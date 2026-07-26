@@ -1,9 +1,9 @@
-defmodule HandleWebRTC.MixProject do
+defmodule HandleWebRTC.WebRTCLobbyHook do
   use Mix.Project
 
   def project do
     [
-      app: :handle_webrtc,
+      app: :webrtc_lobby_hook,
       version: "0.1.1",
       elixir: "~> 1.20",
       start_permanent: Mix.env() == :prod,
@@ -14,7 +14,7 @@ defmodule HandleWebRTC.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      env: [hooks_module: GameServer.Modules.HandleWebRTCHook]
+      env: [hooks_module: GameServer.Modules.WebRTCLobbyHook]
     ]
   end
 

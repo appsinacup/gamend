@@ -6,7 +6,7 @@ defmodule GameServerHost.HostLayoutTranslations do
   def messages do
     [
       gettext_noop("Leaderboards"),
-      gettext_noop("Achievements"),
+      gettext_noop("Quests"),
       gettext_noop("Groups"),
       gettext_noop("Loading..."),
       gettext_noop("Dismiss"),

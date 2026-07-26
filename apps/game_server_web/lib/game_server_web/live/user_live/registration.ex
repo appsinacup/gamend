@@ -13,7 +13,7 @@ defmodule GameServerWeb.UserLive.Registration do
         <div class="text-center">
           <h1 class="text-3xl font-bold">{gettext("Register")}</h1>
           <p class="text-sm text-base-content/70 mt-2">
-            <.link navigate={~p"/users/log-in"} class="font-semibold text-brand hover:underline">
+            <.link navigate={~p"/users/log_in"} class="font-semibold text-brand hover:underline">
               {gettext("Log in")}
             </.link>
           </p>
@@ -180,7 +180,7 @@ defmodule GameServerWeb.UserLive.Registration do
              :info,
              gettext("Success.")
            )
-           |> push_navigate(to: ~p"/users/log-in/#{token}")}
+           |> push_navigate(to: ~p"/users/log_in/#{token}")}
         else
           # Not the first user: a confirmation email was sent inside the
           # registration transaction. Inform the user to check their inbox.
@@ -190,7 +190,7 @@ defmodule GameServerWeb.UserLive.Registration do
              :info,
              gettext("Success.")
            )
-           |> push_navigate(to: ~p"/users/log-in")}
+           |> push_navigate(to: ~p"/users/log_in")}
         end
 
       {:error, %Ecto.Changeset{} = changeset} ->

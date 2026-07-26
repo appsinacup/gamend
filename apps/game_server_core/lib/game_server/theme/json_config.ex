@@ -1,23 +1,27 @@
 defmodule GameServer.Theme.JSONConfig do
   @moduledoc """
-  JSON-backed Theme provider. Reads a locale-specific JSON file from either the
-  THEME_CONFIG environment variable override or the host-owned default path
-  configured by the runnable host application.
+  JSON-backed Theme provider. Reads **one** config file — from the
+  `GAMEND_CONTENT_THEME_CONFIG` setting or the host-owned default path — and
+  translates its text through gettext at read time.
 
-  Only locale-suffixed files are loaded (e.g. `example_config.en.json`,
-  `example_config.es.json`). The base path itself (without a locale suffix) is
-  never loaded directly — it serves only as a naming template to derive
-  locale-specific paths.
+  There used to be one whole JSON file per locale. Two thirds of each copy was
+  structure (urls, icons, layout) rather than text, and they drifted: a
+  `theme_color` added to English never reached the other 29, so non-English
+  visitors silently got the fallback colour. Structure now lives once, and only
+  the leaves `GameServer.Theme.Translatable` names as text vary by locale —
+  through the `theme` gettext domain, like every other string in the UI.
 
-  When THEME_CONFIG is not set, the provider falls back to the host-owned
-  default path configured under `GameServer.Theme.JSONConfig`.
+  A missing translation falls back to the source string, so a config with no
+  `.po` at all still renders exactly as written.
 
-  Theme configs are cached in `:persistent_term` after the first read so
-  subsequent requests never hit the filesystem. Call `reload/0` to clear the
-  cache (e.g. after editing the JSON file at runtime).
+  The decoded file is cached in `:persistent_term`; translation happens per
+  read, against the caller's current locale. Call `reload/0` after editing the
+  file at runtime.
   """
 
   @behaviour GameServer.Theme
+
+  alias GameServer.Theme.Translatable
 
   @impl true
   def get_theme do
@@ -25,26 +29,37 @@ defmodule GameServer.Theme.JSONConfig do
   end
 
   @doc """
-  Variant of `get_theme/0` that prefers a locale-specific THEME_CONFIG file when present.
+  The theme, with its text translated into `locale` (or the caller's current
+  locale when `nil`).
 
-  Given a base config like `modules/example_config.json` and locale `"es"`, we will
-  try `modules/example_config.es.json` first, then fall back to `.en.json`.
-  The base file itself is never loaded.
+  Locale fallback is gettext's, not ours: `es_ES` falls back to `es` and then
+  to the source string, so this never has to hunt for a file that might exist.
   """
   @spec get_theme(String.t() | nil) :: map()
   def get_theme(locale) when is_binary(locale) or is_nil(locale) do
-    cache = :persistent_term.get({__MODULE__, :theme_cache}, %{})
+    case raw_theme() do
+      config when map_size(config) == 0 -> config
+      config -> translate(config, locale)
+    end
+  end
 
-    case Map.get(cache, locale, :not_cached) do
+  @doc """
+  The config exactly as written, untranslated.
+
+  For the extractor and for admin diagnostics, which must show what is on
+  disk rather than what a viewer would see.
+  """
+  @spec raw_theme() :: map()
+  def raw_theme do
+    case :persistent_term.get({__MODULE__, :theme_cache}, :not_cached) do
       :not_cached ->
-        result = do_get_theme(locale)
+        result = do_get_theme()
 
-        # Only cache non-empty results, OR cache empty when no theme source is
-        # configured at all. This prevents a startup race condition where the
-        # config file isn't available yet — an empty map would be cached
-        # permanently, even after the file becomes available.
+        # Only cache a non-empty result, or an empty one when nothing is
+        # configured at all: at startup the file may not be readable yet, and
+        # caching empty would keep it empty forever.
         if result != %{} or config_path() == nil do
-          :persistent_term.put({__MODULE__, :theme_cache}, Map.put(cache, locale, result))
+          :persistent_term.put({__MODULE__, :theme_cache}, result)
         end
 
         result
@@ -54,39 +69,41 @@ defmodule GameServer.Theme.JSONConfig do
     end
   end
 
-  # Performs the actual file-based theme resolution (uncached).
-  #
-  # When a theme source is configured → resolve locale-specific file, load
-  # directly (no merging with packaged defaults). Only locale-suffixed files are
-  # tried.
-  defp do_get_theme(locale) do
+  defp translate(config, locale) do
+    backend = gettext_backend()
+
+    translator = fn source ->
+      if locale do
+        Gettext.with_locale(backend, locale, fn ->
+          Gettext.dgettext(backend, "theme", source)
+        end)
+      else
+        Gettext.dgettext(backend, "theme", source)
+      end
+    end
+
+    Translatable.walk(config, translator)
+  end
+
+  # Resolved at runtime so a host can point the theme at its own backend, the
+  # same one GettextSync drives for the rest of the UI.
+  defp gettext_backend do
+    Application.get_env(:game_server_core, :theme_gettext_backend) ||
+      Application.get_env(:game_server_web, :host_gettext_backend) ||
+      GameServerWeb.Gettext
+  end
+
+  defp do_get_theme do
     case config_path() do
       nil ->
-        # No runtime override or host default configured → return empty.
         %{}
 
-      base_path ->
-        candidates = locale_only_candidates(base_path, locale)
-
-        case Enum.find_value(candidates, :error, &read_json/1) do
+      path ->
+        case read_json(path) do
           {:ok, map} when is_map(map) -> normalize_asset_paths(map)
           _ -> %{}
         end
     end
-  end
-
-  # Build locale-specific file candidates from the base path.
-  # Never includes the base path itself (only locale-suffixed variants).
-  # Always includes the ".en" variant as a final fallback.
-  defp locale_only_candidates(base_path, locale) do
-    locale_variants(locale)
-    |> append_if_missing("en")
-    |> Enum.map(&localized_config_path(base_path, &1))
-  end
-
-  # Appends an item to the end of a list only if it's not already present.
-  defp append_if_missing(list, item) do
-    if item in list, do: list, else: Enum.reverse([item | Enum.reverse(list)])
   end
 
   @impl true
@@ -100,8 +117,8 @@ defmodule GameServer.Theme.JSONConfig do
 
   @impl true
   def reload do
-    # Reset the theme cache so the next get_theme call re-reads from disk.
-    :persistent_term.put({__MODULE__, :theme_cache}, %{})
+    # Reset the cache so the next read comes from disk.
+    :persistent_term.erase({__MODULE__, :theme_cache})
     :ok
   end
 
@@ -110,16 +127,16 @@ defmodule GameServer.Theme.JSONConfig do
   end
 
   @doc """
-  Returns the runtime THEME_CONFIG override if present and non-blank,
+  Returns the runtime GAMEND_CONTENT_THEME_CONFIG override if present and non-blank,
   otherwise nil. This intentionally excludes the host default path so admin
   diagnostics can distinguish explicit overrides from host defaults.
   """
   def runtime_path do
-    normalize_path_env(System.get_env("THEME_CONFIG"))
+    normalize_path_env(GameServer.Settings.get(GameServer.ContentSettings, :theme_config))
   end
 
   @doc """
-  Returns the effective theme config path, preferring THEME_CONFIG when set and
+  Returns the effective theme config path, preferring GAMEND_CONTENT_THEME_CONFIG when set and
   otherwise falling back to the host-owned default path.
   """
   def active_path do
@@ -138,40 +155,6 @@ defmodule GameServer.Theme.JSONConfig do
   end
 
   defp normalize_path_env(_value), do: nil
-
-  defp locale_variants(nil), do: []
-
-  defp locale_variants(locale) when is_binary(locale) do
-    normalized = locale |> String.trim() |> String.downcase()
-
-    primary =
-      normalized
-      |> String.split(~r/[-_]/, parts: 2)
-      |> List.first()
-
-    variants =
-      [normalized, primary]
-      |> Enum.reject(&is_nil/1)
-      |> Enum.map(&String.trim/1)
-      |> Enum.reject(&(&1 == ""))
-      |> Enum.map(&Regex.replace(~r/[^a-z0-9]/, &1, "_"))
-      |> Enum.uniq()
-
-    variants
-  end
-
-  defp localized_config_path(base_path, locale) when is_binary(base_path) and is_binary(locale) do
-    ext = Path.extname(base_path)
-
-    if ext == "" do
-      base_path <> "." <> locale
-    else
-      root = String.trim_trailing(base_path, ext)
-      root <> "." <> locale <> ext
-    end
-  end
-
-  defp read_json(nil), do: :error
 
   defp read_json(path) when is_binary(path) do
     # If the path is relative to the project root, check it directly.

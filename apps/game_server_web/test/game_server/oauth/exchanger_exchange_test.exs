@@ -163,7 +163,14 @@ defmodule GameServer.OAuth.ExchangerExchangeTest do
     Application.put_env(:game_server_core, :oauth_exchanger_client, TestClient)
     # Ensure a test steam api key and app id are available
     Application.put_env(:ueberauth, Ueberauth.Strategy.Steam, api_key: "testkey")
-    System.put_env("STEAM_APP_ID", "12345")
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :steam_app_id,
+      "12345"
+    )
+
     # Ensure a test steam api key is available for steam lookups
     Application.put_env(:ueberauth, Ueberauth.Strategy.Steam, api_key: "testkey")
 
@@ -171,7 +178,12 @@ defmodule GameServer.OAuth.ExchangerExchangeTest do
       Application.delete_env(:game_server_core, :apple_test_jwk)
       Application.delete_env(:game_server_core, :oauth_exchanger_client)
       Application.delete_env(:ueberauth, Ueberauth.Strategy.Steam)
-      System.delete_env("STEAM_APP_ID")
+
+      GameServer.SettingsHelpers.delete(
+        :game_server_core,
+        GameServer.OAuth.Providers,
+        :steam_app_id
+      )
     end)
 
     :ok

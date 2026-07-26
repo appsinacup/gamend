@@ -213,7 +213,7 @@ defmodule GameServerWeb.Api.V1.NotificationControllerTest do
       |> delete("/api/v1/notifications", %{ids: [n1.id, n2.id]})
       |> json_response(200)
 
-    assert resp["deleted"] == 2
+    assert resp["data"]["deleted"] == 2
 
     # Only n3 should remain
     list =
@@ -239,7 +239,7 @@ defmodule GameServerWeb.Api.V1.NotificationControllerTest do
       |> json_response(200)
 
     # Should delete 0 since a is not the recipient
-    assert resp["deleted"] == 0
+    assert resp["data"]["deleted"] == 0
 
     # Notification should still exist for b
     assert Notifications.count_notifications(b.id) == 1
@@ -256,7 +256,7 @@ defmodule GameServerWeb.Api.V1.NotificationControllerTest do
       |> delete("/api/v1/notifications", %{ids: [n.id]})
       |> json_response(200)
 
-    assert resp["deleted"] == 1
+    assert resp["data"]["deleted"] == 1
   end
 
   test "DELETE /api/v1/notifications without ids returns error", %{conn: conn} do

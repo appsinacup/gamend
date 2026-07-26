@@ -7,7 +7,7 @@ defmodule GameServer.Modules.ExampleHook do
 
   To try it locally:
 
-      export GAME_SERVER_PLUGINS_DIR=modules/plugins_examples
+      export GAMEND_CONTENT_PLUGINS_DIR=modules/plugins_examples
 
   Then restart the server and use the Admin Config page to reload plugins.
   """
@@ -19,7 +19,6 @@ defmodule GameServer.Modules.ExampleHook do
   require Logger
 
   alias GameServer.Accounts
-  alias GameServer.Achievements
   alias GameServer.Groups
   alias GameServer.Hooks
   alias GameServer.KV
@@ -32,8 +31,14 @@ defmodule GameServer.Modules.ExampleHook do
   # ignore leaderboards/tournaments belonging to the rest of the game.
   @login_leaderboard "example_login_count"
   @tournament_slug "example-weekly-cup"
-  @achievement_slug "example_first_login"
+  @quest_prefix "example_"
   @group_title "Example Guild"
+  @group_icon "/icons/user-group.svg"
+
+  # Icons are URLs into the server's own typed icon set (`GET /icons/<name>.svg`,
+  # the heroicons the UI already ships), so a sample needs no hosted artwork and
+  # renders in the reader's theme. A game with its own art uploads it instead —
+  # see the two-step icon upload in the admin API — and stores that URL here.
   @welcome_kv_key "example_welcome"
 
   @impl true
@@ -41,12 +46,12 @@ defmodule GameServer.Modules.ExampleHook do
     Logger.info("[ExampleHook] after_startup called")
 
     # Every sample is created only when missing, so restarts and plugin
-    # reloads are safe. The group is seeded on first registration instead —
-    # groups need a creator and there may be no users yet at boot.
+    # reloads are safe.
     ensure_login_leaderboard()
     ensure_weekly_cup()
-    ensure_achievement()
+    ensure_quests()
     ensure_welcome_kv()
+    ensure_group()
 
     [
       %{
@@ -71,44 +76,154 @@ defmodule GameServer.Modules.ExampleHook do
         Leaderboards.create_leaderboard(%{
           slug: @login_leaderboard,
           title: "Logins",
+          icon_url: "/icons/chart-bar.svg",
           description: "How many times each player has logged in.",
           sort_order: :desc,
           operator: :incr
         })
 
-      _existing ->
-        :ok
+      existing ->
+        sync_icon(existing, "/icons/chart-bar.svg", &Leaderboards.update_leaderboard/2)
     end
+  end
+
+  # Only the icon is reconciled on entities that outlive a deploy: their title
+  # and schedule belong to whatever the server (or an admin) has done with them
+  # since. Quests are different — they are pure definitions, so they are synced
+  # whole.
+  defp sync_icon(entity, icon, update) do
+    if Map.get(entity, :icon_url) != icon, do: update.(entity, %{icon_url: icon})
+    :ok
   end
 
   @impl true
   def after_user_logged_in(user) do
-    # Also seeded here, not just on registration: on a database that already
-    # has players, nobody registers again and the group would never appear.
-    ensure_group(user)
-
     case Leaderboards.get_active_leaderboard_by_slug(@login_leaderboard) do
       nil -> :ok
       board -> Leaderboards.submit_score(board.id, user.id, 1)
     end
 
-    # Unlocking is idempotent, so re-logins keep the original unlock time.
-    Achievements.unlock_achievement(user.id, @achievement_slug)
-
     :ok
   end
 
-  # ── Sample achievement: unlocked the first time a player logs in ──────────
+  # Category is a theme ("Check-ins", "Events"), not a cadence — the reset
+  # field already says daily/weekly/monthly, and the page shows it as its own
+  # badge. Using the cadence as the category rendered every label twice.
+  # ── Sample quests ─────────────────────────────────────────────────────────
+  # The core wires the "login" event into the quest engine, so no unlock call
+  # is needed anywhere — defining a quest is enough. Every one below tracks
+  # logins so they all make visible progress from a single action.
 
-  defp ensure_achievement do
-    if is_nil(Achievements.get_achievement_by_slug(@achievement_slug)) do
-      Achievements.create_achievement(%{
-        slug: @achievement_slug,
+  # One quest of every shape the engine supports, so a fresh deployment shows
+  # the whole feature surface rather than a single row: each reset cycle, plus
+  # the orthogonal flags (auto-claim, chained, hidden, time-windowed).
+  #
+  # `category` is a free-form display label, so it is written the way it should
+  # read on the page. It used to be passed as `kind:`, which is not a Quest
+  # field — the changeset dropped it silently and every quest here was created
+  # with no category at all.
+  defp ensure_quests do
+    now = DateTime.utc_now(:second)
+
+    [
+      %{
+        key: "first_login",
+        icon_url: "/icons/hand-raised.svg",
         title: "Welcome aboard",
         description: "Log in for the first time.",
-        progress_target: 1
-      })
-    end
+        category: "Achievements",
+        reset: "never",
+        auto_claim: true,
+        objectives: [%{event: "login", target: 1}]
+      },
+      %{
+        key: "daily_login",
+        icon_url: "/icons/calendar-days.svg",
+        title: "Daily check-in",
+        description: "Log in today.",
+        category: "Check-ins",
+        reset: "daily",
+        objectives: [%{event: "login", target: 1}]
+      },
+      %{
+        key: "weekly_regular",
+        icon_url: "/icons/calendar.svg",
+        title: "Weekly regular",
+        description: "Log in on five different days this week.",
+        category: "Check-ins",
+        reset: "weekly",
+        objectives: [%{event: "login", target: 5}]
+      },
+      %{
+        key: "monthly_devotee",
+        icon_url: "/icons/calendar-date-range.svg",
+        title: "Monthly devotee",
+        description: "Log in twenty times this month.",
+        category: "Check-ins",
+        reset: "monthly",
+        objectives: [%{event: "login", target: 20}]
+      },
+      # `interval` restarts a fixed number of days after each completion,
+      # rather than on a calendar boundary.
+      %{
+        key: "recurring_visit",
+        icon_url: "/icons/arrow-path.svg",
+        title: "Stop by again",
+        description: "Log in. Becomes available again three days later.",
+        category: "Check-ins",
+        reset: "interval",
+        reset_interval_days: 3,
+        objectives: [%{event: "login", target: 1}]
+      },
+      # Chained: stays locked until its prerequisite is completed.
+      %{
+        key: "loyal_veteran",
+        icon_url: "/icons/shield-check.svg",
+        title: "Loyal veteran",
+        description: "Log in fifty times, once you have said hello.",
+        category: "Achievements",
+        reset: "never",
+        prerequisite_quest_key: @quest_prefix <> "first_login",
+        objectives: [%{event: "login", target: 50}]
+      },
+      # Hidden quests stay a teaser in the catalog until they are earned.
+      %{
+        key: "night_owl",
+        icon_url: "/icons/moon.svg",
+        title: "Night owl",
+        description: "Some things are found rather than announced.",
+        category: "Secrets",
+        reset: "never",
+        hidden: true,
+        objectives: [%{event: "login", target: 100}]
+      },
+      # A window is orthogonal to the reset cycle: this is a daily that only
+      # runs while the event is on.
+      %{
+        key: "launch_festival",
+        icon_url: "/icons/sparkles.svg",
+        title: "Launch festival",
+        description: "A daily that only counts while the festival is running.",
+        category: "Events",
+        reset: "daily",
+        starts_at: DateTime.add(now, -1, :day),
+        ends_at: DateTime.add(now, 30, :day),
+        objectives: [%{event: "login", target: 1}]
+      }
+    ]
+    |> Enum.each(fn attrs ->
+      key = @quest_prefix <> attrs.key
+
+      attrs = Map.put(attrs, :key, key)
+
+      # Reconciled on every boot rather than only created: these quests are
+      # *defined* here, so editing one (a new icon, a reworded description) has
+      # to reach the rows a previous deploy already made.
+      case GameServer.Quests.get_quest_by_key(key) do
+        nil -> GameServer.Quests.create_quest(attrs)
+        quest -> GameServer.Quests.update_quest(quest, Map.delete(attrs, :key))
+      end
+    end)
 
     :ok
   end
@@ -124,15 +239,35 @@ defmodule GameServer.Modules.ExampleHook do
     :ok
   end
 
-  # ── Sample group: seeded by the first player to register ──────────────────
+  # ── Sample group ──────────────────────────────────────────────────────────
+  #
+  # A group needs a creator, so unlike the other samples this one cannot be
+  # made out of nothing at boot. It is seeded with the oldest account when one
+  # exists, and otherwise by the first player to register — so an instance ends
+  # up with one of every entity either way.
+
+  defp ensure_group do
+    case List.first(Accounts.list_all_users(%{}, page_size: 1, sort_dir: "asc")) do
+      nil -> :ok
+      owner -> ensure_group(owner)
+    end
+  end
 
   defp ensure_group(user) do
-    if is_nil(Groups.get_group_by_title(@group_title)) do
-      Groups.create_group(user.id, %{
-        title: @group_title,
-        description: "A public group created by the example plugin.",
-        type: "public"
-      })
+    case Groups.get_group_by_title(@group_title) do
+      nil ->
+        Groups.create_group(user.id, %{
+          title: @group_title,
+          icon_url: @group_icon,
+          description: "A public group created by the example plugin.",
+          type: "public"
+        })
+
+      existing ->
+        # Players can rename a group they belong to, so only the icon is synced.
+        sync_icon(existing, @group_icon, fn group, attrs ->
+          Groups.update_group(user.id, group.id, attrs)
+        end)
     end
 
     :ok
@@ -153,6 +288,7 @@ defmodule GameServer.Modules.ExampleHook do
     Notifications.admin_create_notification(user.id, user.id, %{
       "title" => "Welcome!",
       "content" => "Thanks for joining. Register for the Weekly Cup to get started.",
+      "icon_url" => "/icons/bell.svg",
       "metadata" => %{"type" => "example_welcome"}
     })
 
@@ -170,6 +306,7 @@ defmodule GameServer.Modules.ExampleHook do
         Tournaments.create_tournament(%{
           slug: @tournament_slug,
           title: "Weekly Cup",
+          icon_url: "/icons/trophy.svg",
           description: "Register any time; the bracket is drawn every Monday.",
           starts_at: next_monday(),
           recur: "0 0 * * 1",
@@ -177,8 +314,8 @@ defmodule GameServer.Modules.ExampleHook do
           round_window_sec: 24 * 3600
         })
 
-      _existing ->
-        :ok
+      existing ->
+        sync_icon(existing, "/icons/trophy.svg", &Tournaments.update_tournament/2)
     end
   end
 

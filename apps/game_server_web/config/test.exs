@@ -2,11 +2,11 @@ import Config
 
 config :bcrypt_elixir, :log_rounds, 1
 
-if System.get_env("DATABASE_URL") ||
-     (System.get_env("POSTGRES_HOST") && System.get_env("POSTGRES_USER")) do
+if System.get_env("GAMEND_DB_URL") ||
+     (System.get_env("GAMEND_DB_POSTGRES_HOST") && System.get_env("GAMEND_DB_POSTGRES_USER")) do
   database_url =
-    System.get_env("DATABASE_URL") ||
-      "ecto://#{System.get_env("POSTGRES_USER")}:#{System.get_env("POSTGRES_PASSWORD")}@#{System.get_env("POSTGRES_HOST")}:#{System.get_env("POSTGRES_PORT", "5432")}/#{System.get_env("POSTGRES_DB", "game_server_web_test")}"
+    System.get_env("GAMEND_DB_URL") ||
+      "ecto://#{System.get_env("GAMEND_DB_POSTGRES_USER")}:#{System.get_env("GAMEND_DB_POSTGRES_PASSWORD")}@#{System.get_env("GAMEND_DB_POSTGRES_HOST")}:#{System.get_env("GAMEND_DB_POSTGRES_PORT", "5432")}/#{System.get_env("GAMEND_DB_POSTGRES_DB", "game_server_web_test")}"
 
   config :game_server_core, GameServer.Repo,
     url: database_url,
@@ -77,6 +77,26 @@ config :game_server_web, GameServerWeb.Plugs.RateLimiter, enabled: false
 # keep logging after the test task itself is done.
 config :game_server_core, GameServer.Accounts.StalePresenceSweeper, enabled: false
 
+# The other periodic workers, for the same reason: neither owns a sandbox
+# connection, and on SQLite they collide with the test's open write transaction
+# ("database is locked"). Tests drive tick/0 and sweep/0 directly.
+config :game_server_core, GameServer.Tournaments.Ticker, enabled: false
+config :game_server_core, GameServer.Matchmaking.Worker, enabled: false
+
+# NOTE: deliberately NOT setting `async_inline: true` here, unlike the root
+# config/test.exs. Payments call GameServer.Async.run/1 from inside a
+# Repo.transaction, and the hook fanout blocks on a Task that needs its own
+# connection — inline, that Task waits on the connection its own caller is
+# holding for the transaction, times out after 15s and rolls back. It fails
+# 7 payments/entitlement tests. The stray "client exited" disconnects that
+# inline mode would silence need a fix in Async/Hooks, not this knob.
+
 # Jobs run inline on demand in tests (no queues/plugins/cron). Kept in sync with
 # the root config/test.exs.
 config :game_server_core, Oban, testing: :manual
+
+# The declared setting, not just the endpoint's copy: GameServer.Settings
+# validates `auth.secret_key_base` at boot, and dev should not warn about a
+# secret it demonstrably has.
+config :game_server_core, GameServer.Accounts,
+  secret_key_base: "dJoNJZBOt08JlBREyPV5xvuOdwgHPORxK9WHp/k3Cs+g0R9ctyheJ8/CMeg/AdI1"

@@ -43,6 +43,9 @@
 @source "../../deps/game_server_web/apps/game_server_web/assets/js";
 @source "../../deps/game_server_web/apps/game_server_web/lib";
 @source "../../lib";
+/* Guides name their own heroicon in front matter, so the class never appears
+   in Elixir or JS - without this the icons generate no CSS and render blank. */
+@source "../../priv/docs";
 
 /* Float animation for background icons — drift with increased movement range */
 @keyframes float {
@@ -240,23 +243,33 @@
 .markdown-content a:hover {
   opacity: 0.8;
 }
+.markdown-content code,
+.markdown-content pre {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  font-variant-ligatures: none;
+}
 .markdown-content code {
   background: var(--color-base-200);
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
-  font-size: 0.875rem;
+  font-size: 0.875em;
+  border: 1px solid color-mix(in oklch, var(--color-base-content) 10%, transparent);
 }
 .markdown-content pre {
-  background: var(--color-base-200);
+  background: color-mix(in oklch, var(--color-base-200) 70%, var(--color-base-100));
+  border: 1px solid color-mix(in oklch, var(--color-base-content) 12%, transparent);
   padding: 1rem;
   border-radius: 0.5rem;
   overflow-x: auto;
   margin-bottom: 1rem;
+  line-height: 1.6;
 }
 .markdown-content pre code {
   background: none;
+  border: none;
   padding: 0;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 .markdown-content blockquote {
   border-left: 4px solid color-mix(in oklch, var(--color-primary) 40%, transparent);
@@ -277,8 +290,21 @@
   text-align: left;
 }
 .markdown-content th {
-  background: var(--color-base-200);
+  background: color-mix(in oklch, var(--color-base-content) 8%, var(--color-base-100));
   font-weight: 600;
+  white-space: nowrap;
+}
+.markdown-content tbody tr:nth-child(even) {
+  background: color-mix(in oklch, var(--color-base-content) 3%, transparent);
+}
+.markdown-content td {
+  vertical-align: top;
+}
+/* A wide table must scroll inside itself rather than widening the page. */
+.markdown-content table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
 }
 .markdown-content img {
   border-radius: 0.5rem;
@@ -373,4 +399,86 @@
 }
 .highlight-code .code-function {
   color: var(--color-secondary);
+}
+
+/* ─── Fenced code highlighting (lumis token classes) ─── */
+/* Matched by prefix, not enumerated: lumis emits a long tail of token names
+   (l-keyword-conditional, l-function-builtin, l-variable-builtin, ...) and any
+   name missed here renders as plain body text, which reads as "highlighting is
+   broken" for whole languages. */
+.markdown-content .l-line {
+  display: block;
+  min-height: 1lh;
+}
+.markdown-content [class*="l-comment"] {
+  color: color-mix(in oklch, var(--color-base-content) 45%, transparent);
+  font-style: italic;
+}
+.markdown-content [class*="l-keyword"] {
+  color: oklch(0.52 0.24 305);
+}
+.markdown-content [class*="l-string"] {
+  color: oklch(0.5 0.16 145);
+}
+.markdown-content [class*="l-number"],
+.markdown-content [class*="l-boolean"],
+.markdown-content [class*="l-constant"],
+.markdown-content [class*="l-float"] {
+  color: oklch(0.55 0.18 45);
+}
+.markdown-content [class*="l-function"],
+.markdown-content [class*="l-constructor"] {
+  color: oklch(0.52 0.2 250);
+}
+.markdown-content [class*="l-type"],
+.markdown-content [class*="l-module"],
+.markdown-content [class*="l-namespace"] {
+  color: oklch(0.52 0.14 195);
+}
+.markdown-content [class*="l-property"],
+.markdown-content [class*="l-variable-member"],
+.markdown-content [class*="l-attribute"],
+.markdown-content [class*="l-tag"] {
+  color: oklch(0.5 0.14 220);
+}
+/* Plain identifiers stay body-coloured on purpose: colouring everything is the
+   same as colouring nothing. */
+.markdown-content [class*="l-variable"]:not([class*="member"]) {
+  color: var(--color-base-content);
+}
+.markdown-content [class*="l-operator"],
+.markdown-content [class*="l-punctuation"] {
+  color: color-mix(in oklch, var(--color-base-content) 60%, transparent);
+}
+
+/* Dark themes need lighter, less saturated tokens to stay legible. */
+[data-theme="dark"] .markdown-content [class*="l-keyword"] {
+  color: oklch(0.8 0.16 305);
+}
+[data-theme="dark"] .markdown-content [class*="l-string"] {
+  color: oklch(0.82 0.16 145);
+}
+[data-theme="dark"] .markdown-content [class*="l-number"],
+[data-theme="dark"] .markdown-content [class*="l-boolean"],
+[data-theme="dark"] .markdown-content [class*="l-constant"],
+[data-theme="dark"] .markdown-content [class*="l-float"] {
+  color: oklch(0.84 0.15 65);
+}
+[data-theme="dark"] .markdown-content [class*="l-function"],
+[data-theme="dark"] .markdown-content [class*="l-constructor"] {
+  color: oklch(0.8 0.14 250);
+}
+[data-theme="dark"] .markdown-content [class*="l-type"],
+[data-theme="dark"] .markdown-content [class*="l-module"],
+[data-theme="dark"] .markdown-content [class*="l-namespace"] {
+  color: oklch(0.84 0.12 195);
+}
+[data-theme="dark"] .markdown-content [class*="l-property"],
+[data-theme="dark"] .markdown-content [class*="l-variable-member"],
+[data-theme="dark"] .markdown-content [class*="l-attribute"],
+[data-theme="dark"] .markdown-content [class*="l-tag"] {
+  color: oklch(0.82 0.12 220);
+}
+[data-theme="dark"] .markdown-content [class*="l-variable"]:not([class*="member"]) {
+  color: var(--color-base-content);
 }

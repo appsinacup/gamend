@@ -75,6 +75,23 @@ defmodule GameServerWeb.TournamentsLiveTest do
     assert html =~ "Players: 2"
   end
 
+  test "detail resolves a 16-character slug (Ecto.UUID.cast accepts 16-byte binaries)", %{
+    conn: conn
+  } do
+    # "weekend-gauntlet" is exactly 16 bytes; Ecto.UUID.cast/1 treats any 16-byte
+    # binary as a raw UUID, so fetch/1 used to look it up by id and 404 the page.
+    slug = "weekend-gauntlet"
+    assert byte_size(slug) == 16
+    tournament = create_tournament(%{slug: slug})
+    join(tournament, 2)
+
+    {:ok, _view, html} = live(conn, ~p"/tournaments/#{slug}")
+
+    assert html =~ "Public Cup"
+    assert html =~ "Registered"
+    refute html =~ "Not found"
+  end
+
   test "index paginates", %{conn: conn} do
     for _ <- 1..3, do: create_tournament()
 

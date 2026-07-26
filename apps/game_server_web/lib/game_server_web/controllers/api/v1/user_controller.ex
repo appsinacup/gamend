@@ -6,6 +6,7 @@ defmodule GameServerWeb.Api.V1.UserController do
 
   alias GameServer.Accounts
   alias GameServer.Accounts.User
+  alias GameServerWeb.Pagination
   alias OpenApiSpex.Schema
 
   @error_schema %Schema{type: :object, properties: %{error: %Schema{type: :string}}}
@@ -116,27 +117,14 @@ defmodule GameServerWeb.Api.V1.UserController do
 
   def index(conn, params) do
     q = Map.get(params, "q", "")
-    page = GameServer.Limits.clamp_page(params["page"])
-    page_size = GameServer.Limits.clamp_page_size(params["page_size"])
+    {page, page_size} = Pagination.params(params)
 
     users = if q == "", do: [], else: Accounts.search_users(q, page: page, page_size: page_size)
     serialized = Enum.map(users, &serialize_user/1)
-    count = length(serialized)
 
     total_count = if q == "", do: 0, else: Accounts.count_search_users(q)
-    total_pages = if page_size > 0, do: div(total_count + page_size - 1, page_size), else: 0
 
-    json(conn, %{
-      data: serialized,
-      meta: %{
-        page: page,
-        page_size: page_size,
-        count: count,
-        total_count: total_count,
-        total_pages: total_pages,
-        has_more: page < total_pages
-      }
-    })
+    json(conn, Pagination.envelope(serialized, page, page_size, total_count))
   end
 
   def show(conn, %{"id" => id}) do

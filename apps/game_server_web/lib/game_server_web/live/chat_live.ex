@@ -227,7 +227,7 @@ defmodule GameServerWeb.ChatLive do
                   <% else %>
                     {sender_name(msg)}
                   <% end %>
-                  <span class="ml-1">{Calendar.strftime(msg.inserted_at, "%H:%M")}</span>
+                  <span class="ml-1"><.timestamp at={msg.inserted_at} format="time" /></span>
                   <%= if msg.updated_at && msg.updated_at != msg.inserted_at do %>
                     <span class="ml-1 italic">{gettext("(edited)")}</span>
                   <% end %>

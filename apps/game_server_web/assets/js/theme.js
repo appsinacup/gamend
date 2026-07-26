@@ -61,60 +61,26 @@ window.addEventListener("phx:set-theme", (e) => {
 });
 
 // ---------------------------------------------------------------------------
-// Card collapse/expand state handling (UI-only, always collapsed by default)
+// Docs deep links
 // ---------------------------------------------------------------------------
+// The canonical form is /docs/setup?guide=payments, which the server renders
+// and can restore after a reconnect. This only upgrades older #fragment links:
+// opening the section fires `toggle`, and the GuideDisclosure hook rewrites the
+// URL to the query form from there.
 
-const setCardCollapsed = (cardEl, collapsed) => {
-  if (collapsed) {
-    cardEl.classList.add("collapsed");
-    const key = cardEl.dataset.cardKey;
-    const btn = cardEl.querySelector(
-      `[data-action="toggle-card"][data-card-key="${key}"]`
-    );
-    if (btn) btn.setAttribute("aria-expanded", "false");
-  } else {
-    cardEl.classList.remove("collapsed");
-    const key = cardEl.dataset.cardKey;
-    const btn = cardEl.querySelector(
-      `[data-action="toggle-card"][data-card-key="${key}"]`
-    );
-    if (btn) btn.setAttribute("aria-expanded", "true");
-  }
-};
-
-// Initialize collapsed state on DOMContentLoaded so attributes are set consistently
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("[data-card-key]").forEach((card) => {
-    const collapsed = card.classList.contains("collapsed");
-    setCardCollapsed(card, collapsed);
-  });
-});
-
-// Toggle handler
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-action='toggle-card']");
-  if (!btn) return;
-  const key = btn.dataset.cardKey;
-  const card = document.querySelector(`[data-card-key="${key}"]`);
-  if (!card) return;
-  const collapsed = card.classList.toggle("collapsed");
-  setCardCollapsed(card, collapsed);
-});
-
-const handleAnchor = () => {
+const openAnchoredDetails = () => {
   const hash = window.location.hash;
   if (!hash) return;
-  const key = hash.replace("#", "");
-  const card = document.querySelector(`.card[data-card-key="${key}"]`);
-  if (card) {
-    setCardCollapsed(card, false);
-    // Scroll with an offset to ensure the title is visible
-    const yOffset = -80;
-    const y = card.getBoundingClientRect().top + window.pageYOffset + yOffset;
-    window.scrollTo({ top: y, behavior: "smooth" });
-  }
+
+  const target = document.getElementById(hash.slice(1));
+  if (!(target instanceof HTMLDetailsElement)) return;
+
+  target.open = true;
+  // Offset so the summary clears the sticky navbar.
+  const y = target.getBoundingClientRect().top + window.pageYOffset - 80;
+  window.scrollTo({ top: y, behavior: "smooth" });
 };
 
-window.addEventListener("load", handleAnchor);
-window.addEventListener("hashchange", handleAnchor);
-window.addEventListener("phx:page-loading-stop", handleAnchor);
+window.addEventListener("load", openAnchoredDetails);
+window.addEventListener("hashchange", openAnchoredDetails);
+window.addEventListener("phx:page-loading-stop", openAnchoredDetails);

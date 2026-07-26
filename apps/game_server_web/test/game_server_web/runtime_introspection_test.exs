@@ -27,27 +27,27 @@ defmodule GameServerWeb.RuntimeIntrospectionTest do
     by_name = Map.new(rows, &{&1.name, &1})
 
     for key <- Map.keys(GameServer.Limits.defaults()) do
-      name = "LIMIT_#{key |> Atom.to_string() |> String.upcase()}"
+      name = "GAMEND_LIMITS_#{key |> Atom.to_string() |> String.upcase()}"
       assert Map.has_key?(by_name, name), "limit #{name} missing from env grid"
     end
 
     # A limit nobody sets in tests shows its compiled default.
-    row = by_name["LIMIT_MAX_MATCHMAKING_PLAYERS"]
+    row = by_name["GAMEND_LIMITS_MAX_MATCHMAKING_PLAYERS"]
     refute row.set
     assert row.default == "64"
   end
 
   test "env vars mask secret-looking values" do
-    System.put_env("SECRET_KEY_BASE", "super-sensitive")
+    System.put_env("GAMEND_AUTH_SECRET_KEY_BASE", "super-sensitive")
 
-    row = Introspection.env_vars() |> Enum.find(&(&1.name == "SECRET_KEY_BASE"))
+    row = Introspection.env_vars() |> Enum.find(&(&1.name == "GAMEND_AUTH_SECRET_KEY_BASE"))
 
     if row do
       assert row.value == "••••••••"
       refute row.search =~ "sensitive"
     end
   after
-    System.delete_env("SECRET_KEY_BASE")
+    System.delete_env("GAMEND_AUTH_SECRET_KEY_BASE")
   end
 
   test "protobuf and data model attribute rows to the plugin that owns them" do

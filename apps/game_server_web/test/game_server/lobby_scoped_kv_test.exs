@@ -90,4 +90,51 @@ defmodule GameServer.LobbyScopedKvTest do
     {_lobby, [user | _]} = lobby_with_members(2)
     assert {:ok, _} = Lobbies.leave_lobby(user)
   end
+
+  # A plugin must be able to persist state that dies with the membership (e.g.
+  # banking cargo collected in a level the player abandons). That only works if
+  # before_lobby_leave fires *before* clear_lobby_scoped_kv, while the entries
+  # still exist.
+  defmodule ObserverHook do
+    def before_lobby_leave(user, lobby) do
+      value =
+        case KV.get("ready", user_id: user.id, lobby_id: lobby.id) do
+          {:ok, %{value: v}} -> v
+          _ -> nil
+        end
+
+      if pid = Application.get_env(:game_server_core, :before_leave_observer_pid) do
+        send(pid, {:before_lobby_leave_saw, value})
+      end
+
+      :ok
+    end
+  end
+
+  test "before_lobby_leave fires while the member's lobby-scoped entries still exist" do
+    # non-host leaver keeps the teardown to a plain leave (no host transfer)
+    {lobby, [_host, leaver | _]} = lobby_with_members(2)
+    ready!(leaver, lobby, true)
+
+    Application.put_env(:game_server_core, :before_leave_observer_pid, self())
+    previous = Application.get_env(:game_server_core, :hooks_module)
+    Application.put_env(:game_server_core, :hooks_module, ObserverHook)
+
+    on_exit(fn ->
+      Application.delete_env(:game_server_core, :before_leave_observer_pid)
+
+      if previous do
+        Application.put_env(:game_server_core, :hooks_module, previous)
+      else
+        Application.delete_env(:game_server_core, :hooks_module)
+      end
+    end)
+
+    {:ok, _} = Lobbies.leave_lobby(leaver)
+
+    # the hook saw the ready flag intact — it ran before the clear
+    assert_receive {:before_lobby_leave_saw, %{"value" => true}}, 2_000
+    # and the clear still happened afterwards
+    assert ready(leaver, lobby) == nil
+  end
 end

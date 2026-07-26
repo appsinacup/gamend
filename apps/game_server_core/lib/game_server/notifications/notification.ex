@@ -10,24 +10,14 @@ defmodule GameServer.Notifications.Notification do
   - `title` – required short summary
   - `content` – optional longer body text
   - `metadata` – optional arbitrary key/value map
+  - `icon_url` – optional icon; `nil` means clients show their default
+    notification icon
   """
   use GameServer.Schema
   import Ecto.Changeset
 
   alias GameServer.Accounts.User
   alias GameServer.Notifications.Types
-
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :sender_id,
-             :recipient_id,
-             :title,
-             :content,
-             :metadata,
-             :read,
-             :inserted_at
-           ]}
 
   schema "notifications" do
     belongs_to :sender, User
@@ -36,6 +26,7 @@ defmodule GameServer.Notifications.Notification do
     field :title, :string
     field :content, :string, default: ""
     field :metadata, :map, default: %{}
+    field :icon_url, :string
     field :read, :boolean, default: false
 
     timestamps(type: :utc_datetime)
@@ -49,6 +40,7 @@ defmodule GameServer.Notifications.Notification do
           title: String.t() | nil,
           content: String.t() | nil,
           metadata: map(),
+          icon_url: String.t() | nil,
           read: boolean(),
           inserted_at: DateTime.t() | nil
         }
@@ -56,8 +48,9 @@ defmodule GameServer.Notifications.Notification do
   @doc false
   def changeset(notification, attrs) do
     notification
-    |> cast(attrs, [:title, :content, :metadata])
+    |> cast(attrs, [:title, :content, :metadata, :icon_url])
     |> validate_required([:title])
+    |> validate_length(:icon_url, max: GameServer.Limits.get(:max_profile_url))
     |> validate_length(:title, min: 1, max: GameServer.Limits.get(:max_notification_title))
     |> validate_length(:content, max: GameServer.Limits.get(:max_notification_content))
     |> unique_constraint([:sender_id, :recipient_id, :title],
@@ -82,5 +75,27 @@ defmodule GameServer.Notifications.Notification do
       _ ->
         changeset
     end
+  end
+end
+
+# Hand-written rather than @derive so nil strings encode as "" (see
+# GameServer.SchemaJSON — game clients choke on null).
+defimpl Jason.Encoder, for: GameServer.Notifications.Notification do
+  def encode(notification, opts) do
+    GameServer.SchemaJSON.encode(
+      notification,
+      [
+        :id,
+        :sender_id,
+        :recipient_id,
+        :title,
+        :content,
+        :metadata,
+        :icon_url,
+        :read,
+        :inserted_at
+      ],
+      opts
+    )
   end
 end

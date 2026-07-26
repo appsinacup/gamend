@@ -1,32 +1,32 @@
 defmodule Mix.Tasks.Gettext.ImportCsv do
   @moduledoc """
-  Imports translations from a CSV file back into PO files and theme JSON config.
+  Imports reviewed translations from a CSV back into the PO files.
 
   ## Usage
 
-      mix gettext.import_csv LOCALE FILE [--dry-run] [--config BASE_PATH]
+      mix gettext.import_csv LOCALE FILE [--dry-run]
 
   ## Examples
 
-      mix gettext.import_csv es translations_es.csv
-      mix gettext.import_csv es translations_es.csv --dry-run
-      mix gettext.import_csv es translations_es.csv --config modules/example_config.json
+      mix gettext.import_csv es translations/es.csv
+      mix gettext.import_csv es translations/es.csv --dry-run
 
   The CSV must have at minimum the columns: `domain`, `msgid`, `translation`.
   Optional columns: `source`, `fuzzy`.
 
-  Rows with domain `_config` are written to the theme JSON config file.
-  All other rows update the corresponding PO files.
+  Rows are matched by `(domain, msgid)` and only the `msgstr` is updated; a
+  filled-in translation also clears the `fuzzy` flag. New msgids are never
+  added — those come from `mix gettext.extract --merge`.
 
-  The task matches PO rows by `(domain, msgid)` pair and updates only the
-  `msgstr` (translation) fields. It will NOT add new msgids — those must be
-  created via `mix gettext.extract --merge`.
+  Both gettext trees are searched, so a msgid that renders from the host
+  (`priv/gettext`) and from the library
+  (`apps/game_server_web/priv/gettext`) is updated in both.
 
   Use `--dry-run` to preview changes without writing files.
   """
   use Mix.Task
 
-  @shortdoc "Import translations from CSV into PO files and theme config"
+  @shortdoc "Import reviewed translations from CSV into PO files"
 
   @gettext_dirs [
     "priv/gettext",
@@ -35,74 +35,80 @@ defmodule Mix.Tasks.Gettext.ImportCsv do
 
   @impl Mix.Task
   def run(args) do
-    {opts, positional, _} =
-      OptionParser.parse(args, strict: [dry_run: :boolean, config: :string])
+    {opts, positional, _} = OptionParser.parse(args, strict: [dry_run: :boolean])
 
     dry_run? = opts[:dry_run] || false
 
     case positional do
-      [locale, csv_path] -> do_import(locale, csv_path, dry_run?, opts[:config])
+      [locale, csv_path] -> do_import(locale, csv_path, dry_run?)
       _ -> raise_usage!()
     end
   end
 
-  defp do_import(locale, csv_path, dry_run?, config_opt) do
-    locale_dir = Path.join([gettext_dir(), locale, "LC_MESSAGES"])
+  defp do_import(locale, csv_path, dry_run?) do
+    locale_dirs =
+      @gettext_dirs
+      |> Enum.map(&Path.join([&1, locale, "LC_MESSAGES"]))
+      |> Enum.filter(&File.dir?/1)
 
-    unless File.dir?(locale_dir) do
-      Mix.raise("Locale directory not found: #{locale_dir}")
+    if locale_dirs == [] do
+      Mix.raise("Locale not found in any gettext tree: #{locale}")
     end
 
     unless File.exists?(csv_path) do
       Mix.raise("CSV file not found: #{csv_path}")
     end
 
-    # Parse CSV into a map: %{domain => %{msgid => row}}
     translations = parse_csv(csv_path)
 
-    # Split config entries from PO entries
-    {config_entries, po_translations} = Map.pop(translations, "_config", %{})
-
-    # Import PO translations
-    stats = %{updated: 0, skipped: 0, not_found: 0}
-
     {stats, files_written} =
-      po_translations
-      |> Enum.sort_by(fn {domain, _} -> domain end)
-      |> Enum.reduce({stats, 0}, fn {domain, entries}, {acc_stats, acc_files} ->
-        po_path = Path.join(locale_dir, "#{domain}.po")
+      for locale_dir <- locale_dirs,
+          {domain, entries} <- Enum.sort_by(translations, &elem(&1, 0)),
+          reduce: {%{updated: 0, skipped: 0, not_found: 0}, 0} do
+        {acc_stats, acc_files} ->
+          po_path = Path.join(locale_dir, "#{domain}.po")
 
-        if File.exists?(po_path) do
-          {domain_stats, written?} = update_po_file(po_path, entries, dry_run?)
+          if File.exists?(po_path) do
+            {domain_stats, written?} = update_po_file(po_path, entries, dry_run?)
 
-          acc_stats = %{
-            updated: acc_stats.updated + domain_stats.updated,
-            skipped: acc_stats.skipped + domain_stats.skipped,
-            not_found: acc_stats.not_found + domain_stats.not_found
-          }
+            {merge_stats(acc_stats, domain_stats), acc_files + if(written?, do: 1, else: 0)}
+          else
+            {acc_stats, acc_files}
+          end
+      end
 
-          {acc_stats, acc_files + if(written?, do: 1, else: 0)}
-        else
-          count = map_size(entries)
-          Mix.shell().info("  Skipping #{count} entries — #{po_path} not found")
-          {%{acc_stats | not_found: acc_stats.not_found + count}, acc_files}
-        end
-      end)
-
-    # Import config translations
-    config_stats = import_config(locale, config_entries, dry_run?, config_opt)
-
+    unmatched = unmatched_count(translations, locale_dirs)
     prefix = if dry_run?, do: "[DRY RUN] ", else: ""
 
     Mix.shell().info("""
 
     #{prefix}Import complete:
-      PO updated: #{stats.updated}
-      PO skipped (unchanged): #{stats.skipped}
-      PO not found: #{stats.not_found}
-      PO files written: #{files_written}
-      Config entries updated: #{config_stats.updated}
+      Updated: #{stats.updated}
+      Unchanged: #{stats.skipped}
+      No such msgid in any domain: #{unmatched}
+      Files written: #{files_written}
     """)
+  end
+
+  defp merge_stats(a, b) do
+    %{updated: a.updated + b.updated, skipped: a.skipped + b.skipped, not_found: 0}
+  end
+
+  # A CSV row can legitimately match nothing in one tree while matching in the
+  # other, so "not found" is only meaningful across all of them at once.
+  defp unmatched_count(translations, locale_dirs) do
+    present =
+      for locale_dir <- locale_dirs,
+          filename <- File.ls!(locale_dir),
+          String.ends_with?(filename, ".po"),
+          {:ok, po} = Expo.PO.parse_file(Path.join(locale_dir, filename)),
+          message <- po.messages,
+          into: MapSet.new() do
+        {String.replace_suffix(filename, ".po", ""), extract_msgid(message)}
+      end
+
+    for({domain, entries} <- translations, msgid <- Map.keys(entries), do: {domain, msgid})
+    |> Enum.count(&(&1 not in present))
   end
 
   defp update_po_file(po_path, entries, dry_run?) do
@@ -126,16 +132,6 @@ defmodule Mix.Tasks.Gettext.ImportCsv do
             end
         end
       end)
-
-    # Count CSV entries that didn't match any PO message
-    po_msgids = MapSet.new(po.messages, &extract_msgid/1)
-
-    not_found_count =
-      entries
-      |> Map.keys()
-      |> Enum.count(fn key -> not MapSet.member?(po_msgids, key) end)
-
-    stats = %{stats | not_found: stats.not_found + not_found_count}
 
     written? =
       if stats.updated > 0 and not dry_run? do
@@ -327,302 +323,11 @@ defmodule Mix.Tasks.Gettext.ImportCsv do
   @spec raise_usage!() :: no_return()
   defp raise_usage! do
     Mix.raise("""
-    Usage: mix gettext.import_csv LOCALE FILE [--dry-run] [--config BASE_PATH]
+    Usage: mix gettext.import_csv LOCALE FILE [--dry-run]
 
-    Example: mix gettext.import_csv es translations_es.csv
-             mix gettext.import_csv es translations_es.csv --config modules/example_config.json
+    Examples:
+             mix gettext.import_csv es translations/es.csv
+             mix gettext.import_csv es translations/es.csv --dry-run
     """)
   end
-
-  defp gettext_dir do
-    Enum.find(@gettext_dirs, "priv/gettext", &File.dir?/1)
-  end
-
-  # ------------------------------------------------------------------
-  # Theme JSON config import
-  # ------------------------------------------------------------------
-
-  defp import_config(_locale, entries, _dry_run?, _config_opt) when map_size(entries) == 0 do
-    %{updated: 0}
-  end
-
-  defp import_config(locale, entries, dry_run?, config_opt) do
-    base_path = detect_config_base(config_opt)
-
-    if base_path do
-      do_import_config(locale, entries, dry_run?, base_path)
-    else
-      Mix.shell().info(
-        "  Skipping #{map_size(entries)} config entries — no config base path detected"
-      )
-
-      %{updated: 0}
-    end
-  end
-
-  defp do_import_config(locale, entries, dry_run?, base_path) do
-    ext = Path.extname(base_path)
-    stem = String.replace_suffix(base_path, ext, "")
-    locale_path = "#{stem}.#{locale}#{ext}"
-
-    # Read English config to build source-text → [paths] lookup
-    en_path = "#{stem}.en#{ext}"
-
-    en_data =
-      if File.exists?(en_path) do
-        en_path |> File.read!() |> Jason.decode!()
-      else
-        nil
-      end
-
-    data =
-      if File.exists?(locale_path) do
-        locale_path |> File.read!() |> Jason.decode!()
-      else
-        %{}
-      end
-
-    # Build a map from source text → list of all config paths that have that text
-    source_to_paths = build_source_to_paths(en_data)
-
-    # Apply each CSV entry: resolve by source text to find ALL matching paths
-    {updated_data, count} =
-      Enum.reduce(entries, {data, 0}, fn {path_key, row}, {acc_data, acc_count} ->
-        new_val = row[:translation] || ""
-        source_text = row[:source] || ""
-
-        if new_val == "" do
-          {acc_data, acc_count}
-        else
-          all_paths = resolve_config_paths(source_text, path_key, source_to_paths, en_data)
-          apply_to_all_paths(all_paths, new_val, acc_data, acc_count)
-        end
-      end)
-
-    if count > 0 and not dry_run? do
-      json = Jason.encode!(updated_data, pretty: true) <> "\n"
-      File.write!(locale_path, json)
-      Mix.shell().info("  Wrote #{count} config updates to #{locale_path}")
-    else
-      if count > 0 do
-        Mix.shell().info("  [DRY RUN] Would update #{count} config entries in #{locale_path}")
-      end
-    end
-
-    %{updated: count}
-  end
-
-  # Find all config paths that share the same source text, falling back to
-  # the original path key when the English config is unavailable.
-  defp resolve_config_paths(source_text, path_key, source_to_paths, en_data) do
-    if source_text != "" and en_data do
-      Map.get(source_to_paths, source_text, [path_key])
-    else
-      [path_key]
-    end
-  end
-
-  # Apply a translation value to every matching config path.
-  defp apply_to_all_paths(paths, new_val, data, count) do
-    Enum.reduce(paths, {data, count}, fn p, {d, c} ->
-      if get_in_config(d, p) == new_val do
-        {d, c}
-      else
-        {put_in_config(d, p, new_val), c + 1}
-      end
-    end)
-  end
-
-  # Build a map: %{english_text => [path1, path2, ...]} from the English config.
-  # This lets us apply a translation to ALL config paths sharing the same source text.
-  @config_top_keys ~w(title tagline description site_message)
-
-  defp build_source_to_paths(nil), do: %{}
-
-  defp build_source_to_paths(en_data) do
-    en_data
-    |> config_text_paths()
-    |> Enum.flat_map(fn path ->
-      case get_in_config(en_data, path) do
-        value when is_binary(value) and value != "" -> [{value, path}]
-        _ -> []
-      end
-    end)
-    |> Enum.group_by(fn {text, _path} -> text end, fn {_text, path} -> path end)
-  end
-
-  defp config_text_paths(data) when is_map(data) do
-    top_paths =
-      @config_top_keys
-      |> Enum.filter(&(Map.get(data, &1, "") != ""))
-
-    top_paths ++ page_text_paths(data) ++ footer_text_paths(data) ++ navigation_text_paths(data)
-  end
-
-  defp config_text_paths(_data), do: []
-
-  defp page_text_paths(data) do
-    data
-    |> Map.get("pages", %{})
-    |> case do
-      pages when is_map(pages) ->
-        pages
-        |> Enum.sort_by(fn {key, _page} -> key end)
-        |> Enum.flat_map(fn {key, page} -> presentation_page_text_paths("pages.#{key}", page) end)
-
-      _ ->
-        []
-    end
-  end
-
-  defp presentation_page_text_paths(prefix, page) when is_map(page) do
-    hero = Map.get(page, "hero", %{})
-
-    [
-      "#{prefix}.hero.title",
-      "#{prefix}.hero.text"
-    ] ++
-      image_alt_path("#{prefix}.hero", hero) ++
-      button_label_paths("#{prefix}.hero", hero) ++
-      section_text_paths(prefix, Map.get(page, "sections", []))
-  end
-
-  defp presentation_page_text_paths(_prefix, _page), do: []
-
-  defp section_text_paths(prefix, sections) when is_list(sections) do
-    sections
-    |> Enum.with_index()
-    |> Enum.flat_map(fn {section, index} ->
-      section_prefix = "#{prefix}.sections[#{index}]"
-
-      [
-        "#{section_prefix}.title",
-        "#{section_prefix}.text"
-      ] ++ image_alt_path(section_prefix, section) ++ button_label_paths(section_prefix, section)
-    end)
-  end
-
-  defp section_text_paths(_prefix, _sections), do: []
-
-  defp image_alt_path(prefix, item) when is_map(item) do
-    case get_in(item, ["image", "alt"]) do
-      value when is_binary(value) and value != "" -> ["#{prefix}.image.alt"]
-      _ -> []
-    end
-  end
-
-  defp image_alt_path(_prefix, _item), do: []
-
-  defp button_label_paths(prefix, item) when is_map(item) do
-    item
-    |> Map.get("buttons", [])
-    |> list_field_paths("#{prefix}.buttons", "label")
-  end
-
-  defp button_label_paths(_prefix, _item), do: []
-
-  defp footer_text_paths(data) do
-    sections = get_in(data, ["footer", "sections"]) || []
-
-    sections
-    |> Enum.with_index()
-    |> Enum.flat_map(fn {section, index} ->
-      prefix = "footer.sections[#{index}]"
-
-      ["#{prefix}.title"] ++
-        list_field_paths(Map.get(section, "links", []), "#{prefix}.links", "label")
-    end)
-  end
-
-  defp navigation_text_paths(data) do
-    navigation = Map.get(data, "navigation", %{})
-
-    ~w(primary_links guest_links authenticated_links account_links)
-    |> Enum.flat_map(fn key ->
-      navigation
-      |> Map.get(key, [])
-      |> Enum.with_index()
-      |> Enum.flat_map(fn {link, index} ->
-        prefix = "navigation.#{key}[#{index}]"
-
-        ["#{prefix}.label"] ++
-          list_field_paths(Map.get(link, "items", []), "#{prefix}.items", "label")
-      end)
-    end)
-  end
-
-  defp list_field_paths(items, prefix, field) when is_list(items) do
-    items
-    |> Enum.with_index()
-    |> Enum.map(fn {_item, index} -> "#{prefix}[#{index}].#{field}" end)
-  end
-
-  defp list_field_paths(_items, _prefix, _field), do: []
-
-  # Navigate into JSON using our path format: "key" or "array[idx].field"
-  defp get_in_config(data, path) do
-    path
-    |> parse_config_path()
-    |> Enum.reduce(data, fn
-      {key, idx}, acc when is_map(acc) ->
-        acc |> Map.get(key, []) |> Enum.at(idx)
-
-      key, acc when is_map(acc) ->
-        Map.get(acc, key)
-
-      _key, nil ->
-        nil
-    end)
-  end
-
-  defp put_in_config(data, path, value) do
-    segments = parse_config_path(path)
-    do_put_in_config(data, segments, value)
-  end
-
-  defp do_put_in_config(_data, [], value), do: value
-
-  defp do_put_in_config(data, [{key, idx} | rest], value) when is_map(data) do
-    list = Map.get(data, key, [])
-
-    if idx < length(list) do
-      new_item = do_put_in_config(Enum.at(list, idx), rest, value)
-      new_list = List.replace_at(list, idx, new_item)
-      Map.put(data, key, new_list)
-    else
-      data
-    end
-  end
-
-  defp do_put_in_config(data, [key | rest], value) when is_map(data) do
-    current = Map.get(data, key, %{})
-    Map.put(data, key, do_put_in_config(current, rest, value))
-  end
-
-  defp do_put_in_config(data, _rest, _value), do: data
-
-  # Parse "pages.home.sections[0].title" → ["pages", "home", {"sections", 0}, "title"]
-  # Parse "title" → ["title"]
-  defp parse_config_path(path) do
-    path
-    |> String.split(".")
-    |> Enum.map(fn segment ->
-      case Regex.run(~r/^(.+)\[(\d+)\]$/, segment) do
-        [_, key, idx] -> {key, String.to_integer(idx)}
-        nil -> segment
-      end
-    end)
-  end
-
-  defp detect_config_base(nil) do
-    env_path = System.get_env("THEME_CONFIG")
-
-    cond do
-      env_path && env_path != "" -> env_path
-      File.exists?("modules/example_config.en.json") -> "modules/example_config.json"
-      true -> nil
-    end
-  end
-
-  defp detect_config_base(explicit), do: explicit
 end

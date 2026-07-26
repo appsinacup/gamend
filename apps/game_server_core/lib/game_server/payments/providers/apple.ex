@@ -243,8 +243,10 @@ defmodule GameServer.Payments.Providers.Apple do
     )
   end
 
-  defp config_value(env_key, app_key) do
-    System.get_env(env_key) || Application.get_env(:game_server_core, app_key)
+  # The app_key is the declared setting name, so this resolves through
+  # GameServer.Settings rather than reading the environment twice over.
+  defp config_value(_env_key, app_key) do
+    GameServer.Settings.get(GameServer.Payments.Settings, app_key)
   end
 
   defp default_environment do

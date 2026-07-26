@@ -55,16 +55,6 @@ defmodule GameServerWeb.Helpers.ParamParser do
   def parse_int(_), do: nil
 
   @doc """
-  Parse and clamp page parameters from string or atom keyed params.
-  """
-  @spec parse_page_params(map()) :: {pos_integer(), pos_integer()}
-  def parse_page_params(params) when is_map(params) do
-    page = GameServer.Limits.clamp_page(param_value(params, "page", :page))
-    page_size = GameServer.Limits.clamp_page_size(param_value(params, "page_size", :page_size))
-    {page, page_size}
-  end
-
-  @doc """
   Fetch a value from either string or atom keyed params.
   """
   @spec param_value(map(), String.t(), atom()) :: term()

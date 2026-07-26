@@ -51,7 +51,14 @@ defmodule GameServerWeb.NotificationsLive do
                     id={"notif-" <> to_string(n.id)}
                   >
                     <td class="text-sm">
-                      {translate_notification_title(n)}
+                      <div class="flex items-center gap-2">
+                        <.entity_icon
+                          icon_url={n.icon_url}
+                          type={:notification}
+                          class="w-4 h-4 shrink-0 text-base-content/60"
+                        />
+                        {translate_notification_title(n)}
+                      </div>
                     </td>
                     <td class="text-sm">
                       <%= cond do %>
@@ -66,7 +73,7 @@ defmodule GameServerWeb.NotificationsLive do
                       <% end %>
                     </td>
                     <td class="text-sm whitespace-nowrap">
-                      {Calendar.strftime(n.inserted_at, "%Y-%m-%d %H:%M")}
+                      <.timestamp at={n.inserted_at} />
                     </td>
                     <td class="flex gap-1 flex-wrap">
                       <%= if action = notification_action(n) do %>
@@ -205,8 +212,8 @@ defmodule GameServerWeb.NotificationsLive do
   defp action_for_type("friend_request", _n),
     do: {gettext("View"), ~p"/users/settings?#{[tab: "friends"]}"}
 
-  defp action_for_type("achievement_unlocked", _n),
-    do: {gettext("View"), ~p"/achievements"}
+  defp action_for_type("quest_completed", _n),
+    do: {gettext("View"), ~p"/quests"}
 
   defp action_for_type("chat_group", n) do
     group_id = n.metadata["group_id"]
@@ -280,9 +287,14 @@ defmodule GameServerWeb.NotificationsLive do
 
   defp title_for_type("chat_party", _n), do: dgettext("notifications", "New message in party")
 
-  defp title_for_type("achievement_unlocked", n) do
-    name = n.metadata["achievement_title"] || ""
-    dgettext("notifications", "Achievement Unlocked: %{name}", name: name)
+  defp title_for_type("quest_completed", n) do
+    name = n.metadata["quest_title"] || ""
+
+    if n.metadata["kind"] == "achievement" do
+      dgettext("notifications", "Achievement Unlocked: %{name}", name: name)
+    else
+      dgettext("notifications", "Quest completed: %{name}", name: name)
+    end
   end
 
   defp title_for_type("chat_group", n) do

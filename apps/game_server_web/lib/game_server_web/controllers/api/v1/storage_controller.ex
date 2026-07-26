@@ -47,13 +47,35 @@ defmodule GameServerWeb.Api.V1.StorageController do
 
     case Storage.get(key) do
       {:ok, data} ->
-        conn
-        |> put_resp_header("x-content-type-options", "nosniff")
-        |> put_resp_content_type(MIME.from_path(key))
-        |> send_resp(200, data)
+        etag = etag_for(data)
+
+        conn =
+          conn
+          |> put_resp_header("cache-control", Storage.cache_control(key))
+          |> put_resp_header("etag", etag)
+
+        if if_none_match_hit?(conn, etag) do
+          send_resp(conn, 304, "")
+        else
+          conn
+          |> put_resp_header("x-content-type-options", "nosniff")
+          |> put_resp_content_type(MIME.from_path(key))
+          |> send_resp(200, data)
+        end
 
       {:error, _} ->
         conn |> put_status(:not_found) |> json(%{error: "not_found"})
+    end
+  end
+
+  # Strong ETag over the bytes. Lets revalidated (mutable) objects return a cheap
+  # 304; immutable-cached objects (avatars) rarely revalidate at all.
+  defp etag_for(data), do: ~s("#{:crypto.hash(:md5, data) |> Base.encode16(case: :lower)}")
+
+  defp if_none_match_hit?(conn, etag) do
+    case get_req_header(conn, "if-none-match") do
+      [value | _] -> etag in String.split(value, ~r/\s*,\s*/)
+      [] -> false
     end
   end
 

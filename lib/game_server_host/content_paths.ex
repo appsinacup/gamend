@@ -6,7 +6,8 @@ defmodule GameServerHost.ContentPaths do
   @default_candidates [
     changelog: ["CHANGELOG.md"],
     roadmap: ["ROADMAP.md"],
-    blog: ["blog"]
+    blog: ["blog"],
+    docs: ["priv/docs"]
   ]
 
   @spec register_defaults() :: :ok
@@ -26,6 +27,11 @@ defmodule GameServerHost.ContentPaths do
     Content.register_path(:blog,
       kind: :dir,
       candidates: candidates(config, :blog)
+    )
+
+    Content.register_path(:docs,
+      kind: :dir,
+      candidates: candidates(config, :docs)
     )
   end
 

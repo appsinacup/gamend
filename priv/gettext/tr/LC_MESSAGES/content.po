@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: tr\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "Aramıza hoş geldin"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "İlk kez giriş yapın."
+
+#. quests
+msgid "Daily check-in"
+msgstr "Günlük giriş"
+
+#. quests
+msgid "Log in today."
+msgstr "Bugün giriş yapın."
+
+#. quests
+msgid "Weekly regular"
+msgstr "Haftanın müdavimi"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "Bu hafta beş farklı gün giriş yapın."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "Ayın müdavimi"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "Bu ay yirmi kez giriş yapın."
+
+#. quests
+msgid "Stop by again"
+msgstr "Yine uğrayın"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "Giriş yapın. Üç gün sonra yeniden açılır."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "Sadık kıdemli"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "Merhaba dedikten sonra elli kez giriş yapın."
+
+#. quests
+msgid "Night owl"
+msgstr "Gece kuşu"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "Bazı şeyler duyurulmaz, keşfedilir."
+
+#. quests
+msgid "Launch festival"
+msgstr "Lansman festivali"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "Yalnızca festival sürerken sayılan bir günlük görev."
+
+#. leaderboards
+msgid "Logins"
+msgstr "Girişler"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "Her oyuncunun kaç kez giriş yaptığı."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "Haftalık Kupa"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "İstediğiniz zaman kaydolun; eşleşme tablosu her pazartesi çekilir."

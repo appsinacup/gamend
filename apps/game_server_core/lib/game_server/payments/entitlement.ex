@@ -10,22 +10,6 @@ defmodule GameServer.Payments.Entitlement do
 
   @statuses ~w(active expired revoked)
 
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :user_id,
-             :product_id,
-             :source_purchase_id,
-             :key,
-             :status,
-             :starts_at,
-             :expires_at,
-             :revoked_at,
-             :metadata,
-             :inserted_at,
-             :updated_at
-           ]}
-
   schema "entitlements" do
     belongs_to :user, GameServer.Accounts.User
     belongs_to :product, GameServer.Payments.Product
@@ -53,5 +37,30 @@ defmodule GameServer.Payments.Entitlement do
     |> foreign_key_constraint(:product_id)
     |> foreign_key_constraint(:source_purchase_id)
     |> unique_constraint(:key, name: :entitlements_user_id_key_index)
+  end
+end
+
+# Hand-written rather than @derive so nil strings encode as "" (see
+# GameServer.SchemaJSON — game clients choke on null).
+defimpl Jason.Encoder, for: GameServer.Payments.Entitlement do
+  def encode(entitlement, opts) do
+    GameServer.SchemaJSON.encode(
+      entitlement,
+      [
+        :id,
+        :user_id,
+        :product_id,
+        :source_purchase_id,
+        :key,
+        :status,
+        :starts_at,
+        :expires_at,
+        :revoked_at,
+        :metadata,
+        :inserted_at,
+        :updated_at
+      ],
+      opts
+    )
   end
 end

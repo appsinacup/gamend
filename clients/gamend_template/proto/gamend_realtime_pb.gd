@@ -1686,7 +1686,7 @@ class ChatMessage:
 			return PB_ERR.PARSE_INCOMPLETE
 		return result
 	
-class UserAchievement:
+class QuestProgress:
 	extends RefCounted
 	func _init():
 		var service
@@ -1701,32 +1701,49 @@ class UserAchievement:
 		service.field = __user_id
 		data[__user_id.tag] = service
 		
-		__achievement_id = PBField.new("achievement_id", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 3, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		__quest_key = PBField.new("quest_key", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 3, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
 		service = PBServiceField.new()
-		service.field = __achievement_id
-		data[__achievement_id.tag] = service
+		service.field = __quest_key
+		data[__quest_key.tag] = service
 		
-		__progress = PBField.new("progress", PB_DATA_TYPE.INT32, PB_RULE.OPTIONAL, 4, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT32])
+		__period_key = PBField.new("period_key", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 4, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
 		service = PBServiceField.new()
-		service.field = __progress
-		data[__progress.tag] = service
+		service.field = __period_key
+		data[__period_key.tag] = service
 		
-		__unlocked_at_ms = PBField.new("unlocked_at_ms", PB_DATA_TYPE.INT64, PB_RULE.OPTIONAL, 5, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT64])
+		var __objective_progress_default: Array = []
+		__objective_progress = PBField.new("objective_progress", PB_DATA_TYPE.MAP, PB_RULE.REPEATED, 5, true, __objective_progress_default)
 		service = PBServiceField.new()
-		service.field = __unlocked_at_ms
-		data[__unlocked_at_ms.tag] = service
+		service.field = __objective_progress
+		service.func_ref = Callable(self, "add_empty_objective_progress")
+		data[__objective_progress.tag] = service
 		
-		__metadata_json = PBField.new("metadata_json", PB_DATA_TYPE.BYTES, PB_RULE.OPTIONAL, 6, true, DEFAULT_VALUES_3[PB_DATA_TYPE.BYTES])
+		__status = PBField.new("status", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 6, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __status
+		data[__status.tag] = service
+		
+		__completed_at_ms = PBField.new("completed_at_ms", PB_DATA_TYPE.INT64, PB_RULE.OPTIONAL, 7, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT64])
+		service = PBServiceField.new()
+		service.field = __completed_at_ms
+		data[__completed_at_ms.tag] = service
+		
+		__claimed_at_ms = PBField.new("claimed_at_ms", PB_DATA_TYPE.INT64, PB_RULE.OPTIONAL, 8, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT64])
+		service = PBServiceField.new()
+		service.field = __claimed_at_ms
+		data[__claimed_at_ms.tag] = service
+		
+		__metadata_json = PBField.new("metadata_json", PB_DATA_TYPE.BYTES, PB_RULE.OPTIONAL, 9, true, DEFAULT_VALUES_3[PB_DATA_TYPE.BYTES])
 		service = PBServiceField.new()
 		service.field = __metadata_json
 		data[__metadata_json.tag] = service
 		
-		__inserted_at_ms = PBField.new("inserted_at_ms", PB_DATA_TYPE.INT64, PB_RULE.OPTIONAL, 7, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT64])
+		__inserted_at_ms = PBField.new("inserted_at_ms", PB_DATA_TYPE.INT64, PB_RULE.OPTIONAL, 10, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT64])
 		service = PBServiceField.new()
 		service.field = __inserted_at_ms
 		data[__inserted_at_ms.tag] = service
 		
-		__updated_at_ms = PBField.new("updated_at_ms", PB_DATA_TYPE.INT64, PB_RULE.OPTIONAL, 8, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT64])
+		__updated_at_ms = PBField.new("updated_at_ms", PB_DATA_TYPE.INT64, PB_RULE.OPTIONAL, 11, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT64])
 		service = PBServiceField.new()
 		service.field = __updated_at_ms
 		data[__updated_at_ms.tag] = service
@@ -1755,72 +1772,182 @@ class UserAchievement:
 	func set_user_id(value : String) -> void:
 		__user_id.value = value
 	
-	var __achievement_id: PBField
-	func has_achievement_id() -> bool:
+	var __quest_key: PBField
+	func has_quest_key() -> bool:
 		return data[3].state == PB_SERVICE_STATE.FILLED
-	func get_achievement_id() -> String:
-		return __achievement_id.value
-	func clear_achievement_id() -> void:
+	func get_quest_key() -> String:
+		return __quest_key.value
+	func clear_quest_key() -> void:
 		data[3].state = PB_SERVICE_STATE.UNFILLED
-		__achievement_id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
-	func set_achievement_id(value : String) -> void:
-		__achievement_id.value = value
+		__quest_key.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_quest_key(value : String) -> void:
+		__quest_key.value = value
 	
-	var __progress: PBField
-	func has_progress() -> bool:
+	var __period_key: PBField
+	func has_period_key() -> bool:
 		return data[4].state == PB_SERVICE_STATE.FILLED
-	func get_progress() -> int:
-		return __progress.value
-	func clear_progress() -> void:
+	func get_period_key() -> String:
+		return __period_key.value
+	func clear_period_key() -> void:
 		data[4].state = PB_SERVICE_STATE.UNFILLED
-		__progress.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT32]
-	func set_progress(value : int) -> void:
-		__progress.value = value
+		__period_key.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_period_key(value : String) -> void:
+		__period_key.value = value
 	
-	var __unlocked_at_ms: PBField
-	func has_unlocked_at_ms() -> bool:
-		return data[5].state == PB_SERVICE_STATE.FILLED
-	func get_unlocked_at_ms() -> int:
-		return __unlocked_at_ms.value
-	func clear_unlocked_at_ms() -> void:
+	var __objective_progress: PBField
+	func get_raw_objective_progress():
+		return __objective_progress.value
+	func get_objective_progress():
+		return PBPacker.construct_map(__objective_progress.value)
+	func clear_objective_progress():
 		data[5].state = PB_SERVICE_STATE.UNFILLED
-		__unlocked_at_ms.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT64]
-	func set_unlocked_at_ms(value : int) -> void:
-		__unlocked_at_ms.value = value
+		__objective_progress.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MAP]
+	func add_empty_objective_progress() -> QuestProgress.map_type_objective_progress:
+		var element = QuestProgress.map_type_objective_progress.new()
+		__objective_progress.value.append(element)
+		return element
+	func add_objective_progress(a_key, a_value) -> void:
+		var idx = -1
+		for i in range(__objective_progress.value.size()):
+			if __objective_progress.value[i].get_key() == a_key:
+				idx = i
+				break
+		var element = QuestProgress.map_type_objective_progress.new()
+		element.set_key(a_key)
+		element.set_value(a_value)
+		if idx != -1:
+			__objective_progress.value[idx] = element
+		else:
+			__objective_progress.value.append(element)
+	
+	var __status: PBField
+	func has_status() -> bool:
+		return data[6].state == PB_SERVICE_STATE.FILLED
+	func get_status() -> String:
+		return __status.value
+	func clear_status() -> void:
+		data[6].state = PB_SERVICE_STATE.UNFILLED
+		__status.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_status(value : String) -> void:
+		__status.value = value
+	
+	var __completed_at_ms: PBField
+	func has_completed_at_ms() -> bool:
+		return data[7].state == PB_SERVICE_STATE.FILLED
+	func get_completed_at_ms() -> int:
+		return __completed_at_ms.value
+	func clear_completed_at_ms() -> void:
+		data[7].state = PB_SERVICE_STATE.UNFILLED
+		__completed_at_ms.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT64]
+	func set_completed_at_ms(value : int) -> void:
+		__completed_at_ms.value = value
+	
+	var __claimed_at_ms: PBField
+	func has_claimed_at_ms() -> bool:
+		return data[8].state == PB_SERVICE_STATE.FILLED
+	func get_claimed_at_ms() -> int:
+		return __claimed_at_ms.value
+	func clear_claimed_at_ms() -> void:
+		data[8].state = PB_SERVICE_STATE.UNFILLED
+		__claimed_at_ms.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT64]
+	func set_claimed_at_ms(value : int) -> void:
+		__claimed_at_ms.value = value
 	
 	var __metadata_json: PBField
 	func has_metadata_json() -> bool:
-		return data[6].state == PB_SERVICE_STATE.FILLED
+		return data[9].state == PB_SERVICE_STATE.FILLED
 	func get_metadata_json() -> PackedByteArray:
 		return __metadata_json.value
 	func clear_metadata_json() -> void:
-		data[6].state = PB_SERVICE_STATE.UNFILLED
+		data[9].state = PB_SERVICE_STATE.UNFILLED
 		__metadata_json.value = DEFAULT_VALUES_3[PB_DATA_TYPE.BYTES]
 	func set_metadata_json(value : PackedByteArray) -> void:
 		__metadata_json.value = value
 	
 	var __inserted_at_ms: PBField
 	func has_inserted_at_ms() -> bool:
-		return data[7].state == PB_SERVICE_STATE.FILLED
+		return data[10].state == PB_SERVICE_STATE.FILLED
 	func get_inserted_at_ms() -> int:
 		return __inserted_at_ms.value
 	func clear_inserted_at_ms() -> void:
-		data[7].state = PB_SERVICE_STATE.UNFILLED
+		data[10].state = PB_SERVICE_STATE.UNFILLED
 		__inserted_at_ms.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT64]
 	func set_inserted_at_ms(value : int) -> void:
 		__inserted_at_ms.value = value
 	
 	var __updated_at_ms: PBField
 	func has_updated_at_ms() -> bool:
-		return data[8].state == PB_SERVICE_STATE.FILLED
+		return data[11].state == PB_SERVICE_STATE.FILLED
 	func get_updated_at_ms() -> int:
 		return __updated_at_ms.value
 	func clear_updated_at_ms() -> void:
-		data[8].state = PB_SERVICE_STATE.UNFILLED
+		data[11].state = PB_SERVICE_STATE.UNFILLED
 		__updated_at_ms.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT64]
 	func set_updated_at_ms(value : int) -> void:
 		__updated_at_ms.value = value
 	
+	class map_type_objective_progress:
+		extends RefCounted
+		func _init():
+			var service
+			
+			__key = PBField.new("key", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+			__key.is_map_field = true
+			service = PBServiceField.new()
+			service.field = __key
+			data[__key.tag] = service
+			
+			__value = PBField.new("value", PB_DATA_TYPE.INT64, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT64])
+			__value.is_map_field = true
+			service = PBServiceField.new()
+			service.field = __value
+			data[__value.tag] = service
+			
+		var data = {}
+		
+		var __key: PBField
+		func has_key() -> bool:
+			return data[1].state == PB_SERVICE_STATE.FILLED
+		func get_key() -> String:
+			return __key.value
+		func clear_key() -> void:
+			data[1].state = PB_SERVICE_STATE.UNFILLED
+			__key.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+		func set_key(value : String) -> void:
+			__key.value = value
+		
+		var __value: PBField
+		func has_value() -> bool:
+			return data[2].state == PB_SERVICE_STATE.FILLED
+		func get_value() -> int:
+			return __value.value
+		func clear_value() -> void:
+			data[2].state = PB_SERVICE_STATE.UNFILLED
+			__value.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT64]
+		func set_value(value : int) -> void:
+			__value.value = value
+		
+		func _to_string() -> String:
+			return PBPacker.message_to_string(data)
+			
+		func to_bytes() -> PackedByteArray:
+			return PBPacker.pack_message(data)
+			
+		func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
+			var cur_limit = bytes.size()
+			if limit != -1:
+				cur_limit = limit
+			var result = PBPacker.unpack_message(data, bytes, offset, cur_limit)
+			if result == cur_limit:
+				if PBPacker.check_required(data):
+					if limit == -1:
+						return PB_ERR.NO_ERRORS
+				else:
+					return PB_ERR.REQUIRED_FIELDS
+			elif limit == -1 && result > 0:
+				return PB_ERR.PARSE_INCOMPLETE
+			return result
+		
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
 		
@@ -3312,6 +3439,288 @@ class MatchmakingFound:
 				return PB_ERR.PARSE_INCOMPLETE
 			return result
 		
+	func _to_string() -> String:
+		return PBPacker.message_to_string(data)
+		
+	func to_bytes() -> PackedByteArray:
+		return PBPacker.pack_message(data)
+		
+	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
+		var cur_limit = bytes.size()
+		if limit != -1:
+			cur_limit = limit
+		var result = PBPacker.unpack_message(data, bytes, offset, cur_limit)
+		if result == cur_limit:
+			if PBPacker.check_required(data):
+				if limit == -1:
+					return PB_ERR.NO_ERRORS
+			else:
+				return PB_ERR.REQUIRED_FIELDS
+		elif limit == -1 && result > 0:
+			return PB_ERR.PARSE_INCOMPLETE
+		return result
+	
+class ReadyCheckParticipant:
+	extends RefCounted
+	func _init():
+		var service
+		
+		__user_id = PBField.new("user_id", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __user_id
+		data[__user_id.tag] = service
+		
+		__display_name = PBField.new("display_name", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __display_name
+		data[__display_name.tag] = service
+		
+		__state = PBField.new("state", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 3, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __state
+		data[__state.tag] = service
+		
+	var data = {}
+	
+	var __user_id: PBField
+	func has_user_id() -> bool:
+		return data[1].state == PB_SERVICE_STATE.FILLED
+	func get_user_id() -> String:
+		return __user_id.value
+	func clear_user_id() -> void:
+		data[1].state = PB_SERVICE_STATE.UNFILLED
+		__user_id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_user_id(value : String) -> void:
+		__user_id.value = value
+	
+	var __display_name: PBField
+	func has_display_name() -> bool:
+		return data[2].state == PB_SERVICE_STATE.FILLED
+	func get_display_name() -> String:
+		return __display_name.value
+	func clear_display_name() -> void:
+		data[2].state = PB_SERVICE_STATE.UNFILLED
+		__display_name.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_display_name(value : String) -> void:
+		__display_name.value = value
+	
+	var __state: PBField
+	func has_state() -> bool:
+		return data[3].state == PB_SERVICE_STATE.FILLED
+	func get_state() -> String:
+		return __state.value
+	func clear_state() -> void:
+		data[3].state = PB_SERVICE_STATE.UNFILLED
+		__state.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_state(value : String) -> void:
+		__state.value = value
+	
+	func _to_string() -> String:
+		return PBPacker.message_to_string(data)
+		
+	func to_bytes() -> PackedByteArray:
+		return PBPacker.pack_message(data)
+		
+	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
+		var cur_limit = bytes.size()
+		if limit != -1:
+			cur_limit = limit
+		var result = PBPacker.unpack_message(data, bytes, offset, cur_limit)
+		if result == cur_limit:
+			if PBPacker.check_required(data):
+				if limit == -1:
+					return PB_ERR.NO_ERRORS
+			else:
+				return PB_ERR.REQUIRED_FIELDS
+		elif limit == -1 && result > 0:
+			return PB_ERR.PARSE_INCOMPLETE
+		return result
+	
+class ReadyCheckState:
+	extends RefCounted
+	func _init():
+		var service
+		
+		__id = PBField.new("id", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __id
+		data[__id.tag] = service
+		
+		__kind = PBField.new("kind", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __kind
+		data[__kind.tag] = service
+		
+		__status = PBField.new("status", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 3, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __status
+		data[__status.tag] = service
+		
+		__lobby_id = PBField.new("lobby_id", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 4, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __lobby_id
+		data[__lobby_id.tag] = service
+		
+		__deadline_ms = PBField.new("deadline_ms", PB_DATA_TYPE.INT64, PB_RULE.OPTIONAL, 5, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT64])
+		service = PBServiceField.new()
+		service.field = __deadline_ms
+		data[__deadline_ms.tag] = service
+		
+		__total = PBField.new("total", PB_DATA_TYPE.INT32, PB_RULE.OPTIONAL, 6, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT32])
+		service = PBServiceField.new()
+		service.field = __total
+		data[__total.tag] = service
+		
+		__ready_count = PBField.new("ready_count", PB_DATA_TYPE.INT32, PB_RULE.OPTIONAL, 7, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT32])
+		service = PBServiceField.new()
+		service.field = __ready_count
+		data[__ready_count.tag] = service
+		
+		__your_state = PBField.new("your_state", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 8, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __your_state
+		data[__your_state.tag] = service
+		
+		__reason = PBField.new("reason", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 9, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __reason
+		data[__reason.tag] = service
+		
+		var __participants_default: Array[ReadyCheckParticipant] = []
+		__participants = PBField.new("participants", PB_DATA_TYPE.MESSAGE, PB_RULE.REPEATED, 10, true, __participants_default)
+		service = PBServiceField.new()
+		service.field = __participants
+		service.func_ref = Callable(self, "add_participants")
+		data[__participants.tag] = service
+
+		__party_id = PBField.new("party_id", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 11, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __party_id
+		data[__party_id.tag] = service
+
+	var data = {}
+
+	var __id: PBField
+	func has_id() -> bool:
+		return data[1].state == PB_SERVICE_STATE.FILLED
+	func get_id() -> String:
+		return __id.value
+	func clear_id() -> void:
+		data[1].state = PB_SERVICE_STATE.UNFILLED
+		__id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_id(value : String) -> void:
+		__id.value = value
+
+	var __kind: PBField
+	func has_kind() -> bool:
+		return data[2].state == PB_SERVICE_STATE.FILLED
+	func get_kind() -> String:
+		return __kind.value
+	func clear_kind() -> void:
+		data[2].state = PB_SERVICE_STATE.UNFILLED
+		__kind.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_kind(value : String) -> void:
+		__kind.value = value
+	
+	var __status: PBField
+	func has_status() -> bool:
+		return data[3].state == PB_SERVICE_STATE.FILLED
+	func get_status() -> String:
+		return __status.value
+	func clear_status() -> void:
+		data[3].state = PB_SERVICE_STATE.UNFILLED
+		__status.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_status(value : String) -> void:
+		__status.value = value
+	
+	var __lobby_id: PBField
+	func has_lobby_id() -> bool:
+		return data[4].state == PB_SERVICE_STATE.FILLED
+	func get_lobby_id() -> String:
+		return __lobby_id.value
+	func clear_lobby_id() -> void:
+		data[4].state = PB_SERVICE_STATE.UNFILLED
+		__lobby_id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_lobby_id(value : String) -> void:
+		__lobby_id.value = value
+	
+	var __deadline_ms: PBField
+	func has_deadline_ms() -> bool:
+		return data[5].state == PB_SERVICE_STATE.FILLED
+	func get_deadline_ms() -> int:
+		return __deadline_ms.value
+	func clear_deadline_ms() -> void:
+		data[5].state = PB_SERVICE_STATE.UNFILLED
+		__deadline_ms.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT64]
+	func set_deadline_ms(value : int) -> void:
+		__deadline_ms.value = value
+	
+	var __total: PBField
+	func has_total() -> bool:
+		return data[6].state == PB_SERVICE_STATE.FILLED
+	func get_total() -> int:
+		return __total.value
+	func clear_total() -> void:
+		data[6].state = PB_SERVICE_STATE.UNFILLED
+		__total.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT32]
+	func set_total(value : int) -> void:
+		__total.value = value
+	
+	var __ready_count: PBField
+	func has_ready_count() -> bool:
+		return data[7].state == PB_SERVICE_STATE.FILLED
+	func get_ready_count() -> int:
+		return __ready_count.value
+	func clear_ready_count() -> void:
+		data[7].state = PB_SERVICE_STATE.UNFILLED
+		__ready_count.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT32]
+	func set_ready_count(value : int) -> void:
+		__ready_count.value = value
+	
+	var __your_state: PBField
+	func has_your_state() -> bool:
+		return data[8].state == PB_SERVICE_STATE.FILLED
+	func get_your_state() -> String:
+		return __your_state.value
+	func clear_your_state() -> void:
+		data[8].state = PB_SERVICE_STATE.UNFILLED
+		__your_state.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_your_state(value : String) -> void:
+		__your_state.value = value
+	
+	var __reason: PBField
+	func has_reason() -> bool:
+		return data[9].state == PB_SERVICE_STATE.FILLED
+	func get_reason() -> String:
+		return __reason.value
+	func clear_reason() -> void:
+		data[9].state = PB_SERVICE_STATE.UNFILLED
+		__reason.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_reason(value : String) -> void:
+		__reason.value = value
+	
+	var __participants: PBField
+	func get_participants() -> Array[ReadyCheckParticipant]:
+		return __participants.value
+	func clear_participants() -> void:
+		data[10].state = PB_SERVICE_STATE.UNFILLED
+		__participants.value.clear()
+	func add_participants() -> ReadyCheckParticipant:
+		var element = ReadyCheckParticipant.new()
+		__participants.value.append(element)
+		return element
+
+	var __party_id: PBField
+	func has_party_id() -> bool:
+		return data[11].state == PB_SERVICE_STATE.FILLED
+	func get_party_id() -> String:
+		return __party_id.value
+	func clear_party_id() -> void:
+		data[11].state = PB_SERVICE_STATE.UNFILLED
+		__party_id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_party_id(value : String) -> void:
+		__party_id.value = value
+
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
 		

@@ -45,7 +45,7 @@ defmodule GameServerWeb.ChannelUpdates do
   @doc "Milliseconds to hold updates before pushing. 0 disables debouncing."
   @spec debounce_ms() :: non_neg_integer()
   def debounce_ms do
-    Application.get_env(:game_server_web, :realtime_debounce_ms, 0)
+    GameServer.Settings.get(GameServerWeb.Realtime, :debounce_ms)
   end
 
   @doc """

@@ -68,23 +68,23 @@ defmodule GameServerWeb.Api.V1.FriendControllerTest do
     # b should see incoming
     {:ok, token_b, _} = Guardian.encode_and_sign(b)
     conn_b = conn |> put_req_header("authorization", "Bearer " <> token_b)
-    resp = get(conn_b, "/api/v1/me/friend-requests") |> json_response(200)
+    resp = get(conn_b, "/api/v1/me/friend_requests") |> json_response(200)
 
     # Expect exactly one incoming and zero outgoing requests
-    assert [_] = resp["incoming"]
-    assert [] = resp["outgoing"]
+    assert [_] = resp["data"]["incoming"]
+    assert [] = resp["data"]["outgoing"]
 
-    incoming = hd(resp["incoming"])
+    incoming = hd(resp["data"]["incoming"])
     refute Map.has_key?(incoming["requester"], "email")
     refute Map.has_key?(incoming["target"], "email")
     assert incoming["requester"]["last_seen_at"] == "1970-01-01T00:00:00Z"
     assert incoming["target"]["last_seen_at"] == "1970-01-01T00:00:00Z"
 
     # meta total counts and pages should be present
-    assert resp["meta"]["total_counts"]["incoming"] == 1
-    assert resp["meta"]["total_counts"]["outgoing"] == 0
-    assert resp["meta"]["total_pages"]["incoming"] == 1
-    assert resp["meta"]["total_pages"]["outgoing"] == 0
+    assert resp["meta"]["incoming"]["total_count"] == 1
+    assert resp["meta"]["outgoing"]["total_count"] == 0
+    assert resp["meta"]["incoming"]["total_pages"] == 1
+    assert resp["meta"]["outgoing"]["total_pages"] == 0
   end
 
   test "DELETE cancels pending and deletes accepted", %{conn: conn} do

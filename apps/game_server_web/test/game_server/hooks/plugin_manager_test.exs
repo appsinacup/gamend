@@ -94,10 +94,20 @@ defmodule GameServer.Hooks.PluginManagerTest do
     app_text = :io_lib.format(~c"~p.~n", [app_term]) |> IO.iodata_to_binary()
     File.write!(Path.join(ebin_dir, "#{plugin_name}.app"), app_text)
 
-    System.put_env("GAME_SERVER_PLUGINS_DIR", plugin_root)
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.ContentSettings,
+      :plugins_dir,
+      plugin_root
+    )
 
     on_exit(fn ->
-      System.delete_env("GAME_SERVER_PLUGINS_DIR")
+      GameServer.SettingsHelpers.delete(
+        :game_server_core,
+        GameServer.ContentSettings,
+        :plugins_dir
+      )
+
       Application.delete_env(:game_server, :plugin_mgr_test_pid)
       _ = PluginManager.reload()
     end)

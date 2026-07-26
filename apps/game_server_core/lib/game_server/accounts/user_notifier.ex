@@ -39,10 +39,10 @@ defmodule GameServer.Accounts.UserNotifier do
   # Build the sender {name, email} tuple from env or app config
   defp sender_tuple do
     name =
-      System.get_env("SMTP_FROM_NAME") || Application.get_env(:game_server_core, :smtp_from_name)
+      GameServer.Settings.get(GameServer.Mail, :smtp_from_name)
 
     email =
-      System.get_env("SMTP_FROM_EMAIL") ||
+      GameServer.Settings.get(GameServer.Mail, :smtp_from_email) ||
         Application.get_env(:game_server_core, :smtp_from_email)
 
     cond do

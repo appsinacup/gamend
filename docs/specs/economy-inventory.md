@@ -165,7 +165,7 @@ double-grant. A refund/revoke debits with `reason: "refund"`. This is the
 ## Definition of done (CONTRIBUTING)
 
 - [ ] Migrations for the five tables apply on SQLite **and**
-      `DATABASE_ADAPTER=postgres`; idempotency + history indexes as above.
+      `GAMEND_DB_ADAPTER=postgres`; idempotency + history indexes as above.
 - [ ] Credit/debit/transfer/item ops atomic under `:wallet`/`:inventory` locks,
       ledgered in the same txn, cap/floor enforced, idempotency-key exactly-once.
 - [ ] Paginated `list_*`/`count_*`; `Limits` caps in changesets.

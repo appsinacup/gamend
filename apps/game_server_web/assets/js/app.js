@@ -26,10 +26,57 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/game_server_web"
 import "./lobbies"
+import {LocalDatetimeInput, startLocalTime} from "./local_time"
+import {startAvatarFallback} from "./avatar_fallback"
 import topbar from "../vendor/topbar"
 
 // Custom hooks
 const Hooks = {
+  LocalDatetimeInput,
+
+  /**
+   * GuideDisclosure — mirrors a <details> section's open state into the URL so
+   * the link can be shared and the state survives a reconnect (LiveView remounts
+   * from the same params). The `toggle` event is what native <details> fires;
+   * there is no click handler to keep in sync with keyboard use.
+   *
+   * One guide is open at a time. The previously open one is closed HERE, not
+   * by the server patch: collapsing a tall section above the one just clicked
+   * shifts the whole page, so it must happen synchronously with a scroll
+   * correction that keeps the clicked summary where the reader sees it. The
+   * patch then finds both `open` attributes already right and changes no
+   * layout. (The programmatic close fires that section's own toggle event,
+   * whose push the server ignores — it no longer matches the open slug.)
+   */
+  GuideDisclosure: {
+    mounted() {
+      this.onToggle = () => {
+        if (this.el.open) {
+          const before = this.el.getBoundingClientRect().top
+          for (const other of document.querySelectorAll("details[data-slug][open]")) {
+            if (other !== this.el) other.open = false
+          }
+          // "instant" bypasses the page's smooth scroll-behavior: this is a
+          // correction, not a navigation, and animating it looks like a jump.
+          // The second pass one frame later absorbs the browser's own scroll
+          // anchoring, which adjusts again after this handler returns.
+          const correct = () => {
+            const delta = this.el.getBoundingClientRect().top - before
+            if (delta !== 0) window.scrollBy({top: delta, behavior: "instant"})
+          }
+          correct()
+          requestAnimationFrame(correct)
+        }
+        this.pushEvent("guide_toggled", {slug: this.el.dataset.slug, open: this.el.open})
+      }
+      this.el.addEventListener("toggle", this.onToggle)
+    },
+    destroyed() {
+      this.el.removeEventListener("toggle", this.onToggle)
+    },
+  },
+
+
   /**
    * MermaidDiagram — renders the mermaid source in `data-diagram` into the
    * element. The 2.7MB mermaid bundle is lazy-loaded on first use so it never
@@ -502,8 +549,14 @@ function createLiveSocket(extraHooks) {
 
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
+startAvatarFallback()
+
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
+
+// Timestamps render as UTC server-side and are rewritten in the viewer's zone.
+// Started before the socket so static (non-LiveView) pages are covered too.
+startLocalTime()
 
 loadExtraHooks().then((extraHooks) => {
   const liveSocket = createLiveSocket(extraHooks)

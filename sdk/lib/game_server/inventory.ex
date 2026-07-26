@@ -4,7 +4,8 @@ defmodule GameServer.Inventory do
   
   Items are free-form string codes (`"health_potion"`, `"sword"`, `"card_374"`);
   each `(user, item)` pair holds a quantity and per-stack `metadata`. Grants and
-  consumes are atomic — a consume can never take a stack below zero.
+  consumes are atomic — a consume can never take a stack below zero — and every
+  change is recorded in the `inventory_ledger`.
   
   ## Usage (server-side / hooks)
   
@@ -16,6 +17,14 @@ defmodule GameServer.Inventory do
   
       Inventory.quantity(user_id, "health_potion")  #=> 2
       Inventory.inventory(user_id)                  #=> %{"health_potion" => 2}
+  
+  ## Idempotency
+  
+  Pass `:idempotency_key` so a retried request (network retry, at-least-once
+  job) can't double-apply — the second call is a no-op that returns the current
+  quantity:
+  
+      Inventory.grant_item(user_id, "loot_crate", 1, idempotency_key: "quest:#{progress_id}:1")
   
   Like the economy these are **server-authoritative**: expose them from hooks and
   admin tools, never as a raw client "give me items" endpoint.
@@ -47,7 +56,11 @@ defmodule GameServer.Inventory do
 
 
   @doc ~S"""
-    Add `qty` of `item` to a user's inventory. Returns `{:ok, new_quantity}`.
+    Add `qty` of `item` to a user's inventory.
+    
+    Options: `:reason` (ledger label), `:idempotency_key`, `:metadata`.
+    Returns `{:ok, new_quantity}`.
+    
   """
   @spec grant_item(user_id(), item(), pos_integer(), keyword()) ::
   {:ok, non_neg_integer()} | {:error, term()}

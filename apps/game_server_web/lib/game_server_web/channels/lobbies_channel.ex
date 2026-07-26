@@ -20,7 +20,7 @@ defmodule GameServerWeb.LobbiesChannel do
   @impl true
   def join("lobbies", _payload, socket) do
     # Same flag as GET /api/v1/lobbies — the feed must not outlive the API.
-    if FeatureGate.enabled?("LIST_LOBBIES_ENABLED", true) do
+    if FeatureGate.enabled?(:list_lobbies) do
       GameServerWeb.ConnectionTracker.register(:lobbies_channel)
       Lobbies.subscribe_lobbies()
       {:ok, socket}

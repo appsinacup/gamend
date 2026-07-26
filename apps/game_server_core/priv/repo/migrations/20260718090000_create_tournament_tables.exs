@@ -61,7 +61,7 @@ defmodule GameServer.Repo.Migrations.CreateTournamentTables do
       add :ready_at, :utc_datetime
       add :expired_at, :utc_datetime
       add :resolved_at, :utc_datetime
-      add :deadline, :utc_datetime, null: false
+      add :deadline_at, :utc_datetime, null: false
       add :metadata, :map, default: %{}, null: false
 
       timestamps(type: :utc_datetime)
@@ -71,6 +71,6 @@ defmodule GameServer.Repo.Migrations.CreateTournamentTables do
     create index(:tournament_matches, [:tournament_id])
 
     # Sweeps and dashboards only ever look at open matches.
-    create index(:tournament_matches, [:deadline], where: "resolved_at IS NULL")
+    create index(:tournament_matches, [:deadline_at], where: "resolved_at IS NULL")
   end
 end

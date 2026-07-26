@@ -13,15 +13,11 @@ defmodule GameServer.Payments.ProviderConfig do
 
   @spec environment() :: environment()
   def environment do
-    case System.get_env("PAYMENTS_ENVIRONMENT") do
-      nil ->
-        :game_server_core
-        |> Application.get_env(:payments_environment, "production")
-        |> normalize_environment()
-
-      value ->
-        normalize_environment(value, "sandbox")
-    end
+    # An unrecognised value falls back to sandbox rather than production:
+    # a typo must never silently take real money.
+    GameServer.Payments.Settings
+    |> GameServer.Settings.get(:environment)
+    |> normalize_environment("sandbox")
   end
 
   @spec normalize_environment(term()) :: environment()
@@ -76,8 +72,11 @@ defmodule GameServer.Payments.ProviderConfig do
   @spec stripe_api_version_source() :: {String.t(), String.t()} | nil
   def stripe_api_version_source do
     cond do
-      present_string?(System.get_env("STRIPE_API_VERSION")) ->
-        {"STRIPE_API_VERSION", String.trim(System.get_env("STRIPE_API_VERSION"))}
+      present_string?(GameServer.Settings.get(GameServer.Payments.Settings, :stripe_api_version)) ->
+        {"GAMEND_PAYMENTS_STRIPE_API_VERSION",
+         GameServer.Payments.Settings
+         |> then(&GameServer.Settings.get(&1, :stripe_api_version))
+         |> String.trim()}
 
       present_string?(Application.get_env(:game_server_core, :stripe_api_version)) ->
         {"app :stripe_api_version",
@@ -110,7 +109,7 @@ defmodule GameServer.Payments.ProviderConfig do
     kind
     |> stripe_candidates(environment)
     |> Enum.find_value(fn {env_key, app_key} ->
-      case System.get_env(env_key) || Application.get_env(:game_server_core, app_key) do
+      case GameServer.Settings.get(GameServer.Payments.Settings, app_key) do
         value when is_binary(value) and value != "" ->
           if stripe_value_allowed?(kind, environment, value), do: {env_key, value}
 
@@ -128,18 +127,18 @@ defmodule GameServer.Payments.ProviderConfig do
   defp stripe_value_allowed?(:webhook_secret, _environment, _value), do: true
 
   defp stripe_candidates(:secret_key, "production") do
-    [{"STRIPE_PRODUCTION_SECRET_KEY", :stripe_production_secret_key}]
+    [{"GAMEND_PAYMENTS_STRIPE_PRODUCTION_SECRET_KEY", :stripe_production_secret_key}]
   end
 
   defp stripe_candidates(:secret_key, "sandbox") do
-    [{"STRIPE_SANDBOX_SECRET_KEY", :stripe_sandbox_secret_key}]
+    [{"GAMEND_PAYMENTS_STRIPE_SANDBOX_SECRET_KEY", :stripe_sandbox_secret_key}]
   end
 
   defp stripe_candidates(:webhook_secret, "production") do
-    [{"STRIPE_PRODUCTION_WEBHOOK_SECRET", :stripe_production_webhook_secret}]
+    [{"GAMEND_PAYMENTS_STRIPE_PRODUCTION_WEBHOOK_SECRET", :stripe_production_webhook_secret}]
   end
 
   defp stripe_candidates(:webhook_secret, "sandbox") do
-    [{"STRIPE_SANDBOX_WEBHOOK_SECRET", :stripe_sandbox_webhook_secret}]
+    [{"GAMEND_PAYMENTS_STRIPE_SANDBOX_WEBHOOK_SECRET", :stripe_sandbox_webhook_secret}]
   end
 end

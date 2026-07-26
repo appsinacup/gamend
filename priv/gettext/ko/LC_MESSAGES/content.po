@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: ko\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "환영합니다"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "처음으로 로그인하세요."
+
+#. quests
+msgid "Daily check-in"
+msgstr "일일 출석"
+
+#. quests
+msgid "Log in today."
+msgstr "오늘 로그인하세요."
+
+#. quests
+msgid "Weekly regular"
+msgstr "이주의 단골"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "이번 주에 서로 다른 다섯 날에 로그인하세요."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "이달의 단골"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "이번 달에 스무 번 로그인하세요."
+
+#. quests
+msgid "Stop by again"
+msgstr "또 들러 주세요"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "로그인하세요. 3일 뒤에 다시 도전할 수 있습니다."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "충직한 베테랑"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "인사를 마친 뒤 오십 번 로그인하세요."
+
+#. quests
+msgid "Night owl"
+msgstr "올빼미"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "어떤 것들은 알려지기보다 발견됩니다."
+
+#. quests
+msgid "Launch festival"
+msgstr "출시 페스티벌"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "페스티벌이 진행되는 동안에만 인정되는 일일 퀘스트입니다."
+
+#. leaderboards
+msgid "Logins"
+msgstr "로그인 횟수"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "각 플레이어가 로그인한 횟수입니다."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "주간 컵"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "언제든 등록하세요. 대진표는 매주 월요일에 추첨됩니다."

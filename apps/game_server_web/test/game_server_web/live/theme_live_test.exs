@@ -6,15 +6,38 @@ defmodule GameServerWeb.ThemeLiveTest do
   alias GameServer.Content
   alias GameServer.Theme.JSONConfig
 
-  test "LiveView pages render without errors when THEME_CONFIG is unset", %{conn: conn} do
-    # Ensure THEME_CONFIG unset so no theme is loaded
-    orig = System.get_env("THEME_CONFIG")
-    System.delete_env("THEME_CONFIG")
+  test "LiveView pages render without errors when GAMEND_CONTENT_THEME_CONFIG is unset", %{
+    conn: conn
+  } do
+    # Ensure GAMEND_CONTENT_THEME_CONFIG unset so no theme is loaded
+    orig =
+      GameServer.SettingsHelpers.get(:game_server_core, GameServer.ContentSettings, :theme_config)
+
+    GameServer.SettingsHelpers.delete(
+      :game_server_core,
+      GameServer.ContentSettings,
+      :theme_config
+    )
+
     JSONConfig.reload()
     Content.reload()
 
     on_exit(fn ->
-      if orig, do: System.put_env("THEME_CONFIG", orig), else: System.delete_env("THEME_CONFIG")
+      if orig,
+        do:
+          GameServer.SettingsHelpers.put(
+            :game_server_core,
+            GameServer.ContentSettings,
+            :theme_config,
+            orig
+          ),
+        else:
+          GameServer.SettingsHelpers.delete(
+            :game_server_core,
+            GameServer.ContentSettings,
+            :theme_config
+          )
+
       JSONConfig.reload()
       Content.reload()
     end)

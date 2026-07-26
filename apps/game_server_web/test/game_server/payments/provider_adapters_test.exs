@@ -9,6 +9,7 @@ defmodule GameServer.Payments.ProviderAdaptersTest do
   alias GameServer.Payments.Providers.Steam
   alias GameServer.Payments.Providers.Stripe
   alias GameServer.Payments.Purchase
+  alias GameServer.Payments.Settings
 
   defmodule StripeClient do
     def create_checkout_session(params, opts) do
@@ -182,18 +183,18 @@ defmodule GameServer.Payments.ProviderAdaptersTest do
 
   setup do
     env_keys = [
-      "PAYMENTS_ENVIRONMENT",
-      "STRIPE_SANDBOX_SECRET_KEY",
-      "STRIPE_SANDBOX_WEBHOOK_SECRET",
-      "STRIPE_PRODUCTION_SECRET_KEY",
-      "STRIPE_PRODUCTION_WEBHOOK_SECRET",
+      "GAMEND_PAYMENTS_ENVIRONMENT",
+      "GAMEND_PAYMENTS_STRIPE_SANDBOX_SECRET_KEY",
+      "GAMEND_PAYMENTS_STRIPE_SANDBOX_WEBHOOK_SECRET",
+      "GAMEND_PAYMENTS_STRIPE_PRODUCTION_SECRET_KEY",
+      "GAMEND_PAYMENTS_STRIPE_PRODUCTION_WEBHOOK_SECRET",
       "STRIPE_API_VERSION",
-      "GOOGLE_PLAY_PACKAGE_NAME",
-      "GOOGLE_PLAY_ACCESS_TOKEN",
-      "GOOGLE_PLAY_AUTO_ACKNOWLEDGE",
-      "GOOGLE_PLAY_RTDN_TOKEN",
-      "APPLE_BUNDLE_ID",
-      "STEAM_WEB_API_KEY",
+      "GAMEND_PAYMENTS_GOOGLE_PLAY_PACKAGE_NAME",
+      "GAMEND_PAYMENTS_GOOGLE_PLAY_ACCESS_TOKEN",
+      "GAMEND_PAYMENTS_GOOGLE_PLAY_AUTO_ACKNOWLEDGE",
+      "GAMEND_PAYMENTS_GOOGLE_PLAY_RTDN_TOKEN",
+      "GAMEND_PAYMENTS_APPLE_BUNDLE_ID",
+      "GAMEND_PAYMENTS_STEAM_WEB_API_KEY",
       "STEAM_APP_ID"
     ]
 
@@ -204,51 +205,55 @@ defmodule GameServer.Payments.ProviderAdaptersTest do
       :stripe_api_version
     ]
 
-    original_env = Map.new(env_keys, &{&1, System.get_env(&1)})
+    _ = env_keys
+    original_settings = Application.get_env(:game_server_core, Settings)
     original_app = Map.new(app_keys, &{&1, Application.get_env(:game_server_core, &1)})
 
     on_exit(fn ->
-      Enum.each(original_env, fn {key, value} -> restore_system_env(key, value) end)
+      if original_settings,
+        do: Application.put_env(:game_server_core, Settings, original_settings),
+        else: Application.delete_env(:game_server_core, Settings)
+
       Enum.each(original_app, fn {key, value} -> restore_app_env(key, value) end)
     end)
 
-    Enum.each(env_keys, &System.delete_env/1)
+    Application.delete_env(:game_server_core, Settings)
     Enum.each(app_keys, &Application.delete_env(:game_server_core, &1))
 
     :ok
   end
 
   test "Stripe config follows global payment environment" do
-    System.put_env("STRIPE_SANDBOX_SECRET_KEY", "sk_test_sandbox_123")
-    System.put_env("STRIPE_PRODUCTION_SECRET_KEY", "sk_live_production_123")
+    put_setting(:stripe_sandbox_secret_key, "sk_test_sandbox_123")
+    put_setting(:stripe_production_secret_key, "sk_live_production_123")
 
-    System.put_env("PAYMENTS_ENVIRONMENT", "sandbox")
+    put_setting(:environment, :sandbox)
     assert ProviderConfig.stripe_secret_key() == "sk_test_sandbox_123"
 
-    System.put_env("PAYMENTS_ENVIRONMENT", "production")
+    put_setting(:environment, :production)
     assert ProviderConfig.stripe_secret_key() == "sk_live_production_123"
 
-    System.put_env("PAYMENTS_ENVIRONMENT", "sandbox")
-    System.delete_env("STRIPE_SANDBOX_SECRET_KEY")
+    put_setting(:environment, :sandbox)
+    delete_setting(:stripe_sandbox_secret_key)
     assert ProviderConfig.stripe_secret_key() == nil
 
-    System.put_env("PAYMENTS_ENVIRONMENT", "definitely_not_real")
+    put_setting(:environment, :definitely_not_real)
     assert ProviderConfig.environment() == "sandbox"
     assert ProviderConfig.environments() == ["production", "sandbox"]
 
-    System.put_env("PAYMENTS_ENVIRONMENT", "test")
+    put_setting(:environment, :test)
     assert ProviderConfig.environment() == "sandbox"
 
     assert ProviderConfig.stripe_api_version() == "2022-11-15"
-    System.put_env("STRIPE_API_VERSION", "2024-06-20")
+    put_setting(:stripe_api_version, "2024-06-20")
     assert ProviderConfig.stripe_api_version() == "2024-06-20"
   end
 
   test "Stripe creates checkout session through SDK client with pinned API options" do
     Application.put_env(:game_server_core, :stripe_client, StripeClient)
-    System.put_env("PAYMENTS_ENVIRONMENT", "sandbox")
-    System.put_env("STRIPE_SANDBOX_SECRET_KEY", "sk_test_sdk_123")
-    System.put_env("STRIPE_API_VERSION", "2024-06-20")
+    put_setting(:environment, :sandbox)
+    put_setting(:stripe_sandbox_secret_key, "sk_test_sdk_123")
+    put_setting(:stripe_api_version, "2024-06-20")
 
     product = %Product{id: 10, sku: "coins_100", title: "100 Coins", kind: "consumable"}
     provider_product = %ProviderProduct{external_id: "price_123", product: product}
@@ -284,9 +289,9 @@ defmodule GameServer.Payments.ProviderAdaptersTest do
 
   test "Stripe retrieves checkout session through SDK client with pinned API options" do
     Application.put_env(:game_server_core, :stripe_client, StripeClient)
-    System.put_env("PAYMENTS_ENVIRONMENT", "sandbox")
-    System.put_env("STRIPE_SANDBOX_SECRET_KEY", "sk_test_sdk_123")
-    System.put_env("STRIPE_API_VERSION", "2024-06-20")
+    put_setting(:environment, :sandbox)
+    put_setting(:stripe_sandbox_secret_key, "sk_test_sdk_123")
+    put_setting(:stripe_api_version, "2024-06-20")
 
     assert {:ok, session} = Stripe.retrieve_checkout_session("cs_test_reconcile")
 
@@ -302,9 +307,9 @@ defmodule GameServer.Payments.ProviderAdaptersTest do
 
   test "Stripe cancels subscription at period end through SDK client" do
     Application.put_env(:game_server_core, :stripe_client, StripeClient)
-    System.put_env("PAYMENTS_ENVIRONMENT", "sandbox")
-    System.put_env("STRIPE_SANDBOX_SECRET_KEY", "sk_test_sdk_123")
-    System.put_env("STRIPE_API_VERSION", "2024-06-20")
+    put_setting(:environment, :sandbox)
+    put_setting(:stripe_sandbox_secret_key, "sk_test_sdk_123")
+    put_setting(:stripe_api_version, "2024-06-20")
 
     assert {:ok, subscription} = Stripe.cancel_subscription_at_period_end("sub_test_cancel")
 
@@ -319,8 +324,8 @@ defmodule GameServer.Payments.ProviderAdaptersTest do
 
   test "Stripe sends subscription metadata through subscription data" do
     Application.put_env(:game_server_core, :stripe_client, StripeClient)
-    System.put_env("PAYMENTS_ENVIRONMENT", "sandbox")
-    System.put_env("STRIPE_SANDBOX_SECRET_KEY", "sk_test_sdk_123")
+    put_setting(:environment, :sandbox)
+    put_setting(:stripe_sandbox_secret_key, "sk_test_sdk_123")
 
     product = %Product{id: 11, sku: "battle_pass", title: "Battle Pass", kind: "subscription"}
     provider_product = %ProviderProduct{external_id: "price_sub_123", product: product}
@@ -340,8 +345,8 @@ defmodule GameServer.Payments.ProviderAdaptersTest do
 
   test "Stripe verifies webhooks through SDK client" do
     Application.put_env(:game_server_core, :stripe_client, StripeClient)
-    System.put_env("PAYMENTS_ENVIRONMENT", "sandbox")
-    System.put_env("STRIPE_SANDBOX_WEBHOOK_SECRET", "whsec_sdk_123")
+    put_setting(:environment, :sandbox)
+    put_setting(:stripe_sandbox_webhook_secret, "whsec_sdk_123")
 
     raw_body = Jason.encode!(%{"id" => "evt_test_sdk"})
     signature = "t=1710000000,v1=abc"
@@ -355,10 +360,10 @@ defmodule GameServer.Payments.ProviderAdaptersTest do
 
   test "Google validates one-time product purchase and decodes RTDN push" do
     Application.put_env(:game_server_core, :payments_http_client, GoogleHTTP)
-    System.put_env("GOOGLE_PLAY_PACKAGE_NAME", "com.example.game")
-    System.put_env("GOOGLE_PLAY_ACCESS_TOKEN", "ya29_test_token")
-    System.put_env("GOOGLE_PLAY_AUTO_ACKNOWLEDGE", "true")
-    System.put_env("PAYMENTS_ENVIRONMENT", "test")
+    put_setting(:google_play_package_name, "com.example.game")
+    put_setting(:google_play_access_token, "ya29_test_token")
+    put_setting(:google_play_auto_acknowledge, "true")
+    put_setting(:environment, :test)
 
     assert {:ok, result} =
              Google.validate_purchase(nil, %{
@@ -407,8 +412,8 @@ defmodule GameServer.Payments.ProviderAdaptersTest do
 
   test "Apple validates StoreKit signed transaction and notification payload" do
     Application.put_env(:game_server_core, :apple_jws_verifier, AppleJWS)
-    System.put_env("APPLE_BUNDLE_ID", "com.example.game")
-    System.put_env("PAYMENTS_ENVIRONMENT", "test")
+    put_setting(:apple_bundle_id, "com.example.game")
+    put_setting(:environment, :test)
 
     assert {:ok, result} =
              Apple.validate_purchase(nil, %{"signed_transaction_info" => "signed_tx"})
@@ -431,9 +436,9 @@ defmodule GameServer.Payments.ProviderAdaptersTest do
 
   test "Steam normalizes InitTxn, FinalizeTxn, and QueryTxn responses" do
     Application.put_env(:game_server_core, :payments_http_client, SteamHTTP)
-    System.put_env("STEAM_WEB_API_KEY", "steam_key")
-    System.put_env("STEAM_APP_ID", "480")
-    System.put_env("PAYMENTS_ENVIRONMENT", "sandbox")
+    put_setting(:steam_web_api_key, "steam_key")
+    put_setting(:steam_app_id, "480")
+    put_setting(:environment, :sandbox)
 
     product = %Product{title: "100 Coins", kind: "consumable"}
     provider_product = %ProviderProduct{external_id: "100", product: product}
@@ -481,8 +486,15 @@ defmodule GameServer.Payments.ProviderAdaptersTest do
     assert {"orderid", "1234567890123"} in query_opts[:params]
   end
 
-  defp restore_system_env(key, nil), do: System.delete_env(key)
-  defp restore_system_env(key, value), do: System.put_env(key, value)
+  defp put_setting(key, value) do
+    Application.put_env(:game_server_core, Settings, Keyword.put(settings(), key, value))
+  end
+
+  defp delete_setting(key) do
+    Application.put_env(:game_server_core, Settings, Keyword.delete(settings(), key))
+  end
+
+  defp settings, do: Application.get_env(:game_server_core, Settings, [])
 
   defp restore_app_env(key, nil), do: Application.delete_env(:game_server_core, key)
   defp restore_app_env(key, value), do: Application.put_env(:game_server_core, key, value)

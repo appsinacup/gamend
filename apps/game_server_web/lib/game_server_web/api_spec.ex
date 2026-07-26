@@ -17,7 +17,7 @@ defmodule GameServerWeb.ApiSpec do
         title: "Game Server API",
         version: api_version(),
         description: """
-        API for the Gamend Game Server. Provides HTTP REST API, real-time WebSocket channels, and WebRTC DataChannels for low-latency game data. Features authentication, users, lobbies, groups, parties, friends, chat, notifications, achievements, leaderboards, tournaments, matchmaking, payments, server scripting, and admin portal.
+        API for the Gamend Game Server. Provides HTTP REST API, real-time WebSocket channels, and WebRTC DataChannels for low-latency game data. Features authentication, users, lobbies, groups, parties, friends, chat, notifications, quests, leaderboards, tournaments, matchmaking, payments, server scripting, and admin portal.
 
         ## **1. Authentication**
 
@@ -77,6 +77,16 @@ defmodule GameServerWeb.ApiSpec do
         - **Delete notifications** by ID (single or batch)
         - **Real-time delivery** via the user WebSocket channel (`"notification"` events)
         - **Offline delivery**: undeleted notifications are replayed on WebSocket reconnect
+        - **Push delivery**: notifications also fan out to the recipient's registered mobile devices (see Push notifications)
+
+        ## **5b. Push notifications**
+        Mobile/web push delivery to registered devices (FCM for Android/Web, APNs-direct for iOS):
+
+        - **Register device tokens** via `POST /me/push_tokens` (`token`, `platform`, optional `provider`/`device_id`); re-registering a `device_id` rotates its token in place
+        - **List/remove own devices** via `GET /me/push_tokens` and `DELETE /me/push_tokens/:id`
+        - **Server-authoritative sending** — no public send endpoint; pushes originate from server hooks (`GameServer.Push.send_to_user/2`) or the admin API
+        - **Per-token routing**: each token's `provider` ("fcm" | "apns") selects the delivery backend; unconfigured backends log instead of sending (dev-friendly)
+        - **Reliability**: delivery rides the durable job queue with retries; dead tokens reported by the provider are disabled automatically
 
         ## **6. Groups**
         Groups provide persistent community management for players:
@@ -126,22 +136,22 @@ defmodule GameServerWeb.ApiSpec do
         - **List keys** with optional prefix filtering
         - **Metadata support**: values can include arbitrary JSON metadata
 
-        ## **11. Achievements**
-        Track player accomplishments with progress-based or instant-unlock achievements:
+        ## **11. Quests / Progression**
+        One event-driven progression engine covering achievements, daily/weekly quests, time-boxed event quests, and chains:
 
-        - **Achievement definitions**: admin-created with slug, title, description, icon, sort order, and optional progress target
-        - **Progress tracking**: increment progress toward a target; auto-unlocks when progress reaches the target
-        - **Instant unlock**: directly unlock achievements without progress tracking
-        - **Hidden achievements**: details obscured ("???") until unlocked by the user
-        - **Public listings**: paginated, optionally filtered; authenticated users see their own progress
-        - **Admin management**: create, update, delete, grant, revoke, unlock, and increment achievements
+        - **Kinds**: `achievement` (permanent one-shot — the replacement for the old achievements system), `daily`/`weekly` (reset per UTC period), `event` (starts_at/ends_at window), `chain` (requires a prerequisite quest)
+        - **Objectives**: each quest lists objectives `{event, target, params}`; server-side `report_event` advances every matching active quest — there is **no public endpoint to advance progress** (server-authoritative)
+        - **Rewards**: currencies (Economy) and items (Inventory), paid **exactly once** per period via idempotent grants; `auto_claim` quests pay on completion, others via `POST /me/quests/:key/claim`
+        - **My quests**: `GET /me/quests` returns active quests, per-period progress, and a claimable flag; hidden quests appear once completed
+        - **Catalog**: `GET /quests` and per-user completions `GET /quests/user/:user_id` (gated by `LIST_QUESTS_ENABLED`)
+        - **Admin management**: definitions CRUD plus per-user grant/reset/force-claim under `/api/v1/admin/quests`
 
         ## **12. Tournaments**
         Single-elimination bracket tournaments, server-structured and game-judged:
 
         - **Registration window → seeded draw → timed rounds → champions**; recurring tournaments (cron) create one occurrence per cycle sharing a slug; a nil starts_at keeps registration open until an admin draws manually
         - **Join/leave** as an entry leader (`POST`/`DELETE /tournaments/:id/join`); team composition is game policy
-        - **Browse**: list/filter tournaments, standings, full bracket view, and the caller's current match (`GET /tournaments/:id/my-match`)
+        - **Browse**: list/filter tournaments, standings, full bracket view, and the caller's current match (`GET /tournaments/:id/my_match`)
         - **Match verdicts are server-side** (game hooks) — no public resolve endpoint; clients get `tournament_match_ready` / `tournament_match_resolved` / `tournament_updated` / `tournament_finished` on the user channel
         - **Admin management** over HTTP: create/update/delete, cancel, draw now, finish, and force match verdicts under `/api/v1/admin/tournaments`
 
@@ -154,25 +164,35 @@ defmodule GameServerWeb.ApiSpec do
         - **Inspect**: `GET /matchmaking/tickets/me` for your ticket, `GET /matchmaking/stats` for queue depths
         - **Admin management** over HTTP: list/filter tickets, force-cancel, and stats under `/api/v1/admin/matchmaking`
 
-        ## **14. Real-time: WebSocket Channels**
+        ## **14. Ready checks**
+        One primitive for "everyone must answer before this proceeds", with one client-facing surface:
+
+        - **A player holds at most one check per lane** — the match lane (lobby ready-up or matchmaking accept) and the party lane (the party's standing board) — so answering needs no id: `GET /me/ready_check` returns `{"lobby": …, "party": …}` (each null when none) and `POST /me/ready_check` with `{"ready": true|false, "scope": "lobby"|"party"}` answers one (scope defaults to `lobby`)
+        - **Two kinds.** `ready` (lobby/party board) is a toggle — a "no" just leaves the check open, and it lists every participant. `accept` (match confirmation) is final — one decline fails it for everyone — and returns counts plus your own state, so a pending match does not reveal who you were paired with
+        - **Hosts open one** with `POST /lobbies/ready_check` (host-managed lobbies only; hostless matchmaking lobbies belong to the server), **party leaders** with `POST /parties/ready_check`; either call is a **reset** — it quietly replaces an already-open board with a fresh one over the current members, so the same endpoint serves "ready check!", "force ready" (with `timeout_ms`) and "start over". Call it off with `DELETE /lobbies/ready_check` / `DELETE /parties/ready_check`. The opener is pre-marked ready — clicking the button is their answer
+        - **Failure does nothing on its own**: a declined or timed-out check kicks nobody, starts nothing, and moves no lobby state. It reports who did not answer, and the game (or the host, with the kick they already have) decides
+        - **Live**: `ready_check_started` / `ready_check_updated` / `ready_check_passed` / `ready_check_failed` on the lobby channel, the party channel for a party board, or the user channel for an accept check
+        - **Admin management** over HTTP: list/filter checks, force-cancel, and 24h outcome stats under `/api/v1/admin/ready_checks`
+
+        ## **15. Real-time: WebSocket Channels**
         The server provides real-time communication via Phoenix WebSocket channels. Connect to the WebSocket endpoint and join topic-based channels for live updates.
 
-        ### **14.1 Connection**
+        ### **15.1 Connection**
         Connect to `wss://your-server.com/socket` with your JWT token as a parameter:
         ```
         const socket = new Socket("wss://your-server.com/socket", { params: { token: "<access_token>" } })
         socket.connect()
         ```
 
-        ### **14.2 Available Channels**
-        - **User channel** (`user:<user_id>`): notifications, friend events, achievement unlocks, party/group invites, tournament events, KV subscriptions
+        ### **15.2 Available Channels**
+        - **User channel** (`user:<user_id>`): notifications, friend events, quest progress/completions/claims, party/group invites, tournament events, KV subscriptions
         - **Lobby channel** (`lobby:<lobby_id>`): lobby member joins/leaves, lobby updates, lobby chat
         - **Lobbies channel** (`lobbies`): global lobby list changes (created, updated, deleted)
         - **Group channel** (`group:<group_id>`): group member changes, group updates, group chat
         - **Groups channel** (`groups`): global group list changes
         - **Party channel** (`party:<party_id>`): party member changes, party updates, party chat
 
-        ### **14.3 JS SDK Helper**
+        ### **15.3 JS SDK Helper**
         The `GameRealtime` class (included in this SDK) wraps Phoenix.Socket with convenient channel helpers:
         ```javascript
         import { GameRealtime } from '@ughuuu/game_server'
@@ -182,21 +202,21 @@ defmodule GameServerWeb.ApiSpec do
         ```
         Requires the `phoenix` npm package as a peer dependency: `npm install phoenix`
 
-        ## **15. Real-time: WebRTC DataChannels**
+        ## **16. Real-time: WebRTC DataChannels**
         For low-latency game data, the server supports WebRTC DataChannels alongside WebSocket. The server acts as a WebRTC peer (not P2P between clients).
 
-        ### **15.1 How It Works**
+        ### **16.1 How It Works**
         1. Client connects via WebSocket and joins the **User channel**
         2. Client sends an SDP offer over the channel (`webrtc:offer` event)
         3. Server responds with an SDP answer (`webrtc:answer` event)
         4. ICE candidates are exchanged (`webrtc:ice` events)
         5. Once connected, named DataChannels carry game data at low latency
 
-        ### **15.2 Default DataChannels**
+        ### **16.2 Default DataChannels**
         - **`events`** (reliable, ordered): important game events (player actions, state changes)
         - **`state`** (unreliable, unordered): high-frequency position/state sync
 
-        ### **15.3 JS SDK Helper**
+        ### **16.3 JS SDK Helper**
         The `GameWebRTC` class (included in this SDK, browser-only) handles signaling automatically:
         ```javascript
         import { GameRealtime, GameWebRTC } from '@ughuuu/game_server'
@@ -233,6 +253,7 @@ defmodule GameServerWeb.ApiSpec do
           description: "Real-time messaging across lobbies, groups, parties, and friends"
         },
         %Tag{name: "Notifications", description: "Persistent user notifications"},
+        %Tag{name: "Push", description: "Device push-token registration"},
         %Tag{name: "Leaderboards", description: "Ranked scoreboards and score submission"},
         %Tag{name: "Tournaments", description: "Bracket tournaments — browse, join, standings"},
         %Tag{
@@ -240,8 +261,12 @@ defmodule GameServerWeb.ApiSpec do
           description: "Ticket queue — join, cancel, your ticket, queue stats"
         },
         %Tag{
-          name: "Achievements",
-          description: "Player achievements, progress tracking, and unlocks"
+          name: "Ready checks",
+          description: "Ready up / accept — read and answer the caller's open check"
+        },
+        %Tag{
+          name: "Quests",
+          description: "Quests/progression — objectives, periods, claims, rewards"
         },
         %Tag{
           name: "Payments",
@@ -260,11 +285,16 @@ defmodule GameServerWeb.ApiSpec do
         %Tag{name: "Admin – Lobbies", description: "Admin lobby management"},
         %Tag{name: "Admin – Groups", description: "Admin group management"},
         %Tag{name: "Admin – Chat", description: "Admin chat management"},
-        %Tag{name: "Admin – Achievements", description: "Admin achievement management"},
+        %Tag{name: "Admin – Quests", description: "Admin quest management"},
         %Tag{name: "Admin – Notifications", description: "Admin notification management"},
+        %Tag{name: "Admin – Push", description: "Admin push-token management and sending"},
         %Tag{name: "Admin – Leaderboards", description: "Admin leaderboard management"},
         %Tag{name: "Admin – Tournaments", description: "Admin tournament management"},
         %Tag{name: "Admin – Matchmaking", description: "Admin matchmaking queue management"},
+        %Tag{
+          name: "Admin – Ready checks",
+          description: "Admin ready-check inspection and force-cancel"
+        },
         %Tag{name: "Admin – KV", description: "Admin key-value storage management"},
         %Tag{
           name: "Admin – Economy",
@@ -288,9 +318,11 @@ defmodule GameServerWeb.ApiSpec do
   end
 
   defp api_version do
-    # Prefer an environment-supplied APP_VERSION when present (CI injects this),
-    # then fall back to the application vsn or Mix project version.
-    case System.get_env("APP_VERSION") || Application.spec(:game_server, :vsn) do
+    # The declared setting wins: the image supplies it at runtime, while the
+    # compiled vsn keeps mix.exs's default so the version cannot bust the
+    # Docker layer cache. Falls back to the vsn, then the Mix project version.
+    case GameServer.Settings.get(GameServer.ContentSettings, :app_version) ||
+           Application.spec(:game_server, :vsn) do
       nil -> Mix.Project.config()[:version] || "1.0.0"
       vsn -> to_string(vsn)
     end

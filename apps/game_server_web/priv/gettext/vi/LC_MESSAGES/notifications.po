@@ -11,23 +11,28 @@ msgstr ""
 "Language: vi\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: lib/game_server_web/live/notifications_live.ex:284
+#: lib/game_server_web/live/notifications_live.ex:287
 #, elixir-autogen, elixir-format
 msgid "Achievement Unlocked: %{name}"
 msgstr "Đã mở khóa thành tựu: %{name}"
 
-#: lib/game_server_web/live/notifications_live.ex:280
+#: lib/game_server_web/live/notifications_live.ex:281
 #, elixir-autogen, elixir-format
 msgid "New message in party"
 msgstr "Tin nhắn mới trong nhóm"
 
-#: lib/game_server_web/live/notifications_live.ex:289
-#: lib/game_server_web/live/notifications_live.ex:294
+#: lib/game_server_web/live/notifications_live.ex:295
+#: lib/game_server_web/live/notifications_live.ex:300
 #, elixir-autogen, elixir-format
 msgid "New messages from %{name}"
 msgstr "Tin nhắn mới từ %{name}"
 
-#: lib/game_server_web/live/notifications_live.ex:278
+#: lib/game_server_web/live/notifications_live.ex:279
 #, elixir-autogen, elixir-format
 msgid "New messages from friends"
 msgstr "Tin nhắn mới từ bạn bè"
+
+#: lib/game_server_web/live/notifications_live.ex:289
+#, elixir-autogen, elixir-format
+msgid "Quest completed: %{name}"
+msgstr "Hoàn thành nhiệm vụ: %{name}"

@@ -10,6 +10,10 @@ defmodule GameServer.Leaderboards.Leaderboard do
   across multiple leaderboard instances (seasons). Use the slug to always target the
   currently active leaderboard, or use the integer `id` for a specific instance.
 
+  ## Icon
+  `icon_url` is optional; when nil, clients show their default leaderboard
+  icon (the web UI uses `GameServerWeb.Icons.default(:leaderboard)`).
+
   ## Sort Order
   - `:desc` — Higher scores rank first (default)
   - `:asc` — Lower scores rank first (e.g., fastest time)
@@ -30,25 +34,11 @@ defmodule GameServer.Leaderboards.Leaderboard do
   @sort_orders ~w(desc asc)a
   @operators ~w(set best incr decr)a
 
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :slug,
-             :title,
-             :description,
-             :sort_order,
-             :operator,
-             :starts_at,
-             :ends_at,
-             :metadata,
-             :inserted_at,
-             :updated_at
-           ]}
-
   schema "leaderboards" do
     field :slug, :string
     field :title, :string
     field :description, :string, default: ""
+    field :icon_url, :string
     field :sort_order, Ecto.Enum, values: @sort_orders, default: :desc
     field :operator, Ecto.Enum, values: @operators, default: :best
     field :starts_at, :utc_datetime
@@ -61,7 +51,7 @@ defmodule GameServer.Leaderboards.Leaderboard do
   end
 
   @required_fields ~w(slug title)a
-  @optional_fields ~w(description sort_order operator starts_at ends_at metadata)a
+  @optional_fields ~w(description icon_url sort_order operator starts_at ends_at metadata)a
 
   @doc """
   Changeset for creating a new leaderboard.
@@ -71,6 +61,7 @@ defmodule GameServer.Leaderboards.Leaderboard do
     |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
     |> validate_length(:slug, min: 1, max: GameServer.Limits.get(:max_leaderboard_slug))
+    |> validate_length(:icon_url, max: GameServer.Limits.get(:max_profile_url))
     |> validate_format(:slug, ~r/^[a-z0-9_]+$/,
       message: "must be lowercase alphanumeric with underscores"
     )
@@ -87,7 +78,8 @@ defmodule GameServer.Leaderboards.Leaderboard do
   """
   def update_changeset(leaderboard, attrs) do
     leaderboard
-    |> cast(attrs, [:title, :description, :starts_at, :ends_at, :metadata])
+    |> cast(attrs, [:title, :description, :icon_url, :starts_at, :ends_at, :metadata])
+    |> validate_length(:icon_url, max: GameServer.Limits.get(:max_profile_url))
     |> validate_length(:title, min: 1, max: GameServer.Limits.get(:max_leaderboard_title))
     |> validate_length(:description, max: GameServer.Limits.get(:max_leaderboard_description))
     |> GameServer.Limits.validate_metadata_size(:metadata)
@@ -105,37 +97,29 @@ defmodule GameServer.Leaderboards.Leaderboard do
   Returns true if the leaderboard has ended.
   """
   def ended?(%__MODULE__{} = lb), do: not active?(lb)
+end
 
-  @doc """
-  Returns the localized title for the given locale.
-
-  Looks up `metadata["titles"][locale]`, falling back to `title`.
-  Works with both `%Leaderboard{}` structs and plain maps (e.g. group info).
-
-  ## Examples
-
-      iex> lb = %Leaderboard{title: "Weekly Kills", metadata: %{"titles" => %{"es" => "Muertes Semanales"}}}
-      iex> Leaderboard.localized_title(lb, "es")
-      "Muertes Semanales"
-      iex> Leaderboard.localized_title(lb, "en")
-      "Weekly Kills"
-  """
-  def localized_title(%{metadata: metadata, title: title}, locale) when is_binary(locale) do
-    get_in(metadata || %{}, ["titles", locale]) || title
+# Hand-written rather than @derive so optional strings encode as "" instead of
+# null — game clients (Godot) choke on null where they expect a string.
+defimpl Jason.Encoder, for: GameServer.Leaderboards.Leaderboard do
+  def encode(lb, opts) do
+    GameServer.SchemaJSON.encode(
+      lb,
+      [
+        :id,
+        :slug,
+        :title,
+        :description,
+        :icon_url,
+        :sort_order,
+        :operator,
+        :starts_at,
+        :ends_at,
+        :metadata,
+        :inserted_at,
+        :updated_at
+      ],
+      opts
+    )
   end
-
-  def localized_title(%{title: title}, _locale), do: title
-
-  @doc """
-  Returns the localized description for the given locale.
-
-  Looks up `metadata["descriptions"][locale]`, falling back to `description`.
-  Works with both `%Leaderboard{}` structs and plain maps (e.g. group info).
-  """
-  def localized_description(%{metadata: metadata, description: desc}, locale)
-      when is_binary(locale) do
-    get_in(metadata || %{}, ["descriptions", locale]) || desc
-  end
-
-  def localized_description(%{description: desc}, _locale), do: desc
 end

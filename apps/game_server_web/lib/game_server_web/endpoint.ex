@@ -140,7 +140,8 @@ defmodule GameServerWeb.Endpoint do
             gzip: gzip_static?(),
             only: only,
             cache_control_for_etags: static_cache_control(kind),
-            cache_control_for_vsn_requests: static_cache_control(kind)
+            cache_control_for_vsn_requests: static_cache_control(kind),
+            headers: static_headers(kind)
           )
 
         :persistent_term.put(key, opts)
@@ -150,6 +151,16 @@ defmodule GameServerWeb.Endpoint do
         opts
     end
   end
+
+  # Extra response headers per static kind. The game build needs
+  # cross-origin isolation (COOP/COEP) when exported with thread support —
+  # SharedArrayBuffer is gated on it — so hosts opt in via config, e.g.
+  # config :game_server_web, :game_static_headers, %{"cross-origin-opener-policy" => ...}.
+  defp static_headers(:game_static_opts) do
+    Application.get_env(:game_server_web, :game_static_headers, %{})
+  end
+
+  defp static_headers(_kind), do: %{}
 
   defp static_cache_control(:game_static_opts) do
     Application.get_env(

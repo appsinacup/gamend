@@ -28,8 +28,13 @@ defmodule GameServerWeb.ChannelUpdatesTest do
   setup tags do
     GameServer.DataCase.setup_sandbox(tags)
 
-    prev = Application.get_env(:game_server_web, :realtime_debounce_ms, 0)
-    on_exit(fn -> Application.put_env(:game_server_web, :realtime_debounce_ms, prev) end)
+    prev = Application.get_env(:game_server_web, GameServerWeb.Realtime)
+
+    on_exit(fn ->
+      if prev,
+        do: Application.put_env(:game_server_web, GameServerWeb.Realtime, prev),
+        else: Application.delete_env(:game_server_web, GameServerWeb.Realtime)
+    end)
 
     {:ok, _, socket} =
       socket(GameServerWeb.UserSocket, "cu", %{})
@@ -38,7 +43,8 @@ defmodule GameServerWeb.ChannelUpdatesTest do
     %{socket: socket}
   end
 
-  defp set_debounce(ms), do: Application.put_env(:game_server_web, :realtime_debounce_ms, ms)
+  defp set_debounce(ms),
+    do: Application.put_env(:game_server_web, GameServerWeb.Realtime, debounce_ms: ms)
 
   describe "with debounce off (default)" do
     setup do

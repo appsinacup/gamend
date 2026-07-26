@@ -147,7 +147,7 @@ defmodule GameServerWeb.AdminLive.Blacklist do
                     <div class="font-mono text-xs text-base-content/60">{block.requester_id}</div>
                   </td>
                   <td class="text-xs">
-                    {Calendar.strftime(block.inserted_at, "%Y-%m-%d %H:%M:%S")}
+                    <.timestamp at={block.inserted_at} format="full" />
                   </td>
                   <td class="text-right">
                     <button

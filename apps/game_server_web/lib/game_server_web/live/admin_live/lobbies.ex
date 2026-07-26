@@ -3,6 +3,7 @@ defmodule GameServerWeb.AdminLive.Lobbies do
 
   alias GameServer.Lobbies
   alias GameServer.Lobbies.SpectatorTracker
+  alias GameServer.ReadyChecks
 
   @impl true
   def mount(_params, _session, socket) do
@@ -18,6 +19,7 @@ defmodule GameServerWeb.AdminLive.Lobbies do
       |> assign(:form, nil)
       |> assign(:selected_ids, MapSet.new())
       |> assign(:members, [])
+      |> assign(:ready_check, nil)
       |> assign(:show_members, false)
       |> assign(:show_create, false)
       |> assign(
@@ -113,6 +115,7 @@ defmodule GameServerWeb.AdminLive.Lobbies do
                       <th>Spectators</th>
                       <th>Hidden</th>
                       <th>Locked</th>
+                      <th>State</th>
                       <th>Password</th>
                       <th>Created</th>
                       <th>Updated</th>
@@ -174,6 +177,15 @@ defmodule GameServerWeb.AdminLive.Lobbies do
                         </select>
                       </th>
                       <th>
+                        <input
+                          type="text"
+                          name="state"
+                          value={@filters["state"] || ""}
+                          placeholder="state"
+                          class="input input-bordered input-xs w-full"
+                        />
+                      </th>
+                      <th>
                         <select name="has_password" class="select select-bordered select-xs w-full">
                           <option value="" selected={@filters["has_password"] == ""}>All</option>
                           <option value="true" selected={@filters["has_password"] == "true"}>
@@ -218,6 +230,9 @@ defmodule GameServerWeb.AdminLive.Lobbies do
                         <% end %>
                       </td>
                       <td class="text-sm">
+                        <span class="badge badge-ghost badge-sm font-mono">{l.state}</span>
+                      </td>
+                      <td class="text-sm">
                         <%= if l.password_hash do %>
                           <span class="badge badge-success badge-sm">Yes</span>
                         <% else %>
@@ -225,10 +240,10 @@ defmodule GameServerWeb.AdminLive.Lobbies do
                         <% end %>
                       </td>
                       <td class="text-sm">
-                        {Calendar.strftime(l.inserted_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={l.inserted_at} />
                       </td>
                       <td class="text-sm">
-                        {Calendar.strftime(l.updated_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={l.updated_at} />
                       </td>
                       <td class="text-sm">
                         <div class="flex flex-wrap gap-1">
@@ -307,13 +322,13 @@ defmodule GameServerWeb.AdminLive.Lobbies do
               <div>
                 Created:
                 <span class="font-mono">
-                  {Calendar.strftime(@selected_lobby.inserted_at, "%Y-%m-%d %H:%M:%S")}
+                  <.timestamp at={@selected_lobby.inserted_at} format="full" />
                 </span>
               </div>
               <div>
                 Updated:
                 <span class="font-mono">
-                  {Calendar.strftime(@selected_lobby.updated_at, "%Y-%m-%d %H:%M:%S")}
+                  <.timestamp at={@selected_lobby.updated_at} format="full" />
                 </span>
               </div>
             </div>
@@ -336,7 +351,27 @@ defmodule GameServerWeb.AdminLive.Lobbies do
           </h3>
           <p class="text-sm text-base-content/70 mt-1">
             Spectators: {Map.get(@spectator_counts, @selected_lobby.id, 0)}
+            <span class="ml-2">State: <span class="font-mono">{@selected_lobby.state}</span></span>
           </p>
+
+          <div :if={@ready_check} class="alert alert-info mt-3 py-2 text-sm">
+            <span>
+              {gettext("Ready check")}
+              <span class="font-mono">{@ready_check.kind}</span>
+              — {ready_summary(@ready_check)}
+              <span :if={@ready_check.deadline_at}>
+                · {gettext("deadline_at")} <.timestamp at={@ready_check.deadline_at} format="full" />
+              </span>
+            </span>
+            <button
+              type="button"
+              phx-click="cancel_ready_check"
+              phx-value-id={@ready_check.id}
+              class="btn btn-xs"
+            >
+              {gettext("Cancel")}
+            </button>
+          </div>
 
           <div class="flex gap-2 mt-4">
             <input
@@ -364,6 +399,7 @@ defmodule GameServerWeb.AdminLive.Lobbies do
                   <th>User ID</th>
                   <th>Name</th>
                   <th>Role</th>
+                  <th>{gettext("Ready")}</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -377,6 +413,11 @@ defmodule GameServerWeb.AdminLive.Lobbies do
                     <% else %>
                       <span class="badge badge-ghost badge-sm">Member</span>
                     <% end %>
+                  </td>
+                  <td class="text-sm">
+                    <span class={"badge badge-sm #{ready_state_class(@ready_check, m.id)}"}>
+                      {member_ready_state(@ready_check, m.id)}
+                    </span>
                   </td>
                   <td class="text-sm">
                     <button
@@ -510,9 +551,24 @@ defmodule GameServerWeb.AdminLive.Lobbies do
      socket
      |> assign(:selected_lobby, lobby)
      |> assign(:members, members)
+     |> assign(:ready_check, ReadyChecks.pending_for_lobby(lobby_id))
      |> assign(:show_members, true)
      |> assign(:form, nil)
      |> assign(:add_member_id, "")}
+  end
+
+  @impl true
+  def handle_event("cancel_ready_check", %{"id" => id}, socket) do
+    socket =
+      with %{status: "pending"} = check <- ReadyChecks.get_check(id),
+           {:ok, _} <- ReadyChecks.cancel(check) do
+        put_flash(socket, :info, "Ready check cancelled")
+      else
+        _ -> put_flash(socket, :error, "Ready check not found or already resolved")
+      end
+
+    lobby = socket.assigns.selected_lobby
+    {:noreply, assign(socket, :ready_check, lobby && ReadyChecks.pending_for_lobby(lobby.id))}
   end
 
   @impl true
@@ -521,6 +577,7 @@ defmodule GameServerWeb.AdminLive.Lobbies do
      socket
      |> assign(:selected_lobby, nil)
      |> assign(:members, [])
+     |> assign(:ready_check, nil)
      |> assign(:show_members, false)}
   end
 
@@ -798,6 +855,30 @@ defmodule GameServerWeb.AdminLive.Lobbies do
   end
 
   defp lobby_ids(lobbies) when is_list(lobbies), do: Enum.map(lobbies, & &1.id)
+
+  # Ready state is per (check, member); a lobby with no open check shows "—"
+  # rather than implying everyone is un-ready.
+  defp member_ready_state(nil, _user_id), do: "—"
+
+  defp member_ready_state(check, user_id) do
+    Enum.find_value(check.participants, "—", &if(&1.user_id == user_id, do: &1.state))
+  end
+
+  defp ready_state_class(nil, _user_id), do: "badge-ghost"
+
+  defp ready_state_class(check, user_id) do
+    case member_ready_state(check, user_id) do
+      "ready" -> "badge-success"
+      "declined" -> "badge-warning"
+      "timed_out" -> "badge-error"
+      _ -> "badge-ghost"
+    end
+  end
+
+  defp ready_summary(check) do
+    ready = Enum.count(check.participants, &(&1.state == "ready"))
+    "#{ready}/#{length(check.participants)}"
+  end
 
   defp lobby_members(lobby_id) do
     import Ecto.Query, only: [from: 2]

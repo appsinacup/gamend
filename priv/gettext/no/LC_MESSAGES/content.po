@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: no\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "Velkommen om bord"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "Logg inn for første gang."
+
+#. quests
+msgid "Daily check-in"
+msgstr "Daglig innsjekk"
+
+#. quests
+msgid "Log in today."
+msgstr "Logg inn i dag."
+
+#. quests
+msgid "Weekly regular"
+msgstr "Ukens stamgjest"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "Logg inn fem forskjellige dager denne uken."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "Månedens trofaste"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "Logg inn tjue ganger denne måneden."
+
+#. quests
+msgid "Stop by again"
+msgstr "Stikk innom igjen"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "Logg inn. Blir tilgjengelig igjen om tre dager."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "Lojal veteran"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "Logg inn femti ganger, etter at du har sagt hei."
+
+#. quests
+msgid "Night owl"
+msgstr "Nattugle"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "Noen ting blir funnet i stedet for annonsert."
+
+#. quests
+msgid "Launch festival"
+msgstr "Lanseringsfestival"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "Et daglig oppdrag som bare teller mens festivalen pågår."
+
+#. leaderboards
+msgid "Logins"
+msgstr "Innlogginger"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "Hvor mange ganger hver spiller har logget inn."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "Ukens cup"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "Meld deg på når som helst – trekningen skjer hver mandag."

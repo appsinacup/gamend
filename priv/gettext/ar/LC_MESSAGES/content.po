@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: ar\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "أهلًا بك"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "سجّل الدخول للمرة الأولى."
+
+#. quests
+msgid "Daily check-in"
+msgstr "تسجيل الحضور اليومي"
+
+#. quests
+msgid "Log in today."
+msgstr "سجّل الدخول اليوم."
+
+#. quests
+msgid "Weekly regular"
+msgstr "مواظب الأسبوع"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "سجّل الدخول في خمسة أيام مختلفة هذا الأسبوع."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "مواظب الشهر"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "سجّل الدخول عشرين مرة هذا الشهر."
+
+#. quests
+msgid "Stop by again"
+msgstr "مرّ بنا مجددًا"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "سجّل الدخول. تعود المهمة متاحة بعد ثلاثة أيام."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "مخضرم وفي"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "سجّل الدخول خمسين مرة بعد أن تكون قد ألقيت التحية."
+
+#. quests
+msgid "Night owl"
+msgstr "بومة ليلية"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "بعض الأشياء تُكتشف ولا يُعلن عنها."
+
+#. quests
+msgid "Launch festival"
+msgstr "مهرجان الإطلاق"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "مهمة يومية لا تُحتسب إلا أثناء انعقاد المهرجان."
+
+#. leaderboards
+msgid "Logins"
+msgstr "عمليات تسجيل الدخول"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "عدد مرات تسجيل دخول كل لاعب."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "كأس الأسبوع"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "سجّل في أي وقت؛ تُسحب قرعة الجدول كل يوم اثنين."

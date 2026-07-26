@@ -72,4 +72,39 @@ defmodule GameServer.StorageTest do
     assert {:ok, "x"} = Storage.get(key)
     assert File.exists?(Path.join(root, "avatars/etc/passwd"))
   end
+
+  describe "cache_control/1" do
+    test "avatars default to immutable one-year caching" do
+      assert Storage.cache_control("avatars/user-1/abc.png") ==
+               "public, max-age=31536000, immutable"
+    end
+
+    test "entity icons do too — build_key/3 makes their URL content-unique" do
+      assert Storage.cache_control("icons/groups/group-1/abc.png") ==
+               "public, max-age=31536000, immutable"
+    end
+
+    test "everything else revalidates by default" do
+      assert Storage.cache_control("uploads/report.pdf") == "public, max-age=0, must-revalidate"
+    end
+
+    test "policies and the default are configurable; first prefix wins" do
+      old = Application.get_env(:game_server_core, GameServer.Storage, [])
+
+      Application.put_env(
+        :game_server_core,
+        GameServer.Storage,
+        Keyword.merge(old,
+          cache_policies: [{"public/", "public, max-age=3600"}],
+          default_cache_control: "no-store"
+        )
+      )
+
+      on_exit(fn -> Application.put_env(:game_server_core, GameServer.Storage, old) end)
+
+      assert Storage.cache_control("public/logo.png") == "public, max-age=3600"
+      # the built-in avatars rule is replaced by the override, so it hits default
+      assert Storage.cache_control("avatars/u/a.png") == "no-store"
+    end
+  end
 end

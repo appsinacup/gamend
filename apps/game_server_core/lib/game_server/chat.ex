@@ -189,6 +189,7 @@ defmodule GameServer.Chat do
 
         GameServer.Async.run(fn ->
           GameServer.Hooks.internal_call(:after_chat_message, [message])
+          GameServer.Quests.report_event(sender_id, "chat_message")
           send_chat_notifications(message)
         end)
 

@@ -272,6 +272,13 @@ defmodule GameServerWeb.Api.V1.SessionController do
 
   # Generate access + refresh JWTs and return the token response
   defp issue_tokens(conn, user) do
+    # Only real logins reach here (password and device create); `refresh/2`
+    # builds its own token. Same login side-effects as the web session path.
+    GameServer.Async.run(fn ->
+      GameServer.Hooks.internal_call(:after_user_logged_in, [user])
+      GameServer.Quests.report_event(user.id, "login")
+    end)
+
     {:ok, access_token, _} = Guardian.encode_and_sign(user, %{}, token_type: "access")
 
     {:ok, refresh_token, _} =

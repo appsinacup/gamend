@@ -17,7 +17,7 @@ defmodule GameServerWeb.UserLive.ConfirmationTest do
           Accounts.deliver_login_instructions(user, url)
         end)
 
-      {:ok, _lv, html} = live(conn, ~p"/users/log-in/#{token}")
+      {:ok, _lv, html} = live(conn, ~p"/users/log_in/#{token}")
       assert html =~ "Confirm"
     end
 
@@ -27,7 +27,7 @@ defmodule GameServerWeb.UserLive.ConfirmationTest do
           Accounts.deliver_login_instructions(user, url)
         end)
 
-      {:ok, _lv, html} = live(conn, ~p"/users/log-in/#{token}")
+      {:ok, _lv, html} = live(conn, ~p"/users/log_in/#{token}")
       refute html =~ "Confirm my account"
       assert html =~ "Log in"
       assert html =~ user.email
@@ -39,7 +39,7 @@ defmodule GameServerWeb.UserLive.ConfirmationTest do
           Accounts.deliver_login_instructions(user, url)
         end)
 
-      {:ok, lv, _html} = live(conn, ~p"/users/log-in/#{token}")
+      {:ok, lv, _html} = live(conn, ~p"/users/log_in/#{token}")
 
       form = form(lv, "#confirmation_form", %{"user" => %{"token" => token}})
       render_submit(form)
@@ -58,8 +58,8 @@ defmodule GameServerWeb.UserLive.ConfirmationTest do
       conn = build_conn()
 
       {:ok, _lv, html} =
-        live(conn, ~p"/users/log-in/#{token}")
-        |> follow_redirect(conn, ~p"/users/log-in")
+        live(conn, ~p"/users/log_in/#{token}")
+        |> follow_redirect(conn, ~p"/users/log_in")
 
       assert html =~ "Failed"
     end
@@ -73,7 +73,7 @@ defmodule GameServerWeb.UserLive.ConfirmationTest do
           Accounts.deliver_login_instructions(user, url)
         end)
 
-      {:ok, lv, _html} = live(conn, ~p"/users/log-in/#{token}")
+      {:ok, lv, _html} = live(conn, ~p"/users/log_in/#{token}")
 
       form = form(lv, "#login_form", %{"user" => %{"token" => token}})
       render_submit(form)
@@ -89,16 +89,16 @@ defmodule GameServerWeb.UserLive.ConfirmationTest do
       conn = build_conn()
 
       {:ok, _lv, html} =
-        live(conn, ~p"/users/log-in/#{token}")
-        |> follow_redirect(conn, ~p"/users/log-in")
+        live(conn, ~p"/users/log_in/#{token}")
+        |> follow_redirect(conn, ~p"/users/log_in")
 
       assert html =~ "Failed"
     end
 
     test "raises error for invalid token", %{conn: conn} do
       {:ok, _lv, html} =
-        live(conn, ~p"/users/log-in/invalid-token")
-        |> follow_redirect(conn, ~p"/users/log-in")
+        live(conn, ~p"/users/log_in/invalid-token")
+        |> follow_redirect(conn, ~p"/users/log_in")
 
       assert html =~ "Failed"
     end

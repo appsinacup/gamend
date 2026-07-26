@@ -127,7 +127,20 @@ defmodule GameServer.Storage.Local do
     end
   end
 
-  defp base_url, do: config()[:base_url] || ""
+  # Declared so the values are documented and env-fed; the reads below stay as
+  # they are, because a setting resolves into exactly the app-env key they
+  # already look at.
+  use GameServer.Settings.Provider,
+    app: :game_server_core,
+    group: :storage,
+    label: "Storage"
+
+  setting(:dir, :string,
+    default: "priv/storage",
+    doc: "Directory the local adapter writes objects to."
+  )
+
+  defp base_url, do: GameServer.Settings.get(GameServer.Storage, :public_url) || ""
 
   defp config, do: Application.get_env(:game_server_core, __MODULE__, [])
 end

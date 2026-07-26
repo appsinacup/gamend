@@ -16,6 +16,9 @@ defmodule GameServerWeb.PartyChannel do
   - `"member_updated"` - A party member was updated. Payload: user brief object
   - `"updated"` - The party settings were updated. Payload: party object
   - `"disbanded"` - The party was disbanded. Payload: `%{party_id: integer}`
+  - `"ready_check_started"` / `"ready_check_updated"` / `"ready_check_passed"`
+    / `"ready_check_failed"` - The party's ready board changed. Payload: ready
+    check object (see `GameServerWeb.Serializers.serialize_ready_check/2`)
   - `"chat_message_created"` - A new chat message. Payload: chat message object
   - `"chat_message_updated"` - A chat message was updated. Payload: chat message object
   - `"chat_message_deleted"` - A chat message was deleted. Payload: `%{id: integer}`
@@ -131,6 +134,20 @@ defmodule GameServerWeb.PartyChannel do
     {:noreply, socket}
   end
 
+  # Same shape as the lobby channel: a burst of members readying at once
+  # coalesces into one frame; a resolution is never held in the debounce timer.
+  @impl true
+  def handle_info({:ready_check_event, "ready_check_updated" = event, check}, socket) do
+    payload = serialize_ready_check(check, socket)
+    {:noreply, ChannelUpdates.push(socket, event, check.id, payload)}
+  end
+
+  @impl true
+  def handle_info({:ready_check_event, event, check}, socket) do
+    push_event(socket, event, serialize_ready_check(check, socket))
+    {:noreply, socket}
+  end
+
   # Chat messages forwarded from PubSub
 
   @impl true
@@ -199,6 +216,11 @@ defmodule GameServerWeb.PartyChannel do
   @impl true
   def handle_info(_msg, socket) do
     {:noreply, socket}
+  end
+
+  defp serialize_ready_check(check, socket) do
+    viewer_id = get_in(socket.assigns, [:current_scope, Access.key(:user_id)])
+    Serializers.serialize_ready_check(check, viewer_id: viewer_id)
   end
 
   @impl true

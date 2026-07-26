@@ -5,7 +5,7 @@ defmodule GameServerHost.MixProject do
     [
       app: :game_server_host,
       name: "GameServer",
-      version: System.get_env("APP_VERSION") || "1.0.0",
+      version: System.get_env("GAMEND_CONTENT_APP_VERSION") || "1.0.0",
       elixir: "~> 1.20",
       elixirc_paths: ["lib"],
       start_permanent: Mix.env() == :prod,
@@ -99,13 +99,23 @@ defmodule GameServerHost.MixProject do
       lint:
         ["format --check-formatted", "credo --strict"] ++
           local_web_commands([web_cmd("format --check-formatted"), web_cmd("credo --strict")]),
+      "deps.audit": [&prune_vendored_lockfiles/1, "deps.audit"],
+      # The inner loop: fast checks only. Generators and the web app's own
       precommit:
         [
           "compile --warning-as-errors",
           "format",
           "gen.sdk",
+          # Regenerate rather than --check, like format and gen.sdk above: a
+          # stale settings doc is fixed and committed here, and CI runs the
+          # --check form so a bypassed precommit still cannot ship one.
+          "gamend.settings.env_example",
+          "gamend.settings.guide",
+          # Theme text lives in data, so `gettext.extract` cannot see it.
+          "gamend.theme.extract",
           "test",
-          "credo --strict"
+          "credo --strict",
+          "gamend.api.lint"
         ] ++
           local_web_commands([
             web_test_cmd("compile --warning-as-errors"),
@@ -121,6 +131,16 @@ defmodule GameServerHost.MixProject do
         "phx.digest"
       ]
     ]
+  end
+
+  # mix_audit's `apps/**/mix.lock` glob also matches lockfiles vendored inside
+  # git dependencies (pigeon ships one). A dependency's own lock never drives our
+  # resolution — ours does — so scanning it only reports false positives.
+  defp prune_vendored_lockfiles(_args) do
+    "apps/**/mix.lock"
+    |> Path.wildcard()
+    |> Enum.filter(&(&1 =~ ~r{(^|/)deps/}))
+    |> Enum.each(&File.rm/1)
   end
 
   defp web_cmd(task), do: "cmd --cd #{web_app_path()} mix #{task}"

@@ -625,7 +625,7 @@ defmodule GameServer.Accounts do
     
     ## Examples
     
-        iex> deliver_user_update_email_instructions(user, current_email, &url(~p"/users/settings/confirm-email/#{&1}"))
+        iex> deliver_user_update_email_instructions(user, current_email, &url(~p"/users/settings/confirm_email/#{&1}"))
         {:ok, %{to: ..., body: ...}}
     
     
@@ -647,11 +647,7 @@ defmodule GameServer.Accounts do
 
 
   @doc ~S"""
-    Returns true when device-based auth is enabled. This checks the
-    application config `:game_server, :device_auth_enabled` and falls back
-    to the environment variable `DEVICE_AUTH_ENABLED`. If neither
-    is set, device auth is enabled by default.
-    
+    Whether device-based auth is enabled. Defaults to on.
   """
   @spec device_auth_enabled?() :: boolean()
   def device_auth_enabled?() do
@@ -1263,6 +1259,27 @@ defmodule GameServer.Accounts do
 
 
   @doc ~S"""
+    Delete a user's stored avatar objects except `keep_key`.
+    
+    Each new avatar gets a fresh random key (`avatars/<user_id>/<rand><ext>`), so
+    without this the previous upload or mirror copy lingers in storage forever.
+    Best-effort: a failed cleanup leaves the old object rather than failing the
+    update that already succeeded.
+    
+  """
+  @spec prune_user_avatars(Ecto.UUID.t(), String.t()) :: :ok
+  def prune_user_avatars(_user_id, _keep_key) do
+    case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :ok
+
+      _ ->
+        raise "GameServer.Accounts.prune_user_avatars/2 is a stub - only available at runtime on GameServer"
+    end
+  end
+
+
+  @doc ~S"""
     Registers a user.
     
     ## Attributes
@@ -1342,11 +1359,7 @@ defmodule GameServer.Accounts do
 
 
   @doc ~S"""
-    Returns true when new accounts require manual admin activation before
-    they can log in. Reads from application config
-    `:game_server_core, :require_account_activation` which is set at boot
-    from the `REQUIRE_ACCOUNT_ACTIVATION` environment variable in `runtime.exs`.
-    Defaults to `false` when not configured.
+    Whether new accounts require manual admin activation before they can log in.
     
   """
   @spec require_account_activation?() :: boolean()
@@ -1776,6 +1789,23 @@ defmodule GameServer.Accounts do
 
       _ ->
         raise "GameServer.Accounts.user_activated?/1 is a stub - only available at runtime on GameServer"
+    end
+  end
+
+
+  @doc ~S"""
+    Map of `%{id => %User{}}` for the given ids, for batch name lookups (e.g. admin
+    tables that hold only a `user_id`). Nil/duplicate ids are ignored.
+    
+  """
+  @spec users_by_ids([Ecto.UUID.t()]) :: %{required(Ecto.UUID.t()) => GameServer.Accounts.User.t()}
+  def users_by_ids(_ids) do
+    case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        %{}
+
+      _ ->
+        raise "GameServer.Accounts.users_by_ids/1 is a stub - only available at runtime on GameServer"
     end
   end
 

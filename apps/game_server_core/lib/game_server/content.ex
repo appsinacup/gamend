@@ -10,6 +10,13 @@ defmodule GameServer.Content do
   Call `reload/0` to invalidate everything (e.g. after a config change).
   """
 
+  # Heroicon names; the docs page falls back to these when a file names none.
+  @default_doc_icon "hero-document-text"
+  @default_category_icon "hero-folder"
+  # A Tailwind text colour class; Tailwind sees it because priv/docs is a
+  # scanned source.
+  @default_category_color "text-primary"
+
   @cache_key {__MODULE__, :cache}
   @registered_paths_key {__MODULE__, :registered_paths}
   @default_content_config [
@@ -164,6 +171,172 @@ defmodule GameServer.Content do
   # Blog
   # ---------------------------------------------------------------------------
 
+  # ---------------------------------------------------------------------------
+  # Docs
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Lists every guide, grouped into categories in reading order.
+
+  Structure comes from the file tree rather than front matter, so a guide is a
+  file and nothing else has to be edited to add one:
+
+      priv/docs/10-core-setup/20-deployment.md
+
+  The numeric prefixes order categories and guides and are stripped from the
+  slug; the folder name is the category; the title is the first `# ` heading.
+  Returns `[%{category: String.t(), guides: [guide]}]`, each guide a map of
+  `:slug`, `:title`, `:summary` and `:path`.
+  """
+  @spec list_doc_categories() :: [%{category: String.t(), guides: [map()]}]
+  def list_doc_categories do
+    cached(:doc_categories, fn ->
+      case path(:docs) do
+        nil ->
+          []
+
+        dir ->
+          dir
+          |> Path.join("*/*.md")
+          |> Path.wildcard()
+          |> Enum.reject(&(Path.basename(&1) == "_category.md"))
+          |> Enum.sort()
+          |> Enum.map(&parse_doc(&1, dir))
+          |> Enum.chunk_by(& &1.category)
+          |> Enum.map(fn [%{category: folder} | _] = guides ->
+            dir |> category_meta(folder) |> Map.put(:guides, guides)
+          end)
+      end
+    end)
+  end
+
+  @doc "Every guide as a flat list, in the same order as `list_doc_categories/0`."
+  @spec list_docs() :: [map()]
+  def list_docs do
+    Enum.flat_map(list_doc_categories(), & &1.guides)
+  end
+
+  @doc "Returns a single guide map by slug, or `nil`."
+  @spec get_doc(String.t()) :: map() | nil
+  def get_doc(slug) when is_binary(slug) do
+    Enum.find(list_docs(), fn doc -> doc.slug == slug end)
+  end
+
+  @doc """
+  Renders a guide's markdown to HTML, or `nil`.
+
+  The leading `# ` heading is dropped: the page renders the title itself, in
+  the disclosure summary you click to open the guide.
+  """
+  @spec doc_html(String.t()) :: String.t() | nil
+  def doc_html(slug) do
+    cached({:doc_html, slug}, fn ->
+      case get_doc(slug) do
+        nil ->
+          nil
+
+        doc ->
+          case render_markdown_file(doc.path, "docs") do
+            nil -> nil
+            html -> strip_first_h1(html)
+          end
+      end
+    end)
+  end
+
+  defp parse_doc(path, root) do
+    content = File.read!(path)
+    meta = frontmatter(content)
+    slug = path |> Path.basename(".md") |> strip_order_prefix()
+    body = strip_frontmatter(content)
+
+    %{
+      slug: slug,
+      title: extract_title(body) || humanize_slug(slug),
+      summary: extract_excerpt(body),
+      icon: Map.get(meta, "icon", @default_doc_icon),
+      category: category_dir(path, root),
+      path: path
+    }
+  end
+
+  defp category_dir(path, root) do
+    path |> Path.relative_to(root) |> Path.dirname()
+  end
+
+  # A folder's own `_category.md` names and illustrates the category. It is
+  # optional: without one the folder name is humanised and the default icon
+  # used, so a new category is still just a directory.
+  defp category_meta(root, dir) do
+    path = Path.join([root, dir, "_category.md"])
+
+    meta = if File.exists?(path), do: frontmatter(File.read!(path)), else: %{}
+
+    %{
+      category: Map.get(meta, "title") || dir |> strip_order_prefix() |> humanize_slug(),
+      icon: Map.get(meta, "icon", @default_category_icon),
+      color: Map.get(meta, "color", @default_category_color)
+    }
+  end
+
+  @doc """
+  Reads a leading `---` fenced block of `key: value` lines.
+
+  Deliberately not YAML: the values here are single-line strings, and a parser
+  dependency for that would be its own liability.
+  """
+  @spec frontmatter(String.t()) :: %{String.t() => String.t()}
+  def frontmatter("---\n" <> rest) do
+    case String.split(rest, ~r/^---\s*$/m, parts: 2) do
+      [block, _body] ->
+        block
+        |> String.split("\n", trim: true)
+        |> Enum.reduce(%{}, fn line, acc ->
+          case String.split(line, ":", parts: 2) do
+            [key, value] -> Map.put(acc, String.trim(key), String.trim(value))
+            _ -> acc
+          end
+        end)
+
+      _ ->
+        %{}
+    end
+  end
+
+  def frontmatter(_content), do: %{}
+
+  defp strip_frontmatter("---\n" <> rest = content) do
+    case String.split(rest, ~r/^---\s*$/m, parts: 2) do
+      [_block, body] -> String.trim_leading(body)
+      _ -> content
+    end
+  end
+
+  defp strip_frontmatter(content), do: content
+
+  # The highlighter ships no GDScript grammar, so a ```gdscript block renders
+  # as flat text. JavaScript's grammar colours its keywords, strings and calls
+  # closely enough; the markdown keeps saying gdscript, which is what a reader
+  # should see.
+  @language_aliases %{
+    "gdscript" => "javascript",
+    "gd" => "javascript",
+    "godot" => "javascript"
+  }
+
+  defp alias_code_languages(content) do
+    Regex.replace(~r/^```(\w+)[ \t]*$/m, content, fn full, lang ->
+      case Map.fetch(@language_aliases, String.downcase(lang)) do
+        {:ok, replacement} -> "```" <> replacement
+        :error -> full
+      end
+    end)
+  end
+
+  # "20-deployment" -> "deployment". Ordering lives in the filename so the
+  # tree reads in the same order it renders.
+  defp strip_order_prefix(name), do: Regex.replace(~r/^\d+[-_]/, name, "")
+
   @doc """
   Lists all blog posts sorted newest-first.
 
@@ -230,7 +403,7 @@ defmodule GameServer.Content do
         post ->
           case render_markdown_file(post.path, "blog") do
             nil -> nil
-            html -> strip_first_h1(html)
+            html -> html |> strip_first_h1() |> strip_lede_paragraph(post.excerpt)
           end
       end
     end)
@@ -359,7 +532,11 @@ defmodule GameServer.Content do
   defp render_markdown_file(path, content_type) do
     case File.read(path) do
       {:ok, content} ->
-        content = fix_table_separators(content)
+        content =
+          content
+          |> strip_frontmatter()
+          |> alias_code_languages()
+          |> fix_table_separators()
 
         case MDEx.to_html(content, markdown_options()) do
           {:ok, html} -> rewrite_relative_images(html, content_type)
@@ -404,6 +581,12 @@ defmodule GameServer.Content do
         tasklist: true
       ],
       parse: [smart: false],
+      # Linked rather than inline: the formatter emits token classes and the
+      # colours live in app.css, so the same markup reads correctly in both
+      # the light and dark themes. Inline styles would pin one palette.
+      syntax_highlight: [engine: :lumis, opts: [formatter: :html_linked]],
+      # The default sanitizer already preserves the highlighter's classes and
+      # the language hint; narrowing it strips exactly that markup.
       sanitize: MDEx.Document.default_sanitize_options()
     ]
   end
@@ -580,6 +763,33 @@ defmodule GameServer.Content do
   # header already displays the title separately.
   defp strip_first_h1(html) do
     Regex.replace(~r/<h1>.*?<\/h1>\s*/s, html, "", global: false)
+  end
+
+  # The show page renders the excerpt as a lede above the body, and the excerpt
+  # *is* the body's first paragraph — so that paragraph is dropped here or every
+  # post opens by repeating itself. Only an exact match is removed; an edited
+  # opening paragraph stays.
+  defp strip_lede_paragraph(html, excerpt) when is_binary(excerpt) and excerpt != "" do
+    case Regex.run(~r/\A\s*<p>(.*?)<\/p>\s*/s, html) do
+      [full, text] ->
+        if normalize_text(text) == normalize_text(excerpt) do
+          String.replace(html, full, "", global: false)
+        else
+          html
+        end
+
+      _ ->
+        html
+    end
+  end
+
+  defp strip_lede_paragraph(html, _excerpt), do: html
+
+  defp normalize_text(text) do
+    text
+    |> String.replace(~r/<[^>]+>/, "")
+    |> String.replace(~r/\s+/, " ")
+    |> String.trim()
   end
 
   # Pill tag definitions: [tag] → {css_class_suffix, display_label}

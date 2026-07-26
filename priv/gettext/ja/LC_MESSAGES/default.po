@@ -17,24 +17,24 @@ msgstr ""
 #: lib/game_server_web/live/roadmap_live.ex:43
 #, elixir-autogen, elixir-format
 msgid "Blog"
-msgstr ""
+msgstr "ブログ"
 
 #: lib/game_server_web/live/blog_live.ex:119
 #: lib/game_server_web/live/changelog_live.ex:29
 #: lib/game_server_web/live/roadmap_live.ex:36
 #, elixir-autogen, elixir-format
 msgid "Changelog"
-msgstr ""
+msgstr "変更履歴"
 
-#: lib/game_server_web/host_public_docs.ex:64
+#: lib/game_server_web/host_public_docs.ex:67
 #, elixir-autogen, elixir-format
 msgid "Documentation"
-msgstr ""
+msgstr "ドキュメント"
 
 #: lib/game_server_web/live/blog_live.ex:205
 #, elixir-autogen, elixir-format
 msgid "Newer"
-msgstr ""
+msgstr "新しい"
 
 #: lib/game_server_web/live/blog_live.ex:80
 #: lib/game_server_web/live/blog_live.ex:127
@@ -42,76 +42,76 @@ msgstr ""
 #: lib/game_server_web/live/roadmap_live.ex:55
 #, elixir-autogen, elixir-format
 msgid "No results."
-msgstr ""
+msgstr "結果がありません。"
 
 #: lib/game_server_web/live/blog_live.ex:220
 #, elixir-autogen, elixir-format
 msgid "Older"
-msgstr ""
+msgstr "古い"
 
 #: lib/game_server_web/live/blog_live.ex:112
 #: lib/game_server_web/live/changelog_live.ex:36
 #: lib/game_server_web/live/roadmap_live.ex:29
 #, elixir-autogen, elixir-format
 msgid "Roadmap"
-msgstr ""
+msgstr "ロードマップ"
 
 #: lib/game_server_host/host_layout_translations.ex:15
 #, elixir-autogen, elixir-format
 msgid "Account"
-msgstr ""
+msgstr "アカウント"
 
 #: lib/game_server_host/host_layout_translations.ex:9
 #, elixir-autogen, elixir-format
 msgid "Achievements"
-msgstr ""
+msgstr "実績"
 
 #: lib/game_server_host/host_layout_translations.ex:18
 #, elixir-autogen, elixir-format
 msgid "Admin"
-msgstr ""
+msgstr "管理"
 
 #: lib/game_server_host/host_layout_translations.ex:17
 #, elixir-autogen, elixir-format
 msgid "Chat"
-msgstr ""
+msgstr "チャット"
 
 #: lib/game_server_host/host_layout_translations.ex:12
 #, elixir-autogen, elixir-format
 msgid "Dismiss"
-msgstr ""
+msgstr "閉じる"
 
 #: lib/game_server_host/host_layout_translations.ex:10
 #, elixir-autogen, elixir-format
 msgid "Groups"
-msgstr ""
+msgstr "グループ"
 
 #: lib/game_server_host/host_layout_translations.ex:8
 #, elixir-autogen, elixir-format
 msgid "Leaderboards"
-msgstr ""
+msgstr "リーダーボード"
 
 #: lib/game_server_host/host_layout_translations.ex:11
 #, elixir-autogen, elixir-format
 msgid "Loading..."
-msgstr ""
+msgstr "読み込み中..."
 
 #: lib/game_server_host/host_layout_translations.ex:13
 #, elixir-autogen, elixir-format
 msgid "Log in"
-msgstr ""
+msgstr "ログイン"
 
 #: lib/game_server_host/host_layout_translations.ex:19
 #, elixir-autogen, elixir-format
 msgid "Log out"
-msgstr ""
+msgstr "ログアウト"
 
 #: lib/game_server_host/host_layout_translations.ex:16
 #, elixir-autogen, elixir-format
 msgid "Notifications"
-msgstr ""
+msgstr "通知"
 
 #: lib/game_server_host/host_layout_translations.ex:14
 #, elixir-autogen, elixir-format
 msgid "Register"
-msgstr ""
+msgstr "登録"

@@ -13,20 +13,6 @@ defmodule GameServer.Lobbies.Lobby do
   alias GameServer.Accounts.User
   # membership via users.lobby_id
 
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :title,
-             :host_id,
-             :hostless,
-             :max_users,
-             :is_hidden,
-             :is_locked,
-             :metadata,
-             :inserted_at,
-             :updated_at
-           ]}
-
   schema "lobbies" do
     field :title, :string
     field :hostless, :boolean, default: false
@@ -36,6 +22,12 @@ defmodule GameServer.Lobbies.Lobby do
     field :password_hash, :string
     field :metadata, :map, default: %{}
     field :slowdown, :integer, default: 0
+
+    # Server-owned lifecycle (see GameServer.Lobbies.States). Deliberately not
+    # castable: only Lobbies.transition_state/3 may write these, so a generic
+    # PATCH /lobbies/:id can never move a lobby's state.
+    field :state, :string, default: "created"
+    field :state_changed_at, :utc_datetime
 
     belongs_to :host, User
 
@@ -61,5 +53,30 @@ defmodule GameServer.Lobbies.Lobby do
     |> validate_number(:slowdown, greater_than_or_equal_to: 0, less_than_or_equal_to: 3600)
     |> validate_length(:password_hash, max: 256)
     |> GameServer.Limits.validate_metadata_size(:metadata)
+  end
+end
+
+# Hand-written rather than @derive so nil strings encode as "" (see
+# GameServer.SchemaJSON — game clients choke on null).
+defimpl Jason.Encoder, for: GameServer.Lobbies.Lobby do
+  def encode(lobby, opts) do
+    GameServer.SchemaJSON.encode(
+      lobby,
+      [
+        :id,
+        :title,
+        :host_id,
+        :hostless,
+        :max_users,
+        :is_hidden,
+        :is_locked,
+        :state,
+        :state_changed_at,
+        :metadata,
+        :inserted_at,
+        :updated_at
+      ],
+      opts
+    )
   end
 end

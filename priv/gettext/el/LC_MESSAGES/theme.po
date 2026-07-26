@@ -1,0 +1,171 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: el\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "Διακομιστής παιχνιδιών σε Elixir ανοιχτού κώδικα για παιχνίδια πολλών παικτών σε πραγματικό χρόνο."
+
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "Ιστολόγιο"
+
+msgid "Roadmap"
+msgstr "Σχέδιο Ανάπτυξης"
+
+msgid "Changelog"
+msgstr "Αρχείο Αλλαγών"
+
+msgid "Social"
+msgstr "Κοινωνικά"
+
+msgid "About Gamend"
+msgstr "Σχετικά με το Gamend"
+
+msgid "Elixir Docs"
+msgstr "Τεκμηρίωση Elixir"
+
+msgid "About"
+msgstr "Σχετικά"
+
+msgid "Guides"
+msgstr "Οδηγοί"
+
+msgid "API Docs"
+msgstr "Τεκμηρίωση API"
+
+msgid "Store"
+msgstr "Κατάστημα"
+
+msgid "Help"
+msgstr "Βοήθεια"
+
+msgid "Privacy Policy"
+msgstr "Πολιτική Απορρήτου"
+
+msgid "Terms and Conditions"
+msgstr "Όροι και προϋποθέσεις"
+
+msgid "Privacy & Terms"
+msgstr "Απόρρητο και όροι"
+
+msgid "Play"
+msgstr "Παίξε"
+
+msgid "Leaderboards"
+msgstr "Πίνακες Κατάταξης"
+
+msgid "Quests"
+msgstr "Αποστολές"
+
+msgid "Tournaments"
+msgstr "Τουρνουά"
+
+msgid "Groups"
+msgstr "Ομάδες"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "Το Gamend είναι ένα **πλήρως εξοπλισμένο** backend σε Elixir για παιχνίδια πολλών παικτών, με έλεγχο ταυτότητας, κοινωνικά συστήματα, κανάλια πραγματικού χρόνου και εργαλεία διαχείρισης."
+
+msgid "Realtime Guide"
+msgstr "Οδηγός πραγματικού χρόνου"
+
+msgid "Real-time games"
+msgstr "Παιχνίδια πραγματικού χρόνου"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "Χρησιμοποιήστε κανάλια, λόμπι, παρέες, παρουσία και κανάλια δεδομένων WebRTC χωρίς να ξαναχτίσετε τη συνηθισμένη υποδομή πολλών παικτών."
+
+msgid "Built For Real-Time Games"
+msgstr "Φτιαγμένο για παιχνίδια πραγματικού χρόνου"
+
+msgid "Read Docs"
+msgstr "Διαβάστε την τεκμηρίωση"
+
+msgid "Open source foundation"
+msgstr "Θεμέλιο ανοιχτού κώδικα"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "Το έργο σχεδιάστηκε ώστε ομάδες παιχνιδιών να το κάνουν fork, να το προσαρμόζουν, να το φιλοξενούν και να το επεκτείνουν."
+
+msgid "Open Source Foundation"
+msgstr "Θεμέλιο ανοιχτού κώδικα"
+
+msgid "Getting Started"
+msgstr "Ξεκινώντας με το back-end"
+
+msgid "Presentation Video"
+msgstr "Βίντεο Παρουσίασης"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "**Ανοικτός κώδικας** Elixir game server for **real-time** multiplayer games."
+
+msgid "Log in"
+msgstr "Σύνδεση"
+
+msgid "Register"
+msgstr "Εγγραφή"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "Email, magic link, OAuth, JWT και συνεδρία. Εγγραφή, σύνδεση, επαναφορά κωδικού και επαλήθευση email."
+
+msgid "Authentication & Users"
+msgstr "Αυθεντικοποίηση & Χρήστες"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "Αίθουσες αναμονής και προσωρινές ομάδες. Τροποποιήσιμες ρυθμίσεις με ζωντανές ενημερώσεις"
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "Λόμπι, παρέες και αντιστοίχιση παικτών"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "Αιτήματα φιλίας, αποκλεισμοί, ζωντανή συνδεσιμότητα. Δημόσια, ιδιωτικά, κρυμμένες ομάδες. Άμεσες ή ομαδικές συνομιλίες."
+
+msgid "Friends, Groups & Chat"
+msgstr "Φίλοι, Ομάδες & Συνομιλίες"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "Επιτεύγματα, τουρνουά νοκ άουτ και βαθμολογίες που επικυρώνει ο διακομιστής. Ειδοποιήσεις σε πραγματικό χρόνο για όλες τις λειτουργίες και τα συμβάντα πληρωμών."
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "Επιτεύγματα, Τουρνουά, Πίνακες Κατάταξης & Ειδοποιήσεις"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "Επεκτείνετε τη λογική του διακομιστή με σενάρια Elixir. Προγραμματίστε αυτόματες εργασίες και εργασίες cron."
+
+msgid "Server Scripting & Scheduling"
+msgstr "Σενάρια διακομιστή και χρονοπρογραμματισμός"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "REST API, κανάλια WebSocket σε πραγματικό χρόνο και WebRTC DataChannels χαμηλής καθυστέρησης. Πύλη διαχείρισης και διαδικτυακό περιβάλλον."
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "HTTP, WebSocket και WebRTC"
+
+msgid "Open Store"
+msgstr "Άνοιγμα καταστήματος"
+
+msgid "Payment Docs"
+msgstr "Τεκμηρίωση πληρωμών"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "Πληρωμές από την πλευρά του διακομιστή με Stripe, Google Play, App Store και Steam. Επικυρώστε αποδείξεις, επεξεργαστείτε υπογεγραμμένα webhooks, παραχωρήστε δικαιώματα, ανακαλέστε επιστροφές χρημάτων και ελέγξτε τα πάντα από τη διαχείριση."
+
+msgid "Payments & Store Integrations"
+msgstr "Πληρωμές και ενσωματώσεις καταστημάτων"
+
+msgid "Gamend is in beta!"
+msgstr "Το Gamend είναι σε beta!"
+
+msgid "Game + Backend"
+msgstr "Παιχνίδι + backend"

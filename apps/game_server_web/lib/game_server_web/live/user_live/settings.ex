@@ -14,6 +14,7 @@ defmodule GameServerWeb.UserLive.Settings do
   alias GameServer.Groups
   alias GameServerWeb.UserLive.Settings.AccountTab
   alias GameServerWeb.UserLive.Settings.DataTab
+  alias GameServerWeb.UserLive.Settings.DevicesTab
   alias GameServerWeb.UserLive.Settings.FriendsTab
   alias GameServerWeb.UserLive.Settings.GroupsTab
   alias GameServerWeb.UserLive.Settings.ItemsTab
@@ -21,10 +22,10 @@ defmodule GameServerWeb.UserLive.Settings do
   alias GameServerWeb.UserLive.Settings.Shared
   alias GameServerWeb.UserLive.Settings.WalletTab
 
-  @valid_tabs ~w(account friends groups wallet items payments data)
+  @valid_tabs ~w(account friends groups wallet items payments data devices)
 
   @account_events ~w(validate_email update_email validate_display_name update_display_name
-                     validate_username update_username
+                     validate_username update_username validate_avatar save_avatar cancel_avatar
                      validate_password update_password unlink_provider delete_user
                      delete_conflicting_account)
   @friends_events ~w(search_users send_friend block_friend accept_friend reject_friend
@@ -35,6 +36,7 @@ defmodule GameServerWeb.UserLive.Settings do
   @wallet_events ~w(wallet_ledger_prev wallet_ledger_next)
   @items_events ~w(items_prev items_next)
   @data_events ~w(kv_prev kv_next kv_filters_change kv_filters_apply kv_filters_clear)
+  @devices_events ~w(devices_prev devices_next device_remove)
   @groups_events ~w(groups_tab groups_toggle_create group_validate_create group_create
                     group_leave group_join group_request_join group_accept_invite
                     group_decline_invite group_cancel_request group_cancel_invite
@@ -91,7 +93,8 @@ defmodule GameServerWeb.UserLive.Settings do
               {"wallet", gettext("Wallet")},
               {"items", gettext("Items")},
               {"payments", gettext("Payments")},
-              {"data", gettext("Data")}
+              {"data", gettext("Data")},
+              {"devices", gettext("Devices")}
             ]
           }
           phx-click="settings_tab"
@@ -114,6 +117,7 @@ defmodule GameServerWeb.UserLive.Settings do
       <WalletTab.tab {tab_assigns(assigns)} />
       <ItemsTab.tab {tab_assigns(assigns)} />
       <DataTab.tab {tab_assigns(assigns)} />
+      <DevicesTab.tab {tab_assigns(assigns)} />
       <GroupsTab.tab {tab_assigns(assigns)} />
     </Layouts.app>
     """
@@ -150,6 +154,7 @@ defmodule GameServerWeb.UserLive.Settings do
       |> AccountTab.assign_defaults(user)
       |> FriendsTab.assign_defaults(user)
       |> DataTab.assign_defaults()
+      |> DevicesTab.assign_defaults()
       |> WalletTab.assign_defaults()
       |> ItemsTab.assign_defaults()
       |> GroupsTab.assign_defaults()
@@ -186,6 +191,9 @@ defmodule GameServerWeb.UserLive.Settings do
 
   def handle_event(event, params, socket) when event in @data_events,
     do: DataTab.handle_event(event, params, socket)
+
+  def handle_event(event, params, socket) when event in @devices_events,
+    do: DevicesTab.handle_event(event, params, socket)
 
   def handle_event(event, params, socket) when event in @groups_events,
     do: GroupsTab.handle_event(event, params, socket)

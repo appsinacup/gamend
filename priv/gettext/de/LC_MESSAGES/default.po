@@ -17,24 +17,24 @@ msgstr ""
 #: lib/game_server_web/live/roadmap_live.ex:43
 #, elixir-autogen, elixir-format
 msgid "Blog"
-msgstr ""
+msgstr "Blog"
 
 #: lib/game_server_web/live/blog_live.ex:119
 #: lib/game_server_web/live/changelog_live.ex:29
 #: lib/game_server_web/live/roadmap_live.ex:36
 #, elixir-autogen, elixir-format
 msgid "Changelog"
-msgstr ""
+msgstr "Änderungsprotokoll"
 
-#: lib/game_server_web/host_public_docs.ex:64
+#: lib/game_server_web/host_public_docs.ex:67
 #, elixir-autogen, elixir-format
 msgid "Documentation"
-msgstr ""
+msgstr "Dokumentation"
 
 #: lib/game_server_web/live/blog_live.ex:205
 #, elixir-autogen, elixir-format
 msgid "Newer"
-msgstr ""
+msgstr "Neuere"
 
 #: lib/game_server_web/live/blog_live.ex:80
 #: lib/game_server_web/live/blog_live.ex:127
@@ -42,76 +42,76 @@ msgstr ""
 #: lib/game_server_web/live/roadmap_live.ex:55
 #, elixir-autogen, elixir-format
 msgid "No results."
-msgstr ""
+msgstr "Keine Ergebnisse."
 
 #: lib/game_server_web/live/blog_live.ex:220
 #, elixir-autogen, elixir-format
 msgid "Older"
-msgstr ""
+msgstr "Ältere"
 
 #: lib/game_server_web/live/blog_live.ex:112
 #: lib/game_server_web/live/changelog_live.ex:36
 #: lib/game_server_web/live/roadmap_live.ex:29
 #, elixir-autogen, elixir-format
 msgid "Roadmap"
-msgstr ""
+msgstr "Roadmap"
 
 #: lib/game_server_host/host_layout_translations.ex:15
 #, elixir-autogen, elixir-format
 msgid "Account"
-msgstr ""
+msgstr "Konto"
 
 #: lib/game_server_host/host_layout_translations.ex:9
 #, elixir-autogen, elixir-format
 msgid "Achievements"
-msgstr ""
+msgstr "Erfolge"
 
 #: lib/game_server_host/host_layout_translations.ex:18
 #, elixir-autogen, elixir-format
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: lib/game_server_host/host_layout_translations.ex:17
 #, elixir-autogen, elixir-format
 msgid "Chat"
-msgstr ""
+msgstr "Chat"
 
 #: lib/game_server_host/host_layout_translations.ex:12
 #, elixir-autogen, elixir-format
 msgid "Dismiss"
-msgstr ""
+msgstr "Schließen"
 
 #: lib/game_server_host/host_layout_translations.ex:10
 #, elixir-autogen, elixir-format
 msgid "Groups"
-msgstr ""
+msgstr "Gruppen"
 
 #: lib/game_server_host/host_layout_translations.ex:8
 #, elixir-autogen, elixir-format
 msgid "Leaderboards"
-msgstr ""
+msgstr "Bestenlisten"
 
 #: lib/game_server_host/host_layout_translations.ex:11
 #, elixir-autogen, elixir-format
 msgid "Loading..."
-msgstr ""
+msgstr "Laden..."
 
 #: lib/game_server_host/host_layout_translations.ex:13
 #, elixir-autogen, elixir-format
 msgid "Log in"
-msgstr ""
+msgstr "Anmelden"
 
 #: lib/game_server_host/host_layout_translations.ex:19
 #, elixir-autogen, elixir-format
 msgid "Log out"
-msgstr ""
+msgstr "Abmelden"
 
 #: lib/game_server_host/host_layout_translations.ex:16
 #, elixir-autogen, elixir-format
 msgid "Notifications"
-msgstr ""
+msgstr "Benachrichtigungen"
 
 #: lib/game_server_host/host_layout_translations.ex:14
 #, elixir-autogen, elixir-format
 msgid "Register"
-msgstr ""
+msgstr "Registrieren"

@@ -18,6 +18,7 @@ defmodule GameServerWeb.TournamentsLive do
   alias GameServer.Accounts.User
   alias GameServer.Tournaments
   alias GameServer.Tournaments.Tournament
+  alias GameServerWeb.ContentText
   alias GameServerWeb.LiveHelpers
 
   @page_size 25
@@ -147,7 +148,7 @@ defmodule GameServerWeb.TournamentsLive do
         {:noreply, load_detail(socket, refresh(socket.assigns.tournament), socket.assigns.page)}
 
       _ ->
-        {:noreply, push_navigate(socket, to: ~p"/users/log-in")}
+        {:noreply, push_navigate(socket, to: ~p"/users/log_in")}
     end
   end
 
@@ -188,11 +189,22 @@ defmodule GameServerWeb.TournamentsLive do
   # ── Data loading ──────────────────────────────────────────────────────────
 
   defp fetch(id_or_slug) do
-    case Ecto.UUID.cast(id_or_slug) do
-      {:ok, _} -> Tournaments.get_tournament(id_or_slug)
-      :error -> Tournaments.get_tournament_by_slug(id_or_slug)
+    # Only look up by id for a canonical 36-char UUID string. Ecto.UUID.cast/1
+    # also accepts any 16-byte binary as a raw UUID, so a 16-character slug
+    # (e.g. "weekend-gauntlet") would otherwise be misread as an id and never
+    # resolve. Fall back to the slug lookup whenever the id path misses.
+    with true <- canonical_uuid?(id_or_slug),
+         %Tournament{} = tournament <- Tournaments.get_tournament(id_or_slug) do
+      tournament
+    else
+      _ -> Tournaments.get_tournament_by_slug(id_or_slug)
     end
   end
+
+  defp canonical_uuid?(value) when is_binary(value),
+    do: byte_size(value) == 36 and match?({:ok, _}, Ecto.UUID.cast(value))
+
+  defp canonical_uuid?(_value), do: false
 
   # No edition in the URL means the live one; that is the canonical landing page.
   defp resolve(slug, nil), do: fetch(slug)
@@ -237,13 +249,13 @@ defmodule GameServerWeb.TournamentsLive do
     |> assign(:tournament, nil)
     |> assign(:bracket, nil)
     |> assign(:page, page)
-    |> assign(:groups, groups)
+    |> assign(:groups, ContentText.translate(groups))
     |> assign(:count, total)
     |> assign(:total_pages, ceil_div(total, @page_size))
   end
 
   defp load_detail(socket, tournament, page) do
-    tournament = Tournaments.advance_lifecycle(tournament)
+    tournament = tournament |> Tournaments.advance_lifecycle() |> ContentText.translate()
     bracket_count = Tournaments.count_brackets(tournament.id)
     editions = Tournaments.list_occurrences(tournament.slug)
 
@@ -326,6 +338,7 @@ defmodule GameServerWeb.TournamentsLive do
   end
 
   defp load_bracket(socket, tournament, bracket, highlight_entry_id) do
+    tournament = ContentText.translate(tournament)
     matches = Tournaments.list_matches(tournament.id, bracket_index: bracket.index)
     editions = Tournaments.list_occurrences(tournament.slug)
 
@@ -447,34 +460,25 @@ defmodule GameServerWeb.TournamentsLive do
   defp group_list(assigns) do
     ~H"""
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <.link
+      <.entity_card
         :for={group <- @groups}
         navigate={~p"/tournaments/#{group.slug}"}
-        class="card bg-base-200 hover:bg-base-300 transition-colors cursor-pointer"
+        title={group.title}
+        icon_url={group.icon_url}
+        type={:tournament}
+        description={group.description}
       >
-        <div class="card-body">
-          <div class="flex items-start justify-between">
-            <h3 class="card-title text-lg">{group.title}</h3>
-            <div class="flex flex-col items-end gap-1">
-              <.state_badge state={group.state} />
-              <span :if={group.edition_count > 1} class="badge badge-ghost badge-sm text-nowrap">
-                {group.edition_count}
-              </span>
-            </div>
-          </div>
+        <:badges>
+          <.state_badge state={group.state} />
+          <span :if={group.edition_count > 1} class="badge badge-ghost badge-sm text-nowrap">
+            {group.edition_count}
+          </span>
+        </:badges>
 
-          <p
-            :if={group.description not in [nil, ""]}
-            class="text-sm text-base-content/70 line-clamp-2"
-          >
-            {group.description}
-          </p>
-
-          <div class="text-sm text-base-content/60">
-            {gettext("Players")}: {group.entry_count}
-          </div>
+        <div class="text-sm text-base-content/60">
+          {gettext("Players")}: {group.entry_count}
         </div>
-      </.link>
+      </.entity_card>
     </div>
 
     <div :if={@groups == []} class="text-center py-12 text-base-content/60">
@@ -504,11 +508,18 @@ defmodule GameServerWeb.TournamentsLive do
           {gettext("Back")}
         </.link>
         <div>
-          <h1 class="text-2xl font-bold">{@tournament.title}</h1>
+          <h1 class="text-2xl font-bold flex items-center gap-2">
+            <.entity_icon
+              icon_url={@tournament.icon_url}
+              type={:tournament}
+              class="w-7 h-7 text-base-content/60"
+            />
+            {@tournament.title}
+          </h1>
           <div class="flex items-center gap-2 mt-1">
             <.state_badge state={@tournament.state} />
             <span :if={@tournament.starts_at} class="text-sm text-base-content/60">
-              {Calendar.strftime(@tournament.starts_at, "%b %d, %Y")}
+              <.timestamp at={@tournament.starts_at} format="date" />
             </span>
             <span :if={is_nil(@tournament.starts_at)} class="text-sm text-base-content/60">
               {gettext("Starts manually")}
@@ -716,7 +727,7 @@ defmodule GameServerWeb.TournamentsLive do
     ~H"""
     <%= cond do %>
       <% not @signed_in? and @tournament.state == "registration" -> %>
-        <.link navigate={~p"/users/log-in"} class="btn btn-outline btn-sm">
+        <.link navigate={~p"/users/log_in"} class="btn btn-outline btn-sm">
           {gettext("Log in")}
         </.link>
       <% not @signed_in? -> %>
@@ -776,7 +787,7 @@ defmodule GameServerWeb.TournamentsLive do
             {gettext("Slots")}: {@bracket.size}
           </span>
           <span :if={@tournament.starts_at} class="text-sm text-base-content/60">
-            {Calendar.strftime(@tournament.starts_at, "%b %d, %Y")}
+            <.timestamp at={@tournament.starts_at} format="date" />
           </span>
           <span :if={is_nil(@tournament.starts_at)} class="text-sm text-base-content/60">
             {gettext("Starts manually")}

@@ -42,6 +42,25 @@ defmodule GameServer.Accounts.UserToken do
         }
 
   @doc """
+  Query selecting token rows that are past their own context's validity window.
+
+  Each context expires on a different clock (session 14d, magic link 15min,
+  email change 7d), and those windows live here — so retention inverts the
+  same predicate the verify queries use instead of guessing a single age.
+  Contexts this module does not know are never selected.
+  """
+  @spec expired_query() :: Ecto.Query.t()
+  def expired_query do
+    from t in __MODULE__,
+      where:
+        (t.context == "session" and t.inserted_at < ago(@session_validity_in_days, "day")) or
+          (t.context == "login" and
+             t.inserted_at < ago(@magic_link_validity_in_minutes, "minute")) or
+          (like(t.context, "change:%") and
+             t.inserted_at < ago(@change_email_validity_in_days, "day"))
+  end
+
+  @doc """
   Generates a token that will be stored in a signed place,
   such as session or cookie. As they are signed, those
   tokens do not need to be hashed.

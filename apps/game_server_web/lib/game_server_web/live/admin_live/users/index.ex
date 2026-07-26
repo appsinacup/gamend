@@ -64,7 +64,7 @@ defmodule GameServerWeb.AdminLive.Users.Index do
                       <% end %>
                     </td>
                     <td class="text-sm">
-                      {Calendar.strftime(user.inserted_at, "%Y-%m-%d %H:%M")}
+                      <.timestamp at={user.inserted_at} />
                     </td>
                     <td>
                       <div class="flex gap-2">

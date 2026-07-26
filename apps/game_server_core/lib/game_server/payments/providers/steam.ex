@@ -262,7 +262,7 @@ defmodule GameServer.Payments.Providers.Steam do
 
   defp api_key do
     config_value("STEAM_WEB_API_KEY", :steam_web_api_key) ||
-      config_value("STEAM_API_KEY", :steam_api_key)
+      GameServer.Settings.get(GameServer.OAuth.Providers, :steam_api_key)
   end
 
   defp app_id, do: config_value("STEAM_APP_ID", :steam_app_id)
@@ -275,8 +275,10 @@ defmodule GameServer.Payments.Providers.Steam do
     Application.get_env(:game_server_core, :payments_http_client, Req)
   end
 
-  defp config_value(env_key, app_key) do
-    System.get_env(env_key) || Application.get_env(:game_server_core, app_key)
+  # The app_key is the declared setting name, so this resolves through
+  # GameServer.Settings rather than reading the environment twice over.
+  defp config_value(_env_key, app_key) do
+    GameServer.Settings.get(GameServer.Payments.Settings, app_key)
   end
 
   defp present?(value), do: is_binary(value) and value != ""

@@ -196,10 +196,7 @@ defmodule GameServerWeb.UserLive.Settings.GroupsTab do
                     <strong>{gettext("Members")}:</strong> {@group_detail.max_members}
                   </div>
                   <div>
-                    <strong>{gettext("Date")}:</strong> {Calendar.strftime(
-                      @group_detail.inserted_at,
-                      "%Y-%m-%d %H:%M"
-                    )}
+                    <strong>{gettext("Date")}:</strong> <.timestamp at={@group_detail.inserted_at} />
                   </div>
                 </div>
                 <div class="space-y-2 text-sm">
@@ -273,7 +270,7 @@ defmodule GameServerWeb.UserLive.Settings.GroupsTab do
                         </span>
                       </td>
                       <td class="text-sm whitespace-nowrap">
-                        {Calendar.strftime(m.inserted_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={m.inserted_at} />
                       </td>
                       <%= if @group_detail_role == "admin" do %>
                         <td class="flex gap-1">
@@ -342,7 +339,7 @@ defmodule GameServerWeb.UserLive.Settings.GroupsTab do
                       {LiveHelpers.public_user_name(req.user)}
                     </div>
                     <span class="text-xs text-base-content/50">
-                      #{req.user_id} &mdash; {Calendar.strftime(req.inserted_at, "%Y-%m-%d %H:%M")}
+                      #{req.user_id} &mdash; <.timestamp at={req.inserted_at} />
                     </span>
                   </div>
                   <div class="flex gap-1">
@@ -718,7 +715,7 @@ defmodule GameServerWeb.UserLive.Settings.GroupsTab do
                         {inv.sender_name || "User ##{inv.sender_id}"}
                       </td>
                       <td class="text-sm whitespace-nowrap">
-                        {Calendar.strftime(inv.inserted_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={inv.inserted_at} />
                       </td>
                       <td class="flex gap-1">
                         <button
@@ -770,7 +767,7 @@ defmodule GameServerWeb.UserLive.Settings.GroupsTab do
                         <span class="badge badge-sm badge-warning">{req.status}</span>
                       </td>
                       <td class="text-sm whitespace-nowrap">
-                        {Calendar.strftime(req.inserted_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={req.inserted_at} />
                       </td>
                       <td>
                         <button
@@ -816,7 +813,7 @@ defmodule GameServerWeb.UserLive.Settings.GroupsTab do
                         {inv.recipient_name || "User ##{inv.recipient_id}"}
                       </td>
                       <td class="text-sm whitespace-nowrap">
-                        {Calendar.strftime(inv.inserted_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={inv.inserted_at} />
                       </td>
                       <td>
                         <button

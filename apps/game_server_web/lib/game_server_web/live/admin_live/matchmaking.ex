@@ -7,6 +7,7 @@ defmodule GameServerWeb.AdminLive.Matchmaking do
 
   alias GameServer.Matchmaking
   alias GameServer.Matchmaking.Worker
+  alias GameServer.ReadyChecks
 
   @impl true
   def mount(_params, _session, socket) do
@@ -59,6 +60,18 @@ defmodule GameServerWeb.AdminLive.Matchmaking do
     {:noreply, reload(socket)}
   end
 
+  def handle_event("cancel_ready_check", %{"id" => id}, socket) do
+    socket =
+      with %{status: "pending"} = check <- ReadyChecks.get_check(id),
+           {:ok, _} <- ReadyChecks.cancel(check) do
+        put_flash(socket, :info, "Ready check cancelled")
+      else
+        _ -> put_flash(socket, :error, "Ready check not found or already resolved")
+      end
+
+    {:noreply, reload(socket)}
+  end
+
   def handle_event("sweep_now", _params, socket) do
     created = Worker.sweep()
     {:noreply, socket |> put_flash(:info, "Sweep done: #{created} match(es) formed") |> reload()}
@@ -86,6 +99,8 @@ defmodule GameServerWeb.AdminLive.Matchmaking do
     |> assign(:count, total)
     |> assign(:total_pages, ceil_div(total, socket.assigns.page_size))
     |> assign(:stats, Matchmaking.stats())
+    |> assign(:ready_stats, ReadyChecks.stats())
+    |> assign(:ready_checks, ReadyChecks.list_checks(page: 1, page_size: 10))
   end
 
   defp status_filter("all"), do: nil
@@ -112,7 +127,20 @@ defmodule GameServerWeb.AdminLive.Matchmaking do
   defp status_class("queued"), do: "badge-info"
   defp status_class("matched"), do: "badge-success"
   defp status_class("cancelled"), do: "badge-ghost"
+  defp status_class("pending"), do: "badge-info"
+  defp status_class("passed"), do: "badge-success"
+  defp status_class("failed"), do: "badge-error"
   defp status_class(_status), do: "badge-ghost"
+
+  defp ready_counts(check) do
+    ready = Enum.count(check.participants, &(&1.state == "ready"))
+    "#{ready}/#{length(check.participants)}"
+  end
+
+  # Nobody answered vs. someone said no vs. the clock ran out — the three are
+  # different problems, so the admin sees the reason rather than just "failed".
+  defp check_reason(%{reason: reason}) when is_binary(reason) and reason != "", do: reason
+  defp check_reason(_check), do: "—"
 
   defp params_label(params) when params == %{}, do: "—"
 
@@ -164,6 +192,55 @@ defmodule GameServerWeb.AdminLive.Matchmaking do
                 <tr :for={queue <- @stats.queues}>
                   <td class="font-mono text-xs">{params_label(queue.params)}</td>
                   <td class="text-right font-mono">{queue.waiting}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 mb-6">
+        <div class="card-body">
+          <h2 class="card-title">
+            {gettext("Ready checks")}
+            <span class="text-sm font-normal text-base-content/70">{gettext("last 24h")}</span>
+          </h2>
+          <div class="flex flex-wrap gap-4 text-sm">
+            <span>{gettext("Passed")}: <b>{Map.get(@ready_stats, "passed", 0)}</b></span>
+            <span>{gettext("Failed")}: <b>{Map.get(@ready_stats, "failed", 0)}</b></span>
+            <span>{gettext("Cancelled")}: <b>{Map.get(@ready_stats, "cancelled", 0)}</b></span>
+            <span>{gettext("Pending")}: <b>{Map.get(@ready_stats, "pending", 0)}</b></span>
+          </div>
+
+          <div :if={@ready_checks != []} class="overflow-x-auto mt-2">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>{gettext("Kind")}</th>
+                  <th>{gettext("Status")}</th>
+                  <th>{gettext("Reason")}</th>
+                  <th class="text-right">{gettext("Ready")}</th>
+                  <th>{gettext("Created")}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr :for={check <- @ready_checks}>
+                  <td class="font-mono text-xs">{check.kind}</td>
+                  <td><span class={"badge #{status_class(check.status)}"}>{check.status}</span></td>
+                  <td class="font-mono text-xs">{check_reason(check)}</td>
+                  <td class="text-right font-mono">{ready_counts(check)}</td>
+                  <td class="text-xs">{check.inserted_at}</td>
+                  <td class="text-right">
+                    <button
+                      :if={check.status == "pending"}
+                      phx-click="cancel_ready_check"
+                      phx-value-id={check.id}
+                      class="btn btn-ghost btn-xs"
+                    >
+                      {gettext("Cancel")}
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -223,7 +300,7 @@ defmodule GameServerWeb.AdminLive.Matchmaking do
                   </td>
                   <td class="font-mono text-xs">{params_label(ticket.match_params)}</td>
                   <td class="text-right font-mono">{ticket.min_players}/{ticket.max_players}</td>
-                  <td class="text-xs">{Calendar.strftime(ticket.queued_at, "%Y-%m-%d %H:%M:%S")}</td>
+                  <td class="text-xs"><.timestamp at={ticket.queued_at} format="full" /></td>
                   <td class="font-mono text-xs">
                     <%= if ticket.match_id do %>
                       <.link navigate={~p"/admin/lobbies"} class="link link-primary">

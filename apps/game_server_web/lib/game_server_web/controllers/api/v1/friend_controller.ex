@@ -7,6 +7,7 @@ defmodule GameServerWeb.Api.V1.FriendController do
   alias GameServer.Accounts.Scope
   alias GameServer.Accounts.User
   alias GameServer.Friends
+  alias GameServerWeb.Pagination
   alias OpenApiSpex.Schema
 
   @ok_schema %Schema{type: :object}
@@ -18,6 +19,52 @@ defmodule GameServerWeb.Api.V1.FriendController do
   }
 
   tags(["Friends"])
+
+  @request_list_schema %Schema{
+    type: :array,
+    items: %Schema{
+      type: :object,
+      properties: %{
+        id: %Schema{type: :string, format: :uuid},
+        requester: %Schema{
+          type: :object,
+          properties: %{
+            id: %Schema{type: :string, format: :uuid},
+            username: %Schema{type: :string},
+            display_name: %Schema{type: :string},
+            metadata: %Schema{type: :object, description: "User metadata"},
+            is_online: %Schema{type: :boolean},
+            last_seen_at: %Schema{type: :string, format: :date_time, nullable: false}
+          }
+        },
+        target: %Schema{
+          type: :object,
+          properties: %{
+            id: %Schema{type: :string, format: :uuid},
+            username: %Schema{type: :string},
+            display_name: %Schema{type: :string},
+            metadata: %Schema{type: :object, description: "User metadata"},
+            is_online: %Schema{type: :boolean},
+            last_seen_at: %Schema{type: :string, format: :date_time, nullable: false}
+          }
+        },
+        status: %Schema{type: :string},
+        inserted_at: %Schema{type: :string, format: :date_time}
+      }
+    }
+  }
+
+  @request_meta_schema %Schema{
+    type: :object,
+    properties: %{
+      page: %Schema{type: :integer},
+      page_size: %Schema{type: :integer},
+      count: %Schema{type: :integer},
+      total_count: %Schema{type: :integer},
+      total_pages: %Schema{type: :integer},
+      has_more: %Schema{type: :boolean}
+    }
+  }
 
   operation(:create,
     operation_id: "create_friend_request",
@@ -139,81 +186,18 @@ defmodule GameServerWeb.Api.V1.FriendController do
         %Schema{
           type: :object,
           properties: %{
-            incoming: %Schema{
-              type: :array,
-              items: %Schema{
-                type: :object,
-                properties: %{
-                  id: %Schema{type: :string, format: :uuid},
-                  requester: %Schema{
-                    type: :object,
-                    properties: %{
-                      id: %Schema{type: :string, format: :uuid},
-                      username: %Schema{type: :string},
-                      display_name: %Schema{type: :string},
-                      metadata: %Schema{type: :object, description: "User metadata"},
-                      is_online: %Schema{type: :boolean},
-                      last_seen_at: %Schema{type: :string, format: :date_time, nullable: false}
-                    }
-                  },
-                  target: %Schema{
-                    type: :object,
-                    properties: %{
-                      id: %Schema{type: :string, format: :uuid},
-                      username: %Schema{type: :string},
-                      display_name: %Schema{type: :string},
-                      metadata: %Schema{type: :object, description: "User metadata"},
-                      is_online: %Schema{type: :boolean},
-                      last_seen_at: %Schema{type: :string, format: :date_time, nullable: false}
-                    }
-                  },
-                  status: %Schema{type: :string},
-                  inserted_at: %Schema{type: :string, format: :date_time}
-                }
-              }
-            },
-            outgoing: %Schema{
-              type: :array,
-              items: %Schema{
-                type: :object,
-                properties: %{
-                  id: %Schema{type: :string, format: :uuid},
-                  requester: %Schema{
-                    type: :object,
-                    properties: %{
-                      id: %Schema{type: :string, format: :uuid},
-                      username: %Schema{type: :string},
-                      display_name: %Schema{type: :string},
-                      metadata: %Schema{type: :object, description: "User metadata"},
-                      is_online: %Schema{type: :boolean},
-                      last_seen_at: %Schema{type: :string, format: :date_time, nullable: false}
-                    }
-                  },
-                  target: %Schema{
-                    type: :object,
-                    properties: %{
-                      id: %Schema{type: :string, format: :uuid},
-                      username: %Schema{type: :string},
-                      display_name: %Schema{type: :string},
-                      metadata: %Schema{type: :object, description: "User metadata"},
-                      is_online: %Schema{type: :boolean},
-                      last_seen_at: %Schema{type: :string, format: :date_time, nullable: false}
-                    }
-                  },
-                  status: %Schema{type: :string},
-                  inserted_at: %Schema{type: :string, format: :date_time}
-                }
+            data: %Schema{
+              type: :object,
+              properties: %{
+                incoming: @request_list_schema,
+                outgoing: @request_list_schema
               }
             },
             meta: %Schema{
               type: :object,
               properties: %{
-                page: %Schema{type: :integer},
-                page_size: %Schema{type: :integer},
-                counts: %Schema{type: :object},
-                total_counts: %Schema{type: :object},
-                total_pages: %Schema{type: :object},
-                has_more: %Schema{type: :object}
+                incoming: @request_meta_schema,
+                outgoing: @request_meta_schema
               }
             }
           }
@@ -523,7 +507,7 @@ defmodule GameServerWeb.Api.V1.FriendController do
   def blacklist(conn, params) do
     case Scope.user(conn.assigns.current_scope) do
       %User{} = user ->
-        {page, page_size} = parse_page_params(params)
+        {page, page_size} = Pagination.params(params)
 
         users = Friends.list_blocked_users(user.id, page: page, page_size: page_size)
         serialized = Enum.map(users, &serialize_user/1)
@@ -592,7 +576,7 @@ defmodule GameServerWeb.Api.V1.FriendController do
   def index(conn, params) do
     case Scope.user(conn.assigns.current_scope) do
       %User{} = user ->
-        {page, page_size} = parse_page_params(params)
+        {page, page_size} = Pagination.params(params)
 
         # include the friendship row id so clients can call delete/accept/reject by id
         friends = Friends.list_friends_with_friendship(user.id, page: page, page_size: page_size)
@@ -613,7 +597,7 @@ defmodule GameServerWeb.Api.V1.FriendController do
   def blocked(conn, params) do
     case Scope.user(conn.assigns.current_scope) do
       %User{} = user ->
-        {page, page_size} = parse_page_params(params)
+        {page, page_size} = Pagination.params(params)
 
         blocked = Friends.list_blocked_for_user(user.id, page: page, page_size: page_size)
 
@@ -664,7 +648,7 @@ defmodule GameServerWeb.Api.V1.FriendController do
   def requests(conn, params) do
     case Scope.user(conn.assigns.current_scope) do
       %User{} = user ->
-        {page, page_size} = parse_page_params(params)
+        {page, page_size} = Pagination.params(params)
 
         incoming = Friends.list_incoming_requests(user.id, page: page, page_size: page_size)
         outgoing = Friends.list_outgoing_requests(user.id, page: page, page_size: page_size)
@@ -675,22 +659,13 @@ defmodule GameServerWeb.Api.V1.FriendController do
         total_in = Friends.count_incoming_requests(user.id)
         total_out = Friends.count_outgoing_requests(user.id)
 
-        total_pages_in = if page_size > 0, do: div(total_in + page_size - 1, page_size), else: 0
-        total_pages_out = if page_size > 0, do: div(total_out + page_size - 1, page_size), else: 0
-
+        # Two collections share one window, so each gets its own standard meta
+        # rather than the response inventing a parallel-map shape of its own.
         json(conn, %{
-          incoming: inc_serialized,
-          outgoing: out_serialized,
+          data: %{incoming: inc_serialized, outgoing: out_serialized},
           meta: %{
-            page: page,
-            page_size: page_size,
-            counts: %{incoming: length(inc_serialized), outgoing: length(out_serialized)},
-            total_counts: %{incoming: total_in, outgoing: total_out},
-            total_pages: %{incoming: total_pages_in, outgoing: total_pages_out},
-            has_more: %{
-              incoming: length(inc_serialized) == page_size,
-              outgoing: length(out_serialized) == page_size
-            }
+            incoming: Pagination.meta(page, page_size, length(inc_serialized), total_in),
+            outgoing: Pagination.meta(page, page_size, length(out_serialized), total_out)
           }
         })
 

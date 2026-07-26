@@ -54,6 +54,10 @@ defmodule GameServerWeb.UserAuth do
       # Use safe wrapper for hook invocation so missing hooks don't crash background tasks
       GameServer.Async.run(fn ->
         GameServer.Hooks.internal_call(:after_user_logged_in, [user])
+        # The quest event travels with the hook: password and OAuth logins land
+        # here, and only the magic-link path (Accounts) emits it itself — without
+        # this, "log in" quests never progressed for most sign-ins.
+        GameServer.Quests.report_event(user.id, "login")
       end)
     end
 
@@ -255,7 +259,7 @@ defmodule GameServerWeb.UserAuth do
         # while the log-in LiveView lives under the :current_user live_session.
         # Forcing an external redirect avoids the client-side "unauthorized live_redirect"
         # warning and performs a clean full page navigation.
-        |> Phoenix.LiveView.redirect(external: ~p"/users/log-in")
+        |> Phoenix.LiveView.redirect(external: ~p"/users/log_in")
 
       {:halt, socket}
     end
@@ -294,7 +298,7 @@ defmodule GameServerWeb.UserAuth do
           gettext("Failed")
         )
         # See :require_authenticated above for why this must be an external redirect.
-        |> Phoenix.LiveView.redirect(external: ~p"/users/log-in")
+        |> Phoenix.LiveView.redirect(external: ~p"/users/log_in")
 
       {:halt, socket}
     end
@@ -342,7 +346,7 @@ defmodule GameServerWeb.UserAuth do
       conn
       |> put_flash(:error, gettext("Failed"))
       |> maybe_store_return_to()
-      |> redirect(to: ~p"/users/log-in")
+      |> redirect(to: ~p"/users/log_in")
       |> halt()
     end
   end

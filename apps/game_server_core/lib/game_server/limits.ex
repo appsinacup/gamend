@@ -29,98 +29,175 @@ defmodule GameServer.Limits do
       page_size = GameServer.Limits.clamp_page_size(params["page_size"])
   """
 
-  @defaults %{
-    # ── Global ──────────────────────────────────────────────
-    max_metadata_size: 16_384,
-    max_page_size: 100,
-    # Max size of a single uploaded object (avatars/UGC). 5 MiB.
-    max_upload_bytes: 5_242_880,
+  # Every limit is an optional integer with a compiled default; the `LIMIT_`
+  # env prefix predates the naming convention and is pinned here so the
+  # documented names keep working.
+  use GameServer.Settings.Provider,
+    app: :game_server_core,
+    group: :limits,
+    label: "Limits"
 
-    # ── User ────────────────────────────────────────────────
-    max_display_name: 80,
-    min_username: 3,
-    max_username: 32,
-    # 0 disables; counted per app instance.
-    max_sockets_per_user: 20,
-    max_email: 160,
-    max_profile_url: 512,
-    max_device_id: 256,
+  # ── Global ──────────────────────────────────────────────
+  setting(:max_metadata_size, :integer, default: 16_384)
+  setting(:max_page_size, :integer, default: 100)
 
-    # ── Groups ──────────────────────────────────────────────
-    max_group_title: 80,
-    max_group_description: 500,
-    max_group_members: 10_000,
-    max_groups_per_user: 50,
-    max_groups_created_per_user: 20,
-    max_group_pending_invites: 100,
+  setting(:max_upload_bytes, :integer,
+    default: 5_242_880,
+    doc: "Max size of a single uploaded object (avatars/UGC). 5 MiB."
+  )
 
-    # ── Lobbies ─────────────────────────────────────────────
-    max_lobby_title: 80,
-    max_lobby_users: 128,
-    max_lobby_password: 128,
+  # ── User ────────────────────────────────────────────────
+  setting(:max_display_name, :integer, default: 80)
+  setting(:min_username, :integer, default: 3)
+  setting(:max_username, :integer, default: 32)
 
-    # ── Parties ─────────────────────────────────────────────
-    max_party_size: 32,
-    max_party_pending_invites: 20,
+  setting(:max_sockets_per_user, :integer,
+    default: 20,
+    doc: "Concurrent sockets per user. 0 disables; counted per app instance."
+  )
 
-    # ── Chat ────────────────────────────────────────────────
-    max_chat_content: 4_096,
-    # Rolling 24h; 0 disables. Needs rate limiting on; ETS backend counts per instance.
-    max_chat_messages_per_day: 5_000,
+  setting(:max_email, :integer, default: 160)
+  setting(:max_profile_url, :integer, default: 512)
+  setting(:max_device_id, :integer, default: 256)
 
-    # ── Notifications ───────────────────────────────────────
-    max_notification_title: 255,
-    max_notification_content: 10_000,
-    max_notifications_per_user: 500,
+  # ── Groups ──────────────────────────────────────────────
+  setting(:max_group_title, :integer, default: 80)
+  setting(:max_group_description, :integer, default: 500)
+  setting(:max_group_members, :integer, default: 10_000)
+  setting(:max_groups_per_user, :integer, default: 50)
+  setting(:max_groups_created_per_user, :integer, default: 20)
+  setting(:max_group_pending_invites, :integer, default: 100)
 
-    # ── Friends ─────────────────────────────────────────────
-    max_friends_per_user: 500,
-    max_pending_friend_requests: 100,
+  # ── Lobbies ─────────────────────────────────────────────
+  setting(:max_lobby_title, :integer, default: 80)
+  setting(:max_lobby_users, :integer, default: 128)
+  setting(:max_lobby_password, :integer, default: 128)
 
-    # ── Hooks ───────────────────────────────────────────────
-    max_hook_args_size: 65_536,
-    max_hook_args_count: 32,
+  # ── Parties ─────────────────────────────────────────────
+  setting(:max_party_size, :integer, default: 32)
+  setting(:max_party_pending_invites, :integer, default: 20)
 
-    # ── KV ──────────────────────────────────────────────────
-    max_kv_key: 512,
-    max_kv_value_size: 65_536,
-    max_kv_entries_per_user: 1_000,
+  # ── Chat ────────────────────────────────────────────────
+  setting(:max_chat_content, :integer, default: 4_096)
 
-    # ── Leaderboards ────────────────────────────────────────
-    max_leaderboard_title: 255,
-    max_leaderboard_description: 1_000,
-    max_leaderboard_slug: 100,
+  setting(:max_chat_messages_per_day, :integer,
+    default: 5_000,
+    doc: "Rolling 24h; 0 disables. Needs rate limiting on; ETS backend counts per instance."
+  )
 
-    # ── Tournaments ─────────────────────────────────────────
-    max_tournament_title: 255,
-    max_tournament_description: 1_000,
-    max_tournament_slug: 100,
-    # Hard cap on a tournament's own max_entries setting.
-    max_tournament_entries: 10_000,
-    max_tournament_bracket_size: 256,
+  # ── Notifications ───────────────────────────────────────
+  setting(:max_notification_title, :integer, default: 255)
+  setting(:max_notification_content, :integer, default: 10_000)
+  setting(:max_notifications_per_user, :integer, default: 500)
 
-    # ── Matchmaking ─────────────────────────────────────────
-    # Hard cap on a ticket's own max_players setting.
-    max_matchmaking_players: 64,
-    # Serialized byte size of a ticket's match_params map.
-    max_matchmaking_params_size: 2_048,
-    # How long the oldest ticket waits before a below-max group still forms.
-    matchmaking_timeout_ms: 30_000,
-    # Sweep interval of the matchmaking worker.
-    matchmaking_tick_ms: 3_000,
-    # Grace period before an offline player's ticket is pruned. Long enough
-    # that a brief disconnect does not cost a queue position.
-    matchmaking_offline_grace_ms: 300_000
-  }
+  # ── Push ────────────────────────────────────────────────
+  setting(:max_push_tokens_per_user, :integer,
+    default: 20,
+    doc: "Live (non-disabled) device tokens per user."
+  )
+
+  # Byte caps (not characters): FCM and APNs limit the wire payload to 4096
+  # bytes, so only byte caps can guarantee deliverability.
+  setting(:max_push_title, :integer, default: 255)
+  setting(:max_push_body, :integer, default: 4_000)
+
+  setting(:max_push_data_size, :integer,
+    default: 4_096,
+    doc: "Serialized byte size of a push message's custom data map."
+  )
+
+  # ── Friends ─────────────────────────────────────────────
+  setting(:max_friends_per_user, :integer, default: 500)
+  setting(:max_pending_friend_requests, :integer, default: 100)
+
+  # ── Hooks ───────────────────────────────────────────────
+  setting(:max_hook_args_size, :integer, default: 65_536)
+  setting(:max_hook_args_count, :integer, default: 32)
+
+  # ── KV ──────────────────────────────────────────────────
+  setting(:max_kv_key, :integer, default: 512)
+  setting(:max_kv_value_size, :integer, default: 65_536)
+  setting(:max_kv_entries_per_user, :integer, default: 1_000)
+
+  # ── Leaderboards ────────────────────────────────────────
+  setting(:max_leaderboard_title, :integer, default: 255)
+  setting(:max_leaderboard_description, :integer, default: 1_000)
+  setting(:max_leaderboard_slug, :integer, default: 100)
+
+  # ── Tournaments ─────────────────────────────────────────
+  setting(:max_tournament_title, :integer, default: 255)
+  setting(:max_tournament_description, :integer, default: 1_000)
+  setting(:max_tournament_slug, :integer, default: 100)
+
+  setting(:max_tournament_entries, :integer,
+    default: 10_000,
+    doc: "Hard cap on a tournament's own max_entries setting."
+  )
+
+  setting(:max_tournament_bracket_size, :integer, default: 256)
+
+  # ── Quests ──────────────────────────────────────────────
+  setting(:max_quests, :integer, default: 500)
+  setting(:max_quest_key, :integer, default: 100)
+  setting(:max_quest_title, :integer, default: 255)
+  setting(:max_quest_category, :integer, default: 64)
+  setting(:max_quest_description, :integer, default: 1_000)
+  setting(:max_objectives_per_quest, :integer, default: 10)
+  setting(:max_quest_reward_entries, :integer, default: 10)
+
+  setting(:max_active_quests_per_user, :integer,
+    default: 200,
+    doc: "Progress rows a user may hold in the current periods; excess events are ignored."
+  )
+
+  setting(:max_quest_period_history, :integer,
+    default: 90,
+    doc: "Days of daily/weekly period history kept before the retention prune."
+  )
+
+  # ── Matchmaking ─────────────────────────────────────────
+  setting(:max_matchmaking_players, :integer,
+    default: 64,
+    doc: "Hard cap on a ticket's own max_players setting."
+  )
+
+  setting(:max_matchmaking_params_size, :integer,
+    default: 2_048,
+    doc: "Serialized byte size of a ticket's match_params map."
+  )
+
+  setting(:matchmaking_timeout_ms, :integer,
+    default: 30_000,
+    doc: "How long the oldest ticket waits before a below-max group still forms."
+  )
+
+  setting(:matchmaking_tick_ms, :integer,
+    default: 3_000,
+    doc: "Sweep interval of the matchmaking worker."
+  )
+
+  setting(:matchmaking_offline_grace_ms, :integer,
+    default: 300_000,
+    doc:
+      "Grace before an offline player's ticket is pruned; long enough that a brief disconnect keeps its queue position."
+  )
+
+  # ── Ready checks ────────────────────────────────────────
+  setting(:ready_check_timeout_ms, :integer,
+    default: 15_000,
+    doc: "Default answering window. Overridable per check by the caller."
+  )
+
+  setting(:max_ready_check_participants, :integer,
+    default: 64,
+    doc: "Hard cap on participants in one check."
+  )
 
   @doc """
   Returns a map of all limit keys and their current effective values.
   """
   @spec all() :: map()
-  def all do
-    overrides = Application.get_env(:game_server_core, __MODULE__, []) |> Map.new()
-    Map.merge(@defaults, overrides)
-  end
+  def all, do: Map.new(__settings__(), &{&1.key, GameServer.Settings.get(__MODULE__, &1.key)})
 
   @doc """
   Returns the current value for the given limit key.
@@ -129,21 +206,14 @@ defmodule GameServer.Limits do
   falling back to the compiled default.
   """
   @spec get(atom()) :: integer() | any()
-  def get(key) when is_atom(key) do
-    overrides = Application.get_env(:game_server_core, __MODULE__, [])
-
-    case Keyword.fetch(overrides, key) do
-      {:ok, val} -> val
-      :error -> Map.fetch!(@defaults, key)
-    end
-  end
+  def get(key) when is_atom(key), do: GameServer.Settings.get(__MODULE__, key)
 
   @doc """
   Returns the compiled defaults map. Useful for the admin UI to display
   defaults vs. overrides.
   """
   @spec defaults() :: map()
-  def defaults, do: @defaults
+  def defaults, do: Map.new(__settings__(), &{&1.key, &1.default})
 
   @doc """
   Clamps a raw page_size parameter to [1, max_page_size].

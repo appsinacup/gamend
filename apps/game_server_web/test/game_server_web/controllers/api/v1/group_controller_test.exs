@@ -776,7 +776,7 @@ defmodule GameServerWeb.Api.V1.GroupControllerTest do
         |> auth_conn(member)
         |> post("/api/v1/groups/#{group.id}/notify", %{content: "Hello from API!"})
 
-      assert %{"sent" => 1} = json_response(conn, 200)
+      assert %{"data" => %{"sent" => 1}} = json_response(conn, 200)
     end
 
     test "non-member gets 403", %{conn: conn} do
@@ -824,7 +824,7 @@ defmodule GameServerWeb.Api.V1.GroupControllerTest do
           title: "game_event"
         })
 
-      assert %{"sent" => 1} = json_response(conn, 200)
+      assert %{"data" => %{"sent" => 1}} = json_response(conn, 200)
     end
   end
 
@@ -882,6 +882,96 @@ defmodule GameServerWeb.Api.V1.GroupControllerTest do
       body = json_response(conn, 200)
       assert is_list(body["data"])
       assert body["meta"]["total_count"] == 0
+    end
+  end
+
+  describe "group icons" do
+    setup do
+      dir = Path.join(System.tmp_dir!(), "gs_icon_test_#{System.unique_integer([:positive])}")
+      old = Application.get_env(:game_server_core, GameServer.Storage.Local)
+      Application.put_env(:game_server_core, GameServer.Storage.Local, dir: dir)
+
+      on_exit(fn ->
+        File.rm_rf(dir)
+        if old, do: Application.put_env(:game_server_core, GameServer.Storage.Local, old)
+      end)
+
+      owner = create_user()
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "Iconic", "type" => "public"})
+      %{owner: owner, group: group}
+    end
+
+    test "admin gets an upload ticket", %{conn: conn, owner: owner, group: group} do
+      conn =
+        conn
+        |> auth_conn(owner)
+        |> post("/api/v1/groups/#{group.id}/icon/upload_url", %{"content_type" => "image/png"})
+
+      body = json_response(conn, 200)
+      assert String.starts_with?(body["key"], "icons/groups/#{group.id}/")
+      assert String.ends_with?(body["key"], ".png")
+    end
+
+    test "non-admin members cannot request a ticket or set the icon", %{
+      conn: conn,
+      group: group
+    } do
+      outsider = create_user()
+
+      conn1 =
+        conn
+        |> auth_conn(outsider)
+        |> post("/api/v1/groups/#{group.id}/icon/upload_url", %{"content_type" => "image/png"})
+
+      assert json_response(conn1, 403)["error"] == "not_admin"
+
+      conn2 =
+        build_conn()
+        |> auth_conn(outsider)
+        |> post("/api/v1/groups/#{group.id}/icon", %{"key" => "icons/groups/#{group.id}/x.png"})
+
+      assert json_response(conn2, 403)["error"] == "not_admin"
+    end
+
+    test "confirming an uploaded key sets icon_url", %{conn: conn, owner: owner, group: group} do
+      key = "icons/groups/#{group.id}/icon.png"
+      {:ok, _} = GameServer.Storage.put(key, "PNGBYTES", content_type: "image/png")
+
+      conn =
+        conn
+        |> auth_conn(owner)
+        |> post("/api/v1/groups/#{group.id}/icon", %{"key" => key})
+
+      body = json_response(conn, 200)
+      assert body["icon_url"] == GameServer.Storage.url(key)
+    end
+
+    test "rejects keys outside the group's icon prefix", %{
+      conn: conn,
+      owner: owner,
+      group: group
+    } do
+      {:ok, other} = Groups.create_group(create_user().id, %{"title" => "Other"})
+      key = "icons/groups/#{other.id}/icon.png"
+      {:ok, _} = GameServer.Storage.put(key, "PNG", content_type: "image/png")
+
+      conn =
+        conn
+        |> auth_conn(owner)
+        |> post("/api/v1/groups/#{group.id}/icon", %{"key" => key})
+
+      assert json_response(conn, 403)["error"] == "forbidden"
+    end
+
+    test "rejects a key that was never uploaded", %{conn: conn, owner: owner, group: group} do
+      conn =
+        conn
+        |> auth_conn(owner)
+        |> post("/api/v1/groups/#{group.id}/icon", %{
+          "key" => "icons/groups/#{group.id}/ghost.png"
+        })
+
+      assert json_response(conn, 400)["error"] == "object_not_found"
     end
   end
 end

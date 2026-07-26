@@ -8,16 +8,14 @@ defmodule GameServerWeb.PageControllerTest do
   alias GameServer.Theme.JSONConfig
 
   setup do
-    # Ensure a known THEME_CONFIG is active so tests aren't affected by other
+    # Ensure a known GAMEND_CONTENT_THEME_CONFIG is active so tests aren't affected by other
     # modules that may delete/restore the env var concurrently.
     # Use a temp file with known content for reliable path resolution.
-    orig = System.get_env("THEME_CONFIG")
+    orig =
+      GameServer.SettingsHelpers.get(:game_server_core, GameServer.ContentSettings, :theme_config)
 
     base =
       Path.join(System.tmp_dir!(), "theme_page_test_#{System.unique_integer([:positive])}.json")
-
-    en_path = String.trim_trailing(base, ".json") <> ".en.json"
-    ro_path = String.trim_trailing(base, ".json") <> ".ro.json"
 
     theme = %{
       "title" => "Gamend",
@@ -113,7 +111,7 @@ defmodule GameServerWeb.PageControllerTest do
               },
               %{
                 "label" => "Achievements",
-                "href" => "/achievements",
+                "href" => "/quests",
                 "icon" => "hero-trophy-solid"
               },
               %{"label" => "Groups", "href" => "/groups", "icon" => "hero-user-group-solid"},
@@ -134,56 +132,37 @@ defmodule GameServerWeb.PageControllerTest do
       }
     }
 
-    json = Jason.encode!(theme)
+    File.write!(base, Jason.encode!(theme))
 
-    ro_json =
-      Jason.encode!(
-        Map.put(theme, "navigation", %{
-          "primary_links" => [
-            %{"label" => "Joacă", "href" => "/play", "icon" => "hero-play-solid"},
-            %{
-              "label" => "Social",
-              "icon" => "hero-user-group-solid",
-              "items" => [
-                %{
-                  "label" => "Clasamente",
-                  "href" => "/leaderboards",
-                  "icon" => "hero-chart-bar-solid"
-                },
-                %{
-                  "label" => "Realizări",
-                  "href" => "/achievements",
-                  "icon" => "hero-trophy-solid"
-                },
-                %{
-                  "label" => "Grupuri",
-                  "href" => "/groups",
-                  "icon" => "hero-user-group-solid"
-                },
-                %{
-                  "label" => "Petreceri",
-                  "href" => "/parties",
-                  "icon" => "hero-user-plus-solid",
-                  "auth" => "authenticated"
-                }
-              ]
-            }
-          ]
-        })
-      )
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.ContentSettings,
+      :theme_config,
+      base
+    )
 
-    File.write!(en_path, json)
-    File.write!(ro_path, ro_json)
-    System.put_env("THEME_CONFIG", base)
     JSONConfig.reload()
     Content.reload()
 
     on_exit(fn ->
-      if orig, do: System.put_env("THEME_CONFIG", orig), else: System.delete_env("THEME_CONFIG")
+      if orig,
+        do:
+          GameServer.SettingsHelpers.put(
+            :game_server_core,
+            GameServer.ContentSettings,
+            :theme_config,
+            orig
+          ),
+        else:
+          GameServer.SettingsHelpers.delete(
+            :game_server_core,
+            GameServer.ContentSettings,
+            :theme_config
+          )
+
       JSONConfig.reload()
       Content.reload()
-      File.rm(en_path)
-      File.rm(ro_path)
+      File.rm(base)
     end)
 
     :ok
@@ -216,22 +195,31 @@ defmodule GameServerWeb.PageControllerTest do
     assert text_response(conn, 404) == "Not Found"
   end
 
-  test "home uses localized primary nav labels from locale theme config", %{conn: conn} do
+  test "home renders in the visitor's locale", %{conn: conn} do
     conn = get(conn, "/ro")
     assert redirected_to(conn) == "/"
 
     conn = get(recycle(conn), "/")
     body = html_response(conn, 200)
 
-    assert body =~ "Joacă"
-    assert body =~ "Clasamente"
-    assert body =~ "Realizări"
-    assert body =~ "Grupuri"
+    assert body =~ ~s(lang="ro")
     assert body =~ "fi-ro"
+
+    # Chrome this app owns and translates itself. Labels that come from the
+    # theme config are translated through the host's `theme` domain, which
+    # this app's test env has no backend for.
+    assert body =~ "Clasamente"
+    assert body =~ "Grupuri"
+    assert body =~ "Conectare"
   end
 
-  test "home renders without errors when THEME_CONFIG is unset", %{conn: conn} do
-    System.delete_env("THEME_CONFIG")
+  test "home renders without errors when GAMEND_CONTENT_THEME_CONFIG is unset", %{conn: conn} do
+    GameServer.SettingsHelpers.delete(
+      :game_server_core,
+      GameServer.ContentSettings,
+      :theme_config
+    )
+
     JSONConfig.reload()
     Content.reload()
 

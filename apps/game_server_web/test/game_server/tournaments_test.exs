@@ -372,7 +372,7 @@ defmodule GameServer.TournamentsTest do
   end
 
   describe "deadlines" do
-    test "expired matches fire the hook, then the deadline policy applies" do
+    test "expired matches fire the hook, then the deadline_at policy applies" do
       tournament = create_tournament(%{round_window_sec: 600})
       join_all(tournament, users(2))
       tournament = draw!(tournament)
@@ -548,7 +548,7 @@ defmodule GameServer.TournamentsTest do
       assert stats.matches.open == 1
     end
 
-    test "overdue counts unresolved matches past their deadline" do
+    test "overdue counts unresolved matches past their deadline_at" do
       tournament = create_tournament(%{round_window_sec: 600})
       join_all(tournament, users(2))
 

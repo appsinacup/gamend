@@ -139,7 +139,8 @@ defmodule GameServerWeb.HostLayouts do
     |> Map.put("title", Map.get(theme, "title") || if(missing?, do: "MISSING_THEME"))
     |> Map.put(
       "tagline",
-      Map.get(theme, "tagline") || if(missing?, do: "Add host theme config or set THEME_CONFIG")
+      Map.get(theme, "tagline") ||
+        if(missing?, do: "Add host theme config or set GAMEND_CONTENT_THEME_CONFIG")
     )
     |> then(&Map.merge(host_theme_settings, &1))
     |> translate_theme(locale)
@@ -375,34 +376,16 @@ defmodule GameServerWeb.HostLayouts do
 
     _ = Code.ensure_loaded?(theme_mod)
 
+    # No locale hunting here any more: the provider translates through gettext,
+    # which already falls back es_ES -> es -> source string. This used to try
+    # one config file per locale and walk that chain by hand.
     if is_binary(locale) and function_exported?(theme_mod, :get_theme, 1) do
-      case safe_get_theme_1(theme_mod, locale) do
-        theme when is_map(theme) and map_size(theme) > 0 -> theme
-        _ -> try_primary_or_fallback(theme_mod, locale)
-      end
+      safe_get_theme_1(theme_mod, locale)
     else
       safe_get_theme_0(theme_mod)
     end
   rescue
     _ -> %{}
-  end
-
-  defp try_primary_or_fallback(theme_mod, locale) do
-    primary =
-      locale
-      |> String.trim()
-      |> String.downcase()
-      |> String.split(~r/[-_]/, parts: 2)
-      |> List.first()
-
-    if is_binary(primary) and primary != locale and function_exported?(theme_mod, :get_theme, 1) do
-      case safe_get_theme_1(theme_mod, primary) do
-        theme when is_map(theme) and map_size(theme) > 0 -> theme
-        _ -> safe_get_theme_0(theme_mod)
-      end
-    else
-      safe_get_theme_0(theme_mod)
-    end
   end
 
   defp safe_get_theme_1(theme_mod, locale) do
@@ -493,8 +476,8 @@ defmodule GameServerWeb.HostLayouts do
             "icon" => "hero-chart-bar-solid"
           },
           %{
-            "label" => translate("Achievements"),
-            "href" => "/achievements",
+            "label" => translate("Quests"),
+            "href" => "/quests",
             "icon" => "hero-trophy-solid"
           },
           %{

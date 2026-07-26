@@ -16,7 +16,7 @@ defmodule GameServerWeb.Api.V1.Admin.LeaderboardRecordController do
       id: %Schema{type: :string, format: :uuid},
       leaderboard_id: %Schema{type: :string, format: :uuid},
       user_id: %Schema{type: :string, format: :uuid, nullable: true},
-      label: %Schema{type: :string, nullable: true},
+      label: %Schema{type: :string},
       score: %Schema{type: :integer},
       rank: %Schema{type: :integer, nullable: true},
       metadata: %Schema{type: :object},

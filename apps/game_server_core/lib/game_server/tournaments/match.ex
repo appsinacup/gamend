@@ -1,7 +1,7 @@
 defmodule GameServer.Tournaments.Match do
   @moduledoc """
   A pairing plus a verdict: two entries that must produce a winner by
-  `deadline`. Never a lobby — how the pairing is played is game policy;
+  `deadline_at`. Never a lobby — how the pairing is played is game policy;
   `metadata` is game scratch space (runs, lobby id, ...).
   """
 
@@ -20,7 +20,7 @@ defmodule GameServer.Tournaments.Match do
     field :ready_at, :utc_datetime
     field :expired_at, :utc_datetime
     field :resolved_at, :utc_datetime
-    field :deadline, :utc_datetime
+    field :deadline_at, :utc_datetime
     field :metadata, :map, default: %{}
 
     timestamps(type: :utc_datetime)
@@ -39,10 +39,10 @@ defmodule GameServer.Tournaments.Match do
       :ready_at,
       :expired_at,
       :resolved_at,
-      :deadline,
+      :deadline_at,
       :metadata
     ])
-    |> validate_required([:tournament_id, :bracket_index, :round, :slot, :deadline])
+    |> validate_required([:tournament_id, :bracket_index, :round, :slot, :deadline_at])
     |> unique_constraint([:tournament_id, :bracket_index, :round, :slot])
     |> GameServer.Limits.validate_metadata_size(:metadata)
   end

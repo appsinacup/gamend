@@ -338,7 +338,7 @@ defmodule GameServerWeb.AuthController do
 
     conn
     |> put_flash(:error, msg)
-    |> redirect(to: ~p"/users/log-in")
+    |> redirect(to: ~p"/users/log_in")
   end
 
   defp oauth_provider(provider) do
@@ -410,8 +410,8 @@ defmodule GameServerWeb.AuthController do
 
     exchanger.exchange_discord_code(
       code,
-      System.get_env("DISCORD_CLIENT_ID"),
-      System.get_env("DISCORD_CLIENT_SECRET"),
+      GameServer.Settings.get(GameServer.OAuth.Providers, :discord_client_id),
+      GameServer.Settings.get(GameServer.OAuth.Providers, :discord_client_secret),
       oauth_redirect_uri("discord")
     )
   end
@@ -421,8 +421,8 @@ defmodule GameServerWeb.AuthController do
 
     exchanger.exchange_google_code(
       code,
-      System.get_env("GOOGLE_CLIENT_ID"),
-      System.get_env("GOOGLE_CLIENT_SECRET"),
+      GameServer.Settings.get(GameServer.OAuth.Providers, :google_client_id),
+      GameServer.Settings.get(GameServer.OAuth.Providers, :google_client_secret),
       oauth_redirect_uri("google")
     )
   end
@@ -432,8 +432,8 @@ defmodule GameServerWeb.AuthController do
 
     exchanger.exchange_facebook_code(
       code,
-      System.get_env("FACEBOOK_CLIENT_ID"),
-      System.get_env("FACEBOOK_CLIENT_SECRET"),
+      GameServer.Settings.get(GameServer.OAuth.Providers, :facebook_client_id),
+      GameServer.Settings.get(GameServer.OAuth.Providers, :facebook_client_secret),
       oauth_redirect_uri("facebook")
     )
   end
@@ -603,7 +603,7 @@ defmodule GameServerWeb.AuthController do
                 :error,
                 gettext("Your account is pending activation.")
               )
-              |> redirect(to: ~p"/users/log-in")
+              |> redirect(to: ~p"/users/log_in")
             end
 
           {:error, changeset} ->
@@ -615,7 +615,7 @@ defmodule GameServerWeb.AuthController do
 
             conn
             |> put_flash(:error, gettext("Failed"))
-            |> redirect(to: ~p"/users/log-in")
+            |> redirect(to: ~p"/users/log_in")
         end
     end
   end
@@ -648,7 +648,8 @@ defmodule GameServerWeb.AuthController do
 
   def request(conn, %{"provider" => "discord"}) do
     cfg = Application.get_env(:ueberauth, Ueberauth.Strategy.Discord.OAuth, [])
-    client_id = cfg[:client_id] || System.get_env("DISCORD_CLIENT_ID")
+    client_id = GameServer.Settings.get(GameServer.OAuth.Providers, :discord_client_id)
+
     base = GameServerWeb.endpoint().url()
     redirect_uri = cfg[:redirect_uri] || "#{base}/auth/discord/callback"
     scope = "identify email"
@@ -666,7 +667,8 @@ defmodule GameServerWeb.AuthController do
 
   def request(conn, %{"provider" => "google"}) do
     cfg = Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth, [])
-    client_id = cfg[:client_id] || System.get_env("GOOGLE_CLIENT_ID")
+    client_id = GameServer.Settings.get(GameServer.OAuth.Providers, :google_client_id)
+
     base = GameServerWeb.endpoint().url()
     redirect_uri = cfg[:redirect_uri] || "#{base}/auth/google/callback"
     scope = "email profile"
@@ -680,7 +682,8 @@ defmodule GameServerWeb.AuthController do
 
   def request(conn, %{"provider" => "facebook"}) do
     cfg = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth, [])
-    client_id = cfg[:client_id] || System.get_env("FACEBOOK_CLIENT_ID")
+    client_id = GameServer.Settings.get(GameServer.OAuth.Providers, :facebook_client_id)
+
     base = GameServerWeb.endpoint().url()
     redirect_uri = cfg[:redirect_uri] || "#{base}/auth/facebook/callback"
     scope = "email"
@@ -694,9 +697,7 @@ defmodule GameServerWeb.AuthController do
 
   def request(conn, %{"provider" => "apple"}) do
     cfg = Application.get_env(:ueberauth, Ueberauth.Strategy.Apple.OAuth, [])
-
-    client_id =
-      cfg[:client_id] || System.get_env("APPLE_WEB_CLIENT_ID")
+    client_id = GameServer.Settings.get(GameServer.OAuth.Providers, :apple_client_id)
 
     base = GameServerWeb.endpoint().url()
     redirect_uri = cfg[:redirect_uri] || "#{base}/auth/apple/callback"
@@ -855,7 +856,7 @@ defmodule GameServerWeb.AuthController do
 
     conn
     |> put_flash(:error, gettext("Failed"))
-    |> redirect(to: ~p"/users/log-in")
+    |> redirect(to: ~p"/users/log_in")
   end
 
   defp handle_oauth_state_success(conn, provider, user_params, state) do
@@ -985,7 +986,7 @@ defmodule GameServerWeb.AuthController do
     session_id = create_api_oauth_session(conn, "discord")
 
     # Generate the Discord OAuth URL with state parameter
-    client_id = System.get_env("DISCORD_CLIENT_ID")
+    client_id = GameServer.Settings.get(GameServer.OAuth.Providers, :discord_client_id)
     base = GameServerWeb.endpoint().url()
     redirect_uri = "#{base}/auth/discord/callback"
     scope = "identify email"
@@ -1001,7 +1002,7 @@ defmodule GameServerWeb.AuthController do
     session_id = create_api_oauth_session(conn, "apple")
 
     # Generate the Apple OAuth URL
-    client_id = System.get_env("APPLE_WEB_CLIENT_ID")
+    client_id = GameServer.Settings.get(GameServer.OAuth.Providers, :apple_client_id)
     base = GameServerWeb.endpoint().url()
     redirect_uri = "#{base}/auth/apple/callback"
     scope = "name email"
@@ -1017,7 +1018,7 @@ defmodule GameServerWeb.AuthController do
     session_id = create_api_oauth_session(conn, "google")
 
     # Generate the Google OAuth URL
-    client_id = System.get_env("GOOGLE_CLIENT_ID")
+    client_id = GameServer.Settings.get(GameServer.OAuth.Providers, :google_client_id)
     base = GameServerWeb.endpoint().url()
     redirect_uri = "#{base}/auth/google/callback"
     scope = "email profile"
@@ -1033,7 +1034,7 @@ defmodule GameServerWeb.AuthController do
     session_id = create_api_oauth_session(conn, "facebook")
 
     # Generate the Facebook OAuth URL
-    client_id = System.get_env("FACEBOOK_CLIENT_ID")
+    client_id = GameServer.Settings.get(GameServer.OAuth.Providers, :facebook_client_id)
     base = GameServerWeb.endpoint().url()
     redirect_uri = "#{base}/auth/facebook/callback"
     scope = "email"
@@ -1291,13 +1292,13 @@ defmodule GameServerWeb.AuthController do
   end
 
   defp apple_web_client_id do
-    System.get_env("APPLE_WEB_CLIENT_ID") ||
-      raise "APPLE_WEB_CLIENT_ID environment variable is not set"
+    GameServer.Settings.get(GameServer.OAuth.Providers, :apple_client_id) ||
+      raise "GAMEND_OAUTH_APPLE_CLIENT_ID is not set"
   end
 
   defp apple_ios_client_id do
-    System.get_env("APPLE_IOS_CLIENT_ID") ||
-      raise "APPLE_IOS_CLIENT_ID environment variable is not set"
+    GameServer.Settings.get(GameServer.OAuth.Providers, :apple_ios_client_id) ||
+      raise "GAMEND_OAUTH_APPLE_IOS_CLIENT_ID is not set"
   end
 
   operation(:api_session_status,

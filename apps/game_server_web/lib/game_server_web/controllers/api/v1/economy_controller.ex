@@ -6,8 +6,6 @@ defmodule GameServerWeb.Api.V1.EconomyController do
   use GameServerWeb, :controller
   use OpenApiSpex.ControllerSpecs
 
-  import GameServerWeb.Helpers.ParamParser, only: [parse_page_params: 1]
-
   alias GameServer.Accounts.Scope
   alias GameServer.Economy
   alias GameServerWeb.Pagination
@@ -77,7 +75,7 @@ defmodule GameServerWeb.Api.V1.EconomyController do
 
   def ledger(conn, params) do
     user = Scope.user(conn.assigns.current_scope)
-    {page, page_size} = parse_page_params(params)
+    {page, page_size} = GameServerWeb.Pagination.params(params)
 
     filters = [user_id: user.id, currency: params["currency"], page: page, page_size: page_size]
     entries = Economy.list_ledger(filters)
@@ -114,7 +112,7 @@ defmodule GameServerWeb.Api.V1.EconomyController do
   defp serialize(entry) do
     %{
       id: entry.id,
-      currency: entry.currency,
+      currency: entry.currency || "",
       delta: entry.delta,
       balance_after: entry.balance_after,
       reason: entry.reason,

@@ -5,8 +5,8 @@ primary_region = "ams"
   image = "ghcr.io/appsinacup/game_server:latest"
 
 [env]
-  PORT = "4000"
-  SQLITE_DATABASE_PATH = "/data/game_server_prod.db"
+  GAMEND_HTTP_PORT = "4000"
+  GAMEND_DB_SQLITE_PATH = "/data/game_server_prod.db"
 
 [http_service]
   internal_port = 4000

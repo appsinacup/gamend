@@ -7,6 +7,7 @@ defmodule GameServerWeb.Api.V1.NotificationController do
   alias GameServer.Accounts.Scope
   alias GameServer.Accounts.User
   alias GameServer.Notifications
+  alias GameServerWeb.Pagination
   alias GameServerWeb.Serializers
   alias OpenApiSpex.Schema
 
@@ -20,7 +21,8 @@ defmodule GameServerWeb.Api.V1.NotificationController do
       sender_name: %Schema{type: :string, description: "Display name of the sender"},
       recipient_id: %Schema{type: :string, format: :uuid, description: "User ID of the recipient"},
       title: %Schema{type: :string, description: "Notification title"},
-      content: %Schema{type: :string, description: "Notification body text", nullable: true},
+      content: %Schema{type: :string, description: "Notification body text"},
+      icon_url: %Schema{type: :string, description: "Icon URL; empty when unset"},
       metadata: %Schema{type: :object, description: "Arbitrary metadata"},
       inserted_at: %Schema{
         type: :string,
@@ -35,6 +37,7 @@ defmodule GameServerWeb.Api.V1.NotificationController do
       recipient_id: 7,
       title: "Game invite",
       content: "Join my lobby!",
+      icon_url: "",
       metadata: %{"lobby_id" => 10},
       inserted_at: "2026-02-22T12:00:00Z"
     }
@@ -109,6 +112,11 @@ defmodule GameServerWeb.Api.V1.NotificationController do
             description: "Notification body text (optional)",
             nullable: true
           },
+          icon_url: %Schema{
+            type: :string,
+            description: "Icon URL (optional)",
+            nullable: true
+          },
           metadata: %Schema{
             type: :object,
             description: "Arbitrary metadata (optional)",
@@ -153,7 +161,12 @@ defmodule GameServerWeb.Api.V1.NotificationController do
          %Schema{
            type: :object,
            properties: %{
-             deleted: %Schema{type: :integer, description: "Number of notifications deleted"}
+             data: %Schema{
+               type: :object,
+               properties: %{
+                 deleted: %Schema{type: :integer, description: "Number of notifications deleted"}
+               }
+             }
            }
          }},
       bad_request: {"Bad request", "application/json", @error_schema},
@@ -168,26 +181,22 @@ defmodule GameServerWeb.Api.V1.NotificationController do
   def index(conn, params) do
     case Scope.user(conn.assigns.current_scope) do
       %User{} = user ->
-        {page, page_size} = parse_page_params(params)
+        {page, page_size} = GameServerWeb.Pagination.params(params)
 
         notifications =
           Notifications.list_notifications(user.id, page: page, page_size: page_size)
 
         total_count = Notifications.count_notifications(user.id)
-        total_pages = max(ceil(total_count / page_size), 1)
-        count = length(notifications)
 
-        json(conn, %{
-          data: Enum.map(notifications, &Serializers.serialize_notification/1),
-          meta: %{
-            page: page,
-            page_size: page_size,
-            count: count,
-            total_count: total_count,
-            total_pages: total_pages,
-            has_more: page < total_pages
-          }
-        })
+        json(
+          conn,
+          Pagination.envelope(
+            Enum.map(notifications, &Serializers.serialize_notification/1),
+            page,
+            page_size,
+            total_count
+          )
+        )
 
       _ ->
         conn |> put_status(:unauthorized) |> json(%{error: "Not authenticated"})
@@ -243,7 +252,7 @@ defmodule GameServerWeb.Api.V1.NotificationController do
           |> Enum.reject(&is_nil/1)
 
         {deleted, _} = Notifications.delete_notifications(user.id, int_ids)
-        json(conn, %{deleted: deleted})
+        json(conn, %{data: %{deleted: deleted}})
 
       _ ->
         conn |> put_status(:unauthorized) |> json(%{error: "Not authenticated"})

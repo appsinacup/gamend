@@ -1,0 +1,170 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: ar\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "خادم ألعاب مفتوح المصدر بلغة Elixir لألعاب متعددة اللاعبين في الوقت الفعلي."
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "المدونة"
+
+msgid "Roadmap"
+msgstr "خريطة الطريق"
+
+msgid "Changelog"
+msgstr "سجل التغييرات"
+
+msgid "Social"
+msgstr "اجتماعي"
+
+msgid "About Gamend"
+msgstr "حول Gamend"
+
+msgid "Elixir Docs"
+msgstr "توثيق Elixir"
+
+msgid "About"
+msgstr "حول"
+
+msgid "Guides"
+msgstr "الأدلة"
+
+msgid "API Docs"
+msgstr "توثيق واجهة API"
+
+msgid "Store"
+msgstr "المتجر"
+
+msgid "Help"
+msgstr "المساعدة"
+
+msgid "Privacy Policy"
+msgstr "سياسة الخصوصية"
+
+msgid "Terms and Conditions"
+msgstr "الشروط والأحكام"
+
+msgid "Privacy & Terms"
+msgstr "الخصوصية والشروط"
+
+msgid "Play"
+msgstr "العب"
+
+msgid "Leaderboards"
+msgstr "لوحات الصدارة"
+
+msgid "Quests"
+msgstr "المهام"
+
+msgid "Tournaments"
+msgstr "البطولات"
+
+msgid "Groups"
+msgstr "المجموعات"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "‏Gamend واجهة خلفية **متكاملة** بلغة Elixir لألعاب متعددة اللاعبين، مع المصادقة والأنظمة الاجتماعية وقنوات الوقت الفعلي وأدوات الإدارة."
+
+msgid "Realtime Guide"
+msgstr "دليل الوقت الفعلي"
+
+msgid "Real-time games"
+msgstr "ألعاب الوقت الفعلي"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "استخدم القنوات والردهات والفرق والتواجد وقنوات بيانات WebRTC دون إعادة بناء البنية التحتية المعتادة لتعدد اللاعبين."
+
+msgid "Built For Real-Time Games"
+msgstr "مصمم لألعاب الوقت الفعلي"
+
+msgid "Read Docs"
+msgstr "اقرأ التوثيق"
+
+msgid "Open source foundation"
+msgstr "أساس مفتوح المصدر"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "صُمِّم المشروع ليتمكن فرق الألعاب من نسخه وتخصيص مظهره واستضافته وتوسيعه."
+
+msgid "Open Source Foundation"
+msgstr "أساس مفتوح المصدر"
+
+msgid "Getting Started"
+msgstr "البداية"
+
+msgid "Presentation Video"
+msgstr "فيديو تعريفي"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "خادم ألعاب **مفتوح المصدر** بلغة Elixir لألعاب متعددة اللاعبين **في الوقت الفعلي**."
+
+msgid "Log in"
+msgstr "تسجيل الدخول"
+
+msgid "Register"
+msgstr "إنشاء حساب"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "البريد الإلكتروني والرابط السحري وOAuth وJWT والجلسات. التسجيل وتسجيل الدخول وإعادة تعيين كلمة المرور وتأكيد البريد."
+
+msgid "Authentication & Users"
+msgstr "المصادقة والمستخدمون"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "ردهات في الوقت الفعلي وفرق مؤقتة. إعدادات قابلة للتخصيص مع تحديثات مباشرة."
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "الردهات والفرق ومطابقة اللاعبين"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "طلبات الصداقة والحظر والتواجد في الوقت الفعلي. مجموعات عامة وخاصة ومخفية. رسائل مباشرة وجماعية."
+
+msgid "Friends, Groups & Chat"
+msgstr "الأصدقاء والمجموعات والدردشة"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "إنجازات وبطولات إقصائية ولوحات صدارة يتحقق منها الخادم. إشعارات فورية عبر جميع الميزات وأحداث الدفع."
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "الإنجازات والبطولات ولوحات الصدارة والإشعارات"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "وسّع منطق الخادم بنصوص Elixir البرمجية. جدوِل المهام التلقائية ومهام cron."
+
+msgid "Server Scripting & Scheduling"
+msgstr "برمجة الخادم والجدولة"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "واجهة REST وقنوات WebSocket في الوقت الفعلي وقنوات بيانات WebRTC منخفضة الكمون. بوابة إدارة وواجهة ويب."
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "‏HTTP وWebSocket وWebRTC"
+
+msgid "Open Store"
+msgstr "فتح المتجر"
+
+msgid "Payment Docs"
+msgstr "توثيق المدفوعات"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "مدفوعات من جهة الخادم عبر Stripe وGoogle Play وApp Store وSteam. تحقّق من الإيصالات، وعالج خطافات الويب الموقّعة، وامنح الصلاحيات، وألغِ المبالغ المستردة، وراجع كل ذلك من لوحة الإدارة."
+
+msgid "Payments & Store Integrations"
+msgstr "المدفوعات وتكاملات المتاجر"
+
+msgid "Gamend is in beta!"
+msgstr "‏Gamend في مرحلة تجريبية!"
+
+msgid "Game + Backend"
+msgstr "اللعبة + الواجهة الخلفية"

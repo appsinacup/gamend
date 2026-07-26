@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr ""
+
+#. quests
+msgid "Log in for the first time."
+msgstr ""
+
+#. quests
+msgid "Daily check-in"
+msgstr ""
+
+#. quests
+msgid "Log in today."
+msgstr ""
+
+#. quests
+msgid "Weekly regular"
+msgstr ""
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr ""
+
+#. quests
+msgid "Monthly devotee"
+msgstr ""
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr ""
+
+#. quests
+msgid "Stop by again"
+msgstr ""
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr ""
+
+#. quests
+msgid "Loyal veteran"
+msgstr ""
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr ""
+
+#. quests
+msgid "Night owl"
+msgstr ""
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr ""
+
+#. quests
+msgid "Launch festival"
+msgstr ""
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr ""
+
+#. leaderboards
+msgid "Logins"
+msgstr ""
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr ""
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr ""
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr ""

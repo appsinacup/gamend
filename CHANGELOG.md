@@ -1,11 +1,28 @@
 # July 2026
 
-- [added] **Economy** — `GameServer.Economy`: generic-currency wallets with an atomic, idempotent, race-safe ledger; client wallet read + admin grant/spend.
-- [added] **Inventory** — `GameServer.Inventory`: atomic item stacks (grant/consume) alongside the economy.
-- [added] Live `wallet_updated` / `inventory_updated` socket events.
+- [breaking] **One theme file**, translated via gettext; the 30 per-locale JSON copies are gone (`mix gamend.theme.migrate_locales`).
+- [breaking] **DB text is source-language only** — per-locale quest/leaderboard metadata and its admin editor removed (`mix gamend.content.migrate_metadata`); gettext translates at render.
+- [added] **Translation pipeline**: `mix gamend.theme.extract`, `mix gamend.content.extract`, CSV round-trip covering both gettext trees.
+- [added] All **30 locales fully translated** (machine-translated, pending review).
+- [added] **Icons everywhere** — `icon_url` on notifications, tournaments, groups and leaderboards;
+- [added] **Quest chains** are browsable; a chain lists as one quest.
+- [breaking] **API paths use underscores**
+- [breaking] One **pagination meta** shape on every list response.
+- [added] **API conventions** spec + `mix gamend.api.lint` in precommit and CI.
+- [added] **Settings**: one declared config surface.
+- [changed] **Guides are markdown files.** `/docs/setup`
+- [changed] **Times are shown in the reader's timezone.**
+- [added] Retention for every unbounded table.
+- [added] **Ready checks**
+- [added] **Push notifications**
+- [added] **Lobby state**
+- [added] **Quests / progression**.
+- [breaking] **Achievements removed** — replaced by permanent quests
+- [added] **Economy**.
+- [added] **Inventory**.
 - [added] **Object storage** — with local-disk and S3/R2 backends; presigned avatar uploads.
 - [added] Admin **Oban Web** dashboard at `/admin/oban` + jobs/storage.
-- [added] **Lobby snapshots** — durable per-run record of lobby state, opt-in via `LOBBY_SNAPSHOTS_ENABLED`.
+- [added] **Lobby snapshots** — opt-in via `LOBBY_SNAPSHOTS_ENABLED`.
 - [added] **Matchmaking** (ticket queue), admin page and hooks.
 - [added] **Party matchmaking**, matched as one unit.
 - [added] **Tournaments** (bracket system).

@@ -11,23 +11,28 @@ msgstr ""
 "Language: id\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: lib/game_server_web/live/notifications_live.ex:284
+#: lib/game_server_web/live/notifications_live.ex:287
 #, elixir-autogen, elixir-format
 msgid "Achievement Unlocked: %{name}"
 msgstr "Pencapaian terbuka: %{name}"
 
-#: lib/game_server_web/live/notifications_live.ex:280
+#: lib/game_server_web/live/notifications_live.ex:281
 #, elixir-autogen, elixir-format
 msgid "New message in party"
 msgstr "Pesan baru di party"
 
-#: lib/game_server_web/live/notifications_live.ex:289
-#: lib/game_server_web/live/notifications_live.ex:294
+#: lib/game_server_web/live/notifications_live.ex:295
+#: lib/game_server_web/live/notifications_live.ex:300
 #, elixir-autogen, elixir-format
 msgid "New messages from %{name}"
 msgstr "Pesan baru dari %{name}"
 
-#: lib/game_server_web/live/notifications_live.ex:278
+#: lib/game_server_web/live/notifications_live.ex:279
 #, elixir-autogen, elixir-format
 msgid "New messages from friends"
 msgstr "Pesan baru dari teman"
+
+#: lib/game_server_web/live/notifications_live.ex:289
+#, elixir-autogen, elixir-format
+msgid "Quest completed: %{name}"
+msgstr "Misi selesai: %{name}"

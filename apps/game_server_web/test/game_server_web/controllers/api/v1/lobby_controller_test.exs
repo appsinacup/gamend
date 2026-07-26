@@ -281,6 +281,42 @@ defmodule GameServerWeb.Api.V1.LobbyControllerTest do
     assert json_response(conn2, 200)["title"] == "New Title"
   end
 
+  test "PATCH /api/v1/lobbies is forbidden for a non-host member", %{conn: conn} do
+    host = AccountsFixtures.user_fixture()
+    member = AccountsFixtures.user_fixture()
+    {:ok, lobby} = Lobbies.create_lobby(%{title: "member-patch-room", host_id: host.id})
+    assert {:ok, _} = Lobbies.join_lobby(member, lobby)
+
+    {:ok, token, _} = Guardian.encode_and_sign(member)
+
+    conn =
+      conn
+      |> put_req_header("authorization", "Bearer " <> token)
+      |> patch("/api/v1/lobbies", %{title: "Hijacked"})
+
+    assert json_response(conn, 403)["error"] == "not_host"
+    assert Lobbies.get_lobby(lobby.id).title == "member-patch-room"
+  end
+
+  test "PATCH /api/v1/lobbies is forbidden for every member of a hostless lobby", %{conn: conn} do
+    member = AccountsFixtures.user_fixture()
+    {:ok, lobby} = Lobbies.create_lobby(%{title: "hostless-patch-room", hostless: true})
+    assert {:ok, _} = Lobbies.join_lobby(member, lobby)
+
+    {:ok, token, _} = Guardian.encode_and_sign(member)
+
+    conn =
+      conn
+      |> put_req_header("authorization", "Bearer " <> token)
+      |> patch("/api/v1/lobbies", %{title: "Hijacked", metadata: %{"score" => 999}})
+
+    assert json_response(conn, 403)["error"] == "not_host"
+
+    reloaded = Lobbies.get_lobby(lobby.id)
+    assert reloaded.title == "hostless-patch-room"
+    assert reloaded.metadata == %{}
+  end
+
   test "PATCH /api/v1/lobbies/:id cannot shrink max_users below current membership", %{conn: conn} do
     host = AccountsFixtures.user_fixture()
     member1 = AccountsFixtures.user_fixture()

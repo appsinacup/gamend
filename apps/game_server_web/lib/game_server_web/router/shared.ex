@@ -1,5 +1,46 @@
 defmodule GameServerWeb.Router.Shared do
-  @moduledoc false
+  @moduledoc """
+  Route macros a host app mounts to get the server's HTTP surface.
+
+  A host owns its own router; this module supplies the routes rather than
+  imposing a router, so you choose which surfaces exist. Import it, declare the
+  pipelines, then call the groups you want:
+
+      defmodule MyGame.Router do
+        use Phoenix.Router
+        import GameServerWeb.Router.Shared
+
+        game_server_pipelines()
+
+        game_server_api_routes()
+        game_server_public_api_routes()
+        game_server_authenticated_live_routes()
+        game_server_admin_live_routes(GameServerWeb.Router.Shared.require_admin_on_mount())
+      end
+
+  Leaving a group out removes those endpoints entirely — that is the supported
+  way to ship a smaller surface, rather than deleting files from the dependency.
+
+  ## Groups
+
+  | Macro | Mounts |
+  |---|---|
+  | `game_server_pipelines/0` | The `:browser`, `:api`, `:api_auth` and `:api_admin` pipelines the rest expect. Call it first. |
+  | `game_server_api_routes/0` | Auth, current user, lobbies, chat, KV, groups, parties, friends, notifications, quests, tournaments, matchmaking - the whole player-facing API. |
+  | `game_server_public_api_routes/0` | Unauthenticated listings, each behind its own `LIST_*_ENABLED` flag. |
+  | `game_server_api_auth_routes/0`, `game_server_oauth_routes/0` | Login, registration and the OAuth provider flows. |
+  | `game_server_api_docs_routes/0` | The OpenAPI spec and Swagger UI at `/api/docs`. |
+  | `game_server_authenticated_live_routes/0` | Player-facing LiveViews (lobbies, chat, quests, settings). |
+  | `game_server_admin_live_routes/1` | The `/admin` console. Takes the `on_mount` hook from `require_admin_on_mount/0`. |
+  | `game_server_admin_api_routes/0` | Admin HTTP mirrors of every console action. |
+  | `game_server_static_page_routes/0`, `game_server_support_routes/0` | Host pages and support endpoints. |
+  | `game_server_configured_page_fallback_routes/0` | Catch-all for theme-configured pages. Mount **last**. |
+
+  The narrower macros (`game_server_chat_api_routes/0`,
+  `game_server_quest_api_routes/0` and so on) are the pieces the aggregate
+  macros above are built from; call them directly when you want one subsystem
+  without its neighbours.
+  """
 
   @browser_csp "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' wss:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'"
   @swagger_csp "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' wss:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'"
@@ -106,31 +147,31 @@ defmodule GameServerWeb.Router.Shared do
       end
 
       pipeline :openapi_gate do
-        plug GameServerWeb.Plugs.FeatureGate, env: "OPENAPI_ENABLED", default: true
+        plug GameServerWeb.Plugs.FeatureGate, feature: :openapi
       end
 
       pipeline :list_users_gate do
-        plug GameServerWeb.Plugs.FeatureGate, env: "LIST_USERS_ENABLED", default: true
+        plug GameServerWeb.Plugs.FeatureGate, feature: :list_users
       end
 
       pipeline :list_lobbies_gate do
-        plug GameServerWeb.Plugs.FeatureGate, env: "LIST_LOBBIES_ENABLED", default: true
+        plug GameServerWeb.Plugs.FeatureGate, feature: :list_lobbies
       end
 
       pipeline :list_groups_gate do
-        plug GameServerWeb.Plugs.FeatureGate, env: "LIST_GROUPS_ENABLED", default: true
+        plug GameServerWeb.Plugs.FeatureGate, feature: :list_groups
       end
 
       pipeline :list_leaderboards_gate do
-        plug GameServerWeb.Plugs.FeatureGate, env: "LIST_LEADERBOARDS_ENABLED", default: true
+        plug GameServerWeb.Plugs.FeatureGate, feature: :list_leaderboards
       end
 
-      pipeline :list_achievements_gate do
-        plug GameServerWeb.Plugs.FeatureGate, env: "LIST_ACHIEVEMENTS_ENABLED", default: true
+      pipeline :list_quests_gate do
+        plug GameServerWeb.Plugs.FeatureGate, feature: :list_quests
       end
 
       pipeline :list_matchmaking_gate do
-        plug GameServerWeb.Plugs.FeatureGate, env: "LIST_MATCHMAKING_ENABLED", default: true
+        plug GameServerWeb.Plugs.FeatureGate, feature: :list_matchmaking
       end
 
       pipeline :metrics_auth do
@@ -139,15 +180,32 @@ defmodule GameServerWeb.Router.Shared do
     end
   end
 
-  defmacro game_server_static_page_routes do
+  @doc """
+  Core's static pages. `:home` swaps the controller behind `/` for a host's own
+  (action `:home`); overriding by declaring the route first would compile to an
+  unreachable clause.
+  """
+  defmacro game_server_static_page_routes(opts \\ []) do
+    home = Keyword.get(opts, :home, quote(do: GameServerWeb.PageController))
+
     quote do
+      # Its own scope, so a host controller is not resolved under GameServerWeb.
+      scope "/" do
+        pipe_through :browser
+
+        get "/", unquote(home), :home
+      end
+
       scope "/", GameServerWeb do
         pipe_through :browser
 
-        get "/", PageController, :home
         get "/privacy", PageController, :privacy
-        get "/data-deletion", PageController, :data_deletion
+        get "/data_deletion", PageController, :data_deletion
         get "/terms", PageController, :terms
+
+        # The typed icon set as SVG, so `icon_url` can point at an icon we
+        # already ship. Public and unauthenticated: it is static artwork.
+        get "/icons/:name", IconController, :show
       end
 
       # Serve stored objects (local backend). With S3 the object URL points at the
@@ -160,11 +218,17 @@ defmodule GameServerWeb.Router.Shared do
     end
   end
 
-  defmacro game_server_api_routes do
+  @doc """
+  Every core API route. `:chat_update` swaps the controller behind
+  `PATCH /api/v1/chat/messages/:id` for a host that moderates its own edits.
+  """
+  defmacro game_server_api_routes(opts \\ []) do
+    chat_update = Keyword.get(opts, :chat_update, quote(do: ChatController))
+
     quote do
       game_server_api_docs_routes()
       game_server_public_api_routes()
-      game_server_achievement_api_routes()
+      game_server_quest_api_routes()
       game_server_group_api_routes()
       game_server_kv_api_routes()
       game_server_account_lobby_api_routes()
@@ -173,7 +237,7 @@ defmodule GameServerWeb.Router.Shared do
       game_server_hook_leaderboard_party_api_routes()
       game_server_tournament_api_routes()
       game_server_matchmaking_api_routes()
-      game_server_chat_api_routes()
+      game_server_chat_api_routes(update: unquote(chat_update))
       game_server_admin_api_routes()
       game_server_api_auth_routes()
     end
@@ -264,7 +328,7 @@ defmodule GameServerWeb.Router.Shared do
 
         post "/tournaments/:id/join", TournamentController, :join
         delete "/tournaments/:id/join", TournamentController, :leave
-        get "/tournaments/:id/my-match", TournamentController, :my_match
+        get "/tournaments/:id/my_match", TournamentController, :my_match
       end
     end
   end
@@ -289,20 +353,20 @@ defmodule GameServerWeb.Router.Shared do
     end
   end
 
-  defmacro game_server_achievement_api_routes do
+  defmacro game_server_quest_api_routes do
     quote do
       scope "/api/v1", GameServerWeb.Api.V1, as: :api_v1 do
         pipe_through [:api, :api_auth]
 
-        get "/achievements/me", AchievementController, :me
+        get "/me/quests", QuestController, :me
+        post "/me/quests/:key/claim", QuestController, :claim
       end
 
       scope "/api/v1", GameServerWeb.Api.V1, as: :api_v1 do
-        pipe_through [:api, :api_optional_auth, :list_achievements_gate]
+        pipe_through [:api, :api_optional_auth, :list_quests_gate]
 
-        get "/achievements", AchievementController, :index
-        get "/achievements/user/:user_id", AchievementController, :user_achievements
-        get "/achievements/:slug", AchievementController, :show
+        get "/quests", QuestController, :index
+        get "/quests/user/:user_id", QuestController, :user_quests
       end
     end
   end
@@ -350,13 +414,18 @@ defmodule GameServerWeb.Router.Shared do
         post "/lobbies", LobbyController, :create
         post "/lobbies/quick_join", LobbyController, :quick_join
         patch "/lobbies", LobbyController, :update
+        post "/lobbies/state", LobbyController, :set_state
         post "/lobbies/:id/join", LobbyController, :join
         post "/lobbies/leave", LobbyController, :leave
         post "/lobbies/kick", LobbyController, :kick
+        post "/lobbies/ready_check", ReadyCheckController, :open
+        delete "/lobbies/ready_check", ReadyCheckController, :cancel
+        get "/me/ready_check", ReadyCheckController, :show
+        post "/me/ready_check", ReadyCheckController, :respond
         patch "/me/password", MeController, :update_password
         patch "/me/display_name", MeController, :update_display_name
         patch "/me/username", MeController, :update_username
-        post "/me/avatar/upload-url", MeController, :avatar_upload_url
+        post "/me/avatar/upload_url", MeController, :avatar_upload_url
         post "/me/avatar", MeController, :set_avatar
         put "/storage/upload", StorageController, :upload
         get "/me/wallet", EconomyController, :wallet
@@ -370,6 +439,9 @@ defmodule GameServerWeb.Router.Shared do
         delete "/me/providers/:provider", ProviderController, :unlink
         post "/me/device", ProviderController, :link_device
         delete "/me/device", ProviderController, :unlink_device
+        post "/me/push_tokens", PushTokenController, :create
+        get "/me/push_tokens", PushTokenController, :index
+        delete "/me/push_tokens/:id", PushTokenController, :delete
       end
     end
   end
@@ -381,7 +453,7 @@ defmodule GameServerWeb.Router.Shared do
 
         post "/friends", FriendController, :create
         get "/me/friends", FriendController, :index
-        get "/me/friend-requests", FriendController, :requests
+        get "/me/friend_requests", FriendController, :requests
         get "/me/blocked", FriendController, :blocked
         post "/friends/:id/accept", FriendController, :accept
         post "/friends/:id/reject", FriendController, :reject
@@ -416,6 +488,8 @@ defmodule GameServerWeb.Router.Shared do
         delete "/groups/:id/join_requests/:request_id", GroupController, :cancel_request
         post "/groups/:id/invite", GroupController, :invite
         post "/groups/:id/notify", GroupController, :notify_group
+        post "/groups/:id/icon/upload_url", GroupController, :icon_upload_url
+        post "/groups/:id/icon", GroupController, :set_icon
       end
     end
   end
@@ -441,11 +515,15 @@ defmodule GameServerWeb.Router.Shared do
         get "/parties/invitations/sent", PartyController, :list_sent_invitations
         post "/parties/create_lobby", PartyController, :create_lobby
         post "/parties/join_lobby/:id", PartyController, :join_lobby
+        post "/parties/ready_check", ReadyCheckController, :open_party
+        delete "/parties/ready_check", ReadyCheckController, :cancel_party
       end
     end
   end
 
-  defmacro game_server_chat_api_routes do
+  defmacro game_server_chat_api_routes(opts \\ []) do
+    update = Keyword.get(opts, :update, quote(do: ChatController))
+
     quote do
       scope "/api/v1", GameServerWeb.Api.V1, as: :api_v1 do
         pipe_through [:api, :api_auth]
@@ -453,7 +531,7 @@ defmodule GameServerWeb.Router.Shared do
         get "/chat/messages", ChatController, :index
         get "/chat/messages/:id", ChatController, :show
         post "/chat/messages", ChatController, :send
-        patch "/chat/messages/:id", ChatController, :update
+        patch "/chat/messages/:id", unquote(update), :update
         delete "/chat/messages/:id", ChatController, :delete
         post "/chat/read", ChatController, :mark_read
         get "/chat/unread", ChatController, :unread
@@ -465,7 +543,7 @@ defmodule GameServerWeb.Router.Shared do
     quote do
       game_server_admin_kv_leaderboard_api_routes()
       game_server_admin_management_api_routes()
-      game_server_admin_chat_achievement_api_routes()
+      game_server_admin_chat_quest_api_routes()
     end
   end
 
@@ -483,6 +561,8 @@ defmodule GameServerWeb.Router.Shared do
         post "/leaderboards", LeaderboardController, :create
         patch "/leaderboards/:id", LeaderboardController, :update
         post "/leaderboards/:id/end", LeaderboardController, :end_leaderboard
+        post "/leaderboards/:id/icon/upload_url", LeaderboardController, :icon_upload_url
+        post "/leaderboards/:id/icon", LeaderboardController, :set_icon
         delete "/leaderboards/:id", LeaderboardController, :delete
         post "/leaderboards/:id/records", LeaderboardRecordController, :create
         patch "/leaderboards/:id/records/:record_id", LeaderboardRecordController, :update
@@ -495,6 +575,8 @@ defmodule GameServerWeb.Router.Shared do
         post "/tournaments", TournamentController, :create
         patch "/tournaments/:id", TournamentController, :update
         delete "/tournaments/:id", TournamentController, :delete
+        post "/tournaments/:id/icon/upload_url", TournamentController, :icon_upload_url
+        post "/tournaments/:id/icon", TournamentController, :set_icon
         post "/tournaments/:id/cancel", TournamentController, :cancel
         post "/tournaments/:id/reopen", TournamentController, :reopen
         post "/tournaments/:id/draw", TournamentController, :draw
@@ -504,6 +586,9 @@ defmodule GameServerWeb.Router.Shared do
         get "/matchmaking/tickets", MatchmakingController, :index
         delete "/matchmaking/tickets/:id", MatchmakingController, :delete
         get "/matchmaking/stats", MatchmakingController, :stats
+        get "/ready_checks", ReadyCheckController, :index
+        delete "/ready_checks/:id", ReadyCheckController, :delete
+        get "/ready_checks/stats", ReadyCheckController, :stats
       end
     end
   end
@@ -521,6 +606,9 @@ defmodule GameServerWeb.Router.Shared do
         get "/notifications", NotificationController, :index
         post "/notifications", NotificationController, :create
         delete "/notifications/:id", NotificationController, :delete
+        get "/push/tokens", PushController, :index
+        delete "/push/tokens/:id", PushController, :delete
+        post "/push/send", PushController, :send
         get "/groups", GroupController, :index
         patch "/groups/:id", GroupController, :update
         delete "/groups/:id", GroupController, :delete
@@ -536,13 +624,15 @@ defmodule GameServerWeb.Router.Shared do
         post "/economy/grant", EconomyController, :grant
         post "/economy/spend", EconomyController, :spend
         get "/economy/items", EconomyController, :items
-        post "/economy/grant-item", EconomyController, :grant_item
-        post "/economy/consume-item", EconomyController, :consume_item
+        post "/economy/grant_item", EconomyController, :grant_item
+        post "/economy/consume_item", EconomyController, :consume_item
+        get "/retention", RetentionController, :show
+        post "/retention/run", RetentionController, :run
       end
     end
   end
 
-  defmacro game_server_admin_chat_achievement_api_routes do
+  defmacro game_server_admin_chat_quest_api_routes do
     quote do
       scope "/api/v1/admin", GameServerWeb.Api.V1.Admin, as: :api_v1_admin do
         pipe_through [:api, :api_auth, :api_admin]
@@ -550,14 +640,17 @@ defmodule GameServerWeb.Router.Shared do
         get "/chat", ChatController, :index
         delete "/chat/:id", ChatController, :delete
         delete "/chat/conversation", ChatController, :delete_conversation
-        get "/achievements", AchievementController, :index
-        post "/achievements", AchievementController, :create
-        patch "/achievements/:id", AchievementController, :update
-        delete "/achievements/:id", AchievementController, :delete
-        post "/achievements/grant", AchievementController, :grant
-        post "/achievements/revoke", AchievementController, :revoke
-        post "/achievements/unlock", AchievementController, :unlock
-        post "/achievements/increment", AchievementController, :increment
+        get "/quests", QuestController, :index
+        post "/quests", QuestController, :create
+        patch "/quests/:id", QuestController, :update
+        delete "/quests/:id", QuestController, :delete
+        post "/quests/:id/icon/upload_url", QuestController, :icon_upload_url
+        post "/quests/:id/icon", QuestController, :set_icon
+        get "/quests/progress", QuestController, :progress
+        post "/quests/grant", QuestController, :grant
+        post "/quests/reset", QuestController, :reset
+        post "/quests/claim", QuestController, :claim
+        get "/quests/:key/funnel", QuestController, :funnel
       end
     end
   end
@@ -614,7 +707,7 @@ defmodule GameServerWeb.Router.Shared do
   admin pipeline and `on_mount` chain without the host restating them:
 
       game_server_admin_live_routes @require_admin_on_mount do
-        live "/admin/my-thing", MyThingLive, :index
+        live "/admin/my_thing", MyThingLive, :index
       end
 
   It exists so a host that needs one extra admin page does not fork the whole
@@ -635,6 +728,7 @@ defmodule GameServerWeb.Router.Shared do
 
           live "/admin", AdminLive.Index, :index
           live "/admin/config", AdminLive.Config, :index
+          live "/admin/settings", AdminLive.Settings, :index
           live "/admin/kv", AdminLive.KV, :index
           live "/admin/lobbies", AdminLive.Lobbies, :index
           live "/admin/lobbies/live", LobbyLive.Index, :index
@@ -644,17 +738,18 @@ defmodule GameServerWeb.Router.Shared do
           live "/admin/users", AdminLive.Users, :index
           live "/admin/sessions", AdminLive.Sessions, :index
           live "/admin/notifications", AdminLive.Notifications, :index
+          live "/admin/push", AdminLive.Push, :index
           live "/admin/groups", AdminLive.Groups, :index
           live "/admin/parties", AdminLive.Parties, :index
           live "/admin/blacklist", AdminLive.Blacklist, :index
           live "/admin/chat", AdminLive.Chat, :index
-          live "/admin/achievements", AdminLive.Achievements, :index
+          live "/admin/quests", AdminLive.Quests, :index
           live "/admin/payments", AdminLive.Payments, :index
           live "/admin/translations", AdminLive.Translations, :index
           live "/admin/connections", AdminLive.Connections, :index
-          live "/admin/rate-limiting", AdminLive.RateLimiting, :index
+          live "/admin/rate_limiting", AdminLive.RateLimiting, :index
           live "/admin/logs", AdminLive.Logs, :index
-          live "/admin/lobby-snapshots", AdminLive.LobbySnapshots, :index
+          live "/admin/lobby_snapshots", AdminLive.LobbySnapshots, :index
           live "/admin/geo", AdminLive.Geo, :index
           live "/admin/system", AdminLive.System, :index
           live "/admin/runtime", AdminLive.Runtime, :index
@@ -665,38 +760,79 @@ defmodule GameServerWeb.Router.Shared do
     end
   end
 
-  defmacro game_server_authenticated_live_routes(on_mount) do
+  @doc """
+  Core's authenticated LiveView routes, extendable the same way as the admin ones.
+
+  `:do` splices host routes into the same `live_session`; `:chat` swaps the chat
+  LiveView for a host's own. The session name is fixed, so a host cannot declare
+  a second `live_session :require_authenticated_user` of its own — it extends
+  this one or forks the lot.
+  """
+  defmacro game_server_authenticated_live_routes(on_mount, opts \\ []) do
+    host_routes = Keyword.get(opts, :do)
+    chat = Keyword.get(opts, :chat, quote(do: ChatLive))
+
     quote do
       scope "/", GameServerWeb do
         pipe_through [:browser, :require_authenticated_user]
 
         live_session :require_authenticated_user,
           on_mount: unquote(on_mount) do
+          unquote(host_routes)
+
           live "/users/settings", UserLive.Settings, :edit
-          live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
+          live "/users/settings/confirm_email/:token", UserLive.Settings, :confirm_email
           live "/store", StoreLive.Index, :index
           live "/store/success", StoreLive.Index, :success
           live "/store/cancel", StoreLive.Index, :cancel
           live "/notifications", NotificationsLive, :index
-          live "/chat", ChatLive, :index
+          live "/chat", unquote(chat), :index
         end
 
-        post "/users/update-password", UserSessionController, :update_password
+        post "/users/update_password", UserSessionController, :update_password
         get "/payments/downloads/:id", PaymentDownloadController, :show
       end
     end
   end
 
+  @doc """
+  Core's public LiveView routes, extendable with host-specific ones via `:do`.
+
+  Same reasoning as the admin and authenticated variants: `live_session
+  :current_user` can only be declared once, so a host adding one public page
+  extends this rather than restating core's list.
+  """
   defmacro game_server_current_user_routes(on_mount, opts \\ []) do
+    host_routes = Keyword.get(opts, :do)
     docs = Keyword.get(opts, :docs)
-    changelog = Keyword.fetch!(opts, :changelog)
-    roadmap = Keyword.fetch!(opts, :roadmap)
-    blog = Keyword.fetch!(opts, :blog)
+    changelog = Keyword.get(opts, :changelog)
+    roadmap = Keyword.get(opts, :roadmap)
+    blog = Keyword.get(opts, :blog)
 
     docs_route =
       if docs do
         quote do
           live "/docs/setup", unquote(docs), :index
+        end
+      end
+
+    # A host that renders its own changelog/roadmap/blog omits these; the routes
+    # are not emitted at all rather than being shadowed by a host route.
+    changelog_route =
+      if changelog do
+        quote(do: live("/changelog", unquote(changelog), :index))
+      end
+
+    roadmap_route =
+      if roadmap do
+        quote(do: live("/roadmap", unquote(roadmap), :index))
+      end
+
+    blog_routes =
+      if blog do
+        quote do
+          live "/blog", unquote(blog), :index
+          live "/blog/:slug", unquote(blog), :show
         end
       end
 
@@ -706,10 +842,12 @@ defmodule GameServerWeb.Router.Shared do
 
         live_session :current_user,
           on_mount: unquote(on_mount) do
+          unquote(host_routes)
+
           live "/users/register", UserLive.Registration, :new
           live "/groups", GroupsLive, :index
           live "/groups/:id", GroupsLive, :show
-          live "/achievements", AchievementsLive, :index
+          live "/quests", QuestsLive, :index
           live "/tournaments", TournamentsLive, :index
           # Slug-first for SEO; older editions get a stable 1-based number.
           # A UUID still resolves in the :slug position, so old links keep working.
@@ -720,20 +858,19 @@ defmodule GameServerWeb.Router.Shared do
           live "/leaderboards", LeaderboardsLive, :index
           live "/leaderboards/:slug/:id", LeaderboardsLive, :show
           live "/leaderboards/:slug", LeaderboardsLive, :show_active
-          live "/users/log-in", UserLive.Login, :new
-          live "/users/log-in/:token", UserLive.Confirmation, :new
+          live "/users/log_in", UserLive.Login, :new
+          live "/users/log_in/:token", UserLive.Confirmation, :new
           get "/users/confirm/:token", UserSessionController, :confirm
           unquote(docs_route)
-          live "/changelog", unquote(changelog), :index
-          live "/roadmap", unquote(roadmap), :index
-          live "/blog", unquote(blog), :index
-          live "/blog/:slug", unquote(blog), :show
+          unquote(changelog_route)
+          unquote(roadmap_route)
+          unquote(blog_routes)
           live "/auth/success", AuthSuccessLive, :index
           live "/play", PlayLive, :index
         end
 
-        post "/users/log-in", UserSessionController, :create
-        delete "/users/log-out", UserSessionController, :delete
+        post "/users/log_in", UserSessionController, :create
+        delete "/users/log_out", UserSessionController, :delete
       end
     end
   end

@@ -4,6 +4,7 @@ defmodule GameServerWeb.Api.V1.MeController do
 
   alias GameServer.Accounts.Scope
   alias GameServer.Accounts.User
+  alias GameServerWeb.Uploads
   alias OpenApiSpex.Schema
 
   @error_schema %Schema{type: :object, properties: %{error: %Schema{type: :string}}}
@@ -282,18 +283,7 @@ defmodule GameServerWeb.Api.V1.MeController do
 
   def avatar_upload_url(conn, params) do
     user = Scope.user(conn.assigns.current_scope)
-    content_type = params["content_type"] || ""
-
-    case GameServer.Storage.validate_upload(content_type, 0) do
-      :ok ->
-        filename = "avatar" <> ext_for(content_type)
-        key = GameServer.Storage.build_key("avatars", user.id, filename)
-        {:ok, ticket} = GameServer.Storage.presigned_upload(key, content_type: content_type)
-        json(conn, ticket)
-
-      {:error, reason} ->
-        conn |> put_status(:bad_request) |> json(%{error: to_string(reason)})
-    end
+    Uploads.ticket(conn, "avatars", user.id, "avatar", Uploads.content_type(params))
   end
 
   operation(:set_avatar,
@@ -314,34 +304,16 @@ defmodule GameServerWeb.Api.V1.MeController do
     ]
   )
 
-  def set_avatar(conn, %{"key" => key}) when is_binary(key) do
+  def set_avatar(conn, params) do
     user = Scope.user(conn.assigns.current_scope)
 
-    cond do
-      not String.starts_with?(key, "avatars/#{user.id}/") ->
-        conn |> put_status(:forbidden) |> json(%{error: "forbidden"})
-
-      not GameServer.Storage.exists?(key) ->
-        conn |> put_status(:bad_request) |> json(%{error: "object_not_found"})
-
-      true ->
-        url = GameServer.Storage.url(key)
-
-        case GameServer.Accounts.update_user_avatar(user, url) do
-          {:ok, updated} -> json(conn, %{ok: true, profile_url: updated.profile_url})
-          {:error, _} -> conn |> put_status(:bad_request) |> json(%{error: "invalid_data"})
-        end
-    end
+    Uploads.confirm(conn, "avatars", user.id, params["key"], fn url ->
+      case GameServer.Accounts.update_user_avatar(user, url) do
+        {:ok, updated} -> json(conn, %{ok: true, profile_url: updated.profile_url})
+        {:error, _} -> conn |> put_status(:bad_request) |> json(%{error: "invalid_data"})
+      end
+    end)
   end
-
-  def set_avatar(conn, _), do: conn |> put_status(:bad_request) |> json(%{error: "missing_key"})
-
-  # Extension for the object key, derived from the declared content type.
-  defp ext_for("image/png"), do: ".png"
-  defp ext_for("image/jpeg"), do: ".jpg"
-  defp ext_for("image/webp"), do: ".webp"
-  defp ext_for("image/gif"), do: ".gif"
-  defp ext_for(_), do: ""
 
   operation(:delete,
     operation_id: "delete_current_user",

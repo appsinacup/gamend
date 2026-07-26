@@ -340,6 +340,7 @@ defmodule GameServer.Leaderboards do
       slug: slug,
       title: latest.title,
       description: latest.description,
+      icon_url: latest.icon_url,
       metadata: latest.metadata,
       active_id: active && active.id,
       latest_id: latest.id,
@@ -619,6 +620,10 @@ defmodule GameServer.Leaderboards do
   defp run_after_score_submitted({:ok, record} = result) do
     GameServer.Async.run(fn ->
       GameServer.Hooks.internal_call(:after_score_submitted, [record])
+
+      GameServer.Quests.report_event(record.user_id, "score_submitted", 1, %{
+        "leaderboard_id" => record.leaderboard_id
+      })
     end)
 
     result

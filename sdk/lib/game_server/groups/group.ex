@@ -10,6 +10,7 @@ defmodule GameServer.Groups.Group do
   - `id` - Group ID (integer)
   - `title` - Group title (string)
   - `description` - Group description (string)
+  - `icon_url` - Optional icon URL; nil means clients show their type default
   - `type` - Group type: `"public"`, `"private"`, or `"hidden"` (string)
   - `max_members` - Maximum number of members (integer, default 100)
   - `metadata` - Arbitrary group metadata (map)
@@ -23,6 +24,7 @@ defmodule GameServer.Groups.Group do
           id: integer(),
           title: String.t(),
           description: String.t(),
+          icon_url: String.t() | nil,
           type: String.t(),
           max_members: integer(),
           metadata: map(),
@@ -36,6 +38,7 @@ defmodule GameServer.Groups.Group do
     :id,
     :title,
     :description,
+    :icon_url,
     :type,
     :max_members,
     :metadata,

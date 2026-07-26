@@ -19,7 +19,7 @@ defmodule GameServerWeb.Api.V1.Admin.NotificationController do
       sender_name: %Schema{type: :string, description: "Display name of the sender"},
       recipient_id: %Schema{type: :string, format: :uuid, description: "User ID of the recipient"},
       title: %Schema{type: :string, description: "Notification title"},
-      content: %Schema{type: :string, description: "Notification body text", nullable: true},
+      content: %Schema{type: :string, description: "Notification body text"},
       metadata: %Schema{type: :object, description: "Arbitrary metadata"},
       inserted_at: %Schema{
         type: :string,
@@ -153,7 +153,7 @@ defmodule GameServerWeb.Api.V1.Admin.NotificationController do
   # ---------------------------------------------------------------------------
 
   def index(conn, params) do
-    {page, page_size} = parse_page_params(params)
+    {page, page_size} = GameServerWeb.Pagination.params(params)
 
     filters =
       %{}

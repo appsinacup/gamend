@@ -5,12 +5,12 @@ config :bcrypt_elixir, :log_rounds, 1
 
 # Configure your database
 # Use PostgreSQL if environment variables are set, otherwise use SQLite
-if System.get_env("DATABASE_URL") ||
-     (System.get_env("POSTGRES_HOST") && System.get_env("POSTGRES_USER")) do
+if System.get_env("GAMEND_DB_URL") ||
+     (System.get_env("GAMEND_DB_POSTGRES_HOST") && System.get_env("GAMEND_DB_POSTGRES_USER")) do
   # Use PostgreSQL when configured
   database_url =
-    System.get_env("DATABASE_URL") ||
-      "ecto://#{System.get_env("POSTGRES_USER")}:#{System.get_env("POSTGRES_PASSWORD")}@#{System.get_env("POSTGRES_HOST")}:#{System.get_env("POSTGRES_PORT", "5432")}/#{System.get_env("POSTGRES_DB", "game_server_test")}"
+    System.get_env("GAMEND_DB_URL") ||
+      "ecto://#{System.get_env("GAMEND_DB_POSTGRES_USER")}:#{System.get_env("GAMEND_DB_POSTGRES_PASSWORD")}@#{System.get_env("GAMEND_DB_POSTGRES_HOST")}:#{System.get_env("GAMEND_DB_POSTGRES_PORT", "5432")}/#{System.get_env("GAMEND_DB_POSTGRES_DB", "game_server_test")}"
 
   config :game_server_core, GameServer.Repo,
     url: database_url,
@@ -68,6 +68,19 @@ config :swoosh, :api_client, false
 # Print only warnings and errors during test
 config :logger, level: :warning
 
+# Run GameServer.Async side effects inline so assertions observe them without
+# racing, and so a task can't outlive the test's DB sandbox owner.
+config :game_server_core, async_inline: true
+
+# The periodic tournament tick has no sandbox connection in tests; leave the
+# ticker supervised but idle. Tests drive GameServer.Tournaments.tick/0 directly.
+config :game_server_core, GameServer.Tournaments.Ticker, enabled: false
+
+# Same for the matchmaking sweep: no sandbox connection, and on SQLite it
+# collides with the test's open write transaction ("database is locked").
+# Tests drive GameServer.Matchmaking.Worker.sweep/0 directly.
+config :game_server_core, GameServer.Matchmaking.Worker, enabled: false
+
 # Disable app-level caching in tests to avoid stale reads across assertions.
 # Still provide the multilevel configuration so the cache can start.
 config :game_server_core, GameServer.Cache,
@@ -101,3 +114,9 @@ config :game_server_core, GameServer.Accounts.StalePresenceSweeper, enabled: fal
 # Oban.Testing helpers and drain explicitly. Keeps the Cron tick from firing
 # against the Sandbox.
 config :game_server_core, Oban, testing: :manual
+
+# The declared setting, not just the endpoint's copy: GameServer.Settings
+# validates `auth.secret_key_base` at boot, and dev should not warn about a
+# secret it demonstrably has.
+config :game_server_core, GameServer.Accounts,
+  secret_key_base: "dJoNJZBOt08JlBREyPV5xvuOdwgHPORxK9WHp/k3Cs+g0R9ctyheJ8/CMeg/AdI1"

@@ -4,6 +4,7 @@ defmodule GameServerWeb.Api.V1.Admin.TournamentController do
 
   alias GameServer.Tournaments
   alias GameServer.Tournaments.Tournament
+  alias GameServerWeb.Uploads
   alias OpenApiSpex.Schema
 
   tags(["Admin – Tournaments"])
@@ -17,6 +18,7 @@ defmodule GameServerWeb.Api.V1.Admin.TournamentController do
       slug: %Schema{type: :string},
       title: %Schema{type: :string},
       description: %Schema{type: :string},
+      icon_url: %Schema{type: :string, description: "Empty when unset"},
       state: %Schema{
         type: :string,
         enum: ["scheduled", "registration", "running", "finished", "cancelled"]
@@ -24,7 +26,7 @@ defmodule GameServerWeb.Api.V1.Admin.TournamentController do
       registration_opens_at: %Schema{type: :string, format: "date-time", nullable: true},
       starts_at: %Schema{type: :string, format: "date-time", nullable: true},
       ends_at: %Schema{type: :string, format: "date-time", nullable: true},
-      recur: %Schema{type: :string, nullable: true},
+      recur: %Schema{type: :string},
       max_entries: %Schema{type: :integer, nullable: true},
       team_size: %Schema{type: :integer},
       bracket_size: %Schema{type: :integer},
@@ -45,6 +47,7 @@ defmodule GameServerWeb.Api.V1.Admin.TournamentController do
       slug: %Schema{type: :string},
       title: %Schema{type: :string},
       description: %Schema{type: :string},
+      icon_url: %Schema{type: :string, description: "Empty when unset"},
       registration_opens_at: %Schema{type: :string, format: "date-time"},
       starts_at: %Schema{type: :string, format: "date-time", nullable: true},
       ends_at: %Schema{type: :string, format: "date-time"},
@@ -105,6 +108,70 @@ defmodule GameServerWeb.Api.V1.Admin.TournamentController do
         {:ok, tournament} -> json(conn, %{data: serialize(tournament)})
         {:error, changeset} -> changeset_error(conn, changeset)
       end
+    end)
+  end
+
+  operation(:icon_upload_url,
+    operation_id: "admin_tournament_icon_upload_url",
+    summary: "Request an upload ticket for a tournament icon (admin)",
+    description: """
+    Step one of two. Returns a presigned ticket; PUT the image straight to
+    `url`, then POST the returned `key` to the icon endpoint. Bytes never pass
+    through the app server.
+    """,
+    security: [%{"authorization" => []}],
+    parameters: [id: [in: :path, schema: %Schema{type: :string}, required: true]],
+    request_body:
+      {"Declared content type", "application/json",
+       %Schema{
+         type: :object,
+         properties: %{content_type: %Schema{type: :string, example: "image/png"}},
+         required: [:content_type]
+       }},
+    responses: [
+      ok: {"Upload ticket", "application/json", %Schema{type: :object}},
+      bad_request: {"Unsupported content type", "application/json", @error_schema},
+      not_found: {"Not found", "application/json", @error_schema}
+    ]
+  )
+
+  def icon_upload_url(conn, %{"id" => id} = params) do
+    with_tournament(conn, id, fn tournament ->
+      Uploads.ticket(
+        conn,
+        "icons/tournaments",
+        tournament.id,
+        "icon",
+        Uploads.content_type(params)
+      )
+    end)
+  end
+
+  operation(:set_icon,
+    operation_id: "admin_set_tournament_icon",
+    summary: "Confirm an uploaded tournament icon (admin)",
+    description: "Step two: records a previously uploaded object as the icon.",
+    security: [%{"authorization" => []}],
+    parameters: [id: [in: :path, schema: %Schema{type: :string}, required: true]],
+    request_body:
+      {"Uploaded object key", "application/json",
+       %Schema{type: :object, properties: %{key: %Schema{type: :string}}, required: [:key]}},
+    responses: [
+      ok: {"Updated tournament", "application/json", %Schema{type: :object}},
+      bad_request: {"Object not found", "application/json", @error_schema},
+      forbidden: {"Key not owned by this tournament", "application/json", @error_schema},
+      not_found: {"Not found", "application/json", @error_schema}
+    ]
+  )
+
+  def set_icon(conn, %{"id" => id} = params) do
+    with_tournament(conn, id, fn tournament ->
+      Uploads.confirm(conn, "icons/tournaments", tournament.id, params["key"], fn url ->
+        case Tournaments.update_tournament(tournament, %{"icon_url" => url}) do
+          {:ok, updated} -> json(conn, %{data: serialize(updated)})
+          {:error, changeset} -> changeset_error(conn, changeset)
+        end
+      end)
     end)
   end
 
@@ -296,11 +363,12 @@ defmodule GameServerWeb.Api.V1.Admin.TournamentController do
       slug: t.slug,
       title: t.title,
       description: t.description,
+      icon_url: t.icon_url || "",
       state: t.state,
       registration_opens_at: t.registration_opens_at,
       starts_at: t.starts_at,
       ends_at: t.ends_at,
-      recur: t.recur,
+      recur: t.recur || "",
       max_entries: t.max_entries,
       team_size: t.team_size,
       bracket_size: t.bracket_size,

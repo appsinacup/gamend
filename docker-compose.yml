@@ -4,30 +4,30 @@ services:
     ports:
       - "4000:4000"
       # Uncomment to enable HTTPS directly in Phoenix (no reverse proxy needed).
-      # Set SSL_CERTFILE and SSL_KEYFILE env vars below.
+      # Set GAMEND_TLS_CERTFILE and GAMEND_TLS_KEYFILE env vars below.
       # - "443:443"
     # Enable this to set custom env values
     #env_file:
     #  - .env
     environment:
       # Run mix phx.gen.secret
-      SECRET_KEY_BASE: 1DdaMAX56nUh1tvXniEEuQNsGNvgADndawxrJ3YFZlLXc9EOahC/NFDgowCDUFwb
+      GAMEND_AUTH_SECRET_KEY_BASE: 1DdaMAX56nUh1tvXniEEuQNsGNvgADndawxrJ3YFZlLXc9EOahC/NFDgowCDUFwb
       # Path to server module plugins
-      GAME_SERVER_PLUGINS_DIR: modules/plugins_examples
-      DEVICE_AUTH_ENABLED: true
-      PHX_HOST: localhost
+      GAMEND_CONTENT_PLUGINS_DIR: modules/plugins_examples
+      GAMEND_AUTH_DEVICE_AUTH_ENABLED: true
+      GAMEND_HTTP_HOST: localhost
       # Disable this in prod
-      MAILBOX_PREVIEW_ENABLED: true
+      GAMEND_FEATURES_MAILBOX_PREVIEW: true
       # ── HTTPS (uncomment to enable) ──
-      # SSL_CERTFILE: /etc/letsencrypt/live/${PHX_HOST:-localhost}/fullchain.pem
-      # SSL_KEYFILE: /etc/letsencrypt/live/${PHX_HOST:-localhost}/privkey.pem
-      # FORCE_SSL: "true"
-      # ACME_WEBROOT: /var/www/acme
+      # GAMEND_TLS_CERTFILE: /etc/letsencrypt/live/${GAMEND_HTTP_HOST:-localhost}/fullchain.pem
+      # GAMEND_TLS_KEYFILE: /etc/letsencrypt/live/${GAMEND_HTTP_HOST:-localhost}/privkey.pem
+      # GAMEND_TLS_FORCE: "true"
+      # GAMEND_TLS_ACME_WEBROOT: /var/www/acme
       # ── GeoIP (country lookup from IP) ──
       # Download GeoLite2-Country.mmdb from MaxMind (free account required):
       # https://dev.maxmind.com/geoip/geolite2-free-geolocation-data
       # Place it at ./data/GeoLite2-Country.mmdb
-      GEOIP_DB_PATH: /app/data/GeoLite2-Country.mmdb
+      GAMEND_CONTENT_GEOIP_DB_PATH: /app/data/GeoLite2-Country.mmdb
     volumes:
       - ./modules:/app/modules
       - ./priv/static/images:/app/priv/static/images

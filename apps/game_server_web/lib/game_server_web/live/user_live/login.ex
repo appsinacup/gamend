@@ -3,7 +3,6 @@ defmodule GameServerWeb.UserLive.Login do
 
   alias GameServer.Accounts
   alias GameServer.Accounts.Scope
-  alias GameServer.Env
 
   @impl true
   def render(assigns) do
@@ -40,7 +39,7 @@ defmodule GameServerWeb.UserLive.Login do
             :let={f}
             for={@form}
             id="login_form_magic"
-            action={~p"/users/log-in"}
+            action={~p"/users/log_in"}
             phx-submit="submit_magic"
           >
             <.input
@@ -63,7 +62,7 @@ defmodule GameServerWeb.UserLive.Login do
             :let={f}
             for={@form}
             id="login_form_password"
-            action={~p"/users/log-in"}
+            action={~p"/users/log_in"}
             phx-submit="submit_password"
             phx-trigger-action={@trigger_submit}
           >
@@ -200,7 +199,7 @@ defmodule GameServerWeb.UserLive.Login do
         if user = Accounts.get_user_by_email(email) do
           Accounts.deliver_login_instructions(
             user,
-            &url(~p"/users/log-in/#{&1}")
+            &url(~p"/users/log_in/#{&1}")
           )
         end
 
@@ -209,7 +208,7 @@ defmodule GameServerWeb.UserLive.Login do
         {:noreply,
          socket
          |> put_flash(:info, info)
-         |> push_navigate(to: ~p"/users/log-in")}
+         |> push_navigate(to: ~p"/users/log_in")}
 
       {:error, _retry_after} ->
         {:noreply,
@@ -225,7 +224,7 @@ defmodule GameServerWeb.UserLive.Login do
       Application.get_env(:game_server_core, GameServer.Mailer)[:adapter] == Swoosh.Adapters.Local
 
     mailbox_preview_enabled? =
-      Env.bool("MAILBOX_PREVIEW_ENABLED", false)
+      GameServerWeb.Features.enabled?(:mailbox_preview)
 
     adapter_is_local? and (dev_env?() or mailbox_preview_enabled?)
   end

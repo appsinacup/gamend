@@ -305,6 +305,7 @@ defmodule GameServer.Notifications do
     |> order_by([n], desc: n.inserted_at, desc: n.id)
     |> limit(^page_size)
     |> offset(^offset)
+    |> preload([:sender, :recipient])
     |> Repo.all()
   end
 
@@ -473,6 +474,7 @@ defmodule GameServer.Notifications do
   defp upsert_notification(sender_id, recipient_id, attrs) do
     content = Map.get(attrs, "content") || Map.get(attrs, :content, "")
     metadata = Map.get(attrs, "metadata") || Map.get(attrs, :metadata, %{})
+    icon_url = Map.get(attrs, "icon_url") || Map.get(attrs, :icon_url)
 
     %Notification{}
     |> Notification.changeset(attrs)
@@ -482,6 +484,7 @@ defmodule GameServer.Notifications do
       on_conflict: [
         set: [
           content: content,
+          icon_url: icon_url,
           metadata: metadata,
           read: false,
           updated_at: DateTime.utc_now(:second)
@@ -495,10 +498,45 @@ defmodule GameServer.Notifications do
         invalidate_notifications_cache(recipient_id)
         invalidate_notifications_cache(sender_id)
         broadcast_user(recipient_id, {:notification_created, notification})
+        push_notification(notification)
         {:ok, notification}
 
       error ->
         error
+    end
+  end
+
+  # Best-effort bridge to push so an offline recipient still gets pinged:
+  # runs after the row is committed and broadcast, and its outcome never
+  # affects the notification (delivery itself is queued jobs). The cached
+  # has-live-tokens check keeps the common no-device case free.
+  defp push_notification(%Notification{} = notification) do
+    if GameServer.Push.user_has_live_tokens?(notification.recipient_id) do
+      alias GameServer.Push.Message
+
+      # Byte-safe truncation: notification titles/content allow more than the
+      # push byte caps (and titles are personalized, so multibyte names can
+      # exceed the cap even at equal char limits) — a push must degrade to a
+      # shorter preview, never be dropped by validation.
+      _ =
+        GameServer.Push.send_to_user(notification.recipient_id, %{
+          "title" => Message.truncate(notification.title, GameServer.Limits.get(:max_push_title)),
+          "body" =>
+            Message.truncate(notification.content || "", GameServer.Limits.get(:max_push_body)),
+          "data" => push_data(notification),
+          # One collapse id per notification row, so the re-upserted rows
+          # (chat previews) replace their earlier push instead of stacking.
+          "collapse_key" => "notif-#{notification.id}"
+        })
+    end
+
+    :ok
+  end
+
+  defp push_data(%Notification{} = notification) do
+    case notification.metadata do
+      %{"type" => type} -> %{"type" => type, "notification_id" => notification.id}
+      _ -> %{"notification_id" => notification.id}
     end
   end
 
@@ -542,6 +580,7 @@ defmodule GameServer.Notifications do
         invalidate_notifications_cache(recipient_id)
         invalidate_notifications_cache(sender_id)
         broadcast_user(recipient_id, {:notification_created, notification})
+        push_notification(notification)
         {:ok, notification}
 
       error ->

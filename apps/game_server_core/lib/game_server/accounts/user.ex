@@ -148,17 +148,19 @@ defmodule GameServer.Accounts.User do
     |> maybe_hash_password(opts)
   end
 
-  @doc """
-  Returns the minimum password length, configurable via the `MIN_PASSWORD_LENGTH`
-  environment variable. Defaults to 8 if not set.
-  """
+  use GameServer.Settings.Provider,
+    app: :game_server_core,
+    group: :auth,
+    label: "Authentication"
+
+  setting(:min_password_length, :integer,
+    default: 8,
+    doc: "Minimum password length enforced at registration and change."
+  )
+
+  @doc "The minimum password length enforced at registration and change."
   @spec min_password_length() :: pos_integer()
-  def min_password_length do
-    case System.get_env("MIN_PASSWORD_LENGTH") do
-      nil -> 8
-      val -> String.to_integer(val)
-    end
-  end
+  def min_password_length, do: GameServer.Settings.get(__MODULE__, :min_password_length)
 
   defp maybe_hash_password(changeset, opts) do
     hash_password? = Keyword.get(opts, :hash_password, true)

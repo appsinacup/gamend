@@ -26,7 +26,7 @@ defmodule GameServerWeb.GroupsChannel do
   @impl true
   def join("groups", _payload, socket) do
     # Same flag as GET /api/v1/groups — the feed must not outlive the API.
-    if FeatureGate.enabled?("LIST_GROUPS_ENABLED", true) do
+    if FeatureGate.enabled?(:list_groups) do
       GameServerWeb.ConnectionTracker.register(:groups_channel)
       Groups.subscribe_groups()
       {:ok, socket}

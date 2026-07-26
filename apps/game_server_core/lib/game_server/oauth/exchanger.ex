@@ -318,8 +318,8 @@ defmodule GameServer.OAuth.Exchanger do
   defp apple_audiences(opts) do
     opts
     |> Keyword.get(:audience, [
-      System.get_env("APPLE_WEB_CLIENT_ID"),
-      System.get_env("APPLE_IOS_CLIENT_ID")
+      GameServer.Settings.get(GameServer.OAuth.Providers, :apple_client_id),
+      GameServer.Settings.get(GameServer.OAuth.Providers, :apple_ios_client_id)
     ])
     |> List.wrap()
     |> Enum.reject(&(&1 in [nil, ""]))
@@ -359,7 +359,7 @@ defmodule GameServer.OAuth.Exchanger do
   def exchange_steam_code(code) do
     api_key =
       Application.get_env(:ueberauth, Ueberauth.Strategy.Steam)[:api_key] ||
-        System.get_env("STEAM_API_KEY")
+        GameServer.Settings.get(GameServer.OAuth.Providers, :steam_api_key)
 
     if is_nil(api_key) or api_key == "" do
       {:error, :no_api_key}
@@ -403,9 +403,9 @@ defmodule GameServer.OAuth.Exchanger do
   def exchange_steam_ticket(ticket, opts \\ []) when is_binary(ticket) and is_list(opts) do
     api_key =
       Application.get_env(:ueberauth, Ueberauth.Strategy.Steam)[:api_key] ||
-        System.get_env("STEAM_API_KEY")
+        GameServer.Settings.get(GameServer.OAuth.Providers, :steam_api_key)
 
-    appid = System.get_env("STEAM_APP_ID")
+    appid = GameServer.Settings.get(GameServer.OAuth.Providers, :steam_app_id)
 
     if is_nil(api_key) or api_key == "" or is_nil(appid) or appid == "" do
       {:error, :missing_config}
@@ -465,7 +465,7 @@ defmodule GameServer.OAuth.Exchanger do
   def get_player_profile(steamid) when is_binary(steamid) do
     api_key =
       Application.get_env(:ueberauth, Ueberauth.Strategy.Steam)[:api_key] ||
-        System.get_env("STEAM_API_KEY")
+        GameServer.Settings.get(GameServer.OAuth.Providers, :steam_api_key)
 
     if is_nil(api_key) or api_key == "" do
       {:error, :no_api_key}

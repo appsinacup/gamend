@@ -13,7 +13,6 @@ defmodule GameServer.Hooks do
   """
 
   alias GameServer.Accounts.User
-  alias GameServer.Achievements.Achievement
   alias GameServer.Chat.Message
   alias GameServer.Groups.Group
   alias GameServer.Hooks.Default, as: Default
@@ -148,8 +147,21 @@ defmodule GameServer.Hooks do
   @callback before_party_kick(User.t(), User.t(), Party.t()) ::
               hook_result({User.t(), User.t(), Party.t()})
 
-  # Achievement lifecycle hooks
-  @callback after_achievement_unlocked(String.t(), Achievement.t()) :: any()
+  # Quest lifecycle hooks. `before_quest_claim` is veto-only: return
+  # `{:error, reason}` to reject the claim, anything else allows — the return
+  # never rewrites the args. Auto-claim quests skip it (there is no player
+  # request to veto). Achievements are quests of `kind: "achievement"`;
+  # branch on `progress.quest_key` / the quest's kind in these hooks.
+  @callback before_quest_claim(
+              String.t(),
+              GameServer.Quests.Quest.t(),
+              GameServer.Quests.QuestProgress.t()
+            ) :: hook_result(term())
+  @callback after_quest_completed(GameServer.Quests.QuestProgress.t()) :: any()
+  @callback after_quest_claimed(GameServer.Quests.QuestProgress.t()) :: any()
+  @optional_callbacks before_quest_claim: 3,
+                      after_quest_completed: 1,
+                      after_quest_claimed: 1
 
   # Leaderboard lifecycle hooks
   @callback after_score_submitted(GameServer.Leaderboards.Record.t()) :: any()
@@ -160,7 +172,7 @@ defmodule GameServer.Hooks do
   # other return allows. `tournament_match_ready` is where the game starts
   # the match (create a lobby, set up a challenge, ...) and
   # `tournament_match_expired` is where it adjudicates an unresolved match at
-  # its deadline via `GameServer.Tournaments.resolve_match/2`.
+  # its deadline_at via `GameServer.Tournaments.resolve_match/2`.
   @callback before_tournament_register(User.t(), GameServer.Tournaments.Tournament.t()) ::
               hook_result(term())
   @callback after_tournament_register(User.t(), GameServer.Tournaments.Tournament.t()) :: any()
@@ -224,6 +236,25 @@ defmodule GameServer.Hooks do
   @callback before_chat_message(User.t(), map()) :: hook_result(map())
   @callback after_chat_message(Message.t()) :: any()
 
+  # Push delivery hooks. `before_push_send/2` runs once per recipient before
+  # any delivery job is enqueued: return `{:ok, message}` (possibly rewritten)
+  # or `{:error, reason}` to drop the push for that user (per-user opt-out,
+  # quiet hours, moderation). `after_push_sent/3` observes each token's final
+  # outcome (`"delivered"` / `"invalid"` / `"failed"`). Both receive the
+  # message as a plain string-keyed map.
+  @callback before_push_send(String.t(), map()) :: hook_result(map())
+  @callback after_push_sent(String.t(), map(), map()) :: any()
+  @optional_callbacks before_push_send: 2,
+                      after_push_sent: 3
+
+  # Fired synchronously just before a member leaves and the lobby-scoped KV is
+  # wiped, so a plugin can persist state that dies with the membership (e.g.
+  # banking cargo collected in a level the player abandons). Non-gating: the
+  # return value is ignored — it cannot block the leave. Optional so existing
+  # plugins need not implement it.
+  @callback before_lobby_leave(User.t(), Lobby.t()) :: any()
+  @optional_callbacks before_lobby_leave: 2
+
   @callback after_lobby_leave(User.t(), Lobby.t()) :: any()
 
   @callback before_lobby_update(Lobby.t(), map()) :: hook_result(map())
@@ -232,9 +263,33 @@ defmodule GameServer.Hooks do
   @callback before_lobby_delete(Lobby.t()) :: hook_result(Lobby.t())
   @callback after_lobby_deleted(Lobby.t()) :: any()
 
+  # Lobby lifecycle state (see GameServer.Lobbies.States). The vocabulary is
+  # the game's — core only sets "created" — so `before_lobby_state_change` is
+  # where a game enforces its own ordering or entry conditions. Veto-only: the
+  # return never rewrites the args.
+  @callback before_lobby_state_change(Lobby.t(), String.t(), String.t()) :: hook_result(term())
+  @callback after_lobby_state_changed(Lobby.t(), String.t(), String.t()) :: any()
+  @optional_callbacks before_lobby_state_change: 3, after_lobby_state_changed: 3
+
   @callback before_lobby_kick(User.t(), User.t(), Lobby.t()) ::
               hook_result({User.t(), User.t(), Lobby.t()})
   @callback after_lobby_kick(User.t(), User.t(), Lobby.t()) :: any()
+
+  # Ready checks (see GameServer.ReadyChecks). `after_ready_check_passed` is the
+  # "everyone answered yes" callback — where a game starts its match.
+  # `after_ready_check_failed` receives the participants who did not answer
+  # ready; core kicks nobody, so acting on them is the game's call.
+  @callback before_ready_check_open(
+              GameServer.Lobbies.Lobby.t() | GameServer.Parties.Party.t() | :matchmaking,
+              [String.t()]
+            ) ::
+              hook_result(term())
+  @callback after_ready_check_passed(GameServer.ReadyChecks.Check.t()) :: any()
+  @callback after_ready_check_failed(GameServer.ReadyChecks.Check.t(), String.t(), [map()]) ::
+              any()
+  @optional_callbacks before_ready_check_open: 2,
+                      after_ready_check_passed: 1,
+                      after_ready_check_failed: 3
 
   @doc """
   Called before a KV `get/2` is performed. Implementations should return
@@ -467,15 +522,25 @@ defmodule GameServer.Hooks do
       :before_party_kick,
       :before_chat_message,
       :after_chat_message,
+      :before_push_send,
+      :after_push_sent,
+      :before_lobby_leave,
       :after_lobby_leave,
       :before_lobby_update,
       :after_lobby_updated,
       :before_lobby_delete,
       :after_lobby_deleted,
+      :before_lobby_state_change,
+      :after_lobby_state_changed,
       :before_lobby_kick,
       :after_lobby_kick,
       :after_lobby_host_change,
-      :after_achievement_unlocked,
+      :before_ready_check_open,
+      :after_ready_check_passed,
+      :after_ready_check_failed,
+      :before_quest_claim,
+      :after_quest_completed,
+      :after_quest_claimed,
       :after_score_submitted,
       :before_matchmaking_join,
       :after_matchmaking_join,
@@ -538,6 +603,7 @@ defmodule GameServer.Hooks do
       :before_party_create,
       :before_party_update,
       :before_chat_message,
+      :before_push_send,
       :before_lobby_update,
       :before_lobby_delete,
       :before_lobby_kick,
@@ -548,7 +614,10 @@ defmodule GameServer.Hooks do
       :before_matchmaking_join,
       :before_tournament_register,
       :before_tournament_leave,
-      :before_tournament_result
+      :before_tournament_result,
+      :before_quest_claim,
+      :before_lobby_state_change,
+      :before_ready_check_open
     ] and arity > 0
   end
 
@@ -642,6 +711,14 @@ defmodule GameServer.Hooks do
     end
   end
 
+  defp normalize_pipeline_args(:before_push_send, value, current_args)
+       when is_list(current_args) and length(current_args) == 2 do
+    case value do
+      tuple when is_tuple(tuple) and tuple_size(tuple) == 2 -> {:ok, Tuple.to_list(tuple)}
+      message -> {:ok, [Enum.at(current_args, 0), message]}
+    end
+  end
+
   defp normalize_pipeline_args(:before_party_create, value, current_args)
        when is_list(current_args) and length(current_args) == 2 do
     case value do
@@ -690,13 +767,16 @@ defmodule GameServer.Hooks do
     end
   end
 
-  # Veto-only tournament pipelines: the hook allows or rejects; whatever it
+  # Veto-only pipelines: the hook allows or rejects; whatever it
   # returns never rewrites the pipeline args.
   defp normalize_pipeline_args(name, _value, current_args)
        when name in [
               :before_tournament_register,
               :before_tournament_leave,
-              :before_tournament_result
+              :before_tournament_result,
+              :before_quest_claim,
+              :before_lobby_state_change,
+              :before_ready_check_open
             ] and is_list(current_args) do
     {:ok, current_args}
   end
@@ -727,6 +807,11 @@ defmodule GameServer.Hooks do
   end
 
   defp finalize_pipeline_value(:before_chat_message, args)
+       when is_list(args) and length(args) == 2 do
+    Enum.at(args, 1)
+  end
+
+  defp finalize_pipeline_value(:before_push_send, args)
        when is_list(args) and length(args) == 2 do
     Enum.at(args, 1)
   end
@@ -1355,7 +1440,16 @@ defmodule GameServer.Hooks.Default do
   def after_chat_message(_message), do: :ok
 
   @impl true
+  def before_push_send(_user_id, message), do: {:ok, message}
+
+  @impl true
+  def after_push_sent(_user_id, _message, _result), do: :ok
+
+  @impl true
   def after_lobby_join(_user, _lobby), do: :ok
+
+  @impl true
+  def before_lobby_leave(_user, _lobby), do: :ok
 
   @impl true
   def after_lobby_leave(_user, _lobby), do: :ok
@@ -1373,6 +1467,12 @@ defmodule GameServer.Hooks.Default do
   def after_lobby_deleted(_lobby), do: :ok
 
   @impl true
+  def before_lobby_state_change(_lobby, _from, _to), do: :ok
+
+  @impl true
+  def after_lobby_state_changed(_lobby, _from, _to), do: :ok
+
+  @impl true
   def before_lobby_kick(host, target, lobby), do: {:ok, {host, target, lobby}}
 
   @impl true
@@ -1382,13 +1482,28 @@ defmodule GameServer.Hooks.Default do
   def after_lobby_host_change(_lobby, _new_host_id), do: :ok
 
   @impl true
+  def before_ready_check_open(_subject, _user_ids), do: :ok
+
+  @impl true
+  def after_ready_check_passed(_check), do: :ok
+
+  @impl true
+  def after_ready_check_failed(_check, _reason, _not_ready), do: :ok
+
+  @impl true
   @doc """
   Default implementation for `before_kv_get/2` — always allow public reads.
   """
   def before_kv_get(_key, _opts), do: :public
 
   @impl true
-  def after_achievement_unlocked(_user_id, _achievement), do: :ok
+  def before_quest_claim(_user_id, _quest, _progress), do: :ok
+
+  @impl true
+  def after_quest_completed(_progress), do: :ok
+
+  @impl true
+  def after_quest_claimed(_progress), do: :ok
 
   @impl true
   def after_score_submitted(_record), do: :ok

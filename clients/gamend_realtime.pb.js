@@ -2465,44 +2465,48 @@ export const gamend = $root.gamend = (() => {
                 return ChatMessage;
             })();
 
-            v1.UserAchievement = (function() {
+            v1.QuestProgress = (function() {
 
                 /**
-                 * Properties of a UserAchievement.
-                 * @typedef {Object} gamend.realtime.v1.UserAchievement.$Properties
-                 * @property {string|null} [id] UserAchievement id
-                 * @property {string|null} [user_id] UserAchievement user_id
-                 * @property {string|null} [achievement_id] UserAchievement achievement_id
-                 * @property {number|null} [progress] UserAchievement progress
-                 * @property {number|Long|null} [unlocked_at_ms] UserAchievement unlocked_at_ms
-                 * @property {Uint8Array|null} [metadata_json] UserAchievement metadata_json
-                 * @property {number|Long|null} [inserted_at_ms] UserAchievement inserted_at_ms
-                 * @property {number|Long|null} [updated_at_ms] UserAchievement updated_at_ms
+                 * Properties of a QuestProgress.
+                 * @typedef {Object} gamend.realtime.v1.QuestProgress.$Properties
+                 * @property {string|null} [id] QuestProgress id
+                 * @property {string|null} [user_id] QuestProgress user_id
+                 * @property {string|null} [quest_key] QuestProgress quest_key
+                 * @property {string|null} [period_key] QuestProgress period_key
+                 * @property {Object.<string,number|Long>|null} [objective_progress] QuestProgress objective_progress
+                 * @property {string|null} [status] QuestProgress status
+                 * @property {number|Long|null} [completed_at_ms] QuestProgress completed_at_ms
+                 * @property {number|Long|null} [claimed_at_ms] QuestProgress claimed_at_ms
+                 * @property {Uint8Array|null} [metadata_json] QuestProgress metadata_json
+                 * @property {number|Long|null} [inserted_at_ms] QuestProgress inserted_at_ms
+                 * @property {number|Long|null} [updated_at_ms] QuestProgress updated_at_ms
                  * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
                  */
 
                 /**
-                 * Properties of a UserAchievement.
+                 * Properties of a QuestProgress.
                  * @memberof gamend.realtime.v1
-                 * @interface IUserAchievement
-                 * @augments gamend.realtime.v1.UserAchievement.$Properties
-                 * @deprecated Use gamend.realtime.v1.UserAchievement.$Properties instead.
+                 * @interface IQuestProgress
+                 * @augments gamend.realtime.v1.QuestProgress.$Properties
+                 * @deprecated Use gamend.realtime.v1.QuestProgress.$Properties instead.
                  */
 
                 /**
-                 * Shape of a UserAchievement.
-                 * @typedef {gamend.realtime.v1.UserAchievement.$Properties} gamend.realtime.v1.UserAchievement.$Shape
+                 * Shape of a QuestProgress.
+                 * @typedef {gamend.realtime.v1.QuestProgress.$Properties} gamend.realtime.v1.QuestProgress.$Shape
                  */
 
                 /**
-                 * Constructs a new UserAchievement.
+                 * Constructs a new QuestProgress.
                  * @memberof gamend.realtime.v1
-                 * @classdesc Represents a UserAchievement.
+                 * @classdesc Represents a QuestProgress.
                  * @constructor
-                 * @param {gamend.realtime.v1.UserAchievement.$Properties=} [properties] Properties to set
+                 * @param {gamend.realtime.v1.QuestProgress.$Properties=} [properties] Properties to set
                  * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
                  */
-                const UserAchievement = function (properties) {
+                const QuestProgress = function (properties) {
+                    this.objective_progress = {};
                     if (properties)
                         for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
                             if (properties[keys[i]] != null && keys[i] !== "__proto__")
@@ -2510,88 +2514,118 @@ export const gamend = $root.gamend = (() => {
                 };
 
                 /**
-                 * UserAchievement id.
+                 * QuestProgress id.
                  * @member {string} id
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @instance
                  */
-                UserAchievement.prototype.id = "";
+                QuestProgress.prototype.id = "";
 
                 /**
-                 * UserAchievement user_id.
+                 * QuestProgress user_id.
                  * @member {string} user_id
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @instance
                  */
-                UserAchievement.prototype.user_id = "";
+                QuestProgress.prototype.user_id = "";
 
                 /**
-                 * UserAchievement achievement_id.
-                 * @member {string} achievement_id
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * QuestProgress quest_key.
+                 * @member {string} quest_key
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @instance
                  */
-                UserAchievement.prototype.achievement_id = "";
+                QuestProgress.prototype.quest_key = "";
 
                 /**
-                 * UserAchievement progress.
-                 * @member {number} progress
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * QuestProgress period_key.
+                 * @member {string} period_key
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @instance
                  */
-                UserAchievement.prototype.progress = 0;
+                QuestProgress.prototype.period_key = "";
 
                 /**
-                 * UserAchievement unlocked_at_ms.
-                 * @member {number|Long|null|undefined} unlocked_at_ms
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * QuestProgress objective_progress.
+                 * @member {Object.<string,number|Long>} objective_progress
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @instance
                  */
-                UserAchievement.prototype.unlocked_at_ms = null;
+                QuestProgress.prototype.objective_progress = $util.emptyObject;
 
                 /**
-                 * UserAchievement metadata_json.
+                 * QuestProgress status.
+                 * @member {string} status
+                 * @memberof gamend.realtime.v1.QuestProgress
+                 * @instance
+                 */
+                QuestProgress.prototype.status = "";
+
+                /**
+                 * QuestProgress completed_at_ms.
+                 * @member {number|Long|null|undefined} completed_at_ms
+                 * @memberof gamend.realtime.v1.QuestProgress
+                 * @instance
+                 */
+                QuestProgress.prototype.completed_at_ms = null;
+
+                /**
+                 * QuestProgress claimed_at_ms.
+                 * @member {number|Long|null|undefined} claimed_at_ms
+                 * @memberof gamend.realtime.v1.QuestProgress
+                 * @instance
+                 */
+                QuestProgress.prototype.claimed_at_ms = null;
+
+                /**
+                 * QuestProgress metadata_json.
                  * @member {Uint8Array} metadata_json
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @instance
                  */
-                UserAchievement.prototype.metadata_json = $util.newBuffer([]);
+                QuestProgress.prototype.metadata_json = $util.newBuffer([]);
 
                 /**
-                 * UserAchievement inserted_at_ms.
+                 * QuestProgress inserted_at_ms.
                  * @member {number|Long} inserted_at_ms
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @instance
                  */
-                UserAchievement.prototype.inserted_at_ms = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+                QuestProgress.prototype.inserted_at_ms = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
 
                 /**
-                 * UserAchievement updated_at_ms.
+                 * QuestProgress updated_at_ms.
                  * @member {number|Long} updated_at_ms
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @instance
                  */
-                UserAchievement.prototype.updated_at_ms = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+                QuestProgress.prototype.updated_at_ms = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
 
                 // OneOf field names bound to virtual getters and setters
                 let $oneOfFields;
 
                 // Virtual OneOf for proto3 optional field
-                $Object.defineProperty(UserAchievement.prototype, "_unlocked_at_ms", {
-                    get: $util.oneOfGetter($oneOfFields = ["unlocked_at_ms"]),
+                $Object.defineProperty(QuestProgress.prototype, "_completed_at_ms", {
+                    get: $util.oneOfGetter($oneOfFields = ["completed_at_ms"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
+                // Virtual OneOf for proto3 optional field
+                $Object.defineProperty(QuestProgress.prototype, "_claimed_at_ms", {
+                    get: $util.oneOfGetter($oneOfFields = ["claimed_at_ms"]),
                     set: $util.oneOfSetter($oneOfFields)
                 });
 
                 /**
-                 * Encodes the specified UserAchievement message. Does not implicitly {@link gamend.realtime.v1.UserAchievement.verify|verify} messages.
+                 * Encodes the specified QuestProgress message. Does not implicitly {@link gamend.realtime.v1.QuestProgress.verify|verify} messages.
                  * @function encode
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @static
-                 * @param {gamend.realtime.v1.UserAchievement.$Properties} message UserAchievement message or plain object to encode
+                 * @param {gamend.realtime.v1.QuestProgress.$Properties} message QuestProgress message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
-                UserAchievement.encode = function (message, writer, _depth) {
+                QuestProgress.encode = function (message, writer, _depth) {
                     if (!writer)
                         writer = $Writer.create();
                     if (_depth === $undefined)
@@ -2602,18 +2636,25 @@ export const gamend = $root.gamend = (() => {
                         writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
                     if (message.user_id != null && $Object.hasOwnProperty.call(message, "user_id") && message.user_id !== "")
                         writer.uint32(/* id 2, wireType 2 =*/18).string(message.user_id);
-                    if (message.achievement_id != null && $Object.hasOwnProperty.call(message, "achievement_id") && message.achievement_id !== "")
-                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.achievement_id);
-                    if (message.progress != null && $Object.hasOwnProperty.call(message, "progress") && message.progress !== 0)
-                        writer.uint32(/* id 4, wireType 0 =*/32).int32(message.progress);
-                    if (message.unlocked_at_ms != null && $Object.hasOwnProperty.call(message, "unlocked_at_ms"))
-                        writer.uint32(/* id 5, wireType 0 =*/40).int64(message.unlocked_at_ms);
+                    if (message.quest_key != null && $Object.hasOwnProperty.call(message, "quest_key") && message.quest_key !== "")
+                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.quest_key);
+                    if (message.period_key != null && $Object.hasOwnProperty.call(message, "period_key") && message.period_key !== "")
+                        writer.uint32(/* id 4, wireType 2 =*/34).string(message.period_key);
+                    if (message.objective_progress != null && $Object.hasOwnProperty.call(message, "objective_progress"))
+                        for (let keys = $Object.keys(message.objective_progress), i = 0; i < keys.length; ++i)
+                            writer.uint32(/* id 5, wireType 2 =*/42).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 0 =*/16).int64(message.objective_progress[keys[i]]).ldelim();
+                    if (message.status != null && $Object.hasOwnProperty.call(message, "status") && message.status !== "")
+                        writer.uint32(/* id 6, wireType 2 =*/50).string(message.status);
+                    if (message.completed_at_ms != null && $Object.hasOwnProperty.call(message, "completed_at_ms"))
+                        writer.uint32(/* id 7, wireType 0 =*/56).int64(message.completed_at_ms);
+                    if (message.claimed_at_ms != null && $Object.hasOwnProperty.call(message, "claimed_at_ms"))
+                        writer.uint32(/* id 8, wireType 0 =*/64).int64(message.claimed_at_ms);
                     if (message.metadata_json != null && $Object.hasOwnProperty.call(message, "metadata_json") && message.metadata_json.length)
-                        writer.uint32(/* id 6, wireType 2 =*/50).bytes(message.metadata_json);
+                        writer.uint32(/* id 9, wireType 2 =*/74).bytes(message.metadata_json);
                     if (message.inserted_at_ms != null && $Object.hasOwnProperty.call(message, "inserted_at_ms") && (typeof message.inserted_at_ms === "object" ? message.inserted_at_ms.low || message.inserted_at_ms.high : message.inserted_at_ms !== 0))
-                        writer.uint32(/* id 7, wireType 0 =*/56).int64(message.inserted_at_ms);
+                        writer.uint32(/* id 10, wireType 0 =*/80).int64(message.inserted_at_ms);
                     if (message.updated_at_ms != null && $Object.hasOwnProperty.call(message, "updated_at_ms") && (typeof message.updated_at_ms === "object" ? message.updated_at_ms.low || message.updated_at_ms.high : message.updated_at_ms !== 0))
-                        writer.uint32(/* id 8, wireType 0 =*/64).int64(message.updated_at_ms);
+                        writer.uint32(/* id 11, wireType 0 =*/88).int64(message.updated_at_ms);
                     if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
                         for (let i = 0; i < message.$unknowns.length; ++i)
                             writer.raw(message.$unknowns[i]);
@@ -2621,24 +2662,24 @@ export const gamend = $root.gamend = (() => {
                 };
 
                 /**
-                 * Decodes a UserAchievement message from the specified reader or buffer.
+                 * Decodes a QuestProgress message from the specified reader or buffer.
                  * @function decode
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
                  * @param {number} [length] Message length if known beforehand
-                 * @returns {gamend.realtime.v1.UserAchievement & gamend.realtime.v1.UserAchievement.$Shape} UserAchievement
+                 * @returns {gamend.realtime.v1.QuestProgress & gamend.realtime.v1.QuestProgress.$Shape} QuestProgress
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                UserAchievement.decode = function (reader, length, _end, _depth, _target) {
+                QuestProgress.decode = function (reader, length, _end, _depth, _target) {
                     if (!(reader instanceof $Reader))
                         reader = $Reader.create(reader);
                     if (_depth === $undefined)
                         _depth = 0;
                     if (_depth > $Reader.recursionLimit)
                         throw $Error("max depth exceeded");
-                    let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.gamend.realtime.v1.UserAchievement(), value;
+                    let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.gamend.realtime.v1.QuestProgress(), key, value;
                     while (reader.pos < end) {
                         let start = reader.pos;
                         let tag = reader.tag();
@@ -2670,28 +2711,74 @@ export const gamend = $root.gamend = (() => {
                                 if (wireType !== 2)
                                     break;
                                 if ((value = reader.stringVerify()).length)
-                                    message.achievement_id = value;
+                                    message.quest_key = value;
                                 else
-                                    delete message.achievement_id;
+                                    delete message.quest_key;
                                 continue;
                             }
                         case 4: {
-                                if (wireType !== 0)
+                                if (wireType !== 2)
                                     break;
-                                if (value = reader.int32())
-                                    message.progress = value;
+                                if ((value = reader.stringVerify()).length)
+                                    message.period_key = value;
                                 else
-                                    delete message.progress;
+                                    delete message.period_key;
                                 continue;
                             }
                         case 5: {
-                                if (wireType !== 0)
+                                if (wireType !== 2)
                                     break;
-                                message.unlocked_at_ms = reader.int64();
-                                message._unlocked_at_ms = "unlocked_at_ms";
+                                if (message.objective_progress === $util.emptyObject)
+                                    message.objective_progress = {};
+                                let end2 = reader.uint32() + reader.pos;
+                                key = "";
+                                value = $util.Long ? $util.Long.fromNumber(0, false) : 0;
+                                while (reader.pos < end2) {
+                                    let tag2 = reader.tag();
+                                    wireType = tag2 & 7;
+                                    switch (tag2 >>>= 3) {
+                                    case 1:
+                                        if (wireType !== 2)
+                                            break;
+                                        key = reader.stringVerify();
+                                        continue;
+                                    case 2:
+                                        if (wireType !== 0)
+                                            break;
+                                        value = reader.int64();
+                                        continue;
+                                    }
+                                    reader.skipType(wireType, _depth, tag2);
+                                }
+                                if (key === "__proto__")
+                                    $util.makeProp(message.objective_progress, key);
+                                message.objective_progress[key] = value;
                                 continue;
                             }
                         case 6: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.status = value;
+                                else
+                                    delete message.status;
+                                continue;
+                            }
+                        case 7: {
+                                if (wireType !== 0)
+                                    break;
+                                message.completed_at_ms = reader.int64();
+                                message._completed_at_ms = "completed_at_ms";
+                                continue;
+                            }
+                        case 8: {
+                                if (wireType !== 0)
+                                    break;
+                                message.claimed_at_ms = reader.int64();
+                                message._claimed_at_ms = "claimed_at_ms";
+                                continue;
+                            }
+                        case 9: {
                                 if (wireType !== 2)
                                     break;
                                 if ((value = reader.bytes()).length)
@@ -2700,7 +2787,7 @@ export const gamend = $root.gamend = (() => {
                                     delete message.metadata_json;
                                 continue;
                             }
-                        case 7: {
+                        case 10: {
                                 if (wireType !== 0)
                                     break;
                                 if (typeof (value = reader.int64()) === "object" ? value.low || value.high : value !== 0)
@@ -2709,7 +2796,7 @@ export const gamend = $root.gamend = (() => {
                                     delete message.inserted_at_ms;
                                 continue;
                             }
-                        case 8: {
+                        case 11: {
                                 if (wireType !== 0)
                                     break;
                                 if (typeof (value = reader.int64()) === "object" ? value.low || value.high : value !== 0)
@@ -2731,44 +2818,73 @@ export const gamend = $root.gamend = (() => {
                 };
 
                 /**
-                 * Creates a UserAchievement message from a plain object. Also converts values to their respective internal types.
+                 * Creates a QuestProgress message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @static
                  * @param {Object.<string,*>} object Plain object
-                 * @returns {gamend.realtime.v1.UserAchievement} UserAchievement
+                 * @returns {gamend.realtime.v1.QuestProgress} QuestProgress
                  */
-                UserAchievement.fromObject = function (object, _depth) {
-                    if (object instanceof $root.gamend.realtime.v1.UserAchievement)
+                QuestProgress.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.QuestProgress)
                         return object;
                     if (!$util.isObject(object))
-                        throw $TypeError(".gamend.realtime.v1.UserAchievement: object expected");
+                        throw $TypeError(".gamend.realtime.v1.QuestProgress: object expected");
                     if (_depth === $undefined)
                         _depth = 0;
                     if (_depth > $util.recursionLimit)
                         throw $Error("max depth exceeded");
-                    let message = new $root.gamend.realtime.v1.UserAchievement();
+                    let message = new $root.gamend.realtime.v1.QuestProgress();
                     if (object.id != null)
                         if (typeof object.id !== "string" || object.id.length)
                             message.id = $String(object.id);
                     if (object.user_id != null)
                         if (typeof object.user_id !== "string" || object.user_id.length)
                             message.user_id = $String(object.user_id);
-                    if (object.achievement_id != null)
-                        if (typeof object.achievement_id !== "string" || object.achievement_id.length)
-                            message.achievement_id = $String(object.achievement_id);
-                    if (object.progress != null)
-                        if ($Number(object.progress) !== 0)
-                            message.progress = object.progress | 0;
-                    if (object.unlocked_at_ms != null)
+                    if (object.quest_key != null)
+                        if (typeof object.quest_key !== "string" || object.quest_key.length)
+                            message.quest_key = $String(object.quest_key);
+                    if (object.period_key != null)
+                        if (typeof object.period_key !== "string" || object.period_key.length)
+                            message.period_key = $String(object.period_key);
+                    if (object.objective_progress) {
+                        if (!$util.isObject(object.objective_progress))
+                            throw $TypeError(".gamend.realtime.v1.QuestProgress.objective_progress: object expected");
+                        message.objective_progress = {};
+                        for (let keys = $Object.keys(object.objective_progress), i = 0; i < keys.length; ++i) {
+                            if (keys[i] === "__proto__")
+                                $util.makeProp(message.objective_progress, keys[i]);
+                            if ($util.Long)
+                                message.objective_progress[keys[i]] = $util.Long.fromValue(object.objective_progress[keys[i]], false);
+                            else if (typeof object.objective_progress[keys[i]] === "string")
+                                message.objective_progress[keys[i]] = $parseInt(object.objective_progress[keys[i]], 10);
+                            else if (typeof object.objective_progress[keys[i]] === "number")
+                                message.objective_progress[keys[i]] = object.objective_progress[keys[i]];
+                            else if (typeof object.objective_progress[keys[i]] === "object")
+                                message.objective_progress[keys[i]] = new $util.LongBits(object.objective_progress[keys[i]].low >>> 0, object.objective_progress[keys[i]].high >>> 0).toNumber();
+                        }
+                    }
+                    if (object.status != null)
+                        if (typeof object.status !== "string" || object.status.length)
+                            message.status = $String(object.status);
+                    if (object.completed_at_ms != null)
                         if ($util.Long)
-                            message.unlocked_at_ms = $util.Long.fromValue(object.unlocked_at_ms, false);
-                        else if (typeof object.unlocked_at_ms === "string")
-                            message.unlocked_at_ms = $parseInt(object.unlocked_at_ms, 10);
-                        else if (typeof object.unlocked_at_ms === "number")
-                            message.unlocked_at_ms = object.unlocked_at_ms;
-                        else if (typeof object.unlocked_at_ms === "object")
-                            message.unlocked_at_ms = new $util.LongBits(object.unlocked_at_ms.low >>> 0, object.unlocked_at_ms.high >>> 0).toNumber();
+                            message.completed_at_ms = $util.Long.fromValue(object.completed_at_ms, false);
+                        else if (typeof object.completed_at_ms === "string")
+                            message.completed_at_ms = $parseInt(object.completed_at_ms, 10);
+                        else if (typeof object.completed_at_ms === "number")
+                            message.completed_at_ms = object.completed_at_ms;
+                        else if (typeof object.completed_at_ms === "object")
+                            message.completed_at_ms = new $util.LongBits(object.completed_at_ms.low >>> 0, object.completed_at_ms.high >>> 0).toNumber();
+                    if (object.claimed_at_ms != null)
+                        if ($util.Long)
+                            message.claimed_at_ms = $util.Long.fromValue(object.claimed_at_ms, false);
+                        else if (typeof object.claimed_at_ms === "string")
+                            message.claimed_at_ms = $parseInt(object.claimed_at_ms, 10);
+                        else if (typeof object.claimed_at_ms === "number")
+                            message.claimed_at_ms = object.claimed_at_ms;
+                        else if (typeof object.claimed_at_ms === "object")
+                            message.claimed_at_ms = new $util.LongBits(object.claimed_at_ms.low >>> 0, object.claimed_at_ms.high >>> 0).toNumber();
                     if (object.metadata_json != null)
                         if (object.metadata_json.length)
                             if (typeof object.metadata_json === "string")
@@ -2799,15 +2915,15 @@ export const gamend = $root.gamend = (() => {
                 };
 
                 /**
-                 * Creates a plain object from a UserAchievement message. Also converts values to other types if specified.
+                 * Creates a plain object from a QuestProgress message. Also converts values to other types if specified.
                  * @function toObject
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @static
-                 * @param {gamend.realtime.v1.UserAchievement} message UserAchievement
+                 * @param {gamend.realtime.v1.QuestProgress} message QuestProgress
                  * @param {$protobuf.IConversionOptions} [options] Conversion options
                  * @returns {Object.<string,*>} Plain object
                  */
-                UserAchievement.toObject = function (message, options, _depth) {
+                QuestProgress.toObject = function (message, options, _depth) {
                     if (!options)
                         options = {};
                     if (_depth === $undefined)
@@ -2815,11 +2931,14 @@ export const gamend = $root.gamend = (() => {
                     if (_depth > $util.recursionLimit)
                         throw $Error("max depth exceeded");
                     let object = {};
+                    if (options.objects || options.defaults)
+                        object.objective_progress = {};
                     if (options.defaults) {
                         object.id = "";
                         object.user_id = "";
-                        object.achievement_id = "";
-                        object.progress = 0;
+                        object.quest_key = "";
+                        object.period_key = "";
+                        object.status = "";
                         if (options.bytes === $String)
                             object.metadata_json = "";
                         else {
@@ -2842,17 +2961,40 @@ export const gamend = $root.gamend = (() => {
                         object.id = message.id;
                     if (message.user_id != null && $Object.hasOwnProperty.call(message, "user_id"))
                         object.user_id = message.user_id;
-                    if (message.achievement_id != null && $Object.hasOwnProperty.call(message, "achievement_id"))
-                        object.achievement_id = message.achievement_id;
-                    if (message.progress != null && $Object.hasOwnProperty.call(message, "progress"))
-                        object.progress = message.progress;
-                    if (message.unlocked_at_ms != null && $Object.hasOwnProperty.call(message, "unlocked_at_ms"))
+                    if (message.quest_key != null && $Object.hasOwnProperty.call(message, "quest_key"))
+                        object.quest_key = message.quest_key;
+                    if (message.period_key != null && $Object.hasOwnProperty.call(message, "period_key"))
+                        object.period_key = message.period_key;
+                    let keys2;
+                    if (message.objective_progress && (keys2 = $Object.keys(message.objective_progress)).length) {
+                        object.objective_progress = {};
+                        for (let j = 0; j < keys2.length; ++j) {
+                            if (keys2[j] === "__proto__")
+                                $util.makeProp(object.objective_progress, keys2[j]);
+                            if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                                object.objective_progress[keys2[j]] = typeof message.objective_progress[keys2[j]] === "number" ? $BigInt(message.objective_progress[keys2[j]]) : $util.Long.fromBits(message.objective_progress[keys2[j]].low >>> 0, message.objective_progress[keys2[j]].high >>> 0, false).toBigInt();
+                            else if (typeof message.objective_progress[keys2[j]] === "number")
+                                object.objective_progress[keys2[j]] = options.longs === $String ? $String(message.objective_progress[keys2[j]]) : message.objective_progress[keys2[j]];
+                            else
+                                object.objective_progress[keys2[j]] = options.longs === $String ? $util.Long.prototype.toString.call(message.objective_progress[keys2[j]]) : options.longs === $Number ? new $util.LongBits(message.objective_progress[keys2[j]].low >>> 0, message.objective_progress[keys2[j]].high >>> 0).toNumber() : message.objective_progress[keys2[j]];
+                        }
+                    }
+                    if (message.status != null && $Object.hasOwnProperty.call(message, "status"))
+                        object.status = message.status;
+                    if (message.completed_at_ms != null && $Object.hasOwnProperty.call(message, "completed_at_ms"))
                         if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
-                            object.unlocked_at_ms = typeof message.unlocked_at_ms === "number" ? $BigInt(message.unlocked_at_ms) : $util.Long.fromBits(message.unlocked_at_ms.low >>> 0, message.unlocked_at_ms.high >>> 0, false).toBigInt();
-                        else if (typeof message.unlocked_at_ms === "number")
-                            object.unlocked_at_ms = options.longs === $String ? $String(message.unlocked_at_ms) : message.unlocked_at_ms;
+                            object.completed_at_ms = typeof message.completed_at_ms === "number" ? $BigInt(message.completed_at_ms) : $util.Long.fromBits(message.completed_at_ms.low >>> 0, message.completed_at_ms.high >>> 0, false).toBigInt();
+                        else if (typeof message.completed_at_ms === "number")
+                            object.completed_at_ms = options.longs === $String ? $String(message.completed_at_ms) : message.completed_at_ms;
                         else
-                            object.unlocked_at_ms = options.longs === $String ? $util.Long.prototype.toString.call(message.unlocked_at_ms) : options.longs === $Number ? new $util.LongBits(message.unlocked_at_ms.low >>> 0, message.unlocked_at_ms.high >>> 0).toNumber() : message.unlocked_at_ms;
+                            object.completed_at_ms = options.longs === $String ? $util.Long.prototype.toString.call(message.completed_at_ms) : options.longs === $Number ? new $util.LongBits(message.completed_at_ms.low >>> 0, message.completed_at_ms.high >>> 0).toNumber() : message.completed_at_ms;
+                    if (message.claimed_at_ms != null && $Object.hasOwnProperty.call(message, "claimed_at_ms"))
+                        if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                            object.claimed_at_ms = typeof message.claimed_at_ms === "number" ? $BigInt(message.claimed_at_ms) : $util.Long.fromBits(message.claimed_at_ms.low >>> 0, message.claimed_at_ms.high >>> 0, false).toBigInt();
+                        else if (typeof message.claimed_at_ms === "number")
+                            object.claimed_at_ms = options.longs === $String ? $String(message.claimed_at_ms) : message.claimed_at_ms;
+                        else
+                            object.claimed_at_ms = options.longs === $String ? $util.Long.prototype.toString.call(message.claimed_at_ms) : options.longs === $Number ? new $util.LongBits(message.claimed_at_ms.low >>> 0, message.claimed_at_ms.high >>> 0).toNumber() : message.claimed_at_ms;
                     if (message.metadata_json != null && $Object.hasOwnProperty.call(message, "metadata_json"))
                         object.metadata_json = options.bytes === $String ? $util.base64.encode(message.metadata_json, 0, message.metadata_json.length) : options.bytes === $Array ? $Array.prototype.slice.call(message.metadata_json) : message.metadata_json;
                     if (message.inserted_at_ms != null && $Object.hasOwnProperty.call(message, "inserted_at_ms"))
@@ -2873,31 +3015,31 @@ export const gamend = $root.gamend = (() => {
                 };
 
                 /**
-                 * Converts this UserAchievement to JSON.
+                 * Converts this QuestProgress to JSON.
                  * @function toJSON
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @instance
                  * @returns {Object.<string,*>} JSON object
                  */
-                UserAchievement.prototype.toJSON = function() {
-                    return UserAchievement.toObject(this, $protobuf.util.toJSONOptions);
+                QuestProgress.prototype.toJSON = function() {
+                    return QuestProgress.toObject(this, $protobuf.util.toJSONOptions);
                 };
 
                 /**
-                 * Gets the type url for UserAchievement
+                 * Gets the type url for QuestProgress
                  * @function getTypeUrl
-                 * @memberof gamend.realtime.v1.UserAchievement
+                 * @memberof gamend.realtime.v1.QuestProgress
                  * @static
                  * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
                  * @returns {string} The type url
                  */
-                UserAchievement.getTypeUrl = function(prefix) {
+                QuestProgress.getTypeUrl = function(prefix) {
                     if (prefix === $undefined)
                         prefix = "type.googleapis.com";
-                    return prefix + "/gamend.realtime.v1.UserAchievement";
+                    return prefix + "/gamend.realtime.v1.QuestProgress";
                 };
 
-                return UserAchievement;
+                return QuestProgress;
             })();
 
             v1.Lobby = (function() {
@@ -6923,6 +7065,710 @@ export const gamend = $root.gamend = (() => {
                 };
 
                 return MatchmakingFound;
+            })();
+
+            v1.ReadyCheckParticipant = (function() {
+
+                /**
+                 * Properties of a ReadyCheckParticipant.
+                 * @typedef {Object} gamend.realtime.v1.ReadyCheckParticipant.$Properties
+                 * @property {string|null} [user_id] ReadyCheckParticipant user_id
+                 * @property {string|null} [display_name] ReadyCheckParticipant display_name
+                 * @property {string|null} [state] ReadyCheckParticipant state
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a ReadyCheckParticipant.
+                 * @memberof gamend.realtime.v1
+                 * @interface IReadyCheckParticipant
+                 * @augments gamend.realtime.v1.ReadyCheckParticipant.$Properties
+                 * @deprecated Use gamend.realtime.v1.ReadyCheckParticipant.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a ReadyCheckParticipant.
+                 * @typedef {gamend.realtime.v1.ReadyCheckParticipant.$Properties} gamend.realtime.v1.ReadyCheckParticipant.$Shape
+                 */
+
+                /**
+                 * Constructs a new ReadyCheckParticipant.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a ReadyCheckParticipant.
+                 * @constructor
+                 * @param {gamend.realtime.v1.ReadyCheckParticipant.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const ReadyCheckParticipant = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * ReadyCheckParticipant user_id.
+                 * @member {string} user_id
+                 * @memberof gamend.realtime.v1.ReadyCheckParticipant
+                 * @instance
+                 */
+                ReadyCheckParticipant.prototype.user_id = "";
+
+                /**
+                 * ReadyCheckParticipant display_name.
+                 * @member {string} display_name
+                 * @memberof gamend.realtime.v1.ReadyCheckParticipant
+                 * @instance
+                 */
+                ReadyCheckParticipant.prototype.display_name = "";
+
+                /**
+                 * ReadyCheckParticipant state.
+                 * @member {string} state
+                 * @memberof gamend.realtime.v1.ReadyCheckParticipant
+                 * @instance
+                 */
+                ReadyCheckParticipant.prototype.state = "";
+
+                /**
+                 * Encodes the specified ReadyCheckParticipant message. Does not implicitly {@link gamend.realtime.v1.ReadyCheckParticipant.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.ReadyCheckParticipant
+                 * @static
+                 * @param {gamend.realtime.v1.ReadyCheckParticipant.$Properties} message ReadyCheckParticipant message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ReadyCheckParticipant.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.user_id != null && $Object.hasOwnProperty.call(message, "user_id") && message.user_id !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.user_id);
+                    if (message.display_name != null && $Object.hasOwnProperty.call(message, "display_name") && message.display_name !== "")
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.display_name);
+                    if (message.state != null && $Object.hasOwnProperty.call(message, "state") && message.state !== "")
+                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.state);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a ReadyCheckParticipant message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.ReadyCheckParticipant
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.ReadyCheckParticipant & gamend.realtime.v1.ReadyCheckParticipant.$Shape} ReadyCheckParticipant
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ReadyCheckParticipant.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.gamend.realtime.v1.ReadyCheckParticipant(), value;
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.user_id = value;
+                                else
+                                    delete message.user_id;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.display_name = value;
+                                else
+                                    delete message.display_name;
+                                continue;
+                            }
+                        case 3: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.state = value;
+                                else
+                                    delete message.state;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a ReadyCheckParticipant message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.ReadyCheckParticipant
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.ReadyCheckParticipant} ReadyCheckParticipant
+                 */
+                ReadyCheckParticipant.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.ReadyCheckParticipant)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.ReadyCheckParticipant: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.ReadyCheckParticipant();
+                    if (object.user_id != null)
+                        if (typeof object.user_id !== "string" || object.user_id.length)
+                            message.user_id = $String(object.user_id);
+                    if (object.display_name != null)
+                        if (typeof object.display_name !== "string" || object.display_name.length)
+                            message.display_name = $String(object.display_name);
+                    if (object.state != null)
+                        if (typeof object.state !== "string" || object.state.length)
+                            message.state = $String(object.state);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a ReadyCheckParticipant message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.ReadyCheckParticipant
+                 * @static
+                 * @param {gamend.realtime.v1.ReadyCheckParticipant} message ReadyCheckParticipant
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                ReadyCheckParticipant.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults) {
+                        object.user_id = "";
+                        object.display_name = "";
+                        object.state = "";
+                    }
+                    if (message.user_id != null && $Object.hasOwnProperty.call(message, "user_id"))
+                        object.user_id = message.user_id;
+                    if (message.display_name != null && $Object.hasOwnProperty.call(message, "display_name"))
+                        object.display_name = message.display_name;
+                    if (message.state != null && $Object.hasOwnProperty.call(message, "state"))
+                        object.state = message.state;
+                    return object;
+                };
+
+                /**
+                 * Converts this ReadyCheckParticipant to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.ReadyCheckParticipant
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                ReadyCheckParticipant.prototype.toJSON = function() {
+                    return ReadyCheckParticipant.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for ReadyCheckParticipant
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.ReadyCheckParticipant
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                ReadyCheckParticipant.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.ReadyCheckParticipant";
+                };
+
+                return ReadyCheckParticipant;
+            })();
+
+            v1.ReadyCheckState = (function() {
+
+                /**
+                 * Properties of a ReadyCheckState.
+                 * @typedef {Object} gamend.realtime.v1.ReadyCheckState.$Properties
+                 * @property {string|null} [id] ReadyCheckState id
+                 * @property {string|null} [kind] ReadyCheckState kind
+                 * @property {string|null} [status] ReadyCheckState status
+                 * @property {string|null} [lobby_id] ReadyCheckState lobby_id
+                 * @property {number|Long|null} [deadline_ms] ReadyCheckState deadline_ms
+                 * @property {number|null} [total] ReadyCheckState total
+                 * @property {number|null} [ready_count] ReadyCheckState ready_count
+                 * @property {string|null} [your_state] ReadyCheckState your_state
+                 * @property {string|null} [reason] ReadyCheckState reason
+                 * @property {Array.<gamend.realtime.v1.ReadyCheckParticipant.$Properties>|null} [participants] ReadyCheckState participants
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a ReadyCheckState.
+                 * @memberof gamend.realtime.v1
+                 * @interface IReadyCheckState
+                 * @augments gamend.realtime.v1.ReadyCheckState.$Properties
+                 * @deprecated Use gamend.realtime.v1.ReadyCheckState.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a ReadyCheckState.
+                 * @typedef {gamend.realtime.v1.ReadyCheckState.$Properties} gamend.realtime.v1.ReadyCheckState.$Shape
+                 */
+
+                /**
+                 * Constructs a new ReadyCheckState.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a ReadyCheckState.
+                 * @constructor
+                 * @param {gamend.realtime.v1.ReadyCheckState.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const ReadyCheckState = function (properties) {
+                    this.participants = [];
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * ReadyCheckState id.
+                 * @member {string} id
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @instance
+                 */
+                ReadyCheckState.prototype.id = "";
+
+                /**
+                 * ReadyCheckState kind.
+                 * @member {string} kind
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @instance
+                 */
+                ReadyCheckState.prototype.kind = "";
+
+                /**
+                 * ReadyCheckState status.
+                 * @member {string} status
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @instance
+                 */
+                ReadyCheckState.prototype.status = "";
+
+                /**
+                 * ReadyCheckState lobby_id.
+                 * @member {string} lobby_id
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @instance
+                 */
+                ReadyCheckState.prototype.lobby_id = "";
+
+                /**
+                 * ReadyCheckState deadline_ms.
+                 * @member {number|Long} deadline_ms
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @instance
+                 */
+                ReadyCheckState.prototype.deadline_ms = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+                /**
+                 * ReadyCheckState total.
+                 * @member {number} total
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @instance
+                 */
+                ReadyCheckState.prototype.total = 0;
+
+                /**
+                 * ReadyCheckState ready_count.
+                 * @member {number} ready_count
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @instance
+                 */
+                ReadyCheckState.prototype.ready_count = 0;
+
+                /**
+                 * ReadyCheckState your_state.
+                 * @member {string} your_state
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @instance
+                 */
+                ReadyCheckState.prototype.your_state = "";
+
+                /**
+                 * ReadyCheckState reason.
+                 * @member {string} reason
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @instance
+                 */
+                ReadyCheckState.prototype.reason = "";
+
+                /**
+                 * ReadyCheckState participants.
+                 * @member {Array.<gamend.realtime.v1.ReadyCheckParticipant.$Properties>} participants
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @instance
+                 */
+                ReadyCheckState.prototype.participants = $util.emptyArray;
+
+                /**
+                 * Encodes the specified ReadyCheckState message. Does not implicitly {@link gamend.realtime.v1.ReadyCheckState.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @static
+                 * @param {gamend.realtime.v1.ReadyCheckState.$Properties} message ReadyCheckState message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ReadyCheckState.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.id != null && $Object.hasOwnProperty.call(message, "id") && message.id !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.id);
+                    if (message.kind != null && $Object.hasOwnProperty.call(message, "kind") && message.kind !== "")
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.kind);
+                    if (message.status != null && $Object.hasOwnProperty.call(message, "status") && message.status !== "")
+                        writer.uint32(/* id 3, wireType 2 =*/26).string(message.status);
+                    if (message.lobby_id != null && $Object.hasOwnProperty.call(message, "lobby_id") && message.lobby_id !== "")
+                        writer.uint32(/* id 4, wireType 2 =*/34).string(message.lobby_id);
+                    if (message.deadline_ms != null && $Object.hasOwnProperty.call(message, "deadline_ms") && (typeof message.deadline_ms === "object" ? message.deadline_ms.low || message.deadline_ms.high : message.deadline_ms !== 0))
+                        writer.uint32(/* id 5, wireType 0 =*/40).int64(message.deadline_ms);
+                    if (message.total != null && $Object.hasOwnProperty.call(message, "total") && message.total !== 0)
+                        writer.uint32(/* id 6, wireType 0 =*/48).int32(message.total);
+                    if (message.ready_count != null && $Object.hasOwnProperty.call(message, "ready_count") && message.ready_count !== 0)
+                        writer.uint32(/* id 7, wireType 0 =*/56).int32(message.ready_count);
+                    if (message.your_state != null && $Object.hasOwnProperty.call(message, "your_state") && message.your_state !== "")
+                        writer.uint32(/* id 8, wireType 2 =*/66).string(message.your_state);
+                    if (message.reason != null && $Object.hasOwnProperty.call(message, "reason") && message.reason !== "")
+                        writer.uint32(/* id 9, wireType 2 =*/74).string(message.reason);
+                    if (message.participants != null && message.participants.length)
+                        for (let i = 0; i < message.participants.length; ++i)
+                            $root.gamend.realtime.v1.ReadyCheckParticipant.encode(message.participants[i], writer.uint32(/* id 10, wireType 2 =*/82).fork(), _depth + 1).ldelim();
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a ReadyCheckState message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.ReadyCheckState & gamend.realtime.v1.ReadyCheckState.$Shape} ReadyCheckState
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ReadyCheckState.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end = length === $undefined ? reader.len : reader.pos + length, message = _target || new $root.gamend.realtime.v1.ReadyCheckState(), value;
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.id = value;
+                                else
+                                    delete message.id;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.kind = value;
+                                else
+                                    delete message.kind;
+                                continue;
+                            }
+                        case 3: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.status = value;
+                                else
+                                    delete message.status;
+                                continue;
+                            }
+                        case 4: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.lobby_id = value;
+                                else
+                                    delete message.lobby_id;
+                                continue;
+                            }
+                        case 5: {
+                                if (wireType !== 0)
+                                    break;
+                                if (typeof (value = reader.int64()) === "object" ? value.low || value.high : value !== 0)
+                                    message.deadline_ms = value;
+                                else
+                                    delete message.deadline_ms;
+                                continue;
+                            }
+                        case 6: {
+                                if (wireType !== 0)
+                                    break;
+                                if (value = reader.int32())
+                                    message.total = value;
+                                else
+                                    delete message.total;
+                                continue;
+                            }
+                        case 7: {
+                                if (wireType !== 0)
+                                    break;
+                                if (value = reader.int32())
+                                    message.ready_count = value;
+                                else
+                                    delete message.ready_count;
+                                continue;
+                            }
+                        case 8: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.your_state = value;
+                                else
+                                    delete message.your_state;
+                                continue;
+                            }
+                        case 9: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.reason = value;
+                                else
+                                    delete message.reason;
+                                continue;
+                            }
+                        case 10: {
+                                if (wireType !== 2)
+                                    break;
+                                if (!(message.participants && message.participants.length))
+                                    message.participants = [];
+                                message.participants.push($root.gamend.realtime.v1.ReadyCheckParticipant.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a ReadyCheckState message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.ReadyCheckState} ReadyCheckState
+                 */
+                ReadyCheckState.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.ReadyCheckState)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.ReadyCheckState: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.ReadyCheckState();
+                    if (object.id != null)
+                        if (typeof object.id !== "string" || object.id.length)
+                            message.id = $String(object.id);
+                    if (object.kind != null)
+                        if (typeof object.kind !== "string" || object.kind.length)
+                            message.kind = $String(object.kind);
+                    if (object.status != null)
+                        if (typeof object.status !== "string" || object.status.length)
+                            message.status = $String(object.status);
+                    if (object.lobby_id != null)
+                        if (typeof object.lobby_id !== "string" || object.lobby_id.length)
+                            message.lobby_id = $String(object.lobby_id);
+                    if (object.deadline_ms != null)
+                        if (typeof object.deadline_ms === "object" ? object.deadline_ms.low || object.deadline_ms.high : $Number(object.deadline_ms) !== 0)
+                            if ($util.Long)
+                                message.deadline_ms = $util.Long.fromValue(object.deadline_ms, false);
+                            else if (typeof object.deadline_ms === "string")
+                                message.deadline_ms = $parseInt(object.deadline_ms, 10);
+                            else if (typeof object.deadline_ms === "number")
+                                message.deadline_ms = object.deadline_ms;
+                            else if (typeof object.deadline_ms === "object")
+                                message.deadline_ms = new $util.LongBits(object.deadline_ms.low >>> 0, object.deadline_ms.high >>> 0).toNumber();
+                    if (object.total != null)
+                        if ($Number(object.total) !== 0)
+                            message.total = object.total | 0;
+                    if (object.ready_count != null)
+                        if ($Number(object.ready_count) !== 0)
+                            message.ready_count = object.ready_count | 0;
+                    if (object.your_state != null)
+                        if (typeof object.your_state !== "string" || object.your_state.length)
+                            message.your_state = $String(object.your_state);
+                    if (object.reason != null)
+                        if (typeof object.reason !== "string" || object.reason.length)
+                            message.reason = $String(object.reason);
+                    if (object.participants) {
+                        if (!$Array.isArray(object.participants))
+                            throw $TypeError(".gamend.realtime.v1.ReadyCheckState.participants: array expected");
+                        message.participants = $Array(object.participants.length);
+                        for (let i = 0; i < object.participants.length; ++i) {
+                            if (!$util.isObject(object.participants[i]))
+                                throw $TypeError(".gamend.realtime.v1.ReadyCheckState.participants: object expected");
+                            message.participants[i] = $root.gamend.realtime.v1.ReadyCheckParticipant.fromObject(object.participants[i], _depth + 1);
+                        }
+                    }
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a ReadyCheckState message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @static
+                 * @param {gamend.realtime.v1.ReadyCheckState} message ReadyCheckState
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                ReadyCheckState.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.arrays || options.defaults)
+                        object.participants = [];
+                    if (options.defaults) {
+                        object.id = "";
+                        object.kind = "";
+                        object.status = "";
+                        object.lobby_id = "";
+                        if ($util.Long) {
+                            let long = new $util.Long(0, 0, false);
+                            object.deadline_ms = options.longs === $String ? long.toString() : options.longs === $Number ? long.toNumber() : typeof $BigInt !== "undefined" && options.longs === $BigInt ? long.toBigInt() : long;
+                        } else
+                            object.deadline_ms = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
+                        object.total = 0;
+                        object.ready_count = 0;
+                        object.your_state = "";
+                        object.reason = "";
+                    }
+                    if (message.id != null && $Object.hasOwnProperty.call(message, "id"))
+                        object.id = message.id;
+                    if (message.kind != null && $Object.hasOwnProperty.call(message, "kind"))
+                        object.kind = message.kind;
+                    if (message.status != null && $Object.hasOwnProperty.call(message, "status"))
+                        object.status = message.status;
+                    if (message.lobby_id != null && $Object.hasOwnProperty.call(message, "lobby_id"))
+                        object.lobby_id = message.lobby_id;
+                    if (message.deadline_ms != null && $Object.hasOwnProperty.call(message, "deadline_ms"))
+                        if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                            object.deadline_ms = typeof message.deadline_ms === "number" ? $BigInt(message.deadline_ms) : $util.Long.fromBits(message.deadline_ms.low >>> 0, message.deadline_ms.high >>> 0, false).toBigInt();
+                        else if (typeof message.deadline_ms === "number")
+                            object.deadline_ms = options.longs === $String ? $String(message.deadline_ms) : message.deadline_ms;
+                        else
+                            object.deadline_ms = options.longs === $String ? $util.Long.prototype.toString.call(message.deadline_ms) : options.longs === $Number ? new $util.LongBits(message.deadline_ms.low >>> 0, message.deadline_ms.high >>> 0).toNumber() : message.deadline_ms;
+                    if (message.total != null && $Object.hasOwnProperty.call(message, "total"))
+                        object.total = message.total;
+                    if (message.ready_count != null && $Object.hasOwnProperty.call(message, "ready_count"))
+                        object.ready_count = message.ready_count;
+                    if (message.your_state != null && $Object.hasOwnProperty.call(message, "your_state"))
+                        object.your_state = message.your_state;
+                    if (message.reason != null && $Object.hasOwnProperty.call(message, "reason"))
+                        object.reason = message.reason;
+                    if (message.participants && message.participants.length) {
+                        object.participants = $Array(message.participants.length);
+                        for (let j = 0; j < message.participants.length; ++j)
+                            object.participants[j] = $root.gamend.realtime.v1.ReadyCheckParticipant.toObject(message.participants[j], options, _depth + 1);
+                    }
+                    return object;
+                };
+
+                /**
+                 * Converts this ReadyCheckState to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                ReadyCheckState.prototype.toJSON = function() {
+                    return ReadyCheckState.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for ReadyCheckState
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.ReadyCheckState
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                ReadyCheckState.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.ReadyCheckState";
+                };
+
+                return ReadyCheckState;
             })();
 
             v1.KvEntry = (function() {

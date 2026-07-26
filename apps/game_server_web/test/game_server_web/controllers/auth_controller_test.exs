@@ -4,17 +4,19 @@ defmodule GameServerWeb.AuthControllerTest do
   alias GameServer.Accounts
   alias GameServer.AccountsFixtures
   alias GameServer.OAuthSessions
+  alias GameServer.SettingsHelpers
+
+  defp put_provider_setting(key, value) do
+    orig = SettingsHelpers.get(:game_server_core, GameServer.OAuth.Providers, key)
+    SettingsHelpers.put(:game_server_core, GameServer.OAuth.Providers, key, value)
+
+    on_exit(fn ->
+      SettingsHelpers.put(:game_server_core, GameServer.OAuth.Providers, key, orig)
+    end)
+  end
 
   test "request redirects to provider (discord)", %{conn: conn} do
-    orig = Application.get_env(:ueberauth, Ueberauth.Strategy.Discord.OAuth)
-
-    Application.put_env(:ueberauth, Ueberauth.Strategy.Discord.OAuth,
-      client_id: "cid-123",
-      client_secret: "secret",
-      redirect_uri: "http://www.example.com/auth/discord/callback"
-    )
-
-    on_exit(fn -> Application.put_env(:ueberauth, Ueberauth.Strategy.Discord.OAuth, orig) end)
+    put_provider_setting(:discord_client_id, "cid-123")
 
     conn = get(conn, "/auth/discord")
     # Ueberauth strategies may use slightly different endpoints; assert by host and client_id
@@ -23,14 +25,7 @@ defmodule GameServerWeb.AuthControllerTest do
   end
 
   test "request redirects to provider (google)", %{conn: conn} do
-    orig = Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)
-
-    Application.put_env(:ueberauth, Ueberauth.Strategy.Google.OAuth,
-      client_id: "google-123",
-      client_secret: "google-secret"
-    )
-
-    on_exit(fn -> Application.put_env(:ueberauth, Ueberauth.Strategy.Google.OAuth, orig) end)
+    put_provider_setting(:google_client_id, "google-123")
 
     conn = get(conn, "/auth/google")
     assert redirected_to(conn) =~ "accounts.google.com"
@@ -38,15 +33,7 @@ defmodule GameServerWeb.AuthControllerTest do
   end
 
   test "request redirects to provider (facebook)", %{conn: conn} do
-    orig = Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)
-
-    Application.put_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth,
-      client_id: "fb-123",
-      client_secret: "fb-secret",
-      redirect_uri: "http://www.example.com/auth/facebook/callback"
-    )
-
-    on_exit(fn -> Application.put_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth, orig) end)
+    put_provider_setting(:facebook_client_id, "fb-123")
 
     conn = get(conn, "/auth/facebook")
     assert redirected_to(conn) =~ "facebook.com"
@@ -54,15 +41,7 @@ defmodule GameServerWeb.AuthControllerTest do
   end
 
   test "request redirects to provider (apple)", %{conn: conn} do
-    orig = Application.get_env(:ueberauth, Ueberauth.Strategy.Apple.OAuth)
-
-    # Avoid calling GameServer.Apple.client_secret during the request
-    Application.put_env(:ueberauth, Ueberauth.Strategy.Apple.OAuth,
-      client_id: "apple-123",
-      client_secret: "dummy-secret"
-    )
-
-    on_exit(fn -> Application.put_env(:ueberauth, Ueberauth.Strategy.Apple.OAuth, orig) end)
+    put_provider_setting(:apple_client_id, "apple-123")
 
     conn = get(conn, "/auth/apple")
     assert redirected_to(conn) =~ "appleid.apple.com"
@@ -259,7 +238,12 @@ defmodule GameServerWeb.AuthControllerTest do
   test "callback (apple) success browser and api flows", %{conn: conn} do
     orig = Application.get_env(:game_server_web, :oauth_exchanger)
 
-    System.put_env("APPLE_WEB_CLIENT_ID", "com.example.web")
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :apple_client_id,
+      "com.example.web"
+    )
 
     defmodule TestExchanger.SuccessApple do
       def exchange_apple_code(_code, _client_id, _secret, _redirect) do
@@ -316,7 +300,12 @@ defmodule GameServerWeb.AuthControllerTest do
     orig = Application.get_env(:game_server_web, :oauth_exchanger)
     oauth_orig = Application.get_env(:ueberauth, Ueberauth.Strategy.Apple.OAuth)
 
-    System.put_env("APPLE_WEB_CLIENT_ID", "com.example.web")
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :apple_client_id,
+      "com.example.web"
+    )
 
     Application.put_env(:ueberauth, Ueberauth.Strategy.Apple.OAuth,
       client_id: "com.example.web",
@@ -351,7 +340,7 @@ defmodule GameServerWeb.AuthControllerTest do
     # Server-side state is single-use. Session-cookie fallback would wrongly let
     # browser callbacks depend on a cookie Apple cannot guarantee on form_post.
     replay_conn = post(build_conn(), "/auth/apple/callback", %{"code" => "xxx", "state" => state})
-    assert redirected_to(replay_conn) =~ "/users/log-in"
+    assert redirected_to(replay_conn) =~ "/users/log_in"
     assert Phoenix.Flash.get(replay_conn.assigns.flash, :error) =~ "Failed to authenticate"
   end
 
@@ -361,7 +350,12 @@ defmodule GameServerWeb.AuthControllerTest do
     oauth_orig = Application.get_env(:ueberauth, Ueberauth.Strategy.Apple.OAuth)
     user = AccountsFixtures.user_fixture()
 
-    System.put_env("APPLE_WEB_CLIENT_ID", "com.example.web")
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :apple_client_id,
+      "com.example.web"
+    )
 
     Application.put_env(:ueberauth, Ueberauth.Strategy.Apple.OAuth,
       client_id: "com.example.web",
@@ -399,7 +393,12 @@ defmodule GameServerWeb.AuthControllerTest do
   test "callback (apple) error creates session with error status", %{conn: conn} do
     orig = Application.get_env(:game_server_web, :oauth_exchanger)
 
-    System.put_env("APPLE_WEB_CLIENT_ID", "com.example.web")
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :apple_client_id,
+      "com.example.web"
+    )
 
     defmodule TestExchanger.ErrorApple do
       def exchange_apple_code(_code, _client_id, _secret, _redirect), do: {:error, :failed}

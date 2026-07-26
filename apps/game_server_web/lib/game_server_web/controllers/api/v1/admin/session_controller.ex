@@ -3,7 +3,6 @@ defmodule GameServerWeb.Api.V1.Admin.SessionController do
   use OpenApiSpex.ControllerSpecs
 
   import Ecto.Query
-  import GameServerWeb.Helpers.ParamParser
 
   alias GameServer.Accounts
   alias GameServer.Accounts.UserToken
@@ -20,7 +19,7 @@ defmodule GameServerWeb.Api.V1.Admin.SessionController do
     properties: %{
       id: %Schema{type: :string, format: :uuid},
       user_id: %Schema{type: :string, format: :uuid},
-      user_email: %Schema{type: :string, nullable: true},
+      user_email: %Schema{type: :string},
       context: %Schema{type: :string},
       inserted_at: %Schema{type: :string, format: "date-time"},
       authenticated_at: %Schema{type: :string, format: "date-time", nullable: true}
@@ -60,7 +59,7 @@ defmodule GameServerWeb.Api.V1.Admin.SessionController do
   )
 
   def index(conn, params) do
-    {page, page_size} = parse_page_params(params)
+    {page, page_size} = GameServerWeb.Pagination.params(params)
 
     total_count = Repo.aggregate(from(t in UserToken, where: t.context == "session"), :count)
 
@@ -149,7 +148,7 @@ defmodule GameServerWeb.Api.V1.Admin.SessionController do
       username: (token.user && token.user.username) || "",
       display_name: (token.user && token.user.display_name) || "",
       user_email: (token.user && token.user.email) || "",
-      context: token.context,
+      context: token.context || "",
       inserted_at: token.inserted_at,
       authenticated_at: token.authenticated_at
     }

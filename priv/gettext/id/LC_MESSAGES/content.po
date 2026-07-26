@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: id\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "Selamat bergabung"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "Masuk untuk pertama kalinya."
+
+#. quests
+msgid "Daily check-in"
+msgstr "Absen harian"
+
+#. quests
+msgid "Log in today."
+msgstr "Masuk hari ini."
+
+#. quests
+msgid "Weekly regular"
+msgstr "Pelanggan mingguan"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "Masuk pada lima hari berbeda minggu ini."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "Pelanggan bulanan"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "Masuk dua puluh kali bulan ini."
+
+#. quests
+msgid "Stop by again"
+msgstr "Mampir lagi ya"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "Masuk. Tersedia lagi tiga hari kemudian."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "Veteran setia"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "Masuk lima puluh kali, setelah kamu menyapa."
+
+#. quests
+msgid "Night owl"
+msgstr "Burung hantu malam"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "Beberapa hal ditemukan, bukan diumumkan."
+
+#. quests
+msgid "Launch festival"
+msgstr "Festival peluncuran"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "Misi harian yang hanya dihitung selama festival berlangsung."
+
+#. leaderboards
+msgid "Logins"
+msgstr "Jumlah masuk"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "Berapa kali setiap pemain telah masuk."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "Piala Mingguan"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "Daftar kapan saja; bagan diundi setiap Senin."

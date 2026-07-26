@@ -15,106 +15,227 @@ if config_env() == :dev do
   GameServer.Dotenv.load(Path.expand("../.env", __DIR__))
 end
 
+# Resolved once, for the derivations further down: they turn settings into the
+# shapes Phoenix, Ecto, Bandit, Swoosh and Pigeon expect, and cannot read back
+# what `config/2` has staged.
+settings = GameServer.Settings.resolve()
+setting = fn module, key -> Map.get(settings, {module, key}) end
+
 # ## Using releases
 #
 # If you use `mix release`, you need to explicitly enable the server
-# by passing the PHX_SERVER=true when you start it:
+# by passing the GAMEND_HTTP_SERVER=true when you start it:
 #
-#     PHX_SERVER=true bin/game_server_web start
+#     GAMEND_HTTP_SERVER=true bin/game_server_web start
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
-if System.get_env("PHX_SERVER") do
+if setting.(GameServerWeb.Http, :server) do
   config :game_server_web, GameServerWeb.Endpoint, server: true
 end
 
-# Configure log level from environment variable (defaults to :info in prod, :debug in dev)
-if log_level = System.get_env("LOG_LEVEL") do
-  level = String.to_existing_atom(log_level)
-  config :logger, level: level
+# Logger's own level is not ours to declare — mirror the declared setting onto
+# the :logger application, which is what actually filters.
+# The setting is already cast to a level atom.
+if log_level = setting.(GameServerWeb.Observability, :log_level) do
+  config :logger, level: log_level
 end
 
-# ── Configurable limits ────────────────────────────────────────────────────────
-# Override any limit defined in GameServer.Limits by setting the corresponding
-# LIMIT_<KEY> environment variable, e.g. LIMIT_MAX_METADATA_SIZE=32768.
-# Unset variables keep the compiled defaults.
-# Derived from the defaults map rather than a hand-maintained list: a limit
-# added to GameServer.Limits is env-settable from day one. (A hand list here
-# once silently missed four keys.)
-_limit_overrides =
-  GameServer.Limits.defaults()
-  |> Map.keys()
-  |> Enum.reduce([], fn key, acc ->
-    env_name = "LIMIT_#{key |> Atom.to_string() |> String.upcase()}"
+host = setting.(GameServerWeb.Http, :host) || "localhost"
 
-    case System.get_env(env_name) do
-      nil ->
-        acc
+scheme =
+  setting.(GameServerWeb.Http, :scheme) ||
+    if host in ["localhost", "127.0.0.1"], do: "http", else: "https"
 
-      val ->
-        case Integer.parse(val) do
-          {n, _} -> [{key, n} | acc]
-          :error -> acc
-        end
+# ── OAuth providers ─────────────────────────────────────────────────────────
+# Ueberauth resolves credentials from its own application env, so the declared
+# settings are written into it here — in every environment, for every provider.
+# Nothing reads provider credentials from the environment directly.
+config :ueberauth, Ueberauth.Strategy.Discord.OAuth,
+  client_id: setting.(GameServer.OAuth.Providers, :discord_client_id),
+  client_secret: setting.(GameServer.OAuth.Providers, :discord_client_secret)
+
+config :ueberauth, Ueberauth.Strategy.Apple.OAuth,
+  client_id: setting.(GameServer.OAuth.Providers, :apple_client_id),
+  client_secret: {GameServer.Apple, :client_secret},
+  redirect_uri: "#{scheme}://#{host}/auth/apple/callback"
+
+config :ueberauth, Ueberauth.Strategy.Google.OAuth,
+  client_id: setting.(GameServer.OAuth.Providers, :google_client_id),
+  client_secret: setting.(GameServer.OAuth.Providers, :google_client_secret)
+
+config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
+  client_id: setting.(GameServer.OAuth.Providers, :facebook_client_id),
+  client_secret: setting.(GameServer.OAuth.Providers, :facebook_client_secret)
+
+config :ueberauth, Ueberauth.Strategy.Steam,
+  api_key: setting.(GameServer.OAuth.Providers, :steam_api_key)
+
+# ── Mailer ──────────────────────────────────────────────────────────────────
+# Dev and prod resolve the mailer the same way: SMTP when a password is
+# declared, the local mailbox otherwise. Dev used to carry its own copy of this
+# and drifted onto env names that no longer exist. Test keeps the capture
+# adapter it pins in config/test.exs — runtime config would otherwise win.
+if config_env() != :test and setting.(GameServer.Mail, :smtp_password) do
+  # gen_smtp expects a charlist for server_name_indication; a binary raises
+  # "incompatible options". Computed outside the keyword list so no remote call
+  # ends up in a guard.
+  sni_env = setting.(GameServer.Mail, :smtp_sni) || setting.(GameServer.Mail, :smtp_relay)
+
+  sni =
+    if is_binary(sni_env) do
+      trimmed = String.trim(sni_env)
+      if trimmed != "", do: String.to_charlist(trimmed), else: nil
     end
-  end)
-  |> then(fn
-    [] -> :ok
-    overrides -> config :game_server_core, GameServer.Limits, overrides
-  end)
 
-# ── Object storage ──────────────────────────────────────────────────────────
-# STORAGE_ADAPTER selects the backend (local | s3). local (default) needs no
-# further config; s3 uses the STORAGE_S3_* vars and works with AWS S3,
-# Cloudflare R2, Backblaze B2, MinIO, and DigitalOcean Spaces.
-case System.get_env("STORAGE_ADAPTER") do
-  adapter when adapter in ["s3", "S3"] ->
-    config :game_server_core, GameServer.Storage, adapter: GameServer.Storage.S3
+  config :game_server_core, GameServer.Mailer,
+    adapter: Swoosh.Adapters.SMTP,
+    relay: setting.(GameServer.Mail, :smtp_relay),
+    username: setting.(GameServer.Mail, :smtp_username),
+    password: setting.(GameServer.Mail, :smtp_password),
+    port: setting.(GameServer.Mail, :smtp_port),
+    tls: setting.(GameServer.Mail, :smtp_tls),
+    ssl: setting.(GameServer.Mail, :smtp_ssl),
+    retries: 2,
+    auth: :always,
+    no_mx_lookups: false,
+    sockopts: [
+      versions: [:"tlsv1.2", :"tlsv1.3"],
+      verify: :verify_peer,
+      cacerts: :public_key.cacerts_get(),
+      depth: 3,
+      customize_hostname_check: [
+        match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
+      ],
+      server_name_indication: sni
+    ]
 
-    config :game_server_core, GameServer.Storage.S3,
-      bucket: System.get_env("STORAGE_S3_BUCKET"),
-      region: System.get_env("STORAGE_S3_REGION") || "auto",
-      endpoint: System.get_env("STORAGE_S3_ENDPOINT"),
-      access_key_id: System.get_env("STORAGE_S3_ACCESS_KEY_ID"),
-      secret_access_key: System.get_env("STORAGE_S3_SECRET_ACCESS_KEY"),
-      public_base_url: System.get_env("STORAGE_PUBLIC_URL")
+  config :swoosh, :api_client, Swoosh.ApiClient.Req
+else
+  if config_env() != :test do
+    config :game_server_core, GameServer.Mailer, adapter: Swoosh.Adapters.Local
+
+    # Swoosh's in-memory mailbox backs the preview page.
+    config :swoosh, local: true
+    config :swoosh, :api_client, false
+  end
+end
+
+# ── Push notifications ──────────────────────────────────────────────────────
+# (docs/specs/push.md) With nothing set, neither dispatcher is configured, so
+# GameServer.Push.Supervisor starts no children and every delivery routes to
+# the Log provider. Credentials are parse-validated here so a bad value
+# degrades to that Log fallback with one loud error instead of handing the
+# dispatcher a config it would crash-loop on.
+
+# Secret env vars accept inline contents or a path to a file holding them.
+read_push_secret = fn
+  nil -> nil
+  "" -> nil
+  value -> if File.regular?(value), do: File.read!(value), else: value
+end
+
+# The push queue lives in Oban's config, so the declared concurrency has to be
+# copied across rather than read from the setting at runtime.
+case setting.(GameServer.Push, :queue_concurrency) do
+  concurrency when is_integer(concurrency) and concurrency > 0 ->
+    config :game_server_core, Oban, queues: [push: concurrency]
 
   _ ->
-    config :game_server_core, GameServer.Storage, adapter: GameServer.Storage.Local
+    :ok
 end
 
-if dir = System.get_env("STORAGE_LOCAL_DIR") do
-  config :game_server_core, GameServer.Storage.Local, dir: dir
+fcm_credentials = read_push_secret.(setting.(GameServer.Push, :fcm_credentials))
+
+if fcm_credentials do
+  case Jason.decode(fcm_credentials) do
+    {:ok, %{} = credentials} ->
+      project_id = setting.(GameServer.Push, :fcm_project_id) || credentials["project_id"]
+
+      if project_id in [nil, ""] do
+        IO.puts(
+          :stderr,
+          "[push] GAMEND_PUSH_FCM_CREDENTIALS has no project_id and GAMEND_PUSH_FCM_PROJECT_ID is unset — " <>
+            "FCM disabled, deliveries fall back to the Log provider"
+        )
+      else
+        config :game_server_core, GameServer.Push.Goth,
+          source: {:service_account, credentials, []}
+
+        config :game_server_core, GameServer.Push.FCMDispatcher,
+          adapter: Pigeon.FCM,
+          auth: GameServer.Push.Goth,
+          project_id: project_id
+      end
+
+    {:error, _} ->
+      IO.puts(
+        :stderr,
+        "[push] GAMEND_PUSH_FCM_CREDENTIALS is neither valid service-account JSON nor a readable " <>
+          "file — FCM disabled, deliveries fall back to the Log provider"
+      )
+  end
 end
 
-if base = System.get_env("STORAGE_PUBLIC_URL") do
-  config :game_server_core, GameServer.Storage.Local, base_url: base
+apns_key = read_push_secret.(setting.(GameServer.Push, :apns_private_key))
+apns_key_id = setting.(GameServer.Push, :apns_key_id)
+apns_team_id = setting.(GameServer.Push, :apns_team_id)
+apns_topic = setting.(GameServer.Push, :apns_topic)
+apns_vars = [apns_key, apns_key_id, apns_team_id, apns_topic]
+
+cond do
+  Enum.all?(apns_vars, &(&1 in [nil, ""])) ->
+    :ok
+
+  Enum.any?(apns_vars, &(&1 in [nil, ""])) ->
+    IO.puts(
+      :stderr,
+      "[push] APNs needs all of APNS_PRIVATE_KEY, APNS_KEY_ID, APNS_TEAM_ID and APNS_TOPIC — " <>
+        "APNs disabled, deliveries fall back to the Log provider"
+    )
+
+  not String.contains?(apns_key, "PRIVATE KEY") ->
+    IO.puts(
+      :stderr,
+      "[push] APNS_PRIVATE_KEY does not look like .p8 key contents (or a path to them) — " <>
+        "APNs disabled, deliveries fall back to the Log provider"
+    )
+
+  true ->
+    config :game_server_core, GameServer.Push.APNSDispatcher,
+      adapter: Pigeon.APNS,
+      key: apns_key,
+      key_identifier: apns_key_id,
+      team_id: apns_team_id,
+      mode: if(setting.(GameServer.Push, :apns_env) == "sandbox", do: :dev, else: :prod)
+
+    config :game_server_core, GameServer.Push, apns_topic: apns_topic
 end
 
-# ── Account activation ──────────────────────────────────────────────────────
-# Read REQUIRE_ACCOUNT_ACTIVATION once at boot so the function only hits the
-# fast Application.get_env path at runtime.
-if require_activation = System.get_env("REQUIRE_ACCOUNT_ACTIVATION") do
-  config :game_server_core,
-    require_account_activation: require_activation in ["1", "true", "TRUE", "True"]
+# ── Declared settings ───────────────────────────────────────────────────────
+# Every setting declared with GameServer.Settings.Provider, read from the
+# environment once at boot. Blocks below this line are the ones not yet
+# converted; each disappears as its section is declared.
+for {app, module, opts} <- GameServer.Settings.from_env() do
+  config app, module, opts
 end
 
 # Outside prod the cache topology comes from the compiled config; honor the
-# CACHE_ENABLED toggle here so disabling it in dev/test isn't a silent no-op.
+# GAMEND_CACHE_ENABLED toggle here so disabling it in dev/test isn't a silent no-op.
 unless config_env() == :prod do
   config :game_server_core, GameServer.Cache,
-    bypass_mode: not GameServer.Env.bool("CACHE_ENABLED", true)
+    bypass_mode: not setting.(GameServer.Cache.Settings, :enabled)
 end
 
 if config_env() == :prod do
-  cache_enabled = GameServer.Env.bool("CACHE_ENABLED", true)
+  cache_enabled = setting.(GameServer.Cache.Settings, :enabled)
 
-  cache_mode = System.get_env("CACHE_MODE") || "single"
-
-  cache_l2 = System.get_env("CACHE_L2") || "partitioned"
+  cache_mode = setting.(GameServer.Cache.Settings, :mode)
+  cache_l2 = setting.(GameServer.Cache.Settings, :l2)
 
   redis_conn_opts =
-    case System.get_env("CACHE_REDIS_URL") || System.get_env("REDIS_URL") do
+    case setting.(GameServer.Cache.Settings, :redis_url) ||
+           setting.(GameServer.Cluster, :redis_url) do
       nil ->
         []
 
@@ -164,17 +285,17 @@ if config_env() == :prod do
 
   levels =
     case cache_mode do
-      "single" ->
+      :single ->
         [{GameServer.Cache.L1, l1_opts}]
 
       _ ->
         l2_level =
           case cache_l2 do
-            "redis" ->
-              pool_size = GameServer.Env.integer("CACHE_REDIS_POOL_SIZE", 10)
+            :redis ->
+              pool_size = setting.(GameServer.Cache.Settings, :redis_pool_size)
 
               if redis_conn_opts == [] do
-                raise "CACHE_MODE=multi with CACHE_L2=redis requires CACHE_REDIS_URL or REDIS_URL"
+                raise "GAMEND_CACHE_MODE=multi with GAMEND_CACHE_L2=redis requires GAMEND_CACHE_REDIS_URL or REDIS_URL"
               end
 
               {GameServer.Cache.L2.Redis, pool_size: pool_size, conn_opts: redis_conn_opts}
@@ -198,20 +319,22 @@ if config_env() == :prod do
     inclusion_policy: :inclusive,
     levels: levels
 
-  access_log_level = GameServer.Env.log_level("ACCESS_LOG_LEVEL", :debug)
-
-  config :game_server_web, GameServerWeb.Endpoint, access_log: access_log_level
+  config :game_server_web, GameServerWeb.Endpoint,
+    access_log: GameServer.Settings.get(GameServerWeb.Observability, :access_log_level)
 
   # Check if PostgreSQL environment variables are set
   has_postgres_config =
-    System.get_env("DATABASE_URL") ||
-      (System.get_env("POSTGRES_HOST") && System.get_env("POSTGRES_USER"))
+    setting.(GameServer.Database, :url) ||
+      (setting.(GameServer.Database, :postgres_host) &&
+         setting.(GameServer.Database, :postgres_user))
 
   # NOTE: SQLite has a single-writer concurrency model. A very large pool
   # usually increases contention/lock waits rather than throughput.
+  # The declared setting has no default because the sensible one depends on the
+  # adapter, which is only known here.
   default_pool_size = if has_postgres_config, do: 10, else: 5
 
-  repo_pool_size = GameServer.Env.integer("POOL_SIZE", default_pool_size)
+  repo_pool_size = setting.(GameServer.Database, :pool_size) || default_pool_size
 
   # Backpressure/overload tuning:
   # - pool_timeout: how long a request waits for a DB connection checkout (ms)
@@ -220,18 +343,18 @@ if config_env() == :prod do
   # NOTE: Increasing queue_target/interval makes requests wait longer (can increase memory under load).
   # Default to more forgiving backpressure in prod to avoid dropping requests too quickly
   # under bursty load. These can still be overridden via env vars.
-  repo_pool_timeout = GameServer.Env.integer("DB_POOL_TIMEOUT", 10_000)
-  repo_queue_target = GameServer.Env.integer("DB_QUEUE_TARGET", 10_000)
-  repo_queue_interval = GameServer.Env.integer("DB_QUEUE_INTERVAL", 1000)
-  repo_query_timeout = GameServer.Env.integer("DB_QUERY_TIMEOUT", 15_000)
+  repo_pool_timeout = setting.(GameServer.Database, :pool_timeout_ms)
+  repo_queue_target = setting.(GameServer.Database, :queue_target)
+  repo_queue_interval = setting.(GameServer.Database, :queue_interval_ms)
+  repo_query_timeout = setting.(GameServer.Database, :query_timeout_ms)
 
   if has_postgres_config do
     # Use PostgreSQL when configured
     database_url =
-      System.get_env("DATABASE_URL") ||
-        "ecto://#{System.get_env("POSTGRES_USER")}:#{System.get_env("POSTGRES_PASSWORD")}@#{System.get_env("POSTGRES_HOST")}:#{System.get_env("POSTGRES_PORT", "5432")}/#{System.get_env("POSTGRES_DB", "game_server_prod")}"
+      setting.(GameServer.Database, :url) ||
+        "ecto://#{setting.(GameServer.Database, :postgres_user)}:#{setting.(GameServer.Database, :postgres_password)}@#{setting.(GameServer.Database, :postgres_host)}:#{setting.(GameServer.Database, :postgres_port)}/#{setting.(GameServer.Database, :postgres_db)}"
 
-    maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
+    maybe_ipv6 = if setting.(GameServer.Database, :ipv6) in ~w(true 1), do: [:inet6], else: []
 
     config :game_server_core, GameServer.Repo,
       url: database_url,
@@ -244,11 +367,11 @@ if config_env() == :prod do
       socket_options: maybe_ipv6
   else
     # Fallback to persistent SQLite when no PostgreSQL config
-    # Use SQLITE_DATABASE_PATH if set (e.g. a mounted Fly volume), otherwise default to the host-local db directory.
+    # Use GAMEND_DB_SQLITE_PATH if set (e.g. a mounted Fly volume), otherwise default to the host-local db directory.
     default_db_path = Path.expand("../db/game_server_prod.db", __DIR__)
 
     db_path =
-      case System.get_env("SQLITE_DATABASE_PATH") do
+      case setting.(GameServer.Database, :sqlite_path) do
         nil ->
           File.mkdir_p!(Path.dirname(default_db_path))
           default_db_path
@@ -264,7 +387,7 @@ if config_env() == :prod do
     # - cache_size: in KiB when negative (e.g. -200_000 => ~200MB page cache)
     # - busy_timeout: wait for locks instead of immediate "database is locked" failures
     sqlite_synchronous =
-      case System.get_env("SQLITE_SYNCHRONOUS") do
+      case setting.(GameServer.Database, :sqlite_synchronous) do
         "off" -> :off
         "normal" -> :normal
         "full" -> :full
@@ -272,9 +395,9 @@ if config_env() == :prod do
         _ -> :normal
       end
 
-    sqlite_cache_size_kb = GameServer.Env.integer("SQLITE_CACHE_SIZE_KB", 200_000)
-    sqlite_busy_timeout_ms = GameServer.Env.integer("SQLITE_BUSY_TIMEOUT", 15_000)
-    sqlite_wal_autocheckpoint = GameServer.Env.integer("SQLITE_WAL_AUTOCHECKPOINT", 2000)
+    sqlite_cache_size_kb = setting.(GameServer.Database, :sqlite_cache_size_kb)
+    sqlite_busy_timeout_ms = setting.(GameServer.Database, :sqlite_busy_timeout_ms)
+    sqlite_wal_autocheckpoint = setting.(GameServer.Database, :sqlite_wal_autocheckpoint)
 
     # Ensure Ecto/DBConnection timeout does not fire before SQLite's busy timeout.
     sqlite_query_timeout = max(repo_query_timeout, sqlite_busy_timeout_ms + 5_000)
@@ -303,172 +426,62 @@ if config_env() == :prod do
   # want to use a different value for prod and you most likely don't want
   # to check this value into version control, so we use an environment
   # variable instead.
-  secret_key_base =
-    System.get_env("SECRET_KEY_BASE") ||
-      raise """
-      environment variable SECRET_KEY_BASE is missing.
-      You can generate one by calling: mix phx.gen.secret
-      """
+  # Declared as `auth.secret_key_base` and enforced by
+  # GameServer.Settings.validate!/1 at boot, which reports every missing
+  # required setting at once rather than only the first.
+  secret_key_base = setting.(GameServer.Accounts, :secret_key_base)
 
   # Guardian JWT secret - can be the same as secret_key_base or separate
   guardian_secret_key =
-    System.get_env("GUARDIAN_SECRET_KEY") || secret_key_base
+    setting.(GameServer.Accounts, :guardian_secret_key) || secret_key_base
 
   config :game_server_web, GameServerWeb.Auth.Guardian,
     issuer: "game_server",
     secret_key: guardian_secret_key,
     ttl: {15, :minutes}
 
-  host = System.get_env("PHX_HOST") || "localhost"
-  port = GameServer.Env.integer("PORT", 4000)
+  port = setting.(GameServerWeb.Http, :port)
 
-  scheme =
-    System.get_env("PHX_SCHEME") ||
-      if host in ["localhost", "127.0.0.1"], do: "http", else: "https"
+  config :game_server_web, :dns_cluster_query, setting.(GameServer.Cluster, :dns_query)
 
-  config :game_server_web, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+  # The origin allowlist arrives already split — it is a declared `:list`, so
+  # nothing here has to parse a comma-separated string. An entry prefixed with
+  # `regex:` compiles to a pattern; a bare host is normalised to the
+  # protocol-agnostic `//host` form Phoenix and Corsica both accept.
+  normalize_origin = fn
+    <<"regex:", pattern::binary>> ->
+      Regex.compile!(pattern)
 
-  # Configure Apple OAuth with proper redirect URI for production
-  config :ueberauth, Ueberauth.Strategy.Apple.OAuth,
-    client_id: System.get_env("APPLE_WEB_CLIENT_ID"),
-    client_secret: {GameServer.Apple, :client_secret},
-    redirect_uri: "#{scheme}://#{host}/auth/apple/callback"
+    origin ->
+      if String.starts_with?(origin, "//") or String.starts_with?(origin, "http") do
+        origin
+      else
+        "//" <> origin
+      end
+  end
 
-  # Allow runtime configuration of allowed WebSocket origins via PHX_ALLOWED_ORIGINS.
-  # Format: comma-separated values. Prefix with "regex:" for regex entries, e.g.
-  #   PHX_ALLOWED_ORIGINS="//polyglotpirates.com,regex:^https:\/\/(.+\.)?itch\.io(:\d+)?$"
-  allowed_origins = System.get_env("PHX_ALLOWED_ORIGINS", "") |> String.trim()
+  allowed_origins =
+    Enum.map(setting.(GameServerWeb.Http, :allowed_origins) || [], normalize_origin)
 
-  check_origin =
-    if allowed_origins == "" do
-      nil
-    else
-      allowed_origins
-      |> String.split(",", trim: true)
-      |> Enum.map(fn entry ->
-        entry = String.trim(entry)
-
-        case entry do
-          <<"regex:", rest::binary>> ->
-            Regex.compile!(rest)
-
-          other ->
-            if String.starts_with?(other, "//") or String.starts_with?(other, "http") do
-              other
-            else
-              "//" <> other
-            end
-        end
-      end)
-    end
-
-  # Build the Corsica origins list. When explicit origins are configured we prefer
-  # using those for HTTP CORS as well. If no PHX_ALLOWED_ORIGINS is set we fall
-  # back to "*" which allows all origins for simple CORS requests.
-  cors_allowed_origins =
-    if allowed_origins == "" do
-      "*"
-    else
-      allowed_origins
-      |> String.split(",", trim: true)
-      |> Enum.map(fn entry ->
-        entry = String.trim(entry)
-
-        case entry do
-          <<"regex:", rest::binary>> ->
-            # Corsica accepts compiled regex
-            Regex.compile!(rest)
-
-          other ->
-            # Normalize bare host -> protocol-agnostic //host, allow http/https as appropriate
-            if String.starts_with?(other, "//") or String.starts_with?(other, "http") do
-              other
-            else
-              "//" <> other
-            end
-        end
-      end)
-    end
+  # nil lets Phoenix apply its own check_origin default; "*" is Corsica's
+  # allow-any. Both mean "the operator did not restrict this".
+  check_origin = if allowed_origins == [], do: nil, else: allowed_origins
+  cors_allowed_origins = if allowed_origins == [], do: "*", else: allowed_origins
 
   # Expose these choices via application config so endpoint/plug can pick them up
   config :game_server_web, :cors_allowed_origins, cors_allowed_origins
 
-  # Data retention — prune old rows periodically (days; 0/unset keeps forever).
-  config :game_server_core, GameServer.Retention,
-    chat_messages_days: GameServer.Env.integer("RETENTION_CHAT_DAYS", 0),
-    notifications_days: GameServer.Env.integer("RETENTION_NOTIFICATIONS_DAYS", 0),
-    payment_events_days: GameServer.Env.integer("RETENTION_PAYMENT_EVENTS_DAYS", 0),
-    # Defaults to a real window rather than "keep forever" like the others:
-    # snapshots hold user metadata and KV, and account deletion cannot reach
-    # data embedded in JSONB, so this is the control that bounds it.
-    lobby_snapshots_days: GameServer.Env.integer("RETENTION_LOBBY_SNAPSHOTS_DAYS", 30),
-    lobby_snapshots_flagged_days:
-      GameServer.Env.integer("RETENTION_LOBBY_SNAPSHOTS_FLAGGED_DAYS", 90)
+  # Rate limiting is declared on GameServerWeb.Plugs.RateLimiter and
+  # GameServerWeb.RateLimit; from_env/0 above resolves it. The redis URL still
+  # falls back to the shared cache URL when only that is set.
+  if setting.(GameServerWeb.RateLimit, :redis_url) in [nil, ""] do
+    shared_redis =
+      setting.(GameServer.Cache.Settings, :redis_url) || setting.(GameServer.Cluster, :redis_url)
 
-  # Durable per-run record of lobby state changes, for debugging bad runs.
-  # Off by default: it stores user metadata and KV, so switching it on is a
-  # deliberate privacy decision and the retention window is the mechanism that
-  # bounds it (account deletion cannot reach data embedded in JSONB).
-  config :game_server_core, GameServer.LobbySnapshots,
-    enabled: GameServer.Env.bool("LOBBY_SNAPSHOTS_ENABLED", false),
-    # User-scoped KV keys to capture, comma-separated. Empty captures none — the
-    # widest privacy exposure in a snapshot, so it is opt-in per key rather than
-    # a blanket dump.
-    user_kv_keys:
-      (System.get_env("LOBBY_SNAPSHOTS_USER_KV_KEYS") || "")
-      |> String.split(",", trim: true)
-      |> Enum.map(&String.trim/1)
-      |> Enum.reject(&(&1 == "")),
-    max_kv_entries: GameServer.Env.integer("LOBBY_SNAPSHOTS_MAX_KV_ENTRIES", 200)
-
-  # Realtime update debouncing. Holds outbound state updates ("updated",
-  # "member_updated", "lobby_updated", "group_updated") for this many
-  # milliseconds and then pushes only the latest state per object, turning a
-  # burst of writes into one message. 0 (default) pushes immediately.
-  #
-  # Each message costs ~76 bytes of WebSocket/TLS/TCP/IP headers before any
-  # payload, so coalescing saves more than shrinking payloads does; the cost is
-  # up to this much extra latency on state updates.
-  config :game_server_web,
-         :realtime_debounce_ms,
-         GameServer.Env.integer("REALTIME_DEBOUNCE_MS", 0)
-
-  # Rate Limiting — configurable per-IP request throttling via RATE_LIMIT_* env vars.
-  rate_limit_opts = [
-    general_limit: String.to_integer(System.get_env("RATE_LIMIT_HTTP_GENERAL_LIMIT", "240")),
-    general_window: String.to_integer(System.get_env("RATE_LIMIT_HTTP_GENERAL_WINDOW", "60000")),
-    auth_limit: String.to_integer(System.get_env("RATE_LIMIT_HTTP_AUTH_LIMIT", "10")),
-    auth_window: String.to_integer(System.get_env("RATE_LIMIT_HTTP_AUTH_WINDOW", "60000")),
-    ws_limit: String.to_integer(System.get_env("RATE_LIMIT_WS_LIMIT", "60")),
-    ws_window: String.to_integer(System.get_env("RATE_LIMIT_WS_WINDOW", "10000")),
-    dc_limit: String.to_integer(System.get_env("RATE_LIMIT_WEBRTC_LIMIT", "300")),
-    dc_window: String.to_integer(System.get_env("RATE_LIMIT_WEBRTC_WINDOW", "10000"))
-  ]
-
-  config :game_server_web, GameServerWeb.Plugs.RateLimiter, rate_limit_opts
-
-  # Rate limiter backend: "ets" (default, per-node) or "redis" (shared across
-  # instances — recommended for multi-instance deployments).
-  rate_limit_redis_url =
-    System.get_env("RATE_LIMIT_REDIS_URL") || System.get_env("CACHE_REDIS_URL") ||
-      System.get_env("REDIS_URL")
-
-  rate_limit_backend =
-    case System.get_env("RATE_LIMIT_BACKEND", "ets") do
-      "redis" ->
-        if rate_limit_redis_url in [nil, ""] do
-          raise "RATE_LIMIT_BACKEND=redis requires RATE_LIMIT_REDIS_URL, CACHE_REDIS_URL, or REDIS_URL"
-        end
-
-        :redis
-
-      _ ->
-        :ets
+    if shared_redis not in [nil, ""] do
+      config :game_server_web, GameServerWeb.RateLimit, redis_url: shared_redis
     end
-
-  config :game_server_web, GameServerWeb.RateLimit,
-    backend: rate_limit_backend,
-    redis: [url: rate_limit_redis_url]
+  end
 
   endpoint_config =
     [
@@ -488,24 +501,24 @@ if config_env() == :prod do
     end)
 
   # ── HTTPS / TLS ─────────────────────────────────────────────────────────────
-  # Enable native HTTPS directly in Phoenix/Bandit by setting SSL_CERTFILE and
-  # SSL_KEYFILE to the paths of your certificate and private key PEM files.
+  # Enable native HTTPS directly in Phoenix/Bandit by setting GAMEND_TLS_CERTFILE and
+  # GAMEND_TLS_KEYFILE to the paths of your certificate and private key PEM files.
   # Erlang's :ssl automatically reloads certificate files from disk, so
   # renewed certificates (e.g. from certbot) are picked up without restart.
   #
   # Environment variables:
-  #   SSL_CERTFILE  — path to fullchain.pem (certificate + CA chain)
-  #   SSL_KEYFILE   — path to privkey.pem
-  #   HTTPS_PORT    — HTTPS listen port (default: 443)
-  #   FORCE_SSL     — set to "true" to redirect HTTP → HTTPS and enable HSTS
-  #   ACME_WEBROOT  — webroot directory for Let's Encrypt HTTP-01 challenge files
+  #   GAMEND_TLS_CERTFILE  — path to fullchain.pem (certificate + CA chain)
+  #   GAMEND_TLS_KEYFILE   — path to privkey.pem
+  #   GAMEND_TLS_PORT    — HTTPS listen port (default: 443)
+  #   GAMEND_TLS_FORCE     — set to "true" to redirect HTTP → HTTPS and enable HSTS
+  #   GAMEND_TLS_ACME_WEBROOT  — webroot directory for Let's Encrypt HTTP-01 challenge files
   #                   (default: /var/www/acme when SSL is enabled; same path you
   #                   pass to certbot --webroot-path)
-  ssl_certfile = System.get_env("SSL_CERTFILE")
-  ssl_keyfile = System.get_env("SSL_KEYFILE")
+  ssl_certfile = setting.(GameServerWeb.Tls, :certfile)
+  ssl_keyfile = setting.(GameServerWeb.Tls, :keyfile)
 
   # Validate that certificate files actually exist before enabling HTTPS.
-  # This prevents a crash on startup when SSL_CERTFILE/SSL_KEYFILE are set
+  # This prevents a crash on startup when GAMEND_TLS_CERTFILE/GAMEND_TLS_KEYFILE are set
   # but the files haven't been created yet (e.g. before running certbot).
   ssl_files_ready? =
     if ssl_certfile && ssl_keyfile do
@@ -516,7 +529,7 @@ if config_env() == :prod do
         require Logger
 
         Logger.warning(
-          "SSL_CERTFILE is set to #{ssl_certfile} but the file does not exist. " <>
+          "GAMEND_TLS_CERTFILE is set to #{ssl_certfile} but the file does not exist. " <>
             "HTTPS will NOT be enabled. Run certbot to generate the certificate first, " <>
             "then restart the server."
         )
@@ -526,7 +539,7 @@ if config_env() == :prod do
         require Logger
 
         Logger.warning(
-          "SSL_KEYFILE is set to #{ssl_keyfile} but the file does not exist. " <>
+          "GAMEND_TLS_KEYFILE is set to #{ssl_keyfile} but the file does not exist. " <>
             "HTTPS will NOT be enabled. Run certbot to generate the certificate first, " <>
             "then restart the server."
         )
@@ -539,7 +552,7 @@ if config_env() == :prod do
 
   endpoint_config =
     if ssl_files_ready? do
-      https_port = GameServer.Env.integer("HTTPS_PORT", 443)
+      https_port = setting.(GameServerWeb.Tls, :port)
 
       https_opts = [
         ip: {0, 0, 0, 0, 0, 0, 0, 0},
@@ -561,10 +574,10 @@ if config_env() == :prod do
   # <webroot>/.well-known/acme-challenge/<token>; the AcmeChallenge plug
   # serves them over HTTP so the CA can verify domain ownership.
   # This is the same path you pass to `certbot --webroot-path`.
-  # Enabled whenever SSL_CERTFILE is set (even if the file doesn't exist yet)
+  # Enabled whenever GAMEND_TLS_CERTFILE is set (even if the file doesn't exist yet)
   # so certbot can complete its first challenge.
   acme_webroot =
-    System.get_env("ACME_WEBROOT") ||
+    setting.(GameServerWeb.Tls, :acme_webroot) ||
       if(ssl_certfile, do: "/var/www/acme")
 
   if acme_webroot do
@@ -603,7 +616,7 @@ if config_env() == :prod do
   # we'd redirect to HTTPS that isn't listening and break the server.
   # The ACME challenge path and health-check endpoints are excluded so
   # certbot can complete HTTP-01 validation and load balancers can probe.
-  force_ssl = GameServer.Env.bool("FORCE_SSL", ssl_files_ready?)
+  force_ssl = setting.(GameServerWeb.Tls, :force)
 
   endpoint_config =
     if force_ssl do
@@ -625,79 +638,13 @@ if config_env() == :prod do
 
   config :game_server_web, GameServerWeb.Endpoint, endpoint_config
 
-  # ## Configuring the mailer
-  #
-  # Configure the mailer - if SMTP_PASSWORD is set, use SMTP, otherwise use local mailbox
-  if System.get_env("SMTP_PASSWORD") do
-    # Prepare SNI charlist if provided — gen_smtp expects charlists for
-    # server_name_indication, not binaries (passing a binary causes an
-    # "incompatible options" error). Compute safely outside of keyword lists
-    # so we don't call remote fns in guards.
-    sni_env = System.get_env("SMTP_SNI") || System.get_env("SMTP_RELAY")
-
-    sni =
-      if is_binary(sni_env) do
-        trimmed = String.trim(sni_env)
-
-        if trimmed != "" do
-          String.to_charlist(trimmed)
-        else
-          nil
-        end
-      else
-        nil
-      end
-
-    config :game_server_core, GameServer.Mailer,
-      adapter: Swoosh.Adapters.SMTP,
-      relay: System.get_env("SMTP_RELAY"),
-      username: System.get_env("SMTP_USERNAME"),
-      password: System.get_env("SMTP_PASSWORD"),
-      port: System.get_env("SMTP_PORT"),
-      tls: String.to_existing_atom(System.get_env("SMTP_TLS") || "never"),
-      ssl: String.to_existing_atom(System.get_env("SMTP_SSL") || "true"),
-      retries: 2,
-      auth: :always,
-      no_mx_lookups: false,
-      sockopts: [
-        versions: [:"tlsv1.2", :"tlsv1.3"],
-        verify: :verify_peer,
-        cacerts: :public_key.cacerts_get(),
-        depth: 3,
-        customize_hostname_check: [
-          match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
-        ],
-        server_name_indication: sni
-      ]
-
-    # Configure Swoosh to use Req for HTTP requests
-    config :swoosh, :api_client, Swoosh.ApiClient.Req
-  else
-    # Use local adapter when SMTP is not configured - emails go to mailbox
-    config :game_server_core, GameServer.Mailer, adapter: Swoosh.Adapters.Local
-
-    # Enable Swoosh Local in-memory mailbox storage so the mailbox preview works.
-    # In real production deployments you should configure SMTP instead.
-    config :swoosh, local: true
-
-    # Disable swoosh api client for local adapter
-    config :swoosh, :api_client, false
-  end
-
-  # ── Metrics auth ──
-  # Set METRICS_AUTH_TOKEN to require Bearer token for /metrics endpoint.
-  # Without it, the endpoint is open (suitable for internal Docker networks).
-  if token = System.get_env("METRICS_AUTH_TOKEN") do
-    config :game_server_web, :metrics_auth_token, token
-  end
-
   # ── GeoIP database ──
   # Prefer the host-owned default path under data/, but
-  # still allow GEOIP_DB_PATH to override it for custom deployments.
+  # still allow GAMEND_CONTENT_GEOIP_DB_PATH to override it for custom deployments.
   default_geoip_db = Path.expand("../data/GeoLite2-Country.mmdb", __DIR__)
 
   geoip_db =
-    System.get_env("GEOIP_DB_PATH") ||
+    setting.(GameServer.ContentSettings, :geoip_db_path) ||
       if File.exists?(default_geoip_db), do: default_geoip_db, else: nil
 
   if geoip_db do

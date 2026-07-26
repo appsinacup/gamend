@@ -145,7 +145,7 @@ defmodule GameServerWeb.HostBlogLive do
                     <article class="rounded-3xl border border-base-300 bg-base-100/95 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                       <.link navigate={~p"/blog/#{post.slug}"} class="block space-y-2">
                         <div class="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-base-content/40">
-                          <span>{Calendar.strftime(post.date, "%b %-d, %Y")}</span>
+                          <span><.timestamp at={post.date} format="date" /></span>
                         </div>
 
                         <h4 class="text-xl font-semibold text-base-content/90 transition-colors hover:text-primary">
@@ -177,7 +177,7 @@ defmodule GameServerWeb.HostBlogLive do
             {gettext("Blog")}
           </.link>
           <span>/</span>
-          <span>{Calendar.strftime(@post.date, "%b %-d, %Y")}</span>
+          <span><.timestamp at={@post.date} format="date" /></span>
         </div>
 
         <div class="space-y-3">

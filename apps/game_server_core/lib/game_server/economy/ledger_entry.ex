@@ -9,18 +9,6 @@ defmodule GameServer.Economy.LedgerEntry do
 
   @type t :: %__MODULE__{}
 
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :user_id,
-             :currency,
-             :delta,
-             :balance_after,
-             :reason,
-             :metadata,
-             :inserted_at
-           ]}
-
   schema "ledger_entries" do
     belongs_to :user, GameServer.Accounts.User
     field :currency, :string
@@ -51,5 +39,26 @@ defmodule GameServer.Economy.LedgerEntry do
     |> validate_length(:reason, max: 64)
     |> foreign_key_constraint(:user_id)
     |> unique_constraint(:idempotency_key, name: :ledger_entries_idempotency_key_index)
+  end
+end
+
+# Hand-written rather than @derive so nil strings encode as "" (see
+# GameServer.SchemaJSON — game clients choke on null).
+defimpl Jason.Encoder, for: GameServer.Economy.LedgerEntry do
+  def encode(entry, opts) do
+    GameServer.SchemaJSON.encode(
+      entry,
+      [
+        :id,
+        :user_id,
+        :currency,
+        :delta,
+        :balance_after,
+        :reason,
+        :metadata,
+        :inserted_at
+      ],
+      opts
+    )
   end
 end

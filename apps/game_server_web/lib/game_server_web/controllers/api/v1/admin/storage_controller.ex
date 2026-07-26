@@ -2,8 +2,6 @@ defmodule GameServerWeb.Api.V1.Admin.StorageController do
   use GameServerWeb, :controller
   use OpenApiSpex.ControllerSpecs
 
-  import GameServerWeb.Helpers.ParamParser, only: [parse_page_params: 1]
-
   alias GameServer.Storage
   alias GameServerWeb.Pagination
   alias OpenApiSpex.Schema
@@ -50,7 +48,7 @@ defmodule GameServerWeb.Api.V1.Admin.StorageController do
   )
 
   def index(conn, params) do
-    {page, page_size} = parse_page_params(params)
+    {page, page_size} = GameServerWeb.Pagination.params(params)
     prefix = params["prefix"] || ""
     offset = (page - 1) * page_size
 

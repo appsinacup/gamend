@@ -11,6 +11,7 @@ defmodule GameServer.Leaderboards.Leaderboard do
   - `slug` - URL-friendly identifier that can be reused across seasons (string)
   - `title` - Display title (string)
   - `description` - Optional description (string)
+  - `icon_url` - Optional icon URL; nil means clients show their type default
   - `sort_order` - `:desc` (higher is better) or `:asc` (lower is better)
   - `operator` - Score update mode: `:set`, `:best`, `:incr`, `:decr`
   - `starts_at` - Optional start time (DateTime)
@@ -28,6 +29,7 @@ defmodule GameServer.Leaderboards.Leaderboard do
           slug: String.t(),
           title: String.t(),
           description: String.t() | nil,
+          icon_url: String.t() | nil,
           sort_order: sort_order(),
           operator: operator(),
           starts_at: DateTime.t() | nil,
@@ -42,6 +44,7 @@ defmodule GameServer.Leaderboards.Leaderboard do
     :slug,
     :title,
     :description,
+    :icon_url,
     :sort_order,
     :operator,
     :starts_at,

@@ -1,6 +1,27 @@
 # GameServer Web
 
-Web interface for Gamend GameServer, built with Phoenix Framework. Provides APIs, authentication, real-time features, and payments.
+The web layer of [Gamend](https://gamend.appsinacup.com) — the REST API,
+WebSocket channels, player-facing LiveViews and the `/admin` console.
+`game_server_core` holds the domain logic this sits on.
+
+This is the package a **host app** consumes. Core is what a *plugin* calls to
+add game rules; web is what your own Phoenix app mounts to get a server. The
+two audiences barely overlap.
+
+## What a host app uses
+
+| Module | Role |
+|---|---|
+| `GameServerWeb.Router.Shared` | The route macros. Import it and mount the groups you want - leaving one out is how you ship a smaller API surface. Start here. |
+| `GameServerWeb` | The `use GameServerWeb, :controller` / `:live_view` / `:html` macros, so host modules get the same imports and layouts. |
+| `GameServerWeb.UserAuth` | Session plugs and the `on_mount` hooks behind authenticated and admin routes. |
+| `GameServerWeb.Layouts` | The app and root layouts, including navigation driven by your theme config. |
+| `GameServerWeb.CoreComponents` | The shared component set - `<.input>`, `<.timestamp>`, `<.pagination>`, `<.icon>` and friends. |
+| `GameServerWeb.Endpoint` | Sockets, static serving and the plug stack, if you do not supply your own. |
+| `GameServerWeb.OnMount.*`, `GameServerWeb.Plugs.*` | Locale, theme, colour mode, connection tracking, feature gates and rate limiting. |
+
+Everything else — controllers, channels, admin LiveViews — is mounted by those
+route macros rather than called directly.
 
 ## Installation
 

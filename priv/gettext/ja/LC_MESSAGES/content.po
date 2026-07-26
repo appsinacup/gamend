@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "ようこそ"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "はじめてログインする。"
+
+#. quests
+msgid "Daily check-in"
+msgstr "デイリーチェックイン"
+
+#. quests
+msgid "Log in today."
+msgstr "今日ログインする。"
+
+#. quests
+msgid "Weekly regular"
+msgstr "今週の常連"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "今週、5 日間ログインする。"
+
+#. quests
+msgid "Monthly devotee"
+msgstr "今月の常連"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "今月 20 回ログインする。"
+
+#. quests
+msgid "Stop by again"
+msgstr "また立ち寄ってください"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "ログインする。3 日後にまた挑戦できます。"
+
+#. quests
+msgid "Loyal veteran"
+msgstr "忠実なベテラン"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "あいさつを済ませたあと、50 回ログインする。"
+
+#. quests
+msgid "Night owl"
+msgstr "夜ふかし"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "知らせるのではなく、見つけてもらうものもあります。"
+
+#. quests
+msgid "Launch festival"
+msgstr "ローンチフェスティバル"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "フェスティバル開催中のみカウントされるデイリークエスト。"
+
+#. leaderboards
+msgid "Logins"
+msgstr "ログイン回数"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "各プレイヤーのログイン回数。"
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "ウィークリーカップ"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "いつでも参加登録できます。組み合わせは毎週月曜に抽選されます。"

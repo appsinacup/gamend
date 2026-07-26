@@ -17,24 +17,24 @@ msgstr ""
 #: lib/game_server_web/live/roadmap_live.ex:43
 #, elixir-autogen, elixir-format
 msgid "Blog"
-msgstr ""
+msgstr "Blog"
 
 #: lib/game_server_web/live/blog_live.ex:119
 #: lib/game_server_web/live/changelog_live.ex:29
 #: lib/game_server_web/live/roadmap_live.ex:36
 #, elixir-autogen, elixir-format
 msgid "Changelog"
-msgstr ""
+msgstr "Nhật ký thay đổi"
 
-#: lib/game_server_web/host_public_docs.ex:64
+#: lib/game_server_web/host_public_docs.ex:67
 #, elixir-autogen, elixir-format
 msgid "Documentation"
-msgstr ""
+msgstr "Tài liệu"
 
 #: lib/game_server_web/live/blog_live.ex:205
 #, elixir-autogen, elixir-format
 msgid "Newer"
-msgstr ""
+msgstr "Mới hơn"
 
 #: lib/game_server_web/live/blog_live.ex:80
 #: lib/game_server_web/live/blog_live.ex:127
@@ -42,76 +42,76 @@ msgstr ""
 #: lib/game_server_web/live/roadmap_live.ex:55
 #, elixir-autogen, elixir-format
 msgid "No results."
-msgstr ""
+msgstr "Không có kết quả."
 
 #: lib/game_server_web/live/blog_live.ex:220
 #, elixir-autogen, elixir-format
 msgid "Older"
-msgstr ""
+msgstr "Cũ hơn"
 
 #: lib/game_server_web/live/blog_live.ex:112
 #: lib/game_server_web/live/changelog_live.ex:36
 #: lib/game_server_web/live/roadmap_live.ex:29
 #, elixir-autogen, elixir-format
 msgid "Roadmap"
-msgstr ""
+msgstr "Lộ trình"
 
 #: lib/game_server_host/host_layout_translations.ex:15
 #, elixir-autogen, elixir-format
 msgid "Account"
-msgstr ""
+msgstr "Tài khoản"
 
 #: lib/game_server_host/host_layout_translations.ex:9
 #, elixir-autogen, elixir-format
 msgid "Achievements"
-msgstr ""
+msgstr "Thành tựu"
 
 #: lib/game_server_host/host_layout_translations.ex:18
 #, elixir-autogen, elixir-format
 msgid "Admin"
-msgstr ""
+msgstr "Quản trị"
 
 #: lib/game_server_host/host_layout_translations.ex:17
 #, elixir-autogen, elixir-format
 msgid "Chat"
-msgstr ""
+msgstr "Trò chuyện"
 
 #: lib/game_server_host/host_layout_translations.ex:12
 #, elixir-autogen, elixir-format
 msgid "Dismiss"
-msgstr ""
+msgstr "Đóng"
 
 #: lib/game_server_host/host_layout_translations.ex:10
 #, elixir-autogen, elixir-format
 msgid "Groups"
-msgstr ""
+msgstr "Các nhóm"
 
 #: lib/game_server_host/host_layout_translations.ex:8
 #, elixir-autogen, elixir-format
 msgid "Leaderboards"
-msgstr ""
+msgstr "Bảng xếp hạng"
 
 #: lib/game_server_host/host_layout_translations.ex:11
 #, elixir-autogen, elixir-format
 msgid "Loading..."
-msgstr ""
+msgstr "Đang tải..."
 
 #: lib/game_server_host/host_layout_translations.ex:13
 #, elixir-autogen, elixir-format
 msgid "Log in"
-msgstr ""
+msgstr "Đăng nhập"
 
 #: lib/game_server_host/host_layout_translations.ex:19
 #, elixir-autogen, elixir-format
 msgid "Log out"
-msgstr ""
+msgstr "Đăng xuất"
 
 #: lib/game_server_host/host_layout_translations.ex:16
 #, elixir-autogen, elixir-format
 msgid "Notifications"
-msgstr ""
+msgstr "Thông báo"
 
 #: lib/game_server_host/host_layout_translations.ex:14
 #, elixir-autogen, elixir-format
 msgid "Register"
-msgstr ""
+msgstr "Đăng ký"

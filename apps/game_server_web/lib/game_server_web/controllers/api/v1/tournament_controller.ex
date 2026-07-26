@@ -5,6 +5,7 @@ defmodule GameServerWeb.Api.V1.TournamentController do
   alias GameServer.Accounts.Scope
   alias GameServer.Tournaments
   alias GameServer.Tournaments.Tournament
+  alias GameServerWeb.Pagination
   alias OpenApiSpex.Schema
 
   tags(["Tournaments"])
@@ -16,6 +17,10 @@ defmodule GameServerWeb.Api.V1.TournamentController do
       slug: %Schema{type: :string, description: "Shared across recurring occurrences"},
       title: %Schema{type: :string},
       description: %Schema{type: :string},
+      icon_url: %Schema{
+        type: :string,
+        description: "Icon URL; empty when unset (the client applies its own default)"
+      },
       state: %Schema{
         type: :string,
         enum: ["scheduled", "registration", "running", "finished", "cancelled"]
@@ -28,7 +33,7 @@ defmodule GameServerWeb.Api.V1.TournamentController do
         description: "nil = manual start"
       },
       ends_at: %Schema{type: :string, format: "date-time", nullable: true},
-      recur: %Schema{type: :string, nullable: true, description: "Cron; nil = one-shot"},
+      recur: %Schema{type: :string, description: "Cron; empty = one-shot"},
       max_entries: %Schema{type: :integer, nullable: true},
       team_size: %Schema{type: :integer, description: "Advisory; enforced by game hooks"},
       bracket_size: %Schema{type: :integer},
@@ -49,7 +54,7 @@ defmodule GameServerWeb.Api.V1.TournamentController do
       a_leader_id: %Schema{type: :string, format: :uuid, nullable: true},
       b_leader_id: %Schema{type: :string, format: :uuid, nullable: true},
       winner_entry_id: %Schema{type: :string, format: :uuid, nullable: true},
-      deadline: %Schema{type: :string, format: "date-time"},
+      deadline_at: %Schema{type: :string, format: "date-time"},
       resolved_at: %Schema{type: :string, format: "date-time", nullable: true},
       metadata: %Schema{type: :object}
     }
@@ -77,8 +82,7 @@ defmodule GameServerWeb.Api.V1.TournamentController do
   )
 
   def index(conn, params) do
-    page = max(parse_int(params["page"], 1), 1)
-    page_size = min(max(parse_int(params["page_size"], 25), 1), 100)
+    {page, page_size} = Pagination.params(params)
 
     opts =
       [page: page, page_size: page_size]
@@ -88,10 +92,15 @@ defmodule GameServerWeb.Api.V1.TournamentController do
     tournaments = Tournaments.list_tournaments(opts)
     total = Tournaments.count_tournaments(Keyword.drop(opts, [:page, :page_size]))
 
-    json(conn, %{
-      data: Enum.map(tournaments, &serialize_tournament/1),
-      meta: %{page: page, page_size: page_size, total_count: total}
-    })
+    json(
+      conn,
+      Pagination.envelope(
+        Enum.map(tournaments, &serialize_tournament/1),
+        page,
+        page_size,
+        total
+      )
+    )
   end
 
   operation(:show,
@@ -214,7 +223,7 @@ defmodule GameServerWeb.Api.V1.TournamentController do
         not_found(conn)
 
       tournament ->
-        {page, page_size} = pagination(params)
+        {page, page_size} = Pagination.params(params)
         state = params["state"]
 
         entries =
@@ -226,10 +235,10 @@ defmodule GameServerWeb.Api.V1.TournamentController do
 
         total = Tournaments.count_entries(tournament.id)
 
-        json(conn, %{
-          data: Enum.map(entries, &serialize_entry/1),
-          meta: meta(page, page_size, total)
-        })
+        json(
+          conn,
+          Pagination.envelope(Enum.map(entries, &serialize_entry/1), page, page_size, total)
+        )
     end
   end
 
@@ -282,7 +291,7 @@ defmodule GameServerWeb.Api.V1.TournamentController do
   end
 
   defp render_bracket(conn, tournament, params) do
-    {page, page_size} = pagination(params, 10)
+    {page, page_size} = Pagination.params(params)
     brackets = Tournaments.list_brackets(tournament.id, page: page, page_size: page_size)
     total = Tournaments.count_brackets(tournament.id)
     indexes = Enum.map(brackets, & &1.index)
@@ -294,7 +303,7 @@ defmodule GameServerWeb.Api.V1.TournamentController do
         entries: Enum.map(bracket_entries(tournament, matches), &serialize_entry/1),
         matches: Enum.map(matches, &serialize_match(&1, leaders_for(tournament, matches)))
       },
-      meta: meta(page, page_size, total)
+      meta: Pagination.meta(page, page_size, length(brackets), total)
     })
   end
 
@@ -361,12 +370,13 @@ defmodule GameServerWeb.Api.V1.TournamentController do
       id: t.id,
       slug: t.slug,
       title: t.title,
-      description: t.description,
+      description: t.description || "",
+      icon_url: t.icon_url || "",
       state: t.state,
       registration_opens_at: t.registration_opens_at,
       starts_at: t.starts_at,
       ends_at: t.ends_at,
-      recur: t.recur,
+      recur: t.recur || "",
       max_entries: t.max_entries,
       team_size: t.team_size,
       bracket_size: t.bracket_size,
@@ -399,7 +409,7 @@ defmodule GameServerWeb.Api.V1.TournamentController do
       a_leader_id: leaders[match.a_entry_id],
       b_leader_id: leaders[match.b_entry_id],
       winner_entry_id: match.winner_entry_id,
-      deadline: match.deadline,
+      deadline_at: match.deadline_at,
       resolved_at: match.resolved_at,
       metadata: match.metadata || %{}
     }
@@ -426,35 +436,7 @@ defmodule GameServerWeb.Api.V1.TournamentController do
     conn |> put_status(:bad_request) |> json(%{error: "invalid_data"})
   end
 
-  defp pagination(params, default_size \\ 25) do
-    page = max(parse_int(params["page"], 1), 1)
-    page_size = min(max(parse_int(params["page_size"], default_size), 1), 100)
-    {page, page_size}
-  end
-
-  defp meta(page, page_size, total) do
-    %{
-      page: page,
-      page_size: page_size,
-      total_count: total,
-      total_pages: ceil_div(total, page_size)
-    }
-  end
-
-  defp ceil_div(_num, 0), do: 0
-  defp ceil_div(num, den), do: div(num + den - 1, den)
-
   defp maybe_put(opts, _key, nil), do: opts
   defp maybe_put(opts, _key, ""), do: opts
   defp maybe_put(opts, key, value), do: Keyword.put(opts, key, value)
-
-  defp parse_int(nil, default), do: default
-  defp parse_int(value, _default) when is_integer(value), do: value
-
-  defp parse_int(value, default) when is_binary(value) do
-    case Integer.parse(value) do
-      {int, _} -> int
-      :error -> default
-    end
-  end
 end

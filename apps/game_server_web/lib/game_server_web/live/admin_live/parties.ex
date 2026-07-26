@@ -171,10 +171,10 @@ defmodule GameServerWeb.AdminLive.Parties do
                         {Jason.encode!(p.metadata || %{})}
                       </td>
                       <td class="text-sm">
-                        {Calendar.strftime(p.inserted_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={p.inserted_at} />
                       </td>
                       <td class="text-sm">
-                        {Calendar.strftime(p.updated_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={p.updated_at} />
                       </td>
                       <td class="text-sm">
                         <div class="flex flex-wrap gap-1">
@@ -248,13 +248,13 @@ defmodule GameServerWeb.AdminLive.Parties do
               <div>
                 Created:
                 <span class="font-mono">
-                  {Calendar.strftime(@selected_party.inserted_at, "%Y-%m-%d %H:%M:%S")}
+                  <.timestamp at={@selected_party.inserted_at} format="full" />
                 </span>
               </div>
               <div>
                 Updated:
                 <span class="font-mono">
-                  {Calendar.strftime(@selected_party.updated_at, "%Y-%m-%d %H:%M:%S")}
+                  <.timestamp at={@selected_party.updated_at} format="full" />
                 </span>
               </div>
             </div>

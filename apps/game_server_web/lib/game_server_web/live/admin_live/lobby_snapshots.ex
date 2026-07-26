@@ -52,12 +52,12 @@ defmodule GameServerWeb.AdminLive.LobbySnapshots do
             <div :for={gap <- Enum.take(@gaps, 5)} class="flex items-baseline gap-2 text-xs">
               <span class="font-mono">{gap.kind}</span>
               <.link
-                patch={~p"/admin/lobby-snapshots?lobby_id=#{gap.lobby_id}"}
+                patch={~p"/admin/lobby_snapshots?lobby_id=#{gap.lobby_id}"}
                 class="link font-mono truncate"
               >
                 {gap.lobby_id}
               </.link>
-              <span class="opacity-60">{format_time(gap.inserted_at)}</span>
+              <span class="opacity-60"><.timestamp at={gap.inserted_at} format="full" empty="—" /></span>
             </div>
           </div>
         </div>
@@ -106,11 +106,13 @@ defmodule GameServerWeb.AdminLive.LobbySnapshots do
                     <span :if={run.flagged} class="badge badge-error badge-xs ml-1">flagged</span>
                   </td>
                   <td>{run.snapshots}</td>
-                  <td class="text-xs">{format_time(run.started_at)}</td>
-                  <td class="text-xs">{format_time(run.ended_at)}</td>
+                  <td class="text-xs">
+                    <.timestamp at={run.started_at} format="full" empty="—" />
+                  </td>
+                  <td class="text-xs"><.timestamp at={run.ended_at} format="full" empty="—" /></td>
                   <td>
                     <.link
-                      patch={~p"/admin/lobby-snapshots?lobby_id=#{run.lobby_id}"}
+                      patch={~p"/admin/lobby_snapshots?lobby_id=#{run.lobby_id}"}
                       class="link link-primary text-xs"
                     >
                       Timeline →
@@ -125,7 +127,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshots do
         <%!-- Timeline for one lobby --%>
         <div :if={@lobby_id} class="space-y-3">
           <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-            <.link patch={~p"/admin/lobby-snapshots"} class="btn btn-ghost btn-xs">
+            <.link patch={~p"/admin/lobby_snapshots"} class="btn btn-ghost btn-xs">
               &larr; All runs
             </.link>
             <span class="font-mono text-sm truncate">{@lobby_id}</span>
@@ -173,7 +175,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshots do
                   </span>
                 </div>
                 <span class="text-xs text-base-content/50">
-                  {format_time(interval.snapshot.inserted_at)}
+                  <.timestamp at={interval.snapshot.inserted_at} format="full" empty="—" />
                 </span>
               </button>
 
@@ -488,9 +490,6 @@ defmodule GameServerWeb.AdminLive.LobbySnapshots do
   # Shown in full rather than truncated: ids are UUIDv7, so the leading hex is a
   # millisecond timestamp and every lobby from the same ~65s window shares it.
   # The full id is also what correlates a run with the client's own records.
-
-  defp format_time(nil), do: "—"
-  defp format_time(at), do: Calendar.strftime(at, "%Y-%m-%d %H:%M:%S")
 
   # Strings render bare so a value reads as `boost` not `"boost"`, and floats keep
   # full precision — 8423.199939727783 vs 8423.2 is exactly the kind of drift

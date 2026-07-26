@@ -569,55 +569,39 @@ defmodule GameServer.LobbySnapshots do
 
   ## Config
 
+  # Capture stays off unless deliberately enabled: snapshots embed user
+  # metadata and KV, so turning it on is a privacy decision and the retention
+  # window (see `GameServer.Retention`) is what bounds it.
+  use GameServer.Settings.Provider,
+    app: :game_server_core,
+    group: :lobby_snapshots,
+    label: "Lobby snapshots"
+
+  setting(:enabled, :boolean,
+    default: false,
+    doc: "Record a durable per-run snapshot of lobby state, browsable at /admin/lobby_snapshots."
+  )
+
+  setting(:user_kv_keys, :list,
+    default: [],
+    doc:
+      "User-scoped KV keys to capture. Empty captures none — the widest exposure in a snapshot."
+  )
+
+  setting(:max_kv_entries, :integer,
+    default: 200,
+    doc: "Cap on KV entries captured per snapshot."
+  )
+
   @doc """
   The resolved value of a config key, for tests and diagnostics.
 
-  Exposed so the resolution order (app env, then environment) can be asserted
-  against the real code path rather than a copy of it.
+  Exposed so resolution can be asserted against the real code path rather than
+  a copy of it.
   """
   @spec resolved_config(atom(), term()) :: term()
-  def resolved_config(key, default \\ nil) when is_atom(key), do: config(key, default)
+  def resolved_config(key, _default \\ nil) when is_atom(key), do: config(key)
 
-  # Reads app env first, then falls back to the environment directly.
-  #
-  # The fallback is the point. A host app evaluates its OWN config/runtime.exs,
-  # never core's, so a `config :game_server_core, ...` block core ships is not
-  # something a host inherits — it is something a host must copy, and until it
-  # does, LOBBY_SNAPSHOTS_ENABLED=true parses fine and changes nothing. There is
-  # no compile error for the missing block and no warning at boot; the admin
-  # page just says capture is off while the operator can see they turned it on.
-  #
-  # Reading env here makes the documented variables work in any host with no
-  # host-side wiring. An explicit app-env block still wins, so a host that wants
-  # to compute these differently (or pin them in test) keeps that control.
-  defp config(key, default) do
-    case Keyword.fetch(Application.get_env(:game_server_core, __MODULE__, []), key) do
-      {:ok, value} -> value
-      :error -> env_config(key, default)
-    end
-  end
-
-  defp env_config(:enabled, default), do: GameServer.Env.bool("LOBBY_SNAPSHOTS_ENABLED", default)
-
-  defp env_config(:max_kv_entries, default),
-    do: GameServer.Env.integer("LOBBY_SNAPSHOTS_MAX_KV_ENTRIES", default)
-
-  defp env_config(:user_kv_keys, default) do
-    case System.get_env("LOBBY_SNAPSHOTS_USER_KV_KEYS") do
-      nil ->
-        default
-
-      raw ->
-        raw
-        |> String.split(",", trim: true)
-        # Values arrive from a shell or a .env file, where `KEY=cargo # note`
-        # keeps the comment as part of the value. Trimming here means a stray
-        # comment costs one ignored key, not a filter that silently matches
-        # nothing.
-        |> Enum.map(&(&1 |> String.split("#", parts: 2) |> hd() |> String.trim()))
-        |> Enum.reject(&(&1 == ""))
-    end
-  end
-
-  defp env_config(_key, default), do: default
+  defp config(key), do: GameServer.Settings.get(__MODULE__, key)
+  defp config(key, _default), do: config(key)
 end

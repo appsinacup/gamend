@@ -26,13 +26,13 @@ defmodule GameServerWeb.UserSessionController do
         else
           conn
           |> put_flash(:error, gettext("Your account is pending activation."))
-          |> redirect(to: ~p"/users/log-in")
+          |> redirect(to: ~p"/users/log_in")
         end
 
       _ ->
         conn
         |> put_flash(:error, gettext("Failed"))
-        |> redirect(to: ~p"/users/log-in")
+        |> redirect(to: ~p"/users/log_in")
     end
   end
 
@@ -48,14 +48,14 @@ defmodule GameServerWeb.UserSessionController do
       else
         conn
         |> put_flash(:error, gettext("Your account is pending activation."))
-        |> redirect(to: ~p"/users/log-in")
+        |> redirect(to: ~p"/users/log_in")
       end
     else
       # In order to prevent user enumeration attacks, don't disclose whether the email is registered.
       conn
       |> put_flash(:error, gettext("Failed"))
       |> put_flash(:email, String.slice(email, 0, 160))
-      |> redirect(to: ~p"/users/log-in")
+      |> redirect(to: ~p"/users/log_in")
     end
   end
 
@@ -74,7 +74,7 @@ defmodule GameServerWeb.UserSessionController do
     else
       conn
       |> put_flash(:error, gettext("Failed"))
-      |> redirect(to: ~p"/users/log-in")
+      |> redirect(to: ~p"/users/log_in")
     end
   end
 
@@ -96,13 +96,13 @@ defmodule GameServerWeb.UserSessionController do
         else
           conn
           |> put_flash(:info, gettext("Your account is pending activation."))
-          |> redirect(to: ~p"/users/log-in")
+          |> redirect(to: ~p"/users/log_in")
         end
 
       _ ->
         conn
         |> put_flash(:error, gettext("Failed"))
-        |> redirect(to: ~p"/users/log-in")
+        |> redirect(to: ~p"/users/log_in")
     end
   end
 end

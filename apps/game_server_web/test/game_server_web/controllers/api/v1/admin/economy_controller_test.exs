@@ -60,7 +60,7 @@ defmodule GameServerWeb.Api.V1.Admin.EconomyControllerTest do
 
   test "admin grants, consumes and lists items", %{conn: conn, target: target} do
     g =
-      post(conn, "/api/v1/admin/economy/grant-item", %{
+      post(conn, "/api/v1/admin/economy/grant_item", %{
         user_id: target.id,
         item: "potion",
         quantity: 5
@@ -69,7 +69,7 @@ defmodule GameServerWeb.Api.V1.Admin.EconomyControllerTest do
     assert json_response(g, 200)["quantity"] == 5
 
     c =
-      post(conn, "/api/v1/admin/economy/consume-item", %{
+      post(conn, "/api/v1/admin/economy/consume_item", %{
         user_id: target.id,
         item: "potion",
         quantity: 2
@@ -81,9 +81,9 @@ defmodule GameServerWeb.Api.V1.Admin.EconomyControllerTest do
     assert [%{"item" => "potion", "quantity" => 3}] = items["data"]
   end
 
-  test "admin consume-item refuses to overdraw", %{conn: conn, target: target} do
+  test "admin consume_item refuses to overdraw", %{conn: conn, target: target} do
     conn =
-      post(conn, "/api/v1/admin/economy/consume-item", %{
+      post(conn, "/api/v1/admin/economy/consume_item", %{
         user_id: target.id,
         item: "potion",
         quantity: 1

@@ -1,0 +1,177 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: en\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr ""
+
+msgid "Discord"
+msgstr ""
+
+msgid "Blog"
+msgstr ""
+
+msgid "Roadmap"
+msgstr ""
+
+msgid "Changelog"
+msgstr ""
+
+msgid "Social"
+msgstr ""
+
+msgid "About Gamend"
+msgstr ""
+
+msgid "Elixir Docs"
+msgstr ""
+
+msgid "About"
+msgstr ""
+
+msgid "Guides"
+msgstr ""
+
+msgid "API Docs"
+msgstr ""
+
+msgid "Store"
+msgstr ""
+
+msgid "Help"
+msgstr ""
+
+msgid "Privacy Policy"
+msgstr ""
+
+msgid "Terms and Conditions"
+msgstr ""
+
+msgid "Privacy & Terms"
+msgstr ""
+
+msgid "Play"
+msgstr ""
+
+msgid "Leaderboards"
+msgstr ""
+
+msgid "Quests"
+msgstr ""
+
+msgid "Tournaments"
+msgstr ""
+
+msgid "Groups"
+msgstr ""
+
+msgid "GitHub"
+msgstr ""
+
+msgid "Gamend"
+msgstr ""
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr ""
+
+msgid "Realtime Guide"
+msgstr ""
+
+msgid "Real-time games"
+msgstr ""
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr ""
+
+msgid "Built For Real-Time Games"
+msgstr ""
+
+msgid "Read Docs"
+msgstr ""
+
+msgid "Open source foundation"
+msgstr ""
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr ""
+
+msgid "Open Source Foundation"
+msgstr ""
+
+msgid "Getting Started"
+msgstr ""
+
+msgid "Presentation Video"
+msgstr ""
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr ""
+
+msgid "Log in"
+msgstr ""
+
+msgid "Register"
+msgstr ""
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr ""
+
+msgid "Authentication & Users"
+msgstr ""
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr ""
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr ""
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr ""
+
+msgid "Friends, Groups & Chat"
+msgstr ""
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr ""
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr ""
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr ""
+
+msgid "Server Scripting & Scheduling"
+msgstr ""
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr ""
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr ""
+
+msgid "Open Store"
+msgstr ""
+
+msgid "Payment Docs"
+msgstr ""
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr ""
+
+msgid "Payments & Store Integrations"
+msgstr ""
+
+msgid "Gamend is in beta!"
+msgstr ""
+
+msgid "Game + Backend"
+msgstr ""

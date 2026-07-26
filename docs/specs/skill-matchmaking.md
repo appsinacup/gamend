@@ -149,7 +149,7 @@ caps), `@limit_categories`. `skill_matchmaking_enabled` toggle.
 ## Definition of done (CONTRIBUTING)
 
 - [ ] Migration adds `matchmaking_tickets.rating` + creates `player_ratings`,
-      applies on SQLite **and** `DATABASE_ADAPTER=postgres`; indexes as above.
+      applies on SQLite **and** `GAMEND_DB_ADAPTER=postgres`; indexes as above.
 - [ ] `Matcher.form_matches/2` skill-aware (bands passed in, stays pure);
       timeout guarantee preserved; parties still indivisible; unrated ⇒ legacy
       FIFO.

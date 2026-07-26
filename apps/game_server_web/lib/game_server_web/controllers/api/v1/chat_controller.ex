@@ -6,6 +6,7 @@ defmodule GameServerWeb.Api.V1.ChatController do
 
   alias GameServer.Accounts.Scope
   alias GameServer.Chat
+  alias GameServerWeb.Pagination
   alias GameServerWeb.Serializers
   alias OpenApiSpex.Schema
 
@@ -248,8 +249,7 @@ defmodule GameServerWeb.Api.V1.ChatController do
     user_id = scope.user_id
     chat_type = params["chat_type"]
     chat_ref_id = parse_id(params["chat_ref_id"])
-    page = parse_id(params["page"]) || 1
-    page_size = min(parse_id(params["page_size"]) || 25, 100)
+    {page, page_size} = Pagination.params(params)
 
     case authorize_conversation(conn, user_id, chat_type, chat_ref_id) do
       :ok ->
@@ -362,7 +362,10 @@ defmodule GameServerWeb.Api.V1.ChatController do
          %Schema{
            type: :object,
            properties: %{
-             unread_count: %Schema{type: :integer}
+             data: %Schema{
+               type: :object,
+               properties: %{unread_count: %Schema{type: :integer}}
+             }
            }
          }}
     ]
@@ -382,7 +385,7 @@ defmodule GameServerWeb.Api.V1.ChatController do
             Chat.count_unread(user_id, chat_type, chat_ref_id)
           end
 
-        json(conn, %{unread_count: count})
+        json(conn, %{data: %{unread_count: count}})
 
       {:error, conn} ->
         conn

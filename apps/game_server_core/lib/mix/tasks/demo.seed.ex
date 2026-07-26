@@ -21,9 +21,13 @@ defmodule Mix.Tasks.Demo.Seed do
     * `leaderboard` — a leaderboard with N scored records
     * `group`       — a public group with N members
     * `tournament`  — a tournament with N registered entries, still open
-    * `lobby_snapshot` — recorded runs for `/admin/lobby-snapshots`, capped at 12
+    * `lobby_snapshot` — recorded runs for `/admin/lobby_snapshots`, capped at 12
       regardless of `--count` (this set is about having something to read, not
       volume)
+    * `quest` — a daily, an auto-claim achievement and a chained follow-up,
+      with per-user progress in every state (including claimable rows)
+    * `ready_check` — one check per seeded lobby in every outcome (open,
+      passed, timed out, declined), also capped at 12
 
   The `lobby_snapshot` set goes through the real `capture_lobby/3` path rather
   than inserting rows, so what you see is shaped exactly like production data —
@@ -57,6 +61,11 @@ defmodule Mix.Tasks.Demo.Seed do
   alias GameServer.LobbySnapshots.Event, as: SnapshotEvent
   alias GameServer.LobbySnapshots.Snapshot
   alias GameServer.LobbySnapshots.Writer
+  alias GameServer.Push.PushToken
+  alias GameServer.Quests.Quest
+  alias GameServer.Quests.QuestProgress
+  alias GameServer.ReadyChecks.Check, as: ReadyCheck
+  alias GameServer.ReadyChecks.Participant, as: ReadyCheckParticipant
   alias GameServer.Repo
   alias GameServer.Tournaments.Entry
   alias GameServer.Tournaments.Tournament
@@ -66,9 +75,10 @@ defmodule Mix.Tasks.Demo.Seed do
   @leaderboard_slug "demo_seed_scores"
   @group_title "Demo Seed Group"
   @tournament_slug "demo-seed-cup"
+  @quest_key_prefix "demo-seed-"
   @default_count 1000
   @batch 500
-  @all_sets ~w(leaderboard group tournament lobby_snapshot)
+  @all_sets ~w(leaderboard group tournament lobby_snapshot quest push ready_check)
   @lobby_title_prefix "Demo Seed Run"
   @max_runs 12
 
@@ -93,6 +103,9 @@ defmodule Mix.Tasks.Demo.Seed do
         "group" -> seed_group(users)
         "tournament" -> seed_tournament(users)
         "lobby_snapshot" -> seed_lobby_snapshots(users)
+        "quest" -> seed_quests(users)
+        "push" -> seed_push_tokens(users)
+        "ready_check" -> seed_ready_checks(users)
       end)
 
       GameServer.Cache.delete_all()
@@ -273,6 +286,266 @@ defmodule Mix.Tasks.Demo.Seed do
 
   # ── Clean ─────────────────────────────────────────────────────────────────
 
+  # A daily, an auto-claim achievement, and a chain gated on it — with per-user
+  # progress in every state, including claimable completed rows.
+  defp seed_quests(user_ids) do
+    daily =
+      upsert_quest(%{
+        key: @quest_key_prefix <> "daily-login",
+        title: "Demo Daily Login",
+        description: "Log in 3 times today.",
+        reset: "daily",
+        category: "Daily",
+        objectives: [%{event: "login", target: 3, params: %{}}],
+        rewards: [%{type: "currency", code: "gold", amount: 100}],
+        auto_claim: false,
+        active: true,
+        metadata: %{}
+      })
+
+    achievement =
+      upsert_quest(%{
+        key: @quest_key_prefix <> "first-win",
+        title: "Demo First Win",
+        description: "Win your first demo match.",
+        reset: "never",
+        category: "Achievements",
+        objectives: [%{event: "demo_win", target: 1, params: %{}}],
+        rewards: [],
+        auto_claim: true,
+        active: true,
+        metadata: %{}
+      })
+
+    chain =
+      upsert_quest(%{
+        key: @quest_key_prefix <> "veteran",
+        title: "Demo Veteran",
+        description: "Win 10 demo matches (after your first win).",
+        reset: "never",
+        category: "Chained",
+        objectives: [%{event: "demo_win", target: 10, params: %{}}],
+        rewards: [%{type: "item", code: "loot_crate", amount: 1}],
+        auto_claim: false,
+        prerequisite_quest_key: achievement.key,
+        active: true,
+        metadata: %{}
+      })
+
+    now = DateTime.utc_now(:second)
+    today = GameServer.Quests.period_key("daily", now)
+
+    Repo.delete_all(from(p in QuestProgress, where: like(p.quest_key, ^"#{@quest_key_prefix}%")))
+
+    daily_rows =
+      user_ids
+      |> Enum.with_index()
+      |> Enum.map(fn {user_id, i} ->
+        completed? = rem(i, 3) == 0
+        claimed? = rem(i, 6) == 0
+
+        status =
+          cond do
+            claimed? -> "claimed"
+            completed? -> "completed"
+            true -> "active"
+          end
+
+        %{
+          id: UUIDv7.generate(),
+          user_id: user_id,
+          quest_key: daily.key,
+          period_key: today,
+          objective_progress: %{"0" => if(completed?, do: 3, else: rem(i, 3))},
+          status: status,
+          completed_at: if(completed?, do: now),
+          claimed_at: if(claimed?, do: now),
+          rewards_granted_at: if(claimed?, do: now),
+          metadata: %{},
+          inserted_at: now,
+          updated_at: now
+        }
+      end)
+
+    achievement_rows =
+      user_ids
+      |> Enum.with_index()
+      |> Enum.filter(fn {_id, i} -> rem(i, 2) == 0 end)
+      |> Enum.map(fn {user_id, _i} ->
+        %{
+          id: UUIDv7.generate(),
+          user_id: user_id,
+          quest_key: achievement.key,
+          period_key: "static",
+          objective_progress: %{"0" => 1},
+          status: "claimed",
+          completed_at: now,
+          claimed_at: now,
+          rewards_granted_at: now,
+          metadata: %{},
+          inserted_at: now,
+          updated_at: now
+        }
+      end)
+
+    chain_rows =
+      user_ids
+      |> Enum.with_index()
+      |> Enum.filter(fn {_id, i} -> rem(i, 4) == 0 end)
+      |> Enum.map(fn {user_id, i} ->
+        %{
+          id: UUIDv7.generate(),
+          user_id: user_id,
+          quest_key: chain.key,
+          period_key: "static",
+          objective_progress: %{"0" => rem(i, 10)},
+          status: "active",
+          completed_at: nil,
+          claimed_at: nil,
+          rewards_granted_at: nil,
+          metadata: %{},
+          inserted_at: now,
+          updated_at: now
+        }
+      end)
+
+    insert_batches(daily_rows ++ achievement_rows ++ chain_rows, QuestProgress)
+
+    info(
+      "quests: 3 definitions, #{length(daily_rows) + length(achievement_rows) + length(chain_rows)} progress rows -> /admin/quests"
+    )
+  end
+
+  # Definitions go through the context (embeds can't be bulk-inserted).
+  defp upsert_quest(attrs) do
+    case Repo.get_by(Quest, key: attrs.key) do
+      nil ->
+        {:ok, quest} = GameServer.Quests.create_quest(attrs)
+        quest
+
+      quest ->
+        quest
+    end
+  end
+
+  defp clean_quests do
+    Repo.delete_all(from(p in QuestProgress, where: like(p.quest_key, ^"#{@quest_key_prefix}%")))
+    Repo.delete_all(from(q in Quest, where: like(q.key, ^"#{@quest_key_prefix}%")))
+  end
+
+  # One device per player (platform/provider cycling), every tenth disabled so
+  # the admin page shows the dead-token state. Log provider, so a test push
+  # against this data is observable in the server log. Rows cascade-delete
+  # with their demo user on clean.
+  defp seed_push_tokens(user_ids) do
+    Repo.delete_all(from(t in PushToken, where: like(t.token, ^"#{@prefix}-token-%")))
+    now = DateTime.utc_now(:second)
+
+    user_ids
+    |> Enum.with_index()
+    |> Enum.map(fn {user_id, i} ->
+      {platform, provider} =
+        case rem(i, 3) do
+          0 -> {"android", "fcm"}
+          1 -> {"ios", "apns"}
+          2 -> {"web", "fcm"}
+        end
+
+      %{
+        id: UUIDv7.generate(),
+        user_id: user_id,
+        token: "#{@prefix}-token-#{pad(i)}",
+        platform: platform,
+        provider: provider,
+        device_id: device_id(i),
+        disabled_at: if(rem(i, 10) == 9, do: now),
+        metadata: %{},
+        inserted_at: now,
+        updated_at: now
+      }
+    end)
+    |> insert_batches(PushToken)
+
+    info("push: #{length(user_ids)} device tokens -> /admin/push")
+  end
+
+  # Lobbies are hosted by seeded players and cascade on --clean, so the checks
+  # attached to them go too. Each run gets one open check plus a spread of
+  # resolved ones, which is what the admin page's 24h counters read.
+  defp seed_ready_checks(user_ids) do
+    hosts = Enum.take(user_ids, min(@max_runs, length(user_ids)))
+    now = DateTime.utc_now(:second)
+
+    checks =
+      hosts
+      |> Enum.with_index()
+      |> Enum.map(fn {host_id, i} ->
+        {status, reason} =
+          case rem(i, 4) do
+            0 -> {"pending", nil}
+            1 -> {"passed", nil}
+            2 -> {"failed", "timeout"}
+            3 -> {"failed", "declined"}
+          end
+
+        lobby =
+          upsert(Lobby, [title: "#{@lobby_title_prefix} Ready #{pad(i)}"], %{
+            title: "#{@lobby_title_prefix} Ready #{pad(i)}",
+            host_id: host_id,
+            max_users: 4,
+            metadata: %{},
+            state: "created",
+            state_changed_at: now
+          })
+
+        %{
+          id: UUIDv7.generate(),
+          kind: if(rem(i, 3) == 0, do: "accept", else: "ready"),
+          status: status,
+          lobby_id: lobby.id,
+          deadline_at: DateTime.add(now, 15, :second),
+          opened_by: host_id,
+          reason: reason,
+          resolved_at: if(status != "pending", do: now),
+          metadata: %{},
+          inserted_at: now,
+          updated_at: now
+        }
+      end)
+
+    insert_batches(checks, ReadyCheck)
+
+    participants =
+      checks
+      |> Enum.with_index()
+      |> Enum.flat_map(fn {check, i} ->
+        user_ids
+        |> Enum.slice(i, 3)
+        |> Enum.with_index()
+        |> Enum.map(fn {user_id, j} ->
+          %{
+            id: UUIDv7.generate(),
+            ready_check_id: check.id,
+            user_id: user_id,
+            state: participant_state(check, j),
+            responded_at: now,
+            inserted_at: now,
+            updated_at: now
+          }
+        end)
+      end)
+
+    insert_batches(participants, ReadyCheckParticipant)
+
+    info("ready checks: #{length(checks)} (this set ignores --count) -> /admin/matchmaking")
+  end
+
+  defp participant_state(%{status: "passed"}, _index), do: "ready"
+  defp participant_state(%{status: "failed", reason: "declined"}, 0), do: "declined"
+  defp participant_state(%{status: "failed", reason: "timeout"}, 0), do: "timed_out"
+  defp participant_state(%{status: "pending"}, 0), do: "pending"
+  defp participant_state(_check, _index), do: "ready"
+
   defp clean do
     lb = Repo.get_by(Leaderboard, slug: @leaderboard_slug)
     group = Repo.get_by(Group, title: @group_title)
@@ -288,6 +561,7 @@ defmodule Mix.Tasks.Demo.Seed do
 
     # Before the players go: seeded lobbies reference them as host.
     clean_lobby_snapshots()
+    clean_quests()
 
     {users, _} = Repo.delete_all(from(u in User, where: like(u.device_id, ^"#{@prefix}-%")))
 

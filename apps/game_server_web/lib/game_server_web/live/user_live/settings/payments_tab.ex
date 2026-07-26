@@ -83,7 +83,7 @@ defmodule GameServerWeb.UserLive.Settings.PaymentsTab do
                   </td>
                   <td>{payment_amount(purchase)}</td>
                   <td>{purchase.environment}</td>
-                  <td class="whitespace-nowrap">{payment_datetime(purchase.inserted_at)}</td>
+                  <td class="whitespace-nowrap"><.timestamp at={purchase.inserted_at} /></td>
                 </tr>
               </tbody>
             </table>
@@ -126,7 +126,13 @@ defmodule GameServerWeb.UserLive.Settings.PaymentsTab do
                   <div class="text-xs uppercase text-base-content/50">
                     {payment_entitlement_period_label(entitlement)}
                   </div>
-                  <div>{payment_entitlement_period_value(entitlement)}</div>
+                  <div>
+                    <%= if payment_auto_renews?(entitlement) do %>
+                      {gettext("Auto-renews")}
+                    <% else %>
+                      <.timestamp at={entitlement.expires_at} />
+                    <% end %>
+                  </div>
                 </div>
               </div>
 
@@ -226,12 +232,8 @@ defmodule GameServerWeb.UserLive.Settings.PaymentsTab do
     end
   end
 
-  defp payment_entitlement_period_value(entitlement) do
-    if payment_entitlement_kind(entitlement) == "subscription" and is_nil(entitlement.expires_at) do
-      gettext("Auto-renews")
-    else
-      payment_datetime(entitlement.expires_at)
-    end
+  defp payment_auto_renews?(entitlement) do
+    payment_entitlement_kind(entitlement) == "subscription" and is_nil(entitlement.expires_at)
   end
 
   defp payment_amount(%{amount: nil}), do: "-"
@@ -241,16 +243,6 @@ defmodule GameServerWeb.UserLive.Settings.PaymentsTab do
     major = div(amount, 100)
     minor = amount |> rem(100) |> Integer.to_string() |> String.pad_leading(2, "0")
     "#{String.upcase(currency)} #{major}.#{minor}"
-  end
-
-  defp payment_datetime(nil), do: "-"
-
-  defp payment_datetime(%DateTime{} = datetime) do
-    Calendar.strftime(datetime, "%Y-%m-%d %H:%M")
-  end
-
-  defp payment_datetime(%NaiveDateTime{} = datetime) do
-    Calendar.strftime(datetime, "%Y-%m-%d %H:%M")
   end
 
   defp payment_status_badge_class("completed"), do: "badge-success"

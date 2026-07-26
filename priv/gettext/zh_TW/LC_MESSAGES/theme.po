@@ -1,0 +1,170 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: zh_TW\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "面向即時多人遊戲的開源 Elixir 遊戲伺服器。"
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "部落格"
+
+msgid "Roadmap"
+msgstr "發展藍圖"
+
+msgid "Changelog"
+msgstr "更新日誌"
+
+msgid "Social"
+msgstr "社交"
+
+msgid "About Gamend"
+msgstr "關於 Gamend"
+
+msgid "Elixir Docs"
+msgstr "Elixir 文件"
+
+msgid "About"
+msgstr "關於"
+
+msgid "Guides"
+msgstr "指南"
+
+msgid "API Docs"
+msgstr "API 文件"
+
+msgid "Store"
+msgstr "商店"
+
+msgid "Help"
+msgstr "說明"
+
+msgid "Privacy Policy"
+msgstr "隱私權政策"
+
+msgid "Terms and Conditions"
+msgstr "條款與條件"
+
+msgid "Privacy & Terms"
+msgstr "隱私權與條款"
+
+msgid "Play"
+msgstr "開始遊戲"
+
+msgid "Leaderboards"
+msgstr "排行榜"
+
+msgid "Quests"
+msgstr "任務"
+
+msgid "Tournaments"
+msgstr "錦標賽"
+
+msgid "Groups"
+msgstr "群組"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "Gamend 是一套**開箱即用**的 Elixir 多人遊戲後端，內建驗證、社交系統、即時頻道與管理工具。"
+
+msgid "Realtime Guide"
+msgstr "即時指南"
+
+msgid "Real-time games"
+msgstr "即時遊戲"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "直接使用頻道、房間、隊伍、上線狀態與 WebRTC 資料通道，無須重建常見的多人遊戲基礎架構。"
+
+msgid "Built For Real-Time Games"
+msgstr "為即時遊戲而生"
+
+msgid "Read Docs"
+msgstr "閱讀文件"
+
+msgid "Open source foundation"
+msgstr "開源基礎"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "本專案旨在供遊戲團隊自由分支、自訂主題、自行部署與擴充。"
+
+msgid "Open Source Foundation"
+msgstr "開源基礎"
+
+msgid "Getting Started"
+msgstr "開始使用"
+
+msgid "Presentation Video"
+msgstr "介紹影片"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "面向**即時**多人遊戲的**開源** Elixir 遊戲伺服器。"
+
+msgid "Log in"
+msgstr "登入"
+
+msgid "Register"
+msgstr "註冊"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "電子郵件、魔法連結、OAuth、JWT 與工作階段。註冊、登入、重設密碼和驗證電子郵件。"
+
+msgid "Authentication & Users"
+msgstr "驗證與使用者"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "即時房間與臨時隊伍。可自訂設定，即時同步。"
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "房間、隊伍與配對"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "好友邀請、封鎖、即時上線狀態。公開、私人與隱藏群組。私訊與群組訊息。"
+
+msgid "Friends, Groups & Chat"
+msgstr "好友、群組與聊天"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "由伺服器判定的成就、淘汰賽與排行榜。涵蓋各項功能與付款事件的即時通知。"
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "成就、錦標賽、排行榜與通知"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "以 Elixir 指令碼擴充伺服器邏輯。排定自動工作與 cron 排程。"
+
+msgid "Server Scripting & Scheduling"
+msgstr "伺服器指令碼與排程"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "REST API、即時 WebSocket 頻道與低延遲 WebRTC 資料通道。管理後台與網頁介面。"
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "HTTP、WebSocket 與 WebRTC"
+
+msgid "Open Store"
+msgstr "開啟商店"
+
+msgid "Payment Docs"
+msgstr "付款文件"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "支援 Stripe、Google Play、App Store 與 Steam 的伺服器端付款。驗證收據、處理簽章 webhook、發放權益、撤銷退款，並在管理後台檢視全部紀錄。"
+
+msgid "Payments & Store Integrations"
+msgstr "付款與商店整合"
+
+msgid "Gamend is in beta!"
+msgstr "Gamend 目前為測試版！"
+
+msgid "Game + Backend"
+msgstr "遊戲 + 後端"

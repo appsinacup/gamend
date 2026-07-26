@@ -272,15 +272,24 @@ defmodule GameServer.LeaderboardsTest do
 
       # Ada is mid-table on purpose: her rank must survive being searched for.
       for {name, score} <- [{"Zoe Top", 900}, {"Ada Lovelace", 500}, {"Bob Last", 100}] do
-        user =
-          AccountsFixtures.user_fixture()
-          |> Ecto.Changeset.change(display_name: name)
-          |> GameServer.Repo.update!()
-
+        user = searchable_user(display_name: name)
         Leaderboards.submit_score(lb.id, user.id, score)
       end
 
       %{leaderboard: lb}
+    end
+
+    # Search covers username as well as display_name and label, and fixture
+    # usernames come from a word list that can contain the terms these tests
+    # search for - "foxglove-2812" matched a search for "LOVE" and made the
+    # single-result assertions fail at random. Pin them to something no test
+    # searches for.
+    defp searchable_user(attrs) do
+      attrs = Keyword.put(attrs, :username, "pinned-#{System.unique_integer([:positive])}")
+
+      AccountsFixtures.user_fixture()
+      |> Ecto.Changeset.change(attrs)
+      |> GameServer.Repo.update!()
     end
 
     test "returns the board-wide rank, not the position within the results", %{leaderboard: lb} do
@@ -297,7 +306,7 @@ defmodule GameServer.LeaderboardsTest do
     end
 
     test "matches a record's own label", %{leaderboard: lb} do
-      user = AccountsFixtures.user_fixture()
+      user = searchable_user([])
       {:ok, _} = Leaderboards.submit_score(lb.id, user.id, 700, %{})
       {:ok, record} = Leaderboards.get_user_record(lb.id, user.id)
       GameServer.Repo.update!(Ecto.Changeset.change(record, label: "Guest Runner"))

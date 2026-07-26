@@ -16,14 +16,23 @@ defmodule GameServerWeb.UserChannelKvTest do
     GameServer.DataCase.setup_sandbox(tags)
 
     original_hooks_module = Application.get_env(:game_server_core, :hooks_module)
-    original_plugins_dir = System.get_env("GAME_SERVER_PLUGINS_DIR")
+
+    original_plugins_dir =
+      GameServer.SettingsHelpers.get(:game_server_core, GameServer.ContentSettings, :plugins_dir)
 
     plugin_root =
       Path.join(System.tmp_dir!(), "gs-empty-plugins-#{System.unique_integer([:positive])}")
 
     File.mkdir_p!(plugin_root)
     Application.put_env(:game_server_core, :hooks_module, GameServer.Hooks.Default)
-    System.put_env("GAME_SERVER_PLUGINS_DIR", plugin_root)
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.ContentSettings,
+      :plugins_dir,
+      plugin_root
+    )
+
     _ = PluginManager.reload()
 
     on_exit(fn ->
@@ -34,9 +43,18 @@ defmodule GameServerWeb.UserChannelKvTest do
       end
 
       if original_plugins_dir do
-        System.put_env("GAME_SERVER_PLUGINS_DIR", original_plugins_dir)
+        GameServer.SettingsHelpers.put(
+          :game_server_core,
+          GameServer.ContentSettings,
+          :plugins_dir,
+          original_plugins_dir
+        )
       else
-        System.delete_env("GAME_SERVER_PLUGINS_DIR")
+        GameServer.SettingsHelpers.delete(
+          :game_server_core,
+          GameServer.ContentSettings,
+          :plugins_dir
+        )
       end
 
       _ = PluginManager.reload()

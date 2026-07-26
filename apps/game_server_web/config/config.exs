@@ -29,7 +29,7 @@ config :game_server_web,
   host_static_paths: ~w(images game favicon.ico robots.txt .well-known theme.css)
 
 default_adapter =
-  if System.get_env("DATABASE_ADAPTER") == "postgres",
+  if System.get_env("GAMEND_DB_ADAPTER") == "postgres",
     do: Ecto.Adapters.Postgres,
     else: Ecto.Adapters.SQLite3
 
@@ -52,7 +52,7 @@ config :game_server_core, Oban,
   ]
 
 # Object storage — defaults to local disk (see config/host_config.exs).
-config :game_server_core, GameServer.Storage, adapter: GameServer.Storage.Local
+config :game_server_core, GameServer.Storage, adapter: :local
 config :ex_aws, json_codec: Jason
 
 config :game_server_web, GameServerWeb.Endpoint,
@@ -117,6 +117,12 @@ config :game_server_web, :webrtc,
   enabled: true,
   ice_servers: [%{urls: "stun:stun.l.google.com:19302"}]
 
+# MDEx renders every markdown surface (guides, blog, changelog). Its NIF only
+# builds in the syntax highlighter when told to at compile time, and each app
+# that compiles the NIF needs the flag - otherwise fenced code renders as one
+# undifferentiated colour, or raises once highlighting is requested.
+config :mdex_native, syntax_highlighter: :lumis
+
 import_config "#{config_env()}.exs"
 
 config :mime, :types, %{
@@ -132,20 +138,8 @@ config :ueberauth, Ueberauth,
     steam: {Ueberauth.Strategy.Steam, []}
   ]
 
-config :ueberauth, Ueberauth.Strategy.Discord.OAuth,
-  client_id: System.get_env("DISCORD_CLIENT_ID"),
-  client_secret: System.get_env("DISCORD_CLIENT_SECRET")
-
+# Provider credentials are not set here. Ueberauth reads them from its own
+# application env, which the host's config/host_runtime.exs fills from the
+# declared GameServer.OAuth.Providers settings — one source, resolved at boot.
 config :ueberauth, Ueberauth.Strategy.Apple.OAuth,
-  client_id: System.get_env("APPLE_WEB_CLIENT_ID"),
   client_secret: {GameServer.Apple, :client_secret}
-
-config :ueberauth, Ueberauth.Strategy.Google.OAuth,
-  client_id: System.get_env("GOOGLE_CLIENT_ID"),
-  client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
-
-config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
-  client_id: System.get_env("FACEBOOK_CLIENT_ID"),
-  client_secret: System.get_env("FACEBOOK_CLIENT_SECRET")
-
-config :ueberauth, Ueberauth.Strategy.Steam, api_key: System.get_env("STEAM_API_KEY")

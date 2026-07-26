@@ -7,7 +7,7 @@ defmodule GameServerCore.MixProject do
   def project do
     [
       app: :game_server_core,
-      version: System.get_env("APP_VERSION") || @version,
+      version: System.get_env("GAMEND_CONTENT_APP_VERSION") || @version,
       elixir: "~> 1.20",
       start_permanent: Mix.env() == :prod,
       dialyzer: [plt_add_apps: [:mix]],
@@ -59,11 +59,19 @@ defmodule GameServerCore.MixProject do
       {:jose, "~> 1.11"},
       {:guardian, "~> 2.3"},
       {:oban, "~> 2.19"},
+      # Pinned past the released 2.0.1: main replaced kadabra+httpoison with
+      # mint (#296), which also avoids a conflict with ueberauth_steam_strategy's
+      # httpoison ~> 3.0 pin. Re-point at hex on the next pigeon release.
+      {:pigeon, github: "codedge-llc/pigeon", ref: "712d5c2b20100d56bed08efed42e4eed924c422a"},
+      {:goth, "~> 1.4"},
       # crontab was pulled in transitively by quantum; the Schedule tick worker
       # still parses/matches cron expressions with it.
       {:crontab, "~> 1.1"},
       {:corsica, "~> 2.0"},
       {:mdex, "~> 0.13"},
+      # Syntax highlighting engine MDEx delegates to; without it fenced code
+      # renders as undifferentiated text.
+      {:lumis, "~> 0.1"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false}
     ]
@@ -92,15 +100,38 @@ defmodule GameServerCore.MixProject do
       main: "readme",
       source_url: @source_url,
       source_ref: "v#{@version}",
-      extras: ["README.md"],
+      extras: ["README.md", "../../CHANGELOG.md"],
       # Group GameServer.Hooks callbacks by entity (User / Lobby / Group / …)
       # instead of one alphabetical list. Same classifier as the SDK docs and
       # the admin runtime page.
-      groups_for_docs: hook_doc_groups()
+      groups_for_docs: hook_doc_groups(),
+      # Forty-odd modules in one alphabetical list buries the dozen that are
+      # actually entry points, so group them the way the guides do.
+      groups_for_modules: module_groups()
     ]
   end
 
-  @hook_groups ~w(Lifecycle User Lobby Group Party Chat Achievement Leaderboard Tournament Matchmaking Payments Economy KV)
+  defp module_groups do
+    [
+      Accounts: [~r/^GameServer\.(Accounts|Apple|OAuth)/],
+      Lobbies: [~r/^GameServer\.Lobb(ies|ySnapshots)/],
+      Matchmaking: [~r/^GameServer\.(Matchmaking|ReadyChecks)/],
+      Social: [~r/^GameServer\.(Friends|Groups|Parties|Chat)/],
+      Progression: [~r/^GameServer\.(Quests|Leaderboards|Tournaments)/],
+      Economy: [~r/^GameServer\.(Economy|Inventory|Payments)/],
+      "Storage & content": [~r/^GameServer\.(KV|Storage|Content|Theme|Settings)/],
+      Delivery: [~r/^GameServer\.(Notifications|Push|Realtime)/],
+      Plugins: [~r/^GameServer\.Hooks/],
+      Operations: [
+        ~r/^GameServer\.(Retention|IpBans|Limits|Jobs|Schedule|Cache|Repo|Async|Config|Env|Lock|Mailer)/
+      ],
+      # Building blocks a plugin rarely touches directly.
+      Internals: [~r/^GameServer\.(Schema|Types|UUIDv7|Proto)/]
+    ]
+  end
+
+  @hook_groups ~w(Lifecycle User Lobby Group Party Chat Quest Leaderboard Tournament
+                  Matchmaking ReadyCheck Payments Economy Push KV)
 
   defp hook_doc_groups do
     for group <- @hook_groups do
@@ -114,9 +145,11 @@ defmodule GameServerCore.MixProject do
       name in ~w(after_startup before_stop on_custom_hook) -> "Lifecycle"
       String.contains?(name, "kv") -> "KV"
       String.contains?(name, "chat") -> "Chat"
-      String.contains?(name, "achievement") -> "Achievement"
+      String.contains?(name, "quest") -> "Quest"
       String.contains?(name, "score") -> "Leaderboard"
       String.contains?(name, "matchmaking") -> "Matchmaking"
+      String.contains?(name, "ready_check") -> "ReadyCheck"
+      String.contains?(name, "push") -> "Push"
       String.contains?(name, "tournament") -> "Tournament"
       String.contains?(name, "purchase") or String.contains?(name, "entitlement") -> "Payments"
       String.contains?(name, "wallet") or String.contains?(name, "inventory") -> "Economy"

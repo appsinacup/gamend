@@ -25,7 +25,7 @@ defmodule GameServer.Apple do
 
       {:error, :not_found} ->
         # Get the private key and convert escaped newlines to actual newlines
-        private_key_raw = System.get_env("APPLE_PRIVATE_KEY")
+        private_key_raw = GameServer.Settings.get(GameServer.OAuth.Providers, :apple_private_key)
 
         if is_nil(private_key_raw) do
           raise "APPLE_PRIVATE_KEY environment variable is not set"
@@ -42,8 +42,8 @@ defmodule GameServer.Apple do
         secret_attrs = %{
           client_id: client_id,
           expires_in: @expiration_sec,
-          key_id: System.get_env("APPLE_KEY_ID"),
-          team_id: System.get_env("APPLE_TEAM_ID"),
+          key_id: GameServer.Settings.get(GameServer.OAuth.Providers, :apple_key_id),
+          team_id: GameServer.Settings.get(GameServer.OAuth.Providers, :apple_team_id),
           private_key: private_key
         }
 
@@ -60,15 +60,16 @@ defmodule GameServer.Apple do
         Keyword.get(opts, :client_id)
 
       Keyword.get(opts, :client) == :web ->
-        System.get_env("APPLE_WEB_CLIENT_ID") ||
+        GameServer.Settings.get(GameServer.OAuth.Providers, :apple_client_id) ||
           raise "APPLE_WEB_CLIENT_ID environment variable is not set"
 
       Keyword.get(opts, :client) == :ios ->
-        System.get_env("APPLE_IOS_CLIENT_ID") ||
+        GameServer.Settings.get(GameServer.OAuth.Providers, :apple_ios_client_id) ||
           raise "APPLE_IOS_CLIENT_ID environment variable is not set"
 
       true ->
-        System.get_env("APPLE_WEB_CLIENT_ID") || System.get_env("APPLE_IOS_CLIENT_ID") ||
+        GameServer.Settings.get(GameServer.OAuth.Providers, :apple_client_id) ||
+          GameServer.Settings.get(GameServer.OAuth.Providers, :apple_ios_client_id) ||
           raise "APPLE_WEB_CLIENT_ID / APPLE_IOS_CLIENT_ID environment variable is not set"
     end
   end

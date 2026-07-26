@@ -10,20 +10,6 @@ defmodule GameServer.Payments.Product do
 
   @kinds ~w(entitlement consumable subscription)
 
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :sku,
-             :title,
-             :description,
-             :kind,
-             :active,
-             :grant_config,
-             :metadata,
-             :inserted_at,
-             :updated_at
-           ]}
-
   schema "store_products" do
     field :sku, :string
     field :title, :string
@@ -53,4 +39,27 @@ defmodule GameServer.Payments.Product do
   end
 
   def kinds, do: @kinds
+end
+
+# Hand-written rather than @derive so nil strings encode as "" (see
+# GameServer.SchemaJSON — game clients choke on null).
+defimpl Jason.Encoder, for: GameServer.Payments.Product do
+  def encode(product, opts) do
+    GameServer.SchemaJSON.encode(
+      product,
+      [
+        :id,
+        :sku,
+        :title,
+        :description,
+        :kind,
+        :active,
+        :grant_config,
+        :metadata,
+        :inserted_at,
+        :updated_at
+      ],
+      opts
+    )
+  end
 end

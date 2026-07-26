@@ -98,13 +98,24 @@ defmodule GameServer.Hooks.InternalCallPluginFanoutTest do
     app_text = :io_lib.format(~c"~p.~n", [app_term]) |> IO.iodata_to_binary()
     File.write!(Path.join(ebin_dir, "#{plugin_name}.app"), app_text)
 
-    System.put_env("GAME_SERVER_PLUGINS_DIR", plugin_root)
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.ContentSettings,
+      :plugins_dir,
+      plugin_root
+    )
+
     Application.put_env(:game_server, :plugin_fanout_test_pid, test_pid)
 
     original_hooks_mod = Application.get_env(:game_server_core, :hooks_module)
 
     on_exit(fn ->
-      System.delete_env("GAME_SERVER_PLUGINS_DIR")
+      GameServer.SettingsHelpers.delete(
+        :game_server_core,
+        GameServer.ContentSettings,
+        :plugins_dir
+      )
+
       Application.delete_env(:game_server, :plugin_fanout_test_pid)
 
       if is_nil(original_hooks_mod) do

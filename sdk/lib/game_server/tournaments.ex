@@ -7,7 +7,7 @@ defmodule GameServer.Tournaments do
   advancement, recurrence). Gameplay and judgment belong to the game: when a
   match becomes playable the `tournament_match_ready` hook fires, the game
   plays it however it wants (a lobby, solo runs, anything) and reports the
-  verdict with `resolve_match/2`. Unresolved matches past their deadline fire
+  verdict with `resolve_match/2`. Unresolved matches past their deadline_at fire
   `tournament_match_expired` for the game to adjudicate; the tournament's
   `deadline_policy` applies only if it doesn't.
   
@@ -234,7 +234,7 @@ defmodule GameServer.Tournaments do
   def get_match(_match_id) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        if :erlang.phash2(make_ref(), 2) == 0, do: nil, else: %GameServer.Tournaments.Match{id: "", tournament_id: "", bracket_index: 0, round: 1, slot: 0, a_entry_id: nil, b_entry_id: nil, winner_entry_id: nil, ready_at: nil, expired_at: nil, resolved_at: nil, deadline: ~U[1970-01-01 00:00:00Z], metadata: %{}, inserted_at: ~U[1970-01-01 00:00:00Z], updated_at: ~U[1970-01-01 00:00:00Z]}
+        if :erlang.phash2(make_ref(), 2) == 0, do: nil, else: %GameServer.Tournaments.Match{id: "", tournament_id: "", bracket_index: 0, round: 1, slot: 0, a_entry_id: nil, b_entry_id: nil, winner_entry_id: nil, ready_at: nil, expired_at: nil, resolved_at: nil, deadline_at: ~U[1970-01-01 00:00:00Z], metadata: %{}, inserted_at: ~U[1970-01-01 00:00:00Z], updated_at: ~U[1970-01-01 00:00:00Z]}
 
       _ ->
         raise "GameServer.Tournaments.get_match/1 is a stub - only available at runtime on GameServer"
@@ -473,7 +473,7 @@ defmodule GameServer.Tournaments do
   def my_match(_tournament, _user_id) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        if :erlang.phash2(make_ref(), 2) == 0, do: nil, else: %GameServer.Tournaments.Match{id: "", tournament_id: "", bracket_index: 0, round: 1, slot: 0, a_entry_id: nil, b_entry_id: nil, winner_entry_id: nil, ready_at: nil, expired_at: nil, resolved_at: nil, deadline: ~U[1970-01-01 00:00:00Z], metadata: %{}, inserted_at: ~U[1970-01-01 00:00:00Z], updated_at: ~U[1970-01-01 00:00:00Z]}
+        if :erlang.phash2(make_ref(), 2) == 0, do: nil, else: %GameServer.Tournaments.Match{id: "", tournament_id: "", bracket_index: 0, round: 1, slot: 0, a_entry_id: nil, b_entry_id: nil, winner_entry_id: nil, ready_at: nil, expired_at: nil, resolved_at: nil, deadline_at: ~U[1970-01-01 00:00:00Z], metadata: %{}, inserted_at: ~U[1970-01-01 00:00:00Z], updated_at: ~U[1970-01-01 00:00:00Z]}
 
       _ ->
         raise "GameServer.Tournaments.my_match/2 is a stub - only available at runtime on GameServer"
@@ -515,7 +515,7 @@ defmodule GameServer.Tournaments do
   def resolve_match(_match_id, _winner) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, %GameServer.Tournaments.Match{id: "", tournament_id: "", bracket_index: 0, round: 1, slot: 0, a_entry_id: nil, b_entry_id: nil, winner_entry_id: nil, ready_at: nil, expired_at: nil, resolved_at: nil, deadline: ~U[1970-01-01 00:00:00Z], metadata: %{}, inserted_at: ~U[1970-01-01 00:00:00Z], updated_at: ~U[1970-01-01 00:00:00Z]}}
+        {:ok, %GameServer.Tournaments.Match{id: "", tournament_id: "", bracket_index: 0, round: 1, slot: 0, a_entry_id: nil, b_entry_id: nil, winner_entry_id: nil, ready_at: nil, expired_at: nil, resolved_at: nil, deadline_at: ~U[1970-01-01 00:00:00Z], metadata: %{}, inserted_at: ~U[1970-01-01 00:00:00Z], updated_at: ~U[1970-01-01 00:00:00Z]}}
 
       _ ->
         raise "GameServer.Tournaments.resolve_match/2 is a stub - only available at runtime on GameServer"
@@ -524,7 +524,7 @@ defmodule GameServer.Tournaments do
 
 
   @doc ~S"""
-    Unix-independent deadline for `round`, anchored to `starts_at`.
+    Unix-independent deadline_at for `round`, anchored to `starts_at`.
   """
   @spec round_deadline(GameServer.Tournaments.Tournament.t(), pos_integer()) :: DateTime.t()
   def round_deadline(_tournament, _round) do
@@ -626,7 +626,7 @@ defmodule GameServer.Tournaments do
 
   @doc ~S"""
     Periodic driver, called by `GameServer.Tournaments.Ticker`. Runs every
-    transition, match-ready firing, deadline sweep, and recurrence spawn that is
+    transition, match-ready firing, deadline_at sweep, and recurrence spawn that is
     due. Serialized cluster-wide so hooks fire once.
     
   """
@@ -655,7 +655,7 @@ defmodule GameServer.Tournaments do
   def update_match_metadata(_match_id, _map) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, %GameServer.Tournaments.Match{id: "", tournament_id: "", bracket_index: 0, round: 1, slot: 0, a_entry_id: nil, b_entry_id: nil, winner_entry_id: nil, ready_at: nil, expired_at: nil, resolved_at: nil, deadline: ~U[1970-01-01 00:00:00Z], metadata: %{}, inserted_at: ~U[1970-01-01 00:00:00Z], updated_at: ~U[1970-01-01 00:00:00Z]}}
+        {:ok, %GameServer.Tournaments.Match{id: "", tournament_id: "", bracket_index: 0, round: 1, slot: 0, a_entry_id: nil, b_entry_id: nil, winner_entry_id: nil, ready_at: nil, expired_at: nil, resolved_at: nil, deadline_at: ~U[1970-01-01 00:00:00Z], metadata: %{}, inserted_at: ~U[1970-01-01 00:00:00Z], updated_at: ~U[1970-01-01 00:00:00Z]}}
 
       _ ->
         raise "GameServer.Tournaments.update_match_metadata/2 is a stub - only available at runtime on GameServer"

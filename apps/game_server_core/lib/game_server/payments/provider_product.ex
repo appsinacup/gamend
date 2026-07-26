@@ -10,20 +10,6 @@ defmodule GameServer.Payments.ProviderProduct do
 
   @providers ~w(apple google steam stripe)
 
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :product_id,
-             :provider,
-             :external_id,
-             :currency,
-             :unit_amount,
-             :active,
-             :metadata,
-             :inserted_at,
-             :updated_at
-           ]}
-
   schema "provider_products" do
     belongs_to :product, GameServer.Payments.Product
     field :provider, :string
@@ -54,4 +40,27 @@ defmodule GameServer.Payments.ProviderProduct do
   end
 
   def providers, do: @providers
+end
+
+# Hand-written rather than @derive so nil strings encode as "" (see
+# GameServer.SchemaJSON — game clients choke on null).
+defimpl Jason.Encoder, for: GameServer.Payments.ProviderProduct do
+  def encode(provider_product, opts) do
+    GameServer.SchemaJSON.encode(
+      provider_product,
+      [
+        :id,
+        :product_id,
+        :provider,
+        :external_id,
+        :currency,
+        :unit_amount,
+        :active,
+        :metadata,
+        :inserted_at,
+        :updated_at
+      ],
+      opts
+    )
+  end
 end

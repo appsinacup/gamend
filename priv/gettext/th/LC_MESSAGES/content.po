@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: th\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "ยินดีต้อนรับ"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "เข้าสู่ระบบเป็นครั้งแรก"
+
+#. quests
+msgid "Daily check-in"
+msgstr "เช็คอินรายวัน"
+
+#. quests
+msgid "Log in today."
+msgstr "เข้าสู่ระบบวันนี้"
+
+#. quests
+msgid "Weekly regular"
+msgstr "ขาประจำประจำสัปดาห์"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "เข้าสู่ระบบห้าวันที่ต่างกันในสัปดาห์นี้"
+
+#. quests
+msgid "Monthly devotee"
+msgstr "ขาประจำรายเดือน"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "เข้าสู่ระบบยี่สิบครั้งในเดือนนี้"
+
+#. quests
+msgid "Stop by again"
+msgstr "แวะมาอีกนะ"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "เข้าสู่ระบบ กลับมาทำได้อีกครั้งในอีกสามวัน"
+
+#. quests
+msgid "Loyal veteran"
+msgstr "ทหารผ่านศึกผู้ภักดี"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "เข้าสู่ระบบห้าสิบครั้ง หลังจากที่ทักทายแล้ว"
+
+#. quests
+msgid "Night owl"
+msgstr "นกฮูกกลางคืน"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "บางสิ่งมีไว้ให้ค้นพบ ไม่ใช่ให้ประกาศ"
+
+#. quests
+msgid "Launch festival"
+msgstr "เทศกาลเปิดตัว"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "เควสต์รายวันที่นับเฉพาะช่วงที่เทศกาลกำลังจัดอยู่"
+
+#. leaderboards
+msgid "Logins"
+msgstr "การเข้าสู่ระบบ"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "จำนวนครั้งที่ผู้เล่นแต่ละคนเข้าสู่ระบบ"
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "ถ้วยรางวัลประจำสัปดาห์"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "สมัครได้ตลอดเวลา สายการแข่งขันจะจับสลากทุกวันจันทร์"

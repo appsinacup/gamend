@@ -29,14 +29,41 @@ defmodule GameServer.AppleCacheTest do
       _ -> :ets.delete(:apple_oauth_cache)
     end
 
-    System.put_env("APPLE_WEB_CLIENT_ID", "com.example.web")
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :apple_client_id,
+      "com.example.web"
+    )
 
-    old = System.get_env("APPLE_PRIVATE_KEY")
-    System.delete_env("APPLE_PRIVATE_KEY")
+    old =
+      GameServer.SettingsHelpers.get(
+        :game_server_core,
+        GameServer.OAuth.Providers,
+        :apple_private_key
+      )
+
+    GameServer.SettingsHelpers.delete(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :apple_private_key
+    )
 
     on_exit(fn ->
-      System.delete_env("APPLE_WEB_CLIENT_ID")
-      if old, do: System.put_env("APPLE_PRIVATE_KEY", old)
+      GameServer.SettingsHelpers.delete(
+        :game_server_core,
+        GameServer.OAuth.Providers,
+        :apple_client_id
+      )
+
+      if old,
+        do:
+          GameServer.SettingsHelpers.put(
+            :game_server_core,
+            GameServer.OAuth.Providers,
+            :apple_private_key,
+            old
+          )
     end)
 
     assert_raise RuntimeError, fn -> GameServer.Apple.client_secret() end
@@ -54,11 +81,28 @@ defmodule GameServer.AppleCacheTest do
     )
 
     # Calling client_secret should attempt to regenerate (and fail without env vars)
-    old = System.get_env("APPLE_PRIVATE_KEY")
-    System.delete_env("APPLE_PRIVATE_KEY")
+    old =
+      GameServer.SettingsHelpers.get(
+        :game_server_core,
+        GameServer.OAuth.Providers,
+        :apple_private_key
+      )
+
+    GameServer.SettingsHelpers.delete(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :apple_private_key
+    )
 
     on_exit(fn ->
-      if old, do: System.put_env("APPLE_PRIVATE_KEY", old)
+      if old,
+        do:
+          GameServer.SettingsHelpers.put(
+            :game_server_core,
+            GameServer.OAuth.Providers,
+            :apple_private_key,
+            old
+          )
     end)
 
     # Should raise because cache is expired and env var is missing

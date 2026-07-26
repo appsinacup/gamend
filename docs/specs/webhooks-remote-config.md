@@ -175,7 +175,7 @@ and pushed live when it changes.
 ## Definition of done (CONTRIBUTING)
 
 - [ ] Migrations for `webhook_endpoints` / `webhook_deliveries` / `remote_config`
-      apply on SQLite **and** `DATABASE_ADAPTER=postgres`; indexes as above.
+      apply on SQLite **and** `GAMEND_DB_ADAPTER=postgres`; indexes as above.
 - [ ] `Webhooks.emit/2` fan-out on the `webhooks` queue, HMAC-signed, SSRF-guarded,
       retried with backoff, logged; replay works. Enqueue deferred post-commit.
 - [ ] `GET /config` with ETag/version; `config_updated` forwarded on the user

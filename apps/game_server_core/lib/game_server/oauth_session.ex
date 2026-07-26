@@ -15,7 +15,7 @@ defmodule GameServer.OAuthSession do
     field :status, :string
     field :data, :map, default: %{}
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @typedoc "A short-lived OAuth session used for polling by SDKs."

@@ -34,9 +34,6 @@ defmodule GameServerWeb.FileLogHandler do
 
   @handler_id :file_log
 
-  @default_max_no_bytes 10_000_000
-  @default_max_no_files 5
-
   @doc """
   Installs the file handler when a log file path is configured. Idempotent —
   calling it again while already installed is a no-op.
@@ -50,12 +47,7 @@ defmodule GameServerWeb.FileLogHandler do
     end
   end
 
-  defp configured_path do
-    case Application.get_env(:game_server_web, :log_file) do
-      path when is_binary(path) and path != "" -> path
-      _ -> System.get_env("LOG_FILE_PATH")
-    end
-  end
+  defp configured_path, do: GameServerWeb.Observability.get(:log_file_path)
 
   defp handler_status do
     case :logger.get_handler_config(@handler_id) do
@@ -71,8 +63,8 @@ defmodule GameServerWeb.FileLogHandler do
       level: log_level(),
       config: %{
         file: String.to_charlist(path),
-        max_no_bytes: env_int(:log_file_max_bytes, "LOG_FILE_MAX_BYTES", @default_max_no_bytes),
-        max_no_files: env_int(:log_file_max_files, "LOG_FILE_MAX_FILES", @default_max_no_files),
+        max_no_bytes: GameServerWeb.Observability.get(:log_file_max_bytes),
+        max_no_files: GameServerWeb.Observability.get(:log_file_max_files),
         filesync_repeat_interval: 5_000
       },
       formatter:
@@ -96,43 +88,5 @@ defmodule GameServerWeb.FileLogHandler do
     end
   end
 
-  defp log_level do
-    case Application.get_env(:game_server_web, :log_file_level) do
-      level when is_atom(level) and not is_nil(level) -> level
-      _ -> env_level()
-    end
-  end
-
-  defp env_level do
-    # to_existing_atom so a typo cannot mint an atom; unknown values fall back
-    # rather than crashing the handler install.
-    with value when is_binary(value) <- System.get_env("LOG_FILE_LEVEL"),
-         {:ok, level} <- safe_level(value) do
-      level
-    else
-      _ -> :info
-    end
-  end
-
-  defp safe_level(value) do
-    {:ok, String.to_existing_atom(String.trim(value))}
-  rescue
-    ArgumentError -> :error
-  end
-
-  defp env_int(key, env, default) do
-    case Application.get_env(:game_server_web, key) do
-      value when is_integer(value) and value > 0 -> value
-      _ -> parse_int(System.get_env(env), default)
-    end
-  end
-
-  defp parse_int(value, default) when is_binary(value) do
-    case Integer.parse(String.trim(value)) do
-      {parsed, _rest} when parsed > 0 -> parsed
-      _ -> default
-    end
-  end
-
-  defp parse_int(_value, default), do: default
+  defp log_level, do: GameServerWeb.Observability.get(:log_file_level)
 end

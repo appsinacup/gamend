@@ -9,6 +9,7 @@ defmodule GameServerWeb.UserLive.Settings.AccountTab do
   import Phoenix.LiveView
 
   alias GameServer.Accounts
+  alias GameServer.Storage
   alias GameServerWeb.UserLive.Settings.Shared
 
   def assign_defaults(socket, user) do
@@ -22,6 +23,11 @@ defmodule GameServerWeb.UserLive.Settings.AccountTab do
     |> assign(:username_form, to_form(Accounts.change_username(user)))
     |> assign(:password_form, to_form(password_changeset))
     |> assign(:trigger_submit, false)
+    |> allow_upload(:avatar,
+      accept: ~w(.png .jpg .jpeg .webp .gif),
+      max_entries: 1,
+      max_file_size: GameServer.Limits.get(:max_upload_bytes)
+    )
   end
 
   def tab(assigns) do
@@ -31,6 +37,48 @@ defmodule GameServerWeb.UserLive.Settings.AccountTab do
       <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="card bg-base-200 p-4 rounded-lg">
           <div class="font-semibold">{gettext("Account")}</div>
+
+          <div class="flex items-center gap-4 mt-3">
+            <.user_avatar user={@user} class="w-16 h-16" />
+            <form
+              phx-change="validate_avatar"
+              phx-submit="save_avatar"
+              id="avatar_form"
+              class="space-y-2"
+            >
+              <.live_file_input
+                upload={@uploads.avatar}
+                class="file-input file-input-sm file-input-bordered w-full max-w-xs"
+              />
+              <%!-- The native file input clears its label on re-render, so show
+                    the picked file here instead. --%>
+              <div :for={entry <- @uploads.avatar.entries} class="flex items-center gap-2 text-xs">
+                <.live_img_preview entry={entry} class="w-8 h-8 rounded-full object-cover" />
+                <span class="truncate max-w-[10rem]">{entry.client_name}</span>
+                <span class="text-base-content/60">{entry.progress}%</span>
+                <button
+                  type="button"
+                  phx-click="cancel_avatar"
+                  phx-value-ref={entry.ref}
+                  class="btn btn-ghost btn-xs"
+                  aria-label={gettext("Remove selected file")}
+                >
+                  <.icon name="hero-x-mark-solid" class="w-3 h-3" />
+                </button>
+                <span :if={upload_errors(@uploads.avatar, entry) != []} class="text-error">
+                  {gettext("File is too large or not a supported image.")}
+                </span>
+              </div>
+              <button
+                type="submit"
+                class="btn btn-primary btn-sm"
+                disabled={@uploads.avatar.entries == []}
+              >
+                {gettext("Change avatar")}
+              </button>
+            </form>
+          </div>
+
           <div class="text-sm mt-2 space-y-1 text-base-content/80">
             <div><strong>{gettext("ID")}:</strong> {@user.id}</div>
             <div><strong>{gettext("Email")}:</strong> {@current_email}</div>
@@ -95,7 +143,7 @@ defmodule GameServerWeb.UserLive.Settings.AccountTab do
           <.form
             for={@password_form}
             id="password_form"
-            action={~p"/users/update-password"}
+            action={~p"/users/update_password"}
             method="post"
             phx-change="validate_password"
             phx-submit="update_password"
@@ -308,7 +356,7 @@ defmodule GameServerWeb.UserLive.Settings.AccountTab do
         <div class="font-semibold text-error">{gettext("Danger zone")}</div>
         <div class="text-sm mt-2 text-base-content/80">
           <.link
-            href={~p"/data-deletion"}
+            href={~p"/data_deletion"}
             class="link link-primary"
           >
             {gettext("Read data deletion instructions")}
@@ -350,7 +398,7 @@ defmodule GameServerWeb.UserLive.Settings.AccountTab do
         Accounts.deliver_user_update_email_instructions(
           Ecto.Changeset.apply_action!(changeset, :insert),
           user.email,
-          &url(~p"/users/settings/confirm-email/#{&1}")
+          &url(~p"/users/settings/confirm_email/#{&1}")
         )
 
         {:noreply, put_flash(socket, :info, gettext("Success."))}
@@ -422,6 +470,46 @@ defmodule GameServerWeb.UserLive.Settings.AccountTab do
       {:error, reason} ->
         {:noreply,
          put_flash(socket, :error, gettext("Not allowed: %{reason}", reason: inspect(reason)))}
+    end
+  end
+
+  def handle_event("validate_avatar", _params, socket), do: {:noreply, socket}
+
+  def handle_event("cancel_avatar", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :avatar, ref)}
+  end
+
+  def handle_event("save_avatar", _params, socket) do
+    user = Shared.current_user(socket)
+
+    uploads =
+      consume_uploaded_entries(socket, :avatar, fn %{path: path}, entry ->
+        key = Storage.build_key("avatars", user.id, entry.client_name)
+        {:ok, _} = Storage.put(key, File.read!(path), content_type: entry.client_type)
+        {:ok, {key, Storage.url(key)}}
+      end)
+
+    case uploads do
+      [{key, url} | _] ->
+        case Accounts.update_user_avatar(user, url) do
+          {:ok, updated} ->
+            # Drop the previous avatar object(s) now that the new one is live.
+            _ = Accounts.prune_user_avatars(user.id, key)
+
+            # The navbar reads its user via `Scope.user/1`, which re-fetches by id;
+            # `update_user_avatar` invalidated the cache, so it picks up the new
+            # avatar on this re-render without touching the scope.
+            {:noreply,
+             socket
+             |> put_flash(:info, gettext("Avatar updated."))
+             |> assign(:user, updated)}
+
+          {:error, _} ->
+            {:noreply, put_flash(socket, :error, gettext("Could not update avatar."))}
+        end
+
+      [] ->
+        {:noreply, put_flash(socket, :error, gettext("Please choose an image first."))}
     end
   end
 

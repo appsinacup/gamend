@@ -11,23 +11,28 @@ msgstr ""
 "Language: cs\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
-#: lib/game_server_web/live/notifications_live.ex:284
+#: lib/game_server_web/live/notifications_live.ex:287
 #, elixir-autogen, elixir-format
 msgid "Achievement Unlocked: %{name}"
 msgstr "Úspěch odemčen: %{name}"
 
-#: lib/game_server_web/live/notifications_live.ex:280
+#: lib/game_server_web/live/notifications_live.ex:281
 #, elixir-autogen, elixir-format
 msgid "New message in party"
 msgstr "Nová zpráva v partě"
 
-#: lib/game_server_web/live/notifications_live.ex:289
-#: lib/game_server_web/live/notifications_live.ex:294
+#: lib/game_server_web/live/notifications_live.ex:295
+#: lib/game_server_web/live/notifications_live.ex:300
 #, elixir-autogen, elixir-format
 msgid "New messages from %{name}"
 msgstr "Nové zprávy od %{name}"
 
-#: lib/game_server_web/live/notifications_live.ex:278
+#: lib/game_server_web/live/notifications_live.ex:279
 #, elixir-autogen, elixir-format
 msgid "New messages from friends"
 msgstr "Nové zprávy od přátel"
+
+#: lib/game_server_web/live/notifications_live.ex:289
+#, elixir-autogen, elixir-format
+msgid "Quest completed: %{name}"
+msgstr "Úkol dokončen: %{name}"

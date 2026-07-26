@@ -183,7 +183,7 @@ defmodule GameServerWeb.AdminLive.Config do
                       <% end %>
                     </td>
                     <td class="font-mono text-sm break-all whitespace-normal">
-                      DEVICE_AUTH_ENABLED: {@config.device_auth_enabled_env || "<unset>"}
+                      GAMEND_AUTH_DEVICE_AUTH_ENABLED: {@config.device_auth_enabled_env || "<unset>"}
                     </td>
                   </tr>
                   <tr>
@@ -196,7 +196,8 @@ defmodule GameServerWeb.AdminLive.Config do
                       <% end %>
                     </td>
                     <td class="font-mono text-sm break-all whitespace-normal">
-                      REQUIRE_ACCOUNT_ACTIVATION: {@config.require_account_activation_env || "<unset>"}
+                      GAMEND_AUTH_REQUIRE_ACTIVATION: {@config.require_account_activation_env ||
+                        "<unset>"}
                     </td>
                   </tr>
                   <tr>
@@ -209,7 +210,8 @@ defmodule GameServerWeb.AdminLive.Config do
                       <% end %>
                     </td>
                     <td class="font-mono text-sm break-all whitespace-normal">
-                      MIN_PASSWORD_LENGTH: {@config.min_password_length_env || "<undefined>"} <br />
+                      GAMEND_AUTH_MIN_PASSWORD_LENGTH: {@config.min_password_length_env ||
+                        "<undefined>"} <br />
                       Effective: {@config.min_password_length_effective} characters
                     </td>
                   </tr>
@@ -223,7 +225,7 @@ defmodule GameServerWeb.AdminLive.Config do
                       <% end %>
                     </td>
                     <td class="font-mono text-sm break-all whitespace-normal">
-                      THEME_CONFIG: {@config.theme_config || "<unset>"}<br />
+                      GAMEND_CONTENT_THEME_CONFIG: {@config.theme_config || "<unset>"}<br />
 
                       <%= if @config.theme_map do %>
                         <%!-- Branding: Logo + dark, Favicon + dark, Banner + dark --%>
@@ -566,8 +568,9 @@ defmodule GameServerWeb.AdminLive.Config do
                     <td class="font-mono text-sm break-all whitespace-normal">
                       <%= if @config.apple_web_client_id || @config.apple_ios_client_id do %>
                         APPLE_WEB_CLIENT_ID: {mask_secret(@config.apple_web_client_id || "")}<br />
-                        APPLE_IOS_CLIENT_ID: {mask_secret(@config.apple_ios_client_id || "")}<br />
-                        APPLE_TEAM_ID: {mask_secret(@config.apple_team_id || "")}<br />
+                        GAMEND_OAUTH_APPLE_IOS_CLIENT_ID: {mask_secret(
+                          @config.apple_ios_client_id || ""
+                        )}<br /> APPLE_TEAM_ID: {mask_secret(@config.apple_team_id || "")}<br />
                         APPLE_KEY_ID: {mask_secret(@config.apple_key_id || "")}<br />
                         APPLE_PRIVATE_KEY: {mask_secret(@config.apple_private_key)}
                       <% else %>
@@ -604,7 +607,7 @@ defmodule GameServerWeb.AdminLive.Config do
                       <% end %>
                     </td>
                     <td class="font-mono text-sm break-all whitespace-normal">
-                      PHX_ALLOWED_ORIGINS: {@config.phx_allowed_origins_env || "<unset>"}<br />
+                      GAMEND_HTTP_ALLOWED_ORIGINS: {@config.phx_allowed_origins_env || "<unset>"}<br />
                       Effective CORS origins: {inspect(@config.cors_allowed_origins)}<br />
                     </td>
                   </tr>
@@ -640,7 +643,7 @@ defmodule GameServerWeb.AdminLive.Config do
                       <% end %>
                     </td>
                     <td class="font-mono text-sm break-all whitespace-normal">
-                      <.link navigate={~p"/admin/rate-limiting"} class="link link-primary text-sm">
+                      <.link navigate={~p"/admin/rate_limiting"} class="link link-primary text-sm">
                         Manage IP Bans →
                       </.link>
                     </td>
@@ -674,9 +677,9 @@ defmodule GameServerWeb.AdminLive.Config do
                     </td>
                     <td class="font-mono text-sm break-all whitespace-normal">
                       <%= if @config.steam_api_key do %>
-                        STEAM_API_KEY: {mask_secret(@config.steam_api_key)}
+                        GAMEND_OAUTH_STEAM_API_KEY: {mask_secret(@config.steam_api_key)}
                       <% else %>
-                        <span class="text-error">STEAM_API_KEY: unset</span>
+                        <span class="text-error">GAMEND_OAUTH_STEAM_API_KEY: unset</span>
                       <% end %>
                     </td>
                   </tr>
@@ -832,7 +835,7 @@ defmodule GameServerWeb.AdminLive.Config do
                         </span>
                         <br /> RELEASE_COOKIE:
                         <span class="break-all">{mask_secret(@config.release_cookie_env)}</span>
-                        <br /> DNS_CLUSTER_QUERY:
+                        <br /> GAMEND_CLUSTER_DNS_QUERY:
                         <span class="break-all">
                           {env_with_recommended(
                             @config.dns_cluster_query_env,
@@ -847,7 +850,7 @@ defmodule GameServerWeb.AdminLive.Config do
                             @config.erl_aflags_recommended
                           )}
                         </span>
-                        <br /> ECTO_IPV6:
+                        <br /> GAMEND_DB_IPV6:
                         <span class="break-all">
                           {env_with_recommended(
                             @config.ecto_ipv6_env,
@@ -895,25 +898,25 @@ defmodule GameServerWeb.AdminLive.Config do
                     </td>
                     <td class="text-sm break-words whitespace-normal">
                       <div class="font-mono text-sm">
-                        CACHE_ENABLED:
+                        GAMEND_CACHE_ENABLED:
                         <span class="break-all">
                           {env_with_default(@config.cache_enabled_env, @config.cache_enabled_default)}
                         </span>
-                        <br /> CACHE_MODE:
+                        <br /> GAMEND_CACHE_MODE:
                         <span class="break-all">
                           {env_with_default(@config.cache_mode_env, @config.cache_mode_default)}
                         </span>
-                        <br /> CACHE_L2:
+                        <br /> GAMEND_CACHE_L2:
                         <span class="break-all">
                           {env_with_default(@config.cache_l2_env, @config.cache_l2_default)}
                         </span>
-                        <br /> CACHE_REDIS_URL / REDIS_URL:
+                        <br /> GAMEND_CACHE_REDIS_URL / REDIS_URL:
                         <span class="break-all">
                           <%= if @config.cache_redis_url_env do %>
                             {mask_secret(@config.cache_redis_url_env)}
                           <% else %>
                             <span class="opacity-70">
-                              &lt;unset (required when CACHE_L2=redis)&gt;
+                              &lt;unset (required when GAMEND_CACHE_L2=redis)&gt;
                             </span>
                           <% end %>
                         </span>
@@ -951,14 +954,15 @@ defmodule GameServerWeb.AdminLive.Config do
                           This app supports single-level (L1 local) or two-level (L1 + L2).
                         </p>
                         <p>
-                          Use <code class="font-mono">CACHE_MODE=single</code>
+                          Use <code class="font-mono">GAMEND_CACHE_MODE=single</code>
                           for a single-instance deployment
                           (local cache only).
                         </p>
                         <p class="mt-1">
-                          Use <code class="font-mono">CACHE_MODE=multi</code>
-                          to enable L2, then choose <code class="font-mono">CACHE_L2=redis</code>
-                          (shared) or <code class="font-mono">CACHE_L2=partitioned</code>
+                          Use <code class="font-mono">GAMEND_CACHE_MODE=multi</code>
+                          to enable L2, then choose
+                          <code class="font-mono">GAMEND_CACHE_L2=redis</code>
+                          (shared) or <code class="font-mono">GAMEND_CACHE_L2=partitioned</code>
                           (Erlang-cluster sharding).
                         </p>
                       </div>
@@ -982,8 +986,9 @@ defmodule GameServerWeb.AdminLive.Config do
                     </td>
                     <td class="text-sm break-words whitespace-normal">
                       <div class="font-mono text-sm">
-                        LOG_LEVEL: <span class="break-all">{@config.log_level}</span>
-                        <br /> ACCESS_LOG_LEVEL:
+                        GAMEND_OBSERVABILITY_LOG_LEVEL:
+                        <span class="break-all">{@config.log_level}</span>
+                        <br /> GAMEND_OBSERVABILITY_ACCESS_LOG_LEVEL:
                         <span class="break-all">{@config.access_log_level_env || "<unset>"}</span>
                         <span class="opacity-70">
                           (effective: {inspect(@config.access_log_level)})
@@ -1008,7 +1013,7 @@ defmodule GameServerWeb.AdminLive.Config do
                             )}
                           </span>
                           <div class="mt-1 text-xs text-warning">
-                            Postgres env vars are set but the image was compiled with SQLite. Rebuild with DATABASE_ADAPTER=postgres.
+                            Postgres env vars are set but the image was compiled with SQLite. Rebuild with GAMEND_DB_ADAPTER=postgres.
                           </div>
                         </div>
                         <%!-- Also emit a hidden text so test assertions on "Postgres" still pass --%>
@@ -1018,22 +1023,25 @@ defmodule GameServerWeb.AdminLive.Config do
                     <td class="font-mono text-sm break-all whitespace-normal">
                       <div class="mt-2 text-sm">
                         <div>
-                          DATABASE_URL:
+                          GAMEND_DB_URL:
                           <span class="font-mono">
                             {if @config.pg_database_url, do: "set", else: "<unset>"}
                           </span>
                         </div>
                         <div>
-                          POSTGRES_HOST: <span class="font-mono">{@config.pg_host || "<unset>"}</span>
+                          GAMEND_DB_POSTGRES_HOST:
+                          <span class="font-mono">{@config.pg_host || "<unset>"}</span>
                         </div>
                         <div>
-                          POSTGRES_USER: <span class="font-mono">{@config.pg_user || "<unset>"}</span>
+                          GAMEND_DB_POSTGRES_USER:
+                          <span class="font-mono">{@config.pg_user || "<unset>"}</span>
                         </div>
                         <div>
-                          POSTGRES_DB: <span class="font-mono">{@config.pg_db || "<unset>"}</span>
+                          GAMEND_DB_POSTGRES_DB:
+                          <span class="font-mono">{@config.pg_db || "<unset>"}</span>
                         </div>
                         <div>
-                          POSTGRES_PASSWORD:
+                          GAMEND_DB_POSTGRES_PASSWORD:
                           <span class="font-mono">{mask_secret(@config.pg_password)}</span>
                         </div>
 
@@ -1041,7 +1049,7 @@ defmodule GameServerWeb.AdminLive.Config do
                           <div class="font-semibold text-base-content/70">Runtime tuning</div>
                           <div class="mt-1 space-y-1">
                             <div>
-                              POOL_SIZE:
+                              GAMEND_DB_POOL_SIZE:
                               <span class="font-mono">{@config.db_pool_size_env || "<unset>"}</span>
                             </div>
                             <div>
@@ -1069,15 +1077,15 @@ defmodule GameServerWeb.AdminLive.Config do
                               </span>
                             </div>
                             <div>
-                              POSTGRES_PORT:
+                              GAMEND_DB_POSTGRES_PORT:
                               <span class="font-mono">{@config.postgres_port_env || "<unset>"}</span>
                             </div>
                             <div>
-                              ECTO_IPV6:
+                              GAMEND_DB_IPV6:
                               <span class="font-mono">{@config.ecto_ipv6_env || "<unset>"}</span>
                             </div>
                             <div>
-                              PHX_SERVER:
+                              GAMEND_HTTP_SERVER:
                               <span class="font-mono">{@config.phx_server_env || "<unset>"}</span>
                             </div>
                           </div>
@@ -1110,17 +1118,17 @@ defmodule GameServerWeb.AdminLive.Config do
                     </td>
                     <td class="text-sm break-words whitespace-normal">
                       <div class="font-mono text-sm">
-                        SSL_CERTFILE:
+                        GAMEND_TLS_CERTFILE:
                         <span class="break-all">{@config.ssl_certfile_env || "<unset>"}</span>
-                        <br /> SSL_KEYFILE:
+                        <br /> GAMEND_TLS_KEYFILE:
                         <span class="break-all">{@config.ssl_keyfile_env || "<unset>"}</span>
-                        <br /> HTTPS_PORT:
+                        <br /> GAMEND_TLS_PORT:
                         <span class="break-all">
                           {@config.https_port_env || "<unset> (default: 443)"}
                         </span>
-                        <br /> FORCE_SSL:
+                        <br /> GAMEND_TLS_FORCE:
                         <span class="break-all">{@config.force_ssl_env || "<unset>"}</span>
-                        <br /> ACME_WEBROOT:
+                        <br /> GAMEND_TLS_ACME_WEBROOT:
                         <span class="break-all">{@config.acme_webroot_env || "<unset>"}</span>
                       </div>
 
@@ -1188,7 +1196,7 @@ defmodule GameServerWeb.AdminLive.Config do
                     </td>
                     <td class="font-mono text-sm break-all whitespace-normal">
                       <%= if @config.secret_key_base do %>
-                        SECRET_KEY_BASE: {mask_secret(@config.secret_key_base)}
+                        GAMEND_AUTH_SECRET_KEY_BASE: {mask_secret(@config.secret_key_base)}
                       <% else %>
                         Disabled
                       <% end %>
@@ -1200,12 +1208,12 @@ defmodule GameServerWeb.AdminLive.Config do
                       <%= if @config.geoip_available? do %>
                         <span class="badge badge-success badge-sm">MMDB database loaded</span>
                         <span class="text-xs text-base-content/60 ml-2">
-                          GEOIP_DB_PATH: {@config.geoip_db_path || "configured"}
+                          GAMEND_CONTENT_GEOIP_DB_PATH: {@config.geoip_db_path || "configured"}
                         </span>
                       <% else %>
                         <span class="badge badge-warning badge-sm">MMDB not configured</span>
                         <span class="text-xs text-base-content/60 ml-2">
-                          Falling back to CF-IPCountry header (Cloudflare only). Place GeoLite2-Country.mmdb under data or set GEOIP_DB_PATH for a custom lookup path.
+                          Falling back to CF-IPCountry header (Cloudflare only). Place GeoLite2-Country.mmdb under data or set GAMEND_CONTENT_GEOIP_DB_PATH for a custom lookup path.
                         </span>
                       <% end %>
                     </td>
@@ -1453,7 +1461,7 @@ defmodule GameServerWeb.AdminLive.Config do
             <p class="text-sm opacity-70 mb-4">
               Override any limit at boot via env vars:
               <code class="font-mono text-xs">LIMIT_&lt;KEY&gt;=value</code>
-              (e.g. <code class="font-mono text-xs">LIMIT_MAX_METADATA_SIZE=32768</code>).
+              (e.g. <code class="font-mono text-xs">GAMEND_LIMITS_MAX_METADATA_SIZE=32768</code>).
             </p>
 
             <div class="overflow-x-auto">
@@ -1626,88 +1634,84 @@ defmodule GameServerWeb.AdminLive.Config do
     clustering = clustering_diagnostics()
 
     config = %{
-      discord_client_id:
-        Application.get_env(:ueberauth, Ueberauth.Strategy.Discord.OAuth)[:client_id] ||
-          System.get_env("DISCORD_CLIENT_ID"),
+      discord_client_id: GameServer.Settings.get(GameServer.OAuth.Providers, :discord_client_id),
       discord_client_secret:
-        Application.get_env(:ueberauth, Ueberauth.Strategy.Discord.OAuth)[:client_secret] ||
-          System.get_env("DISCORD_CLIENT_SECRET"),
-      apple_web_client_id: System.get_env("APPLE_WEB_CLIENT_ID"),
-      apple_ios_client_id: System.get_env("APPLE_IOS_CLIENT_ID"),
-      apple_team_id: System.get_env("APPLE_TEAM_ID"),
-      apple_key_id: System.get_env("APPLE_KEY_ID"),
-      apple_private_key: System.get_env("APPLE_PRIVATE_KEY"),
-      google_client_id:
-        Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_id] ||
-          System.get_env("GOOGLE_CLIENT_ID"),
+        GameServer.Settings.get(GameServer.OAuth.Providers, :discord_client_secret),
+      apple_web_client_id: GameServer.Settings.get(GameServer.OAuth.Providers, :apple_client_id),
+      apple_ios_client_id:
+        GameServer.Settings.get(GameServer.OAuth.Providers, :apple_ios_client_id),
+      apple_team_id: GameServer.Settings.get(GameServer.OAuth.Providers, :apple_team_id),
+      apple_key_id: GameServer.Settings.get(GameServer.Payments.Settings, :apple_key_id),
+      apple_private_key:
+        GameServer.Settings.get(GameServer.Payments.Settings, :apple_private_key),
+      google_client_id: GameServer.Settings.get(GameServer.OAuth.Providers, :google_client_id),
       google_client_secret:
-        Application.get_env(:ueberauth, Ueberauth.Strategy.Google.OAuth)[:client_secret] ||
-          System.get_env("GOOGLE_CLIENT_SECRET"),
+        GameServer.Settings.get(GameServer.OAuth.Providers, :google_client_secret),
       facebook_client_id:
-        Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)[:client_id] ||
-          System.get_env("FACEBOOK_CLIENT_ID"),
+        GameServer.Settings.get(GameServer.OAuth.Providers, :facebook_client_id),
       facebook_client_secret:
-        Application.get_env(:ueberauth, Ueberauth.Strategy.Facebook.OAuth)[:client_secret] ||
-          System.get_env("FACEBOOK_CLIENT_SECRET"),
-      steam_api_key:
-        Application.get_env(:ueberauth, Ueberauth.Strategy.Steam)[:api_key] ||
-          System.get_env("STEAM_API_KEY"),
+        GameServer.Settings.get(GameServer.OAuth.Providers, :facebook_client_secret),
+      steam_api_key: GameServer.Settings.get(GameServer.OAuth.Providers, :steam_api_key),
       payment_provider_configs: payment_provider_configs(),
       payment_provider_configured_count: payment_provider_configured_count(),
-      email_configured: System.get_env("SMTP_PASSWORD") != nil,
-      smtp_username: System.get_env("SMTP_USERNAME"),
-      smtp_password: System.get_env("SMTP_PASSWORD"),
-      smtp_relay: System.get_env("SMTP_RELAY"),
-      smtp_port: System.get_env("SMTP_PORT"),
-      smtp_ssl: System.get_env("SMTP_SSL"),
-      smtp_from_name: System.get_env("SMTP_FROM_NAME"),
-      smtp_from_email: System.get_env("SMTP_FROM_EMAIL"),
-      smtp_sni: System.get_env("SMTP_SNI"),
-      smtp_tls: System.get_env("SMTP_TLS"),
+      email_configured: GameServer.Settings.get(GameServer.Mail, :smtp_password) != nil,
+      smtp_username: GameServer.Settings.get(GameServer.Mail, :smtp_username),
+      smtp_password: GameServer.Settings.get(GameServer.Mail, :smtp_password),
+      smtp_relay: GameServer.Settings.get(GameServer.Mail, :smtp_relay),
+      smtp_port: GameServer.Settings.get(GameServer.Mail, :smtp_port),
+      smtp_ssl: GameServer.Settings.get(GameServer.Mail, :smtp_ssl),
+      smtp_from_name: GameServer.Settings.get(GameServer.Mail, :smtp_from_name),
+      smtp_from_email: GameServer.Settings.get(GameServer.Mail, :smtp_from_email),
+      smtp_sni: GameServer.Settings.get(GameServer.Mail, :smtp_sni),
+      smtp_tls: GameServer.Settings.get(GameServer.Mail, :smtp_tls),
       env: to_string(Application.get_env(:game_server_web, :environment, :prod)),
       repo_conf: Application.get_env(:game_server_core, GameServer.Repo) || %{},
       database: Application.get_env(:game_server_core, GameServer.Repo)[:database] || "N/A",
       # Database environment diagnostics (don't show raw passwords)
       database_adapter: detect_db_adapter(),
       database_config_adapter: detect_db_config_adapter(),
-      pg_database_url: System.get_env("DATABASE_URL"),
-      pg_host: System.get_env("POSTGRES_HOST"),
-      pg_user: System.get_env("POSTGRES_USER"),
-      pg_db: System.get_env("POSTGRES_DB"),
-      pg_password: System.get_env("POSTGRES_PASSWORD"),
+      pg_database_url: GameServer.Settings.get(GameServer.Database, :url),
+      pg_host: GameServer.Settings.get(GameServer.Database, :postgres_host),
+      pg_user: GameServer.Settings.get(GameServer.Database, :postgres_user),
+      pg_db: GameServer.Settings.get(GameServer.Database, :postgres_db),
+      pg_password: GameServer.Settings.get(GameServer.Database, :postgres_password),
       # DB source detection and masked effective value for admin UI
       db_source: detect_db_source(),
       db_effective_value: detect_effective_db_value(),
       hostname:
         Application.get_env(:game_server_web, GameServerWeb.Endpoint)[:url][:host] ||
-          System.get_env("HOSTNAME") || System.get_env("PHX_HOST") || "localhost",
-      port: System.get_env("PORT") || "4000",
+          GameServer.Settings.get(GameServerWeb.Http, :host),
+      port: GameServer.Settings.get(GameServerWeb.Http, :port) || "4000",
       secret_key_base:
-        System.get_env("SECRET_KEY_BASE") ||
+        GameServer.Settings.get(GameServer.Accounts, :secret_key_base) ||
           Application.get_env(:game_server_web, GameServerWeb.Endpoint)[:secret_key_base],
       live_reload:
         Application.get_env(:game_server_web, GameServerWeb.Endpoint)[:live_reload] != nil,
       log_level: Logger.level(),
-      log_level_env: System.get_env("LOG_LEVEL"),
+      log_level_env: GameServer.Settings.get(GameServerWeb.Observability, :log_level),
       access_log_level: GameServerWeb.endpoint().access_log_level(nil),
-      access_log_level_env: System.get_env("ACCESS_LOG_LEVEL"),
-      release_distribution_env: System.get_env("RELEASE_DISTRIBUTION"),
-      release_node_env: System.get_env("RELEASE_NODE"),
-      release_cookie_env: System.get_env("RELEASE_COOKIE"),
-      dns_cluster_query_env: System.get_env("DNS_CLUSTER_QUERY"),
+      access_log_level_env:
+        GameServer.Settings.get(GameServerWeb.Observability, :access_log_level),
+      release_distribution_env: cluster_env("RELEASE_DISTRIBUTION"),
+      release_node_env: cluster_env("RELEASE_NODE"),
+      release_cookie_env: cluster_env("RELEASE_COOKIE"),
+      dns_cluster_query_env: GameServer.Settings.get(GameServer.Cluster, :dns_query),
       release_distribution_recommended: "name",
       release_node_recommended: clustering.release_node_recommended,
       dns_cluster_query_recommended: clustering.dns_cluster_query_recommended,
-      erl_aflags_env: System.get_env("ERL_AFLAGS"),
+      erl_aflags_env: cluster_env("ERL_AFLAGS"),
       erl_aflags_recommended: clustering.erl_aflags_recommended,
       node_name: node(),
       node_alive?: Node.alive?(),
       release_distribution_enabled?: Node.alive?(),
-      cache_enabled_env: System.get_env("CACHE_ENABLED"),
-      cache_mode_env: System.get_env("CACHE_MODE"),
-      cache_l2_env: System.get_env("CACHE_L2"),
-      cache_redis_url_env: System.get_env("CACHE_REDIS_URL") || System.get_env("REDIS_URL"),
-      cache_redis_pool_size_env: System.get_env("CACHE_REDIS_POOL_SIZE"),
+      cache_enabled_env: GameServer.Settings.get(GameServer.Cache.Settings, :enabled),
+      cache_mode_env: GameServer.Settings.get(GameServer.Cache.Settings, :mode),
+      cache_l2_env: GameServer.Settings.get(GameServer.Cache.Settings, :l2),
+      cache_redis_url_env:
+        GameServer.Settings.get(GameServer.Cache.Settings, :redis_url) ||
+          GameServer.Settings.get(GameServer.Cluster, :redis_url),
+      cache_redis_pool_size_env:
+        GameServer.Settings.get(GameServer.Cache.Settings, :redis_pool_size),
       cache_enabled_default: "true",
       cache_mode_default: "single",
       cache_l2_default: "partitioned",
@@ -1722,15 +1726,15 @@ defmodule GameServerWeb.AdminLive.Config do
       cache_l1_opts: cache.cache_l1_opts,
       cache_l2_module: cache.cache_l2_module,
       cache_l2_opts: cache.cache_l2_opts,
-      db_pool_size_env: System.get_env("POOL_SIZE"),
-      db_pool_timeout_env: System.get_env("DB_POOL_TIMEOUT"),
-      db_queue_target_env: System.get_env("DB_QUEUE_TARGET"),
-      db_queue_interval_env: System.get_env("DB_QUEUE_INTERVAL"),
-      db_query_timeout_env: System.get_env("DB_QUERY_TIMEOUT"),
-      postgres_port_env: System.get_env("POSTGRES_PORT"),
-      ecto_ipv6_env: System.get_env("ECTO_IPV6"),
+      db_pool_size_env: GameServer.Settings.get(GameServer.Database, :pool_size),
+      db_pool_timeout_env: GameServer.Settings.get(GameServer.Database, :pool_timeout_ms),
+      db_queue_target_env: GameServer.Settings.get(GameServer.Database, :queue_target),
+      db_queue_interval_env: GameServer.Settings.get(GameServer.Database, :queue_interval_ms),
+      db_query_timeout_env: GameServer.Settings.get(GameServer.Database, :query_timeout_ms),
+      postgres_port_env: GameServer.Settings.get(GameServer.Database, :postgres_port),
+      ecto_ipv6_env: GameServer.Settings.get(GameServer.Database, :ipv6),
       ecto_ipv6_recommended: clustering.ecto_ipv6_recommended,
-      phx_server_env: System.get_env("PHX_SERVER"),
+      phx_server_env: GameServer.Settings.get(GameServerWeb.Http, :server),
       fly_app_name_env: clustering.fly_app_name_env,
       fly_private_ip_env: clustering.fly_private_ip_env,
       fly_region_env: clustering.fly_region_env,
@@ -1744,7 +1748,7 @@ defmodule GameServerWeb.AdminLive.Config do
       # Theme configuration diagnostics: reuse the existing Theme provider
       # implementation so behavior is consistent across the app. We expose three
       # keys used by the template:
-      #  - :theme_config -> the runtime THEME_CONFIG env value (path) or nil
+      #  - :theme_config -> the runtime GAMEND_CONTENT_THEME_CONFIG env value (path) or nil
       #  - :theme_map -> resolved theme map with host-owned branding assets
       #  - :theme_raw_map -> raw runtime JSON theme values (locale-specific)
       theme_map: GameServerWeb.Layouts.resolve_theme(),
@@ -1761,22 +1765,24 @@ defmodule GameServerWeb.AdminLive.Config do
         roadmap: Content.path(:roadmap)
       },
       device_auth_enabled_app: Application.get_env(:game_server_core, :device_auth_enabled),
-      device_auth_enabled_env: System.get_env("DEVICE_AUTH_ENABLED"),
+      device_auth_enabled_env: GameServer.Settings.get(GameServer.Accounts, :device_auth_enabled),
       require_account_activation: GameServer.Accounts.require_account_activation?(),
-      require_account_activation_env: System.get_env("REQUIRE_ACCOUNT_ACTIVATION"),
-      min_password_length_env: System.get_env("MIN_PASSWORD_LENGTH"),
+      require_account_activation_env:
+        GameServer.Settings.get(GameServer.Accounts, :require_activation),
+      min_password_length_env:
+        GameServer.Settings.get(GameServer.Accounts.User, :min_password_length),
       min_password_length_effective: User.min_password_length(),
 
-      # PHX/CORS runtime configuration (set via PHX_ALLOWED_ORIGINS)
-      phx_allowed_origins_env: System.get_env("PHX_ALLOWED_ORIGINS"),
+      # PHX/CORS runtime configuration (set via GAMEND_HTTP_ALLOWED_ORIGINS)
+      phx_allowed_origins_env: GameServer.Settings.get(GameServerWeb.Http, :allowed_origins),
       cors_allowed_origins: Application.get_env(:game_server_web, :cors_allowed_origins, "*"),
 
       # HTTPS / TLS certificate diagnostics
-      ssl_certfile_env: System.get_env("SSL_CERTFILE"),
-      ssl_keyfile_env: System.get_env("SSL_KEYFILE"),
-      https_port_env: System.get_env("HTTPS_PORT"),
-      force_ssl_env: System.get_env("FORCE_SSL"),
-      acme_webroot_env: System.get_env("ACME_WEBROOT"),
+      ssl_certfile_env: GameServer.Settings.get(GameServerWeb.Tls, :certfile),
+      ssl_keyfile_env: GameServer.Settings.get(GameServerWeb.Tls, :keyfile),
+      https_port_env: GameServer.Settings.get(GameServerWeb.Tls, :port),
+      force_ssl_env: GameServer.Settings.get(GameServerWeb.Tls, :force),
+      acme_webroot_env: GameServer.Settings.get(GameServerWeb.Tls, :acme_webroot),
       ssl_enabled?: ssl_enabled?(),
       ssl_cert_info: ssl_cert_info(),
 
@@ -1796,7 +1802,7 @@ defmodule GameServerWeb.AdminLive.Config do
       rate_limit_general_window:
         Keyword.get(
           Application.get_env(:game_server_web, GameServerWeb.Plugs.RateLimiter, []),
-          :general_window,
+          :general_window_ms,
           60_000
         ),
       rate_limit_auth_limit:
@@ -1808,7 +1814,7 @@ defmodule GameServerWeb.AdminLive.Config do
       rate_limit_auth_window:
         Keyword.get(
           Application.get_env(:game_server_web, GameServerWeb.Plugs.RateLimiter, []),
-          :auth_window,
+          :auth_window_ms,
           60_000
         ),
       rate_limit_ws_limit:
@@ -1820,7 +1826,7 @@ defmodule GameServerWeb.AdminLive.Config do
       rate_limit_ws_window:
         Keyword.get(
           Application.get_env(:game_server_web, GameServerWeb.Plugs.RateLimiter, []),
-          :ws_window,
+          :ws_window_ms,
           10_000
         ),
       rate_limit_dc_limit:
@@ -1832,7 +1838,7 @@ defmodule GameServerWeb.AdminLive.Config do
       rate_limit_dc_window:
         Keyword.get(
           Application.get_env(:game_server_web, GameServerWeb.Plugs.RateLimiter, []),
-          :dc_window,
+          :dc_window_ms,
           10_000
         ),
       rate_limit_ice_limit:
@@ -1844,14 +1850,14 @@ defmodule GameServerWeb.AdminLive.Config do
       rate_limit_ice_window:
         Keyword.get(
           Application.get_env(:game_server_web, GameServerWeb.Plugs.RateLimiter, []),
-          :ice_window,
+          :ice_window_ms,
           30_000
         ),
       webrtc_max_channels: 1,
       webrtc_max_message_size: 65_536,
       geoip_available?: GeoCountry.geoip_available?(),
-      geoip_db_path: System.get_env("GEOIP_DB_PATH"),
-      metrics_auth_token: Application.get_env(:game_server_web, :metrics_auth_token)
+      geoip_db_path: GameServer.Settings.get(GameServer.ContentSettings, :geoip_db_path),
+      metrics_auth_token: GameServerWeb.Observability.get(:metrics_token)
     }
 
     socket =
@@ -1978,9 +1984,9 @@ defmodule GameServerWeb.AdminLive.Config do
   defp cache_l2_label(other), do: inspect(other)
 
   defp clustering_diagnostics do
-    fly_app_name_env = System.get_env("FLY_APP_NAME")
-    fly_private_ip_env = System.get_env("FLY_PRIVATE_IP")
-    fly_region_env = System.get_env("FLY_REGION")
+    fly_app_name_env = cluster_env("FLY_APP_NAME")
+    fly_private_ip_env = cluster_env("FLY_PRIVATE_IP")
+    fly_region_env = cluster_env("FLY_REGION")
 
     fly? = fly_app_name_env != nil
 
@@ -2430,6 +2436,15 @@ defmodule GameServerWeb.AdminLive.Config do
 
   defp dynamic_signature(_export), do: %{arity: :custom, signature: nil, doc: nil}
 
+  # Not settings: the BEAM and the platform read these names themselves, so
+  # they are reported rather than declared. See GameServer.Cluster.
+  defp cluster_env(name) do
+    Enum.find_value(GameServer.Cluster.environment(), fn
+      %{name: ^name, value: value} -> value
+      _ -> nil
+    end)
+  end
+
   defp detect_db_adapter do
     if AdvisoryLock.postgres?(), do: :postgres, else: :sqlite
   end
@@ -2438,10 +2453,18 @@ defmodule GameServerWeb.AdminLive.Config do
     repo_conf = Application.get_env(:game_server_core, GameServer.Repo) || %{}
 
     cond do
-      System.get_env("DATABASE_URL") -> :postgres
-      System.get_env("POSTGRES_HOST") && System.get_env("POSTGRES_USER") -> :postgres
-      repo_conf[:adapter] == Ecto.Adapters.Postgres -> :postgres
-      true -> :sqlite
+      GameServer.Settings.get(GameServer.Database, :url) ->
+        :postgres
+
+      GameServer.Settings.get(GameServer.Database, :postgres_host) &&
+          GameServer.Settings.get(GameServer.Database, :postgres_user) ->
+        :postgres
+
+      repo_conf[:adapter] == Ecto.Adapters.Postgres ->
+        :postgres
+
+      true ->
+        :sqlite
     end
   end
 
@@ -2449,23 +2472,31 @@ defmodule GameServerWeb.AdminLive.Config do
     repo_conf = Application.get_env(:game_server_core, GameServer.Repo) || %{}
 
     cond do
-      System.get_env("DATABASE_URL") -> :database_url
-      System.get_env("POSTGRES_HOST") && System.get_env("POSTGRES_USER") -> :env_vars
-      repo_conf[:adapter] in [Ecto.Adapters.Postgres] -> :repo_config
-      true -> :sqlite
+      GameServer.Settings.get(GameServer.Database, :url) ->
+        :database_url
+
+      GameServer.Settings.get(GameServer.Database, :postgres_host) &&
+          GameServer.Settings.get(GameServer.Database, :postgres_user) ->
+        :env_vars
+
+      repo_conf[:adapter] in [Ecto.Adapters.Postgres] ->
+        :repo_config
+
+      true ->
+        :sqlite
     end
   end
 
   defp detect_effective_db_value do
-    case System.get_env("DATABASE_URL") do
+    case GameServer.Settings.get(GameServer.Database, :url) do
       v when is_binary(v) and v != "" ->
         v
 
       _ ->
-        host = System.get_env("POSTGRES_HOST")
-        user = System.get_env("POSTGRES_USER")
-        db = System.get_env("POSTGRES_DB")
-        pw = System.get_env("POSTGRES_PASSWORD")
+        host = GameServer.Settings.get(GameServer.Database, :postgres_host)
+        user = GameServer.Settings.get(GameServer.Database, :postgres_user)
+        db = GameServer.Settings.get(GameServer.Database, :postgres_db)
+        pw = GameServer.Settings.get(GameServer.Database, :postgres_password)
 
         if host || user || db do
           "postgres://#{user || "<unset>"}@#{host || "<unset>"}/#{db || "<unset>"}#{if pw, do: ":(pwd)", else: ""}"
@@ -2497,7 +2528,7 @@ defmodule GameServerWeb.AdminLive.Config do
 
   @doc false
   defp ssl_cert_info do
-    certfile = System.get_env("SSL_CERTFILE")
+    certfile = GameServer.Settings.get(GameServerWeb.Tls, :certfile)
 
     if certfile do
       case File.read(certfile) do
@@ -2652,7 +2683,7 @@ defmodule GameServerWeb.AdminLive.Config do
         configured: stripe.configured,
         details: [
           "Detected mode: #{stripe.mode}",
-          env_line("PAYMENTS_ENVIRONMENT", payments_environment()),
+          env_line("GAMEND_PAYMENTS_ENVIRONMENT", payments_environment()),
           "Secret key source: #{stripe.selected_secret_key || Enum.join(stripe.expected_secret_keys, " or ")}",
           env_line(
             stripe.selected_secret_key || "STRIPE_*_SECRET_KEY",
@@ -2666,52 +2697,96 @@ defmodule GameServerWeb.AdminLive.Config do
             secret: true
           ),
           "API version source: #{stripe.api_version_source}",
-          env_line("STRIPE_API_VERSION", stripe.api_version)
+          env_line("GAMEND_PAYMENTS_STRIPE_API_VERSION", stripe.api_version)
         ]
       },
       %{
         name: "Google Play",
         configured: google.configured,
         details: [
-          env_line("GOOGLE_PLAY_PACKAGE_NAME", System.get_env("GOOGLE_PLAY_PACKAGE_NAME")),
           env_line(
-            "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON",
-            System.get_env("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON"),
-            secret: true
+            "GAMEND_PAYMENTS_GOOGLE_PLAY_PACKAGE_NAME",
+            GameServer.Settings.get(GameServer.Payments.Settings, :google_play_package_name)
           ),
           env_line(
-            "GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_PATH",
-            System.get_env("GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_PATH")
-          ),
-          env_line("GOOGLE_PLAY_ACCESS_TOKEN", System.get_env("GOOGLE_PLAY_ACCESS_TOKEN"),
+            "GAMEND_PAYMENTS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON",
+            GameServer.Settings.get(
+              GameServer.Payments.Settings,
+              :google_play_service_account_json
+            ),
             secret: true
           ),
-          env_line("GOOGLE_PLAY_RTDN_TOKEN", System.get_env("GOOGLE_PLAY_RTDN_TOKEN"),
+          env_line(
+            "GAMEND_PAYMENTS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_PATH",
+            GameServer.Settings.get(
+              GameServer.Payments.Settings,
+              :google_play_service_account_json_path
+            )
+          ),
+          env_line(
+            "GAMEND_PAYMENTS_GOOGLE_PLAY_ACCESS_TOKEN",
+            GameServer.Settings.get(GameServer.Payments.Settings, :google_play_access_token),
             secret: true
           ),
-          env_line("GOOGLE_PLAY_AUTO_ACKNOWLEDGE", System.get_env("GOOGLE_PLAY_AUTO_ACKNOWLEDGE"))
+          env_line(
+            "GAMEND_PAYMENTS_GOOGLE_PLAY_RTDN_TOKEN",
+            GameServer.Settings.get(GameServer.Payments.Settings, :google_play_rtdn_token),
+            secret: true
+          ),
+          env_line(
+            "GAMEND_PAYMENTS_GOOGLE_PLAY_AUTO_ACKNOWLEDGE",
+            GameServer.Settings.get(GameServer.Payments.Settings, :google_play_auto_acknowledge)
+          )
         ]
       },
       %{
         name: "App Store",
         configured: apple.configured,
         details: [
-          env_line("APPLE_BUNDLE_ID", System.get_env("APPLE_BUNDLE_ID")),
-          env_line("APPLE_ISSUER_ID", System.get_env("APPLE_ISSUER_ID"), secret: true),
-          env_line("APPLE_KEY_ID", System.get_env("APPLE_KEY_ID")),
-          env_line("APPLE_PRIVATE_KEY", System.get_env("APPLE_PRIVATE_KEY"), secret: true),
-          env_line("APPLE_PRIVATE_KEY_PATH", System.get_env("APPLE_PRIVATE_KEY_PATH")),
-          env_line("PAYMENTS_ENVIRONMENT", payments_environment())
+          env_line(
+            "GAMEND_PAYMENTS_APPLE_BUNDLE_ID",
+            GameServer.Settings.get(GameServer.Payments.Settings, :apple_bundle_id)
+          ),
+          env_line(
+            "GAMEND_PAYMENTS_APPLE_ISSUER_ID",
+            GameServer.Settings.get(GameServer.Payments.Settings, :apple_issuer_id),
+            secret: true
+          ),
+          env_line(
+            "APPLE_KEY_ID",
+            GameServer.Settings.get(GameServer.Payments.Settings, :apple_key_id)
+          ),
+          env_line(
+            "APPLE_PRIVATE_KEY",
+            GameServer.Settings.get(GameServer.Payments.Settings, :apple_private_key),
+            secret: true
+          ),
+          env_line(
+            "APPLE_PRIVATE_KEY_PATH",
+            GameServer.Settings.get(GameServer.Payments.Settings, :apple_private_key_path)
+          ),
+          env_line("GAMEND_PAYMENTS_ENVIRONMENT", payments_environment())
         ]
       },
       %{
         name: "Steam MicroTxn",
         configured: steam.configured,
         details: [
-          env_line("STEAM_WEB_API_KEY", System.get_env("STEAM_WEB_API_KEY"), secret: true),
-          env_line("STEAM_API_KEY fallback", System.get_env("STEAM_API_KEY"), secret: true),
-          env_line("STEAM_APP_ID", System.get_env("STEAM_APP_ID")),
-          env_line("PAYMENTS_ENVIRONMENT", payments_environment())
+          env_line(
+            "GAMEND_PAYMENTS_STEAM_WEB_API_KEY",
+            GameServer.Settings.get(GameServer.Payments.Settings, :steam_web_api_key),
+            secret: true
+          ),
+          env_line(
+            "GAMEND_OAUTH_STEAM_API_KEY fallback",
+            GameServer.Settings.get(GameServer.OAuth.Providers, :steam_api_key),
+            secret: true
+          ),
+          env_line(
+            "STEAM_APP_ID",
+            GameServer.Settings.get(GameServer.Payments.Settings, :steam_app_id)
+          ),
+          env_line("GAMEND_PAYMENTS_ENVIRONMENT", payments_environment())
         ]
       }
     ]
@@ -2775,17 +2850,39 @@ defmodule GameServerWeb.AdminLive.Config do
     "Chat" => ~w(max_chat_content)a,
     "Notifications" =>
       ~w(max_notification_title max_notification_content max_notifications_per_user)a,
+    "Push" => ~w(max_push_tokens_per_user max_push_title max_push_body max_push_data_size)a,
     "Friends" => ~w(max_friends_per_user max_pending_friend_requests)a,
     "Hooks" => ~w(max_hook_args_size max_hook_args_count)a,
     "KV" => ~w(max_kv_key max_kv_value_size max_kv_entries_per_user)a,
     "Leaderboards" => ~w(max_leaderboard_title max_leaderboard_description max_leaderboard_slug)a,
+    "Quests" =>
+      ~w(max_quests max_quest_key max_quest_title max_quest_category max_quest_description max_objectives_per_quest max_quest_reward_entries max_active_quests_per_user max_quest_period_history)a,
     "Tournaments" =>
       ~w(max_tournament_title max_tournament_description max_tournament_slug max_tournament_entries max_tournament_bracket_size)a,
     "Matchmaking" =>
-      ~w(max_matchmaking_players max_matchmaking_params_size matchmaking_timeout_ms matchmaking_tick_ms)a
+      ~w(max_matchmaking_players max_matchmaking_params_size matchmaking_timeout_ms matchmaking_tick_ms)a,
+    "Ready checks" => ~w(ready_check_timeout_ms max_ready_check_participants)a
   }
 
-  @category_order ~w(Global User Groups Lobbies Parties Chat Notifications Friends Hooks KV Leaderboards Tournaments Matchmaking)
+  # Not a ~w sigil: "Ready checks" has a space in it.
+  @category_order [
+    "Global",
+    "User",
+    "Groups",
+    "Lobbies",
+    "Parties",
+    "Chat",
+    "Notifications",
+    "Push",
+    "Friends",
+    "Hooks",
+    "KV",
+    "Leaderboards",
+    "Quests",
+    "Tournaments",
+    "Matchmaking",
+    "Ready checks"
+  ]
 
   defp limits_grouped do
     defaults = GameServer.Limits.defaults()

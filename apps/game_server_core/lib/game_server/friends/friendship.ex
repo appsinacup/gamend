@@ -29,7 +29,7 @@ defmodule GameServer.Friends.Friendship do
 
     field :status, :string, default: "pending"
 
-    timestamps()
+    timestamps(type: :utc_datetime)
   end
 
   @typedoc "A friendship/request record between two users."

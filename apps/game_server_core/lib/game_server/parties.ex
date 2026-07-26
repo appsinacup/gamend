@@ -878,6 +878,9 @@ defmodule GameServer.Parties do
         _ = Accounts.broadcast_member_update(updated_user)
         broadcast_party(party_id, {:party_member_joined, party_id, updated_user.id})
 
+        # The party's open ready board, if any, must cover the new member.
+        _ = GameServer.ReadyChecks.add_party_member(party_id, updated_user.id)
+
         {:ok, updated_user}
 
       {:error, _reason} = error ->
@@ -1014,6 +1017,7 @@ defmodule GameServer.Parties do
         _ = Accounts.broadcast_user_update(updated)
         _ = Accounts.broadcast_member_update(updated)
         broadcast_party(party.id, {:party_member_left, party.id, updated.id})
+        _ = GameServer.ReadyChecks.remove_party_member(party.id, updated.id)
 
         # Notify the kicked user
         GameServer.Notifications.admin_create_notification(
@@ -1327,6 +1331,21 @@ defmodule GameServer.Parties do
           )
         end)
 
+        # Party seats bypass `Lobbies.join_lobby/2`, so run its side seams here
+        # too: games observe every member arriving, and an open ready check
+        # gains the seated members. The leader created the lobby, so only the
+        # non-leader members "join".
+        Enum.each(non_leader_members, fn member ->
+          _ = GameServer.ReadyChecks.add_member(lobby.id, member.id)
+
+          GameServer.Async.run(fn ->
+            GameServer.Hooks.internal_call(:after_lobby_join, [
+              Accounts.get_user(member.id),
+              lobby
+            ])
+          end)
+        end)
+
         {:ok, lobby}
 
       {:error, reason} ->
@@ -1450,6 +1469,20 @@ defmodule GameServer.Parties do
           )
         end)
 
+        # Party seats bypass `Lobbies.join_lobby/2`, so run its side seams
+        # here too — in particular, the lobby's open ready check must gain
+        # every seated member or the match could start without them.
+        Enum.each(members, fn member ->
+          _ = GameServer.ReadyChecks.add_member(lobby.id, member.id)
+
+          GameServer.Async.run(fn ->
+            GameServer.Hooks.internal_call(:after_lobby_join, [
+              Accounts.get_user(member.id),
+              lobby
+            ])
+          end)
+        end)
+
         {:ok, lobby}
 
       {:error, reason} ->
@@ -1522,6 +1555,7 @@ defmodule GameServer.Parties do
         _ = Accounts.broadcast_user_update(updated)
         _ = Accounts.broadcast_member_update(updated)
         broadcast_party(party_id, {:party_member_left, party_id, updated.id})
+        _ = GameServer.ReadyChecks.remove_party_member(party_id, updated.id)
 
         GameServer.Async.run(fn ->
           GameServer.Hooks.internal_call(:after_party_leave, [user, party_id])

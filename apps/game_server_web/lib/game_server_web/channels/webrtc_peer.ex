@@ -50,8 +50,6 @@ defmodule GameServerWeb.WebRTCPeer do
   alias GameServer.Hooks.HookSchemas
 
   # DataChannel message rate limits (per user) — defaults, overridden by config
-  @default_dc_rate_limit 600
-  @default_dc_rate_window :timer.seconds(10)
 
   # Max open DataChannels per peer (clients create named channels)
   @max_data_channels 1
@@ -440,12 +438,11 @@ defmodule GameServerWeb.WebRTCPeer do
   # ── DataChannel rate limiting ──────────────────────────────────────────────
 
   defp dc_rate_limit_allowed?(user_id) do
-    config = Application.get_env(:game_server_web, GameServerWeb.Plugs.RateLimiter, [])
-    enabled? = Keyword.get(config, :enabled, true)
+    enabled? = GameServer.Settings.get(GameServerWeb.Plugs.RateLimiter, :enabled)
 
     if enabled? do
-      limit = Keyword.get(config, :dc_limit, @default_dc_rate_limit)
-      window = Keyword.get(config, :dc_window, @default_dc_rate_window)
+      limit = GameServer.Settings.get(GameServerWeb.Plugs.RateLimiter, :dc_limit)
+      window = GameServer.Settings.get(GameServerWeb.Plugs.RateLimiter, :dc_window_ms)
 
       case GameServerWeb.RateLimit.hit("dc:#{user_id}", window, limit) do
         {:allow, _count} -> true

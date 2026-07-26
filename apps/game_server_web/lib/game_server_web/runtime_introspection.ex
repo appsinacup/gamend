@@ -29,18 +29,8 @@ defmodule GameServerWeb.RuntimeIntrospection do
   # they may be absent, so everything degrades to structure-only.
 
   @sdk_hooks_path Path.expand("../../../../sdk/lib/game_server/hooks.ex", __DIR__)
-  @env_example_path Path.expand("../../../../.env.example", __DIR__)
-  @host_runtime_path Path.expand("../../../../config/host_runtime.exs", __DIR__)
 
   if File.exists?(@sdk_hooks_path), do: @external_resource(@sdk_hooks_path)
-  if File.exists?(@env_example_path), do: @external_resource(@env_example_path)
-  if File.exists?(@host_runtime_path), do: @external_resource(@host_runtime_path)
-
-  # The runtime config's source, so env_vars/0 can list every var the server
-  # actually reads — .env.example is hand-maintained and drifts from the code.
-  @host_runtime_source if File.exists?(@host_runtime_path),
-                         do: File.read!(@host_runtime_path),
-                         else: ""
 
   # Parsed from the SDK mirror (the file game devs read): per-callback `@doc`
   # where present, the full typespec signature always, and the `# ... callbacks`
@@ -65,7 +55,7 @@ defmodule GameServerWeb.RuntimeIntrospection do
 
   # Order categories appear in, grouped views included. A hook maps to the first
   # match, so specific keywords come before generic ones.
-  @hook_group_order ~w(Lifecycle User Lobby Group Party Chat Achievement Leaderboard Tournament Matchmaking Payments Economy KV Other)
+  @hook_group_order ~w(Lifecycle User Lobby Group Party Chat Push Quest Leaderboard Tournament Matchmaking Payments Economy KV Other)
 
   @doc "Category a hook belongs to, derived from its name (not source position)."
   @spec hook_group(String.t()) :: String.t()
@@ -74,7 +64,8 @@ defmodule GameServerWeb.RuntimeIntrospection do
       name in ~w(after_startup before_stop on_custom_hook) -> "Lifecycle"
       String.contains?(name, "kv") -> "KV"
       String.contains?(name, "chat") -> "Chat"
-      String.contains?(name, "achievement") -> "Achievement"
+      String.contains?(name, "push") -> "Push"
+      String.contains?(name, "quest") -> "Quest"
       String.contains?(name, "score") -> "Leaderboard"
       String.contains?(name, "matchmaking") -> "Matchmaking"
       String.contains?(name, "tournament") -> "Tournament"
@@ -91,14 +82,6 @@ defmodule GameServerWeb.RuntimeIntrospection do
   @doc "Category order for grouped rendering."
   @spec hook_group_order() :: [String.t()]
   def hook_group_order, do: @hook_group_order
-
-  # Core's .env.example content, baked at compile time (via @external_resource
-  # above) so it survives into a release where the file may be absent. Parsed at
-  # runtime by parse_env_content/1, which also parses the running host's own
-  # .env.example — see env_vars/0.
-  @env_example_source if File.exists?(@env_example_path),
-                        do: File.read!(@env_example_path),
-                        else: ""
 
   @secret_pattern ~r/SECRET|TOKEN|_KEY|PASSWORD|_PASS|DSN|PRIVATE|SALT|CREDENTIAL|SIGNING/
 
@@ -145,113 +128,30 @@ defmodule GameServerWeb.RuntimeIntrospection do
   # ── Env vars ────────────────────────────────────────────────────────────
 
   @doc """
-  Every env var the server can read, with live set/unset state (secret-like
-  values masked). Sources, in order: documented vars from core's and the host's
-  `.env.example`; vars actually read by `config/host_runtime.exs` (so the list
-  stays complete even when `.env.example` hasn't caught up); `LIMIT_*` from
-  `GameServer.Limits.defaults/0`; and plugin-declared vars via `env_vars/0`.
+  Every environment variable the server can read, with live set/unset state
+  (secret-like values masked).
+
+  Sourced from `GameServer.Settings.all/0` plus any variables a plugin declares
+  through `env_vars/0`. This used to be reconstructed by regex-scraping the
+  runtime config's source and parsing `.env.example` prose, because nothing
+  declared the settings; the declaration replaced both.
   """
   def env_vars do
-    # Core's baked .env.example plus the running host's own .env.example (read at
-    # runtime), so a game's host-level vars show alongside core's — previously
-    # only core's file was ever read. First occurrence wins, so core stays
-    # canonical and the host contributes any extra vars it documents. (Vars a
-    # plugin declares via env_vars/0 are folded in separately below.)
-    documented =
-      (parse_env_content(@env_example_source) ++ parse_env_content(host_env_content()))
-      |> Enum.uniq_by(&elem(&1, 0))
-      |> Enum.map(&env_row/1)
-
-    known = MapSet.new(documented, & &1.name)
-
-    # Vars the runtime config reads but .env.example never documented, so the
-    # page reflects what the server actually consumes rather than just what
-    # someone remembered to write down.
-    config =
-      @host_runtime_source
-      |> config_env_reads()
-      |> Enum.reject(fn {name, _, _, _} -> MapSet.member?(known, name) end)
-      |> Enum.map(&env_row/1)
-
-    known = MapSet.union(known, MapSet.new(config, & &1.name))
-
-    limits =
-      for {key, default} <- GameServer.Limits.defaults(),
-          name = "LIMIT_#{key |> Atom.to_string() |> String.upcase()}",
-          not MapSet.member?(known, name) do
+    declared =
+      for definition <- GameServer.Settings.all() do
         env_row(
-          {name, to_string(default), "Limit: #{key} (#{GameServer.Limits.get(key)} in effect)",
-           "Limits"}
+          {definition.env, definition.default, definition.doc, definition.label, definition.type}
         )
       end
 
+    known = MapSet.new(declared, & &1.name)
+
     plugin =
-      for var <- Declarations.env_vars() do
+      for var <- Declarations.env_vars(), not MapSet.member?(known, var.name) do
         env_row({var.name, var.default, var.description, "Plugin: #{var.plugin}", var.type})
       end
 
-    Enum.sort_by(documented ++ config ++ limits ++ plugin, & &1.name)
-  end
-
-  # Env var names (and literal default, where one is written) read by the
-  # runtime config via `System.get_env/1,2` or `GameServer.Env.*`. A computed
-  # default (a variable/expression rather than a literal) is left blank.
-  defp config_env_reads(source) do
-    ~r/(?:System\.get_env|GameServer\.Env\.[a-z_]+)\(\s*"([A-Z][A-Z0-9_]+)"\s*(?:,\s*([^\n),]+))?/
-    |> Regex.scan(source)
-    |> Enum.map(fn
-      [_, name] ->
-        {name, "", "Read by config/host_runtime.exs", "Config"}
-
-      [_, name, default] ->
-        {name, String.trim(default), "Read by config/host_runtime.exs", "Config"}
-    end)
-    |> Enum.uniq_by(&elem(&1, 0))
-  end
-
-  # The running host's own .env.example, if present in the working directory.
-  # Best-effort: absent in some releases, and never worth breaking the page for.
-  defp host_env_content do
-    File.read!(Path.join(File.cwd!(), ".env.example"))
-  rescue
-    _ -> ""
-  end
-
-  # Parse .env.example content into {name, default, description, section} rows.
-  defp parse_env_content(content) do
-    content
-    |> String.split("\n")
-    |> Enum.reduce({nil, []}, fn line, {section, acc} ->
-      cond do
-        String.contains?(line, "─") ->
-          {line |> String.replace(~r/[#─\s]+/, " ") |> String.trim(), acc}
-
-        match = Regex.run(~r/^\s*#?\s*([A-Z][A-Z0-9_]+)=(.*)$/, line) ->
-          [_, name, rest] = match
-          {default, desc} = split_env_value(rest)
-          {section, [{name, default, desc, section} | acc]}
-
-        true ->
-          {section, acc}
-      end
-    end)
-    |> elem(1)
-    |> Enum.reverse()
-  end
-
-  # A quoted value is taken whole; otherwise the first token is the value and
-  # the remainder a description.
-  defp split_env_value(rest) do
-    case String.trim(rest) do
-      "\"" <> _ = quoted ->
-        {quoted, ""}
-
-      other ->
-        case String.split(other, ~r/[ \t]{2,}| /, parts: 2) do
-          [value] -> {value, ""}
-          [value, description] -> {value, String.trim(description)}
-        end
-    end
+    Enum.sort_by(declared ++ plugin, & &1.name)
   end
 
   defp env_row({name, default, desc, section}), do: env_row({name, default, desc, section, nil})

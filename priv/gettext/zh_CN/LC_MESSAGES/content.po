@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: zh_CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "欢迎加入"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "第一次登录。"
+
+#. quests
+msgid "Daily check-in"
+msgstr "每日签到"
+
+#. quests
+msgid "Log in today."
+msgstr "今天登录。"
+
+#. quests
+msgid "Weekly regular"
+msgstr "本周常客"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "本周在五个不同的日子登录。"
+
+#. quests
+msgid "Monthly devotee"
+msgstr "月度常客"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "本月登录二十次。"
+
+#. quests
+msgid "Stop by again"
+msgstr "记得再来"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "登录。三天后可再次完成。"
+
+#. quests
+msgid "Loyal veteran"
+msgstr "忠实老兵"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "打过招呼之后，登录五十次。"
+
+#. quests
+msgid "Night owl"
+msgstr "夜猫子"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "有些东西是被发现的，而不是被公布的。"
+
+#. quests
+msgid "Launch festival"
+msgstr "上线庆典"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "仅在活动进行期间才计数的每日任务。"
+
+#. leaderboards
+msgid "Logins"
+msgstr "登录次数"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "每位玩家登录的次数。"
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "每周杯赛"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "随时报名；对阵表每周一抽签。"

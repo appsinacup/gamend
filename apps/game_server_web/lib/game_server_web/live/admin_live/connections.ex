@@ -1,6 +1,7 @@
 defmodule GameServerWeb.AdminLive.Connections do
   use GameServerWeb, :live_view
 
+  alias GameServer.Accounts
   alias GameServerWeb.ConnectionTracker
 
   @refresh_interval 3_000
@@ -185,7 +186,9 @@ defmodule GameServerWeb.AdminLive.Connections do
                       </thead>
                       <tbody>
                         <tr :for={peer <- @webrtc_users}>
-                          <td class="font-mono text-sm">{peer.user_id}</td>
+                          <td class="text-sm" title={peer.user_id}>
+                            {user_display(@user_names[peer.user_id])}
+                          </td>
                           <td class="font-mono text-xs text-base-content/50">{peer.pid}</td>
                         </tr>
                       </tbody>
@@ -246,7 +249,9 @@ defmodule GameServerWeb.AdminLive.Connections do
                   </thead>
                   <tbody>
                     <tr :for={user <- @paged_users} id={"conn-user-#{user.user_id}"}>
-                      <td class="font-mono text-sm">{user.user_id}</td>
+                      <td class="text-sm" title={user.user_id}>
+                        {user_display(@user_names[user.user_id])}
+                      </td>
                       <td>
                         <div class="flex flex-wrap gap-1">
                           <span
@@ -372,6 +377,8 @@ defmodule GameServerWeb.AdminLive.Connections do
       |> Enum.drop((page - 1) * @per_page)
       |> Enum.take(@per_page)
 
+    webrtc = build_webrtc_users(all)
+
     assign(socket,
       conn_stats: ConnectionTracker.cluster_counts(),
       total_connected_users: length(connected_users),
@@ -380,7 +387,8 @@ defmodule GameServerWeb.AdminLive.Connections do
       conn_total_pages: total_pages,
       conn_page: page,
       live_view_pages: build_live_view_pages(all),
-      webrtc_users: build_webrtc_users(all),
+      webrtc_users: webrtc,
+      user_names: Accounts.users_by_ids(Enum.map(paged ++ webrtc, & &1.user_id)),
       cluster_size: 1 + length(Node.list())
     )
   end
@@ -453,7 +461,7 @@ defmodule GameServerWeb.AdminLive.Connections do
     all
     |> Map.get(:webrtc_peer, [])
     |> Enum.map(fn {pid, meta} ->
-      %{user_id: Map.get(meta, :user_id, "?"), pid: inspect(pid)}
+      %{user_id: Map.get(meta, :user_id), pid: inspect(pid)}
     end)
     |> Enum.sort_by(& &1.user_id)
   end

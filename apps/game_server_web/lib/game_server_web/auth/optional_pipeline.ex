@@ -8,7 +8,7 @@ defmodule GameServerWeb.Auth.OptionalPipeline do
   `current_scope` set to an anonymous scope.
 
   Use this on public endpoints that can optionally enrich responses when the
-  caller is authenticated (e.g. showing user progress on achievements).
+  caller is authenticated (e.g. showing user progress on quests).
   """
 
   use Guardian.Plug.Pipeline,

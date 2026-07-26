@@ -4,7 +4,6 @@ defmodule GameServerWeb.AdminLive.Leaderboards do
   alias GameServer.Leaderboards
   alias GameServer.Leaderboards.Leaderboard
   alias GameServer.Leaderboards.Record
-  alias GameServerWeb.AdminLive.TranslationMetadata
 
   @impl true
   def mount(_params, _session, socket) do
@@ -18,7 +17,6 @@ defmodule GameServerWeb.AdminLive.Leaderboards do
       |> assign(:records_page, 1)
       |> assign(:form, nil)
       |> assign(:record_form, nil)
-      |> assign(:translation_values, %{})
       |> assign(:editing_record, nil)
       |> assign(:selected_ids, MapSet.new())
       |> reload_leaderboards()
@@ -132,20 +130,7 @@ defmodule GameServerWeb.AdminLive.Leaderboards do
                     </td>
                     <td class="text-sm">{Leaderboards.count_records(lb.id)}</td>
                     <td class="text-sm">
-                      <% pct = TranslationMetadata.completeness(lb.metadata) %>
-                      <span class={[
-                        "badge badge-sm",
-                        cond do
-                          pct == 100 -> "badge-success"
-                          pct > 0 -> "badge-warning"
-                          true -> "badge-ghost"
-                        end
-                      ]}>
-                        {pct}%
-                      </span>
-                    </td>
-                    <td class="text-sm">
-                      {Calendar.strftime(lb.inserted_at, "%Y-%m-%d %H:%M")}
+                      <.timestamp at={lb.inserted_at} />
                     </td>
                     <td class="text-sm">
                       <div class="flex flex-wrap gap-1">
@@ -244,47 +229,7 @@ defmodule GameServerWeb.AdminLive.Leaderboards do
               <% end %>
               <.input field={@form[:title]} type="text" label="Title" />
               <.input field={@form[:description]} type="textarea" label="Description" />
-
-              <%!-- Per-locale translations --%>
-              <% locales = Gettext.known_locales(GameServerWeb.Gettext) -- ["en"] %>
-              <%= if locales != [] do %>
-                <div class="collapse collapse-arrow bg-base-200 mt-4">
-                  <input type="checkbox" />
-                  <div class="collapse-title font-medium text-sm">
-                    Translations ({Enum.join(locales, ", ")})
-                  </div>
-                  <div class="collapse-content space-y-3">
-                    <%= for locale <- locales do %>
-                      <div class="text-xs font-semibold uppercase text-base-content/50 mt-2">
-                        {locale}
-                      </div>
-                      <div class="fieldset mb-2">
-                        <label>
-                          <span class="label mb-1">Title ({locale})</span>
-                          <input
-                            type="text"
-                            name={"translations[#{locale}][title]"}
-                            value={get_in(@translation_values, [locale, "title"]) || ""}
-                            class="w-full input"
-                            placeholder="Leave empty to use default"
-                          />
-                        </label>
-                      </div>
-                      <div class="fieldset mb-2">
-                        <label>
-                          <span class="label mb-1">Description ({locale})</span>
-                          <textarea
-                            name={"translations[#{locale}][description]"}
-                            class="w-full textarea textarea-bordered"
-                            rows="2"
-                            placeholder="Leave empty to use default"
-                          ><%= get_in(@translation_values, [locale, "description"]) || "" %></textarea>
-                        </label>
-                      </div>
-                    <% end %>
-                  </div>
-                </div>
-              <% end %>
+              <.input field={@form[:icon_url]} type="text" label="Icon URL (optional)" />
 
               <%= if is_nil(@selected_leaderboard) do %>
                 <div class="form-control">
@@ -318,8 +263,12 @@ defmodule GameServerWeb.AdminLive.Leaderboards do
                 </div>
               <% end %>
 
-              <.input field={@form[:starts_at]} type="datetime-local" label="Starts at (optional)" />
-              <.input field={@form[:ends_at]} type="datetime-local" label="Ends at (optional)" />
+              <.input
+                field={@form[:starts_at]}
+                type="utc-datetime-local"
+                label="Starts at (optional)"
+              />
+              <.input field={@form[:ends_at]} type="utc-datetime-local" label="Ends at (optional)" />
 
               <div class="form-control">
                 <label class="label"><span class="label-text">Metadata (JSON)</span></label>
@@ -381,7 +330,7 @@ defmodule GameServerWeb.AdminLive.Leaderboards do
                     </td>
                     <td class="font-mono">{record.score}</td>
                     <td class="text-sm">
-                      {Calendar.strftime(record.updated_at, "%Y-%m-%d %H:%M")}
+                      <.timestamp at={record.updated_at} />
                     </td>
                     <td class="flex gap-1">
                       <button
@@ -566,7 +515,6 @@ defmodule GameServerWeb.AdminLive.Leaderboards do
     {:noreply,
      socket
      |> assign(:selected_leaderboard, nil)
-     |> assign(:translation_values, %{})
      |> assign(:form, form)}
   end
 
@@ -590,7 +538,6 @@ defmodule GameServerWeb.AdminLive.Leaderboards do
     {:noreply,
      socket
      |> assign(:selected_leaderboard, nil)
-     |> assign(:translation_values, TranslationMetadata.extract(new_leaderboard.metadata))
      |> assign(:form, form)}
   end
 
@@ -602,7 +549,6 @@ defmodule GameServerWeb.AdminLive.Leaderboards do
     {:noreply,
      socket
      |> assign(:selected_leaderboard, leaderboard)
-     |> assign(:translation_values, TranslationMetadata.extract(leaderboard.metadata))
      |> assign(:form, form)}
   end
 
@@ -613,7 +559,7 @@ defmodule GameServerWeb.AdminLive.Leaderboards do
      |> assign(:form, nil)}
   end
 
-  def handle_event("save_leaderboard", %{"leaderboard" => params} = all_params, socket) do
+  def handle_event("save_leaderboard", %{"leaderboard" => params}, socket) do
     # Parse metadata JSON
     params =
       Map.update(params, "metadata", %{}, fn metadata_str ->
@@ -622,9 +568,6 @@ defmodule GameServerWeb.AdminLive.Leaderboards do
           _ -> %{}
         end
       end)
-
-    # Merge translations into metadata
-    params = TranslationMetadata.merge(params, Map.get(all_params, "translations", %{}))
 
     result =
       case socket.assigns.selected_leaderboard do

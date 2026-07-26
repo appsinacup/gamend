@@ -1,0 +1,170 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: vi\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "Máy chủ game Elixir mã nguồn mở cho các trò chơi nhiều người thời gian thực."
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "Blog"
+
+msgid "Roadmap"
+msgstr "Lộ trình"
+
+msgid "Changelog"
+msgstr "Nhật ký thay đổi"
+
+msgid "Social"
+msgstr "Xã hội"
+
+msgid "About Gamend"
+msgstr "Giới thiệu về Gamend"
+
+msgid "Elixir Docs"
+msgstr "Tài liệu Elixir"
+
+msgid "About"
+msgstr "Giới thiệu"
+
+msgid "Guides"
+msgstr "Hướng dẫn"
+
+msgid "API Docs"
+msgstr "Tài liệu API"
+
+msgid "Store"
+msgstr "Cửa hàng"
+
+msgid "Help"
+msgstr "Trợ giúp"
+
+msgid "Privacy Policy"
+msgstr "Chính sách quyền riêng tư"
+
+msgid "Terms and Conditions"
+msgstr "Điều khoản và điều kiện"
+
+msgid "Privacy & Terms"
+msgstr "Quyền riêng tư và điều khoản"
+
+msgid "Play"
+msgstr "Chơi"
+
+msgid "Leaderboards"
+msgstr "Bảng xếp hạng"
+
+msgid "Quests"
+msgstr "Nhiệm vụ"
+
+msgid "Tournaments"
+msgstr "Giải đấu"
+
+msgid "Groups"
+msgstr "Các nhóm"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "Gamend là một backend Elixir **đầy đủ tính năng** cho game nhiều người chơi, với xác thực, hệ thống xã hội, kênh thời gian thực và công cụ quản trị."
+
+msgid "Realtime Guide"
+msgstr "Hướng dẫn thời gian thực"
+
+msgid "Real-time games"
+msgstr "Game thời gian thực"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "Dùng kênh, sảnh chờ, nhóm chơi, trạng thái trực tuyến và kênh dữ liệu WebRTC mà không cần dựng lại hạ tầng nhiều người chơi thông thường."
+
+msgid "Built For Real-Time Games"
+msgstr "Được xây dựng cho game thời gian thực"
+
+msgid "Read Docs"
+msgstr "Đọc tài liệu"
+
+msgid "Open source foundation"
+msgstr "Nền tảng mã nguồn mở"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "Dự án được thiết kế để các nhóm làm game fork, đổi giao diện, tự vận hành và mở rộng."
+
+msgid "Open Source Foundation"
+msgstr "Nền tảng mã nguồn mở"
+
+msgid "Getting Started"
+msgstr "Bắt đầu"
+
+msgid "Presentation Video"
+msgstr "Video giới thiệu"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "Máy chủ game Elixir **mã nguồn mở** cho các trò chơi nhiều người **thời gian thực**."
+
+msgid "Log in"
+msgstr "Đăng nhập"
+
+msgid "Register"
+msgstr "Đăng ký"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "Email, liên kết đăng nhập nhanh, OAuth, JWT và phiên. Đăng ký, đăng nhập, đặt lại mật khẩu và xác minh email."
+
+msgid "Authentication & Users"
+msgstr "Xác thực và người dùng"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "Sảnh chờ thời gian thực và nhóm chơi tạm thời. Cài đặt tùy chỉnh với cập nhật trực tiếp."
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "Sảnh chờ, nhóm chơi và ghép trận"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "Lời mời kết bạn, chặn, trạng thái trực tuyến thời gian thực. Nhóm công khai, riêng tư và ẩn. Nhắn tin riêng và nhóm."
+
+msgid "Friends, Groups & Chat"
+msgstr "Bạn bè, nhóm và trò chuyện"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "Thành tựu, giải đấu loại trực tiếp và bảng xếp hạng do máy chủ xác thực. Thông báo thời gian thực cho mọi tính năng và sự kiện thanh toán."
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "Thành tựu, giải đấu, bảng xếp hạng và thông báo"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "Mở rộng logic máy chủ bằng script Elixir. Lên lịch tác vụ tự động và tác vụ cron."
+
+msgid "Server Scripting & Scheduling"
+msgstr "Script máy chủ và lập lịch"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "REST API, kênh WebSocket thời gian thực và DataChannel WebRTC độ trễ thấp. Cổng quản trị và giao diện web."
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "HTTP, WebSocket và WebRTC"
+
+msgid "Open Store"
+msgstr "Mở cửa hàng"
+
+msgid "Payment Docs"
+msgstr "Tài liệu thanh toán"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "Thanh toán phía máy chủ với Stripe, Google Play, App Store và Steam. Xác thực biên lai, xử lý webhook có chữ ký, cấp quyền lợi, thu hồi khoản hoàn tiền và xem lại tất cả trong trang quản trị."
+
+msgid "Payments & Store Integrations"
+msgstr "Thanh toán và tích hợp cửa hàng"
+
+msgid "Gamend is in beta!"
+msgstr "Gamend đang trong giai đoạn beta!"
+
+msgid "Game + Backend"
+msgstr "Game + backend"

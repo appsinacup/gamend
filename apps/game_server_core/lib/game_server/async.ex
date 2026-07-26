@@ -27,6 +27,20 @@ defmodule GameServer.Async do
   def run(fun) when is_function(fun, 0) do
     wrapped = wrap(fun)
 
+    if inline?() do
+      wrapped.()
+      :ok
+    else
+      spawn_task(wrapped)
+    end
+  end
+
+  # Tests set `:async_inline` so side effects land before assertions run, and so
+  # a fire-and-forget task can't outlive the DB sandbox owner (which surfaced as
+  # a storm of "owner exited" DBConnection errors).
+  defp inline?, do: Application.get_env(:game_server_core, :async_inline, false)
+
+  defp spawn_task(wrapped) do
     case Process.whereis(@supervisor) do
       nil ->
         _ = Task.start(wrapped)

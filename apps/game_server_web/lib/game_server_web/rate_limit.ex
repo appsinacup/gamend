@@ -49,10 +49,10 @@ defmodule GameServerWeb.RateLimit do
   """
   @spec check_chat_daily(term()) :: :ok | {:error, :chat_daily_limit}
   def check_chat_daily(user_id) do
-    limiter_config = Application.get_env(:game_server_web, GameServerWeb.Plugs.RateLimiter, [])
     limit = GameServer.Limits.get(:max_chat_messages_per_day)
 
-    if Keyword.get(limiter_config, :enabled, true) and is_integer(limit) and limit > 0 do
+    if GameServer.Settings.get(GameServerWeb.Plugs.RateLimiter, :enabled) and
+         is_integer(limit) and limit > 0 do
       case hit("chatd:#{user_id}", :timer.hours(24), limit) do
         {:allow, _count} -> :ok
         {:deny, _retry_after} -> {:error, :chat_daily_limit}
@@ -73,10 +73,30 @@ defmodule GameServerWeb.RateLimit do
 
   defp scope_of(_key), do: "unknown"
 
+  # ETS counts per node, which is fine for one instance and wrong for several:
+  # with N instances every limit is effectively N times higher. Redis shares
+  # the counters, so it is required rather than warned about once selected —
+  # a rate limiter that silently does not limit is worse than none.
+  use GameServer.Settings.Provider,
+    app: :game_server_web,
+    group: :ratelimit,
+    label: "Rate limiting"
+
+  setting(:backend, :atom,
+    default: :ets,
+    doc: "ets (per-node counters) or redis (shared across instances)."
+  )
+
+  setting(:redis_url, :string,
+    required: :prod,
+    when: {[:ratelimit, :backend], :redis},
+    doc: "Redis URL for shared counters."
+  )
+
   @doc "Returns the currently configured backend module."
   @spec backend() :: module()
   def backend do
-    case Keyword.get(config(), :backend) do
+    case GameServer.Settings.get(__MODULE__, :backend) do
       :redis -> GameServerWeb.RateLimit.Redis
       _ -> GameServerWeb.RateLimit.ETS
     end
@@ -86,14 +106,11 @@ defmodule GameServerWeb.RateLimit do
   def child_spec(opts) do
     case backend() do
       GameServerWeb.RateLimit.Redis = mod ->
-        %{id: __MODULE__, start: {mod, :start_link, [Keyword.get(config(), :redis, [])]}}
+        url = GameServer.Settings.get(__MODULE__, :redis_url)
+        %{id: __MODULE__, start: {mod, :start_link, [[url: url]]}}
 
       mod ->
         %{id: __MODULE__, start: {mod, :start_link, [opts]}}
     end
-  end
-
-  defp config do
-    Application.get_env(:game_server_web, __MODULE__, [])
   end
 end

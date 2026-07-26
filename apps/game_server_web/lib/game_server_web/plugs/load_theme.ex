@@ -19,7 +19,7 @@ defmodule GameServerWeb.Plugs.LoadTheme do
     # runtime debugging easier when things appear blank in the UI.
     if log_theme?() do
       Logger.debug(
-        "LoadTheme: assigned theme=#{inspect(theme)} (THEME_CONFIG=#{inspect(System.get_env("THEME_CONFIG"))})"
+        "LoadTheme: assigned theme=#{inspect(theme)} (GAMEND_CONTENT_THEME_CONFIG=#{inspect(GameServer.Settings.get(GameServer.ContentSettings, :theme_config))})"
       )
     end
 

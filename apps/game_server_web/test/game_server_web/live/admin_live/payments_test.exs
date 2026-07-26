@@ -62,20 +62,63 @@ defmodule GameServerWeb.AdminLive.PaymentsTest do
   end
 
   setup do
-    original_secret = System.get_env("STRIPE_SANDBOX_SECRET_KEY")
-    original_webhook = System.get_env("STRIPE_SANDBOX_WEBHOOK_SECRET")
-    original_environment = System.get_env("PAYMENTS_ENVIRONMENT")
+    original_secret =
+      GameServer.SettingsHelpers.get(
+        :game_server_core,
+        GameServer.Payments.Settings,
+        :stripe_sandbox_secret_key
+      )
+
+    original_webhook =
+      GameServer.SettingsHelpers.get(
+        :game_server_core,
+        GameServer.Payments.Settings,
+        :stripe_sandbox_webhook_secret
+      )
+
+    original_environment =
+      GameServer.SettingsHelpers.get(
+        :game_server_core,
+        GameServer.Payments.Settings,
+        :environment
+      )
+
     original_stripe_adapter = Application.get_env(:game_server_core, :stripe_adapter)
 
-    System.put_env("STRIPE_SANDBOX_SECRET_KEY", "sk_test_admin_payments_123456")
-    System.put_env("STRIPE_SANDBOX_WEBHOOK_SECRET", "whsec_admin_payments_123456")
-    System.put_env("PAYMENTS_ENVIRONMENT", "sandbox")
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :stripe_sandbox_secret_key,
+      "sk_test_admin_payments_123456"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :stripe_sandbox_webhook_secret,
+      "whsec_admin_payments_123456"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :environment,
+      :sandbox
+    )
+
     Application.put_env(:game_server_core, :stripe_adapter, StripeReconcileAdapter)
 
     on_exit(fn ->
-      restore_env("STRIPE_SANDBOX_SECRET_KEY", original_secret)
-      restore_env("STRIPE_SANDBOX_WEBHOOK_SECRET", original_webhook)
-      restore_env("PAYMENTS_ENVIRONMENT", original_environment)
+      restore_env("GAMEND_PAYMENTS_STRIPE_SANDBOX_SECRET_KEY", original_secret)
+      restore_env("GAMEND_PAYMENTS_STRIPE_SANDBOX_WEBHOOK_SECRET", original_webhook)
+
+      GameServer.SettingsHelpers.put(
+        :game_server_core,
+        GameServer.Payments.Settings,
+        :environment,
+        original_environment
+      )
+
       restore_app_env(:stripe_adapter, original_stripe_adapter)
     end)
 

@@ -29,7 +29,7 @@ defmodule GameServerWeb.Api.V1.PartyController do
             id: %Schema{type: :string, format: :uuid},
             username: %Schema{type: :string},
             display_name: %Schema{type: :string},
-            profile_url: %Schema{type: :string, nullable: true},
+            profile_url: %Schema{type: :string},
             metadata: %Schema{
               type: :object,
               description: "User metadata (accessories, hat, color, etc.)"

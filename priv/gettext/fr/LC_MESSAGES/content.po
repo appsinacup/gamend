@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n>1);\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "Bienvenue à bord"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "Connectez-vous pour la première fois."
+
+#. quests
+msgid "Daily check-in"
+msgstr "Visite quotidienne"
+
+#. quests
+msgid "Log in today."
+msgstr "Connectez-vous aujourd'hui."
+
+#. quests
+msgid "Weekly regular"
+msgstr "Habitué de la semaine"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "Connectez-vous cinq jours différents cette semaine."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "Fidèle du mois"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "Connectez-vous vingt fois ce mois-ci."
+
+#. quests
+msgid "Stop by again"
+msgstr "Repassez nous voir"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "Connectez-vous. De nouveau disponible trois jours plus tard."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "Vétéran fidèle"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "Connectez-vous cinquante fois, une fois que vous avez dit bonjour."
+
+#. quests
+msgid "Night owl"
+msgstr "Oiseau de nuit"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "Certaines choses se découvrent plutôt qu'elles ne s'annoncent."
+
+#. quests
+msgid "Launch festival"
+msgstr "Festival de lancement"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "Une quête quotidienne qui ne compte que pendant le festival."
+
+#. leaderboards
+msgid "Logins"
+msgstr "Connexions"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "Combien de fois chaque joueur s'est connecté."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "Coupe hebdomadaire"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "Inscrivez-vous quand vous voulez ; le tableau est tiré chaque lundi."

@@ -6,7 +6,7 @@ half is [push.md](push.md) (the contract this targets). Ships Android first,
 then iOS — hence "Android → iOS".
 
 Goal: from a Godot game, obtain the device's push token, register it with the
-server (`POST /me/push-tokens`), and surface incoming notifications to game code
+server (`POST /me/push_tokens`), and surface incoming notifications to game code
 as signals — with the platform plumbing (FCM on Android, native APNs on iOS)
 hidden behind one GDScript API.
 
@@ -32,7 +32,7 @@ godot_addons/addons/gamend/
 ```
 
 - **`PushApi.gd`** is **generated** by `mix gen.sdk` from the server's
-  `/me/push-tokens` OpenAPI schemas (no hand-editing — same pipeline as
+  `/me/push_tokens` OpenAPI schemas (no hand-editing — same pipeline as
   `NotificationsApi.gd`, `PaymentsApi.gd`).
 - **`GamendPush.gd`** is **hand-written** (the generator can't model native
   plugins). It orchestrates: ask the platform plugin for a token → call
@@ -99,7 +99,7 @@ signal notification_opened(data: Dictionary)     # user tapped it (cold or warm 
    reuses the addon's existing device id so re-installs rotate in place.
 3. Server delivery (FCM/APNs) reaches the device; the plugin emits
    `notification_received` / `notification_opened`.
-4. On logout, `unregister()` → `DELETE /me/push-tokens/:id`.
+4. On logout, `unregister()` → `DELETE /me/push_tokens/:id`.
 
 ## Setup / permissions (documented, not code)
 

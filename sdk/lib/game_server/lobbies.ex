@@ -63,7 +63,8 @@ defmodule GameServer.Lobbies do
 
 
   @doc ~S"""
-    Check if a user can edit a lobby (is host or lobby is hostless).
+    Check if a user can edit a lobby: the host of a host-managed lobby, nobody
+    else. Hostless lobbies have no editor — see `update_lobby_by_host/3`.
     
   """
   @spec can_edit_lobby?(GameServer.Accounts.User.t() | nil, GameServer.Lobbies.Lobby.t() | nil) ::
@@ -558,6 +559,7 @@ defmodule GameServer.Lobbies do
       * `:title` - Filter by title (partial match)
       * `:is_passworded` - boolean or string 'true'/'false' (omit for any)
       * `:is_locked` - boolean or string 'true'/'false' (omit for any)
+      * `:state` - lifecycle state (see `GameServer.Lobbies.States`)
       * `:min_users` - Filter lobbies with max_users >= value
       * `:max_users` - Filter lobbies with max_users <= value
       * `:metadata_key` - Filter by metadata key
@@ -588,6 +590,7 @@ defmodule GameServer.Lobbies do
       * `:title` - Filter by title (partial match)
       * `:is_passworded` - boolean or string 'true'/'false' (omit for any)
       * `:is_locked` - boolean or string 'true'/'false' (omit for any)
+      * `:state` - lifecycle state (see `GameServer.Lobbies.States`)
       * `:min_users` - Filter lobbies with max_users >= value
       * `:max_users` - Filter lobbies with max_users <= value
       * `:metadata_key` - Filter by metadata key
@@ -618,6 +621,7 @@ defmodule GameServer.Lobbies do
       * `:title` - Filter by title (partial match)
       * `:is_passworded` - boolean or string 'true'/'false' (omit for any)
       * `:is_locked` - boolean or string 'true'/'false' (omit for any)
+      * `:state` - lifecycle state (see `GameServer.Lobbies.States`)
       * `:min_users` - Filter lobbies with max_users >= value
       * `:max_users` - Filter lobbies with max_users <= value
       * `:metadata_key` - Filter by metadata key
@@ -855,6 +859,59 @@ defmodule GameServer.Lobbies do
 
 
   @doc ~S"""
+    Move a lobby to `state` (see `GameServer.Lobbies.States`).
+    
+    The only writer of `state`/`state_changed_at` — the columns are not castable,
+    so a generic `update_lobby/2` can never move a lobby's state.
+    
+    The vocabulary is the game's: core only requires a sane string (non-empty,
+    ≤ 64 bytes) and `before_lobby_state_change` enforces
+    whatever words and ordering the game cares about. A same-state call is
+    a no-op (so at-least-once hook/job retries are safe) and does not re-fire
+    hooks. `after_lobby_state_changed` observes post-commit.
+    
+    Returns `{:ok, lobby}`, `{:error, :invalid_state}` or
+    `{:error, {:hook_rejected, reason}}`.
+    
+  """
+  @spec transition_state(GameServer.Lobbies.Lobby.t(), String.t(), keyword()) ::
+  {:ok, GameServer.Lobbies.Lobby.t()}
+  | {:error, :invalid_state | {:hook_rejected, term()} | term()}
+  def transition_state(_lobby, _state, _opts) do
+    case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "GameServer.Lobbies.transition_state/3 is a stub - only available at runtime on GameServer"
+    end
+  end
+
+
+  @doc ~S"""
+    Player-initiated state change, subject to lobby ownership.
+    
+    Allowed only for the **host of a host-managed lobby** — the host already
+    renames, locks, resizes and kicks, so `state` is no more powerful than what
+    they hold, and "press Start" is a normal party-game action. **Hostless**
+    lobbies (matchmaking's) belong to nobody, so no player may move them: use
+    `transition_state/3` from server-side hooks instead.
+    
+  """
+  @spec transition_state_by_host(GameServer.Accounts.User.t(), GameServer.Lobbies.Lobby.t(), String.t()) ::
+  {:ok, GameServer.Lobbies.Lobby.t()} | {:error, :not_host | :invalid_state | term()}
+  def transition_state_by_host(_user, _lobby, _state) do
+    case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok, %GameServer.Lobbies.Lobby{id: 0, title: "", host_id: nil, hostless: false, max_users: 0, is_hidden: false, is_locked: false, metadata: %{}, inserted_at: ~U[1970-01-01 00:00:00Z], updated_at: ~U[1970-01-01 00:00:00Z]}}
+
+      _ ->
+        raise "GameServer.Lobbies.transition_state_by_host/3 is a stub - only available at runtime on GameServer"
+    end
+  end
+
+
+  @doc ~S"""
     Unsubscribe from a specific lobby's events.
     
   """
@@ -891,7 +948,16 @@ defmodule GameServer.Lobbies do
   end
 
 
-  @doc false
+  @doc ~S"""
+    Player-initiated lobby update, subject to lobby ownership.
+    
+    Allowed only for the **host of a host-managed lobby**. **Hostless** lobbies
+    (matchmaking's) belong to nobody, so no player may edit them — a member
+    could otherwise rewrite `metadata`, `max_users`, `password_hash` and the
+    visibility flags of a ranked match they merely happen to be in. Server-side
+    code (hooks, jobs, matchmaking, admin) uses `update_lobby/2` instead.
+    
+  """
   @spec update_lobby_by_host(
   GameServer.Accounts.User.t(),
   GameServer.Lobbies.Lobby.t(),

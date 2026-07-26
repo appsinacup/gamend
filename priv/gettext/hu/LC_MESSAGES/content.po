@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: hu\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "Üdv a fedélzeten"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "Jelentkezz be először."
+
+#. quests
+msgid "Daily check-in"
+msgstr "Napi bejelentkezés"
+
+#. quests
+msgid "Log in today."
+msgstr "Jelentkezz be ma."
+
+#. quests
+msgid "Weekly regular"
+msgstr "A hét törzsvendége"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "Jelentkezz be a héten öt különböző napon."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "A hónap törzsvendége"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "Jelentkezz be húszszor ebben a hónapban."
+
+#. quests
+msgid "Stop by again"
+msgstr "Nézz be máskor is"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "Jelentkezz be. Három nap múlva újra elérhető."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "Hűséges veterán"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "Jelentkezz be ötvenszer, miután köszöntél."
+
+#. quests
+msgid "Night owl"
+msgstr "Éjszakai bagoly"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "Néhány dolgot megtalálni kell, nem bejelenteni."
+
+#. quests
+msgid "Launch festival"
+msgstr "Indulási fesztivál"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "Napi küldetés, amely csak a fesztivál ideje alatt számít."
+
+#. leaderboards
+msgid "Logins"
+msgstr "Bejelentkezések"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "Hányszor jelentkezett be az egyes játékosok."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "Heti kupa"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "Nevezz be bármikor; a táblát minden hétfőn sorsolják."

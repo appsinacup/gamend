@@ -33,32 +33,32 @@ services:
     #  - .env
     environment:
       # Run mix phx.gen.secret
-      SECRET_KEY_BASE: 1DdaMAX56nUh1tvXniEEuQNsGNvgADndawxrJ3YFZlLXc9EOahC/NFDgowCDUFwb
+      GAMEND_AUTH_SECRET_KEY_BASE: 1DdaMAX56nUh1tvXniEEuQNsGNvgADndawxrJ3YFZlLXc9EOahC/NFDgowCDUFwb
       # Path to server module plugins
-      GAME_SERVER_PLUGINS_DIR: modules/plugins_examples
-      DEVICE_AUTH_ENABLED: true
-      PHX_HOST: localhost
+      GAMEND_CONTENT_PLUGINS_DIR: modules/plugins_examples
+      GAMEND_AUTH_DEVICE_AUTH_ENABLED: true
+      GAMEND_HTTP_HOST: localhost
       # Disable this in prod
-      MAILBOX_PREVIEW_ENABLED: true
+      GAMEND_FEATURES_MAILBOX_PREVIEW: true
       # Postgres
-      POSTGRES_HOST: db
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: game_server_dev
+      GAMEND_DB_POSTGRES_HOST: db
+      GAMEND_DB_POSTGRES_PORT: 5432
+      GAMEND_DB_POSTGRES_USER: postgres
+      GAMEND_DB_POSTGRES_PASSWORD: postgres
+      GAMEND_DB_POSTGRES_DB: game_server_dev
       # Cache
-      CACHE_MODE: multi
-      CACHE_L2: redis
-      CACHE_REDIS_URL: redis://redis:6379/0
+      GAMEND_CACHE_MODE: multi
+      GAMEND_CACHE_L2: redis
+      GAMEND_CACHE_REDIS_URL: redis://redis:6379/0
       # Shared rate limiting across app instances
-      RATE_LIMIT_BACKEND: redis
+      GAMEND_RATELIMIT_BACKEND: redis
       # ── HTTPS (uncomment to enable) ──
-      # SSL_CERTFILE: /etc/letsencrypt/live/${PHX_HOST:-localhost}/fullchain.pem
-      # SSL_KEYFILE: /etc/letsencrypt/live/${PHX_HOST:-localhost}/privkey.pem
-      # FORCE_SSL: "true"
-      # ACME_WEBROOT: /var/www/acme
+      # GAMEND_TLS_CERTFILE: /etc/letsencrypt/live/${GAMEND_HTTP_HOST:-localhost}/fullchain.pem
+      # GAMEND_TLS_KEYFILE: /etc/letsencrypt/live/${GAMEND_HTTP_HOST:-localhost}/privkey.pem
+      # GAMEND_TLS_FORCE: "true"
+      # GAMEND_TLS_ACME_WEBROOT: /var/www/acme
       # ── GeoIP (country lookup from IP) ──
-      GEOIP_DB_PATH: /app/data/GeoLite2-Country.mmdb
+      GAMEND_CONTENT_GEOIP_DB_PATH: /app/data/GeoLite2-Country.mmdb
     volumes:
       - ./modules:/app/modules
       - ./priv/static/images:/app/priv/static/images

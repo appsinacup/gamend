@@ -197,7 +197,8 @@ defmodule GameServer.Hooks.PluginManager do
 
   @spec plugins_dir() :: String.t()
   def plugins_dir do
-    System.get_env("GAME_SERVER_PLUGINS_DIR") || Path.expand("modules/plugins")
+    GameServer.Settings.get(GameServer.ContentSettings, :plugins_dir) ||
+      Path.expand("modules/plugins")
   end
 
   # GenServer
@@ -256,7 +257,31 @@ defmodule GameServer.Hooks.PluginManager do
     HookSchemas.refresh(list)
     KvSchemas.refresh(list)
     Declarations.refresh(list)
+    register_plugin_settings(hook_modules)
     state
+  end
+
+  # Plugins load after config/runtime.exs has already run, so a plugin's
+  # declared settings cannot be resolved by `from_env/0` at boot. Register them
+  # here and fill in any the host did not configure, so a plugin setting behaves
+  # exactly like one of core's.
+  defp register_plugin_settings(hook_modules) do
+    for {_name, module} <- hook_modules,
+        Code.ensure_loaded?(module),
+        function_exported?(module, :__settings__, 0) do
+      GameServer.Settings.add_provider(module)
+
+      for definition <- module.__settings__(),
+          value = System.get_env(definition.env),
+          value not in [nil, ""],
+          {:ok, cast} = GameServer.Settings.cast(value, definition.type),
+          existing = Application.get_env(definition.app, module, []),
+          not Keyword.has_key?(existing, definition.key) do
+        Application.put_env(definition.app, module, Keyword.put(existing, definition.key, cast))
+      end
+    end
+
+    :ok
   end
 
   defp format_rpc_context(plugin, fn_name, args, opts) do

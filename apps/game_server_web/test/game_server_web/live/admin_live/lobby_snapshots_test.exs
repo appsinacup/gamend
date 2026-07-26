@@ -46,7 +46,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
   end
 
   test "lists recorded runs", %{conn: conn, lobby: lobby} do
-    {:ok, _live, html} = live(conn, ~p"/admin/lobby-snapshots")
+    {:ok, _live, html} = live(conn, ~p"/admin/lobby_snapshots")
 
     assert html =~ "Lobby snapshots"
     assert html =~ lobby.id
@@ -56,7 +56,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
     :ok = LobbySnapshots.record_event(lobby.id, "boat.speed", %{from: 100, to: 50})
     :ok = Writer.flush()
 
-    {:ok, _live, html} = live(conn, ~p"/admin/lobby-snapshots?lobby_id=#{lobby.id}")
+    {:ok, _live, html} = live(conn, ~p"/admin/lobby_snapshots?lobby_id=#{lobby.id}")
 
     assert html =~ "test:first"
     assert html =~ "test:second"
@@ -64,7 +64,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
   end
 
   test "expanding a snapshot shows the field that changed", %{conn: conn, lobby: lobby} do
-    {:ok, live, _html} = live(conn, ~p"/admin/lobby-snapshots?lobby_id=#{lobby.id}")
+    {:ok, live, _html} = live(conn, ~p"/admin/lobby_snapshots?lobby_id=#{lobby.id}")
 
     [_first, second] = LobbySnapshots.list_snapshots(lobby.id)
 
@@ -84,7 +84,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
     conn: conn,
     lobby: lobby
   } do
-    {:ok, live, _html} = live(conn, ~p"/admin/lobby-snapshots?lobby_id=#{lobby.id}")
+    {:ok, live, _html} = live(conn, ~p"/admin/lobby_snapshots?lobby_id=#{lobby.id}")
 
     [first, _second] = LobbySnapshots.list_snapshots(lobby.id)
 
@@ -104,7 +104,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
     end
 
     test "the run filter narrows rows across every section", %{conn: conn, lobby: lobby} do
-      {:ok, live, _html} = live(conn, ~p"/admin/lobby-snapshots?lobby_id=#{lobby.id}")
+      {:ok, live, _html} = live(conn, ~p"/admin/lobby_snapshots?lobby_id=#{lobby.id}")
       {_second, html} = expand_second(live, lobby)
 
       # Both sections changed, so both render rows.
@@ -120,7 +120,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
     end
 
     test "the filter matches values, not just field names", %{conn: conn, lobby: lobby} do
-      {:ok, live, _html} = live(conn, ~p"/admin/lobby-snapshots?lobby_id=#{lobby.id}")
+      {:ok, live, _html} = live(conn, ~p"/admin/lobby_snapshots?lobby_id=#{lobby.id}")
       expand_second(live, lobby)
 
       # "250.5" is a value, not a path — searching by what a field changed *to*
@@ -136,7 +136,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
       conn: conn,
       lobby: lobby
     } do
-      {:ok, live, _html} = live(conn, ~p"/admin/lobby-snapshots?lobby_id=#{lobby.id}")
+      {:ok, live, _html} = live(conn, ~p"/admin/lobby_snapshots?lobby_id=#{lobby.id}")
       expand_second(live, lobby)
 
       html = live |> form("#run-filter", %{q: "zzz-no-such-field"}) |> render_change()
@@ -146,7 +146,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
     end
 
     test "a per-section filter narrows only its own section", %{conn: conn, lobby: lobby} do
-      {:ok, live, _html} = live(conn, ~p"/admin/lobby-snapshots?lobby_id=#{lobby.id}")
+      {:ok, live, _html} = live(conn, ~p"/admin/lobby_snapshots?lobby_id=#{lobby.id}")
       {second, _html} = expand_second(live, lobby)
 
       html =
@@ -160,7 +160,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
     end
 
     test "each section's filter box is labelled with its section", %{conn: conn, lobby: lobby} do
-      {:ok, live, _html} = live(conn, ~p"/admin/lobby-snapshots?lobby_id=#{lobby.id}")
+      {:ok, live, _html} = live(conn, ~p"/admin/lobby_snapshots?lobby_id=#{lobby.id}")
       {_second, html} = expand_second(live, lobby)
 
       # HEEx does not interpolate inside quoted attributes, so this catches the
@@ -174,7 +174,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
       :ok = LobbySnapshots.record_event(lobby.id, "boat.collision", %{actor: "starfish"})
       :ok = Writer.flush()
 
-      {:ok, live, html} = live(conn, ~p"/admin/lobby-snapshots?lobby_id=#{lobby.id}")
+      {:ok, live, html} = live(conn, ~p"/admin/lobby_snapshots?lobby_id=#{lobby.id}")
       assert html =~ "boat.speed"
       assert html =~ "boat.collision"
 
@@ -194,7 +194,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
 
     :ok = Writer.flush()
 
-    {:ok, live, html} = live(conn, ~p"/admin/lobby-snapshots?lobby_id=#{lobby.id}")
+    {:ok, live, html} = live(conn, ~p"/admin/lobby_snapshots?lobby_id=#{lobby.id}")
 
     assert html =~ "boat.tick.1"
     refute html =~ "boat.tick.15"
@@ -217,7 +217,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
 
     :ok = Writer.flush()
 
-    {:ok, _live, html} = live(conn, ~p"/admin/lobby-snapshots?lobby_id=#{lobby.id}")
+    {:ok, _live, html} = live(conn, ~p"/admin/lobby_snapshots?lobby_id=#{lobby.id}")
 
     assert html =~ "current_dist="
     assert html =~ "to="
@@ -237,7 +237,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
 
     :ok = Writer.flush()
 
-    {:ok, _live, html} = live(conn, ~p"/admin/lobby-snapshots")
+    {:ok, _live, html} = live(conn, ~p"/admin/lobby_snapshots")
 
     assert html =~ "coverage gap"
     assert html =~ "coverage:unserialized_write"
@@ -250,7 +250,7 @@ defmodule GameServerWeb.AdminLive.LobbySnapshotsTest do
     :ok = LobbySnapshots.capture_lobby(flagged_lobby.id, "hook:boom", sync: true, flagged: true)
     :ok = Writer.flush()
 
-    {:ok, live, _html} = live(conn, ~p"/admin/lobby-snapshots")
+    {:ok, live, _html} = live(conn, ~p"/admin/lobby_snapshots")
 
     html = live |> element("button[phx-click='toggle_flagged']") |> render_click()
 

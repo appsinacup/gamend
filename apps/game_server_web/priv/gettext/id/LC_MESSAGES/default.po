@@ -11,10 +11,10 @@ msgstr ""
 "Language: id\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: lib/game_server_web/components/core_components.ex:346
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:248
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:760
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:804
+#: lib/game_server_web/components/core_components.ex:381
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:245
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:757
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:801
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr "Tindakan"
@@ -22,15 +22,15 @@ msgstr "Tindakan"
 #: lib/game_server_web/live/user_live/login.ex:49
 #: lib/game_server_web/live/user_live/login.ex:73
 #: lib/game_server_web/live/user_live/registration.ex:26
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:36
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:81
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:84
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:129
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr "Email"
 
-#: lib/game_server_web/live/leaderboards_live.ex:24
-#: lib/game_server_web/live/leaderboards_live.ex:102
-#: lib/game_server_web/live/leaderboards_live.ex:287
+#: lib/game_server_web/live/leaderboards_live.ex:25
+#: lib/game_server_web/live/leaderboards_live.ex:103
+#: lib/game_server_web/live/leaderboards_live.ex:302
 #, elixir-autogen, elixir-format
 msgid "Leaderboards"
 msgstr "Papan peringkat"
@@ -38,9 +38,9 @@ msgstr "Papan peringkat"
 #: lib/game_server_web/live/auth_success_live.ex:30
 #: lib/game_server_web/live/auth_success_live.ex:42
 #: lib/game_server_web/live/auth_success_live.ex:52
-#: lib/game_server_web/live/groups_live.ex:547
-#: lib/game_server_web/live/groups_live.ex:709
-#: lib/game_server_web/live/tournaments_live.ex:679
+#: lib/game_server_web/live/groups_live.ex:553
+#: lib/game_server_web/live/groups_live.ex:730
+#: lib/game_server_web/live/tournaments_live.ex:747
 #: lib/game_server_web/live/user_live/confirmation.ex:56
 #: lib/game_server_web/live/user_live/confirmation.ex:71
 #: lib/game_server_web/live/user_live/login.ex:13
@@ -50,21 +50,21 @@ msgstr "Papan peringkat"
 #: lib/game_server_web/live/user_live/login.ex:142
 #: lib/game_server_web/live/user_live/login.ex:152
 #: lib/game_server_web/live/user_live/login.ex:162
-#: lib/game_server_web/live/user_live/login.ex:184
+#: lib/game_server_web/live/user_live/login.ex:186
 #: lib/game_server_web/live/user_live/registration.ex:17
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:152
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:182
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:212
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:242
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:272
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:200
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:230
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:260
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:290
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:320
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr "Masuk"
 
-#: lib/game_server_web/live/lobby_live/index.ex:760
+#: lib/game_server_web/live/lobby_live/index.ex:753
 #: lib/game_server_web/live/user_live/login.ex:80
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:93
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:114
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:141
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:162
 #, elixir-autogen, elixir-format
 msgid "Password"
 msgstr "Kata sandi"
@@ -76,7 +76,7 @@ msgstr "Kata sandi"
 msgid "or"
 msgstr "atau"
 
-#: lib/game_server_web/live/groups_live.ex:642
+#: lib/game_server_web/live/groups_live.ex:656
 #, elixir-autogen, elixir-format
 msgid "Admin"
 msgstr "Admin"
@@ -95,14 +95,15 @@ msgid "Register"
 msgstr "Daftar"
 
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:69
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:729
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:726
 #, elixir-autogen, elixir-format
 msgid "Accept"
 msgstr "Terima"
 
-#: lib/game_server_web/live/achievements_live.ex:159
-#: lib/game_server_web/live/groups_live.ex:423
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:598
+#: lib/game_server_web/live/groups_live.ex:421
+#: lib/game_server_web/live/quests_live.ex:280
+#: lib/game_server_web/live/quests_live.ex:302
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:595
 #, elixir-autogen, elixir-format
 msgid "All"
 msgstr "Semua"
@@ -112,15 +113,15 @@ msgstr "Semua"
 msgid "Apply"
 msgstr "Terapkan"
 
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:354
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:351
 #, elixir-autogen, elixir-format
 msgid "Approve"
 msgstr "Setujui"
 
-#: lib/game_server_web/live/groups_live.ex:558
-#: lib/game_server_web/live/leaderboards_live.ex:198
-#: lib/game_server_web/live/tournaments_live.ex:484
-#: lib/game_server_web/live/tournaments_live.ex:726
+#: lib/game_server_web/live/groups_live.ex:564
+#: lib/game_server_web/live/leaderboards_live.ex:207
+#: lib/game_server_web/live/tournaments_live.ex:523
+#: lib/game_server_web/live/tournaments_live.ex:794
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:64
 #, elixir-autogen, elixir-format
 msgid "Back"
@@ -131,36 +132,38 @@ msgstr "Kembali"
 msgid "Block"
 msgstr "Blokir"
 
-#: lib/game_server_web/live/chat_live.ex:254
-#: lib/game_server_web/live/lobby_live/index.ex:767
+#: lib/game_server_web/live/admin_live/lobbies.ex:372
+#: lib/game_server_web/live/admin_live/matchmaking.ex:241
+#: lib/game_server_web/live/chat_live.ex:255
+#: lib/game_server_web/live/lobby_live/index.ex:760
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:109
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:75
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:170
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:782
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:828
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:779
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:825
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr "Batal"
 
-#: lib/game_server_web/live/lobby_live/index.ex:812
+#: lib/game_server_web/live/lobby_live/index.ex:805
 #: lib/game_server_web/live/user_live/settings/data_tab.ex:53
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:609
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:606
 #, elixir-autogen, elixir-format
 msgid "Clear"
 msgstr "Bersihkan"
 
 #: lib/game_server_web/components/core_components.ex:77
-#: lib/game_server_web/live/lobby_live/index.ex:823
-#: lib/game_server_web/live/lobby_live/index.ex:893
+#: lib/game_server_web/live/lobby_live/index.ex:816
+#: lib/game_server_web/live/lobby_live/index.ex:886
 #, elixir-autogen, elixir-format
 msgid "Close"
 msgstr "Tutup"
 
-#: lib/game_server_web/live/lobby_live/index.ex:764
+#: lib/game_server_web/live/lobby_live/index.ex:757
 #: lib/game_server_web/live/user_live/confirmation.ex:37
 #: lib/game_server_web/live/user_live/confirmation.ex:90
 #: lib/game_server_web/live/user_live/login.ex:16
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:121
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:169
 #, elixir-autogen, elixir-format
 msgid "Confirm"
 msgstr "Konfirmasi"
@@ -171,8 +174,8 @@ msgstr "Konfirmasi"
 msgid "Content"
 msgstr "Konten"
 
-#: lib/game_server_web/live/lobby_live/index.ex:648
-#: lib/game_server_web/live/lobby_live/index.ex:668
+#: lib/game_server_web/live/lobby_live/index.ex:641
+#: lib/game_server_web/live/lobby_live/index.ex:661
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:77
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:86
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:123
@@ -180,28 +183,29 @@ msgstr "Konten"
 msgid "Create"
 msgstr "Buat"
 
-#: lib/game_server_web/live/groups_live.ex:445
-#: lib/game_server_web/live/notifications_live.ex:43
+#: lib/game_server_web/live/groups_live.ex:443
+#: lib/game_server_web/live/notifications_live.ex:44
 #: lib/game_server_web/live/user_live/settings/data_tab.ex:72
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:199
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:705
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:803
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:67
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:702
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:800
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:61
+#: lib/game_server_web/live/user_live/settings/wallet_tab.ex:61
 #, elixir-autogen, elixir-format
 msgid "Date"
 msgstr "Tanggal"
 
 #: lib/game_server_web/controllers/page_controller.ex:22
-#: lib/game_server_web/live/chat_live.ex:280
-#: lib/game_server_web/live/chat_live.ex:282
-#: lib/game_server_web/live/notifications_live.ex:29
-#: lib/game_server_web/live/notifications_live.ex:83
-#: lib/game_server_web/live/user_live/settings.ex:70
+#: lib/game_server_web/live/chat_live.ex:281
+#: lib/game_server_web/live/chat_live.ex:283
+#: lib/game_server_web/live/notifications_live.ex:30
+#: lib/game_server_web/live/notifications_live.ex:84
+#: lib/game_server_web/live/user_live/settings.ex:77
 #, elixir-autogen, elixir-format
 msgid "Delete"
 msgstr "Hapus"
 
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:297
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:294
 #, elixir-autogen, elixir-format
 msgid "Demote"
 msgstr "Turunkan"
@@ -214,259 +218,260 @@ msgstr "Turunkan"
 msgid "Description"
 msgstr "Deskripsi"
 
-#: lib/game_server_web/live/notifications_live.ex:42
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:704
+#: lib/game_server_web/live/notifications_live.ex:43
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:701
 #, elixir-autogen, elixir-format
 msgid "From"
 msgstr "Dari"
 
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:703
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:757
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:801
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:700
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:754
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:798
 #, elixir-autogen, elixir-format
 msgid "Group"
 msgstr "Grup"
 
-#: lib/game_server_web/live/chat_live.ex:155
-#: lib/game_server_web/live/groups_live.ex:46
-#: lib/game_server_web/live/groups_live.ex:96
-#: lib/game_server_web/live/groups_live.ex:393
-#: lib/game_server_web/live/user_live/settings.ex:85
+#: lib/game_server_web/live/chat_live.ex:156
+#: lib/game_server_web/live/groups_live.ex:44
+#: lib/game_server_web/live/groups_live.ex:94
+#: lib/game_server_web/live/groups_live.ex:391
+#: lib/game_server_web/live/user_live/settings.ex:92
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:59
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:479
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:476
 #, elixir-autogen, elixir-format
 msgid "Groups"
 msgstr "Grup"
 
-#: lib/game_server_web/live/achievements_live.ex:325
-#: lib/game_server_web/live/achievements_live.ex:349
-#: lib/game_server_web/live/lobby_live/index.ex:807
+#: lib/game_server_web/live/lobby_live/index.ex:800
+#: lib/game_server_web/live/quests_live.ex:596
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:112
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:155
 #, elixir-autogen, elixir-format
 msgid "Hidden"
 msgstr "Tersembunyi"
 
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:35
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:83
 #: lib/game_server_web/live/user_live/settings/data_tab.ex:70
 #, elixir-autogen, elixir-format
 msgid "ID"
 msgstr "ID"
 
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:370
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:419
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:458
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:481
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:802
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:367
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:416
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:455
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:478
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:799
 #, elixir-autogen, elixir-format
 msgid "Invite"
 msgstr "Undang"
 
-#: lib/game_server_web/live/groups_live.ex:533
-#: lib/game_server_web/live/groups_live.ex:694
-#: lib/game_server_web/live/lobby_live/index.ex:733
-#: lib/game_server_web/live/lobby_live/index.ex:745
-#: lib/game_server_web/live/tournaments_live.ex:691
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:662
+#: lib/game_server_web/live/groups_live.ex:539
+#: lib/game_server_web/live/groups_live.ex:715
+#: lib/game_server_web/live/lobby_live/index.ex:726
+#: lib/game_server_web/live/lobby_live/index.ex:738
+#: lib/game_server_web/live/tournaments_live.ex:759
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:659
 #, elixir-autogen, elixir-format
 msgid "Join"
 msgstr "Gabung"
 
-#: lib/game_server_web/live/groups_live.ex:171
-#: lib/game_server_web/live/groups_live.ex:198
-#: lib/game_server_web/live/lobby_live/index.ex:426
-#: lib/game_server_web/live/lobby_live/index.ex:671
-#: lib/game_server_web/live/tournaments_live.ex:107
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:246
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:650
+#: lib/game_server_web/live/groups_live.ex:169
+#: lib/game_server_web/live/groups_live.ex:196
+#: lib/game_server_web/live/lobby_live/index.ex:425
+#: lib/game_server_web/live/lobby_live/index.ex:664
+#: lib/game_server_web/live/tournaments_live.ex:115
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:243
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:647
 #, elixir-autogen, elixir-format
 msgid "Joined"
 msgstr "Bergabung"
 
-#: lib/game_server_web/live/lobby_live/index.ex:859
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:307
+#: lib/game_server_web/live/lobby_live/index.ex:852
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:304
 #, elixir-autogen, elixir-format
 msgid "Kick"
 msgstr "Keluarkan"
 
-#: lib/game_server_web/live/groups_live.ex:683
-#: lib/game_server_web/live/lobby_live/index.ex:848
-#: lib/game_server_web/live/lobby_live/index.ex:884
-#: lib/game_server_web/live/tournaments_live.ex:685
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:229
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:567
+#: lib/game_server_web/live/groups_live.ex:704
+#: lib/game_server_web/live/lobby_live/index.ex:841
+#: lib/game_server_web/live/lobby_live/index.ex:877
+#: lib/game_server_web/live/tournaments_live.ex:753
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:226
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:564
 #, elixir-autogen, elixir-format
 msgid "Leave"
 msgstr "Keluar"
 
-#: lib/game_server_web/live/achievements_live.ex:161
-#: lib/game_server_web/live/lobby_live/index.ex:726
-#: lib/game_server_web/live/lobby_live/index.ex:738
-#: lib/game_server_web/live/lobby_live/index.ex:798
+#: lib/game_server_web/live/lobby_live/index.ex:719
+#: lib/game_server_web/live/lobby_live/index.ex:731
+#: lib/game_server_web/live/lobby_live/index.ex:791
+#: lib/game_server_web/live/quests_live.ex:559
 #, elixir-autogen, elixir-format
 msgid "Locked"
 msgstr "Terkunci"
 
-#: lib/game_server_web/live/groups_live.ex:524
-#: lib/game_server_web/live/groups_live.ex:644
+#: lib/game_server_web/live/groups_live.ex:530
+#: lib/game_server_web/live/groups_live.ex:658
 #, elixir-autogen, elixir-format
 msgid "Member"
 msgstr "Anggota"
 
-#: lib/game_server_web/live/groups_live.ex:448
-#: lib/game_server_web/live/groups_live.ex:492
-#: lib/game_server_web/live/groups_live.ex:585
+#: lib/game_server_web/live/groups_live.ex:446
+#: lib/game_server_web/live/groups_live.ex:498
 #: lib/game_server_web/live/groups_live.ex:599
-#: lib/game_server_web/live/lobby_live/index.ex:830
-#: lib/game_server_web/live/lobby_live/index.ex:868
+#: lib/game_server_web/live/groups_live.ex:613
+#: lib/game_server_web/live/lobby_live/index.ex:823
+#: lib/game_server_web/live/lobby_live/index.ex:861
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:118
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:160
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:196
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:238
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:513
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:622
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:235
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:510
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:619
 #, elixir-autogen, elixir-format
 msgid "Members"
 msgstr "Anggota"
 
-#: lib/game_server_web/live/groups_live.ex:447
-#: lib/game_server_web/live/groups_live.ex:621
-#: lib/game_server_web/live/leaderboards_live.ex:307
-#: lib/game_server_web/live/tournaments_live.ex:602
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:64
+#: lib/game_server_web/live/groups_live.ex:445
+#: lib/game_server_web/live/groups_live.ex:635
+#: lib/game_server_web/live/leaderboards_live.ex:322
+#: lib/game_server_web/live/tournaments_live.ex:671
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:112
 #: lib/game_server_web/live/user_live/settings/data_tab.ex:71
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:219
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:142
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:177
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:244
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:392
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:241
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:389
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr "Nama"
 
-#: lib/game_server_web/live/groups_live.ex:446
+#: lib/game_server_web/live/groups_live.ex:444
 #, elixir-autogen, elixir-format
 msgid "Newest"
 msgstr "Terbaru"
 
-#: lib/game_server_web/components/core_components.ex:527
-#: lib/game_server_web/live/lobby_live/index.ex:661
+#: lib/game_server_web/components/core_components.ex:633
+#: lib/game_server_web/live/lobby_live/index.ex:654
 #, elixir-autogen, elixir-format
 msgid "Next"
 msgstr "Berikutnya"
 
-#: lib/game_server_web/components/core_components.ex:513
-#: lib/game_server_web/live/lobby_live/index.ex:651
+#: lib/game_server_web/components/core_components.ex:619
+#: lib/game_server_web/live/lobby_live/index.ex:644
 #, elixir-autogen, elixir-format
 msgid "Prev"
 msgstr "Sebelumnya"
 
-#: lib/game_server_web/live/groups_live.ex:425
-#: lib/game_server_web/live/groups_live.ex:477
-#: lib/game_server_web/live/groups_live.ex:566
+#: lib/game_server_web/live/groups_live.ex:423
+#: lib/game_server_web/live/groups_live.ex:483
+#: lib/game_server_web/live/groups_live.ex:580
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:111
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:154
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:600
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:597
 #, elixir-autogen, elixir-format
 msgid "Private"
 msgstr "Privat"
 
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:288
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:285
 #, elixir-autogen, elixir-format
 msgid "Promote"
 msgstr "Promosikan"
 
-#: lib/game_server_web/live/groups_live.ex:424
-#: lib/game_server_web/live/groups_live.ex:475
-#: lib/game_server_web/live/groups_live.ex:564
+#: lib/game_server_web/live/groups_live.ex:422
+#: lib/game_server_web/live/groups_live.ex:481
+#: lib/game_server_web/live/groups_live.ex:578
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:110
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:153
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:599
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:596
 #, elixir-autogen, elixir-format
 msgid "Public"
 msgstr "Publik"
 
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:72
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:361
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:358
 #, elixir-autogen, elixir-format
 msgid "Reject"
 msgstr "Tolak"
 
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:163
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:167
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:193
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:197
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:223
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:227
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:253
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:257
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:283
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:287
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:211
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:215
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:241
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:245
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:271
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:275
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:301
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:305
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:331
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:335
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:78
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:151
 #, elixir-autogen, elixir-format
 msgid "Remove"
 msgstr "Hapus"
 
-#: lib/game_server_web/live/groups_live.ex:541
-#: lib/game_server_web/live/groups_live.ex:703
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:333
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:482
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:670
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:759
+#: lib/game_server_web/live/groups_live.ex:547
+#: lib/game_server_web/live/groups_live.ex:724
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:330
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:479
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:667
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:756
 #, elixir-autogen, elixir-format
 msgid "Request"
 msgstr "Permintaan"
 
-#: lib/game_server_web/live/groups_live.ex:622
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:207
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:245
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:514
+#: lib/game_server_web/live/groups_live.ex:636
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:204
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:242
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:511
 #, elixir-autogen, elixir-format
 msgid "Role"
 msgstr "Peran"
 
-#: lib/game_server_web/live/chat_live.ex:251
-#: lib/game_server_web/live/lobby_live/index.ex:816
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:51
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:68
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:86
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:125
+#: lib/game_server_web/live/chat_live.ex:252
+#: lib/game_server_web/live/lobby_live/index.ex:809
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:99
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:116
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:134
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:173
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:164
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr "Simpan"
 
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:50
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:67
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:124
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:98
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:115
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:172
 #, elixir-autogen, elixir-format
 msgid "Saving..."
 msgstr "Menyimpan..."
 
-#: lib/game_server_web/live/chat_live.ex:309
-#: lib/game_server_web/live/chat_live.ex:314
+#: lib/game_server_web/live/chat_live.ex:310
+#: lib/game_server_web/live/chat_live.ex:315
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:236
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:484
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:481
 #, elixir-autogen, elixir-format
 msgid "Send"
 msgstr "Kirim"
 
-#: lib/game_server_web/live/achievements_live.ex:183
-#: lib/game_server_web/live/achievements_live.ex:356
-#: lib/game_server_web/live/groups_live.ex:441
-#: lib/game_server_web/live/store_live/index.ex:126
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:758
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:64
+#: lib/game_server_web/live/admin_live/matchmaking.ex:220
+#: lib/game_server_web/live/groups_live.ex:439
+#: lib/game_server_web/live/quests_live.ex:736
+#: lib/game_server_web/live/store_live/index.ex:130
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:48
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:755
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:58
 #, elixir-autogen, elixir-format
 msgid "Status"
 msgstr "Status"
 
-#: lib/game_server_web/live/lobby_live/index.ex:666
-#: lib/game_server_web/live/notifications_live.ex:41
+#: lib/game_server_web/live/lobby_live/index.ex:659
+#: lib/game_server_web/live/notifications_live.ex:42
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:97
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:511
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:590
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:620
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:508
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:587
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:617
 #, elixir-autogen, elixir-format
 msgid "Title"
 msgstr "Judul"
@@ -474,9 +479,9 @@ msgstr "Judul"
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:108
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:150
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:183
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:512
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:596
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:621
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:509
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:593
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:618
 #, elixir-autogen, elixir-format
 msgid "Type"
 msgstr "Tipe"
@@ -486,87 +491,81 @@ msgstr "Tipe"
 msgid "Unblock"
 msgstr "Buka blokir"
 
-#: lib/game_server_web/live/lobby_live/index.ex:714
-#: lib/game_server_web/live/lobby_live/index.ex:723
-#: lib/game_server_web/live/notifications_live.ex:196
+#: lib/game_server_web/live/lobby_live/index.ex:707
+#: lib/game_server_web/live/lobby_live/index.ex:716
 #: lib/game_server_web/live/notifications_live.ex:197
-#: lib/game_server_web/live/notifications_live.ex:200
-#: lib/game_server_web/live/notifications_live.ex:202
-#: lib/game_server_web/live/notifications_live.ex:205
-#: lib/game_server_web/live/notifications_live.ex:208
-#: lib/game_server_web/live/notifications_live.ex:238
-#: lib/game_server_web/live/notifications_live.ex:241
-#: lib/game_server_web/live/notifications_live.ex:244
-#: lib/game_server_web/live/notifications_live.ex:247
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:559
+#: lib/game_server_web/live/notifications_live.ex:198
+#: lib/game_server_web/live/notifications_live.ex:201
+#: lib/game_server_web/live/notifications_live.ex:203
+#: lib/game_server_web/live/notifications_live.ex:206
+#: lib/game_server_web/live/notifications_live.ex:209
+#: lib/game_server_web/live/notifications_live.ex:239
+#: lib/game_server_web/live/notifications_live.ex:242
+#: lib/game_server_web/live/notifications_live.ex:245
+#: lib/game_server_web/live/notifications_live.ex:248
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:556
 #, elixir-autogen, elixir-format
 msgid "View"
 msgstr "Lihat"
 
-#: lib/game_server_web/live/chat_live.ex:225
-#: lib/game_server_web/live/leaderboards_live.ex:337
-#: lib/game_server_web/live/tournaments_live.ex:623
-#: lib/game_server_web/live/tournaments_live.ex:688
+#: lib/game_server_web/live/chat_live.ex:226
+#: lib/game_server_web/live/leaderboards_live.ex:352
+#: lib/game_server_web/live/tournaments_live.ex:692
 #: lib/game_server_web/live/tournaments_live.ex:756
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:310
+#: lib/game_server_web/live/tournaments_live.ex:824
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:307
 #, elixir-autogen, elixir-format
 msgid "You"
 msgstr "Kamu"
 
-#: lib/game_server_web/live/groups_live.ex:413
+#: lib/game_server_web/live/groups_live.ex:411
 #: lib/game_server_web/live/user_live/settings/data_tab.ex:46
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:212
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:375
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:383
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:480
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:372
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:380
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:477
 #, elixir-autogen, elixir-format
 msgid "Search..."
 msgstr "Cari..."
 
-#: lib/game_server_web/live/chat_live.ex:231
+#: lib/game_server_web/live/chat_live.ex:232
 #, elixir-autogen, elixir-format
 msgid "(edited)"
 msgstr "(diedit)"
 
-#: lib/game_server_web/live/user_live/settings.ex:48
-#: lib/game_server_web/live/user_live/settings.ex:83
-#: lib/game_server_web/live/user_live/settings.ex:136
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:33
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:132
+#: lib/game_server_web/live/user_live/settings.ex:55
+#: lib/game_server_web/live/user_live/settings.ex:90
+#: lib/game_server_web/live/user_live/settings.ex:149
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:39
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:180
 #, elixir-autogen, elixir-format
 msgid "Account"
 msgstr "Akun"
 
-#: lib/game_server_web/live/achievements_live.ex:32
-#: lib/game_server_web/live/achievements_live.ex:142
-#, elixir-autogen, elixir-format
-msgid "Achievements"
-msgstr "Pencapaian"
-
-#: lib/game_server_web/live/chat_live.ex:117
-#: lib/game_server_web/live/notifications_live.ex:59
+#: lib/game_server_web/live/chat_live.ex:118
+#: lib/game_server_web/live/notifications_live.ex:60
 #, elixir-autogen, elixir-format
 msgid "Chat"
 msgstr "Obrolan"
 
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:736
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:733
 #, elixir-autogen, elixir-format
 msgid "Decline"
 msgstr "Tolak"
 
-#: lib/game_server_web/live/chat_live.ex:271
-#: lib/game_server_web/live/chat_live.ex:273
-#: lib/game_server_web/live/lobby_live/index.ex:705
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:221
+#: lib/game_server_web/live/chat_live.ex:272
+#: lib/game_server_web/live/chat_live.ex:274
+#: lib/game_server_web/live/lobby_live/index.ex:698
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:218
 #, elixir-autogen, elixir-format
 msgid "Edit"
 msgstr "Edit"
 
-#: lib/game_server_web/live/chat_live.ex:126
-#: lib/game_server_web/live/user_live/settings.ex:84
+#: lib/game_server_web/live/chat_live.ex:127
+#: lib/game_server_web/live/user_live/settings.ex:91
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:45
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:126
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:435
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:432
 #, elixir-autogen, elixir-format
 msgid "Friends"
 msgstr "Teman"
@@ -576,27 +575,27 @@ msgstr "Teman"
 msgid "Home"
 msgstr "Beranda"
 
-#: lib/game_server_web/live/notifications_live.ex:16
-#: lib/game_server_web/live/notifications_live.ex:121
+#: lib/game_server_web/live/notifications_live.ex:17
+#: lib/game_server_web/live/notifications_live.ex:122
 #, elixir-autogen, elixir-format
 msgid "Notifications"
 msgstr "Notifikasi"
 
-#: lib/game_server_web/live/chat_live.ex:320
 #: lib/game_server_web/live/chat_live.ex:321
+#: lib/game_server_web/live/chat_live.ex:322
 #, elixir-autogen, elixir-format
 msgid "Select a conversation"
 msgstr "Pilih percakapan"
 
-#: lib/game_server_web/live/leaderboards_live.ex:251
-#: lib/game_server_web/live/tournaments_live.ex:529
+#: lib/game_server_web/live/leaderboards_live.ex:266
+#: lib/game_server_web/live/tournaments_live.ex:576
 #, elixir-autogen, elixir-format
 msgid "Newer"
 msgstr "Lebih baru"
 
-#: lib/game_server_web/live/chat_live.ex:204
-#: lib/game_server_web/live/leaderboards_live.ex:236
-#: lib/game_server_web/live/tournaments_live.ex:518
+#: lib/game_server_web/live/chat_live.ex:205
+#: lib/game_server_web/live/leaderboards_live.ex:251
+#: lib/game_server_web/live/tournaments_live.ex:565
 #, elixir-autogen, elixir-format
 msgid "Older"
 msgstr "Lebih lama"
@@ -610,117 +609,123 @@ msgstr "Lebih lama"
 #: lib/game_server_web/live/user_live/confirmation.ex:62
 #: lib/game_server_web/live/user_live/confirmation.ex:68
 #: lib/game_server_web/live/user_live/registration.ex:33
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:85
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:133
 #, elixir-autogen, elixir-format
 msgid "Loading..."
 msgstr "Memuat..."
 
 #: lib/game_server_web/live/auth_success_live.ex:76
 #: lib/game_server_web/live/auth_success_live.ex:190
-#: lib/game_server_web/live/chat_live.ex:74
-#: lib/game_server_web/live/chat_live.ex:102
-#: lib/game_server_web/live/chat_live.ex:355
-#: lib/game_server_web/live/chat_live.ex:379
-#: lib/game_server_web/live/groups_live.ex:78
-#: lib/game_server_web/live/leaderboards_live.ex:44
-#: lib/game_server_web/live/leaderboards_live.ex:76
-#: lib/game_server_web/live/lobby_live/index.ex:141
-#: lib/game_server_web/live/lobby_live/index.ex:161
-#: lib/game_server_web/live/lobby_live/index.ex:176
-#: lib/game_server_web/live/tournaments_live.ex:358
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:496
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1318
+#: lib/game_server_web/live/chat_live.ex:75
+#: lib/game_server_web/live/chat_live.ex:103
+#: lib/game_server_web/live/groups_live.ex:76
+#: lib/game_server_web/live/leaderboards_live.ex:45
+#: lib/game_server_web/live/leaderboards_live.ex:77
+#: lib/game_server_web/live/lobby_live/index.ex:139
+#: lib/game_server_web/live/lobby_live/index.ex:159
+#: lib/game_server_web/live/lobby_live/index.ex:174
+#: lib/game_server_web/live/tournaments_live.ex:389
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:584
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1315
 #, elixir-autogen, elixir-format
 msgid "Not found"
 msgstr "Tidak ditemukan"
 
 #: lib/game_server_web/controllers/auth_controller.ex:570
 #: lib/game_server_web/controllers/auth_controller.ex:598
-#: lib/game_server_web/controllers/auth_controller.ex:894
-#: lib/game_server_web/controllers/user_session_controller.ex:8
-#: lib/game_server_web/controllers/user_session_controller.ex:12
-#: lib/game_server_web/controllers/user_session_controller.ex:72
-#: lib/game_server_web/controllers/user_session_controller.ex:82
-#: lib/game_server_web/controllers/user_session_controller.ex:93
+#: lib/game_server_web/controllers/auth_controller.ex:895
+#: lib/game_server_web/controllers/user_session_controller.ex:9
+#: lib/game_server_web/controllers/user_session_controller.ex:13
+#: lib/game_server_web/controllers/user_session_controller.ex:73
+#: lib/game_server_web/controllers/user_session_controller.ex:83
+#: lib/game_server_web/controllers/user_session_controller.ex:94
 #: lib/game_server_web/live/auth_success_live.ex:45
 #: lib/game_server_web/live/auth_success_live.ex:70
 #: lib/game_server_web/live/auth_success_live.ex:98
 #: lib/game_server_web/live/auth_success_live.ex:102
-#: lib/game_server_web/live/groups_live.ex:296
-#: lib/game_server_web/live/lobby_live/index.ex:267
-#: lib/game_server_web/live/notifications_live.ex:158
-#: lib/game_server_web/live/notifications_live.ex:173
-#: lib/game_server_web/live/user_live/login.ex:204
+#: lib/game_server_web/live/groups_live.ex:294
+#: lib/game_server_web/live/lobby_live/index.ex:266
+#: lib/game_server_web/live/notifications_live.ex:159
+#: lib/game_server_web/live/notifications_live.ex:174
+#: lib/game_server_web/live/user_live/login.ex:206
 #: lib/game_server_web/live/user_live/registration.ex:181
 #: lib/game_server_web/live/user_live/registration.ex:191
-#: lib/game_server_web/live/user_live/settings.ex:122
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:356
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:384
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:414
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:460
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:478
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:524
+#: lib/game_server_web/live/user_live/settings.ex:135
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:404
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:432
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:462
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:548
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:566
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:612
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:117
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:288
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1117
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1140
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1158
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1175
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1226
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1257
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1268
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1114
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1137
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1155
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1172
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1223
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1254
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1265
 #, elixir-autogen, elixir-format
 msgid "Success."
 msgstr "Berhasil."
 
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:780
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:826
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:777
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:823
 #, elixir-autogen, elixir-format
 msgid "Cancel?"
 msgstr "Batalkan?"
 
-#: lib/game_server_web/live/chat_live.ex:470
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1264
+#: lib/game_server_web/live/chat_live.ex:437
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1261
 #, elixir-autogen, elixir-format
 msgid "Cannot be empty."
 msgstr "Tidak boleh kosong."
 
-#: lib/game_server_web/live/chat_live.ex:278
-#: lib/game_server_web/live/notifications_live.ex:26
-#: lib/game_server_web/live/user_live/settings.ex:68
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:321
+#: lib/game_server_web/live/chat_live.ex:279
+#: lib/game_server_web/live/notifications_live.ex:27
+#: lib/game_server_web/live/user_live/settings.ex:75
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:369
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:75
 #, elixir-autogen, elixir-format
 msgid "Delete?"
 msgstr "Hapus?"
 
-#: lib/game_server_web/live/achievements_live.ex:204
-#: lib/game_server_web/live/chat_live.ex:129
-#: lib/game_server_web/live/chat_live.ex:158
-#: lib/game_server_web/live/chat_live.ex:210
-#: lib/game_server_web/live/groups_live.ex:501
-#: lib/game_server_web/live/groups_live.ex:654
-#: lib/game_server_web/live/leaderboards_live.ex:175
-#: lib/game_server_web/live/leaderboards_live.ex:351
-#: lib/game_server_web/live/tournaments_live.ex:652
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:212
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:429
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:465
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:504
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:629
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:696
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:750
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:795
+#: lib/game_server_web/live/chat_live.ex:130
+#: lib/game_server_web/live/chat_live.ex:159
+#: lib/game_server_web/live/chat_live.ex:211
+#: lib/game_server_web/live/groups_live.ex:507
+#: lib/game_server_web/live/groups_live.ex:668
+#: lib/game_server_web/live/leaderboards_live.ex:184
+#: lib/game_server_web/live/leaderboards_live.ex:366
+#: lib/game_server_web/live/quests_live.ex:428
+#: lib/game_server_web/live/tournaments_live.ex:500
+#: lib/game_server_web/live/tournaments_live.ex:720
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:209
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:426
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:462
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:501
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:626
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:693
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:747
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:792
+#: lib/game_server_web/live/user_live/settings/items_tab.ex:58
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:48
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:101
+#: lib/game_server_web/live/user_live/settings/wallet_tab.ex:33
+#: lib/game_server_web/live/user_live/settings/wallet_tab.ex:91
 #, elixir-autogen, elixir-format
 msgid "No results."
 msgstr "Tidak ada hasil."
 
-#: lib/game_server_web/live/notifications_live.ex:201
-#: lib/game_server_web/live/notifications_live.ex:214
+#: lib/game_server_web/live/notifications_live.ex:202
 #: lib/game_server_web/live/notifications_live.ex:215
-#: lib/game_server_web/live/notifications_live.ex:222
+#: lib/game_server_web/live/notifications_live.ex:216
 #: lib/game_server_web/live/notifications_live.ex:223
-#: lib/game_server_web/live/notifications_live.ex:230
+#: lib/game_server_web/live/notifications_live.ex:224
 #: lib/game_server_web/live/notifications_live.ex:231
-#: lib/game_server_web/live/notifications_live.ex:246
+#: lib/game_server_web/live/notifications_live.ex:232
+#: lib/game_server_web/live/notifications_live.ex:247
 #, elixir-autogen, elixir-format
 msgid "Open"
 msgstr "Terbuka"
@@ -728,11 +733,12 @@ msgstr "Terbuka"
 #: lib/game_server_web/controllers/auth_controller.ex:578
 #: lib/game_server_web/controllers/auth_controller.ex:589
 #: lib/game_server_web/controllers/auth_controller.ex:617
-#: lib/game_server_web/controllers/auth_controller.ex:857
-#: lib/game_server_web/controllers/user_session_controller.ex:33
-#: lib/game_server_web/controllers/user_session_controller.ex:55
-#: lib/game_server_web/controllers/user_session_controller.ex:75
-#: lib/game_server_web/controllers/user_session_controller.ex:103
+#: lib/game_server_web/controllers/auth_controller.ex:858
+#: lib/game_server_web/controllers/user_session_controller.ex:34
+#: lib/game_server_web/controllers/user_session_controller.ex:56
+#: lib/game_server_web/controllers/user_session_controller.ex:76
+#: lib/game_server_web/controllers/user_session_controller.ex:104
+#: lib/game_server_web/live/admin_live/matchmaking.ex:210
 #: lib/game_server_web/live/auth_success_live.ex:72
 #: lib/game_server_web/live/auth_success_live.ex:74
 #: lib/game_server_web/live/auth_success_live.ex:137
@@ -740,31 +746,32 @@ msgstr "Terbuka"
 #: lib/game_server_web/live/auth_success_live.ex:161
 #: lib/game_server_web/live/auth_success_live.ex:164
 #: lib/game_server_web/live/auth_success_live.ex:194
-#: lib/game_server_web/live/chat_live.ex:402
-#: lib/game_server_web/live/chat_live.ex:405
-#: lib/game_server_web/live/chat_live.ex:494
-#: lib/game_server_web/live/groups_live.ex:174
-#: lib/game_server_web/live/groups_live.ex:208
-#: lib/game_server_web/live/groups_live.ex:299
-#: lib/game_server_web/live/lobby_live/index.ex:78
-#: lib/game_server_web/live/lobby_live/index.ex:121
-#: lib/game_server_web/live/lobby_live/index.ex:164
-#: lib/game_server_web/live/lobby_live/index.ex:280
-#: lib/game_server_web/live/lobby_live/index.ex:315
-#: lib/game_server_web/live/lobby_live/index.ex:366
-#: lib/game_server_web/live/lobby_live/index.ex:410
-#: lib/game_server_web/live/lobby_live/index.ex:458
-#: lib/game_server_web/live/tournaments_live.ex:156
+#: lib/game_server_web/live/chat_live.ex:367
+#: lib/game_server_web/live/chat_live.ex:370
+#: lib/game_server_web/live/chat_live.ex:461
+#: lib/game_server_web/live/groups_live.ex:172
+#: lib/game_server_web/live/groups_live.ex:206
+#: lib/game_server_web/live/groups_live.ex:297
+#: lib/game_server_web/live/lobby_live/index.ex:76
+#: lib/game_server_web/live/lobby_live/index.ex:119
+#: lib/game_server_web/live/lobby_live/index.ex:162
+#: lib/game_server_web/live/lobby_live/index.ex:279
+#: lib/game_server_web/live/lobby_live/index.ex:314
+#: lib/game_server_web/live/lobby_live/index.ex:365
+#: lib/game_server_web/live/lobby_live/index.ex:409
+#: lib/game_server_web/live/lobby_live/index.ex:457
+#: lib/game_server_web/live/tournaments_live.ex:173
 #: lib/game_server_web/live/user_live/confirmation.ex:95
 #: lib/game_server_web/live/user_live/registration.ex:211
-#: lib/game_server_web/live/user_live/settings.ex:58
-#: lib/game_server_web/live/user_live/settings.ex:125
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:464
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:467
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:482
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:506
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:515
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:528
+#: lib/game_server_web/live/user_live/settings.ex:65
+#: lib/game_server_web/live/user_live/settings.ex:138
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:552
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:555
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:570
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:594
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:603
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:616
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:121
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:292
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:295
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:308
@@ -773,78 +780,80 @@ msgstr "Terbuka"
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:347
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:360
 #: lib/game_server_web/live/user_live/settings/friends_tab.ex:373
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:890
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1127
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1145
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1162
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1179
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:887
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1124
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1142
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1159
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1176
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1234
 #: lib/game_server_web/live/user_live/settings/groups_tab.ex:1237
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1240
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1261
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1271
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:187
-#: lib/game_server_web/user_auth.ex:250
-#: lib/game_server_web/user_auth.ex:273
-#: lib/game_server_web/user_auth.ex:291
-#: lib/game_server_web/user_auth.ex:340
-#: lib/game_server_web/user_auth.ex:356
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1258
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:1268
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:184
+#: lib/game_server_web/user_auth.ex:252
+#: lib/game_server_web/user_auth.ex:276
+#: lib/game_server_web/user_auth.ex:294
+#: lib/game_server_web/user_auth.ex:343
+#: lib/game_server_web/user_auth.ex:360
 #, elixir-autogen, elixir-format
 msgid "Failed"
 msgstr "Gagal"
 
 #: lib/game_server_web/controllers/auth_controller.ex:604
-#: lib/game_server_web/controllers/user_session_controller.ex:27
-#: lib/game_server_web/controllers/user_session_controller.ex:49
-#: lib/game_server_web/controllers/user_session_controller.ex:97
+#: lib/game_server_web/controllers/user_session_controller.ex:28
+#: lib/game_server_web/controllers/user_session_controller.ex:50
+#: lib/game_server_web/controllers/user_session_controller.ex:98
 #, elixir-autogen, elixir-format
 msgid "Your account is pending activation."
 msgstr "Akunmu menunggu aktivasi."
 
-#: lib/game_server_web/live/achievements_live.ex:162
+#: lib/game_server_web/live/quests_live.ex:303
 #, elixir-autogen, elixir-format
 msgid "In Progress"
 msgstr "Berlangsung"
 
-#: lib/game_server_web/live/groups_live.ex:201
-#: lib/game_server_web/live/groups_live.ex:526
-#: lib/game_server_web/live/groups_live.ex:686
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:654
+#: lib/game_server_web/live/admin_live/matchmaking.ex:212
+#: lib/game_server_web/live/groups_live.ex:199
+#: lib/game_server_web/live/groups_live.ex:532
+#: lib/game_server_web/live/groups_live.ex:707
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:651
 #, elixir-autogen, elixir-format
 msgid "Pending"
 msgstr "Menunggu"
 
-#: lib/game_server_web/live/leaderboards_live.ex:153
-#: lib/game_server_web/live/leaderboards_live.ex:204
-#: lib/game_server_web/live/store_live/index.ex:128
+#: lib/game_server_web/live/leaderboards_live.ex:162
+#: lib/game_server_web/live/leaderboards_live.ex:221
+#: lib/game_server_web/live/store_live/index.ex:132
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:64
 #, elixir-autogen, elixir-format
 msgid "Active"
 msgstr "Aktif"
 
-#: lib/game_server_web/live/leaderboards_live.ex:155
-#: lib/game_server_web/live/leaderboards_live.ex:206
+#: lib/game_server_web/live/leaderboards_live.ex:164
+#: lib/game_server_web/live/leaderboards_live.ex:223
 #, elixir-autogen, elixir-format
 msgid "Ended"
 msgstr "Berakhir"
 
-#: lib/game_server_web/live/lobby_live/index.ex:841
-#: lib/game_server_web/live/lobby_live/index.ex:879
+#: lib/game_server_web/live/lobby_live/index.ex:834
+#: lib/game_server_web/live/lobby_live/index.ex:872
 #, elixir-autogen, elixir-format
 msgid "Host"
 msgstr "Host"
 
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:305
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:302
 #, elixir-autogen, elixir-format
 msgid "Kick?"
 msgstr "Keluarkan?"
 
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:227
-#: lib/game_server_web/live/user_live/settings/groups_tab.ex:565
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:224
+#: lib/game_server_web/live/user_live/settings/groups_tab.ex:562
 #, elixir-autogen, elixir-format
 msgid "Leave?"
 msgstr "Keluar?"
 
-#: lib/game_server_web/live/lobby_live/index.ex:46
-#: lib/game_server_web/live/lobby_live/index.ex:679
+#: lib/game_server_web/live/lobby_live/index.ex:44
+#: lib/game_server_web/live/lobby_live/index.ex:672
 #, elixir-autogen, elixir-format
 msgid "Lobbies"
 msgstr "Lobi"
@@ -854,19 +863,19 @@ msgstr "Lobi"
 msgid "Privacy"
 msgstr "Privasi"
 
-#: lib/game_server_web/live/leaderboards_live.ex:268
-#: lib/game_server_web/live/leaderboards_live.ex:306
+#: lib/game_server_web/live/leaderboards_live.ex:283
+#: lib/game_server_web/live/leaderboards_live.ex:321
 #, elixir-autogen, elixir-format
 msgid "Rank"
 msgstr "Peringkat"
 
-#: lib/game_server_web/live/lobby_live/index.ex:518
+#: lib/game_server_web/live/lobby_live/index.ex:516
 #, elixir-autogen, elixir-format
 msgid "Removed"
 msgstr "Dihapus"
 
-#: lib/game_server_web/live/leaderboards_live.ex:274
-#: lib/game_server_web/live/leaderboards_live.ex:308
+#: lib/game_server_web/live/leaderboards_live.ex:289
+#: lib/game_server_web/live/leaderboards_live.ex:323
 #, elixir-autogen, elixir-format
 msgid "Score"
 msgstr "Skor"
@@ -876,40 +885,29 @@ msgstr "Skor"
 msgid "Terms"
 msgstr "Ketentuan"
 
-#: lib/game_server_web/live/achievements_live.ex:160
-#: lib/game_server_web/live/achievements_live.ex:339
-#, elixir-autogen, elixir-format
-msgid "Unlocked"
-msgstr "Terbuka"
-
-#: lib/game_server_web/live/user_live/settings.ex:87
+#: lib/game_server_web/live/user_live/settings.ex:96
 #: lib/game_server_web/live/user_live/settings/data_tab.ex:31
 #, elixir-autogen, elixir-format
 msgid "Data"
 msgstr "Data"
 
-#: lib/game_server_web/live/user_live/login.ex:213
+#: lib/game_server_web/live/user_live/login.ex:215
 #: lib/game_server_web/live/user_live/registration.ex:146
 #, elixir-autogen, elixir-format
 msgid "Too many attempts. Please try again later."
 msgstr "Terlalu banyak percobaan. Coba lagi nanti."
 
-#: lib/game_server_web/live/store_live/index.ex:163
+#: lib/game_server_web/live/store_live/index.ex:167
 #, elixir-autogen, elixir-format
 msgid "API only"
 msgstr "Hanya API"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:104
-#, elixir-autogen, elixir-format
-msgid "Active entitlements and downloadable purchases."
-msgstr "Hak aktif dan pembelian yang dapat diunduh."
-
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:65
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:59
 #, elixir-autogen, elixir-format
 msgid "Amount"
 msgstr "Jumlah"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:240
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:131
 #, elixir-autogen, elixir-format
 msgid "Auto-renews"
 msgstr "Diperpanjang otomatis"
@@ -919,53 +917,51 @@ msgstr "Diperpanjang otomatis"
 msgid "Blocked users"
 msgstr "Pengguna yang diblokir"
 
-#: lib/game_server_web/live/store_live/index.ex:153
+#: lib/game_server_web/live/store_live/index.ex:157
 #, elixir-autogen, elixir-format
 msgid "Buy"
 msgstr "Beli"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:150
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:147
 #, elixir-autogen, elixir-format
 msgid "Cancel renewal"
 msgstr "Batalkan perpanjangan"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:228
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:225
 #, elixir-autogen, elixir-format
 msgid "Cancels"
 msgstr "Berakhir"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:156
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:153
 #, elixir-autogen, elixir-format
 msgid "Cancels at period end"
 msgstr "Berakhir di akhir periode"
 
-#: lib/game_server_web/live/store_live/index.ex:78
+#: lib/game_server_web/live/store_live/index.ex:82
 #, elixir-autogen, elixir-format
 msgid "Checkout cancelled."
 msgstr "Pembelian dibatalkan."
 
-#: lib/game_server_web/live/store_live/index.ex:217
+#: lib/game_server_web/live/store_live/index.ex:221
 #, elixir-autogen, elixir-format
 msgid "Checkout failed."
 msgstr "Pembelian gagal."
 
-#: lib/game_server_web/live/store_live/index.ex:229
 #: lib/game_server_web/live/store_live/index.ex:233
 #: lib/game_server_web/live/store_live/index.ex:237
-#: lib/game_server_web/live/store_live/index.ex:240
-#: lib/game_server_web/live/store_live/index.ex:242
+#: lib/game_server_web/live/store_live/index.ex:241
+#: lib/game_server_web/live/store_live/index.ex:244
+#: lib/game_server_web/live/store_live/index.ex:246
 #, elixir-autogen, elixir-format
 msgid "Checkout failed: %{reason}"
 msgstr "Pembelian gagal: %{reason}"
 
-#: lib/game_server_web/live/store_live/index.ex:222
+#: lib/game_server_web/live/store_live/index.ex:226
 #, elixir-autogen, elixir-format
 msgid "Checkout is already open for this item. Finish or cancel that checkout first."
-msgstr ""
-"Sudah ada pembelian yang berlangsung untuk item ini. Selesaikan atau "
-"batalkan dulu."
+msgstr "Pembayaran untuk item ini sudah terbuka. Selesaikan atau batalkan dulu pembayaran itu."
 
-#: lib/game_server_web/live/store_live/index.ex:67
+#: lib/game_server_web/live/store_live/index.ex:71
 #, elixir-autogen, elixir-format
 msgid "Checkout returned."
 msgstr "Kembali dari pembelian."
@@ -975,47 +971,48 @@ msgstr "Kembali dari pembelian."
 msgid "Confirm and remember me"
 msgstr "Konfirmasi dan ingat saya"
 
-#: lib/game_server_web/live/store_live/index.ex:88
+#: lib/game_server_web/live/store_live/index.ex:92
 #, elixir-autogen, elixir-format
 msgid "Create products and provider SKUs in Admin -> Payments."
 msgstr "Buat produk dan SKU penyedia di Admin -> Payments."
 
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:308
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:356
 #, elixir-autogen, elixir-format
 msgid "Danger zone"
 msgstr "Zona berbahaya"
 
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:323
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:371
 #, elixir-autogen, elixir-format
 msgid "Delete account"
 msgstr "Hapus akun"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:163
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:160
 #, elixir-autogen, elixir-format
 msgid "Download"
 msgstr "Unduh"
 
-#: lib/game_server_web/live/store_live/index.ex:273
+#: lib/game_server_web/live/store_live/index.ex:277
 #, elixir-autogen, elixir-format
 msgid "Downloadable"
 msgstr "Dapat diunduh"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:66
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:60
 #, elixir-autogen, elixir-format
 msgid "Environment"
 msgstr "Lingkungan"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:234
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:231
 #, elixir-autogen, elixir-format
 msgid "Expires"
 msgstr "Kedaluwarsa"
 
-#: lib/game_server_web/live/store_live/index.ex:275
+#: lib/game_server_web/live/store_live/index.ex:279
 #, elixir-autogen, elixir-format
 msgid "Grant"
 msgstr "Berikan"
 
-#: lib/game_server_web/live/store_live/index.ex:128
+#: lib/game_server_web/live/store_live/index.ex:132
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:67
 #, elixir-autogen, elixir-format
 msgid "Inactive"
 msgstr "Tidak aktif"
@@ -1025,21 +1022,22 @@ msgstr "Tidak aktif"
 msgid "Incoming requests"
 msgstr "Permintaan masuk"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:200
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:197
 #, elixir-autogen, elixir-format
 msgid "Invalid payment state"
 msgstr "Status pembayaran tidak valid"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:131
+#: lib/game_server_web/live/admin_live/matchmaking.ex:219
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:122
 #, elixir-autogen, elixir-format
 msgid "Kind"
 msgstr "Jenis"
 
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:172
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:202
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:232
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:262
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:292
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:220
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:250
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:280
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:310
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:340
 #, elixir-autogen, elixir-format
 msgid "Link"
 msgstr "Tautkan"
@@ -1050,74 +1048,60 @@ msgstr "Tautkan"
 msgid "Log in and remember me"
 msgstr "Masuk dan ingat saya"
 
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:301
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:349
 #: lib/game_server_web/live/user_live/settings/data_tab.ex:74
+#: lib/game_server_web/live/user_live/settings/items_tab.ex:41
 #, elixir-autogen, elixir-format
 msgid "Metadata"
 msgstr "Metadata"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:110
-#, elixir-autogen, elixir-format
-msgid "No active entitlements."
-msgstr "Tidak ada hak aktif."
-
-#: lib/game_server_web/live/store_live/index.ex:86
+#: lib/game_server_web/live/store_live/index.ex:90
 #, elixir-autogen, elixir-format
 msgid "No products configured."
 msgstr "Tidak ada produk yang dikonfigurasi."
 
-#: lib/game_server_web/live/store_live/index.ex:79
+#: lib/game_server_web/live/store_live/index.ex:83
 #, elixir-autogen, elixir-format
 msgid "No purchase was fulfilled."
 msgstr "Tidak ada pembelian yang diselesaikan."
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:54
-#, elixir-autogen, elixir-format
-msgid "No purchases yet."
-msgstr "Belum ada pembelian."
-
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:424
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:472
 #, elixir-autogen, elixir-format
 msgid "Not allowed: %{reason}"
 msgstr "Tidak diizinkan: %{reason}"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:39
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:36
 #, elixir-autogen, elixir-format
 msgid "Open Store"
 msgstr "Buka toko"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:61
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:55
 #, elixir-autogen, elixir-format
 msgid "Order"
 msgstr "Pesanan"
 
-#: lib/game_server_web/live/store_live/index.ex:201
+#: lib/game_server_web/live/store_live/index.ex:205
 #, elixir-autogen, elixir-format
 msgid "Order %{order_id} completed."
 msgstr "Pesanan %{order_id} selesai."
 
-#: lib/game_server_web/live/store_live/index.ex:210
+#: lib/game_server_web/live/store_live/index.ex:214
 #, elixir-autogen, elixir-format
 msgid "Order %{order_id} failed before payment was completed."
 msgstr "Pesanan %{order_id} gagal sebelum pembayaran selesai."
 
-#: lib/game_server_web/live/store_live/index.ex:206
+#: lib/game_server_web/live/store_live/index.ex:210
 #, elixir-autogen, elixir-format
 msgid "Order %{order_id} is waiting for Stripe webhook confirmation."
 msgstr "Pesanan %{order_id} menunggu konfirmasi webhook Stripe."
 
-#: lib/game_server_web/live/store_live/index.ex:214
+#: lib/game_server_web/live/store_live/index.ex:218
 #, elixir-autogen, elixir-format
 msgid "Order %{order_id} returned from checkout."
 msgstr "Pesanan %{order_id} kembali dari pembelian."
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:48
-#, elixir-autogen, elixir-format
-msgid "Orders, payment providers, and fulfillment status."
-msgstr "Pesanan, penyedia pembayaran, dan status pemenuhan."
-
-#: lib/game_server_web/live/store_live/index.ex:142
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:102
+#: lib/game_server_web/live/store_live/index.ex:146
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:96
 #, elixir-autogen, elixir-format
 msgid "Owned"
 msgstr "Dimiliki"
@@ -1127,56 +1111,52 @@ msgstr "Dimiliki"
 msgid "Page"
 msgstr "Halaman"
 
-#: lib/game_server_web/live/store_live/index.ex:197
+#: lib/game_server_web/live/store_live/index.ex:201
 #, elixir-autogen, elixir-format
 msgid "Payment is still being processed. Refresh after webhook delivery."
 msgstr "Pembayaran masih diproses. Segarkan setelah webhook terkirim."
 
-#: lib/game_server_web/live/store_live/index.ex:59
-#: lib/game_server_web/live/user_live/settings.ex:86
+#: lib/game_server_web/live/store_live/index.ex:63
+#: lib/game_server_web/live/user_live/settings.ex:95
 #: lib/game_server_web/live/user_live/settings/payments_tab.ex:33
 #, elixir-autogen, elixir-format
 msgid "Payments"
 msgstr "Pembayaran"
 
-#: lib/game_server_web/live/store_live/index.ex:118
+#: lib/game_server_web/live/store_live/index.ex:122
 #, elixir-autogen, elixir-format
 msgid "Price"
 msgstr "Harga"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:62
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:56
 #, elixir-autogen, elixir-format
 msgid "Product"
 msgstr "Produk"
 
-#: lib/game_server_web/live/store_live/index.ex:114
-#: lib/game_server_web/live/store_live/index.ex:244
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:63
+#: lib/game_server_web/live/store_live/index.ex:118
+#: lib/game_server_web/live/store_live/index.ex:248
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:45
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:57
 #, elixir-autogen, elixir-format
 msgid "Provider"
 msgstr "Penyedia"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:46
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:43
 #, elixir-autogen, elixir-format
 msgid "Purchases"
 msgstr "Pembelian"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:35
-#, elixir-autogen, elixir-format
-msgid "Purchases, owned items, and downloads."
-msgstr "Pembelian, item yang dimiliki, dan unduhan."
-
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:314
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:362
 #, elixir-autogen, elixir-format
 msgid "Read data deletion instructions"
 msgstr "Baca petunjuk penghapusan data"
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:231
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:228
 #, elixir-autogen, elixir-format
 msgid "Renews"
 msgstr "Diperpanjang"
 
-#: lib/game_server_web/live/store_live/index.ex:122
+#: lib/game_server_web/live/store_live/index.ex:126
 #, elixir-autogen, elixir-format
 msgid "SKU"
 msgstr "SKU"
@@ -1186,43 +1166,43 @@ msgstr "SKU"
 msgid "Sent requests"
 msgstr "Permintaan terkirim"
 
-#: lib/game_server_web/live/store_live/index.ex:11
-#: lib/game_server_web/live/store_live/index.ex:51
+#: lib/game_server_web/live/store_live/index.ex:12
+#: lib/game_server_web/live/store_live/index.ex:55
 #, elixir-autogen, elixir-format
 msgid "Store"
 msgstr "Toko"
 
-#: lib/game_server_web/live/store_live/index.ex:109
+#: lib/game_server_web/live/store_live/index.ex:113
 #, elixir-autogen, elixir-format
 msgid "Store item"
 msgstr "Item toko"
 
-#: lib/game_server_web/live/store_live/index.ex:226
+#: lib/game_server_web/live/store_live/index.ex:230
 #, elixir-autogen, elixir-format
 msgid "Stripe is not configured."
 msgstr "Stripe belum dikonfigurasi."
 
-#: lib/game_server_web/live/user_live/settings/payments_tab.ex:183
+#: lib/game_server_web/live/user_live/settings/payments_tab.ex:180
 #, elixir-autogen, elixir-format
 msgid "Subscription will cancel at the end of the period."
 msgstr "Langganan akan berakhir di akhir periode."
 
-#: lib/game_server_web/live/store_live/index.ex:54
+#: lib/game_server_web/live/store_live/index.ex:58
 #, elixir-autogen, elixir-format
 msgid "Subscriptions, one-time items, and consumables."
 msgstr "Langganan, item sekali beli, dan konsumabel."
 
-#: lib/game_server_web/live/store_live/index.ex:225
+#: lib/game_server_web/live/store_live/index.ex:229
 #, elixir-autogen, elixir-format
 msgid "This item can only be bought once."
 msgstr "Item ini hanya bisa dibeli sekali."
 
-#: lib/game_server_web/live/user_live/settings/account_tab.ex:47
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:95
 #, elixir-autogen, elixir-format
 msgid "Username"
 msgstr "Nama pengguna"
 
-#: lib/game_server_web/live/store_live/index.ex:219
+#: lib/game_server_web/live/store_live/index.ex:223
 #, elixir-autogen, elixir-format
 msgid "You already own this item."
 msgstr "Kamu sudah memiliki item ini."
@@ -1232,192 +1212,443 @@ msgstr "Kamu sudah memiliki item ini."
 msgid "Send magic link"
 msgstr "Kirim tautan ajaib"
 
-#: lib/game_server_web/live/tournaments_live.ex:323
-#: lib/game_server_web/live/tournaments_live.ex:555
-#: lib/game_server_web/live/tournaments_live.ex:603
-#: lib/game_server_web/live/tournaments_live.ex:633
-#: lib/game_server_web/live/tournaments_live.ex:730
+#: lib/game_server_web/live/tournaments_live.ex:354
+#: lib/game_server_web/live/tournaments_live.ex:602
+#: lib/game_server_web/live/tournaments_live.ex:672
+#: lib/game_server_web/live/tournaments_live.ex:702
+#: lib/game_server_web/live/tournaments_live.ex:798
 #, elixir-autogen, elixir-format
 msgid "Bracket"
 msgstr "Bagan"
 
-#: lib/game_server_web/live/tournaments_live.ex:540
+#: lib/game_server_web/live/tournaments_live.ex:587
 #, elixir-autogen, elixir-format
 msgid "Bracket size"
 msgstr "Ukuran bagan"
 
-#: lib/game_server_web/live/tournaments_live.ex:541
-#: lib/game_server_web/live/tournaments_live.ex:546
+#: lib/game_server_web/live/tournaments_live.ex:588
+#: lib/game_server_web/live/tournaments_live.ex:593
 #, elixir-autogen, elixir-format
 msgid "Brackets"
 msgstr "Bagan"
 
-#: lib/game_server_web/live/tournaments_live.ex:899
+#: lib/game_server_web/live/admin_live/matchmaking.ex:211
+#: lib/game_server_web/live/tournaments_live.ex:970
 #, elixir-autogen, elixir-format
 msgid "Cancelled"
 msgstr "Dibatalkan"
 
-#: lib/game_server_web/live/tournaments_live.ex:861
+#: lib/game_server_web/live/tournaments_live.ex:929
 #, elixir-autogen, elixir-format
 msgid "Final"
 msgstr "Final"
 
-#: lib/game_server_web/live/tournaments_live.ex:898
+#: lib/game_server_web/live/tournaments_live.ex:969
 #, elixir-autogen, elixir-format
 msgid "Finished"
 msgstr "Selesai"
 
-#: lib/game_server_web/live/tournaments_live.ex:651
-#, elixir-autogen, elixir-format
-msgid "No players registered yet."
-msgstr "Belum ada pemain terdaftar."
-
-#: lib/game_server_web/live/tournaments_live.ex:461
-#, elixir-autogen, elixir-format
-msgid "No tournaments yet."
-msgstr "Belum ada turnamen."
-
-#: lib/game_server_web/live/tournaments_live.ex:354
-#: lib/game_server_web/live/tournaments_live.ex:854
+#: lib/game_server_web/live/tournaments_live.ex:385
+#: lib/game_server_web/live/tournaments_live.ex:922
 #, elixir-autogen, elixir-format
 msgid "Player"
 msgstr "Pemain"
 
-#: lib/game_server_web/live/tournaments_live.ex:863
+#: lib/game_server_web/live/tournaments_live.ex:931
 #, elixir-autogen, elixir-format
 msgid "Quarterfinal"
 msgstr "Perempat final"
 
-#: lib/game_server_web/live/tournaments_live.ex:896
+#: lib/game_server_web/live/tournaments_live.ex:967
 #, elixir-autogen, elixir-format
 msgid "Registration open"
 msgstr "Pendaftaran dibuka"
 
-#: lib/game_server_web/live/tournaments_live.ex:864
+#: lib/game_server_web/live/tournaments_live.ex:932
 #, elixir-autogen, elixir-format
 msgid "Round %{n}"
 msgstr "Ronde %{n}"
 
-#: lib/game_server_web/live/tournaments_live.ex:897
+#: lib/game_server_web/live/tournaments_live.ex:968
 #, elixir-autogen, elixir-format
 msgid "Running"
 msgstr "Berlangsung"
 
-#: lib/game_server_web/live/tournaments_live.ex:895
+#: lib/game_server_web/live/tournaments_live.ex:966
 #, elixir-autogen, elixir-format
 msgid "Scheduled"
 msgstr "Terjadwal"
 
-#: lib/game_server_web/live/tournaments_live.ex:862
+#: lib/game_server_web/live/tournaments_live.ex:930
 #, elixir-autogen, elixir-format
 msgid "Semifinal"
 msgstr "Semifinal"
 
-#: lib/game_server_web/live/tournaments_live.ex:494
-#: lib/game_server_web/live/tournaments_live.ex:741
+#: lib/game_server_web/live/tournaments_live.ex:541
+#: lib/game_server_web/live/tournaments_live.ex:809
 #, elixir-autogen, elixir-format
 msgid "Starts manually"
 msgstr "Mulai manual"
 
-#: lib/game_server_web/live/tournaments_live.ex:29
-#: lib/game_server_web/live/tournaments_live.ex:219
-#: lib/game_server_web/live/tournaments_live.ex:385
+#: lib/game_server_web/live/tournaments_live.ex:30
+#: lib/game_server_web/live/tournaments_live.ex:247
+#: lib/game_server_web/live/tournaments_live.ex:416
 #, elixir-autogen, elixir-format
 msgid "Tournaments"
 msgstr "Turnamen"
 
-#: lib/game_server_web/live/tournaments_live.ex:842
+#: lib/game_server_web/live/tournaments_live.ex:910
 #, elixir-autogen, elixir-format
 msgid "bye"
 msgstr "bye"
 
-#: lib/game_server_web/live/tournaments_live.ex:560
+#: lib/game_server_web/live/tournaments_live.ex:607
 #, elixir-autogen, elixir-format
 msgid "matches decided"
 msgstr "pertandingan diputuskan"
 
-#: lib/game_server_web/live/tournaments_live.ex:454
-#: lib/game_server_web/live/tournaments_live.ex:539
-#: lib/game_server_web/live/tournaments_live.ex:583
+#: lib/game_server_web/live/tournaments_live.ex:493
+#: lib/game_server_web/live/tournaments_live.ex:586
+#: lib/game_server_web/live/tournaments_live.ex:630
 #, elixir-autogen, elixir-format
 msgid "Players"
 msgstr "Pemain"
 
-#: lib/game_server_web/live/tournaments_live.ex:557
-#: lib/game_server_web/live/tournaments_live.ex:735
+#: lib/game_server_web/live/tournaments_live.ex:604
+#: lib/game_server_web/live/tournaments_live.ex:803
 #, elixir-autogen, elixir-format
 msgid "Slots"
 msgstr "Slot"
 
-#: lib/game_server_web/live/tournaments_live.ex:889
+#: lib/game_server_web/live/tournaments_live.ex:641
+#: lib/game_server_web/live/tournaments_live.ex:960
 #, elixir-autogen, elixir-format
 msgid "Champion"
 msgstr "Juara"
 
-#: lib/game_server_web/live/tournaments_live.ex:891
+#: lib/game_server_web/live/tournaments_live.ex:647
+#: lib/game_server_web/live/tournaments_live.ex:962
 #, elixir-autogen, elixir-format
 msgid "Eliminated"
 msgstr "Tersingkir"
 
-#: lib/game_server_web/live/tournaments_live.ex:890
+#: lib/game_server_web/live/tournaments_live.ex:644
+#: lib/game_server_web/live/tournaments_live.ex:961
 #, elixir-autogen, elixir-format
 msgid "Playing"
 msgstr "Bermain"
 
-#: lib/game_server_web/live/tournaments_live.ex:892
+#: lib/game_server_web/live/tournaments_live.ex:650
+#: lib/game_server_web/live/tournaments_live.ex:963
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:46
 #, elixir-autogen, elixir-format
 msgid "Registered"
 msgstr "Terdaftar"
 
-#: lib/game_server_web/live/tournaments_live.ex:605
+#: lib/game_server_web/live/tournaments_live.ex:674
 #, elixir-autogen, elixir-format
 msgid "Result"
 msgstr "Hasil"
 
-#: lib/game_server_web/live/groups_live.ex:610
-#: lib/game_server_web/live/leaderboards_live.ex:295
-#: lib/game_server_web/live/tournaments_live.ex:591
+#: lib/game_server_web/live/groups_live.ex:624
+#: lib/game_server_web/live/leaderboards_live.ex:310
+#: lib/game_server_web/live/tournaments_live.ex:659
 #, elixir-autogen, elixir-format
 msgid "Search players..."
 msgstr "Cari pemain..."
 
-#: lib/game_server_web/live/tournaments_live.ex:753
+#: lib/game_server_web/live/tournaments_live.ex:821
 #, elixir-autogen, elixir-format
 msgid "Showing"
 msgstr "Menampilkan"
 
-#: lib/game_server_web/live/tournaments_live.ex:604
-#: lib/game_server_web/live/tournaments_live.ex:761
+#: lib/game_server_web/live/tournaments_live.ex:673
+#: lib/game_server_web/live/tournaments_live.ex:829
 #, elixir-autogen, elixir-format
 msgid "Wins"
 msgstr "Kemenangan"
 
-#: lib/game_server_web/live/tournaments_live.ex:116
+#: lib/game_server_web/live/tournaments_live.ex:124
 #, elixir-autogen, elixir-format
 msgid "Left"
 msgstr "Keluar"
 
-#: lib/game_server_web/live/tournaments_live.ex:148
+#: lib/game_server_web/live/tournaments_live.ex:156
 #, elixir-autogen, elixir-format
 msgid "Registration is closed."
 msgstr "Pendaftaran sudah ditutup."
 
-#: lib/game_server_web/live/tournaments_live.ex:152
+#: lib/game_server_web/live/tournaments_live.ex:160
 #, elixir-autogen, elixir-format
 msgid "The bracket has already been drawn."
 msgstr "Bagan sudah diundi."
 
-#: lib/game_server_web/live/tournaments_live.ex:150
+#: lib/game_server_web/live/tournaments_live.ex:158
 #, elixir-autogen, elixir-format
 msgid "This tournament is full."
 msgstr "Turnamen ini sudah penuh."
 
-#: lib/game_server_web/live/tournaments_live.ex:149
+#: lib/game_server_web/live/tournaments_live.ex:157
 #, elixir-autogen, elixir-format
 msgid "You are already registered."
 msgstr "Anda sudah terdaftar."
 
-#: lib/game_server_web/live/tournaments_live.ex:151
+#: lib/game_server_web/live/tournaments_live.ex:159
 #, elixir-autogen, elixir-format
 msgid "You are not registered."
 msgstr "Anda belum terdaftar."
+
+#: lib/game_server_web/live/tournaments_live.ex:638
+#, elixir-autogen, elixir-format
+msgid "All results"
+msgstr "Semua hasil"
+
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:504
+#, elixir-autogen, elixir-format
+msgid "Avatar updated."
+msgstr "Avatar diperbarui."
+
+#: lib/game_server_web/live/user_live/settings/wallet_tab.ex:64
+#, elixir-autogen, elixir-format
+msgid "Balance"
+msgstr "Saldo"
+
+#: lib/game_server_web/live/user_live/settings/wallet_tab.ex:63
+#, elixir-autogen, elixir-format
+msgid "Change"
+msgstr "Perubahan"
+
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:77
+#, elixir-autogen, elixir-format
+msgid "Change avatar"
+msgstr "Ganti avatar"
+
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:508
+#, elixir-autogen, elixir-format
+msgid "Could not update avatar."
+msgstr "Tidak dapat memperbarui avatar."
+
+#: lib/game_server_web/live/user_live/settings/wallet_tab.ex:62
+#, elixir-autogen, elixir-format
+msgid "Currency"
+msgstr "Mata uang"
+
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:69
+#, elixir-autogen, elixir-format
+msgid "File is too large or not a supported image."
+msgstr "Berkas terlalu besar atau bukan gambar yang didukung."
+
+#: lib/game_server_web/live/user_live/settings/items_tab.ex:39
+#, elixir-autogen, elixir-format
+msgid "Item"
+msgstr "Item"
+
+#: lib/game_server_web/live/user_live/settings.ex:94
+#: lib/game_server_web/live/user_live/settings/items_tab.ex:28
+#, elixir-autogen, elixir-format
+msgid "Items"
+msgstr "Item"
+
+#: lib/game_server_web/live/groups_live.ex:696
+#, elixir-autogen, elixir-format
+msgid "Open chat"
+msgstr "Buka obrolan"
+
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:512
+#, elixir-autogen, elixir-format
+msgid "Please choose an image first."
+msgstr "Silakan pilih gambar terlebih dahulu."
+
+#: lib/game_server_web/live/user_live/settings/items_tab.ex:40
+#, elixir-autogen, elixir-format
+msgid "Quantity"
+msgstr "Jumlah"
+
+#: lib/game_server_web/live/admin_live/matchmaking.ex:221
+#: lib/game_server_web/live/user_live/settings/wallet_tab.ex:65
+#, elixir-autogen, elixir-format
+msgid "Reason"
+msgstr "Alasan"
+
+#: lib/game_server_web/live/user_live/settings/account_tab.ex:64
+#, elixir-autogen, elixir-format
+msgid "Remove selected file"
+msgstr "Hapus berkas yang dipilih"
+
+#: lib/game_server_web/live/user_live/settings/wallet_tab.ex:48
+#, elixir-autogen, elixir-format
+msgid "Transactions"
+msgstr "Transaksi"
+
+#: lib/game_server_web/live/user_live/settings.ex:93
+#: lib/game_server_web/live/user_live/settings/wallet_tab.ex:29
+#, elixir-autogen, elixir-format
+msgid "Wallet"
+msgstr "Dompet"
+
+#: lib/game_server_web/live/quests_live.ex:89
+#, elixir-autogen, elixir-format
+msgid "Already claimed."
+msgstr "Sudah diklaim."
+
+#: lib/game_server_web/live/quests_live.ex:716
+#, elixir-autogen, elixir-format
+msgid "Claim"
+msgstr "Klaim"
+
+#: lib/game_server_web/live/quests_live.ex:304
+#, elixir-autogen, elixir-format
+msgid "Claimable"
+msgstr "Bisa diklaim"
+
+#: lib/game_server_web/live/quests_live.ex:556
+#: lib/game_server_web/live/quests_live.ex:722
+#, elixir-autogen, elixir-format
+msgid "Claimed"
+msgstr "Sudah diklaim"
+
+#: lib/game_server_web/live/quests_live.ex:305
+#: lib/game_server_web/live/quests_live.ex:558
+#: lib/game_server_web/live/quests_live.ex:731
+#, elixir-autogen, elixir-format
+msgid "Completed"
+msgstr "Selesai"
+
+#: lib/game_server_web/live/quests_live.ex:92
+#, elixir-autogen, elixir-format
+msgid "Could not claim this quest."
+msgstr "Tidak dapat mengklaim misi ini."
+
+#: lib/game_server_web/live/quests_live.ex:293
+#, elixir-autogen, elixir-format
+msgid "Daily"
+msgstr "Harian"
+
+#: lib/game_server_web/live/quests_live.ex:697
+#, elixir-autogen, elixir-format
+msgid "Ends in %{time}"
+msgstr "Berakhir dalam %{time}"
+
+#: lib/game_server_web/live/quests_live.ex:37
+#: lib/game_server_web/live/quests_live.ex:377
+#: lib/game_server_web/live/quests_live.ex:661
+#, elixir-autogen, elixir-format
+msgid "Quests"
+msgstr "Misi"
+
+#: lib/game_server_web/live/quests_live.ex:699
+#, elixir-autogen, elixir-format
+msgid "Resets in %{time}"
+msgstr "Direset dalam %{time}"
+
+#: lib/game_server_web/live/quests_live.ex:85
+#, elixir-autogen, elixir-format
+msgid "Rewards claimed!"
+msgstr "Hadiah diklaim!"
+
+#: lib/game_server_web/live/quests_live.ex:294
+#, elixir-autogen, elixir-format
+msgid "Weekly"
+msgstr "Mingguan"
+
+#: lib/game_server_web/live/quests_live.ex:419
+#, elixir-autogen, elixir-format
+msgid "You have %{count} quest(s) ready to claim!"
+msgstr "Ada %{count} misi siap diklaim!"
+
+#: lib/game_server_web/live/quests_live.ex:298
+#, elixir-autogen, elixir-format
+msgid "Every %{count}d"
+msgstr "Tiap %{count} hr"
+
+#: lib/game_server_web/live/quests_live.ex:295
+#, elixir-autogen, elixir-format
+msgid "Monthly"
+msgstr "Bulanan"
+
+#: lib/game_server_web/live/user_live/settings.ex:97
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:29
+#, elixir-autogen, elixir-format
+msgid "Devices"
+msgstr "Perangkat"
+
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:31
+#, elixir-autogen, elixir-format
+msgid "Devices registered for push notifications."
+msgstr "Perangkat yang terdaftar untuk notifikasi push."
+
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:47
+#, elixir-autogen, elixir-format
+msgid "Last used"
+msgstr "Terakhir digunakan"
+
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:37
+#, elixir-autogen, elixir-format
+msgid "No devices registered."
+msgstr "Tidak ada perangkat terdaftar."
+
+#: lib/game_server_web/live/user_live/settings/devices_tab.ex:44
+#, elixir-autogen, elixir-format
+msgid "Platform"
+msgstr "Platform"
+
+#: lib/game_server_web/live/admin_live/matchmaking.ex:209
+#, elixir-autogen, elixir-format
+msgid "Passed"
+msgstr "Lulus"
+
+#: lib/game_server_web/live/admin_live/lobbies.ex:402
+#: lib/game_server_web/live/admin_live/matchmaking.ex:222
+#, elixir-autogen, elixir-format
+msgid "Ready"
+msgstr "Siap"
+
+#: lib/game_server_web/live/admin_live/matchmaking.ex:205
+#, elixir-autogen, elixir-format
+msgid "Ready checks"
+msgstr "Pemeriksaan kesiapan"
+
+#: lib/game_server_web/live/admin_live/matchmaking.ex:206
+#, elixir-autogen, elixir-format
+msgid "last 24h"
+msgstr "24 jam terakhir"
+
+#: lib/game_server_web/live/admin_live/matchmaking.ex:223
+#, elixir-autogen, elixir-format
+msgid "Created"
+msgstr "Dibuat"
+
+#: lib/game_server_web/live/admin_live/lobbies.ex:359
+#, elixir-autogen, elixir-format
+msgid "Ready check"
+msgstr "Pemeriksaan kesiapan"
+
+#: lib/game_server_web/live/admin_live/lobbies.ex:363
+#, elixir-autogen, elixir-format
+msgid "deadline"
+msgstr "tenggat"
+
+#: lib/game_server_web/live/quests_live.ex:560
+#, elixir-autogen, elixir-format
+msgid "In progress"
+msgstr "Berlangsung"
+
+#: lib/game_server_web/live/quests_live.ex:561
+#, elixir-autogen, elixir-format
+msgid "Not started"
+msgstr "Belum dimulai"
+
+#: lib/game_server_web/live/quests_live.ex:484
+#, elixir-autogen, elixir-format
+msgid "Quest chain"
+msgstr "Rantai misi"
+
+#: lib/game_server_web/live/quests_live.ex:557
+#, elixir-autogen, elixir-format
+msgid "Ready to claim"
+msgstr "Siap diklaim"
+
+#: lib/game_server_web/live/quests_live.ex:614
+#, elixir-autogen, elixir-format
+msgid "View quest chain"
+msgstr "Lihat rantai misi"

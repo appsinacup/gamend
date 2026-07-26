@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: uk\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100 != 11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "Ласкаво просимо"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "Увійдіть уперше."
+
+#. quests
+msgid "Daily check-in"
+msgstr "Щоденний вхід"
+
+#. quests
+msgid "Log in today."
+msgstr "Увійдіть сьогодні."
+
+#. quests
+msgid "Weekly regular"
+msgstr "Завсідник тижня"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "Увійдіть у п'ять різних днів цього тижня."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "Відданий місяця"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "Увійдіть двадцять разів цього місяця."
+
+#. quests
+msgid "Stop by again"
+msgstr "Завітайте ще раз"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "Увійдіть. Знову стане доступним через три дні."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "Вірний ветеран"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "Увійдіть п'ятдесят разів, після того як привіталися."
+
+#. quests
+msgid "Night owl"
+msgstr "Нічна сова"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "Дещо знаходять, а не оголошують."
+
+#. quests
+msgid "Launch festival"
+msgstr "Фестиваль запуску"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "Щоденне завдання, яке зараховується лише під час фестивалю."
+
+#. leaderboards
+msgid "Logins"
+msgstr "Входи"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "Скільки разів кожен гравець увійшов у гру."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "Щотижневий кубок"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "Реєструйтеся будь-коли; сітку жеребкують щопонеділка."

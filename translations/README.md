@@ -5,7 +5,19 @@ These files are **not committed** — they are working files for translators.
 
 | Strings | Domains | Languages |
 |---------|---------|-----------|
-| 148 | default (89), errors (29), notifications (30) | 30 |
+| 352 | default (242), theme (55), errors (30), content (20), notifications (5) | 30 |
+
+Both gettext trees are exported into the one CSV: the host's `priv/gettext`
+(which owns `theme` and `content`) and the library's
+`apps/game_server_web/priv/gettext`. A msgid that appears in both is one row,
+and importing writes it back to both.
+
+`theme` is the site copy from `theme/config.json` — refresh it with
+`mix gamend.theme.extract`. `content` is quest, leaderboard and tournament
+text read straight from the database — refresh it with
+`mix gamend.content.extract`. Run either before exporting if the source
+changed; configuration (colours, hrefs, icons, slugs) is never extracted, so a
+translator cannot break the site's layout.
 
 ## CSV export / import
 

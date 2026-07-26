@@ -17,6 +17,23 @@ defmodule GameServer.AccountsTest do
     end
   end
 
+  describe "users_by_ids/1" do
+    test "maps ids to users, ignoring nils and duplicates" do
+      u1 = user_fixture()
+      u2 = user_fixture()
+
+      result = Accounts.users_by_ids([u1.id, u2.id, nil, u1.id])
+
+      assert %User{} = result[u1.id]
+      assert %User{} = result[u2.id]
+      assert map_size(result) == 2
+    end
+
+    test "returns an empty map when given no ids" do
+      assert Accounts.users_by_ids([nil]) == %{}
+    end
+  end
+
   describe "get_user_by_email_and_password/2" do
     test "does not return the user if the email does not exist" do
       refute Accounts.get_user_by_email_and_password("unknown@example.com", "hello world!")

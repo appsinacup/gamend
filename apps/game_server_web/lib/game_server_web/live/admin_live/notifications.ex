@@ -20,6 +20,7 @@ defmodule GameServerWeb.AdminLive.Notifications do
             "recipient_id" => "",
             "title" => "",
             "content" => "",
+            "icon_url" => "",
             "metadata" => ""
           },
           as: :notification
@@ -64,6 +65,7 @@ defmodule GameServerWeb.AdminLive.Notifications do
                 </div>
                 <.input field={@create_form[:title]} type="text" label="Title" />
                 <.input field={@create_form[:content]} type="text" label="Content (optional)" />
+                <.input field={@create_form[:icon_url]} type="text" label="Icon URL (optional)" />
                 <div class="form-control">
                   <label class="label">Metadata (JSON, optional)</label>
                   <textarea
@@ -172,15 +174,15 @@ defmodule GameServerWeb.AdminLive.Notifications do
                         />
                       </td>
                       <td class="font-mono text-sm">{n.id}</td>
-                      <td class="font-mono text-sm">{n.sender_id}</td>
-                      <td class="font-mono text-sm">{n.recipient_id}</td>
+                      <td class="text-sm" title={n.sender_id}>{user_display(n.sender)}</td>
+                      <td class="text-sm" title={n.recipient_id}>{user_display(n.recipient)}</td>
                       <td class="text-sm max-w-xs truncate">{n.title}</td>
                       <td class="text-sm max-w-xs truncate">{n.content || "-"}</td>
                       <td class="text-xs font-mono max-w-xs truncate">
                         {Jason.encode!(n.metadata || %{})}
                       </td>
                       <td class="text-sm whitespace-nowrap">
-                        {Calendar.strftime(n.inserted_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={n.inserted_at} />
                       </td>
                       <td class="text-sm">
                         <button
@@ -260,6 +262,7 @@ defmodule GameServerWeb.AdminLive.Notifications do
       attrs = %{
         "title" => params["title"],
         "content" => params["content"],
+        "icon_url" => params["icon_url"],
         "metadata" => metadata
       }
 
@@ -276,6 +279,7 @@ defmodule GameServerWeb.AdminLive.Notifications do
                  "recipient_id" => "",
                  "title" => "",
                  "content" => "",
+                 "icon_url" => "",
                  "metadata" => ""
                },
                as: :notification
@@ -283,8 +287,9 @@ defmodule GameServerWeb.AdminLive.Notifications do
            )
            |> reload_notifications()}
 
-        {:error, changeset} when is_struct(changeset, Ecto.Changeset) ->
-          {:noreply, put_flash(socket, :error, "Validation failed: title is required")}
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:noreply,
+           put_flash(socket, :error, "Validation failed: #{changeset_error_summary(changeset)}")}
 
         {:error, reason} ->
           {:noreply, put_flash(socket, :error, "Failed: #{inspect(reason)}")}
@@ -430,4 +435,10 @@ defmodule GameServerWeb.AdminLive.Notifications do
   end
 
   defp parse_id(v), do: GameServer.UUIDv7.cast_or_nil(v)
+
+  defp changeset_error_summary(changeset) do
+    changeset
+    |> Ecto.Changeset.traverse_errors(fn {msg, _opts} -> msg end)
+    |> Enum.map_join("; ", fn {field, messages} -> "#{field} #{Enum.join(messages, ", ")}" end)
+  end
 end

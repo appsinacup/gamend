@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: vi\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "Chào mừng bạn"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "Đăng nhập lần đầu tiên."
+
+#. quests
+msgid "Daily check-in"
+msgstr "Điểm danh hằng ngày"
+
+#. quests
+msgid "Log in today."
+msgstr "Đăng nhập hôm nay."
+
+#. quests
+msgid "Weekly regular"
+msgstr "Người quen của tuần"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "Đăng nhập vào năm ngày khác nhau trong tuần này."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "Người gắn bó của tháng"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "Đăng nhập hai mươi lần trong tháng này."
+
+#. quests
+msgid "Stop by again"
+msgstr "Ghé lại nhé"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "Đăng nhập. Sẽ mở lại sau ba ngày."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "Kỳ cựu trung thành"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "Đăng nhập năm mươi lần, sau khi bạn đã chào hỏi."
+
+#. quests
+msgid "Night owl"
+msgstr "Cú đêm"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "Có những thứ để khám phá, chứ không phải để thông báo."
+
+#. quests
+msgid "Launch festival"
+msgstr "Lễ hội ra mắt"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "Nhiệm vụ hằng ngày chỉ được tính trong thời gian diễn ra lễ hội."
+
+#. leaderboards
+msgid "Logins"
+msgstr "Lượt đăng nhập"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "Số lần mỗi người chơi đã đăng nhập."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "Cúp hằng tuần"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "Đăng ký bất cứ lúc nào; nhánh đấu được bốc thăm vào mỗi thứ Hai."

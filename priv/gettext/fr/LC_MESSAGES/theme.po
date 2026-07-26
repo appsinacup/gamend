@@ -1,0 +1,170 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: fr\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "Serveur de jeu Elixir open source pour les jeux multijoueurs en temps réel."
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "Blog"
+
+msgid "Roadmap"
+msgstr "Feuille de route"
+
+msgid "Changelog"
+msgstr "Journal des modifications"
+
+msgid "Social"
+msgstr "Social"
+
+msgid "About Gamend"
+msgstr "À propos de Gamend"
+
+msgid "Elixir Docs"
+msgstr "Documentation Elixir"
+
+msgid "About"
+msgstr "À propos"
+
+msgid "Guides"
+msgstr "Guides"
+
+msgid "API Docs"
+msgstr "Documentation de l'API"
+
+msgid "Store"
+msgstr "Boutique"
+
+msgid "Help"
+msgstr "Aide"
+
+msgid "Privacy Policy"
+msgstr "Politique de confidentialité"
+
+msgid "Terms and Conditions"
+msgstr "Conditions générales"
+
+msgid "Privacy & Terms"
+msgstr "Confidentialité et conditions"
+
+msgid "Play"
+msgstr "Jouer"
+
+msgid "Leaderboards"
+msgstr "Classements"
+
+msgid "Quests"
+msgstr "Quêtes"
+
+msgid "Tournaments"
+msgstr "Tournois"
+
+msgid "Groups"
+msgstr "Groupes"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "Gamend est un backend Elixir **complet** pour les jeux multijoueurs, avec authentification, systèmes sociaux, canaux temps réel et outils d'administration."
+
+msgid "Realtime Guide"
+msgstr "Guide du temps réel"
+
+msgid "Real-time games"
+msgstr "Jeux en temps réel"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "Utilisez les canaux, salons, groupes, la présence et les canaux de données WebRTC sans reconstruire l'infrastructure multijoueur habituelle."
+
+msgid "Built For Real-Time Games"
+msgstr "Conçu pour les jeux en temps réel"
+
+msgid "Read Docs"
+msgstr "Lire la documentation"
+
+msgid "Open source foundation"
+msgstr "Fondation open source"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "Le projet est conçu pour être forké, personnalisé, hébergé et étendu par les équipes de jeu."
+
+msgid "Open Source Foundation"
+msgstr "Fondation open source"
+
+msgid "Getting Started"
+msgstr "Premiers pas"
+
+msgid "Presentation Video"
+msgstr "Vidéo de présentation"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "Serveur de jeu Elixir **open source** pour les jeux multijoueurs **en temps réel**."
+
+msgid "Log in"
+msgstr "Se connecter"
+
+msgid "Register"
+msgstr "S'inscrire"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "E-mail, lien magique, OAuth, JWT et session. Inscription, connexion, réinitialisation du mot de passe et vérification de l'e-mail."
+
+msgid "Authentication & Users"
+msgstr "Authentification et utilisateurs"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "Salons en temps réel et groupes éphémères. Paramètres personnalisables avec mises à jour en direct."
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "Salons, groupes et matchmaking"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "Demandes d'amis, blocage, présence en temps réel. Groupes publics, privés et masqués. Messagerie directe et de groupe."
+
+msgid "Friends, Groups & Chat"
+msgstr "Amis, groupes et chat"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "Succès, tournois à élimination et classements gérés par le serveur. Notifications en temps réel pour toutes les fonctionnalités et les événements de paiement."
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "Succès, tournois, classements et notifications"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "Étendez la logique du serveur avec des scripts Elixir. Planifiez des tâches automatiques et des tâches cron."
+
+msgid "Server Scripting & Scheduling"
+msgstr "Scripts serveur et planification"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "API REST, canaux WebSocket en temps réel et DataChannels WebRTC à faible latence. Portail d'administration et interface web."
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "HTTP, WebSocket et WebRTC"
+
+msgid "Open Store"
+msgstr "Ouvrir la boutique"
+
+msgid "Payment Docs"
+msgstr "Documentation des paiements"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "Paiements côté serveur avec Stripe, Google Play, App Store et Steam. Validez les reçus, traitez les webhooks signés, accordez des droits, révoquez les remboursements et inspectez le tout dans l'administration."
+
+msgid "Payments & Store Integrations"
+msgstr "Paiements et intégrations de boutique"
+
+msgid "Gamend is in beta!"
+msgstr "Gamend est en bêta !"
+
+msgid "Game + Backend"
+msgstr "Jeu + backend"

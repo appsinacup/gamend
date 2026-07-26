@@ -183,11 +183,78 @@ defmodule GameServerWeb.Api.V1.LobbyController do
     ]
   )
 
+  operation(:set_state,
+    operation_id: "set_lobby_state",
+    summary: "Set lobby state (host only)",
+    description:
+      "Move the caller's lobby to another lifecycle state. Allowed only for the " <>
+        "host of a host-managed lobby: hostless (matchmaking) lobbies belong to " <>
+        "the server, so no player may move them. The vocabulary is the game's " <>
+        "(core documents created, starting, playing, ended); the game's " <>
+        "before_lobby_state_change hook enforces its own words and ordering.",
+    security: [%{"authorization" => []}],
+    request_body: {
+      "Target state",
+      "application/json",
+      %Schema{
+        type: :object,
+        properties: %{state: %Schema{type: :string, description: "Target lifecycle state"}},
+        required: [:state]
+      }
+    },
+    responses: %{
+      200 => {"Updated lobby", "application/json", %Schema{type: :object}},
+      400 => {"Not in a lobby / missing state", "application/json", %Schema{type: :object}},
+      403 => {"Not the host, or lobby is hostless", "application/json", %Schema{type: :object}},
+      422 => {"Unknown state or hook rejection", "application/json", %Schema{type: :object}}
+    }
+  )
+
+  def set_state(conn, %{"state" => state}) when is_binary(state) do
+    case Scope.user(conn.assigns[:current_scope]) do
+      %User{} = user ->
+        if is_nil(user.lobby_id) do
+          conn |> put_status(:bad_request) |> json(%{error: "not_in_lobby"})
+        else
+          lobby = Lobbies.get_lobby!(user.lobby_id)
+
+          case Lobbies.transition_state_by_host(user, lobby, state) do
+            {:ok, updated} ->
+              json(conn, serialize_lobby(updated))
+
+            {:error, :not_host} ->
+              conn |> put_status(:forbidden) |> json(%{error: "not_host"})
+
+            {:error, :invalid_state} ->
+              conn |> put_status(:unprocessable_entity) |> json(%{error: "invalid_state"})
+
+            {:error, {:hook_rejected, reason}} ->
+              conn
+              |> put_status(:unprocessable_entity)
+              |> json(%{error: "rejected", reason: inspect(reason)})
+
+            _other ->
+              conn |> put_status(:unprocessable_entity) |> json(%{error: "unexpected_error"})
+          end
+        end
+
+      _ ->
+        conn |> put_status(:unauthorized) |> json(%{error: "Not authenticated"})
+    end
+  end
+
+  def set_state(conn, _params) do
+    conn |> put_status(:bad_request) |> json(%{error: "state_required"})
+  end
+
   operation(:update,
     operation_id: "update_lobby",
     summary: "Update lobby (host only)",
     description:
-      "Update lobby settings. Only the host can update the lobby via the API (returns 403 if not host). Admins can still modify lobbies from the admin console - those changes are broadcast to viewers.",
+      "Update the caller's lobby settings. Allowed only for the host of a host-managed " <>
+        "lobby: hostless (matchmaking) lobbies belong to the server, so no player may edit " <>
+        "them (both cases return 403). Admins can still modify any lobby from the admin " <>
+        "console or the admin API - those changes are broadcast to viewers.",
     security: [%{"authorization" => []}],
     request_body: {
       "Lobby update parameters",
@@ -217,7 +284,7 @@ defmodule GameServerWeb.Api.V1.LobbyController do
     responses: [
       ok: {"Lobby updated", "application/json", @lobby_schema},
       forbidden:
-        {"Not the host", "application/json",
+        {"Not the host, or lobby is hostless", "application/json",
          %Schema{type: :object, properties: %{error: %Schema{type: :string}}}},
       unauthorized:
         {"Not authenticated", "application/json",
@@ -367,7 +434,7 @@ defmodule GameServerWeb.Api.V1.LobbyController do
         param_value(params, "metadata_value", :metadata_value)
       )
 
-    {page, page_size} = parse_page_params(params)
+    {page, page_size} = GameServerWeb.Pagination.params(params)
 
     lobbies = Lobbies.list_lobbies(filters, page: page, page_size: page_size)
     serialized = Enum.map(lobbies, &serialize_lobby/1)
@@ -414,7 +481,7 @@ defmodule GameServerWeb.Api.V1.LobbyController do
                    id: %Schema{type: :string, format: :uuid},
                    username: %Schema{type: :string},
                    display_name: %Schema{type: :string},
-                   profile_url: %Schema{type: :string, nullable: true},
+                   profile_url: %Schema{type: :string},
                    metadata: %Schema{
                      type: :object,
                      description: "User metadata (accessories, hat, color, etc.)"

@@ -109,6 +109,12 @@ defmodule GameServer.Hooks do
         def after_lobby_deleted(_lobby), do: :ok
 
         @impl true
+        def before_lobby_state_change(_lobby, _from, _to), do: :ok
+
+        @impl true
+        def after_lobby_state_changed(_lobby, _from, _to), do: :ok
+
+        @impl true
         def before_lobby_kick(host, target, lobby) do
           {:ok, {host, target, lobby}}
         end
@@ -118,6 +124,15 @@ defmodule GameServer.Hooks do
 
         @impl true
         def after_lobby_host_change(_lobby, _new_host_id), do: :ok
+
+        @impl true
+        def before_ready_check_open(_subject, _user_ids), do: :ok
+
+        @impl true
+        def after_ready_check_passed(_check), do: :ok
+
+        @impl true
+        def after_ready_check_failed(_check, _reason, _not_ready), do: :ok
 
         # Custom RPC handlers - define your own functions!
         # These are called from game clients via the RPC channel.
@@ -165,7 +180,9 @@ defmodule GameServer.Hooks do
   - `after_party_leave/2` - After a user leaves a party (fire-and-forget), receives `(user, party_id)`
   - `after_party_kick/3` - After a member is kicked from a party (fire-and-forget), receives `(target, leader, party)`
   - `after_party_disband/1` - After a party is disbanded (fire-and-forget), receives `(party)`
-  - `after_achievement_unlocked/2` - After an achievement is unlocked (fire-and-forget), receives `(user_id, achievement)`
+  - `before_quest_claim/3` - Before a player claims a completed quest, receives `(user_id, quest, progress)`. Veto-only: return `{:error, reason}` to reject, anything else allows. Skipped for auto-claim quests
+  - `after_quest_completed/1` - After a quest completes (fire-and-forget), receives the progress row
+  - `after_quest_claimed/1` - After a quest's rewards are claimed (fire-and-forget), receives the progress row
   - `before_chat_message/2` - Before a chat message is sent, receives `(user, attrs)`. Return `{:ok, attrs}` to allow (and optionally modify), or `{:error, reason}` to block
   - `after_chat_message/1` - After a chat message is persisted (fire-and-forget)
   - `before_lobby_leave/2` - Before user leaves lobby
@@ -174,9 +191,14 @@ defmodule GameServer.Hooks do
   - `after_lobby_updated/1` - After lobby is updated
   - `before_lobby_delete/1` - Before lobby is deleted
   - `after_lobby_deleted/1` - After lobby is deleted
+  - `before_lobby_state_change/3` - Before a lobby's `state` changes, receives `(lobby, from, to)`. Veto-only: return `{:error, reason}` to reject, anything else allows. The vocabulary is yours — enforce it here (reject words you don't use)
+  - `after_lobby_state_changed/3` - After a lobby's `state` changed (fire-and-forget), receives `(lobby, from, to)`
   - `before_lobby_kick/3` - Before user is kicked from lobby
   - `after_lobby_kick/3` - After user is kicked from lobby
   - `after_lobby_host_change/2` - After lobby host changes
+  - `before_ready_check_open/2` - Before a ready check opens, receives `(lobby | :matchmaking, user_ids)`. Veto-only: return `{:error, reason}` to reject
+  - `after_ready_check_passed/1` - Everyone answered ready (fire-and-forget), receives the check. Where you start the match: `Lobbies.transition_state(lobby, "starting")`
+  - `after_ready_check_failed/3` - A check was declined, timed out or cancelled, receives `(check, reason, not_ready_participants)`. Core kicks nobody — decide here
   - `before_kv_get/2` - Called before a client KV `get` to return a KV access decision such as `:public`, `:owner_only`, or `:server_only`
 
     ## Custom RPC Functions
@@ -339,8 +361,13 @@ defmodule GameServer.Hooks do
   @callback after_party_kick(user(), user(), party()) :: any()
   @callback after_party_disband(party()) :: any()
 
-  # Achievement lifecycle callbacks
-  @callback after_achievement_unlocked(integer(), map()) :: any()
+  # Quest lifecycle callbacks. `before_quest_claim` is veto-only: return
+  # `{:error, reason}` to reject the claim, anything else allows. Auto-claim
+  # quests skip it. Achievements are quests of `kind: "achievement"`.
+  @callback before_quest_claim(String.t(), GameServer.Quests.Quest.t(), GameServer.Quests.QuestProgress.t()) ::
+              {:ok, term()} | {:error, term()} | any()
+  @callback after_quest_completed(GameServer.Quests.QuestProgress.t()) :: any()
+  @callback after_quest_claimed(GameServer.Quests.QuestProgress.t()) :: any()
 
   # Tournament lifecycle hooks (all optional; see the Tournaments guide).
   # Match payloads are `GameServer.Tournaments.Match` structs with
@@ -403,6 +430,9 @@ defmodule GameServer.Hooks do
   @callback before_chat_message(user(), attrs :: map()) :: hook_result(map())
   @callback after_chat_message(message()) :: any()
 
+  @callback before_push_send(user_id :: String.t(), message :: map()) :: hook_result(map())
+  @callback after_push_sent(user_id :: String.t(), message :: map(), result :: map()) :: any()
+
   @callback before_lobby_leave(user(), lobby()) :: hook_result({user(), lobby()})
   @callback after_lobby_leave(user(), lobby()) :: any()
 
@@ -412,9 +442,24 @@ defmodule GameServer.Hooks do
   @callback before_lobby_delete(lobby()) :: hook_result(lobby())
   @callback after_lobby_deleted(lobby()) :: any()
 
+  # Lobby lifecycle state. Core only ever sets "created" and accepts any sane
+  # word; the vocabulary and its ordering are the game's, enforced right here.
+  # Veto-only: the return never rewrites the args.
+  @callback before_lobby_state_change(lobby(), String.t(), String.t()) ::
+              {:ok, term()} | {:error, term()} | any()
+  @callback after_lobby_state_changed(lobby(), String.t(), String.t()) :: any()
+
   @callback before_lobby_kick(host :: user(), target :: user(), lobby()) ::
               hook_result({user(), user(), lobby()})
   @callback after_lobby_kick(host :: user(), target :: user(), lobby()) :: any()
+
+  # Ready checks. `after_ready_check_passed` is the "everyone answered yes"
+  # callback; `after_ready_check_failed` gets the participants who did not —
+  # core kicks nobody, so what that costs them is the game's call.
+  @callback before_ready_check_open(lobby() | :matchmaking, [String.t()]) ::
+              {:ok, term()} | {:error, term()} | any()
+  @callback after_ready_check_passed(map()) :: any()
+  @callback after_ready_check_failed(map(), String.t(), [map()]) :: any()
 
   @optional_callbacks before_group_create: 2,
                       after_group_create: 1,
@@ -434,9 +479,16 @@ defmodule GameServer.Hooks do
                       after_party_leave: 2,
                       after_party_kick: 3,
                       after_party_disband: 1,
-                      after_achievement_unlocked: 2,
+                      before_quest_claim: 3,
+                      after_quest_completed: 1,
+                      after_quest_claimed: 1,
                       before_chat_message: 2,
-                      after_chat_message: 1
+                      after_chat_message: 1,
+                      before_push_send: 2,
+                      after_push_sent: 3,
+                      before_ready_check_open: 2,
+                      after_ready_check_passed: 1,
+                      after_ready_check_failed: 3
 
   @doc """
   Called before a KV `get/2` is performed. Implementations should return
@@ -507,7 +559,10 @@ defmodule GameServer.Hooks do
       @impl true
       def after_user_deleted(_user), do: :ok
 
+      @impl true
       def after_wallet_changed(_change), do: :ok
+
+      @impl true
       def after_inventory_changed(_change), do: :ok
 
       @impl true
@@ -574,7 +629,13 @@ defmodule GameServer.Hooks do
       def after_party_disband(_party), do: :ok
 
       @impl true
-      def after_achievement_unlocked(_user_id, _achievement), do: :ok
+      def before_quest_claim(_user_id, _quest, _progress), do: :ok
+
+      @impl true
+      def after_quest_completed(_progress), do: :ok
+
+      @impl true
+      def after_quest_claimed(_progress), do: :ok
 
       @impl true
       def after_lobby_join(_user, _lobby), do: :ok
@@ -584,6 +645,12 @@ defmodule GameServer.Hooks do
 
       @impl true
       def after_chat_message(_message), do: :ok
+
+      @impl true
+      def before_push_send(_user_id, message), do: {:ok, message}
+
+      @impl true
+      def after_push_sent(_user_id, _message, _result), do: :ok
 
       @impl true
       def before_lobby_leave(user, lobby), do: {:ok, {user, lobby}}
@@ -604,6 +671,12 @@ defmodule GameServer.Hooks do
       def after_lobby_deleted(_lobby), do: :ok
 
       @impl true
+      def before_lobby_state_change(_lobby, _from, _to), do: :ok
+
+      @impl true
+      def after_lobby_state_changed(_lobby, _from, _to), do: :ok
+
+      @impl true
       def before_lobby_kick(host, target, lobby), do: {:ok, {host, target, lobby}}
 
       @impl true
@@ -611,6 +684,15 @@ defmodule GameServer.Hooks do
 
       @impl true
       def after_lobby_host_change(_lobby, _new_host_id), do: :ok
+
+      @impl true
+      def before_ready_check_open(_subject, _user_ids), do: :ok
+
+      @impl true
+      def after_ready_check_passed(_check), do: :ok
+
+      @impl true
+      def after_ready_check_failed(_check, _reason, _not_ready), do: :ok
 
       @impl true
       def before_kv_get(_key, _opts), do: :public
@@ -685,20 +767,29 @@ defmodule GameServer.Hooks do
                      after_party_leave: 2,
                      after_party_kick: 3,
                      after_party_disband: 1,
-                     after_achievement_unlocked: 2,
+                     before_quest_claim: 3,
+                     after_quest_completed: 1,
+                     after_quest_claimed: 1,
                      before_lobby_join: 3,
                      after_lobby_join: 2,
                      before_chat_message: 2,
                      after_chat_message: 1,
+                     before_push_send: 2,
+                     after_push_sent: 3,
                      before_lobby_leave: 2,
                      after_lobby_leave: 2,
                      before_lobby_update: 2,
                      after_lobby_updated: 1,
                      before_lobby_delete: 1,
                      after_lobby_deleted: 1,
+                     before_lobby_state_change: 3,
+                     after_lobby_state_changed: 3,
                      before_lobby_kick: 3,
                      after_lobby_kick: 3,
                      after_lobby_host_change: 2,
+                     before_ready_check_open: 2,
+                     after_ready_check_passed: 1,
+                     after_ready_check_failed: 3,
                      before_kv_get: 2,
                      before_matchmaking_join: 2,
                      after_matchmaking_join: 2,

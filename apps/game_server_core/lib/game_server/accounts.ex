@@ -23,7 +23,7 @@ defmodule GameServer.Accounts do
   alias GameServer.Repo
   alias GameServer.Types
 
-  alias GameServer.Accounts.{User, UsernameGenerator, UserNotifier, UserToken}
+  alias GameServer.Accounts.{AvatarMirror, User, UsernameGenerator, UserNotifier, UserToken}
 
   @stats_cache_ttl_ms 60_000
   @users_count_cache_ttl_ms 60_000
@@ -572,6 +572,19 @@ defmodule GameServer.Accounts do
               opts: [ttl: @user_cache_ttl_ms]
             )
   def get_user(id), do: Repo.get_uuid(User, id)
+
+  @doc """
+  Map of `%{id => %User{}}` for the given ids, for batch name lookups (e.g. admin
+  tables that hold only a `user_id`). Nil/duplicate ids are ignored.
+  """
+  @spec users_by_ids([Ecto.UUID.t()]) :: %{Ecto.UUID.t() => User.t()}
+  def users_by_ids(ids) when is_list(ids) do
+    ids = ids |> Enum.reject(&is_nil/1) |> Enum.uniq()
+
+    from(u in User, where: u.id in ^ids)
+    |> Repo.all()
+    |> Map.new(&{&1.id, &1})
+  end
 
   @decorate cacheable(
               key: {:accounts, :user_by, field, value},
@@ -1175,46 +1188,46 @@ defmodule GameServer.Accounts do
     end
   end
 
-  @doc """
-  Returns true when device-based auth is enabled. This checks the
-  application config `:game_server, :device_auth_enabled` and falls back
-  to the environment variable `DEVICE_AUTH_ENABLED`. If neither
-  is set, device auth is enabled by default.
-  """
+  use GameServer.Settings.Provider,
+    app: :game_server_core,
+    group: :auth,
+    label: "Authentication"
+
+  setting(:device_auth_enabled, :boolean,
+    default: true,
+    doc:
+      "Allow POST /api/v1/login/device. When on, any unknown device_id creates an anonymous account."
+  )
+
+  setting(:require_activation, :boolean,
+    default: false,
+    doc: "New accounts cannot log in until an admin activates them (beta mode)."
+  )
+
+  # Dev and test carry compiled values (config/dev.exs, config/test.exs), so
+  # this only ever fires on a real deployment. Generate one with
+  # `mix phx.gen.secret`.
+  setting(:secret_key_base, :string,
+    secret: true,
+    required: :prod,
+    doc: "Signs and encrypts cookies, tokens and LiveView sessions."
+  )
+
+  setting(:guardian_secret_key, :string,
+    secret: true,
+    doc: "JWT signing key. Defaults to secret_key_base when unset."
+  )
+
+  @doc "Whether device-based auth is enabled. Defaults to on."
   @spec device_auth_enabled?() :: boolean()
-  def device_auth_enabled? do
-    case Application.get_env(:game_server_core, :device_auth_enabled) do
-      nil ->
-        case System.get_env("DEVICE_AUTH_ENABLED") do
-          v when v in ["1", "true", "TRUE", "True"] -> true
-          v when v in ["0", "false", "FALSE", "False"] -> false
-          _ -> true
-        end
-
-      bool when is_boolean(bool) ->
-        bool
-
-      other ->
-        # support string-like values in config
-        case other do
-          v when v in ["1", "true", "TRUE", "True"] -> true
-          v when v in ["0", "false", "FALSE", "False"] -> false
-          _ -> true
-        end
-    end
-  end
+  def device_auth_enabled?, do: GameServer.Settings.get(__MODULE__, :device_auth_enabled) == true
 
   @doc """
-  Returns true when new accounts require manual admin activation before
-  they can log in. Reads from application config
-  `:game_server_core, :require_account_activation` which is set at boot
-  from the `REQUIRE_ACCOUNT_ACTIVATION` environment variable in `runtime.exs`.
-  Defaults to `false` when not configured.
+  Whether new accounts require manual admin activation before they can log in.
   """
   @spec require_account_activation?() :: boolean()
-  def require_account_activation? do
-    Application.get_env(:game_server_core, :require_account_activation, false) == true
-  end
+  def require_account_activation?,
+    do: GameServer.Settings.get(__MODULE__, :require_activation) == true
 
   @doc """
   Returns true when the given user is activated or when account activation
@@ -1236,15 +1249,20 @@ defmodule GameServer.Accounts do
     provider_id = Map.get(attrs, provider_id_field)
     email = Map.get(attrs, :email)
 
-    cond do
-      provider_id != nil ->
-        handle_provider_id(provider_id, attrs, provider_id_field, changeset_fn)
+    result =
+      cond do
+        provider_id != nil ->
+          handle_provider_id(provider_id, attrs, provider_id_field, changeset_fn)
 
-      email != nil ->
-        handle_by_email(email, attrs, provider_id_field, changeset_fn)
+        email != nil ->
+          handle_by_email(email, attrs, provider_id_field, changeset_fn)
 
-      true ->
-        create_user_from_provider(attrs, changeset_fn)
+        true ->
+          create_user_from_provider(attrs, changeset_fn)
+      end
+
+    with {:ok, %User{} = user} <- result do
+      {:ok, maybe_mirror_avatar(user)}
     end
   end
 
@@ -1313,6 +1331,34 @@ defmodule GameServer.Accounts do
       {:error, %{changeset | action: :update}}
     end
   end
+
+  # Mirror an external (OAuth provider) avatar into our object storage so avatars
+  # render from our storage/CDN rather than hotlinking the provider. Enqueued only
+  # when the user's avatar is not already one of our stored objects. Oban's
+  # `:infinity` uniqueness keeps it to one job per user, and once mirrored the URL
+  # points at our storage so `our_stored_avatar?/1` short-circuits future logins —
+  # we never re-mirror. See `GameServer.Accounts.AvatarMirror`.
+  defp maybe_mirror_avatar(%User{profile_url: url} = user) when is_binary(url) and url != "" do
+    unless our_stored_avatar?(user) do
+      _ =
+        Oban.insert(
+          AvatarMirror.new(
+            %{"user_id" => user.id, "source_url" => url},
+            unique: [keys: [:user_id], period: :infinity, states: Oban.Job.states()]
+          )
+        )
+    end
+
+    user
+  end
+
+  defp maybe_mirror_avatar(user), do: user
+
+  # Our stored avatars live under the `avatars/<user_id>/…` key namespace, so a
+  # profile URL containing that segment is one we already host (uploaded or
+  # previously mirrored) — anything else is an external provider link.
+  defp our_stored_avatar?(%User{id: id, profile_url: url}),
+    do: is_binary(url) and String.contains?(url, "avatars/#{id}")
 
   defp create_user_from_provider(attrs, changeset_fn) do
     is_first_user = first_user?()
@@ -1402,7 +1448,7 @@ defmodule GameServer.Accounts do
         # Broadcast user update to user channel
         broadcast_user_update(updated_user)
 
-        {:ok, updated_user}
+        {:ok, maybe_mirror_avatar(updated_user)}
 
       {:error, changeset} ->
         handle_link_error(user, attrs, provider_id_field, changeset)
@@ -1749,6 +1795,7 @@ defmodule GameServer.Accounts do
 
         GameServer.Async.run(fn ->
           GameServer.Hooks.internal_call(:after_user_logged_in, [user])
+          GameServer.Quests.report_event(user.id, "login")
         end)
 
         {:ok, {user, []}}
@@ -1768,6 +1815,7 @@ defmodule GameServer.Accounts do
       {:ok, {user, _tokens}} = ok ->
         GameServer.Async.run(fn ->
           GameServer.Hooks.internal_call(:after_user_logged_in, [user])
+          GameServer.Quests.report_event(user.id, "login")
         end)
 
         ok
@@ -1782,7 +1830,7 @@ defmodule GameServer.Accounts do
 
   ## Examples
 
-      iex> deliver_user_update_email_instructions(user, current_email, &url(~p"/users/settings/confirm-email/#{&1}"))
+      iex> deliver_user_update_email_instructions(user, current_email, &url(~p"/users/settings/confirm_email/#{&1}"))
       {:ok, %{to: ..., body: ...}}
 
   """
@@ -2188,6 +2236,28 @@ defmodule GameServer.Accounts do
       err ->
         err
     end
+  end
+
+  @doc """
+  Delete a user's stored avatar objects except `keep_key`.
+
+  Each new avatar gets a fresh random key (`avatars/<user_id>/<rand><ext>`), so
+  without this the previous upload or mirror copy lingers in storage forever.
+  Best-effort: a failed cleanup leaves the old object rather than failing the
+  update that already succeeded.
+  """
+  @spec prune_user_avatars(Ecto.UUID.t(), String.t()) :: :ok
+  def prune_user_avatars(user_id, keep_key) when is_binary(user_id) and is_binary(keep_key) do
+    [prefix: "avatars/#{user_id}/", limit: 100]
+    |> GameServer.Storage.list_objects()
+    |> Enum.reject(&(&1.key == keep_key))
+    |> Enum.each(fn %{key: key} -> GameServer.Storage.delete(key) end)
+
+    :ok
+  rescue
+    e ->
+      Logger.warning("avatar prune failed user=#{user_id}: #{inspect(e)}")
+      :ok
   end
 
   @doc """

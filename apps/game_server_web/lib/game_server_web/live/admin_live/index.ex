@@ -4,7 +4,6 @@ defmodule GameServerWeb.AdminLive.Index do
   alias GameServer.Accounts
   alias GameServer.Accounts.User
   alias GameServer.Accounts.UserToken
-  alias GameServer.Achievements
   alias GameServer.Groups
   alias GameServer.KV
   alias GameServer.Leaderboards.Leaderboard
@@ -33,6 +32,9 @@ defmodule GameServerWeb.AdminLive.Index do
           <.link navigate={~p"/admin/config"} class="btn btn-outline">
             Configuration
           </.link>
+          <.link navigate={~p"/admin/settings"} class="btn btn-outline">
+            Settings
+          </.link>
           <.link navigate={~p"/admin/kv"} class="btn btn-outline">
             KV ({@kv_count})
           </.link>
@@ -57,6 +59,9 @@ defmodule GameServerWeb.AdminLive.Index do
           <.link navigate={~p"/admin/notifications"} class="btn btn-outline">
             Notifications ({@notifications_count})
           </.link>
+          <.link navigate={~p"/admin/push"} class="btn btn-outline">
+            Push Devices ({@push_stats.live})
+          </.link>
           <.link navigate={~p"/admin/groups"} class="btn btn-outline">
             Groups ({@groups_count})
           </.link>
@@ -69,8 +74,8 @@ defmodule GameServerWeb.AdminLive.Index do
           <.link navigate={~p"/admin/chat"} class="btn btn-outline">
             Chat ({@chat_count})
           </.link>
-          <.link navigate={~p"/admin/achievements"} class="btn btn-outline">
-            Achievements ({@achievements_count})
+          <.link navigate={~p"/admin/quests"} class="btn btn-outline">
+            Quests ({@quest_stats.definitions})
           </.link>
           <.link navigate={~p"/admin/payments"} class="btn btn-outline">
             Payments ({@payments_stats.purchases})
@@ -78,13 +83,13 @@ defmodule GameServerWeb.AdminLive.Index do
           <.link navigate={~p"/admin/connections"} class="btn btn-outline">
             Connections ({@conn_stats.total_connections})
           </.link>
-          <.link navigate={~p"/admin/rate-limiting"} class="btn btn-outline">
+          <.link navigate={~p"/admin/rate_limiting"} class="btn btn-outline">
             Rate Limiting ({@rate_stats.limited})
           </.link>
           <.link navigate={~p"/admin/logs"} class="btn btn-outline">
             Logs ({@log_recent_errors} errors/1h)
           </.link>
-          <.link navigate={~p"/admin/lobby-snapshots"} class="btn btn-outline">
+          <.link navigate={~p"/admin/lobby_snapshots"} class="btn btn-outline">
             Lobby Snapshots ({@lobby_snapshot_runs.total})
           </.link>
           <.link navigate={~p"/admin/geo"} class="btn btn-outline">
@@ -240,7 +245,7 @@ defmodule GameServerWeb.AdminLive.Index do
                     Matches: {@tournament_stats.matches.open} open / {@tournament_stats.matches.total}
                   </div>
                   <div :if={@tournament_stats.matches.overdue > 0} class="text-warning">
-                    Past deadline: {@tournament_stats.matches.overdue}
+                    Past deadline_at: {@tournament_stats.matches.overdue}
                   </div>
                 </div>
               </div>
@@ -260,6 +265,13 @@ defmodule GameServerWeb.AdminLive.Index do
                     Matched: {@matchmaking_stats.matched} · Cancelled: {@matchmaking_stats.cancelled}
                   </div>
                   <div>Active queues: {length(@matchmaking_stats.queues)}</div>
+                  <div>
+                    Ready checks 24h: {Map.get(@ready_check_stats, "passed", 0)} passed · {Map.get(
+                      @ready_check_stats,
+                      "failed",
+                      0
+                    )} failed
+                  </div>
                 </div>
               </div>
 
@@ -356,40 +368,20 @@ defmodule GameServerWeb.AdminLive.Index do
                 </div>
               </div>
 
-              <%!-- 11. Achievements --%>
+              <%!-- 11a. Quests --%>
               <div class="card bg-base-100 p-4">
                 <div class="flex items-center justify-between mb-2">
-                  <div class="text-sm font-semibold">Achievements</div>
-                  <.link navigate={~p"/admin/achievements"} class="link link-primary text-xs">
+                  <div class="text-sm font-semibold">Quests</div>
+                  <.link navigate={~p"/admin/quests"} class="link link-primary text-xs">
                     View →
                   </.link>
                 </div>
-                <div class="text-2xl font-bold">{@achievements_count}</div>
+                <div class="text-2xl font-bold">{@quest_stats.definitions}</div>
                 <div class="text-xs text-base-content/60 mt-2 space-y-1">
-                  <div>Hidden: {@achievement_stats.hidden}</div>
-                  <div>Total unlocks: {@achievements_unlocks}</div>
-                  <div>
-                    Users with unlocks: {@achievement_stats.users_with_unlocks}
-                  </div>
-                  <div>
-                    Avg per user: {@achievement_stats.avg_unlocks_per_user}
-                  </div>
-                  <%= if @achievement_stats.most_unlocked do %>
-                    <div>
-                      Most unlocked: {elem(@achievement_stats.most_unlocked, 1)} ({elem(
-                        @achievement_stats.most_unlocked,
-                        2
-                      )})
-                    </div>
-                  <% end %>
-                  <%= if @achievement_stats.least_unlocked do %>
-                    <div>
-                      Least unlocked: {elem(@achievement_stats.least_unlocked, 1)} ({elem(
-                        @achievement_stats.least_unlocked,
-                        2
-                      )})
-                    </div>
-                  <% end %>
+                  <div>Active: {@quest_stats.active_definitions}</div>
+                  <div>Completions today: {@quest_stats.completions_today}</div>
+                  <div>Claims today: {@quest_stats.claims_today}</div>
+                  <div>Claimable now: {@quest_stats.claimable_now}</div>
                 </div>
               </div>
 
@@ -440,7 +432,7 @@ defmodule GameServerWeb.AdminLive.Index do
               <div class="card bg-base-100 p-4">
                 <div class="flex items-center justify-between mb-2">
                   <div class="text-sm font-semibold">Rate Limiting</div>
-                  <.link navigate={~p"/admin/rate-limiting"} class="link link-primary text-xs">
+                  <.link navigate={~p"/admin/rate_limiting"} class="link link-primary text-xs">
                     View →
                   </.link>
                 </div>
@@ -504,7 +496,7 @@ defmodule GameServerWeb.AdminLive.Index do
               <div class="card bg-base-100 p-4">
                 <div class="flex items-center justify-between mb-2">
                   <div class="text-sm font-semibold">Lobby snapshots</div>
-                  <.link navigate={~p"/admin/lobby-snapshots"} class="link link-primary text-xs">
+                  <.link navigate={~p"/admin/lobby_snapshots"} class="link link-primary text-xs">
                     View →
                   </.link>
                 </div>
@@ -694,11 +686,13 @@ defmodule GameServerWeb.AdminLive.Index do
       sessions_count: Task.async(fn -> Repo.aggregate(UserToken, :count) end),
       lobbies_count: Task.async(fn -> Repo.aggregate(Lobby, :count) end),
       notifications_count: Task.async(fn -> Notifications.count_all_notifications() end),
+      push_stats: Task.async(fn -> GameServer.Push.token_stats() end),
       leaderboards_count: Task.async(fn -> Repo.aggregate(Leaderboard, :count) end),
       tournaments_count:
         Task.async(fn -> Repo.aggregate(GameServer.Tournaments.Tournament, :count) end),
       tournament_stats: Task.async(fn -> GameServer.Tournaments.stats() end),
       matchmaking_stats: Task.async(fn -> GameServer.Matchmaking.stats() end),
+      ready_check_stats: Task.async(fn -> GameServer.ReadyChecks.stats() end),
       kv_count: Task.async(fn -> KV.count_entries() end),
       kv_global: Task.async(fn -> KV.count_entries(global_only: true) end),
       users_google: Task.async(fn -> Accounts.count_users_with_provider(:google_id) end),
@@ -724,12 +718,9 @@ defmodule GameServerWeb.AdminLive.Index do
       chat_count: Task.async(fn -> GameServer.Chat.count_all_messages() end),
       chat_senders: Task.async(fn -> GameServer.Chat.count_unique_senders() end),
       chat_by_type: Task.async(fn -> GameServer.Chat.count_messages_by_type() end),
-      achievements_count: Task.async(fn -> Achievements.count_all_achievements() end),
-      achievements_unlocks: Task.async(fn -> Achievements.count_all_unlocks() end),
-      achievement_stats: Task.async(fn -> Achievements.dashboard_stats() end),
+      quest_stats: Task.async(fn -> GameServer.Quests.dashboard_stats() end),
       payments_stats: Task.async(fn -> Payments.admin_stats() end),
       translation_stats: Task.async(fn -> TranslationStats.all_completeness() end),
-      content_i18n_stats: Task.async(fn -> compute_content_i18n_stats() end),
       users_registered_1d: Task.async(fn -> Accounts.count_users_registered_since(1) end),
       users_registered_7d: Task.async(fn -> Accounts.count_users_registered_since(7) end),
       users_registered_30d: Task.async(fn -> Accounts.count_users_registered_since(30) end),
@@ -763,6 +754,7 @@ defmodule GameServerWeb.AdminLive.Index do
        leaderboards_count: r.leaderboards_count,
        tournaments_count: r.tournaments_count,
        matchmaking_stats: r.matchmaking_stats,
+       ready_check_stats: r.ready_check_stats,
        tournament_stats: r.tournament_stats,
        kv_count: r.kv_count,
        kv_global: r.kv_global,
@@ -779,6 +771,7 @@ defmodule GameServerWeb.AdminLive.Index do
        lobbies_locked: r.lobbies_locked,
        lobbies_passworded: r.lobbies_passworded,
        notifications_count: r.notifications_count,
+       push_stats: r.push_stats,
        leaderboard_records: r.leaderboard_records,
        groups_count: r.groups_count,
        groups_public: r.groups_public,
@@ -795,10 +788,7 @@ defmodule GameServerWeb.AdminLive.Index do
        chat_by_group: Map.get(r.chat_by_type, "group", 0),
        chat_by_friend: Map.get(r.chat_by_type, "friend", 0),
        translation_stats: r.translation_stats,
-       content_i18n_stats: r.content_i18n_stats,
-       achievements_count: r.achievements_count,
-       achievements_unlocks: r.achievements_unlocks,
-       achievement_stats: r.achievement_stats,
+       quest_stats: r.quest_stats,
        payments_stats: r.payments_stats,
        conn_stats: conn_stats,
        sys_stats: sys_stats,
@@ -922,60 +912,6 @@ defmodule GameServerWeb.AdminLive.Index do
   end
 
   defp country_flag(_), do: "🌐"
-
-  defp compute_content_i18n_stats do
-    locales = Gettext.known_locales(GameServerWeb.Gettext) -- ["en"]
-
-    if locales == [] do
-      %{total: 0, translated: 0, resources: []}
-    else
-      # Leaderboards
-      leaderboards = GameServer.Leaderboards.list_leaderboards(page: 1, page_size: 10_000)
-      lb_total = length(leaderboards) * length(locales)
-
-      lb_translated =
-        Enum.reduce(leaderboards, 0, fn lb, acc ->
-          titles = get_in(lb.metadata || %{}, ["titles"]) || %{}
-
-          acc +
-            Enum.count(locales, fn locale ->
-              title = Map.get(titles, locale, "")
-              is_binary(title) and String.trim(title) != ""
-            end)
-        end)
-
-      # Achievements
-      achievements =
-        GameServer.Achievements.list_achievements(
-          page: 1,
-          page_size: 10_000,
-          include_hidden: true
-        )
-
-      ach_items = Enum.map(achievements, & &1.achievement)
-      ach_total = length(ach_items) * length(locales)
-
-      ach_translated =
-        Enum.reduce(ach_items, 0, fn a, acc ->
-          titles = get_in(a.metadata || %{}, ["titles"]) || %{}
-
-          acc +
-            Enum.count(locales, fn locale ->
-              title = Map.get(titles, locale, "")
-              is_binary(title) and String.trim(title) != ""
-            end)
-        end)
-
-      %{
-        total: lb_total + ach_total,
-        translated: lb_translated + ach_translated,
-        resources: [
-          {"Leaderboards", %{total: lb_total, translated: lb_translated}},
-          {"Achievements", %{total: ach_total, translated: ach_translated}}
-        ]
-      }
-    end
-  end
 
   defp safe_log_count_by_level do
     GameServerWeb.AdminLogBuffer.count_by_level()

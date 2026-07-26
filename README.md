@@ -2,7 +2,7 @@
 
 # Gamend
 
-**Open source Elixir game server with authentication, users, lobbies, groups, parties, friends, chat, notifications, achievements, leaderboards, tournaments, payments, server scripting and an admin portal with HTTP, WebSocket, and WebRTC support and SDK for JS and Godot.**
+**Open source Elixir game server with authentication, users, lobbies, groups, parties, friends, chat, notifications, quests, leaderboards, tournaments, payments, server scripting and an admin portal with HTTP, WebSocket, and WebRTC support and SDK for JS and Godot.**
 
 Game + Backend = Gamend
 
@@ -18,11 +18,12 @@ Game + Backend = Gamend
 - **Friends** — Requests, accept/reject, blocking
 - **Chat** — Lobby, group, party, and friend DMs with read cursors and unread counts
 - **Notifications** — Typed notifications for all social events, read/unread, real-time delivery
-- **Achievements** — Progress tracking, hidden achievements, unlock percentage (rarity), admin management
+- **Push Notifications** — FCM + APNs-direct mobile push, routed per device token; notifications reach offline players, with zero-config log delivery in dev
+- **Quests / Progression** — One event-driven engine: achievements (permanent quests), daily/weekly quests, event windows, chains; exactly-once rewards into the economy
 - **Leaderboards** — Global and per-user rankings
 - **Payments** — Stripe Checkout, Google Play, App Store, and Steam provider flows with receipt validation, webhooks, entitlements, refunds, and admin tools
 - **Key-Value Store** — Server-side key-value storage with access control hooks
-- **Server Scripting** — Elixir hooks on server events (login, lobby created, achievement unlocked, etc.)
+- **Server Scripting** — Elixir hooks on server events (login, lobby created, quest completed, etc.)
 - **Background Jobs** — Durable, retryable background and scheduled (cron) jobs from server hooks, on Postgres or SQLite
 - **Economy & Inventory** — Virtual-currency wallets (`gold`, `gems`, …) with an atomic, auditable ledger, plus item stacks (`health_potion`, …); server-authoritative grant/spend/consume with live balance updates
 - **Object Storage** — Avatar/UGC uploads with a pluggable backend: local disk or any S3-compatible service (AWS S3, Cloudflare R2, MinIO, …)
@@ -40,7 +41,7 @@ Game + Backend = Gamend
 
 - **Elixir 1.20 & Erlang/OTP 29** — see [`.tool-versions`](.tool-versions); with [asdf](https://asdf-vm.com/) just run `asdf install`
 - **Rust** ([rustup](https://rustup.rs/)) — required to build the WebRTC native dependency (`ex_sctp`)
-- **PostgreSQL** — optional. Dev uses SQLite by default; set `POSTGRES_*` or `DATABASE_URL` in `.env` to use Postgres instead. The adapter is chosen at compile time, so after changing these run `mix deps.clean game_server_core game_server_web --build` and recompile. (Docker: use the `-postgres` image tag or build with `DATABASE_ADAPTER=postgres`.)
+- **PostgreSQL** — optional. Dev uses SQLite by default; set `POSTGRES_*` or `DATABASE_URL` in `.env` to use Postgres instead. The adapter is chosen at compile time, so after changing these run `mix deps.clean game_server_core game_server_web --build` and recompile. (Docker: use the `-postgres` image tag or build with `GAMEND_DB_ADAPTER=postgres`.)
 
 ### First run
 

@@ -27,82 +27,214 @@ defmodule GameServerWeb.AdminLive.ConfigTest do
     assert html =~ "Configuration"
     assert html =~ "data-action=\"toggle-card\""
     assert html =~ "data-card-key=\"config_status\""
-    assert html =~ "CACHE_ENABLED"
-    assert html =~ "ACCESS_LOG_LEVEL"
+    assert html =~ "GAMEND_CACHE_ENABLED"
+    assert html =~ "GAMEND_OBSERVABILITY_ACCESS_LOG_LEVEL"
     # default collapsed state
     assert html =~ "collapsed"
     assert html =~ "aria-expanded=\"false\""
     # Database diagnostics should render (show adapter and diagnostic keys)
     assert html =~ "Database"
-    assert html =~ "POSTGRES_HOST" or html =~ "SQLite"
+    assert html =~ "GAMEND_DB_POSTGRES_HOST" or html =~ "SQLite"
   end
 
   test "secrets are masked and DB adapter shows Postgres when env is set", %{conn: conn} do
     # Arrange - set env vars to predictable values and ensure cleanup after test
-    System.put_env("DISCORD_CLIENT_ID", "discord12345")
-    System.put_env("DISCORD_CLIENT_SECRET", "disSecret9876")
-    System.put_env("GOOGLE_CLIENT_ID", "go123456")
-    System.put_env("GOOGLE_CLIENT_SECRET", "goSecret987")
-    System.put_env("SECRET_KEY_BASE", "myverylongsecret_key_value_here")
-    System.put_env("SMTP_USERNAME", "smtpuser")
-    System.put_env("SMTP_PASSWORD", "smtppass")
-    System.put_env("SMTP_PORT", "465")
-    System.put_env("SMTP_SSL", "true")
-    System.put_env("SMTP_TLS", "true")
-    System.put_env("SMTP_FROM_NAME", "Game Server")
-    System.put_env("SMTP_FROM_EMAIL", "no-reply@example.com")
-    System.put_env("SMTP_SNI", "mail.resend.com")
-    System.put_env("POSTGRES_HOST", "localhost")
-    System.put_env("POSTGRES_USER", "postgres")
-    System.put_env("POSTGRES_DB", "game_server_test")
-    System.put_env("POSTGRES_PASSWORD", "pg_secret_very_long")
-    System.put_env("STRIPE_SANDBOX_SECRET_KEY", "sk_test_config_123456")
-    System.put_env("STRIPE_SANDBOX_WEBHOOK_SECRET", "whsec_config_123456")
-    System.put_env("STRIPE_API_VERSION", "2022-11-15")
-    System.put_env("PAYMENTS_ENVIRONMENT", "sandbox")
-    System.put_env("GOOGLE_PLAY_PACKAGE_NAME", "com.example.game")
-    System.put_env("GOOGLE_PLAY_ACCESS_TOKEN", "google_play_access_token")
-    System.put_env("APPLE_BUNDLE_ID", "com.example.game")
-    System.put_env("APPLE_ISSUER_ID", "apple_issuer_id")
-    System.put_env("APPLE_KEY_ID", "apple_key_id")
-    System.put_env("APPLE_PRIVATE_KEY", "apple_private_key_value")
-    System.put_env("STEAM_WEB_API_KEY", "steam_payment_key")
-    System.put_env("STEAM_APP_ID", "480")
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :discord_client_id,
+      "discord12345"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :discord_client_secret,
+      "disSecret9876"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :google_client_id,
+      "go123456"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :google_client_secret,
+      "goSecret987"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Accounts,
+      :secret_key_base,
+      "myverylongsecret_key_value_here"
+    )
+
+    GameServer.SettingsHelpers.put(:game_server_core, GameServer.Mail, :smtp_username, "smtpuser")
+    GameServer.SettingsHelpers.put(:game_server_core, GameServer.Mail, :smtp_password, "smtppass")
+    GameServer.SettingsHelpers.put(:game_server_core, GameServer.Mail, :smtp_port, 465)
+    GameServer.SettingsHelpers.put(:game_server_core, GameServer.Mail, :smtp_ssl, true)
+    GameServer.SettingsHelpers.put(:game_server_core, GameServer.Mail, :smtp_tls, true)
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Mail,
+      :smtp_from_name,
+      "Game Server"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Mail,
+      :smtp_from_email,
+      "no-reply@example.com"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Mail,
+      :smtp_sni,
+      "mail.resend.com"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Database,
+      :postgres_host,
+      "localhost"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Database,
+      :postgres_user,
+      "postgres"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Database,
+      :postgres_db,
+      "game_server_test"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Database,
+      :postgres_password,
+      "pg_secret_very_long"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :stripe_sandbox_secret_key,
+      "sk_test_config_123456"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :stripe_sandbox_webhook_secret,
+      "whsec_config_123456"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :stripe_api_version,
+      "2022-11-15"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :environment,
+      :sandbox
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :google_play_package_name,
+      "com.example.game"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :google_play_access_token,
+      "google_play_access_token"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :apple_bundle_id,
+      "com.example.game"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :apple_issuer_id,
+      "apple_issuer_id"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :apple_key_id,
+      "apple_key_id"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :apple_private_key,
+      "apple_private_key_value"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.Payments.Settings,
+      :steam_web_api_key,
+      "steam_payment_key"
+    )
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.OAuth.Providers,
+      :steam_app_id,
+      "480"
+    )
+
+    previous_settings =
+      Map.new(
+        [
+          GameServer.Mail,
+          GameServer.OAuth.Providers,
+          GameServer.Payments.Settings,
+          GameServer.Database,
+          GameServer.Accounts,
+          GameServerWeb.Observability
+        ],
+        &{&1, Application.get_env(:game_server_core, &1)}
+      )
 
     on_exit(fn ->
-      for k <- [
-            "DISCORD_CLIENT_ID",
-            "DISCORD_CLIENT_SECRET",
-            "GOOGLE_CLIENT_ID",
-            "GOOGLE_CLIENT_SECRET",
-            "SECRET_KEY_BASE",
-            "SMTP_USERNAME",
-            "SMTP_PASSWORD",
-            "SMTP_PORT",
-            "SMTP_SSL",
-            "SMTP_TLS",
-            "SMTP_FROM_NAME",
-            "SMTP_FROM_EMAIL",
-            "SMTP_SNI",
-            "POSTGRES_HOST",
-            "POSTGRES_USER",
-            "POSTGRES_DB",
-            "POSTGRES_PASSWORD",
-            "STRIPE_SANDBOX_SECRET_KEY",
-            "STRIPE_SANDBOX_WEBHOOK_SECRET",
-            "STRIPE_API_VERSION",
-            "PAYMENTS_ENVIRONMENT",
-            "GOOGLE_PLAY_PACKAGE_NAME",
-            "GOOGLE_PLAY_ACCESS_TOKEN",
-            "APPLE_BUNDLE_ID",
-            "APPLE_ISSUER_ID",
-            "APPLE_KEY_ID",
-            "APPLE_PRIVATE_KEY",
-            "STEAM_WEB_API_KEY",
-            "STEAM_APP_ID"
-          ] do
-        System.delete_env(k)
-      end
+      # Restore, not delete: these providers also hold values the rest of the
+      # suite depends on (config/test.exs sets auth.secret_key_base, and a
+      # missing required setting would fail validate!/1 for every later test).
+      Enum.each(previous_settings, fn {module, value} ->
+        if value,
+          do: Application.put_env(:game_server_core, module, value),
+          else: Application.delete_env(:game_server_core, module)
+      end)
     end)
 
     {:ok, user} =
@@ -151,20 +283,20 @@ defmodule GameServerWeb.AdminLive.ConfigTest do
     assert html =~ mask.("steam_payment_key")
 
     # ensure secret env label presence
-    assert html =~ "SECRET_KEY_BASE"
+    assert html =~ "GAMEND_AUTH_SECRET_KEY_BASE"
 
     # ensure we've rendered env-var style labels for client config and hooks/device env names
     assert html =~ "DISCORD_CLIENT_ID"
     assert html =~ "GOOGLE_CLIENT_ID"
-    assert html =~ "DEVICE_AUTH_ENABLED"
+    assert html =~ "GAMEND_AUTH_DEVICE_AUTH_ENABLED"
     assert html =~ "Payment Providers"
-    assert html =~ "STRIPE_SANDBOX_SECRET_KEY"
-    assert html =~ "STRIPE_SANDBOX_WEBHOOK_SECRET"
+    assert html =~ "GAMEND_PAYMENTS_STRIPE_SANDBOX_SECRET_KEY"
+    assert html =~ "GAMEND_PAYMENTS_STRIPE_SANDBOX_WEBHOOK_SECRET"
     assert html =~ "STRIPE_API_VERSION"
     assert html =~ "2022-11-15"
-    assert html =~ "GOOGLE_PLAY_PACKAGE_NAME"
-    assert html =~ "APPLE_BUNDLE_ID"
-    assert html =~ "STEAM_WEB_API_KEY"
+    assert html =~ "GAMEND_PAYMENTS_GOOGLE_PLAY_PACKAGE_NAME"
+    assert html =~ "GAMEND_PAYMENTS_APPLE_BUNDLE_ID"
+    assert html =~ "GAMEND_PAYMENTS_STEAM_WEB_API_KEY"
 
     # SMTP env var label should be shown
     assert html =~ "SMTP_USERNAME"
@@ -268,7 +400,6 @@ defmodule GameServerWeb.AdminLive.ConfigTest do
       def after_party_kick(_target, _leader, _party), do: :ok
       def after_party_disband(_party), do: :ok
 
-      def after_achievement_unlocked(_user_id, _achievement), do: :ok
 
       def before_kv_get(_key, _opts), do: :public
 
@@ -301,14 +432,33 @@ defmodule GameServerWeb.AdminLive.ConfigTest do
     app_text = :io_lib.format(~c"~p.~n", [app_term]) |> IO.iodata_to_binary()
     File.write!(Path.join(ebin_dir, "#{plugin_name}.app"), app_text)
 
-    orig_plugins_dir = System.get_env("GAME_SERVER_PLUGINS_DIR")
-    System.put_env("GAME_SERVER_PLUGINS_DIR", plugin_root)
+    orig_plugins_dir =
+      GameServer.SettingsHelpers.get(:game_server_core, GameServer.ContentSettings, :plugins_dir)
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.ContentSettings,
+      :plugins_dir,
+      plugin_root
+    )
+
     _ = PluginManager.reload()
 
     on_exit(fn ->
       if orig_plugins_dir,
-        do: System.put_env("GAME_SERVER_PLUGINS_DIR", orig_plugins_dir),
-        else: System.delete_env("GAME_SERVER_PLUGINS_DIR")
+        do:
+          GameServer.SettingsHelpers.put(
+            :game_server_core,
+            GameServer.ContentSettings,
+            :plugins_dir,
+            orig_plugins_dir
+          ),
+        else:
+          GameServer.SettingsHelpers.delete(
+            :game_server_core,
+            GameServer.ContentSettings,
+            :plugins_dir
+          )
 
       _ = PluginManager.reload()
       File.rm_rf!(tmp)
@@ -375,12 +525,13 @@ defmodule GameServerWeb.AdminLive.ConfigTest do
     assert Enum.any?(email.to, fn {_name, addr} -> addr == user.email end)
   end
 
-  test "renders theme diagnostics when THEME_CONFIG is set (env var)", %{conn: conn} do
-    # create temporary locale-specific theme config file
-    orig = System.get_env("THEME_CONFIG")
+  test "renders theme diagnostics when GAMEND_CONTENT_THEME_CONFIG is set (env var)", %{
+    conn: conn
+  } do
+    orig =
+      GameServer.SettingsHelpers.get(:game_server_core, GameServer.ContentSettings, :theme_config)
 
     base = Path.join(System.tmp_dir!(), "theme_test_#{System.unique_integer([:positive])}.json")
-    en_path = String.trim_trailing(base, ".json") <> ".en.json"
 
     json =
       Jason.encode!(%{
@@ -402,17 +553,37 @@ defmodule GameServerWeb.AdminLive.ConfigTest do
         }
       })
 
-    File.write!(en_path, json)
+    File.write!(base, json)
 
-    System.put_env("THEME_CONFIG", base)
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.ContentSettings,
+      :theme_config,
+      base
+    )
+
     JSONConfig.reload()
     Content.reload()
 
     on_exit(fn ->
-      if orig, do: System.put_env("THEME_CONFIG", orig), else: System.delete_env("THEME_CONFIG")
+      if orig,
+        do:
+          GameServer.SettingsHelpers.put(
+            :game_server_core,
+            GameServer.ContentSettings,
+            :theme_config,
+            orig
+          ),
+        else:
+          GameServer.SettingsHelpers.delete(
+            :game_server_core,
+            GameServer.ContentSettings,
+            :theme_config
+          )
+
       JSONConfig.reload()
       Content.reload()
-      File.rm_rf(en_path)
+      File.rm_rf(base)
     end)
 
     {:ok, user} =
@@ -426,7 +597,7 @@ defmodule GameServerWeb.AdminLive.ConfigTest do
       |> live(~p"/admin/config")
 
     assert html =~ "Theme"
-    assert html =~ "THEME_CONFIG: #{base}"
+    assert html =~ "GAMEND_CONTENT_THEME_CONFIG: #{base}"
     # raw JSON content should be present in the page
     assert html =~ "Test Theme"
     assert html =~ "Primary Nav"
@@ -436,16 +607,38 @@ defmodule GameServerWeb.AdminLive.ConfigTest do
     assert has_element?(lv, "#main-navbar a[href='/billing']")
   end
 
-  test "renders default theme diagnostics when THEME_CONFIG is unset", %{conn: conn} do
+  test "renders default theme diagnostics when GAMEND_CONTENT_THEME_CONFIG is unset", %{
+    conn: conn
+  } do
     # Ensure env var is unset so no theme is loaded
-    orig = System.get_env("THEME_CONFIG")
+    orig =
+      GameServer.SettingsHelpers.get(:game_server_core, GameServer.ContentSettings, :theme_config)
 
-    System.delete_env("THEME_CONFIG")
+    GameServer.SettingsHelpers.delete(
+      :game_server_core,
+      GameServer.ContentSettings,
+      :theme_config
+    )
+
     JSONConfig.reload()
     Content.reload()
 
     on_exit(fn ->
-      if orig, do: System.put_env("THEME_CONFIG", orig), else: System.delete_env("THEME_CONFIG")
+      if orig,
+        do:
+          GameServer.SettingsHelpers.put(
+            :game_server_core,
+            GameServer.ContentSettings,
+            :theme_config,
+            orig
+          ),
+        else:
+          GameServer.SettingsHelpers.delete(
+            :game_server_core,
+            GameServer.ContentSettings,
+            :theme_config
+          )
+
       JSONConfig.reload()
       Content.reload()
     end)
@@ -460,18 +653,42 @@ defmodule GameServerWeb.AdminLive.ConfigTest do
       |> log_in_user(user)
       |> live(~p"/admin/config")
 
-    # When THEME_CONFIG is not present, the UI should show Disabled badge
+    # When GAMEND_CONTENT_THEME_CONFIG is not present, the UI should show Disabled badge
     assert html =~ "<span class=\"badge badge-error\">Disabled</span>"
   end
 
-  test "blank THEME_CONFIG is treated as unset and shows disabled badge", %{conn: conn} do
-    orig = System.get_env("THEME_CONFIG")
-    System.put_env("THEME_CONFIG", "")
+  test "blank GAMEND_CONTENT_THEME_CONFIG is treated as unset and shows disabled badge", %{
+    conn: conn
+  } do
+    orig =
+      GameServer.SettingsHelpers.get(:game_server_core, GameServer.ContentSettings, :theme_config)
+
+    GameServer.SettingsHelpers.put(
+      :game_server_core,
+      GameServer.ContentSettings,
+      :theme_config,
+      ""
+    )
+
     JSONConfig.reload()
     Content.reload()
 
     on_exit(fn ->
-      if orig, do: System.put_env("THEME_CONFIG", orig), else: System.delete_env("THEME_CONFIG")
+      if orig,
+        do:
+          GameServer.SettingsHelpers.put(
+            :game_server_core,
+            GameServer.ContentSettings,
+            :theme_config,
+            orig
+          ),
+        else:
+          GameServer.SettingsHelpers.delete(
+            :game_server_core,
+            GameServer.ContentSettings,
+            :theme_config
+          )
+
       JSONConfig.reload()
       Content.reload()
     end)
@@ -486,7 +703,7 @@ defmodule GameServerWeb.AdminLive.ConfigTest do
       |> log_in_user(user)
       |> live(~p"/admin/config")
 
-    assert html =~ "THEME_CONFIG: &lt;unset&gt;"
+    assert html =~ "GAMEND_CONTENT_THEME_CONFIG: &lt;unset&gt;"
     assert html =~ "<span class=\"badge badge-error\">Disabled</span>"
   end
 end

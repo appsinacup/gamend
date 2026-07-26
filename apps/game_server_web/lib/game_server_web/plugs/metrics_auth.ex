@@ -83,7 +83,7 @@ defmodule GameServerWeb.Plugs.MetricsAuth do
   defp private_ip?(ip), do: loopback?(ip)
 
   defp required_token do
-    case Application.get_env(:game_server_web, :metrics_auth_token) do
+    case GameServerWeb.Observability.get(:metrics_token) do
       token when is_binary(token) and token != "" -> token
       _ -> nil
     end

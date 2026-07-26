@@ -7,6 +7,9 @@ defmodule GameServer.Tournaments.Tournament do
   occurrence. `team_size` is advisory — core only ever tracks entry leaders.
   A nil `starts_at` means manual start: registration stays open until an
   admin/game sets `starts_at` (the "draw now" force action does exactly that).
+
+  `icon_url` is optional; when nil, clients show their default tournament
+  icon (the web UI uses `GameServerWeb.Icons.default(:tournament)`).
   """
 
   use GameServer.Schema
@@ -19,6 +22,7 @@ defmodule GameServer.Tournaments.Tournament do
     field :slug, :string
     field :title, :string
     field :description, :string, default: ""
+    field :icon_url, :string
     field :state, :string, default: "scheduled"
     field :registration_opens_at, :utc_datetime
     field :starts_at, :utc_datetime
@@ -40,8 +44,8 @@ defmodule GameServer.Tournaments.Tournament do
   def deadline_policies, do: @deadline_policies
 
   @required ~w(slug title round_window_sec)a
-  @optional ~w(description state registration_opens_at starts_at ends_at recur max_entries
-               team_size bracket_size deadline_policy metadata)a
+  @optional ~w(description icon_url state registration_opens_at starts_at ends_at recur
+               max_entries team_size bracket_size deadline_policy metadata)a
 
   def changeset(tournament, attrs) do
     tournament
@@ -53,6 +57,7 @@ defmodule GameServer.Tournaments.Tournament do
     |> validate_length(:slug, min: 1, max: GameServer.Limits.get(:max_tournament_slug))
     |> validate_length(:title, min: 1, max: GameServer.Limits.get(:max_tournament_title))
     |> validate_length(:description, max: GameServer.Limits.get(:max_tournament_description))
+    |> validate_length(:icon_url, max: GameServer.Limits.get(:max_profile_url))
     |> validate_inclusion(:state, @states)
     |> validate_inclusion(:deadline_policy, @deadline_policies)
     |> validate_number(:team_size, greater_than: 0)

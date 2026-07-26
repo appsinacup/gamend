@@ -11,6 +11,7 @@ defmodule GameServer.Tournaments.Tournament do
   - `slug` - Identifier shared by every occurrence of a recurring tournament
   - `title` - Display title (string)
   - `description` - Description (string)
+  - `icon_url` - Optional icon URL; nil means clients show their type default
   - `state` - `"scheduled"`, `"registration"`, `"running"`, `"finished"` or `"cancelled"`
   - `registration_opens_at` - When registration opens (nil = open immediately)
   - `starts_at` - When the bracket is drawn (nil = started manually)
@@ -33,6 +34,7 @@ defmodule GameServer.Tournaments.Tournament do
           slug: String.t(),
           title: String.t(),
           description: String.t(),
+          icon_url: String.t() | nil,
           state: state(),
           registration_opens_at: DateTime.t() | nil,
           starts_at: DateTime.t() | nil,
@@ -53,6 +55,7 @@ defmodule GameServer.Tournaments.Tournament do
     :slug,
     :title,
     :description,
+    :icon_url,
     :state,
     :registration_opens_at,
     :starts_at,

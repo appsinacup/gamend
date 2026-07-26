@@ -58,6 +58,10 @@ defmodule GameServerWeb.AdminLive.Storage do
 
   def handle_event("refresh", _params, socket), do: {:noreply, reload(socket)}
 
+  def handle_event("cancel_upload_entry", %{"ref" => ref}, socket) do
+    {:noreply, cancel_upload(socket, :object, ref)}
+  end
+
   def handle_event("validate_upload", params, socket) do
     {:noreply, assign(socket, :upload_path, Map.get(params, "path", socket.assigns.upload_path))}
   end
@@ -148,9 +152,6 @@ defmodule GameServerWeb.AdminLive.Storage do
   defp format_bytes(bytes) when bytes >= 1024, do: "#{Float.round(bytes / 1024, 1)} KB"
   defp format_bytes(bytes), do: "#{bytes} B"
 
-  defp modified(nil), do: "—"
-  defp modified(%DateTime{} = dt), do: Calendar.strftime(dt, "%Y-%m-%d %H:%M:%S")
-
   defp image?(key),
     do: (key |> Path.extname() |> String.downcase()) in ~w(.png .jpg .jpeg .webp .gif)
 
@@ -206,8 +207,24 @@ defmodule GameServerWeb.AdminLive.Storage do
             >
               Upload
             </button>
-            <span :for={entry <- @uploads.object.entries}>
-              <span :for={err <- upload_errors(@uploads.object, entry)} class="text-error text-xs">
+            <%!-- The native file input clears its label on re-render, so show
+                  the picked file here instead. --%>
+            <span
+              :for={entry <- @uploads.object.entries}
+              class="flex items-center gap-2 text-xs"
+            >
+              <span class="font-mono truncate max-w-[14rem]">{entry.client_name}</span>
+              <span class="text-base-content/60">{entry.progress}%</span>
+              <button
+                type="button"
+                phx-click="cancel_upload_entry"
+                phx-value-ref={entry.ref}
+                class="btn btn-ghost btn-xs"
+                aria-label="Remove selected file"
+              >
+                <.icon name="hero-x-mark-solid" class="w-3 h-3" />
+              </button>
+              <span :for={err <- upload_errors(@uploads.object, entry)} class="text-error">
                 {upload_error(err)}
               </span>
             </span>
@@ -256,7 +273,9 @@ defmodule GameServerWeb.AdminLive.Storage do
                   </td>
                   <td class="font-mono text-xs break-all">{obj.key}</td>
                   <td class="text-xs whitespace-nowrap">{format_bytes(obj.size)}</td>
-                  <td class="text-xs whitespace-nowrap">{modified(obj.last_modified)}</td>
+                  <td class="text-xs whitespace-nowrap">
+                    <.timestamp at={obj.last_modified} format="full" empty="—" />
+                  </td>
                   <td class="text-right whitespace-nowrap">
                     <a href={Storage.url(obj.key)} download class="btn btn-outline btn-xs">
                       Download

@@ -14,10 +14,11 @@ defmodule GameServer.Storage.S3 do
   @impl true
   def put(key, data, opts) do
     s3_opts =
-      case Keyword.get(opts, :content_type) do
-        nil -> []
-        ct -> [content_type: ct]
-      end
+      [
+        content_type: Keyword.get(opts, :content_type),
+        cache_control: Keyword.get(opts, :cache_control)
+      ]
+      |> Enum.reject(fn {_k, v} -> is_nil(v) end)
 
     case bucket() |> S3.put_object(key, IO.iodata_to_binary(data), s3_opts) |> request() do
       {:ok, _} -> {:ok, key}
@@ -48,7 +49,7 @@ defmodule GameServer.Storage.S3 do
 
   @impl true
   def url(key, opts) do
-    case config()[:public_base_url] do
+    case GameServer.Settings.get(GameServer.Storage, :public_url) do
       nil ->
         {:ok, url} =
           S3.presigned_url(aws_config(), :get, bucket(), key,
@@ -155,6 +156,30 @@ defmodule GameServer.Storage.S3 do
   end
 
   defp maybe_endpoint(opts, _), do: opts
+
+  # Credentials are required only once the adapter is actually s3 — a
+  # deployment on local disk should not be asked for a bucket. Silently
+  # degrading to local instead would lose every upload on the next redeploy,
+  # so these fail the boot rather than warn.
+  use GameServer.Settings.Provider,
+    app: :game_server_core,
+    group: :storage,
+    label: "Storage"
+
+  @s3_selected {[:storage, :adapter], :s3}
+
+  setting(:bucket, :string, required: :prod, when: @s3_selected)
+  setting(:access_key_id, :string, secret: true, required: :prod, when: @s3_selected)
+  setting(:secret_access_key, :string, secret: true, required: :prod, when: @s3_selected)
+
+  setting(:region, :string,
+    default: "auto",
+    doc: "Region, or \"auto\" for services that do not use one (R2, MinIO)."
+  )
+
+  setting(:endpoint, :string,
+    doc: "Custom endpoint, e.g. https://<account>.r2.cloudflarestorage.com."
+  )
 
   defp bucket do
     config()[:bucket] || raise "GameServer.Storage.S3 :bucket is not configured"

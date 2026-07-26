@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: cs\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "Vítej na palubě"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "Přihlas se poprvé."
+
+#. quests
+msgid "Daily check-in"
+msgstr "Denní přihlášení"
+
+#. quests
+msgid "Log in today."
+msgstr "Přihlas se dnes."
+
+#. quests
+msgid "Weekly regular"
+msgstr "Stálý host týdne"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "Přihlas se tento týden v pěti různých dnech."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "Vytrvalec měsíce"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "Přihlas se tento měsíc dvacetkrát."
+
+#. quests
+msgid "Stop by again"
+msgstr "Zastav se zas"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "Přihlas se. Znovu dostupné o tři dny později."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "Věrný veterán"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "Přihlas se padesátkrát poté, co jsi pozdravil."
+
+#. quests
+msgid "Night owl"
+msgstr "Noční pták"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "Některé věci se objevují, místo aby se oznamovaly."
+
+#. quests
+msgid "Launch festival"
+msgstr "Festival ke spuštění"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "Denní úkol, který se počítá jen po dobu festivalu."
+
+#. leaderboards
+msgid "Logins"
+msgstr "Přihlášení"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "Kolikrát se každý hráč přihlásil."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "Týdenní pohár"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "Přihlaste se kdykoli; pavouk se losuje každé pondělí."

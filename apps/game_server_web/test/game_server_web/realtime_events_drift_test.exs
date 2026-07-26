@@ -16,6 +16,7 @@ defmodule GameServerWeb.RealtimeEventsDriftTest do
     match_found
     user_online user_offline
     tournament_updated tournament_finished tournament_match_ready tournament_match_resolved
+    ready_check_started ready_check_updated ready_check_passed ready_check_failed
   )
 
   defp pushed_literals do

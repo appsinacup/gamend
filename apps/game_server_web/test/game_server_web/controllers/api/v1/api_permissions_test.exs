@@ -31,10 +31,15 @@ defmodule GameServerWeb.Api.V1.ApiPermissionsTest do
       {:patch, "/api/v1/lobbies"},
       {:post, "/api/v1/lobbies/leave"},
       {:post, "/api/v1/lobbies/kick"},
+      # Ready checks
+      {:post, "/api/v1/lobbies/ready_check"},
+      {:delete, "/api/v1/lobbies/ready_check"},
+      {:get, "/api/v1/me/ready_check"},
+      {:post, "/api/v1/me/ready_check"},
       # Friends
       {:post, "/api/v1/friends"},
       {:get, "/api/v1/me/friends"},
-      {:get, "/api/v1/me/friend-requests"},
+      {:get, "/api/v1/me/friend_requests"},
       {:get, "/api/v1/me/blocked"},
       {:post, "/api/v1/friends/1/accept"},
       {:post, "/api/v1/friends/1/reject"},
@@ -85,7 +90,7 @@ defmodule GameServerWeb.Api.V1.ApiPermissionsTest do
       {:post, "/api/v1/chat/read"},
       {:get, "/api/v1/chat/unread"},
       # Achievements (auth)
-      {:get, "/api/v1/achievements/me"},
+      {:get, "/api/v1/me/quests"},
       # Provider
       {:delete, "/api/v1/me/providers/google"},
       {:post, "/api/v1/me/device"},
@@ -129,9 +134,13 @@ defmodule GameServerWeb.Api.V1.ApiPermissionsTest do
       {:get, "/api/v1/admin/sessions"},
       # Chat Admin
       {:get, "/api/v1/admin/chat"},
+      # Ready checks Admin
+      {:get, "/api/v1/admin/ready_checks"},
+      {:get, "/api/v1/admin/ready_checks/stats"},
+      {:delete, "/api/v1/admin/ready_checks/1"},
       # Achievements Admin
-      {:get, "/api/v1/admin/achievements"},
-      {:post, "/api/v1/admin/achievements"}
+      {:get, "/api/v1/admin/quests"},
+      {:post, "/api/v1/admin/quests"}
     ]
 
     for {method, path} <- @admin_endpoints do
@@ -173,7 +182,7 @@ defmodule GameServerWeb.Api.V1.ApiPermissionsTest do
       {:get, "/api/v1/lobbies"},
       {:get, "/api/v1/leaderboards"},
       {:get, "/api/v1/groups"},
-      {:get, "/api/v1/achievements"}
+      {:get, "/api/v1/quests"}
     ]
 
     for {method, path} <- @public_endpoints do

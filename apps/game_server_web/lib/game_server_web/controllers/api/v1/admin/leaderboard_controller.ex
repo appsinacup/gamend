@@ -3,6 +3,7 @@ defmodule GameServerWeb.Api.V1.Admin.LeaderboardController do
   use OpenApiSpex.ControllerSpecs
 
   alias GameServer.Leaderboards
+  alias GameServerWeb.Uploads
   alias OpenApiSpex.Schema
 
   tags(["Admin – Leaderboards"])
@@ -15,7 +16,8 @@ defmodule GameServerWeb.Api.V1.Admin.LeaderboardController do
       id: %Schema{type: :string, format: :uuid},
       slug: %Schema{type: :string},
       title: %Schema{type: :string},
-      description: %Schema{type: :string, nullable: true},
+      description: %Schema{type: :string},
+      icon_url: %Schema{type: :string, description: "Empty when unset"},
       sort_order: %Schema{type: :string, enum: ["desc", "asc"]},
       operator: %Schema{type: :string, enum: ["set", "best", "incr", "decr"]},
       starts_at: %Schema{type: :string, format: "date-time", nullable: true},
@@ -39,6 +41,7 @@ defmodule GameServerWeb.Api.V1.Admin.LeaderboardController do
           slug: %Schema{type: :string},
           title: %Schema{type: :string},
           description: %Schema{type: :string},
+          icon_url: %Schema{type: :string},
           sort_order: %Schema{type: :string, enum: ["desc", "asc"]},
           operator: %Schema{type: :string, enum: ["set", "best", "incr", "decr"]},
           starts_at: %Schema{type: :string, format: "date-time"},
@@ -85,6 +88,7 @@ defmodule GameServerWeb.Api.V1.Admin.LeaderboardController do
         properties: %{
           title: %Schema{type: :string},
           description: %Schema{type: :string},
+          icon_url: %Schema{type: :string},
           starts_at: %Schema{type: :string, format: "date-time"},
           ends_at: %Schema{type: :string, format: "date-time"},
           metadata: %Schema{type: :object}
@@ -103,28 +107,12 @@ defmodule GameServerWeb.Api.V1.Admin.LeaderboardController do
   )
 
   def update(conn, %{"id" => id} = params) do
-    id = to_string(id)
-
-    case Leaderboards.get_leaderboard(id) do
-      nil ->
-        conn |> put_status(:not_found) |> json(%{error: "not_found"})
-
-      leaderboard ->
-        attrs = Map.delete(params, "id")
-
-        case Leaderboards.update_leaderboard(leaderboard, attrs) do
-          {:ok, lb} ->
-            json(conn, %{data: lb})
-
-          {:error, %Ecto.Changeset{} = cs} ->
-            conn
-            |> put_status(:unprocessable_entity)
-            |> json(%{
-              error: "validation_failed",
-              errors: Ecto.Changeset.traverse_errors(cs, & &1)
-            })
-        end
-    end
+    with_leaderboard(conn, id, fn leaderboard ->
+      case Leaderboards.update_leaderboard(leaderboard, Map.delete(params, "id")) do
+        {:ok, lb} -> json(conn, %{data: lb})
+        {:error, %Ecto.Changeset{} = cs} -> changeset_error(conn, cs)
+      end
+    end)
   end
 
   operation(:end_leaderboard,
@@ -160,6 +148,70 @@ defmodule GameServerWeb.Api.V1.Admin.LeaderboardController do
         |> put_status(:unprocessable_entity)
         |> json(%{error: "validation_failed", errors: Ecto.Changeset.traverse_errors(cs, & &1)})
     end
+  end
+
+  operation(:icon_upload_url,
+    operation_id: "admin_leaderboard_icon_upload_url",
+    summary: "Request an upload ticket for a leaderboard icon (admin)",
+    description: """
+    Step one of two. Returns a presigned ticket; PUT the image straight to
+    `url`, then POST the returned `key` to the icon endpoint. Bytes never pass
+    through the app server.
+    """,
+    security: [%{"authorization" => []}],
+    parameters: [id: [in: :path, schema: %Schema{type: :string}, required: true]],
+    request_body:
+      {"Declared content type", "application/json",
+       %Schema{
+         type: :object,
+         properties: %{content_type: %Schema{type: :string, example: "image/png"}},
+         required: [:content_type]
+       }},
+    responses: [
+      ok: {"Upload ticket", "application/json", %Schema{type: :object}},
+      bad_request: {"Unsupported content type", "application/json", @error_schema},
+      not_found: {"Not found", "application/json", @error_schema}
+    ]
+  )
+
+  def icon_upload_url(conn, %{"id" => id} = params) do
+    with_leaderboard(conn, id, fn leaderboard ->
+      Uploads.ticket(
+        conn,
+        "icons/leaderboards",
+        leaderboard.id,
+        "icon",
+        Uploads.content_type(params)
+      )
+    end)
+  end
+
+  operation(:set_icon,
+    operation_id: "admin_set_leaderboard_icon",
+    summary: "Confirm an uploaded leaderboard icon (admin)",
+    description: "Step two: records a previously uploaded object as the icon.",
+    security: [%{"authorization" => []}],
+    parameters: [id: [in: :path, schema: %Schema{type: :string}, required: true]],
+    request_body:
+      {"Uploaded object key", "application/json",
+       %Schema{type: :object, properties: %{key: %Schema{type: :string}}, required: [:key]}},
+    responses: [
+      ok: {"Updated leaderboard", "application/json", %Schema{type: :object}},
+      bad_request: {"Object not found", "application/json", @error_schema},
+      forbidden: {"Key not owned by this leaderboard", "application/json", @error_schema},
+      not_found: {"Not found", "application/json", @error_schema}
+    ]
+  )
+
+  def set_icon(conn, %{"id" => id} = params) do
+    with_leaderboard(conn, id, fn leaderboard ->
+      Uploads.confirm(conn, "icons/leaderboards", leaderboard.id, params["key"], fn url ->
+        case Leaderboards.update_leaderboard(leaderboard, %{"icon_url" => url}) do
+          {:ok, updated} -> json(conn, %{data: updated})
+          {:error, %Ecto.Changeset{} = cs} -> changeset_error(conn, cs)
+        end
+      end)
+    end)
   end
 
   operation(:delete,
@@ -198,5 +250,21 @@ defmodule GameServerWeb.Api.V1.Admin.LeaderboardController do
             })
         end
     end
+  end
+
+  defp with_leaderboard(conn, id, fun) do
+    case Leaderboards.get_leaderboard(to_string(id)) do
+      nil -> conn |> put_status(:not_found) |> json(%{error: "not_found"})
+      leaderboard -> fun.(leaderboard)
+    end
+  end
+
+  defp changeset_error(conn, changeset) do
+    conn
+    |> put_status(:unprocessable_entity)
+    |> json(%{
+      error: "validation_failed",
+      errors: Ecto.Changeset.traverse_errors(changeset, & &1)
+    })
   end
 end

@@ -1,0 +1,170 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: id\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "Server game Elixir sumber terbuka untuk game multipemain waktu nyata."
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "Blog"
+
+msgid "Roadmap"
+msgstr "Peta jalan"
+
+msgid "Changelog"
+msgstr "Catatan perubahan"
+
+msgid "Social"
+msgstr "Sosial"
+
+msgid "About Gamend"
+msgstr "Tentang Gamend"
+
+msgid "Elixir Docs"
+msgstr "Dokumentasi Elixir"
+
+msgid "About"
+msgstr "Tentang"
+
+msgid "Guides"
+msgstr "Panduan"
+
+msgid "API Docs"
+msgstr "Dokumentasi API"
+
+msgid "Store"
+msgstr "Toko"
+
+msgid "Help"
+msgstr "Bantuan"
+
+msgid "Privacy Policy"
+msgstr "Kebijakan privasi"
+
+msgid "Terms and Conditions"
+msgstr "Syarat dan ketentuan"
+
+msgid "Privacy & Terms"
+msgstr "Privasi dan ketentuan"
+
+msgid "Play"
+msgstr "Main"
+
+msgid "Leaderboards"
+msgstr "Papan peringkat"
+
+msgid "Quests"
+msgstr "Misi"
+
+msgid "Tournaments"
+msgstr "Turnamen"
+
+msgid "Groups"
+msgstr "Grup"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "Gamend adalah backend Elixir **serba lengkap** untuk game multipemain, dengan autentikasi, sistem sosial, kanal waktu nyata, dan perkakas admin."
+
+msgid "Realtime Guide"
+msgstr "Panduan waktu nyata"
+
+msgid "Real-time games"
+msgstr "Game waktu nyata"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "Gunakan kanal, lobi, party, kehadiran, dan kanal data WebRTC tanpa membangun ulang infrastruktur multipemain yang biasa."
+
+msgid "Built For Real-Time Games"
+msgstr "Dibuat untuk game waktu nyata"
+
+msgid "Read Docs"
+msgstr "Baca dokumentasi"
+
+msgid "Open source foundation"
+msgstr "Fondasi sumber terbuka"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "Proyek ini dirancang untuk di-fork, ditema, di-hosting, dan dikembangkan oleh tim game."
+
+msgid "Open Source Foundation"
+msgstr "Fondasi sumber terbuka"
+
+msgid "Getting Started"
+msgstr "Memulai"
+
+msgid "Presentation Video"
+msgstr "Video presentasi"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "Server game Elixir **sumber terbuka** untuk game multipemain **waktu nyata**."
+
+msgid "Log in"
+msgstr "Masuk"
+
+msgid "Register"
+msgstr "Daftar"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "Email, tautan ajaib, OAuth, JWT, dan sesi. Pendaftaran, masuk, atur ulang kata sandi, dan verifikasi email."
+
+msgid "Authentication & Users"
+msgstr "Autentikasi dan pengguna"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "Lobi waktu nyata dan party sementara. Pengaturan yang dapat disesuaikan dengan pembaruan langsung."
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "Lobi, party, dan pencocokan pemain"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "Permintaan pertemanan, pemblokiran, kehadiran waktu nyata. Grup publik, privat, dan tersembunyi. Pesan langsung dan grup."
+
+msgid "Friends, Groups & Chat"
+msgstr "Teman, grup, dan obrolan"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "Pencapaian, turnamen gugur, dan papan peringkat yang divalidasi server. Notifikasi waktu nyata untuk semua fitur dan peristiwa pembayaran."
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "Pencapaian, turnamen, papan peringkat, dan notifikasi"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "Perluas logika server dengan skrip Elixir. Jadwalkan tugas otomatis dan pekerjaan cron."
+
+msgid "Server Scripting & Scheduling"
+msgstr "Skrip server dan penjadwalan"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "REST API, kanal WebSocket waktu nyata, dan DataChannel WebRTC berlatensi rendah. Portal admin dan antarmuka web."
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "HTTP, WebSocket, dan WebRTC"
+
+msgid "Open Store"
+msgstr "Buka toko"
+
+msgid "Payment Docs"
+msgstr "Dokumentasi pembayaran"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "Pembayaran sisi server dengan Stripe, Google Play, App Store, dan Steam. Validasi tanda terima, proses webhook bertanda tangan, berikan hak, cabut pengembalian dana, dan periksa semuanya di admin."
+
+msgid "Payments & Store Integrations"
+msgstr "Pembayaran dan integrasi toko"
+
+msgid "Gamend is in beta!"
+msgstr "Gamend masih dalam versi beta!"
+
+msgid "Game + Backend"
+msgstr "Game + backend"

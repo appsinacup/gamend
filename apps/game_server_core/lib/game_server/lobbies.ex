@@ -55,9 +55,14 @@ defmodule GameServer.Lobbies do
   alias GameServer.KV.Entry, as: KVEntry
   alias GameServer.Lobbies.Lobby
   alias GameServer.Lobbies.SpectatorTracker
+  alias GameServer.Lobbies.States
   alias GameServer.Repo
   alias GameServer.Repo.AdvisoryLock
   alias GameServer.Types
+
+  # A state is a game-chosen word (see GameServer.Lobbies.States); core only
+  # keeps it a sane string, since a host can set it over the API.
+  @max_state_length 64
 
   defp invalidate_accounts_user_cache(user_id) when is_binary(user_id) do
     # Synchronous invalidation including index keys — the client may join a
@@ -133,6 +138,7 @@ defmodule GameServer.Lobbies do
     * `:title` - Filter by title (partial match)
     * `:is_passworded` - boolean or string 'true'/'false' (omit for any)
     * `:is_locked` - boolean or string 'true'/'false' (omit for any)
+    * `:state` - lifecycle state (see `GameServer.Lobbies.States`)
     * `:min_users` - Filter lobbies with max_users >= value
     * `:max_users` - Filter lobbies with max_users <= value
     * `:metadata_key` - Filter by metadata key
@@ -158,6 +164,7 @@ defmodule GameServer.Lobbies do
       |> filter_by_hidden_false()
       |> filter_by_passworded(filters)
       |> filter_by_locked(filters)
+      |> filter_by_state(filters)
       |> filter_by_min_users(filters)
       |> filter_by_max_users(filters)
 
@@ -168,6 +175,14 @@ defmodule GameServer.Lobbies do
 
   defp filter_by_hidden_false(q) do
     from l in q, where: l.is_hidden == false
+  end
+
+  defp filter_by_state(q, filters) do
+    case Map.get(filters, :state) || Map.get(filters, "state") do
+      nil -> q
+      v when is_binary(v) and v != "" -> from l in q, where: l.state == ^v
+      _ -> q
+    end
   end
 
   defp filter_by_passworded(q, filters) do
@@ -338,6 +353,7 @@ defmodule GameServer.Lobbies do
     |> filter_by_title(filters)
     |> filter_by_hidden(filters)
     |> filter_by_locked(filters)
+    |> filter_by_state(filters)
     |> filter_by_password(filters)
     |> filter_by_min_users_admin(filters)
     |> filter_by_max_users_admin(filters)
@@ -529,6 +545,9 @@ defmodule GameServer.Lobbies do
             # Post-commit: write the correct value to cache so stale
             # concurrent @decorate cacheable puts are overwritten.
             Accounts.cache_user(updated_user)
+            # Also post-commit: adding a late arrival to an open ready check
+            # broadcasts, which must never happen inside the join transaction.
+            _ = GameServer.ReadyChecks.add_member(lobby.id, user_id)
             {:ok, updated_user}
 
           error ->
@@ -697,7 +716,7 @@ defmodule GameServer.Lobbies do
         |> Multi.run(:check_host, fn _repo, _changes ->
           validate_host_not_in_lobby(attrs)
         end)
-        |> Multi.insert(:lobby, Lobby.changeset(%Lobby{}, attrs))
+        |> Multi.insert(:lobby, new_lobby_changeset(attrs))
         |> maybe_add_host_membership(attrs)
         |> Repo.transaction()
 
@@ -873,6 +892,105 @@ defmodule GameServer.Lobbies do
     end
   end
 
+  # Core owns the lifecycle field: a new lobby always starts in the initial
+  # state, stamped, regardless of what the caller passed (state is not
+  # castable, so this is the only way it gets set at insert).
+  defp new_lobby_changeset(attrs) do
+    %Lobby{}
+    |> Lobby.changeset(attrs)
+    |> Ecto.Changeset.put_change(:state, States.initial())
+    |> Ecto.Changeset.put_change(:state_changed_at, DateTime.utc_now(:second))
+  end
+
+  @doc """
+  Player-initiated state change, subject to lobby ownership.
+
+  Allowed only for the **host of a host-managed lobby** — the host already
+  renames, locks, resizes and kicks, so `state` is no more powerful than what
+  they hold, and "press Start" is a normal party-game action. **Hostless**
+  lobbies (matchmaking's) belong to nobody, so no player may move them: use
+  `transition_state/3` from server-side hooks instead.
+  """
+  @spec transition_state_by_host(User.t(), Lobby.t(), String.t()) ::
+          {:ok, Lobby.t()} | {:error, :not_host | :invalid_state | term()}
+  def transition_state_by_host(%User{id: user_id}, %Lobby{} = lobby, state) do
+    if not lobby.hostless and lobby.host_id == user_id do
+      transition_state(lobby, state)
+    else
+      {:error, :not_host}
+    end
+  end
+
+  @doc """
+  Move a lobby to `state` (see `GameServer.Lobbies.States`).
+
+  The only writer of `state`/`state_changed_at` — the columns are not castable,
+  so a generic `update_lobby/2` can never move a lobby's state.
+
+  The vocabulary is the game's: core only requires a sane string (non-empty,
+  ≤ #{@max_state_length} bytes) and `before_lobby_state_change` enforces
+  whatever words and ordering the game cares about. A same-state call is
+  a no-op (so at-least-once hook/job retries are safe) and does not re-fire
+  hooks. `after_lobby_state_changed` observes post-commit.
+
+  Returns `{:ok, lobby}`, `{:error, :invalid_state}` or
+  `{:error, {:hook_rejected, reason}}`.
+  """
+  @spec transition_state(Lobby.t(), String.t(), keyword()) ::
+          {:ok, Lobby.t()} | {:error, :invalid_state | {:hook_rejected, term()} | term()}
+  def transition_state(%Lobby{} = lobby, state, opts \\ []) when is_binary(state) do
+    cond do
+      state == "" or byte_size(state) > @max_state_length ->
+        {:error, :invalid_state}
+
+      lobby.state == state ->
+        {:ok, lobby}
+
+      true ->
+        do_transition_state(lobby, lobby.state, state, opts)
+    end
+  end
+
+  defp do_transition_state(lobby, from, to, opts) do
+    with :ok <- run_before_state_change(lobby, from, to, opts),
+         {:ok, updated} <- write_state(lobby, to) do
+      GameServer.Async.run(fn ->
+        GameServer.Hooks.internal_call(:after_lobby_state_changed, [updated, from, to])
+      end)
+
+      _ = invalidate_lobby_cache(updated.id)
+
+      payload = %{
+        lobby_id: updated.id,
+        from: from,
+        to: to,
+        state_changed_at: updated.state_changed_at
+      }
+
+      broadcast_lobby(updated.id, {:lobby_state_changed, payload})
+      broadcast_lobbies({:lobby_updated, updated})
+
+      {:ok, updated}
+    end
+  end
+
+  defp run_before_state_change(lobby, from, to, opts) do
+    if Keyword.get(opts, :skip_hooks, false) do
+      :ok
+    else
+      case GameServer.Hooks.internal_call(:before_lobby_state_change, [lobby, from, to]) do
+        {:ok, _} -> :ok
+        {:error, reason} -> {:error, {:hook_rejected, reason}}
+      end
+    end
+  end
+
+  defp write_state(lobby, to) do
+    lobby
+    |> Ecto.Changeset.change(%{state: to, state_changed_at: DateTime.utc_now(:second)})
+    |> Repo.update()
+  end
+
   @spec delete_lobby(Lobby.t()) :: {:ok, Lobby.t()} | {:error, Ecto.Changeset.t() | term()}
   def delete_lobby(%Lobby{} = lobby) do
     case GameServer.Hooks.internal_call(:before_lobby_delete, [lobby]) do
@@ -985,6 +1103,7 @@ defmodule GameServer.Lobbies do
 
             GameServer.Async.run(fn ->
               GameServer.Hooks.internal_call(:after_lobby_join, [updated_user, lobby])
+              report_join_quest_event(updated_user.id, lobby)
             end)
 
             {:ok, updated_user}
@@ -993,6 +1112,12 @@ defmodule GameServer.Lobbies do
             result
         end
     end
+  end
+
+  defp report_join_quest_event(_user_id, nil), do: :ok
+
+  defp report_join_quest_event(user_id, lobby) do
+    GameServer.Quests.report_event(user_id, "lobby_joined", 1, %{"lobby_id" => lobby.id})
   end
 
   @spec delete_membership(User.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
@@ -1044,7 +1169,15 @@ defmodule GameServer.Lobbies do
         handle_host_transfer(lobby, user_id, membership.id)
       end)
 
+    # Let plugins react to the state that is about to be wiped (e.g. bank cargo
+    # collected in a level the player is abandoning). Runs synchronously, before
+    # the KV clear, and only when the leave actually committed.
+    if match?({:ok, _}, result), do: run_before_lobby_leave(user_id, lobby)
+
     _ = clear_lobby_scoped_kv(user_id, lobby_id)
+    # The check is about who is present; a leaver stops being part of it, and
+    # the remaining members may now all be ready.
+    _ = GameServer.ReadyChecks.remove_member(lobby_id, user_id)
 
     result
     |> broadcast_leave_result(lobby_id, user_id)
@@ -1053,6 +1186,17 @@ defmodule GameServer.Lobbies do
     Ecto.StaleEntryError ->
       # Race condition: user was concurrently removed (double leave, kicked, etc.)
       {:error, :not_in_lobby}
+  end
+
+  defp run_before_lobby_leave(user_id, lobby) do
+    case Accounts.get_user(user_id) do
+      %User{} = user -> GameServer.Hooks.internal_call(:before_lobby_leave, [user, lobby])
+      _ -> :ok
+    end
+  rescue
+    exception ->
+      Logger.warning("before_lobby_leave hook failed: #{Exception.message(exception)}")
+      :ok
   end
 
   # Per-member lobby state (ready flags, loadouts, character picks) is stored as
@@ -1219,6 +1363,7 @@ defmodule GameServer.Lobbies do
           {:ok, updated} ->
             _ = invalidate_accounts_user_cache(membership.id)
             _ = clear_lobby_scoped_kv(membership.id, lobby.id)
+            _ = GameServer.ReadyChecks.remove_member(lobby.id, membership.id)
             _ = Accounts.broadcast_user_update(updated)
             _ = Accounts.broadcast_member_update(updated)
 
@@ -1262,11 +1407,12 @@ defmodule GameServer.Lobbies do
   end
 
   @doc """
-  Check if a user can edit a lobby (is host or lobby is hostless).
+  Check if a user can edit a lobby: the host of a host-managed lobby, nobody
+  else. Hostless lobbies have no editor — see `update_lobby_by_host/3`.
   """
   @spec can_edit_lobby?(User.t() | nil, Lobby.t() | nil) :: boolean()
   def can_edit_lobby?(%User{id: user_id}, %Lobby{} = lobby) do
-    lobby.host_id == user_id or lobby.hostless
+    not lobby.hostless and lobby.host_id == user_id
   end
 
   def can_edit_lobby?(nil, _lobby), do: false
@@ -1291,10 +1437,19 @@ defmodule GameServer.Lobbies do
   def spectatable?(%Lobby{is_locked: true}), do: false
   def spectatable?(%Lobby{}), do: true
 
+  @doc """
+  Player-initiated lobby update, subject to lobby ownership.
+
+  Allowed only for the **host of a host-managed lobby**. **Hostless** lobbies
+  (matchmaking's) belong to nobody, so no player may edit them — a member
+  could otherwise rewrite `metadata`, `max_users`, `password_hash` and the
+  visibility flags of a ranked match they merely happen to be in. Server-side
+  code (hooks, jobs, matchmaking, admin) uses `update_lobby/2` instead.
+  """
   @spec update_lobby_by_host(User.t(), Lobby.t(), Types.lobby_update_attrs()) ::
           {:ok, Lobby.t()} | {:error, :not_host | :too_small | Ecto.Changeset.t() | term()}
   def update_lobby_by_host(%User{id: host_id}, %Lobby{} = lobby, attrs) do
-    if lobby.host_id == host_id or lobby.hostless do
+    if not lobby.hostless and lobby.host_id == host_id do
       attrs = maybe_hash_password(attrs)
       new_max = Map.get(attrs, "max_users") || Map.get(attrs, :max_users)
 

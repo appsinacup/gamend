@@ -3,8 +3,6 @@ defmodule GameServerWeb.Plugs.MailboxPreviewEnabled do
 
   import Plug.Conn
 
-  alias GameServer.Env
-
   @behaviour Plug
 
   @impl Plug
@@ -12,7 +10,7 @@ defmodule GameServerWeb.Plugs.MailboxPreviewEnabled do
 
   @impl Plug
   def call(conn, _opts) do
-    enabled? = dev_env?() or Env.bool("MAILBOX_PREVIEW_ENABLED", false)
+    enabled? = dev_env?() or GameServerWeb.Features.enabled?(:mailbox_preview)
 
     adapter_is_local? =
       Application.get_env(:game_server_core, GameServer.Mailer, [])[:adapter] ==

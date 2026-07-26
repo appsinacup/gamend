@@ -1,31 +1,32 @@
 defmodule Mix.Tasks.Gettext.ExportCsv do
   @moduledoc """
-  Exports all PO translations and theme JSON config for a locale to CSV.
+  Exports every translation for a locale to one CSV, for review in a
+  spreadsheet.
 
   ## Usage
 
-      mix gettext.export_csv LOCALE [--output FILE] [--config BASE_PATH]
+      mix gettext.export_csv LOCALE [--output FILE]
 
   ## Examples
 
       mix gettext.export_csv es
       mix gettext.export_csv es --output translations/es.csv
-      mix gettext.export_csv es --config modules/example_config.json
 
   The CSV has columns: `domain`, `msgid`, `source`, `translation`, `fuzzy`.
 
-  - For PO messages: `source` is empty (the `msgid` itself is the English
-    source text), `translation` is the `msgstr` value.
-  - `fuzzy` is `"yes"` when the entry is marked fuzzy, otherwise empty.
-  - For JSON config: domain is `_config`, `msgid` is the JSON key path,
-    `source` is the English reference text from the base config,
-    `translation` is the locale text. Edit `translation` to change.
+  - `source` is empty — the `msgid` *is* the English source text.
+  - `translation` is the `msgstr`; an empty cell is untranslated work.
+  - `fuzzy` is `"yes"` when the entry needs re-checking after a source change.
 
-  Empty `translation` cells indicate untranslated strings that need work.
+  Both gettext trees are exported: the host's (`priv/gettext`, which holds the
+  `theme` and `content` domains) and the library's
+  (`apps/game_server_web/priv/gettext`). A `(domain, msgid)` present in both is
+  one row, and `mix gettext.import_csv` writes it back to both — the same
+  English string gets the same translation wherever it renders.
   """
   use Mix.Task
 
-  @shortdoc "Export PO translations and theme config for a locale to CSV"
+  @shortdoc "Export a locale's translations to CSV"
 
   @gettext_dirs [
     "priv/gettext",
@@ -34,43 +35,61 @@ defmodule Mix.Tasks.Gettext.ExportCsv do
 
   @impl Mix.Task
   def run(args) do
-    {opts, positional, _} =
-      OptionParser.parse(args, strict: [output: :string, config: :string])
+    {opts, positional, _} = OptionParser.parse(args, strict: [output: :string])
 
     locale = List.first(positional) || raise_usage!()
-    locale_dir = Path.join([gettext_dir(), locale, "LC_MESSAGES"])
+    locale_dirs = locale_dirs(locale)
 
-    unless File.dir?(locale_dir) do
-      Mix.raise("Locale directory not found: #{locale_dir}")
+    if locale_dirs == [] do
+      Mix.raise("Locale not found in any gettext tree: #{locale}")
     end
 
     output_path = opts[:output] || "translations/#{locale}.csv"
+    rows = export_rows(locale_dirs)
 
-    po_rows = export_po_rows(locale_dir)
-    config_rows = export_config_rows(locale, opts[:config]) |> dedup_config_rows()
-
-    all_rows = po_rows ++ config_rows
-    csv_content = encode_csv([header_row() | all_rows])
     File.mkdir_p!(Path.dirname(output_path))
-    File.write!(output_path, csv_content)
+    File.write!(output_path, encode_csv([header_row() | rows]))
+
+    translated = Enum.count(rows, fn [_, _, _, translation, _] -> translation != "" end)
 
     Mix.shell().info(
-      "Exported #{length(po_rows)} PO + #{length(config_rows)} config = " <>
-        "#{length(all_rows)} total translations to #{output_path}"
+      "Exported #{length(rows)} strings (#{translated} translated) to #{output_path}"
     )
   end
 
-  defp export_po_rows(locale_dir) do
+  defp locale_dirs(locale) do
+    @gettext_dirs
+    |> Enum.map(&Path.join([&1, locale, "LC_MESSAGES"]))
+    |> Enum.filter(&File.dir?/1)
+  end
+
+  # A msgid shared by both trees is one row, keeping whichever copy is already
+  # translated — otherwise a stale empty msgstr in one tree would hide the work
+  # already done in the other.
+  defp export_rows(locale_dirs) do
+    locale_dirs
+    |> Enum.flat_map(&po_rows/1)
+    |> Enum.reduce(%{}, fn [domain, msgid, _, _, _] = row, acc ->
+      Map.update(acc, {domain, msgid}, row, &better_of(&1, row))
+    end)
+    |> Enum.sort_by(fn {key, _row} -> key end)
+    |> Enum.map(fn {_key, row} -> row end)
+  end
+
+  defp better_of([_, _, _, "", _], candidate), do: candidate
+  defp better_of(existing, _candidate), do: existing
+
+  defp po_rows(locale_dir) do
     locale_dir
     |> File.ls!()
     |> Enum.filter(&String.ends_with?(&1, ".po"))
-    |> Enum.sort()
     |> Enum.flat_map(fn filename ->
       domain = String.replace_suffix(filename, ".po", "")
-      path = Path.join(locale_dir, filename)
-      {:ok, po} = Expo.PO.parse_file(path)
+      {:ok, po} = Expo.PO.parse_file(Path.join(locale_dir, filename))
 
-      Enum.map(po.messages, fn msg -> message_to_row(domain, msg) end)
+      po.messages
+      |> Enum.map(&message_to_row(domain, &1))
+      |> Enum.reject(fn [_, msgid, _, _, _] -> msgid == "" end)
     end)
   end
 
@@ -79,28 +98,26 @@ defmodule Mix.Tasks.Gettext.ExportCsv do
   end
 
   defp message_to_row(domain, %Expo.Message.Singular{} = msg) do
-    fuzzy = if fuzzy?(msg), do: "yes", else: ""
-
     [
       domain,
       IO.iodata_to_binary(msg.msgid),
       "",
       IO.iodata_to_binary(msg.msgstr),
-      fuzzy
+      fuzzy_cell(msg)
     ]
   end
 
   defp message_to_row(domain, %Expo.Message.Plural{} = msg) do
-    fuzzy = if fuzzy?(msg), do: "yes", else: ""
-
     [
       domain,
       IO.iodata_to_binary(msg.msgid),
       "",
       IO.iodata_to_binary(Map.get(msg.msgstr, 0, [])),
-      fuzzy
+      fuzzy_cell(msg)
     ]
   end
+
+  defp fuzzy_cell(msg), do: if(fuzzy?(msg), do: "yes", else: "")
 
   defp fuzzy?(%{flags: flags}) do
     Enum.any?(flags, fn flag_list ->
@@ -128,240 +145,13 @@ defmodule Mix.Tasks.Gettext.ExportCsv do
 
   defp csv_escape(value), do: csv_escape(to_string(value))
 
-  @spec raise_usage!() :: no_return()
   defp raise_usage! do
     Mix.raise("""
-    Usage: mix gettext.export_csv LOCALE [--output FILE] [--config BASE_PATH]
+    Usage: mix gettext.export_csv LOCALE [--output FILE]
 
-    Example: mix gettext.export_csv es
-             mix gettext.export_csv es --config modules/example_config.json
+    Examples:
+             mix gettext.export_csv es
+             mix gettext.export_csv es --output translations/es.csv
     """)
-  end
-
-  defp gettext_dir do
-    Enum.find(@gettext_dirs, "priv/gettext", &File.dir?/1)
-  end
-
-  # ------------------------------------------------------------------
-  # Theme JSON config export
-  # ------------------------------------------------------------------
-
-  @config_top_keys ~w(title tagline description site_message)
-
-  # Deduplicate config rows that share the same English source text.
-  # Keeps only the first occurrence (by path). The import script uses
-  # source-text matching to apply translations to ALL matching paths.
-  defp dedup_config_rows(rows) do
-    {_seen, deduped} =
-      Enum.reduce(rows, {MapSet.new(), []}, fn row, {seen, acc} ->
-        # row = [domain, path, en_val, locale_val, fuzzy]
-        en_val = Enum.at(row, 2)
-
-        if MapSet.member?(seen, en_val) do
-          {seen, acc}
-        else
-          {MapSet.put(seen, en_val), [row | acc]}
-        end
-      end)
-
-    Enum.reverse(deduped)
-  end
-
-  defp export_config_rows(locale, config_opt) do
-    base_path = detect_config_base(config_opt)
-
-    if base_path do
-      en_data = read_config_json(base_path, "en")
-      locale_data = if locale == "en", do: en_data, else: read_config_json(base_path, locale)
-
-      if en_data do
-        config_text_rows(en_data, locale_data || %{})
-      else
-        []
-      end
-    else
-      []
-    end
-  end
-
-  defp config_text_rows(en_data, locale_data) do
-    en_data
-    |> config_text_paths()
-    |> Enum.flat_map(fn path ->
-      en_val = get_in_config(en_data, path)
-      locale_val = get_in_config(locale_data, path) || ""
-
-      if is_binary(en_val) and en_val != "" do
-        [["_config", path, en_val, locale_val, ""]]
-      else
-        []
-      end
-    end)
-  end
-
-  defp config_text_paths(data) when is_map(data) do
-    top_paths =
-      @config_top_keys
-      |> Enum.filter(&(Map.get(data, &1, "") != ""))
-
-    top_paths ++ page_text_paths(data) ++ footer_text_paths(data) ++ navigation_text_paths(data)
-  end
-
-  defp config_text_paths(_data), do: []
-
-  defp page_text_paths(data) do
-    data
-    |> Map.get("pages", %{})
-    |> case do
-      pages when is_map(pages) ->
-        pages
-        |> Enum.sort_by(fn {key, _page} -> key end)
-        |> Enum.flat_map(fn {key, page} -> presentation_page_text_paths("pages.#{key}", page) end)
-
-      _ ->
-        []
-    end
-  end
-
-  defp presentation_page_text_paths(prefix, page) when is_map(page) do
-    hero = Map.get(page, "hero", %{})
-
-    [
-      "#{prefix}.hero.title",
-      "#{prefix}.hero.text"
-    ] ++
-      image_alt_path("#{prefix}.hero", hero) ++
-      button_label_paths("#{prefix}.hero", hero) ++
-      section_text_paths(prefix, Map.get(page, "sections", []))
-  end
-
-  defp presentation_page_text_paths(_prefix, _page), do: []
-
-  defp section_text_paths(prefix, sections) when is_list(sections) do
-    sections
-    |> Enum.with_index()
-    |> Enum.flat_map(fn {section, index} ->
-      section_prefix = "#{prefix}.sections[#{index}]"
-
-      [
-        "#{section_prefix}.title",
-        "#{section_prefix}.text"
-      ] ++ image_alt_path(section_prefix, section) ++ button_label_paths(section_prefix, section)
-    end)
-  end
-
-  defp section_text_paths(_prefix, _sections), do: []
-
-  defp image_alt_path(prefix, item) when is_map(item) do
-    case get_in(item, ["image", "alt"]) do
-      value when is_binary(value) and value != "" -> ["#{prefix}.image.alt"]
-      _ -> []
-    end
-  end
-
-  defp image_alt_path(_prefix, _item), do: []
-
-  defp button_label_paths(prefix, item) when is_map(item) do
-    item
-    |> Map.get("buttons", [])
-    |> list_field_paths("#{prefix}.buttons", "label")
-  end
-
-  defp button_label_paths(_prefix, _item), do: []
-
-  defp footer_text_paths(data) do
-    sections = get_in(data, ["footer", "sections"]) || []
-
-    sections
-    |> Enum.with_index()
-    |> Enum.flat_map(fn {section, index} ->
-      prefix = "footer.sections[#{index}]"
-
-      ["#{prefix}.title"] ++
-        list_field_paths(Map.get(section, "links", []), "#{prefix}.links", "label")
-    end)
-  end
-
-  defp navigation_text_paths(data) do
-    navigation = Map.get(data, "navigation", %{})
-
-    ~w(primary_links guest_links authenticated_links account_links)
-    |> Enum.flat_map(fn key ->
-      navigation
-      |> Map.get(key, [])
-      |> Enum.with_index()
-      |> Enum.flat_map(fn {link, index} ->
-        prefix = "navigation.#{key}[#{index}]"
-
-        ["#{prefix}.label"] ++
-          list_field_paths(Map.get(link, "items", []), "#{prefix}.items", "label")
-      end)
-    end)
-  end
-
-  defp list_field_paths(items, prefix, field) when is_list(items) do
-    items
-    |> Enum.with_index()
-    |> Enum.map(fn {_item, index} -> "#{prefix}[#{index}].#{field}" end)
-  end
-
-  defp list_field_paths(_items, _prefix, _field), do: []
-
-  defp get_in_config(data, path) do
-    path
-    |> parse_config_path()
-    |> Enum.reduce(data, fn
-      {key, idx}, acc when is_map(acc) ->
-        acc |> Map.get(key, []) |> Enum.at(idx)
-
-      key, acc when is_map(acc) ->
-        Map.get(acc, key)
-
-      _key, nil ->
-        nil
-    end)
-  end
-
-  defp parse_config_path(path) do
-    path
-    |> String.split(".")
-    |> Enum.map(fn segment ->
-      case Regex.run(~r/^(.+)\[(\d+)\]$/, segment) do
-        [_, key, idx] -> {key, String.to_integer(idx)}
-        nil -> segment
-      end
-    end)
-  end
-
-  defp detect_config_base(nil) do
-    # Auto-detect: check THEME_CONFIG env, then common patterns
-    env_path = System.get_env("THEME_CONFIG")
-
-    cond do
-      env_path && env_path != "" ->
-        env_path
-
-      File.exists?("modules/example_config.en.json") ->
-        # Derive base from .en.json file
-        "modules/example_config.json"
-
-      true ->
-        nil
-    end
-  end
-
-  defp detect_config_base(explicit), do: explicit
-
-  defp read_config_json(base_path, locale) do
-    # Insert locale before extension: foo.json → foo.LOCALE.json
-    ext = Path.extname(base_path)
-    stem = String.replace_suffix(base_path, ext, "")
-    locale_path = "#{stem}.#{locale}#{ext}"
-
-    if File.exists?(locale_path) do
-      locale_path |> File.read!() |> Jason.decode!()
-    else
-      nil
-    end
   end
 end

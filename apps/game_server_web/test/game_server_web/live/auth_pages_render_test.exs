@@ -16,7 +16,7 @@ defmodule GameServerWeb.AuthPagesRenderTest do
   describe "unauthenticated users are redirected to login" do
     for {path, _label} <- @auth_routes do
       test "GET #{path} redirects unauthenticated", %{conn: conn} do
-        assert {:error, {:redirect, %{to: "/users/log-in"}}} =
+        assert {:error, {:redirect, %{to: "/users/log_in"}}} =
                  live(conn, unquote(path))
       end
     end

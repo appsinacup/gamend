@@ -209,7 +209,7 @@ defmodule GameServerWeb.AdminLive.Economy do
               type="text"
               name="user_id"
               value={@user_filter}
-              placeholder="filter user id"
+              placeholder="filter user (id or name)"
               phx-debounce="300"
               class="input input-sm font-mono w-72"
             />
@@ -231,7 +231,7 @@ defmodule GameServerWeb.AdminLive.Economy do
               </thead>
               <tbody>
                 <tr :for={w <- @wallets} id={"wallet-#{w.id}"}>
-                  <td class="font-mono text-xs break-all">{w.user_id}</td>
+                  <td class="text-xs" title={w.user_id}>{user_display(w.user)}</td>
                   <td class="font-mono text-xs">{w.currency}</td>
                   <td class="text-right font-mono">{w.balance}</td>
                 </tr>
@@ -295,7 +295,7 @@ defmodule GameServerWeb.AdminLive.Economy do
               </thead>
               <tbody>
                 <tr :for={i <- @items} id={"item-#{i.id}"}>
-                  <td class="font-mono text-xs break-all">{i.user_id}</td>
+                  <td class="text-xs" title={i.user_id}>{user_display(i.user)}</td>
                   <td class="font-mono text-xs">{i.item}</td>
                   <td class="text-right font-mono">{i.quantity}</td>
                 </tr>
@@ -321,9 +321,9 @@ defmodule GameServerWeb.AdminLive.Economy do
               <tbody>
                 <tr :for={e <- @ledger} id={"ledger-#{e.id}"}>
                   <td class="text-xs whitespace-nowrap">
-                    {Calendar.strftime(e.inserted_at, "%Y-%m-%d %H:%M:%S")}
+                    <.timestamp at={e.inserted_at} format="full" />
                   </td>
-                  <td class="font-mono text-xs break-all">{e.user_id}</td>
+                  <td class="text-xs" title={e.user_id}>{user_display(e.user)}</td>
                   <td class="font-mono text-xs">{e.currency}</td>
                   <td class={[
                     "text-right font-mono",

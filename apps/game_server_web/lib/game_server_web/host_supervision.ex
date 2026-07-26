@@ -44,6 +44,11 @@ defmodule GameServerWeb.HostSupervision do
   """
   @spec init_runtime() :: :ok
   def init_runtime do
+    # Before anything starts: a missing required setting should stop the boot
+    # here, with a list of what is missing, rather than surface later as a
+    # crash-loop in whichever child needed it.
+    GameServer.Settings.validate!(Application.get_env(:game_server_web, :environment, :prod))
+
     Application.start(:os_mon)
 
     # ETS owner for the Schedule registry + protected-callback set — must exist
@@ -107,6 +112,10 @@ defmodule GameServerWeb.HostSupervision do
         GameServer.Retention,
         # Tournament lifecycle: transitions, draws, match deadlines, recurrence
         GameServer.Tournaments.Ticker,
+        # Push delivery processes (Goth + Pigeon dispatchers); supervises
+        # nothing when no PUSH_*/APNS_* vars are set. Before Oban so
+        # dispatchers are up when push-queue workers start running.
+        GameServer.Push.Supervisor,
         # Durable background jobs (GameServer.Jobs) + the per-minute Cron tick
         # that drives GameServer.Schedule.
         {Oban, GameServer.Jobs.oban_config()},

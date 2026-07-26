@@ -69,21 +69,18 @@ defmodule GameServerWeb.AdminLive.Sessions do
                       <span class="badge badge-info badge-sm">{session.context}</span>
                     </td>
                     <td class="text-sm">
-                      {Calendar.strftime(session.inserted_at, "%Y-%m-%d %H:%M")}
+                      <.timestamp at={session.inserted_at} />
                     </td>
                     <td class="text-sm">
                       <%= if session.authenticated_at do %>
-                        {Calendar.strftime(session.authenticated_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={session.authenticated_at} />
                       <% else %>
                         <span class="text-gray-500">Never</span>
                       <% end %>
                     </td>
                     <td class="text-sm">
                       <%= if session.context == "session" do %>
-                        {Calendar.strftime(
-                          DateTime.add(session.inserted_at, 14, :day),
-                          "%Y-%m-%d %H:%M"
-                        )}
+                        <.timestamp at={DateTime.add(session.inserted_at, 14, :day)} />
                       <% else %>
                         <span class="text-gray-500">-</span>
                       <% end %>

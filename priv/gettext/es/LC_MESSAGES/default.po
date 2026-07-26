@@ -18,7 +18,7 @@ msgstr "Blog"
 msgid "Changelog"
 msgstr "Registro de cambios"
 
-#: lib/game_server_web/host_public_docs.ex:64
+#: lib/game_server_web/host_public_docs.ex:67
 #, elixir-autogen, elixir-format
 msgid "Documentation"
 msgstr "Documentación"
@@ -34,7 +34,7 @@ msgstr "Más nuevo"
 #: lib/game_server_web/live/roadmap_live.ex:55
 #, elixir-autogen, elixir-format
 msgid "No results."
-msgstr ""
+msgstr "Sin resultados."
 
 #: lib/game_server_web/live/blog_live.ex:220
 #, elixir-autogen, elixir-format
@@ -71,7 +71,7 @@ msgstr "Chat"
 #: lib/game_server_host/host_layout_translations.ex:12
 #, elixir-autogen, elixir-format
 msgid "Dismiss"
-msgstr ""
+msgstr "Descartar"
 
 #: lib/game_server_host/host_layout_translations.ex:10
 #, elixir-autogen, elixir-format

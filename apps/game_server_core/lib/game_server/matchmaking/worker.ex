@@ -10,6 +10,13 @@ defmodule GameServer.Matchmaking.Worker do
   Each tick, inside the lock: prune tickets of users that went offline, then
   group the queued tickets by `match_params` and create a hidden lobby per
   formed match. Broadcasts go out after the lock's transaction commits.
+
+      config :game_server_core, GameServer.Matchmaking.Worker,
+        enabled: true               # set false to leave the worker idle
+
+  Disabled in test configs, like the other periodic workers: the tick owns no
+  sandbox connection, so it only produces "database is locked" noise. Tests
+  call `sweep/0` directly.
   """
 
   use GenServer
@@ -28,9 +35,13 @@ defmodule GameServer.Matchmaking.Worker do
 
   @impl true
   def init(_) do
-    Process.send_after(self(), :tick, @initial_delay_ms)
+    # Stays supervised but idle when disabled (tests): the sweep has no sandbox
+    # connection to check out, so it would just stall and then error.
+    if enabled?(), do: Process.send_after(self(), :tick, @initial_delay_ms)
     {:ok, %{}}
   end
+
+  defp enabled?, do: Application.get_env(:game_server_core, __MODULE__, [])[:enabled] != false
 
   @impl true
   def handle_info(:tick, state) do
@@ -59,6 +70,10 @@ defmodule GameServer.Matchmaking.Worker do
   """
   @spec sweep() :: non_neg_integer()
   def sweep do
+    # Backstop for a ready check whose durable expiry job was lost. Outside the
+    # lock: expiring fires hooks and broadcasts. One indexed query per tick.
+    _ = GameServer.ReadyChecks.expire_due()
+
     claimed =
       case GameServer.Lock.serialize(:matchmaking_sweep, "global", &claim_phase/0) do
         {:ok, matches} -> matches

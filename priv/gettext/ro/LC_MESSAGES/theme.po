@@ -1,0 +1,171 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: ro\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "Server de joc Elixir open source pentru jocuri multiplayer în timp real."
+
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "Blog"
+
+msgid "Roadmap"
+msgstr "Foaie de parcurs"
+
+msgid "Changelog"
+msgstr "Jurnal de modificări"
+
+msgid "Social"
+msgstr "Social"
+
+msgid "About Gamend"
+msgstr "Despre Gamend"
+
+msgid "Elixir Docs"
+msgstr "Documente despre elixir"
+
+msgid "About"
+msgstr "Despre"
+
+msgid "Guides"
+msgstr "Ghid"
+
+msgid "API Docs"
+msgstr "Documentație API"
+
+msgid "Store"
+msgstr "Magazin"
+
+msgid "Help"
+msgstr "Ajutor"
+
+msgid "Privacy Policy"
+msgstr "Politica de confidențialitate"
+
+msgid "Terms and Conditions"
+msgstr "Termeni și condiții"
+
+msgid "Privacy & Terms"
+msgstr "Confidențialitate și termeni"
+
+msgid "Play"
+msgstr "Joacă"
+
+msgid "Leaderboards"
+msgstr "Clasamente"
+
+msgid "Quests"
+msgstr "Misiuni"
+
+msgid "Tournaments"
+msgstr "Turnee"
+
+msgid "Groups"
+msgstr "Grupuri"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "Gamend este un backend Elixir **complet echipat** pentru jocuri multiplayer, cu autentificare, sisteme sociale, canale în timp real și unelte de administrare."
+
+msgid "Realtime Guide"
+msgstr "Ghid pentru timp real"
+
+msgid "Real-time games"
+msgstr "Jocuri în timp real"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "Folosește canale, lobby-uri, petreceri, prezență și canale de date WebRTC fără a reconstrui infrastructura multiplayer obișnuită."
+
+msgid "Built For Real-Time Games"
+msgstr "Creat pentru jocuri în timp real"
+
+msgid "Read Docs"
+msgstr "Citește documentația"
+
+msgid "Open source foundation"
+msgstr "Fundație open source"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "Proiectul este conceput pentru a fi bifurcat, personalizat, găzduit și extins de echipe de jocuri."
+
+msgid "Open Source Foundation"
+msgstr "Fundație open source"
+
+msgid "Getting Started"
+msgstr "Noțiuni de bază"
+
+msgid "Presentation Video"
+msgstr "Prezentare video"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "Server de jocuri Elixir **open source** pentru jocuri multiplayer **în timp real**."
+
+msgid "Log in"
+msgstr "Conectare"
+
+msgid "Register"
+msgstr "Înregistrare"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "E-mail, Magic-link, OAuth, JWT și Sesiune. Înregistrare, conectare, resetare parolă și verificare e-mail."
+
+msgid "Authentication & Users"
+msgstr "Autentificare și utilizatori"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "Lobby-uri în timp real și party-uri efemere. Setări personalizabile cu actualizări live."
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "Lobby-uri, party-uri și matchmaking"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "Cereri de prietenie, blocare, prezență în timp real. Grupuri publice, private și ascunse. Mesagerie directă și de grup."
+
+msgid "Friends, Groups & Chat"
+msgstr "Prieteni, Grupuri și Chat"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "Realizări, turnee și clasamente cu autoritate pe server. Notificări în timp real pentru toate funcțiile."
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "Realizări, Turnee, Clasamente și Notificări"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "Extindeți logica serverului cu scripturi Elixir. Programați sarcini automate și cron job-uri."
+
+msgid "Server Scripting & Scheduling"
+msgstr "Scriptare și programare server"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "API REST, canale WebSocket în timp real și canale de date WebRTC cu latență redusă. Portal de administrare și interfață web."
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "HTTP, WebSocket și WebRTC"
+
+msgid "Open Store"
+msgstr "Deschide magazinul"
+
+msgid "Payment Docs"
+msgstr "Documentație plăți"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "Plăți pe server cu furnizorii Stripe, Google Play, App Store și Steam. Validează chitanțe, procesează webhook-uri semnate, acordă drepturi, revocă rambursări și inspectează totul în administrare."
+
+msgid "Payments & Store Integrations"
+msgstr "Plăți și integrări de magazin"
+
+msgid "Gamend is in beta!"
+msgstr "Gamend este în beta!"
+
+msgid "Game + Backend"
+msgstr "Joc + Backend"

@@ -122,7 +122,7 @@ defmodule GameServerWeb.AdminLive.Logs do
                 ]}
               >
                 <span class="text-base-content/40 whitespace-nowrap shrink-0">
-                  {format_log_ts(entry.timestamp)}
+                  <.timestamp at={entry.timestamp} format="time" empty="" />
                 </span>
                 <span class={[
                   "whitespace-nowrap shrink-0 font-semibold w-14 text-right",
@@ -302,14 +302,6 @@ defmodule GameServerWeb.AdminLive.Logs do
     ts = if entry.timestamp, do: DateTime.to_unix(entry.timestamp, :microsecond), else: 0
     "#{ts}-#{:erlang.phash2(entry.message, 999_999)}"
   end
-
-  defp format_log_ts(%DateTime{} = dt) do
-    dt
-    |> DateTime.truncate(:second)
-    |> Calendar.strftime("%H:%M:%S")
-  end
-
-  defp format_log_ts(_), do: ""
 
   defp format_module(mod) when is_atom(mod) do
     mod

@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: fi\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "Tervetuloa mukaan"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "Kirjaudu sisään ensimmäistä kertaa."
+
+#. quests
+msgid "Daily check-in"
+msgstr "Päivittäinen kirjautuminen"
+
+#. quests
+msgid "Log in today."
+msgstr "Kirjaudu sisään tänään."
+
+#. quests
+msgid "Weekly regular"
+msgstr "Viikon vakiokävijä"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "Kirjaudu sisään viitenä eri päivänä tällä viikolla."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "Kuukauden vakiokävijä"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "Kirjaudu sisään kaksikymmentä kertaa tässä kuussa."
+
+#. quests
+msgid "Stop by again"
+msgstr "Piipahda uudelleen"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "Kirjaudu sisään. Tulee taas saataville kolmen päivän kuluttua."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "Uskollinen konkari"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "Kirjaudu sisään viisikymmentä kertaa sen jälkeen, kun olet tervehtinyt."
+
+#. quests
+msgid "Night owl"
+msgstr "Yökyöpeli"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "Jotkin asiat löydetään, niistä ei ilmoiteta."
+
+#. quests
+msgid "Launch festival"
+msgstr "Julkaisufestivaali"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "Päivittäinen tehtävä, joka lasketaan vain festivaalin ajan."
+
+#. leaderboards
+msgid "Logins"
+msgstr "Kirjautumiset"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "Kuinka monta kertaa kukin pelaaja on kirjautunut sisään."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "Viikon cup"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "Ilmoittaudu milloin tahansa – kaavio arvotaan joka maanantai."

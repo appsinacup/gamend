@@ -46,13 +46,18 @@ config :game_server_web,
   well_known_static_app: :game_server_host,
   host_static_paths: ~w(images game favicon.ico robots.txt .well-known theme.css)
 
-# Adapter selection (compile-time). Override with DATABASE_ADAPTER=postgres
+# MDEx's NIF only builds in the syntax highlighter when told to at compile
+# time. Every root that compiles the NIF needs this - the host app, and each
+# app under apps/ - or fenced code raises the moment highlighting is requested.
+config :mdex_native, syntax_highlighter: :lumis
+
+# Adapter selection (compile-time). Override with GAMEND_DB_ADAPTER=postgres
 # at build time for production Postgres deployments. In dev, setting
-# POSTGRES_*/DATABASE_URL (shell or .env) makes dev.exs override this with
+# GAMEND_DB_POSTGRES_*/GAMEND_DB_URL (shell or .env) makes dev.exs override this with
 # Postgres; after changing them, recompile:
 #   mix deps.clean game_server_core game_server_web --build && mix compile
 default_adapter =
-  if System.get_env("DATABASE_ADAPTER") == "postgres",
+  if System.get_env("GAMEND_DB_ADAPTER") == "postgres",
     do: Ecto.Adapters.Postgres,
     else: Ecto.Adapters.SQLite3
 
@@ -65,20 +70,39 @@ config :game_server_core, GameServer.Repo,
 # Durable background jobs (GameServer.Jobs / GameServer.Schedule). The `:engine`
 # (Basic on Postgres, Lite on SQLite) is injected at runtime from the Repo's
 # actual adapter by GameServer.Jobs.oban_config/0 — so it stays correct when
-# dev/test switch the Repo to Postgres via POSTGRES_HOST. The single per-minute
+# dev/test switch the Repo to Postgres via GAMEND_DB_POSTGRES_HOST. The single per-minute
 # Cron entry drives Schedule.TickWorker (see GameServer.Schedule).
 config :game_server_core, Oban,
   repo: GameServer.Repo,
-  queues: [default: 10, hooks: 20, mailers: 5, storage: 5, webhooks: 10],
+  queues: [default: 10, hooks: 20, mailers: 5, storage: 5, webhooks: 10, push: 10],
   plugins: [
     {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7},
     {Oban.Plugins.Cron, crontab: [{"* * * * *", GameServer.Schedule.TickWorker}]}
   ]
 
+# Push notifications (GameServer.Push) need no compiled config: delivery
+# routes per token off its `provider` column, and a provider whose dispatcher
+# isn't running falls back to the zero-config Log provider. The PUSH_* /
+# APNS_* vars (see config/host_runtime.exs) configure the dispatchers at
+# runtime.
+
 # Object storage (GameServer.Storage). Defaults to local disk; STORAGE_ADAPTER
 # and the STORAGE_* vars (see config/host_runtime.exs) select and configure a
 # backend at runtime.
-config :game_server_core, GameServer.Storage, adapter: GameServer.Storage.Local
+config :game_server_core, GameServer.Storage, adapter: :local
+
+# HTTP caching per key-prefix (first match wins). The `avatars/` immutable rule
+# and the revalidate-by-ETag default ship in code; override here to add prefixes
+# or change TTLs. Applied to the local serve route and set as S3 object metadata.
+#
+#   config :game_server_core, GameServer.Storage,
+#     adapter: GameServer.Storage.Local,
+#     cache_policies: [
+#       {"avatars/", "public, max-age=31536000, immutable"},
+#       {"public/", "public, max-age=3600"}
+#     ],
+#     default_cache_control: "public, max-age=0, must-revalidate"
+
 config :ex_aws, json_codec: Jason
 
 host_root = Path.expand("..", __DIR__)
@@ -216,20 +240,6 @@ config :ueberauth, Ueberauth,
     steam: {Ueberauth.Strategy.Steam, []}
   ]
 
-config :ueberauth, Ueberauth.Strategy.Discord.OAuth,
-  client_id: System.get_env("DISCORD_CLIENT_ID"),
-  client_secret: System.get_env("DISCORD_CLIENT_SECRET")
-
-config :ueberauth, Ueberauth.Strategy.Apple.OAuth,
-  client_id: System.get_env("APPLE_WEB_CLIENT_ID"),
-  client_secret: {GameServer.Apple, :client_secret}
-
-config :ueberauth, Ueberauth.Strategy.Google.OAuth,
-  client_id: System.get_env("GOOGLE_CLIENT_ID"),
-  client_secret: System.get_env("GOOGLE_CLIENT_SECRET")
-
-config :ueberauth, Ueberauth.Strategy.Facebook.OAuth,
-  client_id: System.get_env("FACEBOOK_CLIENT_ID"),
-  client_secret: System.get_env("FACEBOOK_CLIENT_SECRET")
-
-config :ueberauth, Ueberauth.Strategy.Steam, api_key: System.get_env("STEAM_API_KEY")
+# Provider credentials are not set here. Ueberauth reads them from its own
+# application env, which host_runtime.exs fills from the declared
+# GameServer.OAuth.Providers settings — one source, resolved at boot.

@@ -29,8 +29,8 @@ defmodule GameServer.LimitsTest do
       assert Limits.get(:max_page_size) == 100
     end
 
-    test "raises for unknown key" do
-      assert_raise KeyError, fn ->
+    test "raises for unknown key, naming the module and the declared keys" do
+      assert_raise ArgumentError, ~r/declares no setting :nonexistent_limit/, fn ->
         Limits.get(:nonexistent_limit)
       end
     end

@@ -1,0 +1,170 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: th\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "เกมเซิร์ฟเวอร์ Elixir โอเพนซอร์สสำหรับเกมผู้เล่นหลายคนแบบเรียลไทม์"
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "บล็อก"
+
+msgid "Roadmap"
+msgstr "แผนงาน"
+
+msgid "Changelog"
+msgstr "บันทึกการเปลี่ยนแปลง"
+
+msgid "Social"
+msgstr "โซเชียล"
+
+msgid "About Gamend"
+msgstr "เกี่ยวกับ Gamend"
+
+msgid "Elixir Docs"
+msgstr "เอกสาร Elixir"
+
+msgid "About"
+msgstr "เกี่ยวกับ"
+
+msgid "Guides"
+msgstr "คู่มือ"
+
+msgid "API Docs"
+msgstr "เอกสาร API"
+
+msgid "Store"
+msgstr "ร้านค้า"
+
+msgid "Help"
+msgstr "ช่วยเหลือ"
+
+msgid "Privacy Policy"
+msgstr "นโยบายความเป็นส่วนตัว"
+
+msgid "Terms and Conditions"
+msgstr "ข้อกำหนดและเงื่อนไข"
+
+msgid "Privacy & Terms"
+msgstr "ความเป็นส่วนตัวและข้อกำหนด"
+
+msgid "Play"
+msgstr "เล่น"
+
+msgid "Leaderboards"
+msgstr "ตารางอันดับ"
+
+msgid "Quests"
+msgstr "เควสต์"
+
+msgid "Tournaments"
+msgstr "ทัวร์นาเมนต์"
+
+msgid "Groups"
+msgstr "กลุ่ม"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "Gamend คือแบ็กเอนด์ Elixir **ครบเครื่อง** สำหรับเกมผู้เล่นหลายคน พร้อมระบบยืนยันตัวตน ระบบโซเชียล ช่องทางเรียลไทม์ และเครื่องมือผู้ดูแลระบบ"
+
+msgid "Realtime Guide"
+msgstr "คู่มือเรียลไทม์"
+
+msgid "Real-time games"
+msgstr "เกมเรียลไทม์"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "ใช้ช่องทาง ล็อบบี้ ปาร์ตี้ สถานะออนไลน์ และช่องข้อมูล WebRTC ได้เลย โดยไม่ต้องสร้างโครงสร้างพื้นฐานผู้เล่นหลายคนขึ้นมาใหม่"
+
+msgid "Built For Real-Time Games"
+msgstr "สร้างมาเพื่อเกมเรียลไทม์"
+
+msgid "Read Docs"
+msgstr "อ่านเอกสาร"
+
+msgid "Open source foundation"
+msgstr "รากฐานโอเพนซอร์ส"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "โปรเจกต์นี้ออกแบบมาให้ทีมเกมสามารถ fork ปรับธีม โฮสต์ และต่อยอดได้"
+
+msgid "Open Source Foundation"
+msgstr "รากฐานโอเพนซอร์ส"
+
+msgid "Getting Started"
+msgstr "เริ่มต้นใช้งาน"
+
+msgid "Presentation Video"
+msgstr "วิดีโอแนะนำ"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "เกมเซิร์ฟเวอร์ Elixir **โอเพนซอร์ส** สำหรับเกมผู้เล่นหลายคน**แบบเรียลไทม์**"
+
+msgid "Log in"
+msgstr "เข้าสู่ระบบ"
+
+msgid "Register"
+msgstr "สมัครสมาชิก"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "อีเมล ลิงก์เวทมนตร์ OAuth JWT และเซสชัน สมัครสมาชิก เข้าสู่ระบบ รีเซ็ตรหัสผ่าน และยืนยันอีเมล"
+
+msgid "Authentication & Users"
+msgstr "การยืนยันตัวตนและผู้ใช้"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "ล็อบบี้แบบเรียลไทม์และปาร์ตี้ชั่วคราว ตั้งค่าได้ตามต้องการพร้อมอัปเดตสด"
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "ล็อบบี้ ปาร์ตี้ และการจับคู่"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "คำขอเป็นเพื่อน การบล็อก สถานะออนไลน์แบบเรียลไทม์ กลุ่มสาธารณะ ส่วนตัว และซ่อนอยู่ ข้อความส่วนตัวและข้อความกลุ่ม"
+
+msgid "Friends, Groups & Chat"
+msgstr "เพื่อน กลุ่ม และแชท"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "ความสำเร็จ ทัวร์นาเมนต์แบบแพ้คัดออก และกระดานผู้นำที่ตัดสินโดยเซิร์ฟเวอร์ การแจ้งเตือนแบบเรียลไทม์ครอบคลุมทุกฟีเจอร์และเหตุการณ์การชำระเงิน"
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "ความสำเร็จ ทัวร์นาเมนต์ กระดานผู้นำ และการแจ้งเตือน"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "ขยายตรรกะของเซิร์ฟเวอร์ด้วยสคริปต์ Elixir ตั้งเวลางานอัตโนมัติและงาน cron"
+
+msgid "Server Scripting & Scheduling"
+msgstr "สคริปต์เซิร์ฟเวอร์และการตั้งเวลา"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "REST API ช่อง WebSocket แบบเรียลไทม์ และ WebRTC DataChannel ที่หน่วงต่ำ พร้อมพอร์ทัลผู้ดูแลระบบและเว็บ UI"
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "HTTP, WebSocket และ WebRTC"
+
+msgid "Open Store"
+msgstr "เปิดร้านค้า"
+
+msgid "Payment Docs"
+msgstr "เอกสารการชำระเงิน"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "การชำระเงินฝั่งเซิร์ฟเวอร์ด้วย Stripe, Google Play, App Store และ Steam ตรวจสอบใบเสร็จ ประมวลผล webhook ที่ลงลายเซ็น มอบสิทธิ์ เพิกถอนการคืนเงิน และตรวจสอบทั้งหมดในหน้าผู้ดูแลระบบ"
+
+msgid "Payments & Store Integrations"
+msgstr "การชำระเงินและการเชื่อมต่อร้านค้า"
+
+msgid "Gamend is in beta!"
+msgstr "Gamend อยู่ในช่วงเบตา!"
+
+msgid "Game + Backend"
+msgstr "เกม + แบ็กเอนด์"

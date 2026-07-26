@@ -6,8 +6,6 @@ defmodule GameServerWeb.Api.V1.Admin.EconomyController do
   use GameServerWeb, :controller
   use OpenApiSpex.ControllerSpecs
 
-  import GameServerWeb.Helpers.ParamParser, only: [parse_page_params: 1]
-
   alias GameServer.Economy
   alias GameServer.Inventory
   alias GameServerWeb.Pagination
@@ -51,7 +49,7 @@ defmodule GameServerWeb.Api.V1.Admin.EconomyController do
   )
 
   def wallets(conn, params) do
-    {page, page_size} = parse_page_params(params)
+    {page, page_size} = GameServerWeb.Pagination.params(params)
 
     filters = [
       user_id: params["user_id"],
@@ -91,7 +89,7 @@ defmodule GameServerWeb.Api.V1.Admin.EconomyController do
   )
 
   def ledger(conn, params) do
-    {page, page_size} = parse_page_params(params)
+    {page, page_size} = GameServerWeb.Pagination.params(params)
 
     filters = [
       user_id: params["user_id"],
@@ -109,7 +107,7 @@ defmodule GameServerWeb.Api.V1.Admin.EconomyController do
           %{
             id: e.id,
             user_id: e.user_id,
-            currency: e.currency,
+            currency: e.currency || "",
             delta: e.delta,
             balance_after: e.balance_after,
             reason: e.reason,
@@ -195,7 +193,7 @@ defmodule GameServerWeb.Api.V1.Admin.EconomyController do
   )
 
   def items(conn, params) do
-    {page, page_size} = parse_page_params(params)
+    {page, page_size} = GameServerWeb.Pagination.params(params)
     filters = [user_id: params["user_id"], item: params["item"], page: page, page_size: page_size]
 
     items = Inventory.list_items(filters)

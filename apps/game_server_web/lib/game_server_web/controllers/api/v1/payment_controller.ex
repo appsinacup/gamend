@@ -128,7 +128,7 @@ defmodule GameServerWeb.Api.V1.PaymentController do
         json(conn, %{
           data: %{
             purchase: serialize_purchase(result.purchase),
-            provider_transaction_id: result.provider_transaction_id,
+            provider_transaction_id: result.provider_transaction_id || "",
             steam_url: result.steam_url
           }
         })
@@ -224,9 +224,9 @@ defmodule GameServerWeb.Api.V1.PaymentController do
 
     %{
       id: provider_product.id,
-      provider: provider_product.provider,
-      external_id: provider_product.external_id,
-      currency: provider_product.currency,
+      provider: provider_product.provider || "",
+      external_id: provider_product.external_id || "",
+      currency: provider_product.currency || "",
       unit_amount: provider_product.unit_amount,
       metadata: provider_product.metadata || %{},
       product: %{
@@ -243,14 +243,14 @@ defmodule GameServerWeb.Api.V1.PaymentController do
   defp serialize_purchase(purchase) do
     %{
       id: purchase.id,
-      order_id: purchase.order_id,
-      provider: purchase.provider,
-      provider_transaction_id: purchase.provider_transaction_id,
+      order_id: purchase.order_id || "",
+      provider: purchase.provider || "",
+      provider_transaction_id: purchase.provider_transaction_id || "",
       status: purchase.status,
       product_id: purchase.product_id,
       provider_product_id: purchase.provider_product_id,
       quantity: purchase.quantity,
-      currency: purchase.currency,
+      currency: purchase.currency || "",
       amount: purchase.amount,
       environment: purchase.environment,
       purchased_at: purchase.purchased_at,
@@ -262,7 +262,7 @@ defmodule GameServerWeb.Api.V1.PaymentController do
   defp serialize_entitlement(entitlement) do
     %{
       id: entitlement.id,
-      key: entitlement.key,
+      key: entitlement.key || "",
       status: entitlement.status,
       product_id: entitlement.product_id,
       source_purchase_id: entitlement.source_purchase_id,

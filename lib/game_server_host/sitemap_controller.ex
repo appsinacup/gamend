@@ -18,9 +18,9 @@ defmodule GameServerHost.SitemapController do
     %{loc: "/docs/setup", changefreq: "monthly", priority: "0.7"},
     %{loc: "/privacy", changefreq: "yearly", priority: "0.3"},
     %{loc: "/terms", changefreq: "yearly", priority: "0.3"},
-    %{loc: "/data-deletion", changefreq: "yearly", priority: "0.3"},
+    %{loc: "/data_deletion", changefreq: "yearly", priority: "0.3"},
     %{loc: "/users/register", changefreq: "yearly", priority: "0.5"},
-    %{loc: "/users/log-in", changefreq: "yearly", priority: "0.5"}
+    %{loc: "/users/log_in", changefreq: "yearly", priority: "0.5"}
   ]
 
   def index(conn, _params) do

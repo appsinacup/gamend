@@ -71,7 +71,7 @@ defmodule GameServerWeb.UserLive.Settings.WalletTab do
                 id={dom_id}
                 class="hover"
               >
-                <td class="text-xs font-mono">{format_ts(e.inserted_at)}</td>
+                <td class="text-xs font-mono"><.timestamp at={e.inserted_at} /></td>
                 <td class="text-sm">{e.currency}</td>
                 <td class={[
                   "text-right font-mono tabular-nums",
@@ -163,9 +163,4 @@ defmodule GameServerWeb.UserLive.Settings.WalletTab do
 
   defp format_delta(delta) when is_integer(delta) and delta >= 0, do: "+#{delta}"
   defp format_delta(delta), do: to_string(delta)
-
-  defp format_ts(nil), do: "-"
-  defp format_ts(%DateTime{} = ts), do: Calendar.strftime(ts, "%Y-%m-%d %H:%M")
-  defp format_ts(%NaiveDateTime{} = ts), do: Calendar.strftime(ts, "%Y-%m-%d %H:%M")
-  defp format_ts(other), do: to_string(other)
 end

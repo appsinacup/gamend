@@ -17,19 +17,6 @@ defmodule GameServer.Leaderboards.Record do
   alias GameServer.Accounts.User
   alias GameServer.Leaderboards.Leaderboard
 
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :leaderboard_id,
-             :user_id,
-             :label,
-             :score,
-             :rank,
-             :metadata,
-             :inserted_at,
-             :updated_at
-           ]}
-
   schema "leaderboard_records" do
     belongs_to :leaderboard, Leaderboard
     belongs_to :user, User
@@ -88,5 +75,27 @@ defmodule GameServer.Leaderboards.Record do
       true ->
         changeset
     end
+  end
+end
+
+# Hand-written rather than @derive so nil strings encode as "" (see
+# GameServer.SchemaJSON — game clients choke on null).
+defimpl Jason.Encoder, for: GameServer.Leaderboards.Record do
+  def encode(record, opts) do
+    GameServer.SchemaJSON.encode(
+      record,
+      [
+        :id,
+        :leaderboard_id,
+        :user_id,
+        :label,
+        :score,
+        :rank,
+        :metadata,
+        :inserted_at,
+        :updated_at
+      ],
+      opts
+    )
   end
 end

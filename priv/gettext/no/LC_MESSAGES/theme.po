@@ -1,0 +1,170 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: no\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "Elixir-spillserver med åpen kildekode for sanntids flerspillerspill."
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "Blogg"
+
+msgid "Roadmap"
+msgstr "Veikart"
+
+msgid "Changelog"
+msgstr "Endringslogg"
+
+msgid "Social"
+msgstr "Sosialt"
+
+msgid "About Gamend"
+msgstr "Om Gamend"
+
+msgid "Elixir Docs"
+msgstr "Elixir-dokumentasjon"
+
+msgid "About"
+msgstr "Om"
+
+msgid "Guides"
+msgstr "Veiledninger"
+
+msgid "API Docs"
+msgstr "API-dokumentasjon"
+
+msgid "Store"
+msgstr "Butikk"
+
+msgid "Help"
+msgstr "Hjelp"
+
+msgid "Privacy Policy"
+msgstr "Personvernerklæring"
+
+msgid "Terms and Conditions"
+msgstr "Vilkår og betingelser"
+
+msgid "Privacy & Terms"
+msgstr "Personvern og vilkår"
+
+msgid "Play"
+msgstr "Spill"
+
+msgid "Leaderboards"
+msgstr "Topplister"
+
+msgid "Quests"
+msgstr "Oppdrag"
+
+msgid "Tournaments"
+msgstr "Turneringer"
+
+msgid "Groups"
+msgstr "Grupper"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "Gamend er en **komplett** Elixir-backend for flerspillerspill, med autentisering, sosiale systemer, sanntidskanaler og administrasjonsverktøy."
+
+msgid "Realtime Guide"
+msgstr "Sanntidsveiledning"
+
+msgid "Real-time games"
+msgstr "Sanntidsspill"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "Bruk kanaler, lobbyer, følger, tilstedeværelse og WebRTC-datakanaler uten å bygge den vanlige flerspillerinfrastrukturen på nytt."
+
+msgid "Built For Real-Time Games"
+msgstr "Bygget for sanntidsspill"
+
+msgid "Read Docs"
+msgstr "Les dokumentasjonen"
+
+msgid "Open source foundation"
+msgstr "Grunnmur i åpen kildekode"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "Prosjektet er laget for at spillteam skal kunne forke, tematisere, hoste og utvide det."
+
+msgid "Open Source Foundation"
+msgstr "Grunnmur i åpen kildekode"
+
+msgid "Getting Started"
+msgstr "Kom i gang"
+
+msgid "Presentation Video"
+msgstr "Presentasjonsvideo"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "**Åpen kildekode** – en Elixir-spillserver for **sanntids** flerspillerspill."
+
+msgid "Log in"
+msgstr "Logg inn"
+
+msgid "Register"
+msgstr "Registrer"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "E-post, magisk lenke, OAuth, JWT og økt. Registrering, innlogging, tilbakestilling av passord og e-postbekreftelse."
+
+msgid "Authentication & Users"
+msgstr "Autentisering og brukere"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "Lobbyer i sanntid og midlertidige følger. Tilpassbare innstillinger med liveoppdateringer."
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "Lobbyer, følger og matchmaking"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "Venneforespørsler, blokkering, tilstedeværelse i sanntid. Offentlige, private og skjulte grupper. Direkte- og gruppemeldinger."
+
+msgid "Friends, Groups & Chat"
+msgstr "Venner, grupper og chat"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "Serverbestemte prestasjoner, cupturneringer og poengtavler. Varsler i sanntid på tvers av funksjoner og betalingshendelser."
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "Prestasjoner, turneringer, poengtavler og varsler"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "Utvid serverlogikken med Elixir-skript. Planlegg automatiske oppgaver og cron-jobber."
+
+msgid "Server Scripting & Scheduling"
+msgstr "Serverskript og planlegging"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "REST-API, WebSocket-kanaler i sanntid og WebRTC-datakanaler med lav latens. Adminportal og webgrensesnitt."
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "HTTP, WebSocket og WebRTC"
+
+msgid "Open Store"
+msgstr "Åpne butikken"
+
+msgid "Payment Docs"
+msgstr "Betalingsdokumentasjon"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "Betalinger på serversiden med Stripe, Google Play, App Store og Steam. Valider kvitteringer, behandle signerte webhooks, tildel rettigheter, trekk tilbake refusjoner og se alt i administrasjonen."
+
+msgid "Payments & Store Integrations"
+msgstr "Betalinger og butikkintegrasjoner"
+
+msgid "Gamend is in beta!"
+msgstr "Gamend er i beta!"
+
+msgid "Game + Backend"
+msgstr "Spill + backend"

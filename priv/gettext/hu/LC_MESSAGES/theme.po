@@ -1,0 +1,170 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: hu\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "Nyílt forráskódú Elixir játékszerver valós idejű többjátékos játékokhoz."
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "Blog"
+
+msgid "Roadmap"
+msgstr "Ütemterv"
+
+msgid "Changelog"
+msgstr "Változásnapló"
+
+msgid "Social"
+msgstr "Közösség"
+
+msgid "About Gamend"
+msgstr "A Gamendről"
+
+msgid "Elixir Docs"
+msgstr "Elixir-dokumentáció"
+
+msgid "About"
+msgstr "Névjegy"
+
+msgid "Guides"
+msgstr "Útmutatók"
+
+msgid "API Docs"
+msgstr "API-dokumentáció"
+
+msgid "Store"
+msgstr "Bolt"
+
+msgid "Help"
+msgstr "Súgó"
+
+msgid "Privacy Policy"
+msgstr "Adatvédelmi irányelvek"
+
+msgid "Terms and Conditions"
+msgstr "Általános szerződési feltételek"
+
+msgid "Privacy & Terms"
+msgstr "Adatvédelem és feltételek"
+
+msgid "Play"
+msgstr "Játék"
+
+msgid "Leaderboards"
+msgstr "Ranglisták"
+
+msgid "Quests"
+msgstr "Küldetések"
+
+msgid "Tournaments"
+msgstr "Versenyek"
+
+msgid "Groups"
+msgstr "Csoportok"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "A Gamend egy **mindent tudó** Elixir háttérrendszer többjátékos játékokhoz: hitelesítés, közösségi funkciók, valós idejű csatornák és adminisztrációs eszközök."
+
+msgid "Realtime Guide"
+msgstr "Valós idejű útmutató"
+
+msgid "Real-time games"
+msgstr "Valós idejű játékok"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "Használj csatornákat, előszobákat, csapatokat, jelenlétet és WebRTC-adatcsatornákat anélkül, hogy újraépítenéd a szokásos többjátékos infrastruktúrát."
+
+msgid "Built For Real-Time Games"
+msgstr "Valós idejű játékokhoz készült"
+
+msgid "Read Docs"
+msgstr "Dokumentáció elolvasása"
+
+msgid "Open source foundation"
+msgstr "Nyílt forráskódú alap"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "A projektet arra tervezték, hogy játékcsapatok forkolják, testre szabják, üzemeltessék és bővítsék."
+
+msgid "Open Source Foundation"
+msgstr "Nyílt forráskódú alap"
+
+msgid "Getting Started"
+msgstr "Első lépések"
+
+msgid "Presentation Video"
+msgstr "Bemutatóvideó"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "**Nyílt forráskódú** Elixir játékszerver **valós idejű** többjátékos játékokhoz."
+
+msgid "Log in"
+msgstr "Bejelentkezés"
+
+msgid "Register"
+msgstr "Regisztráció"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "E-mail, varázslinkek, OAuth, JWT és munkamenet. Regisztráció, bejelentkezés, jelszó-visszaállítás és e-mail-ellenőrzés."
+
+msgid "Authentication & Users"
+msgstr "Hitelesítés és felhasználók"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "Valós idejű előszobák és ideiglenes csapatok. Testreszabható beállítások élő frissítéssel."
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "Előszobák, csapatok és játékostársítás"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "Ismerőskérések, letiltás, valós idejű jelenlét. Nyilvános, privát és rejtett csoportok. Közvetlen és csoportos üzenetek."
+
+msgid "Friends, Groups & Chat"
+msgstr "Ismerősök, csoportok és csevegés"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "Szerver által hitelesített teljesítmények, kieséses versenyek és ranglisták. Valós idejű értesítések minden funkcióra és fizetési eseményre."
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "Teljesítmények, versenyek, ranglisták és értesítések"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "Bővítsd a szerver logikáját Elixir-szkriptekkel. Ütemezz automatikus feladatokat és cron-feladatokat."
+
+msgid "Server Scripting & Scheduling"
+msgstr "Szerveroldali szkriptek és ütemezés"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "REST API, valós idejű WebSocket-csatornák és alacsony késleltetésű WebRTC-adatcsatornák. Adminisztrációs portál és webes felület."
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "HTTP, WebSocket és WebRTC"
+
+msgid "Open Store"
+msgstr "Bolt megnyitása"
+
+msgid "Payment Docs"
+msgstr "Fizetési dokumentáció"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "Szerveroldali fizetés Stripe, Google Play, App Store és Steam szolgáltatókkal. Ellenőrizd a nyugtákat, dolgozd fel az aláírt webhookokat, adj jogosultságokat, vond vissza a visszatérítéseket, és nézd meg mindezt az adminban."
+
+msgid "Payments & Store Integrations"
+msgstr "Fizetések és áruházi integrációk"
+
+msgid "Gamend is in beta!"
+msgstr "A Gamend béta állapotban van!"
+
+msgid "Game + Backend"
+msgstr "Játék + háttérrendszer"

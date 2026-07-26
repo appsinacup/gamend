@@ -155,7 +155,7 @@ defmodule GameServerWeb.Api.V1.TournamentControllerTest do
            |> json_response(404)
   end
 
-  test "bracket, standings and my-match after a draw", %{
+  test "bracket, standings and my_match after a draw", %{
     auth_conn: auth_conn,
     conn: conn,
     user: user,
@@ -176,7 +176,7 @@ defmodule GameServerWeb.Api.V1.TournamentControllerTest do
     assert [match] = resp["data"]["matches"]
     assert match["a_leader_id"] && match["b_leader_id"]
 
-    resp = auth_conn |> get("/api/v1/tournaments/#{tournament.id}/my-match") |> json_response(200)
+    resp = auth_conn |> get("/api/v1/tournaments/#{tournament.id}/my_match") |> json_response(200)
     assert resp["data"]["id"] == match["id"]
 
     {:ok, _} = Tournaments.resolve_match(match["id"], match["a_entry_id"])

@@ -10,6 +10,7 @@ defmodule GameServer.Groups.Group do
 
   - `title` – human-readable display title (unique)
   - `description` – optional longer description
+  - `icon_url` – optional icon; `nil` means clients show their default group icon
   - `type` – visibility: `"public"`, `"private"`, or `"hidden"`
   - `max_members` – maximum number of members (default 100)
   - `metadata` – arbitrary server-managed key/value map
@@ -23,22 +24,10 @@ defmodule GameServer.Groups.Group do
 
   @type t :: %__MODULE__{}
 
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :title,
-             :description,
-             :type,
-             :max_members,
-             :metadata,
-             :creator_id,
-             :inserted_at,
-             :updated_at
-           ]}
-
   schema "groups" do
     field :title, :string
     field :description, :string, default: ""
+    field :icon_url, :string
     field :type, :string, default: "public"
     field :max_members, :integer, default: 100
     field :metadata, :map, default: %{}
@@ -51,7 +40,7 @@ defmodule GameServer.Groups.Group do
   end
 
   @required_fields ~w(title)a
-  @optional_fields ~w(description type max_members metadata slowdown)a
+  @optional_fields ~w(description icon_url type max_members metadata slowdown)a
 
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(group, attrs) do
@@ -60,6 +49,7 @@ defmodule GameServer.Groups.Group do
     |> validate_required(@required_fields)
     |> validate_length(:title, min: 1, max: GameServer.Limits.get(:max_group_title))
     |> validate_length(:description, max: GameServer.Limits.get(:max_group_description))
+    |> validate_length(:icon_url, max: GameServer.Limits.get(:max_profile_url))
     |> validate_inclusion(:type, ["public", "private", "hidden"])
     |> validate_number(:max_members,
       greater_than: 0,
@@ -68,5 +58,28 @@ defmodule GameServer.Groups.Group do
     |> validate_number(:slowdown, greater_than_or_equal_to: 0, less_than_or_equal_to: 3600)
     |> unique_constraint(:title)
     |> GameServer.Limits.validate_metadata_size(:metadata)
+  end
+end
+
+# Hand-written rather than @derive so optional strings encode as "" instead of
+# null — game clients (Godot) choke on null where they expect a string.
+defimpl Jason.Encoder, for: GameServer.Groups.Group do
+  def encode(group, opts) do
+    GameServer.SchemaJSON.encode(
+      group,
+      [
+        :id,
+        :title,
+        :description,
+        :icon_url,
+        :type,
+        :max_members,
+        :metadata,
+        :creator_id,
+        :inserted_at,
+        :updated_at
+      ],
+      opts
+    )
   end
 end

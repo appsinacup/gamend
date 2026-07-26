@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: bg\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "Добре дошъл"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "Влез за първи път."
+
+#. quests
+msgid "Daily check-in"
+msgstr "Ежедневно отбелязване"
+
+#. quests
+msgid "Log in today."
+msgstr "Влез днес."
+
+#. quests
+msgid "Weekly regular"
+msgstr "Редовен за седмицата"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "Влез в пет различни дни тази седмица."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "Постоянен за месеца"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "Влез двадесет пъти този месец."
+
+#. quests
+msgid "Stop by again"
+msgstr "Отбий се пак"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "Влез. Става достъпна отново след три дни."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "Верен ветеран"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "Влез петдесет пъти, след като вече си поздравил."
+
+#. quests
+msgid "Night owl"
+msgstr "Нощна птица"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "Някои неща се откриват, вместо да се обявяват."
+
+#. quests
+msgid "Launch festival"
+msgstr "Фестивал по случай пускането"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "Ежедневна задача, която се брои само докато тече фестивалът."
+
+#. leaderboards
+msgid "Logins"
+msgstr "Влизания"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "Колко пъти е влизал всеки играч."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "Седмична купа"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "Запишете се по всяко време; схемата се тегли всеки понеделник."

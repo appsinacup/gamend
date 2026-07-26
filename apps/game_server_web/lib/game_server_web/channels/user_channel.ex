@@ -59,13 +59,9 @@ defmodule GameServerWeb.UserChannel do
   alias GameServerWeb.Serializers
 
   # WebSocket message rate limits (per user) — defaults, overridden by config
-  @default_ws_rate_limit 300
-  @default_ws_rate_window :timer.seconds(10)
 
   # Separate ICE candidate budget — prevents ICE flooding from starving
   # other channel events. A typical WebRTC session sends 5–30 candidates.
-  @default_ice_rate_limit 150
-  @default_ice_rate_window :timer.seconds(30)
 
   # Interval for periodic presence refresh (keeps StalePresenceSweeper from
   # marking actively connected users as offline).  Default: 3 minutes.
@@ -331,6 +327,13 @@ defmodule GameServerWeb.UserChannel do
     {:noreply, socket}
   end
 
+  # A matchmaking ready check has no lobby topic yet, so it fans out per user.
+  def handle_info({:ready_check_event, event, check}, socket) do
+    user_id = socket.assigns.current_scope.user_id
+    push_event(socket, event, Serializers.serialize_ready_check(check, viewer_id: user_id))
+    {:noreply, socket}
+  end
+
   def handle_info({:wallet_updated, payload}, socket) do
     push_event(socket, "wallet_updated", payload)
     {:noreply, socket}
@@ -448,13 +451,20 @@ defmodule GameServerWeb.UserChannel do
   end
 
   @impl true
-  def handle_info({:achievement_unlocked, user_achievement}, socket) do
-    push_event(
-      socket,
-      "achievement_unlocked",
-      Serializers.serialize_user_achievement(user_achievement)
-    )
+  def handle_info({:quest_progress, progress}, socket) do
+    push_event(socket, "quest_progress", Serializers.serialize_quest_progress(progress))
+    {:noreply, socket}
+  end
 
+  @impl true
+  def handle_info({:quest_completed, progress}, socket) do
+    push_event(socket, "quest_completed", Serializers.serialize_quest_progress(progress))
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info({:quest_claimed, progress}, socket) do
+    push_event(socket, "quest_claimed", Serializers.serialize_quest_progress(progress))
     {:noreply, socket}
   end
 
@@ -693,12 +703,10 @@ defmodule GameServerWeb.UserChannel do
   # ── WebSocket rate limiting ────────────────────────────────────────────────
 
   defp check_ws_rate_limit(socket) do
-    config = Application.get_env(:game_server_web, GameServerWeb.Plugs.RateLimiter, [])
-
-    if Keyword.get(config, :enabled, true) do
+    if GameServer.Settings.get(GameServerWeb.Plugs.RateLimiter, :enabled) do
       user_id = socket.assigns.current_scope.user_id
-      limit = Keyword.get(config, :ws_limit, @default_ws_rate_limit)
-      window = Keyword.get(config, :ws_window, @default_ws_rate_window)
+      limit = GameServer.Settings.get(GameServerWeb.Plugs.RateLimiter, :ws_limit)
+      window = GameServer.Settings.get(GameServerWeb.Plugs.RateLimiter, :ws_window_ms)
 
       case GameServerWeb.RateLimit.hit("ws:#{user_id}", window, limit) do
         {:allow, _count} ->
@@ -726,12 +734,10 @@ defmodule GameServerWeb.UserChannel do
   # Separate ICE candidate rate limit — prevents ICE flooding from consuming
   # the entire WS rate budget and starving other events.
   defp check_ice_rate_limit(socket) do
-    config = Application.get_env(:game_server_web, GameServerWeb.Plugs.RateLimiter, [])
-
-    if Keyword.get(config, :enabled, true) do
+    if GameServer.Settings.get(GameServerWeb.Plugs.RateLimiter, :enabled) do
       user_id = socket.assigns.current_scope.user_id
-      limit = Keyword.get(config, :ice_limit, @default_ice_rate_limit)
-      window = Keyword.get(config, :ice_window, @default_ice_rate_window)
+      limit = GameServer.Settings.get(GameServerWeb.Plugs.RateLimiter, :ice_limit)
+      window = GameServer.Settings.get(GameServerWeb.Plugs.RateLimiter, :ice_window_ms)
 
       case GameServerWeb.RateLimit.hit("ice:#{user_id}", window, limit) do
         {:allow, _count} ->

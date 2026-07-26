@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: sv\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "Välkommen ombord"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "Logga in för första gången."
+
+#. quests
+msgid "Daily check-in"
+msgstr "Daglig incheckning"
+
+#. quests
+msgid "Log in today."
+msgstr "Logga in i dag."
+
+#. quests
+msgid "Weekly regular"
+msgstr "Veckans stammis"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "Logga in fem olika dagar den här veckan."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "Månadens trotjänare"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "Logga in tjugo gånger den här månaden."
+
+#. quests
+msgid "Stop by again"
+msgstr "Titta in igen"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "Logga in. Blir tillgängligt igen om tre dagar."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "Trogen veteran"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "Logga in femtio gånger, efter att du har sagt hej."
+
+#. quests
+msgid "Night owl"
+msgstr "Nattuggla"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "Vissa saker upptäcks i stället för att tillkännages."
+
+#. quests
+msgid "Launch festival"
+msgstr "Lanseringsfestival"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "Ett dagligt uppdrag som bara räknas medan festivalen pågår."
+
+#. leaderboards
+msgid "Logins"
+msgstr "Inloggningar"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "Hur många gånger varje spelare har loggat in."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "Veckans cup"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "Anmäl dig när som helst – lottningen sker varje måndag."

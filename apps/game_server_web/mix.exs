@@ -7,7 +7,7 @@ defmodule GameServerWeb.MixProject do
   def project do
     [
       app: :game_server_web,
-      version: System.get_env("APP_VERSION") || @version,
+      version: System.get_env("GAMEND_CONTENT_APP_VERSION") || @version,
       elixir: "~> 1.20",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -143,8 +143,40 @@ defmodule GameServerWeb.MixProject do
   defp docs do
     [
       main: "readme",
+      source_url: @source_url,
       source_ref: "v#{@version}",
-      extras: ["README.md"]
+      extras: ["README.md", "../../CHANGELOG.md"],
+      # Two audiences share this package: a host app calls a handful of
+      # modules, everything else is mounted by the route macros. One flat list
+      # of 200+ modules hides that distinction entirely.
+      groups_for_modules: module_groups()
+    ]
+  end
+
+  defp module_groups do
+    [
+      "Host integration": [
+        GameServerWeb,
+        GameServerWeb.Router.Shared,
+        GameServerWeb.Endpoint,
+        GameServerWeb.UserAuth,
+        GameServerWeb.Layouts,
+        GameServerWeb.CoreComponents,
+        GameServerWeb.Telemetry,
+        GameServerWeb.Router
+      ],
+      "Plugs & mounts": [~r/^GameServerWeb\.(Plugs|OnMount|Auth)/],
+      "REST API": [~r/^GameServerWeb\.(Api\.|Schemas\.|ApiSpec|.*Controller$|.*HTML$|.*JSON$)/],
+      Channels: [~r/^GameServerWeb\.(.*Channel|UserSocket|Presence|WebRTCPeer)/],
+      Admin: [~r/^GameServerWeb\.AdminLive/],
+      "Player pages": [~r/^GameServerWeb\.(\w*Live($|\.)|LiveHelpers|PresentationPage|PageHTML)/],
+      Helpers: [
+        ~r/^GameServerWeb\.(Helpers|Serializers|Pagination|Components|Gettext|EventCodec|SRI)/
+      ],
+      # Observability and runtime plumbing a host runs but rarely calls.
+      Runtime: [
+        ~r/^GameServerWeb\.(PromEx|Telemetry|RateLimit|ConnectionTracker|AdminLogBuffer|FileLogHandler|IpBanSync|HostSupervision|RuntimeIntrospection|RealtimeEvents|GeoCountryCleaner|HostContentStatic|HostLayouts)/
+      ]
     ]
   end
 end

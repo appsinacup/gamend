@@ -28,7 +28,7 @@ The `priv/` copy is important for dependencies that ship NIFs or other runtime a
 
 ## Run locally
 
-- Set `GAME_SERVER_PLUGINS_DIR=modules/plugins_examples` (or copy the built bundle into `modules/plugins/example_hook`)
+- Set `GAMEND_CONTENT_PLUGINS_DIR=modules/plugins_examples` (or copy the built bundle into `modules/plugins/example_hook`)
 - Open the Admin Config page and click **Reload plugins**
 - Call a function via the “Hooks - Test RPC” form using:
   - `plugin`: `example_hook`

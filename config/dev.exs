@@ -2,12 +2,12 @@ import Config
 
 # Configure your database
 # Use PostgreSQL if environment variables are set, otherwise use SQLite
-if System.get_env("DATABASE_URL") ||
-     (System.get_env("POSTGRES_HOST") && System.get_env("POSTGRES_USER")) do
+if System.get_env("GAMEND_DB_URL") ||
+     (System.get_env("GAMEND_DB_POSTGRES_HOST") && System.get_env("GAMEND_DB_POSTGRES_USER")) do
   # Use PostgreSQL when configured
   database_url =
-    System.get_env("DATABASE_URL") ||
-      "ecto://#{System.get_env("POSTGRES_USER")}:#{System.get_env("POSTGRES_PASSWORD")}@#{System.get_env("POSTGRES_HOST")}:#{System.get_env("POSTGRES_PORT", "5432")}/#{System.get_env("POSTGRES_DB", "game_server_dev")}"
+    System.get_env("GAMEND_DB_URL") ||
+      "ecto://#{System.get_env("GAMEND_DB_POSTGRES_USER")}:#{System.get_env("GAMEND_DB_POSTGRES_PASSWORD")}@#{System.get_env("GAMEND_DB_POSTGRES_HOST")}:#{System.get_env("GAMEND_DB_POSTGRES_PORT", "5432")}/#{System.get_env("GAMEND_DB_POSTGRES_DB", "game_server_dev")}"
 
   config :game_server_core, GameServer.Repo,
     url: database_url,
@@ -88,7 +88,7 @@ config :game_server_web, GameServerWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :game_server_web, dev_routes: true
 
-# Keep local development logs readable by default. Set LOG_LEVEL=debug when
+# Keep local development logs readable by default. Set GAMEND_OBSERVABILITY_LOG_LEVEL=debug when
 # request/SQL traces are needed.
 config :logger, level: :info
 config :logger, :default_formatter, format: "[$level] $message\n"
@@ -115,42 +115,27 @@ config :phoenix_live_view,
   # Enable helpful, but potentially expensive runtime checks
   enable_expensive_runtime_checks: true
 
-# Enable SMTP in development when SMTP_PASSWORD is present, otherwise
-# keep the default Local adapter and disable Swoosh's API client.
-if System.get_env("SMTP_PASSWORD") do
-  config :game_server_core, GameServer.Mailer,
-    adapter: Swoosh.Adapters.SMTP,
-    relay: System.get_env("SMTP_RELAY"),
-    username: System.get_env("SMTP_USERNAME"),
-    password: System.get_env("SMTP_PASSWORD"),
-    port: String.to_integer(System.get_env("SMTP_PORT") || "587"),
-    tls: String.to_existing_atom(System.get_env("SMTP_TLS") || "never"),
-    ssl: String.to_existing_atom(System.get_env("SMTP_SSL") || "true"),
-    auth: :always,
-    no_mx_lookups: false,
-    retries: 2,
-    sockopts: [
-      versions: [:"tlsv1.2", :"tlsv1.3"],
-      verify: :verify_peer,
-      cacerts: :public_key.cacerts_get(),
-      depth: 3,
-      customize_hostname_check: [
-        match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
-      ],
-      server_name_indication:
-        if(sni = System.get_env("SMTP_SNI"), do: String.to_charlist(sni), else: :disable)
-    ]
-
-  # When using an SMTP adapter we may still need the HTTP API client for
-  # certain Swoosh adapters; enable Req which is used elsewhere in prod.
-  config :swoosh, :api_client, Swoosh.ApiClient.Req
-else
-  # Disable swoosh api client as it is only required for production adapters.
-  config :swoosh, :api_client, false
-end
+# The mailer is configured for every environment in host_runtime.exs, from the
+# declared GameServer.Mail settings.
 
 # Configure Guardian for development
 config :game_server_web, GameServerWeb.Auth.Guardian,
   issuer: "game_server",
   secret_key: "l/tTJZ4KUNjIfiUsNQDQLWOTgFlyiOz8RQ2EgSRa7mopMzPLJuu7/8s5pA7iiSgO",
   ttl: {15, :minutes}
+
+# Looser throttling for local iteration. These were previously the *implicit*
+# dev values — the production numbers only ever applied inside runtime.exs's
+# prod branch, so dev silently got the code defaults. Now that the declared
+# defaults are the production ones, dev asks for the slack explicitly.
+config :game_server_web, GameServerWeb.Plugs.RateLimiter,
+  general_limit: 1200,
+  auth_limit: 30,
+  ws_limit: 300,
+  dc_limit: 600
+
+# The declared setting, not just the endpoint's copy: GameServer.Settings
+# validates `auth.secret_key_base` at boot, and dev should not warn about a
+# secret it demonstrably has.
+config :game_server_core, GameServer.Accounts,
+  secret_key_base: "l/tTJZ4KUNjIfiUsNQDQLWOTgFlyiOz8RQ2EgSRa7mopMzPLJuu7/8s5pA7iiSgO"

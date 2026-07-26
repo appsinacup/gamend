@@ -152,8 +152,8 @@ defmodule GameServerWeb.CoreComponents do
 
   attr :type, :string,
     default: "text",
-    values: ~w(checkbox color date datetime-local email file month number password
-               search select tel text textarea time url week)
+    values: ~w(checkbox color date datetime-local utc-datetime-local email file month number
+               password search select tel text textarea time url week)
 
   attr :field, Phoenix.HTML.FormField,
     doc: "a form field struct retrieved from the form, for example: @form[:email]"
@@ -249,6 +249,35 @@ defmodule GameServerWeb.CoreComponents do
     """
   end
 
+  # A datetime the server stores in UTC but a human enters in their own clock.
+  # The named field the form casts always carries UTC; the visible input is a
+  # nameless local-time mirror the LocalDatetimeInput hook keeps in sync both
+  # ways. Conversion happens in the browser against the *entered* date, so DST
+  # is right for a value months out, which a fixed offset sent from the client
+  # would get wrong. LiveView needs JS to run at all, so there is no non-JS
+  # path to degrade to here.
+  def input(%{type: "utc-datetime-local"} = assigns) do
+    ~H"""
+    <div class="fieldset mb-2" phx-hook="LocalDatetimeInput" id={"#{@id}-local-wrap"}>
+      <label>
+        <span :if={@label} class="label mb-1">{@label}</span>
+        <input type="hidden" name={@name} id={@id} value={utc_input_value(@value)} />
+        <input
+          type="datetime-local"
+          data-local-mirror-for={@id}
+          class={[
+            @class || "w-full input",
+            @errors != [] && (@error_class || "input-error")
+          ]}
+          {@rest}
+        />
+      </label>
+      <p class="text-xs text-base-content/50 mt-1" data-local-zone-note></p>
+      <.error :for={msg <- @errors}>{msg}</.error>
+    </div>
+    """
+  end
+
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
@@ -271,6 +300,12 @@ defmodule GameServerWeb.CoreComponents do
     </div>
     """
   end
+
+  # Strict ISO8601 with the offset, because `Date` in the browser parses that
+  # everywhere; `DateTime`'s own to_string uses a space and Safari rejects it.
+  defp utc_input_value(%DateTime{} = at), do: DateTime.to_iso8601(at)
+  defp utc_input_value(value) when is_binary(value), do: value
+  defp utc_input_value(_value), do: ""
 
   # Helper used by inputs to generate form errors
   defp error(assigns) do
@@ -424,6 +459,157 @@ defmodule GameServerWeb.CoreComponents do
     """
   end
 
+  @doc """
+  The grid card every entity list shares — leaderboards, tournaments, groups,
+  quests. One recipe (`bg-base-200`, icon in the title, badges stacked
+  top-right, muted two-line description) so the grids read as one family
+  instead of four dialects.
+
+      <.entity_card
+        navigate={~p"/leaderboards/\#{group.slug}"}
+        title={group.title}
+        icon_url={group.icon_url}
+        type={:leaderboard}
+        description={group.description}
+      >
+        <:badges>
+          <span class="badge badge-success">{gettext("Active")}</span>
+        </:badges>
+      </.entity_card>
+
+  With `navigate` the card is a `<.link>`; without it a `<div>`, and any
+  `phx-click`/`title` in `rest` lands on it. `class` appends to the wrapper —
+  state borders (`border-success`), `cursor-pointer`, and the like.
+  """
+  attr :title, :string, required: true
+  attr :icon_url, :string, default: nil
+  attr :icon, :atom, default: nil
+
+  attr :type, :atom,
+    required: true,
+    values: [:group, :tournament, :leaderboard, :quest, :notification]
+
+  attr :description, :string, default: nil
+  attr :navigate, :string, default: nil
+  attr :class, :any, default: nil
+  attr :rest, :global
+
+  slot :badges
+  slot :inner_block
+
+  def entity_card(%{navigate: navigate} = assigns) when is_binary(navigate) do
+    ~H"""
+    <.link navigate={@navigate} class={[card_classes(), "cursor-pointer", @class]} {@rest}>
+      {render_slot_card_body(assigns)}
+    </.link>
+    """
+  end
+
+  def entity_card(assigns) do
+    ~H"""
+    <div class={[card_classes(), @class]} {@rest}>
+      {render_slot_card_body(assigns)}
+    </div>
+    """
+  end
+
+  defp card_classes, do: "card bg-base-200 hover:bg-base-300 transition-colors"
+
+  defp render_slot_card_body(assigns) do
+    ~H"""
+    <div class="card-body">
+      <div class="flex items-start justify-between">
+        <h3 class="card-title text-lg">
+          <.entity_icon
+            icon_url={@icon_url}
+            icon={@icon}
+            type={@type}
+            class="w-6 h-6 shrink-0 text-base-content/60"
+          />
+          {@title}
+        </h3>
+        <div :if={@badges != []} class="flex flex-col items-end gap-1 shrink-0">
+          {render_slot(@badges)}
+        </div>
+      </div>
+
+      <p :if={@description not in [nil, ""]} class="text-sm text-base-content/70 line-clamp-2">
+        {@description}
+      </p>
+
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+
+  @doc """
+  An entity's icon: the uploaded `icon_url` when set, otherwise the typed
+  default for its entity type (`GameServerWeb.Icons.default/1`) — so every
+  group, tournament, leaderboard, quest and notification has *some* icon
+  without storing one.
+
+  Pass `icon` (any `GameServerWeb.Icons` atom — the full heroicons catalog)
+  to override the type default.
+
+  ## Examples
+
+      <.entity_icon icon_url={group.icon_url} type={:group} />
+      <.entity_icon icon_url={nil} type={:quest} icon={:fire} />
+  """
+  attr :icon_url, :string, default: nil
+  attr :icon, :atom, default: nil
+
+  attr :type, :atom,
+    required: true,
+    values: [:group, :tournament, :leaderboard, :quest, :notification]
+
+  # `:any` so callers can pass the usual Phoenix class list; both branches
+  # below normalise it the same way.
+  attr :class, :any, default: "w-6 h-6"
+
+  def entity_icon(%{icon_url: url} = assigns) when is_binary(url) and url != "" do
+    case GameServerWeb.Icons.from_path(url) do
+      # One of ours: inline it rather than fetching it back over HTTP, so its
+      # `currentColor` follows the theme. In an <img> it would resolve to black
+      # and disappear against the dark theme.
+      {:ok, icon} -> assigns |> assign(:icon, icon) |> inline_icon()
+      :error -> uploaded_icon(assigns)
+    end
+  end
+
+  def entity_icon(assigns), do: inline_icon(assigns)
+
+  defp uploaded_icon(assigns) do
+    ~H"""
+    <img src={@icon_url} alt="" loading="lazy" decoding="async" class={[@class, "object-contain"]} />
+    """
+  end
+
+  defp inline_icon(assigns) do
+    icon = assigns.icon || GameServerWeb.Icons.default(assigns.type)
+
+    # Inline SVG, not a `hero-*` class: Tailwind only generates those classes
+    # for names it finds literally in source, and this one is chosen at runtime.
+    # The class is interpolated into raw markup, so it has to be flattened to a
+    # string first — a list would render as one run-on token.
+    svg =
+      GameServerWeb.Icons.svg(icon)
+      |> String.replace("<svg ", ~s|<svg class="#{class_string(assigns.class)}" |, global: false)
+
+    assigns = assign(assigns, :svg, svg)
+
+    ~H"""
+    {Phoenix.HTML.raw(@svg)}
+    """
+  end
+
+  defp class_string(class) do
+    class
+    |> List.wrap()
+    |> Enum.reject(&(&1 in [nil, false, ""]))
+    |> Enum.join(" ")
+  end
+
   ## JS Commands
 
   def show(js \\ %JS{}, selector) do
@@ -464,6 +650,62 @@ defmodule GameServerWeb.CoreComponents do
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
   end
+
+  @doc """
+  Renders a stored-UTC timestamp for a human reader.
+
+  The server has no timezone database and no idea where the reader is, so it
+  emits the instant in UTC and marks it; `local_time.js` rewrites the text in
+  the viewer's own zone and locale once it runs. Without JS the UTC text stands,
+  which is why it is labelled rather than left to look local.
+
+  `format` is `"datetime"` (default), `"date"`, `"time"` or `"full"`.
+
+      <.timestamp at={@user.inserted_at} />
+      <.timestamp at={@message.inserted_at} format="time" class="text-xs" />
+  """
+  attr :at, :any, required: true, doc: "a DateTime, or nil to render the dash"
+  attr :format, :string, default: "datetime", values: ~w(datetime date time full)
+  attr :class, :string, default: nil
+  attr :empty, :string, default: "-", doc: "text shown when `at` is nil"
+
+  # Everything this app stores is UTC, so a naive value from a plugin schema is
+  # a UTC instant that merely lost its zone on the way here.
+  def timestamp(%{at: %NaiveDateTime{} = at} = assigns) do
+    assigns |> Map.put(:at, DateTime.from_naive!(at, "Etc/UTC")) |> timestamp()
+  end
+
+  def timestamp(%{at: nil} = assigns) do
+    ~H"{@empty}"
+  end
+
+  # A bare date (blog posts, release dates) has no instant to localize, so it
+  # is rendered as-is with no `data-local-time` — shifting it into the
+  # reader's zone would move it across midnight boundaries it never crossed.
+  def timestamp(%{at: %Date{} = at} = assigns) do
+    assigns = assign(assigns, :iso, Date.to_iso8601(at))
+
+    ~H"""
+    <time datetime={@iso} class={@class}>{Calendar.strftime(@at, "%b %d, %Y")}</time>
+    """
+  end
+
+  def timestamp(assigns) do
+    ~H"""
+    <time datetime={DateTime.to_iso8601(@at)} data-local-time={@format} class={@class}>
+      {utc_text(@at, @format)}
+    </time>
+    """
+  end
+
+  # Matches what `dateStyle: "medium"` produces in English, so the page does not
+  # visibly reflow when the localizer runs. No UTC marker on a date alone: it is
+  # an hour shown in the wrong zone that misleads, and the localizer corrects
+  # the date across a midnight boundary anyway.
+  defp utc_text(at, "date"), do: Calendar.strftime(at, "%b %d, %Y")
+  defp utc_text(at, "time"), do: Calendar.strftime(at, "%H:%M UTC")
+  defp utc_text(at, "full"), do: Calendar.strftime(at, "%Y-%m-%d %H:%M:%S UTC")
+  defp utc_text(at, _datetime), do: Calendar.strftime(at, "%Y-%m-%d %H:%M UTC")
 
   # ---------------------------------------------------------------------------
   # Pagination
@@ -541,4 +783,62 @@ defmodule GameServerWeb.CoreComponents do
     </div>
     """
   end
+
+  @doc """
+  Display label for a user in admin tables: username, then display name, then the
+  raw id as a last resort. Accepts a loaded `%User{}`; `nil` or a not-loaded
+  association renders "-". Surface the full id separately (e.g. a `title`
+  attribute on the cell) so it stays available without cluttering the table.
+  """
+  def user_display(%GameServer.Accounts.User{} = user) do
+    cond do
+      is_binary(user.username) and user.username != "" -> user.username
+      is_binary(user.display_name) and user.display_name != "" -> user.display_name
+      true -> user.id
+    end
+  end
+
+  def user_display(_), do: "-"
+
+  @doc """
+  A user's avatar as a round image when they have one (`profile_url`), falling
+  back to the generic person icon. Pass `class` for sizing, e.g. `"w-5 h-5"`.
+  If the image URL fails to load (provider not ready yet, expired CDN link,
+  rate-limited avatar CDN), `assets/js/avatar_fallback.js` hides the broken
+  image and reveals the same icon. That lives in a real script rather than an
+  `onerror` attribute because the CSP here has no `script-src 'unsafe-inline'`,
+  so an inline handler is refused and the fallback would never fire.
+
+  `crossorigin="anonymous"` is load-bearing, not decoration: `/play` and
+  `/game/*` are served cross-origin isolated for Godot's `SharedArrayBuffer`
+  (see `GameServerWeb.Plugs.GameHeaders`), and under
+  `Cross-Origin-Embedder-Policy: require-corp` a cross-origin subresource is
+  blocked unless it either sends `Cross-Origin-Resource-Policy` or is fetched in
+  CORS mode. OAuth avatar CDNs (Google, Discord, Steam, Gravatar) send no CORP
+  header but do send `Access-Control-Allow-Origin: *`, so asking for CORS mode
+  is what makes them load on those pages. Same-origin and object-storage avatars
+  are unaffected — buckets already need CORS for the presigned upload flow.
+  """
+  attr :user, :any, default: nil
+  attr :class, :string, default: "w-6 h-6"
+
+  def user_avatar(assigns) do
+    assigns = assign(assigns, :avatar_url, avatar_url(assigns.user))
+
+    ~H"""
+    <img
+      :if={@avatar_url}
+      src={@avatar_url}
+      alt=""
+      crossorigin="anonymous"
+      data-avatar-fallback
+      class={["rounded-full object-cover bg-base-300", @class]}
+    />
+    <.icon :if={@avatar_url} name="hero-user-circle-solid" class={"hidden " <> @class} />
+    <.icon :if={!@avatar_url} name="hero-user-circle-solid" class={@class} />
+    """
+  end
+
+  defp avatar_url(%{profile_url: url}) when is_binary(url) and url != "", do: url
+  defp avatar_url(_), do: nil
 end

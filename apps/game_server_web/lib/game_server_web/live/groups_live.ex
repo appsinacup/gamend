@@ -11,7 +11,7 @@ defmodule GameServerWeb.GroupsLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    unless FeatureGate.enabled?("LIST_GROUPS_ENABLED", true) do
+    unless FeatureGate.enabled?(:list_groups) do
       raise GameServerWeb.NotFoundError
     end
 
@@ -176,7 +176,7 @@ defmodule GameServerWeb.GroupsLive do
         end
 
       _ ->
-        {:noreply, push_navigate(socket, to: ~p"/users/log-in")}
+        {:noreply, push_navigate(socket, to: ~p"/users/log_in")}
     end
   end
 
@@ -211,7 +211,7 @@ defmodule GameServerWeb.GroupsLive do
         end
 
       _ ->
-        {:noreply, push_navigate(socket, to: ~p"/users/log-in")}
+        {:noreply, push_navigate(socket, to: ~p"/users/log_in")}
     end
   end
 
@@ -233,7 +233,7 @@ defmodule GameServerWeb.GroupsLive do
         end
 
       _ ->
-        {:noreply, push_navigate(socket, to: ~p"/users/log-in")}
+        {:noreply, push_navigate(socket, to: ~p"/users/log_in")}
     end
   end
 
@@ -458,40 +458,35 @@ defmodule GameServerWeb.GroupsLive do
     </div>
 
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3" id="groups-list">
-      <div
+      <.entity_card
         :for={group <- @groups}
         id={"group-#{group.id}"}
-        class="card bg-base-200 hover:bg-base-300 transition-colors cursor-pointer"
+        title={group.title}
+        icon_url={group.icon_url}
+        type={:group}
+        description={group.description}
+        class="cursor-pointer"
         phx-click="view_group"
         phx-value-id={group.id}
       >
-        <div class="card-body">
-          <div class="flex items-start justify-between">
-            <h3 class="card-title text-lg">{group.title}</h3>
-            <div class="flex flex-col items-end gap-1">
-              <%= if group.type == "public" do %>
-                <span class="badge badge-success">{gettext("Public")}</span>
-              <% else %>
-                <span class="badge badge-warning">{gettext("Private")}</span>
-              <% end %>
-              {render_group_action_button(
-                assigns
-                |> Map.put(:group, group)
-              )}
-            </div>
-          </div>
-
-          <%= if group.description && group.description != "" do %>
-            <p class="text-sm text-base-content/70 line-clamp-2">{group.description}</p>
+        <:badges>
+          <%= if group.type == "public" do %>
+            <span class="badge badge-success">{gettext("Public")}</span>
+          <% else %>
+            <span class="badge badge-warning">{gettext("Private")}</span>
           <% end %>
+          {render_group_action_button(
+            assigns
+            |> Map.put(:group, group)
+          )}
+        </:badges>
 
-          <div class="flex items-center gap-2 mt-1">
-            <span class="badge badge-ghost badge-sm text-nowrap">
-              {@member_counts[group.id] || 0} / {group.max_members} {gettext("Members")}
-            </span>
-          </div>
+        <div class="flex items-center gap-2 mt-1">
+          <span class="badge badge-ghost badge-sm text-nowrap">
+            {@member_counts[group.id] || 0} / {group.max_members} {gettext("Members")}
+          </span>
         </div>
-      </div>
+      </.entity_card>
     </div>
 
     <%= if @groups == [] do %>
@@ -541,7 +536,7 @@ defmodule GameServerWeb.GroupsLive do
         <% true -> %>
       <% end %>
     <% else %>
-      <.link navigate={~p"/users/log-in"} class="btn btn-ghost btn-xs">
+      <.link navigate={~p"/users/log_in"} class="btn btn-ghost btn-xs">
         {gettext("Log in")}
       </.link>
     <% end %>
@@ -556,7 +551,14 @@ defmodule GameServerWeb.GroupsLive do
           ← {gettext("Back")}
         </button>
         <div>
-          <h1 class="text-2xl font-bold">{@selected_group.title}</h1>
+          <h1 class="text-2xl font-bold flex items-center gap-2">
+            <.entity_icon
+              icon_url={@selected_group.icon_url}
+              type={:group}
+              class="w-7 h-7 text-base-content/60"
+            />
+            {@selected_group.title}
+          </h1>
           <div class="flex items-center gap-2 mt-1">
             <%= if @selected_group.type == "public" do %>
               <span class="badge badge-success">{gettext("Public")}</span>
@@ -564,7 +566,7 @@ defmodule GameServerWeb.GroupsLive do
               <span class="badge badge-warning">{gettext("Private")}</span>
             <% end %>
             <span class="text-sm text-base-content/60">
-              {Calendar.strftime(@selected_group.inserted_at, "%b %d, %Y")}
+              <.timestamp at={@selected_group.inserted_at} format="date" />
             </span>
           </div>
         </div>
@@ -710,7 +712,7 @@ defmodule GameServerWeb.GroupsLive do
         <% true -> %>
       <% end %>
     <% else %>
-      <.link navigate={~p"/users/log-in"} class="btn btn-outline btn-sm">
+      <.link navigate={~p"/users/log_in"} class="btn btn-outline btn-sm">
         {gettext("Log in")}
       </.link>
     <% end %>

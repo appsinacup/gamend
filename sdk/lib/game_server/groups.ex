@@ -463,7 +463,7 @@ defmodule GameServer.Groups do
   def get_group(_id) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if :erlang.phash2(make_ref(), 2) == 0, do: nil, else: %GameServer.Groups.Group{id: "", title: "", description: "", icon_url: nil, type: "public", max_members: 100, metadata: %{}, slowdown: 0, creator_id: nil, inserted_at: ~U[1970-01-01 00:00:00Z], updated_at: ~U[1970-01-01 00:00:00Z]}
 
       _ ->
         raise "GameServer.Groups.get_group/1 is a stub - only available at runtime on GameServer"
@@ -493,7 +493,7 @@ defmodule GameServer.Groups do
   def get_group_by_title(_title) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if :erlang.phash2(make_ref(), 2) == 0, do: nil, else: %GameServer.Groups.Group{id: "", title: "", description: "", icon_url: nil, type: "public", max_members: 100, metadata: %{}, slowdown: 0, creator_id: nil, inserted_at: ~U[1970-01-01 00:00:00Z], updated_at: ~U[1970-01-01 00:00:00Z]}
 
       _ ->
         raise "GameServer.Groups.get_group_by_title/1 is a stub - only available at runtime on GameServer"

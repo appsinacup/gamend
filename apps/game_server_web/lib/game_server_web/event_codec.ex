@@ -54,7 +54,9 @@ defmodule GameServerWeb.EventCodec do
   defp message_for(_, "chat_message_created", p), do: chat_message(p)
   defp message_for(_, "chat_message_updated", p), do: chat_message(p)
   defp message_for(_, "chat_message_deleted", p), do: %PB.EntityId{id: get(p, :id)}
-  defp message_for(_, "achievement_unlocked", p), do: user_achievement(p)
+  defp message_for(_, "quest_progress", p), do: quest_progress(p)
+  defp message_for(_, "quest_completed", p), do: quest_progress(p)
+  defp message_for(_, "quest_claimed", p), do: quest_progress(p)
 
   defp message_for("lobby", "updated", p), do: lobby(p)
 
@@ -122,9 +124,13 @@ defmodule GameServerWeb.EventCodec do
          slug: get(p, :slug) || "",
          match_id: get(p, :match_id),
          round: get(p, :round),
-         deadline_ms: ms(p, :deadline),
+         deadline_ms: ms(p, :deadline_at),
          winner_entry_id: get(p, :winner_entry_id) || ""
        }
+
+  defp message_for(_kind, event, p)
+       when event in ~w(ready_check_started ready_check_updated ready_check_passed ready_check_failed),
+       do: ready_check(p)
 
   defp message_for("user", "match_found", p),
     do: %PB.MatchmakingFound{
@@ -230,13 +236,42 @@ defmodule GameServerWeb.EventCodec do
     }
   end
 
-  defp user_achievement(p) do
-    %PB.UserAchievement{
+  # `participants` is absent on an accept check by design — the serializer only
+  # includes it for kind "ready", so a pending match keeps its roster private.
+  defp ready_check(p) do
+    %PB.ReadyCheckState{
+      id: get(p, :id),
+      kind: get(p, :kind),
+      status: get(p, :status),
+      lobby_id: get(p, :lobby_id) || "",
+      party_id: get(p, :party_id) || "",
+      deadline_ms: ms(p, :deadline_at) || 0,
+      total: get(p, :total) || 0,
+      ready_count: get(p, :ready_count) || 0,
+      your_state: get(p, :your_state) || "",
+      reason: get(p, :reason) || "",
+      participants: Enum.map(get(p, :participants) || [], &ready_check_participant/1)
+    }
+  end
+
+  defp ready_check_participant(p) do
+    %PB.ReadyCheckParticipant{
+      user_id: get(p, :user_id),
+      display_name: get(p, :display_name) || "",
+      state: get(p, :state)
+    }
+  end
+
+  defp quest_progress(p) do
+    %PB.QuestProgress{
       id: get(p, :id),
       user_id: get(p, :user_id),
-      achievement_id: get(p, :achievement_id),
-      progress: get(p, :progress) || 0,
-      unlocked_at_ms: ms(p, :unlocked_at),
+      quest_key: get(p, :quest_key),
+      period_key: get(p, :period_key),
+      objective_progress: get(p, :objective_progress) || %{},
+      status: get(p, :status),
+      completed_at_ms: ms(p, :completed_at),
+      claimed_at_ms: ms(p, :claimed_at),
       metadata_json: json_bytes(p, :metadata) || "",
       inserted_at_ms: ms(p, :inserted_at) || 0,
       updated_at_ms: ms(p, :updated_at) || 0

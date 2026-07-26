@@ -5,10 +5,23 @@ Checklist for adding a feature. Keep PRs small; one feature at a time.
 ## Data model (if the feature stores data)
 
 - Schema in `apps/game_server_core/lib/game_server/<feature>/` using `use GameServer.Schema` (UUIDv7 ids).
-- Migration in `apps/game_server_core/priv/repo/migrations/`. Must work on **both SQLite and Postgres** — no `ALTER COLUMN` and no `DISTINCT ON` on SQLite (rebuild the table / group in Elixir instead), test with `DATABASE_ADAPTER=postgres` too.
+- Migration in `apps/game_server_core/priv/repo/migrations/`. Must work on **both SQLite and Postgres** — no `ALTER COLUMN` and no `DISTINCT ON` on SQLite (rebuild the table / group in Elixir instead), test with `GAMEND_DB_ADAPTER=postgres` too.
 - Index every column you filter, sort or count on. Use partial indexes for hot predicates (e.g. `create index(:t, [:deadline], where: "resolved_at IS NULL")`) — they serve sweeps and dashboard counters at once.
 - Size/count caps in `GameServer.Limits` (auto-exposed as `LIMIT_*` env vars), enforced in the changeset, and listed in `@limit_categories` on the admin Config page.
-- Document the tables in the [Data Schema](https://gamend.appsinacup.com/docs/setup) docs page (`lib/game_server_web/host_public_docs/data_schema.html.heex`).
+- `timestamps(type: :utc_datetime)`, never a bare `timestamps()` — the bare form stores naive values that lose the zone and cannot be rendered safely (see **Time**).
+- **Does the table grow without bound?** If rows accumulate per event, per session or per message, add a class to `GameServer.Retention` with a `RETENTION_*` window, or say in the PR why the table is bounded by its owner. Entity and balance state (users, wallets, inventories) is deliberately never pruned.
+- Document the tables in the [Data Schema](https://gamend.appsinacup.com/docs/setup) guide (`priv/docs/10-setup/40-data-schema.md`).
+
+## Time
+
+The server stores and sends UTC and has **no timezone database**; the reader's
+zone is only known in their browser. So:
+
+- Persist `:utc_datetime` and serialise ISO8601 with the `Z` (the default `Jason` encoding). Never send a wall-clock string a client cannot place.
+- Render every human-facing instant with `<.timestamp at={...} />`, never `Calendar.strftime` in a template. The component emits the UTC text plus the marks `local_time.js` needs; formatting by hand silently ships UTC dressed up as local time.
+- A form field a person fills in uses `type="utc-datetime-local"`. A plain `datetime-local` submits the browser's wall clock with no offset, and casting that as UTC stores an instant hours off — the bug is invisible to whoever entered it, because it reads back the same way.
+- Prefer a **duration** to an instant wherever the product allows: a countdown ("resets in 4h") is right in every zone and needs no conversion.
+- Period boundaries (quest resets, quotas, recurring tournaments) are UTC and deliberately global — one rollover instant everyone races. Document the boundary where players can see it; never show them a reset hour.
 
 ## Functionality
 
@@ -27,7 +40,7 @@ Adding one callback touches six places — miss one and plugins break in confusi
 3. `before_*` hooks: add to `lifecycle_pipeline_hook?/2`, plus a `normalize_pipeline_args/3` clause if the hook only vetoes (returns the value unchanged).
 4. No-op implementation in `GameServer.Hooks.Default`.
 5. Mirror in the SDK (`sdk/lib/game_server/hooks.ex`): `@callback`, `@optional_callbacks`, a default in `__using__`, **and the `defoverridable` list** — a default that isn't listed there cannot be overridden by plugins.
-6. Document the hook on the Server-scripting docs page.
+6. Document the hook in `priv/docs/40-gameplay/90-server-scripting.md`.
 
 **Never dispatch a hook or broadcast inside a transaction or lock.** The hook runs in another process, so anything it writes contends with the transaction that spawned it. Queue the effect and flush it after commit (see `defer/1` in `GameServer.Tournaments`). This also keeps subscribers from seeing uncommitted state.
 
@@ -70,8 +83,9 @@ Adding one callback touches six places — miss one and plugins break in confusi
 
 ## Finish
 
-- Docs page in `lib/game_server_web/host_public_docs/` if user-facing, registered in `host_public_docs.ex`, plus the realtime events table and the feature list in `api_spec.ex`.
-- New env vars documented in `.env.example`.
+- Guide in `priv/docs/<NN-category>/<NN-name>.md` if user-facing — a markdown file is the whole change, no registration and no Elixir. The folder is the category, the numeric prefixes order it, the first `# ` heading is the title and the first paragraph becomes the one-line summary on the index. Also update the realtime events table and the feature list in `api_spec.ex`.
+- Keep guides short. They render inside a disclosure someone opened with a question in mind: lead with the answer, prefer a table or a short example over prose, and leave the exhaustive reference to the API docs.
+- New settings declared with `GameServer.Settings.Provider`, never read with `System.get_env/1`. The env var name derives from the declaration, and both `.env.example` and the public Settings guide are generated — run `mix gamend.settings.env_example` and `mix gamend.settings.guide`, and commit the result. Both take `--check` so CI catches a declaration whose docs were never regenerated.
 - `CHANGELOG.md` entry (`[added]` / `[changed]` / `[breaking]`), 3–4 words, grouped with related items.
 - `mix format`, `mix credo --strict`, full `mix test` green.
 - SDKs regenerate from the OpenAPI spec in CI — no manual SDK edits.

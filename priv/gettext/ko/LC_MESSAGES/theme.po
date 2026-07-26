@@ -1,0 +1,170 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: ko\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "실시간 멀티플레이 게임을 위한 오픈 소스 Elixir 게임 서버."
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "블로그"
+
+msgid "Roadmap"
+msgstr "로드맵"
+
+msgid "Changelog"
+msgstr "변경 내역"
+
+msgid "Social"
+msgstr "소셜"
+
+msgid "About Gamend"
+msgstr "Gamend 소개"
+
+msgid "Elixir Docs"
+msgstr "Elixir 문서"
+
+msgid "About"
+msgstr "소개"
+
+msgid "Guides"
+msgstr "가이드"
+
+msgid "API Docs"
+msgstr "API 문서"
+
+msgid "Store"
+msgstr "스토어"
+
+msgid "Help"
+msgstr "도움말"
+
+msgid "Privacy Policy"
+msgstr "개인정보 처리방침"
+
+msgid "Terms and Conditions"
+msgstr "이용약관"
+
+msgid "Privacy & Terms"
+msgstr "개인정보 및 약관"
+
+msgid "Play"
+msgstr "플레이"
+
+msgid "Leaderboards"
+msgstr "리더보드"
+
+msgid "Quests"
+msgstr "퀘스트"
+
+msgid "Tournaments"
+msgstr "토너먼트"
+
+msgid "Groups"
+msgstr "그룹"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "Gamend는 인증, 소셜 시스템, 실시간 채널, 관리 도구를 갖춘 멀티플레이 게임용 **올인원** Elixir 백엔드입니다."
+
+msgid "Realtime Guide"
+msgstr "실시간 가이드"
+
+msgid "Real-time games"
+msgstr "실시간 게임"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "흔한 멀티플레이 인프라를 다시 만들지 않고도 채널, 로비, 파티, 접속 상태, WebRTC 데이터 채널을 사용할 수 있습니다."
+
+msgid "Built For Real-Time Games"
+msgstr "실시간 게임을 위해 만들어졌습니다"
+
+msgid "Read Docs"
+msgstr "문서 보기"
+
+msgid "Open source foundation"
+msgstr "오픈 소스 기반"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "이 프로젝트는 게임 팀이 포크하고, 테마를 입히고, 호스팅하고, 확장할 수 있도록 설계되었습니다."
+
+msgid "Open Source Foundation"
+msgstr "오픈 소스 기반"
+
+msgid "Getting Started"
+msgstr "시작하기"
+
+msgid "Presentation Video"
+msgstr "소개 영상"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "**실시간** 멀티플레이 게임을 위한 **오픈 소스** Elixir 게임 서버."
+
+msgid "Log in"
+msgstr "로그인"
+
+msgid "Register"
+msgstr "가입하기"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "이메일, 매직 링크, OAuth, JWT, 세션. 가입, 로그인, 비밀번호 재설정, 이메일 인증."
+
+msgid "Authentication & Users"
+msgstr "인증 및 사용자"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "실시간 로비와 일시적인 파티. 실시간으로 반영되는 사용자 지정 설정."
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "로비, 파티, 매치메이킹"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "친구 요청, 차단, 실시간 접속 상태. 공개, 비공개, 숨김 그룹. 1:1 및 그룹 메시지."
+
+msgid "Friends, Groups & Chat"
+msgstr "친구, 그룹, 채팅"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "서버가 판정하는 업적, 토너먼트 대진, 리더보드. 모든 기능과 결제 이벤트에 대한 실시간 알림."
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "업적, 토너먼트, 리더보드, 알림"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "Elixir 스크립트로 서버 로직을 확장하세요. 자동 작업과 cron 작업을 예약할 수 있습니다."
+
+msgid "Server Scripting & Scheduling"
+msgstr "서버 스크립팅 및 스케줄링"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "REST API, 실시간 WebSocket 채널, 저지연 WebRTC DataChannel. 관리자 포털과 웹 UI."
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "HTTP, WebSocket, WebRTC"
+
+msgid "Open Store"
+msgstr "스토어 열기"
+
+msgid "Payment Docs"
+msgstr "결제 문서"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "Stripe, Google Play, App Store, Steam을 지원하는 서버 측 결제. 영수증 검증, 서명된 웹훅 처리, 권한 부여, 환불 취소까지 모두 관리자에서 확인할 수 있습니다."
+
+msgid "Payments & Store Integrations"
+msgstr "결제 및 스토어 연동"
+
+msgid "Gamend is in beta!"
+msgstr "Gamend는 베타 버전입니다!"
+
+msgid "Game + Backend"
+msgstr "게임 + 백엔드"

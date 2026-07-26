@@ -6,7 +6,7 @@ defmodule GameServer.Tournaments.Match do
   is provided by GameServer at runtime.
 
   A match is a pairing plus a verdict: two entries that must produce a winner
-  by `deadline`. How it is played is up to the game — the server only needs
+  by `deadline_at`. How it is played is up to the game — the server only needs
   `GameServer.Tournaments.resolve_match/2` called before the deadline.
 
   Payloads passed to `tournament_match_ready/1` and `tournament_match_expired/1`
@@ -25,7 +25,7 @@ defmodule GameServer.Tournaments.Match do
   - `ready_at` - When the match became playable
   - `expired_at` - When the deadline passed with the match still open
   - `resolved_at` - When the verdict was recorded
-  - `deadline` - End of the round window
+  - `deadline_at` - End of the round window
   - `metadata` - Game scratch space, e.g. runs or a lobby id (map)
   - `inserted_at` - Creation timestamp
   - `updated_at` - Last update timestamp
@@ -46,7 +46,7 @@ defmodule GameServer.Tournaments.Match do
           ready_at: DateTime.t() | nil,
           expired_at: DateTime.t() | nil,
           resolved_at: DateTime.t() | nil,
-          deadline: DateTime.t(),
+          deadline_at: DateTime.t(),
           metadata: map(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
@@ -67,7 +67,7 @@ defmodule GameServer.Tournaments.Match do
     :ready_at,
     :expired_at,
     :resolved_at,
-    :deadline,
+    :deadline_at,
     :metadata,
     :inserted_at,
     :updated_at

@@ -8,6 +8,7 @@ defmodule GameServerWeb.Api.V1.GroupController do
   alias GameServer.Accounts.User
   alias GameServer.Groups
   alias GameServerWeb.Serializers
+  alias GameServerWeb.Uploads
   alias OpenApiSpex.Schema
 
   tags(["Groups"])
@@ -21,7 +22,8 @@ defmodule GameServerWeb.Api.V1.GroupController do
     properties: %{
       id: %Schema{type: :string, format: :uuid, description: "Group ID"},
       title: %Schema{type: :string, description: "Display title"},
-      description: %Schema{type: :string, description: "Description", nullable: true},
+      description: %Schema{type: :string, description: "Description"},
+      icon_url: %Schema{type: :string, description: "Icon URL; empty when unset"},
       type: %Schema{
         type: :string,
         enum: ["public", "private", "hidden"],
@@ -83,7 +85,7 @@ defmodule GameServerWeb.Api.V1.GroupController do
       role: %Schema{type: :string, enum: ["admin", "member"]},
       username: %Schema{type: :string},
       display_name: %Schema{type: :string},
-      profile_url: %Schema{type: :string, nullable: true},
+      profile_url: %Schema{type: :string, description: "Empty when unset"},
       is_online: %Schema{type: :boolean},
       last_seen_at: %Schema{type: :string, format: "date-time"},
       inserted_at: %Schema{type: :string, format: :"date-time"}
@@ -204,6 +206,7 @@ defmodule GameServerWeb.Api.V1.GroupController do
         properties: %{
           title: %Schema{type: :string, description: "Display title (unique)"},
           description: %Schema{type: :string, description: "Optional description"},
+          icon_url: %Schema{type: :string, description: "Optional icon URL"},
           type: %Schema{
             type: :string,
             enum: ["public", "private", "hidden"],
@@ -248,6 +251,7 @@ defmodule GameServerWeb.Api.V1.GroupController do
         properties: %{
           title: %Schema{type: :string},
           description: %Schema{type: :string},
+          icon_url: %Schema{type: :string},
           type: %Schema{type: :string, enum: ["public", "private", "hidden"]},
           max_members: %Schema{type: :integer},
           metadata: %Schema{type: :object},
@@ -815,7 +819,12 @@ defmodule GameServerWeb.Api.V1.GroupController do
          %Schema{
            type: :object,
            properties: %{
-             sent: %Schema{type: :integer, description: "Number of notifications delivered"}
+             data: %Schema{
+               type: :object,
+               properties: %{
+                 sent: %Schema{type: :integer, description: "Number of notifications delivered"}
+               }
+             }
            }
          }},
       forbidden: {"Not a member", "application/json", @error_schema},
@@ -844,7 +853,7 @@ defmodule GameServerWeb.Api.V1.GroupController do
         param_value(params, "metadata_value", :metadata_value)
       )
 
-    {page, page_size} = parse_page_params(params)
+    {page, page_size} = GameServerWeb.Pagination.params(params)
     sort_by = Map.get(params, "sort_by")
 
     groups =
@@ -926,6 +935,114 @@ defmodule GameServerWeb.Api.V1.GroupController do
           end
       end
     end)
+  end
+
+  operation(:icon_upload_url,
+    operation_id: "create_group_icon_upload_url",
+    summary: "Request a group icon upload ticket (admin only)",
+    description:
+      "Returns a presigned ticket for uploading the group's icon to storage. " <>
+        "Upload the file to `upload_url`, then confirm with `POST /groups/{id}/icon` " <>
+        "using the returned `key`.",
+    security: [%{"authorization" => []}],
+    parameters: [
+      id: [
+        in: :path,
+        schema: %Schema{type: :string, format: :uuid},
+        description: "Group ID",
+        required: true
+      ]
+    ],
+    request_body: {
+      "Upload intent",
+      "application/json",
+      %Schema{
+        type: :object,
+        properties: %{content_type: %Schema{type: :string, example: "image/png"}},
+        required: [:content_type]
+      }
+    },
+    responses: [
+      ok: {"Upload ticket", "application/json", %Schema{type: :object}},
+      bad_request: {"Unsupported content type", "application/json", @error_schema},
+      forbidden: {"Not a group admin", "application/json", @error_schema},
+      unauthorized: {"Not authenticated", "application/json", @error_schema},
+      not_found: {"Group not found", "application/json", @error_schema}
+    ]
+  )
+
+  def icon_upload_url(conn, %{"id" => id} = params) do
+    with_auth(conn, fn user ->
+      with_group_admin(conn, user, id, fn group_id ->
+        Uploads.ticket(conn, "icons/groups", group_id, "icon", Uploads.content_type(params))
+      end)
+    end)
+  end
+
+  operation(:set_icon,
+    operation_id: "set_group_icon",
+    summary: "Confirm an uploaded group icon (admin only)",
+    description: "Records a previously uploaded object (`key`) as the group's icon.",
+    security: [%{"authorization" => []}],
+    parameters: [
+      id: [
+        in: :path,
+        schema: %Schema{type: :string, format: :uuid},
+        description: "Group ID",
+        required: true
+      ]
+    ],
+    request_body: {
+      "Uploaded object key",
+      "application/json",
+      %Schema{type: :object, properties: %{key: %Schema{type: :string}}, required: [:key]}
+    },
+    responses: [
+      ok: {"Group with the new icon", "application/json", @group_schema},
+      bad_request: {"Object not found", "application/json", @error_schema},
+      forbidden: {"Not a group admin or key not owned", "application/json", @error_schema},
+      unauthorized: {"Not authenticated", "application/json", @error_schema},
+      not_found: {"Group not found", "application/json", @error_schema}
+    ]
+  )
+
+  def set_icon(conn, %{"id" => id} = params) do
+    with_auth(conn, fn user ->
+      with_group_admin(conn, user, id, fn group_id ->
+        Uploads.confirm(conn, "icons/groups", group_id, params["key"], fn url ->
+          save_icon(conn, user, group_id, url)
+        end)
+      end)
+    end)
+  end
+
+  defp save_icon(conn, user, group_id, url) do
+    case Groups.update_group(user.id, group_id, %{"icon_url" => url}) do
+      {:ok, group} ->
+        json(conn, serialize_group(group))
+
+      {:error, _reason} ->
+        conn |> put_status(:unprocessable_entity) |> json(%{error: "invalid_data"})
+    end
+  end
+
+  defp with_group_admin(conn, user, raw_id, fun) do
+    case parse_id(raw_id) do
+      nil ->
+        conn |> put_status(:not_found) |> json(%{error: "not_found"})
+
+      group_id ->
+        cond do
+          Groups.get_group(group_id) == nil ->
+            conn |> put_status(:not_found) |> json(%{error: "not_found"})
+
+          not Groups.admin?(group_id, user.id) ->
+            conn |> put_status(:forbidden) |> json(%{error: "not_admin"})
+
+          true ->
+            fun.(group_id)
+        end
+    end
   end
 
   def join(conn, %{"id" => id}) do
@@ -1040,7 +1157,7 @@ defmodule GameServerWeb.Api.V1.GroupController do
             conn |> put_status(:not_found) |> json(%{error: "not_found"})
 
           _group ->
-            {page, page_size} = parse_page_params(params)
+            {page, page_size} = GameServerWeb.Pagination.params(params)
 
             members =
               Groups.get_group_members_paginated(group_id, page: page, page_size: page_size)
@@ -1134,7 +1251,7 @@ defmodule GameServerWeb.Api.V1.GroupController do
           conn |> put_status(:not_found) |> json(%{error: "not_found"})
 
         group_id ->
-          {page, page_size} = parse_page_params(params)
+          {page, page_size} = GameServerWeb.Pagination.params(params)
 
           case Groups.list_join_requests(user.id, group_id, page: page, page_size: page_size) do
             {:ok, requests} ->
@@ -1326,7 +1443,7 @@ defmodule GameServerWeb.Api.V1.GroupController do
 
   def invitations(conn, params) do
     with_auth(conn, fn user ->
-      {page, page_size} = parse_page_params(params)
+      {page, page_size} = GameServerWeb.Pagination.params(params)
       invites = Groups.list_invitations(user.id, page: page, page_size: page_size)
       count = length(invites)
       total_count = Groups.count_invitations(user.id)
@@ -1340,7 +1457,7 @@ defmodule GameServerWeb.Api.V1.GroupController do
 
   def my_groups(conn, params) do
     with_auth(conn, fn user ->
-      {page, page_size} = parse_page_params(params)
+      {page, page_size} = GameServerWeb.Pagination.params(params)
       groups = Groups.list_user_groups(user.id, page: page, page_size: page_size)
       member_counts = Groups.batch_member_counts(Enum.map(groups, & &1.id))
       serialized = Enum.map(groups, &serialize_group(&1, member_counts))
@@ -1356,7 +1473,7 @@ defmodule GameServerWeb.Api.V1.GroupController do
 
   def sent_invitations(conn, params) do
     with_auth(conn, fn user ->
-      {page, page_size} = parse_page_params(params)
+      {page, page_size} = GameServerWeb.Pagination.params(params)
       invites = Groups.list_sent_invitations(user.id, page: page, page_size: page_size)
       count = length(invites)
       total_count = Groups.count_sent_invitations(user.id)
@@ -1410,7 +1527,7 @@ defmodule GameServerWeb.Api.V1.GroupController do
 
           case Groups.notify_group(user.id, group_id, content, metadata) do
             {:ok, sent} ->
-              json(conn, %{sent: sent})
+              json(conn, %{data: %{sent: sent}})
 
             {:error, :not_found} ->
               conn |> put_status(:not_found) |> json(%{error: "not_found"})

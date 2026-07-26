@@ -443,4 +443,65 @@ defmodule GameServer.LobbiesTest do
       assert reloaded.lobby_id == matched.id
     end
   end
+
+  describe "update_lobby_by_host/3 authorization" do
+    setup do
+      host = AccountsFixtures.user_fixture()
+      member = AccountsFixtures.user_fixture()
+
+      %{host: host, member: member}
+    end
+
+    test "the host of a host-managed lobby may update it", %{host: host} do
+      {:ok, lobby} = Lobbies.create_lobby(%{title: "host-edits", host_id: host.id})
+
+      assert {:ok, updated} =
+               Lobbies.update_lobby_by_host(host, lobby, %{
+                 "title" => "Renamed",
+                 "is_locked" => true
+               })
+
+      assert updated.title == "Renamed"
+      assert updated.is_locked
+      assert Lobbies.can_edit_lobby?(host, lobby)
+    end
+
+    test "a non-host member may not", %{host: host, member: member} do
+      {:ok, lobby} = Lobbies.create_lobby(%{title: "member-edits", host_id: host.id})
+      assert {:ok, _} = Lobbies.join_lobby(member, lobby)
+
+      assert {:error, :not_host} =
+               Lobbies.update_lobby_by_host(member, lobby, %{"title" => "Hijacked"})
+
+      assert Lobbies.get_lobby(lobby.id).title == "member-edits"
+      refute Lobbies.can_edit_lobby?(member, lobby)
+    end
+
+    test "no member may update a hostless lobby — matchmaking matches belong to the server", %{
+      member: member
+    } do
+      {:ok, lobby} = Lobbies.create_lobby(%{title: "ranked-match", hostless: true})
+      assert {:ok, _} = Lobbies.join_lobby(member, lobby)
+
+      assert {:error, :not_host} =
+               Lobbies.update_lobby_by_host(member, lobby, %{
+                 "title" => "Hijacked",
+                 "metadata" => %{"score" => 999},
+                 "max_users" => 99,
+                 "is_hidden" => true,
+                 "password" => "locked-out"
+               })
+
+      reloaded = Lobbies.get_lobby(lobby.id)
+      assert reloaded.title == "ranked-match"
+      assert reloaded.metadata == %{}
+      refute reloaded.is_hidden
+      assert is_nil(reloaded.password_hash)
+      refute Lobbies.can_edit_lobby?(member, lobby)
+
+      # The server itself still can, via the unscoped call.
+      assert {:ok, updated} = Lobbies.update_lobby(reloaded, %{"metadata" => %{"score" => 3}})
+      assert updated.metadata == %{"score" => 3}
+    end
+  end
 end

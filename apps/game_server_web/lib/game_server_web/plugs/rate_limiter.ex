@@ -19,10 +19,71 @@ defmodule GameServerWeb.Plugs.RateLimiter do
 
   import Plug.Conn
 
-  @default_general_limit 1200
-  @default_general_window :timer.seconds(60)
-  @default_auth_limit 30
-  @default_auth_window :timer.seconds(60)
+  # Declared so the values are documented, env-fed and visible in the admin
+  # viewer; the `Keyword.get(config(), key, @default)` reads below are
+  # unchanged, because a setting resolves into the app-env key they already
+  # look at. Defaults are the production ones — `config/dev.exs` raises them
+  # explicitly so local iteration is not throttled.
+  use GameServer.Settings.Provider,
+    app: :game_server_web,
+    group: :ratelimit,
+    label: "Rate limiting"
+
+  setting(:enabled, :boolean,
+    default: true,
+    doc: "Master switch for all request/message throttling."
+  )
+
+  setting(:general_limit, :integer,
+    default: 240,
+    doc: "Max general HTTP requests per window, per IP."
+  )
+
+  setting(:general_window_ms, :integer,
+    default: 60_000,
+    doc: "General HTTP window, in milliseconds."
+  )
+
+  setting(:auth_limit, :integer,
+    default: 10,
+    doc: "Max login/register requests per window, per IP."
+  )
+
+  setting(:auth_window_ms, :integer,
+    default: 60_000,
+    doc: "Auth HTTP window, in milliseconds."
+  )
+
+  setting(:ws_limit, :integer,
+    default: 60,
+    doc: "Max WebSocket channel messages per window, per user."
+  )
+
+  setting(:ws_window_ms, :integer,
+    default: 10_000,
+    doc: "WebSocket window, in milliseconds."
+  )
+
+  setting(:dc_limit, :integer,
+    default: 300,
+    doc: "Max WebRTC DataChannel messages per window, per user."
+  )
+
+  setting(:dc_window_ms, :integer,
+    default: 10_000,
+    doc: "WebRTC DataChannel window, in milliseconds."
+  )
+
+  # Separate from the WS budget so ICE flooding cannot starve other events.
+  setting(:ice_limit, :integer,
+    default: 150,
+    doc: "Max ICE candidate messages per window, per user."
+  )
+
+  setting(:ice_window_ms, :integer,
+    default: 30_000,
+    doc: "ICE candidate window, in milliseconds."
+  )
 
   def init(opts), do: opts
 
@@ -106,22 +167,14 @@ defmodule GameServerWeb.Plugs.RateLimiter do
   end
 
   defp bucket_for(_conn, ip) do
-    config = config()
-
-    {"general:#{ip}", Keyword.get(config, :general_window, @default_general_window),
-     Keyword.get(config, :general_limit, @default_general_limit)}
+    {"general:#{ip}", setting(:general_window_ms), setting(:general_limit)}
   end
 
   defp auth_bucket(ip) do
-    config = config()
-
-    {"auth:#{ip}", Keyword.get(config, :auth_window, @default_auth_window),
-     Keyword.get(config, :auth_limit, @default_auth_limit)}
+    {"auth:#{ip}", setting(:auth_window_ms), setting(:auth_limit)}
   end
 
-  defp config do
-    Application.get_env(:game_server_web, __MODULE__, [])
-  end
+  defp setting(key), do: GameServer.Settings.get(__MODULE__, key)
 
   # Real client IP is already extracted by the RealIp plug earlier in the
   # endpoint pipeline, so we just format conn.remote_ip.
@@ -129,7 +182,5 @@ defmodule GameServerWeb.Plugs.RateLimiter do
     conn.remote_ip |> :inet.ntoa() |> to_string()
   end
 
-  defp enabled? do
-    Keyword.get(config(), :enabled, true)
-  end
+  defp enabled?, do: setting(:enabled)
 end

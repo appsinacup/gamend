@@ -138,7 +138,7 @@ SDK-mirrored in all six places.
 ## Definition of done (CONTRIBUTING)
 
 - [ ] Migrations for `save_slots` / `save_versions` apply on SQLite **and**
-      `DATABASE_ADAPTER=postgres`; indexes as above.
+      `GAMEND_DB_ADAPTER=postgres`; indexes as above.
 - [ ] Conditional-update conflict detection (no silent clobber); version prune
       deletes old blobs; presigned + small-inline write paths; restore.
 - [ ] Paginated `list_*`/`count_*`; `Limits` caps enforced.

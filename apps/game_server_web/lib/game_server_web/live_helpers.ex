@@ -47,18 +47,14 @@ defmodule GameServerWeb.LiveHelpers do
   end
 
   defp auth_limits do
-    config = Application.get_env(:game_server_web, GameServerWeb.Plugs.RateLimiter, [])
-    limit = Keyword.get(config, :auth_limit, 30)
-    window = Keyword.get(config, :auth_window, :timer.seconds(60))
-    {limit, window}
+    {setting(:auth_limit), setting(:auth_window_ms)}
   end
 
   defp general_limits do
-    config = Application.get_env(:game_server_web, GameServerWeb.Plugs.RateLimiter, [])
-    limit = Keyword.get(config, :general_limit, 1200)
-    window = Keyword.get(config, :general_window, :timer.seconds(60))
-    {limit, window}
+    {setting(:general_limit), setting(:general_window_ms)}
   end
+
+  defp setting(key), do: GameServer.Settings.get(GameServerWeb.Plugs.RateLimiter, key)
 
   @doc """
   Put a standard success flash on a LiveView socket.

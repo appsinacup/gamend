@@ -173,8 +173,6 @@ defmodule GameServer.Hooks.GroupPartyHooksTest do
     def after_chat_message(_message), do: :ok
     @impl true
     def before_kv_get(_key, _opts), do: :public
-    @impl true
-    def after_achievement_unlocked(_user_id, _achievement), do: :ok
   end
 
   # ---------------------------------------------------------------------------

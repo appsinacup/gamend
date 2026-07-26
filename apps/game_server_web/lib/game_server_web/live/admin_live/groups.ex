@@ -177,10 +177,10 @@ defmodule GameServerWeb.AdminLive.Groups do
                       </td>
                       <td class="font-mono text-sm">{g.creator_id}</td>
                       <td class="text-sm">
-                        {Calendar.strftime(g.inserted_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={g.inserted_at} />
                       </td>
                       <td class="text-sm">
-                        {Calendar.strftime(g.updated_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={g.updated_at} />
                       </td>
                       <td class="text-sm">
                         <div class="flex flex-wrap gap-1">
@@ -242,6 +242,7 @@ defmodule GameServerWeb.AdminLive.Groups do
           <.form for={@form} id="group-edit-form" phx-submit="save_group">
             <.input field={@form[:title]} type="text" label="Title (unique)" />
             <.input field={@form[:description]} type="text" label="Description" />
+            <.input field={@form[:icon_url]} type="text" label="Icon URL (optional)" />
             <.input
               field={@form[:type]}
               type="select"
@@ -262,13 +263,13 @@ defmodule GameServerWeb.AdminLive.Groups do
               <div>
                 Created:
                 <span class="font-mono">
-                  {Calendar.strftime(@selected_group.inserted_at, "%Y-%m-%d %H:%M:%S")}
+                  <.timestamp at={@selected_group.inserted_at} format="full" />
                 </span>
               </div>
               <div>
                 Updated:
                 <span class="font-mono">
-                  {Calendar.strftime(@selected_group.updated_at, "%Y-%m-%d %H:%M:%S")}
+                  <.timestamp at={@selected_group.updated_at} format="full" />
                 </span>
               </div>
             </div>
@@ -304,7 +305,7 @@ defmodule GameServerWeb.AdminLive.Groups do
               <tbody>
                 <tr :for={m <- @members} id={"member-" <> to_string(m.id)}>
                   <td class="font-mono text-sm">{m.user_id}</td>
-                  <td class="text-sm">{m.user.display_name || m.user.email || "-"}</td>
+                  <td class="text-sm">{user_display(m.user)}</td>
                   <td class="text-sm">
                     <%= if m.role == "admin" do %>
                       <span class="badge badge-primary badge-sm">Admin</span>
@@ -313,7 +314,7 @@ defmodule GameServerWeb.AdminLive.Groups do
                     <% end %>
                   </td>
                   <td class="text-sm">
-                    {Calendar.strftime(m.inserted_at, "%Y-%m-%d %H:%M")}
+                    <.timestamp at={m.inserted_at} />
                   </td>
                   <td class="text-sm">
                     <div class="flex flex-wrap gap-1">
@@ -343,7 +344,7 @@ defmodule GameServerWeb.AdminLive.Groups do
                         phx-click="kick_member"
                         phx-value-group-id={m.group_id}
                         phx-value-user-id={m.user_id}
-                        data-confirm={"Kick user #{m.user_id} from group?"}
+                        data-confirm={"Kick #{user_display(m.user)} from group?"}
                         class="btn btn-xs btn-outline btn-error"
                       >
                         Kick

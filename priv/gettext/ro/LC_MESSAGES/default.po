@@ -26,7 +26,7 @@ msgstr "Blog"
 msgid "Changelog"
 msgstr "Jurnal de modificări"
 
-#: lib/game_server_web/host_public_docs.ex:64
+#: lib/game_server_web/host_public_docs.ex:67
 #, elixir-autogen, elixir-format
 msgid "Documentation"
 msgstr "Documentație"
@@ -79,7 +79,7 @@ msgstr "Chat"
 #: lib/game_server_host/host_layout_translations.ex:12
 #, elixir-autogen, elixir-format
 msgid "Dismiss"
-msgstr ""
+msgstr "Închide"
 
 #: lib/game_server_host/host_layout_translations.ex:10
 #, elixir-autogen, elixir-format

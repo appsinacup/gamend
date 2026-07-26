@@ -18,7 +18,7 @@ defmodule GameServerWeb.UserLive.Confirmation do
           id="confirmation_form"
           phx-mounted={JS.focus_first()}
           phx-submit="submit"
-          action={~p"/users/log-in?_action=confirmed"}
+          action={~p"/users/log_in?_action=confirmed"}
           phx-trigger-action={@trigger_submit}
         >
           <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
@@ -44,7 +44,7 @@ defmodule GameServerWeb.UserLive.Confirmation do
           id="login_form"
           phx-submit="submit"
           phx-mounted={JS.focus_first()}
-          action={~p"/users/log-in"}
+          action={~p"/users/log_in"}
           phx-trigger-action={@trigger_submit}
         >
           <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
@@ -93,7 +93,7 @@ defmodule GameServerWeb.UserLive.Confirmation do
       {:ok,
        socket
        |> put_flash(:error, gettext("Failed"))
-       |> push_navigate(to: ~p"/users/log-in")}
+       |> push_navigate(to: ~p"/users/log_in")}
     end
   end
 

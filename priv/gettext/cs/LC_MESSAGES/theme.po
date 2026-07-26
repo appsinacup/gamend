@@ -1,0 +1,170 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: cs\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "Herní server v Elixiru s otevřeným zdrojovým kódem pro realtimové hry pro více hráčů."
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "Blog"
+
+msgid "Roadmap"
+msgstr "Plán vývoje"
+
+msgid "Changelog"
+msgstr "Seznam změn"
+
+msgid "Social"
+msgstr "Sociální"
+
+msgid "About Gamend"
+msgstr "O Gamendu"
+
+msgid "Elixir Docs"
+msgstr "Dokumentace Elixiru"
+
+msgid "About"
+msgstr "O projektu"
+
+msgid "Guides"
+msgstr "Návody"
+
+msgid "API Docs"
+msgstr "Dokumentace API"
+
+msgid "Store"
+msgstr "Obchod"
+
+msgid "Help"
+msgstr "Nápověda"
+
+msgid "Privacy Policy"
+msgstr "Zásady ochrany osobních údajů"
+
+msgid "Terms and Conditions"
+msgstr "Podmínky použití"
+
+msgid "Privacy & Terms"
+msgstr "Soukromí a podmínky"
+
+msgid "Play"
+msgstr "Hrát"
+
+msgid "Leaderboards"
+msgstr "Žebříčky"
+
+msgid "Quests"
+msgstr "Úkoly"
+
+msgid "Tournaments"
+msgstr "Turnaje"
+
+msgid "Groups"
+msgstr "Skupiny"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "Gamend je **kompletně vybavený** backend v Elixiru pro hry více hráčů – s ověřováním, sociálními systémy, realtimovými kanály a nástroji pro správu."
+
+msgid "Realtime Guide"
+msgstr "Průvodce reálným časem"
+
+msgid "Real-time games"
+msgstr "Realtimové hry"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "Používejte kanály, lobby, party, přítomnost a datové kanály WebRTC, aniž byste znovu stavěli obvyklou infrastrukturu pro více hráčů."
+
+msgid "Built For Real-Time Games"
+msgstr "Vytvořeno pro realtimové hry"
+
+msgid "Read Docs"
+msgstr "Přečíst dokumentaci"
+
+msgid "Open source foundation"
+msgstr "Základ v otevřeném zdrojovém kódu"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "Projekt je navržen tak, aby si jej herní týmy mohly forknout, otématovat, hostovat a rozšířit."
+
+msgid "Open Source Foundation"
+msgstr "Základ v otevřeném zdrojovém kódu"
+
+msgid "Getting Started"
+msgstr "Začínáme"
+
+msgid "Presentation Video"
+msgstr "Prezentační video"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "Herní server v Elixiru s **otevřeným zdrojovým kódem** pro **realtimové** hry pro více hráčů."
+
+msgid "Log in"
+msgstr "Přihlásit se"
+
+msgid "Register"
+msgstr "Registrovat se"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "E-mail, magický odkaz, OAuth, JWT a relace. Registrace, přihlášení, obnovení hesla a ověření e-mailu."
+
+msgid "Authentication & Users"
+msgstr "Ověřování a uživatelé"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "Realtimové lobby a dočasné party. Přizpůsobitelná nastavení se živými aktualizacemi."
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "Lobby, party a hledání hry"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "Žádosti o přátelství, blokování, přítomnost v reálném čase. Veřejné, soukromé a skryté skupiny. Přímé a skupinové zprávy."
+
+msgid "Friends, Groups & Chat"
+msgstr "Přátelé, skupiny a chat"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "Úspěchy, vyřazovací turnaje a žebříčky vyhodnocované serverem. Oznámení v reálném čase napříč funkcemi i platebními událostmi."
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "Úspěchy, turnaje, žebříčky a oznámení"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "Rozšiřte logiku serveru skripty v Elixiru. Naplánujte automatické úlohy a úlohy cron."
+
+msgid "Server Scripting & Scheduling"
+msgstr "Serverové skripty a plánování"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "REST API, realtimové kanály WebSocket a WebRTC DataChannels s nízkou latencí. Administrační portál a webové rozhraní."
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "HTTP, WebSocket a WebRTC"
+
+msgid "Open Store"
+msgstr "Otevřít obchod"
+
+msgid "Payment Docs"
+msgstr "Dokumentace plateb"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "Platby na straně serveru přes Stripe, Google Play, App Store a Steam. Ověřujte účtenky, zpracovávejte podepsané webhooky, přidělujte oprávnění, rušte vrácené platby a vše si prohlédněte ve správě."
+
+msgid "Payments & Store Integrations"
+msgstr "Platby a integrace obchodů"
+
+msgid "Gamend is in beta!"
+msgstr "Gamend je v beta verzi!"
+
+msgid "Game + Backend"
+msgstr "Hra + backend"

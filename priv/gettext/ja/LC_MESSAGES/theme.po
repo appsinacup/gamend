@@ -1,0 +1,170 @@
+## Migrated from the per-locale theme JSON by
+## `mix gamend.theme.migrate_locales`. Maintain with `mix gettext.merge`.
+msgid ""
+msgstr ""
+"Language: ja\n"
+
+msgid "Open source Elixir game server for real-time multiplayer games."
+msgstr "リアルタイムマルチプレイヤーゲームのためのオープンソースの Elixir ゲームサーバー。"
+
+msgid "Discord"
+msgstr "Discord"
+
+msgid "Blog"
+msgstr "ブログ"
+
+msgid "Roadmap"
+msgstr "ロードマップ"
+
+msgid "Changelog"
+msgstr "変更履歴"
+
+msgid "Social"
+msgstr "ソーシャル"
+
+msgid "About Gamend"
+msgstr "Gamend について"
+
+msgid "Elixir Docs"
+msgstr "Elixir ドキュメント"
+
+msgid "About"
+msgstr "概要"
+
+msgid "Guides"
+msgstr "ガイド"
+
+msgid "API Docs"
+msgstr "API ドキュメント"
+
+msgid "Store"
+msgstr "ストア"
+
+msgid "Help"
+msgstr "ヘルプ"
+
+msgid "Privacy Policy"
+msgstr "プライバシーポリシー"
+
+msgid "Terms and Conditions"
+msgstr "利用規約"
+
+msgid "Privacy & Terms"
+msgstr "プライバシーと利用規約"
+
+msgid "Play"
+msgstr "プレイ"
+
+msgid "Leaderboards"
+msgstr "リーダーボード"
+
+msgid "Quests"
+msgstr "クエスト"
+
+msgid "Tournaments"
+msgstr "トーナメント"
+
+msgid "Groups"
+msgstr "グループ"
+
+msgid "GitHub"
+msgstr "GitHub"
+
+msgid "Gamend"
+msgstr "Gamend"
+
+msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
+msgstr "Gamend はマルチプレイヤーゲーム向けの**すぐに使える** Elixir バックエンドです。認証、ソーシャル機能、リアルタイムチャンネル、管理ツールを備えています。"
+
+msgid "Realtime Guide"
+msgstr "リアルタイムガイド"
+
+msgid "Real-time games"
+msgstr "リアルタイムゲーム"
+
+msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
+msgstr "チャンネル、ロビー、パーティー、プレゼンス、WebRTC データチャンネルを、よくあるマルチプレイヤー基盤を作り直すことなく利用できます。"
+
+msgid "Built For Real-Time Games"
+msgstr "リアルタイムゲームのために作られた"
+
+msgid "Read Docs"
+msgstr "ドキュメントを読む"
+
+msgid "Open source foundation"
+msgstr "オープンソースの基盤"
+
+msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
+msgstr "このプロジェクトは、ゲームチームがフォークし、テーマを変え、ホストし、拡張できるように設計されています。"
+
+msgid "Open Source Foundation"
+msgstr "オープンソースの基盤"
+
+msgid "Getting Started"
+msgstr "はじめに"
+
+msgid "Presentation Video"
+msgstr "紹介動画"
+
+msgid "**Open source** Elixir game server for **real-time** multiplayer games."
+msgstr "**リアルタイム**マルチプレイヤーゲームのための**オープンソース**の Elixir ゲームサーバー。"
+
+msgid "Log in"
+msgstr "ログイン"
+
+msgid "Register"
+msgstr "登録"
+
+msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
+msgstr "メール、マジックリンク、OAuth、JWT、セッション。登録、ログイン、パスワード再設定、メール認証。"
+
+msgid "Authentication & Users"
+msgstr "認証とユーザー"
+
+msgid "Real-time lobbies and ephemeral parties. Customizable settings with live updates."
+msgstr "リアルタイムのロビーと一時的なパーティー。ライブ更新に対応したカスタマイズ可能な設定。"
+
+msgid "Lobbies, Parties & Matchmaking"
+msgstr "ロビー、パーティー、マッチメイキング"
+
+msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
+msgstr "フレンド申請、ブロック、リアルタイムのプレゼンス。公開・非公開・非表示のグループ。ダイレクトメッセージとグループメッセージ。"
+
+msgid "Friends, Groups & Chat"
+msgstr "フレンド、グループ、チャット"
+
+msgid "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events."
+msgstr "サーバー権威の実績、トーナメント、ランキング。あらゆる機能と決済イベントのリアルタイム通知。"
+
+msgid "Achievements, Tournaments, Leaderboards & Notifications"
+msgstr "実績、トーナメント、ランキング、通知"
+
+msgid "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs."
+msgstr "Elixir スクリプトでサーバーロジックを拡張。自動タスクや cron ジョブをスケジュール。"
+
+msgid "Server Scripting & Scheduling"
+msgstr "サーバースクリプトとスケジューリング"
+
+msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI."
+msgstr "REST API、リアルタイム WebSocket チャンネル、低遅延の WebRTC DataChannel。管理ポータルと Web UI。"
+
+msgid "HTTP, WebSocket & WebRTC"
+msgstr "HTTP、WebSocket、WebRTC"
+
+msgid "Open Store"
+msgstr "ストアを開く"
+
+msgid "Payment Docs"
+msgstr "決済ドキュメント"
+
+msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
+msgstr "Stripe、Google Play、App Store、Steam に対応したサーバーサイド決済。レシート検証、署名付き Webhook の処理、権利の付与、返金の取り消し、そのすべてを管理画面で確認できます。"
+
+msgid "Payments & Store Integrations"
+msgstr "決済とストア連携"
+
+msgid "Gamend is in beta!"
+msgstr "Gamend はベータ版です！"
+
+msgid "Game + Backend"
+msgstr "ゲーム + バックエンド"

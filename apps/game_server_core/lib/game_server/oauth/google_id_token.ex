@@ -92,7 +92,10 @@ defmodule GameServer.OAuth.GoogleIDToken do
     # For Godot/Android plugins that return an id_token, this MUST match the
     # Web Client ID you initialize the plugin with.
     auds =
-      [System.get_env("GOOGLE_WEB_CLIENT_ID"), System.get_env("GOOGLE_CLIENT_ID")]
+      [
+        GameServer.Settings.get(GameServer.OAuth.Providers, :google_web_client_id),
+        GameServer.Settings.get(GameServer.OAuth.Providers, :google_client_id)
+      ]
       |> Enum.filter(&is_binary/1)
       |> Enum.map(&String.trim/1)
       |> Enum.reject(&(&1 == ""))

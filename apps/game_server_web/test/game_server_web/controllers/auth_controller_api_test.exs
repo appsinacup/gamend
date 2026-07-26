@@ -291,10 +291,19 @@ defmodule GameServerWeb.AuthControllerApiTest do
     test "POST /api/v1/auth/apple/callback skips profile lookup when user already has profile", %{
       conn: conn
     } do
-      System.put_env("APPLE_WEB_CLIENT_ID", "com.example.web")
+      GameServer.SettingsHelpers.put(
+        :game_server_core,
+        GameServer.OAuth.Providers,
+        :apple_client_id,
+        "com.example.web"
+      )
 
       on_exit(fn ->
-        System.delete_env("APPLE_WEB_CLIENT_ID")
+        GameServer.SettingsHelpers.delete(
+          :game_server_core,
+          GameServer.OAuth.Providers,
+          :apple_client_id
+        )
       end)
 
       {:ok, _user} =
@@ -311,7 +320,13 @@ defmodule GameServerWeb.AuthControllerApiTest do
         "-----BEGIN PRIVATE KEY-----\nMYSAMPLE\n-----END PRIVATE KEY-----"
       )
 
-      on_exit(fn -> System.delete_env("APPLE_PRIVATE_KEY") end)
+      on_exit(fn ->
+        GameServer.SettingsHelpers.delete(
+          :game_server_core,
+          GameServer.OAuth.Providers,
+          :apple_private_key
+        )
+      end)
 
       defmodule MockExchangerApple do
         def exchange_apple_code("valid_ticket", _cid, _secret, _redirect) do
@@ -335,10 +350,19 @@ defmodule GameServerWeb.AuthControllerApiTest do
     end
 
     test "POST /api/v1/auth/apple/callback fetches profile when missing fields", %{conn: conn} do
-      System.put_env("APPLE_WEB_CLIENT_ID", "com.example.web")
+      GameServer.SettingsHelpers.put(
+        :game_server_core,
+        GameServer.OAuth.Providers,
+        :apple_client_id,
+        "com.example.web"
+      )
 
       on_exit(fn ->
-        System.delete_env("APPLE_WEB_CLIENT_ID")
+        GameServer.SettingsHelpers.delete(
+          :game_server_core,
+          GameServer.OAuth.Providers,
+          :apple_client_id
+        )
       end)
 
       {:ok, user} =
@@ -350,7 +374,13 @@ defmodule GameServerWeb.AuthControllerApiTest do
         "-----BEGIN PRIVATE KEY-----\nMYSAMPLE\n-----END PRIVATE KEY-----"
       )
 
-      on_exit(fn -> System.delete_env("APPLE_PRIVATE_KEY") end)
+      on_exit(fn ->
+        GameServer.SettingsHelpers.delete(
+          :game_server_core,
+          GameServer.OAuth.Providers,
+          :apple_private_key
+        )
+      end)
 
       defmodule MockExchangerAppleFetch do
         def exchange_apple_code("valid_ticket", _cid, _secret, _redirect) do
@@ -377,12 +407,32 @@ defmodule GameServerWeb.AuthControllerApiTest do
     end
 
     test "POST /api/v1/auth/apple/callback uses APPLE_WEB_CLIENT_ID when set", %{conn: conn} do
-      System.put_env("APPLE_WEB_CLIENT_ID", "com.example.web")
-      System.put_env("APPLE_IOS_CLIENT_ID", "com.example.ios")
+      GameServer.SettingsHelpers.put(
+        :game_server_core,
+        GameServer.OAuth.Providers,
+        :apple_client_id,
+        "com.example.web"
+      )
+
+      GameServer.SettingsHelpers.put(
+        :game_server_core,
+        GameServer.OAuth.Providers,
+        :apple_ios_client_id,
+        "com.example.ios"
+      )
 
       on_exit(fn ->
-        System.delete_env("APPLE_WEB_CLIENT_ID")
-        System.delete_env("APPLE_IOS_CLIENT_ID")
+        GameServer.SettingsHelpers.delete(
+          :game_server_core,
+          GameServer.OAuth.Providers,
+          :apple_client_id
+        )
+
+        GameServer.SettingsHelpers.delete(
+          :game_server_core,
+          GameServer.OAuth.Providers,
+          :apple_ios_client_id
+        )
       end)
 
       defmodule MockExchangerAppleClientId do
@@ -404,13 +454,35 @@ defmodule GameServerWeb.AuthControllerApiTest do
       assert_received {:apple_client_id, "com.example.web"}
     end
 
-    test "POST /api/v1/auth/apple/ios/callback uses APPLE_IOS_CLIENT_ID when set", %{conn: conn} do
-      System.put_env("APPLE_WEB_CLIENT_ID", "com.example.web")
-      System.put_env("APPLE_IOS_CLIENT_ID", "com.example.ios")
+    test "POST /api/v1/auth/apple/ios/callback uses GAMEND_OAUTH_APPLE_IOS_CLIENT_ID when set", %{
+      conn: conn
+    } do
+      GameServer.SettingsHelpers.put(
+        :game_server_core,
+        GameServer.OAuth.Providers,
+        :apple_client_id,
+        "com.example.web"
+      )
+
+      GameServer.SettingsHelpers.put(
+        :game_server_core,
+        GameServer.OAuth.Providers,
+        :apple_ios_client_id,
+        "com.example.ios"
+      )
 
       on_exit(fn ->
-        System.delete_env("APPLE_WEB_CLIENT_ID")
-        System.delete_env("APPLE_IOS_CLIENT_ID")
+        GameServer.SettingsHelpers.delete(
+          :game_server_core,
+          GameServer.OAuth.Providers,
+          :apple_client_id
+        )
+
+        GameServer.SettingsHelpers.delete(
+          :game_server_core,
+          GameServer.OAuth.Providers,
+          :apple_ios_client_id
+        )
       end)
 
       defmodule MockExchangerAppleIosClientId do
@@ -544,10 +616,19 @@ defmodule GameServerWeb.AuthControllerApiTest do
 
       Application.put_env(:game_server_core, :google_tokeninfo_client, MockGoogleTokeninfoOk)
 
-      System.put_env("GOOGLE_WEB_CLIENT_ID", "webcid")
+      GameServer.SettingsHelpers.put(
+        :game_server_core,
+        GameServer.OAuth.Providers,
+        :google_web_client_id,
+        "webcid"
+      )
 
       on_exit(fn ->
-        System.delete_env("GOOGLE_WEB_CLIENT_ID")
+        GameServer.SettingsHelpers.delete(
+          :game_server_core,
+          GameServer.OAuth.Providers,
+          :google_web_client_id
+        )
       end)
 
       conn = post(conn, "/api/v1/auth/google/id_token", %{id_token: "good"})
@@ -582,10 +663,19 @@ defmodule GameServerWeb.AuthControllerApiTest do
 
       Application.put_env(:game_server_core, :google_tokeninfo_client, MockGoogleTokeninfoBadAud)
 
-      System.put_env("GOOGLE_WEB_CLIENT_ID", "webcid")
+      GameServer.SettingsHelpers.put(
+        :game_server_core,
+        GameServer.OAuth.Providers,
+        :google_web_client_id,
+        "webcid"
+      )
 
       on_exit(fn ->
-        System.delete_env("GOOGLE_WEB_CLIENT_ID")
+        GameServer.SettingsHelpers.delete(
+          :game_server_core,
+          GameServer.OAuth.Providers,
+          :google_web_client_id
+        )
       end)
 
       conn = post(conn, "/api/v1/auth/google/id_token", %{id_token: "good"})

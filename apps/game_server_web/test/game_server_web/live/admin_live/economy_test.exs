@@ -28,8 +28,10 @@ defmodule GameServerWeb.AdminLive.EconomyTest do
     {:ok, _lv, html} = live(conn, ~p"/admin/economy?user_id=#{u1.id}")
 
     # Filtered to u1: their balance and item show, the other user's do not.
-    assert html =~ "111"
-    refute html =~ "222"
+    # Balances are matched tag-bounded (>NNN<) so they can't collide with the
+    # digits in a rendered username (fixtures auto-generate "word-NNNN" names).
+    assert html =~ ">111<"
+    refute html =~ ">222<"
     assert html =~ "mine_potion"
     refute html =~ "their_sword"
   end

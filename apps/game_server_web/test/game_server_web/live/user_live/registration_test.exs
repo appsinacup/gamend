@@ -59,7 +59,7 @@ defmodule GameServerWeb.UserLive.RegistrationTest do
 
       {:ok, _lv, html} =
         render_submit(form)
-        |> follow_redirect(conn, ~p"/users/log-in")
+        |> follow_redirect(conn, ~p"/users/log_in")
 
       assert html =~
                "Success."
@@ -119,7 +119,7 @@ defmodule GameServerWeb.UserLive.RegistrationTest do
         lv
         |> element("main a", "Log in")
         |> render_click()
-        |> follow_redirect(conn, ~p"/users/log-in")
+        |> follow_redirect(conn, ~p"/users/log_in")
 
       assert login_html =~ "Log in"
     end

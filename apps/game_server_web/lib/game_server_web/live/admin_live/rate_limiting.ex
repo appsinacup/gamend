@@ -353,15 +353,15 @@ defmodule GameServerWeb.AdminLive.RateLimiting do
 
     config = %{
       general_limit: Keyword.get(rl_config, :general_limit, 1200),
-      general_window: Keyword.get(rl_config, :general_window, 60_000),
+      general_window: Keyword.get(rl_config, :general_window_ms, 60_000),
       auth_limit: Keyword.get(rl_config, :auth_limit, 30),
-      auth_window: Keyword.get(rl_config, :auth_window, 60_000),
+      auth_window: Keyword.get(rl_config, :auth_window_ms, 60_000),
       ws_limit: Keyword.get(rl_config, :ws_limit, 300),
-      ws_window: Keyword.get(rl_config, :ws_window, 10_000),
+      ws_window: Keyword.get(rl_config, :ws_window_ms, 10_000),
       dc_limit: Keyword.get(rl_config, :dc_limit, 600),
-      dc_window: Keyword.get(rl_config, :dc_window, 10_000),
+      dc_window: Keyword.get(rl_config, :dc_window_ms, 10_000),
       ice_limit: Keyword.get(rl_config, :ice_limit, 150),
-      ice_window: Keyword.get(rl_config, :ice_window, 30_000),
+      ice_window: Keyword.get(rl_config, :ice_window_ms, 30_000),
       max_channels: 1,
       max_message_size: 65_536
     }

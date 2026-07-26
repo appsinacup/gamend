@@ -1,0 +1,360 @@
+{
+  "title": "Gamend",
+  "tagline": "Game + Backend",
+  "site_message": "Gamend is in beta!",
+  "description": "Open source Elixir game server for real-time multiplayer games.",
+  "theme_color": {
+    "light": "#ffffff",
+    "dark": "#1a1a2e"
+  },
+  "pages": {
+    "home": {
+      "path": "/",
+      "hero": {
+        "title": "Gamend",
+        "text": "**Open source** Elixir game server for **real-time** multiplayer games.",
+        "image": {
+          "light": "/images/banner.png",
+          "alt": "Gamend"
+        },
+        "image_position_desktop": "left",
+        "image_position_mobile": "top",
+        "media_width": "half",
+        "media_size": "section",
+        "text_align": "center",
+        "buttons": [
+          {
+            "label": "Getting Started",
+            "href": "/docs/setup#deployment",
+            "icon": "hero-rocket-launch-solid",
+            "style": "primary"
+          },
+          {
+            "label": "Presentation Video",
+            "href": "https://www.youtube.com/watch?v=KhjWyUVsTkE",
+            "icon": "hero-play-solid",
+            "external": true
+          }
+        ]
+      },
+      "sections_height": "half",
+      "sections": [
+        {
+          "title": "Authentication & Users",
+          "text": "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email.",
+          "icon": "hero-lock-closed-solid",
+          "media_width": "third",
+          "image_position_desktop": "left",
+          "image_position_mobile": "top",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "Log in",
+              "href": "/users/log_in",
+              "icon": "hero-arrow-right-on-rectangle-solid"
+            },
+            {
+              "label": "Register",
+              "href": "/users/register",
+              "icon": "hero-user-plus-solid"
+            }
+          ]
+        },
+        {
+          "title": "Lobbies, Parties & Matchmaking",
+          "text": "Real-time lobbies and ephemeral parties. Customizable settings with live updates.",
+          "icon": "hero-home-solid",
+          "media_width": "third",
+          "image_position_desktop": "right",
+          "image_position_mobile": "top",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "API Docs",
+              "href": "/api/docs",
+              "icon": "hero-book-open-solid"
+            }
+          ]
+        },
+        {
+          "title": "Friends, Groups & Chat",
+          "text": "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging.",
+          "icon": "hero-user-group-solid",
+          "media_width": "third",
+          "image_position_desktop": "left",
+          "image_position_mobile": "top",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "Groups",
+              "href": "/groups",
+              "icon": "hero-user-group-solid"
+            }
+          ]
+        },
+        {
+          "title": "Achievements, Tournaments, Leaderboards & Notifications",
+          "text": "Server-authoritative achievements, bracket tournaments and leaderboards. Real-time notifications across features and payment events.",
+          "icon": "hero-trophy-solid",
+          "media_width": "third",
+          "image_position_desktop": "right",
+          "image_position_mobile": "top",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "Tournaments",
+              "href": "/tournaments",
+              "icon": "hero-trophy-solid"
+            },
+            {
+              "label": "Leaderboards",
+              "href": "/leaderboards",
+              "icon": "hero-chart-bar-solid"
+            }
+          ]
+        },
+        {
+          "title": "Server Scripting & Scheduling",
+          "text": "Extend server logic with Elixir scripts. Schedule automated tasks and cron jobs.",
+          "icon": "hero-puzzle-piece-solid",
+          "media_width": "third",
+          "image_position_desktop": "left",
+          "image_position_mobile": "top",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "Guides",
+              "href": "/docs/setup",
+              "icon": "hero-academic-cap-solid"
+            },
+            {
+              "label": "API Docs",
+              "href": "/api/docs",
+              "icon": "hero-book-open-solid"
+            }
+          ]
+        },
+        {
+          "title": "HTTP, WebSocket & WebRTC",
+          "text": "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels. Admin portal and web UI.",
+          "icon": "hero-globe-alt-solid",
+          "media_width": "third",
+          "image_position_desktop": "right",
+          "image_position_mobile": "top",
+          "text_align": "left"
+        },
+        {
+          "title": "Payments & Store Integrations",
+          "text": "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin.",
+          "icon": "hero-credit-card-solid",
+          "media_width": "third",
+          "image_position_desktop": "left",
+          "image_position_mobile": "top",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "Open Store",
+              "href": "/store",
+              "icon": "hero-shopping-bag-solid"
+            },
+            {
+              "label": "Payment Docs",
+              "href": "/docs/setup#payments",
+              "icon": "hero-book-open-solid"
+            }
+          ]
+        }
+      ]
+    },
+    "about": {
+      "path": "/about",
+      "hero": {
+        "title": "About Gamend",
+        "text": "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling.",
+        "image": {
+          "light": "/images/logo.png",
+          "alt": "Gamend"
+        },
+        "image_position_desktop": "left",
+        "image_position_mobile": "top",
+        "media_width": "half",
+        "text_align": "left",
+        "buttons": [
+          {
+            "label": "GitHub",
+            "href": "https://github.com/appsinacup/game_server",
+            "icon": "hero-code-bracket-solid",
+            "external": true,
+            "style": "primary"
+          },
+          {
+            "label": "Discord",
+            "href": "https://discord.com/invite/v649emcpAu",
+            "icon": "hero-chat-bubble-left-ellipsis-solid",
+            "external": true
+          }
+        ]
+      },
+      "sections": [
+        {
+          "title": "Built For Real-Time Games",
+          "text": "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure.",
+          "image": {
+            "light": "/images/logo.png",
+            "alt": "Real-time games"
+          },
+          "media_width": "third",
+          "image_position_desktop": "right",
+          "image_position_mobile": "top",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "Realtime Guide",
+              "href": "/docs/realtime",
+              "icon": "hero-signal-solid"
+            }
+          ]
+        },
+        {
+          "title": "Open Source Foundation",
+          "text": "The project is designed to be forked, themed, hosted, and extended by game teams.",
+          "image": {
+            "light": "/images/logo.png",
+            "alt": "Open source foundation"
+          },
+          "media_width": "third",
+          "image_position_desktop": "left",
+          "image_position_mobile": "top",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "Read Docs",
+              "href": "/docs/setup",
+              "icon": "hero-book-open-solid"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "navigation": {
+    "primary_links": [
+      {
+        "label": "Play",
+        "href": "/play",
+        "icon": "hero-play-solid"
+      },
+      {
+        "label": "Social",
+        "icon": "hero-user-group-solid",
+        "items": [
+          {
+            "label": "Leaderboards",
+            "href": "/leaderboards",
+            "icon": "hero-chart-bar-solid"
+          },
+          {
+            "label": "Quests",
+            "href": "/quests",
+            "icon": "hero-trophy-solid"
+          },
+          {
+            "label": "Tournaments",
+            "href": "/tournaments",
+            "icon": "hero-bolt-solid"
+          },
+          {
+            "label": "Groups",
+            "href": "/groups",
+            "icon": "hero-user-group-solid"
+          }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "sections": [
+      {
+        "title": "Social",
+        "links": [
+          {
+            "label": "Discord",
+            "href": "https://discord.com/invite/v649emcpAu",
+            "external": true
+          },
+          {
+            "label": "Blog",
+            "href": "/blog"
+          },
+          {
+            "label": "Roadmap",
+            "href": "/roadmap"
+          },
+          {
+            "label": "Changelog",
+            "href": "/changelog"
+          }
+        ]
+      },
+      {
+        "title": "About",
+        "links": [
+          {
+            "label": "About Gamend",
+            "href": "/about"
+          },
+          {
+            "label": "Elixir Docs",
+            "href": "https://appsinacup.github.io/game_server/",
+            "external": true
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "links": [
+          {
+            "label": "Guides",
+            "href": "/docs/setup"
+          },
+          {
+            "label": "API Docs",
+            "href": "/api/docs"
+          },
+          {
+            "label": "Store",
+            "href": "/store"
+          }
+        ]
+      },
+      {
+        "title": "Privacy & Terms",
+        "links": [
+          {
+            "label": "Privacy Policy",
+            "href": "/privacy"
+          },
+          {
+            "label": "Terms and Conditions",
+            "href": "/terms"
+          }
+        ]
+      }
+    ]
+  },
+  "background_icons": [
+    "hero-lock-closed-solid",
+    "hero-trophy-solid",
+    "hero-user-group-solid",
+    "hero-chat-bubble-left-ellipsis-solid",
+    "hero-home-solid",
+    "hero-server-stack-solid",
+    "hero-puzzle-piece-solid",
+    "hero-rocket-launch-solid",
+    "hero-bell-solid",
+    "hero-shield-check-solid",
+    "hero-computer-desktop-solid",
+    "hero-globe-alt-solid",
+    "hero-credit-card-solid"
+  ]
+}

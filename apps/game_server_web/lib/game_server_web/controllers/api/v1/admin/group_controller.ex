@@ -32,7 +32,7 @@ defmodule GameServerWeb.Api.V1.Admin.GroupController do
     properties: %{
       id: %Schema{type: :string, format: :uuid},
       title: %Schema{type: :string},
-      description: %Schema{type: :string, nullable: true},
+      description: %Schema{type: :string},
       type: %Schema{type: :string},
       max_members: %Schema{type: :integer},
       metadata: %Schema{type: :object},
@@ -150,7 +150,7 @@ defmodule GameServerWeb.Api.V1.Admin.GroupController do
       |> maybe_put_param_filter(:min_members, params)
       |> maybe_put_param_filter(:max_members, params)
 
-    {page, page_size} = parse_page_params(params)
+    {page, page_size} = GameServerWeb.Pagination.params(params)
     sort_by = Map.get(params, "sort_by")
 
     groups =

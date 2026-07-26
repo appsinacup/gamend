@@ -93,8 +93,10 @@ static func decode_event(topic: String, event: String, data: PackedByteArray) ->
 			return _chat(data)
 		"chat_message_deleted":
 			return _decode(PB.EntityId.new(), data, func(m): return {"id": m.get_id()})
-		"achievement_unlocked":
-			return _achievement(data)
+		"quest_progress", "quest_completed", "quest_claimed":
+			return _quest_progress(data)
+		"ready_check_started", "ready_check_updated", "ready_check_passed", "ready_check_failed":
+			return _ready_check(data)
 
 	match kind:
 		"user":
@@ -314,19 +316,48 @@ static func _chat(data: PackedByteArray) -> Variant:
 		return d)
 
 
-static func _achievement(data: PackedByteArray) -> Variant:
-	return _decode(PB.UserAchievement.new(), data, func(m):
+static func _quest_progress(data: PackedByteArray) -> Variant:
+	return _decode(PB.QuestProgress.new(), data, func(m):
 		var d := {
 			"id": m.get_id(),
 			"user_id": m.get_user_id(),
-			"achievement_id": m.get_achievement_id(),
-			"progress": m.get_progress(),
+			"quest_key": m.get_quest_key(),
+			"period_key": m.get_period_key(),
+			"objective_progress": m.get_objective_progress(),
+			"status": m.get_status(),
 			"metadata": _json_bytes(m.get_metadata_json(), {}),
 			"inserted_at_ms": m.get_inserted_at_ms(),
 			"updated_at_ms": m.get_updated_at_ms(),
 		}
-		if m.has_unlocked_at_ms(): d["unlocked_at_ms"] = m.get_unlocked_at_ms()
+		if m.has_completed_at_ms(): d["completed_at_ms"] = m.get_completed_at_ms()
+		if m.has_claimed_at_ms(): d["claimed_at_ms"] = m.get_claimed_at_ms()
 		return d)
+
+
+static func _ready_check(data: PackedByteArray) -> Variant:
+	return _decode(PB.ReadyCheckState.new(), data, func(m):
+		var participants := []
+		for p in m.get_participants():
+			participants.append({
+				"user_id": p.get_user_id(),
+				"display_name": p.get_display_name(),
+				"state": p.get_state(),
+			})
+		# `participants` stays empty for kind "accept": that check reports counts
+		# only, so a match that may still dissolve keeps its roster private.
+		return {
+			"id": m.get_id(),
+			"kind": m.get_kind(),
+			"status": m.get_status(),
+			"lobby_id": m.get_lobby_id(),
+			"party_id": m.get_party_id(),
+			"deadline_ms": m.get_deadline_ms(),
+			"total": m.get_total(),
+			"ready_count": m.get_ready_count(),
+			"your_state": m.get_your_state(),
+			"reason": m.get_reason(),
+			"participants": participants,
+		})
 
 
 static func _lobby_to_dict(l) -> Dictionary:

@@ -103,7 +103,7 @@ LiveViews that require login should **always be placed inside the __existing__ `
         on_mount: [{GameServerWeb.UserAuth, :require_authenticated}] do
         # phx.gen.auth generated routes
         live "/users/settings", UserLive.Settings, :edit
-        live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
+        live "/users/settings/confirm_email/:token", UserLive.Settings, :confirm_email
         # our own routes that require logged in user
         live "/", MyLiveThatRequiresAuth, :index
       end
@@ -211,17 +211,24 @@ API routes use JWT tokens via Guardian for stateless authentication:
 - Caching: uses Nebulex version-based caching for `list_messages` (60s TTL).
 - API endpoints: `GET /api/v1/chat/messages`, `POST /api/v1/chat/messages`, `POST /api/v1/chat/read`, `GET /api/v1/chat/unread`.
 
-### Achievements
+### Quests / Progression
 
-- Achievement context: `GameServer.Achievements` — key functions: `create_achievement/1`, `update_achievement/2`, `delete_achievement/1`, `get_achievement/1`, `get_achievement_by_slug/1`, `list_achievements/1`, `unlock_achievement/2`, `increment_progress/3`, `grant_achievement/2`, `revoke_achievement/2`, `get_user_achievement/2`, `list_user_achievements/2`, `unlock_percentage/1`.
-- Achievements are stored in the `achievements` table with fields: `id`, `slug` (unique), `title`, `description`, `icon_url`, `sort_order`, `hidden`, `progress_target` (default 1), `metadata` (map), `inserted_at`, `updated_at`.
-- User progress is tracked in the `user_achievements` table with fields: `id`, `user_id`, `achievement_id`, `progress` (default 0), `unlocked_at` (nil until unlocked), `metadata` (map). Unique index on `(user_id, achievement_id)`.
-- `unlock_achievement/2` immediately unlocks (sets `progress = progress_target`, `unlocked_at = now`). `increment_progress/3` adds to progress and auto-unlocks when `progress >= progress_target`.
-- Hidden achievements are always included in public listings but with obscured details (title/description shown as "???", no icon, no progress) until the user unlocks them. Once unlocked, the full details are revealed.
-- `list_achievements/1` accepts opts: `:page`, `:page_size`, `:user_id` (to include user progress), `:include_hidden`.
-- Public achievement API routes (`/api/v1/achievements`, `/api/v1/achievements/:slug`, `/api/v1/achievements/user/:user_id`) use the `:api_optional_auth` pipeline so authenticated callers get their progress/unlocked_at while unauthenticated callers still get results.
-- On unlock, a notification is created and `after_achievement_unlocked(user_id, achievement)` hook fires asynchronously via `GameServer.Async.run`.
-- API endpoints: `GET /api/v1/achievements` (public, paginated), `GET /api/v1/achievements/:slug`, `GET /api/v1/achievements/me` (auth required, user's achievements), `GET /api/v1/achievements/user/:user_id`. Admin API under `/api/v1/admin/achievements` (GET list, POST create, PATCH update, DELETE, POST grant, POST revoke, POST unlock, POST increment).
+- Quest context: `GameServer.Quests` — key functions: `create_quest/1`, `update_quest/2`, `delete_quest/1`, `get_quest/1`, `get_quest_by_key/1`, `list_quests/1`, `report_event/4`, `claim/3`, `list_user_quests/2`, `list_user_completions/2`, `claimable_count/1`, `admin_complete/2`, `admin_reset/2`, `admin_claim/2`.
+- Three orthogonal dimensions, so any combination works: `reset` (`never`/`daily`/`weekly`/`monthly`/`interval` + `reset_interval_days`) drives `period_key` bucketing — a new period means a fresh `quest_progress` row, nothing fires at midnight; `starts_at`/`ends_at` make it an event; `prerequisite_quest_key` makes it a chain (hidden and frozen until unlocked). `category` is a free-form UI label with no engine behavior — achievements are `reset: "never", category: "achievement"`.
+- Definitions live in the `quests` table (`key` unique, `reset`, `reset_interval_days`, `category`, `objectives` jsonb list of `{event, target, params}`, `rewards` jsonb list of `{type, code, amount}`, `auto_claim`, `hidden`, `active`); per-user state in `quest_progress` (`user_id`, `quest_key`, `period_key`, `objective_progress` map of objective index → count, `status` active/completed/claimed, unique on `(user_id, quest_key, period_key)`).
+- Progress is server-authoritative: there is **no public endpoint to advance a quest**. Core wires common events (`login`, `chat_message`, `score_submitted`, `lobby_joined`, `match_won`); games call `Quests.report_event(user_id, event, amount, meta)` from hooks for custom events. Objective `params` must all match the event meta.
+- Rewards pay **exactly once**: claiming is an atomic `completed → claimed` transition, grants go through Economy/Inventory with per-entry idempotency keys (`"quest:<progress_id>:<index>"`), and `recover_pending_rewards/1` heals crashed grants. `auto_claim` quests pay on completion.
+- Hooks: `before_quest_claim(user_id, quest, progress)` (veto-only pipeline, skipped for auto-claim), `after_quest_completed(progress)`, `after_quest_claimed(progress)` — all async via `GameServer.Async.run`. On completion a `quest_completed` notification is created (quests categorised "achievement" get "Achievement unlocked" wording).
+- Realtime user-channel events: `quest_progress` (user topic only), `quest_completed`, `quest_claimed`.
+- Definitions are cached (`GameServer.Cache`, version-bumped); completed/claimed periods are remembered in a done-marker cache so post-completion events skip the DB entirely.
+- API endpoints: `GET /api/v1/me/quests` (auth), `POST /api/v1/me/quests/:key/claim` (auth), `GET /api/v1/quests` and `GET /api/v1/quests/user/:user_id` (public catalog/completions, gated by `LIST_QUESTS_ENABLED`). Admin API under `/api/v1/admin/quests` (CRUD, `GET /progress`, POST grant/reset/claim, `GET /:key/funnel`). Public LiveView at `/quests`; admin page at `/admin/quests`.
+
+### Push notifications
+
+- Push context: `GameServer.Push` — token registry (`register_token/2` upsert, `list_tokens/2`, `delete_token/2`, soft `disable_token/1`) + server-authoritative delivery (`send_to_user/3`, `send_to_users/3`; no public send endpoint).
+- Delivery routes **per token** off `push_tokens.provider` ("fcm" | "apns") through Pigeon dispatchers; unconfigured providers fall back to the zero-config `Log` provider. One Oban job per token on the `push` queue (`GAMEND_PUSH_QUEUE_CONCURRENCY`); large fan-outs expand via `FanoutWorker`.
+- Hooks: `before_push_send/2` (per-recipient veto/rewrite pipeline), `after_push_sent/3` (per-token outcome). `Notifications` bridges committed notifications to push for offline users via the cached `user_has_live_tokens?/1`.
+- API: `POST/GET /api/v1/me/push_tokens`, `DELETE /api/v1/me/push_tokens/:id`; admin under `/api/v1/admin/push/*`; admin page at `/admin/push`. Stale tokens prune via `GAMEND_RETENTION_PUSH_TOKENS_DAYS` (default 270).
 
 ### Notifications
 

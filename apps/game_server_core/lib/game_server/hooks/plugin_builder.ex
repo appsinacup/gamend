@@ -26,7 +26,8 @@ defmodule GameServer.Hooks.PluginBuilder do
     # Mirror the loader's default (GameServer.Hooks.PluginManager.plugins_dir/0)
     # so the builder always knows where plugin sources live, even when the
     # GAME_SERVER_PLUGINS_DIR env var is unset.
-    System.get_env("GAME_SERVER_PLUGINS_DIR") || Path.expand("modules/plugins")
+    GameServer.Settings.get(GameServer.ContentSettings, :plugins_dir) ||
+      Path.expand("modules/plugins")
   end
 
   @spec list_buildable_plugins() :: [String.t()]

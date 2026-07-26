@@ -5,7 +5,8 @@
       "name": "gamend-dev",
       "runtimeExecutable": "mix",
       "runtimeArgs": ["phx.server"],
-      "port": 4000
+      "port": 4000,
+      "autoPort": true
     }
   ]
 }

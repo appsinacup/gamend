@@ -4,6 +4,7 @@ defmodule GameServerWeb.Api.V1.LeaderboardController do
 
   alias GameServer.Leaderboards
   alias GameServer.Leaderboards.Leaderboard
+  alias GameServerWeb.Pagination
   alias OpenApiSpex.Schema
 
   tags(["Leaderboards"])
@@ -18,7 +19,11 @@ defmodule GameServerWeb.Api.V1.LeaderboardController do
         description: "Human-readable identifier (reusable across seasons)"
       },
       title: %Schema{type: :string, description: "Display title"},
-      description: %Schema{type: :string, description: "Description", nullable: true},
+      description: %Schema{type: :string, description: "Description"},
+      icon_url: %Schema{
+        type: :string,
+        description: "Icon URL; empty when unset (the client applies its own default)"
+      },
       sort_order: %Schema{
         type: :string,
         enum: ["desc", "asc"],
@@ -175,8 +180,7 @@ defmodule GameServerWeb.Api.V1.LeaderboardController do
   )
 
   def index(conn, params) do
-    page = max(parse_int(params["page"], 1), 1)
-    page_size = min(max(parse_int(params["page_size"], 25), 1), 100)
+    {page, page_size} = Pagination.params(params)
 
     opts =
       [page: page, page_size: page_size]
@@ -193,19 +197,16 @@ defmodule GameServerWeb.Api.V1.LeaderboardController do
 
     leaderboards = Leaderboards.list_leaderboards(opts)
     total_count = Leaderboards.count_leaderboards(count_opts)
-    total_pages = ceil_div(total_count, page_size)
 
-    json(conn, %{
-      data: Enum.map(leaderboards, &serialize_leaderboard/1),
-      meta: %{
-        page: page,
-        page_size: page_size,
-        count: length(leaderboards),
-        total_count: total_count,
-        total_pages: total_pages,
-        has_more: page < total_pages
-      }
-    })
+    json(
+      conn,
+      Pagination.envelope(
+        Enum.map(leaderboards, &serialize_leaderboard/1),
+        page,
+        page_size,
+        total_count
+      )
+    )
   end
 
   # ---------------------------------------------------------------------------
@@ -363,24 +364,20 @@ defmodule GameServerWeb.Api.V1.LeaderboardController do
         |> json(%{error: "Leaderboard not found"})
 
       leaderboard ->
-        page = max(parse_int(params["page"], 1), 1)
-        page_size = min(max(parse_int(params["page_size"], 25), 1), 100)
+        {page, page_size} = Pagination.params(params)
 
         records = Leaderboards.list_records(leaderboard.id, page: page, page_size: page_size)
         total_count = Leaderboards.count_records(leaderboard.id)
-        total_pages = ceil_div(total_count, page_size)
 
-        json(conn, %{
-          data: Enum.map(records, &serialize_record/1),
-          meta: %{
-            page: page,
-            page_size: page_size,
-            count: length(records),
-            total_count: total_count,
-            total_pages: total_pages,
-            has_more: page < total_pages
-          }
-        })
+        json(
+          conn,
+          Pagination.envelope(
+            Enum.map(records, &serialize_record/1),
+            page,
+            page_size,
+            total_count
+          )
+        )
     end
   end
 
@@ -506,6 +503,7 @@ defmodule GameServerWeb.Api.V1.LeaderboardController do
       slug: lb.slug,
       title: lb.title,
       description: lb.description || "",
+      icon_url: lb.icon_url || "",
       sort_order: to_string(lb.sort_order),
       operator: to_string(lb.operator),
       starts_at: lb.starts_at,
@@ -525,11 +523,11 @@ defmodule GameServerWeb.Api.V1.LeaderboardController do
       updated_at: record.updated_at
     }
 
-    if record.label do
+    if label = record.label do
       Map.merge(base, %{
         user_id: "",
         username: "",
-        display_name: record.label
+        display_name: label
       })
     else
       Map.merge(base, %{
@@ -574,7 +572,4 @@ defmodule GameServerWeb.Api.V1.LeaderboardController do
       {:error, _} -> opts
     end
   end
-
-  defp ceil_div(_num, 0), do: 0
-  defp ceil_div(num, denom), do: div(num + denom - 1, denom)
 end

@@ -12,30 +12,6 @@ defmodule GameServer.Payments.Purchase do
   @statuses ~w(pending requires_action completed failed cancelled refunded revoked)
   @environments ~w(production sandbox test)
 
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :user_id,
-             :product_id,
-             :provider_product_id,
-             :provider,
-             :order_id,
-             :provider_transaction_id,
-             :provider_original_transaction_id,
-             :status,
-             :quantity,
-             :currency,
-             :amount,
-             :environment,
-             :raw_provider_payload,
-             :metadata,
-             :purchased_at,
-             :expires_at,
-             :revoked_at,
-             :inserted_at,
-             :updated_at
-           ]}
-
   schema "purchases" do
     belongs_to :user, GameServer.Accounts.User
     belongs_to :product, GameServer.Payments.Product
@@ -82,4 +58,37 @@ defmodule GameServer.Payments.Purchase do
 
   def statuses, do: @statuses
   def providers, do: @providers
+end
+
+# Hand-written rather than @derive so nil strings encode as "" (see
+# GameServer.SchemaJSON — game clients choke on null).
+defimpl Jason.Encoder, for: GameServer.Payments.Purchase do
+  def encode(purchase, opts) do
+    GameServer.SchemaJSON.encode(
+      purchase,
+      [
+        :id,
+        :user_id,
+        :product_id,
+        :provider_product_id,
+        :provider,
+        :order_id,
+        :provider_transaction_id,
+        :provider_original_transaction_id,
+        :status,
+        :quantity,
+        :currency,
+        :amount,
+        :environment,
+        :raw_provider_payload,
+        :metadata,
+        :purchased_at,
+        :expires_at,
+        :revoked_at,
+        :inserted_at,
+        :updated_at
+      ],
+      opts
+    )
+  end
 end

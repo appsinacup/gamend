@@ -1,0 +1,92 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: el\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. quests
+msgid "Welcome aboard"
+msgstr "Καλώς όρισες"
+
+#. quests
+msgid "Log in for the first time."
+msgstr "Συνδεθείτε για πρώτη φορά."
+
+#. quests
+msgid "Daily check-in"
+msgstr "Ημερήσια είσοδος"
+
+#. quests
+msgid "Log in today."
+msgstr "Συνδεθείτε σήμερα."
+
+#. quests
+msgid "Weekly regular"
+msgstr "Θαμώνας της εβδομάδας"
+
+#. quests
+msgid "Log in on five different days this week."
+msgstr "Συνδεθείτε πέντε διαφορετικές ημέρες αυτή την εβδομάδα."
+
+#. quests
+msgid "Monthly devotee"
+msgstr "Αφοσιωμένος του μήνα"
+
+#. quests
+msgid "Log in twenty times this month."
+msgstr "Συνδεθείτε είκοσι φορές αυτόν τον μήνα."
+
+#. quests
+msgid "Stop by again"
+msgstr "Πέρνα ξανά"
+
+#. quests
+msgid "Log in. Becomes available again three days later."
+msgstr "Συνδεθείτε. Ξαναγίνεται διαθέσιμη σε τρεις ημέρες."
+
+#. quests
+msgid "Loyal veteran"
+msgstr "Πιστός βετεράνος"
+
+#. quests
+msgid "Log in fifty times, once you have said hello."
+msgstr "Συνδεθείτε πενήντα φορές, αφού πρώτα πείτε ένα γεια."
+
+#. quests
+msgid "Night owl"
+msgstr "Νυχτοπούλι"
+
+#. quests
+msgid "Some things are found rather than announced."
+msgstr "Κάποια πράγματα τα ανακαλύπτεις, δεν σου τα ανακοινώνουν."
+
+#. quests
+msgid "Launch festival"
+msgstr "Φεστιβάλ κυκλοφορίας"
+
+#. quests
+msgid "A daily that only counts while the festival is running."
+msgstr "Μια ημερήσια αποστολή που μετράει μόνο όσο διαρκεί το φεστιβάλ."
+
+#. leaderboards
+msgid "Logins"
+msgstr "Συνδέσεις"
+
+#. leaderboards
+msgid "How many times each player has logged in."
+msgstr "Πόσες φορές έχει συνδεθεί κάθε παίκτης."
+
+#. tournaments
+msgid "Weekly Cup"
+msgstr "Εβδομαδιαίο Κύπελλο"
+
+#. tournaments
+msgid "Register any time; the bracket is drawn every Monday."
+msgstr "Δηλώστε συμμετοχή όποτε θέλετε· η κλήρωση γίνεται κάθε Δευτέρα."

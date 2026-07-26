@@ -26,14 +26,15 @@ defmodule GameServerWeb.AdminPagesRenderTest do
     {"/admin/users", "Users"},
     {"/admin/sessions", "Sessions"},
     {"/admin/notifications", "Notifications"},
+    {"/admin/push", "Push"},
     {"/admin/groups", "Groups"},
     {"/admin/parties", "Parties"},
     {"/admin/blacklist", "Blacklist"},
     {"/admin/chat", "Chat"},
-    {"/admin/achievements", "Achievements"},
+    {"/admin/quests", "Quests"},
     {"/admin/payments", "Payments"},
     {"/admin/translations", "Translation"},
-    {"/admin/lobby-snapshots", "Lobby snapshots"},
+    {"/admin/lobby_snapshots", "Lobby snapshots"},
     {"/admin/storage", "Storage"},
     {"/admin/economy", "Economy"}
   ]
@@ -108,7 +109,7 @@ defmodule GameServerWeb.AdminPagesRenderTest do
     {"/admin/blacklist", "Blacklist"},
     {"/admin/groups", "Groups"},
     {"/admin/leaderboards", "Leaderboards"},
-    {"/admin/achievements", "Achievements"},
+    {"/admin/quests", "Quests"},
     {"/admin/payments", "Payments"},
     {"/admin/kv", "KV"},
     {"/admin/notifications", "Notifications"},
@@ -121,8 +122,13 @@ defmodule GameServerWeb.AdminPagesRenderTest do
     other = AccountsFixtures.user_fixture()
 
     # Lobby with a member
-    {:ok, _lobby} =
+    {:ok, lobby} =
       GameServer.Lobbies.create_lobby(%{title: "Seeded Lobby", hostless: true, max_users: 10})
+
+    # Ready check, so /admin/matchmaking renders its table rather than the empty
+    # state. Opened over the hostless lobby: seating a member would fire the
+    # join hooks asynchronously, and this file is async.
+    {:ok, _check} = GameServer.ReadyChecks.open(lobby, [admin.id], opened_by: admin.id)
 
     # Group with a member
     {:ok, _group} =
@@ -152,17 +158,19 @@ defmodule GameServerWeb.AdminPagesRenderTest do
 
     GameServer.Leaderboards.submit_score(lb.id, admin.id, 100)
 
-    # Achievement (unlocked for the admin user)
-    slug = "seeded_ach_#{System.unique_integer([:positive])}"
+    # Quest (completed by the admin user)
+    quest_key = "seeded_quest_#{System.unique_integer([:positive])}"
 
-    {:ok, _ach} =
-      GameServer.Achievements.create_achievement(%{
-        slug: slug,
-        title: "Seeded Achievement",
-        progress_target: 1
+    {:ok, _quest} =
+      GameServer.Quests.create_quest(%{
+        key: quest_key,
+        title: "Seeded Quest",
+        kind: "achievement",
+        auto_claim: true,
+        objectives: [%{event: quest_key, target: 1}]
       })
 
-    GameServer.Achievements.unlock_achievement(admin.id, slug)
+    GameServer.Quests.admin_complete(admin.id, quest_key)
 
     # KV entry
     GameServer.KV.put("seeded:key", %{v: 1}, %{"meta" => "data"})

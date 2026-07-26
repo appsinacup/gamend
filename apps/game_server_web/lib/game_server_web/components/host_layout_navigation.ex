@@ -47,10 +47,10 @@ defmodule GameServerWeb.HostLayoutNavigation do
 
         <li>
           <.link
-            href={~p"/users/log-in"}
+            href={~p"/users/log_in"}
             class={[
               "btn",
-              if(String.starts_with?(@current_path, "/users/log-in"),
+              if(String.starts_with?(@current_path, "/users/log_in"),
                 do: "btn-primary",
                 else: "btn-outline"
               )
@@ -133,7 +133,7 @@ defmodule GameServerWeb.HostLayoutNavigation do
           else: "btn-outline"
         )
       ]}>
-        <.icon name="hero-user-circle-solid" class="w-5 h-5" />
+        <.user_avatar user={Scope.user(@current_scope)} class="w-6 h-6" />
         <span class="max-w-[8rem] truncate">{display_name(Scope.user(@current_scope))}</span>
         <span
           :if={@notif_unread_count > 0}
@@ -184,7 +184,7 @@ defmodule GameServerWeb.HostLayoutNavigation do
           </.link>
         </li>
         <li class="border-t border-base-300 mt-1 pt-1">
-          <.link href={~p"/users/log-out"} method="delete">
+          <.link href={~p"/users/log_out"} method="delete">
             <.icon name="hero-arrow-left-on-rectangle-solid" class="w-4 h-4" />
             {GameServerWeb.HostLayouts.translate("Log out")}
           </.link>
@@ -257,10 +257,10 @@ defmodule GameServerWeb.HostLayoutNavigation do
 
             <li>
               <a
-                href={~p"/users/log-in"}
+                href={~p"/users/log_in"}
                 class={[
                   "btn w-full",
-                  if(String.starts_with?(@current_path, "/users/log-in"),
+                  if(String.starts_with?(@current_path, "/users/log_in"),
                     do: "btn-primary",
                     else: "btn-ghost"
                   )
@@ -524,7 +524,7 @@ defmodule GameServerWeb.HostLayoutNavigation do
           if(@active?, do: "btn-primary", else: "btn-ghost")
         ]}>
           <span class="flex items-center gap-2">
-            <.icon name="hero-user-circle-solid" class="w-4 h-4" />
+            <.user_avatar user={Scope.user(@current_scope)} class="w-5 h-5" />
             <span class="truncate">{display_name(Scope.user(@current_scope))}</span>
             <span
               :if={@notif_unread_count > 0}
@@ -575,7 +575,7 @@ defmodule GameServerWeb.HostLayoutNavigation do
             inactive_class="btn-ghost"
           />
           <li class="border-t border-base-300 mt-1 pt-1 w-full">
-            <.link href={~p"/users/log-out"} method="delete" class="btn btn-ghost w-full">
+            <.link href={~p"/users/log_out"} method="delete" class="btn btn-ghost w-full">
               <.icon name="hero-arrow-left-on-rectangle-solid" class="w-4 h-4" />
               {GameServerWeb.HostLayouts.translate("Log out")}
             </.link>

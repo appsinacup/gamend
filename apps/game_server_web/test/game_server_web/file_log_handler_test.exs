@@ -4,12 +4,14 @@ defmodule GameServerWeb.FileLogHandlerTest do
 
   require Logger
 
+  alias GameServer.Settings
   alias GameServerWeb.FileLogHandler
+  alias GameServerWeb.Observability
 
   @handler_id :file_log
 
   setup do
-    previous = Application.get_all_env(:game_server_web)
+    previous = Application.get_env(:game_server_web, Observability)
     dir = Path.join(System.tmp_dir!(), "file_log_test_#{System.unique_integer([:positive])}")
     File.mkdir_p!(dir)
 
@@ -17,22 +19,33 @@ defmodule GameServerWeb.FileLogHandlerTest do
       :logger.remove_handler(@handler_id)
       File.rm_rf(dir)
 
-      for key <- [:log_file, :log_file_level, :log_file_max_bytes, :log_file_max_files] do
-        case Keyword.fetch(previous, key) do
-          {:ok, value} -> Application.put_env(:game_server_web, key, value)
-          :error -> Application.delete_env(:game_server_web, key)
-        end
-      end
+      if previous,
+        do: Application.put_env(:game_server_web, Observability, previous),
+        else: Application.delete_env(:game_server_web, Observability)
 
-      for env <- ~w(LOG_FILE_PATH LOG_FILE_LEVEL LOG_FILE_MAX_BYTES LOG_FILE_MAX_FILES) do
+      for env <-
+            ~w(GAMEND_OBSERVABILITY_LOG_FILE_PATH GAMEND_OBSERVABILITY_LOG_FILE_LEVEL GAMEND_OBSERVABILITY_LOG_FILE_MAX_BYTES GAMEND_OBSERVABILITY_LOG_FILE_MAX_FILES) do
         System.delete_env(env)
       end
     end)
 
-    Application.delete_env(:game_server_web, :log_file)
+    Application.delete_env(:game_server_web, Observability)
     :logger.remove_handler(@handler_id)
 
     %{dir: dir, path: Path.join(dir, "test.log")}
+  end
+
+  # What a host's runtime.exs does with from_env/0, for the Observability group.
+  defp apply_env do
+    for {app, Observability, opts} <- Settings.from_env() do
+      Application.put_env(app, Observability, Keyword.merge(config(), opts))
+    end
+  end
+
+  defp config, do: Application.get_env(:game_server_web, Observability, [])
+
+  defp put(key, value) do
+    Application.put_env(:game_server_web, Observability, Keyword.put(config(), key, value))
   end
 
   defp handler_config do
@@ -51,7 +64,7 @@ defmodule GameServerWeb.FileLogHandlerTest do
     end
 
     test "installs from app config" do
-      Application.put_env(:game_server_web, :log_file, "/tmp/from_app_config.log")
+      put(:log_file_path, "/tmp/from_app_config.log")
 
       FileLogHandler.install()
 
@@ -59,10 +72,11 @@ defmodule GameServerWeb.FileLogHandlerTest do
       assert handler_config().file == ~c"/tmp/from_app_config.log"
     end
 
-    test "installs from LOG_FILE_PATH when app config is unset", %{path: path} do
-      # The whole point of reading the env here: a host that never wired
-      # LOG_FILE_PATH into its own runtime config still gets file logging.
-      System.put_env("LOG_FILE_PATH", path)
+    test "installs from GAMEND_OBSERVABILITY_LOG_FILE_PATH once a host applies from_env/0", %{
+      path: path
+    } do
+      System.put_env("GAMEND_OBSERVABILITY_LOG_FILE_PATH", path)
+      apply_env()
 
       FileLogHandler.install()
 
@@ -70,9 +84,9 @@ defmodule GameServerWeb.FileLogHandlerTest do
       assert handler_config().file == String.to_charlist(path)
     end
 
-    test "app config wins over the environment", %{path: path} do
-      Application.put_env(:game_server_web, :log_file, path)
-      System.put_env("LOG_FILE_PATH", "/tmp/should_be_ignored.log")
+    test "app config wins: from_env/0 never overwrites what the host set", %{path: path} do
+      put(:log_file_path, path)
+      System.put_env("GAMEND_OBSERVABILITY_LOG_FILE_PATH", "/tmp/should_be_ignored.log")
 
       FileLogHandler.install()
 
@@ -80,7 +94,7 @@ defmodule GameServerWeb.FileLogHandlerTest do
     end
 
     test "is idempotent", %{path: path} do
-      Application.put_env(:game_server_web, :log_file, path)
+      put(:log_file_path, path)
 
       assert FileLogHandler.install() == :ok
       assert FileLogHandler.install() == :ok
@@ -89,7 +103,7 @@ defmodule GameServerWeb.FileLogHandlerTest do
 
     test "creates the log directory when it does not exist", %{dir: dir} do
       nested = Path.join([dir, "deep", "nested", "app.log"])
-      Application.put_env(:game_server_web, :log_file, nested)
+      put(:log_file_path, nested)
 
       FileLogHandler.install()
 
@@ -99,7 +113,7 @@ defmodule GameServerWeb.FileLogHandlerTest do
 
   describe "rotation settings" do
     test "defaults to 10MB across 5 files", %{path: path} do
-      Application.put_env(:game_server_web, :log_file, path)
+      put(:log_file_path, path)
 
       FileLogHandler.install()
 
@@ -109,9 +123,10 @@ defmodule GameServerWeb.FileLogHandlerTest do
     end
 
     test "reads limits from the environment", %{path: path} do
-      Application.put_env(:game_server_web, :log_file, path)
-      System.put_env("LOG_FILE_MAX_BYTES", "2048")
-      System.put_env("LOG_FILE_MAX_FILES", "3")
+      put(:log_file_path, path)
+      System.put_env("GAMEND_OBSERVABILITY_LOG_FILE_MAX_BYTES", "2048")
+      System.put_env("GAMEND_OBSERVABILITY_LOG_FILE_MAX_FILES", "3")
+      apply_env()
 
       FileLogHandler.install()
 
@@ -120,10 +135,10 @@ defmodule GameServerWeb.FileLogHandlerTest do
       assert config.max_no_files == 3
     end
 
-    test "falls back to defaults on unparseable limits", %{path: path} do
-      Application.put_env(:game_server_web, :log_file, path)
-      System.put_env("LOG_FILE_MAX_BYTES", "not-a-number")
-      System.put_env("LOG_FILE_MAX_FILES", "0")
+    test "falls back to defaults on an unparseable limit", %{path: path} do
+      put(:log_file_path, path)
+      System.put_env("GAMEND_OBSERVABILITY_LOG_FILE_MAX_BYTES", "not-a-number")
+      apply_env()
 
       FileLogHandler.install()
 
@@ -132,9 +147,12 @@ defmodule GameServerWeb.FileLogHandlerTest do
       assert config.max_no_files == 5
     end
 
-    test "an unknown LOG_FILE_LEVEL falls back rather than crashing", %{path: path} do
-      Application.put_env(:game_server_web, :log_file, path)
-      System.put_env("LOG_FILE_LEVEL", "definitely-not-a-level")
+    test "an unknown GAMEND_OBSERVABILITY_LOG_FILE_LEVEL falls back rather than crashing", %{
+      path: path
+    } do
+      put(:log_file_path, path)
+      System.put_env("GAMEND_OBSERVABILITY_LOG_FILE_LEVEL", "definitely-not-a-level")
+      apply_env()
 
       FileLogHandler.install()
 
@@ -144,8 +162,9 @@ defmodule GameServerWeb.FileLogHandlerTest do
     end
 
     test "reads a valid LOG_FILE_LEVEL", %{path: path} do
-      Application.put_env(:game_server_web, :log_file, path)
-      System.put_env("LOG_FILE_LEVEL", "warning")
+      put(:log_file_path, path)
+      System.put_env("GAMEND_OBSERVABILITY_LOG_FILE_LEVEL", "warning")
+      apply_env()
 
       FileLogHandler.install()
 
@@ -159,9 +178,9 @@ defmodule GameServerWeb.FileLogHandlerTest do
     test "rolls over to numbered files once max_no_bytes is exceeded", %{dir: dir, path: path} do
       # Config alone proves nothing — this drives real writes past the limit and
       # checks OTP rotated, so the "10MB x 5" promise is verified end to end.
-      Application.put_env(:game_server_web, :log_file, path)
-      Application.put_env(:game_server_web, :log_file_max_bytes, 1_024)
-      Application.put_env(:game_server_web, :log_file_max_files, 3)
+      put(:log_file_path, path)
+      put(:log_file_max_bytes, 1_024)
+      put(:log_file_max_files, 3)
 
       FileLogHandler.install()
 

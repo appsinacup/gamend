@@ -18,6 +18,8 @@ defmodule GameServer.DataCase do
 
   alias Ecto.Adapters.SQL
 
+  @drain_timeout 5_000
+
   using do
     quote do
       alias Ecto.Adapters.SQL
@@ -40,7 +42,47 @@ defmodule GameServer.DataCase do
   """
   def setup_sandbox(tags) do
     pid = SQL.Sandbox.start_owner!(GameServer.Repo, shared: not tags[:async])
-    on_exit(fn -> SQL.Sandbox.stop_owner(pid) end)
+
+    on_exit(fn ->
+      drain_async_tasks(System.monotonic_time(:millisecond) + @drain_timeout)
+      SQL.Sandbox.stop_owner(pid)
+    end)
+  end
+
+  # `GameServer.Async` side effects run as supervised tasks that outlive the
+  # caller, so a test can finish while one is still mid-query — cache warming
+  # via Nebulex and quest progress are the usual culprits. Stopping the owner
+  # first tears the connection down under them, which disconnects the pooled
+  # connection and fails the query. Draining is iterative because a running
+  # task can enqueue further async work.
+  defp drain_async_tasks(deadline_at) do
+    if System.monotonic_time(:millisecond) < deadline_at do
+      case running_tasks() do
+        pending when map_size(pending) == 0 -> :ok
+        pending -> if await_down(pending, deadline_at), do: drain_async_tasks(deadline_at)
+      end
+    end
+  end
+
+  defp running_tasks do
+    case Process.whereis(GameServer.TaskSupervisor) do
+      nil -> %{}
+      sup -> Map.new(Task.Supervisor.children(sup), &{Process.monitor(&1), &1})
+    end
+  end
+
+  # Returns true when everything went down before the deadline_at.
+  defp await_down(pending, _deadline) when map_size(pending) == 0, do: true
+
+  defp await_down(pending, deadline_at) do
+    receive do
+      {:DOWN, ref, :process, _pid, _reason} when is_map_key(pending, ref) ->
+        await_down(Map.delete(pending, ref), deadline_at)
+    after
+      max(deadline_at - System.monotonic_time(:millisecond), 0) ->
+        Enum.each(pending, fn {ref, _pid} -> Process.demonitor(ref, [:flush]) end)
+        false
+    end
   end
 
   @doc """

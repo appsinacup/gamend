@@ -349,16 +349,16 @@ defmodule GameServerWeb.AdminLive.Users do
                     </td>
                     <td class="text-sm">
                       <%= if user.last_seen_at do %>
-                        {Calendar.strftime(user.last_seen_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={user.last_seen_at} />
                       <% else %>
                         <span class="text-gray-500">-</span>
                       <% end %>
                     </td>
                     <td class="text-sm">
-                      {Calendar.strftime(user.inserted_at, "%Y-%m-%d %H:%M")}
+                      <.timestamp at={user.inserted_at} />
                     </td>
                     <td class="text-sm">
-                      {Calendar.strftime(user.updated_at, "%Y-%m-%d %H:%M")}
+                      <.timestamp at={user.updated_at} />
                     </td>
                     <td>
                       <button
@@ -502,11 +502,11 @@ defmodule GameServerWeb.AdminLive.Users do
                         </span>
                       </td>
                       <td class="text-xs">
-                        {Calendar.strftime(token.inserted_at, "%Y-%m-%d %H:%M")}
+                        <.timestamp at={token.inserted_at} />
                       </td>
                       <td class="text-xs">
                         <%= if token.authenticated_at do %>
-                          {Calendar.strftime(token.authenticated_at, "%Y-%m-%d %H:%M")}
+                          <.timestamp at={token.authenticated_at} />
                         <% else %>
                           <span class="opacity-40">-</span>
                         <% end %>

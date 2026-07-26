@@ -1,6 +1,13 @@
 defmodule GameServerWeb.Serializers do
   @moduledoc """
   Shared JSON payload serializers used by API controllers and channels.
+
+  ## Null policy
+
+  String-typed fields are never `null` — an unset value serializes as `""`.
+  Game clients (Godot in particular) choke on `null` where they expect a
+  string. Datetimes, numbers and objects keep `null` where absence is
+  semantic (e.g. `ends_at: null` = permanent).
   """
 
   alias GameServer.Accounts
@@ -20,17 +27,82 @@ defmodule GameServerWeb.Serializers do
     end
   end
 
+  @doc """
+  Serializes a ready check for its participants.
+
+  A `"ready"` check lists every participant and their state — lobby members
+  already see each other. An `"accept"` check returns counts and the viewer's
+  own state only: a match that may still dissolve should not reveal who the
+  player was paired with.
+  """
+  @spec serialize_ready_check(term(), keyword()) :: map() | nil
+  def serialize_ready_check(check, opts \\ [])
+
+  def serialize_ready_check(nil, _opts), do: nil
+
+  def serialize_ready_check(check, opts) do
+    participants = ready_check_participants(check)
+    viewer_id = Keyword.get(opts, :viewer_id)
+
+    base = %{
+      id: check.id,
+      kind: check.kind,
+      status: check.status,
+      lobby_id: check.lobby_id || "",
+      party_id: check.party_id || "",
+      deadline_at: check.deadline_at,
+      opened_by: check.opened_by || "",
+      reason: check.reason || "",
+      metadata: check.metadata || %{},
+      total: length(participants),
+      ready_count: Enum.count(participants, &(&1.state == "ready")),
+      your_state: viewer_state(participants, viewer_id)
+    }
+
+    if check.kind == "ready" do
+      Map.put(base, :participants, Enum.map(participants, &serialize_ready_participant/1))
+    else
+      base
+    end
+  end
+
+  defp serialize_ready_participant(participant) do
+    %{
+      user_id: participant.user_id,
+      display_name: display_name(participant.user_id),
+      state: participant.state,
+      responded_at: participant.responded_at
+    }
+  end
+
+  defp ready_check_participants(check) do
+    case loaded_assoc(check, :participants) do
+      nil -> []
+      participants -> participants
+    end
+  end
+
+  defp viewer_state(_participants, nil), do: ""
+
+  defp viewer_state(participants, viewer_id) do
+    case Enum.find(participants, &(&1.user_id == viewer_id)) do
+      nil -> ""
+      participant -> participant.state
+    end
+  end
+
   @spec serialize_notification(term()) :: map()
   def serialize_notification(notification) do
     sender = loaded_assoc(notification, :sender)
 
     %{
       id: notification.id,
-      sender_id: notification.sender_id,
+      sender_id: notification.sender_id || "",
       sender_name: assoc_display_name(sender),
       recipient_id: notification.recipient_id,
       title: notification.title,
       content: notification.content || "",
+      icon_url: notification.icon_url || "",
       metadata: notification.metadata || %{},
       inserted_at: notification.inserted_at
     }
@@ -58,17 +130,20 @@ defmodule GameServerWeb.Serializers do
     )
   end
 
-  @spec serialize_user_achievement(term()) :: map()
-  def serialize_user_achievement(user_achievement) do
+  @spec serialize_quest_progress(term()) :: map()
+  def serialize_quest_progress(progress) do
     %{
-      id: user_achievement.id,
-      user_id: user_achievement.user_id,
-      achievement_id: user_achievement.achievement_id,
-      progress: user_achievement.progress,
-      unlocked_at: user_achievement.unlocked_at,
-      metadata: user_achievement.metadata || %{},
-      inserted_at: user_achievement.inserted_at,
-      updated_at: user_achievement.updated_at
+      id: progress.id,
+      user_id: progress.user_id,
+      quest_key: progress.quest_key,
+      period_key: progress.period_key,
+      objective_progress: progress.objective_progress,
+      status: progress.status,
+      completed_at: progress.completed_at,
+      claimed_at: progress.claimed_at,
+      metadata: progress.metadata || %{},
+      inserted_at: progress.inserted_at,
+      updated_at: progress.updated_at
     }
   end
 
@@ -85,6 +160,8 @@ defmodule GameServerWeb.Serializers do
       max_users: lobby.max_users,
       is_hidden: lobby.is_hidden,
       is_locked: lobby.is_locked,
+      state: lobby.state,
+      state_changed_at: lobby.state_changed_at,
       metadata: lobby.metadata || %{}
     }
     |> maybe_put(
@@ -124,6 +201,7 @@ defmodule GameServerWeb.Serializers do
       id: group.id,
       title: group.title,
       description: group.description || "",
+      icon_url: group.icon_url || "",
       type: group.type,
       max_members: group.max_members,
       creator_id: response_id(group.creator_id),

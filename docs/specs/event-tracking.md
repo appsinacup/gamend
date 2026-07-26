@@ -30,7 +30,7 @@ the eventual ClickHouse/PostHog step is a sink swap, not a rewrite.
   one.
 - **SQLite note:** the table works on SQLite too (dev/single-node), but the
   feature is Postgres-shaped; document that heavy analytics implies
-  `DATABASE_ADAPTER=postgres`.
+  `GAMEND_DB_ADAPTER=postgres`.
 
 ## Ingestion — batched, enriched, never client-trusted
 
@@ -118,7 +118,7 @@ toggle (default on) so a host can disable capture entirely.
 
 ## Definition of done (CONTRIBUTING)
 
-- [ ] `events` migration applies on SQLite **and** `DATABASE_ADAPTER=postgres`;
+- [ ] `events` migration applies on SQLite **and** `GAMEND_DB_ADAPTER=postgres`;
       minimal time-ordered indexes as above.
 - [ ] Batched `insert_all` writer supervised in both trees; server-side
       enrichment overrides client-supplied `user_id`/time/country; rate limits +

@@ -22,10 +22,18 @@ defmodule HandleWebRTC.WebRTCLobbyHook do
   # in-repo SDK via a path dependency.
   defp deps do
     [
-      {:game_server_sdk, path: "../../../sdk", runtime: false, optional: true},
-      {:game_server_plugin_tools, path: "../../../sdk_tools", runtime: false},
+      shared_dep(:game_server_sdk, "../../../sdk"),
+      shared_dep(:game_server_plugin_tools, "../../../sdk_tools"),
       {:bunt, "~> 1.0"},
       {:phoenix, "~> 1.8.3"},
     ]
+  end
+
+  defp shared_dep(app, local_path) do
+    if File.dir?(local_path) do
+      {app, path: local_path, runtime: false}
+    else
+      {app, github: "appsinacup/game_server", override: true, runtime: false}
+    end
   end
 end

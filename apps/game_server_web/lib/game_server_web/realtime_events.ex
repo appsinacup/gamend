@@ -26,6 +26,7 @@ defmodule GameServerWeb.RealtimeEvents do
   @group "group:*"
   @groups "groups"
   @party "party:*"
+  @signaling "signaling:*"
 
   @events [
     # ── user:* ──────────────────────────────────────────────────────────
@@ -133,7 +134,16 @@ defmodule GameServerWeb.RealtimeEvents do
     {@party, "disbanded", true, "party ref", "The party was disbanded"},
     {@party, "chat_message_created", true, "chat message", "Party chat message"},
     {@party, "chat_message_updated", true, "chat message", "Party chat message edited"},
-    {@party, "chat_message_deleted", true, "message id", "Party chat message deleted"}
+    {@party, "chat_message_deleted", true, "message id", "Party chat message deleted"},
+
+    # ── signaling:* ─────────────────────────────────────────────────────
+    {@signaling, "user_joined", false, "user id + role", "A user joined the signaling room"},
+    {@signaling, "user_rejoined", false, "user id + role", "A user rejoined the signaling room after a transient disconnect"},
+    {@signaling, "user_left", false, "user id", "A user left the signaling room"},
+    {@signaling, "offer", false, "sdp + from user id", "WebRTC offer relayed to this peer"},
+    {@signaling, "answer", false, "sdp + from user id", "WebRTC answer relayed to this peer"},
+    {@signaling, "ice", false, "candidate + from user id", "WebRTC ICE candidate relayed to this peer"},
+    {@signaling, "room_closed", false, "empty", "The signaling room was closed"}
   ]
 
   @doc "Every server→client event as a list of maps."

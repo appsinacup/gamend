@@ -1,10 +1,10 @@
-defmodule GameServerWeb.SignalingBroker do
+defmodule GameServerWeb.SignalingServer do
   @moduledoc """
   Signaling relay for WebRTC user-to-user and client-server topologies.
 
   Rooms are created explicitly by a worker process (e.g. a lobby worker) and
   are keyed by the lobby id. Each room stores its topology and, for :star,
-  the designated host user id. The broker validates membership and topology
+  the designated host user id. The server validates membership and topology
   rules on every relay.
 
   Does not create PeerConnections or handle media; only routes SDP offers,
@@ -119,8 +119,8 @@ defmodule GameServerWeb.SignalingBroker do
     GenServer.call(__MODULE__, {:list_users, room_id})
   end
 
-  def is_room_host?(room_id, user_id) do
-    GenServer.call(__MODULE__, {:is_room_host, room_id, user_id})
+  def room_host?(room_id, user_id) do
+    GenServer.call(__MODULE__, {:room_host, room_id, user_id})
   end
 
   def get_room(room_id) do
@@ -141,7 +141,7 @@ defmodule GameServerWeb.SignalingBroker do
   @impl true
   def handle_call({:create_room, room_id, topology, host_user_id, opts}, _from, state) do
     if Map.has_key?(state.rooms, room_id) do
-      Logger.warning("SignalingBroker: room already exists room=#{room_id}")
+      Logger.warning("SignalingServer: room already exists room=#{room_id}")
       {:reply, {:error, :already_exists}, state}
     else
       allowed_users = Keyword.get(opts, :allowed_users, %{})
@@ -158,7 +158,7 @@ defmodule GameServerWeb.SignalingBroker do
       }
 
       Logger.info(
-        "SignalingBroker: room created room=#{room_id} topology=#{topology} host_user_id=#{host_user_id || "none"} allowed_users=#{map_size(allowed_users)} late_join=#{late_join}"
+        "SignalingServer: room created room=#{room_id} topology=#{topology} host_user_id=#{host_user_id || "none"} allowed_users=#{map_size(allowed_users)} late_join=#{late_join}"
       )
 
       {:reply, :ok, %{state | rooms: Map.put(state.rooms, room_id, room)}}
@@ -169,19 +169,19 @@ defmodule GameServerWeb.SignalingBroker do
   def handle_call({:close_room, room_id}, _from, state) do
     case Map.pop(state.rooms, room_id) do
       {nil, _} ->
-        Logger.warning("SignalingBroker: close_room for non-existent room=#{room_id}")
+        Logger.warning("SignalingServer: close_room for non-existent room=#{room_id}")
         {:reply, {:error, :room_not_found}, state}
 
       {room, rooms} ->
         user_count = map_size(room.users)
 
         Logger.info(
-          "SignalingBroker: closing room=#{room_id} topology=#{room.topology} evicting=#{user_count}"
+          "SignalingServer: closing room=#{room_id} topology=#{room.topology} evicting=#{user_count}"
         )
 
         for {user_id, %{pid: pid}} <- room.users do
           Logger.debug(
-            "SignalingBroker: sending room_closed to user=#{user_id} pid=#{inspect(pid)}"
+            "SignalingServer: sending room_closed to user=#{user_id} pid=#{inspect(pid)}"
           )
 
           send(pid, {:signaling_relay, :room_closed, nil, %{}})
@@ -203,7 +203,7 @@ defmodule GameServerWeb.SignalingBroker do
     case Map.get(state.rooms, room_id) do
       nil ->
         Logger.warning(
-          "SignalingBroker: allow_user failed room_not_found room=#{room_id} user=#{user_id}"
+          "SignalingServer: allow_user failed room_not_found room=#{room_id} user=#{user_id}"
         )
 
         {:reply, {:error, :room_not_found}, state}
@@ -213,7 +213,7 @@ defmodule GameServerWeb.SignalingBroker do
         room = %{room | allowed_users: allowed_users}
         rooms = Map.put(state.rooms, room_id, room)
 
-        Logger.info("SignalingBroker: allowed user room=#{room_id} user=#{user_id} role=#{role}")
+        Logger.info("SignalingServer: allowed user room=#{room_id} user=#{user_id} role=#{role}")
         {:reply, :ok, %{state | rooms: rooms}}
     end
   end
@@ -253,7 +253,7 @@ defmodule GameServerWeb.SignalingBroker do
             {room, rooms, state.refs}
           end
 
-        Logger.info("SignalingBroker: disallowed user room=#{room_id} user=#{user_id}")
+        Logger.info("SignalingServer: disallowed user room=#{room_id} user=#{user_id}")
         {:reply, :ok, %{state | rooms: rooms, refs: refs}}
     end
   end
@@ -263,7 +263,7 @@ defmodule GameServerWeb.SignalingBroker do
     case Map.get(state.rooms, room_id) do
       nil ->
         Logger.warning(
-          "SignalingBroker: join_room failed room_not_found room=#{room_id} user=#{user_id}"
+          "SignalingServer: join_room failed room_not_found room=#{room_id} user=#{user_id}"
         )
 
         {:reply, {:error, :room_not_found}, state}
@@ -274,7 +274,7 @@ defmodule GameServerWeb.SignalingBroker do
         cond do
           is_nil(allowed_role) and not room.late_join ->
             Logger.warning(
-              "SignalingBroker: join_room failed not_allowed room=#{room_id} user=#{user_id}"
+              "SignalingServer: join_room failed not_allowed room=#{room_id} user=#{user_id}"
             )
 
             {:reply, {:error, :not_allowed}, state}
@@ -293,12 +293,12 @@ defmodule GameServerWeb.SignalingBroker do
             user_count = map_size(users)
 
             Logger.info(
-              "SignalingBroker: user reconnected room=#{room_id} user=#{user_id} role=#{user.role} total_users=#{user_count}"
+              "SignalingServer: user reconnected room=#{room_id} user=#{user_id} role=#{user.role} total_users=#{user_count}"
             )
 
             for {other_id, %{pid: other_pid}} <- users, other_id != user_id do
               Logger.debug(
-                "SignalingBroker: notifying user=#{other_id} of user_rejoined user=#{user_id}"
+                "SignalingServer: notifying user=#{other_id} of user_rejoined user=#{user_id}"
               )
 
               send(
@@ -336,13 +336,13 @@ defmodule GameServerWeb.SignalingBroker do
             user_count = map_size(users)
 
             Logger.info(
-              "SignalingBroker: user joined room=#{room_id} user=#{user_id} role=#{role} total_users=#{user_count}"
+              "SignalingServer: user joined room=#{room_id} user=#{user_id} role=#{role} total_users=#{user_count}"
             )
 
             # Notify existing peers about the newcomer.
             for {other_id, %{pid: other_pid}} <- users, other_id != user_id do
               Logger.debug(
-                "SignalingBroker: notifying user=#{other_id} of user_joined user=#{user_id}"
+                "SignalingServer: notifying user=#{other_id} of user_joined user=#{user_id}"
               )
 
               send(
@@ -355,7 +355,7 @@ defmodule GameServerWeb.SignalingBroker do
             # connections (e.g. star clients connecting to the host).
             for {other_id, %{role: other_role}} <- users, other_id != user_id do
               Logger.debug(
-                "SignalingBroker: seeding existing user to new user=#{user_id} other=#{other_id} role=#{other_role}"
+                "SignalingServer: seeding existing user to new user=#{user_id} other=#{other_id} role=#{other_role}"
               )
 
               send(
@@ -374,7 +374,7 @@ defmodule GameServerWeb.SignalingBroker do
     case Map.get(state.rooms, room_id) do
       nil ->
         Logger.warning(
-          "SignalingBroker: leave_room failed room_not_found room=#{room_id} user=#{user_id}"
+          "SignalingServer: leave_room failed room_not_found room=#{room_id} user=#{user_id}"
         )
 
         {:reply, {:error, :room_not_found}, state}
@@ -383,7 +383,7 @@ defmodule GameServerWeb.SignalingBroker do
         case Map.pop(room.users, user_id) do
           {nil, _} ->
             Logger.warning(
-              "SignalingBroker: leave_room failed user_not_found room=#{room_id} user=#{user_id}"
+              "SignalingServer: leave_room failed user_not_found room=#{room_id} user=#{user_id}"
             )
 
             {:reply, {:error, :user_not_found}, state}
@@ -394,7 +394,7 @@ defmodule GameServerWeb.SignalingBroker do
             user_count = map_size(users)
 
             Logger.info(
-              "SignalingBroker: user leaving room=#{room_id} user=#{user_id} role=#{user.role} remaining_users=#{user_count}"
+              "SignalingServer: user leaving room=#{room_id} user=#{user_id} role=#{user.role} remaining_users=#{user_count}"
             )
 
             for {_other_id, %{pid: other_pid}} <- users do
@@ -405,7 +405,7 @@ defmodule GameServerWeb.SignalingBroker do
 
             rooms =
               if map_size(users) == 0 do
-                Logger.info("SignalingBroker: room empty, removing room=#{room_id}")
+                Logger.info("SignalingServer: room empty, removing room=#{room_id}")
                 Map.delete(state.rooms, room_id)
               else
                 Map.put(state.rooms, room_id, room)
@@ -431,7 +431,7 @@ defmodule GameServerWeb.SignalingBroker do
     case Map.get(state.rooms, room_id) do
       nil ->
         Logger.warning(
-          "SignalingBroker: relay_message failed room_not_found room=#{room_id} from=#{from} to=#{to} type=#{type}"
+          "SignalingServer: relay_message failed room_not_found room=#{room_id} from=#{from} to=#{to} type=#{type}"
         )
 
         {:reply, {:error, :room_not_found}, state}
@@ -443,28 +443,28 @@ defmodule GameServerWeb.SignalingBroker do
         cond do
           is_nil(from_user) ->
             Logger.warning(
-              "SignalingBroker: relay_message failed user_not_found room=#{room_id} from=#{from} to=#{to} type=#{type}"
+              "SignalingServer: relay_message failed user_not_found room=#{room_id} from=#{from} to=#{to} type=#{type}"
             )
 
             {:reply, {:error, :user_not_found}, state}
 
           is_nil(to_user) ->
             Logger.warning(
-              "SignalingBroker: relay_message failed user_not_found room=#{room_id} from=#{from} to=#{to} type=#{type}"
+              "SignalingServer: relay_message failed user_not_found room=#{room_id} from=#{from} to=#{to} type=#{type}"
             )
 
             {:reply, {:error, :user_not_found}, state}
 
           room.topology == :star and from_user.role != :host and to_user.role != :host ->
             Logger.warning(
-              "SignalingBroker: relay_message failed not_allowed room=#{room_id} from=#{from} role=#{from_user.role} to=#{to} role=#{to_user.role}"
+              "SignalingServer: relay_message failed not_allowed room=#{room_id} from=#{from} role=#{from_user.role} to=#{to} role=#{to_user.role}"
             )
 
             {:reply, {:error, :not_allowed}, state}
 
           true ->
             Logger.debug(
-              "SignalingBroker: relaying room=#{room_id} type=#{type} from=#{from} to=#{to}"
+              "SignalingServer: relaying room=#{room_id} type=#{type} from=#{from} to=#{to}"
             )
 
             send(to_user.pid, {:signaling_relay, type, from, payload})
@@ -477,43 +477,23 @@ defmodule GameServerWeb.SignalingBroker do
   def handle_call({:broadcast_message, room_id, from, type, payload}, _from, state) do
     case Map.get(state.rooms, room_id) do
       nil ->
-        Logger.warning(
-          "SignalingBroker: broadcast_message failed room_not_found room=#{room_id} from=#{from} type=#{type}"
-        )
-
+        Logger.warning("SignalingServer: broadcast_message failed room_not_found room=#{room_id} from=#{from} type=#{type}")
         {:reply, {:error, :room_not_found}, state}
 
       room ->
-        from_user = Map.get(room.users, from)
+        case Map.get(room.users, from) do
+          nil ->
+            Logger.warning("SignalingServer: broadcast_message failed user_not_found room=#{room_id} from=#{from}")
+            {:reply, {:error, :user_not_found}, state}
 
-        if is_nil(from_user) do
-          Logger.warning(
-            "SignalingBroker: broadcast_message failed user_not_found room=#{room_id} from=#{from}"
-          )
-
-          {:reply, {:error, :user_not_found}, state}
-        else
-          if room.topology == :star and from_user.role != :host do
-            Logger.warning(
-              "SignalingBroker: broadcast_message failed not_allowed room=#{room_id} from=#{from} role=#{from_user.role}"
-            )
-
-            {:reply, {:error, :not_allowed}, state}
-          else
-            targets =
-              Enum.filter(room.users, fn {user_id, _} -> user_id != from end)
-              |> Enum.map(fn {id, _} -> id end)
-
-            Logger.debug(
-              "SignalingBroker: broadcasting room=#{room_id} type=#{type} from=#{from} targets=#{length(targets)}"
-            )
-
-            for {user_id, %{pid: pid}} <- room.users, user_id != from do
-              send(pid, {:signaling_relay, type, from, payload})
+          from_user ->
+            if broadcast_allowed?(room, from_user) do
+              broadcast_to_room(room_id, room, from, type, payload)
+              {:reply, :ok, state}
+            else
+              Logger.warning("SignalingServer: broadcast_message failed not_allowed room=#{room.topology} from=#{from} role=#{from_user.role}")
+              {:reply, {:error, :not_allowed}, state}
             end
-
-            {:reply, :ok, state}
-          end
         end
     end
   end
@@ -522,7 +502,7 @@ defmodule GameServerWeb.SignalingBroker do
   def handle_call({:list_users, room_id}, _from, state) do
     case Map.get(state.rooms, room_id) do
       nil ->
-        Logger.warning("SignalingBroker: list_users failed room_not_found room=#{room_id}")
+        Logger.warning("SignalingServer: list_users failed room_not_found room=#{room_id}")
         {:reply, {:error, :room_not_found}, state}
 
       room ->
@@ -535,7 +515,7 @@ defmodule GameServerWeb.SignalingBroker do
     end
   end
 
-  def handle_call({:is_room_host, room_id, user_id}, _from, state) do
+  def handle_call({:room_host, room_id, user_id}, _from, state) do
     case Map.get(state.rooms, room_id) do
       nil ->
         {:reply, false, state}
@@ -566,7 +546,7 @@ defmodule GameServerWeb.SignalingBroker do
         else
           room = %{room | host_user_id: new_host_user_id}
           rooms = Map.put(state.rooms, room_id, room)
-          Logger.info("SignalingBroker: updated host room=#{room_id} host=#{new_host_user_id}")
+          Logger.info("SignalingServer: updated host room=#{room_id} host=#{new_host_user_id}")
           {:reply, :ok, %{state | rooms: rooms}}
         end
     end
@@ -577,7 +557,7 @@ defmodule GameServerWeb.SignalingBroker do
     case Map.pop(state.refs, ref) do
       {nil, _} ->
         Logger.debug(
-          "SignalingBroker: DOWN from unknown pid=#{inspect(pid)} reason=#{inspect(reason)}"
+          "SignalingServer: DOWN from unknown pid=#{inspect(pid)} reason=#{inspect(reason)}"
         )
 
         {:noreply, state}
@@ -586,7 +566,7 @@ defmodule GameServerWeb.SignalingBroker do
         case Map.get(state.rooms, room_id) do
           nil ->
             Logger.warning(
-              "SignalingBroker: DOWN for removed room room=#{room_id} user=#{user_id} pid=#{inspect(pid)} reason=#{inspect(reason)}"
+              "SignalingServer: DOWN for removed room room=#{room_id} user=#{user_id} pid=#{inspect(pid)} reason=#{inspect(reason)}"
             )
 
             {:noreply, %{state | refs: refs}}
@@ -610,7 +590,7 @@ defmodule GameServerWeb.SignalingBroker do
               rooms = Map.put(state.rooms, room_id, room)
 
               Logger.info(
-                "SignalingBroker: user disconnected room=#{room_id} user=#{user_id} grace=#{room.reconnect_timeout}ms pid=#{inspect(pid)} reason=#{inspect(reason)}"
+                "SignalingServer: user disconnected room=#{room_id} user=#{user_id} grace=#{room.reconnect_timeout}ms pid=#{inspect(pid)} reason=#{inspect(reason)}"
               )
 
               {:noreply, %{state | rooms: rooms, refs: refs}}
@@ -635,7 +615,7 @@ defmodule GameServerWeb.SignalingBroker do
           remaining = map_size(users)
 
           Logger.info(
-            "SignalingBroker: reconnect timeout expired room=#{room_id} user=#{user_id} remaining_users=#{remaining}"
+            "SignalingServer: reconnect timeout expired room=#{room_id} user=#{user_id} remaining_users=#{remaining}"
           )
 
           for {other_id, %{pid: other_pid}} <- users, other_id != user_id do
@@ -644,7 +624,7 @@ defmodule GameServerWeb.SignalingBroker do
 
           rooms =
             if map_size(users) == 0 do
-              Logger.info("SignalingBroker: room empty after timeout, removing room=#{room_id}")
+              Logger.info("SignalingServer: room empty after timeout, removing room=#{room_id}")
               Map.delete(state.rooms, room_id)
             else
               Map.put(state.rooms, room_id, %{room | users: users})
@@ -669,5 +649,20 @@ defmodule GameServerWeb.SignalingBroker do
       :mesh -> :user
       :star -> if user_id == room.host_user_id, do: :host, else: :client
     end
+  end
+
+  defp broadcast_allowed?(room, from_user) do
+    room.topology != :star or from_user.role == :host
+  end
+
+  defp broadcast_to_room(room_id, room, from, type, payload) do
+    targets = Enum.filter(room.users, fn {user_id, _} -> user_id != from end) |> Enum.map(fn {id, _} -> id end)
+    Logger.debug("SignalingServer: broadcasting room=#{room_id} type=#{type} from=#{from} targets=#{length(targets)}")
+
+    for {user_id, %{pid: pid}} <- room.users, user_id != from do
+      send(pid, {:signaling_relay, type, from, payload})
+    end
+
+    :ok
   end
 end

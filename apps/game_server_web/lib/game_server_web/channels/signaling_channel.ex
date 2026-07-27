@@ -58,12 +58,16 @@ defmodule GameServerWeb.SignalingChannel do
     user_id = socket.assigns.current_scope.user_id
 
     if is_nil(user_id) do
-      Logger.warning("SignalingChannel: unauthorized join attempt room=#{room_id} missing user_id")
+      Logger.warning(
+        "SignalingChannel: unauthorized join attempt room=#{room_id} missing user_id"
+      )
+
       {:error, %{reason: "unauthorized"}}
     else
       case SignalingBroker.join_room(room_id, user_id, self(), %{}) do
         {:ok, role} ->
           Logger.info("SignalingChannel: join ok room=#{room_id} user=#{user_id} role=#{role}")
+
           {:ok, %{user_id: user_id, role: role},
            assign(socket,
              signaling_room: room_id,
@@ -72,15 +76,24 @@ defmodule GameServerWeb.SignalingChannel do
            )}
 
         {:error, :room_not_found} ->
-          Logger.warning("SignalingChannel: join failed room_not_found room=#{room_id} user=#{user_id}")
+          Logger.warning(
+            "SignalingChannel: join failed room_not_found room=#{room_id} user=#{user_id}"
+          )
+
           {:error, %{reason: "room_not_found"}}
 
         {:error, :not_allowed} ->
-          Logger.warning("SignalingChannel: join failed not_allowed room=#{room_id} user=#{user_id}")
+          Logger.warning(
+            "SignalingChannel: join failed not_allowed room=#{room_id} user=#{user_id}"
+          )
+
           {:error, %{reason: "not_allowed"}}
 
         {:error, reason} ->
-          Logger.warning("SignalingChannel: join failed reason=#{reason} room=#{room_id} user=#{user_id}")
+          Logger.warning(
+            "SignalingChannel: join failed reason=#{reason} room=#{room_id} user=#{user_id}"
+          )
+
           {:error, %{reason: to_string(reason)}}
       end
     end
@@ -99,15 +112,24 @@ defmodule GameServerWeb.SignalingChannel do
           {:reply, {:ok, %{}}, socket}
 
         {:error, :user_not_found} ->
-          Logger.warning("SignalingChannel: offer failed user_not_found room=#{room} from=#{from} target=#{target}")
+          Logger.warning(
+            "SignalingChannel: offer failed user_not_found room=#{room} from=#{from} target=#{target}"
+          )
+
           {:reply, {:error, %{error: "user_not_found"}}, socket}
 
         {:error, :not_allowed} ->
-          Logger.warning("SignalingChannel: offer failed not_allowed room=#{room} from=#{from} target=#{target}")
+          Logger.warning(
+            "SignalingChannel: offer failed not_allowed room=#{room} from=#{from} target=#{target}"
+          )
+
           {:reply, {:error, %{error: "not_allowed"}}, socket}
 
         {:error, :room_not_found} ->
-          Logger.warning("SignalingChannel: offer failed room_not_found room=#{room} from=#{from}")
+          Logger.warning(
+            "SignalingChannel: offer failed room_not_found room=#{room} from=#{from}"
+          )
+
           {:stop, :normal, {:error, %{error: "room_not_found"}}, socket}
       end
     end
@@ -124,15 +146,24 @@ defmodule GameServerWeb.SignalingChannel do
           {:reply, {:ok, %{}}, socket}
 
         {:error, :user_not_found} ->
-          Logger.warning("SignalingChannel: answer failed user_not_found room=#{room} from=#{from} target=#{target}")
+          Logger.warning(
+            "SignalingChannel: answer failed user_not_found room=#{room} from=#{from} target=#{target}"
+          )
+
           {:reply, {:error, %{error: "user_not_found"}}, socket}
 
         {:error, :not_allowed} ->
-          Logger.warning("SignalingChannel: answer failed not_allowed room=#{room} from=#{from} target=#{target}")
+          Logger.warning(
+            "SignalingChannel: answer failed not_allowed room=#{room} from=#{from} target=#{target}"
+          )
+
           {:reply, {:error, %{error: "not_allowed"}}, socket}
 
         {:error, :room_not_found} ->
-          Logger.warning("SignalingChannel: answer failed room_not_found room=#{room} from=#{from}")
+          Logger.warning(
+            "SignalingChannel: answer failed room_not_found room=#{room} from=#{from}"
+          )
+
           {:stop, :normal, {:error, %{error: "room_not_found"}}, socket}
       end
     end
@@ -149,11 +180,17 @@ defmodule GameServerWeb.SignalingChannel do
           {:reply, {:ok, %{}}, socket}
 
         {:error, :user_not_found} ->
-          Logger.warning("SignalingChannel: ice failed user_not_found room=#{room} from=#{from} target=#{target}")
+          Logger.warning(
+            "SignalingChannel: ice failed user_not_found room=#{room} from=#{from} target=#{target}"
+          )
+
           {:reply, {:error, %{error: "user_not_found"}}, socket}
 
         {:error, :not_allowed} ->
-          Logger.warning("SignalingChannel: ice failed not_allowed room=#{room} from=#{from} target=#{target}")
+          Logger.warning(
+            "SignalingChannel: ice failed not_allowed room=#{room} from=#{from} target=#{target}"
+          )
+
           {:reply, {:error, %{error: "not_allowed"}}, socket}
 
         {:error, :room_not_found} ->
@@ -174,11 +211,17 @@ defmodule GameServerWeb.SignalingChannel do
           {:reply, {:ok, %{}}, socket}
 
         {:error, :not_allowed} ->
-          Logger.warning("SignalingChannel: broadcast_offer failed not_allowed room=#{room} from=#{from}")
+          Logger.warning(
+            "SignalingChannel: broadcast_offer failed not_allowed room=#{room} from=#{from}"
+          )
+
           {:reply, {:error, %{error: "not_allowed"}}, socket}
 
         {:error, :room_not_found} ->
-          Logger.warning("SignalingChannel: broadcast_offer failed room_not_found room=#{room} from=#{from}")
+          Logger.warning(
+            "SignalingChannel: broadcast_offer failed room_not_found room=#{room} from=#{from}"
+          )
+
           {:stop, :normal, {:error, %{error: "room_not_found"}}, socket}
       end
     end
@@ -202,7 +245,10 @@ defmodule GameServerWeb.SignalingChannel do
 
   @impl true
   def handle_in(event, _payload, socket) do
-    Logger.warning("SignalingChannel: unknown event=#{event} room=#{socket.assigns[:signaling_room] || "nil"} user=#{socket.assigns[:signaling_user_id] || "nil"}")
+    Logger.warning(
+      "SignalingChannel: unknown event=#{event} room=#{socket.assigns[:signaling_room] || "nil"} user=#{socket.assigns[:signaling_user_id] || "nil"}"
+    )
+
     {:reply, {:error, %{error: "unknown_event"}}, socket}
   end
 
@@ -210,7 +256,10 @@ defmodule GameServerWeb.SignalingChannel do
 
   @impl true
   def handle_info({:signaling_relay, :room_closed, nil, payload}, socket) do
-    Logger.info("SignalingChannel: room_closed received, stopping room=#{socket.assigns.signaling_room} user=#{socket.assigns.signaling_user_id}")
+    Logger.info(
+      "SignalingChannel: room_closed received, stopping room=#{socket.assigns.signaling_room} user=#{socket.assigns.signaling_user_id}"
+    )
+
     push_event(socket, "room_closed", payload)
     {:stop, :normal, socket}
   end
@@ -218,7 +267,10 @@ defmodule GameServerWeb.SignalingChannel do
   @impl true
   def handle_info({:signaling_relay, type, from_user_id, payload}, socket) do
     event_name = relay_event_name(type)
-    payload = if is_nil(from_user_id), do: payload, else: Map.put(payload, :from_user_id, from_user_id)
+
+    payload =
+      if is_nil(from_user_id), do: payload, else: Map.put(payload, :from_user_id, from_user_id)
+
     push_event(socket, event_name, payload)
     {:noreply, socket}
   end
@@ -230,7 +282,10 @@ defmodule GameServerWeb.SignalingChannel do
 
   @impl true
   def handle_info(msg, socket) do
-    Logger.debug("SignalingChannel: unexpected msg=#{inspect(msg)} room=#{socket.assigns[:signaling_room] || "nil"} user=#{socket.assigns[:signaling_user_id] || "nil"}")
+    Logger.debug(
+      "SignalingChannel: unexpected msg=#{inspect(msg)} room=#{socket.assigns[:signaling_room] || "nil"} user=#{socket.assigns[:signaling_user_id] || "nil"}"
+    )
+
     {:noreply, socket}
   end
 
@@ -240,7 +295,10 @@ defmodule GameServerWeb.SignalingChannel do
     user_id = socket.assigns[:signaling_user_id]
 
     if room_id && user_id do
-      Logger.info("SignalingChannel: terminating reason=#{inspect(reason)} room=#{room_id} user=#{user_id}")
+      Logger.info(
+        "SignalingChannel: terminating reason=#{inspect(reason)} room=#{room_id} user=#{user_id}"
+      )
+
       # Do NOT call SignalingBroker.leave here. The broker's DOWN handler
       # starts a grace period so the same user_id can reconnect and keep
       # its role. Explicit leave is only used for intentional removal.
@@ -276,7 +334,10 @@ defmodule GameServerWeb.SignalingChannel do
           :ok
 
         {:deny, _retry_after} ->
-          Logger.warning("SignalingChannel: rate limit exceeded user=#{user_id} room=#{socket.assigns[:signaling_room] || "nil"}")
+          Logger.warning(
+            "SignalingChannel: rate limit exceeded user=#{user_id} room=#{socket.assigns[:signaling_room] || "nil"}"
+          )
+
           {:stop, :normal, {:error, %{error: "rate_limited"}}, socket}
       end
     else
@@ -297,7 +358,10 @@ defmodule GameServerWeb.SignalingChannel do
           :ok
 
         {:deny, _retry_after} ->
-          Logger.warning("SignalingChannel: ICE rate limit exceeded user=#{user_id} room=#{socket.assigns[:signaling_room] || "nil"}")
+          Logger.warning(
+            "SignalingChannel: ICE rate limit exceeded user=#{user_id} room=#{socket.assigns[:signaling_room] || "nil"}"
+          )
+
           {:reply, {:error, %{error: "ice_rate_limited"}}, socket}
       end
     else

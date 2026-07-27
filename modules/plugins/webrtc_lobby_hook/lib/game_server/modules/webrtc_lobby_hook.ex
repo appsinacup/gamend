@@ -122,7 +122,7 @@ defmodule GameServer.Modules.WebRTCLobbyHook do
     with %{"webrtc" => %{"enabled" => true, "topology" => topology}} <- lobby.metadata,
          topology_atom <- parse_topology(topology),
          {:ok, host_user_id} <- resolve_host(lobby, topology_atom) do
-      if Signaling.room_exists?(lobby.id) do
+      if Signaling.exists_room?(lobby.id) do
         :ok
       else
         allowed_users = build_allowed_users(lobby, host_user_id, topology_atom)
@@ -148,7 +148,7 @@ defmodule GameServer.Modules.WebRTCLobbyHook do
     else
       _ ->
         # WebRTC not enabled or invalid config; close room if it exists.
-        if Signaling.room_exists?(lobby.id) do
+        if Signaling.exists_room?(lobby.id) do
           Signaling.close_room(lobby.id)
         end
 
@@ -187,7 +187,7 @@ defmodule GameServer.Modules.WebRTCLobbyHook do
           cond do
             topology == :star and id == host_id -> :host
             topology == :star -> :client
-            true -> :peer
+            true -> :user
           end
 
         {id, role}
@@ -214,7 +214,7 @@ defmodule GameServer.Modules.WebRTCLobbyHook do
     cond do
       topology == :star and to_string(user_id) == to_string(host_user_id) -> :host
       topology == :star -> :client
-      true -> :peer
+      true -> :user
     end
   end
 

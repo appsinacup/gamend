@@ -11,11 +11,11 @@ defmodule GameServerWeb.SignalingChannel do
 
   ## Lifecycle
 
-  On join the authenticated `user_id` is used directly as the peer identity.
-  The broker assigns the role (`:host` or `:client` for `:star`, `:peer` for
+  On join the authenticated `user_id` is used directly as the user identity.
+  The broker assigns the role (`:host` or `:client` for `:star`, `:user` for
   `:mesh`) based on the room's configuration. If the same user_id reconnects
-  within the configured grace period, the existing peer is preserved and a
-  `peer_rejoined` event is broadcast.
+  within the configured grace period, the existing user is preserved and a
+  `user_rejoined` event is broadcast.
 
   ## Messages
 
@@ -31,9 +31,9 @@ defmodule GameServerWeb.SignalingChannel do
       "offer"         — %{sdp: "...", from_user_id: "..."}
       "answer"        — %{sdp: "...", from_user_id: "..."}
       "ice"           — %{candidate: "...", from_user_id: "..."}
-      "peer_joined"   — %{user_id: "...", role: :host | :client | :peer}
-      "peer_rejoined" — %{user_id: "...", role: :host | :client | :peer}
-      "peer_left"     — %{user_id: "..."}
+      "user_joined"   — %{user_id: "...", role: :host | :client | :user}
+      "user_rejoined" — %{user_id: "...", role: :host | :client | :user}
+      "user_left"     — %{user_id: "..."}
       "room_closed"   — %{}
   """
 
@@ -61,7 +61,7 @@ defmodule GameServerWeb.SignalingChannel do
       Logger.warning("SignalingChannel: unauthorized join attempt room=#{room_id} missing user_id")
       {:error, %{reason: "unauthorized"}}
     else
-      case SignalingBroker.join(room_id, user_id, self(), %{}) do
+      case SignalingBroker.join_room(room_id, user_id, self(), %{}) do
         {:ok, role} ->
           Logger.info("SignalingChannel: join ok room=#{room_id} user=#{user_id} role=#{role}")
           {:ok, %{user_id: user_id, role: role},
@@ -94,13 +94,13 @@ defmodule GameServerWeb.SignalingChannel do
       room = socket.assigns.signaling_room
       from = socket.assigns.signaling_user_id
 
-      case SignalingBroker.relay(room, from, target, :offer, %{sdp: sdp}) do
+      case SignalingBroker.relay_message(room, from, target, :offer, %{sdp: sdp}) do
         :ok ->
           {:reply, {:ok, %{}}, socket}
 
-        {:error, :peer_not_found} ->
-          Logger.warning("SignalingChannel: offer failed peer_not_found room=#{room} from=#{from} target=#{target}")
-          {:reply, {:error, %{error: "peer_not_found"}}, socket}
+        {:error, :user_not_found} ->
+          Logger.warning("SignalingChannel: offer failed user_not_found room=#{room} from=#{from} target=#{target}")
+          {:reply, {:error, %{error: "user_not_found"}}, socket}
 
         {:error, :not_allowed} ->
           Logger.warning("SignalingChannel: offer failed not_allowed room=#{room} from=#{from} target=#{target}")
@@ -119,13 +119,13 @@ defmodule GameServerWeb.SignalingChannel do
       room = socket.assigns.signaling_room
       from = socket.assigns.signaling_user_id
 
-      case SignalingBroker.relay(room, from, target, :answer, %{sdp: sdp}) do
+      case SignalingBroker.relay_message(room, from, target, :answer, %{sdp: sdp}) do
         :ok ->
           {:reply, {:ok, %{}}, socket}
 
-        {:error, :peer_not_found} ->
-          Logger.warning("SignalingChannel: answer failed peer_not_found room=#{room} from=#{from} target=#{target}")
-          {:reply, {:error, %{error: "peer_not_found"}}, socket}
+        {:error, :user_not_found} ->
+          Logger.warning("SignalingChannel: answer failed user_not_found room=#{room} from=#{from} target=#{target}")
+          {:reply, {:error, %{error: "user_not_found"}}, socket}
 
         {:error, :not_allowed} ->
           Logger.warning("SignalingChannel: answer failed not_allowed room=#{room} from=#{from} target=#{target}")
@@ -144,13 +144,13 @@ defmodule GameServerWeb.SignalingChannel do
       room = socket.assigns.signaling_room
       from = socket.assigns.signaling_user_id
 
-      case SignalingBroker.relay(room, from, target, :ice, %{candidate: candidate}) do
+      case SignalingBroker.relay_message(room, from, target, :ice, %{candidate: candidate}) do
         :ok ->
           {:reply, {:ok, %{}}, socket}
 
-        {:error, :peer_not_found} ->
-          Logger.warning("SignalingChannel: ice failed peer_not_found room=#{room} from=#{from} target=#{target}")
-          {:reply, {:error, %{error: "peer_not_found"}}, socket}
+        {:error, :user_not_found} ->
+          Logger.warning("SignalingChannel: ice failed user_not_found room=#{room} from=#{from} target=#{target}")
+          {:reply, {:error, %{error: "user_not_found"}}, socket}
 
         {:error, :not_allowed} ->
           Logger.warning("SignalingChannel: ice failed not_allowed room=#{room} from=#{from} target=#{target}")
@@ -169,7 +169,7 @@ defmodule GameServerWeb.SignalingChannel do
       room = socket.assigns.signaling_room
       from = socket.assigns.signaling_user_id
 
-      case SignalingBroker.broadcast(room, from, :offer, %{sdp: sdp, from_user_id: from}) do
+      case SignalingBroker.broadcast_message(room, from, :offer, %{sdp: sdp, from_user_id: from}) do
         :ok ->
           {:reply, {:ok, %{}}, socket}
 
@@ -185,16 +185,16 @@ defmodule GameServerWeb.SignalingChannel do
   end
 
   @impl true
-  def handle_in("list_peers", _payload, socket) do
+  def handle_in("list_users", _payload, socket) do
     with :ok <- check_ws_rate_limit(socket) do
       room = socket.assigns.signaling_room
 
-      case SignalingBroker.list_peers(room) do
-        peers when is_map(peers) ->
-          {:reply, {:ok, %{peers: peers}}, socket}
+      case SignalingBroker.list_users(room) do
+        users when is_map(users) ->
+          {:reply, {:ok, %{users: users}}, socket}
 
         {:error, :room_not_found} ->
-          Logger.warning("SignalingChannel: list_peers failed room_not_found room=#{room}")
+          Logger.warning("SignalingChannel: list_users failed room_not_found room=#{room}")
           {:stop, :normal, {:error, %{error: "room_not_found"}}, socket}
       end
     end
@@ -256,9 +256,9 @@ defmodule GameServerWeb.SignalingChannel do
   defp relay_event_name(:offer), do: "offer"
   defp relay_event_name(:answer), do: "answer"
   defp relay_event_name(:ice), do: "ice"
-  defp relay_event_name(:peer_joined), do: "peer_joined"
-  defp relay_event_name(:peer_rejoined), do: "peer_rejoined"
-  defp relay_event_name(:peer_left), do: "peer_left"
+  defp relay_event_name(:user_joined), do: "user_joined"
+  defp relay_event_name(:user_rejoined), do: "user_rejoined"
+  defp relay_event_name(:user_left), do: "user_left"
   defp relay_event_name(:room_closed), do: "room_closed"
 
   # ── WebSocket rate limiting ─────────────────────────────────────────────

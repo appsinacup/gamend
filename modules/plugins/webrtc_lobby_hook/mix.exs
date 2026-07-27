@@ -26,8 +26,6 @@ defmodule HandleWebRTC.WebRTCLobbyHook do
       {:game_server_plugin_tools, path: "../../../sdk_tools", runtime: false},
       {:bunt, "~> 1.0"},
       {:phoenix, "~> 1.8.3"},
-      # Typed hook payloads (see proto/example_hook.proto).
-      #{:protobuf, "~> 0.17"}
     ]
   end
 end

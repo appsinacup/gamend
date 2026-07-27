@@ -22,9 +22,6 @@ msgstr "Ändringslogg"
 msgid "Social"
 msgstr "Socialt"
 
-msgid "About Gamend"
-msgstr "Om Gamend"
-
 msgid "Elixir Docs"
 msgstr "Elixir-dokumentation"
 
@@ -67,44 +64,14 @@ msgstr "Turneringar"
 msgid "Groups"
 msgstr "Grupper"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend är en **komplett** Elixir-backend för flerspelarspel, med autentisering, sociala system, realtidskanaler och administrationsverktyg."
-
-msgid "Realtime Guide"
-msgstr "Realtidsguide"
-
-msgid "Real-time games"
-msgstr "Realtidsspel"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Använd kanaler, lobbyer, sällskap, närvaro och WebRTC-datakanaler utan att bygga om den vanliga flerspelarinfrastrukturen."
-
-msgid "Built For Real-Time Games"
-msgstr "Byggd för realtidsspel"
-
-msgid "Read Docs"
-msgstr "Läs dokumentationen"
-
-msgid "Open source foundation"
-msgstr "Grund i öppen källkod"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Projektet är gjort för att spelteam ska kunna forka, tematisera, drifta och bygga vidare på det."
-
-msgid "Open Source Foundation"
-msgstr "Grund i öppen källkod"
-
 msgid "Getting Started"
 msgstr "Kom igång"
 
 msgid "Presentation Video"
 msgstr "Presentationsvideo"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "**Öppen källkod** – en Elixir-spelserver för **realtidsbaserade** flerspelarspel."
@@ -162,9 +129,6 @@ msgstr "Serverbaserade betalningar med Stripe, Google Play, App Store och Steam.
 
 msgid "Payments & Store Integrations"
 msgstr "Betalningar och butiksintegrationer"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend är i beta!"
 
 msgid "Game + Backend"
 msgstr "Spel + backend"

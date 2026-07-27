@@ -22,9 +22,6 @@ msgstr "Список змін"
 msgid "Social"
 msgstr "Спільнота"
 
-msgid "About Gamend"
-msgstr "Про Gamend"
-
 msgid "Elixir Docs"
 msgstr "Документація Elixir"
 
@@ -67,44 +64,14 @@ msgstr "Турніри"
 msgid "Groups"
 msgstr "Групи"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend — це **повністю укомплектований** бекенд на Elixir для багатокористувацьких ігор: автентифікація, соціальні системи, канали реального часу та інструменти адміністрування."
-
-msgid "Realtime Guide"
-msgstr "Посібник із реального часу"
-
-msgid "Real-time games"
-msgstr "Ігри в реальному часі"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Використовуйте канали, лобі, групи, присутність і канали даних WebRTC, не будуючи звичну багатокористувацьку інфраструктуру заново."
-
-msgid "Built For Real-Time Games"
-msgstr "Створено для ігор у реальному часі"
-
-msgid "Read Docs"
-msgstr "Читати документацію"
-
-msgid "Open source foundation"
-msgstr "Відкрита основа"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Проєкт створено, щоб ігрові команди форкали, оформлювали, розміщували та розширювали його."
-
-msgid "Open Source Foundation"
-msgstr "Відкрита основа"
-
 msgid "Getting Started"
 msgstr "Початок роботи"
 
 msgid "Presentation Video"
 msgstr "Презентаційне відео"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "**Відкритий** ігровий сервер на Elixir для багатокористувацьких ігор **у реальному часі**."
@@ -162,9 +129,6 @@ msgstr "Платежі на боці сервера через Stripe, Google Pl
 
 msgid "Payments & Store Integrations"
 msgstr "Платежі та інтеграції з магазинами"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend у беті!"
 
 msgid "Game + Backend"
 msgstr "Гра + бекенд"

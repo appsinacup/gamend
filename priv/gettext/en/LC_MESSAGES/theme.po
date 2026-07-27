@@ -29,9 +29,6 @@ msgstr ""
 msgid "Social"
 msgstr ""
 
-msgid "About Gamend"
-msgstr ""
-
 msgid "Elixir Docs"
 msgstr ""
 
@@ -74,43 +71,13 @@ msgstr ""
 msgid "Groups"
 msgstr ""
 
-msgid "GitHub"
-msgstr ""
-
-msgid "Gamend"
-msgstr ""
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr ""
-
-msgid "Realtime Guide"
-msgstr ""
-
-msgid "Real-time games"
-msgstr ""
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr ""
-
-msgid "Built For Real-Time Games"
-msgstr ""
-
-msgid "Read Docs"
-msgstr ""
-
-msgid "Open source foundation"
-msgstr ""
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr ""
-
-msgid "Open Source Foundation"
-msgstr ""
-
 msgid "Getting Started"
 msgstr ""
 
 msgid "Presentation Video"
+msgstr ""
+
+msgid "Gamend"
 msgstr ""
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
@@ -168,9 +135,6 @@ msgid "Server-side payments with Stripe, Google Play, App Store, and Steam provi
 msgstr ""
 
 msgid "Payments & Store Integrations"
-msgstr ""
-
-msgid "Gamend is in beta!"
 msgstr ""
 
 msgid "Game + Backend"

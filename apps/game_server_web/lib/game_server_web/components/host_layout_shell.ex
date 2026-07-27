@@ -12,8 +12,6 @@ defmodule GameServerWeb.HostLayoutShell do
   attr :navigation, :map, default: %{}
   attr :footer, :map, default: %{}
   attr :background_icons, :list, default: []
-  attr :site_message, :string, default: ""
-  attr :site_message_hash, :string, default: ""
   attr :notif_unread_count, :integer, default: 0
   attr :locale, :string, required: true
   attr :known_locales, :list, default: []
@@ -95,8 +93,6 @@ defmodule GameServerWeb.HostLayoutShell do
         known_locales={@known_locales}
       />
 
-      <.site_banner site_message={@site_message} site_message_hash={@site_message_hash} />
-
       <%= if @flush do %>
         <div class="flex-1 min-h-0 relative">
           {render_slot(@inner_block)}
@@ -118,7 +114,7 @@ defmodule GameServerWeb.HostLayoutShell do
               </h2>
               <nav class="flex flex-col gap-1.5">
                 <a
-                  :for={link <- Map.get(section, "links", [])}
+                  :for={link <- visible_footer_links(section, @current_scope)}
                   href={link["href"]}
                   target={if(link["external"], do: "_blank", else: nil)}
                   rel={if(link["external"], do: "noopener noreferrer", else: nil)}
@@ -138,6 +134,15 @@ defmodule GameServerWeb.HostLayoutShell do
   defp footer_sections(%{"sections" => sections}) when is_list(sections), do: sections
   defp footer_sections(_footer), do: []
 
+  # A footer link obeys the same `"auth"` rule as the nav: /store is behind
+  # `require_authenticated_user`, so advertising it to a signed-out visitor
+  # just sends them to an error.
+  defp visible_footer_links(section, current_scope) do
+    section
+    |> Map.get("links", [])
+    |> Enum.filter(&GameServerWeb.HostLayoutNavigation.entry_visible?(&1, current_scope))
+  end
+
   attr :background_icons, :list, default: []
   attr :current_path, :string, default: nil
 
@@ -156,32 +161,6 @@ defmodule GameServerWeb.HostLayoutShell do
             <.dynamic_icon name={placement.name} class={placement.size} />
           </div>
         <% end %>
-      </div>
-    <% end %>
-    """
-  end
-
-  attr :site_message, :string, default: ""
-  attr :site_message_hash, :string, default: ""
-
-  def site_banner(assigns) do
-    ~H"""
-    <%= if @site_message != "" do %>
-      <div
-        id="site-banner"
-        phx-hook="SiteBanner"
-        data-message-hash={@site_message_hash}
-        class="hidden relative z-40 bg-base-200/60 backdrop-blur-sm text-base-content/70 px-4 py-1.5 text-center text-xs transition-all duration-300 border-b border-base-300/40"
-      >
-        <span>{@site_message}</span>
-        <button
-          type="button"
-          data-dismiss-banner
-          class="absolute right-3 top-1/2 -translate-y-1/2 opacity-40 hover:opacity-80 transition-opacity cursor-pointer"
-          aria-label={GameServerWeb.HostLayouts.translate("Dismiss")}
-        >
-          <.icon name="hero-x-mark" class="w-3.5 h-3.5" />
-        </button>
       </div>
     <% end %>
     """

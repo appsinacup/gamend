@@ -22,9 +22,6 @@ msgstr "Lista zmian"
 msgid "Social"
 msgstr "Społeczność"
 
-msgid "About Gamend"
-msgstr "O Gamend"
-
 msgid "Elixir Docs"
 msgstr "Dokumentacja Elixira"
 
@@ -67,44 +64,14 @@ msgstr "Turnieje"
 msgid "Groups"
 msgstr "Grupy"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend to **kompletny** backend w Elixirze dla gier wieloosobowych, z uwierzytelnianiem, systemami społecznościowymi, kanałami czasu rzeczywistego i narzędziami administracyjnymi."
-
-msgid "Realtime Guide"
-msgstr "Przewodnik po czasie rzeczywistym"
-
-msgid "Real-time games"
-msgstr "Gry czasu rzeczywistego"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Korzystaj z kanałów, poczekalni, drużyn, obecności i kanałów danych WebRTC bez budowania typowej infrastruktury wieloosobowej od nowa."
-
-msgid "Built For Real-Time Games"
-msgstr "Stworzony do gier czasu rzeczywistego"
-
-msgid "Read Docs"
-msgstr "Przeczytaj dokumentację"
-
-msgid "Open source foundation"
-msgstr "Fundament open source"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Projekt powstał z myślą o forkowaniu, personalizacji, hostowaniu i rozszerzaniu przez zespoły twórców gier."
-
-msgid "Open Source Foundation"
-msgstr "Fundament open source"
-
 msgid "Getting Started"
 msgstr "Pierwsze kroki"
 
 msgid "Presentation Video"
 msgstr "Wideo prezentacyjne"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "Serwer gier w Elixirze **open source** do gier wieloosobowych **w czasie rzeczywistym**."
@@ -162,9 +129,6 @@ msgstr "Płatności po stronie serwera z użyciem Stripe, Google Play, App Store
 
 msgid "Payments & Store Integrations"
 msgstr "Płatności i integracje ze sklepami"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend jest w wersji beta!"
 
 msgid "Game + Backend"
 msgstr "Gra + backend"

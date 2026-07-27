@@ -325,6 +325,9 @@ defmodule GameServerWeb.LeaderboardsLive do
                 </td>
                 <td>
                   <div class="flex items-center gap-2">
+                    <%!-- A label-only record (an external scoreboard entry) has
+                          no user behind it, so it gets no avatar. --%>
+                    <.user_avatar :if={record.user} user={record.user} class="w-8 h-8" />
                     <span class={[
                       record.user_id != nil && record.user_id == @current_user_id && "font-bold"
                     ]}>

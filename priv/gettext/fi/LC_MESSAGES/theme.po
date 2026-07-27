@@ -22,9 +22,6 @@ msgstr "Muutosloki"
 msgid "Social"
 msgstr "Sosiaalinen"
 
-msgid "About Gamend"
-msgstr "Tietoja Gamendista"
-
 msgid "Elixir Docs"
 msgstr "Elixir-dokumentaatio"
 
@@ -67,44 +64,14 @@ msgstr "Turnaukset"
 msgid "Groups"
 msgstr "Ryhmät"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend on **kaiken kattava** Elixir-taustapalvelu moninpeleihin: todennus, sosiaaliset järjestelmät, reaaliaikaiset kanavat ja ylläpitotyökalut."
-
-msgid "Realtime Guide"
-msgstr "Reaaliaikaopas"
-
-msgid "Real-time games"
-msgstr "Reaaliaikaiset pelit"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Käytä kanavia, auloja, seurueita, läsnäoloa ja WebRTC-datakanavia rakentamatta tavanomaista moninpeli-infrastruktuuria uudelleen."
-
-msgid "Built For Real-Time Games"
-msgstr "Rakennettu reaaliaikaisiin peleihin"
-
-msgid "Read Docs"
-msgstr "Lue dokumentaatio"
-
-msgid "Open source foundation"
-msgstr "Avoimen lähdekoodin perusta"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Projekti on suunniteltu pelitiimien haarautettavaksi, teemoitettavaksi, isännöitäväksi ja laajennettavaksi."
-
-msgid "Open Source Foundation"
-msgstr "Avoimen lähdekoodin perusta"
-
 msgid "Getting Started"
 msgstr "Aloitus"
 
 msgid "Presentation Video"
 msgstr "Esittelyvideo"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "**Avoimen lähdekoodin** Elixir-pelipalvelin **reaaliaikaisiin** moninpeleihin."
@@ -162,9 +129,6 @@ msgstr "Palvelinpuolen maksut Stripen, Google Playn, App Storen ja Steamin kautt
 
 msgid "Payments & Store Integrations"
 msgstr "Maksut ja kauppaintegraatiot"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend on beetavaiheessa!"
 
 msgid "Game + Backend"
 msgstr "Peli + taustapalvelu"

@@ -121,7 +121,7 @@ defmodule GameServer.Push do
   def force_log?() do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Push.force_log?/0 is a stub - only available at runtime on GameServer"
@@ -347,7 +347,7 @@ defmodule GameServer.Push do
   def user_has_live_tokens?(_user_id) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Push.user_has_live_tokens?/1 is a stub - only available at runtime on GameServer"

@@ -7,7 +7,6 @@ msgstr ""
 msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "Διακομιστής παιχνιδιών σε Elixir ανοιχτού κώδικα για παιχνίδια πολλών παικτών σε πραγματικό χρόνο."
 
-
 msgid "Discord"
 msgstr "Discord"
 
@@ -22,9 +21,6 @@ msgstr "Αρχείο Αλλαγών"
 
 msgid "Social"
 msgstr "Κοινωνικά"
-
-msgid "About Gamend"
-msgstr "Σχετικά με το Gamend"
 
 msgid "Elixir Docs"
 msgstr "Τεκμηρίωση Elixir"
@@ -68,44 +64,14 @@ msgstr "Τουρνουά"
 msgid "Groups"
 msgstr "Ομάδες"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Το Gamend είναι ένα **πλήρως εξοπλισμένο** backend σε Elixir για παιχνίδια πολλών παικτών, με έλεγχο ταυτότητας, κοινωνικά συστήματα, κανάλια πραγματικού χρόνου και εργαλεία διαχείρισης."
-
-msgid "Realtime Guide"
-msgstr "Οδηγός πραγματικού χρόνου"
-
-msgid "Real-time games"
-msgstr "Παιχνίδια πραγματικού χρόνου"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Χρησιμοποιήστε κανάλια, λόμπι, παρέες, παρουσία και κανάλια δεδομένων WebRTC χωρίς να ξαναχτίσετε τη συνηθισμένη υποδομή πολλών παικτών."
-
-msgid "Built For Real-Time Games"
-msgstr "Φτιαγμένο για παιχνίδια πραγματικού χρόνου"
-
-msgid "Read Docs"
-msgstr "Διαβάστε την τεκμηρίωση"
-
-msgid "Open source foundation"
-msgstr "Θεμέλιο ανοιχτού κώδικα"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Το έργο σχεδιάστηκε ώστε ομάδες παιχνιδιών να το κάνουν fork, να το προσαρμόζουν, να το φιλοξενούν και να το επεκτείνουν."
-
-msgid "Open Source Foundation"
-msgstr "Θεμέλιο ανοιχτού κώδικα"
-
 msgid "Getting Started"
 msgstr "Ξεκινώντας με το back-end"
 
 msgid "Presentation Video"
 msgstr "Βίντεο Παρουσίασης"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "**Ανοικτός κώδικας** Elixir game server for **real-time** multiplayer games."
@@ -163,9 +129,6 @@ msgstr "Πληρωμές από την πλευρά του διακομιστή 
 
 msgid "Payments & Store Integrations"
 msgstr "Πληρωμές και ενσωματώσεις καταστημάτων"
-
-msgid "Gamend is in beta!"
-msgstr "Το Gamend είναι σε beta!"
 
 msgid "Game + Backend"
 msgstr "Παιχνίδι + backend"

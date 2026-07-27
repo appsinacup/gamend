@@ -23,6 +23,8 @@ else
   config :game_server_core, GameServer.Repo,
     database: database_path,
     adapter: Ecto.Adapters.SQLite3,
+    # Match production: see the note in config/host_runtime.exs.
+    default_transaction_mode: :immediate,
     stacktrace: true,
     show_sensitive_data_on_connection_error: true,
     pool_size: 10

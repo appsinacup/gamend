@@ -22,9 +22,6 @@ msgstr "Список изменений"
 msgid "Social"
 msgstr "Общение"
 
-msgid "About Gamend"
-msgstr "О Gamend"
-
 msgid "Elixir Docs"
 msgstr "Документация Elixir"
 
@@ -67,44 +64,14 @@ msgstr "Турниры"
 msgid "Groups"
 msgstr "Группы"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend — это **полностью укомплектованный** бэкенд на Elixir для многопользовательских игр: аутентификация, социальные системы, каналы реального времени и инструменты администратора."
-
-msgid "Realtime Guide"
-msgstr "Руководство по реальному времени"
-
-msgid "Real-time games"
-msgstr "Игры в реальном времени"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Используйте каналы, лобби, группы, присутствие и каналы данных WebRTC, не собирая привычную многопользовательскую инфраструктуру заново."
-
-msgid "Built For Real-Time Games"
-msgstr "Создан для игр в реальном времени"
-
-msgid "Read Docs"
-msgstr "Читать документацию"
-
-msgid "Open source foundation"
-msgstr "Открытая основа"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Проект рассчитан на то, чтобы игровые команды форкали, оформляли, размещали и расширяли его."
-
-msgid "Open Source Foundation"
-msgstr "Открытая основа"
-
 msgid "Getting Started"
 msgstr "Начало работы"
 
 msgid "Presentation Video"
 msgstr "Презентационное видео"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "**Открытый** игровой сервер на Elixir для многопользовательских игр **в реальном времени**."
@@ -162,9 +129,6 @@ msgstr "Платежи на стороне сервера через Stripe, Goo
 
 msgid "Payments & Store Integrations"
 msgstr "Платежи и интеграции с магазинами"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend в бета-версии!"
 
 msgid "Game + Backend"
 msgstr "Игра + бэкенд"

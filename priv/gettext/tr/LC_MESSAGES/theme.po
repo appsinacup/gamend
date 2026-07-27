@@ -22,9 +22,6 @@ msgstr "Değişiklik günlüğü"
 msgid "Social"
 msgstr "Sosyal"
 
-msgid "About Gamend"
-msgstr "Gamend Hakkında"
-
 msgid "Elixir Docs"
 msgstr "Elixir Belgeleri"
 
@@ -67,44 +64,14 @@ msgstr "Turnuvalar"
 msgid "Groups"
 msgstr "Gruplar"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend; kimlik doğrulama, sosyal sistemler, gerçek zamanlı kanallar ve yönetim araçlarıyla gelen, çok oyunculu oyunlar için **her şeyi hazır sunan** bir Elixir arka ucudur."
-
-msgid "Realtime Guide"
-msgstr "Gerçek Zamanlı Kılavuzu"
-
-msgid "Real-time games"
-msgstr "Gerçek zamanlı oyunlar"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Alışıldık çok oyunculu altyapıyı yeniden kurmadan kanalları, lobileri, grupları, çevrimiçi durumunu ve WebRTC veri kanallarını kullanın."
-
-msgid "Built For Real-Time Games"
-msgstr "Gerçek zamanlı oyunlar için tasarlandı"
-
-msgid "Read Docs"
-msgstr "Belgeleri oku"
-
-msgid "Open source foundation"
-msgstr "Açık kaynak temeli"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Proje; oyun ekipleri tarafından çatallanmak, temalandırılmak, barındırılmak ve genişletilmek üzere tasarlandı."
-
-msgid "Open Source Foundation"
-msgstr "Açık kaynak temeli"
-
 msgid "Getting Started"
 msgstr "Başlarken"
 
 msgid "Presentation Video"
 msgstr "Tanıtım videosu"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "**Gerçek zamanlı** çok oyunculu oyunlar için **açık kaynaklı** Elixir oyun sunucusu."
@@ -162,9 +129,6 @@ msgstr "Stripe, Google Play, App Store ve Steam ile sunucu tarafı ödemeler. Ma
 
 msgid "Payments & Store Integrations"
 msgstr "Ödemeler ve mağaza entegrasyonları"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend beta aşamasında!"
 
 msgid "Game + Backend"
 msgstr "Oyun + arka uç"

@@ -374,7 +374,7 @@ defmodule GameServer.Parties do
   def leader?(_user) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Parties.leader?/1 is a stub - only available at runtime on GameServer"

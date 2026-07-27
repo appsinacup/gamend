@@ -854,6 +854,22 @@ defmodule GameServerWeb.HostLayoutNavigation do
   # (icon + label, no href/click) — e.g. a live status/value indicator.
   defp readonly?(entry), do: Map.get(entry, "readonly") == true
 
+  @doc """
+  Whether `entry` should be shown to a viewer with this `current_scope`.
+
+  Same `"auth"` convention the nav uses (`"any"`, `"unauthenticated"`,
+  `"authenticated"`, `"admin"`, or `"admin_only": true`), exposed so the footer
+  filters identically — a link to a page the viewer cannot open is a link to an
+  error page.
+  """
+  @spec entry_visible?(map(), map() | nil) :: boolean()
+  def entry_visible?(entry, current_scope) do
+    link_visible?(entry, auth_level(scope_user(current_scope)), "any")
+  end
+
+  defp scope_user(%{user: user}), do: user
+  defp scope_user(_scope), do: nil
+
   defp link_visible?(link, auth_level, default_auth) do
     required = required_auth(link, default_auth)
 

@@ -34,6 +34,8 @@ else
   config :game_server_core, GameServer.Repo,
     database: database_path,
     adapter: Ecto.Adapters.SQLite3,
+    # Match production: see the note in config/host_runtime.exs.
+    default_transaction_mode: :immediate,
     pool: Ecto.Adapters.SQL.Sandbox,
     # 2, not 1: Oban runs a boot-time `verify_migrated!` query in test mode, and
     # the host tree's periodic DB workers can hold the single connection long

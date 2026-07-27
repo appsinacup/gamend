@@ -1655,7 +1655,7 @@ func admin_quests_admin_create_quest(request: AdminCreateQuestRequest) -> Gamend
 	return await _call_api(AdminQuestsApi.new(_config), "admin_create_quest", [request])
 
 ## Update a quest (admin)
-func admin_quests_admin_update_quest(id: String, request: AdminUpdateQuestRequest) -> GamendResult:
+func admin_quests_admin_update_quest(id: String, request: AdminCreateQuestRequest) -> GamendResult:
 	return await _call_api(AdminQuestsApi.new(_config), "admin_update_quest", [id, request])
 
 ## Delete a quest and all user progress (admin)
@@ -1667,7 +1667,7 @@ func admin_quests_admin_list_quest_progress(page = 1, pageSize = 25) -> GamendRe
 	return await _call_api(AdminQuestsApi.new(_config), "admin_list_quest_progress", [page, pageSize])
 
 ## Force-complete a quest for a user (admin)
-func admin_quests_admin_grant_quest(request: AdminGrantQuestRequest) -> GamendResult:
+func admin_quests_admin_grant_quest(request: AdminResetQuestRequest) -> GamendResult:
 	return await _call_api(AdminQuestsApi.new(_config), "admin_grant_quest", [request])
 
 ## Reset a user's current-period quest progress (admin)
@@ -1675,7 +1675,7 @@ func admin_quests_admin_reset_quest(request: AdminResetQuestRequest) -> GamendRe
 	return await _call_api(AdminQuestsApi.new(_config), "admin_reset_quest", [request])
 
 ## Claim a completed quest on a user's behalf (admin)
-func admin_quests_admin_claim_quest(request: AdminClaimQuestRequest) -> GamendResult:
+func admin_quests_admin_claim_quest(request: AdminResetQuestRequest) -> GamendResult:
 	return await _call_api(AdminQuestsApi.new(_config), "admin_claim_quest", [request])
 
 ## Per-status progress counts for one quest (admin)

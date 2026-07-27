@@ -7,7 +7,6 @@ msgstr ""
 msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "Server de joc Elixir open source pentru jocuri multiplayer în timp real."
 
-
 msgid "Discord"
 msgstr "Discord"
 
@@ -22,9 +21,6 @@ msgstr "Jurnal de modificări"
 
 msgid "Social"
 msgstr "Social"
-
-msgid "About Gamend"
-msgstr "Despre Gamend"
 
 msgid "Elixir Docs"
 msgstr "Documente despre elixir"
@@ -68,44 +64,14 @@ msgstr "Turnee"
 msgid "Groups"
 msgstr "Grupuri"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend este un backend Elixir **complet echipat** pentru jocuri multiplayer, cu autentificare, sisteme sociale, canale în timp real și unelte de administrare."
-
-msgid "Realtime Guide"
-msgstr "Ghid pentru timp real"
-
-msgid "Real-time games"
-msgstr "Jocuri în timp real"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Folosește canale, lobby-uri, petreceri, prezență și canale de date WebRTC fără a reconstrui infrastructura multiplayer obișnuită."
-
-msgid "Built For Real-Time Games"
-msgstr "Creat pentru jocuri în timp real"
-
-msgid "Read Docs"
-msgstr "Citește documentația"
-
-msgid "Open source foundation"
-msgstr "Fundație open source"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Proiectul este conceput pentru a fi bifurcat, personalizat, găzduit și extins de echipe de jocuri."
-
-msgid "Open Source Foundation"
-msgstr "Fundație open source"
-
 msgid "Getting Started"
 msgstr "Noțiuni de bază"
 
 msgid "Presentation Video"
 msgstr "Prezentare video"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "Server de jocuri Elixir **open source** pentru jocuri multiplayer **în timp real**."
@@ -163,9 +129,6 @@ msgstr "Plăți pe server cu furnizorii Stripe, Google Play, App Store și Steam
 
 msgid "Payments & Store Integrations"
 msgstr "Plăți și integrări de magazin"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend este în beta!"
 
 msgid "Game + Backend"
 msgstr "Joc + Backend"

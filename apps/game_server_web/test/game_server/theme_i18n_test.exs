@@ -41,7 +41,7 @@ defmodule GameServer.ThemeI18nTest do
 
   describe "what counts as text" do
     test "text keys are translatable" do
-      for key <- ~w(label title text tagline description alt site_message cta subtitle) do
+      for key <- ~w(label title text tagline description alt cta subtitle) do
         assert Translatable.text?(key), "#{key} should be translatable"
       end
     end
@@ -79,8 +79,8 @@ defmodule GameServer.ThemeI18nTest do
     end
 
     test "a blank string is left alone rather than offered for translation" do
-      walked = Translatable.walk(%{"site_message" => "   "}, fn _ -> "translated" end)
-      assert walked["site_message"] == "   "
+      walked = Translatable.walk(%{"tagline" => "   "}, fn _ -> "translated" end)
+      assert walked["tagline"] == "   "
     end
   end
 

@@ -666,9 +666,7 @@ defmodule GameServerWeb.TournamentsLive do
               >
                 <td>
                   <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-base-300 flex items-center justify-center text-sm font-semibold">
-                      {String.upcase(String.first(player_name(e.leader)) || "?")}
-                    </div>
+                    <.user_avatar user={e.leader} class="w-8 h-8" />
                     <span class={[e.leader_id == @current_user_id && "font-bold"]}>
                       {player_name(e.leader)}
                     </span>

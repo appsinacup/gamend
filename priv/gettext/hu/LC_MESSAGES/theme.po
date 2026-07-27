@@ -22,9 +22,6 @@ msgstr "Változásnapló"
 msgid "Social"
 msgstr "Közösség"
 
-msgid "About Gamend"
-msgstr "A Gamendről"
-
 msgid "Elixir Docs"
 msgstr "Elixir-dokumentáció"
 
@@ -67,44 +64,14 @@ msgstr "Versenyek"
 msgid "Groups"
 msgstr "Csoportok"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "A Gamend egy **mindent tudó** Elixir háttérrendszer többjátékos játékokhoz: hitelesítés, közösségi funkciók, valós idejű csatornák és adminisztrációs eszközök."
-
-msgid "Realtime Guide"
-msgstr "Valós idejű útmutató"
-
-msgid "Real-time games"
-msgstr "Valós idejű játékok"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Használj csatornákat, előszobákat, csapatokat, jelenlétet és WebRTC-adatcsatornákat anélkül, hogy újraépítenéd a szokásos többjátékos infrastruktúrát."
-
-msgid "Built For Real-Time Games"
-msgstr "Valós idejű játékokhoz készült"
-
-msgid "Read Docs"
-msgstr "Dokumentáció elolvasása"
-
-msgid "Open source foundation"
-msgstr "Nyílt forráskódú alap"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "A projektet arra tervezték, hogy játékcsapatok forkolják, testre szabják, üzemeltessék és bővítsék."
-
-msgid "Open Source Foundation"
-msgstr "Nyílt forráskódú alap"
-
 msgid "Getting Started"
 msgstr "Első lépések"
 
 msgid "Presentation Video"
 msgstr "Bemutatóvideó"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "**Nyílt forráskódú** Elixir játékszerver **valós idejű** többjátékos játékokhoz."
@@ -162,9 +129,6 @@ msgstr "Szerveroldali fizetés Stripe, Google Play, App Store és Steam szolgál
 
 msgid "Payments & Store Integrations"
 msgstr "Fizetések és áruházi integrációk"
-
-msgid "Gamend is in beta!"
-msgstr "A Gamend béta állapotban van!"
 
 msgid "Game + Backend"
 msgstr "Játék + háttérrendszer"

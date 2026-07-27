@@ -1,7 +1,6 @@
 {
   "title": "Gamend",
   "tagline": "Game + Backend",
-  "site_message": "Gamend is in beta!",
   "description": "Open source Elixir game server for real-time multiplayer games.",
   "theme_color": {
     "light": "#ffffff",
@@ -165,76 +164,6 @@
           ]
         }
       ]
-    },
-    "about": {
-      "path": "/about",
-      "hero": {
-        "title": "About Gamend",
-        "text": "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling.",
-        "image": {
-          "light": "/images/logo.png",
-          "alt": "Gamend"
-        },
-        "image_position_desktop": "left",
-        "image_position_mobile": "top",
-        "media_width": "half",
-        "text_align": "left",
-        "buttons": [
-          {
-            "label": "GitHub",
-            "href": "https://github.com/appsinacup/game_server",
-            "icon": "hero-code-bracket-solid",
-            "external": true,
-            "style": "primary"
-          },
-          {
-            "label": "Discord",
-            "href": "https://discord.com/invite/v649emcpAu",
-            "icon": "hero-chat-bubble-left-ellipsis-solid",
-            "external": true
-          }
-        ]
-      },
-      "sections": [
-        {
-          "title": "Built For Real-Time Games",
-          "text": "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure.",
-          "image": {
-            "light": "/images/logo.png",
-            "alt": "Real-time games"
-          },
-          "media_width": "third",
-          "image_position_desktop": "right",
-          "image_position_mobile": "top",
-          "text_align": "left",
-          "buttons": [
-            {
-              "label": "Realtime Guide",
-              "href": "/docs/realtime",
-              "icon": "hero-signal-solid"
-            }
-          ]
-        },
-        {
-          "title": "Open Source Foundation",
-          "text": "The project is designed to be forked, themed, hosted, and extended by game teams.",
-          "image": {
-            "light": "/images/logo.png",
-            "alt": "Open source foundation"
-          },
-          "media_width": "third",
-          "image_position_desktop": "left",
-          "image_position_mobile": "top",
-          "text_align": "left",
-          "buttons": [
-            {
-              "label": "Read Docs",
-              "href": "/docs/setup",
-              "icon": "hero-book-open-solid"
-            }
-          ]
-        }
-      ]
     }
   },
   "navigation": {
@@ -300,10 +229,6 @@
         "title": "About",
         "links": [
           {
-            "label": "About Gamend",
-            "href": "/about"
-          },
-          {
             "label": "Elixir Docs",
             "href": "https://appsinacup.github.io/game_server/",
             "external": true
@@ -323,7 +248,8 @@
           },
           {
             "label": "Store",
-            "href": "/store"
+            "href": "/store",
+            "auth": "authenticated"
           }
         ]
       },

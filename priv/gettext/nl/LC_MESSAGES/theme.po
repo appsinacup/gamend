@@ -22,9 +22,6 @@ msgstr "Wijzigingslogboek"
 msgid "Social"
 msgstr "Sociaal"
 
-msgid "About Gamend"
-msgstr "Over Gamend"
-
 msgid "Elixir Docs"
 msgstr "Elixir-documentatie"
 
@@ -67,44 +64,14 @@ msgstr "Toernooien"
 msgid "Groups"
 msgstr "Groepen"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend is een **volledig uitgeruste** Elixir-backend voor multiplayergames, met authenticatie, sociale systemen, realtimekanalen en beheertools."
-
-msgid "Realtime Guide"
-msgstr "Realtime-handleiding"
-
-msgid "Real-time games"
-msgstr "Realtimegames"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Gebruik kanalen, lobby's, party's, aanwezigheid en WebRTC-datakanalen zonder de gebruikelijke multiplayerinfrastructuur opnieuw te bouwen."
-
-msgid "Built For Real-Time Games"
-msgstr "Gebouwd voor realtimegames"
-
-msgid "Read Docs"
-msgstr "Documentatie lezen"
-
-msgid "Open source foundation"
-msgstr "Opensourcefundament"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Het project is bedoeld om door gameteams te worden geforkt, vormgegeven, gehost en uitgebreid."
-
-msgid "Open Source Foundation"
-msgstr "Opensourcefundament"
-
 msgid "Getting Started"
 msgstr "Aan de slag"
 
 msgid "Presentation Video"
 msgstr "Presentatievideo"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "**Open source** Elixir-gameserver voor **realtime** multiplayergames."
@@ -162,9 +129,6 @@ msgstr "Betalingen aan serverzijde met Stripe, Google Play, App Store en Steam. 
 
 msgid "Payments & Store Integrations"
 msgstr "Betalingen en winkelintegraties"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend is in bèta!"
 
 msgid "Game + Backend"
 msgstr "Game + backend"

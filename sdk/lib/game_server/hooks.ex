@@ -326,6 +326,20 @@ defmodule GameServer.Hooks do
   @callback after_inventory_changed(change :: map()) :: any()
   @optional_callbacks after_wallet_changed: 1, after_inventory_changed: 1
 
+  # Payment lifecycle. A game turns a fulfilled purchase into currency or items
+  # here; core has already recorded the purchase and any entitlement.
+  @callback after_purchase_fulfilled(GameServer.Payments.Purchase.t()) :: any()
+  @callback after_purchase_revoked(GameServer.Payments.Purchase.t()) :: any()
+  @callback after_entitlement_changed(GameServer.Payments.Entitlement.t()) :: any()
+
+  @optional_callbacks after_purchase_fulfilled: 1,
+                      after_purchase_revoked: 1,
+                      after_entitlement_changed: 1
+
+  @callback after_score_submitted(GameServer.Leaderboards.Record.t()) :: any()
+
+  @optional_callbacks after_score_submitted: 1
+
   # Lobby lifecycle callbacks
   @callback before_lobby_create(attrs :: map()) :: hook_result(map())
   @callback after_lobby_create(lobby()) :: any()
@@ -349,8 +363,15 @@ defmodule GameServer.Hooks do
   @callback after_group_deleted(group()) :: any()
   @callback after_group_kick(integer(), integer(), integer()) :: any()
 
+  @callback before_group_delete(group()) :: hook_result(group())
+  @callback before_group_kick(String.t(), String.t(), String.t()) ::
+              hook_result({String.t(), String.t(), String.t()})
+
   # Party lifecycle callbacks
   @callback before_party_create(user(), map()) :: hook_result(map())
+  @callback before_party_join(user(), party()) :: hook_result({user(), party()})
+  @callback before_party_kick(user(), user(), party()) ::
+              hook_result({user(), user(), party()})
   @callback after_party_create(party()) :: any()
 
   @callback before_party_update(party(), map()) :: hook_result(map())
@@ -364,7 +385,11 @@ defmodule GameServer.Hooks do
   # Quest lifecycle callbacks. `before_quest_claim` is veto-only: return
   # `{:error, reason}` to reject the claim, anything else allows. Auto-claim
   # quests skip it. Achievements are quests of `kind: "achievement"`.
-  @callback before_quest_claim(String.t(), GameServer.Quests.Quest.t(), GameServer.Quests.QuestProgress.t()) ::
+  @callback before_quest_claim(
+              String.t(),
+              GameServer.Quests.Quest.t(),
+              GameServer.Quests.QuestProgress.t()
+            ) ::
               {:ok, term()} | {:error, term()} | any()
   @callback after_quest_completed(GameServer.Quests.QuestProgress.t()) :: any()
   @callback after_quest_claimed(GameServer.Quests.QuestProgress.t()) :: any()
@@ -605,6 +630,31 @@ defmodule GameServer.Hooks do
       def after_group_kick(_admin_id, _target_id, _group_id), do: :ok
 
       @impl true
+      def before_group_delete(group), do: {:ok, group}
+
+      @impl true
+      def before_group_kick(admin_id, target_id, group_id),
+        do: {:ok, {admin_id, target_id, group_id}}
+
+      @impl true
+      def before_party_join(user, party), do: {:ok, {user, party}}
+
+      @impl true
+      def before_party_kick(admin, target, party), do: {:ok, {admin, target, party}}
+
+      @impl true
+      def after_purchase_fulfilled(_purchase), do: :ok
+
+      @impl true
+      def after_purchase_revoked(_purchase), do: :ok
+
+      @impl true
+      def after_entitlement_changed(_entitlement), do: :ok
+
+      @impl true
+      def after_score_submitted(_record), do: :ok
+
+      @impl true
       def before_party_create(_user, attrs), do: {:ok, attrs}
 
       @impl true
@@ -738,6 +788,14 @@ defmodule GameServer.Hooks do
 
       defoverridable after_startup: 0,
                      before_stop: 0,
+                     before_group_delete: 1,
+                     before_group_kick: 3,
+                     before_party_join: 2,
+                     before_party_kick: 3,
+                     after_purchase_fulfilled: 1,
+                     after_purchase_revoked: 1,
+                     after_entitlement_changed: 1,
+                     after_score_submitted: 1,
                      before_user_register: 2,
                      after_user_register: 1,
                      after_user_logged_in: 1,

@@ -30,6 +30,9 @@ defmodule Mix.Tasks.Gen.Sdk do
     {GameServer.Jobs, "jobs.ex"},
     {GameServer.Economy, "economy.ex"},
     {GameServer.Inventory, "inventory.ex"},
+    # Plugins get `after_purchase_fulfilled`, so they need to be able to read
+    # the product that was bought.
+    {GameServer.Payments, "payments.ex"},
     {GameServer.KV, "kv.ex"},
     {GameServer.Lock, "lock.ex"},
     {GameServer.Tournaments, "tournaments.ex"},
@@ -353,6 +356,11 @@ defmodule Mix.Tasks.Gen.Sdk do
          String.contains?(rt, "GameServer.Groups.Group.t()") and String.contains?(rt, "| nil")
        end, "if :erlang.phash2(make_ref(), 2) == 0, do: nil, else: #{group_placeholder_expr()}"},
       {fn rt ->
+         String.contains?(rt, "GameServer.Payments.Product.t()") and
+           String.contains?(rt, "| nil")
+       end,
+       "if :erlang.phash2(make_ref(), 2) == 0, do: nil, else: #{product_placeholder_expr()}"},
+      {fn rt ->
          String.contains?(rt, "GameServer.Quests.Quest.t()") and String.contains?(rt, "| nil")
        end, "if :erlang.phash2(make_ref(), 2) == 0, do: nil, else: #{quest_placeholder_expr()}"},
       {fn rt ->
@@ -391,7 +399,11 @@ defmodule Mix.Tasks.Gen.Sdk do
   defp placeholder_expr_for_primitives(return_type) when is_binary(return_type) do
     cond do
       String.contains?(return_type, "boolean()") ->
-        "false"
+        # Both branches, not a literal `false`: a constant makes every
+        # `if Something.enabled?(...)` in plugin code look unreachable to the
+        # type checker, which is a warning the plugin author cannot fix.
+        "  :erlang.phash2(make_ref(), 2) == 0"
+        |> String.trim()
 
       String.contains?(return_type, "integer()") ->
         "0"
@@ -463,6 +475,12 @@ defmodule Mix.Tasks.Gen.Sdk do
     dt = dt_placeholder_expr()
 
     "%GameServer.Lobbies.Lobby{id: 0, title: \"\", host_id: nil, hostless: false, max_users: 0, is_hidden: false, is_locked: false, metadata: %{}, inserted_at: #{dt}, updated_at: #{dt}}"
+  end
+
+  defp product_placeholder_expr do
+    dt = dt_placeholder_expr()
+
+    "%GameServer.Payments.Product{id: \"\", sku: \"\", title: \"\", description: \"\", kind: \"entitlement\", active: true, grant_config: %{}, metadata: %{}, inserted_at: #{dt}, updated_at: #{dt}}"
   end
 
   defp group_placeholder_expr do

@@ -22,9 +22,6 @@ msgstr "Endringslogg"
 msgid "Social"
 msgstr "Sosialt"
 
-msgid "About Gamend"
-msgstr "Om Gamend"
-
 msgid "Elixir Docs"
 msgstr "Elixir-dokumentasjon"
 
@@ -67,44 +64,14 @@ msgstr "Turneringer"
 msgid "Groups"
 msgstr "Grupper"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend er en **komplett** Elixir-backend for flerspillerspill, med autentisering, sosiale systemer, sanntidskanaler og administrasjonsverktøy."
-
-msgid "Realtime Guide"
-msgstr "Sanntidsveiledning"
-
-msgid "Real-time games"
-msgstr "Sanntidsspill"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Bruk kanaler, lobbyer, følger, tilstedeværelse og WebRTC-datakanaler uten å bygge den vanlige flerspillerinfrastrukturen på nytt."
-
-msgid "Built For Real-Time Games"
-msgstr "Bygget for sanntidsspill"
-
-msgid "Read Docs"
-msgstr "Les dokumentasjonen"
-
-msgid "Open source foundation"
-msgstr "Grunnmur i åpen kildekode"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Prosjektet er laget for at spillteam skal kunne forke, tematisere, hoste og utvide det."
-
-msgid "Open Source Foundation"
-msgstr "Grunnmur i åpen kildekode"
-
 msgid "Getting Started"
 msgstr "Kom i gang"
 
 msgid "Presentation Video"
 msgstr "Presentasjonsvideo"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "**Åpen kildekode** – en Elixir-spillserver for **sanntids** flerspillerspill."
@@ -162,9 +129,6 @@ msgstr "Betalinger på serversiden med Stripe, Google Play, App Store og Steam. 
 
 msgid "Payments & Store Integrations"
 msgstr "Betalinger og butikkintegrasjoner"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend er i beta!"
 
 msgid "Game + Backend"
 msgstr "Spill + backend"

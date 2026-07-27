@@ -103,7 +103,7 @@ That exact file is the only one loaded — there is no per-locale variant. When 
 
 ## Translating the theme
 
-Write the theme once, in English, and translate it through gettext like the rest of the UI. Text keys (title, tagline, description, label, text, alt, site_message, cta, subtitle) are translatable; everything else — colours, hrefs, icons, image paths, layout — is configuration and can never vary by locale.
+Write the theme once, in English, and translate it through gettext like the rest of the UI. Text keys (title, tagline, description, label, text, alt, cta, subtitle) are translatable; everything else — colours, hrefs, icons, image paths, layout — is configuration and can never vary by locale.
 
 ```bash
 mix gamend.theme.extract

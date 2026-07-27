@@ -22,9 +22,6 @@ msgstr "บันทึกการเปลี่ยนแปลง"
 msgid "Social"
 msgstr "โซเชียล"
 
-msgid "About Gamend"
-msgstr "เกี่ยวกับ Gamend"
-
 msgid "Elixir Docs"
 msgstr "เอกสาร Elixir"
 
@@ -67,44 +64,14 @@ msgstr "ทัวร์นาเมนต์"
 msgid "Groups"
 msgstr "กลุ่ม"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend คือแบ็กเอนด์ Elixir **ครบเครื่อง** สำหรับเกมผู้เล่นหลายคน พร้อมระบบยืนยันตัวตน ระบบโซเชียล ช่องทางเรียลไทม์ และเครื่องมือผู้ดูแลระบบ"
-
-msgid "Realtime Guide"
-msgstr "คู่มือเรียลไทม์"
-
-msgid "Real-time games"
-msgstr "เกมเรียลไทม์"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "ใช้ช่องทาง ล็อบบี้ ปาร์ตี้ สถานะออนไลน์ และช่องข้อมูล WebRTC ได้เลย โดยไม่ต้องสร้างโครงสร้างพื้นฐานผู้เล่นหลายคนขึ้นมาใหม่"
-
-msgid "Built For Real-Time Games"
-msgstr "สร้างมาเพื่อเกมเรียลไทม์"
-
-msgid "Read Docs"
-msgstr "อ่านเอกสาร"
-
-msgid "Open source foundation"
-msgstr "รากฐานโอเพนซอร์ส"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "โปรเจกต์นี้ออกแบบมาให้ทีมเกมสามารถ fork ปรับธีม โฮสต์ และต่อยอดได้"
-
-msgid "Open Source Foundation"
-msgstr "รากฐานโอเพนซอร์ส"
-
 msgid "Getting Started"
 msgstr "เริ่มต้นใช้งาน"
 
 msgid "Presentation Video"
 msgstr "วิดีโอแนะนำ"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "เกมเซิร์ฟเวอร์ Elixir **โอเพนซอร์ส** สำหรับเกมผู้เล่นหลายคน**แบบเรียลไทม์**"
@@ -162,9 +129,6 @@ msgstr "การชำระเงินฝั่งเซิร์ฟเวอ
 
 msgid "Payments & Store Integrations"
 msgstr "การชำระเงินและการเชื่อมต่อร้านค้า"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend อยู่ในช่วงเบตา!"
 
 msgid "Game + Backend"
 msgstr "เกม + แบ็กเอนด์"

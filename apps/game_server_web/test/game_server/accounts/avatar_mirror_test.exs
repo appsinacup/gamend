@@ -77,4 +77,64 @@ defmodule GameServer.Accounts.AvatarMirrorTest do
 
     assert_enqueued(worker: AvatarMirror, args: %{"user_id" => user.id})
   end
+
+  describe "a mirror that fails is not permanent" do
+    test "a rate-limited provider is retried rather than given up on" do
+      Req.Test.stub(__MODULE__, fn conn -> Plug.Conn.send_resp(conn, 429, "slow down") end)
+
+      user = user_fixture() |> with_provider_avatar()
+
+      assert {:error, {:http, 429}} =
+               perform_job(AvatarMirror, %{
+                 "user_id" => user.id,
+                 "source_url" => user.profile_url
+               })
+
+      # Still hotlinked, but the job will run again with backoff.
+      assert Accounts.get_user(user.id).profile_url == user.profile_url
+    end
+
+    test "a 404 is not retried — nothing about it will change" do
+      Req.Test.stub(__MODULE__, fn conn -> Plug.Conn.send_resp(conn, 404, "gone") end)
+
+      user = user_fixture() |> with_provider_avatar()
+
+      assert {:cancel, _} =
+               perform_job(AvatarMirror, %{
+                 "user_id" => user.id,
+                 "source_url" => user.profile_url
+               })
+    end
+
+    test "a discarded attempt does not block the next one from being enqueued" do
+      user = user_fixture() |> with_provider_avatar()
+      args = %{"user_id" => user.id, "source_url" => user.profile_url}
+
+      # The dedupe rule sign-in uses: one job per user in flight, but a user
+      # whose earlier attempt was discarded must still get another chance.
+      unique = [
+        keys: [:user_id],
+        period: :infinity,
+        states: [:available, :scheduled, :executing, :retryable, :completed]
+      ]
+
+      {:ok, first} = Oban.insert(AvatarMirror.new(args, unique: unique))
+      {:ok, dupe} = Oban.insert(AvatarMirror.new(args, unique: unique))
+      assert dupe.id == first.id, "a pending mirror should not be enqueued twice"
+
+      {:ok, _} = first |> Ecto.Changeset.change(state: "discarded") |> GameServer.Repo.update()
+
+      {:ok, retry} = Oban.insert(AvatarMirror.new(args, unique: unique))
+
+      assert retry.id != first.id,
+             "a discarded attempt must not block this user's avatar from ever mirroring"
+    end
+  end
+
+  defp with_provider_avatar(user) do
+    {:ok, user} =
+      Accounts.update_user_avatar(user, "https://lh3.googleusercontent.com/a/#{user.id}=s96-c")
+
+    user
+  end
 end

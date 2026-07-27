@@ -72,7 +72,7 @@ defmodule GameServer.Lobbies do
   def can_edit_lobby?(_user, _lobby) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Lobbies.can_edit_lobby?/2 is a stub - only available at runtime on GameServer"
@@ -90,7 +90,7 @@ defmodule GameServer.Lobbies do
   def can_view_lobby?(_user, _lobby) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Lobbies.can_view_lobby?/2 is a stub - only available at runtime on GameServer"
@@ -818,7 +818,7 @@ defmodule GameServer.Lobbies do
   def spectatable?(_lobby) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Lobbies.spectatable?/1 is a stub - only available at runtime on GameServer"

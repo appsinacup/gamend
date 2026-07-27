@@ -41,6 +41,8 @@ defmodule GameServerWeb.ChatLive do
      |> assign(:chat_type, nil)
      |> assign(:chat_target, nil)
      |> assign(:chat_target_name, nil)
+     |> assign(:chat_target_user, nil)
+     |> assign(:chat_target_icon, nil)
      # messages
      |> assign(:messages, [])
      |> assign(:page, 1)
@@ -66,6 +68,8 @@ defmodule GameServerWeb.ChatLive do
          |> assign(:chat_type, "group")
          |> assign(:chat_target, gid)
          |> assign(:chat_target_name, group.title || group.name)
+         |> assign(:chat_target_user, nil)
+         |> assign(:chat_target_icon, group.icon_url)
          |> assign(:page, 1)
          |> assign(:editing_message_id, nil)
          |> assign(:editing_message_content, "")
@@ -94,6 +98,8 @@ defmodule GameServerWeb.ChatLive do
          |> assign(:chat_type, "friend")
          |> assign(:chat_target, fid)
          |> assign(:chat_target_name, LiveHelpers.public_user_name(target))
+         |> assign(:chat_target_user, target)
+         |> assign(:chat_target_icon, nil)
          |> assign(:page, 1)
          |> assign(:editing_message_id, nil)
          |> assign(:editing_message_content, "")
@@ -142,6 +148,7 @@ defmodule GameServerWeb.ChatLive do
                   )
                 ]}
               >
+                <.user_avatar user={f} class="w-6 h-6 shrink-0" />
                 <span class="truncate flex-1">{LiveHelpers.public_user_name(f)}</span>
                 <%= if (count = Map.get(@friend_unread, f.id, 0)) > 0 do %>
                   <span class="badge badge-sm badge-info">{count}</span>
@@ -171,6 +178,7 @@ defmodule GameServerWeb.ChatLive do
                   )
                 ]}
               >
+                <.entity_icon icon_url={group.icon_url} type={:group} class="w-6 h-6 shrink-0" />
                 <span class="truncate flex-1">{group.title || group.name}</span>
                 <%= if (count = Map.get(@group_unread, group.id, 0)) > 0 do %>
                   <span class="badge badge-sm badge-info">{count}</span>
@@ -191,6 +199,13 @@ defmodule GameServerWeb.ChatLive do
               <button phx-click="close_chat" class="btn btn-xs btn-ghost md:hidden">
                 ←
               </button>
+              <.user_avatar :if={@chat_type == "friend"} user={@chat_target_user} class="w-7 h-7" />
+              <.entity_icon
+                :if={@chat_type == "group"}
+                icon_url={@chat_target_icon}
+                type={:group}
+                class="w-7 h-7 text-base-content/60"
+              />
               <h2 class="font-semibold text-lg truncate">{@chat_target_name}</h2>
             </div>
 
@@ -384,6 +399,8 @@ defmodule GameServerWeb.ChatLive do
       |> assign(:chat_type, nil)
       |> assign(:chat_target, nil)
       |> assign(:chat_target_name, nil)
+      |> assign(:chat_target_user, nil)
+      |> assign(:chat_target_icon, nil)
       |> assign(:messages, [])
       |> assign(:page, 1)
       |> assign(:has_more, false)

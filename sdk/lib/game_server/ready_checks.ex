@@ -317,7 +317,7 @@ defmodule GameServer.ReadyChecks do
   def passed?(_lobby_id) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.ReadyChecks.passed?/1 is a stub - only available at runtime on GameServer"

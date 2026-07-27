@@ -1333,18 +1333,25 @@ defmodule GameServer.Accounts do
   end
 
   # Mirror an external (OAuth provider) avatar into our object storage so avatars
-  # render from our storage/CDN rather than hotlinking the provider. Enqueued only
-  # when the user's avatar is not already one of our stored objects. Oban's
-  # `:infinity` uniqueness keeps it to one job per user, and once mirrored the URL
-  # points at our storage so `our_stored_avatar?/1` short-circuits future logins —
-  # we never re-mirror. See `GameServer.Accounts.AvatarMirror`.
+  # render from our storage/CDN rather than hotlinking the provider. Enqueued
+  # whenever the user's avatar is not already one of our stored objects — once
+  # mirrored the URL points at our storage, so `our_stored_avatar?/1`
+  # short-circuits every later sign-in and we never re-fetch.
+  #
+  # Uniqueness deliberately omits `:discarded` and `:cancelled`. Counting those
+  # meant one failed download — a provider 429 is enough — blocked every future
+  # job for that user forever, leaving the avatar hotlinked to the provider for
+  # good. Excluding them lets the next sign-in try again, while a job still
+  # in flight or already completed keeps the dedupe.
+  @mirror_dedupe_states [:available, :scheduled, :executing, :retryable, :completed]
+
   defp maybe_mirror_avatar(%User{profile_url: url} = user) when is_binary(url) and url != "" do
     unless our_stored_avatar?(user) do
       _ =
         Oban.insert(
           AvatarMirror.new(
             %{"user_id" => user.id, "source_url" => url},
-            unique: [keys: [:user_id], period: :infinity, states: Oban.Job.states()]
+            unique: [keys: [:user_id], period: :infinity, states: @mirror_dedupe_states]
           )
         )
     end

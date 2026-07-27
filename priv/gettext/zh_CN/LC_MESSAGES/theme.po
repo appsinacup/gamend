@@ -22,9 +22,6 @@ msgstr "更新日志"
 msgid "Social"
 msgstr "社交"
 
-msgid "About Gamend"
-msgstr "关于 Gamend"
-
 msgid "Elixir Docs"
 msgstr "Elixir 文档"
 
@@ -67,44 +64,14 @@ msgstr "锦标赛"
 msgid "Groups"
 msgstr "群组"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend 是一个**开箱即用**的 Elixir 多人游戏后端，内置认证、社交系统、实时频道和管理工具。"
-
-msgid "Realtime Guide"
-msgstr "实时指南"
-
-msgid "Real-time games"
-msgstr "实时游戏"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "直接使用频道、房间、队伍、在线状态和 WebRTC 数据通道，无需重建常见的多人游戏基础设施。"
-
-msgid "Built For Real-Time Games"
-msgstr "为实时游戏而生"
-
-msgid "Read Docs"
-msgstr "阅读文档"
-
-msgid "Open source foundation"
-msgstr "开源基础"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "本项目旨在供游戏团队自由复刻、定制主题、自行部署和扩展。"
-
-msgid "Open Source Foundation"
-msgstr "开源基础"
-
 msgid "Getting Started"
 msgstr "快速开始"
 
 msgid "Presentation Video"
 msgstr "介绍视频"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "面向**实时**多人游戏的**开源** Elixir 游戏服务器。"
@@ -162,9 +129,6 @@ msgstr "支持 Stripe、Google Play、App Store 和 Steam 的服务端支付。�
 
 msgid "Payments & Store Integrations"
 msgstr "支付与商店集成"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend 目前处于测试版！"
 
 msgid "Game + Backend"
 msgstr "游戏 + 后端"

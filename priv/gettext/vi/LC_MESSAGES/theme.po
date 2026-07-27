@@ -22,9 +22,6 @@ msgstr "Nhật ký thay đổi"
 msgid "Social"
 msgstr "Xã hội"
 
-msgid "About Gamend"
-msgstr "Giới thiệu về Gamend"
-
 msgid "Elixir Docs"
 msgstr "Tài liệu Elixir"
 
@@ -67,44 +64,14 @@ msgstr "Giải đấu"
 msgid "Groups"
 msgstr "Các nhóm"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend là một backend Elixir **đầy đủ tính năng** cho game nhiều người chơi, với xác thực, hệ thống xã hội, kênh thời gian thực và công cụ quản trị."
-
-msgid "Realtime Guide"
-msgstr "Hướng dẫn thời gian thực"
-
-msgid "Real-time games"
-msgstr "Game thời gian thực"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Dùng kênh, sảnh chờ, nhóm chơi, trạng thái trực tuyến và kênh dữ liệu WebRTC mà không cần dựng lại hạ tầng nhiều người chơi thông thường."
-
-msgid "Built For Real-Time Games"
-msgstr "Được xây dựng cho game thời gian thực"
-
-msgid "Read Docs"
-msgstr "Đọc tài liệu"
-
-msgid "Open source foundation"
-msgstr "Nền tảng mã nguồn mở"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Dự án được thiết kế để các nhóm làm game fork, đổi giao diện, tự vận hành và mở rộng."
-
-msgid "Open Source Foundation"
-msgstr "Nền tảng mã nguồn mở"
-
 msgid "Getting Started"
 msgstr "Bắt đầu"
 
 msgid "Presentation Video"
 msgstr "Video giới thiệu"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "Máy chủ game Elixir **mã nguồn mở** cho các trò chơi nhiều người **thời gian thực**."
@@ -162,9 +129,6 @@ msgstr "Thanh toán phía máy chủ với Stripe, Google Play, App Store và St
 
 msgid "Payments & Store Integrations"
 msgstr "Thanh toán và tích hợp cửa hàng"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend đang trong giai đoạn beta!"
 
 msgid "Game + Backend"
 msgstr "Game + backend"

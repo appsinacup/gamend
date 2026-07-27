@@ -76,7 +76,7 @@ defmodule GameServer.Groups do
   def admin?(_group_id, _user_id) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Groups.admin?/2 is a stub - only available at runtime on GameServer"
@@ -816,7 +816,7 @@ defmodule GameServer.Groups do
   def member?(_group_id, _user_id) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Groups.member?/2 is a stub - only available at runtime on GameServer"
@@ -914,7 +914,7 @@ defmodule GameServer.Groups do
   def shared_group_member?(_user_a_id, _user_b_id) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Groups.shared_group_member?/2 is a stub - only available at runtime on GameServer"

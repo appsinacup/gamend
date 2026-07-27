@@ -410,6 +410,13 @@ if config_env() == :prod do
       queue_target: repo_queue_target,
       queue_interval: repo_queue_interval,
       timeout: sqlite_query_timeout,
+      # IMMEDIATE, not the DEFERRED default: a deferred transaction that reads
+      # before it writes has to *upgrade* its lock, and SQLite answers a
+      # contended upgrade with SQLITE_BUSY straight away — `busy_timeout` only
+      # covers waiting for a lock, never upgrading one. Read-modify-write paths
+      # (quest progress, wallets, KV) crashed under concurrent logins because of
+      # it. Taking the write lock up front means those waits honour the timeout.
+      default_transaction_mode: :immediate,
       pragmas: [
         foreign_keys: :on,
         journal_mode: :wal,

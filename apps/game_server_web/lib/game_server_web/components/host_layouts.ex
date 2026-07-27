@@ -74,7 +74,7 @@ defmodule GameServerWeb.HostLayouts do
 
   @host_theme_css_path "/theme.css"
 
-  @theme_translatable_top_keys ~w(title tagline description site_message)
+  @theme_translatable_top_keys ~w(title tagline description)
 
   @theme_translatable_array_fields [
     {["footer", "sections"], "title"},
@@ -320,20 +320,6 @@ defmodule GameServerWeb.HostLayouts do
 
     navigation = navigation_config(theme, en_theme)
     background_icons = theme_list(theme, en_theme, "background_icons")
-    site_message_source = Map.get(en_theme, "site_message", "")
-
-    site_message =
-      case Map.get(theme, "site_message", "") do
-        "" -> site_message_source
-        message -> message
-      end
-
-    site_message_hash =
-      if site_message_source != "" do
-        :erlang.phash2(site_message_source) |> Integer.to_string()
-      else
-        ""
-      end
 
     notif_unread_count =
       if assigns[:current_scope] do
@@ -351,8 +337,6 @@ defmodule GameServerWeb.HostLayouts do
       navigation: navigation,
       footer: Map.get(theme, "footer", %{}),
       background_icons: background_icons,
-      site_message: site_message,
-      site_message_hash: site_message_hash,
       notif_unread_count: notif_unread_count
     )
   end

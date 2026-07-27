@@ -507,7 +507,7 @@ defmodule GameServer.Quests do
   def prerequisite_met?(_user_id, _quest) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Quests.prerequisite_met?/2 is a stub - only available at runtime on GameServer"

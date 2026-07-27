@@ -22,9 +22,6 @@ msgstr "Ændringslog"
 msgid "Social"
 msgstr "Socialt"
 
-msgid "About Gamend"
-msgstr "Om Gamend"
-
 msgid "Elixir Docs"
 msgstr "Elixir-dokumentation"
 
@@ -67,44 +64,14 @@ msgstr "Turneringer"
 msgid "Groups"
 msgstr "Grupper"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend er en **fuldt udstyret** Elixir-backend til multiplayerspil med godkendelse, sociale systemer, realtidskanaler og administrationsværktøjer."
-
-msgid "Realtime Guide"
-msgstr "Realtidsvejledning"
-
-msgid "Real-time games"
-msgstr "Realtidsspil"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Brug kanaler, lobbyer, selskaber, tilstedeværelse og WebRTC-datakanaler uden at bygge den sædvanlige multiplayerinfrastruktur forfra."
-
-msgid "Built For Real-Time Games"
-msgstr "Bygget til realtidsspil"
-
-msgid "Read Docs"
-msgstr "Læs dokumentationen"
-
-msgid "Open source foundation"
-msgstr "Fundament i open source"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Projektet er lavet til at blive forket, tematiseret, hostet og udvidet af spilhold."
-
-msgid "Open Source Foundation"
-msgstr "Fundament i open source"
-
 msgid "Getting Started"
 msgstr "Kom godt i gang"
 
 msgid "Presentation Video"
 msgstr "Præsentationsvideo"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "**Open source** Elixir-spilserver til **realtids** multiplayerspil."
@@ -162,9 +129,6 @@ msgstr "Betalinger på serversiden med Stripe, Google Play, App Store og Steam. 
 
 msgid "Payments & Store Integrations"
 msgstr "Betalinger og butiksintegrationer"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend er i beta!"
 
 msgid "Game + Backend"
 msgstr "Spil + backend"

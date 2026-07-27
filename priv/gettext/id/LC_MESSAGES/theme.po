@@ -22,9 +22,6 @@ msgstr "Catatan perubahan"
 msgid "Social"
 msgstr "Sosial"
 
-msgid "About Gamend"
-msgstr "Tentang Gamend"
-
 msgid "Elixir Docs"
 msgstr "Dokumentasi Elixir"
 
@@ -67,44 +64,14 @@ msgstr "Turnamen"
 msgid "Groups"
 msgstr "Grup"
 
-msgid "GitHub"
-msgstr "GitHub"
-
-msgid "Gamend"
-msgstr "Gamend"
-
-msgid "Gamend is a **batteries-included** Elixir backend for multiplayer games, with auth, social systems, real-time channels, and admin tooling."
-msgstr "Gamend adalah backend Elixir **serba lengkap** untuk game multipemain, dengan autentikasi, sistem sosial, kanal waktu nyata, dan perkakas admin."
-
-msgid "Realtime Guide"
-msgstr "Panduan waktu nyata"
-
-msgid "Real-time games"
-msgstr "Game waktu nyata"
-
-msgid "Use channels, lobbies, parties, presence, and WebRTC data channels without rebuilding common multiplayer infrastructure."
-msgstr "Gunakan kanal, lobi, party, kehadiran, dan kanal data WebRTC tanpa membangun ulang infrastruktur multipemain yang biasa."
-
-msgid "Built For Real-Time Games"
-msgstr "Dibuat untuk game waktu nyata"
-
-msgid "Read Docs"
-msgstr "Baca dokumentasi"
-
-msgid "Open source foundation"
-msgstr "Fondasi sumber terbuka"
-
-msgid "The project is designed to be forked, themed, hosted, and extended by game teams."
-msgstr "Proyek ini dirancang untuk di-fork, ditema, di-hosting, dan dikembangkan oleh tim game."
-
-msgid "Open Source Foundation"
-msgstr "Fondasi sumber terbuka"
-
 msgid "Getting Started"
 msgstr "Memulai"
 
 msgid "Presentation Video"
 msgstr "Video presentasi"
+
+msgid "Gamend"
+msgstr "Gamend"
 
 msgid "**Open source** Elixir game server for **real-time** multiplayer games."
 msgstr "Server game Elixir **sumber terbuka** untuk game multipemain **waktu nyata**."
@@ -162,9 +129,6 @@ msgstr "Pembayaran sisi server dengan Stripe, Google Play, App Store, dan Steam.
 
 msgid "Payments & Store Integrations"
 msgstr "Pembayaran dan integrasi toko"
-
-msgid "Gamend is in beta!"
-msgstr "Gamend masih dalam versi beta!"
 
 msgid "Game + Backend"
 msgstr "Game + backend"

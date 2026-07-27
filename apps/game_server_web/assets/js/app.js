@@ -159,55 +159,6 @@ const Hooks = {
       })
     },
   },
-  /**
-   * SiteBanner — dismissible site-wide announcement banner.
-   *
-   * Reads `data-message-hash` to identify the current message. Dismissed hashes
-   * are stored in localStorage so the banner stays hidden across page loads.
-   * When the message changes (hash differs), the banner re-appears.
-   */
-  SiteBanner: {
-    mounted() {
-      const STORAGE_KEY = "dismissed_site_banners"
-      const hash = this.el.dataset.messageHash
-      if (!hash) return
-
-      // Read dismissed set from localStorage
-      const dismissed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")
-
-      if (dismissed.includes(hash)) {
-        // Already dismissed — stay hidden
-        return
-      }
-
-      // Not dismissed — reveal the banner
-      this.el.classList.remove("hidden")
-
-      // Wire up dismiss button
-      const btn = this.el.querySelector("[data-dismiss-banner]")
-      if (btn) {
-        btn.addEventListener("click", () => {
-          // Slide up animation
-          this.el.style.maxHeight = this.el.scrollHeight + "px"
-          requestAnimationFrame(() => {
-            this.el.style.overflow = "hidden"
-            this.el.style.maxHeight = "0"
-            this.el.style.paddingTop = "0"
-            this.el.style.paddingBottom = "0"
-          })
-
-          // Persist after animation completes
-          setTimeout(() => {
-            this.el.style.display = "none"
-            // Keep only the last 50 dismissed hashes to avoid unbounded growth
-            const current = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]")
-            const updated = [...current.slice(-49), hash]
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-          }, 300)
-        })
-      }
-    }
-  },
   GameAuth: {
     mounted() {
       const access = this.el.dataset.accessToken

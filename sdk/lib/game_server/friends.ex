@@ -60,7 +60,7 @@ defmodule GameServer.Friends do
   def any_blocked?(_user_id, _other_ids) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Friends.any_blocked?/2 is a stub - only available at runtime on GameServer"
@@ -119,7 +119,7 @@ defmodule GameServer.Friends do
   def blocked?(_requester_id, _target_id) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Friends.blocked?/2 is a stub - only available at runtime on GameServer"
@@ -320,7 +320,7 @@ defmodule GameServer.Friends do
   def friends?(_user_a_id, _user_b_id) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Friends.friends?/2 is a stub - only available at runtime on GameServer"

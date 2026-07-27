@@ -19,12 +19,15 @@ defmodule GameServer.Modules.ExampleHook do
   require Logger
 
   alias GameServer.Accounts
+  alias GameServer.Economy
   alias GameServer.Groups
   alias GameServer.Hooks
+  alias GameServer.Inventory
   alias GameServer.KV
   alias GameServer.Leaderboards
   alias GameServer.Lock
   alias GameServer.Notifications
+  alias GameServer.Payments
   alias GameServer.Tournaments
 
   # Sample content this plugin owns. Both are namespaced so the hooks below can
@@ -52,6 +55,7 @@ defmodule GameServer.Modules.ExampleHook do
     ensure_quests()
     ensure_welcome_kv()
     ensure_group()
+    ensure_store_products()
 
     [
       %{
@@ -98,6 +102,8 @@ defmodule GameServer.Modules.ExampleHook do
 
   @impl true
   def after_user_logged_in(user) do
+    pay_subscription_stipend(user)
+
     case Leaderboards.get_active_leaderboard_by_slug(@login_leaderboard) do
       nil -> :ok
       board -> Leaderboards.submit_score(board.id, user.id, 1)
@@ -134,7 +140,8 @@ defmodule GameServer.Modules.ExampleHook do
         category: "Achievements",
         reset: "never",
         auto_claim: true,
-        objectives: [%{event: "login", target: 1}]
+        objectives: [%{event: "login", target: 1}],
+        rewards: [%{type: "currency", code: "gold", amount: 100}]
       },
       %{
         key: "daily_login",
@@ -143,7 +150,8 @@ defmodule GameServer.Modules.ExampleHook do
         description: "Log in today.",
         category: "Check-ins",
         reset: "daily",
-        objectives: [%{event: "login", target: 1}]
+        objectives: [%{event: "login", target: 1}],
+        rewards: [%{type: "currency", code: "gold", amount: 25}]
       },
       %{
         key: "weekly_regular",
@@ -152,7 +160,11 @@ defmodule GameServer.Modules.ExampleHook do
         description: "Log in on five different days this week.",
         category: "Check-ins",
         reset: "weekly",
-        objectives: [%{event: "login", target: 5}]
+        objectives: [%{event: "login", target: 5}],
+        rewards: [
+          %{type: "currency", code: "gold", amount: 150},
+          %{type: "currency", code: "gems", amount: 5}
+        ]
       },
       %{
         key: "monthly_devotee",
@@ -161,7 +173,8 @@ defmodule GameServer.Modules.ExampleHook do
         description: "Log in twenty times this month.",
         category: "Check-ins",
         reset: "monthly",
-        objectives: [%{event: "login", target: 20}]
+        objectives: [%{event: "login", target: 20}],
+        rewards: [%{type: "currency", code: "gems", amount: 25}]
       },
       # `interval` restarts a fixed number of days after each completion,
       # rather than on a calendar boundary.
@@ -173,7 +186,8 @@ defmodule GameServer.Modules.ExampleHook do
         category: "Check-ins",
         reset: "interval",
         reset_interval_days: 3,
-        objectives: [%{event: "login", target: 1}]
+        objectives: [%{event: "login", target: 1}],
+        rewards: [%{type: "currency", code: "gold", amount: 40}]
       },
       # Chained: stays locked until its prerequisite is completed.
       %{
@@ -184,7 +198,8 @@ defmodule GameServer.Modules.ExampleHook do
         category: "Achievements",
         reset: "never",
         prerequisite_quest_key: @quest_prefix <> "first_login",
-        objectives: [%{event: "login", target: 50}]
+        objectives: [%{event: "login", target: 50}],
+        rewards: [%{type: "item", code: "veteran_banner", amount: 1}]
       },
       # Hidden quests stay a teaser in the catalog until they are earned.
       %{
@@ -195,7 +210,8 @@ defmodule GameServer.Modules.ExampleHook do
         category: "Secrets",
         reset: "never",
         hidden: true,
-        objectives: [%{event: "login", target: 100}]
+        objectives: [%{event: "login", target: 100}],
+        rewards: [%{type: "item", code: "lantern", amount: 1}]
       },
       # A window is orthogonal to the reset cycle: this is a daily that only
       # runs while the event is on.
@@ -208,7 +224,8 @@ defmodule GameServer.Modules.ExampleHook do
         reset: "daily",
         starts_at: DateTime.add(now, -1, :day),
         ends_at: DateTime.add(now, 30, :day),
-        objectives: [%{event: "login", target: 1}]
+        objectives: [%{event: "login", target: 1}],
+        rewards: [%{type: "currency", code: "gold", amount: 75}]
       }
     ]
     |> Enum.each(fn attrs ->
@@ -227,6 +244,108 @@ defmodule GameServer.Modules.ExampleHook do
 
     :ok
   end
+
+  # ── Sample store products ─────────────────────────────────────────────────
+  #
+  # Enough to see the store page do something: one product per kind. Payment
+  # providers are not involved here — `grant_config` is free-form, and the
+  # payout below is what turns a fulfilled purchase into currency or an item.
+
+  @products [
+    %{
+      sku: "example_gold_pouch",
+      title: "Pouch of Gold",
+      description: "500 gold, delivered straight to your wallet.",
+      kind: "consumable",
+      grant_config: %{"currency" => "gold", "amount" => 500}
+    },
+    %{
+      sku: "example_gem_bag",
+      title: "Bag of Gems",
+      description: "25 gems for the impatient adventurer.",
+      kind: "consumable",
+      grant_config: %{"currency" => "gems", "amount" => 25}
+    },
+    %{
+      sku: "example_starter_pack",
+      title: "Starter Pack",
+      description: "A one-off bundle: gold, gems and a commemorative compass.",
+      kind: "consumable",
+      grant_config: %{
+        "currency" => "gold",
+        "amount" => 1000,
+        "items" => [%{"item" => "compass", "qty" => 1}]
+      }
+    },
+    %{
+      sku: "example_supporter_badge",
+      title: "Supporter Badge",
+      description: "Permanent badge on your profile. Thanks for keeping the lights on.",
+      kind: "entitlement",
+      grant_config: %{"entitlement_key" => "supporter"}
+    },
+    %{
+      sku: "example_monthly_pass",
+      title: "Monthly Pass",
+      description: "Daily bonus gold and a supporter badge, renewed monthly.",
+      kind: "subscription",
+      grant_config: %{"entitlement_key" => "monthly_pass", "duration_days" => 30}
+    }
+  ]
+
+  defp ensure_store_products do
+    Enum.each(@products, fn attrs ->
+      # Reconciled, like the quests: editing a price or blurb here has to reach
+      # the row a previous deploy already made.
+      case Payments.get_product_by_sku(attrs.sku) do
+        nil -> Payments.create_product(attrs)
+        product -> Payments.update_product(product, Map.delete(attrs, :sku))
+      end
+    end)
+
+    :ok
+  end
+
+  # What a completed purchase actually pays out. Core marks the purchase
+  # fulfilled and records the entitlement; turning `grant_config` into game
+  # currency or items is the game's job, which is this.
+  @impl true
+  def after_purchase_fulfilled(purchase) do
+    case Payments.get_product(purchase.product_id) do
+      nil ->
+        :ok
+
+      product ->
+        config = product.grant_config
+        qty = max(purchase.quantity || 1, 1)
+
+        grant_currency(purchase.user_id, config, qty, product.sku)
+        grant_items(purchase.user_id, config, qty)
+    end
+
+    :ok
+  end
+
+  defp grant_currency(user_id, %{"currency" => code, "amount" => amount}, qty, sku)
+       when is_binary(code) and is_integer(amount) and amount > 0 do
+    # The purchase id would be the natural idempotency key; the sku keeps this
+    # example short and is enough for a sample store.
+    Economy.grant(user_id, code, amount * qty, reason: "store:" <> sku)
+  end
+
+  defp grant_currency(_user_id, _config, _qty, _sku), do: :ok
+
+  defp grant_items(user_id, %{"items" => items}, qty) when is_list(items) do
+    Enum.each(items, fn
+      %{"item" => item, "qty" => item_qty} when is_binary(item) and is_integer(item_qty) ->
+        Inventory.grant_item(user_id, item, item_qty * qty, reason: "store_purchase")
+
+      _ ->
+        :ok
+    end)
+  end
+
+  defp grant_items(_user_id, _config, _qty), do: :ok
 
   # ── Sample KV entry: a global value any client can read ───────────────────
 
@@ -276,7 +395,51 @@ defmodule GameServer.Modules.ExampleHook do
   @impl true
   def after_user_register(user) do
     ensure_group(user)
+    grant_starter_kit(user)
     welcome_notification(user)
+    :ok
+  end
+
+  # Everyone starts with something, so a brand-new account has a wallet and an
+  # inventory worth looking at instead of two empty pages. Idempotent: the key
+  # is the user, so re-running this never double-grants.
+  @starter_currency [{"gold", 250}, {"gems", 10}]
+  @starter_items [{"compass", 1}, {"spyglass", 1}, {"rations", 3}]
+
+  defp grant_starter_kit(user) do
+    for {code, amount} <- @starter_currency do
+      Economy.grant(user.id, code, amount,
+        reason: "starter_kit",
+        idempotency_key: "starter:#{user.id}:#{code}"
+      )
+    end
+
+    for {item, qty} <- @starter_items do
+      Inventory.grant_item(user.id, item, qty,
+        reason: "starter_kit",
+        idempotency_key: "starter:#{user.id}:#{item}"
+      )
+    end
+
+    :ok
+  end
+
+  # What the Monthly Pass actually buys: a gold stipend once per day, paid on
+  # the day's first login. The idempotency key is the date, so logging in ten
+  # times pays once — and a lapsed subscription simply stops matching.
+  @pass_entitlement "monthly_pass"
+  @pass_daily_gold 100
+
+  defp pay_subscription_stipend(user) do
+    if Payments.has_entitlement?(user.id, @pass_entitlement) do
+      today = Date.utc_today() |> Date.to_iso8601()
+
+      Economy.grant(user.id, "gold", @pass_daily_gold,
+        reason: "monthly_pass_daily",
+        idempotency_key: "pass:#{user.id}:#{today}"
+      )
+    end
+
     :ok
   end
 

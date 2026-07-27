@@ -629,9 +629,7 @@ defmodule GameServerWeb.GroupsLive do
               >
                 <td>
                   <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-base-300 flex items-center justify-center text-sm font-semibold">
-                      {LiveHelpers.public_user_initial(member.user)}
-                    </div>
+                    <.user_avatar user={member.user} class="w-8 h-8" />
                     <span>
                       {LiveHelpers.public_user_name(member.user)}
                     </span>

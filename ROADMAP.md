@@ -1,5 +1,3 @@
-# Roadmap
-
 ## 2026
 
 - **Rename to Gamend** — repo, code and docs.

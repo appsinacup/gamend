@@ -324,10 +324,17 @@ defmodule GameServerWeb.PresentationPage do
 
   defp section_height_class(section) do
     case section_height(section) do
-      value when value in ["compact", "sm", "small"] -> "py-8"
-      value when value in ["half", "50", "50%"] -> "min-h-[calc(50dvh-2.5rem)] py-8"
-      value when value in ["full", "screen", "100", "100%"] -> "min-h-[calc(100dvh-5rem)] py-12"
-      _ -> "py-8"
+      value when value in ["compact", "sm", "small"] ->
+        "py-8"
+
+      value when value in ["half", "50", "50%"] ->
+        "min-h-[calc(50dvh-2.5rem)] py-8"
+
+      value when value in ["full", "screen", "100", "100%"] ->
+        "min-h-[calc(100dvh-5rem)] py-12"
+
+      _ ->
+        "py-8"
     end
   end
 

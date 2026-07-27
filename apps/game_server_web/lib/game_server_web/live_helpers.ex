@@ -84,14 +84,4 @@ defmodule GameServerWeb.LiveHelpers do
   def public_user_name(%{"user_id" => id}) when is_binary(id) and id != "", do: "User #{id}"
   def public_user_name(id) when is_binary(id), do: "User #{id}"
   def public_user_name(_), do: "User"
-
-  @doc """
-  Return the first character from the public user label.
-  """
-  def public_user_initial(user) do
-    case public_user_name(user) do
-      <<first::utf8, _rest::binary>> -> String.upcase(<<first::utf8>>)
-      _ -> "?"
-    end
-  end
 end

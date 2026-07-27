@@ -653,7 +653,7 @@ defmodule GameServer.Accounts do
   def device_auth_enabled?() do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Accounts.device_auth_enabled?/0 is a stub - only available at runtime on GameServer"
@@ -1110,7 +1110,7 @@ defmodule GameServer.Accounts do
   def has_password?(_user) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Accounts.has_password?/1 is a stub - only available at runtime on GameServer"
@@ -1366,7 +1366,7 @@ defmodule GameServer.Accounts do
   def require_account_activation?() do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Accounts.require_account_activation?/0 is a stub - only available at runtime on GameServer"
@@ -1526,7 +1526,7 @@ defmodule GameServer.Accounts do
   def sudo_mode?(_user) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Accounts.sudo_mode?/1 is a stub - only available at runtime on GameServer"
@@ -1545,7 +1545,7 @@ defmodule GameServer.Accounts do
   def sudo_mode?(_user, _minutes) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Accounts.sudo_mode?/2 is a stub - only available at runtime on GameServer"
@@ -1785,7 +1785,7 @@ defmodule GameServer.Accounts do
   def user_activated?(_user) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Accounts.user_activated?/1 is a stub - only available at runtime on GameServer"
@@ -1818,7 +1818,7 @@ defmodule GameServer.Accounts do
   def valid_password?(_user, _password) do
     case Application.get_env(:game_server_sdk, :stub_mode, :raise) do
       :placeholder ->
-        false
+        :erlang.phash2(make_ref(), 2) == 0
 
       _ ->
         raise "GameServer.Accounts.valid_password?/2 is a stub - only available at runtime on GameServer"

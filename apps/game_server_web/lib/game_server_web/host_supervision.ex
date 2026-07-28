@@ -123,7 +123,9 @@ defmodule GameServerWeb.HostSupervision do
         GameServer.Matchmaking.Worker,
         # Buffers lobby snapshots/events and assigns seq. :global-registered, so
         # only one node runs it and start_link returns :ignore on the others.
-        GameServer.LobbySnapshots.Writer
+        GameServer.LobbySnapshots.Writer,
+        # Signaling relay for WebRTC user-to-user and client-server topologies
+        GameServer.Signaling.Server
       ] ++
       extra
   end

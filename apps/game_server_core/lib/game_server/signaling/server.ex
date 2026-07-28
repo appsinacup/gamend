@@ -1,4 +1,4 @@
-defmodule GameServerWeb.SignalingServer do
+defmodule GameServer.Signaling.Server do
   @moduledoc """
   Signaling relay for WebRTC user-to-user and client-server topologies.
 
@@ -32,6 +32,21 @@ defmodule GameServerWeb.SignalingServer do
   def start_link(opts) do
     name = Keyword.get(opts, :name, __MODULE__)
     GenServer.start_link(__MODULE__, opts, name: name)
+  end
+
+  @impl true
+  def init(_opts) do
+    if enabled?() do
+      Logger.info("SignalingServer: started")
+    else
+      Logger.info("SignalingServer: disabled, idle")
+    end
+
+    {:ok, %__MODULE__{}}
+  end
+
+  defp enabled? do
+    Application.get_env(:game_server_core, __MODULE__, [])[:enabled] != false
   end
 
   @doc """
@@ -132,11 +147,6 @@ defmodule GameServerWeb.SignalingServer do
   end
 
   # ── GenServer callbacks ──────────────────────────────────────────────────
-
-  @impl true
-  def init(_opts) do
-    {:ok, %__MODULE__{}}
-  end
 
   @impl true
   def handle_call({:create_room, room_id, topology, host_user_id, opts}, _from, state) do
@@ -477,13 +487,19 @@ defmodule GameServerWeb.SignalingServer do
   def handle_call({:broadcast_message, room_id, from, type, payload}, _from, state) do
     case Map.get(state.rooms, room_id) do
       nil ->
-        Logger.warning("SignalingServer: broadcast_message failed room_not_found room=#{room_id} from=#{from} type=#{type}")
+        Logger.warning(
+          "SignalingServer: broadcast_message failed room_not_found room=#{room_id} from=#{from} type=#{type}"
+        )
+
         {:reply, {:error, :room_not_found}, state}
 
       room ->
         case Map.get(room.users, from) do
           nil ->
-            Logger.warning("SignalingServer: broadcast_message failed user_not_found room=#{room_id} from=#{from}")
+            Logger.warning(
+              "SignalingServer: broadcast_message failed user_not_found room=#{room_id} from=#{from}"
+            )
+
             {:reply, {:error, :user_not_found}, state}
 
           from_user ->
@@ -491,7 +507,10 @@ defmodule GameServerWeb.SignalingServer do
               broadcast_to_room(room_id, room, from, type, payload)
               {:reply, :ok, state}
             else
-              Logger.warning("SignalingServer: broadcast_message failed not_allowed room=#{room.topology} from=#{from} role=#{from_user.role}")
+              Logger.warning(
+                "SignalingServer: broadcast_message failed not_allowed room=#{room.topology} from=#{from} role=#{from_user.role}"
+              )
+
               {:reply, {:error, :not_allowed}, state}
             end
         end
@@ -656,8 +675,13 @@ defmodule GameServerWeb.SignalingServer do
   end
 
   defp broadcast_to_room(room_id, room, from, type, payload) do
-    targets = Enum.filter(room.users, fn {user_id, _} -> user_id != from end) |> Enum.map(fn {id, _} -> id end)
-    Logger.debug("SignalingServer: broadcasting room=#{room_id} type=#{type} from=#{from} targets=#{length(targets)}")
+    targets =
+      Enum.filter(room.users, fn {user_id, _} -> user_id != from end)
+      |> Enum.map(fn {id, _} -> id end)
+
+    Logger.debug(
+      "SignalingServer: broadcasting room=#{room_id} type=#{type} from=#{from} targets=#{length(targets)}"
+    )
 
     for {user_id, %{pid: pid}} <- room.users, user_id != from do
       send(pid, {:signaling_relay, type, from, payload})

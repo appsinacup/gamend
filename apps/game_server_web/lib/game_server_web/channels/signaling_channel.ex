@@ -4,7 +4,7 @@ defmodule GameServerWeb.SignalingChannel do
 
   Topic: `signaling:<room_id>`
 
-  Rooms are created by the `WebRTCLobbyHook` through `SignalingServer.create_room/3`.
+  Rooms are created by the `WebRTCLobbyHook` through `Server.create_room/3`.
   The allowed-user list is populated by the hook, so this channel does not
   need to query the lobby system. The topology and host are fixed at room
   creation; clients cannot choose their role.
@@ -42,7 +42,7 @@ defmodule GameServerWeb.SignalingChannel do
   import GameServerWeb.ChannelPush
   require Logger
 
-  alias GameServerWeb.SignalingServer
+  alias GameServer.Signaling.Server
 
   # WebSocket message rate limits (per user) — defaults, overridden by config
   @default_ws_rate_limit 300
@@ -64,7 +64,7 @@ defmodule GameServerWeb.SignalingChannel do
 
       {:error, %{reason: "unauthorized"}}
     else
-      case SignalingServer.join_room(room_id, user_id, self(), %{}) do
+      case Server.join_room(room_id, user_id, self(), %{}) do
         {:ok, role} ->
           Logger.info("SignalingChannel: join ok room=#{room_id} user=#{user_id} role=#{role}")
 
@@ -107,7 +107,7 @@ defmodule GameServerWeb.SignalingChannel do
       room = socket.assigns.signaling_room
       from = socket.assigns.signaling_user_id
 
-      case SignalingServer.relay_message(room, from, target, :offer, %{sdp: sdp}) do
+      case Server.relay_message(room, from, target, :offer, %{sdp: sdp}) do
         :ok ->
           {:reply, {:ok, %{}}, socket}
 
@@ -141,7 +141,7 @@ defmodule GameServerWeb.SignalingChannel do
       room = socket.assigns.signaling_room
       from = socket.assigns.signaling_user_id
 
-      case SignalingServer.relay_message(room, from, target, :answer, %{sdp: sdp}) do
+      case Server.relay_message(room, from, target, :answer, %{sdp: sdp}) do
         :ok ->
           {:reply, {:ok, %{}}, socket}
 
@@ -175,7 +175,7 @@ defmodule GameServerWeb.SignalingChannel do
       room = socket.assigns.signaling_room
       from = socket.assigns.signaling_user_id
 
-      case SignalingServer.relay_message(room, from, target, :ice, %{candidate: candidate}) do
+      case Server.relay_message(room, from, target, :ice, %{candidate: candidate}) do
         :ok ->
           {:reply, {:ok, %{}}, socket}
 
@@ -206,7 +206,7 @@ defmodule GameServerWeb.SignalingChannel do
       room = socket.assigns.signaling_room
       from = socket.assigns.signaling_user_id
 
-      case SignalingServer.broadcast_message(room, from, :offer, %{sdp: sdp, from_user_id: from}) do
+      case Server.broadcast_message(room, from, :offer, %{sdp: sdp, from_user_id: from}) do
         :ok ->
           {:reply, {:ok, %{}}, socket}
 
@@ -232,7 +232,7 @@ defmodule GameServerWeb.SignalingChannel do
     with :ok <- check_ws_rate_limit(socket) do
       room = socket.assigns.signaling_room
 
-      case SignalingServer.list_users(room) do
+      case Server.list_users(room) do
         users when is_map(users) ->
           {:reply, {:ok, %{users: users}}, socket}
 
@@ -299,7 +299,7 @@ defmodule GameServerWeb.SignalingChannel do
         "SignalingChannel: terminating reason=#{inspect(reason)} room=#{room_id} user=#{user_id}"
       )
 
-      # Do NOT call SignalingServer.leave here. The server's DOWN handler
+      # Do NOT call Server.leave here. The server's DOWN handler
       # starts a grace period so the same user_id can reconnect and keep
       # its role. Explicit leave is only used for intentional removal.
     else

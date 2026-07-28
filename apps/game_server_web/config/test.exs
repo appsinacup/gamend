@@ -84,6 +84,7 @@ config :game_server_core, GameServer.Accounts.StalePresenceSweeper, enabled: fal
 # ("database is locked"). Tests drive tick/0 and sweep/0 directly.
 config :game_server_core, GameServer.Tournaments.Ticker, enabled: false
 config :game_server_core, GameServer.Matchmaking.Worker, enabled: false
+config :game_server_core, GameServer.Signaling.Server, enabled: false
 
 # NOTE: deliberately NOT setting `async_inline: true` here, unlike the root
 # config/test.exs. Payments call GameServer.Async.run/1 from inside a

@@ -83,6 +83,10 @@ config :game_server_core, GameServer.Tournaments.Ticker, enabled: false
 # Tests drive GameServer.Matchmaking.Worker.sweep/0 directly.
 config :game_server_core, GameServer.Matchmaking.Worker, enabled: false
 
+# The signaling server is disabled in tests by default. If a test needs it,
+# start it manually with start_supervised!(GameServer.Signaling.Server).
+config :game_server_core, GameServer.Signaling.Server, enabled: false
+
 # Disable app-level caching in tests to avoid stale reads across assertions.
 # Still provide the multilevel configuration so the cache can start.
 config :game_server_core, GameServer.Cache,

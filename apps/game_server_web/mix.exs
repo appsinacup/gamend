@@ -24,7 +24,6 @@ defmodule GameServerWeb.MixProject do
 
   def application do
     [
-      mod: {GameServerWeb.Application, []},
       extra_applications: [:logger]
     ]
   end

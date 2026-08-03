@@ -39,10 +39,8 @@ signal errored(message: String)
 
 ## The Phoenix channel used for signaling (must be joined already).
 var _channel: PhoenixChannel
-## The WebRTCPeerConnection instance.
-var _peer: WebRTCPeerConnection
-## Map of label → WebRTCDataChannel for open channels.
-var _data_channels: Dictionary = {}
+## The peer connection wrapper (shared with GamendSignalingClient).
+var _peer: GamendWebRTCPeer
 ## ICE servers configuration.
 var _ice_servers: Array = [{"urls": ["stun:stun.l.google.com:19302"]}]
 ## DataChannel definitions: Array of {label, ordered, max_retransmits}.
@@ -50,8 +48,6 @@ var _channel_defs: Array = [
 	{"label": "events", "ordered": true},
 	{"label": "state", "ordered": false, "maxRetransmits": 0},
 ]
-## Whether we are currently connected.
-var _is_connected: bool = false
 ## Enable debug logging.
 var enable_logs: bool = false
 ## RPC payload format: "json" or "protobuf" (negotiated via the DataChannel
@@ -84,41 +80,31 @@ func _ready() -> void:
 
 ## Start the WebRTC connection negotiation.
 func connect_webrtc() -> void:
-	# Create WebRTCPeerConnection
-	_peer = WebRTCPeerConnection.new()
-
-	var config := {"iceServers": _ice_servers}
-	var err := _peer.initialize(config)
+	# Create GamendWebRTCPeer
+	_peer = GamendWebRTCPeer.new()
+	var err := _peer.initialize(_ice_servers)
 	if err != OK:
 		_log("Failed to initialize WebRTCPeerConnection: %s" % err)
 		errored.emit("Failed to initialize WebRTCPeerConnection")
+		_peer = null
 		return
 
 	# Connect signals
-	_peer.ice_candidate_created.connect(_on_ice_candidate_created)
 	_peer.session_description_created.connect(_on_session_description_created)
+	_peer.ice_candidate_created.connect(_on_ice_candidate_created)
+	_peer.connected.connect(_on_peer_connected)
+	_peer.failed.connect(_on_peer_failed)
+	_peer.closed.connect(_on_peer_closed)
+	# Channel open/close is detected locally by polling in GamendWebRTCPeer.
+	_peer.channel_opened.connect(channel_opened.emit)
+	_peer.channel_closed.connect(channel_closed.emit)
+	_peer.data_received.connect(_on_peer_data_received)
 
 	# Create DataChannels (client-initiated)
-	for def in _channel_defs:
-		var label: String = def["label"]
-		var opts := {}
-		if def.has("ordered"):
-			opts["ordered"] = def["ordered"]
-		if def.has("maxRetransmits"):
-			opts["maxRetransmits"] = def["maxRetransmits"]
-		if def.has("maxPacketLifeTime"):
-			opts["maxPacketLifeTime"] = def["maxPacketLifeTime"]
-		if _format == "protobuf":
-			opts["protocol"] = "protobuf"
-
-		var dc := _peer.create_data_channel(label, opts)
-		if dc == null:
-			_log("Failed to create DataChannel: %s" % label)
-			errored.emit("Failed to create DataChannel: %s" % label)
-			continue
-
-		_data_channels[label] = dc
-		_log("Created DataChannel: %s" % label)
+	var protocol := "protobuf" if _format == "protobuf" else ""
+	for label in _peer.create_channels(_channel_defs, protocol):
+		_log("Failed to create DataChannel: %s" % label)
+		errored.emit("Failed to create DataChannel: %s" % label)
 
 	# Create offer
 	_peer.create_offer()
@@ -227,14 +213,9 @@ func _handle_rpc_reply(data: PackedByteArray) -> bool:
 
 ## Send data over a named DataChannel.
 func send_data(label: String, data: PackedByteArray) -> Error:
-	if not _data_channels.has(label):
-		return ERR_DOES_NOT_EXIST
-
-	var dc: WebRTCDataChannel = _data_channels[label]
-	if dc.get_ready_state() != WebRTCDataChannel.STATE_OPEN:
-		return ERR_UNAVAILABLE
-
-	return dc.put_packet(data)
+	if _peer == null:
+		return ERR_UNCONFIGURED
+	return _peer.send_data(label, data)
 
 
 ## Send a string over a named DataChannel.
@@ -244,26 +225,16 @@ func send_text(label: String, text: String) -> Error:
 
 ## Check if a specific DataChannel is open.
 func is_channel_open(label: String) -> bool:
-	if not _data_channels.has(label):
-		return false
-	var dc: WebRTCDataChannel = _data_channels[label]
-	return dc.get_ready_state() == WebRTCDataChannel.STATE_OPEN
+	return _peer != null and _peer.is_channel_open(label)
 
 
 ## Check if the WebRTC connection is established.
 func is_connected_webrtc() -> bool:
-	return _is_connected
+	return _peer != null and _peer.is_connected_webrtc()
 
 
 ## Close the WebRTC connection and all DataChannels.
 func close_webrtc() -> void:
-	_is_connected = false
-
-	for label in _data_channels:
-		var dc: WebRTCDataChannel = _data_channels[label]
-		dc.close()
-	_data_channels.clear()
-
 	if _peer:
 		_peer.close()
 		_peer = null
@@ -274,40 +245,9 @@ func close_webrtc() -> void:
 
 
 func _process(_delta: float) -> void:
-	if _peer == null:
-		return
-
-	# Poll the peer connection
-	_peer.poll()
-
-	# Check connection state
-	var state := _peer.get_connection_state()
-	if state == WebRTCPeerConnection.STATE_CONNECTED and not _is_connected:
-		_is_connected = true
-		_log("WebRTC connected")
-		connection_state_changed.emit("connected")
-		connected.emit()
-	elif state == WebRTCPeerConnection.STATE_FAILED:
-		_log("WebRTC connection failed")
-		connection_state_changed.emit("failed")
-		errored.emit("WebRTC connection failed")
-		close_webrtc()
-	elif state == WebRTCPeerConnection.STATE_CLOSED and _is_connected:
-		_is_connected = false
-		connection_state_changed.emit("closed")
-
-	# Poll DataChannels and read incoming data
-	for label in _data_channels:
-		var dc: WebRTCDataChannel = _data_channels[label]
-		dc.poll()
-
-		# Check for state changes
-		if dc.get_ready_state() == WebRTCDataChannel.STATE_OPEN:
-			while dc.get_available_packet_count() > 0:
-				var packet := dc.get_packet()
-				if label == "events" and _handle_rpc_reply(packet):
-					continue
-				data_received.emit(label, packet)
+	if _peer:
+		# Poll the peer connection
+		_peer.poll()
 
 
 ## Handle signaling events from the server via the Phoenix channel.
@@ -334,12 +274,38 @@ func _on_channel_event(event: String, payload: Dictionary, _status) -> void:
 			# We track this locally via polling, but log the server perspective
 
 		"webrtc:channel_open":
+			# channel_opened is emitted from local polling in GamendWebRTCPeer;
+			# this is the server-side confirmation.
 			var label: String = payload.get("channel", "")
 			_log("Server confirms channel open: %s" % label)
-			channel_opened.emit(label)
 
 		"webrtc:channel_closed":
 			_log("Server reports channel closed")
+
+
+func _on_peer_connected() -> void:
+	_log("WebRTC connected")
+	connection_state_changed.emit("connected")
+	connected.emit()
+
+
+func _on_peer_failed() -> void:
+	_log("WebRTC connection failed")
+	connection_state_changed.emit("failed")
+	errored.emit("WebRTC connection failed")
+	close_webrtc()
+
+
+func _on_peer_closed() -> void:
+	_log("WebRTC connection closed")
+	_peer = null
+	connection_state_changed.emit("closed")
+
+
+func _on_peer_data_received(label: String, data: PackedByteArray) -> void:
+	if label == "events" and _handle_rpc_reply(data):
+		return
+	data_received.emit(label, data)
 
 
 ## Called when the PeerConnection generates an ICE candidate.
@@ -353,10 +319,9 @@ func _on_ice_candidate_created(mid: String, index: int, candidate: String) -> vo
 
 
 ## Called when the PeerConnection generates a session description (offer/answer).
+## The local description is already applied by GamendWebRTCPeer.
 func _on_session_description_created(type: String, sdp: String) -> void:
 	_log("SDP created: %s" % type)
-	_peer.set_local_description(type, sdp)
-
 	if type == "offer":
 		_channel.push("webrtc:offer", {
 			"sdp": sdp,

@@ -13,7 +13,7 @@ defmodule Gamend.Modules.WebRTCLobbyHook do
       why.
     * `after_lobby_deleted/1` — closes the room.
     * `after_lobby_host_change/2` — re-notifies the new star host.
-      `Signaling.config/1` reads the host off the lobby, so the next join
+      `Signaling.config/1` reads the host of the lobby, so the next join
       already sees the new one.
 
   The star host is notified on its user channel with `webrtc:room_ready`,
@@ -47,17 +47,11 @@ defmodule Gamend.Modules.WebRTCLobbyHook do
   # attrs, because the `webrtc_*` columns are deliberately not castable.
   @impl true
   def after_lobby_create(lobby) do
-    with {:ok, configured} <- Signaling.configure(lobby, enabled: true, topology: :star) do
+    with {:ok, configured} <- Signaling.configure(lobby, enabled: true, topology: :star, host_id: "host_user_id") do
       ensure_room(configured)
     end
 
     :ok
-  end
-
-  @impl true
-  def after_lobby_updated(lobby) do
-    # If WebRTC is enabled later, create the room. If disabled, close it.
-    ensure_room(lobby)
   end
 
   @impl true
@@ -68,7 +62,7 @@ defmodule Gamend.Modules.WebRTCLobbyHook do
 
   @impl true
   def after_lobby_host_change(lobby, new_host_id) do
-    # Nothing to mirror: `Signaling.config/1` reads the host off the lobby, so
+    # Nothing to mirror: `Signaling.config/1` reads the host of the lobby, so
     # the next join already sees the new one. The notification is the only
     # side effect a headless host still needs.
     case Signaling.config(lobby.id) do

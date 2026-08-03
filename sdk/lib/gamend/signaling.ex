@@ -17,7 +17,8 @@ defmodule Gamend.Signaling do
   
   Read from the lobby, never mirrored:
   
-      Signaling.configure(lobby, enabled: true, topology: :star)
+      Signaling.configure(lobby, enabled: true, topology: :mesh)
+      Signaling.configure(lobby, enabled: true, topology: :star, host_id: some_server_user_id)
   
   Held in server-owned `lobbies.webrtc_*` columns, written only by
   `configure/2`. It lived in `metadata` once, which was wrong twice over: that

@@ -41,6 +41,8 @@ defmodule GamendWeb.SignalingChannel do
 
   use Phoenix.Channel
 
+  intercept ["presence_diff"]
+
   import GamendWeb.ChannelPush
   require Logger
 
@@ -251,6 +253,19 @@ defmodule GamendWeb.SignalingChannel do
 
   # ── Presence ─────────────────────────────────────────────────────────────
 
+  # Presence diffs carry the cluster-wide view. Translated into this channel's
+  # existing event names so the client protocol is unchanged.
+  # Intercepted via `intercept ["presence_diff"]`
+  @impl true
+  def handle_out("presence_diff", payload, socket) do
+    socket =
+      socket
+      |> announce_joins(payload.joins)
+      |> schedule_leaves(payload.leaves)
+
+    {:noreply, socket}
+  end
+
   # Tracking happens after join so `Presence.track/3` sees a joined channel.
   # Subscribing to our own inbox is what makes relays work across nodes: the
   # sender broadcasts to `signaling:<room>:<user>` and whichever node holds
@@ -272,18 +287,6 @@ defmodule GamendWeb.SignalingChannel do
     for {other_id, other_role} <- Signaling.peers(room), other_id != user_id do
       push_event(socket, "user_joined", %{user_id: other_id, role: other_role})
     end
-
-    {:noreply, socket}
-  end
-
-  # Presence diffs carry the cluster-wide view. Translated into this channel's
-  # existing event names so the client protocol is unchanged.
-  @impl true
-  def handle_info(%Phoenix.Socket.Broadcast{event: "presence_diff", payload: diff}, socket) do
-    socket =
-      socket
-      |> announce_joins(diff.joins)
-      |> schedule_leaves(diff.leaves)
 
     {:noreply, socket}
   end

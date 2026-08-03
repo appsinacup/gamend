@@ -17,7 +17,8 @@ defmodule Gamend.Signaling do
 
   Read from the lobby, never mirrored:
 
-      Signaling.configure(lobby, enabled: true, topology: :star)
+      Signaling.configure(lobby, enabled: true, topology: :mesh)
+      Signaling.configure(lobby, enabled: true, topology: :star, host_id: some_server_user_id)
 
   Held in server-owned `lobbies.webrtc_*` columns, written only by
   `configure/2`. It lived in `metadata` once, which was wrong twice over: that
@@ -76,7 +77,7 @@ defmodule Gamend.Signaling do
         {:ok,
          %{
            topology: parse_topology(lobby.webrtc_topology),
-           host_user_id: lobby.host_id,
+           host_user_id: lobby.webrtc_host_id || lobby.host_id,
            late_join: lobby.webrtc_late_join,
            reconnect_timeout: lobby.webrtc_reconnect_timeout_ms || @default_reconnect_timeout
          }}
@@ -109,6 +110,7 @@ defmodule Gamend.Signaling do
     changes =
       %{}
       |> put_opt(opts, :enabled, :webrtc_enabled)
+      |> put_opt(opts, :host_id, :webrtc_host_id)
       |> put_opt(opts, :late_join, :webrtc_late_join)
       |> put_opt(opts, :reconnect_timeout, :webrtc_reconnect_timeout_ms)
       |> put_topology(opts)

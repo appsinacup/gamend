@@ -16,6 +16,7 @@ defmodule Gamend.Lobbies.Lobby do
   - `is_locked` - Whether the lobby is locked (boolean)
   - `slowdown` - Rate-limit slowdown in milliseconds (integer, default 0)
   - `metadata` - Arbitrary lobby metadata (map)
+  - `webrtc_host_id` - Optional pinned WebRTC star host (UUID string)
   - `inserted_at` - Creation timestamp
   - `updated_at` - Last update timestamp
   """
@@ -30,6 +31,7 @@ defmodule Gamend.Lobbies.Lobby do
           is_locked: boolean(),
           slowdown: integer(),
           metadata: map(),
+          webrtc_host_id: String.t() | nil,
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
         }
@@ -44,6 +46,7 @@ defmodule Gamend.Lobbies.Lobby do
     :is_locked,
     :slowdown,
     :metadata,
+    :webrtc_host_id,
     :inserted_at,
     :updated_at
   ]

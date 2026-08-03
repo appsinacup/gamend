@@ -37,6 +37,7 @@ defmodule Gamend.Lobbies.Lobby do
     field :webrtc_topology, :string
     field :webrtc_late_join, :boolean, default: true
     field :webrtc_reconnect_timeout_ms, :integer, default: 30_000
+    field :webrtc_host_id, Gamend.UUIDv7
 
     belongs_to :host, User
 

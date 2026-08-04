@@ -366,6 +366,7 @@ defmodule GamendWeb.HostLayoutNavigation do
             <li class="list-none">
               <a
                 href={link.href}
+                rel={link[:rel]}
                 class={[
                   "flex items-center gap-2 px-2 py-1.5 rounded text-sm whitespace-nowrap hover:bg-base-200 transition-colors",
                   link.locale == @locale && "bg-primary/10 font-semibold text-primary"
@@ -425,6 +426,7 @@ defmodule GamendWeb.HostLayoutNavigation do
           <%= for link <- @locale_links do %>
             <a
               href={link.href}
+                rel={link[:rel]}
               class={[
                 "flex items-center gap-2 px-2 py-2 rounded text-sm whitespace-nowrap hover:bg-base-200 transition-colors",
                 link.locale == @locale && "bg-primary/10 font-semibold text-primary"
@@ -950,6 +952,14 @@ defmodule GamendWeb.HostLayoutNavigation do
     query_suffix =
       if is_binary(current_query) and current_query != "", do: "?" <> current_query, else: ""
 
+    # A locale prefix is only served as a real page for the paths in
+    # `:localized_paths`; everywhere else it redirects to the clean URL. The
+    # switcher still needs those links — following one is how a reader changes
+    # language — but a crawler following 30 of them per page just generates
+    # redirects. On this site that was 278 URLs reported as "Page with
+    # redirect", i.e. most of the crawl budget spent on nothing.
+    crawlable? = GamendWeb.Plugs.LocalePath.localized_path?(base_path)
+
     Enum.map(known_locales, fn locale ->
       href =
         if(base_path == "/", do: "/" <> locale, else: "/" <> locale <> base_path) <> query_suffix
@@ -958,6 +968,7 @@ defmodule GamendWeb.HostLayoutNavigation do
         locale: locale,
         label: Map.get(locale_labels, locale, locale),
         href: href,
+        rel: unless(crawlable?, do: "nofollow"),
         flag_code: locale_flag_code(locale)
       }
     end)

@@ -15,6 +15,7 @@ defmodule GamendWeb.HostLayoutShell do
   attr :notif_unread_count, :integer, default: 0
   attr :locale, :string, required: true
   attr :known_locales, :list, default: []
+  attr :breadcrumbs, :list, default: []
 
   slot :inner_block, required: true
 
@@ -101,6 +102,7 @@ defmodule GamendWeb.HostLayoutShell do
       <% else %>
         <main class="relative z-[2] px-4 py-4 sm:px-6 lg:px-8 flex-1">
           <div class="mx-auto max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-6xl space-y-4">
+            <.breadcrumbs trail={@breadcrumbs} />
             {render_slot(@inner_block)}
           </div>
         </main>
@@ -130,6 +132,32 @@ defmodule GamendWeb.HostLayoutShell do
     </div>
     """
   end
+
+  attr :trail, :list, default: []
+
+  @doc """
+  The breadcrumb trail, as `{label, path}` pairs — the last one is the current
+  page and carries a `nil` path.
+
+  Renders nothing for a bare `[{"Home", nil}]`: a trail with no ancestors tells
+  the reader nothing, and Google ignores a single-item `BreadcrumbList`.
+  """
+  def breadcrumbs(assigns) do
+    ~H"""
+    <nav :if={length(@trail) > 1} aria-label="Breadcrumb" class="text-sm text-base-content/60">
+      <ol class="flex flex-wrap items-center gap-2">
+        <li :for={{{label, path}, index} <- Enum.with_index(@trail)} class="flex items-center gap-2">
+          <span :if={index > 0} aria-hidden="true">/</span>
+          <.link :if={path} href={path} class="hover:text-primary transition-colors">
+            {label}
+          </.link>
+          <span :if={is_nil(path)} aria-current="page" class="text-base-content/90">{label}</span>
+        </li>
+      </ol>
+    </nav>
+    """
+  end
+
 
   defp footer_sections(%{"sections" => sections}) when is_list(sections), do: sections
   defp footer_sections(_footer), do: []

@@ -196,9 +196,12 @@ defmodule GamendWeb.PageControllerTest do
   end
 
   test "home renders in the visitor's locale", %{conn: conn} do
+    # `/` is a localized path, so the prefixed URL is served directly rather
+    # than redirected — that is what makes the Romanian home page indexable.
     conn = get(conn, "/ro")
-    assert redirected_to(conn) == "/"
+    assert html_response(conn, 200) =~ ~s(lang="ro")
 
+    # The locale also sticks for the unprefixed URL, via the session.
     conn = get(recycle(conn), "/")
     body = html_response(conn, 200)
 

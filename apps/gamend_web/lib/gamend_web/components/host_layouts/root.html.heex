@@ -24,7 +24,13 @@
     <!-- Open Graph / Twitter meta defaults -->
     <% locale = GamendWeb.HostLayouts.current_locale() %>
     <% theme = GamendWeb.HostLayouts.resolve_theme(locale, Map.get(assigns, :theme, %{})) %>
-    <% title = assigns[:page_title] || Map.get(theme, "title") %>
+    <% site_title = Map.get(theme, "title") %>
+    <%!--
+    `:seo_title` (from the PageMeta plug) wins over `:page_title`: the latter is
+    a short in-app label like "Learn", which is not what anyone searches for.
+    --%>
+    <% doc_title = assigns[:seo_title] || assigns[:page_title] %>
+    <% title = doc_title || site_title %>
     <% description_raw =
       assigns[:meta_description] || Map.get(theme, "description") ||
         Map.get(theme, "tagline") || "" %>
@@ -41,23 +47,86 @@
         (File.exists?(Path.join(host_static_dir, banner_dark_rel)) or
            File.exists?(Path.join(web_static_dir, banner_dark_rel))) %>
     <% image_path = if banner_dark_exists?, do: banner_dark_path, else: banner_path %>
+    <%!-- Open Graph requires absolute URLs — a relative path breaks share previews. --%>
+    <% site_url = String.trim_trailing(GamendWeb.endpoint().url(), "/") %>
+    <% image_url =
+      cond do
+        image_path == "" -> ""
+        String.starts_with?(image_path, ["http://", "https://"]) -> image_path
+        true -> site_url <> "/" <> String.trim_leading(image_path, "/")
+      end %>
 
     <meta name="description" content={description} />
+    <%!--
+    Pages that set `:robots` opt out of indexing. Internal search results are
+    the classic case: Google treats indexed search pages as low-value and they
+    dilute the crawl budget the real pages need.
+    --%>
+    <meta :if={assigns[:robots]} name="robots" content={assigns[:robots]} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={image_path} />
+    <meta property="og:image" content={image_url} />
+    <meta property="og:site_name" content={Map.get(theme, "title")} />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={image_path} />
-    <.live_title
-      default={Map.get(theme, "title")}
-      prefix={"#{Map.get(theme, "title")} — "}
-    >
-      {assigns[:page_title]}
+    <meta name="twitter:image" content={image_url} />
+
+    <%!--
+    Canonical + hreflang. `seo_path` is the locale-free path, assigned by the
+    LocalePath plug. Content pages are served under a locale prefix, so each
+    (page, locale) pair gets its own indexable URL that points at every other
+    translation — without this Google only ever sees the English one.
+    --%>
+    <% seo_path = assigns[:seo_path] %>
+    <%= if is_binary(seo_path) do %>
+      <% suffix = if seo_path == "/", do: "", else: seo_path %>
+      <% clean_url = site_url <> seo_path %>
+      <% default_locale = GamendWeb.Plugs.LocalePath.default_locale() %>
+      <% locale_url = fn loc ->
+        if loc == default_locale do
+          clean_url
+        else
+          site_url <> "/" <> GamendWeb.Plugs.LocalePath.url_locale(loc) <> suffix
+        end
+      end %>
+      <% canonical_url =
+        case assigns[:locale_prefix] do
+          prefix when is_binary(prefix) -> locale_url.(prefix)
+          _ -> clean_url
+        end %>
+      <link rel="canonical" href={canonical_url} />
+      <%= if GamendWeb.Plugs.LocalePath.localized_path?(seo_path) do %>
+        <link rel="alternate" hreflang="x-default" href={clean_url} />
+        <%= for alt <- GamendWeb.Plugs.LocalePath.hreflang_locales() do %>
+          <link
+            rel="alternate"
+            hreflang={GamendWeb.Plugs.LocalePath.url_locale(alt)}
+            href={locale_url.(alt)}
+          />
+        <% end %>
+      <% end %>
+    <% end %>
+    <%!--
+    Brand last. Google truncates the title around 60 characters, so leading
+    every page with "Polyglot Pirates — " spends the visible half of every
+    result on a word the page already ranks for.
+    --%>
+    <.live_title default={site_title} suffix={" | #{site_title}"}>
+      {doc_title}
     </.live_title>
+    <%!--
+    schema.org JSON-LD. This is what search engines and AI answer engines read
+    to understand what the site *is* rather than guessing from prose, and it
+    is the input for rich results.
+    --%>
+    <%= for object <- assigns[:json_ld] || [] do %>
+      <script type="application/ld+json">
+        <%= Phoenix.HTML.raw(GamendWeb.HostLayouts.json_ld(object)) %>
+      </script>
+    <% end %>
     <% app_css_href = SRI.versioned_path(~p"/assets/css/app.css") %>
     <link
       phx-track-static

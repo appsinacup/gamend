@@ -161,6 +161,31 @@ defmodule GamendWeb.HostLayouts do
     |> Enum.map(fn path -> GamendWeb.SRI.versioned_path(path) || path end)
   end
 
+  @doc """
+  Encodes a schema.org object for an `application/ld+json` script tag.
+
+  `nil` values are dropped so callers can build objects with optional fields
+  without emitting `null`, which validators flag. `<` is escaped because a
+  `</script>` inside a string would otherwise close the tag early — the one
+  way JSON-LD turns into an injection vector.
+  """
+  @spec json_ld(map()) :: String.t()
+  def json_ld(object) do
+    object
+    |> drop_nils()
+    |> Jason.encode!()
+    |> String.replace("<", "\\u003C")
+  end
+
+  defp drop_nils(map) when is_map(map) and not is_struct(map) do
+    map
+    |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+    |> Map.new(fn {key, value} -> {key, drop_nils(value)} end)
+  end
+
+  defp drop_nils(list) when is_list(list), do: Enum.map(list, &drop_nils/1)
+  defp drop_nils(other), do: other
+
   @doc false
   def current_locale do
     GamendWeb.GettextSync.current_locale()
@@ -308,9 +333,16 @@ defmodule GamendWeb.HostLayouts do
   defp prepare_app_assigns(assigns) do
     conn = Map.get(assigns, :conn)
 
+    # `Layouts.app` is a function component, so it only sees the attrs a
+    # template hands it — several core templates pass neither `current_path`
+    # nor `conn`, and defaulting those to "/" made the nav highlight Home on
+    # every one of them. The path the PageMeta plug stashed is the reliable
+    # last resort.
     current_path =
       Map.get(assigns, :current_path) ||
-        if(conn, do: conn.request_path, else: "/")
+        if(conn, do: conn.request_path, else: nil) ||
+        Process.get(:gamend_page_path) ||
+        "/"
 
     current_query = if conn, do: conn.query_string, else: ""
     locale = current_locale()
@@ -337,8 +369,38 @@ defmodule GamendWeb.HostLayouts do
       navigation: navigation,
       footer: Map.get(theme, "footer", %{}),
       background_icons: background_icons,
-      notif_unread_count: notif_unread_count
+      notif_unread_count: notif_unread_count,
+      breadcrumbs: breadcrumbs_for(current_path)
     )
+  end
+
+  # Derived here rather than threaded through as an assign: `Layouts.app` is a
+  # function component, so it only ever sees the attrs a template passes it —
+  # a conn assign set by the PageMeta plug would never arrive. Deriving from
+  # `current_path` means every page gets a trail without touching a single
+  # template, LiveViews included.
+  defp breadcrumbs_for(current_path) do
+    case Application.get_env(:gamend_web, :page_meta_provider) do
+      nil ->
+        []
+
+      module ->
+        if Code.ensure_loaded?(module) and function_exported?(module, :breadcrumbs, 1) do
+          module.breadcrumbs(breadcrumb_path(current_path))
+        else
+          []
+        end
+    end
+  end
+
+  # The plug's path is authoritative: it is already locale-stripped, and it is
+  # present even when a template passed no `current_path` at all.
+  defp breadcrumb_path(current_path) do
+    case Process.get(:gamend_page_path) do
+      path when is_binary(path) -> path
+      _ when is_binary(current_path) -> strip_locale_prefix(current_path, @known_locales)
+      _ -> "/"
+    end
   end
 
   defp host_theme_settings do

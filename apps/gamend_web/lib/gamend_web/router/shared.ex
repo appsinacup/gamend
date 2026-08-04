@@ -93,6 +93,7 @@ defmodule GamendWeb.Router.Shared do
         plug :put_secure_browser_headers, RouterShared.browser_headers()
         plug GamendWeb.Plugs.CaptchaCsp
         plug GamendWeb.Plugs.ColorMode
+        plug GamendWeb.Plugs.PageMeta
         plug :fetch_current_scope_for_user
       end
 

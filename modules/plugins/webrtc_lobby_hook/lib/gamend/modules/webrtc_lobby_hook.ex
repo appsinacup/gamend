@@ -1,28 +1,49 @@
 defmodule Gamend.Modules.WebRTCLobbyHook do
   @moduledoc """
-  Turns WebRTC signaling on for every lobby, and tells a star host when to
-  connect.
+  Enables WebRTC signaling for every lobby.
 
-  A room *is* a lobby: `Gamend.Signaling` reads configuration from the
-  lobby's `webrtc_*` columns, membership from presence, and relays over PubSub,
-  so this plugin mirrors no state. It sets policy and sends one notification:
+  A room *is* a lobby: `Gamend.Signaling` reads configuration from the lobby's
+  `webrtc_*` columns, membership from `Gamend.Presence`, and relays over
+  PubSub, so this plugin mirrors no state. It sets a default policy and sends
+  one notification.
 
-    * `after_lobby_create/1` — enables star signaling on the new lobby.
+  ## What this plugin does
+
+    * `after_lobby_create/1` — enables **mesh** signaling on the new lobby.
     * `after_lobby_updated/1` — closes the room if WebRTC was switched off,
       since peers would otherwise stay connected, unable to relay, never told
       why.
     * `after_lobby_deleted/1` — closes the room.
-    * `after_lobby_host_change/2` — re-notifies the new star host.
-      `Signaling.config/1` reads the host off the lobby, so the next join
-      already sees the new one.
+    * `after_lobby_host_change/2` — re-notifies the star host when the lobby
+      uses star topology.
 
-  The star host is notified on its user channel with `webrtc:room_ready`,
-  carrying the topic to join, so a headless server-as-host connects on its own.
+  ## Changing the default topology
 
-  Configuration goes through `Gamend.Signaling.configure/2` (see its docs);
-  the star host is always `lobby.host_id`. Drop this plugin to drive
-  `configure/2` yourself — for mesh rooms, or to enable signaling only once a
-  match actually starts.
+  This plugin is a convenience default. You can change the topology by
+  calling `Gamend.Signaling.configure/2` directly instead — for example,
+  switching to `:star` with a pinned `host_id` when your game starts, or
+  enabling `:mesh` with `late_join: false` for tournament rooms.
+
+  ## Star host and `webrtc_host_id`
+
+  With `:star` topology, one peer relays traffic for everyone. By default the
+  star host is `lobby.host_id`. If you want a dedicated server, bot, or other
+  user to be the star host instead, pin it with the `host_id` option:
+
+      Gamend.Signaling.configure(lobby,
+        enabled: true,
+        topology: :star,
+        host_id: dedicated_server_user_id
+      )
+
+  The `webrtc_host_id` column stores the pinned host. When `nil`,
+  `Gamend.Signaling.config/1` falls back to `lobby.host_id`.
+
+  ## Realtime events
+
+  When using `:star`, the star host is notified on its user channel with
+  `webrtc:room_ready`, carrying the topic to join, so a headless server-as-host
+  can connect on its own.
   """
 
   use Gamend.Hooks
@@ -39,7 +60,10 @@ defmodule Gamend.Modules.WebRTCLobbyHook do
   """
   def realtime_events do
     %{
-      @room_ready_event => "A signaling room is ready; the star host should connect to it."
+      @room_ready_event =>
+        "A signaling room is ready. The star host should connect to the " <>
+        "channel topic provided in the payload. Payload fields: " <>
+        "`lobby_id`, `topology`, `host_user_id`, `signaling_topic`."
     }
   end
 
@@ -47,17 +71,11 @@ defmodule Gamend.Modules.WebRTCLobbyHook do
   # attrs, because the `webrtc_*` columns are deliberately not castable.
   @impl true
   def after_lobby_create(lobby) do
-    with {:ok, configured} <- Signaling.configure(lobby, enabled: true, topology: :star) do
+    with {:ok, configured} <- Signaling.configure(lobby, enabled: true, topology: :mesh) do
       ensure_room(configured)
     end
 
     :ok
-  end
-
-  @impl true
-  def after_lobby_updated(lobby) do
-    # If WebRTC is enabled later, create the room. If disabled, close it.
-    ensure_room(lobby)
   end
 
   @impl true

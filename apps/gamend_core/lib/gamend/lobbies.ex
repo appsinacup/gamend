@@ -892,6 +892,10 @@ defmodule Gamend.Lobbies do
   def write_webrtc_config(%Lobby{} = lobby, changes) when is_map(changes) do
     lobby
     |> Ecto.Changeset.change(changes)
+    |> Ecto.Changeset.foreign_key_constraint(:webrtc_host_id,
+      name: "lobbies_webrtc_host_id_fkey",
+      message: "the specified host does not exist in users"
+    )
     |> Repo.update()
     |> case do
       {:ok, updated} = ok ->

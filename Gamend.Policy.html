@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1210">
+    <meta name="project" content="gamend_core v1.0.1211">
 
 
-    <title>Gamend.Policy — gamend_core v1.0.1210</title>
+    <title>Gamend.Policy — gamend_core v1.0.1211</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-EFF2AD35.js"></script>
+    <script defer src="dist/sidebar_items-1C5C6705.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1210
+          v1.0.1211
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Policy</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1210)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1211)</small>
 
     </h1>
 
@@ -118,9 +118,9 @@ gamend_core
 everywhere.</p><p>Gamend has four owners: a lobby's host, a lobby's pinned WebRTC host, a
 group's admins and a party's leader. Each context decides its own rule and
 keeps deciding it; this module does not own authority, it only routes to the
-context that does:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Policy</span><span class="o">.</span><span class="n">can?</span><span class="p" data-group-id="9863844521-1">(</span><span class="n">user</span><span class="p">,</span><span class="w"> </span><span class="ss">:manage</span><span class="p">,</span><span class="w"> </span><span class="n">lobby</span><span class="p" data-group-id="9863844521-1">)</span><span class="w">   </span><span class="c1"># -&gt; Lobbies.can_manage_lobby?/2</span><span class="w">
-</span><span class="nc">Policy</span><span class="o">.</span><span class="n">can?</span><span class="p" data-group-id="9863844521-2">(</span><span class="n">user</span><span class="p">,</span><span class="w"> </span><span class="ss">:manage</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="p" data-group-id="9863844521-2">)</span><span class="w">   </span><span class="c1"># -&gt; Groups.can_manage_group?/2</span><span class="w">
-</span><span class="nc">Policy</span><span class="o">.</span><span class="n">can?</span><span class="p" data-group-id="9863844521-3">(</span><span class="n">user</span><span class="p">,</span><span class="w"> </span><span class="ss">:manage</span><span class="p">,</span><span class="w"> </span><span class="n">party</span><span class="p" data-group-id="9863844521-3">)</span><span class="w">   </span><span class="c1"># -&gt; Parties.can_manage_party?/2</span></code></pre><p>A caller that holds a resource but does not know its type — an admin screen,
+context that does:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Policy</span><span class="o">.</span><span class="n">can?</span><span class="p" data-group-id="1061612233-1">(</span><span class="n">user</span><span class="p">,</span><span class="w"> </span><span class="ss">:manage</span><span class="p">,</span><span class="w"> </span><span class="n">lobby</span><span class="p" data-group-id="1061612233-1">)</span><span class="w">   </span><span class="c1"># -&gt; Lobbies.can_manage_lobby?/2</span><span class="w">
+</span><span class="nc">Policy</span><span class="o">.</span><span class="n">can?</span><span class="p" data-group-id="1061612233-2">(</span><span class="n">user</span><span class="p">,</span><span class="w"> </span><span class="ss">:manage</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="p" data-group-id="1061612233-2">)</span><span class="w">   </span><span class="c1"># -&gt; Groups.can_manage_group?/2</span><span class="w">
+</span><span class="nc">Policy</span><span class="o">.</span><span class="n">can?</span><span class="p" data-group-id="1061612233-3">(</span><span class="n">user</span><span class="p">,</span><span class="w"> </span><span class="ss">:manage</span><span class="p">,</span><span class="w"> </span><span class="n">party</span><span class="p" data-group-id="1061612233-3">)</span><span class="w">   </span><span class="c1"># -&gt; Parties.can_manage_party?/2</span></code></pre><p>A caller that holds a resource but does not know its type — an admin screen,
 a hook, a serializer — can ask without a <code class="inline">case</code> per resource, and the answer
 comes from the context that owns the rule rather than from a copy of it.</p><h2 id="module-actions" class="section-heading"><a href="#module-actions" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Actions</span></h2><ul><li><code class="inline">:view</code> — read the resource's details. Lobbies only; groups and parties
 have no hidden state to gate yet.</li><li><code class="inline">:manage</code> — everything an owner does: edit, kick, moderate, and for a
@@ -297,9 +297,9 @@ for one.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1210">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1211">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1210">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1211">Hex Preview</a>
 
             </span>
 

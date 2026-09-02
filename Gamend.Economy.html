@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1210">
+    <meta name="project" content="gamend_core v1.0.1211">
 
 
-    <title>Gamend.Economy — gamend_core v1.0.1210</title>
+    <title>Gamend.Economy — gamend_core v1.0.1211</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-EFF2AD35.js"></script>
+    <script defer src="dist/sidebar_items-1C5C6705.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1210
+          v1.0.1211
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Economy</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1210)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1211)</small>
 
     </h1>
 
@@ -117,16 +117,16 @@ gamend_core
 <p>Virtual-currency wallets with an append-only ledger.</p><p>Currencies are free-form string codes (<code class="inline">&quot;gold&quot;</code>, <code class="inline">&quot;gems&quot;</code>, <code class="inline">&quot;energy&quot;</code>) — the
 game decides which exist. Every balance change is atomic and recorded in the
 ledger, so two concurrent spends can never overspend and every mutation is
-auditable.</p><h2 id="module-usage-server-side-hooks" class="section-heading"><a href="#module-usage-server-side-hooks" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage (server-side / hooks)</span></h2><pre><code class="makeup elixir" translate="no"><span class="nc">Economy</span><span class="o">.</span><span class="n">grant</span><span class="p" data-group-id="3356486349-1">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;gold&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="ss">reason</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;match_reward&quot;</span><span class="p" data-group-id="3356486349-1">)</span><span class="w">
-</span><span class="k">case</span><span class="w"> </span><span class="nc">Economy</span><span class="o">.</span><span class="n">spend</span><span class="p" data-group-id="3356486349-2">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;gold&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="ss">reason</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;store_purchase&quot;</span><span class="p" data-group-id="3356486349-2">)</span><span class="w"> </span><span class="k" data-group-id="3356486349-3">do</span><span class="w">
-  </span><span class="p" data-group-id="3356486349-4">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">balance</span><span class="p" data-group-id="3356486349-4">}</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">:ok</span><span class="w">
-  </span><span class="p" data-group-id="3356486349-5">{</span><span class="ss">:error</span><span class="p">,</span><span class="w"> </span><span class="ss">:insufficient_funds</span><span class="p" data-group-id="3356486349-5">}</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">:not_enough_gold</span><span class="w">
-</span><span class="k" data-group-id="3356486349-3">end</span><span class="w">
+auditable.</p><h2 id="module-usage-server-side-hooks" class="section-heading"><a href="#module-usage-server-side-hooks" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage (server-side / hooks)</span></h2><pre><code class="makeup elixir" translate="no"><span class="nc">Economy</span><span class="o">.</span><span class="n">grant</span><span class="p" data-group-id="9595547252-1">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;gold&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="ss">reason</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;match_reward&quot;</span><span class="p" data-group-id="9595547252-1">)</span><span class="w">
+</span><span class="k">case</span><span class="w"> </span><span class="nc">Economy</span><span class="o">.</span><span class="n">spend</span><span class="p" data-group-id="9595547252-2">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;gold&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">30</span><span class="p">,</span><span class="w"> </span><span class="ss">reason</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;store_purchase&quot;</span><span class="p" data-group-id="9595547252-2">)</span><span class="w"> </span><span class="k" data-group-id="9595547252-3">do</span><span class="w">
+  </span><span class="p" data-group-id="9595547252-4">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">balance</span><span class="p" data-group-id="9595547252-4">}</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">:ok</span><span class="w">
+  </span><span class="p" data-group-id="9595547252-5">{</span><span class="ss">:error</span><span class="p">,</span><span class="w"> </span><span class="ss">:insufficient_funds</span><span class="p" data-group-id="9595547252-5">}</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">:not_enough_gold</span><span class="w">
+</span><span class="k" data-group-id="9595547252-3">end</span><span class="w">
 
-</span><span class="nc">Economy</span><span class="o">.</span><span class="n">balance</span><span class="p" data-group-id="3356486349-6">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;gold&quot;</span><span class="p" data-group-id="3356486349-6">)</span><span class="w">   </span><span class="c1">#=&gt; 70</span><span class="w">
-</span><span class="nc">Economy</span><span class="o">.</span><span class="n">balances</span><span class="p" data-group-id="3356486349-7">(</span><span class="n">user_id</span><span class="p" data-group-id="3356486349-7">)</span><span class="w">          </span><span class="c1">#=&gt; %{&quot;gold&quot; =&gt; 70}</span></code></pre><h2 id="module-idempotency" class="section-heading"><a href="#module-idempotency" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Idempotency</span></h2><p>Pass <code class="inline">:idempotency_key</code> so a retried request (network retry, at-least-once job)
+</span><span class="nc">Economy</span><span class="o">.</span><span class="n">balance</span><span class="p" data-group-id="9595547252-6">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;gold&quot;</span><span class="p" data-group-id="9595547252-6">)</span><span class="w">   </span><span class="c1">#=&gt; 70</span><span class="w">
+</span><span class="nc">Economy</span><span class="o">.</span><span class="n">balances</span><span class="p" data-group-id="9595547252-7">(</span><span class="n">user_id</span><span class="p" data-group-id="9595547252-7">)</span><span class="w">          </span><span class="c1">#=&gt; %{&quot;gold&quot; =&gt; 70}</span></code></pre><h2 id="module-idempotency" class="section-heading"><a href="#module-idempotency" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Idempotency</span></h2><p>Pass <code class="inline">:idempotency_key</code> so a retried request (network retry, at-least-once job)
 can't double-apply — the second call is a no-op that returns the current
-balance:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Economy</span><span class="o">.</span><span class="n">grant</span><span class="p" data-group-id="1765933118-1">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;gems&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="ss">idempotency_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;purchase:</span><span class="si" data-group-id="1765933118-2">#{</span><span class="n">order_id</span><span class="si" data-group-id="1765933118-2">}</span><span class="s">&quot;</span><span class="p" data-group-id="1765933118-1">)</span></code></pre><h2 id="module-safety" class="section-heading"><a href="#module-safety" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Safety</span></h2><p>These are <strong>server-authoritative</strong>: expose them from hooks and admin tools,
+balance:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Economy</span><span class="o">.</span><span class="n">grant</span><span class="p" data-group-id="6393023406-1">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;gems&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="ss">idempotency_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;purchase:</span><span class="si" data-group-id="6393023406-2">#{</span><span class="n">order_id</span><span class="si" data-group-id="6393023406-2">}</span><span class="s">&quot;</span><span class="p" data-group-id="6393023406-1">)</span></code></pre><h2 id="module-safety" class="section-heading"><a href="#module-safety" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Safety</span></h2><p>These are <strong>server-authoritative</strong>: expose them from hooks and admin tools,
 never as a raw client &quot;add currency&quot; endpoint. Clients only read their wallet.</p>
     </section>
 
@@ -494,9 +494,9 @@ is never left negative.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1210">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1211">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1210">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1211">Hex Preview</a>
 
             </span>
 

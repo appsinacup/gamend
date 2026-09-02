@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1210">
+    <meta name="project" content="gamend_core v1.0.1211">
 
 
-    <title>Gamend.Hooks.Declarations — gamend_core v1.0.1210</title>
+    <title>Gamend.Hooks.Declarations — gamend_core v1.0.1211</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-EFF2AD35.js"></script>
+    <script defer src="dist/sidebar_items-1C5C6705.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1210
+          v1.0.1211
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Hooks.<wbr />Declarations</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1210)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1211)</small>
 
     </h1>
 
@@ -117,17 +117,17 @@ gamend_core
 <p>Registry of what a plugin <em>declares</em> it contributes, for observability and
 validation.</p><p>Three optional callbacks, registered the same convention-based way as
 <a href="Gamend.Hooks.KvSchemas.html"><code class="inline">Gamend.Hooks.KvSchemas</code></a> — export them from the plugin's hooks module and
-they are picked up at load:</p><pre><code class="makeup elixir" translate="no"><span class="kd">def</span><span class="w"> </span><span class="nf">notification_types</span><span class="w"> </span><span class="k" data-group-id="4120663735-1">do</span><span class="w">
-  </span><span class="p" data-group-id="4120663735-2">%{</span><span class="s">&quot;quest_completed&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;Player finished a quest&quot;</span><span class="p" data-group-id="4120663735-2">}</span><span class="w">
-</span><span class="k" data-group-id="4120663735-1">end</span><span class="w">
+they are picked up at load:</p><pre><code class="makeup elixir" translate="no"><span class="kd">def</span><span class="w"> </span><span class="nf">notification_types</span><span class="w"> </span><span class="k" data-group-id="9574940898-1">do</span><span class="w">
+  </span><span class="p" data-group-id="9574940898-2">%{</span><span class="s">&quot;quest_completed&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;Player finished a quest&quot;</span><span class="p" data-group-id="9574940898-2">}</span><span class="w">
+</span><span class="k" data-group-id="9574940898-1">end</span><span class="w">
 
-</span><span class="kd">def</span><span class="w"> </span><span class="nf">realtime_events</span><span class="w"> </span><span class="k" data-group-id="4120663735-3">do</span><span class="w">
-  </span><span class="p" data-group-id="4120663735-4">%{</span><span class="s">&quot;quest_progress&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;Objective counter moved&quot;</span><span class="p" data-group-id="4120663735-4">}</span><span class="w">
-</span><span class="k" data-group-id="4120663735-3">end</span><span class="w">
+</span><span class="kd">def</span><span class="w"> </span><span class="nf">realtime_events</span><span class="w"> </span><span class="k" data-group-id="9574940898-3">do</span><span class="w">
+  </span><span class="p" data-group-id="9574940898-4">%{</span><span class="s">&quot;quest_progress&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;Objective counter moved&quot;</span><span class="p" data-group-id="9574940898-4">}</span><span class="w">
+</span><span class="k" data-group-id="9574940898-3">end</span><span class="w">
 
-</span><span class="kd">def</span><span class="w"> </span><span class="nf">env_vars</span><span class="w"> </span><span class="k" data-group-id="4120663735-5">do</span><span class="w">
-  </span><span class="p" data-group-id="4120663735-6">[</span><span class="p" data-group-id="4120663735-7">%{</span><span class="ss">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;MYGAME_DIFFICULTY&quot;</span><span class="p">,</span><span class="w"> </span><span class="ss">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;normal&quot;</span><span class="p">,</span><span class="w"> </span><span class="ss">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Global difficulty&quot;</span><span class="p" data-group-id="4120663735-7">}</span><span class="p" data-group-id="4120663735-6">]</span><span class="w">
-</span><span class="k" data-group-id="4120663735-5">end</span></code></pre><p><a href="#notification_types/0"><code class="inline">notification_types/0</code></a> is <strong>enforced</strong>: <a href="Gamend.Notifications.html"><code class="inline">Gamend.Notifications</code></a> rejects a
+</span><span class="kd">def</span><span class="w"> </span><span class="nf">env_vars</span><span class="w"> </span><span class="k" data-group-id="9574940898-5">do</span><span class="w">
+  </span><span class="p" data-group-id="9574940898-6">[</span><span class="p" data-group-id="9574940898-7">%{</span><span class="ss">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;MYGAME_DIFFICULTY&quot;</span><span class="p">,</span><span class="w"> </span><span class="ss">default</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;normal&quot;</span><span class="p">,</span><span class="w"> </span><span class="ss">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Global difficulty&quot;</span><span class="p" data-group-id="9574940898-7">}</span><span class="p" data-group-id="9574940898-6">]</span><span class="w">
+</span><span class="k" data-group-id="9574940898-5">end</span></code></pre><p><a href="#notification_types/0"><code class="inline">notification_types/0</code></a> is <strong>enforced</strong>: <a href="Gamend.Notifications.html"><code class="inline">Gamend.Notifications</code></a> rejects a
 notification whose <code class="inline">metadata[&quot;type&quot;]</code> is not declared by core or a plugin, so
 a client is never sent a code nobody documented. The other two are
 declarations only — a plugin can always read an env var directly, and events
@@ -366,9 +366,9 @@ the whole truth instead of only core's half.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1210">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1211">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1210">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1211">Hex Preview</a>
 
             </span>
 

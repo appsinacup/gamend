@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1210">
+    <meta name="project" content="gamend_core v1.0.1211">
 
 
-    <title>Gamend.Realtime — gamend_core v1.0.1210</title>
+    <title>Gamend.Realtime — gamend_core v1.0.1211</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-EFF2AD35.js"></script>
+    <script defer src="dist/sidebar_items-1C5C6705.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1210
+          v1.0.1211
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Realtime</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1210)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1211)</small>
 
     </h1>
 
@@ -117,7 +117,7 @@ gamend_core
 <p>Pushing game-defined realtime events to a player's socket.</p><p>Core's own events (<code class="inline">updated</code>, <code class="inline">notification</code>, <code class="inline">member_joined</code>, …) are fixed
 and documented in <code class="inline">GamendWeb.RealtimeEvents</code>. This is the escape hatch a
 plugin uses for events core knows nothing about — a quest counter, a boss
-spawn — without needing its own channel:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Gamend.Realtime</span><span class="o">.</span><span class="n">push_to_user</span><span class="p" data-group-id="4555032898-1">(</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;quest_progress&quot;</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="4555032898-2">%{</span><span class="ss">id</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="ss">step</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p" data-group-id="4555032898-2">}</span><span class="p" data-group-id="4555032898-1">)</span></code></pre><p>Delivery rides the user's existing <code class="inline">user:&lt;id&gt;</code> channel, so the client needs
+spawn — without needing its own channel:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Gamend.Realtime</span><span class="o">.</span><span class="n">push_to_user</span><span class="p" data-group-id="7147756908-1">(</span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;quest_progress&quot;</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="7147756908-2">%{</span><span class="ss">id</span><span class="p">:</span><span class="w"> </span><span class="mi">7</span><span class="p">,</span><span class="w"> </span><span class="ss">step</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p" data-group-id="7147756908-2">}</span><span class="p" data-group-id="7147756908-1">)</span></code></pre><p>Delivery rides the user's existing <code class="inline">user:&lt;id&gt;</code> channel, so the client needs
 no new subscription. The payload is JSON; protobuf mapping is reserved for
 core events, whose schemas ship with the clients.</p><p>The event name must be declared by the plugin's <code class="inline">realtime_events/0</code> callback
 (see <a href="Gamend.Hooks.Declarations.html"><code class="inline">Gamend.Hooks.Declarations</code></a>), for the same reason notification codes
@@ -204,9 +204,9 @@ declared the event name.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1210">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1211">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1210">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1211">Hex Preview</a>
 
             </span>
 

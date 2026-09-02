@@ -124,9 +124,28 @@ See `Gamend.Accounts.User.password_changeset/3` for a list of supported options.
 # `change_user_registration`
 
 ```elixir
-@spec change_user_registration(Gamend.Accounts.User.t(), map(), keyword()) ::
+@spec change_user_registration(Gamend.Accounts.User.t(), map()) :: Ecto.Changeset.t()
+```
+
+# `change_user_registration_for_validation`
+
+```elixir
+@spec change_user_registration_for_validation(Gamend.Accounts.User.t(), map()) ::
   Ecto.Changeset.t()
 ```
+
+A registration changeset for live form feedback, with the uniqueness query
+skipped.
+
+`change_user_registration/2` runs `unsafe_validate_unique`, which is right on
+submit and wrong on every keystroke: the registration form's `validate` event
+is neither rate-limited nor captcha'd, so running it there turned the form
+into an unauthenticated oracle for "does this address have an account here?",
+one query per character typed. Submitting still checks, and the unique index
+is what actually enforces it.
+
+Separate function rather than an option, because `mix gen.sdk` cannot generate
+a stub for a function carrying two default arguments.
 
 # `change_username`
 

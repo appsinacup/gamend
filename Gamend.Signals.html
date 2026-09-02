@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1210">
+    <meta name="project" content="gamend_core v1.0.1211">
 
 
-    <title>Gamend.Signals — gamend_core v1.0.1210</title>
+    <title>Gamend.Signals — gamend_core v1.0.1211</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-EFF2AD35.js"></script>
+    <script defer src="dist/sidebar_items-1C5C6705.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1210
+          v1.0.1211
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Signals</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1210)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1211)</small>
 
     </h1>
 
@@ -117,9 +117,9 @@ gamend_core
 <p>Server-side signals: a plugin emits a named event, another part of the plugin
 waits for it.</p><p>This is the server's answer to Godot's <code class="inline">signal</code> / <code class="inline">emit</code> / <code class="inline">await</code>. Nothing
 on the server emits engine signals, so a hook that wants to wait for
-something needs a source of its own:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Gamend.Signals</span><span class="o">.</span><span class="n">subscribe</span><span class="p" data-group-id="4191285989-1">(</span><span class="s">&quot;my_game&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;level_up&quot;</span><span class="p" data-group-id="4191285989-1">)</span><span class="w">
-</span><span class="nc">Gamend.Signals</span><span class="o">.</span><span class="n">emit</span><span class="p" data-group-id="4191285989-2">(</span><span class="s">&quot;my_game&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;level_up&quot;</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="4191285989-3">[</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p" data-group-id="4191285989-3">]</span><span class="p" data-group-id="4191285989-2">)</span><span class="w">
-</span><span class="p" data-group-id="4191285989-4">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="4191285989-5">[</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">level</span><span class="p" data-group-id="4191285989-5">]</span><span class="p" data-group-id="4191285989-4">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gamend.Signals</span><span class="o">.</span><span class="n">await</span><span class="p" data-group-id="4191285989-6">(</span><span class="s">&quot;my_game&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;level_up&quot;</span><span class="p" data-group-id="4191285989-6">)</span></code></pre><p>Signals are scoped to one plugin, so two plugins may use the same name
+something needs a source of its own:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Gamend.Signals</span><span class="o">.</span><span class="n">subscribe</span><span class="p" data-group-id="7886910452-1">(</span><span class="s">&quot;my_game&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;level_up&quot;</span><span class="p" data-group-id="7886910452-1">)</span><span class="w">
+</span><span class="nc">Gamend.Signals</span><span class="o">.</span><span class="n">emit</span><span class="p" data-group-id="7886910452-2">(</span><span class="s">&quot;my_game&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;level_up&quot;</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="7886910452-3">[</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p" data-group-id="7886910452-3">]</span><span class="p" data-group-id="7886910452-2">)</span><span class="w">
+</span><span class="p" data-group-id="7886910452-4">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="7886910452-5">[</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">level</span><span class="p" data-group-id="7886910452-5">]</span><span class="p" data-group-id="7886910452-4">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gamend.Signals</span><span class="o">.</span><span class="n">await</span><span class="p" data-group-id="7886910452-6">(</span><span class="s">&quot;my_game&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;level_up&quot;</span><span class="p" data-group-id="7886910452-6">)</span></code></pre><p>Signals are scoped to one plugin, so two plugins may use the same name
 without colliding, and they ride <a href="https://hexdocs.pm/phoenix_pubsub/2.3.0/Phoenix.PubSub.html"><code class="inline">Phoenix.PubSub</code></a>, so an emit reaches every
 node in a cluster.</p><p><a href="#subscribe/2"><code class="inline">subscribe/2</code></a> before <a href="#await/3"><code class="inline">await/3</code></a>, not inside it: a signal emitted between the
 two would otherwise be missed. The GDScript front end does this
@@ -380,9 +380,9 @@ ends, the subscription goes with it.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1210">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1211">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1210">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1211">Hex Preview</a>
 
             </span>
 

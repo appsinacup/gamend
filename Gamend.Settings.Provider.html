@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1210">
+    <meta name="project" content="gamend_core v1.0.1211">
 
 
-    <title>Gamend.Settings.Provider — gamend_core v1.0.1210</title>
+    <title>Gamend.Settings.Provider — gamend_core v1.0.1211</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-EFF2AD35.js"></script>
+    <script defer src="dist/sidebar_items-1C5C6705.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1210
+          v1.0.1211
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Settings.<wbr />Provider</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1210)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1211)</small>
 
     </h1>
 
@@ -114,7 +114,7 @@ gamend_core
 
 
     <section id="moduledoc">
-<p>Declares a group of settings on a module.</p><pre><code class="makeup elixir" translate="no"><span class="kd">defmodule</span><span class="w"> </span><span class="nc">Gamend.Retention</span><span class="w"> </span><span class="k" data-group-id="5303287940-1">do</span><span class="w">
+<p>Declares a group of settings on a module.</p><pre><code class="makeup elixir" translate="no"><span class="kd">defmodule</span><span class="w"> </span><span class="nc">Gamend.Retention</span><span class="w"> </span><span class="k" data-group-id="4625891186-1">do</span><span class="w">
   </span><span class="kn">use</span><span class="w"> </span><span class="nc">Gamend.Settings.Provider</span><span class="p">,</span><span class="w">
     </span><span class="ss">app</span><span class="p">:</span><span class="w"> </span><span class="ss">:gamend_core</span><span class="p">,</span><span class="w">
     </span><span class="ss">group</span><span class="p">:</span><span class="w"> </span><span class="ss">:retention</span><span class="p">,</span><span class="w">
@@ -123,7 +123,7 @@ gamend_core
   </span><span class="n">setting</span><span class="w"> </span><span class="ss">:chat_messages_days</span><span class="p">,</span><span class="w"> </span><span class="ss">:integer</span><span class="p">,</span><span class="w">
     </span><span class="ss">default</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
     </span><span class="ss">doc</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Delete chat messages older than N days. 0 keeps forever.&quot;</span><span class="w">
-</span><span class="k" data-group-id="5303287940-1">end</span></code></pre><p>The declaration is the only place a setting is written down. Its environment
+</span><span class="k" data-group-id="4625891186-1">end</span></code></pre><p>The declaration is the only place a setting is written down. Its environment
 variable name is <strong>derived</strong> — <code class="inline">&lt;ROOT&gt;_&lt;GROUP&gt;_&lt;KEY&gt;</code>, e.g.
 <code class="inline">GAMEND_RETENTION_CHAT_MESSAGES_DAYS</code> — so the key and its env var can never
 disagree. There is no way to pin a different name: every setting follows the
@@ -253,9 +253,9 @@ silent; a partial set trips <code class="inline">:required</code>.</li></ul>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1210">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1211">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1210">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1211">Hex Preview</a>
 
             </span>
 

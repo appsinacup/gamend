@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1208">
+    <meta name="project" content="gamend_core v1.0.1210">
 
 
-    <title>Gamend.Storage — gamend_core v1.0.1208</title>
+    <title>Gamend.Storage — gamend_core v1.0.1210</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-A7AC1934.js"></script>
+    <script defer src="dist/sidebar_items-EFF2AD35.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1208
+          v1.0.1210
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Storage</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1208)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1210)</small>
 
     </h1>
 
@@ -125,8 +125,8 @@ and the bytes must actually be that format (<a href="#sniff_content_type/1"><cod
 (<code class="inline">max_upload_bytes_per_owner</code>).</li></ul><p>We never decode an image server-side, so there is no image-parser attack
 surface here; the risk being defended against is serving attacker-chosen bytes
 under an attacker-chosen type from our own origin.</p><h2 id="module-direct-uploads" class="section-heading"><a href="#module-direct-uploads" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Direct uploads</span></h2><p>Clients never stream bytes through the app. The server issues an upload ticket
-and the client uploads straight to the backend:</p><pre><code class="makeup elixir" translate="no"><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Storage</span><span class="o">.</span><span class="n">build_key</span><span class="p" data-group-id="0175596751-1">(</span><span class="s">&quot;avatars&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;me.png&quot;</span><span class="p" data-group-id="0175596751-1">)</span><span class="w">
-</span><span class="p" data-group-id="0175596751-2">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">ticket</span><span class="p" data-group-id="0175596751-2">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Storage</span><span class="o">.</span><span class="n">presigned_upload</span><span class="p" data-group-id="0175596751-3">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="ss">content_type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;image/png&quot;</span><span class="p" data-group-id="0175596751-3">)</span><span class="w">
+and the client uploads straight to the backend:</p><pre><code class="makeup elixir" translate="no"><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Storage</span><span class="o">.</span><span class="n">build_key</span><span class="p" data-group-id="1379148366-1">(</span><span class="s">&quot;avatars&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">user</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;me.png&quot;</span><span class="p" data-group-id="1379148366-1">)</span><span class="w">
+</span><span class="p" data-group-id="1379148366-2">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">ticket</span><span class="p" data-group-id="1379148366-2">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Storage</span><span class="o">.</span><span class="n">presigned_upload</span><span class="p" data-group-id="1379148366-3">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="ss">content_type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;image/png&quot;</span><span class="p" data-group-id="1379148366-3">)</span><span class="w">
 </span><span class="c1"># -&gt; client PUTs the file to ticket.url, then tells the server `key` is ready</span></code></pre><p>The ticket shape is identical for local disk and S3, so the client code does
 not change between environments.</p><h2 id="module-what-is-checked-and-where" class="section-heading"><a href="#module-what-is-checked-and-where" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">What is checked, and where</span></h2><p>The two backends do not offer the same guarantees at upload time, so the
 checks are deliberately split:</p><ul><li><strong>At ticket time</strong> (both backends) the declared content type must be one
@@ -805,9 +805,9 @@ and set as S3 object metadata at upload.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1208">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1210">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1208">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1210">Hex Preview</a>
 
             </span>
 

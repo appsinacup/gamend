@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1208">
+    <meta name="project" content="gamend_core v1.0.1210">
 
 
-    <title>Gamend.Inventory — gamend_core v1.0.1208</title>
+    <title>Gamend.Inventory — gamend_core v1.0.1210</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-A7AC1934.js"></script>
+    <script defer src="dist/sidebar_items-EFF2AD35.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1208
+          v1.0.1210
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Inventory</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1208)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1210)</small>
 
     </h1>
 
@@ -117,16 +117,16 @@ gamend_core
 <p>Player item stacks — the non-fungible companion to <a href="Gamend.Economy.html"><code class="inline">Gamend.Economy</code></a>.</p><p>Items are free-form string codes (<code class="inline">&quot;health_potion&quot;</code>, <code class="inline">&quot;sword&quot;</code>, <code class="inline">&quot;card_374&quot;</code>);
 each <code class="inline">(user, item)</code> pair holds a quantity and per-stack <code class="inline">metadata</code>. Grants and
 consumes are atomic — a consume can never take a stack below zero — and every
-change is recorded in the <code class="inline">inventory_ledger</code>.</p><h2 id="module-usage-server-side-hooks" class="section-heading"><a href="#module-usage-server-side-hooks" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage (server-side / hooks)</span></h2><pre><code class="makeup elixir" translate="no"><span class="nc">Inventory</span><span class="o">.</span><span class="n">grant_item</span><span class="p" data-group-id="1828133113-1">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;health_potion&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p" data-group-id="1828133113-1">)</span><span class="w">
-</span><span class="k">case</span><span class="w"> </span><span class="nc">Inventory</span><span class="o">.</span><span class="n">consume_item</span><span class="p" data-group-id="1828133113-2">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;health_potion&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p" data-group-id="1828133113-2">)</span><span class="w"> </span><span class="k" data-group-id="1828133113-3">do</span><span class="w">
-  </span><span class="p" data-group-id="1828133113-4">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">remaining</span><span class="p" data-group-id="1828133113-4">}</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">:ok</span><span class="w">
-  </span><span class="p" data-group-id="1828133113-5">{</span><span class="ss">:error</span><span class="p">,</span><span class="w"> </span><span class="ss">:insufficient_items</span><span class="p" data-group-id="1828133113-5">}</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">:none_left</span><span class="w">
-</span><span class="k" data-group-id="1828133113-3">end</span><span class="w">
+change is recorded in the <code class="inline">inventory_ledger</code>.</p><h2 id="module-usage-server-side-hooks" class="section-heading"><a href="#module-usage-server-side-hooks" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage (server-side / hooks)</span></h2><pre><code class="makeup elixir" translate="no"><span class="nc">Inventory</span><span class="o">.</span><span class="n">grant_item</span><span class="p" data-group-id="4962140776-1">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;health_potion&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p" data-group-id="4962140776-1">)</span><span class="w">
+</span><span class="k">case</span><span class="w"> </span><span class="nc">Inventory</span><span class="o">.</span><span class="n">consume_item</span><span class="p" data-group-id="4962140776-2">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;health_potion&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p" data-group-id="4962140776-2">)</span><span class="w"> </span><span class="k" data-group-id="4962140776-3">do</span><span class="w">
+  </span><span class="p" data-group-id="4962140776-4">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">remaining</span><span class="p" data-group-id="4962140776-4">}</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">:ok</span><span class="w">
+  </span><span class="p" data-group-id="4962140776-5">{</span><span class="ss">:error</span><span class="p">,</span><span class="w"> </span><span class="ss">:insufficient_items</span><span class="p" data-group-id="4962140776-5">}</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="ss">:none_left</span><span class="w">
+</span><span class="k" data-group-id="4962140776-3">end</span><span class="w">
 
-</span><span class="nc">Inventory</span><span class="o">.</span><span class="n">quantity</span><span class="p" data-group-id="1828133113-6">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;health_potion&quot;</span><span class="p" data-group-id="1828133113-6">)</span><span class="w">  </span><span class="c1">#=&gt; 2</span><span class="w">
-</span><span class="nc">Inventory</span><span class="o">.</span><span class="n">inventory</span><span class="p" data-group-id="1828133113-7">(</span><span class="n">user_id</span><span class="p" data-group-id="1828133113-7">)</span><span class="w">                  </span><span class="c1">#=&gt; %{&quot;health_potion&quot; =&gt; 2}</span></code></pre><h2 id="module-idempotency" class="section-heading"><a href="#module-idempotency" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Idempotency</span></h2><p>Pass <code class="inline">:idempotency_key</code> so a retried request (network retry, at-least-once
+</span><span class="nc">Inventory</span><span class="o">.</span><span class="n">quantity</span><span class="p" data-group-id="4962140776-6">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;health_potion&quot;</span><span class="p" data-group-id="4962140776-6">)</span><span class="w">  </span><span class="c1">#=&gt; 2</span><span class="w">
+</span><span class="nc">Inventory</span><span class="o">.</span><span class="n">inventory</span><span class="p" data-group-id="4962140776-7">(</span><span class="n">user_id</span><span class="p" data-group-id="4962140776-7">)</span><span class="w">                  </span><span class="c1">#=&gt; %{&quot;health_potion&quot; =&gt; 2}</span></code></pre><h2 id="module-idempotency" class="section-heading"><a href="#module-idempotency" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Idempotency</span></h2><p>Pass <code class="inline">:idempotency_key</code> so a retried request (network retry, at-least-once
 job) can't double-apply — the second call is a no-op that returns the current
-quantity:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Inventory</span><span class="o">.</span><span class="n">grant_item</span><span class="p" data-group-id="9206869398-1">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;loot_crate&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">idempotency_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;quest:</span><span class="si" data-group-id="9206869398-2">#{</span><span class="n">progress_id</span><span class="si" data-group-id="9206869398-2">}</span><span class="s">:1&quot;</span><span class="p" data-group-id="9206869398-1">)</span></code></pre><p>Like the economy these are <strong>server-authoritative</strong>: expose them from hooks and
+quantity:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Inventory</span><span class="o">.</span><span class="n">grant_item</span><span class="p" data-group-id="3253680453-1">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;loot_crate&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">idempotency_key</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;quest:</span><span class="si" data-group-id="3253680453-2">#{</span><span class="n">progress_id</span><span class="si" data-group-id="3253680453-2">}</span><span class="s">:1&quot;</span><span class="p" data-group-id="3253680453-1">)</span></code></pre><p>Like the economy these are <strong>server-authoritative</strong>: expose them from hooks and
 admin tools, never as a raw client &quot;give me items&quot; endpoint.</p>
     </section>
 
@@ -533,9 +533,9 @@ Returns <code class="inline">{:ok, new_quantity}</code>.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1208">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1210">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1208">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1210">Hex Preview</a>
 
             </span>
 

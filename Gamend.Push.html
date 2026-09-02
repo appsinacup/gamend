@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1208">
+    <meta name="project" content="gamend_core v1.0.1210">
 
 
-    <title>Gamend.Push — gamend_core v1.0.1208</title>
+    <title>Gamend.Push — gamend_core v1.0.1210</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-A7AC1934.js"></script>
+    <script defer src="dist/sidebar_items-EFF2AD35.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1208
+          v1.0.1210
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Push</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1208)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1210)</small>
 
     </h1>
 
@@ -120,17 +120,17 @@ the authenticated user; a user has many devices. Delivery routes <strong>per
 token</strong> off the <code class="inline">provider</code> column (<code class="inline">&quot;fcm&quot;</code> | <code class="inline">&quot;apns&quot;</code>), falling back to the
 zero-config <code class="inline">Log</code> provider when nothing is configured
 (see the moduledoc below).</p><h2 id="module-usage" class="section-heading"><a href="#module-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage</span></h2><pre><code class="makeup elixir" translate="no"><span class="c1"># Register a device (typically via POST /me/push_tokens)</span><span class="w">
-</span><span class="p" data-group-id="5361296659-1">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="p" data-group-id="5361296659-1">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Push</span><span class="o">.</span><span class="n">register_token</span><span class="p" data-group-id="5361296659-2">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="5361296659-3">%{</span><span class="w">
+</span><span class="p" data-group-id="4017841095-1">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="p" data-group-id="4017841095-1">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Push</span><span class="o">.</span><span class="n">register_token</span><span class="p" data-group-id="4017841095-2">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="4017841095-3">%{</span><span class="w">
   </span><span class="s">&quot;token&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;fcm-registration-token&quot;</span><span class="p">,</span><span class="w">
   </span><span class="s">&quot;platform&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;android&quot;</span><span class="p">,</span><span class="w">
   </span><span class="s">&quot;device_id&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;stable-device-key&quot;</span><span class="w">
-</span><span class="p" data-group-id="5361296659-3">}</span><span class="p" data-group-id="5361296659-2">)</span><span class="w">
+</span><span class="p" data-group-id="4017841095-3">}</span><span class="p" data-group-id="4017841095-2">)</span><span class="w">
 
 </span><span class="c1"># List a user&#39;s devices</span><span class="w">
-</span><span class="n">tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Push</span><span class="o">.</span><span class="n">list_tokens</span><span class="p" data-group-id="5361296659-4">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="ss">page</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">page_size</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p" data-group-id="5361296659-4">)</span><span class="w">
+</span><span class="n">tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Push</span><span class="o">.</span><span class="n">list_tokens</span><span class="p" data-group-id="4017841095-4">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="ss">page</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">page_size</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p" data-group-id="4017841095-4">)</span><span class="w">
 
 </span><span class="c1"># Remove one (DELETE /me/push_tokens/:id)</span><span class="w">
-</span><span class="p" data-group-id="5361296659-5">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="bp">_</span><span class="p" data-group-id="5361296659-5">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Push</span><span class="o">.</span><span class="n">delete_token</span><span class="p" data-group-id="5361296659-6">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="5361296659-6">)</span></code></pre>
+</span><span class="p" data-group-id="4017841095-5">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="bp">_</span><span class="p" data-group-id="4017841095-5">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Push</span><span class="o">.</span><span class="n">delete_token</span><span class="p" data-group-id="4017841095-6">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="4017841095-6">)</span></code></pre>
     </section>
 
 </div>
@@ -409,7 +409,7 @@ common no-device answer must not cost a query.</p></div>
       <h1 class="signature" translate="no">admin_delete_token(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L209" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L229" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -441,7 +441,7 @@ common no-device answer must not cost a query.</p></div>
       <h1 class="signature" translate="no">count_all_tokens(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L345" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L365" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -469,7 +469,7 @@ common no-device answer must not cost a query.</p></div>
       <h1 class="signature" translate="no">count_tokens(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L294" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L314" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -497,7 +497,7 @@ common no-device answer must not cost a query.</p></div>
       <h1 class="signature" translate="no">delete_token(user_id, id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L200" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L220" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -527,7 +527,7 @@ path). Returns <code class="inline">{:ok, %PushToken{}}</code> or <code class="i
       <h1 class="signature" translate="no">disable_token(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L238" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L258" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -557,7 +557,7 @@ invalid never loses its device association.</p>
       <h1 class="signature" translate="no">force_log?()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L498" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L518" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -589,7 +589,7 @@ invalid never loses its device association.</p>
       <h1 class="signature" translate="no">list_all_tokens(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L330" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L350" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -624,7 +624,7 @@ so the admin UI can show names, not UUIDs.</p>
       <h1 class="signature" translate="no">list_tokens(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L278" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L298" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -656,7 +656,7 @@ are the user's devices; clients can show them greyed out).</p><p>Supports pagina
       <h1 class="signature" translate="no">live_tokens(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L303" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L323" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -685,7 +685,7 @@ by design: bounded by <code class="inline">max_push_tokens_per_user</code>.</p>
       <h1 class="signature" translate="no">mark_token_used(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L258" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L278" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -713,7 +713,7 @@ by design: bounded by <code class="inline">max_push_tokens_per_user</code>.</p>
       <h1 class="signature" translate="no">provider_for(push_token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L506" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L526" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -781,7 +781,7 @@ anything else → <code class="inline">&quot;fcm&quot;</code>.</p><p>Returns <co
       <h1 class="signature" translate="no">send_to_user(user_id, message_attrs, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L530" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L550" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -814,7 +814,7 @@ means no jobs, and delivery failures never propagate back to the caller.</p><p>R
       <h1 class="signature" translate="no">send_to_users(user_ids, message_attrs, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L543" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L563" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -844,7 +844,7 @@ restart-safe, deduped against identical double-broadcasts).</p>
       <h1 class="signature" translate="no">token_stats()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L384" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L404" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -874,7 +874,7 @@ restart-safe, deduped against identical double-broadcasts).</p>
       <h1 class="signature" translate="no">unregister_token(user_id, token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L190" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/push.ex#L210" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -932,9 +932,9 @@ common no-device answer must not cost a query.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1208">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1210">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1208">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1210">Hex Preview</a>
 
             </span>
 

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1208">
+    <meta name="project" content="gamend_core v1.0.1210">
 
 
-    <title>Gamend.Hooks.Default — gamend_core v1.0.1208</title>
+    <title>Gamend.Hooks.Default — gamend_core v1.0.1210</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-A7AC1934.js"></script>
+    <script defer src="dist/sidebar_items-EFF2AD35.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1208
+          v1.0.1210
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Hooks.<wbr />Default</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1208)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1210)</small>
 
     </h1>
 
@@ -105,7 +105,7 @@ gamend_core
 
 
 
-      <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1404" title="View Source" class="icon-action" rel="help nofollow">
+      <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1417" title="View Source" class="icon-action" rel="help nofollow">
         <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         <span class="sr-only">View Source</span>
       </a>
@@ -137,7 +137,7 @@ gamend_core
 
       </div>
 
-        <div class="summary-synopsis"><p>Default implementation for <a href="#before_kv_get/2"><code class="inline">before_kv_get/2</code></a> — always allow public reads.</p></div>
+        <div class="summary-synopsis"><p>Default implementation for <a href="#before_kv_get/2"><code class="inline">before_kv_get/2</code></a>.</p></div>
 
     </div>
 
@@ -165,7 +165,7 @@ gamend_core
       <h1 class="signature" translate="no">before_kv_get(key, opts)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1587" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1614" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -174,7 +174,15 @@ gamend_core
 
   <section class="docstring">
 
-<p>Default implementation for <a href="#before_kv_get/2"><code class="inline">before_kv_get/2</code></a> — always allow public reads.</p>
+<p>Default implementation for <a href="#before_kv_get/2"><code class="inline">before_kv_get/2</code></a>.</p><p>Scope-aware, not blanket-public. A global entry (no <code class="inline">user_id</code>, no <code class="inline">lobby_id</code>)
+is <code class="inline">:public</code>, which is what makes a shared config or welcome value readable by
+everyone. A read that <em>names</em> a user or lobby defaults to
+<code class="inline">:owner_or_lobby_member</code>, so the caller has to be that user or in that lobby.</p><p>It used to return <code class="inline">:public</code> unconditionally, and <code class="inline">kv_access_allowed?/4</code> grants
+a <code class="inline">:public</code> read without looking at who is asking — so with no plugin
+overriding this hook, <code class="inline">GET /api/v1/kv/save_data?user_id=&lt;someone else&gt;</code> (and
+the <code class="inline">kv:subscribe</code> channel event, which then streamed every later write)
+returned another player's entries. Saves and progression live there.</p><p>A game that genuinely wants cross-player reads implements this hook and
+returns <code class="inline">:public</code> for those keys.</p>
   </section>
 </section>
 
@@ -186,9 +194,9 @@ gamend_core
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1208">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1210">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1208">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1210">Hex Preview</a>
 
             </span>
 

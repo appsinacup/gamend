@@ -124,7 +124,8 @@ See `Gamend.Accounts.User.password_changeset/3` for a list of supported options.
 # `change_user_registration`
 
 ```elixir
-@spec change_user_registration(Gamend.Accounts.User.t(), map()) :: Ecto.Changeset.t()
+@spec change_user_registration(Gamend.Accounts.User.t(), map(), keyword()) ::
+  Ecto.Changeset.t()
 ```
 
 # `change_username`
@@ -158,6 +159,18 @@ Confirm a user by an email confirmation token (context: "confirm").
 
 Returns {:ok, user} when the token is valid and user was confirmed.
 Returns {:error, :not_found} or {:error, :expired} when token is invalid/expired.
+
+# `count_admins`
+
+```elixir
+@spec count_admins() :: non_neg_integer()
+```
+
+How many accounts hold the admin flag.
+
+Used to refuse the write that would take that number to zero: nothing else can
+grant `is_admin`, so an installation that reaches zero admins cannot be
+administered again.
 
 # `count_list_all_users`
 

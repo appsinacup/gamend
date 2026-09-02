@@ -274,6 +274,16 @@ context remains the source of truth for what a user owns inside the game.
 ) :: [Gamend.Payments.Purchase.t()]
 ```
 
+# `mark_event_processed`
+
+```elixir
+@spec mark_event_processed(Gamend.Payments.ProviderEvent.t()) ::
+  {:ok, Gamend.Payments.ProviderEvent.t()} | {:error, Ecto.Changeset.t()}
+```
+
+Stamp a provider event as fully handled. Only then does a retry of the same
+event id count as a duplicate.
+
 # `product_entitlement_key`
 
 ```elixir

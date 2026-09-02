@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1208">
+    <meta name="project" content="gamend_core v1.0.1210">
 
 
-    <title>Gamend.Settings — gamend_core v1.0.1208</title>
+    <title>Gamend.Settings — gamend_core v1.0.1210</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-A7AC1934.js"></script>
+    <script defer src="dist/sidebar_items-EFF2AD35.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1208
+          v1.0.1210
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Settings</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1208)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1210)</small>
 
     </h1>
 
@@ -119,9 +119,9 @@ plugins expose, with its type, default, group, env var name and required
 level.</p><p>Settings are declared with <a href="Gamend.Settings.Provider.html"><code class="inline">Gamend.Settings.Provider</code></a> and read with
 <a href="#get/2"><code class="inline">get/2</code></a>, which checks <code class="inline">Application.get_env(app, module)</code> and falls back to
 the compiled default. That means a host configures the ordinary Elixir way:</p><pre><code class="makeup elixir" translate="no"><span class="n">config</span><span class="w"> </span><span class="ss">:gamend_core</span><span class="p">,</span><span class="w"> </span><span class="nc">Gamend.Retention</span><span class="p">,</span><span class="w"> </span><span class="ss">chat_messages_days</span><span class="p">:</span><span class="w"> </span><span class="mi">90</span></code></pre><p>Environment variables are one <em>input method</em> into that, not a second source.
-A host that wants them writes one line in <code class="inline">config/runtime.exs</code>:</p><pre><code class="makeup elixir" translate="no"><span class="k">for</span><span class="w"> </span><span class="p" data-group-id="2608439925-1">{</span><span class="n">app</span><span class="p">,</span><span class="w"> </span><span class="n">module</span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="p" data-group-id="2608439925-1">}</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nc">Gamend.Settings</span><span class="o">.</span><span class="n">from_env</span><span class="p" data-group-id="2608439925-2">(</span><span class="p" data-group-id="2608439925-2">)</span><span class="w"> </span><span class="k" data-group-id="2608439925-3">do</span><span class="w">
+A host that wants them writes one line in <code class="inline">config/runtime.exs</code>:</p><pre><code class="makeup elixir" translate="no"><span class="k">for</span><span class="w"> </span><span class="p" data-group-id="7271412910-1">{</span><span class="n">app</span><span class="p">,</span><span class="w"> </span><span class="n">module</span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="p" data-group-id="7271412910-1">}</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nc">Gamend.Settings</span><span class="o">.</span><span class="n">from_env</span><span class="p" data-group-id="7271412910-2">(</span><span class="p" data-group-id="7271412910-2">)</span><span class="w"> </span><span class="k" data-group-id="7271412910-3">do</span><span class="w">
   </span><span class="n">config</span><span class="w"> </span><span class="n">app</span><span class="p">,</span><span class="w"> </span><span class="n">module</span><span class="p">,</span><span class="w"> </span><span class="n">opts</span><span class="w">
-</span><span class="k" data-group-id="2608439925-3">end</span></code></pre><p>A host that prefers a JSON file, or plain Elixir, writes its own equivalent.
+</span><span class="k" data-group-id="7271412910-3">end</span></code></pre><p>A host that prefers a JSON file, or plain Elixir, writes its own equivalent.
 Every route ends at <a href="https://hexdocs.pm/elixir/Application.html"><code class="inline">Application</code></a> config, so no two sources compete.</p><h2 id="module-discovery" class="section-heading"><a href="#module-discovery" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Discovery</span></h2><p>Providers are found by scanning the modules of <a href="#apps/0"><code class="inline">apps/0</code></a> for <code class="inline">__settings__/0</code>
 and cached in <code class="inline">:persistent_term</code>. Plugins load after config is resolved, so
 <a href="Gamend.Hooks.PluginManager.html"><code class="inline">Gamend.Hooks.PluginManager</code></a> registers theirs on load via <a href="#add_app/1"><code class="inline">add_app/1</code></a>.</p>
@@ -413,7 +413,7 @@ when it is set, the compiled default otherwise.</p></div>
       <h1 class="signature" translate="no">add_app(app)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L381" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L397" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -442,7 +442,7 @@ after boot. Clears the cache so the next read picks them up.</p>
       <h1 class="signature" translate="no">add_provider(module)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L388" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L404" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -499,7 +499,7 @@ app's module list — a plugin compiled at runtime, or a test.</p>
       <h1 class="signature" translate="no">apps()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L371" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L387" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -527,7 +527,7 @@ app's module list — a plugin compiled at runtime, or a test.</p>
       <h1 class="signature" translate="no">cast(raw, atom)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L199" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L206" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -586,7 +586,7 @@ vars are resolved into <a href="https://hexdocs.pm/elixir/Application.html"><cod
       <h1 class="signature" translate="no">env_name(root, group, key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L495" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L511" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -732,7 +732,7 @@ not a runtime condition.</p>
       <h1 class="signature" translate="no">providers()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L425" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L441" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -760,7 +760,7 @@ not a runtime condition.</p>
       <h1 class="signature" translate="no">reload()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L418" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L434" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -788,7 +788,7 @@ not a runtime condition.</p>
       <h1 class="signature" translate="no">remove_provider(module)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L392" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L408" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -847,7 +847,7 @@ configuration. <code class="inline">config/2</code> only applies after the whole
       <h1 class="signature" translate="no">validate(env)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L269" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L285" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -879,7 +879,7 @@ Test is silent because the suite boots hundreds of times.</p>
       <h1 class="signature" translate="no">validate!(env)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L288" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L304" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -906,9 +906,9 @@ Test is silent because the suite boots hundreds of times.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1208">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1210">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1208">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1210">Hex Preview</a>
 
             </span>
 

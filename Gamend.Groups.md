@@ -321,6 +321,18 @@ Pass `:search` to filter by member name (display name or username).
 
 Get a specific membership.
 
+# `group_member_ids`
+
+```elixir
+@spec group_member_ids(Ecto.UUID.t()) :: [Ecto.UUID.t()]
+```
+
+Just the user ids of a group's members, oldest first.
+
+For callers that only need to address members — chat notification fanout is
+the hot one — where `get_group_members/1` would preload every member's full
+user row only to read `user_id` from it.
+
 # `handle_user_deletion`
 
 ```elixir
@@ -550,6 +562,22 @@ Reject a pending join request. Admin only.
 ```
 
 Request to join a private group. Creates a pending join request.
+
+# `set_icon_url`
+
+```elixir
+@spec set_icon_url(String.t(), String.t(), String.t()) ::
+  {:ok, Gamend.Groups.Group.t()}
+  | {:error, :not_admin | Ecto.Changeset.t() | term()}
+```
+
+Set a group's icon to an object we have just accepted an upload for.
+
+Separate from `update_group/3` because that one deliberately drops `icon_url`
+from caller-supplied attributes. The URL here does not come from the caller:
+it is produced by `GamendWeb.Uploads.confirm/5` after the stored object has
+been re-read, size-checked and content-sniffed, so this path is the only way
+an icon is ever set. Admin rights are still required.
 
 # `shared_group_member?`
 

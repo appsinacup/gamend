@@ -228,6 +228,9 @@ Join a user to a lobby.
 
   * `:password` - password for a password-protected lobby
   * `:bypass_lock` - when `true`, join succeeds even if the lobby is locked.
+  * `:bypass_hidden` - when `true`, join succeeds even if the lobby is hidden.
+    For server-side callers (matchmaking, hooks, admin) that already know the
+    lobby is the right one; a client-facing path must never set it.
     Only set this from trusted server-side code; the HTTP and channel
     surfaces never pass it, so players cannot unlock a lobby themselves.
 
@@ -365,7 +368,14 @@ Signature: quick_join(user, title \ nil, max_users \ nil, metadata \ %{})
 
 Check if a lobby can be spectated (watched by non-members).
 
-A lobby is spectatable if it is not hidden and not locked.
+A lobby is spectatable if it is not hidden, not locked and not
+password-protected.
+
+The password clause matters because spectating is not a read-only peek: the
+channel subscribes the spectator to lobby chat and hands them an after-join
+payload built with the full member list. The password gated the HTTP join and
+nothing on the channel, so it protected participation while leaving the
+conversation and the roster open to anyone who knew the lobby id.
 
 # `stats`
 

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1208">
+    <meta name="project" content="gamend_core v1.0.1210">
 
 
-    <title>Gamend.OAuthSessions — gamend_core v1.0.1208</title>
+    <title>Gamend.OAuthSessions — gamend_core v1.0.1210</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-A7AC1934.js"></script>
+    <script defer src="dist/sidebar_items-EFF2AD35.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1208
+          v1.0.1210
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />OAuthSessions</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1208)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1210)</small>
 
     </h1>
 
@@ -141,9 +141,30 @@ gamend_core
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#get_pending_session/2" data-no-tooltip="" translate="no">get_pending_session(session_id, provider \\ nil)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A session that may still accept a callback: it exists, is <code class="inline">pending</code>, was
+started for <code class="inline">provider</code>, and is inside <a href="#pending_ttl_seconds/0"><code class="inline">pending_ttl_seconds/0</code></a>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#get_session/1" data-no-tooltip="" translate="no">get_session(session_id)</a>
 
       </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#pending_ttl_seconds/0" data-no-tooltip="" translate="no">pending_ttl_seconds()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How long a session may sit in <code class="inline">pending</code> before a callback stops being accepted.</p></div>
 
     </div>
 
@@ -200,6 +221,39 @@ gamend_core
 
   </section>
 </section>
+<section class="detail" id="get_pending_session/2">
+
+    <span id="get_pending_session/1"></span>
+
+  <div class="detail-header">
+    <a href="#get_pending_session/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">get_pending_session(session_id, provider \\ nil)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/oauth_sessions.ex#L67" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> get_pending_session(<a href="https://hexdocs.pm/elixir/String.html#t:t/0">String.t</a>(), <a href="https://hexdocs.pm/elixir/String.html#t:t/0">String.t</a>() | nil) ::
+  <a href="Gamend.OAuthSession.html#t:t/0">Gamend.OAuthSession.t</a>() | nil</pre>
+
+      </div>
+
+<p>A session that may still accept a callback: it exists, is <code class="inline">pending</code>, was
+started for <code class="inline">provider</code>, and is inside <a href="#pending_ttl_seconds/0"><code class="inline">pending_ttl_seconds/0</code></a>.</p><p>Returns <code class="inline">nil</code> otherwise, so a stale, replayed or provider-mismatched state is
+indistinguishable from one that was never issued.</p>
+  </section>
+</section>
 <section class="detail" id="get_session/1">
 
   <div class="detail-header">
@@ -228,6 +282,36 @@ gamend_core
 
   </section>
 </section>
+<section class="detail" id="pending_ttl_seconds/0">
+
+  <div class="detail-header">
+    <a href="#pending_ttl_seconds/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">pending_ttl_seconds()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/oauth_sessions.ex#L57" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> pending_ttl_seconds() :: <a href="https://hexdocs.pm/elixir/typespecs.html#basic-types">pos_integer</a>()</pre>
+
+      </div>
+
+<p>How long a session may sit in <code class="inline">pending</code> before a callback stops being accepted.</p><p>An OAuth round trip is seconds; the only thing a long window buys is time for
+someone to hand a started flow's URL to another person and have that person's
+consent land in the starter's session.</p>
+  </section>
+</section>
 <section class="detail" id="update_session/2">
 
   <div class="detail-header">
@@ -238,7 +322,7 @@ gamend_core
       <h1 class="signature" translate="no">update_session(session_id, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/oauth_sessions.ex#L51" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/oauth_sessions.ex#L85" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -266,9 +350,9 @@ gamend_core
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1208">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1210">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1208">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1210">Hex Preview</a>
 
             </span>
 

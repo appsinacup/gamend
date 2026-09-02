@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1211">
+    <meta name="project" content="gamend_core v1.0.1212">
 
 
-    <title>Gamend.Push — gamend_core v1.0.1211</title>
+    <title>Gamend.Push — gamend_core v1.0.1212</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-1C5C6705.js"></script>
+    <script defer src="dist/sidebar_items-B3768CE4.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1211
+          v1.0.1212
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Push</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1211)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1212)</small>
 
     </h1>
 
@@ -120,17 +120,17 @@ the authenticated user; a user has many devices. Delivery routes <strong>per
 token</strong> off the <code class="inline">provider</code> column (<code class="inline">&quot;fcm&quot;</code> | <code class="inline">&quot;apns&quot;</code>), falling back to the
 zero-config <code class="inline">Log</code> provider when nothing is configured
 (see the moduledoc below).</p><h2 id="module-usage" class="section-heading"><a href="#module-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage</span></h2><pre><code class="makeup elixir" translate="no"><span class="c1"># Register a device (typically via POST /me/push_tokens)</span><span class="w">
-</span><span class="p" data-group-id="4956061990-1">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="p" data-group-id="4956061990-1">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Push</span><span class="o">.</span><span class="n">register_token</span><span class="p" data-group-id="4956061990-2">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="4956061990-3">%{</span><span class="w">
+</span><span class="p" data-group-id="1621004557-1">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="p" data-group-id="1621004557-1">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Push</span><span class="o">.</span><span class="n">register_token</span><span class="p" data-group-id="1621004557-2">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="1621004557-3">%{</span><span class="w">
   </span><span class="s">&quot;token&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;fcm-registration-token&quot;</span><span class="p">,</span><span class="w">
   </span><span class="s">&quot;platform&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;android&quot;</span><span class="p">,</span><span class="w">
   </span><span class="s">&quot;device_id&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;stable-device-key&quot;</span><span class="w">
-</span><span class="p" data-group-id="4956061990-3">}</span><span class="p" data-group-id="4956061990-2">)</span><span class="w">
+</span><span class="p" data-group-id="1621004557-3">}</span><span class="p" data-group-id="1621004557-2">)</span><span class="w">
 
 </span><span class="c1"># List a user&#39;s devices</span><span class="w">
-</span><span class="n">tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Push</span><span class="o">.</span><span class="n">list_tokens</span><span class="p" data-group-id="4956061990-4">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="ss">page</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">page_size</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p" data-group-id="4956061990-4">)</span><span class="w">
+</span><span class="n">tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Push</span><span class="o">.</span><span class="n">list_tokens</span><span class="p" data-group-id="1621004557-4">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="ss">page</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">page_size</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p" data-group-id="1621004557-4">)</span><span class="w">
 
 </span><span class="c1"># Remove one (DELETE /me/push_tokens/:id)</span><span class="w">
-</span><span class="p" data-group-id="4956061990-5">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="bp">_</span><span class="p" data-group-id="4956061990-5">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Push</span><span class="o">.</span><span class="n">delete_token</span><span class="p" data-group-id="4956061990-6">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="4956061990-6">)</span></code></pre>
+</span><span class="p" data-group-id="1621004557-5">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="bp">_</span><span class="p" data-group-id="1621004557-5">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Push</span><span class="o">.</span><span class="n">delete_token</span><span class="p" data-group-id="1621004557-6">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">token</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="1621004557-6">)</span></code></pre>
     </section>
 
 </div>
@@ -932,9 +932,9 @@ common no-device answer must not cost a query.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1211">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1212">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1211">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1212">Hex Preview</a>
 
             </span>
 

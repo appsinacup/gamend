@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1211">
+    <meta name="project" content="gamend_core v1.0.1212">
 
 
-    <title>Gamend.Hooks.DynamicRpcs — gamend_core v1.0.1211</title>
+    <title>Gamend.Hooks.DynamicRpcs — gamend_core v1.0.1212</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-1C5C6705.js"></script>
+    <script defer src="dist/sidebar_items-B3768CE4.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1211
+          v1.0.1212
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Hooks.<wbr />DynamicRpcs</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1211)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1212)</small>
 
     </h1>
 
@@ -117,10 +117,10 @@ gamend_core
 <p>Runtime registry for <em>dynamic</em> RPC function names exported by hook plugins.</p><h2 id="module-goal" class="section-heading"><a href="#module-goal" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Goal</span></h2><p>Allow hook plugins to expose additional callable function names without
 defining them as exported Elixir functions (eg. without <code class="inline">def my_fn/1</code>).</p><p>The intended pattern is:</p><ul><li>Plugin implements <code class="inline">after_startup/0</code> and returns a list of maps describing
 which dynamic RPC names should be callable.</li><li>Plugin implements <code class="inline">rpc/2</code> (or <code class="inline">rpc/3</code>) to handle these names at runtime.</li><li><a href="Gamend.Hooks.PluginManager.html#call_rpc/4"><code class="inline">Gamend.Hooks.PluginManager.call_rpc/4</code></a> falls back to the registry when
-the requested function is not exported.</li></ul><h2 id="module-export-format" class="section-heading"><a href="#module-export-format" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Export format</span></h2><p><code class="inline">after_startup/0</code> may return a list like:</p><pre><code class="makeup elixir" translate="no"><span class="p" data-group-id="9819054989-1">[</span><span class="w">
-  </span><span class="p" data-group-id="9819054989-2">%{</span><span class="ss">hook</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my_dynamic_fn&quot;</span><span class="p" data-group-id="9819054989-2">}</span><span class="p">,</span><span class="w">
-  </span><span class="p" data-group-id="9819054989-3">%{</span><span class="s">&quot;hook&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;other_fn&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;meta&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p" data-group-id="9819054989-4">%{</span><span class="n">...</span><span class="p" data-group-id="9819054989-4">}</span><span class="p" data-group-id="9819054989-3">}</span><span class="w">
-</span><span class="p" data-group-id="9819054989-1">]</span></code></pre><p>Required:</p><ul><li><code class="inline">hook</code> (string): the callable function name.</li></ul><p>Optional:</p><ul><li><code class="inline">meta</code> (map): arbitrary metadata.</li></ul><p>Names are validated to contain only letters, digits, and underscores.</p><p>Note: this registry is in-memory and is rebuilt on plugin reload.</p>
+the requested function is not exported.</li></ul><h2 id="module-export-format" class="section-heading"><a href="#module-export-format" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Export format</span></h2><p><code class="inline">after_startup/0</code> may return a list like:</p><pre><code class="makeup elixir" translate="no"><span class="p" data-group-id="9126409388-1">[</span><span class="w">
+  </span><span class="p" data-group-id="9126409388-2">%{</span><span class="ss">hook</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;my_dynamic_fn&quot;</span><span class="p" data-group-id="9126409388-2">}</span><span class="p">,</span><span class="w">
+  </span><span class="p" data-group-id="9126409388-3">%{</span><span class="s">&quot;hook&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;other_fn&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;meta&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p" data-group-id="9126409388-4">%{</span><span class="n">...</span><span class="p" data-group-id="9126409388-4">}</span><span class="p" data-group-id="9126409388-3">}</span><span class="w">
+</span><span class="p" data-group-id="9126409388-1">]</span></code></pre><p>Required:</p><ul><li><code class="inline">hook</code> (string): the callable function name.</li></ul><p>Optional:</p><ul><li><code class="inline">meta</code> (map): arbitrary metadata.</li></ul><p>Names are validated to contain only letters, digits, and underscores.</p><p>Note: this registry is in-memory and is rebuilt on plugin reload.</p>
     </section>
 
 </div>
@@ -504,9 +504,9 @@ the requested function is not exported.</li></ul><h2 id="module-export-format" c
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1211">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1212">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1211">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1212">Hex Preview</a>
 
             </span>
 

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1211">
+    <meta name="project" content="gamend_core v1.0.1212">
 
 
-    <title>Gamend.Analytics — gamend_core v1.0.1211</title>
+    <title>Gamend.Analytics — gamend_core v1.0.1212</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-1C5C6705.js"></script>
+    <script defer src="dist/sidebar_items-B3768CE4.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1211
+          v1.0.1212
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Analytics</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1211)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1212)</small>
 
     </h1>
 
@@ -834,16 +834,16 @@ a missing user (deleted mid-request) is a silent no-op, like the
 
       </div>
 
-<p>Every context's live counters in one map, cached for a minute:</p><pre><code class="makeup elixir" translate="no"><span class="p" data-group-id="8080004991-1">%{</span><span class="w">
-  </span><span class="ss">players</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="8080004991-2">%{</span><span class="n">players_online</span><span class="p">,</span><span class="w"> </span><span class="n">players_total</span><span class="p">,</span><span class="w"> </span><span class="n">players_offline</span><span class="p">,</span><span class="w"> </span><span class="n">players_in_lobbies</span><span class="p">,</span><span class="w"> </span><span class="n">players_in_parties</span><span class="p" data-group-id="8080004991-2">}</span><span class="p">,</span><span class="w">
-  </span><span class="ss">activity</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="8080004991-3">%{</span><span class="n">dau</span><span class="p">,</span><span class="w"> </span><span class="n">wau</span><span class="p">,</span><span class="w"> </span><span class="n">mau</span><span class="p">,</span><span class="w"> </span><span class="n">new_users_1d</span><span class="p">,</span><span class="w"> </span><span class="n">new_users_7d</span><span class="p">,</span><span class="w"> </span><span class="n">new_users_30d</span><span class="p" data-group-id="8080004991-3">}</span><span class="p">,</span><span class="w">
-  </span><span class="ss">lobbies</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="8080004991-4">%{</span><span class="n">lobbies_total</span><span class="p">,</span><span class="w"> </span><span class="n">by_state</span><span class="p">,</span><span class="w"> </span><span class="n">spectators</span><span class="p" data-group-id="8080004991-4">}</span><span class="p">,</span><span class="w">
-  </span><span class="ss">parties</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="8080004991-5">%{</span><span class="n">parties_active</span><span class="p">,</span><span class="w"> </span><span class="n">players_in_parties</span><span class="p" data-group-id="8080004991-5">}</span><span class="p">,</span><span class="w">
-  </span><span class="ss">quests</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="8080004991-6">%{</span><span class="n">quests_total</span><span class="p">,</span><span class="w"> </span><span class="n">completed</span><span class="p">,</span><span class="w"> </span><span class="n">claimed</span><span class="p" data-group-id="8080004991-6">}</span><span class="p">,</span><span class="w">
-  </span><span class="ss">signaling</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="8080004991-7">%{</span><span class="n">rooms_enabled</span><span class="p">,</span><span class="w"> </span><span class="n">rooms_active</span><span class="p">,</span><span class="w"> </span><span class="n">peers_connected</span><span class="p" data-group-id="8080004991-7">}</span><span class="p">,</span><span class="w">
-  </span><span class="ss">matchmaking</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="8080004991-8">%{</span><span class="n">queued</span><span class="p">,</span><span class="w"> </span><span class="n">queues</span><span class="p" data-group-id="8080004991-8">}</span><span class="p">,</span><span class="w">
-  </span><span class="ss">tournaments</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="8080004991-9">%{</span><span class="n">tournaments</span><span class="p">,</span><span class="w"> </span><span class="n">entries</span><span class="p">,</span><span class="w"> </span><span class="n">matches</span><span class="p" data-group-id="8080004991-9">}</span><span class="w">
-</span><span class="p" data-group-id="8080004991-1">}</span></code></pre><p>Everything in it is safe to show publicly (the stats page is opt-in via
+<p>Every context's live counters in one map, cached for a minute:</p><pre><code class="makeup elixir" translate="no"><span class="p" data-group-id="7957614482-1">%{</span><span class="w">
+  </span><span class="ss">players</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="7957614482-2">%{</span><span class="n">players_online</span><span class="p">,</span><span class="w"> </span><span class="n">players_total</span><span class="p">,</span><span class="w"> </span><span class="n">players_offline</span><span class="p">,</span><span class="w"> </span><span class="n">players_in_lobbies</span><span class="p">,</span><span class="w"> </span><span class="n">players_in_parties</span><span class="p" data-group-id="7957614482-2">}</span><span class="p">,</span><span class="w">
+  </span><span class="ss">activity</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="7957614482-3">%{</span><span class="n">dau</span><span class="p">,</span><span class="w"> </span><span class="n">wau</span><span class="p">,</span><span class="w"> </span><span class="n">mau</span><span class="p">,</span><span class="w"> </span><span class="n">new_users_1d</span><span class="p">,</span><span class="w"> </span><span class="n">new_users_7d</span><span class="p">,</span><span class="w"> </span><span class="n">new_users_30d</span><span class="p" data-group-id="7957614482-3">}</span><span class="p">,</span><span class="w">
+  </span><span class="ss">lobbies</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="7957614482-4">%{</span><span class="n">lobbies_total</span><span class="p">,</span><span class="w"> </span><span class="n">by_state</span><span class="p">,</span><span class="w"> </span><span class="n">spectators</span><span class="p" data-group-id="7957614482-4">}</span><span class="p">,</span><span class="w">
+  </span><span class="ss">parties</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="7957614482-5">%{</span><span class="n">parties_active</span><span class="p">,</span><span class="w"> </span><span class="n">players_in_parties</span><span class="p" data-group-id="7957614482-5">}</span><span class="p">,</span><span class="w">
+  </span><span class="ss">quests</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="7957614482-6">%{</span><span class="n">quests_total</span><span class="p">,</span><span class="w"> </span><span class="n">completed</span><span class="p">,</span><span class="w"> </span><span class="n">claimed</span><span class="p" data-group-id="7957614482-6">}</span><span class="p">,</span><span class="w">
+  </span><span class="ss">signaling</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="7957614482-7">%{</span><span class="n">rooms_enabled</span><span class="p">,</span><span class="w"> </span><span class="n">rooms_active</span><span class="p">,</span><span class="w"> </span><span class="n">peers_connected</span><span class="p" data-group-id="7957614482-7">}</span><span class="p">,</span><span class="w">
+  </span><span class="ss">matchmaking</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="7957614482-8">%{</span><span class="n">queued</span><span class="p">,</span><span class="w"> </span><span class="n">queues</span><span class="p" data-group-id="7957614482-8">}</span><span class="p">,</span><span class="w">
+  </span><span class="ss">tournaments</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="7957614482-9">%{</span><span class="n">tournaments</span><span class="p">,</span><span class="w"> </span><span class="n">entries</span><span class="p">,</span><span class="w"> </span><span class="n">matches</span><span class="p" data-group-id="7957614482-9">}</span><span class="w">
+</span><span class="p" data-group-id="7957614482-1">}</span></code></pre><p>Everything in it is safe to show publicly (the stats page is opt-in via
 <code class="inline">:public_stats</code>); <code class="inline">matchmaking</code> is the already-public subset. Consumers
 read this rather than calling the contexts, so the same number cannot
 drift between two pages.</p>
@@ -922,9 +922,9 @@ in the last 30 days ÷ MAU).</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1211">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1212">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1211">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1212">Hex Preview</a>
 
             </span>
 

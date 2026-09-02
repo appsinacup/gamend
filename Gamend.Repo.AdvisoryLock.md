@@ -66,6 +66,22 @@ extra serialization, never lost mutual exclusion).
 Must be called inside a `Repo.transaction`. On PostgreSQL, blocks until
 the lock is available. On SQLite, returns immediately — see the moduledoc.
 
+# `namespace_id`
+
+```elixir
+@spec namespace_id(atom() | String.t()) :: non_neg_integer()
+```
+
+The integer namespace `pg_advisory_xact_lock` is called with.
+
+Public so `Gamend.Lock.serialize/3` can resolve it on *every* adapter, not
+only Postgres. An unregistered atom is a programming error, and it used to
+surface as a `KeyError` from deep inside the Postgres branch — while the
+SQLite branch never calls `lock/2` at all and so never noticed. Anyone
+developing on the default SQLite setup could therefore add a lock with an
+unregistered namespace, watch every local test pass, and only find out on the
+Postgres CI job.
+
 # `namespaces`
 
 The registered lock namespaces and their ids (for introspection).

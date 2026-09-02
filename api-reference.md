@@ -1,4 +1,4 @@
-# gamend_core v1.0.1211 - API Reference
+# gamend_core v1.0.1212 - API Reference
 
 ## Modules
 

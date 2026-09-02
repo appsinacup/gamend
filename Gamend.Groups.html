@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1211">
+    <meta name="project" content="gamend_core v1.0.1212">
 
 
-    <title>Gamend.Groups — gamend_core v1.0.1211</title>
+    <title>Gamend.Groups — gamend_core v1.0.1212</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
-    <script defer src="dist/sidebar_items-1C5C6705.js"></script>
+    <script defer src="dist/sidebar_items-B3768CE4.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-Y2MUTVIN.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1211
+          v1.0.1212
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Groups</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1211)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1212)</small>
 
     </h1>
 
@@ -117,19 +117,19 @@ gamend_core
 <p>Context module for group management: creating, updating, listing, joining,
 leaving, kicking, promoting/demoting members, and handling join requests.</p><p>Groups are persistent communities (unlike ephemeral lobbies). They support
 three visibility types:</p><ul><li><strong>public</strong> – anyone can join directly</li><li><strong>private</strong> – anyone can request to join; an admin must approve</li><li><strong>hidden</strong> – only invited users can join (via notifications / invite API)</li></ul><h2 id="module-usage" class="section-heading"><a href="#module-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage</span></h2><pre><code class="makeup elixir" translate="no"><span class="c1"># Create a group (creator becomes admin)</span><span class="w">
-</span><span class="p" data-group-id="3496578843-1">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="p" data-group-id="3496578843-1">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Groups</span><span class="o">.</span><span class="n">create_group</span><span class="p" data-group-id="3496578843-2">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="3496578843-3">%{</span><span class="s">&quot;title&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;Cool Group&quot;</span><span class="p" data-group-id="3496578843-3">}</span><span class="p" data-group-id="3496578843-2">)</span><span class="w">
+</span><span class="p" data-group-id="6197755818-1">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="p" data-group-id="6197755818-1">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Groups</span><span class="o">.</span><span class="n">create_group</span><span class="p" data-group-id="6197755818-2">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="6197755818-3">%{</span><span class="s">&quot;title&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;Cool Group&quot;</span><span class="p" data-group-id="6197755818-3">}</span><span class="p" data-group-id="6197755818-2">)</span><span class="w">
 
 </span><span class="c1"># List public/private groups (hidden excluded)</span><span class="w">
-</span><span class="n">groups</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Groups</span><span class="o">.</span><span class="n">list_groups</span><span class="p" data-group-id="3496578843-4">(</span><span class="p" data-group-id="3496578843-5">%{</span><span class="p" data-group-id="3496578843-5">}</span><span class="p">,</span><span class="w"> </span><span class="ss">page</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">page_size</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p" data-group-id="3496578843-4">)</span><span class="w">
+</span><span class="n">groups</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Groups</span><span class="o">.</span><span class="n">list_groups</span><span class="p" data-group-id="6197755818-4">(</span><span class="p" data-group-id="6197755818-5">%{</span><span class="p" data-group-id="6197755818-5">}</span><span class="p">,</span><span class="w"> </span><span class="ss">page</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">page_size</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p" data-group-id="6197755818-4">)</span><span class="w">
 
 </span><span class="c1"># Join a public group</span><span class="w">
-</span><span class="p" data-group-id="3496578843-6">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">member</span><span class="p" data-group-id="3496578843-6">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Groups</span><span class="o">.</span><span class="n">join_group</span><span class="p" data-group-id="3496578843-7">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="3496578843-7">)</span><span class="w">
+</span><span class="p" data-group-id="6197755818-6">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">member</span><span class="p" data-group-id="6197755818-6">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Groups</span><span class="o">.</span><span class="n">join_group</span><span class="p" data-group-id="6197755818-7">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="6197755818-7">)</span><span class="w">
 
 </span><span class="c1"># Request to join a private group</span><span class="w">
-</span><span class="p" data-group-id="3496578843-8">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">request</span><span class="p" data-group-id="3496578843-8">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Groups</span><span class="o">.</span><span class="n">request_join</span><span class="p" data-group-id="3496578843-9">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="3496578843-9">)</span><span class="w">
+</span><span class="p" data-group-id="6197755818-8">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">request</span><span class="p" data-group-id="6197755818-8">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Groups</span><span class="o">.</span><span class="n">request_join</span><span class="p" data-group-id="6197755818-9">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="6197755818-9">)</span><span class="w">
 
 </span><span class="c1"># Admin approves a join request</span><span class="w">
-</span><span class="p" data-group-id="3496578843-10">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">member</span><span class="p" data-group-id="3496578843-10">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Groups</span><span class="o">.</span><span class="n">approve_join_request</span><span class="p" data-group-id="3496578843-11">(</span><span class="n">admin_id</span><span class="p">,</span><span class="w"> </span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="3496578843-11">)</span></code></pre><h2 id="module-pubsub-events" class="section-heading"><a href="#module-pubsub-events" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">PubSub Events</span></h2><ul><li><p><code class="inline">&quot;groups&quot;</code> topic:</p><ul><li><code class="inline">{:group_created, group}</code></li><li><code class="inline">{:group_updated, group}</code></li><li><code class="inline">{:group_deleted, group_id}</code></li></ul></li><li><p><code class="inline">&quot;group:&lt;group_id&gt;&quot;</code> topic:</p><ul><li><code class="inline">{:member_joined, group_id, user_id}</code></li><li><code class="inline">{:member_left, group_id, user_id}</code></li><li><code class="inline">{:member_kicked, group_id, user_id}</code></li><li><code class="inline">{:member_promoted, group_id, user_id}</code></li><li><code class="inline">{:member_demoted, group_id, user_id}</code></li><li><code class="inline">{:group_updated, group}</code></li><li><code class="inline">{:join_request_created, group_id, user_id}</code></li><li><code class="inline">{:join_request_approved, group_id, user_id}</code></li><li><code class="inline">{:join_request_rejected, group_id, user_id}</code></li><li><code class="inline">{:group_notification, group_id, sender_id}</code></li></ul></li></ul>
+</span><span class="p" data-group-id="6197755818-10">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">member</span><span class="p" data-group-id="6197755818-10">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Groups</span><span class="o">.</span><span class="n">approve_join_request</span><span class="p" data-group-id="6197755818-11">(</span><span class="n">admin_id</span><span class="p">,</span><span class="w"> </span><span class="n">request</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="6197755818-11">)</span></code></pre><h2 id="module-pubsub-events" class="section-heading"><a href="#module-pubsub-events" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">PubSub Events</span></h2><ul><li><p><code class="inline">&quot;groups&quot;</code> topic:</p><ul><li><code class="inline">{:group_created, group}</code></li><li><code class="inline">{:group_updated, group}</code></li><li><code class="inline">{:group_deleted, group_id}</code></li></ul></li><li><p><code class="inline">&quot;group:&lt;group_id&gt;&quot;</code> topic:</p><ul><li><code class="inline">{:member_joined, group_id, user_id}</code></li><li><code class="inline">{:member_left, group_id, user_id}</code></li><li><code class="inline">{:member_kicked, group_id, user_id}</code></li><li><code class="inline">{:member_promoted, group_id, user_id}</code></li><li><code class="inline">{:member_demoted, group_id, user_id}</code></li><li><code class="inline">{:group_updated, group}</code></li><li><code class="inline">{:join_request_created, group_id, user_id}</code></li><li><code class="inline">{:join_request_approved, group_id, user_id}</code></li><li><code class="inline">{:join_request_rejected, group_id, user_id}</code></li><li><code class="inline">{:group_notification, group_id, sender_id}</code></li></ul></li></ul>
     </section>
 
 </div>
@@ -2481,9 +2481,9 @@ Cannot lower max_members below current member count.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1211">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1212">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1211">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1212">Hex Preview</a>
 
             </span>
 

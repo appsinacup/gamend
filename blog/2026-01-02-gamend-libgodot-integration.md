@@ -95,7 +95,7 @@ func _process(delta):
 	rotate_x(delta)
 ```
 
-## Conclusion
+## Results
 
 And it works:
 

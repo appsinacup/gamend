@@ -4,7 +4,7 @@ icon: hero-cube-transparent
 
 # Architecture
 
-High-level overview of how the platform is structured — from clients down to the database and external services.
+High-level overview of how the platform is structured, from clients down to the database and external services.
 
 ## System overview
 
@@ -104,7 +104,7 @@ High-level overview of how the platform is structured — from clients down to t
                                                               inbox: relayed offer/answer/ice)
 ```
 
-Signaling has no room process and no room record — configuration is read from
+Signaling has no room process and no room record: configuration is read from
 the lobby's `webrtc_*` columns, membership is presence, and relay is PubSub. All
 three are cluster-wide, so two peers whose sockets land on different nodes can
 still signal each other.

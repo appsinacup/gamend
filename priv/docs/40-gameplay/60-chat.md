@@ -6,7 +6,7 @@ icon: hero-chat-bubble-oval-left-ellipsis
 
 The chat system supports messaging within lobbies, groups, and between friends (direct messages). Messages can be sent, edited, deleted, and support read cursors for tracking unread counts. A word filter, a report queue and mutes ship built in, with the hook pipeline for rules of your own. Notifications are sent automatically for new messages.
 
-## Chat Types
+## Chat types
 
 - **lobby** — Messages sent within a lobby. Requires the sender to be a member of the lobby.
 - **group** — Messages sent within a group. Requires the sender to be a member of the group.
@@ -21,7 +21,7 @@ Endpoints live under `/api/v1/chat`; the shapes are in
 - **`chat_ref_id`** - the lobby id, the group id, or *the other user's* id for a
   DM (not a conversation id; there is no such row)
 
-## Read Cursors & Unread Counts
+## Read cursors and unread counts
 
 Track which messages a user has read with read cursors. The server stores the last-read message ID per user per chat.
 
@@ -35,7 +35,7 @@ Track which messages a user has read with read cursors. The server stores the la
 unread_count": 12 }
 ```
 
-## Architecture & Message Flow
+## Architecture and message flow
 
 The following diagram shows the flow when a chat message is sent:
 
@@ -43,9 +43,9 @@ The following diagram shows the flow when a chat message is sent:
  Client Server Recipients ────── ────── ────────── POST /chat/messages ──► 1. Validate access 2. Run before_chat_message hook 3. Insert into DB 4. Invalidate Nebulex cache 5. PubSub broadcast ─────────► WebSocket push 6. Async: after_chat_message "chat_message_created" hook + send notifications ──► "notification" event PATCH /chat/messages/:id ► 1. Verify ownership (sender_id) 2. Update content/metadata 3. Invalidate cache 4. PubSub broadcast ────────► "chat_message_updated" DELETE /chat/messages/:id ► 1. Verify ownership 2. Delete from DB 3. Invalidate cache 4. PubSub broadcast ───────► "chat_message_deleted" (payload: {id})
 ```
 
-## Real-time Events
+## Real-time events
 
-Messages are broadcast in real-time via PubSub. WebSocket channels automatically forward these events to connected clients.
+Messages are broadcast in real time via PubSub. WebSocket channels automatically forward these events to connected clients.
 
 ```text
  Chat Type PubSub Topic Channel ───────── ──────────── ─────── lobby chat:lobby:{lobby_id} LobbyChannel group chat:group:{group_id} GroupChannel friend chat:friend:{lo}:{hi} UserChannel + user:{recipient_id} Events pushed to clients: ───────────────────────── "chat_message_created" → Full message object (on send) "chat_message_updated" → Full message object (on edit) "chat_message_deleted" → { id: message_id } (on delete)
@@ -55,7 +55,7 @@ Friend DMs are broadcast to both the sorted-pair topic and each user's personal 
 
 Clients that cache messages locally can update in-place: on "chat_message_updated\
 
-## Automatic Notifications
+## Automatic notifications
 
 When a new chat message is sent, a notification is automatically created for each recipient:
 
@@ -63,9 +63,9 @@ When a new chat message is sent, a notification is automatically created for eac
 - **Group message:** Title: "New message in {group_name}\
 - **Lobby message:** Title: "New message in {lobby_name}\
 
-Notifications use upsert semantics — multiple messages from the same sender update the existing notification with the latest content rather than creating duplicates.
+Notifications use upsert semantics: multiple messages from the same sender update the existing notification with the latest content rather than creating duplicates.
 
-## Elixir Context Functions
+## Elixir context functions
 
 The Chat context module provides functions for server-side chat operations:
 
@@ -105,12 +105,12 @@ Gamend.Chat.count_unread_groups_batch(user_id, group_ids)
 ## Moderation
 
 Three primitives ship with core, all enforced server-side in
-`Gamend.Chat.send_message/2` before a message is persisted: a **word filter**, a
-**report queue** and **mutes**. A message core rejects never reaches the
-database, PubSub or your hooks. Core ships the mechanism, not the policy — the
+`Gamend.Chat.send_message/2` before a message is persisted: a word filter, a
+report queue and mutes. A message core rejects never reaches the
+database, PubSub or your hooks. Core ships the mechanism, not the policy. The
 blocklist starts empty and nobody is muted until a moderator says so.
 
-## Word Filter
+## Word filter
 
 An admin-managed blocklist, edited on the admin chat filter page. Every entry
 carries a severity and a match mode (`substring`, the default, or `exact` for a
@@ -121,13 +121,13 @@ whole word):
 - **flag** — the message is stored as written, marked flagged, and a report is filed automatically.
 
 Matching is evasion-resistant. Blocklist entries and incoming messages both go
-through one shared normalizer — lower-cased, diacritics dropped, zero-width
+through one shared normalizer (lower-cased, diacritics dropped, zero-width
 characters removed, common leetspeak mapped (`@`→`a`, `3`→`e`, `0`→`o`, …),
-repeated characters collapsed — so a word stored as `idiot` still catches
+repeated characters collapsed), so a word stored as `idiot` still catches
 `ïd10T` and `iiiidiot`. The admin "test a phrase" box runs that same normalizer,
 so what it reports is exactly what the runtime path does.
 
-The list **ships inert**: nothing is enabled, and Gamend ships no profanity or
+The list ships inert: nothing is enabled, and Gamend ships no profanity or
 slur list of its own. `priv/chat_filter/en.txt` contains two harmless
 placeholders (`badword`, `spamlink`) purely so you can try the feature; which
 words are unacceptable is your game's policy, in your languages, and the server
@@ -142,8 +142,8 @@ Public multi-language lists you can start from:
 | [LDNOOBW](https://github.com/LDNOOBW/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words) | ~30 languages, one word per line | CC-BY-4.0 |
 | [Shutterstock](https://github.com/shutterstock/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words) | ~25 languages | MIT |
 
-Read one before you ship it — lists built for filtering search queries are far
-more aggressive than you want between players — and check the licence of
+Read one before you ship it, because lists built for filtering search queries are
+far more aggressive than you want between players. Check the licence of
 anything you vendor into your repo.
 
 There are two ways to load one:
@@ -153,7 +153,7 @@ There are two ways to load one:
 comments. Rebuild, then open **Admin → Chat filter**, pick the language and a
 severity, and press **Import bundled list**. The folder is read from the
 compiled app's `priv/` via `Application.app_dir/2`, so a file added *after* the
-build is not visible to a running server — it ships with the release like any
+build is not visible to a running server; it ships with the release like any
 other asset. Anything you drop there appears in the picker automatically, and a
 whole imported list can be removed again in one click (or with
 `DELETE /api/v1/admin/chat/filter_words?lang=de`).
@@ -161,22 +161,22 @@ whole imported list can be removed again in one click (or with
 **Over the admin API (no rebuild).** POST each word to
 `POST /api/v1/admin/chat/filter_words` with `{"word": "...", "severity":
 "block", "lang": "de"}`. This is the path to script when the list lives outside
-your repo or changes between deploys — tag the rows with `lang` and you keep the
+your repo or changes between deploys. Tag the rows with `lang` and you keep the
 same one-click bulk removal.
 
 Either way the cap is `max_chat_filter_words`, and every word goes through the
 normalizer on the way in, so one entry covers its evasive spellings.
 
-Matching is **language-agnostic**: every entry is checked against every message,
-because a chat line carries no reliable language signal — players code-switch,
+Matching is language-agnostic: every entry is checked against every message,
+because a chat line carries no reliable language signal: players code-switch,
 and detecting a language from a short string is both slow and wrong. `lang` is
 provenance only. It records which bundled list a row came from, powers "remove
 the German list" as a bulk delete, and shows as a column in admin; it never
 narrows what a message is checked against. Import the locales you actually
-serve — a benign word in one language is a slur in another, so importing
+serve, since a benign word in one language is a slur in another, so importing
 everything mostly buys false positives.
 
-## Working the Report Queue
+## Working the report queue
 
 A report is a to-do item for a moderator, and **Admin → Chat reports** is where
 you work it. A report has four states:
@@ -198,25 +198,25 @@ who did it and when:
 - **Mute** — silences the player for a duration you choose (10 minutes to
   permanent), in one room or globally.
 
-When a report lands, **every admin gets a notification** ("New chat reports").
+When a report lands, every admin gets a notification ("New chat reports").
 It upserts on its title, so it stays a single unread entry whose count keeps
 rising rather than one notification per report.
 
-Each of those actions can also **reply to the reporter**, so someone who takes
+Each of those actions can also reply to the reporter, so someone who takes
 the trouble to report abuse hears what came of it. Reports the word filter filed
 itself have no reporter, so that option does not appear on them.
 
 Warnings, mute notices and reporter replies are all prefilled with sensible
-wording and are **editable before sending** — core supplies a starting point, not
+wording and are editable before sending; core supplies a starting point, not
 your community's voice.
 
-## Report Queue
+## Report queue
 
 Players report a message with `POST /api/v1/chat/messages/:id/report` and an
 optional `reason`. One report per player per message (a repeat is rejected as
 `already_reported`), you cannot report your own message, and each player is
 capped over a rolling 24 hours by `max_chat_reports_per_user_per_day`. Reports
-the word filter files for itself on a `flag` hit have **no reporter** — the
+the word filter files for itself on a `flag` hit have no reporter, so the
 `reporter_id` is null.
 
 Every report keeps a snapshot of the message content plus the reported user's
@@ -241,16 +241,16 @@ The scoped endpoints take `{ "target_user_id": …, "expires_at": …, "reason":
 | group | `POST /api/v1/groups/:id/mute` | `POST /api/v1/groups/:id/unmute` | `GET /api/v1/groups/:id/mutes` |
 | party | `POST /api/v1/parties/mute` | `POST /api/v1/parties/unmute` | `GET /api/v1/parties/mutes` |
 
-Lobby and party calls take no room id — the room is the caller's own. A hostless
+Lobby and party calls take no room id; the room is the caller's own. A hostless
 (matchmaking-owned) lobby has no in-game moderator, so only an admin or a plugin
 can mute there.
 
-A mute is **editable after the fact**. Open **Admin → Chat mutes** and change its
-duration or reason in place to shorten, extend or re-word one — you do not have
+A mute is editable after the fact. Open **Admin → Chat mutes** and change its
+duration or reason in place to shorten, extend or re-word one, so you do not have
 to unmute and start over. The same holds through the API: re-muting a player in a
 scope they are already muted in replaces the existing mute rather than failing.
 
-When you mute someone from the console you can **notify them**, with wording
+When you mute someone from the console you can notify them, with wording
 prefilled from the mute (its scope, expiry and reason) and editable before it
 goes out. Separately, a `chat_muted` realtime event reaches the player's socket
 immediately so the client can grey out its chat input.
@@ -265,16 +265,16 @@ The muted player is pushed `chat_muted` (`scope`, `scope_ref_id`, `expires_at`,
 a client can grey out the input instead of discovering the mute through a
 rejected send.
 
-## Hook Pipeline (Moderation)
+## Hook pipeline (moderation)
 
 Chat messages pass through the hook pipeline before being persisted. Core's
-filter and mute checks run first — your hook never sees a message core already
-blocked — and then before_chat_message is where your own rules go: custom rate
+filter and mute checks run first, so your hook never sees a message core already
+blocked. Then before_chat_message is where your own rules go: custom rate
 limits, per-lobby etiquette, or a call out to a classifier. It can still reject
 or rewrite anything core let through. Two observation hooks watch what core did:
 after_chat_message_reported fires for every report (player-filed or
 filter-filed) and after_user_muted for every mute, which is where a strike
-policy belongs — see the [Server scripting](/docs/server-scripting)
+policy belongs; see the [Server scripting](/docs/server-scripting)
 guide.
 
 ```elixir
@@ -307,7 +307,7 @@ end
 
 Message listings are cached using Nebulex with version-based invalidation. When a message is sent, edited, or deleted, the cache version for that chat is incremented, automatically invalidating stale cached results. Cache TTL is 60 seconds.
 
-## Access Rules
+## Access rules
 
 - **Lobby chat:** User must currently be in the lobby (user.lobby_id matches)
 - **Group chat:** User must be a member of the group

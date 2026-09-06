@@ -17,7 +17,7 @@ GAMEND_CACHE_REDIS_POOL_SIZE=10
 
 Tip: `GAMEND_CACHE_L2` only matters when `GAMEND_CACHE_MODE=multi`.
 
-## Single Instance (recommended default)
+## Single instance (recommended default)
 
 Use a single local cache level:
 
@@ -26,7 +26,7 @@ GAMEND_CACHE_MODE=single
 # optional: GAMEND_CACHE_ENABLED=false (bypass caching)
 ```
 
-## Multiple Instances (near-cache)
+## Multiple instances (near-cache)
 
 Enable a two-level cache: L1 local + L2 shared/sharded.
 
@@ -41,7 +41,7 @@ GAMEND_CACHE_L2=partitioned
 
 Redis is shared across nodes. Partitioned requires Erlang clustering between nodes.
 
-## Partitioned Cache Setup (Erlang cluster for partitioned L2)
+## Partitioned cache setup (Erlang cluster for partitioned L2)
 
 If you use `GAMEND_CACHE_L2=partitioned`, nodes must be able to connect to each other via Erlang distribution.
 

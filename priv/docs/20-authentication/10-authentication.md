@@ -44,9 +44,9 @@ magic-link forms; it does not apply to any of the game-client flows.
             ◄── { access_token, refresh_token } ◄─ New token pair
 ```
 
-Access tokens are short-lived (15 min). Refresh tokens last 30 days. Both are stateless JWTs — no database lookup on each request.
+Access tokens are short-lived (15 min). Refresh tokens last 30 days. Both are stateless JWTs, with no database lookup on each request.
 
-## OAuth — browser redirect (polling)
+## OAuth: browser redirect (polling)
 
 For game clients that can't handle OAuth natively. The client opens a browser, then polls for the result.
 
@@ -64,7 +64,7 @@ For game clients that can't handle OAuth natively. The client opens a browser, t
          ◄── { status: "completed", access_token, refresh_token }
 ```
 
-## OAuth — direct code exchange
+## OAuth: direct code exchange
 
 For clients that handle OAuth natively (mobile SDKs, Steam auth tickets). No browser or polling needed.
 
@@ -86,7 +86,7 @@ Optional human verification on the browser sign-up forms, using
 [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/). Off by
 default.
 
-It guards the two paths that send an email to an address the submitter chose —
+It guards the two paths that send an email to an address the submitter chose:
 **registration** and the **magic link**. Those are the spam-relay vector: an
 attacker who cannot read the inbox can still make the server mail anyone, at
 your domain's reputation.
@@ -104,8 +104,8 @@ client.
 ### Setup
 
 Create a widget at
-[dash.cloudflare.com](https://dash.cloudflare.com/?to=/:account/turnstile) —
-free, no request cap, no card — and set:
+[dash.cloudflare.com](https://dash.cloudflare.com/?to=/:account/turnstile)
+(free, no request cap, no card) and set:
 
 ```bash
 GAMEND_CAPTCHA_ENABLED=true
@@ -125,7 +125,7 @@ always-fails dummy `2x0000000000000000000000000000000AA`.
 - **Verification fails closed.** If Cloudflare cannot be reached, the submission
   is rejected rather than allowed through. Treating an unreachable verifier as a
   pass would let anyone able to sit between the server and Cloudflare switch the
-  protection off — which is exactly the attacker.
+  protection off, which is exactly the attacker.
 - **Tokens are single-use** and expire after five minutes. A rejected submission
   resets the widget automatically, so the player can retry without reloading.
 - **The Content-Security-Policy widens only while the captcha is enabled**, and

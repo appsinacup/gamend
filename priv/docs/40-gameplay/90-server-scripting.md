@@ -8,7 +8,7 @@ icon: hero-command-line
 
 The application exposes a lightweight server-side scripting surface via the `Gamend.Hooks` behaviour. Hooks let you run custom code on lifecycle events (eg. user register/login, lobby create/update) and optionally expose RPC functions.
 
-Hooks can be written in **Elixir** (this guide), in **GDScript** (see [GDScript hooks](95-gdscript-hooks.md)), or in any other BEAM language — see [Other BEAM languages](#other-beam-languages-gleam-lfe-erlang) below.
+Hooks can be written in **Elixir** (this guide), in **GDScript** (see [GDScript hooks](95-gdscript-hooks.md)), or in any other BEAM language; see [Other BEAM languages](#other-beam-languages-gleam-lfe-erlang) below.
 
 ## Add a lifecycle callback
 
@@ -62,11 +62,11 @@ def before_group_create(user, attrs) do
 end
 ```
 
-Other "before" hooks follow the same pattern: `before_lobby_create/1`, `before_lobby_join/3`, `before_group_join/3`, `before_user_update/2`. Return {:ok, attrs} (or the appropriate tuple) to allow, {:error, reason} to reject. At registration time, before_user_register/2 receives the tentative user and the registration attrs (including the generated username) on every signup path — email, device, and OAuth — and may adjust the attrs or abort. Tournaments have their own hook family (before/after_tournament_register, before_tournament_leave, tournament_match_ready, tournament_match_expired, before_tournament_result, after_tournament_match_resolved, after_tournament_finished) — see the Tournaments guide for the match resolution contract. Matchmaking has its own family too (before_matchmaking_join, after_matchmaking_join, after_matchmaking_cancel, matchmaking_form_matches, after_matchmaking_matched) — see the Matchmaking guide. matchmaking_form_matches/2 is the one hook that replaces built-in logic rather than gating it: it hands you a whole queue bucket and lets you group it yourself.
+Other "before" hooks follow the same pattern: `before_lobby_create/1`, `before_lobby_join/3`, `before_group_join/3`, `before_user_update/2`. Return {:ok, attrs} (or the appropriate tuple) to allow, {:error, reason} to reject. At registration time, before_user_register/2 receives the tentative user and the registration attrs (including the generated username) on every signup path (email, device, and OAuth) and may adjust the attrs or abort. Tournaments have their own hook family (before/after_tournament_register, before_tournament_leave, tournament_match_ready, tournament_match_expired, before_tournament_result, after_tournament_match_resolved, after_tournament_finished); see the Tournaments guide for the match resolution contract. Matchmaking has its own family too (before_matchmaking_join, after_matchmaking_join, after_matchmaking_cancel, matchmaking_form_matches, after_matchmaking_matched); see the Matchmaking guide. matchmaking_form_matches/2 is the one hook that replaces built-in logic rather than gating it: it hands you a whole queue bucket and lets you group it yourself.
 
 ### Declaring what your plugin contributes
 
-Three optional callbacks tell the server what your game adds, so it shows up in the admin Runtime page next to the built-in surface instead of being invisible. Notification codes are enforced: the server never reads a notification's type, so an undeclared code would be delivered and silently ignored by every client — it is rejected at write time instead. Realtime events are enforced at the push site for the same reason. Env vars are declaration only, since a plugin can always read one directly.
+Three optional callbacks tell the server what your game adds, so it shows up in the admin Runtime page next to the built-in surface instead of being invisible. Notification codes are enforced: the server never reads a notification's type, so an undeclared code would be delivered and silently ignored by every client. It is rejected at write time instead. Realtime events are enforced at the push site for the same reason. Env vars are declaration only, since a plugin can always read one directly.
 
 ```elixir
 def notification_types do
@@ -97,7 +97,7 @@ Codes and event names are global: if two plugins declare the same one, the first
 
 ### Quest hooks
 
-before_quest_claim/3 can veto a player's claim (return an error tuple to reject; anything else allows — it never rewrites its args, and auto_claim quests skip it). after_quest_completed/1 and after_quest_claimed/1 observe the progress row asynchronously — chain the next quest, feed analytics, or push a custom notification. Report custom gameplay events from any hook with Gamend.Quests.report_event/4:
+before_quest_claim/3 can veto a player's claim (return an error tuple to reject; anything else allows; it never rewrites its args, and auto_claim quests skip it). after_quest_completed/1 and after_quest_claimed/1 observe the progress row asynchronously: chain the next quest, feed analytics, or push a custom notification. Report custom gameplay events from any hook with Gamend.Quests.report_event/4:
 
 ```elixir
 @impl true
@@ -126,7 +126,7 @@ end
 
 ### Push hooks
 
-before_push_send/2 runs once per recipient before any delivery job is enqueued. It receives the user id and the message as a string-keyed map; return {:ok, message} to allow (optionally rewritten — the result is re-validated against the push limits) or {:error, reason} to drop the push for that user. It is where per-user opt-out, quiet hours, or moderation belong. after_push_sent/3 observes each device's final outcome — "delivered", "invalid" (token disabled), or "failed". Send a push from any hook with Gamend.Push.send_to_user/2 — delivery is queued, retried, and never blocks the caller:
+before_push_send/2 runs once per recipient before any delivery job is enqueued. It receives the user id and the message as a string-keyed map; return {:ok, message} to allow (optionally rewritten, and the result is re-validated against the push limits) or {:error, reason} to drop the push for that user. It is where per-user opt-out, quiet hours, or moderation belong. after_push_sent/3 observes each device's final outcome: "delivered", "invalid" (token disabled), or "failed". Send a push from any hook with Gamend.Push.send_to_user/2. Delivery is queued, retried, and never blocks the caller:
 
 ```elixir
 @impl true def before_push_send(user_id, message) do # Example: respect a per-user mute stored in KV case Gamend.KV.get("push_muted", user_id: user_id) do {:ok, %{value: %{"muted" => true}}} -> {:error, :muted} _ -> {:ok, message} end end # From any hook: ping an offline player def on_turn_ready(user_id, match_id) do Gamend.Push.send_to_user(user_id, %{ "title" => "Your move!", "body" => "It is your turn.", "data" => %{"match_id" => match_id}, "collapse_key" => "turn-#{match_id})
@@ -135,11 +135,11 @@ end
 
 ### Chat moderation hooks
 
-Core already enforces the word filter and mutes inside `before_chat_message` — a
+Core already enforces the word filter and mutes inside `before_chat_message`: a
 blocked word or a muted sender never reaches your hook. These two observe what
 core did: `after_chat_message_reported/1` fires when a player reports a message
 or the filter files one itself (`reporter_id` is nil then), and
-`after_user_muted/1` fires whenever anyone is muted — admin, lobby host, group
+`after_user_muted/1` fires whenever anyone is muted by an admin, lobby host, group
 admin, party leader or a plugin. Both are fire-and-forget; the report is already
 queued and the mute already in effect. They are where a strike policy lives,
 since core deliberately ships none:
@@ -171,7 +171,7 @@ end
 
 ### Ready check hooks
 
-before_ready_check_open/2 can veto a check before it opens (veto-only: it never rewrites its args). after_ready_check_passed/1 is the "everyone answered ready" callback — the natural place to start the match. after_ready_check_failed/3 receives (check, reason, not_ready) where reason is "declined\
+before_ready_check_open/2 can veto a check before it opens (veto-only: it never rewrites its args). after_ready_check_passed/1 is the "everyone answered ready" callback, the natural place to start the match. after_ready_check_failed/3 receives (check, reason, not_ready) where reason is "declined\
 
 ```elixir
 @impl true
@@ -222,7 +222,7 @@ A few domain functions accept options that the HTTP and channel surfaces never p
 # Join succeeds even though the lobby is locked Gamend.Lobbies.join_lobby(user, lobby_id, %{bypass_lock: true})
 ```
 
-Useful for reconnects, admin tooling, or seating a late player into a match already in progress. Capacity and blacklist checks still apply — bypass_lock only skips the lock, so it cannot be used to overfill a lobby or to put two players who blocked each other together.
+Useful for reconnects, admin tooling, or seating a late player into a match already in progress. Capacity and blacklist checks still apply: bypass_lock only skips the lock, so it cannot be used to overfill a lobby or to put two players who blocked each other together.
 
 ### Background jobs & scheduling
 
@@ -232,7 +232,7 @@ For work that must survive a restart, retry on failure, or run later, enqueue a 
 # Run now, retried with backoff on failure Gamend.Jobs.enqueue_hook(:on_welcome_email, %{"user_id" => user.id}) # Run in 24 hours Gamend.Jobs.enqueue_in(24 * 60 * 60, :on_trial_reminder, %{"user_id" => user.id}) def on_welcome_email(%{"user_id" => user_id}), do: :ok
 ```
 
-For recurring work, register cron-like schedules from your after_startup hook. These are durable and distributed-safe — exactly one instance runs each job per period:
+For recurring work, register cron-like schedules from your after_startup hook. These are durable and distributed-safe, and exactly one instance runs each job per period:
 
 ```elixir
 def after_startup do Gamend.Schedule.hourly(:on_hourly) Gamend.Schedule.daily(:on_morning_report, hour: 9) Gamend.Schedule.cron(:sweep, "*/15 * * * *", :on_every_15m) :ok end
@@ -253,7 +253,7 @@ Gamend.Inventory.grant_item(user_id, "health_potion", 3)
 Gamend.Inventory.consume_item(user_id, "health_potion", 1)  # {:error, :insufficient_items} if empty
 ```
 
-Pass idempotency_key: so an at-least-once job or a client retry can't double-apply. These are server-authoritative — clients only read their wallet (GET /me/wallet).
+Pass idempotency_key: so an at-least-once job or a client retry can't double-apply. These are server-authoritative: clients only read their wallet (GET /me/wallet).
 
 React to changes made anywhere (admin, jobs, another plugin) with the after_wallet_changed / after_inventory_changed hooks:
 
@@ -264,18 +264,18 @@ def after_wallet_changed(%{user_id: id, currency: cur, balance: bal, delta: d}) 
 end
 ```
 
-### Best practices & pitfalls
+### What works, and what to avoid
 
-- Keep hooks fast and resilient — avoid long blocking work in the main request path. Use `Task.start` for background processing.
+- Keep hooks fast and resilient: avoid long blocking work in the main request path. Use `Task.start` for background processing.
 - When returning values from lifecycle hooks, prefer a `{:ok, map}` shape for "before" hooks that may modify attrs. Return `{:error, reason}` to reject flows; domain code will convert to `{:hook_rejected, reason}`.
-- Do not return structs as hook results intended to be used as params — always return plain maps when you intend to pass modified params into changesets.
+- Do not return structs as hook results intended to be used as params; always return plain maps when you intend to pass modified params into changesets.
 - Tests that modify global plugin configuration (eg. `GAMEND_CONTENT_PLUGINS_DIR` ) should run serially (`async: false`) and restore env via `on_exit` to avoid cross-test races.
-- Be careful modifying user or lobby data from hooks — reuse high-level domain functions (eg. `Gamend.Accounts.update_user/2`, `Gamend.Lobbies.update_lobby/2` ) so changes are validated and broadcast consistently.
+- Be careful modifying user or lobby data from hooks: reuse high-level domain functions (eg. `Gamend.Accounts.update_user/2`, `Gamend.Lobbies.update_lobby/2` ) so changes are validated and broadcast consistently.
 
 ## Server signals
 
 Hooks are request-shaped: something happens, your code runs, it returns. When
-one part of a plugin needs to *wait* for another part, use `Gamend.Signals` —
+one part of a plugin needs to *wait* for another part, use `Gamend.Signals`,
 the server's answer to Godot's `signal` / `emit` / `await`. Signals are scoped
 to your plugin, so two plugins can use the same name without colliding, and
 they ride `Phoenix.PubSub`, so an emit reaches every node in a cluster.
@@ -291,7 +291,7 @@ Gamend.Signals.subscribe("my_game", "level_up")
 {:ok, [user_id, level]} = Gamend.Signals.await("my_game", "level_up", 10_000)
 ```
 
-`await/3` returns `{:ok, payload}` — whatever the emitter passed, unchanged —
+`await/3` returns `{:ok, payload}` (whatever the emitter passed, unchanged)
 or `{:error, :timeout}` after the given timeout (30 seconds by default). A
 subscription belongs to the process that made it, so when a hook's task ends
 the subscription goes with it; `Gamend.Signals.topic/2` names the underlying
@@ -302,7 +302,7 @@ function entry for every signal the function awaits.
 ## Other BEAM languages (Gleam, LFE, Erlang)
 
 Hooks are dispatched with `function_exported?/3`, so a plugin only has to
-*export* the callbacks it implements — it never has to be an Elixir module. Any
+*export* the callbacks it implements; it never has to be an Elixir module. Any
 language that compiles to BEAM bytecode works, with no bridge and no runtime
 cost.
 
@@ -326,7 +326,7 @@ pub fn after_user_register(user: Dynamic) -> Dynamic {
 ```
 
 Hook payloads arrive as Elixir structs, which on the BEAM are maps with atom
-keys — `maps:get/2` plus a decoder reads a field out. A Gleam `Dict` *is* an
+keys, so `maps:get/2` plus a decoder reads a field out. A Gleam `Dict` *is* an
 Erlang map, so anything gamend guards with `is_map/1` takes one directly.
 
 The trade-off is the SDK: `sdk/` ships Elixir stub modules with typespecs, so
@@ -339,7 +339,7 @@ A complete, runnable example is in
 
 ## Every hook
 
-79 callbacks, all optional — implement only what you need. A `before_*`
+79 callbacks, all optional; implement only what you need. A `before_*`
 hook returns `{:ok, value}` to continue (optionally rewriting the value) or
 `{:error, reason}` to reject the operation. An `after_*` hook runs once the
 change is committed and its return value is ignored.

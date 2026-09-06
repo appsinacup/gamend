@@ -1,6 +1,6 @@
 # Quests: One Progression System
 
-Gamend now has a full quest system — dailies, weeklies, chains, secret quests and time-limited events — replacing the old achievements.
+Gamend now has a full quest system (dailies, weeklies, chains, secret quests and time-limited events) replacing the old achievements.
 
 ![](quests/overview.png)
 

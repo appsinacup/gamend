@@ -21,7 +21,7 @@ The server exposes three windows into itself: Prometheus metrics at `/metrics`, 
 
 ### Gating the endpoint
 
-`/metrics` reveals routes, traffic volumes and error rates, so it is gated: loopback always scrapes freely, and once `GAMEND_OBSERVABILITY_METRICS_TOKEN` is set, every non-loopback request — including private and Docker-internal addresses — must send `Authorization: Bearer <token>`. The setting accepts the token inline or a path to a file holding it (a docker secret). With no token configured, private-range addresses are allowed without auth as a dev/compose convenience.
+`/metrics` reveals routes, traffic volumes and error rates, so it is gated: loopback always scrapes freely, and once `GAMEND_OBSERVABILITY_METRICS_TOKEN` is set, every non-loopback request (including private and Docker-internal addresses) must send `Authorization: Bearer <token>`. The setting accepts the token inline or a path to a file holding it (a docker secret). With no token configured, private-range addresses are allowed without auth as a dev/compose convenience.
 
 ```yaml
 scrape_configs:
@@ -37,9 +37,9 @@ scrape_configs:
 
 ## Logs
 
-Recent log entries land in an in-memory ring buffer (the last 5,000, written straight to ETS so a log storm never serializes through a process) and are browsable live at [/admin/logs](/admin/logs) — filterable by level, module, text, and crucially by *source*: game clients can upload their own logs, which are re-emitted through the server's logger, so the source filter is what keeps the server's tail from being buried under every connected player's entries. A client session id joins a client's lines to the server lines logged while handling its requests. Client-side collection is its own system — see the [Client logs guide](/docs/client-logs).
+Recent log entries land in an in-memory ring buffer (the last 5,000, written straight to ETS so a log storm never serializes through a process) and are browsable live at [/admin/logs](/admin/logs), filterable by level, module, text, and by *source*: game clients can upload their own logs, which are re-emitted through the server's logger, so the source filter is what keeps the server's tail from being buried under every connected player's entries. A client session id joins a client's lines to the server lines logged while handling its requests. Client-side collection is its own system; see the [Client logs guide](/docs/client-logs).
 
-The buffer is in-memory only and lost on restart. For history that survives a redeploy, point the rotating file handler at persistent storage — it runs alongside stdout, so platform log drains still receive everything:
+The buffer is in-memory only and lost on restart. For history that survives a redeploy, point the rotating file handler at persistent storage. It runs alongside stdout, so platform log drains still receive everything:
 
 ```bash
 GAMEND_OBSERVABILITY_LOG_FILE_PATH=/data/log/gamend.log
@@ -52,15 +52,15 @@ GAMEND_OBSERVABILITY_LOG_FILE_MAX_FILES=5          # ~50MB total
 
 ## Health
 
-`GET /api/v1/health` is unauthenticated and returns `{"status": "ok"}` with a timestamp — point load-balancer and uptime checks at it.
+`GET /api/v1/health` is unauthenticated and returns `{"status": "ok"}` with a timestamp. Point load-balancer and uptime checks at it.
 
 ## Public stats
 
-With `GAMEND_FEATURES_PUBLIC_STATS` on (the default), the unauthenticated endpoints `GET /api/v1/stats`, `/users/stats`, `/lobbies/stats`, `/parties/stats`, `/quests/stats`, `/signaling/stats` and `/matchmaking/stats` return aggregate counts — never per-row data — and the [/stats](/stats) page renders the same snapshot in the browser. The admin index, the page and the API all read one cached composition, so every surface shows one set of numbers. They do reveal how busy the server is; the flag closes the page and the endpoints together.
+With `GAMEND_FEATURES_PUBLIC_STATS` on (the default), the unauthenticated endpoints `GET /api/v1/stats`, `/users/stats`, `/lobbies/stats`, `/parties/stats`, `/quests/stats`, `/signaling/stats` and `/matchmaking/stats` return aggregate counts, never per-row data, and the [/stats](/stats) page renders the same snapshot in the browser. The admin index, the page and the API all read one cached composition, so every surface shows one set of numbers. They do reveal how busy the server is; the flag closes the page and the endpoints together.
 
 ## In the admin console
 
-[/admin/system](/admin/system) (uptime, schedulers, BEAM memory breakdown, ETS tables), [/admin/connections](/admin/connections) (live sockets per node), [/admin/geo](/admin/geo) (traffic by country), [/admin/analytics](/admin/analytics) (DAU and retention cohorts) and [/admin/dashboard](/admin/dashboard) (Phoenix LiveDashboard) show much of the same telemetry without a Prometheus stack — see the [Admin Console guide](/docs/admin-console).
+[/admin/system](/admin/system) (uptime, schedulers, BEAM memory breakdown, ETS tables), [/admin/connections](/admin/connections) (live sockets per node), [/admin/geo](/admin/geo) (traffic by country), [/admin/analytics](/admin/analytics) (DAU and retention cohorts) and [/admin/dashboard](/admin/dashboard) (Phoenix LiveDashboard) show much of the same telemetry without a Prometheus stack; see the [Admin Console guide](/docs/admin-console).
 
 ## Reference
 

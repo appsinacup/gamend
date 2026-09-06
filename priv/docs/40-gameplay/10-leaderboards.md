@@ -6,7 +6,7 @@ icon: hero-chart-bar
 
 Leaderboards allow you to rank players based on scores. Scores are submitted server-side only (authoritative mode) ensuring fair competition. Each leaderboard acts as a season with optional start/end dates.
 
-## Key Concepts
+## Key concepts
 
 - **Sort Order:** `desc` (highest first) or `asc` (lowest first)
 - **Operators:** `set` (replace), `best` (only if better), `incr` (add), `decr` (subtract)
@@ -50,7 +50,7 @@ Leaderboards carry an optional `icon_url` (admin form or API). When unset,
 the web UI shows the shared default leaderboard icon and the API returns
 `""` so game clients can apply their own.
 
-## Best Practices
+## What works well
 
 - Use descriptive slugs like `weekly_score_2024_w48` or `season_3_pvp`
 - Set `starts_at` for scheduled leaderboards

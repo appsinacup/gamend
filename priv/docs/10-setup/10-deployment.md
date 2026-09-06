@@ -4,7 +4,7 @@ icon: hero-cloud-arrow-up
 
 # Deployment
 
-Deploy your own gamend instance using the starter repository. The quickest path is Docker Compose — clone, configure, and run. If you want a full Elixir host app that you can edit directly, see the Elixir App Starter guide below.
+Deploy your own gamend instance using the starter repository. The quickest path is Docker Compose: clone, configure, and run. If you want a full Elixir host app that you can edit directly, see the Elixir App Starter guide below.
 
 Two supported starting paths
 
@@ -100,7 +100,7 @@ Admin -> System, which can also sweep on demand.
 
 Two rules worth knowing before you tune them:
 
-- A lobby is deleted only when **nobody in it has been seen** for the window, so
+- A lobby is deleted only when nobody in it has been seen for the window, so
   a reconnect always saves one. Ending a match is not itself a reason to delete:
   a game that ends one deletes its own lobby.
 - Expired sessions and magic-link tokens are always pruned on their own
@@ -127,17 +127,17 @@ actually been delivered - a mail outage postpones the deletion rather than
 performing a silent one. Signing in resets the clock and invalidates the
 warning.
 
-Two kinds of account are never swept on either window: **admins**, and anyone
-holding a **purchase or entitlement**. Deleting an account also deletes its
+Two kinds of account are never swept on either window: admins, and anyone
+holding a purchase or entitlement. Deleting an account also deletes its
 stored objects, which nothing else reaches - object storage has no foreign key
 to cascade.
 
 ## HTTPS
 
-Gamend terminates TLS itself through Bandit — no nginx or reverse proxy. Point
+Gamend terminates TLS itself through Bandit, with no nginx or reverse proxy. Point
 it at a certificate and it serves HTTPS on 443, keeping HTTP on 4000 for ACME
 challenges. Erlang's `:ssl` re-reads the files from disk, so a renewal takes
-effect **without a restart**.
+effect without a restart.
 
 | Variable | Purpose |
 |---|---|
@@ -215,7 +215,7 @@ docker compose up -d
 (crontab -l 2>/dev/null; echo "0 */12 * * * certbot renew --config-dir $(pwd)/certbot/conf --work-dir $(pwd)/certbot/work --logs-dir $(pwd)/certbot/logs --quiet") | crontab -
 ```
 
-Renewed certs are picked up automatically — no container restart needed.
+Renewed certs are picked up automatically, with no container restart needed.
 
 ### Environment variables reference
 
@@ -229,4 +229,4 @@ Renewed certs are picked up automatically — no container restart needed.
 
 Port 443 access
 
-Binding to port 443 requires root access or Linux capabilities. In Docker this works by default. On bare metal, use: sudo setcap 'cap_net_bind_service=+ep' $(which beam.smp) — or use iptables to redirect port 443 to a higher port.
+Binding to port 443 requires root access or Linux capabilities. In Docker this works by default. On bare metal, use: sudo setcap 'cap_net_bind_service=+ep' $(which beam.smp), or use iptables to redirect port 443 to a higher port.

@@ -6,7 +6,7 @@ icon: hero-chat-bubble-left-right
 
 [Discord Developer Portal](https://discord.com/developers/applications)
 
-## Create Discord Application
+## Create a Discord application
 
 Go to the [Discord Developer Portal](https://discord.com/developers/applications)
 
@@ -14,7 +14,7 @@ Go to the [Discord Developer Portal](https://discord.com/developers/applications
 2. Give your app a name (e.g., "Gamend")
 3. Go to the "OAuth2" → "General" tab
 
-## Configure Redirect URIs
+## Configure redirect URIs
 
 In the OAuth2 General settings, add these redirect URIs:
 
@@ -25,7 +25,7 @@ Production: https://example.com/auth/discord/callback
 
 These are the URLs Discord will redirect users back to after authorization.
 
-## Get Application Credentials
+## Get the application credentials
 
 From the OAuth2 General tab, copy these values:
 
@@ -45,7 +45,7 @@ Click "Reset Secret" to generate
 abcdefghijklmnopqrstuvwx
 ```
 
-## Configure Application Secrets
+## Configure application secrets
 
 Set these environment variables:
 
@@ -54,7 +54,7 @@ GAMEND_OAUTH_DISCORD_CLIENT_ID="your_client_id_here"
 GAMEND_OAUTH_DISCORD_CLIENT_SECRET="your_client_secret_here"
 ```
 
-## Test Discord Login
+## Test Discord login
 
 After deploying with the secrets:
 

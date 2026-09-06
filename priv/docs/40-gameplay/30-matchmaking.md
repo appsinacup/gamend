@@ -25,7 +25,7 @@ POST /matchmaking/tickets ──► ticket (queued)
         "match_found" pushed on each player's user channel
 ```
 
-Parameters match exactly — a ticket queued with map=dust2 never joins one with map=inferno. Skill bands, regions or modes are therefore encoded by the game client (or a server hook) as parameter values, and each distinct combination forms its own queue.
+Parameters match exactly: a ticket queued with map=dust2 never joins one with map=inferno. Skill bands, regions or modes are therefore encoded by the game client (or a server hook) as parameter values, and each distinct combination forms its own queue.
 
 Blacklists are applied while the group is being formed, not after: two players who have blocked each other are never put in the same match, and each is matched with someone else instead. A player blocked with everyone ahead of them in the queue is skipped over rather than allowed to stall the players behind them. See the Friends & Blacklist guide.
 
@@ -50,7 +50,7 @@ queued ────► matched      lobby created; match_id points at it
 
 ## Server hooks
 
-Five hooks cover the queue. Four are the usual gate-and-notify pattern; matchmaking_form_matches/2 is different — it replaces the matcher for one bucket.
+Five hooks cover the queue. Four are the usual gate-and-notify pattern; matchmaking_form_matches/2 is different, in that it replaces the matcher for one bucket.
 
 | Hook | When | Returns |
 |---|---|---|
@@ -62,9 +62,9 @@ Five hooks cover the queue. Four are the usual gate-and-notify pattern; matchmak
 
 ## Server-authoritative queue parameters
 
-match_params is the bucket key: two tickets only meet when their params match byte for byte. That has one consequence worth internalising — put a precise value like an exact rating in match_params and every player lands in a bucket of one, so nothing ever matches. Keep params coarse (mode, region, a skill band) and read precise numbers off the user record inside matchmaking_form_matches/2.
+match_params is the bucket key: two tickets only meet when their params match byte for byte. That has one consequence worth internalising: put a precise value like an exact rating in match_params and every player lands in a bucket of one, so nothing ever matches. Keep params coarse (mode, region, a skill band) and read precise numbers off the user record inside matchmaking_form_matches/2.
 
-Because the client sends the params, before_matchmaking_join/2 is where you stop it choosing its own bracket — recompute them server-side and overwrite whatever arrived:
+Because the client sends the params, before_matchmaking_join/2 is where you stop it choosing its own bracket. Recompute them server-side and overwrite whatever arrived:
 
 ```elixir
 @impl true
@@ -105,11 +105,11 @@ def matchmaking_form_matches(_params, _tickets), do: :default
 
 The server re-checks whatever you return: groups containing a ticket from outside the bucket, a duplicate ticket, or a pair where one player has blocked the other are dropped with a warning rather than seated. A bug in your matcher costs you a match, not a broken lobby.
 
-A worked example combining both — a string mode validated on join and an integer rating used in the matcher — ships in modules/plugins_examples/example_hook.
+A worked example combining both (a string mode validated on join and an integer rating used in the matcher) ships in modules/plugins_examples/example_hook.
 
 ## Parties
 
-A party queues as one. The leader calls join for everybody: the server writes one ticket per member, all sharing the party's id, and the matcher treats them as an indivisible unit — the whole party is seated in the same lobby or none of them are. A party is never split.
+A party queues as one. The leader calls join for everybody: the server writes one ticket per member, all sharing the party's id, and the matcher treats them as an indivisible unit: the whole party is seated in the same lobby or none of them are. A party is never split.
 
 | Rule | Why |
 |---|---|
@@ -135,11 +135,11 @@ Going offline does not immediately cost a queue position. A ticket is pruned onl
 
 ## Ready checks
 
-A ready check asks a set of players to each answer before something proceeds. A host opens one over their lobby with POST /lobbies/ready_check and calls it off with DELETE — host-managed lobbies only, since a hostless matchmaking lobby belongs to the server. The host is pre-marked ready: clicking the button is their answer.
+A ready check asks a set of players to each answer before something proceeds. A host opens one over their lobby with POST /lobbies/ready_check and calls it off with DELETE, for host-managed lobbies only, since a hostless matchmaking lobby belongs to the server. The host is pre-marked ready: clicking the button is their answer.
 
 A player is in at most one check at a time, so answering needs no id: GET /me/ready_check returns the open one (or null) and POST /me/ready_check with {"ready": true} or false answers it. Members see each other's states; the four events ready_check_started, ready_check_updated, ready_check_passed and ready_check_failed arrive on the lobby channel.
 
-What core does on failure is nothing. A declined or timed-out check kicks nobody, deletes no lobby and moves no lobby state — it records who did not answer and stops there. The host can kick them with the kick they already have, or your after_ready_check_failed hook can decide. Likewise a passed check starts no match by itself: call Lobbies.transition_state/3 from after_ready_check_passed, and gate your own start in before_lobby_state_change with ReadyChecks.passed?/1.
+What core does on failure is nothing. A declined or timed-out check kicks nobody, deletes no lobby and moves no lobby state. It records who did not answer and stops there. The host can kick them with the kick they already have, or your after_ready_check_failed hook can decide. Likewise a passed check starts no match by itself: call Lobbies.transition_state/3 from after_ready_check_passed, and gate your own start in before_lobby_state_change with ReadyChecks.passed?/1.
 
 Tuning: GAMEND_LIMITS_READY_CHECK_TIMEOUT_MS (default 15s answering window; a host may override it per check) and GAMEND_LIMITS_MAX_READY_CHECK_PARTICIPANTS. The Admin → Matchmaking page lists recent checks with their outcomes and a force-cancel, mirrored at /api/v1/admin/ready_checks.
 

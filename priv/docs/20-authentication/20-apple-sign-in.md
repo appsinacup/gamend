@@ -6,11 +6,11 @@ icon: hero-device-phone-mobile
 
 [Apple Developer Portal](https://developer.apple.com/account/resources/identifiers/list)
 
-## Apple Developer Account
+## Apple Developer account
 
 You need an [Apple Developer Account](https://developer.apple.com/programs/) ($99/year)
 
-## Create App ID
+## Create an App ID
 
 Go to [Certificates, Identifiers & Profiles](https://developer.apple.com/account/resources/identifiers/list)
 
@@ -22,7 +22,7 @@ Go to [Certificates, Identifiers & Profiles](https://developer.apple.com/account
 6. Scroll down and check "Sign in with Apple"
 7. Click Continue and Register
 
-## Create Service ID (Client ID)
+## Create a Service ID (Client ID)
 
 Back in Certificates, Identifiers & Profiles:
 
@@ -39,7 +39,7 @@ Back in Certificates, Identifiers & Profiles:
 
 com.yourcompany.gameserver.web
 
-## Create Private Key
+## Create a private key
 
 In Certificates, Identifiers & Profiles, go to Keys:
 
@@ -53,14 +53,14 @@ In Certificates, Identifiers & Profiles, go to Keys:
 8. **Download the .p8 file** - you can only download this once!
 9. Note the Key ID (e.g., ABC123XYZ) shown on the confirmation page
 
-## Get Your Team ID
+## Get your Team ID
 
 Find your Team ID:
 
 1. Go to [Membership Details](https://developer.apple.com/account/#/membership/)
 2. Your Team ID is listed there (10 characters, e.g., A1B2C3D4E5)
 
-## Configure Environment Variables
+## Configure environment variables
 
 Set these environment variables:
 
@@ -74,7 +74,7 @@ GAMEND_OAUTH_APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----"
 "-----END PRIVATE KEY-----"
 ```
 
-## Test Apple Sign In
+## Test Apple sign-in
 
 After deploying with the secrets:
 

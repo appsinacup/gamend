@@ -100,7 +100,7 @@ than an obvious failure.
    which answers a different question and should stay as a second chart.
 4. Rebuild the bench image from the working tree. Every number here came from
    `ghcr.io/appsinacup/gamend:latest`, which predates this session's fixes —
-   notably the partial provider indexes, which take a registration from 13 index
+   in particular the partial provider indexes, which take a registration from 13 index
    writes to 7 and should move the registration row.
 5. Postgres cells (E-H). Needs the cluster, which is the one manual setup step.
 6. Blog post.

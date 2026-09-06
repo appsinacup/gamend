@@ -6,7 +6,7 @@ icon: hero-credit-card
 
 Payments use a server-side ledger. Clients may start purchases through Stripe Checkout, App Store, Play Store, or Steam, but grants happen only after server validation or a signed provider webhook.
 
-## Core Concepts
+## Core concepts
 
 - **Products:** Internal catalog rows such as coins, subscriptions, battle passes, or DLC.
 - **Provider SKUs:** Provider-specific mappings, for example Stripe price IDs or store product IDs.
@@ -14,7 +14,7 @@ Payments use a server-side ledger. Clients may start purchases through Stripe Ch
 - **Entitlements:** Durable unlocks created from fulfilled purchases and revoked on refund/dispute.
 - **Consumables:** One-time rewards such as coins or item packs. Grant these in hooks so your game economy stays the source of truth.
 
-## Stripe Sandbox And Live Mode
+## Stripe sandbox and live mode
 
 GAMEND_PAYMENTS_ENVIRONMENT is the global payment mode. Use sandbox for non-real provider flows, and production only when ready to charge real payment methods.
 
@@ -36,7 +36,7 @@ GAMEND_PAYMENTS_STRIPE_PRODUCTION_WEBHOOK_SECRET=whsec_...
 - `GAMEND_PAYMENTS_STRIPE_API_VERSION` is optional. If omitted, the Stripe SDK default is 2022-11-15; the webhook endpoint should use the same version.
 - Live secret keys may be shown only once when created. Store them in deployment secrets or environment variables, never in source control.
 
-### Create Stripe Webhook Endpoint
+### Create a Stripe webhook endpoint
 
 1. Open Stripe Dashboard `Developers / Workbench > Webhooks`.
 2. Click Add endpoint.
@@ -85,7 +85,7 @@ Stripe Authentication
 
 Stripe Webhooks
 
-## Stripe Checkout Setup
+## Stripe Checkout setup
 
 1. Create products and prices in Stripe Dashboard.
 2. Create matching internal products in Admin > Payments.
@@ -104,7 +104,7 @@ Currency display is handled by Stripe Checkout. Enable Stripe Adaptive Pricing i
 product_sku": "coins_100", "success_url": "https://your-game.example/payments/success", "cancel_url": "https://your-game.example/payments/cancel
 ```
 
-## User Store And Downloads
+## User store and downloads
 
 Authenticated users can open /store to test browser purchases. Stripe rows start Checkout; Apple, Google, and Steam rows remain platform-SDK/API flows.
 
@@ -131,7 +131,7 @@ Cancel renewal calls Stripe and schedules cancellation at period end; it does no
 
 Download assets are served from the payment downloads directory or priv/downloads. Asset keys must be file names, and only active entitlement owners can download.
 
-## Refunds, Disputes, And Reversals
+## Refunds, disputes and reversals
 
 Stripe refund and dispute events are callbacks. They update the purchase and revoke entitlements created by that purchase.
 
@@ -148,14 +148,14 @@ Recommended webhook events also include `checkout.session.completed`, `checkout.
 ## Refusing a sale
 
 `before_purchase(user, product)` runs on every provider path before the player
-is charged — return `{:error, reason}` and no money moves. Use it for the
+is charged: return `{:error, reason}` and no money moves. Use it for the
 conditions only the game knows: an account with no identity, whose entitlement
 would be stranded on one device; a region you do not ship to; a banned player.
 
 Refusing *after* the charge is not an option: the money has already moved, so
 declining to fulfil takes payment and gives nothing back.
 
-## Play Store, App Store, And Steam
+## Play Store, App Store and Steam
 
 Google, Apple, and Steam adapters are built in. They store normalized validation results in the same purchases, entitlements, and provider event tables.
 
@@ -218,7 +218,7 @@ If `GAMEND_PAYMENTS_STEAM_WEB_API_KEY` is unset, payments reuse `GAMEND_OAUTH_ST
 
 Steam MicroTxn API
 
-## Admin And Hooks
+## Admin and hooks
 
 Use Admin > Payments to view provider status, products, provider SKUs, purchases, entitlements, webhook events, and reconciliation cursors. Use Admin > Config to view masked provider environment variables.
 

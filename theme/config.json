@@ -11,7 +11,7 @@
       "path": "/",
       "hero": {
         "title": "Gamend",
-        "text": "**Open source** Elixir game server for **real-time** multiplayer games — backend, player website and admin panel in one.",
+        "text": "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one.",
         "video": {
           "src": "/images/hero-tour.mp4",
           "poster": "/images/hero-tour-poster.webp",
@@ -55,7 +55,7 @@
       "sections": [
         {
           "title": "What is Gamend?",
-          "text": "The **backend for your multiplayer game** — accounts, lobbies, chat, leaderboards and everything players expect around the game itself — plus the **web UI around it**: a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full **admin panel**. Server-side scripting runs your own logic where players cannot reach it. **You run it on your own server** — there is no hosted service.",
+          "text": "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service.",
           "image": {
             "light": "/images/banner.webp",
             "alt": "Gamend",
@@ -204,7 +204,7 @@
         },
         {
           "title": "Server Scripting & Scheduling",
-          "text": "Write server hooks in **Elixir, GDScript or Gleam** — scoring, rewards, matchmaking rules, validation — where players cannot reach them. Durable background jobs and cron scheduling built in.",
+          "text": "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in.",
           "image": {
             "light": "/images/screenshots/admin-runtime-light.webp",
             "dark": "/images/screenshots/admin-runtime-dark.webp",

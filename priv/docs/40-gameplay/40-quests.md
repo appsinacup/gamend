@@ -4,7 +4,7 @@ icon: hero-flag
 
 # Quests / Progression
 
-One engine for achievements, dailies, seasonal events and quest lines. A quest is objectives + rewards plus five independent settings — combine them freely.
+One engine for achievements, dailies, seasonal events and quest lines. A quest is objectives + rewards plus five independent settings that combine freely.
 
 | reset | When progress restarts: `never`, `daily`, `weekly`, `monthly`, or `interval` with `reset_interval_days` (biweekly = 14, any cadence). Every period boundary is 00:00 UTC, the same instant for every player - so a daily rolls over at noon in New Zealand and the previous afternoon on the US west coast. Show players the countdown a quest already carries rather than a reset time. |
 |---|---|
@@ -50,10 +50,10 @@ One engine for achievements, dailies, seasonal events and quest lines. A quest i
 ## Chains
 
 `prerequisite_quest_key` links quests into tiers. A chain occupies **one
-slot** in the quest list: the earliest tier the player can still act on — in
+slot** in the quest list: the earliest tier the player can still act on, whether in
 progress or completed-but-unclaimed. Claiming advances the slot to the next
 tier; once every tier is claimed the final one stands for the chain. On the
-web quests page, clicking the chained card opens the whole chain — earlier
+web quests page, clicking the chained card opens the whole chain: earlier
 tiers and locked ones ahead alike (hidden quests stay `???` until earned).
 Plugins can read the same view with
 `Gamend.Quests.chain(user_id, quest_key)`.
@@ -65,7 +65,7 @@ can apply their own.
 ## Groups
 
 `group_key` also collapses many quests into **one slot**, but for the opposite
-reason to a chain: nothing is ordered and every member is live at once — 52
+reason to a chain: nothing is ordered and every member is live at once, like 52
 countries to visit, in any order. The slot is titled by `group_title` (every
 member declares the same one) and shows the member worth acting on: claimable
 first, then furthest along. `group_size` on the entry says how many it stands
@@ -83,13 +83,13 @@ every other stays collapsed; plugins read the same view with
 `Gamend.Quests.group(user_id, group_key)`. Either way a member the player
 cannot see yet (out of window, prerequisite unmet) stays out.
 
-A quest can carry both a category and a group key — they are unrelated. A chain
+A quest can carry both a category and a group key; they are unrelated. A chain
 inside a group collapses as a chain first, then contributes its surviving entry
 to the group.
 
 ## Progress is server-authoritative
 
-Clients cannot advance their own quests — there is no endpoint for it. Core reports login, chat_message, score_submitted, lobby_joined and match_won; your game reports the rest from hooks:
+Clients cannot advance their own quests. There is no endpoint for it. Core reports login, chat_message, score_submitted, lobby_joined and match_won; your game reports the rest from hooks:
 
 ```elixir
 Gamend.Quests.report_event(user_id, "enemy_killed", 1, %{"map" => "desert"})
@@ -108,7 +108,7 @@ Player endpoints live under `/api/v1/me/quests` and the catalogue under
 - **Admin:** `/admin/quests` and `/api/v1/admin/quests` — CRUD plus grant,
   reset, claim and completion funnels
 
-Resets need no scheduled job — the current period is derived from the clock, so a new period simply starts a new progress row. Hidden quests show as "???" until earned.
+Resets need no scheduled job: the current period is derived from the clock, so a new period simply starts a new progress row. Hidden quests show as "???" until earned.
 
 ## Reference
 

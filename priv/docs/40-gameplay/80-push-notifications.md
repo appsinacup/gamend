@@ -4,7 +4,7 @@ icon: hero-bell-alert
 
 # Push notifications
 
-Deliver push notifications to your players' devices — the one channel that reaches a player whose app is backgrounded or closed. Android and Web deliver through Firebase Cloud Messaging (FCM); iOS goes straight to Apple (APNs) with no Firebase dependency. Routing is per device token, sending is server-authoritative (hooks and admin only), and delivery rides the durable job queue with retries. With no credentials configured, deliveries are logged instead of sent, so the whole flow works in development.
+Deliver push notifications to your players' devices, the one channel that reaches a player whose app is backgrounded or closed. Android and Web deliver through Firebase Cloud Messaging (FCM); iOS goes straight to Apple (APNs) with no Firebase dependency. Routing is per device token, sending is server-authoritative (hooks and admin only), and delivery rides the durable job queue with retries. With no credentials configured, deliveries are logged instead of sent, so the whole flow works in development.
 
 ## Device registration
 
@@ -32,7 +32,7 @@ GAMEND_PUSH_FCM_CREDENTIALS=/etc/gamend/fcm-service-account.json
 
 ### APNs setup (iOS, no Firebase)
 
-In the Apple Developer portal, create an APNs auth key (Certificates, Identifiers & Profiles → Keys → enable Apple Push Notifications service) and download the .p8 file — one key serves all your apps and never expires. Configure all four variables; GAMEND_PUSH_APNS_ENV=sandbox targets Apple's sandbox gateway for development builds.
+In the Apple Developer portal, create an APNs auth key (Certificates, Identifiers & Profiles → Keys → enable Apple Push Notifications service) and download the .p8 file. One key serves all your apps and never expires. Configure all four variables; GAMEND_PUSH_APNS_ENV=sandbox targets Apple's sandbox gateway for development builds.
 
 ```bash
 GAMEND_PUSH_APNS_PRIVATE_KEY=/etc/gamend/AuthKey_AB12CD34EF.p8
@@ -44,7 +44,7 @@ GAMEND_PUSH_APNS_ENV=production           # or sandbox
 
 ### Sending from a hook
 
-There is no public send endpoint — pushes originate server-side. Delivery is queued per device with retries; dead tokens the provider reports are disabled automatically. Friend/chat/system notifications already bridge to push on their own: an offline recipient with a registered device gets pinged without any extra code. before_push_send/2 lets a plugin veto or rewrite any push per recipient (opt-out, quiet hours); after_push_sent/3 observes per-device outcomes — see Server-side scripting.
+There is no public send endpoint: pushes originate server-side. Delivery is queued per device with retries; dead tokens the provider reports are disabled automatically. Friend/chat/system notifications already bridge to push on their own: an offline recipient with a registered device gets pinged without any extra code. before_push_send/2 lets a plugin veto or rewrite any push per recipient (opt-out, quiet hours); after_push_sent/3 observes per-device outcomes; see Server-side scripting.
 
 ```elixir
 Gamend.Push.send_to_user(user_id, %{
@@ -62,7 +62,7 @@ Gamend.Push.send_to_users(user_ids, %{"title" => "Event starts now!"})
 
 ### Operations
 
-The /admin/push page lists registered devices (filter by user, platform, provider, status) and can send a test push. Delivery jobs are visible on the push queue at /admin/oban; GAMEND_PUSH_QUEUE_CONCURRENCY sets per-node delivery throughput. Devices untouched for GAMEND_RETENTION_PUSH_TOKENS_DAYS (default 270) are pruned as dead installs. GAMEND_PUSH_ADAPTER=log forces log-only delivery even with credentials configured — useful on staging.
+The /admin/push page lists registered devices (filter by user, platform, provider, status) and can send a test push. Delivery jobs are visible on the push queue at /admin/oban; GAMEND_PUSH_QUEUE_CONCURRENCY sets per-node delivery throughput. Devices untouched for GAMEND_RETENTION_PUSH_TOKENS_DAYS (default 270) are pruned as dead installs. GAMEND_PUSH_ADAPTER=log forces log-only delivery even with credentials configured, useful on staging.
 
 ## Reference
 

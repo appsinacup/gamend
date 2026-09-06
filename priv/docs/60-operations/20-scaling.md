@@ -25,7 +25,7 @@ GAMEND_CACHE_REDIS_URL="redis://redis:6379/0"
 
 If you want to use `GAMEND_CACHE_L2=partitioned` under Compose, you also need to configure Erlang distribution + node discovery for your app containers.
 
-## Rate Limiting
+## Rate limiting
 
 HTTP rate limiting is enforced per client IP using the Hammer library (ETS backend). It protects against brute-force attacks and API abuse.
 

@@ -6,7 +6,7 @@ icon: hero-circle-stack
 
 [Download PostgreSQL](https://www.postgresql.org)
 
-## Database URL Configuration
+## Database URL configuration
 
 Set the GAMEND_DB_URL environment variable:
 
@@ -18,7 +18,7 @@ GAMEND_DB_URL="postgresql://myuser:mypass@localhost:5432/gamend_prod"
 
 The app will automatically detect PostgreSQL when GAMEND_DB_URL is set or when GAMEND_DB_POSTGRES_HOST and GAMEND_DB_POSTGRES_USER environment variables are configured.
 
-## Individual Environment Variables (Alternative)
+## Individual environment variables (alternative)
 
 You can also set individual database connection variables:
 
@@ -30,7 +30,7 @@ GAMEND_DB_POSTGRES_PASSWORD="your-password"
 GAMEND_DB_POSTGRES_DB="your-database-name"
 ```
 
-## Deployment Considerations
+## Deployment considerations
 
 Popular PostgreSQL hosting options:
 

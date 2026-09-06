@@ -6,7 +6,7 @@ icon: hero-globe-alt
 
 [Google Cloud Console](https://console.cloud.google.com/)
 
-## Create Google Cloud Project
+## Create a Google Cloud project
 
 Go to the [Google Cloud Console](https://console.cloud.google.com/)
 
@@ -23,7 +23,7 @@ In your Google Cloud project:
 2. Search for "Google People API"
 3. Click on it and click "Enable"
 
-## Configure OAuth Consent Screen
+## Configure the OAuth consent screen
 
 Go to "APIs & Services" → "OAuth consent screen":
 
@@ -38,7 +38,7 @@ Go to "APIs & Services" → "OAuth consent screen":
 9. Click "Save and Continue"
 10. Add test users if needed (optional for development)
 
-## Create OAuth Credentials
+## Create OAuth credentials
 
 Go to "APIs & Services" → "Credentials":
 
@@ -50,7 +50,7 @@ Go to "APIs & Services" → "Credentials":
 5. Click "Create"
 6. Copy the Client ID and Client Secret
 
-## Configure Environment Variables
+## Configure environment variables
 
 Set these environment variables:
 
@@ -59,7 +59,7 @@ GAMEND_OAUTH_GOOGLE_CLIENT_ID="your_client_id.apps.googleusercontent.com"
 GAMEND_OAUTH_GOOGLE_CLIENT_SECRET="your_client_secret"
 ```
 
-## Test Google Login
+## Test Google login
 
 After deploying with the secrets:
 

@@ -21,27 +21,27 @@ numbers appear as soon as players log in.
 | Counters | Game-defined per-day counters written with `Analytics.count/3` — `level.started`, `level.finished`, `level.failed`, `level.abandoned`, `lives.blocked_start`, each also sliced `…lang:<code>`, `level.started.mode:<mode>`, `level.started.{solo,coop,tournament}` | `analytics_daily_counts` |
 
 "Seen" is any authenticated contact: a login (session or JWT), a socket
-heartbeat, or an offline→online transition — the same events that move
+heartbeat, or an offline→online transition, the same events that move
 `users.last_seen_at`. Days are UTC, like every other period on the server.
 
 Retention is the strict "back on day N" definition, so the numbers line up
 with what stores and ad networks report; it is not "active at any point in
-the first week". A dash means no cohort has reached that horizon yet — never
+the first week". A dash means no cohort has reached that horizon yet, rather than
 0%.
 
 ## Where it lives
 
-- `user_activity_days` — one row per user per UTC day seen, written once by
+- `user_activity_days`: one row per user per UTC day seen, written once by
   `Analytics.record_activity/2` from the `last_seen_at` touches in
   `Gamend.Accounts`. Deduped through the cache, so a heartbeat costs a cache
   read, not a write. Grows by *active users × days*;
   `GAMEND_RETENTION_ACTIVITY_DAYS` prunes older rows (below 60 the cohort
   numbers go blank).
-- `analytics_daily_counts` — one row per `(day, key)`, incremented in place.
+- `analytics_daily_counts`: one row per `(day, key)`, incremented in place.
   Bounded by *keys × days*. Keys are dotted strings the game owns; put a
   dimension after a colon (`level.started.lang:ja`) so `counts/3` can pull a
   family with `level.started.lang:*`.
-- `client_sessions` — one row per run of the game on a device, written by
+- `client_sessions`: one row per run of the game on a device, written by
   [client log](/docs/godot-sdk) uploads. Bounded by *players ×
   sessions per day*; the log lines themselves are **not** stored here, they go
   out through `Logger` to whatever log store the host runs. Pruned by
@@ -96,7 +96,7 @@ abandoned per day, per language, per mode; solo vs co-op vs tournament
 starts; starts blocked by empty hearts (pair with `refill_lives` spends for
 the paywall funnel).
 
-Still not recorded anywhere — add a counter or a table if you need it:
+Still not recorded anywhere; add a counter or a table if you need it:
 session length and peak concurrency history; onboarding funnel steps
 (language chosen → first level → tutorial done); shop opens / SKU views /
 checkout abandons; per-guess accuracy over time (word stats are a per-user

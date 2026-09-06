@@ -6,7 +6,7 @@ icon: hero-code-bracket
 
 Write server hooks in GDScript instead of Elixir. The script is **compiled** to
 Elixir source and then to BEAM bytecode, so it runs at the same speed as a
-hand-written plugin — there is no interpreter, no bridge and no Godot on the
+hand-written plugin: there is no interpreter, no bridge and no Godot on the
 server.
 
 ```sh
@@ -37,7 +37,7 @@ func after_user_register(user):
 ```
 
 Every callback in the [`Gamend.Hooks`](https://docs.gamend.org/Gamend.Hooks.html)
-list works — write a `func` with the callback's name. Any other `func` is
+list works. Write a `func` with the callback's name. Any other `func` is
 callable as an RPC.
 
 ## Calling gamend
@@ -54,7 +54,7 @@ my_game.gd:9: `Economy` has no function `grnt` -- did you mean `grant`?
 
 ### `opts({...})` for keyword arguments
 
-Many functions take options — `reason`, `idempotency_key`. GDScript has no
+Many functions take options such as `reason` and `idempotency_key`. GDScript has no
 syntax for those, and they cannot be inferred: a trailing Dictionary is often a
 real payload (the notification above). So they are spelled explicitly:
 
@@ -118,7 +118,7 @@ fits, because everything between `(` and `)` is one logical line.
 
 ### `spawn()` is a server extension, not GDScript
 
-Godot has no `spawn`. There, `await` waits on a **signal** or on a coroutine —
+Godot has no `spawn`. There, `await` waits on a **signal** or on a coroutine,
 and nothing emits signals on the server, so `await` would have nothing to wait
 for on its own. `spawn()` is what gives it something: it runs a lambda
 concurrently, and `await` collects the result. Two independent lookups then
@@ -131,7 +131,7 @@ return {"gold": await gold, "items": await items}
 ```
 
 This is one place the server beats the engine: a suspended task is a BEAM
-process, so thousands can be in flight at once — Godot needs `Thread` or
+process, so thousands can be in flight at once, where Godot needs `Thread` or
 `WorkerThreadPool` for the same thing. Two caveats: a spawned lambda does
 **not** inherit the hook's caller, so `Hooks.caller_user()` inside one returns
 nothing, and `await` gives up after 30 seconds.
@@ -148,7 +148,7 @@ var doubled = offset * 2                      # {"x": 8, "y": 12}
 ```
 
 `+`, `-` and `*` work component-wise (and scale by a number). There is no
-`v[0]` and no other engine method — these are data, not the engine's types.
+`v[0]` and no other engine method: these are data, not the engine's types.
 
 ## More than one script
 
@@ -174,7 +174,7 @@ All of `scripts/*.gd` compile together, so a wrong name or argument count
 across files is a compile error like any other. A script *without*
 `class_name` is private to itself.
 
-Arrays and Dictionaries stay references across a script boundary — a callee in
+Arrays and Dictionaries stay references across a script boundary, so a callee in
 another script mutates the caller's collection, as it would in Godot. One
 consequence: if any script mutates in place, every script in the plugin
 compiles in reference mode. The boundary is still crossed only where gamend
@@ -195,7 +195,7 @@ The `@GlobalScope` functions that mean something without an engine:
 | Other | `str` `len` `range` `typeof` `int` `float` `hash` `assert` |
 
 `min`, `max`, `str` and the whole `print` family take any number of arguments,
-as in Godot — `print("score: ", score)` reads the way you would write it, and
+as in Godot, so `print("score: ", score)` reads the way you would write it, and
 `prints` joins with spaces where `printt` joins with tabs. `print` and
 `printraw` go to stdout; `printerr` and `push_error` log at error level,
 `push_warning` at warning, `print_verbose` at debug.
@@ -212,7 +212,7 @@ indexes.size()                # 3
 indexes.map(func(i): return i * i)
 ```
 
-Anything else is a compile error naming the line — `clamp(a, b)` says `clamp`
+Anything else is a compile error naming the line: `clamp(a, b)` says `clamp`
 takes 3 arguments rather than failing somewhere in the generated Elixir.
 
 ## JSON and Time
@@ -260,7 +260,7 @@ their defaults.
 | Dictionary | `clear` `duplicate` `erase` `find_key` `get` `get_or_add` `has` `has_all` `is_empty` `keys` `merge` `merged` `set` `size` `values` |
 | String | `begins_with` `capitalize` `contains` `containsn` `count` `dedent` `ends_with` `erase` `find` `indent` `insert` `is_empty` `is_valid_float` `is_valid_int` `join` `left` `length` `lpad` `lstrip` `md5_text` `pad_zeros` `repeat` `replace` `replacen` `reverse` `rfind` `right` `rpad` `rsplit` `rstrip` `sha256_text` `similarity` `slice` `split` `strip_edges` `substr` `to_camel_case` `to_float` `to_int` `to_kebab_case` `to_lower` `to_pascal_case` `to_snake_case` `to_upper` `trim_prefix` `trim_suffix` `uri_decode` `uri_encode` |
 
-The higher-order ones take a lambda, as in Godot — note `reduce` hands the
+The higher-order ones take a lambda, as in Godot. Note that `reduce` hands the
 callable `(accumulator, element)`:
 
 ```gdscript
@@ -286,8 +286,8 @@ families (`get_base_dir`, `to_utf8_buffer`, …) and the static constructors
 
 Two smaller things: `has` on an Array of nested collections compares by
 reference rather than contents, and a Dictionary does **not** preserve
-insertion order here, so `keys()` and iteration come back in an arbitrary order
-— unlike Godot.
+insertion order here, so `keys()` and iteration come back in an arbitrary order,
+unlike Godot.
 
 ## Classes
 
@@ -319,13 +319,13 @@ exactly as in Godot. `extends` inherits fields, `_init` and methods, and an
 override wins. An instance is a Dictionary underneath, so returning one hands
 gamend plain data.
 
-`class_name` is accepted at the top level and dropped — the module is the
+`class_name` is accepted at the top level and dropped: the module is the
 class, and its name comes from the file.
 
 ## Calling by name
 
 `Context.callv(name, args)` resolves the name at run time, against the same
-table the compiler checks against — so a name outside it raises rather than
+table the compiler checks against, so a name outside it raises rather than
 reaching an arbitrary function:
 
 ```gdscript
@@ -368,14 +368,14 @@ enum { RED, GREEN, BLUE }
 ```
 
 Both fold into the code that uses them, so they cost nothing at run time. A
-`const` must be a number, string, boolean or null — return a collection from a
+`const` must be a number, string, boolean or null. Return a collection from a
 `func` instead. A top-level `var` is refused: it is per-instance state in
 Godot, and the server has no instance to hold it.
 
 ## Arrays and Dictionaries are references, as in Godot
 
 A function mutates its caller's collection, two names can point at the same
-one, and `+` makes a new one — all exactly as in the engine:
+one, and `+` makes a new one, all exactly as in the engine:
 
 ```gdscript
 func bump(counts, key):
@@ -392,7 +392,7 @@ func tally(items):
 ```
 
 Collections live on a small heap belonging to the hook's own process, so one
-hook can never see another's, and nothing has to be freed — it dies with the
+hook can never see another's, and nothing has to be freed: it dies with the
 call. A script that never mutates a collection in place compiles with no heap
 at all and pays nothing.
 
@@ -417,7 +417,7 @@ surprise:
 - **Everything engine-side**: `Node` `Resource` `Object` `Input` `Engine` `OS`
   `ProjectSettings`, physics, rendering, and the servers.
 - **Everything the BEAM does differently**: `Thread` `Mutex` `Semaphore`
-  `WorkerThreadPool` — use `spawn()` / `await`.
+  `WorkerThreadPool`: use `spawn()` / `await`.
 
 ## Performance
 
@@ -430,7 +430,7 @@ Two things do:
 
 - **`xs.append(v)` in a loop copies the Array each time.** In Godot an Array is
   contiguous and that is amortised O(1); on the BEAM it is O(n), so a thousand appends is a
-  million operations — the same cost hand-written Elixir would pay for the
+  million operations, the same cost hand-written Elixir would pay for the
   same algorithm. Under a few hundred elements it does not matter. Above that,
   build the Array with `map` or `filter` instead:
 
@@ -443,13 +443,13 @@ Two things do:
   constant on the same O(n²). Godot's other fast-array idiom does **not**
   carry over: `xs.resize(n)` followed by `xs[i] = v` in a loop is O(1) per
   write in Godot because its Array is contiguous, but indexed assignment here
-  goes through the same per-element list cost as `append` — `resize` will not
+  goes through the same per-element list cost as `append`, so `resize` will not
   rescue a loop that `append` is slow in.
 
 - **Creating an Array or Dictionary costs ~250ns in reference mode**, which a
   plugin is in as soon as any script mutates a collection in place. A hook
   that builds ten small Dictionaries pays a few microseconds for it. A hook
-  that only reads pays nothing — the boundary itself measures 1.0-1.1x.
+  that only reads pays nothing: the boundary itself measures 1.0-1.1x.
 
 `sdk_tools/bench/hook_bench.exs` is the benchmark, if you want to measure your
 own.
@@ -458,7 +458,7 @@ own.
 
 The parts of GDScript that disagree with Elixir are preserved, not quietly
 changed: `+` still concatenates strings, `5 / 2` is still `2`, and `0`, `""`
-and `[]` are still falsy. What genuinely differs:
+and `[]` are still falsy. What differs:
 
 - **There is no engine.** No nodes, no scenes, no physics, no frame loop. A
   hook runs when the server calls it.
@@ -476,5 +476,5 @@ my_game/
 stack traces name, and reading its diff is how you see what a script change
 actually did. `mix gamend.gdscript.compile --check` fails when it is stale.
 
-Rebuild with `mix bundle` after every script change — the server loads the
+Rebuild with `mix bundle` after every script change, since the server loads the
 bundled `ebin/`, not your source.

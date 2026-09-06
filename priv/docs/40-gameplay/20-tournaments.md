@@ -4,7 +4,7 @@ icon: hero-trophy
 
 # Tournaments
 
-Single-elimination bracket tournaments: players register during a registration window, the bracket is drawn at start time (seeded, byes auto-resolved), and winners advance through timed rounds until each bracket crowns a champion. The server owns the structure — registration, seeding, rounds, deadlines, advancement, recurrence — while your game owns gameplay and judgment through hooks: the server never creates lobbies and never decides winners on its own.
+Single-elimination bracket tournaments: players register during a registration window, the bracket is drawn at start time (seeded, byes auto-resolved), and winners advance through timed rounds until each bracket crowns a champion. The server owns the structure (registration, seeding, rounds, deadlines, advancement, recurrence) while your game owns gameplay and judgment through hooks: the server never creates lobbies and never decides winners on its own.
 
 ## Lifecycle
 
@@ -22,7 +22,7 @@ Single-elimination bracket tournaments: players register during a registration w
 
 ## Entries
 
-A bracket side is an entry, and an entry is a leader (one user). For team tournaments (team_size 2+, advisory) the leader registers and team composition is game policy, enforced in hooks if you care — the server tracks who leads, not who shows up. Entry states: registered → active (after the draw) → eliminated or winner.
+A bracket side is an entry, and an entry is a leader (one user). For team tournaments (team_size 2+, advisory) the leader registers and team composition is game policy, enforced in hooks if you care. The server tracks who leads, not who shows up. Entry states: registered → active (after the draw) → eliminated or winner.
 
 ## Client API
 
@@ -36,11 +36,11 @@ A bracket side is an entry, and an entry is a leader (one user). For team tourna
 | GET /api/v1/tournaments/:id/bracket | Brackets, entries and matches |
 | GET /api/v1/tournaments/:id/my_match | The caller's current unresolved match, if any |
 
-Match resolution has no public endpoint — verdicts are server-side (hooks); expose your own call_hook RPC if your flow needs a client trigger. Entry leaders receive tournament_updated, tournament_match_ready, tournament_match_resolved and tournament_finished on their user channel (see WebSocket Channels).
+Match resolution has no public endpoint: verdicts are server-side (hooks); expose your own call_hook RPC if your flow needs a client trigger. Entry leaders receive tournament_updated, tournament_match_ready, tournament_match_resolved and tournament_finished on their user channel (see WebSocket Channels).
 
 ## Match resolution contract (hooks)
 
-A tournament match is a pairing plus a verdict: two entries that must produce a winner by a deadline. How it is played — a live lobby your hook creates, solo runs compared afterwards, anything — is invisible to the server.
+A tournament match is a pairing plus a verdict: two entries that must produce a winner by a deadline. How it is played (a live lobby your hook creates, solo runs compared afterwards, anything) is invisible to the server.
 
 ```elixir
 # fires when both slots are filled and the round window is open

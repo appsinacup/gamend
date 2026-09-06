@@ -6,7 +6,7 @@ icon: hero-envelope
 
 [Email Implementation Docs](https://hexdocs.pm/swoosh/Swoosh.html)
 
-## Choose an Email Provider
+## Choose an email provider
 
 Recommended providers:
 
@@ -16,7 +16,7 @@ Recommended providers:
 | [SendGrid](https://sendgrid.com) | 100 emails/day |
 | [Mailgun](https://mailgun.com) | 5,000 emails/month |
 
-## Configure Email Secrets
+## Configure email secrets
 
 Set these environment variables based on your provider:
 

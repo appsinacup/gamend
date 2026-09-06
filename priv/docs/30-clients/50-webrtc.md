@@ -21,7 +21,7 @@ either, both, or neither.
 SDP/ICE is exchanged over the already-authenticated `user:<id>` channel, so
 there is no separate WebRTC auth. One PeerConnection per user, spawned on the
 first `webrtc:offer` and linked to the channel process, so it dies with the
-WebSocket. Both transports coexist — WS keeps notifications and chat, WebRTC
+WebSocket. Both transports coexist: WS keeps notifications and chat, WebRTC
 carries high-frequency game data.
 
 ```text
@@ -67,7 +67,7 @@ byte pipe.
 JSON is the default; a channel opts into protobuf via the DataChannel protocol
 field (envelope: `RtcEnvelope` in `proto/gamend_realtime.proto`). **Prefer
 protobuf here**: DataChannels have no compression, and protobuf calls carry a
-request id so concurrent calls to the same function are correlated safely —
+request id so concurrent calls to the same function are correlated safely, where
 JSON matches replies by plugin+fn and needs caller-side serialization.
 
 Typed hooks: define `<FnName>Request` / `<FnName>Reply` protobuf messages in
@@ -98,7 +98,7 @@ on Fly.io `ExWebRTC.ICE.FlyIpFilter` handles public IP binding.
 ## Peer-to-peer signaling
 
 The server relays SDP/ICE between clients and enforces who may talk to whom;
-media and game data never touch it. **A room is a lobby** — same id, no room
+media and game data never touch it. **A room is a lobby**, with the same id and no room
 record or process. Configuration lives in the lobby's server-owned `webrtc_*`
 columns, membership in presence, relay over PubSub; all cluster-wide, so peers
 on different nodes signal fine.
@@ -112,7 +112,7 @@ Gamend.Signaling.configure(lobby, enabled: true, topology: :star)
 #          :late_join (true), :reconnect_timeout (30_000 ms)
 ```
 
-`:host_id` pins the star host to someone else — a headless server process that
+`:host_id` pins the star host to someone else, a headless server process that
 hosts the match without being a lobby member. It grants that user the `:host`
 role on join, so it is server-side only and never reachable from a client
 `PATCH`; an unknown id returns `{:error, :host_not_found}`.
@@ -125,7 +125,7 @@ role on join, so it is server-side only and never reachable from a client
 Roles (`:host` / `:user`) are assigned by the server in the join reply and
 recomputed from the lobby on every read, so a host change applies immediately.
 
-### Channel events — topic `signaling:<lobby_id>`
+### Channel events on topic `signaling:<lobby_id>`
 
 | Direction | Event | Payload |
 |---|---|---|
@@ -142,7 +142,7 @@ ICE so candidate bursts cannot starve offers. `webrtc:*` and signaling events
 stay JSON even on protobuf sockets.
 
 In Godot, `GamendSignalingClient` owns the peer connections and leaves the
-topology to you — connect on `peer_joined` for mesh, or only to the host's
+topology to you: connect on `peer_joined` for mesh, or only to the host's
 user_id for star. Pass `user_id`: it is what resolves simultaneous offers.
 
 ```gdscript
@@ -157,5 +157,5 @@ p2p.broadcast_text("events", "hello")
 The bundled `webrtc_lobby_hook` plugin enables star signaling on every lobby,
 closes rooms on delete, and pushes `webrtc:room_ready` (with the topic to join)
 to the host's `user:<id>` channel so a headless host connects on its own. Drop
-it to call `Signaling.configure/2` yourself — e.g. mesh rooms, or signaling only
+it to call `Signaling.configure/2` yourself, e.g. mesh rooms, or signaling only
 once a match starts.

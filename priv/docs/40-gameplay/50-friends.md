@@ -4,7 +4,7 @@ icon: hero-heart
 
 # Friends & Blacklist
 
-One table backs both features. A friendship row records a directed relationship between two users, and its status decides what that relationship means — a pending request, an accepted friendship, or a block. Blocking is therefore not a separate system: it is the same row, which is why a block cleanly supersedes whatever friendship existed before it.
+One table backs both features. A friendship row records a directed relationship between two users, and its status decides what that relationship means: a pending request, an accepted friendship, or a block. Blocking is therefore not a separate system: it is the same row, which is why a block cleanly supersedes whatever friendship existed before it.
 
 ## Friend lifecycle
 

@@ -72,7 +72,7 @@ if (session.status === 'completed') {
 ```
 
 If your client can receive the provider's redirect itself, exchange the code
-directly instead — see the Authentication guide.
+directly instead; see the Authentication guide.
 
 ## Errors
 

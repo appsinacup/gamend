@@ -39,11 +39,11 @@ var realtime = GamendRealtime.new(token_provider, endpoint, "protobuf")
 - Every event pushed by the server is protobuf-mapped, except the webrtc:* signaling events and phx_reply payloads (join/push replies), which remain JSON. Any future unmapped event is delivered as JSON on the same socket, so coverage can grow without breaking clients.
 - The format is negotiated per connection, so JSON and protobuf clients coexist freely on the same server.
 
-**Which to choose:** keep JSON unless you have a reason not to — it is human-readable on the wire, and because WebSocket traffic is permessage-deflate compressed the real bandwidth difference on this transport is small. Choose protobuf when you want schema-enforced payload shapes, cheaper client-side decoding, or numeric timestamps; raw payloads measure 35–84% smaller (see the encoding benchmark in protobuf_bench_test.exs), which matters mainly for clients without compression support.
+**Which to choose:** keep JSON unless you have a reason not to. It is human-readable on the wire, and because WebSocket traffic is permessage-deflate compressed the real bandwidth difference on this transport is small. Choose protobuf when you want schema-enforced payload shapes, cheaper client-side decoding, or numeric timestamps; raw payloads measure 35–84% smaller (see the encoding benchmark in protobuf_bench_test.exs), which matters mainly for clients without compression support.
 
 ### Game-defined schemas: what to implement
 
-Free-form values (metadata, KV data, hook payloads) are JSON in the database and REST API, so on protobuf sockets they normally travel as JSON bytes. To make them compact binary, your plugin's proto file implements the following messages — everything below is optional and independent, and anything you skip simply stays JSON. The admin Config page shows this coverage at a glance (Hooks section, "Protobuf schema coverage").
+Free-form values (metadata, KV data, hook payloads) are JSON in the database and REST API, so on protobuf sockets they normally travel as JSON bytes. To make them compact binary, your plugin's proto file implements the following messages. Everything below is optional and independent, and anything you skip simply stays JSON. The admin Config page shows this coverage at a glance (Hooks section, "Protobuf schema coverage").
 
 | You want binary… | Implement / register | Registration |
 |---|---|---|
@@ -54,7 +54,7 @@ Free-form values (metadata, KV data, hook payloads) are JSON in the database and
 | a hook's request/reply | message <FnName>Request + <FnName>Reply | by name, at plugin load |
 | KV data for a key | any message + kv_schemas/0 mapping | explicit: exact key or "prefix*" pattern |
 
-KV keys are open-ended, so unlike the fixed names above there is no naming convention — the hooks module exports the mapping itself (exact keys win over prefixes, longest prefix wins). KV entry metadata always stays JSON. Overrides: metadata_schemas/0 remaps or disables the Meta conventions. Scoping: hook schemas are namespaced per plugin; metadata entities and the KV keyspace are global — explicit registrations beat conventions, and on a conflict the first plugin in name order wins (losers are logged, and an explicit nil disables an entity for the whole deployment).
+KV keys are open-ended, so unlike the fixed names above there is no naming convention; the hooks module exports the mapping itself (exact keys win over prefixes, longest prefix wins). KV entry metadata always stays JSON. Overrides: metadata_schemas/0 remaps or disables the Meta conventions. Scoping: hook schemas are namespaced per plugin; metadata entities and the KV keyspace are global, so explicit registrations beat conventions, and on a conflict the first plugin in name order wins (losers are logged, and an explicit nil disables an entity for the whole deployment).
 
 ```elixir
 # In the plugin's hooks module — KV data schemas are explicit
@@ -82,7 +82,7 @@ realtime.registerMetaSchema('user', UserMeta)
 GamendProto.register_meta_schema("user", MyGamePb.UserMeta)
 ```
 
-- Safety: if a stored metadata map does not match the registered schema (extra keys, wrong types), that push falls back to JSON — mismatches cost bytes, never data.
+- Safety: if a stored metadata map does not match the registered schema (extra keys, wrong types), that push falls back to JSON, so mismatches cost bytes, never data.
 - Clients without a registered schema receive the raw bytes as metadata_pb and can decode them however they like.
 
 ## Event payload reference
@@ -115,7 +115,7 @@ Detailed payload shapes for every event pushed from the server to the client, gr
 | party_invite_cancelled | Party leader cancelled your invite | {party_id, user_id} |
 
 Friend requests, acceptances, blocks and removals **do not** each get their own
-channel event — every one of them arrives as a single `friend_updated` carrying
+channel event. Every one of them arrives as a single `friend_updated` carrying
 the refreshed friend list, plus a `notification_created` whose `metadata.type`
 names what happened (`incoming_request`, `friend_accepted`, `friend_blocked`,
 and so on). Handle those two events; a listener bound to `friend_accepted` on
@@ -213,16 +213,16 @@ The UserChannel also accepts a "call_hook" push from the client to invoke server
        to client)     via stream)
 ```
 
-## Notes
+## Delivery details
 
-- All broadcasts are fire-and-forget — subscribers don't acknowledge receipt
+- All broadcasts are fire-and-forget; subscribers don't acknowledge receipt
 - In a cluster, PubSub automatically distributes messages across nodes via pg2/Phoenix.PubSub.PG2
 - WebSocket connections are authenticated via JWT token on join
 - Friend DMs are broadcast to both the sorted-pair topic and each user's personal topic, so the recipient receives the message even without subscribing to the friend chat topic directly.
 - Clients that cache messages locally can update in place: `chat_message_updated`
   carries the full message, and `chat_message_deleted` carries only its `id`.
 
-## Chat Notifications
+## Chat notifications
 
 When a new chat message is sent, a notification is automatically created for recipients:
 
@@ -230,13 +230,13 @@ When a new chat message is sent, a notification is automatically created for rec
 - **Group message:** One notification per group: "New messages from {group_name}". Sent to all group members except sender.
 - **Lobby message:** One notification per lobby: "New messages from {lobby_name}". Sent to all lobby members except sender.
 
-Notifications use upsert semantics — multiple messages update the existing notification with the latest content rather than creating duplicates.
+Notifications use upsert semantics: multiple messages update the existing notification with the latest content rather than creating duplicates.
 
-## Quest Completion Notifications
+## Quest completion notifications
 
 When a user completes a quest, a notification is automatically created:
 
 - **Title:** "Quest completed: " ("Achievement unlocked: " for quests categorised `achievement`)
 - **Metadata:** `{type: "quest_completed", quest_key, category, quest_title}`
 
-Progress increments do not generate notifications — only completion does. The notification is a self-notification (sender = recipient) since it is system-generated.
+Progress increments do not generate notifications; only completion does. The notification is a self-notification (sender = recipient) since it is system-generated.

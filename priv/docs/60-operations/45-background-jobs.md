@@ -4,11 +4,11 @@ icon: hero-queue-list
 
 # Background & Scheduled Jobs
 
-Durable background work rides Oban, persisted in the same database as the rest of your data (Postgres or SQLite), retried with backoff on failure, and observable at [/admin/oban](/admin/oban). Plugins reach it through two small modules: `Gamend.Jobs` for one-off work and `Gamend.Schedule` for recurring cron work — both of which run *your hook functions*, so a background job is just a hook that happens later.
+Durable background work rides Oban, persisted in the same database as the rest of your data (Postgres or SQLite), retried with backoff on failure, and observable at [/admin/oban](/admin/oban). Plugins reach it through two small modules: `Gamend.Jobs` for one-off work and `Gamend.Schedule` for recurring cron work. Both run *your hook functions*, so a background job is just a hook that happens later.
 
 ## Durable jobs from hooks
 
-`Gamend.Async` and `Task.start` are best-effort and in-memory: work started that way dies with the node. For anything that must survive a restart, retry on failure, or run later — a welcome email, a trial reminder, a cleanup — enqueue a hook as a job instead:
+`Gamend.Async` and `Task.start` are best-effort and in-memory: work started that way dies with the node. For anything that must survive a restart, retry on failure, or run later (a welcome email, a trial reminder, a cleanup), enqueue a hook as a job instead:
 
 ```elixir
 # Run now, retried on failure
@@ -28,13 +28,13 @@ def on_welcome_email(%{"user_id" => user_id}) do
 end
 ```
 
-The contract: `:ok` or `{:ok, _}` completes the job; `{:error, reason}` retries it with backoff, up to 5 attempts. A job whose hook function no longer exists is discarded rather than retried — retrying will not make the plugin implement it.
+The contract: `:ok` or `{:ok, _}` completes the job; `{:error, reason}` retries it with backoff, up to 5 attempts. A job whose hook function no longer exists is discarded rather than retried; retrying will not make the plugin implement it.
 
 Enqueuing a callback also protects it: any hook that has ever been the target of `enqueue_hook/3` or a schedule is barred from client RPC, so a player cannot invoke your job callbacks through `/api/v1/hooks/call`.
 
 ## Recurring schedules
 
-Register cron-like schedules from your `after_startup/0` hook. Registration is in-memory and re-runs on every boot, which is exactly what you want — the schedule always matches the code that is running:
+Register cron-like schedules from your `after_startup/0` hook. Registration is in-memory and re-runs on every boot, which is exactly what you want, since the schedule always matches the code that is running:
 
 ```elixir
 def after_startup do
@@ -71,7 +71,7 @@ Six queues, sized in `config :gamend_core, Oban`:
 | `mailers` | 5 | Account email, e.g. inactivity warnings |
 | `storage` | 5 | Object-storage work, e.g. avatar mirroring |
 
-The engine is picked at runtime from the Repo's actual adapter: Postgres runs the Basic engine with the numbers above, SQLite runs the Lite engine with every queue capped at concurrency 2 and staging slowed to every 5 seconds. SQLite takes a single database-wide write lock, so Postgres-sized parallelism only converts into lock contention — SQLite hosts get the same throughput without the pile-up.
+The engine is picked at runtime from the Repo's actual adapter: Postgres runs the Basic engine with the numbers above, SQLite runs the Lite engine with every queue capped at concurrency 2 and staging slowed to every 5 seconds. SQLite takes a single database-wide write lock, so Postgres-sized parallelism only converts into lock contention, so SQLite hosts get the same throughput without the pile-up.
 
 ## Operations
 

@@ -6,11 +6,11 @@ icon: hero-play-circle
 
 [Steam Dev Portal](https://steamcommunity.com/dev)
 
-## Get a Steam Web API Key
+## Get a Steam Web API key
 
 Visit the Steam Web API page at [https://steamcommunity.com/dev](https://steamcommunity.com/dev) and register your domain to get an **API key**.
 
-## Configure Redirect Domain
+## Configure the redirect domain
 
 Steam uses OpenID for sign-in. When registering your domain at [steamcommunity.com/dev](https://steamcommunity.com/dev) , enter your domain (e.g., `example.com` for production or `localhost:4000` for development).
 
@@ -19,7 +19,7 @@ Steam uses OpenID for sign-in. When registering your domain at [steamcommunity.c
 | Development | `localhost:4000` |
 | Production | `your-domain.com` |
 
-## Configure Environment Variables
+## Configure environment variables
 
 Set the following environment variable:
 
@@ -27,7 +27,7 @@ Set the following environment variable:
 GAMEND_OAUTH_STEAM_API_KEY="your_steam_api_key_here"
 ```
 
-## Test Steam Login
+## Test Steam login
 
 After configuring the API key:
 

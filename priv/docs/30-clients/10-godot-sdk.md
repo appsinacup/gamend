@@ -80,7 +80,7 @@ events and payloads are in the Realtime guide.
 
 Ship the game's own log lines to the server, where they land in the same stream
 as the server's lines. One search for a session id then returns both halves of a
-failure — what the client thought it asked for, and what the server did — instead
+failure (what the client thought it asked for, and what the server did) instead
 of two lists to line up by timestamp.
 
 Two lines to enable it:
@@ -100,7 +100,7 @@ it any dictionary with `message`, and optionally `severity` (`0`-`4`, low to hig
 gamend_api.logs.submit({"message": "Game starting", "severity": 2, "category": "game"})
 ```
 
-Wiring it to your own logger instead is the same call — `submit` is what the
+Wiring it to your own logger instead is the same call: `submit` is what the
 signal connects to, nothing about it is specific to `DebugLog`.
 
 ### The server decides what is collected
@@ -121,7 +121,7 @@ nothing. Set it under `client_logs` in
 So `info` by default, `debug` for the noisy things (per-frame, per-message)
 which upload only when someone asks for them, and a category turned `off`
 entirely when it turns out to be chatty. Changing any of these takes effect on
-each client's next policy fetch — no new build.
+each client's next policy fetch, with no new build.
 
 ### Correlating with server logs
 
@@ -141,7 +141,7 @@ server's own record of it at `/admin/lobby_snapshots`, from both directions.
 ### What each session records about the device
 
 Gathered once per run and sent with the first batch. Every field is here
-because it answers a question a log line alone cannot — "only on Android 13",
+because it answers a question a log line alone cannot: "only on Android 13",
 "only on the compatibility renderer", "only in Safari", "only on the 3GB
 devices":
 
@@ -161,7 +161,7 @@ so a missing `gpu` means "not measurable here", not "no GPU".
 default `template.html`); it is the high-water mark of the WASM heap, which is
 what gets a tab killed on iOS and is invisible from anywhere else.
 
-To add your own, put them in `meta` — it is free-form, capped at 32 keys and
+To add your own, put them in `meta`, which is free-form, capped at 32 keys and
 256 bytes per value:
 
 ```gdscript
@@ -170,7 +170,7 @@ gamend_api.logs.submit({"message": "…", "category": "game"})
 
 One thing to weigh before adding more: this set is already close to a device
 fingerprint. It sits next to a `device_id` that identifies the install
-outright, so the marginal privacy cost is small — but that stops being true if
+outright, so the marginal privacy cost is small, but that stops being true if
 you add location, contacts, or anything else tied to the person rather than
 the hardware. Collect what explains a crash, not what identifies a player.
 
@@ -178,7 +178,7 @@ the hardware. Collect what explains a crash, not what identifies a player.
 
 Entries are buffered and sent in batches rather than one request per line:
 
-- flushed every 10s, or at 50 buffered entries, or **immediately on an error** —
+- flushed every 10s, or at 50 buffered entries, or **immediately on an error**;
   the line most likely to be followed by a crash is the one least worth holding
 - at most 200 entries per request, one request in flight at a time
 - an immediate repeat is collapsed to `message  (x140)` rather than sent 140
@@ -195,7 +195,7 @@ lost entries says so instead of looking quiet.
 
 ### What is stored where
 
-Only one row per session is stored in the database — who, which build, which
+Only one row per session is stored in the database: who, which build, which
 lobbies, how many errors. The lines themselves leave through `Logger` to
 whatever log store the host runs. That keeps volume off the database and puts
 client and server lines in one place; browse sessions at `/admin/logs`.

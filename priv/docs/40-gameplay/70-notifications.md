@@ -6,7 +6,7 @@ icon: hero-bell
 
 The notification system delivers real-time and persistent notifications for social events (friend requests, group invites, party actions), chat messages, and custom payloads. Every system-generated notification includes a metadata.type tag for client-side routing and filtering.
 
-## API Endpoints
+## API endpoints
 
 Endpoints are under `/api/v1/notifications` - see [/api/docs](/api/docs).
 
@@ -14,7 +14,7 @@ There is deliberately **no** "mark as read" endpoint. Reading is server-side:
 the web UI and `Notifications.mark_all_notifications_read/1` set the flag, so a
 game client tracks its own seen state or deletes what it has handled.
 
-## Notification Schema
+## Notification schema
 
 ```text
   id": 1, "sender_id": 42, "sender_name": "SomePlayer", "recipient_id": "01977f5a-0007-7000-8000-3f6a2d8c0a07", "title": "New Group Invite", "content": "You've been invited to join Cool Guild", "metadata": { "type": "group_invite", "group_id": "01977f5a-0005-7000-8000-3f6a2d8c0a05,
@@ -22,7 +22,7 @@ game client tracks its own seen state or deletes what it has handled.
   }
 ```
 
-## Notification Types (metadata.type)
+## Notification types (metadata.type)
 
 All system-generated notifications include a type string in metadata for client-side routing. Below is the full list grouped by domain.
 
@@ -94,16 +94,16 @@ Chat notifications include a message_count field in metadata indicating how many
   └──────────────────────┴──────────────────────────────────────────────┘
 ```
 
-## Behaviour Notes
+## Behaviour notes
 
-- Notifications upsert on (sender_id, recipient_id, title) — sending the same notification again updates the existing one.
+- Notifications upsert on (sender_id, recipient_id, title): sending the same notification again updates the existing one.
 - Cancelling a friend request, group invite, or party invite automatically retracts (deletes) the original notification.
-- Notifications are delivered in real-time via PubSub on the "user:" topic and persisted to the database.
+- Notifications are delivered in real time via PubSub on the "user:" topic and persisted to the database.
 - Custom notifications can be sent between friends via POST /api/v1/notifications with any title, content, and metadata.
 
 ## Real-time (WebSocket)
 
-Connect to the UserChannel to receive notifications in real-time. Notifications are broadcast on the "user:" topic.
+Connect to the UserChannel to receive notifications in real time. Notifications are broadcast on the "user:" topic.
 
 ```javascript
   // JavaScript — join the user channel

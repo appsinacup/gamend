@@ -70,7 +70,7 @@ These hold everywhere, so the tables below list only what is specific to them:
 | `webrtc_reconnect_timeout_ms` | integer | Grace period before a dropped peer is announced gone. Default 30 000 |
 | `metadata` | map | Searchable in lobby listings |
 
-Membership lives on `users.lobby_id`, not a join table — a user is in at most
+Membership lives on `users.lobby_id`, not a join table, so a user is in at most
 one lobby, and disconnecting does not clear it. `state` is server-owned: the
 host may set it on a host-managed lobby via `POST /lobbies/state`, hostless
 lobbies are server-only, and a plain lobby update can never write it. Core
@@ -78,7 +78,7 @@ validates only that the word is 1-64 bytes and enforces no ordering, so a game
 that wants a closed vocabulary rejects the move in `before_lobby_state_change`.
 
 The `webrtc_*` columns are the WebRTC signaling room: a room *is* a lobby, with
-no separate record. Like `state` they are server-owned — only
+no separate record. Like `state` they are server-owned: only
 `Gamend.Signaling.configure/2` writes them. The star host is always
 `host_id`. See the [WebRTC](/docs/webrtc) guide.
 
@@ -90,7 +90,7 @@ no separate record. Like `state` they are server-owned — only
 | `max_size` | integer | Default 4 |
 
 Membership is `users.party_id`. Invites live in `party_invites`
-(`party_id`, `sender_id`, `recipient_id`, `status`) — independent of
+(`party_id`, `sender_id`, `recipient_id`, `status`), independent of
 notifications, so deleting the notification does not cancel the invite.
 
 ## friendships
@@ -139,7 +139,7 @@ plugin declares a schema for the key.
 
 One table drives achievements, dailies, seasonal events and quest lines. What
 separates them is `reset` (how often progress restarts) and `category` (how you
-group them for display) — an achievement is a quest that never resets. There is
+group them for display). An achievement is a quest that never resets. There is
 no separate achievements table.
 
 | Column | Type | Notes |
@@ -174,7 +174,7 @@ no separate achievements table.
 | `rewards_granted_at` | utc_datetime | Null until every reward applied |
 
 Unique on `(user_id, quest_key, period_key)`. A new period is simply a new row
-on the next reported event — nothing fires at midnight, and period boundaries
+on the next reported event; nothing fires at midnight, and period boundaries
 are UTC.
 
 ## leaderboards and leaderboard_records
@@ -226,7 +226,7 @@ messages require an accepted friendship and no block either way.
 | `lang` | string | Which bundled list the row was imported from; null for hand-added. Provenance only |
 
 The table ships empty; the admin filter page fills it, from a bundled list or by
-hand. Matching is language-agnostic — every row is checked against every
+hand. Matching is language-agnostic: every row is checked against every
 message, so `lang` never narrows what a message is tested against. It exists to
 make "remove the German list" one bulk delete.
 
@@ -247,7 +247,7 @@ make "remove the German list" one bulk delete.
 | `resolved_at` | utc_datetime | Null until resolved |
 
 Unique on `(reporter_id, message_id)` so a player cannot report one message
-twice — partial, so the many filter-filed rows (null reporter) never collide
+twice. It is partial, so the many filter-filed rows (null reporter) never collide
 with each other.
 
 ## chat_mutes
@@ -264,7 +264,7 @@ with each other.
 | `muted_by` | FK users | Who applied it; null for a plugin or automated mute, and nulled if that account goes |
 
 Unique on `(user_id, scope, scope_ref_id)`, plus a second partial unique index
-for global mutes — `NULL` never equals `NULL`, so the composite one does not
+for global mutes, because `NULL` never equals `NULL`, so the composite one does not
 constrain them. Expiry is filtered in the query rather than indexed, because a
 partial index on `expires_at > now()` is not portable to SQLite; the sweep that
 deletes lapsed rows is hygiene only.

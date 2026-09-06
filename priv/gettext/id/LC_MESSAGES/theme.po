@@ -88,9 +88,8 @@ msgstr "Memulai"
 msgid "Presentation Video"
 msgstr "Video presentasi"
 
-#, fuzzy
-msgid "**Open source** Elixir game server for **real-time** multiplayer games — backend, player website and admin panel in one."
-msgstr "Server game Elixir **sumber terbuka** untuk game multipemain **waktu nyata**."
+msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
+msgstr ""
 
 msgid "Gamend"
 msgstr "Gamend"
@@ -104,8 +103,7 @@ msgstr ""
 msgid "Godot SDK"
 msgstr ""
 
-#, fuzzy
-msgid "The **backend for your multiplayer game** — accounts, lobbies, chat, leaderboards and everything players expect around the game itself — plus the **web UI around it**: a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full **admin panel**. Server-side scripting runs your own logic where players cannot reach it. **You run it on your own server** — there is no hosted service."
+msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
 msgstr ""
 
 msgid "What is Gamend?"
@@ -169,7 +167,7 @@ msgstr ""
 msgid "Runtime introspection listing every hook with its implementing plugins"
 msgstr ""
 
-msgid "Write server hooks in **Elixir, GDScript or Gleam** — scoring, rewards, matchmaking rules, validation — where players cannot reach them. Durable background jobs and cron scheduling built in."
+msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
 msgstr ""
 
 msgid "Server Scripting & Scheduling"

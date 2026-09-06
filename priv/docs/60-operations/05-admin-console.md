@@ -8,7 +8,7 @@ Every operational surface of the server is a LiveView under `/admin`, gated to a
 
 ## Access
 
-A user with `is_admin` set can open the console; everyone else gets redirected. The gate is enforced twice — on the HTTP request and again on the LiveView socket — so a stale page cannot keep operating after the flag is removed. Admins edit the flag itself on the Users page, which is also where a locked-out colleague's sessions get revoked.
+A user with `is_admin` set can open the console; everyone else gets redirected. The gate is enforced twice, on the HTTP request and again on the LiveView socket, so a stale page cannot keep operating after the flag is removed. Admins edit the flag itself on the Users page, which is also where a locked-out colleague's sessions get revoked.
 
 ## Players & sessions
 

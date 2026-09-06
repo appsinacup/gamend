@@ -55,7 +55,7 @@ Next, I added **in memory caching** (with option to later add multi level cachin
 
 I ran again the stress test, but this time for 10 minutes, to test for reliability.
 
-Now it was able to handle **4000 users concurrently**, utilizing all CPU and almost all RAM.
+Now it was able to handle **4000 users concurrently**, using all CPU and almost all RAM.
 
 ![cpu](gamend_stress/cpu_final.png)
 

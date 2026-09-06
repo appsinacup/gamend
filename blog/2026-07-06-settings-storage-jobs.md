@@ -24,7 +24,7 @@ Avatars and icons go through one storage facade with two backends: `local disk` 
 
 ## Jobs and retention
 
-Background work — push fan-out, mailers, webhooks, pruning — runs on Oban, with the full dashboard mounted at `/admin/oban`:
+Background work (push fan-out, mailers, webhooks, pruning) runs on Oban, with the full dashboard mounted at `/admin/oban`:
 
 ![](ops/oban.png)
 

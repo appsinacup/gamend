@@ -6,7 +6,7 @@ icon: hero-user-group
 
 [Facebook Developers Portal](https://developers.facebook.com/)
 
-## Create Facebook App
+## Create a Facebook app
 
 Go to the [Facebook Developers Portal](https://developers.facebook.com/)
 
@@ -20,7 +20,7 @@ Go to the [Facebook Developers Portal](https://developers.facebook.com/)
 8. Enter contact email
 9. Click "Create App"
 
-## Add Facebook Login Product
+## Add the Facebook Login product
 
 In your Facebook App dashboard:
 
@@ -30,7 +30,7 @@ In your Facebook App dashboard:
 4. Enter your site URL (e.g., https://example.com)
 5. Click "Save" and continue
 
-## Configure OAuth Redirect URIs
+## Configure OAuth redirect URIs
 
 Go to "Facebook Login" → "Settings":
 
@@ -38,7 +38,7 @@ Go to "Facebook Login" → "Settings":
  Development: http://localhost:4000/auth/facebook/callback Production: https://example.com/auth/facebook/callback
 2. Click "Save Changes"
 
-## Get App Credentials
+## Get the app credentials
 
 Go to "Settings" → "Basic":
 
@@ -51,7 +51,7 @@ App ID: 1234567890123456
 
 App Secret: abcdef1234567890abcdef1234567890
 
-## Make App Public (Production)
+## Make the app public (production)
 
 For production use, switch to live mode:
 
@@ -61,7 +61,7 @@ For production use, switch to live mode:
 4. Select a category for your app
 5. Toggle the switch at the top from "Development" to "Live"
 
-## Configure Environment Variables
+## Configure environment variables
 
 Set these environment variables:
 
@@ -70,7 +70,7 @@ GAMEND_OAUTH_FACEBOOK_CLIENT_ID="your_app_id"
 GAMEND_OAUTH_FACEBOOK_CLIENT_SECRET="your_app_secret"
 ```
 
-## Test Facebook Login
+## Test Facebook login
 
 After deploying with the secrets:
 

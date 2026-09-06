@@ -4,7 +4,7 @@ icon: hero-table-cells
 
 # Key-Value Store
 
-One `kv_entries` table stores JSON documents under a string key, each entry optionally scoped to a user, a lobby, or both. Server code writes; clients read over HTTP and subscribe over the realtime socket — which makes a KV row the standard way to hold server-authoritative state the game pushes to players the moment it changes.
+One `kv_entries` table stores JSON documents under a string key, each entry optionally scoped to a user, a lobby, or both. Server code writes; clients read over HTTP and subscribe over the realtime socket, which makes a KV row the standard way to hold server-authoritative state the game pushes to players the moment it changes.
 
 ## Scoping
 
@@ -15,22 +15,22 @@ One `kv_entries` table stores JSON documents under a string key, each entry opti
 | `lobby_id` | one lobby | shared match state |
 | `user_id` + `lobby_id` | one user inside one lobby | ready flags, loadouts, character picks |
 
-The key is unique *per scope*: a global `"progress"` and user A's `"progress"` are different entries. Namespacing is not built in — encode it in the key (`"my_game:key1"`).
+The key is unique *per scope*: a global `"progress"` and user A's `"progress"` are different entries. Namespacing is not built in. Encode it in the key (`"my_game:key1"`).
 
 Per-member lobby state does not survive a leave: when a user stops being a lobby member, every entry scoped to that user *and* that lobby is deleted (`Gamend.KV.delete_user_lobby_entries/2`), so a leave-and-rejoin starts clean. Entries scoped to the lobby alone, or to the user alone, are left untouched.
 
 ## Who can read what
 
-Clients never write KV — writes come from server scripting or the admin API. The client surface is one endpoint, `GET /api/v1/kv/{key}` with optional `user_id` / `lobby_id` query parameters (see [/api/docs](/api/docs)), and whether it answers is decided by the `before_kv_get/2` hook. Return one access level per key:
+Clients never write KV. Writes come from server scripting or the admin API. The client surface is one endpoint, `GET /api/v1/kv/{key}` with optional `user_id` / `lobby_id` query parameters (see [/api/docs](/api/docs)), and whether it answers is decided by the `before_kv_get/2` hook. Return one access level per key:
 
-- `:public` — any authenticated client (the default when no hook is registered)
-- `:owner_only` — only the caller matching the requested `user_id`
-- `:lobby_members_only` — only callers currently in the requested `lobby_id`
-- `:owner_or_lobby_member` — either of the above
-- `:admin_only` — admins only
-- `:server_only` — no client reads at all
+- `:public`: any authenticated client (the default when no hook is registered)
+- `:owner_only`: only the caller matching the requested `user_id`
+- `:lobby_members_only`: only callers currently in the requested `lobby_id`
+- `:owner_or_lobby_member`: either of the above
+- `:admin_only`: admins only
+- `:server_only`: no client reads at all
 
-When several plugins implement the hook their decisions are intersected, and incompatible restrictions — or a hook that errors — fail closed to `:server_only`. Server-side `Gamend.KV.get/2` is unaffected; the hook governs only the client surface.
+When several plugins implement the hook their decisions are intersected, and incompatible restrictions (or a hook that errors) fail closed to `:server_only`. Server-side `Gamend.KV.get/2` is unaffected; the hook governs only the client surface.
 
 ## Realtime subscriptions
 
@@ -51,7 +51,7 @@ client.kv_row_changed.connect(func(key, row): print(key, " -> ", row))
 var row: Dictionary = await client.fetch_row("progress")
 ```
 
-`register_kv` options: `user_scoped` (default `true` — subscribe under the current user's id), `persist` (mirror to disk across sessions), `subscribe` (`false` registers cache-only). Underneath sit `GamendApi.kv_get_kv(key, user_id, lobby_id)`, `kv_subscribe_ws` / `kv_unsubscribe_ws`, and the `kv_updated` / `kv_deleted` signals.
+`register_kv` options: `user_scoped` (default `true`, subscribing under the current user's id), `persist` (mirror to disk across sessions), `subscribe` (`false` registers cache-only). Underneath sit `GamendApi.kv_get_kv(key, user_id, lobby_id)`, `kv_subscribe_ws` / `kv_unsubscribe_ws`, and the `kv_updated` / `kv_deleted` signals.
 
 ## Server scripting
 
@@ -70,7 +70,7 @@ Gamend.KV.count_entries(lobby_id: lobby.id)
 
 ## Typed schemas
 
-KV values are JSON, but a plugin can map keys to protobuf messages by exporting `kv_schemas/0` — exact keys or `*`-suffixed prefixes:
+KV values are JSON, but a plugin can map keys to protobuf messages by exporting `kv_schemas/0`, which lists exact keys or `*`-suffixed prefixes:
 
 ```elixir
 def kv_schemas do
@@ -78,15 +78,15 @@ def kv_schemas do
 end
 ```
 
-On protobuf sockets, `kv_updated` data for a matching key is pushed as compact binary (`data_pb`) instead of JSON bytes; storage and REST stay JSON, and data that does not fit the schema falls back to JSON so it is never dropped. Exact keys win over prefixes, the longest prefix wins, and the keyspace is global — when two plugins register the same pattern, the first plugin in name order wins and the loser is logged. Entry metadata always stays JSON.
+On protobuf sockets, `kv_updated` data for a matching key is pushed as compact binary (`data_pb`) instead of JSON bytes; storage and REST stay JSON, and data that does not fit the schema falls back to JSON so it is never dropped. Exact keys win over prefixes, the longest prefix wins, and the keyspace is global. When two plugins register the same pattern, the first plugin in name order wins and the loser is logged. Entry metadata always stays JSON.
 
 ## Caching and limits
 
-Every read runs through the app cache with a 60-second TTL: writes re-warm the entry (evicting it on other instances first so no node serves the old value out its TTL), deletes evict it, and listings are versioned per scope. On a multi-node deploy the cache mode decides how that invalidation travels — see [Cache Setup](/docs/cache-setup).
+Every read runs through the app cache with a 60-second TTL: writes re-warm the entry (evicting it on other instances first so no node serves the old value out its TTL), deletes evict it, and listings are versioned per scope. On a multi-node deploy the cache mode decides how that invalidation travels. See [Cache Setup](/docs/cache-setup).
 
-- `GAMEND_LIMITS_MAX_KV_KEY` (512) — maximum key length.
-- `GAMEND_LIMITS_MAX_KV_VALUE_SIZE` (65536) — maximum serialized value size, in bytes.
-- `GAMEND_LIMITS_MAX_KV_ENTRIES_PER_USER` (1000) — entries one user may hold; checked when an entry is created through the entries API (`create_entry/1`), not on `put/4` upserts.
+- `GAMEND_LIMITS_MAX_KV_KEY` (512): maximum key length.
+- `GAMEND_LIMITS_MAX_KV_VALUE_SIZE` (65536): maximum serialized value size, in bytes.
+- `GAMEND_LIMITS_MAX_KV_ENTRIES_PER_USER` (1000): entries one user may hold; checked when an entry is created through the entries API (`create_entry/1`), not on `put/4` upserts.
 
 ## Operations
 

@@ -117,12 +117,12 @@ gamend_core
 <p>Registry of game-defined protobuf schemas for KV entry data.</p><p>KV keys are open-ended, so unlike metadata entities there is no naming
 convention — a plugin registers schemas explicitly by exporting
 <code class="inline">kv_schemas/0</code>, mapping exact keys or <code class="inline">*</code>-suffixed prefixes to protobuf
-message modules:</p><pre><code class="makeup elixir" translate="no"><span class="kd">def</span><span class="w"> </span><span class="nf">kv_schemas</span><span class="w"> </span><span class="k" data-group-id="9586212475-1">do</span><span class="w">
-  </span><span class="p" data-group-id="9586212475-2">%{</span><span class="w">
+message modules:</p><pre><code class="makeup elixir" translate="no"><span class="kd">def</span><span class="w"> </span><span class="nf">kv_schemas</span><span class="w"> </span><span class="k" data-group-id="7664424101-1">do</span><span class="w">
+  </span><span class="p" data-group-id="7664424101-2">%{</span><span class="w">
     </span><span class="s">&quot;loadout&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nc">MyGame.V1.Loadout</span><span class="p">,</span><span class="w">
     </span><span class="s">&quot;match:*&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nc">MyGame.V1.MatchState</span><span class="w">
-  </span><span class="p" data-group-id="9586212475-2">}</span><span class="w">
-</span><span class="k" data-group-id="9586212475-1">end</span></code></pre><p>On protobuf sockets, <code class="inline">kv_updated</code> data for a matching key is pushed as
+  </span><span class="p" data-group-id="7664424101-2">}</span><span class="w">
+</span><span class="k" data-group-id="7664424101-1">end</span></code></pre><p>On protobuf sockets, <code class="inline">kv_updated</code> data for a matching key is pushed as
 compact binary (<code class="inline">data_pb</code>) instead of JSON bytes; storage and REST stay
 JSON, and data that does not fit the schema falls back to JSON so it is
 never dropped. Exact keys win over prefixes; the longest prefix wins.

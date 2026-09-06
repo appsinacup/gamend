@@ -1,4 +1,4 @@
-# gamend_core v1.0.1212 - Table of Contents
+# gamend_core v1.0.1213 - Table of Contents
 
 > Core functionality for Gamend, including user management, authentication, friends, matchmaking, and more.
 

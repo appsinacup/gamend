@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1212">
+    <meta name="project" content="gamend_core v1.0.1213">
 
 
-    <title>Gamend.Repo.AdvisoryLock — gamend_core v1.0.1212</title>
+    <title>Gamend.Repo.AdvisoryLock — gamend_core v1.0.1213</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1212
+          v1.0.1213
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Repo.<wbr />AdvisoryLock</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1212)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1213)</small>
 
     </h1>
 
@@ -123,18 +123,18 @@ read-modify-write spanning statements, and does nothing at all for a critical
 section held over ETS or process state.</p><p>Callers should not use this module directly for that reason. Go through
 <a href="Gamend.Lock.html#serialize/3"><code class="inline">Gamend.Lock.serialize/3</code></a>, which picks this on Postgres and a keyed
 <code class="inline">:global</code> mutex (<a href="Gamend.Lock.Local.html"><code class="inline">Gamend.Lock.Local</code></a>) everywhere else, so the guarantee
-holds on both adapters.</p><h2 id="module-usage" class="section-heading"><a href="#module-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage</span></h2><p>Always call within a <code class="inline">Repo.transaction</code>:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Repo</span><span class="o">.</span><span class="n">transaction</span><span class="p" data-group-id="8392751123-1">(</span><span class="k" data-group-id="8392751123-2">fn</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
-  </span><span class="nc">AdvisoryLock</span><span class="o">.</span><span class="n">lock</span><span class="p" data-group-id="8392751123-3">(</span><span class="ss">:lobby</span><span class="p">,</span><span class="w"> </span><span class="n">lobby</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="8392751123-3">)</span><span class="w">
-  </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count_members</span><span class="p" data-group-id="8392751123-4">(</span><span class="n">lobby</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="8392751123-4">)</span><span class="w">
-  </span><span class="k">if</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">lobby</span><span class="o">.</span><span class="n">max_users</span><span class="p">,</span><span class="w"> </span><span class="ss">do</span><span class="p">:</span><span class="w"> </span><span class="nc">Repo</span><span class="o">.</span><span class="n">rollback</span><span class="p" data-group-id="8392751123-5">(</span><span class="ss">:full</span><span class="p" data-group-id="8392751123-5">)</span><span class="w">
-  </span><span class="n">do_join</span><span class="p" data-group-id="8392751123-6">(</span><span class="n">...</span><span class="p" data-group-id="8392751123-6">)</span><span class="w">
-</span><span class="k" data-group-id="8392751123-2">end</span><span class="p" data-group-id="8392751123-1">)</span></code></pre><h2 id="module-namespaces" class="section-heading"><a href="#module-namespaces" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Namespaces</span></h2><p>Each resource type uses a distinct integer namespace to avoid collisions:</p><ul><li><code class="inline">:lobby</code> → 1</li><li><code class="inline">:group</code> → 2</li><li><code class="inline">:party</code> → 3</li><li><code class="inline">:friendship</code> → 4</li></ul><p>You can also pass an arbitrary string as the namespace. The string is
+holds on both adapters.</p><h2 id="module-usage" class="section-heading"><a href="#module-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage</span></h2><p>Always call within a <code class="inline">Repo.transaction</code>:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Repo</span><span class="o">.</span><span class="n">transaction</span><span class="p" data-group-id="9007996060-1">(</span><span class="k" data-group-id="9007996060-2">fn</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+  </span><span class="nc">AdvisoryLock</span><span class="o">.</span><span class="n">lock</span><span class="p" data-group-id="9007996060-3">(</span><span class="ss">:lobby</span><span class="p">,</span><span class="w"> </span><span class="n">lobby</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="9007996060-3">)</span><span class="w">
+  </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count_members</span><span class="p" data-group-id="9007996060-4">(</span><span class="n">lobby</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="9007996060-4">)</span><span class="w">
+  </span><span class="k">if</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">lobby</span><span class="o">.</span><span class="n">max_users</span><span class="p">,</span><span class="w"> </span><span class="ss">do</span><span class="p">:</span><span class="w"> </span><span class="nc">Repo</span><span class="o">.</span><span class="n">rollback</span><span class="p" data-group-id="9007996060-5">(</span><span class="ss">:full</span><span class="p" data-group-id="9007996060-5">)</span><span class="w">
+  </span><span class="n">do_join</span><span class="p" data-group-id="9007996060-6">(</span><span class="n">...</span><span class="p" data-group-id="9007996060-6">)</span><span class="w">
+</span><span class="k" data-group-id="9007996060-2">end</span><span class="p" data-group-id="9007996060-1">)</span></code></pre><h2 id="module-namespaces" class="section-heading"><a href="#module-namespaces" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Namespaces</span></h2><p>Each resource type uses a distinct integer namespace to avoid collisions:</p><ul><li><code class="inline">:lobby</code> → 1</li><li><code class="inline">:group</code> → 2</li><li><code class="inline">:party</code> → 3</li><li><code class="inline">:friendship</code> → 4</li></ul><p>You can also pass an arbitrary string as the namespace. The string is
 hashed to a stable 32-bit integer via <a href="https://www.erlang.org/doc/apps/erts/erlang.html#phash2/2"><code class="inline">:erlang.phash2/2</code></a>, so any
 string (e.g. <code class="inline">&quot;word_guessed&quot;</code>, <code class="inline">&quot;my_rpc&quot;</code>) works without pre-registration.</p><h2 id="module-examples" class="section-heading"><a href="#module-examples" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Examples</span></h2><pre><code class="makeup elixir" translate="no"><span class="c1"># Atom namespace (predefined):</span><span class="w">
-</span><span class="nc">AdvisoryLock</span><span class="o">.</span><span class="n">lock</span><span class="p" data-group-id="8484735922-1">(</span><span class="ss">:lobby</span><span class="p">,</span><span class="w"> </span><span class="n">lobby_id</span><span class="p" data-group-id="8484735922-1">)</span><span class="w">
+</span><span class="nc">AdvisoryLock</span><span class="o">.</span><span class="n">lock</span><span class="p" data-group-id="1554650631-1">(</span><span class="ss">:lobby</span><span class="p">,</span><span class="w"> </span><span class="n">lobby_id</span><span class="p" data-group-id="1554650631-1">)</span><span class="w">
 
 </span><span class="c1"># String namespace (ad-hoc):</span><span class="w">
-</span><span class="nc">AdvisoryLock</span><span class="o">.</span><span class="n">lock</span><span class="p" data-group-id="8484735922-2">(</span><span class="s">&quot;word_guessed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">lobby_id</span><span class="p" data-group-id="8484735922-2">)</span></code></pre>
+</span><span class="nc">AdvisoryLock</span><span class="o">.</span><span class="n">lock</span><span class="p" data-group-id="1554650631-2">(</span><span class="s">&quot;word_guessed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">lobby_id</span><span class="p" data-group-id="1554650631-2">)</span></code></pre>
     </section>
 
 </div>
@@ -330,9 +330,9 @@ Postgres CI job.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1212">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1213">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1212">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1213">Hex Preview</a>
 
             </span>
 

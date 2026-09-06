@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1212">
+    <meta name="project" content="gamend_core v1.0.1213">
 
 
-    <title>Gamend.Lobbies.States — gamend_core v1.0.1212</title>
+    <title>Gamend.Lobbies.States — gamend_core v1.0.1213</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1212
+          v1.0.1213
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Lobbies.<wbr />States</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1212)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1213)</small>
 
     </h1>
 
@@ -120,9 +120,9 @@ nothing more. So the values below are documentation, not an enum: core
 accepts any state word, any state may follow any other, and a game that
 needs a vocabulary or an ordering enforces both in
 <code class="inline">before_lobby_state_change</code> — the same callback that already gates who may
-move to what:</p><pre><code class="makeup elixir" translate="no"><span class="kd">def</span><span class="w"> </span><span class="nf">before_lobby_state_change</span><span class="p" data-group-id="0734027988-1">(</span><span class="c">_lobby</span><span class="p">,</span><span class="w"> </span><span class="c">_from</span><span class="p">,</span><span class="w"> </span><span class="n">to</span><span class="p" data-group-id="0734027988-1">)</span><span class="w">
-    </span><span class="ow">when</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="p" data-group-id="0734027988-2">[</span><span class="s">&quot;created&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;starting&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;playing&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ended&quot;</span><span class="p" data-group-id="0734027988-2">]</span><span class="p">,</span><span class="w">
-    </span><span class="ss">do</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="0734027988-3">{</span><span class="ss">:error</span><span class="p">,</span><span class="w"> </span><span class="ss">:unknown_state</span><span class="p" data-group-id="0734027988-3">}</span></code></pre><p>A state is a word, not a lifecycle: core attaches no meaning to any of them,
+move to what:</p><pre><code class="makeup elixir" translate="no"><span class="kd">def</span><span class="w"> </span><span class="nf">before_lobby_state_change</span><span class="p" data-group-id="9144890250-1">(</span><span class="c">_lobby</span><span class="p">,</span><span class="w"> </span><span class="c">_from</span><span class="p">,</span><span class="w"> </span><span class="n">to</span><span class="p" data-group-id="9144890250-1">)</span><span class="w">
+    </span><span class="ow">when</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="ow">not</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="p" data-group-id="9144890250-2">[</span><span class="s">&quot;created&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;starting&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;playing&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ended&quot;</span><span class="p" data-group-id="9144890250-2">]</span><span class="p">,</span><span class="w">
+    </span><span class="ss">do</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="9144890250-3">{</span><span class="ss">:error</span><span class="p">,</span><span class="w"> </span><span class="ss">:unknown_state</span><span class="p" data-group-id="9144890250-3">}</span></code></pre><p>A state is a word, not a lifecycle: core attaches no meaning to any of them,
 including whether one ends the lobby. A game that finishes a match deletes
 the lobby itself; retention only reaps lobbies everyone has gone quiet in.</p>
     </section>
@@ -240,9 +240,9 @@ the lobby itself; retention only reaps lobbies everyone has gone quiet in.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1212">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1213">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1212">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1213">Hex Preview</a>
 
             </span>
 

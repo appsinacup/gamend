@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.3">
-    <meta name="project" content="gamend_core v1.0.1212">
+    <meta name="project" content="gamend_core v1.0.1213">
 
 
-    <title>Gamend.Friends — gamend_core v1.0.1212</title>
+    <title>Gamend.Friends — gamend_core v1.0.1213</title>
 
     <link rel="stylesheet" href="dist/html-elixir-NHQLCD6Y.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1212
+          v1.0.1213
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Friends</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1212)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1213)</small>
 
     </h1>
 
@@ -117,19 +117,19 @@ gamend_core
 <p>Friends context - handles friend requests and relationships.</p><p>Basic semantics:</p><ul><li>A single <code class="inline">friendships</code> row represents a directed request from requester -&gt; target.</li><li><p>status: &quot;pending&quot; | &quot;accepted&quot; | &quot;rejected&quot; | &quot;blocked&quot;</p></li><li>When a user accepts a pending incoming request, that request becomes <code class="inline">accepted</code>.
 If a reverse pending request exists, it will be removed to avoid duplicate rows.</li><li>Listing friends returns the other user from rows with status <code class="inline">accepted</code> in either
 direction.</li></ul><h2 id="module-usage" class="section-heading"><a href="#module-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage</span></h2><pre><code class="makeup elixir" translate="no"><span class="c1"># Create a friend request (requester -&gt; target)</span><span class="w">
-</span><span class="p" data-group-id="1739862904-1">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">friendship</span><span class="p" data-group-id="1739862904-1">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gamend.Friends</span><span class="o">.</span><span class="n">create_request</span><span class="p" data-group-id="1739862904-2">(</span><span class="n">requester_id</span><span class="p">,</span><span class="w"> </span><span class="n">target_id</span><span class="p" data-group-id="1739862904-2">)</span><span class="w">
+</span><span class="p" data-group-id="1166632789-1">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">friendship</span><span class="p" data-group-id="1166632789-1">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gamend.Friends</span><span class="o">.</span><span class="n">create_request</span><span class="p" data-group-id="1166632789-2">(</span><span class="n">requester_id</span><span class="p">,</span><span class="w"> </span><span class="n">target_id</span><span class="p" data-group-id="1166632789-2">)</span><span class="w">
 
 </span><span class="c1"># Accept a pending incoming request (performed by the target)</span><span class="w">
-</span><span class="p" data-group-id="1739862904-3">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">accepted</span><span class="p" data-group-id="1739862904-3">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gamend.Friends</span><span class="o">.</span><span class="n">accept_friend_request</span><span class="p" data-group-id="1739862904-4">(</span><span class="n">friendship</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="1739862904-5">%</span><span class="nc" data-group-id="1739862904-5">Gamend.Accounts.User</span><span class="p" data-group-id="1739862904-5">{</span><span class="ss">id</span><span class="p">:</span><span class="w"> </span><span class="n">target_id</span><span class="p" data-group-id="1739862904-5">}</span><span class="p" data-group-id="1739862904-4">)</span><span class="w">
+</span><span class="p" data-group-id="1166632789-3">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">accepted</span><span class="p" data-group-id="1166632789-3">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gamend.Friends</span><span class="o">.</span><span class="n">accept_friend_request</span><span class="p" data-group-id="1166632789-4">(</span><span class="n">friendship</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="1166632789-5">%</span><span class="nc" data-group-id="1166632789-5">Gamend.Accounts.User</span><span class="p" data-group-id="1166632789-5">{</span><span class="ss">id</span><span class="p">:</span><span class="w"> </span><span class="n">target_id</span><span class="p" data-group-id="1166632789-5">}</span><span class="p" data-group-id="1166632789-4">)</span><span class="w">
 
 </span><span class="c1"># List accepted friends for a user (paginated)</span><span class="w">
-</span><span class="n">friends</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gamend.Friends</span><span class="o">.</span><span class="n">list_friends_for_user</span><span class="p" data-group-id="1739862904-6">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="ss">page</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">page_size</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p" data-group-id="1739862904-6">)</span><span class="w">
+</span><span class="n">friends</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gamend.Friends</span><span class="o">.</span><span class="n">list_friends_for_user</span><span class="p" data-group-id="1166632789-6">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="ss">page</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="ss">page_size</span><span class="p">:</span><span class="w"> </span><span class="mi">25</span><span class="p" data-group-id="1166632789-6">)</span><span class="w">
 
 </span><span class="c1"># Count accepted friends for a user</span><span class="w">
-</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gamend.Friends</span><span class="o">.</span><span class="n">count_friends_for_user</span><span class="p" data-group-id="1739862904-7">(</span><span class="n">user_id</span><span class="p" data-group-id="1739862904-7">)</span><span class="w">
+</span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gamend.Friends</span><span class="o">.</span><span class="n">count_friends_for_user</span><span class="p" data-group-id="1166632789-7">(</span><span class="n">user_id</span><span class="p" data-group-id="1166632789-7">)</span><span class="w">
 
 </span><span class="c1"># Remove a friendship (either direction)</span><span class="w">
-</span><span class="p" data-group-id="1739862904-8">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="bp">_</span><span class="p" data-group-id="1739862904-8">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gamend.Friends</span><span class="o">.</span><span class="n">remove_friend</span><span class="p" data-group-id="1739862904-9">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">friend_id</span><span class="p" data-group-id="1739862904-9">)</span></code></pre>
+</span><span class="p" data-group-id="1166632789-8">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="bp">_</span><span class="p" data-group-id="1166632789-8">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Gamend.Friends</span><span class="o">.</span><span class="n">remove_friend</span><span class="p" data-group-id="1166632789-9">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="n">friend_id</span><span class="p" data-group-id="1166632789-9">)</span></code></pre>
     </section>
 
 </div>
@@ -1693,9 +1693,9 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1212">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1213">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1212">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1213">Hex Preview</a>
 
             </span>
 

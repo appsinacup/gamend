@@ -4,7 +4,7 @@ icon: hero-code-bracket
 
 # JavaScript Client SDK
 
-[View on NPM](https://www.npmjs.com/package/@ughuuu/gamend)
+[View on NPM](https://www.npmjs.com/package/@ughuuu/game_server)
 
 The REST client is generated from the OpenAPI spec, so every endpoint has a
 method and every method matches the [API reference](/api/docs). This guide
@@ -12,13 +12,13 @@ covers what the generated docs cannot tell you: setup, the auth flows, and
 realtime.
 
 ```bash
-npm install @ughuuu/gamend
+npm i @ughuuu/game_server
 ```
 
 ## Connect
 
 ```javascript
-const { ApiClient, HealthApi } = require('@ughuuu/gamend');
+const { ApiClient, HealthApi } = require('@ughuuu/game_server');
 
 const apiClient = new ApiClient();
 apiClient.basePath = 'http://localhost:4000';
@@ -99,7 +99,7 @@ The package bundles `GameRealtime`, a thin wrapper over Phoenix channels that
 handles the socket URL, the token and protobuf decoding:
 
 ```javascript
-import { GameRealtime } from '@ughuuu/gamend';
+import { GameRealtime } from '@ughuuu/game_server';
 
 const realtime = new GameRealtime('https://your-server.com', access_token);
 

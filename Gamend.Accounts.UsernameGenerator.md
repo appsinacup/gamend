@@ -28,8 +28,10 @@ word otherwise. Attempts beyond 3 widen the numeric suffix.
 @spec slug(term()) :: String.t() | nil
 ```
 
-Best-effort ASCII slug of a display name in username format; `nil` when
-too little survives transliteration.
+Best-effort slug of a display name in username format; `nil` when too
+little survives. A name that transliterates to ASCII keeps doing so
+(`Drágoș` -> `dragos`, easier to type); one that does not (`山田太郎`,
+`Дмитрий`) keeps its own script, as long as it is a valid handle.
 
 ---
 

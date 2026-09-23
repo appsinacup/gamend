@@ -197,10 +197,11 @@ Expects steam_id and optional profile fields.
 
 A changeset for the unique username handle.
 
-Input is lowercased on cast. Valid usernames are 3–32 chars
-(`Gamend.Limits` `:min_username`/`:max_username`) of `a-z`, `0-9` and
-non-consecutive `.` `_` `-` separators, starting and ending alphanumeric.
-Uniqueness is enforced by the DB unique index.
+Input is NFKC-normalized and lowercased on cast. Valid usernames are 3–32
+characters (`Gamend.Limits` `:min_username`/`:max_username`) of letters and
+digits in any ONE script, joined by non-consecutive `.` `_` `-` separators
+and starting and ending on a letter or digit — `Gamend.Accounts.Username`
+has the rules and why. Uniqueness is enforced by the DB unique index.
 
 # `valid_password?`
 

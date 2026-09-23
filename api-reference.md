@@ -1,4 +1,4 @@
-# gamend_core v1.0.1259 - API Reference
+# gamend_core v1.0.1260 - API Reference
 
 ## Modules
 
@@ -75,6 +75,8 @@ application (registration, OAuth, and admin changes).
 (confirmation, magic link, and email change instructions).
   - [Gamend.Accounts.UserToken](Gamend.Accounts.UserToken.md): Functions and schema for persistent user tokens used by sessions, magic links,
 and email-change workflows.
+  - [Gamend.Accounts.Username](Gamend.Accounts.Username.md): The username handle's rules, in one place for the changeset and the
+generator.
   - [Gamend.Accounts.UsernameGenerator](Gamend.Accounts.UsernameGenerator.md): Generates default usernames for new users.
   - [Gamend.Apple](Gamend.Apple.md): Apple OAuth client secret generation for Ueberauth.
   - [Gamend.OAuth.Exchanger](Gamend.OAuth.Exchanger.md): Default implementation for exchanging OAuth codes with providers.

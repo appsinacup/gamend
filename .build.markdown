@@ -17,6 +17,7 @@ Gamend.Accounts.Stats.md
 Gamend.Accounts.User.md
 Gamend.Accounts.UserNotifier.md
 Gamend.Accounts.UserToken.md
+Gamend.Accounts.Username.md
 Gamend.Accounts.UsernameGenerator.md
 Gamend.Accounts.md
 Gamend.Analytics.ActivityDay.md

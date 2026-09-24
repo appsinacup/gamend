@@ -10,6 +10,12 @@ directories exist for those sources.
 All content is cached in `:persistent_term` after the first read.
 Call `reload/0` to invalidate everything (e.g. after a config change).
 
+The work is split three ways and this module is the door to all of it:
+`Gamend.Content.Frontmatter` reads the `---` block, `Gamend.Content.Markdown`
+turns a file into HTML, and `Gamend.Content.Tree` reads a nested guide
+collection. What stays here is the registry, the cache, the blog, and the
+changelog and roadmap pills.
+
 # `apply_changelog_pills`
 
 ```elixir
@@ -72,6 +78,16 @@ Returns a list of `{year, [{month, [posts]}]}`.
 Returns the rendered changelog HTML, or `nil` when the changelog path is
 not configured or the file doesn't exist.
 
+# `doc_breadcrumbs`
+
+```elixir
+@spec doc_breadcrumbs(atom(), String.t()) :: [Gamend.Content.Tree.entry()]
+```
+
+The categories above a guide, outermost first, then the guide. For a
+breadcrumb. Empty in a flat collection, whose one level the index already
+shows.
+
 # `doc_category`
 
 ```elixir
@@ -85,6 +101,9 @@ Found by membership rather than by name: a guide carries its category's
 *folder* ("10-setup") while the category carries the display title ("Setup").
 Both pages that render a guide need this, so deriving it twice by hand was
 how the two drifted apart.
+
+In a tree collection this is the guide's nearest category, with its
+`guides` being that category's direct pages.
 
 # `doc_html`
 
@@ -116,16 +135,38 @@ Across categories, not within one: the collections are written to be read
 front to back, and stopping at a category boundary would strand the reader on
 the last page of each section.
 
+# `doc_toc`
+
+```elixir
+@spec doc_toc(atom(), String.t()) :: [
+  %{id: String.t(), text: String.t(), level: 2 | 3}
+]
+```
+
+The headings of a rendered guide, for a table of contents.
+
+# `doc_tree`
+
+```elixir
+@spec doc_tree(atom()) :: [Gamend.Content.Tree.entry()]
+```
+
+The whole tree of a `nesting: :tree` collection — categories with their
+children, guides with their metadata — in reading order. A flat collection
+answers its categories as top-level nodes, so a sidebar built from this
+works on either.
+
 # `frontmatter`
 
 ```elixir
-@spec frontmatter(String.t()) :: %{required(String.t()) =&gt; String.t()}
+@spec frontmatter(String.t()) :: Gamend.Content.Frontmatter.meta()
 ```
 
-Reads a leading `---` fenced block of `key: value` lines.
+Reads a leading `---` fenced block.
 
-Deliberately not YAML: the values here are single-line strings, and a parser
-dependency for that would be its own liability.
+Deliberately not YAML — see `Gamend.Content.Frontmatter` for exactly how
+much of it is read. Scalars come back as strings, numbers or booleans, and
+lists as lists.
 
 # `get_blog_post`
 
@@ -143,6 +184,15 @@ Returns a single blog post map by slug, or `nil`.
 
 Returns a single guide map by slug, or `nil`.
 
+# `get_doc_category`
+
+```elixir
+@spec get_doc_category(atom(), String.t()) :: Gamend.Content.Tree.category() | nil
+```
+
+A category of a tree collection by its slug, or `nil`. A category without
+an `index.md` has no guide of its own, and this is how its page is found.
+
 # `list_blog_posts`
 
 ```elixir
@@ -152,18 +202,28 @@ Returns a single guide map by slug, or `nil`.
 Lists all blog posts sorted newest-first.
 
 Each post is a map with keys:
-  * `:slug`  – URL-safe identifier derived from the filename
-  * `:title` – extracted from the first `# ` heading (or humanised slug)
-  * `:date`  – `Date.t()` parsed from filename prefix or file mtime
+  * `:slug`  – from frontmatter `slug`, else the filename after its date
+  * `:title` – frontmatter `title`, else the first `# ` heading, else the
+    humanised slug
+  * `:date`  – frontmatter `date`, else the `YYYY-MM-DD-` filename prefix,
+    else today
   * `:path`  – absolute path to the `.md` file
-  * `:excerpt` – first non-heading paragraph (≤ 200 chars), for cards and
-    meta descriptions
-  * `:lede` – that same paragraph in full, which is what a post opens with
+  * `:excerpt` – what a card and a meta description show: the frontmatter
+    `description`, else the text above a `<!-- truncate -->` marker, else
+    the first paragraph cut to 200 characters
+  * `:lede` – the first paragraph in full, which is what a post opens
+    with when it has no description of its own; `:lede_in_body?` says
+    whether that paragraph is also the body's first, so the page drops one
+  * `:description`, `:image`, `:keywords`, `:tags` – frontmatter
+  * `:authors` – resolved from `_authors/<key>.md` beside the posts:
+    `%{key, name, title, url, image}`, with a key that has no file
+    answering its key as its name
+  * `:reading_minutes` – at two hundred words a minute, never under one
 
 # `list_doc_categories`
 
 ```elixir
-@spec list_doc_categories(atom()) :: [%{category: String.t(), guides: [map()]}]
+@spec list_doc_categories(atom()) :: [%{category: String.t() | nil, guides: [map()]}]
 ```
 
 Lists every guide in a collection, grouped into categories in reading order.
@@ -187,13 +247,23 @@ player guide). The collection is part of every cache key, so the sets never
 see each other's entries. Everything defaults to `:docs`, which is what the
 single-collection callers already had.
 
+A collection registered with `nesting: :tree` answers the same shape for
+its top-level categories, each holding every guide beneath it in reading
+order; guides at the root come first under a category titled `nil`. The
+full tree is `doc_tree/1`.
+
 # `list_docs`
 
 ```elixir
 @spec list_docs(atom()) :: [map()]
 ```
 
-Every guide as a flat list, in the same order as `list_doc_categories/1`.
+Every guide as a flat list, in reading order.
+
+For a flat collection that is the order of `list_doc_categories/1`. For a
+tree it is the tree's own order — a category's page, then its children,
+then the next sibling — which is what previous/next should follow and what
+the grouped view, with the root guides pulled to the front, does not.
 
 # `path`
 
@@ -230,6 +300,14 @@ Supported options:
   * `:candidates` - ordered candidate paths
   * `:asset_root` - `:self` or `:dirname` when serving assets
   * `:post_render` - `{module, function}` applied to rendered guide HTML
+  * `:nesting` - `:flat` (the default: one folder level, slugs are file
+    names) or `:tree` (any depth, slugs are paths; see `Gamend.Content.Tree`)
+  * `:base_path` - the route prefix guides are served under, such as
+    `"/docs"`. With it set, a link written to a neighbouring `.md` file is
+    rewritten to that guide's route
+  * `:assets` - `:content` (the default) serves images through the
+    `/content/<name>/` asset route; `:static` leaves root-absolute image
+    paths alone, for a site whose images live in `priv/static`
 
 # `relabel_pills`
 

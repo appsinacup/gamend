@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.40.4">
+    <meta name="project" content="gamend_core v1.0.1264">
+
+
+    <title>Gamend.Content.Markdown — gamend_core v1.0.1264</title>
+
+    <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
+
+    <script defer src="dist/sidebar_items-323B10BE.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-MI33G4N7.js"></script>
+
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
+
+<div class="body-wrapper">
+
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<nav id="sidebar" class="sidebar">
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
+
+      <div>
+        <a href="readme.html" class="sidebar-projectName" translate="no">
+gamend_core
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v1.0.1264
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras="Pages"></ul>
+  </div>
+</nav>
+
+<output role="status" id="toast"></output>
+
+<main class="content page-module" id="main" data-type="modules">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of gamend_core</span>
+            <div class="search-input-wrapper">
+              <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+                <i class="ri-close-line ri-lg" title="Cancel search"></i>
+              </button>
+            </div>
+          </label>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <div class="engine-selector" data-multiple="false">
+          <button type="button" class="engine-button" aria-label="Select search engine" aria-haspopup="true" aria-expanded="false">
+            <i class="ri-search-2-line" aria-hidden="true"></i>
+            <span class="engine-name">Default</span>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </button>
+          <div class="engine-dropdown" hidden role="menu">
+
+              <button type="button"
+                      class="engine-option"
+                      data-engine-url="search.html?q="
+                      role="menuitemradio"
+                      aria-checked="true">
+                <span class="name">Default</span>
+                <span class="help">In-browser search</span>
+              </button>
+
+          </div>
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
+
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>
+      <span translate="no">Gamend.<wbr />Content.<wbr />Markdown</span> 
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1264)</small>
+
+    </h1>
+
+<a href="Gamend.Content.Markdown.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
+  <i class="ri-markdown-line" aria-hidden="true"></i>
+  <span class="sr-only">Copy Markdown</span>
+</a>
+
+
+
+      <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L1" title="View Source" class="icon-action" rel="help nofollow">
+        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        <span class="sr-only">View Source</span>
+      </a>
+
+  </div>
+
+
+    <section id="moduledoc">
+<p>Markdown to HTML, the way every collection renders it.</p><p>One pipeline: strip the frontmatter, mend table separators, parse with
+MDEx, rewrite the tree — code-language aliases, mermaid fences,
+admonitions, links written to a neighbouring <code class="inline">.md</code> — render through the
+sanitiser, then fix up image paths on the HTML.</p><p>The rewrites work on <a href="https://mdex.hexdocs.pm/0.13.5/MDEx.Document.html"><code class="inline">MDEx.Document</code></a> nodes rather than on rendered HTML: a
+fence inside a list item is still a <a href="https://mdex.hexdocs.pm/0.13.5/MDEx.CodeBlock.html"><code class="inline">MDEx.CodeBlock</code></a>, a <code class="inline">:::tip</code> inside a
+quote still a <a href="https://mdex.hexdocs.pm/0.13.5/MDEx.BlockDirective.html"><code class="inline">MDEx.BlockDirective</code></a>, and a link's <code class="inline">url</code> is a field rather
+than an attribute a regex has to find. The one pass left on the HTML is the
+image one, because a <code class="inline">&lt;figure&gt;</code> written in raw HTML carries an <code class="inline">&lt;img&gt;</code> no
+node stands for, and every image gets the same <code class="inline">loading</code>/<code class="inline">decoding</code>
+attributes either way.</p><h2 id="module-raw-html" class="section-heading"><a href="#module-raw-html" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Raw HTML</span></h2><p>Rendered with <code class="inline">unsafe: true</code> and <em>always</em> sanitised. The allowlist below is
+what makes that safe: a fixed set of tags a guide legitimately contains —
+<code class="inline">&lt;figure&gt;</code>, <code class="inline">&lt;video&gt;</code>, <code class="inline">&lt;details&gt;</code>, a <code class="inline">&lt;div class&gt;</code> for a gallery, an
+inline <code class="inline">&lt;svg&gt;</code> for an icon — with the attributes each of them needs and
+nothing that runs. Content is the operator's own files, so the sanitiser
+is a guard against a pasted snippet, not against an adversary; it stays on
+because a rule that is on for everyone is a rule nobody has to remember.</p><h2 id="module-admonitions" class="section-heading"><a href="#module-admonitions" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Admonitions</span></h2><p>Two spellings, one markup. <code class="inline">:::tip[Title]</code> … <code class="inline">:::</code> is what Docusaurus
+authors write; <code class="inline">&gt; [!TIP]</code> is GitHub's. MDEx parses the first as a
+<a href="https://mdex.hexdocs.pm/0.13.5/MDEx.BlockDirective.html"><code class="inline">MDEx.BlockDirective</code></a> whose <code class="inline">info</code> is <code class="inline">tip[Title]</code> and the second as a
+<a href="https://mdex.hexdocs.pm/0.13.5/MDEx.Alert.html"><code class="inline">MDEx.Alert</code></a>. Both become a directive rendered as
+<code class="inline">&lt;div class=&quot;admonition admonition-tip&quot;&gt;</code> with a
+<code class="inline">&lt;p class=&quot;admonition-title&quot;&gt;</code> as its first child, which is the one thing
+a stylesheet has to know. A raw <code class="inline">&lt;div class=&quot;note&quot;&gt;</code> an author wrote is
+HTML, not a directive, and stays as written.</p>
+    </section>
+
+</div>
+
+  <section id="summary" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h2>
+<div class="summary-types summary">
+  <h3>
+    <a href="#types">Types</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:opt/0" data-no-tooltip="" translate="no">opt()</a>
+
+      </div>
+
+        <div class="summary-synopsis"></div>
+
+    </div>
+
+</div>
+<div class="summary-functions summary">
+  <h3>
+    <a href="#functions">Functions</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#plain_text/1" data-no-tooltip="" translate="no">plain_text(html)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Inline markup removed, entities left as they are.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#render/2" data-no-tooltip="" translate="no">render(content, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Render markdown source. The frontmatter, if any, is dropped.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#render_file/2" data-no-tooltip="" translate="no">render_file(path, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Render a file, or <code class="inline">nil</code> when it cannot be read or parsed.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#strip_first_h1/1" data-no-tooltip="" translate="no">strip_first_h1(html)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Drop a leading <code class="inline">&lt;h1&gt;</code>: the page renders the title itself, so leaving it in
+prints it twice. Attribute-tolerant, because headings carry ids now.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#toc/1" data-no-tooltip="" translate="no">toc(html)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The headings of rendered HTML, for a table of contents: <code class="inline">h2</code> and <code class="inline">h3</code>
+with their ids and plain text.</p></div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="types" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#types">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Types</span>
+    </h2>
+
+    <div class="types-list">
+<section class="detail" id="t:opt/0">
+
+  <div class="detail-header">
+    <a href="#t:opt/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">opt()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L54" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> opt() ::
+  {:collection, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}
+  | {:assets, :content | :static}
+  | {:dir, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}
+  | {:base_path, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil}
+  | {:slug, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil}
+  | {:id, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}</pre>
+
+      </div>
+
+<ul><li><code class="inline">:collection</code> — the registered name, for <code class="inline">/content/&lt;collection&gt;/</code> asset paths</li><li><code class="inline">:assets</code> — <code class="inline">:content</code> (the default) rewrites image paths into the
+collection's asset route; <code class="inline">:static</code> leaves root-absolute paths alone, for
+a site whose images are served from <code class="inline">priv/static</code></li><li><code class="inline">:dir</code> — the file's folder relative to the collection root, for relative
+image paths</li><li><code class="inline">:base_path</code> — the route prefix a <code class="inline">.md</code> link rewrites to; <code class="inline">nil</code> leaves
+such links untouched</li><li><code class="inline">:slug</code> — the document's slug, which relative links resolve against</li><li><code class="inline">:id</code> — a stable prefix for element ids (mermaid diagrams need one)</li></ul>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+  <section id="functions" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h2>
+
+    <div class="functions-list">
+<section class="detail" id="plain_text/1">
+
+  <div class="detail-header">
+    <a href="#plain_text/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">plain_text(html)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L140" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> plain_text(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+
+      </div>
+
+<p>Inline markup removed, entities left as they are.</p>
+  </section>
+</section>
+<section class="detail" id="render/2">
+
+    <span id="render/1"></span>
+
+  <div class="detail-header">
+    <a href="#render/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">render(content, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L91" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> render(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), [<a href="#t:opt/0">opt</a>()]) :: {:ok, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Render markdown source. The frontmatter, if any, is dropped.</p>
+  </section>
+</section>
+<section class="detail" id="render_file/2">
+
+    <span id="render_file/1"></span>
+
+  <div class="detail-header">
+    <a href="#render_file/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">render_file(path, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L76" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> render_file(<a href="https://elixir.hexdocs.pm/Path.html#t:t/0">Path.t</a>(), [<a href="#t:opt/0">opt</a>()]) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil</pre>
+
+      </div>
+
+<p>Render a file, or <code class="inline">nil</code> when it cannot be read or parsed.</p>
+  </section>
+</section>
+<section class="detail" id="strip_first_h1/1">
+
+  <div class="detail-header">
+    <a href="#strip_first_h1/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">strip_first_h1(html)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L134" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> strip_first_h1(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+
+      </div>
+
+<p>Drop a leading <code class="inline">&lt;h1&gt;</code>: the page renders the title itself, so leaving it in
+prints it twice. Attribute-tolerant, because headings carry ids now.</p>
+  </section>
+</section>
+<section class="detail" id="toc/1">
+
+  <div class="detail-header">
+    <a href="#toc/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">toc(html)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L119" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> toc(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) :: [%{id: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), text: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), level: 2 | 3}]</pre>
+
+      </div>
+
+<p>The headings of rendered HTML, for a table of contents: <code class="inline">h2</code> and <code class="inline">h3</code>
+with their ids and plain text.</p><p>Read from the HTML because that is what the cache holds; the renderer
+puts the id first on the heading tag, so the pattern is stable.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+    <footer class="footer">
+
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/gamend_core/1.0.1264">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1264">Hex Preview</a>
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Go to package docs">
+              Go to package docs
+            </button>
+
+              <a href="llms.txt" target="_blank">
+                View llms.txt
+              </a>
+
+
+              <a href="gamend_core.epub">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.4) for the
+
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
+
+        </p>
+
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
+</html>

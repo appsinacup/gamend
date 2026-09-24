@@ -55,6 +55,9 @@ Gamend.ClientLogs.html
 Gamend.Cluster.html
 Gamend.Codegen.html
 Gamend.Config.html
+Gamend.Content.Frontmatter.html
+Gamend.Content.Markdown.html
+Gamend.Content.Tree.html
 Gamend.Content.html
 Gamend.ContentSettings.html
 Gamend.Database.html
@@ -218,8 +221,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-C6E76DF0.js
-dist/sidebar_items-47363E8D.js
+dist/search_data-7130CBC5.js
+dist/sidebar_items-323B10BE.js
 index.html
 readme.html
 search.html

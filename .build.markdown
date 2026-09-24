@@ -54,6 +54,9 @@ Gamend.ClientLogs.md
 Gamend.Cluster.md
 Gamend.Codegen.md
 Gamend.Config.md
+Gamend.Content.Frontmatter.md
+Gamend.Content.Markdown.md
+Gamend.Content.Tree.md
 Gamend.Content.md
 Gamend.ContentSettings.md
 Gamend.Database.md

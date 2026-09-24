@@ -1,4 +1,4 @@
-# gamend_core v1.0.1263 - API Reference
+# gamend_core v1.0.1264 - API Reference
 
 ## Modules
 
@@ -222,6 +222,9 @@ missed, and cancelling a subscription at the end of its period.
 
 - Storage &amp; content
   - [Gamend.Content](Gamend.Content.md): Reads and renders Markdown content from project files and directories.
+  - [Gamend.Content.Frontmatter](Gamend.Content.Frontmatter.md): The `---` block at the top of a markdown file.
+  - [Gamend.Content.Markdown](Gamend.Content.Markdown.md): Markdown to HTML, the way every collection renders it.
+  - [Gamend.Content.Tree](Gamend.Content.Tree.md): A guide collection read as a tree: folders are categories, at any depth.
   - [Gamend.ContentSettings](Gamend.ContentSettings.md): Where the server finds host-supplied content: the theme config, hook plugins,
 and the GeoIP database.
 

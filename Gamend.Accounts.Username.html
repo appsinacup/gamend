@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1263">
+    <meta name="project" content="gamend_core v1.0.1264">
 
 
-    <title>Gamend.Accounts.Username — gamend_core v1.0.1263</title>
+    <title>Gamend.Accounts.Username — gamend_core v1.0.1264</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-47363E8D.js"></script>
+    <script defer src="dist/sidebar_items-323B10BE.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1263
+          v1.0.1264
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Username</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1263)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1264)</small>
 
     </h1>
 
@@ -120,25 +120,24 @@ at most three combining marks, joined by non-consecutive <code class="inline">.<
 starting and ending on a letter or digit. It is stored NFKC-normalized and
 lowercased, so the fullwidth <code class="inline">ｄｒａｇｏｓ</code>, the ligature <code class="inline">ﬁ</code> and the
 precomposed/decomposed forms of <code class="inline">ș</code> each land on one spelling and the
-unique index sees them as the same name.</p><p>The rules against impersonation, which a Unicode handle opens, follow
-published standards rather than a list of our own:</p><ul><li><strong>Scripts mix as UTS #39 &quot;Highly Restrictive&quot; allows</strong> (Unicode Security
-Mechanisms, section 5.2): one script, or Latin with Chinese, Japanese or
-Korean (Latin + Han + Hiragana + Katakana; Latin + Han + Bopomofo;
-Latin + Han + Hangul). <code class="inline">王wang</code> and <code class="inline">yamada太郎</code> pass; <code class="inline">pаypal</code> with a
-Cyrillic <code class="inline">а</code> renders as <code class="inline">paypal</code> and is refused, as is Latin with
-Cyrillic or Greek, or Hangul with kana. Digits and separators belong to
-no script. Chromium applies the same profile to domain names.</li><li><strong>Chromium's lookalike patterns.</strong> Mixing Latin with CJK lets <code class="inline">丨</code> pass
-for <code class="inline">l</code>, <code class="inline">一</code> for <code class="inline">-</code>, <code class="inline">〇</code> for <code class="inline">o</code>. <code class="inline">@lookalike</code> ports the patterns
-Chromium's IDN spoof checker (<code class="inline">idn_spoof_checker.cc</code>) refuses and a
-handle can hold, character lists and all: those ideographs and Bopomofo
-letters only next to Chinese or Japanese (<code class="inline">一刀</code> passes, <code class="inline">tom一号</code> does
-not), <code class="inline">ー</code> only after kana, look-alike <code class="inline">へ</code>/<code class="inline">ヘ</code> inside the other kana,
-and combining marks only where they belong.</li><li><strong>No lone Hangul jamo</strong> (<code class="inline">ㅇ</code>, <code class="inline">ㅣ</code>). UTS #39 marks the standalone jamo
-Obsolete for identifiers; syllables (<code class="inline">이</code>) are unaffected.</li><li><strong>Combining marks</strong> (UTS #39 section 5.4): decomposed, never the same
-mark twice in a row nor more than four in a row; the stored form also
-caps three per letter. That stops stacked-mark &quot;zalgo&quot; text while
-allowing Vietnamese (<code class="inline">ệ</code> is two).</li></ul><p>Format-control characters (zero-width joiners, direction overrides) are not
-letters, so they are refused by the format alone.</p>
+unique index sees them as the same name.</p><p>Against impersonation, which a Unicode handle opens, it applies two clauses
+of UTS #39 (Unicode Security Mechanisms), the standard browsers apply to
+international domain names:</p><ul><li><strong>Section 5.2, &quot;Highly Restrictive&quot; script mixing.</strong> One script, or
+Latin with Chinese, Japanese or Korean (Latin + Han + Hiragana +
+Katakana; Latin + Han + Bopomofo; Latin + Han + Hangul). <code class="inline">王wang</code> and
+<code class="inline">yamada太郎</code> pass. <code class="inline">pаypal</code> with a Cyrillic <code class="inline">а</code> renders as <code class="inline">paypal</code> and
+is refused, as is any mix of Latin, Cyrillic and Greek, which share
+dozens of identical letters. Digits and separators belong to no script.</li><li><strong>Section 5.4, combining marks.</strong> Decomposed, never the same mark twice
+in a row nor more than four in a row (<code class="inline">café</code> with the accent typed
+twice renders as <code class="inline">café</code>); the stored form also caps three per letter.
+That stops stacked-mark &quot;zalgo&quot; text while allowing Vietnamese (<code class="inline">ệ</code> is
+two).</li></ul><p>Nothing else: a CJK letter that resembles a Latin one (<code class="inline">丨</code> for <code class="inline">l</code>, <code class="inline">ㅇ</code>
+for <code class="inline">o</code>) is no more confusable than <code class="inline">1</code> and <code class="inline">0</code>, which any ASCII handle
+holds. Format-control characters (zero-width joiners, direction overrides)
+are not letters, so the format refuses them.</p><p><code class="inline">GAMEND_LIMITS_USERNAME_ASCII_ONLY=true</code> keeps handles to <code class="inline">a-z</code>, <code class="inline">0-9</code> and
+the separators, the GitHub and Discord model, after the same normalization
+(<code class="inline">ＷＡＮＧ</code> is still <code class="inline">wang</code>); the generator then transliterates or picks a
+word.</p>
     </section>
 
 </div>
@@ -161,8 +160,8 @@ letters, so they are refused by the format alone.</p>
 
       </div>
 
-        <div class="summary-synopsis"><p>The script, lookalike, jamo and mark rules (see moduledoc) for a
-NORMALIZED handle: <code class="inline">:ok</code>, or <code class="inline">{:error, message}</code> for the changeset.</p></div>
+        <div class="summary-synopsis"><p>The ASCII-only, script and mark rules (see moduledoc) for a NORMALIZED
+handle: <code class="inline">:ok</code>, or <code class="inline">{:error, message}</code> for the changeset.</p></div>
 
     </div>
 
@@ -220,7 +219,7 @@ NORMALIZED handle: <code class="inline">:ok</code>, or <code class="inline">{:er
       <h1 class="signature" translate="no">check_scripts(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L121" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -235,8 +234,8 @@ NORMALIZED handle: <code class="inline">:ok</code>, or <code class="inline">{:er
 
       </div>
 
-<p>The script, lookalike, jamo and mark rules (see moduledoc) for a
-NORMALIZED handle: <code class="inline">:ok</code>, or <code class="inline">{:error, message}</code> for the changeset.</p>
+<p>The ASCII-only, script and mark rules (see moduledoc) for a NORMALIZED
+handle: <code class="inline">:ok</code>, or <code class="inline">{:error, message}</code> for the changeset.</p>
   </section>
 </section>
 <section class="detail" id="format/0">
@@ -249,7 +248,7 @@ NORMALIZED handle: <code class="inline">:ok</code>, or <code class="inline">{:er
       <h1 class="signature" translate="no">format()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L114" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L74" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -277,7 +276,7 @@ NORMALIZED handle: <code class="inline">:ok</code>, or <code class="inline">{:er
       <h1 class="signature" translate="no">normalize(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L105" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L65" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -305,7 +304,7 @@ NORMALIZED handle: <code class="inline">:ok</code>, or <code class="inline">{:er
       <h1 class="signature" translate="no">valid?(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L142" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L99" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -332,9 +331,9 @@ NORMALIZED handle: <code class="inline">:ok</code>, or <code class="inline">{:er
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1263">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1264">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1263">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1264">Hex Preview</a>
 
             </span>
 

@@ -35,7 +35,8 @@ Distinct from `search_users/2`, the privacy-safe player search: this matches
 sensitive fields a player cannot, so it is admin-only.
 
 `filters` keys (string or atom): `:search` (term or full id), `:facets` (list
-of `"online"`, `"unactivated"`, and provider names). `opts`: `:page`,
+of `"online"`, `"unactivated"`, `"unverified"` — an email never confirmed —
+and provider names). `opts`: `:page`,
 `:page_size`, `:sort_field`, `:sort_dir`.
 
 # `search_users`

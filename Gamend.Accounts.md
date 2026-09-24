@@ -180,6 +180,8 @@ then the raw id, which `display_label/1` documents as the thing not to do.
 
 # `find_or_create_from_facebook`
 
+# `find_or_create_from_github`
+
 # `find_or_create_from_google`
 
 # `find_or_create_from_steam`
@@ -192,6 +194,7 @@ then the raw id, which `display_label/1` documents as the thing not to do.
 @spec get_linked_providers(Gamend.Accounts.User.t()) :: %{
   google: boolean(),
   facebook: boolean(),
+  github: boolean(),
   discord: boolean(),
   apple: boolean(),
   steam: boolean(),
@@ -299,6 +302,16 @@ Gets a user by email and password.
 ```
 
 Get a user by their Facebook ID.
+
+Returns `%User{}` or `nil`.
+
+# `get_user_by_github_id`
+
+```elixir
+@spec get_user_by_github_id(String.t()) :: Gamend.Accounts.User.t() | nil
+```
+
+Get a user by their GitHub ID.
 
 Returns `%User{}` or `nil`.
 

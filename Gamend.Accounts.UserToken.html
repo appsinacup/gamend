@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1262">
+    <meta name="project" content="gamend_core v1.0.1263">
 
 
-    <title>Gamend.Accounts.UserToken — gamend_core v1.0.1262</title>
+    <title>Gamend.Accounts.UserToken — gamend_core v1.0.1263</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-6527B931.js"></script>
+    <script defer src="dist/sidebar_items-47363E8D.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1262
+          v1.0.1263
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />UserToken</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1262)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1263)</small>
 
     </h1>
 
@@ -172,6 +172,16 @@ tokens do not need to be hashed.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#confirm_validity_in_days/0" data-no-tooltip="" translate="no">confirm_validity_in_days()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How long an email confirmation link stays valid, in days.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#expired_query/0" data-no-tooltip="" translate="no">expired_query()</a>
 
       </div>
@@ -234,7 +244,7 @@ tokens do not need to be hashed.</p></div>
       <h1 class="signature" translate="no">t()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L33" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L34" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -285,7 +295,7 @@ tokens do not need to be hashed.</p></div>
       <h1 class="signature" translate="no">build_email_token(user, context)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L119" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -313,7 +323,7 @@ for example, by phone numbers.</p>
       <h1 class="signature" translate="no">build_session_token(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L82" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L88" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -337,6 +347,34 @@ and devices in the UI and allow users to explicitly expire any
 session they deem invalid.</p>
   </section>
 </section>
+<section class="detail" id="confirm_validity_in_days/0">
+
+  <div class="detail-header">
+    <a href="#confirm_validity_in_days/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">confirm_validity_in_days()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L67" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> confirm_validity_in_days() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()</pre>
+
+      </div>
+
+<p>How long an email confirmation link stays valid, in days.</p>
+  </section>
+</section>
 <section class="detail" id="expired_query/0">
 
   <div class="detail-header">
@@ -347,7 +385,7 @@ session they deem invalid.</p>
       <h1 class="signature" translate="no">expired_query()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L53" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L54" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -363,7 +401,7 @@ session they deem invalid.</p>
       </div>
 
 <p>Query selecting token rows that are past their own context's validity window.</p><p>Each context expires on a different clock (session 14d, magic link 15min,
-email change 7d), and those windows live here — so retention inverts the
+email change and confirmation 7d), and those windows live here — so retention inverts the
 same predicate the verify queries use instead of guessing a single age.
 Contexts this module does not know are never selected.</p>
   </section>
@@ -378,7 +416,7 @@ Contexts this module does not know are never selected.</p>
       <h1 class="signature" translate="no">verify_change_email_token_query(token, context)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L175" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L181" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -404,7 +442,7 @@ The context must always start with &quot;change:&quot;.</p>
       <h1 class="signature" translate="no">verify_magic_link_token_query(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L145" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L151" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -428,7 +466,7 @@ database. This function also checks if the token is being used within
       <h1 class="signature" translate="no">verify_session_token_query(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L96" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L102" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -450,9 +488,9 @@ not expired (after @session_validity_in_days).</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1262">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1263">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1262">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1263">Hex Preview</a>
 
             </span>
 

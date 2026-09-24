@@ -35,6 +35,9 @@ env vars `GAMEND_RETENTION_*`); `0` or unset keeps data forever:
   `0`; the table grows by at most one row per active user per day, and a
   window shorter than the analytics cohort span (60 days) blanks the
   retention numbers.
+- `GAMEND_RETENTION_ANONYMOUS_USERS_DAYS` (90) — device-only accounts inactive
+  for N days. `GAMEND_RETENTION_UNCONFIRMED_USERS_DAYS` (30) — email accounts
+  whose address was never confirmed, inactive for N days.
 - `GAMEND_RETENTION_ABANDONED_LOBBY_MINUTES` (15) — lobbies nobody has been seen in
   for N minutes, in minutes rather than days. The same window releases a lobby
   seat held by a long-offline player. A party everyone abandoned is disbanded

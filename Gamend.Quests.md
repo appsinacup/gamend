@@ -288,6 +288,20 @@ out too, so the count on the collapsed entry matches what opening it reveals.
 
 Returns `[]` for a group key nothing carries.
 
+# `groups`
+
+```elixir
+@spec groups(user_id() | nil, String.t() | nil) :: [
+  %{key: String.t(), title: String.t()}
+]
+```
+
+The groups this viewer's quests fall into, as `%{key, title}` in the order
+the list would show them — what a group selector offers. `title` is the
+stored `group_title` (the first member's when they disagree), untranslated,
+like every other stored string here. `category` narrows it the way the list
+filter does; `nil` is the signed-out catalog.
+
 # `host_lock_label`
 
 ```elixir
@@ -386,11 +400,15 @@ user's current-period progress and a claimable flag.
 
 Hidden quests are listed but carry no details until earned (callers obscure
 them). Chain quests only appear once their prerequisite is met. Grouped
-quests collapse to one entry carrying `:group_size`.
+quests collapse to one entry carrying `:group_size` and `collapsed: true`;
+the members of a group listed in full carry the size alone.
 
 ## Options
 - `:category` — filter by category
-- `:group` — expand this one group's members; every other group stays collapsed
+- `:group` — expand this one group's members; every other group stays
+  collapsed
+- `:drop_groups` — group keys to leave out entirely, collapsed or not: what
+  a page with a selector over some groups does with the ones not picked
 - `:status` — `"in_progress"` (not yet completed), `"claimable"`
   (completed, waiting to be claimed) or `"done"` (completed or claimed)
 - `:page` / `:page_size`

@@ -58,6 +58,14 @@ You could then use this information to display all valid sessions
 and devices in the UI and allow users to explicitly expire any
 session they deem invalid.
 
+# `confirm_validity_in_days`
+
+```elixir
+@spec confirm_validity_in_days() :: pos_integer()
+```
+
+How long an email confirmation link stays valid, in days.
+
 # `expired_query`
 
 ```elixir
@@ -67,7 +75,7 @@ session they deem invalid.
 Query selecting token rows that are past their own context's validity window.
 
 Each context expires on a different clock (session 14d, magic link 15min,
-email change 7d), and those windows live here — so retention inverts the
+email change and confirmation 7d), and those windows live here — so retention inverts the
 same predicate the verify queries use instead of guessing a single age.
 Contexts this module does not know are never selected.
 

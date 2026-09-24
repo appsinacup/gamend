@@ -13,7 +13,7 @@ supported way to add game-specific rules without forking anything.
 
 | Area | What you get |
 |---|---|
-| **Accounts** | Email/password, magic link, device (guest) and OAuth for Discord, Google, Apple, Facebook and Steam. JWT access/refresh plus browser sessions, per-user revocation, presence. |
+| **Accounts** | Email/password, magic link, device (guest) and OAuth for Discord, Google, Apple, Facebook, GitHub and Steam. JWT access/refresh plus browser sessions, per-user revocation, presence. |
 | **Lobbies** | Create/join/leave with capacity, passwords, visibility and a server-owned lifecycle `state`. Membership lives on the user, so a player is in at most one. |
 | **Matchmaking** | A ticket queue grouping players by exact parameters into hidden lobbies; parties queue as an indivisible unit, blocks are honoured while groups form, and a hook can replace the matcher outright. |
 | **Ready checks** | "Everyone must answer before this proceeds", one row per participant, resolving to a pass or fail your game acts on. |

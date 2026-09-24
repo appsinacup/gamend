@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1262">
+    <meta name="project" content="gamend_core v1.0.1263">
 
 
-    <title>Gamend.Accounts.Identities — gamend_core v1.0.1262</title>
+    <title>Gamend.Accounts.Identities — gamend_core v1.0.1263</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-6527B931.js"></script>
+    <script defer src="dist/sidebar_items-47363E8D.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1262
+          v1.0.1263
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Identities</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1262)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1263)</small>
 
     </h1>
 
@@ -115,7 +115,7 @@ gamend_core
 
     <section id="moduledoc">
 <p>How a person signs in without a password — Discord, Apple, Google, Facebook,
-Steam or a device id — and linking those identities to an existing account or
+GitHub, Steam or a device id — and linking those identities to an existing account or
 removing them from one.</p><p>Split out of <a href="Gamend.Accounts.html"><code class="inline">Gamend.Accounts</code></a>, which still exposes every function here under
 the same name.</p>
     </section>
@@ -182,6 +182,16 @@ the same name.</p>
       </div>
 
         <div class="summary-synopsis"><p>Finds a user by Facebook ID or creates a new user from OAuth data.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#find_or_create_from_github/1" data-no-tooltip="" translate="no">find_or_create_from_github(attrs)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Finds a user by GitHub ID or creates a new user from OAuth data.</p></div>
 
     </div>
 
@@ -272,7 +282,7 @@ authenticate using the device_id in addition to their OAuth providers.</p></div>
       <h1 class="signature" translate="no">attach_device_to_user(user, device_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L202" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L221" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -334,7 +344,7 @@ authenticate using the device_id in addition to their OAuth providers.</p></div>
       <h1 class="signature" translate="no">find_or_create_from_device(device_id, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L150" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L169" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -415,6 +425,36 @@ create an anonymous confirmed user and attach the device_id.</p>
 </span><span class="p" data-group-id="group-3">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="group-4">%</span><span class="nc" data-group-id="group-4">User</span><span class="p" data-group-id="group-4">{</span><span class="p" data-group-id="group-4">}</span><span class="p" data-group-id="group-3">}</span></code></pre>
   </section>
 </section>
+<section class="detail" id="find_or_create_from_github/1">
+
+  <div class="detail-header">
+    <a href="#find_or_create_from_github/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">find_or_create_from_github(attrs)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L128" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> find_or_create_from_github(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
+  {:ok, <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Finds a user by GitHub ID or creates a new user from OAuth data.</p><h2 id="find_or_create_from_github/1-examples" class="section-heading"><a href="#find_or_create_from_github/1-examples" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Examples</span></h2><pre><code class="makeup elixir" translate="no"><span class="gp unselectable">iex&gt; </span><span class="n">find_or_create_from_github</span><span class="p" data-group-id="group-1">(</span><span class="p" data-group-id="group-2">%{</span><span class="ss">github_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;123&quot;</span><span class="p">,</span><span class="w"> </span><span class="ss">email</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;user@example.com&quot;</span><span class="p" data-group-id="group-2">}</span><span class="p" data-group-id="group-1">)</span><span class="w">
+</span><span class="p" data-group-id="group-3">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="group-4">%</span><span class="nc" data-group-id="group-4">User</span><span class="p" data-group-id="group-4">{</span><span class="p" data-group-id="group-4">}</span><span class="p" data-group-id="group-3">}</span></code></pre>
+  </section>
+</section>
 <section class="detail" id="find_or_create_from_google/1">
 
   <div class="detail-header">
@@ -455,7 +495,7 @@ create an anonymous confirmed user and attach the device_id.</p>
       <h1 class="signature" translate="no">find_or_create_from_steam(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L128" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L147" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -485,7 +525,7 @@ create an anonymous confirmed user and attach the device_id.</p>
       <h1 class="signature" translate="no">link_account(user, attrs, provider_id_field, changeset_fn)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L452" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L471" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -519,7 +559,7 @@ existing email or avatars.</p><p>Example: link_account(user, %{discord_id: &quot
       <h1 class="signature" translate="no">link_device_id(user, device_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L501" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L520" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -550,7 +590,7 @@ is already used by another account.</p>
       <h1 class="signature" translate="no">unlink_device_id(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L529" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L548" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -582,7 +622,7 @@ This prevents users losing all login methods unexpectedly.</p>
       <h1 class="signature" translate="no">unlink_provider(user, provider)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L580" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L602" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -595,14 +635,14 @@ This prevents users losing all login methods unexpectedly.</p>
 
           <pre translate="no"><span class="attribute">@spec</span> unlink_provider(
   <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(),
-  :discord | :apple | :google | :facebook | :steam
+  :discord | :apple | :google | :facebook | :github | :steam
 ) ::
   {:ok, <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()}
   | {:error, :last_provider | <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
 
-<p>Unlink an OAuth provider from a user's account.</p><p>provider should be one of :discord, :apple, :google, :facebook.
+<p>Unlink an OAuth provider from a user's account.</p><p>provider should be one of :discord, :apple, :google, :facebook, :github, :steam.
 This will return {:ok, user} when successful or {:error, reason}.</p><p>Guard: we only allow unlinking when the user will still have at least
 one other social provider remaining. This prevents users losing all
 social logins unexpectedly.</p>
@@ -617,9 +657,9 @@ social logins unexpectedly.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1262">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1263">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1262">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1263">Hex Preview</a>
 
             </span>
 

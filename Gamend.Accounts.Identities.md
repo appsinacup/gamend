@@ -2,7 +2,7 @@
 [🔗](https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/identities.ex#L1)
 
 How a person signs in without a password — Discord, Apple, Google, Facebook,
-Steam or a device id — and linking those identities to an existing account or
+GitHub, Steam or a device id — and linking those identities to an existing account or
 removing them from one.
 
 Split out of `Gamend.Accounts`, which still exposes every function here under
@@ -71,6 +71,20 @@ Finds a user by Facebook ID or creates a new user from OAuth data.
 ## Examples
 
     iex> find_or_create_from_facebook(%{facebook_id: "123", email: "user@example.com"})
+    {:ok, %User{}}
+
+# `find_or_create_from_github`
+
+```elixir
+@spec find_or_create_from_github(map()) ::
+  {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t() | term()}
+```
+
+Finds a user by GitHub ID or creates a new user from OAuth data.
+
+## Examples
+
+    iex> find_or_create_from_github(%{github_id: "123", email: "user@example.com"})
     {:ok, %User{}}
 
 # `find_or_create_from_google`
@@ -151,7 +165,7 @@ This prevents users losing all login methods unexpectedly.
 ```elixir
 @spec unlink_provider(
   Gamend.Accounts.User.t(),
-  :discord | :apple | :google | :facebook | :steam
+  :discord | :apple | :google | :facebook | :github | :steam
 ) ::
   {:ok, Gamend.Accounts.User.t()}
   | {:error, :last_provider | Ecto.Changeset.t() | term()}
@@ -159,7 +173,7 @@ This prevents users losing all login methods unexpectedly.
 
 Unlink an OAuth provider from a user's account.
 
-provider should be one of :discord, :apple, :google, :facebook.
+provider should be one of :discord, :apple, :google, :facebook, :github, :steam.
 This will return {:ok, user} when successful or {:error, reason}.
 
 Guard: we only allow unlinking when the user will still have at least

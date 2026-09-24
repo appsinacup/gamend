@@ -1,4 +1,4 @@
-# gamend_core v1.0.1262 - Table of Contents
+# gamend_core v1.0.1263 - Table of Contents
 
 > Core functionality for Gamend, including user management, authentication, friends, matchmaking, and more.
 
@@ -58,7 +58,7 @@ hotlinking the provider.
   - [Gamend.Accounts.Broadcasts](Gamend.Accounts.Broadcasts.md): Telling connected clients a user changed: the `user:<id>` topic, and the
 member and friend topics that show that user to others.
   - [Gamend.Accounts.Identities](Gamend.Accounts.Identities.md): How a person signs in without a password — Discord, Apple, Google, Facebook,
-Steam or a device id — and linking those identities to an existing account or
+GitHub, Steam or a device id — and linking those identities to an existing account or
 removing them from one.
   - [Gamend.Accounts.InactivityNotifier](Gamend.Accounts.InactivityNotifier.md): Warns a user their account is about to be deleted for inactivity.
   - [Gamend.Accounts.PasswordHash](Gamend.Accounts.PasswordHash.md): Password hashing: Argon2id for new hashes, bcrypt still accepted for old ones.

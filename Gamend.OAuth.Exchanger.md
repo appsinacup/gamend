@@ -33,6 +33,13 @@ Tests may replace the exchanger via application config for easier stubbing.
   {:ok, map()} | {:error, term()}
 ```
 
+# `exchange_github_code`
+
+```elixir
+@spec exchange_github_code(String.t(), String.t(), String.t(), String.t(), keyword()) ::
+  {:ok, map()} | {:error, term()}
+```
+
 # `exchange_google_code`
 
 ```elixir

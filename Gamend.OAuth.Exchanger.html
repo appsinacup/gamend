@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1262">
+    <meta name="project" content="gamend_core v1.0.1263">
 
 
-    <title>Gamend.OAuth.Exchanger — gamend_core v1.0.1262</title>
+    <title>Gamend.OAuth.Exchanger — gamend_core v1.0.1263</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-6527B931.js"></script>
+    <script defer src="dist/sidebar_items-47363E8D.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1262
+          v1.0.1263
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />OAuth.<wbr />Exchanger</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1262)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1263)</small>
 
     </h1>
 
@@ -158,6 +158,14 @@ Tests may replace the exchanger via application config for easier stubbing.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#exchange_github_code/5" data-no-tooltip="" translate="no">exchange_github_code(code, client_id, client_secret, redirect_uri, opts \\ [])</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#exchange_google_code/5" data-no-tooltip="" translate="no">exchange_google_code(code, client_id, client_secret, redirect_uri, opts \\ [])</a>
 
       </div>
@@ -208,7 +216,7 @@ Tests may replace the exchanger via application config for easier stubbing.</p>
       <h1 class="signature" translate="no">exchange_apple_code(code, client_id, client_secret, redirect_uri, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/oauth/exchanger.ex#L170" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/oauth/exchanger.ex#L246" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -295,6 +303,37 @@ Tests may replace the exchanger via application config for easier stubbing.</p>
 
   </section>
 </section>
+<section class="detail" id="exchange_github_code/5">
+
+    <span id="exchange_github_code/4"></span>
+
+  <div class="detail-header">
+    <a href="#exchange_github_code/5" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">exchange_github_code(code, client_id, client_secret, redirect_uri, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/oauth/exchanger.ex#L174" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> exchange_github_code(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) ::
+  {:ok, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+
+  </section>
+</section>
 <section class="detail" id="exchange_google_code/5">
 
     <span id="exchange_google_code/4"></span>
@@ -336,7 +375,7 @@ Tests may replace the exchanger via application config for easier stubbing.</p>
       <h1 class="signature" translate="no">exchange_steam_code(code)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/oauth/exchanger.ex#L371" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/oauth/exchanger.ex#L447" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -366,7 +405,7 @@ Tests may replace the exchanger via application config for easier stubbing.</p>
       <h1 class="signature" translate="no">exchange_steam_ticket(ticket, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/oauth/exchanger.ex#L415" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/oauth/exchanger.ex#L491" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -394,9 +433,9 @@ Tests may replace the exchanger via application config for easier stubbing.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1262">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1263">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1262">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1263">Hex Preview</a>
 
             </span>
 

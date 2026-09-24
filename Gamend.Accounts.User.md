@@ -26,6 +26,7 @@ validations so other domains can reuse them safely.
   display_name: String.t() | nil,
   email: String.t() | nil,
   facebook_id: term(),
+  github_id: term(),
   google_id: term(),
   grandfathered_at: DateTime.t() | nil,
   hashed_password: String.t() | nil,
@@ -136,6 +137,13 @@ A user changeset for Facebook OAuth registration.
 
 It accepts email and Facebook ID.
 
+# `github_oauth_changeset`
+
+A user changeset for GitHub OAuth registration.
+
+It accepts email and GitHub ID. The email may be absent: a GitHub App
+without the email permission only sees the public profile.
+
 # `google_oauth_changeset`
 
 A user changeset for Google OAuth registration.
@@ -199,9 +207,9 @@ A changeset for the unique username handle.
 
 Input is NFKC-normalized and lowercased on cast. Valid usernames are 3–32
 characters (`Gamend.Limits` `:min_username`/`:max_username`) of letters and
-digits in any ONE script, joined by non-consecutive `.` `_` `-` separators
-and starting and ending on a letter or digit — `Gamend.Accounts.Username`
-has the rules and why. Uniqueness is enforced by the DB unique index.
+digits in one script, or Latin mixed with Chinese, Japanese or Korean,
+joined by non-consecutive `.` `_` `-` separators and starting and ending on
+a letter or digit — `Gamend.Accounts.Username` has the rules and why. Uniqueness is enforced by the DB unique index.
 
 # `valid_password?`
 

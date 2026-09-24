@@ -12,9 +12,11 @@ at a time. Password login is deliberately *not* guarded: a captcha on every
 routine sign-in is friction for returning players, and the credentials are
 their own proof.
 
-The game SDKs never see this. Registration is browser-only (there is no
-`POST /api/v1/register`), and device login is untouched, so turning it on
-cannot break a shipped Godot or JS client.
+`POST /api/v1/register` mails an address too, but a game client often has no
+browser to render the widget in, so turning the forms' captcha on leaves it
+alone. `api_register` puts it in front of the endpoint as well: the client
+then sends a Turnstile token as `captcha_token`, from a web export or a
+webview. Device login is never guarded.
 
 ## Setup
 
@@ -40,6 +42,14 @@ machine rather than in production. To exercise the failure path, set
 ```
 
 Why a token was rejected. `:missing` never reached Cloudflare.
+
+# `api_register?`
+
+```elixir
+@spec api_register?() :: boolean()
+```
+
+Whether `POST /api/v1/register` requires a captcha token too.
 
 # `enabled?`
 
@@ -78,11 +88,20 @@ the captcha is disabled this is `:ok` without a network call, so callers can
 gate unconditionally rather than branching on `enabled?/0` themselves.
 
 `remote_ip` is passed through to Cloudflare when known; `"unknown"` (what
-`GamendWeb.LiveHelpers.client_ip/1` returns without peer data) is
+`GamendWeb.LiveHelpers.client_ip/2` returns with no known address) is
 omitted rather than sent as a literal.
 
 A token is single-use and expires after five minutes, so a rejected
 submission needs a fresh one — the caller resets the widget.
+
+# `verify_api_register`
+
+```elixir
+@spec verify_api_register(term(), String.t() | nil) :: :ok | {:error, error()}
+```
+
+`verify/2` for `POST /api/v1/register`: `:ok` without a call unless
+`api_register?/0`.
 
 ---
 

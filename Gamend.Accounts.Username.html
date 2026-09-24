@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1262">
+    <meta name="project" content="gamend_core v1.0.1263">
 
 
-    <title>Gamend.Accounts.Username — gamend_core v1.0.1262</title>
+    <title>Gamend.Accounts.Username — gamend_core v1.0.1263</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-6527B931.js"></script>
+    <script defer src="dist/sidebar_items-47363E8D.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1262
+          v1.0.1263
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Username</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1262)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1263)</small>
 
     </h1>
 
@@ -120,11 +120,24 @@ at most three combining marks, joined by non-consecutive <code class="inline">.<
 starting and ending on a letter or digit. It is stored NFKC-normalized and
 lowercased, so the fullwidth <code class="inline">ｄｒａｇｏｓ</code>, the ligature <code class="inline">ﬁ</code> and the
 precomposed/decomposed forms of <code class="inline">ș</code> each land on one spelling and the
-unique index sees them as the same name.</p><p>Two rules exist only to stop impersonation, which a Unicode handle opens:</p><ul><li><strong>One script per handle.</strong> <code class="inline">pаypal</code> with a Cyrillic <code class="inline">а</code> renders as
-<code class="inline">paypal</code>. Mixing is refused, except Han with kana (Japanese) and Han
-with Hangul (Korean), where one name legitimately spans scripts. Digits
-and separators belong to no script.</li><li><strong>At most three combining marks per letter</strong>, which stops stacked-mark
-&quot;zalgo&quot; text while allowing Vietnamese (<code class="inline">ệ</code> is two).</li></ul><p>Format-control characters (zero-width joiners, direction overrides) are not
+unique index sees them as the same name.</p><p>The rules against impersonation, which a Unicode handle opens, follow
+published standards rather than a list of our own:</p><ul><li><strong>Scripts mix as UTS #39 &quot;Highly Restrictive&quot; allows</strong> (Unicode Security
+Mechanisms, section 5.2): one script, or Latin with Chinese, Japanese or
+Korean (Latin + Han + Hiragana + Katakana; Latin + Han + Bopomofo;
+Latin + Han + Hangul). <code class="inline">王wang</code> and <code class="inline">yamada太郎</code> pass; <code class="inline">pаypal</code> with a
+Cyrillic <code class="inline">а</code> renders as <code class="inline">paypal</code> and is refused, as is Latin with
+Cyrillic or Greek, or Hangul with kana. Digits and separators belong to
+no script. Chromium applies the same profile to domain names.</li><li><strong>Chromium's lookalike patterns.</strong> Mixing Latin with CJK lets <code class="inline">丨</code> pass
+for <code class="inline">l</code>, <code class="inline">一</code> for <code class="inline">-</code>, <code class="inline">〇</code> for <code class="inline">o</code>. <code class="inline">@lookalike</code> ports the patterns
+Chromium's IDN spoof checker (<code class="inline">idn_spoof_checker.cc</code>) refuses and a
+handle can hold, character lists and all: those ideographs and Bopomofo
+letters only next to Chinese or Japanese (<code class="inline">一刀</code> passes, <code class="inline">tom一号</code> does
+not), <code class="inline">ー</code> only after kana, look-alike <code class="inline">へ</code>/<code class="inline">ヘ</code> inside the other kana,
+and combining marks only where they belong.</li><li><strong>No lone Hangul jamo</strong> (<code class="inline">ㅇ</code>, <code class="inline">ㅣ</code>). UTS #39 marks the standalone jamo
+Obsolete for identifiers; syllables (<code class="inline">이</code>) are unaffected.</li><li><strong>Combining marks</strong> (UTS #39 section 5.4): decomposed, never the same
+mark twice in a row nor more than four in a row; the stored form also
+caps three per letter. That stops stacked-mark &quot;zalgo&quot; text while
+allowing Vietnamese (<code class="inline">ệ</code> is two).</li></ul><p>Format-control characters (zero-width joiners, direction overrides) are not
 letters, so they are refused by the format alone.</p>
     </section>
 
@@ -144,6 +157,17 @@ letters, so they are refused by the format alone.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#check_scripts/1" data-no-tooltip="" translate="no">check_scripts(username)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The script, lookalike, jamo and mark rules (see moduledoc) for a
+NORMALIZED handle: <code class="inline">:ok</code>, or <code class="inline">{:error, message}</code> for the changeset.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#format/0" data-no-tooltip="" translate="no">format()</a>
 
       </div>
@@ -159,16 +183,6 @@ letters, so they are refused by the format alone.</p>
       </div>
 
         <div class="summary-synopsis"><p>The spelling a handle is stored and looked up under.</p></div>
-
-    </div>
-
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#single_script?/1" data-no-tooltip="" translate="no">single_script?(username)</a>
-
-      </div>
-
-        <div class="summary-synopsis"><p>Whether a NORMALIZED handle keeps to one script (see moduledoc).</p></div>
 
     </div>
 
@@ -196,6 +210,35 @@ letters, so they are refused by the format alone.</p>
     </h2>
 
     <div class="functions-list">
+<section class="detail" id="check_scripts/1">
+
+  <div class="detail-header">
+    <a href="#check_scripts/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">check_scripts(username)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L121" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> check_scripts(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}</pre>
+
+      </div>
+
+<p>The script, lookalike, jamo and mark rules (see moduledoc) for a
+NORMALIZED handle: <code class="inline">:ok</code>, or <code class="inline">{:error, message}</code> for the changeset.</p>
+  </section>
+</section>
 <section class="detail" id="format/0">
 
   <div class="detail-header">
@@ -206,7 +249,7 @@ letters, so they are refused by the format alone.</p>
       <h1 class="signature" translate="no">format()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L50" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L114" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -234,7 +277,7 @@ letters, so they are refused by the format alone.</p>
       <h1 class="signature" translate="no">normalize(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L41" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L105" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -252,34 +295,6 @@ letters, so they are refused by the format alone.</p>
 <p>The spelling a handle is stored and looked up under.</p>
   </section>
 </section>
-<section class="detail" id="single_script?/1">
-
-  <div class="detail-header">
-    <a href="#single_script?/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <div class="heading-with-actions">
-      <h1 class="signature" translate="no">single_script?(username)</h1>
-
-
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L54" class="icon-action" rel="help nofollow" aria-label="View Source">
-          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-        </a>
-
-    </div>
-  </div>
-
-  <section class="docstring">
-
-      <div class="specs">
-
-          <pre translate="no"><span class="attribute">@spec</span> single_script?(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
-
-      </div>
-
-<p>Whether a NORMALIZED handle keeps to one script (see moduledoc).</p>
-  </section>
-</section>
 <section class="detail" id="valid?/1">
 
   <div class="detail-header">
@@ -290,7 +305,7 @@ letters, so they are refused by the format alone.</p>
       <h1 class="signature" translate="no">valid?(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L142" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -317,9 +332,9 @@ letters, so they are refused by the format alone.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1262">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1263">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1262">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1263">Hex Preview</a>
 
             </span>
 

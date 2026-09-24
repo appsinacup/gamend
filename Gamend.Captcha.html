@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1262">
+    <meta name="project" content="gamend_core v1.0.1263">
 
 
-    <title>Gamend.Captcha — gamend_core v1.0.1262</title>
+    <title>Gamend.Captcha — gamend_core v1.0.1263</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-6527B931.js"></script>
+    <script defer src="dist/sidebar_items-47363E8D.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1262
+          v1.0.1263
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Captcha</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1262)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1263)</small>
 
     </h1>
 
@@ -121,9 +121,11 @@ requests from one IP&quot; (the rate limiter in <code class="inline">GamendWeb.L
 already answers that) but a botnet spending our mail reputation an address
 at a time. Password login is deliberately <em>not</em> guarded: a captcha on every
 routine sign-in is friction for returning players, and the credentials are
-their own proof.</p><p>The game SDKs never see this. Registration is browser-only (there is no
-<code class="inline">POST /api/v1/register</code>), and device login is untouched, so turning it on
-cannot break a shipped Godot or JS client.</p><h2 id="module-setup" class="section-heading"><a href="#module-setup" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Setup</span></h2><p>Create a widget at <a rel="nofollow" href="https://dash.cloudflare.com/?to=/:account/turnstile">https://dash.cloudflare.com/?to=/:account/turnstile</a> —
+their own proof.</p><p><code class="inline">POST /api/v1/register</code> mails an address too, but a game client often has no
+browser to render the widget in, so turning the forms' captcha on leaves it
+alone. <code class="inline">api_register</code> puts it in front of the endpoint as well: the client
+then sends a Turnstile token as <code class="inline">captcha_token</code>, from a web export or a
+webview. Device login is never guarded.</p><h2 id="module-setup" class="section-heading"><a href="#module-setup" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Setup</span></h2><p>Create a widget at <a rel="nofollow" href="https://dash.cloudflare.com/?to=/:account/turnstile">https://dash.cloudflare.com/?to=/:account/turnstile</a> —
 it is free with no request cap and no card — then set:</p><pre><code class="makeup elixir" translate="no"><span class="nc">GAMEND_CAPTCHA_ENABLED</span><span class="o">=</span><span class="no">true</span><span class="w">
 </span><span class="nc">GAMEND_CAPTCHA_SITE_KEY</span><span class="o">=</span><span class="mh">0x4AAA</span><span class="n">...</span><span class="w">
 </span><span class="nc">GAMEND_CAPTCHA_SECRET_KEY</span><span class="o">=</span><span class="mh">0x4AAA</span><span class="n">...</span></code></pre><p>Dev and test need none of that: with the keys unset we fall back to
@@ -167,6 +169,16 @@ machine rather than in production. To exercise the failure path, set
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#api_register?/0" data-no-tooltip="" translate="no">api_register?()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether <code class="inline">POST /api/v1/register</code> requires a captcha token too.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#enabled?/0" data-no-tooltip="" translate="no">enabled?()</a>
 
       </div>
@@ -205,6 +217,17 @@ machine rather than in production. To exercise the failure path, set
 
     </div>
 
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#verify_api_register/2" data-no-tooltip="" translate="no">verify_api_register(token, remote_ip)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p><a href="#verify/2"><code class="inline">verify/2</code></a> for <code class="inline">POST /api/v1/register</code>: <code class="inline">:ok</code> without a call unless
+<a href="#api_register?/0"><code class="inline">api_register?/0</code></a>.</p></div>
+
+    </div>
+
 </div>
 
   </section>
@@ -229,7 +252,7 @@ machine rather than in production. To exercise the failure path, set
       <h1 class="signature" translate="no">error()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/captcha.ex#L74" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/captcha.ex#L83" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -260,6 +283,34 @@ machine rather than in production. To exercise the failure path, set
     </h2>
 
     <div class="functions-list">
+<section class="detail" id="api_register?/0">
+
+  <div class="detail-header">
+    <a href="#api_register?/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">api_register?()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/captcha.ex#L91" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> api_register?() :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether <code class="inline">POST /api/v1/register</code> requires a captcha token too.</p>
+  </section>
+</section>
 <section class="detail" id="enabled?/0">
 
   <div class="detail-header">
@@ -270,7 +321,7 @@ machine rather than in production. To exercise the failure path, set
       <h1 class="signature" translate="no">enabled?()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/captcha.ex#L78" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/captcha.ex#L87" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -298,7 +349,7 @@ machine rather than in production. To exercise the failure path, set
       <h1 class="signature" translate="no">script_origin()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/captcha.ex#L86" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/captcha.ex#L109" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -326,7 +377,7 @@ machine rather than in production. To exercise the failure path, set
       <h1 class="signature" translate="no">site_key()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/captcha.ex#L82" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/captcha.ex#L105" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -356,7 +407,7 @@ machine rather than in production. To exercise the failure path, set
       <h1 class="signature" translate="no">verify(token, remote_ip \\ nil)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/captcha.ex#L103" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/captcha.ex#L126" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -374,9 +425,38 @@ machine rather than in production. To exercise the failure path, set
 <p>Verifies a widget token with Cloudflare.</p><p>Returns <code class="inline">:ok</code> when the token is good, <code class="inline">{:error, reason}</code> otherwise. When
 the captcha is disabled this is <code class="inline">:ok</code> without a network call, so callers can
 gate unconditionally rather than branching on <a href="#enabled?/0"><code class="inline">enabled?/0</code></a> themselves.</p><p><code class="inline">remote_ip</code> is passed through to Cloudflare when known; <code class="inline">&quot;unknown&quot;</code> (what
-<code class="inline">GamendWeb.LiveHelpers.client_ip/1</code> returns without peer data) is
+<code class="inline">GamendWeb.LiveHelpers.client_ip/2</code> returns with no known address) is
 omitted rather than sent as a literal.</p><p>A token is single-use and expires after five minutes, so a rejected
 submission needs a fresh one — the caller resets the widget.</p>
+  </section>
+</section>
+<section class="detail" id="verify_api_register/2">
+
+  <div class="detail-header">
+    <a href="#verify_api_register/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">verify_api_register(token, remote_ip)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/captcha.ex#L99" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> verify_api_register(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) :: :ok | {:error, <a href="#t:error/0">error</a>()}</pre>
+
+      </div>
+
+<p><a href="#verify/2"><code class="inline">verify/2</code></a> for <code class="inline">POST /api/v1/register</code>: <code class="inline">:ok</code> without a call unless
+<a href="#api_register?/0"><code class="inline">api_register?/0</code></a>.</p>
   </section>
 </section>
 
@@ -388,9 +468,9 @@ submission needs a fresh one — the caller resets the widget.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1262">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1263">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1262">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1263">Hex Preview</a>
 
             </span>
 

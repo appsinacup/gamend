@@ -230,6 +230,7 @@ The UserChannel also accepts a "call_hook" push from the client to invoke server
 - All broadcasts are fire-and-forget; subscribers don't acknowledge receipt
 - In a cluster, PubSub automatically distributes messages across nodes via pg2/Phoenix.PubSub.PG2
 - WebSocket connections are authenticated on socket connect, not on channel join: the socket needs a valid JWT access token (a refresh token is refused), and a connection without one is rejected before any channel can be joined
+- A socket that sends nothing for `GAMEND_REALTIME_SOCKET_TIMEOUT_MS` (default 5 minutes) is closed. The default is long because browsers pause a background tab's game loop, heartbeats included; a hard disconnect still ends the socket at once. A single frame larger than `GAMEND_REALTIME_SOCKET_MAX_FRAME_BYTES` (default 128 KB) is refused
 - Friend DMs are broadcast to both the sorted-pair topic and each user's personal topic, so the recipient receives the message even without subscribing to the friend chat topic directly.
 - Clients that cache messages locally can update in place: `chat_message_updated`
   carries the full message, and `chat_message_deleted` carries only its `id`.

@@ -182,7 +182,7 @@ defmodule Gamend.Retention do
   @impl true
   def handle_info(:prune, _state) do
     state = sweep()
-    Process.send_after(self(), :prune, :timer.hours(max(config(:interval_hours), 1)))
+    Process.send_after(self(), :prune, sweep_interval_ms())
     {:noreply, state}
   end
 
@@ -195,6 +195,11 @@ defmodule Gamend.Retention do
   end
 
   def handle_info(_msg, state), do: {:noreply, state}
+
+  @doc false
+  # Milliseconds between full sweeps: `interval_hours`, at least one.
+  @spec sweep_interval_ms() :: pos_integer()
+  def sweep_interval_ms, do: :timer.hours(max(config(:interval_hours), 1))
 
   # 0 folds the live classes back into the full sweep only.
   defp schedule_live do

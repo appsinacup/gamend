@@ -157,6 +157,61 @@ defmodule GamendWeb.AuthControllerTest do
     assert session.status == "completed"
   end
 
+  describe "an account scheduled for deletion" do
+    defmodule TestExchanger.ScheduledDiscord do
+      def exchange_discord_code(_code, _client_id, _secret, _redirect) do
+        {:ok, %{"id" => "d-scheduled", "email" => "leaving@example.com", "username" => "leaving"}}
+      end
+    end
+
+    setup do
+      orig = Application.get_env(:gamend_web, :oauth_exchanger)
+      Application.put_env(:gamend_web, :oauth_exchanger, TestExchanger.ScheduledDiscord)
+      SettingsHelpers.put(:gamend_core, Accounts, :deletion_grace_days, 30)
+
+      on_exit(fn ->
+        Application.put_env(:gamend_web, :oauth_exchanger, orig)
+        SettingsHelpers.delete(:gamend_core, Accounts, :deletion_grace_days)
+      end)
+
+      {:ok, user} =
+        Accounts.find_or_create_from_discord(%{
+          discord_id: "d-scheduled",
+          email: "leaving@example.com"
+        })
+
+      {:ok, {:scheduled, user, _}} = Accounts.request_deletion(user)
+      %{user: user}
+    end
+
+    test "the polling flow answers deletion_scheduled and issues no tokens",
+         %{conn: conn, user: user} do
+      session_id = "sid-#{System.unique_integer([:positive])}"
+      OAuthSessions.create_session(session_id, %{provider: "discord", status: "pending"})
+
+      _conn = get(conn, "/auth/discord/callback?code=abc&state=#{session_id}")
+
+      session = OAuthSessions.get_session(session_id)
+      assert session.status == "error"
+      assert session.data["error"] == "deletion_scheduled"
+      refute Map.has_key?(session.data, "access_token")
+      assert Accounts.deletion_scheduled?(Accounts.get_user!(user.id))
+    end
+
+    test "signing in with the provider on the website keeps the account",
+         %{conn: conn, user: user} do
+      # A browser flow's state, as the request step issues it.
+      state = "browser:#{System.unique_integer([:positive])}"
+      OAuthSessions.create_session(state, %{provider: "discord", status: "pending"})
+
+      conn = get(conn, "/auth/discord/callback?code=abc&state=#{state}")
+
+      assert get_session(conn, :user_token)
+      assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "will not be deleted"
+      refute Accounts.deletion_scheduled?(Accounts.get_user!(user.id))
+    end
+  end
+
   test "callback (google) success browser and api flows", %{conn: conn} do
     orig = Application.get_env(:gamend_web, :oauth_exchanger)
 

@@ -40,15 +40,20 @@ defmodule Gamend.HTTP do
   @spec post(String.t() | URI.t(), keyword()) :: {:ok, Req.Response.t()} | {:error, Exception.t()}
   def post(url, opts \\ []), do: Req.post(url, options(opts))
 
-  @doc "The declared timeout and retry options, with `opts` over them."
+  @doc """
+  The declared timeout and retry options, with `opts` over them.
+
+  `config :gamend_core, Gamend.HTTP, req_options: [...]` is merged in too, so
+  a test can route every provider call through a `Req.Test` stub. Empty in prod.
+  """
   @spec options(keyword()) :: keyword()
   def options(opts \\ []) do
     timeout = max(Gamend.Settings.get(__MODULE__, :client_timeout_ms), 1)
     retries = max(Gamend.Settings.get(__MODULE__, :client_retries), 0)
+    injected = Keyword.get(Application.get_env(:gamend_core, __MODULE__, []), :req_options, [])
 
-    Keyword.merge(
-      [receive_timeout: timeout, connect_options: [timeout: timeout], max_retries: retries],
-      opts
-    )
+    [receive_timeout: timeout, connect_options: [timeout: timeout], max_retries: retries]
+    |> Keyword.merge(injected)
+    |> Keyword.merge(opts)
   end
 end

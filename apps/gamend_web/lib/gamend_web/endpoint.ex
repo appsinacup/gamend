@@ -1,6 +1,9 @@
 defmodule GamendWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :gamend_web
 
+  alias Phoenix.Socket.Transport
+  alias Phoenix.Transports.WebSocket
+
   @session_options [
     store: :cookie,
     key: "_gamend_key",
@@ -9,14 +12,12 @@ defmodule GamendWeb.Endpoint do
     secure: Application.compile_env(:gamend_web, :session_secure, false)
   ]
 
-  # timeout: the game client runs on requestAnimationFrame, which browsers
-  # stop entirely for background tabs — heartbeats pause and the default 60s
-  # would drop every alt-tabbed player. 5 minutes keeps the TCP-alive-but-
-  # silent socket open across short tab switches; hard disconnects still
-  # terminate immediately (this only defers reaping half-open connections).
-  socket "/socket", GamendWeb.UserSocket,
-    websocket: [log: false, compress: true, max_frame_size: 131_072, timeout: 300_000],
-    longpoll: false
+  # The game socket. Its idle timeout and frame cap are settings
+  # (`GamendWeb.Realtime`), but `socket/3` fixes a transport's options when the
+  # endpoint compiles. So it is declared with no transport, which keeps Phoenix
+  # supervising it, and `game_socket/2` below serves `/socket/websocket` with
+  # options built at runtime.
+  socket "/socket", GamendWeb.UserSocket, websocket: false, longpoll: false
 
   # `:user_agent` alongside the peer data: a page that adapts to the
   # visitor's platform — a download page highlighting their OS — reads it in
@@ -31,6 +32,8 @@ defmodule GamendWeb.Endpoint do
     ],
     longpoll: [connect_info: [:user_agent, session: @session_options], log: false]
 
+  # First, where Phoenix's own socket dispatch runs.
+  plug :game_socket
   plug GamendWeb.Plugs.AcmeChallenge
   # After AcmeChallenge so certbot's HTTP-01 fetch is answered before any
   # redirect can touch it; before everything else so a plain-HTTP request
@@ -105,6 +108,38 @@ defmodule GamendWeb.Endpoint do
 
   plug Plug.MethodOverride
   plug Plug.Head
+
+  # What Phoenix generates for a `socket/3` websocket transport: the same
+  # config, loaded the same way, handed to the same plug. Built once per pair of
+  # values, as `socket/3` builds it once per compile.
+  defp game_socket(%Plug.Conn{path_info: ["socket", "websocket"]} = conn, _opts) do
+    conn
+    |> WebSocket.call({__MODULE__, GamendWeb.UserSocket, game_socket_opts()})
+    |> halt()
+  end
+
+  defp game_socket(conn, _opts), do: conn
+
+  defp game_socket_opts do
+    timeout = max(Gamend.Settings.get(GamendWeb.Realtime, :socket_timeout_ms), 1_000)
+    max_frame = max(Gamend.Settings.get(GamendWeb.Realtime, :socket_max_frame_bytes), 1_024)
+    key = {__MODULE__, :game_socket, timeout, max_frame}
+
+    case :persistent_term.get(key, nil) do
+      nil ->
+        opts =
+          Transport.load_config(
+            [log: false, compress: true, max_frame_size: max_frame, timeout: timeout],
+            WebSocket
+          )
+
+        :persistent_term.put(key, opts)
+        opts
+
+      opts ->
+        opts
+    end
+  end
 
   @parsers_opts [
     parsers: [:urlencoded, :multipart, :json],

@@ -671,6 +671,46 @@ defmodule GamendWeb.AuthControllerApiTest do
       assert user.google_id == "gsub_1"
     end
 
+    test "refuses an account scheduled for deletion", %{conn: conn} do
+      defmodule MockGoogleTokeninfoScheduled do
+        def get(_url, _opts) do
+          {:ok,
+           %{
+             status: 200,
+             body: %{
+               "sub" => "gsub_scheduled",
+               "aud" => "webcid",
+               "iss" => "https://accounts.google.com",
+               "email" => "scheduled@example.com",
+               "expires_in" => "3600"
+             }
+           }}
+        end
+      end
+
+      Application.put_env(:gamend_core, :google_tokeninfo_client, MockGoogleTokeninfoScheduled)
+      SettingsHelpers.put(:gamend_core, Gamend.OAuth.Providers, :google_web_client_id, "webcid")
+      SettingsHelpers.put(:gamend_core, Gamend.Accounts, :deletion_grace_days, 30)
+
+      on_exit(fn ->
+        SettingsHelpers.delete(:gamend_core, Gamend.OAuth.Providers, :google_web_client_id)
+        SettingsHelpers.delete(:gamend_core, Gamend.Accounts, :deletion_grace_days)
+      end)
+
+      {:ok, user} =
+        Gamend.Accounts.find_or_create_from_google(%{
+          google_id: "gsub_scheduled",
+          email: "scheduled@example.com"
+        })
+
+      {:ok, {:scheduled, _, _}} = Gamend.Accounts.request_deletion(user)
+
+      conn = post(conn, "/api/v1/auth/google/id_token", %{id_token: "any"})
+
+      assert %{"error" => "deletion_scheduled"} = json_response(conn, 403)
+      assert Gamend.Accounts.deletion_scheduled?(Gamend.Accounts.get_user!(user.id))
+    end
+
     test "returns 400 when aud does not match", %{conn: conn} do
       defmodule MockGoogleTokeninfoBadAud do
         def get(_url, _opts) do

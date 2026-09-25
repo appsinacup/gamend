@@ -7,7 +7,7 @@ generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
 # Settings
 
 Every setting the server has, with the environment variable that sets it.
-309 settings across 28 groups.
+311 settings across 28 groups.
 
 A setting is declared in the module that owns it, so this page and
 `.env.example` are generated from the same source the server reads. The
@@ -425,6 +425,8 @@ Live values, and where each one came from, are on the
 | `GAMEND_REALTIME_PRESENCE_POOL_SIZE` | integer | `1` | Phoenix.Presence tracker shards. Must match on every node in a cluster; needs a full restart to change. |
 | `GAMEND_REALTIME_PUBSUB_POOL_SIZE` | integer | `1` | Phoenix.PubSub shards. Raise on nodes holding many thousands of sockets. |
 | `GAMEND_REALTIME_SOCKET_BUFFER_KB` | integer | `0` | Cap the per-connection socket read buffer, in KB. 0 leaves the OS default. Only lowers memory on platforms that honour it; does not change the TCP window. |
+| `GAMEND_REALTIME_SOCKET_MAX_FRAME_BYTES` | integer | `131072` | Largest single WebSocket frame a game client may send, in bytes. |
+| `GAMEND_REALTIME_SOCKET_TIMEOUT_MS` | integer | `300000` | How long a game socket may stay silent before it is closed, in ms. Longer keeps alt-tabbed players; shorter frees half-open sockets (and their seats) sooner. |
 
 
 ## Retention

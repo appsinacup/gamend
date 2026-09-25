@@ -58,6 +58,22 @@ defmodule GamendWeb.Realtime do
   # So: leave it alone unless a node is holding tens of thousands of sockets and
   # memory is the binding constraint, and measure per-socket memory before and
   # after rather than assuming it worked.
+  # The default timeout exists for background tabs: the game client runs on
+  # requestAnimationFrame, which browsers stop for a hidden tab, so heartbeats
+  # pause and Phoenix's own 60s would drop every alt-tabbed player. Hard
+  # disconnects still end at once; this only defers reaping half-open sockets.
+  setting(:socket_timeout_ms, :integer,
+    default: 300_000,
+    doc:
+      "How long a game socket may stay silent before it is closed, in ms. Longer keeps " <>
+        "alt-tabbed players; shorter frees half-open sockets (and their seats) sooner."
+  )
+
+  setting(:socket_max_frame_bytes, :integer,
+    default: 131_072,
+    doc: "Largest single WebSocket frame a game client may send, in bytes."
+  )
+
   setting(:socket_buffer_kb, :integer,
     default: 0,
     doc:

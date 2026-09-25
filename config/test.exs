@@ -85,6 +85,10 @@ config :gamend_core, async_inline: true
 # ticker supervised but idle. Tests drive Gamend.Tournaments.tick/0 directly.
 config :gamend_core, Gamend.Tournaments.Ticker, enabled: false
 
+# The live retention cycle would sweep outside any sandbox every minute; the
+# full sweep's first run is five minutes out, past any test.
+config :gamend_core, Gamend.Retention, live_interval_seconds: 0
+
 # Same for the matchmaking sweep: no sandbox connection, and on SQLite it
 # collides with the test's open write transaction ("database is locked").
 # Tests drive Gamend.Matchmaking.Worker.sweep/0 directly.
@@ -113,8 +117,7 @@ config :phoenix_live_view,
 # Configure Guardian for testing
 config :gamend_web, GamendWeb.Auth.Guardian,
   issuer: "gamend",
-  secret_key: "dJoNJZBOt08JlBREyPV5xvuOdwgHPORxK9WHp/k3Cs+g0R9ctyheJ8/CMeg/AdI1",
-  ttl: {15, :minutes}
+  secret_key: "dJoNJZBOt08JlBREyPV5xvuOdwgHPORxK9WHp/k3Cs+g0R9ctyheJ8/CMeg/AdI1"
 
 # Disable rate limiting in tests
 config :gamend_web, GamendWeb.Plugs.RateLimiter, enabled: false

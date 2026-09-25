@@ -45,6 +45,7 @@ defmodule Gamend.Parties do
   require Logger
 
   alias Gamend.Accounts
+  alias Gamend.Accounts.PasswordHash
   alias Gamend.Accounts.PresenceStatus
   alias Gamend.Accounts.User
   alias Gamend.Friends
@@ -79,7 +80,7 @@ defmodule Gamend.Parties do
   end
 
   defp broadcast_party(party_id, event) do
-    Phoenix.PubSub.broadcast(Gamend.PubSub, "party:#{party_id}", event)
+    Gamend.Broadcast.publish("party:#{party_id}", event)
   end
 
   @doc "Broadcast a member presence event (online/offline) to a party's PubSub topic."
@@ -92,8 +93,6 @@ defmodule Gamend.Parties do
   # Cache helpers
   # ---------------------------------------------------------------------------
 
-  @party_invite_cache_ttl_ms 60_000
-
   defp party_invite_cache_version(user_id) when is_binary(user_id) do
     Gamend.Cache.get!({:party_invites, :version, user_id}) || 1
   end
@@ -105,8 +104,6 @@ defmodule Gamend.Parties do
 
   # Party-row cache: get_party is keyed by a version bumped on every party-row
   # write. Membership/invite changes don't touch the party row, so they don't bump.
-  @party_cache_ttl_ms 60_000
-  @stats_cache_ttl_ms 60_000
   defp party_cache_version, do: Gamend.Cache.get!({:parties, :version}) || 1
 
   @doc """
@@ -117,7 +114,7 @@ defmodule Gamend.Parties do
   """
   @spec stats() :: %{parties_active: non_neg_integer(), players_in_parties: non_neg_integer()}
   def stats do
-    Gamend.Cache.cached({:parties, :stats}, [ttl: @stats_cache_ttl_ms], fn ->
+    Gamend.Cache.cached({:parties, :stats}, [ttl: Gamend.Cache.ttl()], fn ->
       %{
         parties_active: Repo.aggregate(Party, :count, :id),
         players_in_parties: Accounts.count_users_in_parties()
@@ -227,7 +224,7 @@ defmodule Gamend.Parties do
   @decorate cacheable(
               key: {:parties, :get, party_cache_version(), id},
               match: &(&1 != nil),
-              opts: [ttl: @party_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_party(id), do: Repo.get_uuid(Party, id)
 
@@ -481,8 +478,7 @@ defmodule Gamend.Parties do
           "Party invite from #{leader_name}"
         )
 
-        Phoenix.PubSub.broadcast(
-          Gamend.PubSub,
+        Gamend.Broadcast.publish(
           "user:#{target_user_id}",
           {:party_invite_cancelled, %{party_id: party.id, user_id: leader.id}}
         )
@@ -601,8 +597,7 @@ defmodule Gamend.Parties do
     )
 
     # Real-time PubSub so the sender's UI updates immediately
-    Phoenix.PubSub.broadcast(
-      Gamend.PubSub,
+    Gamend.Broadcast.publish(
       "user:#{invite.sender_id}",
       {:party_invite_declined, %{party_id: party_id, user_id: user.id, reason: reason_str}}
     )
@@ -676,8 +671,7 @@ defmodule Gamend.Parties do
     )
 
     # Notify the sender that the invite was accepted via PubSub
-    Phoenix.PubSub.broadcast(
-      Gamend.PubSub,
+    Gamend.Broadcast.publish(
       "user:#{invite.sender_id}",
       {:party_invite_accepted, %{party_id: party_id, user_id: user.id}}
     )
@@ -746,8 +740,7 @@ defmodule Gamend.Parties do
         }
       )
 
-      Phoenix.PubSub.broadcast(
-        Gamend.PubSub,
+      Gamend.Broadcast.publish(
         "user:#{sender_id}",
         {:party_invite_declined, %{party_id: party_id, user_id: user.id}}
       )
@@ -777,7 +770,7 @@ defmodule Gamend.Parties do
               key:
                 {:party_invites, :list, party_invite_cache_version(user_id), user_id, page,
                  page_size},
-              opts: [ttl: @party_invite_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp do_list_party_invitations(user_id, page, page_size) do
     from(i in PartyInvite,
@@ -819,7 +812,7 @@ defmodule Gamend.Parties do
               key:
                 {:party_invites, :list_sent, party_invite_cache_version(leader_id), leader_id,
                  page, page_size},
-              opts: [ttl: @party_invite_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp do_list_sent_party_invitations(leader_id, page, page_size) do
     from(i in PartyInvite,
@@ -1433,8 +1426,7 @@ defmodule Gamend.Parties do
           updated = Accounts.get_user(member.id)
           _ = Accounts.broadcast_user_update(updated)
 
-          Phoenix.PubSub.broadcast(
-            Gamend.PubSub,
+          Gamend.Broadcast.publish(
             "lobby:#{lobby.id}",
             {:user_joined, lobby.id, member.id}
           )
@@ -1518,7 +1510,7 @@ defmodule Gamend.Parties do
         {:error, :password_required}
 
       {hash, pwd} ->
-        if Bcrypt.verify_pass(pwd, hash), do: :ok, else: {:error, :invalid_password}
+        if PasswordHash.verify(pwd, hash), do: :ok, else: {:error, :invalid_password}
     end
   end
 
@@ -1569,8 +1561,7 @@ defmodule Gamend.Parties do
           updated = Accounts.get_user(member.id)
           _ = Accounts.broadcast_user_update(updated)
 
-          Phoenix.PubSub.broadcast(
-            Gamend.PubSub,
+          Gamend.Broadcast.publish(
             "lobby:#{lobby.id}",
             {:user_joined, lobby.id, member.id}
           )
@@ -1607,7 +1598,7 @@ defmodule Gamend.Parties do
     members = get_party_members(party.id)
     member_ids = Enum.map(members, & &1.id)
 
-    Repo.transaction(fn ->
+    Gamend.AfterCommit.transaction(fn ->
       # Bulk-clear party_id for all members in a single query
       from(u in User, where: u.party_id == ^party.id)
       |> Repo.update_all(set: [party_id: nil])
@@ -1775,7 +1766,7 @@ defmodule Gamend.Parties do
   end
 
   defp broadcast_parties(event) do
-    Phoenix.PubSub.broadcast(Gamend.PubSub, "parties", event)
+    Gamend.Broadcast.publish("parties", event)
   end
 
   @doc "List all parties with optional filters and pagination."

@@ -49,6 +49,9 @@ defmodule Gamend.Content.Markdown do
   * `:base_path` — the route prefix a `.md` link rewrites to; `nil` leaves
     such links untouched
   * `:slug` — the document's slug, which relative links resolve against
+  * `:index` — the document is a folder's `index.md`, whose slug *is* its
+    folder, so its links resolve against the slug rather than its parent.
+    `render_file/2` sets it from the file name.
   * `:id` — a stable prefix for element ids (mermaid diagrams need one)
   """
   @type opt ::
@@ -57,6 +60,7 @@ defmodule Gamend.Content.Markdown do
           | {:dir, String.t()}
           | {:base_path, String.t() | nil}
           | {:slug, String.t() | nil}
+          | {:index, boolean()}
           | {:id, String.t()}
 
   @admonitions ~w(note tip info warning danger caution important)
@@ -74,6 +78,8 @@ defmodule Gamend.Content.Markdown do
   @doc "Render a file, or `nil` when it cannot be read or parsed."
   @spec render_file(Path.t(), [opt()]) :: String.t() | nil
   def render_file(path, opts \\ []) do
+    opts = Keyword.put_new(opts, :index, Path.rootname(Path.basename(path)) == "index")
+
     case File.read(path) do
       {:ok, content} ->
         case render(content, opts) do
@@ -332,15 +338,23 @@ defmodule Gamend.Content.Markdown do
 
   # `[Principles](./principles.md)` and `(../reference/index.md#anchor)` are
   # how a guide points at its neighbours, and how an editor previews them.
-  # Resolved against the document's own slug — order prefixes stripped, an
-  # `index` file meaning its folder — and rewritten to the route.
+  # Resolved against the document's own folder — order prefixes stripped, an
+  # `index` file meaning its folder — and rewritten to the route. A page's
+  # folder is its slug's parent; an index page's slug already names its
+  # folder, so taking the parent there sent `builds.md` in `forge/index.md`
+  # to `/docs/builds`.
   defp rewrite_links(document, opts) do
     case Keyword.get(opts, :base_path) do
       nil ->
         document
 
       base ->
-        slug_dir = (Keyword.get(opts, :slug) || "") |> Path.dirname() |> normalize_dir()
+        slug = Keyword.get(opts, :slug) || ""
+
+        slug_dir =
+          if Keyword.get(opts, :index, false),
+            do: slug,
+            else: slug |> Path.dirname() |> normalize_dir()
 
         MDEx.Document.update_nodes(document, MDEx.Link, fn %{url: url} = link ->
           case rewrite_md_link(url, slug_dir, base) do

@@ -1,6 +1,7 @@
 defmodule GamendWeb.AdminLive.Lobbies do
   use GamendWeb, :live_view
 
+  alias Gamend.Accounts.PasswordHash
   alias Gamend.Lobbies
   alias Gamend.Lobbies.SpectatorTracker
   alias Gamend.ReadyChecks
@@ -858,7 +859,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
         Map.put(params, "password_hash", nil)
 
       is_binary(password) and password != "" ->
-        Map.put(params, "password_hash", Bcrypt.hash_pwd_salt(password))
+        Map.put(params, "password_hash", PasswordHash.hash(password))
 
       true ->
         params

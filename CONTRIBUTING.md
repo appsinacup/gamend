@@ -39,10 +39,10 @@ Adding one callback touches six places — miss one and plugins break in confusi
 2. Add the name to `internal_hooks()` — otherwise clients can invoke it over RPC.
 3. `before_*` hooks: add to `lifecycle_pipeline_hook?/2`, plus a `normalize_pipeline_args/3` clause if the hook only vetoes (returns the value unchanged).
 4. No-op implementation in `Gamend.Hooks.Default`.
-5. Mirror in the SDK (`sdk/lib/gamend/hooks.ex`): `@callback`, `@optional_callbacks`, a default in `__using__`, **and the `defoverridable` list** — a default that isn't listed there cannot be overridden by plugins.
+5. Mirror in the SDK (`sdk/lib/gamend/hooks.ex`): `@callback`, `@optional_callbacks`, a default in `default_callbacks` or `more_default_callbacks` (the quoted code `__using__` injects), **and the `overridable_callbacks` list** — a default that isn't listed there cannot be overridden by plugins.
 6. Document the hook in `priv/docs/40-gameplay/90-server-scripting.md`.
 
-**Never dispatch a hook or broadcast inside a transaction or lock.** The hook runs in another process, so anything it writes contends with the transaction that spawned it. Queue the effect and flush it after commit (see `defer/1` in `Gamend.Tournaments`). This also keeps subscribers from seeing uncommitted state.
+**Hold the database only for database work.** On SQLite the repo has a single connection and every transaction takes the write lock, so anything slow inside a transaction or `Gamend.Lock.serialize/3` stalls every other request. Open transactions with `Gamend.AfterCommit.transaction/2` (or `serialize/3`) and broadcast with `Gamend.Broadcast.publish/2`: broadcasts, `Gamend.Async.run/1` tasks and anything passed to `Gamend.AfterCommit.defer/1` then wait for the commit, and a rollback drops them. A test in `after_commit_test.exs` fails on a bare `Repo.transaction` or `Phoenix.PubSub.broadcast` in core. Slow gates run *before* the lock: a plugin's `before_*` hook, a password check, an HTTP call. Inside it, re-check only what a concurrent writer could change (see `Lobbies.join_lobby/3`). When the hook needs the value the lock protects, go optimistic: read and ask the hook unlocked, then write under the lock only if the value is unchanged, and retry otherwise (`Lobbies.merge_metadata/2`).
 
 ## SDK (plugin-facing)
 

@@ -41,8 +41,6 @@ defmodule Gamend.Signaling do
   alias Gamend.Lobbies
   alias Gamend.Presence
 
-  @stats_cache_ttl_ms 60_000
-
   @type room_id :: String.t()
   @type user_id :: String.t()
   @type topology :: :mesh | :star
@@ -234,7 +232,7 @@ defmodule Gamend.Signaling do
           peers_connected: non_neg_integer()
         }
   def stats do
-    Gamend.Cache.cached({:signaling, :stats}, [ttl: @stats_cache_ttl_ms], fn ->
+    Gamend.Cache.cached({:signaling, :stats}, [ttl: Gamend.Cache.ttl()], fn ->
       peer_counts =
         Lobbies.webrtc_enabled_lobby_ids()
         |> Enum.map(fn room_id -> room_id |> topic() |> Presence.list() |> map_size() end)
@@ -261,8 +259,7 @@ defmodule Gamend.Signaling do
          {:ok, from_role} <- fetch_peer(connected, from),
          {:ok, to_role} <- fetch_peer(connected, to),
          :ok <- allow_pair(cfg.topology, from_role, to_role) do
-      Phoenix.PubSub.broadcast(
-        Gamend.PubSub,
+      Gamend.Broadcast.publish(
         inbox(room_id, to),
         {:signaling_relay, type, from, payload}
       )
@@ -282,8 +279,7 @@ defmodule Gamend.Signaling do
          {:ok, from_role} <- fetch_peer(connected, from),
          :ok <- allow_broadcast(cfg.topology, from_role) do
       for {user_id, _role} <- connected, user_id != from do
-        Phoenix.PubSub.broadcast(
-          Gamend.PubSub,
+        Gamend.Broadcast.publish(
           inbox(room_id, user_id),
           {:signaling_relay, type, from, payload}
         )
@@ -299,8 +295,7 @@ defmodule Gamend.Signaling do
     Logger.info("Signaling: closing room=#{room_id}")
 
     for {user_id, _role} <- peers(room_id) do
-      Phoenix.PubSub.broadcast(
-        Gamend.PubSub,
+      Gamend.Broadcast.publish(
         inbox(room_id, user_id),
         {:signaling_relay, :room_closed, nil, %{room_id: room_id}}
       )

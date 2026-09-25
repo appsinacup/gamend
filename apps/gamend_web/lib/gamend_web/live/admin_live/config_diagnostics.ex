@@ -39,7 +39,7 @@ defmodule GamendWeb.AdminLive.ConfigDiagnostics do
     "Tournaments" =>
       ~w(max_tournament_title max_tournament_description max_tournament_slug max_tournament_entries max_tournament_bracket_size)a,
     "Matchmaking" =>
-      ~w(max_matchmaking_players max_matchmaking_params_size matchmaking_timeout_ms matchmaking_tick_ms)a,
+      ~w(max_matchmaking_players matchmaking_default_min_players matchmaking_default_max_players max_matchmaking_params_size matchmaking_timeout_ms matchmaking_tick_ms)a,
     "Ready checks" => ~w(ready_check_timeout_ms max_ready_check_participants)a
   }
 

@@ -193,6 +193,15 @@ defmodule GamendWeb.Plugs.LocalePath do
     with_query(path, drop_switch_param(conn.query_string))
   end
 
+  @doc """
+  `path_info` without a leading locale segment (`["ro", "users", "log_in"]` is
+  `["users", "log_in"]`), for code that runs before this plug and must see the
+  path the router will. `GamendWeb.Plugs.RateLimiter` is one: it runs before
+  the body is parsed, which this plug, needing the session, cannot.
+  """
+  @spec strip_locale([String.t()]) :: [String.t()]
+  def strip_locale(path_info) when is_list(path_info), do: strip_locale_segment(path_info)
+
   defp strip_locale_segment([first | rest]) when is_binary(first) do
     case GamendWeb.GettextSync.normalize_locale(first) do
       locale when is_binary(locale) and locale in @known_locales -> rest

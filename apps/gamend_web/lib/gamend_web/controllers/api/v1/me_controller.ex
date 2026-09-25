@@ -261,7 +261,11 @@ defmodule GamendWeb.Api.V1.MeController do
     summary: "Delete current user",
     description:
       "Deletes the authenticated user's account. An account with a password sends " <>
-        "it as `current_password`; a device or OAuth-only one sends nothing.",
+        "it as `current_password`; a device or OAuth-only one sends nothing. When the " <>
+        "server keeps a grace period (`GAMEND_AUTH_DELETION_GRACE_DAYS`), the account is " <>
+        "instead scheduled for deletion that many days out and signed out everywhere; " <>
+        "API sign-ins answer 403 `deletion_scheduled` until then, and signing in on the " <>
+        "website keeps the account.",
     security: [%{"authorization" => []}],
     request_body: {
       "Current password, for an account that has one",
@@ -296,8 +300,12 @@ defmodule GamendWeb.Api.V1.MeController do
     # wallet is the larger of the two actions. Accounts with no password (device
     # and OAuth-only) have nothing to prove, exactly as for setting one.
     if password_change_authorized?(user, params) do
-      case Gamend.Accounts.delete_user(user) do
-        {:ok, _} ->
+      case Gamend.Accounts.request_deletion(user) do
+        {:ok, :deleted} ->
+          reply_ok(conn)
+
+        {:ok, {:scheduled, _user, expired_tokens}} ->
+          GamendWeb.UserAuth.disconnect_sessions(expired_tokens)
           reply_ok(conn)
 
         {:error, _} ->

@@ -892,6 +892,11 @@ msgstr "구매"
 msgid "Cancel renewal"
 msgstr "갱신 해지"
 
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:47
+#, elixir-autogen, elixir-format
+msgid "Manage billing"
+msgstr "결제 관리"
+
 #: lib/gamend_web/live/user_live/settings/payments_tab.ex:234
 #, elixir-autogen, elixir-format
 msgid "Cancels"
@@ -1086,7 +1091,7 @@ msgstr "상품"
 msgid "Provider"
 msgstr "제공업체"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:44
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:47
 #, elixir-autogen, elixir-format
 msgid "Purchases"
 msgstr "구매"

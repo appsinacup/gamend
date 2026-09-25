@@ -35,8 +35,7 @@ defmodule Gamend.Realtime do
     if Map.has_key?(Declarations.realtime_events(), event) do
       topic = "user:#{user_id}"
 
-      Phoenix.PubSub.broadcast(
-        Gamend.PubSub,
+      Gamend.Broadcast.publish(
         topic,
         {:plugin_event, event, payload}
       )

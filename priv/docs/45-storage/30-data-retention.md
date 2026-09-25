@@ -4,7 +4,7 @@ icon: hero-clock
 
 # Data Retention
 
-A supervised sweeper (`Gamend.Retention`) prunes unbounded tables on a schedule: a first pass five minutes after boot, then every six hours. Each window is one setting, a `GAMEND_RETENTION_*` env var, in days unless the name says otherwise, and `0` means keep forever. Deletes run in batches of 500, are idempotent so several instances sweeping at once is harmless, are failure-isolated per class, and each class emits `[:gamend, :retention, :pruned]` telemetry with its count.
+A supervised sweeper (`Gamend.Retention`) prunes unbounded tables on a schedule: a first pass five minutes after boot, then every `GAMEND_RETENTION_INTERVAL_HOURS` (default `6`). The classes that free live game state (offline lobby and party seats, abandoned parties and lobbies) also run on their own short cycle, every `GAMEND_RETENTION_LIVE_INTERVAL_SECONDS` (default `60`), so their minute-long windows hold to within a minute. Each window is one setting, a `GAMEND_RETENTION_*` env var, in days unless the name says otherwise, and `0` means keep forever. Deletes run in batches of `GAMEND_RETENTION_BATCH_SIZE` (default `500`), are idempotent so several instances sweeping at once is harmless, are failure-isolated per class, and each class emits `[:gamend, :retention, :pruned]` telemetry with its count.
 
 ## Pruning windows
 
@@ -25,7 +25,7 @@ A supervised sweeper (`Gamend.Retention`) prunes unbounded tables on a schedule:
 | `GAMEND_RETENTION_UNCONFIRMED_USERS_DAYS` | `30` | Accounts whose only identity is an email never confirmed, inactive for N days. One with a provider login is kept. Find them on the admin Users page with the "Unverified email" filter. |
 | `GAMEND_RETENTION_INACTIVE_USERS_DAYS` | `0` | Accounts with a real identity, after N days of inactivity — see the warning flow below. |
 
-Client log *sessions* are pruned on the client-logs module's own settings (`retention_days` 14, `retention_flagged_days` 90, keyed off `last_seen_at`). That prunes the searchable index over sessions, not the log lines, which live in the host's log store on its own retention. And some cleanups have no variable at all: expired IP bans, OAuth sessions older than a day, user tokens past their context's validity, and stored avatars whose owner no longer exists are always removed. The full variable list, with types and defaults, is in [Settings](/docs/settings).
+Client log *sessions* are pruned on the client-logs module's own settings (`retention_days` 14, `retention_flagged_days` 90, keyed off `last_seen_at`). That prunes the searchable index over sessions, not the log lines, which live in the host's log store on its own retention. And some cleanups have no variable of their own: expired IP bans, OAuth sessions older than a day, user tokens past their context's validity, login lockouts whose window and lock have run out, accounts whose owner deleted them once `GAMEND_AUTH_DELETION_GRACE_DAYS` has passed, and stored avatars whose owner no longer exists are always removed. The full variable list, with types and defaults, is in [Settings](/docs/settings).
 
 ## Abandoned lobbies and parties
 

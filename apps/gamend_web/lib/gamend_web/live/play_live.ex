@@ -86,7 +86,7 @@ defmodule GamendWeb.PlayLive do
     with {:ok, access_token, _claims} <-
            Guardian.encode_and_sign(user, %{}, token_type: "access"),
          {:ok, refresh_token, _claims} <-
-           Guardian.encode_and_sign(user, %{}, token_type: "refresh", ttl: {30, :days}) do
+           Guardian.encode_and_sign(user, %{}, token_type: "refresh") do
       %{access_token: access_token, refresh_token: refresh_token}
     else
       _error -> %{}

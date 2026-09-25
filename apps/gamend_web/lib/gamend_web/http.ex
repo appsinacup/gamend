@@ -36,4 +36,16 @@ defmodule GamendWeb.Http do
     doc:
       "Browser CORS/WebSocket origin allowlist. Empty allows any origin. Prefix an entry with `regex:` for a pattern."
   )
+
+  setting(:max_body_bytes, :integer,
+    default: 1_048_576,
+    doc:
+      "Largest request body the server reads (JSON, form or multipart), in bytes. Raise it " <>
+        "with any GAMEND_LIMITS_* size above 1 MB, or requests that size are refused first. " <>
+        "Local-backend uploads are capped by GAMEND_LIMITS_MAX_UPLOAD_BYTES instead."
+  )
+
+  @doc "Largest request body the endpoint parses, in bytes (`max_body_bytes`)."
+  @spec max_body_bytes() :: pos_integer()
+  def max_body_bytes, do: max(Gamend.Settings.get(__MODULE__, :max_body_bytes), 1)
 end

@@ -13,6 +13,7 @@ defmodule GamendWeb.UserLive.Settings do
   alias Gamend.Friends
   alias Gamend.Groups
   alias GamendWeb.UserLive.Settings.AccountTab
+  alias GamendWeb.UserLive.Settings.ApiTokensTab
   alias GamendWeb.UserLive.Settings.DataTab
   alias GamendWeb.UserLive.Settings.DevicesTab
   alias GamendWeb.UserLive.Settings.FriendsTab
@@ -22,7 +23,7 @@ defmodule GamendWeb.UserLive.Settings do
   alias GamendWeb.UserLive.Settings.Shared
   alias GamendWeb.UserLive.Settings.WalletTab
 
-  @valid_tabs ~w(account friends groups wallet items payments data devices)
+  @valid_tabs ~w(account friends groups wallet items payments data devices api_tokens)
 
   @account_events ~w(validate_email update_email validate_display_name update_display_name
                      validate_username update_username validate_avatar save_avatar cancel_avatar
@@ -32,11 +33,13 @@ defmodule GamendWeb.UserLive.Settings do
                      cancel_friend remove_friend unblock_friend search_prev search_next
                      incoming_prev incoming_next outgoing_prev outgoing_next friends_prev
                      friends_next blocked_prev blocked_next)
-  @payments_events ~w(cancel_stripe_subscription)
+  @payments_events ~w(cancel_stripe_subscription open_stripe_portal)
   @wallet_events ~w(wallet_ledger_prev wallet_ledger_next)
   @items_events ~w(items_prev items_next)
   @data_events ~w(kv_prev kv_next kv_filters_change kv_filters_apply kv_filters_clear)
   @devices_events ~w(devices_prev devices_next device_remove)
+  @api_tokens_events ~w(api_token_create api_token_dismiss api_token_revoke api_tokens_prev
+                        api_tokens_next)
   @groups_events ~w(groups_tab groups_toggle_create group_validate_create group_create
                     group_leave group_join group_request_join group_accept_invite
                     group_decline_invite group_cancel_request group_cancel_invite
@@ -95,7 +98,8 @@ defmodule GamendWeb.UserLive.Settings do
               {"items", gettext("Items")},
               {"payments", gettext("Payments")},
               {"data", gettext("Data")},
-              {"devices", gettext("Devices")}
+              {"devices", gettext("Devices")},
+              {"api_tokens", gettext("API tokens")}
             ]
           }
           phx-click="settings_tab"
@@ -119,6 +123,7 @@ defmodule GamendWeb.UserLive.Settings do
       <ItemsTab.tab {tab_assigns(assigns)} />
       <DataTab.tab {tab_assigns(assigns)} />
       <DevicesTab.tab {tab_assigns(assigns)} />
+      <ApiTokensTab.tab {tab_assigns(assigns)} />
       <GroupsTab.tab {tab_assigns(assigns)} />
     </Layouts.app>
     """
@@ -157,6 +162,7 @@ defmodule GamendWeb.UserLive.Settings do
       |> FriendsTab.assign_defaults(user)
       |> DataTab.assign_defaults()
       |> DevicesTab.assign_defaults()
+      |> ApiTokensTab.assign_defaults()
       |> WalletTab.assign_defaults()
       |> ItemsTab.assign_defaults()
       |> GroupsTab.assign_defaults()
@@ -196,6 +202,9 @@ defmodule GamendWeb.UserLive.Settings do
 
   def handle_event(event, params, socket) when event in @devices_events,
     do: DevicesTab.handle_event(event, params, socket)
+
+  def handle_event(event, params, socket) when event in @api_tokens_events,
+    do: ApiTokensTab.handle_event(event, params, socket)
 
   def handle_event(event, params, socket) when event in @groups_events,
     do: GroupsTab.handle_event(event, params, socket)

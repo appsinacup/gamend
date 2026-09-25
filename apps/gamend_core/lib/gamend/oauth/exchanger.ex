@@ -438,9 +438,10 @@ defmodule Gamend.OAuth.Exchanger do
     if nonce == expected_nonce, do: :ok, else: {:error, :invalid_nonce}
   end
 
-  # Helper to allow injecting a test HTTP client in tests. Defaults to Req.
+  # Helper to allow injecting a test HTTP client in tests. Defaults to
+  # Gamend.HTTP, Req with the declared timeout and retries.
   defp http_client do
-    Application.get_env(:gamend_core, :oauth_exchanger_client, Req)
+    Application.get_env(:gamend_core, :oauth_exchanger_client, Gamend.HTTP)
   end
 
   @spec exchange_steam_code(String.t()) :: {:ok, map()} | {:error, term()}

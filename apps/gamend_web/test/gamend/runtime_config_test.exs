@@ -115,6 +115,23 @@ defmodule Gamend.RuntimeConfigTest do
 
       assert [{Gamend.Cache.L1, _}, {Gamend.Cache.L2.Partitioned, _}] = levels
     end
+
+    @tag env: %{
+           "GAMEND_AUTH_SECRET_KEY_BASE" => String.duplicate("a", 64),
+           "GAMEND_CACHE_MODE" => "multi",
+           "GAMEND_CACHE_MAX_ENTRIES" => "5000",
+           "GAMEND_CACHE_MAX_MEMORY_MB" => "64"
+         }
+    test "each node's local cache is sized by the settings", %{config: config} do
+      levels = config[:gamend_core][Gamend.Cache][:levels]
+
+      assert [{Gamend.Cache.L1, l1}, {Gamend.Cache.L2.Partitioned, l2}] = levels
+
+      for opts <- [l1, l2[:primary]] do
+        assert opts[:max_size] == 5_000
+        assert opts[:allocated_memory] == 64_000_000
+      end
+    end
   end
 
   describe "endpoint" do

@@ -56,8 +56,6 @@ defmodule Gamend.ReadyChecks do
   alias Gamend.ReadyChecks.Participant
   alias Gamend.Repo
 
-  @pubsub Gamend.PubSub
-
   @type subject :: Lobby.t() | Party.t() | :matchmaking
   @type scope :: :match | :party
   @type answer :: boolean()
@@ -194,7 +192,7 @@ defmodule Gamend.ReadyChecks do
       metadata: Keyword.get(opts, :metadata, %{})
     }
 
-    Repo.transaction(fn ->
+    Gamend.AfterCommit.transaction(fn ->
       with {:ok, check} <- %Check{} |> Check.changeset(check_attrs) |> Repo.insert(),
            :ok <- insert_participants(check, user_ids, pre_ready, tickets) do
         check
@@ -801,16 +799,14 @@ defmodule Gamend.ReadyChecks do
   # every member (and, for lobbies, spectator) sees one event; matchmaking
   # checks have no shared topic yet, so they fan out per user.
   defp broadcast(%Check{lobby_id: lobby_id} = check, event) when is_binary(lobby_id) do
-    Phoenix.PubSub.broadcast(
-      @pubsub,
+    Gamend.Broadcast.publish(
       "lobby:#{lobby_id}",
       {:ready_check_event, event, check}
     )
   end
 
   defp broadcast(%Check{party_id: party_id} = check, event) when is_binary(party_id) do
-    Phoenix.PubSub.broadcast(
-      @pubsub,
+    Gamend.Broadcast.publish(
       "party:#{party_id}",
       {:ready_check_event, event, check}
     )
@@ -820,8 +816,7 @@ defmodule Gamend.ReadyChecks do
     check
     |> load_participants()
     |> Enum.each(fn participant ->
-      Phoenix.PubSub.broadcast(
-        @pubsub,
+      Gamend.Broadcast.publish(
         "matchmaking:user:#{participant.user_id}",
         {:ready_check_event, event, check}
       )

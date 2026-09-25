@@ -33,4 +33,25 @@ defmodule Gamend.Cache.Settings do
   )
 
   setting(:redis_pool_size, :integer, default: 10)
+
+  # Both bound each node's local cache (L1, and a partitioned L2's local
+  # primary). Whichever is reached first evicts the oldest generation.
+  setting(:max_entries, :integer,
+    default: 1_000_000,
+    doc: "Most entries each node's local cache holds."
+  )
+
+  setting(:max_memory_mb, :integer,
+    default: 500,
+    doc:
+      "Most memory each node's local cache may use, in MB. Lower it on a small machine: " <>
+        "the default alone is most of a 512 MB instance."
+  )
+
+  setting(:ttl_ms, :integer,
+    default: 60_000,
+    doc:
+      "How long a cached entity (user, lobby, party, group, KV entry...) is kept, in ms. " <>
+        "On a cluster it bounds how stale a node can be when an invalidation is missed."
+  )
 end

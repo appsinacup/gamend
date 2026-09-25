@@ -33,42 +33,18 @@ defmodule Gamend.Tournaments do
   alias Crontab.CronExpression.Parser, as: CronParser
   alias Crontab.Scheduler, as: CronScheduler
 
-  @pubsub Gamend.PubSub
-
   # Cached reads keyed by a version counter bumped on every tournament-row write,
   # so any write (single or bulk) invalidates all cached tournament rows at once.
-  @tournament_cache_ttl_ms 60_000
   defp tournament_cache_version, do: Gamend.Cache.get!({:tournaments, :version}) || 1
   defp bump_tournament_cache, do: Gamend.Cache.bump_version({:tournaments, :version})
 
   # Hook dispatches and broadcasts must never run while a lock/transaction is
   # open: the hook runs in another process, and anything it writes contends
   # with the very transaction that spawned it (a game resolving a match from
-  # `tournament_match_ready` would block on the draw's advisory lock). Effects
-  # are therefore queued while in a transaction and flushed after it commits —
-  # which also means observers never see uncommitted state.
-  @deferred_key {__MODULE__, :deferred_effects}
-
-  defp defer(fun) when is_function(fun, 0) do
-    if Repo.in_transaction?() do
-      Process.put(@deferred_key, [fun | Process.get(@deferred_key, [])])
-      :ok
-    else
-      fun.()
-      :ok
-    end
-  end
-
-  defp flush_deferred do
-    if Repo.in_transaction?() do
-      :ok
-    else
-      effects = @deferred_key |> Process.get([]) |> Enum.reverse()
-      Process.delete(@deferred_key)
-      Enum.each(effects, & &1.())
-      :ok
-    end
-  end
+  # `tournament_match_ready` would block on the draw's advisory lock). They
+  # wait for the commit (`Gamend.AfterCommit`), which also means observers
+  # never see uncommitted state, and a rollback drops them.
+  defp defer(fun) when is_function(fun, 0), do: Gamend.AfterCommit.defer(fun)
 
   # ── CRUD (admin / hooks) ──────────────────────────────────────────────────
 
@@ -136,7 +112,7 @@ defmodule Gamend.Tournaments do
   @spec get_tournament(Ecto.UUID.t()) :: Tournament.t() | nil
   @decorate cacheable(
               key: {:tournaments, :get, tournament_cache_version(), id},
-              opts: [ttl: @tournament_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_tournament(id) when is_binary(id), do: Repo.get(Tournament, id)
 
@@ -437,9 +413,7 @@ defmodule Gamend.Tournaments do
   """
   @spec advance_lifecycle(Tournament.t(), DateTime.t()) :: Tournament.t()
   def advance_lifecycle(%Tournament{} = tournament, now \\ DateTime.utc_now()) do
-    result = do_advance_lifecycle(tournament, now)
-    flush_deferred()
-    result
+    do_advance_lifecycle(tournament, now)
   end
 
   defp do_advance_lifecycle(%Tournament{} = tournament, now) do
@@ -498,7 +472,10 @@ defmodule Gamend.Tournaments do
   """
   @spec tick(DateTime.t()) :: :ok
   def tick(now \\ DateTime.utc_now()) do
-    Gamend.Lock.serialize(:tournaments_tick, "global", fn ->
+    # Once cluster-wide, but not one transaction: each tournament's draw and
+    # sweep commits on its own, so a tick with many due never holds the
+    # database (on SQLite, its only write lock) for all of them at once.
+    Gamend.Lock.exclusive(:tournaments_tick, "global", fn ->
       from(t in Tournament, where: t.state in ["scheduled", "registration", "running"])
       |> Repo.all()
       |> Enum.each(fn tournament ->
@@ -513,7 +490,6 @@ defmodule Gamend.Tournaments do
       spawn_missed_recurrences(now)
     end)
 
-    flush_deferred()
     :ok
   end
 
@@ -524,7 +500,7 @@ defmodule Gamend.Tournaments do
       # Re-read inside the lock: a concurrent caller must not draw twice.
       case Repo.get(Tournament, tournament.id) do
         %Tournament{state: "registration"} = tournament ->
-          {:ok, tournament} = Repo.transaction(fn -> do_draw(tournament, now) end)
+          {:ok, tournament} = Gamend.AfterCommit.transaction(fn -> do_draw(tournament, now) end)
           after_draw(tournament, now)
           tournament
 
@@ -711,9 +687,7 @@ defmodule Gamend.Tournaments do
              match_payload(tournament, match),
              winner
            ]) do
-      result = internal_resolve(tournament, match, winner, %{})
-      flush_deferred()
-      result
+      internal_resolve(tournament, match, winner, %{})
     else
       {:error, _} = err -> err
       nil -> {:error, :not_found}
@@ -754,7 +728,7 @@ defmodule Gamend.Tournaments do
     now = DateTime.utc_now()
 
     {:ok, match} =
-      Repo.transaction(fn ->
+      Gamend.AfterCommit.transaction(fn ->
         {:ok, match} =
           match
           |> Match.changeset(%{
@@ -1342,8 +1316,7 @@ defmodule Gamend.Tournaments do
   end
 
   defp broadcast_user(user_id, event, payload) do
-    Phoenix.PubSub.broadcast(
-      @pubsub,
+    Gamend.Broadcast.publish(
       "tournaments:user:#{user_id}",
       {:tournament_event, event, payload}
     )

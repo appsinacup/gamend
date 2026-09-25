@@ -11,6 +11,16 @@ defmodule GamendWeb.UserLive.SettingsPaymentsTest do
   end
 
   defmodule StripeAdapter do
+    # Runs in the LiveView process, so the return URL rides back in the
+    # redirect target rather than a message to the test.
+    def create_billing_portal_session("cus_settings_portal", return_url) do
+      {:ok,
+       %{
+         "id" => "bps_settings",
+         "url" => "https://billing.stripe.test/p/session?back=" <> URI.encode_www_form(return_url)
+       }}
+    end
+
     def cancel_subscription_at_period_end("sub_settings_cancel") do
       {:ok,
        %{
@@ -103,6 +113,47 @@ defmodule GamendWeb.UserLive.SettingsPaymentsTest do
     [entitlement] = Payments.list_user_entitlements(user.id)
     assert entitlement.expires_at == DateTime.from_unix!(1_900_000_000, :second)
     assert entitlement.metadata["stripe_subscription_cancel_at_period_end"] == true
+  end
+
+  test "Manage billing opens the Stripe portal for an account that paid through Stripe", %{
+    conn: conn
+  } do
+    user = AccountsFixtures.user_fixture()
+    {_product, provider_product} = create_consumable_provider_product("stripe")
+    {:ok, purchase} = Payments.create_purchase(user, provider_product)
+
+    {:ok, _purchase} =
+      Payments.fulfill_purchase(purchase, %{
+        "stripe_session" => %{"id" => "cs_portal", "customer" => "cus_settings_portal"}
+      })
+
+    assert Payments.stripe_customer_id(user) == "cus_settings_portal"
+
+    {:ok, view, _html} =
+      conn
+      |> log_in_user(user)
+      |> live(~p"/users/settings?tab=payments")
+
+    assert {:error, {:redirect, %{to: "https://billing.stripe.test/p/session?back=" <> back}}} =
+             view |> element("#open-stripe-portal") |> render_click()
+
+    assert back |> URI.decode_www_form() |> String.ends_with?("/users/settings?tab=payments")
+  end
+
+  test "no Manage billing button for an account that never paid through Stripe", %{conn: conn} do
+    user = AccountsFixtures.user_fixture()
+    {_product, provider_product} = create_consumable_provider_product("apple")
+    {:ok, purchase} = Payments.create_purchase(user, provider_product)
+    {:ok, _purchase} = Payments.fulfill_purchase(purchase)
+
+    assert Payments.stripe_customer_id(user) == nil
+
+    {:ok, view, _html} =
+      conn
+      |> log_in_user(user)
+      |> live(~p"/users/settings?tab=payments")
+
+    refute has_element?(view, "#open-stripe-portal")
   end
 
   defp create_consumable_provider_product(provider) do

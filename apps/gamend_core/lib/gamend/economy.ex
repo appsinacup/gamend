@@ -163,8 +163,7 @@ defmodule Gamend.Economy do
   defp topic(user_id), do: @topic_prefix <> user_id
 
   defp broadcast_wallet(user_id, currency, balance, delta) do
-    Phoenix.PubSub.broadcast(
-      Gamend.PubSub,
+    Gamend.Broadcast.publish(
       topic(user_id),
       {:wallet_updated, %{currency: currency, balance: balance, delta: delta}}
     )

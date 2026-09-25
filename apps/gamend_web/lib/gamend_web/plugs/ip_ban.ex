@@ -17,6 +17,11 @@ defmodule GamendWeb.Plugs.IpBan do
 
   This plug runs early in the endpoint pipeline, after `RealIp` extracts
   the true client address.
+
+  An IPv6 address is banned by its /64 (`GamendWeb.RateLimit.ip_key/1`): one
+  subscriber is routinely handed the whole /64 and moves around inside it, so
+  a ban on a single address would not hold. `ban("2001:db8::1")` is listed as
+  `2001:db8::/64`. An IPv4 address is banned as itself.
   """
 
   import Plug.Conn
@@ -56,6 +61,7 @@ defmodule GamendWeb.Plugs.IpBan do
   """
   def ban(ip, ttl_ms \\ :infinity) do
     init_table()
+    ip = GamendWeb.RateLimit.ip_key(ip)
 
     expires_at =
       case ttl_ms do
@@ -76,8 +82,16 @@ defmodule GamendWeb.Plugs.IpBan do
     :ok
   end
 
-  @doc "Remove a ban for the given IP (locally, persisted, and cluster-wide)."
+  @doc """
+  Remove a ban for the given IP (locally, persisted, and cluster-wide): the
+  ban on its /64 for IPv6, and any on the exact address, which is how IPv6
+  bans were stored before they covered the /64.
+  """
   def unban(ip) do
+    [GamendWeb.RateLimit.ip_key(ip), ip] |> Enum.uniq() |> Enum.each(&unban_key/1)
+  end
+
+  defp unban_key(ip) do
     init_table()
     :ets.delete(@table, ip)
     append_log(:unban, ip, nil)
@@ -86,8 +100,12 @@ defmodule GamendWeb.Plugs.IpBan do
     :ok
   end
 
-  @doc "Check if an IP is currently banned."
+  @doc "Check if an IP is currently banned: itself, or its /64 for IPv6."
   def banned?(ip) do
+    [ip, GamendWeb.RateLimit.ip_key(ip)] |> Enum.uniq() |> Enum.any?(&banned_key?/1)
+  end
+
+  defp banned_key?(ip) do
     init_table()
 
     case :ets.lookup(@table, ip) do
@@ -217,8 +235,9 @@ defmodule GamendWeb.Plugs.IpBan do
   @impl true
   def call(conn, _opts) do
     ip = conn.remote_ip |> :inet.ntoa() |> to_string()
+    network = GamendWeb.RateLimit.ip_key(conn.remote_ip)
 
-    if banned?(ip) do
+    if banned_key?(ip) or (network != ip and banned_key?(network)) do
       conn
       |> send_resp(403, "Forbidden")
       |> halt()

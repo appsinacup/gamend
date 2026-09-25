@@ -26,15 +26,35 @@ defmodule Gamend.Accounts.UserNotifier do
     #
     # Log every failure here: most callers ignore the return value, so a
     # rejected relay or unverified sender domain is otherwise invisible.
-    try do
-      case Mailer.deliver(email) do
-        {:ok, _metadata} -> {:ok, email}
-        other -> failed(subject, other)
-      end
-    rescue
-      e -> failed(subject, {:exception, e})
-    catch
-      kind, reason -> failed(subject, {kind, reason})
+    case deliver_bounded(email) do
+      {:ok, _metadata} -> {:ok, email}
+      other -> failed(subject, other)
+    end
+  end
+
+  # gen_smtp waits up to 20 minutes for each reply from the relay, and that is
+  # not configurable: a hung relay hung whatever sent the mail (a magic-link
+  # request, an email change, a mail job) for that long. The send runs in a
+  # task given `mail.send_timeout_ms`; what it raises or exits is caught inside
+  # it, as the task is linked to the caller.
+  defp deliver_bounded(email) do
+    task =
+      Task.async(fn ->
+        try do
+          Mailer.deliver(email)
+        rescue
+          e -> {:exception, e}
+        catch
+          kind, reason -> {kind, reason}
+        end
+      end)
+
+    timeout = Gamend.Settings.get(Gamend.Mail, :send_timeout_ms)
+
+    case Task.yield(task, timeout) || Task.shutdown(task, :brutal_kill) do
+      {:ok, result} -> result
+      {:exit, reason} -> {:exit, reason}
+      nil -> {:error, :timeout}
     end
   end
 

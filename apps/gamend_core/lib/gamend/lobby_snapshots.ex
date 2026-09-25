@@ -72,6 +72,25 @@ defmodule Gamend.LobbySnapshots do
   def capture_lobby(_lobby_id, _trigger, _opts), do: :ok
 
   @doc """
+  Gathers a capture now without recording it; `record/1` records it later.
+
+  For a caller that must read the state before a transaction unwinds it, and
+  outside that transaction, but records it only if the transaction commits
+  (the last member leaving deletes the lobby). `nil` when snapshots are off or
+  there is nothing to read. Takes `capture_lobby/3`'s options but `:sync`.
+  """
+  @spec prepare(String.t(), String.t(), keyword()) :: map() | nil
+  def prepare(lobby_id, trigger, opts \\ [])
+      when is_binary(lobby_id) and is_binary(trigger) and is_list(opts) do
+    if enabled?(), do: build_capture(lobby_id, trigger, opts)
+  end
+
+  @doc "Records a capture `prepare/3` gathered. `nil` records nothing."
+  @spec record(map() | nil) :: :ok
+  def record(nil), do: :ok
+  def record(capture) when is_map(capture), do: Writer.enqueue_snapshot(capture)
+
+  @doc """
   Record a decision that happened within the current snapshot interval.
 
   `payload` carries the fields that explain the decision — a snapshot can show
@@ -220,25 +239,29 @@ defmodule Gamend.LobbySnapshots do
   ## Gathering
 
   defp enqueue_capture(lobby_id, trigger, opts) do
+    lobby_id |> build_capture(trigger, opts) |> record()
+  end
+
+  defp build_capture(lobby_id, trigger, opts) do
     case gather_sections(lobby_id) do
       sections when map_size(sections) > 0 ->
-        Writer.enqueue_snapshot(%{
+        %{
           lobby_id: lobby_id,
           trigger: trigger,
           sections: hash_sections(sections),
           flagged: Keyword.get(opts, :flagged, false),
           user_id: Keyword.get(opts, :user_id)
-        })
+        }
 
       _ ->
         # Lobby already gone and nothing left to read — a capture that lost the
         # race with teardown. Nothing to record.
-        :ok
+        nil
     end
   rescue
     e ->
       Logger.warning("lobby_snapshots: gather failed lobby_id=#{lobby_id} #{inspect(e)}")
-      :ok
+      nil
   end
 
   # Hashed here rather than in the writer: the writer is one process serving

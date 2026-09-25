@@ -45,8 +45,6 @@ defmodule Gamend.Notifications do
 
   @type user_id :: Ecto.UUID.t()
 
-  @notifications_cache_ttl_ms 60_000
-
   # ---------------------------------------------------------------------------
   # PubSub
   # ---------------------------------------------------------------------------
@@ -64,7 +62,7 @@ defmodule Gamend.Notifications do
   end
 
   defp broadcast_user(user_id, event) when is_binary(user_id) do
-    Phoenix.PubSub.broadcast(Gamend.PubSub, "notifications:user:#{user_id}", event)
+    Gamend.Broadcast.publish("notifications:user:#{user_id}", event)
   end
 
   # ---------------------------------------------------------------------------
@@ -109,7 +107,7 @@ defmodule Gamend.Notifications do
               key:
                 {:notifications, :list, notifications_version(user_id), user_id,
                  Keyword.get(opts, :page, 1), Keyword.get(opts, :page_size, 25)},
-              opts: [ttl: @notifications_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def list_notifications(user_id, opts \\ []) when is_binary(user_id) do
     page = Keyword.get(opts, :page, 1)
@@ -148,7 +146,7 @@ defmodule Gamend.Notifications do
   @spec count_notifications(user_id()) :: non_neg_integer()
   @decorate cacheable(
               key: {:notifications, :count, notifications_version(user_id), user_id},
-              opts: [ttl: @notifications_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def count_notifications(user_id) when is_binary(user_id) do
     Repo.one(
@@ -163,7 +161,7 @@ defmodule Gamend.Notifications do
   @spec count_unread_notifications(user_id()) :: non_neg_integer()
   @decorate cacheable(
               key: {:notifications, :count_unread, notifications_version(user_id), user_id},
-              opts: [ttl: @notifications_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def count_unread_notifications(user_id) when is_binary(user_id) do
     Repo.one(
@@ -183,7 +181,7 @@ defmodule Gamend.Notifications do
   @spec list_notifications_by_title(user_id(), String.t()) :: [Notification.t()]
   @decorate cacheable(
               key: {:notifications, :by_title, notifications_version(user_id), user_id, title},
-              opts: [ttl: @notifications_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def list_notifications_by_title(user_id, title)
       when is_binary(user_id) and is_binary(title) do
@@ -204,7 +202,7 @@ defmodule Gamend.Notifications do
   @decorate cacheable(
               key:
                 {:notifications, :sent_by_title, notifications_version(user_id), user_id, title},
-              opts: [ttl: @notifications_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def list_sent_notifications_by_title(user_id, title)
       when is_binary(user_id) and is_binary(title) do
@@ -261,7 +259,7 @@ defmodule Gamend.Notifications do
   @decorate cacheable(
               key: {:notifications, :get, notification_row_version(), id},
               match: &(&1 != nil),
-              opts: [ttl: @notifications_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_notification(id) do
     Repo.get_uuid(Notification, id)

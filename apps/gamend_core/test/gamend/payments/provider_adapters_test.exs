@@ -55,6 +55,11 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
        }}
     end
 
+    def create_billing_portal_session(params, opts) do
+      send(self(), {:stripe_create_billing_portal_session, params, opts})
+      {:ok, %{id: "bps_test", url: "https://billing.stripe.test/session"}}
+    end
+
     def construct_webhook_event(raw_body, signature_header, secret, tolerance_seconds) do
       send(
         self(),
@@ -303,6 +308,117 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
     assert opts[:api_key] == "sk_test_sdk_123"
     assert opts[:api_version] == "2024-06-20"
     assert opts[:idempotency_key] == "order_42"
+  end
+
+  test "Stripe checkout: a one-off payment creates a customer, a known one is reused" do
+    Application.put_env(:gamend_core, :stripe_client, StripeClient)
+    put_setting(:environment, :sandbox)
+    put_setting(:stripe_sandbox_secret_key, "sk_test_sdk_123")
+
+    urls = %{
+      "success_url" => "https://example.test/success",
+      "cancel_url" => "https://example.test/cancel"
+    }
+
+    one_off = %Product{id: 10, sku: "pro_lifetime", title: "Pro", kind: "entitlement"}
+    sub = %Product{id: 11, sku: "pro_yearly", title: "Pro", kind: "subscription"}
+    purchase = %Purchase{id: 42, user_id: 7, order_id: "order_42", quantity: 1}
+
+    assert {:ok, _} =
+             Stripe.create_checkout_session(
+               purchase,
+               %ProviderProduct{external_id: "price_1", product: one_off},
+               urls
+             )
+
+    assert_received {:stripe_create_checkout_session, params, _opts}
+    assert params.customer_creation == "always"
+    refute Map.has_key?(params, :customer)
+
+    assert {:ok, _} =
+             Stripe.create_checkout_session(
+               purchase,
+               %ProviderProduct{external_id: "price_2", product: sub},
+               urls
+             )
+
+    # Subscription mode always creates one; Stripe rejects customer_creation there.
+    assert_received {:stripe_create_checkout_session, params, _opts}
+    refute Map.has_key?(params, :customer_creation)
+
+    assert {:ok, _} =
+             Stripe.create_checkout_session(
+               purchase,
+               %ProviderProduct{external_id: "price_1", product: one_off},
+               Map.put(urls, "stripe_customer_id", "cus_known")
+             )
+
+    assert_received {:stripe_create_checkout_session, params, _opts}
+    assert params.customer == "cus_known"
+    refute Map.has_key?(params, :customer_creation)
+
+    # Anything that is not a customer id is ignored, never forwarded.
+    assert {:ok, _} =
+             Stripe.create_checkout_session(
+               purchase,
+               %ProviderProduct{external_id: "price_1", product: one_off},
+               Map.put(urls, "stripe_customer_id", "acct_other")
+             )
+
+    assert_received {:stripe_create_checkout_session, params, _opts}
+    refute Map.has_key?(params, :customer)
+  end
+
+  test "Stripe Managed Payments: the flag and a new enough API version on checkout only" do
+    Application.put_env(:gamend_core, :stripe_client, StripeClient)
+    put_setting(:environment, :sandbox)
+    put_setting(:stripe_sandbox_secret_key, "sk_test_sdk_123")
+
+    product = %Product{id: 10, sku: "pro_yearly", title: "Pro", kind: "subscription"}
+    provider_product = %ProviderProduct{external_id: "price_1", product: product}
+    purchase = %Purchase{id: 42, user_id: 7, order_id: "order_42", quantity: 1}
+
+    urls = %{
+      "success_url" => "https://example.test/success",
+      "cancel_url" => "https://example.test/cancel"
+    }
+
+    # Off: nothing changes.
+    assert {:ok, _} = Stripe.create_checkout_session(purchase, provider_product, urls)
+    assert_received {:stripe_create_checkout_session, params, opts}
+    refute Map.has_key?(params, :managed_payments)
+    assert opts[:api_version] == "2022-11-15"
+
+    # On: the flag, and the checkout call raised to basil.
+    put_setting(:stripe_managed_payments, true)
+    assert {:ok, _} = Stripe.create_checkout_session(purchase, provider_product, urls)
+    assert_received {:stripe_create_checkout_session, params, opts}
+    assert params.managed_payments == %{enabled: true}
+    refute Map.has_key?(params, :automatic_tax)
+    refute Map.has_key?(params, :payment_method_types)
+    assert opts[:api_version] == "2025-03-31.basil"
+    # Every other call keeps the configured version.
+    assert ProviderConfig.stripe_api_version() == "2022-11-15"
+
+    # A configured version newer than the minimum is kept, not lowered.
+    put_setting(:stripe_api_version, "2026-01-28.clover")
+    assert {:ok, _} = Stripe.create_checkout_session(purchase, provider_product, urls)
+    assert_received {:stripe_create_checkout_session, _params, opts}
+    assert opts[:api_version] == "2026-01-28.clover"
+  end
+
+  test "Stripe creates a billing portal session through the SDK client" do
+    Application.put_env(:gamend_core, :stripe_client, StripeClient)
+    put_setting(:environment, :sandbox)
+    put_setting(:stripe_sandbox_secret_key, "sk_test_sdk_123")
+
+    assert {:ok, session} =
+             Stripe.create_billing_portal_session("cus_123", "https://example.test/back")
+
+    assert session["url"] == "https://billing.stripe.test/session"
+    assert_received {:stripe_create_billing_portal_session, params, opts}
+    assert params == %{customer: "cus_123", return_url: "https://example.test/back"}
+    assert opts[:api_key] == "sk_test_sdk_123"
   end
 
   test "Stripe retrieves checkout session through SDK client with pinned API options" do

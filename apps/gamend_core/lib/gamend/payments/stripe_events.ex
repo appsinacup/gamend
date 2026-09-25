@@ -27,7 +27,12 @@ defmodule Gamend.Payments.StripeEvents do
            }}
           | {:error, term()}
   def create_stripe_checkout(%User{} = user, attrs) when is_map(attrs) do
-    attrs = attrs |> Params.normalize() |> Payments.client_checkout_attrs()
+    attrs =
+      attrs
+      |> Params.normalize()
+      |> Payments.client_checkout_attrs()
+      # Server-side and last, so a client can never name someone else's customer.
+      |> Map.put("stripe_customer_id", stripe_customer_id(user))
 
     with {:ok, provider_product} <- Payments.resolve_provider_product("stripe", attrs),
          :ok <- Payments.ensure_checkout_allowed(user, provider_product, attrs),
@@ -49,6 +54,54 @@ defmodule Gamend.Payments.StripeEvents do
           {:error, reason}
       end
     else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @doc """
+  The Stripe customer this account has paid as, or nil: the newest Stripe
+  purchase whose stored checkout session names one. Stripe creates the customer
+  at checkout (subscriptions always; one-off payments since
+  `customer_creation: "always"`), and `checkout.session.completed` stores the
+  session on the purchase.
+  """
+  @spec stripe_customer_id(User.t()) :: String.t() | nil
+  def stripe_customer_id(%User{id: user_id}) do
+    from(p in Purchase,
+      where: p.user_id == ^user_id and p.provider == "stripe",
+      order_by: [desc: p.inserted_at],
+      select: p.raw_provider_payload
+    )
+    |> Repo.all()
+    |> Enum.find_value(&payload_customer_id/1)
+  end
+
+  defp payload_customer_id(%{} = payload) do
+    [payload["stripe_session"], payload["stripe_subscription"]]
+    |> Enum.find_value(fn
+      %{"customer" => "cus_" <> _ = id} -> id
+      %{"customer" => %{"id" => "cus_" <> _ = id}} -> id
+      _ -> nil
+    end)
+  end
+
+  defp payload_customer_id(_payload), do: nil
+
+  @doc """
+  Open Stripe's customer portal for this account: cancel, change card, download
+  invoices. `{:error, :no_stripe_customer}` when the account never paid through
+  Stripe Checkout.
+  """
+  @spec create_stripe_billing_portal(User.t(), String.t()) ::
+          {:ok, String.t()} | {:error, term()}
+  def create_stripe_billing_portal(%User{} = user, return_url) when is_binary(return_url) do
+    with customer_id when is_binary(customer_id) <- stripe_customer_id(user),
+         {:ok, %{"url" => url}} when is_binary(url) <-
+           Payments.stripe_adapter().create_billing_portal_session(customer_id, return_url) do
+      {:ok, url}
+    else
+      nil -> {:error, :no_stripe_customer}
+      {:ok, _session} -> {:error, :stripe_portal_without_url}
       {:error, reason} -> {:error, reason}
     end
   end

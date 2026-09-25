@@ -62,12 +62,13 @@ defmodule GamendWeb.Auth.GuardianTest do
   end
 
   describe "token expiration" do
-    test "tokens have a default TTL" do
+    test "an access token lasts 15 minutes and a refresh token 30 days by default" do
       user = AccountsFixtures.user_fixture()
-      {:ok, _token, claims} = Guardian.encode_and_sign(user)
+      {:ok, _token, access} = Guardian.encode_and_sign(user)
+      {:ok, _token, refresh} = Guardian.encode_and_sign(user, %{}, token_type: "refresh")
 
-      assert Map.has_key?(claims, "exp")
-      assert claims["exp"] > System.system_time(:second)
+      assert access["exp"] - access["iat"] == 15 * 60
+      assert refresh["exp"] - refresh["iat"] == 30 * 86_400
     end
   end
 end

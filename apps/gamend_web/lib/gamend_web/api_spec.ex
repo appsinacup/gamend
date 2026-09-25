@@ -35,8 +35,8 @@ defmodule GamendWeb.ApiSpec do
         - **Steam (OpenID)**: Use `/api/v1/auth/steam` flow
 
         Both methods return:
-        - `access_token` - Short-lived (15 min), use for API requests
-        - `refresh_token` - Long-lived (30 days), use to get new access tokens
+        - `access_token` - Short-lived (15 min by default), use for API requests; `expires_in` gives its lifetime in seconds
+        - `refresh_token` - Long-lived (30 days by default), use to get new access tokens
 
         ### **1.2 Using Tokens**
         Include the access token in the Authorization header:

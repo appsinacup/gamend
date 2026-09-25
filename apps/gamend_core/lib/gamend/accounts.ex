@@ -25,6 +25,7 @@ defmodule Gamend.Accounts do
   alias Gamend.Accounts.{
     Broadcasts,
     Identities,
+    LoginLockouts,
     PasswordHash,
     Presence,
     Profile,
@@ -39,11 +40,9 @@ defmodule Gamend.Accounts do
 
   # Upper bound on cross-node staleness for cached user structs: explicit
   # invalidations propagate immediately via `Gamend.Cache.invalidate/1`,
-  # and this TTL caps staleness if an invalidation broadcast is ever missed.
-  @user_cache_ttl_ms 60_000
-
+  # and the cache TTL caps staleness if an invalidation broadcast is ever missed.
   @doc false
-  def user_cache_ttl_ms, do: @user_cache_ttl_ms
+  def user_cache_ttl_ms, do: Gamend.Cache.ttl()
 
   @doc false
   def users_stats_cache_version do
@@ -316,7 +315,8 @@ defmodule Gamend.Accounts do
               to: Registration
 
   @doc """
-  Gets a user by email and password.
+  Gets a user by email and password. `nil` for a wrong password, and for an
+  address locked by too many failures (`authenticate_by_password/2` says which).
 
   ## Examples
 
@@ -330,11 +330,41 @@ defmodule Gamend.Accounts do
   @spec get_user_by_email_and_password(String.t(), String.t()) :: User.t() | nil
   def get_user_by_email_and_password(email, password)
       when is_binary(email) and is_binary(password) do
+    case authenticate_by_password(email, password) do
+      {:ok, user} -> user
+      {:error, _reason} -> nil
+    end
+  end
+
+  @doc """
+  Checks an email and password, counting failures per address
+  (`Gamend.Accounts.LoginLockouts`).
+
+  `{:error, {:locked, seconds}}` when the address is locked, before the
+  password is looked at, and for the failure that locks it.
+  """
+  @spec authenticate_by_password(String.t(), String.t()) ::
+          {:ok, User.t()} | {:error, :invalid_credentials | {:locked, pos_integer()}}
+  def authenticate_by_password(email, password)
+      when is_binary(email) and is_binary(password) do
+    case LoginLockouts.check(email) do
+      :ok -> check_password(email, password)
+      {:locked, seconds} -> {:error, {:locked, seconds}}
+    end
+  end
+
+  defp check_password(email, password) do
     user = get_user_by_email(email)
 
     if User.valid_password?(user, password) do
       maybe_upgrade_password_hash(user, password)
-      user
+      LoginLockouts.clear(email)
+      {:ok, user}
+    else
+      case LoginLockouts.record_failure(email) do
+        :ok -> {:error, :invalid_credentials}
+        {:locked, seconds} -> {:error, {:locked, seconds}}
+      end
     end
   end
 
@@ -414,7 +444,7 @@ defmodule Gamend.Accounts do
   @decorate cacheable(
               key: {:accounts, :user, id},
               match: &cache_match/1,
-              opts: [ttl: @user_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_user(id), do: Repo.get_uuid(User, id)
 
@@ -528,7 +558,7 @@ defmodule Gamend.Accounts do
               key: {:accounts, :user_by, field, value},
               references: &(&1 && keyref({:accounts, :user, &1.id})),
               match: &cache_match/1,
-              opts: [ttl: @user_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_user_by_field(field, value) when is_atom(field) do
     Repo.get_by(User, [{field, value}])
@@ -546,7 +576,7 @@ defmodule Gamend.Accounts do
     # Evict on all other instances first so their L1 refetches the fresh
     # struct; the put re-warms this node and the shared L2.
     _ = Gamend.Cache.invalidate({:accounts, :user, user.id})
-    _ = Gamend.Cache.put({:accounts, :user, user.id}, user, ttl: @user_cache_ttl_ms)
+    _ = Gamend.Cache.put({:accounts, :user, user.id}, user, ttl: Gamend.Cache.ttl())
     user
   end
 
@@ -726,6 +756,84 @@ defmodule Gamend.Accounts do
     doc: "JWT signing key. Defaults to secret_key_base when unset."
   )
 
+  setting(:access_token_ttl_minutes, :integer,
+    default: 15,
+    doc:
+      "Lifetime of API access tokens, in minutes. Login and refresh answer it as expires_in. " <>
+        "Applies to tokens issued after the change."
+  )
+
+  setting(:refresh_token_ttl_days, :integer,
+    default: 30,
+    doc:
+      "Lifetime of API refresh tokens, in days. A refresh keeps its token, so this is how " <>
+        "long a client stays signed in without logging in again."
+  )
+
+  setting(:session_days, :integer,
+    default: 14,
+    doc:
+      "Lifetime of a browser session and its remember-me cookie, in days. An active " <>
+        "session is renewed once it is half this old."
+  )
+
+  setting(:magic_link_minutes, :integer,
+    default: 15,
+    doc:
+      "How long an emailed login link stays valid, in minutes. Capped at 60: anyone who " <>
+        "can read the email can sign in while the link lives."
+  )
+
+  setting(:confirm_email_days, :integer,
+    default: 7,
+    doc: "How long an email confirmation link stays valid, in days."
+  )
+
+  setting(:change_email_days, :integer,
+    default: 7,
+    doc: "How long the link confirming a new email address stays valid, in days."
+  )
+
+  setting(:sudo_mode_minutes, :integer,
+    default: 10,
+    doc:
+      "How recently a user must have signed in to open the settings that change their " <>
+        "password or email. Submitting the form is allowed 10 minutes more."
+  )
+
+  setting(:api_token_max_days, :integer,
+    default: 0,
+    doc:
+      "Longest lifetime a personal API token may have, in days. Applies to existing tokens " <>
+        "too, counted from creation. 0 allows tokens that never expire."
+  )
+
+  setting(:lockout_attempts, :integer,
+    default: 10,
+    doc:
+      "Failed passwords for one email address that lock its password sign-in. Counted per " <>
+        "address across every IP. 0 disables the lockout."
+  )
+
+  setting(:lockout_window_minutes, :integer,
+    default: 15,
+    doc: "The failures must fall within this many minutes to lock."
+  )
+
+  setting(:lockout_minutes, :integer,
+    default: 15,
+    doc:
+      "How long a lock lasts. Emailed login links and provider sign-in still work " <>
+        "meanwhile, so the owner is never shut out."
+  )
+
+  setting(:deletion_grace_days, :integer,
+    default: 0,
+    doc:
+      "Days between a player deleting their own account and it being deleted. Signing in " <>
+        "on the website within that time keeps the account. 0 deletes at once."
+  )
+
   @doc "Whether device-based auth is enabled. Defaults to on."
   @spec device_auth_enabled?() :: boolean()
   def device_auth_enabled?, do: Gamend.Settings.get(__MODULE__, :device_auth_enabled) == true
@@ -754,15 +862,25 @@ defmodule Gamend.Accounts do
 
   ## Settings
 
+  # Opening a sudo page needs a sign-in within `sudo_mode_minutes`; submitting
+  # its form gets this much longer, so a user who opened the page just inside
+  # the window can still finish typing.
+  @sudo_form_grace_minutes 10
+
+  @doc "How recently a user must have signed in to open a sudo page (`auth.sudo_mode_minutes`)."
+  @spec sudo_mode_minutes() :: pos_integer()
+  def sudo_mode_minutes, do: max(Gamend.Settings.get(__MODULE__, :sudo_mode_minutes), 1)
+
   @doc """
   Checks whether the user is in sudo mode.
 
-  The user is in sudo mode when the last authentication was done no further
-  than 20 minutes ago. The limit can be given as second argument in minutes.
+  With one argument, the window is the one a sudo form is submitted in:
+  `sudo_mode_minutes/0` plus ten minutes to fill the form in. The limit can be
+  given as second argument in minutes (negative, as an offset from now).
   """
   @spec sudo_mode?(User.t()) :: boolean()
   @spec sudo_mode?(User.t(), integer()) :: boolean()
-  def sudo_mode?(user, minutes \\ -20)
+  def sudo_mode?(user), do: sudo_mode?(user, -(sudo_mode_minutes() + @sudo_form_grace_minutes))
 
   def sudo_mode?(%User{authenticated_at: ts}, minutes) when is_struct(ts, DateTime) do
     DateTime.after?(ts, DateTime.utc_now() |> DateTime.add(minutes, :minute))
@@ -798,7 +916,7 @@ defmodule Gamend.Accounts do
   def update_user_email(user, token) do
     context = "change:#{user.email}"
 
-    Repo.transact(fn ->
+    Gamend.AfterCommit.transact(fn ->
       with {:ok, query} <- UserToken.verify_change_email_token_query(token, context),
            %UserToken{sent_to: email} <- Repo.one(query),
            # Bump `token_version` with the address change, so JWTs issued to the
@@ -860,6 +978,74 @@ defmodule Gamend.Accounts do
     user
     |> User.password_changeset(attrs)
     |> update_user_and_delete_all_tokens()
+  end
+
+  @doc "Days a player's own deletion waits (`auth.deletion_grace_days`); 0 deletes at once."
+  @spec deletion_grace_days() :: non_neg_integer()
+  def deletion_grace_days, do: max(Gamend.Settings.get(__MODULE__, :deletion_grace_days), 0)
+
+  @doc """
+  A player deleting their own account.
+
+  With `auth.deletion_grace_days` at 0 the account is deleted now, by
+  `delete_user/1`. Otherwise it is scheduled that many days out and signed out
+  everywhere (every session, access, refresh and personal API token), and
+  `Gamend.Retention` deletes it on the day unless its owner signs in on the
+  website first (`cancel_deletion/1`). An account already scheduled keeps its
+  date. The expired session tokens come back so the caller can disconnect
+  their LiveViews.
+
+  Admin deletions and the retention sweeps call `delete_user/1` and never wait.
+  """
+  @spec request_deletion(User.t()) ::
+          {:ok, :deleted}
+          | {:ok, {:scheduled, User.t(), [UserToken.t()]}}
+          | {:error, Ecto.Changeset.t()}
+  def request_deletion(%User{} = user) do
+    case deletion_grace_days() do
+      0 ->
+        with {:ok, _user} <- delete_user(user), do: {:ok, :deleted}
+
+      days ->
+        at = user.deletion_scheduled_at || DateTime.add(DateTime.utc_now(:second), days, :day)
+
+        with {:ok, {user, tokens}} <-
+               user
+               |> Ecto.Changeset.change(deletion_scheduled_at: at)
+               |> update_user_and_delete_all_tokens() do
+          {:ok, {:scheduled, user, tokens}}
+        end
+    end
+  end
+
+  @doc "Whether `user` is waiting out a deletion grace period."
+  @spec deletion_scheduled?(User.t() | nil) :: boolean()
+  def deletion_scheduled?(%User{deletion_scheduled_at: %DateTime{}}), do: true
+  def deletion_scheduled?(_user), do: false
+
+  @doc """
+  Keep an account that was scheduled for deletion. A no-op for one that was not.
+  """
+  @spec cancel_deletion(User.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def cancel_deletion(%User{deletion_scheduled_at: nil} = user), do: {:ok, user}
+
+  def cancel_deletion(%User{} = user) do
+    with {:ok, user} <-
+           user |> Ecto.Changeset.change(deletion_scheduled_at: nil) |> Repo.update() do
+      invalidate_user_cache(user)
+      cache_user(user)
+      {:ok, user}
+    end
+  end
+
+  @doc "Accounts whose deletion date has passed. For `Gamend.Retention`."
+  @spec due_deletions_query() :: Ecto.Query.t()
+  def due_deletions_query do
+    now = DateTime.utc_now(:second)
+
+    from(u in User,
+      where: not is_nil(u.deletion_scheduled_at) and u.deletion_scheduled_at <= ^now
+    )
   end
 
   @doc """
@@ -962,7 +1148,7 @@ defmodule Gamend.Accounts do
 
   @doc false
   def update_user_and_delete_all_tokens(changeset) do
-    Repo.transact(fn ->
+    Gamend.AfterCommit.transact(fn ->
       changeset = bump_token_version(changeset)
 
       with {:ok, user} <- Repo.update(changeset) do
@@ -1057,23 +1243,27 @@ defmodule Gamend.Accounts do
   @spec update_user(User.t(), Types.user_update_attrs()) ::
           {:ok, User.t()} | {:error, Ecto.Changeset.t()}
   def update_user(%User{} = user, attrs) when is_map(attrs) do
-    case Gamend.Hooks.internal_call(:before_user_update, [user, attrs]) do
-      {:ok, returned} ->
-        attrs_to_use =
-          if is_map(returned) and not is_struct(returned) do
-            returned
-          else
-            attrs
-          end
-
-        do_update_user(user, attrs_to_use)
-
-      {:error, reason} ->
-        {:error, reason}
+    with {:ok, attrs_to_use} <- run_before_user_update(user, attrs) do
+      apply_user_update(user, attrs_to_use)
     end
   end
 
-  defp do_update_user(%User{} = user, attrs) do
+  # `update_user/2` in two halves, for a read-modify-write that must not hold
+  # its lock across the plugin's hook: ask the hook first, then write under the
+  # lock (`Gamend.Hooks.Default`'s payment metadata).
+  @doc false
+  @spec run_before_user_update(User.t(), map()) :: {:ok, map()} | {:error, term()}
+  def run_before_user_update(%User{} = user, attrs) when is_map(attrs) do
+    case Gamend.Hooks.internal_call(:before_user_update, [user, attrs]) do
+      {:ok, returned} when is_map(returned) and not is_struct(returned) -> {:ok, returned}
+      {:ok, _other} -> {:ok, attrs}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @doc false
+  @spec apply_user_update(User.t(), map()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  def apply_user_update(%User{} = user, attrs) do
     case user |> User.admin_changeset(attrs) |> revoke_on_deactivation() |> Repo.update() do
       {:ok, updated} = ok ->
         invalidate_user_cache(user)

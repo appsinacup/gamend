@@ -204,13 +204,9 @@ defmodule GamendWeb.AuthController do
   defp sign_in_session_outcome(user_params, config) do
     case config.finder.(user_params) do
       {:ok, user} ->
-        if Accounts.user_activated?(user) do
-          %{status: "completed", data: Tokens.sign_in(user)}
-        else
-          session_error(
-            "account_not_activated",
-            "Your account is pending activation by an administrator."
-          )
+        case Tokens.refusal(user) do
+          nil -> %{status: "completed", data: Tokens.sign_in(user)}
+          {_status, code, message} -> session_error(code, message)
         end
 
       {:error, _changeset} ->
@@ -229,15 +225,9 @@ defmodule GamendWeb.AuthController do
 
     case config.finder.(user_params) do
       {:ok, user} ->
-        if Accounts.user_activated?(user) do
-          reply_data(conn, Tokens.sign_in(user))
-        else
-          reply_error(
-            conn,
-            :forbidden,
-            "account_not_activated",
-            "Your account is pending activation by an administrator."
-          )
+        case Tokens.refusal(user) do
+          nil -> reply_data(conn, Tokens.sign_in(user))
+          {status, code, message} -> reply_error(conn, status, code, message)
         end
 
       {:error, changeset} ->
@@ -726,7 +716,7 @@ defmodule GamendWeb.AuthController do
     responses: [
       ok: {"Signed in", "application/json", Schemas.SessionResponse},
       bad_request: Schemas.error("Missing code, or the provider refused it"),
-      forbidden: Schemas.error("Account awaiting activation"),
+      forbidden: Schemas.error("Account awaiting activation, or scheduled for deletion"),
       not_found: Schemas.error("Unknown or disabled provider"),
       unprocessable_entity: Schemas.error("The account could not be created")
     ]
@@ -765,7 +755,7 @@ defmodule GamendWeb.AuthController do
     responses: [
       ok: {"Signed in", "application/json", Schemas.SessionResponse},
       bad_request: Schemas.error("Missing or invalid token"),
-      forbidden: Schemas.error("Account awaiting activation"),
+      forbidden: Schemas.error("Account awaiting activation, or scheduled for deletion"),
       unprocessable_entity: Schemas.error("The account could not be created"),
       service_unavailable: Schemas.error("Google sign-in not configured")
     ]
@@ -813,7 +803,7 @@ defmodule GamendWeb.AuthController do
     responses: [
       ok: {"Signed in", "application/json", Schemas.SessionResponse},
       bad_request: Schemas.error("Missing code, or Apple refused it"),
-      forbidden: Schemas.error("Account awaiting activation"),
+      forbidden: Schemas.error("Account awaiting activation, or scheduled for deletion"),
       unprocessable_entity: Schemas.error("The account could not be created")
     ]
   )
@@ -899,7 +889,7 @@ defmodule GamendWeb.AuthController do
     %{
       access_token: access_token,
       refresh_token: Map.get(data, "refresh_token", ""),
-      expires_in: Map.get(data, "expires_in", 900),
+      expires_in: Map.get(data, "expires_in", Tokens.access_ttl_seconds()),
       user_id: Map.get(data, "user_id", ""),
       username: Map.get(data, "username", ""),
       display_name: Map.get(data, "display_name", "")

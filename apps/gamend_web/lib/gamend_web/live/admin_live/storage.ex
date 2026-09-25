@@ -255,7 +255,7 @@ defmodule GamendWeb.AdminLive.Storage do
                   <td>
                     <img
                       :if={image?(obj.key)}
-                      src={Storage.url(obj.key)}
+                      src={Storage.url(obj.key, signed: true)}
                       alt=""
                       class="w-10 h-10 object-cover rounded"
                       loading="lazy"
@@ -268,7 +268,11 @@ defmodule GamendWeb.AdminLive.Storage do
                     <.timestamp at={obj.last_modified} format="full" empty="—" />
                   </td>
                   <td class="text-right whitespace-nowrap">
-                    <a href={Storage.url(obj.key)} download class="btn btn-outline btn-xs">
+                    <a
+                      href={Storage.url(obj.key, signed: true)}
+                      download
+                      class="btn btn-outline btn-xs"
+                    >
                       Download
                     </a>
                     <button

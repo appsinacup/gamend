@@ -46,7 +46,7 @@ defmodule Gamend.Ledger do
     # A balance row and its ledger row reference only the user, so a foreign
     # key that fires here means the user was deleted after the context checked.
     Repo.rescue_foreign_key(:user_not_found, fn ->
-      Repo.transaction(fn ->
+      Gamend.AfterCommit.transaction(fn ->
         case apply_fun.() do
           {:ok, new_total} ->
             record_fun.(new_total)

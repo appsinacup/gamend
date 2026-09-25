@@ -287,6 +287,24 @@ defmodule Gamend.RetentionTest do
       assert Repo.get(Lobby, fresh.id)
     end
 
+    test "the live cycle reaps it too, and runs nothing else" do
+      Application.put_env(:gamend_core, Gamend.Retention, abandoned_lobby_minutes: 15)
+
+      quiet = age_lobby(lobby_fixture(), 20)
+      results = Retention.prune_live()
+
+      assert results |> Map.keys() |> Enum.sort() ==
+               [
+                 :abandoned_parties,
+                 :lobbies,
+                 :offline_lobby_memberships,
+                 :offline_party_memberships
+               ]
+
+      assert results.lobbies == 1
+      refute Repo.get(Lobby, quiet.id)
+    end
+
     test "keeps a lobby inside the window" do
       Application.put_env(:gamend_core, Gamend.Retention, abandoned_lobby_minutes: 60)
 

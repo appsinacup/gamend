@@ -48,6 +48,7 @@ These hold everywhere, so the tables below list only what is specific to them:
 | `lobby_id` | FK lobbies | Current lobby, nullable. **Not** cleared on disconnect |
 | `party_id` | FK parties | Current party, nullable |
 | `confirmed_at` | utc_datetime | Email confirmation |
+| `deletion_scheduled_at` | utc_datetime | When an account its owner deleted goes, under `GAMEND_AUTH_DELETION_GRACE_DAYS`; null otherwise |
 | `metadata` | map | Yours |
 
 ## lobbies
@@ -62,7 +63,7 @@ These hold everywhere, so the tables below list only what is specific to them:
 | `max_users` | integer | Default 8 |
 | `is_hidden` | boolean | Excluded from public listings |
 | `is_locked` | boolean | Blocks joins; server code may pass `bypass_lock` |
-| `password_hash` | string | bcrypt; optional join password |
+| `password_hash` | string | Argon2id (old bcrypt hashes still verify); optional join password |
 | `state` | string | Lifecycle word. Core sets `created`; the game owns the vocabulary (enforced in `before_lobby_state_change`) |
 | `state_changed_at` | utc_datetime | When `state` last changed |
 | `slowdown` | integer | Chat slow-mode seconds, 0 = off |
@@ -310,6 +311,7 @@ ledger is the audit trail; the balance is a cache of it.
 |---|---|---|
 | `users_tokens` | Session, magic-link and email-change tokens, pruned on their own expiry | Authentication |
 | `oauth_sessions` | In-flight OAuth handshakes, pruned daily | Authentication |
+| `login_lockouts` | Failed passwords per email address (a SHA-256 of it, never the address) and the lock they set, pruned once both run out | Authentication |
 | `ip_bans` | Address bans, with optional expiry | — |
 | `matchmaking_tickets` | Queue state, one per user or party | Matchmaking |
 | `ready_checks`, `ready_check_participants` | "Everyone must answer" boards on a lobby or party, one row per participant | Matchmaking |

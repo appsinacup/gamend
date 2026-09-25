@@ -409,7 +409,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
        socket
        |> assign(:ip_bans, IpBan.list_bans())
        |> assign(:ban_log, IpBan.list_log())
-       |> put_flash(:info, "Banned IP #{ip_str}")}
+       |> put_flash(:info, "Banned #{GamendWeb.RateLimit.ip_key(ip_str)}")}
     end
   end
 
@@ -502,7 +502,6 @@ defmodule GamendWeb.AdminLive.RateLimiting do
   # code reads it. `lv_*` are the LiveView login/register buckets
   # (`GamendWeb.LiveHelpers.check_rate_limit/2`), on the HTTP settings.
   defp bucket_limits do
-    rl = Application.get_env(:gamend_web, GamendWeb.Plugs.RateLimiter, [])
     general = rate_setting(:general_limit)
 
     %{
@@ -514,9 +513,8 @@ defmodule GamendWeb.AdminLive.RateLimiting do
       "ws" => rate_setting(:ws_limit),
       "dc" => rate_setting(:dc_limit),
       "ice" => rate_setting(:ice_limit),
-      # SignalingChannel's own keys and fallbacks — not declared settings.
-      "signaling_ws" => Keyword.get(rl, :signaling_ws_limit, 300),
-      "signaling_ice" => Keyword.get(rl, :signaling_ice_limit, 150),
+      "signaling_ws" => rate_setting(:signaling_ws_limit),
+      "signaling_ice" => rate_setting(:signaling_ice_limit),
       "chatd" => positive_limit(:max_chat_messages_per_day, general),
       "chatrep" => positive_limit(:max_chat_reports_per_user_per_day, general)
     }

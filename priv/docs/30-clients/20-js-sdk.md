@@ -46,8 +46,10 @@ const { access_token, refresh_token, user_id } = (await authApi.login({
 apiClient.defaultHeaders = { Authorization: `Bearer ${access_token}` };
 ```
 
-Access tokens last 15 minutes, refresh tokens 30 days. Refresh before the
-access token expires, or retry once on a `401`:
+Access tokens last 15 minutes and refresh tokens 30 days, unless the server
+sets otherwise; `expires_in` on every login and refresh gives the access
+token's lifetime in seconds. Refresh before the access token expires, or retry
+once on a `401`:
 
 ```javascript
 const refreshed = (await authApi.refreshToken({

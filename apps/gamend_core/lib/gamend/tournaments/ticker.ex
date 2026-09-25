@@ -10,8 +10,19 @@ defmodule Gamend.Tournaments.Ticker do
   use GenServer
   require Logger
 
-  @interval_ms :timer.seconds(30)
   @initial_delay_ms :timer.seconds(5)
+
+  use Gamend.Settings.Provider,
+    app: :gamend_core,
+    group: :tournaments,
+    label: "Tournaments"
+
+  setting(:tick_interval_seconds, :integer,
+    default: 30,
+    doc:
+      "Seconds between tournament ticks: state transitions, match-ready, deadline " <>
+        "sweeps and recurrence. A round can start or time out up to this late."
+  )
 
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
@@ -36,7 +47,8 @@ defmodule Gamend.Tournaments.Ticker do
         e -> Logger.error("tournaments tick failed: #{Exception.message(e)}")
       end
 
-    Process.send_after(self(), :tick, @interval_ms)
+    seconds = max(Gamend.Settings.get(__MODULE__, :tick_interval_seconds), 1)
+    Process.send_after(self(), :tick, :timer.seconds(seconds))
     {:noreply, state}
   end
 end

@@ -83,4 +83,29 @@ defmodule GamendWeb.SignalingChannelTest do
 
     assert pushed_ids("user_left") == [peer.id]
   end
+
+  test "ICE relayed over signaling is limited by its own settings", %{lobby: lobby, host: host} do
+    limiter = Application.get_env(:gamend_web, GamendWeb.Plugs.RateLimiter, [])
+
+    Application.put_env(
+      :gamend_web,
+      GamendWeb.Plugs.RateLimiter,
+      Keyword.merge(limiter, enabled: true, signaling_ice_limit: 1)
+    )
+
+    on_exit(fn -> Application.put_env(:gamend_web, GamendWeb.Plugs.RateLimiter, limiter) end)
+
+    {:ok, _reply, socket} = join_signaling(host, lobby.id)
+
+    ice = %{
+      "target" => Ecto.UUID.generate(),
+      "candidate" => "candidate:1 1 udp 1 1.2.3.4 5 typ host"
+    }
+
+    ref = push(socket, "ice", ice)
+    refute_reply ref, :error, %{error: "ice_rate_limited"}
+
+    ref = push(socket, "ice", ice)
+    assert_reply ref, :error, %{error: "ice_rate_limited"}
+  end
 end

@@ -19,9 +19,10 @@ defmodule Gamend.Repo.AdvisoryLock do
 
   ## Usage
 
-  Always call within a `Repo.transaction`:
+  Always call within a transaction, opened through `Gamend.AfterCommit` so
+  broadcasts inside wait for the commit (or use `Gamend.Lock.serialize/3`):
 
-      Repo.transaction(fn ->
+      Gamend.AfterCommit.transaction(fn ->
         AdvisoryLock.lock(:lobby, lobby.id)
         count = count_members(lobby.id)
         if count >= lobby.max_users, do: Repo.rollback(:full)
@@ -97,6 +98,37 @@ defmodule Gamend.Repo.AdvisoryLock do
   @spec lock(atom() | String.t(), String.t()) :: :ok
   def lock(namespace, resource_id) when is_binary(resource_id) do
     maybe_advisory_lock(namespace_id(namespace), hash_resource_id(resource_id))
+  end
+
+  @doc """
+  Takes the session-level lock for `(namespace, resource_id)` on the current
+  connection, waiting as long as it takes. It is held until `unlock_session/2`
+  or until the connection closes, not until a transaction ends, for a job that
+  commits many transactions of its own under one lock (`Gamend.Lock.exclusive/3`).
+
+  Postgres only. Call it inside `Repo.checkout/2`, so the lock, the work and
+  the unlock share one connection. It shares its key space with `lock/2`.
+  """
+  @spec lock_session(atom() | String.t(), String.t()) :: :ok
+  def lock_session(namespace, resource_id) when is_binary(resource_id) do
+    Gamend.Repo.query!(
+      "SELECT pg_advisory_lock($1, $2)",
+      [namespace_id(namespace), hash_resource_id(resource_id)],
+      timeout: :infinity
+    )
+
+    :ok
+  end
+
+  @doc "Releases a lock `lock_session/2` took on this connection."
+  @spec unlock_session(atom() | String.t(), String.t()) :: :ok
+  def unlock_session(namespace, resource_id) when is_binary(resource_id) do
+    Gamend.Repo.query!("SELECT pg_advisory_unlock($1, $2)", [
+      namespace_id(namespace),
+      hash_resource_id(resource_id)
+    ])
+
+    :ok
   end
 
   @doc """

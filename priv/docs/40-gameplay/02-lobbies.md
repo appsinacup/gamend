@@ -14,7 +14,7 @@ POST /lobbies creates a lobby with the caller as host and first member; POST /lo
 |---|---|
 | `is_hidden` | Out of GET /lobbies and the lobby-list feed. Members and the pinned WebRTC host still see it; to everyone else GET /lobbies/:id answers 404, not 403 - a 403 would confirm the lobby exists. Joining one by id is refused too (403 `cannot_join`): a hidden lobby is invite-only, and server-side code may pass `bypass_hidden` to seat a player in it. |
 | `is_locked` | Nobody can join, and the lobby cannot be spectated. Server-side code may pass `bypass_lock`; no player-facing surface does. |
-| `password` | Stored as a bcrypt hash; join must carry the password. Quick join never considers passworded lobbies. |
+| `password` | Stored as an Argon2id hash, like account passwords (older bcrypt hashes still verify); join must carry the password. Quick join never considers passworded lobbies. |
 | `max_users` | Seat cap (default 8), enforced under the lobby's advisory lock. Shrinking it below the current member count is refused with `too_small`. |
 
 POST /lobbies/quick_join finds a room instead of asking the player to pick one: it tries the oldest visible, unlocked, passwordless candidates whose max_users and metadata match the request, skips any that are full or that the game's before_lobby_join hook rejects, and creates a fresh lobby with the caller as host when none will take them.

@@ -46,6 +46,7 @@ defmodule GamendWeb.UserChannel do
 
   alias Gamend.Accounts
   alias Gamend.Accounts.Scope
+  alias Gamend.Accounts.StalePresenceSweeper
   alias Gamend.Accounts.User
   alias Gamend.Friends
   alias Gamend.Groups
@@ -65,9 +66,9 @@ defmodule GamendWeb.UserChannel do
   # Separate ICE candidate budget — prevents ICE flooding from starving
   # other channel events. A typical WebRTC session sends 5–30 candidates.
 
-  # Interval for periodic presence refresh (keeps StalePresenceSweeper from
-  # marking actively connected users as offline).  Default: 3 minutes.
-  @presence_refresh_interval :timer.minutes(3)
+  # Periodic presence refresh keeps StalePresenceSweeper from marking actively
+  # connected users as offline; its interval follows the sweeper's threshold
+  # (`Gamend.Accounts.StalePresenceSweeper.heartbeat_ms/0`).
 
   @impl true
   def join("user:" <> user_id_str, _payload, socket) do
@@ -321,7 +322,7 @@ defmodule GamendWeb.UserChannel do
 
     # Start periodic presence refresh so the StalePresenceSweeper doesn't
     # mark this user offline while the WebSocket is still open.
-    Process.send_after(self(), :refresh_presence, @presence_refresh_interval)
+    Process.send_after(self(), :refresh_presence, StalePresenceSweeper.heartbeat_ms())
 
     {:noreply, socket}
   end
@@ -372,7 +373,7 @@ defmodule GamendWeb.UserChannel do
   def handle_info(:refresh_presence, socket) do
     Accounts.touch_last_seen_by_id(socket.assigns.current_scope.user_id)
 
-    Process.send_after(self(), :refresh_presence, @presence_refresh_interval)
+    Process.send_after(self(), :refresh_presence, StalePresenceSweeper.heartbeat_ms())
     {:noreply, socket}
   end
 

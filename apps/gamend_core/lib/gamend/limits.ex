@@ -135,6 +135,12 @@ defmodule Gamend.Limits do
     doc: "Live (non-disabled) device tokens per user."
   )
 
+  # ── API tokens ──────────────────────────────────────────
+  setting(:max_api_tokens_per_user, :integer,
+    default: 10,
+    doc: "Personal API tokens one user may hold, revoked ones not counted."
+  )
+
   # Byte caps (not characters): FCM and APNs limit the wire payload to 4096
   # bytes, so only byte caps can guarantee deliverability.
   setting(:max_push_title, :integer, default: 255)
@@ -198,6 +204,16 @@ defmodule Gamend.Limits do
   setting(:max_matchmaking_players, :integer,
     default: 64,
     doc: "Hard cap on a ticket's own max_players setting."
+  )
+
+  setting(:matchmaking_default_min_players, :integer,
+    default: 2,
+    doc: "Smallest match a ticket forms when it does not say."
+  )
+
+  setting(:matchmaking_default_max_players, :integer,
+    default: 5,
+    doc: "Largest match a ticket forms when it does not say. At most max_matchmaking_players."
   )
 
   setting(:max_matchmaking_params_size, :integer,

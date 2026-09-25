@@ -25,6 +25,8 @@ POST /matchmaking/tickets ──► ticket (queued)
         "match_found" pushed on each player's user channel
 ```
 
+A ticket may set its own min_players and max_players; one that leaves them out gets the server's, GAMEND_LIMITS_MATCHMAKING_DEFAULT_MIN_PLAYERS (2) and GAMEND_LIMITS_MATCHMAKING_DEFAULT_MAX_PLAYERS (5).
+
 Parameters match exactly: a ticket queued with map=dust2 never joins one with map=inferno. Skill bands, regions or modes are therefore encoded by the game client (or a server hook) as parameter values, and each distinct combination forms its own queue.
 
 Blacklists are applied while the group is being formed, not after: two players who have blocked each other are never put in the same match, and each is matched with someone else instead. A player blocked with everyone ahead of them in the queue is skipped over rather than allowed to stall the players behind them. See the Friends & Blacklist guide.

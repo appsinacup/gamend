@@ -85,4 +85,84 @@ defmodule GamendWeb.AbuseLimitsTest do
       end)
     end
   end
+
+  describe "IPv6 clients are limited per /64" do
+    setup do
+      previous = Application.get_env(:gamend_web, GamendWeb.Plugs.RateLimiter, [])
+
+      Application.put_env(
+        :gamend_web,
+        GamendWeb.Plugs.RateLimiter,
+        Keyword.merge(previous, enabled: true, auth_limit: 2, auth_window_ms: 60_000)
+      )
+
+      on_exit(fn ->
+        Application.put_env(:gamend_web, GamendWeb.Plugs.RateLimiter, previous)
+      end)
+
+      :ok
+    end
+
+    test "ip_key/1: IPv4 as itself, IPv6 by /64, IPv4-mapped as the IPv4" do
+      assert GamendWeb.RateLimit.ip_key({203, 0, 113, 7}) == "203.0.113.7"
+      assert GamendWeb.RateLimit.ip_key({0x2001, 0xDB8, 1, 2, 3, 4, 5, 6}) == "2001:db8:1:2::/64"
+      assert GamendWeb.RateLimit.ip_key({0, 0, 0, 0, 0, 0xFFFF, 0xCB00, 0x7107}) == "203.0.113.7"
+      assert GamendWeb.RateLimit.ip_key("2001:db8:1:2:ffff::1") == "2001:db8:1:2::/64"
+      assert GamendWeb.RateLimit.ip_key("unknown") == "unknown"
+    end
+
+    test "addresses in one /64 share the auth bucket; another /64 does not" do
+      login = fn ip ->
+        %{build_conn() | remote_ip: ip}
+        |> post("/api/v1/login", %{email: "nobody@example.com", password: "wrong password"})
+      end
+
+      refute login.({0x2001, 0xDB8, 0xAB, 1, 0, 0, 0, 1}).status == 429
+      refute login.({0x2001, 0xDB8, 0xAB, 1, 0xA, 0xB, 0xC, 0xD}).status == 429
+      assert login.({0x2001, 0xDB8, 0xAB, 1, 0xF, 0xF, 0xF, 0xF}).status == 429
+
+      refute login.({0x2001, 0xDB8, 0xAB, 2, 0, 0, 0, 1}).status == 429
+    end
+  end
+
+  describe "the HTTP rate limiter" do
+    setup do
+      previous = Application.get_env(:gamend_web, GamendWeb.Plugs.RateLimiter, [])
+
+      Application.put_env(
+        :gamend_web,
+        GamendWeb.Plugs.RateLimiter,
+        Keyword.merge(previous, enabled: true, auth_limit: 1, auth_window_ms: 60_000)
+      )
+
+      on_exit(fn ->
+        Application.put_env(:gamend_web, GamendWeb.Plugs.RateLimiter, previous)
+      end)
+
+      :ok
+    end
+
+    test "refuses a request over its limit before reading the body" do
+      login = fn ip, body ->
+        %{build_conn() | remote_ip: ip}
+        |> put_req_header("content-type", "application/json")
+        |> post("/api/v1/login", body)
+      end
+
+      ip = {198, 51, 100, 21}
+      _ = login.(ip, ~s({"email": "a@example.com", "password": "x"}))
+
+      # Malformed JSON: had the body been parsed first, this would be a 400.
+      assert login.(ip, "{not json").status == 429
+    end
+
+    test "counts a locale-prefixed browser login against the auth bucket" do
+      login = fn ->
+        post(%{build_conn() | remote_ip: {198, 51, 100, 22}}, "/ro/users/log_in", %{})
+      end
+
+      refute login.().status == 429
+      assert login.().status == 429
+    end
+  end
 end

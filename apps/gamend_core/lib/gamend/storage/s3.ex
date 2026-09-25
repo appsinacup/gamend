@@ -47,25 +47,33 @@ defmodule Gamend.Storage.S3 do
     match?({:ok, _}, bucket() |> S3.head_object(key) |> request())
   end
 
+  # With no `public_url` the bucket is private. A signed link expires, so the URL
+  # handed out to be stored is our own `/storage/<key>`, which redirects to a
+  # fresh one: a signed link saved as a player's `profile_url` stopped loading an
+  # hour after the upload.
   @impl true
   def url(key, opts) do
     case Gamend.Settings.get(Gamend.Storage, :public_url) do
       nil ->
-        {:ok, url} =
-          S3.presigned_url(aws_config(), :get, bucket(), key,
-            expires_in: Keyword.get(opts, :expires_in, 3600)
-          )
-
-        url
+        if Keyword.get(opts, :signed, false), do: signed_url(key), else: "/storage/#{key}"
 
       base ->
         "#{String.trim_trailing(base, "/")}/#{key}"
     end
   end
 
+  defp signed_url(key) do
+    {:ok, url} =
+      S3.presigned_url(aws_config(), :get, bucket(), key,
+        expires_in: Gamend.Storage.signed_url_seconds()
+      )
+
+    url
+  end
+
   @impl true
   def presigned_upload(key, opts) do
-    expires_in = Keyword.get(opts, :expires_in, 600)
+    expires_in = Keyword.get_lazy(opts, :expires_in, &Gamend.Storage.upload_ttl_seconds/0)
     content_type = Keyword.get(opts, :content_type)
 
     case S3.presigned_url(aws_config(), :put, bucket(), key, expires_in: expires_in) do

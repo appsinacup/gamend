@@ -892,6 +892,11 @@ msgstr "Satın al"
 msgid "Cancel renewal"
 msgstr "Yenilemeyi iptal et"
 
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:47
+#, elixir-autogen, elixir-format
+msgid "Manage billing"
+msgstr "Ödemeleri yönet"
+
 #: lib/gamend_web/live/user_live/settings/payments_tab.ex:234
 #, elixir-autogen, elixir-format
 msgid "Cancels"
@@ -1086,7 +1091,7 @@ msgstr "Ürün"
 msgid "Provider"
 msgstr "Sağlayıcı"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:44
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:47
 #, elixir-autogen, elixir-format
 msgid "Purchases"
 msgstr "Satın alımlar"

@@ -142,6 +142,26 @@ defmodule Gamend.KV do
   end
 
   @doc ~S"""
+    Delete every entry scoped to a lobby, in one statement: for deleting the lobby.
+    
+    The per-entry cache invalidations and `kv_deleted` broadcasts wait for the
+    enclosing transaction to commit (`Gamend.AfterCommit`). One `delete/2` per
+    entry cost a statement and two cache round-trips each while the caller held
+    the lobby's lock. Returns the number of entries deleted.
+    
+  """
+  @spec delete_lobby_entries(Ecto.UUID.t()) :: non_neg_integer()
+  def delete_lobby_entries(_lobby_id) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.KV.delete_lobby_entries/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Delete every entry a user holds inside one lobby.
     
     Called when a user stops being a member of a lobby, so per-member lobby state

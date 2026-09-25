@@ -9,11 +9,11 @@ defmodule Gamend.Accounts.StalePresenceSweeper do
 
   ## Configuration
 
-      config :gamend_core, Gamend.Accounts.StalePresenceSweeper,
-        interval_ms: 120_000,       # how often to run the sweep (default 2 min)
-        stale_threshold_s: 300,     # mark offline if last_seen > 5 min ago
-        enabled: true               # set false to disable the sweep entirely
+  `interval_ms` and `stale_threshold_s` are settings (`GAMEND_PRESENCE_*`).
+  `enabled: false` in the app config turns the sweep off entirely (tests).
 
+  A connected socket refreshes `last_seen_at` on a heartbeat derived from the
+  threshold (`heartbeat_ms/0`), so a live player is never swept.
   """
 
   use GenServer
@@ -25,8 +25,27 @@ defmodule Gamend.Accounts.StalePresenceSweeper do
   alias Gamend.Accounts.User
   alias Gamend.Repo
 
-  @default_interval_ms 120_000
-  @default_stale_threshold_s 300
+  use Gamend.Settings.Provider,
+    app: :gamend_core,
+    group: :presence,
+    label: "Presence"
+
+  setting(:interval_ms, :integer,
+    default: 120_000,
+    doc: "How often users still marked online after a crash are looked for, in ms."
+  )
+
+  setting(:stale_threshold_s, :integer,
+    default: 300,
+    doc:
+      "Mark a user offline once their last_seen_at is this many seconds old. Connected " <>
+        "sockets refresh it at three fifths of this, at most every 3 minutes."
+  )
+
+  # A connected socket refreshes `last_seen_at` at least this often, whatever
+  # the threshold: the abandoned-lobby reaper (15 minutes by default) reads the
+  # same column, so a long threshold must not slow the refresh down.
+  @max_heartbeat_ms :timer.minutes(3)
 
   # ── Public API ──────────────────────────────────────────────────────────────
 
@@ -42,6 +61,19 @@ defmodule Gamend.Accounts.StalePresenceSweeper do
     Application.get_env(:gamend_core, __MODULE__, [])
   end
 
+  @doc """
+  How often a connected socket refreshes `last_seen_at`: three fifths of
+  `stale_threshold_s`, so two refreshes fit before a user reads as stale, and
+  never less often than every 3 minutes.
+  """
+  @spec heartbeat_ms() :: pos_integer()
+  def heartbeat_ms do
+    (threshold_s() * 600) |> min(@max_heartbeat_ms) |> max(1_000)
+  end
+
+  defp interval_ms, do: max(Gamend.Settings.get(__MODULE__, :interval_ms), 1_000)
+  defp threshold_s, do: max(Gamend.Settings.get(__MODULE__, :stale_threshold_s), 1)
+
   # ── GenServer callbacks ─────────────────────────────────────────────────────
 
   @impl true
@@ -50,7 +82,7 @@ defmodule Gamend.Accounts.StalePresenceSweeper do
     enabled = Keyword.get(conf, :enabled, true)
 
     if enabled do
-      interval = Keyword.get(conf, :interval_ms, @default_interval_ms)
+      interval = interval_ms()
       # A hard stop skips every UserChannel.terminate/2, so the node comes
       # back with all previously connected users still is_online=true. Sweep
       # right away (as a message, so init never blocks the supervision tree
@@ -71,11 +103,8 @@ defmodule Gamend.Accounts.StalePresenceSweeper do
   end
 
   def handle_info(:sweep, state) do
-    conf = config()
-    interval = Keyword.get(conf, :interval_ms, @default_interval_ms)
-    threshold_s = Keyword.get(conf, :stale_threshold_s, @default_stale_threshold_s)
-
-    swept = do_sweep(threshold_s)
+    interval = interval_ms()
+    swept = do_sweep(threshold_s())
 
     if swept > 0 do
       Logger.info("StalePresenceSweeper: marked #{swept} stale user(s) offline")

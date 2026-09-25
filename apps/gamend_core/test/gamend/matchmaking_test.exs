@@ -42,6 +42,17 @@ defmodule Gamend.MatchmakingTest do
       assert ticket.timeout_ms == Gamend.Limits.get(:matchmaking_timeout_ms)
     end
 
+    test "a ticket that leaves its size out gets the server's defaults" do
+      for {key, value} <- [matchmaking_default_min_players: 4, matchmaking_default_max_players: 8] do
+        Gamend.SettingsHelpers.put(:gamend_core, Gamend.Limits, key, value)
+        on_exit(fn -> Gamend.SettingsHelpers.delete(:gamend_core, Gamend.Limits, key) end)
+      end
+
+      {:ok, ticket} = Matchmaking.join(user(), %{mode: "squads"})
+
+      assert {ticket.min_players, ticket.max_players} == {4, 8}
+    end
+
     test "rejects max_players below min_players" do
       assert {:error, changeset} = Matchmaking.join(user(), %{}, 4, 2)
       assert %{max_players: _} = errors_on(changeset)

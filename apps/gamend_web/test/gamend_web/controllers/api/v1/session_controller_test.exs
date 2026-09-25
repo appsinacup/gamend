@@ -1,8 +1,10 @@
 defmodule GamendWeb.Api.V1.SessionControllerTest do
   use GamendWeb.ConnCase, async: false
+  use Oban.Testing, repo: Gamend.Repo
 
   alias Gamend.Accounts.User
   alias Gamend.Repo
+  alias GamendWeb.Auth.Guardian
 
   @valid_email "testuser@example.com"
   @valid_password "hello world!"
@@ -218,6 +220,52 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
     end
   end
 
+  describe "token lifetimes" do
+    setup do
+      accounts = Application.get_env(:gamend_core, Gamend.Accounts, [])
+      on_exit(fn -> Application.put_env(:gamend_core, Gamend.Accounts, accounts) end)
+      :ok
+    end
+
+    test "login and refresh follow the TTL settings", %{conn: conn} do
+      put_accounts_setting(:access_token_ttl_minutes, 2)
+      put_accounts_setting(:refresh_token_ttl_days, 7)
+
+      login = post(conn, "/api/v1/login", %{email: @valid_email, password: @valid_password})
+
+      assert %{"data" => %{"access_token" => access, "refresh_token" => refresh} = data} =
+               json_response(login, 200)
+
+      assert data["expires_in"] == 120
+      assert lifetime(access) == 120
+      assert lifetime(refresh) == 7 * 86_400
+
+      refreshed = post(build_conn(), "/api/v1/refresh", %{refresh_token: refresh})
+
+      assert %{"data" => %{"access_token" => new_access, "expires_in" => 120}} =
+               json_response(refreshed, 200)
+
+      assert lifetime(new_access) == 120
+    end
+
+    test "a TTL below one counts as one", %{conn: conn} do
+      put_accounts_setting(:access_token_ttl_minutes, 0)
+      put_accounts_setting(:refresh_token_ttl_days, -3)
+
+      login = post(conn, "/api/v1/login", %{email: @valid_email, password: @valid_password})
+
+      assert %{"data" => %{"refresh_token" => refresh, "expires_in" => 60}} =
+               json_response(login, 200)
+
+      assert lifetime(refresh) == 86_400
+    end
+  end
+
+  defp lifetime(token) do
+    {:ok, %{"exp" => exp, "iat" => iat}} = Guardian.decode_and_verify(token)
+    exp - iat
+  end
+
   defp put_accounts_setting(key, value) do
     existing = Application.get_env(:gamend_core, Gamend.Accounts, [])
     Application.put_env(:gamend_core, Gamend.Accounts, Keyword.put(existing, key, value))
@@ -225,6 +273,13 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
 
   defmodule FailNotifier do
     def deliver_confirmation_instructions(_user, _url), do: {:error, :smtp_failed}
+  end
+
+  defmodule RefuseRegisterHooks do
+    use Gamend.TestSupport.NoopHooks
+
+    @impl true
+    def before_user_register(_user, _attrs), do: {:error, "closed beta"}
   end
 
   describe "POST /api/v1/register" do
@@ -252,8 +307,10 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       assert json_response(login, 200)["data"]["user_id"] == user_id
     end
 
-    test "sends the confirmation email, as browser sign-up does", %{conn: conn} do
+    test "queues the confirmation email, as browser sign-up does", %{conn: conn} do
       post(conn, "/api/v1/register", %{email: "mailed@example.com", password: @valid_password})
+
+      assert %{success: 1} = Oban.drain_queue(queue: :mailers)
 
       Swoosh.TestAssertions.assert_email_sent(
         to: "mailed@example.com",
@@ -261,7 +318,7 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       )
     end
 
-    test "keeps no account when its email cannot be sent", %{conn: conn} do
+    test "answers without waiting for the email; a failed send keeps the account", %{conn: conn} do
       notifier = Application.get_env(:gamend_web, :user_notifier)
       Application.put_env(:gamend_web, :user_notifier, __MODULE__.FailNotifier)
 
@@ -271,11 +328,27 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
           else: Application.delete_env(:gamend_web, :user_notifier)
       end)
 
-      failed =
+      created =
         post(conn, "/api/v1/register", %{email: "bounced@example.com", password: @valid_password})
 
-      assert json_response(failed, 503)["error"] == "email_delivery_failed"
-      refute Repo.get_by(User, email: "bounced@example.com")
+      assert json_response(created, 201)
+      assert [job] = all_enqueued(worker: Gamend.Accounts.ConfirmationMailer)
+      assert {:error, :smtp_failed} = perform_job(Gamend.Accounts.ConfirmationMailer, job.args)
+      assert Repo.get_by(User, email: "bounced@example.com")
+    end
+
+    test "a plugin that refuses the sign-up is 403 registration_refused", %{conn: conn} do
+      hooks = Application.get_env(:gamend_core, :hooks_module)
+      Application.put_env(:gamend_core, :hooks_module, __MODULE__.RefuseRegisterHooks)
+      on_exit(fn -> Application.put_env(:gamend_core, :hooks_module, hooks) end)
+
+      refused =
+        post(conn, "/api/v1/register", %{email: "beta@example.com", password: @valid_password})
+
+      assert %{"error" => "registration_refused", "message" => "closed beta"} =
+               json_response(refused, 403)
+
+      refute Repo.get_by(User, email: "beta@example.com")
     end
 
     test "keeps a username the caller picked", %{conn: conn} do

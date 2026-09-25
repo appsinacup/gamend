@@ -37,8 +37,6 @@ defmodule Gamend.Push do
 
   @type user_id :: Ecto.UUID.t()
 
-  @push_cache_ttl_ms 60_000
-
   # ---------------------------------------------------------------------------
   # Cache helpers
   # ---------------------------------------------------------------------------
@@ -333,7 +331,7 @@ defmodule Gamend.Push do
   @spec user_has_live_tokens?(user_id()) :: boolean()
   @decorate cacheable(
               key: {:push, :has_tokens, push_version(user_id), user_id},
-              opts: [ttl: @push_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def user_has_live_tokens?(user_id) when is_binary(user_id) do
     Repo.exists?(from(t in PushToken, where: t.user_id == ^user_id and is_nil(t.disabled_at)))

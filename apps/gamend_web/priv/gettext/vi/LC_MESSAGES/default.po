@@ -892,6 +892,11 @@ msgstr "Mua"
 msgid "Cancel renewal"
 msgstr "Hủy gia hạn"
 
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:47
+#, elixir-autogen, elixir-format
+msgid "Manage billing"
+msgstr "Quản lý thanh toán"
+
 #: lib/gamend_web/live/user_live/settings/payments_tab.ex:234
 #, elixir-autogen, elixir-format
 msgid "Cancels"
@@ -1086,7 +1091,7 @@ msgstr "Sản phẩm"
 msgid "Provider"
 msgstr "Nhà cung cấp"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:44
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:47
 #, elixir-autogen, elixir-format
 msgid "Purchases"
 msgstr "Giao dịch mua"

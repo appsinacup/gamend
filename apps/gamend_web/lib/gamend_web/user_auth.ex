@@ -15,34 +15,25 @@ defmodule GamendWeb.UserAuth do
 
   alias Gamend.Accounts
   alias Gamend.Accounts.Scope
+  alias Gamend.Accounts.UserToken
 
-  # Make the remember me cookie valid for 14 days. This should match
-  # the session validity setting in UserToken.
-  @max_cookie_age_in_days 14
+  # The remember-me cookie lives exactly as long as the session token it holds:
+  # both come from `auth.session_days` (`UserToken.session_validity_in_days/0`).
   @remember_me_cookie "_gamend_web_user_remember_me"
-  @remember_me_options [
-    sign: true,
-    max_age: @max_cookie_age_in_days * 24 * 60 * 60,
-    same_site: "Lax"
-  ]
-
-  # How old the session token should be before a new one is issued. When a request is made
-  # with a session token older than this value, then a new session token will be created
-  # and the session and remember-me cookies (if set) will be updated with the new token.
-  # Lowering this value will result in more tokens being created by active users. Increasing
-  # it will result in less time before a session token expires for a user to get issued a new
-  # token. This can be set to a value greater than `@max_cookie_age_in_days` to disable
-  # the reissuing of tokens completely.
-  @session_reissue_age_in_days 7
 
   @doc """
   Logs the user in.
 
   Redirects to the session's `:user_return_to` path
   or falls back to the `signed_in_path/1`.
+
+  Signing in on the website is how an account scheduled for deletion is kept:
+  a person is at the keyboard here, where an API sign-in may be a game client
+  signing in on its own (`GamendWeb.Auth.Tokens.refusal/1`).
   """
   def log_in_user(conn, user, params \\ %{}) do
     user_return_to = get_session(conn, :user_return_to)
+    {conn, user} = keep_scheduled_account(conn, user)
 
     conn = create_or_extend_session(conn, user, params)
 
@@ -62,6 +53,21 @@ defmodule GamendWeb.UserAuth do
     end
 
     conn |> redirect(to: user_return_to || signed_in_path(conn))
+  end
+
+  defp keep_scheduled_account(conn, user) do
+    if Accounts.deletion_scheduled?(user) do
+      case Accounts.cancel_deletion(user) do
+        {:ok, user} ->
+          {put_flash(conn, :info, gettext("Welcome back. Your account will not be deleted.")),
+           user}
+
+        {:error, _changeset} ->
+          {conn, user}
+      end
+    else
+      {conn, user}
+    end
   end
 
   @doc """
@@ -117,11 +123,13 @@ defmodule GamendWeb.UserAuth do
     end
   end
 
-  # Reissue the session token if it is older than the configured reissue age.
+  # A session token is reissued once it is half its validity old: an active
+  # user is never logged out, and an idle one lasts the whole window from
+  # their last visit. 7 days at the 14-day default.
   defp maybe_reissue_user_session_token(conn, user, token_inserted_at) do
-    token_age = DateTime.diff(DateTime.utc_now(:second), token_inserted_at, :day)
+    token_age = DateTime.diff(DateTime.utc_now(:second), token_inserted_at)
 
-    if token_age >= @session_reissue_age_in_days do
+    if token_age >= div(session_seconds(), 2) do
       create_or_extend_session(conn, user, %{})
     else
       conn
@@ -187,8 +195,14 @@ defmodule GamendWeb.UserAuth do
   defp write_remember_me_cookie(conn, token) do
     conn
     |> put_session(:user_remember_me, true)
-    |> put_resp_cookie(@remember_me_cookie, token, @remember_me_options)
+    |> put_resp_cookie(@remember_me_cookie, token,
+      sign: true,
+      max_age: session_seconds(),
+      same_site: "Lax"
+    )
   end
+
+  defp session_seconds, do: UserToken.session_validity_in_days() * 86_400
 
   defp put_token_in_session(conn, token) do
     conn
@@ -288,7 +302,10 @@ defmodule GamendWeb.UserAuth do
   def on_mount(:require_sudo_mode, _params, session, socket) do
     socket = mount_current_scope(socket, session)
 
-    if Accounts.sudo_mode?(Scope.user(socket.assigns.current_scope), -10) do
+    if Accounts.sudo_mode?(
+         Scope.user(socket.assigns.current_scope),
+         -Accounts.sudo_mode_minutes()
+       ) do
       {:cont, socket}
     else
       socket =

@@ -255,9 +255,10 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
         </div>
         <div class="mt-4">
           <button
+            id="delete-account-button"
             phx-click="delete_user"
             class="btn btn-error"
-            data-confirm={gettext("Delete your account permanently? This cannot be undone.")}
+            data-confirm={delete_confirmation(Accounts.deletion_grace_days())}
           >
             {gettext("Delete account")}
           </button>
@@ -435,11 +436,26 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
   def handle_event("delete_user", _params, socket) do
     user = Shared.current_user(socket)
 
-    case Accounts.delete_user(user) do
-      {:ok, _deleted_user} ->
+    case Accounts.request_deletion(user) do
+      {:ok, :deleted} ->
         {:noreply,
          socket
          |> put_flash(:info, gettext("Success."))
+         |> redirect(external: ~p"/")}
+
+      {:ok, {:scheduled, _user, expired_tokens}} ->
+        GamendWeb.UserAuth.disconnect_sessions(expired_tokens)
+
+        {:noreply,
+         socket
+         |> put_flash(
+           :info,
+           ngettext(
+             "Your account will be deleted in %{count} day. Sign in before then to keep it.",
+             "Your account will be deleted in %{count} days. Sign in before then to keep it.",
+             Accounts.deletion_grace_days()
+           )
+         )
          |> redirect(external: ~p"/")}
 
       {:error, _changeset} ->
@@ -588,6 +604,17 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
       {:error, _} ->
         {:noreply, put_flash(socket, :error, gettext("Failed"))}
     end
+  end
+
+  defp delete_confirmation(0),
+    do: gettext("Delete your account permanently? This cannot be undone.")
+
+  defp delete_confirmation(days) do
+    ngettext(
+      "Delete your account? It will be deleted in %{count} day, and signing in before then keeps it.",
+      "Delete your account? It will be deleted in %{count} days, and signing in before then keeps it.",
+      days
+    )
   end
 
   # Rows in the Account card: every linked provider (a disabled one must stay

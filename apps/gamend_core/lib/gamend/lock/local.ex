@@ -18,4 +18,14 @@ defmodule Gamend.Lock.Local do
   def trans(key, fun) when is_function(fun, 0) do
     :global.trans({{__MODULE__, key}, self()}, fun)
   end
+
+  @doc """
+  As `trans/2`, on this node only. On Postgres the advisory lock is the
+  cluster-wide one; this queues a node's own callers in the BEAM, where waiting
+  is free, instead of each holding a pooled connection blocked on the database.
+  """
+  @spec trans_on_node(term(), (-> result)) :: result when result: term()
+  def trans_on_node(key, fun) when is_function(fun, 0) do
+    :global.trans({{__MODULE__, key}, self()}, fun, [node()])
+  end
 end

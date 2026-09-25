@@ -9,8 +9,6 @@ defmodule Gamend.Matchmaking.Broadcast do
 
   alias Gamend.Matchmaking.Constants
 
-  @pubsub Gamend.PubSub
-
   @doc "Notifies every matched user that a lobby has been found."
   @spec match_found([map()], Ecto.UUID.t()) :: :ok
   def match_found(tickets, lobby_id) do
@@ -22,8 +20,7 @@ defmodule Gamend.Matchmaking.Broadcast do
     }
 
     Enum.each(tickets, fn ticket ->
-      Phoenix.PubSub.broadcast(
-        @pubsub,
+      Gamend.Broadcast.publish(
         "matchmaking:user:#{ticket.user_id}",
         {:matchmaking_event, Constants.event_found(), payload}
       )

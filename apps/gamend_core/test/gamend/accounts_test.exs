@@ -1,7 +1,9 @@
 defmodule Gamend.AccountsTest do
   use Gamend.DataCase
+  use Oban.Testing, repo: Gamend.Repo
 
   alias Gamend.Accounts
+  alias Gamend.Accounts.ConfirmationMailer
 
   import Gamend.AccountsFixtures
   alias Gamend.Accounts.{User, UserToken}
@@ -123,7 +125,7 @@ defmodule Gamend.AccountsTest do
       assert linked.device_id == device_id
     end
 
-    test "register_user_and_deliver/3 succeeds when notifier delivers" do
+    test "register_user_and_deliver/3 queues the email; the job's link confirms the account" do
       # ensure there's already a user so we are not the first user (first user is auto-admin and skips email delivery)
       _existing = user_fixture()
 
@@ -131,17 +133,29 @@ defmodule Gamend.AccountsTest do
       attrs = valid_user_attributes(%{"email" => email})
 
       defmodule SuccessNotifier do
-        def deliver_confirmation_instructions(_user, _url), do: {:ok, :sent}
+        def deliver_confirmation_instructions(_user, url) do
+          send(self(), {:confirmation_url, url})
+          {:ok, :sent}
+        end
       end
 
       {:ok, user} =
         Accounts.register_user_and_deliver(attrs, fn t -> "http://x/#{t}" end, SuccessNotifier)
 
+      # Committed and queued; nothing sent, no token minted, until the job runs.
       assert Repo.get_by(Accounts.User, id: user.id)
-      assert Repo.get_by(Accounts.UserToken, user_id: user.id)
+      refute Repo.get_by(Accounts.UserToken, user_id: user.id)
+      assert [job] = all_enqueued(worker: ConfirmationMailer)
+      assert job.args["user_id"] == user.id
+      # The token is minted by the job: the queued args hold a placeholder.
+      assert job.args["url"] == "http://x/__gamend_confirm_token__"
+
+      assert :ok = perform_job(ConfirmationMailer, job.args)
+      assert_received {:confirmation_url, "http://x/" <> token}
+      assert {:ok, %User{confirmed_at: %DateTime{}}} = Accounts.confirm_user_by_token(token)
     end
 
-    test "register_user_and_deliver/3 rolls back when notifier fails" do
+    test "a failed confirmation send keeps the account, for the job to retry" do
       _existing = user_fixture()
 
       email = unique_user_email()
@@ -151,14 +165,28 @@ defmodule Gamend.AccountsTest do
         def deliver_confirmation_instructions(_user, _url), do: {:error, :smtp_failed}
       end
 
-      assert {:error, :smtp_failed} =
+      assert {:ok, user} =
                Accounts.register_user_and_deliver(
                  attrs,
                  fn t -> "http://x/#{t}" end,
                  FailNotifier
                )
 
-      refute Repo.get_by(Accounts.User, email: email)
+      assert [job] = all_enqueued(worker: ConfirmationMailer)
+      assert {:error, :smtp_failed} = perform_job(ConfirmationMailer, job.args)
+      assert Repo.get_by(Accounts.User, id: user.id)
+    end
+
+    test "the first user is the admin and gets no email" do
+      {:ok, user} =
+        Accounts.register_user_and_deliver(
+          valid_user_attributes(),
+          fn t -> "http://x/#{t}" end,
+          Gamend.Accounts.UserNotifier
+        )
+
+      assert user.is_admin
+      refute_enqueued(worker: ConfirmationMailer)
     end
   end
 

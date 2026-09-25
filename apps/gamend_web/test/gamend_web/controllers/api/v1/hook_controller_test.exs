@@ -128,10 +128,15 @@ defmodule GamendWeb.Api.V1.HookControllerTest do
     old_request_threshold =
       Application.get_env(:gamend_web, :slow_request_threshold_ms, :unset)
 
-    old_hook_threshold = Application.get_env(:gamend_core, :slow_hook_threshold_ms, :unset)
+    old_hook_settings = Application.get_env(:gamend_core, Gamend.Hooks.PluginManager, [])
 
     Application.put_env(:gamend_web, :slow_request_threshold_ms, -1.0)
-    Application.put_env(:gamend_core, :slow_hook_threshold_ms, -1.0)
+
+    Application.put_env(
+      :gamend_core,
+      Gamend.Hooks.PluginManager,
+      Keyword.put(old_hook_settings, :slow_threshold_ms, -1)
+    )
 
     try do
       body2 = %{"plugin" => plugin_name, "fn" => "greet", "args" => []}
@@ -157,7 +162,7 @@ defmodule GamendWeb.Api.V1.HookControllerTest do
       refute log =~ "secret-value"
     after
       restore_env(:slow_request_threshold_ms, old_request_threshold)
-      restore_core_env(:slow_hook_threshold_ms, old_hook_threshold)
+      Application.put_env(:gamend_core, Gamend.Hooks.PluginManager, old_hook_settings)
     end
 
     body3 = %{"plugin" => plugin_name, "fn" => "boom", "args" => []}
@@ -320,6 +325,4 @@ defmodule GamendWeb.Api.V1.HookControllerTest do
 
   defp restore_env(key, :unset), do: Application.delete_env(:gamend_web, key)
   defp restore_env(key, value), do: Application.put_env(:gamend_web, key, value)
-  defp restore_core_env(key, :unset), do: Application.delete_env(:gamend_core, key)
-  defp restore_core_env(key, value), do: Application.put_env(:gamend_core, key, value)
 end

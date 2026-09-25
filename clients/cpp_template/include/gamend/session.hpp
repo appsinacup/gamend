@@ -15,7 +15,7 @@ struct Session {
   std::string user_id;
   std::string username;      // empty when the sign-in did not say (OAuth)
   std::string display_name;
-  /// The access token's lifetime in seconds, as the server said (900).
+  /// The access token's lifetime in seconds, as the server said (900 by default).
   std::int64_t expires_in = 0;
   /// When the access token lapses, in Unix seconds; 0 when unknown.
   std::int64_t expires_at = 0;

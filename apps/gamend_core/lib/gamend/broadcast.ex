@@ -25,6 +25,24 @@ defmodule Gamend.Broadcast do
   """
   @spec best_effort(String.t(), term(), String.t() | nil) :: :ok
   def best_effort(topic, message, label \\ nil) do
+    Gamend.AfterCommit.defer(fn -> send_best_effort(topic, message, label) end)
+  end
+
+  @doc """
+  Broadcasts `message` on `topic` through `Gamend.PubSub` once the enclosing
+  transaction commits (`Gamend.AfterCommit`), or now outside one.
+
+  Subscribers then never see a write before it is visible, nor one a rollback
+  erases, and the broadcast never runs while a transaction holds the database.
+  Every broadcast in core goes through here; the cache's own invalidation
+  messages are the exception (`Gamend.Cache`).
+  """
+  @spec publish(String.t(), term()) :: :ok
+  def publish(topic, message) do
+    Gamend.AfterCommit.defer(fn -> Phoenix.PubSub.broadcast(Gamend.PubSub, topic, message) end)
+  end
+
+  defp send_best_effort(topic, message, label) do
     Phoenix.PubSub.broadcast(Gamend.PubSub, topic, message)
     :ok
   rescue

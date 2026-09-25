@@ -40,22 +40,41 @@ defmodule GamendWeb.UserSessionController do
   defp create(conn, %{"user" => user_params}, info) do
     %{"email" => email, "password" => password} = user_params
 
-    if user = Accounts.get_user_by_email_and_password(email, password) do
-      if Accounts.user_activated?(user) do
+    case Accounts.authenticate_by_password(email, password) do
+      {:ok, user} ->
+        if Accounts.user_activated?(user) do
+          conn
+          |> put_flash(:info, info)
+          |> UserAuth.log_in_user(user, user_params)
+        else
+          conn
+          |> put_flash(:error, gettext("Your account is pending activation."))
+          |> redirect(to: ~p"/users/log_in")
+        end
+
+      # Says as much for an address with no account: the lock counts per
+      # address, so it discloses nothing about which ones are registered.
+      {:error, {:locked, seconds}} ->
+        minutes = div(seconds + 59, 60)
+
         conn
-        |> put_flash(:info, info)
-        |> UserAuth.log_in_user(user, user_params)
-      else
-        conn
-        |> put_flash(:error, gettext("Your account is pending activation."))
+        |> put_flash(
+          :error,
+          ngettext(
+            "Too many failed attempts. Try again in %{count} minute, or sign in with an emailed link.",
+            "Too many failed attempts. Try again in %{count} minutes, or sign in with an emailed link.",
+            minutes
+          )
+        )
+        |> put_flash(:email, String.slice(email, 0, Gamend.Limits.get(:max_email)))
         |> redirect(to: ~p"/users/log_in")
-      end
-    else
-      # In order to prevent user enumeration attacks, don't disclose whether the email is registered.
-      conn
-      |> put_flash(:error, gettext("Failed"))
-      |> put_flash(:email, String.slice(email, 0, 160))
-      |> redirect(to: ~p"/users/log_in")
+
+      {:error, :invalid_credentials} ->
+        # In order to prevent user enumeration attacks, don't disclose whether the email is registered.
+        conn
+        |> put_flash(:error, gettext("Failed"))
+        |> put_flash(:email, String.slice(email, 0, Gamend.Limits.get(:max_email)))
+        |> redirect(to: ~p"/users/log_in")
     end
   end
 

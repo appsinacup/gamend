@@ -60,4 +60,36 @@ defmodule GamendWeb.Plugs.IpBanTest do
     :ok = IpBan.apply_remote(:unbanned, "203.0.113.13", nil)
     refute IpBan.banned?("203.0.113.13")
   end
+
+  describe "IPv6" do
+    test "a ban covers the address's /64, and is listed as the /64" do
+      :ok = IpBan.ban("2001:db8:5:6::1")
+
+      assert IpBan.banned?("2001:db8:5:6:ffff::2")
+      refute IpBan.banned?("2001:db8:5:7::1")
+      assert [{"2001:db8:5:6::/64", :infinity}] = IpBan.list_bans()
+      assert [%{ip: "2001:db8:5:6::/64"}] = IpBans.list_active()
+
+      :ok = IpBan.unban("2001:db8:5:6::abcd")
+      refute IpBan.banned?("2001:db8:5:6::1")
+    end
+
+    test "a ban stored per address, as before, still holds and still lifts" do
+      :ok = IpBan.apply_remote(:banned, "2001:db8:9::1", nil)
+      assert IpBan.banned?("2001:db8:9::1")
+
+      :ok = IpBan.unban("2001:db8:9::1")
+      refute IpBan.banned?("2001:db8:9::1")
+    end
+
+    test "the plug refuses any address in a banned /64" do
+      :ok = IpBan.ban("2001:db8:5:6::1")
+
+      conn = %{Phoenix.ConnTest.build_conn() | remote_ip: {0x2001, 0xDB8, 5, 6, 7, 7, 7, 7}}
+      assert IpBan.call(conn, []).halted
+
+      other = %{Phoenix.ConnTest.build_conn() | remote_ip: {0x2001, 0xDB8, 5, 8, 0, 0, 0, 1}}
+      refute IpBan.call(other, []).halted
+    end
+  end
 end

@@ -36,7 +36,6 @@ defmodule Gamend.Leaderboards do
   alias Gamend.Leaderboards.Record
   alias Gamend.Repo.AdvisoryLock
 
-  @leaderboards_cache_ttl_ms 60_000
   @records_cache_ttl_ms 10_000
 
   # Name of the ranking CTE used by `list_records_around_user/3`. One
@@ -199,7 +198,7 @@ defmodule Gamend.Leaderboards do
 
   @decorate cacheable(
               key: {:leaderboards, :get, leaderboards_cache_version(), id},
-              opts: [ttl: @leaderboards_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp get_leaderboard_cached(id) when is_binary(id) do
     Repo.get(Leaderboard, id)
@@ -307,7 +306,7 @@ defmodule Gamend.Leaderboards do
 
   @decorate cacheable(
               key: {:leaderboards, :list_groups, leaderboards_cache_version(), page, page_size},
-              opts: [ttl: @leaderboards_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp list_leaderboard_groups_cached(page, page_size) do
     offset = max((page - 1) * page_size, 0)
@@ -379,7 +378,7 @@ defmodule Gamend.Leaderboards do
 
   @decorate cacheable(
               key: {:leaderboards, :count_groups, leaderboards_cache_version()},
-              opts: [ttl: @leaderboards_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp count_leaderboard_groups_cached do
     from(lb in Leaderboard,
@@ -441,7 +440,7 @@ defmodule Gamend.Leaderboards do
               key:
                 {:leaderboards, :list, leaderboards_cache_version(), opts, order_by, page,
                  page_size},
-              opts: [ttl: @leaderboards_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp list_leaderboards_cached(opts, order_by, page, page_size) do
     opts
@@ -464,7 +463,7 @@ defmodule Gamend.Leaderboards do
 
   @decorate cacheable(
               key: {:leaderboards, :count, leaderboards_cache_version(), opts},
-              opts: [ttl: @leaderboards_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp count_leaderboards_cached(opts) do
     opts

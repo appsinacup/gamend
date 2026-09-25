@@ -156,6 +156,37 @@ defmodule Gamend.Content.MarkdownTest do
       assert html =~ ~s(href="/docs/manual/sub/thing")
     end
 
+    test "an index page's links resolve against its own folder, not its parent" do
+      html =
+        render!(
+          "[a](builds.md) [b](signing/10-macos.md#notary) [c](../principles.md)",
+          base_path: "/docs",
+          slug: "forge",
+          index: true
+        )
+
+      assert html =~ ~s(href="/docs/forge/builds")
+      assert html =~ ~s(href="/docs/forge/signing/macos#notary")
+      assert html =~ ~s(href="/docs/principles")
+    end
+
+    test "render_file/2 knows an index.md from its name" do
+      dir = Path.join(System.tmp_dir!(), "gs-md-index-#{System.unique_integer([:positive])}")
+      File.mkdir_p!(dir)
+      on_exit(fn -> File.rm_rf!(dir) end)
+
+      index = Path.join(dir, "index.md")
+      page = Path.join(dir, "20-page.md")
+      File.write!(index, "[a](builds.md)")
+      File.write!(page, "[a](builds.md)")
+
+      assert Markdown.render_file(index, base_path: "/docs", slug: "forge") =~
+               ~s(href="/docs/forge/builds")
+
+      assert Markdown.render_file(page, base_path: "/docs", slug: "forge/page") =~
+               ~s(href="/docs/forge/builds")
+    end
+
     test "absolute and external links are left alone, as is everything without a base path" do
       html = render!("[a](/docs/x) [b](https://e.com/a.md) [c](./y.md)", base_path: "/docs")
 

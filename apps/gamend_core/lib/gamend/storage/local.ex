@@ -11,9 +11,6 @@ defmodule Gamend.Storage.Local do
 
   @behaviour Gamend.Storage.Adapter
 
-  # How long an upload ticket is nominally valid (seconds) — advisory for clients.
-  @upload_ttl 600
-
   @impl true
   def put(key, data, _opts) do
     path = path_for(key)
@@ -53,7 +50,7 @@ defmodule Gamend.Storage.Local do
        url: "#{base_url()}/storage/upload?key=#{URI.encode_www_form(key)}",
        headers: headers,
        key: key,
-       expires_in: @upload_ttl
+       expires_in: Gamend.Storage.upload_ttl_seconds()
      }}
   end
 

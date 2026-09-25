@@ -18,13 +18,11 @@ defmodule Gamend.Groups.Invites do
   alias Gamend.Groups.Shared
   alias Gamend.Repo
 
-  @invite_cache_ttl_ms 60_000
-
   @doc "Count pending invitations for a user."
   @spec count_invitations(Ecto.UUID.t()) :: non_neg_integer()
   @decorate cacheable(
               key: {:group_invites, :count, Shared.invite_cache_version(user_id), user_id},
-              opts: [ttl: @invite_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def count_invitations(user_id) when is_binary(user_id) do
     import Ecto.Query
@@ -41,7 +39,7 @@ defmodule Gamend.Groups.Invites do
   @spec count_sent_invitations(Ecto.UUID.t()) :: non_neg_integer()
   @decorate cacheable(
               key: {:group_invites, :count_sent, Shared.invite_cache_version(user_id), user_id},
-              opts: [ttl: @invite_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def count_sent_invitations(user_id) when is_binary(user_id) do
     import Ecto.Query
@@ -280,8 +278,7 @@ defmodule Gamend.Groups.Invites do
     )
 
     # Real-time PubSub so the sender's UI updates immediately
-    Phoenix.PubSub.broadcast(
-      Gamend.PubSub,
+    Gamend.Broadcast.publish(
       "user:#{invite.sender_id}",
       {:group_invite_declined, %{group_id: group_id, user_id: user_id, reason: "full"}}
     )
@@ -320,8 +317,7 @@ defmodule Gamend.Groups.Invites do
     )
 
     # Broadcast so the sender's LiveView refreshes
-    Phoenix.PubSub.broadcast(
-      Gamend.PubSub,
+    Gamend.Broadcast.publish(
       "user:#{invite.sender_id}",
       {:group_invite_accepted, %{group_id: group_id}}
     )
@@ -350,7 +346,7 @@ defmodule Gamend.Groups.Invites do
               key:
                 {:group_invites, :list, Shared.invite_cache_version(user_id), user_id, page,
                  page_size},
-              opts: [ttl: @invite_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp do_list_invitations(user_id, page, page_size) do
     import Ecto.Query
@@ -384,7 +380,7 @@ defmodule Gamend.Groups.Invites do
               key:
                 {:group_invites, :list_sent, Shared.invite_cache_version(user_id), user_id, page,
                  page_size},
-              opts: [ttl: @invite_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp do_list_sent_invitations(user_id, page, page_size) do
     import Ecto.Query
@@ -490,8 +486,7 @@ defmodule Gamend.Groups.Invites do
         )
 
         # Notify the sender via PubSub
-        Phoenix.PubSub.broadcast(
-          Gamend.PubSub,
+        Gamend.Broadcast.publish(
           "user:#{invite.sender_id}",
           {:group_invite_declined, %{group_id: invite.group_id, user_id: user_id}}
         )

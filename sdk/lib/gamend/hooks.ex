@@ -593,10 +593,13 @@ defmodule Gamend.Hooks do
         end
       end
   """
-  defmacro __using__(_opts) do
-    quote do
-      @behaviour Gamend.Hooks
 
+  # The defaults `__using__/1` injects, as quoted code split across three
+  # attributes: one quote block this long is past credo's LongQuoteBlocks, and
+  # a function holding one counts every branch of the code it quotes.
+
+  default_callbacks =
+    quote do
       @impl true
       def after_startup, do: :ok
 
@@ -652,6 +655,9 @@ defmodule Gamend.Hooks do
       def before_group_create(_user, attrs), do: {:ok, attrs}
 
       @impl true
+      def before_group_join(user, group, opts), do: {:ok, {user, group, opts}}
+
+      @impl true
       def after_group_create(_group), do: :ok
 
       @impl true
@@ -683,7 +689,8 @@ defmodule Gamend.Hooks do
       def before_party_join(user, party), do: {:ok, {user, party}}
 
       @impl true
-      def before_party_kick(admin, target, party), do: {:ok, {admin, target, party}}
+      def before_party_kick(admin, target, party),
+        do: {:ok, {admin, target, party}}
 
       @impl true
       def before_purchase(_user, product), do: {:ok, product}
@@ -717,7 +724,12 @@ defmodule Gamend.Hooks do
 
       @impl true
       def after_party_leave(_user, _party_id), do: :ok
+    end
 
+  @default_callbacks default_callbacks
+
+  more_default_callbacks =
+    quote do
       @impl true
       def after_party_kick(_target, _leader, _party), do: :ok
 
@@ -779,7 +791,8 @@ defmodule Gamend.Hooks do
       def after_lobby_state_changed(_lobby, _from, _to), do: :ok
 
       @impl true
-      def before_lobby_kick(host, target, lobby), do: {:ok, {host, target, lobby}}
+      def before_lobby_kick(host, target, lobby),
+        do: {:ok, {host, target, lobby}}
 
       @impl true
       def after_lobby_kick(_host, _target, _lobby), do: :ok
@@ -815,7 +828,8 @@ defmodule Gamend.Hooks do
       def after_matchmaking_matched(_tickets, _lobby_id), do: :ok
 
       @impl true
-      def before_tournament_register(_user, tournament), do: {:ok, tournament}
+      def before_tournament_register(_user, tournament),
+        do: {:ok, tournament}
 
       @impl true
       def after_tournament_register(_user, _tournament), do: :ok
@@ -837,7 +851,12 @@ defmodule Gamend.Hooks do
 
       @impl true
       def after_tournament_finished(_tournament, _standings), do: :ok
+    end
 
+  @more_default_callbacks more_default_callbacks
+
+  overridable_callbacks =
+    quote do
       defoverridable after_startup: 0,
                      before_stop: 0,
                      before_group_delete: 1,
@@ -864,6 +883,7 @@ defmodule Gamend.Hooks do
                      before_lobby_create: 1,
                      after_lobby_create: 1,
                      before_group_create: 2,
+                     before_group_join: 3,
                      after_group_create: 1,
                      before_group_update: 2,
                      after_group_updated: 1,
@@ -918,6 +938,16 @@ defmodule Gamend.Hooks do
                      before_tournament_result: 2,
                      after_tournament_match_resolved: 1,
                      after_tournament_finished: 2
+    end
+
+  @overridable_callbacks overridable_callbacks
+  defmacro __using__(_opts) do
+    quote do
+      @behaviour Gamend.Hooks
+
+      unquote(@default_callbacks)
+      unquote(@more_default_callbacks)
+      unquote(@overridable_callbacks)
     end
   end
 

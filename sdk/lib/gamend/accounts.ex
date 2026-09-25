@@ -48,6 +48,36 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
+    Checks an email and password, counting failures per address
+    (`Gamend.Accounts.LoginLockouts`).
+    
+    `{:error, {:locked, seconds}}` when the address is locked, before the
+    password is looked at, and for the failure that locks it.
+    
+  """
+  @spec authenticate_by_password(String.t(), String.t()) ::
+          {:ok, Gamend.Accounts.User.t()}
+          | {:error, :invalid_credentials | {:locked, pos_integer()}}
+  def authenticate_by_password(_email, _password) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok,
+         %Gamend.Accounts.User{
+           id: 0,
+           email: "",
+           display_name: nil,
+           metadata: %{},
+           is_admin: false,
+           inserted_at: ~U[1970-01-01 00:00:00Z],
+           updated_at: ~U[1970-01-01 00:00:00Z]
+         }}
+
+      _ ->
+        raise "Gamend.Accounts.authenticate_by_password/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Broadcast a `friend_updated` event to all accepted friends.
     
     Used when public user data changes: map presence, display name, avatar,
@@ -134,6 +164,31 @@ defmodule Gamend.Accounts do
 
       _ ->
         raise "Gamend.Accounts.can_upload_avatar?/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Keep an account that was scheduled for deletion. A no-op for one that was not.
+    
+  """
+  @spec cancel_deletion(Gamend.Accounts.User.t()) ::
+          {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t()}
+  def cancel_deletion(_user) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok,
+         %Gamend.Accounts.User{
+           id: 0,
+           email: "",
+           display_name: nil,
+           metadata: %{},
+           is_admin: false,
+           inserted_at: ~U[1970-01-01 00:00:00Z],
+           updated_at: ~U[1970-01-01 00:00:00Z]
+         }}
+
+      _ ->
+        raise "Gamend.Accounts.cancel_deletion/1 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -666,6 +721,34 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
+    Days a player's own deletion waits (`auth.deletion_grace_days`); 0 deletes at once.
+  """
+  @spec deletion_grace_days() :: non_neg_integer()
+  def deletion_grace_days() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.Accounts.deletion_grace_days/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Whether `user` is waiting out a deletion grace period.
+  """
+  @spec deletion_scheduled?(Gamend.Accounts.User.t() | nil) :: boolean()
+  def deletion_scheduled?(_user) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :erlang.phash2(make_ref(), 2) == 0
+
+      _ ->
+        raise "Gamend.Accounts.deletion_scheduled?/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Delivers the magic link login instructions to the given user.
     
   """
@@ -778,6 +861,20 @@ defmodule Gamend.Accounts do
 
       _ ->
         raise "Gamend.Accounts.display_name/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Accounts whose deletion date has passed. For `Gamend.Retention`.
+  """
+  @spec due_deletions_query() :: Ecto.Query.t()
+  def due_deletions_query() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Accounts.due_deletions_query/0 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -1214,7 +1311,8 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
-    Gets a user by email and password.
+    Gets a user by email and password. `nil` for a wrong password, and for an
+    address locked by too many failures (`authenticate_by_password/2` says which).
     
     ## Examples
     
@@ -1758,13 +1856,13 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
-    Register a user and send the confirmation email inside a DB transaction.
+    Register a user and queue its confirmation email.
     
-    The function accepts a `confirmation_url_fun` which must be a function of arity 1
-    that receives the encoded token and returns the confirmation URL string.
-    
-    If sending the confirmation email fails the transaction is rolled back and
-    `{:error, reason}` is returned. On success it returns `{:ok, user}`.
+    `confirmation_url_fun` maps an encoded token to the confirmation URL. The
+    email goes out from the `mailers` queue (`Gamend.Accounts.ConfirmationMailer`),
+    enqueued in the transaction that inserts the user: the call returns once
+    both are committed, without waiting on SMTP, and a failed send is retried
+    there. The first user becomes the admin and gets no email.
     
   """
   @spec register_user_and_deliver(Gamend.Types.user_registration_attrs(), (String.t() ->
@@ -1790,13 +1888,13 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
-    Register a user and send the confirmation email inside a DB transaction.
+    Register a user and queue its confirmation email.
     
-    The function accepts a `confirmation_url_fun` which must be a function of arity 1
-    that receives the encoded token and returns the confirmation URL string.
-    
-    If sending the confirmation email fails the transaction is rolled back and
-    `{:error, reason}` is returned. On success it returns `{:ok, user}`.
+    `confirmation_url_fun` maps an encoded token to the confirmation URL. The
+    email goes out from the `mailers` queue (`Gamend.Accounts.ConfirmationMailer`),
+    enqueued in the transaction that inserts the user: the call returns once
+    both are committed, without waiting on SMTP, and a failed send is retried
+    there. The first user becomes the admin and gets no email.
     
   """
   @spec register_user_and_deliver(
@@ -1824,7 +1922,7 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
-    Register a user with an email and a password and send the confirmation
+    Register a user with an email and a password and queue the confirmation
     email, as `register_user_and_deliver/3` does for the browser form: how a
     game client signs up (`POST /api/v1/register`).
     
@@ -1854,6 +1952,34 @@ defmodule Gamend.Accounts do
 
       _ ->
         raise "Gamend.Accounts.register_user_with_password_and_deliver/3 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    A player deleting their own account.
+    
+    With `auth.deletion_grace_days` at 0 the account is deleted now, by
+    `delete_user/1`. Otherwise it is scheduled that many days out and signed out
+    everywhere (every session, access, refresh and personal API token), and
+    `Gamend.Retention` deletes it on the day unless its owner signs in on the
+    website first (`cancel_deletion/1`). An account already scheduled keeps its
+    date. The expired session tokens come back so the caller can disconnect
+    their LiveViews.
+    
+    Admin deletions and the retention sweeps call `delete_user/1` and never wait.
+    
+  """
+  @spec request_deletion(Gamend.Accounts.User.t()) ::
+          {:ok, :deleted}
+          | {:ok, {:scheduled, Gamend.Accounts.User.t(), [Gamend.Accounts.UserToken.t()]}}
+          | {:error, Ecto.Changeset.t()}
+  def request_deletion(_user) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Accounts.request_deletion/1 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -2067,8 +2193,9 @@ defmodule Gamend.Accounts do
   @doc ~S"""
     Checks whether the user is in sudo mode.
     
-    The user is in sudo mode when the last authentication was done no further
-    than 20 minutes ago. The limit can be given as second argument in minutes.
+    With one argument, the window is the one a sudo form is submitted in:
+    `sudo_mode_minutes/0` plus ten minutes to fill the form in. The limit can be
+    given as second argument in minutes (negative, as an offset from now).
     
   """
   @spec sudo_mode?(Gamend.Accounts.User.t()) :: boolean()
@@ -2082,13 +2209,7 @@ defmodule Gamend.Accounts do
     end
   end
 
-  @doc ~S"""
-    Checks whether the user is in sudo mode.
-    
-    The user is in sudo mode when the last authentication was done no further
-    than 20 minutes ago. The limit can be given as second argument in minutes.
-    
-  """
+  @doc false
   @spec sudo_mode?(Gamend.Accounts.User.t(), integer()) :: boolean()
   def sudo_mode?(_user, _minutes) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
@@ -2097,6 +2218,20 @@ defmodule Gamend.Accounts do
 
       _ ->
         raise "Gamend.Accounts.sudo_mode?/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    How recently a user must have signed in to open a sudo page (`auth.sudo_mode_minutes`).
+  """
+  @spec sudo_mode_minutes() :: pos_integer()
+  def sudo_mode_minutes() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.Accounts.sudo_mode_minutes/0 is a stub - only available at runtime on Gamend"
     end
   end
 

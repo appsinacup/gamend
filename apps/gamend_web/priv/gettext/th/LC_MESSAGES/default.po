@@ -892,6 +892,11 @@ msgstr "ซื้อ"
 msgid "Cancel renewal"
 msgstr "ยกเลิกการต่ออายุ"
 
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:47
+#, elixir-autogen, elixir-format
+msgid "Manage billing"
+msgstr "จัดการการชำระเงิน"
+
 #: lib/gamend_web/live/user_live/settings/payments_tab.ex:234
 #, elixir-autogen, elixir-format
 msgid "Cancels"
@@ -1086,7 +1091,7 @@ msgstr "สินค้า"
 msgid "Provider"
 msgstr "ผู้ให้บริการ"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:44
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:47
 #, elixir-autogen, elixir-format
 msgid "Purchases"
 msgstr "การซื้อ"

@@ -246,7 +246,7 @@ defmodule Gamend.Payments.Providers.Apple do
   defp key_id, do: config_value("APPLE_KEY_ID", :apple_key_id)
 
   defp http_client do
-    Application.get_env(:gamend_core, :payments_http_client, Req)
+    Application.get_env(:gamend_core, :payments_http_client, Gamend.HTTP)
   end
 
   defp jws_verifier do

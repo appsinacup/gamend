@@ -54,8 +54,11 @@ defmodule GamendWeb.Uploads do
   """
   def token_salt, do: "storage upload"
 
-  @doc "How long an upload ticket stays valid, in seconds."
-  def token_max_age, do: 900
+  @doc """
+  How long an upload ticket stays valid, in seconds: the `expires_in` the ticket
+  answers, so a client is never told a longer window than the token allows.
+  """
+  def token_max_age, do: Gamend.Storage.upload_ttl_seconds()
 
   # The local backend receives the upload on our own endpoint, so the key has to
   # travel signed: the receiver takes the key *from the token*, never from the

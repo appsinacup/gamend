@@ -201,6 +201,24 @@ defmodule Gamend.Payments do
     end
   end
 
+  @doc ~S"""
+    Open Stripe's customer portal for this account: cancel, change card, download
+    invoices. `{:error, :no_stripe_customer}` when the account never paid through
+    Stripe Checkout.
+    
+  """
+  @spec create_stripe_billing_portal(Gamend.Accounts.User.t(), String.t()) ::
+          {:ok, String.t()} | {:error, term()}
+  def create_stripe_billing_portal(_user, _return_url) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok, nil}
+
+      _ ->
+        raise "Gamend.Payments.create_stripe_billing_portal/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
   @doc false
   @spec create_stripe_checkout(Gamend.Accounts.User.t(), map()) ::
           {:ok,
@@ -645,6 +663,25 @@ defmodule Gamend.Payments do
 
       _ ->
         raise "Gamend.Payments.stripe_config_status/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    The Stripe customer this account has paid as, or nil: the newest Stripe
+    purchase whose stored checkout session names one. Stripe creates the customer
+    at checkout (subscriptions always; one-off payments since
+    `customer_creation: "always"`), and `checkout.session.completed` stores the
+    session on the purchase.
+    
+  """
+  @spec stripe_customer_id(Gamend.Accounts.User.t()) :: String.t() | nil
+  def stripe_customer_id(_user) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Payments.stripe_customer_id/1 is a stub - only available at runtime on Gamend"
     end
   end
 

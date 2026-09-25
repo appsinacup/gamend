@@ -256,8 +256,8 @@ defmodule GamendWeb.Router.Shared do
 
       gamend_search_routes()
 
-      # Serve stored objects (local backend). With S3 the object URL points at the
-      # bucket and this route is unused.
+      # Serve stored objects. The local backend serves the bytes; a private S3
+      # bucket (no public_url) redirects to a freshly signed link.
       scope "/", GamendWeb.Api.V1, as: :api_v1 do
         pipe_through :browser
 

@@ -104,6 +104,6 @@ defmodule Gamend.OAuth.GoogleIDToken do
   end
 
   defp http_client do
-    Application.get_env(:gamend_core, :google_tokeninfo_client, Req)
+    Application.get_env(:gamend_core, :google_tokeninfo_client, Gamend.HTTP)
   end
 end

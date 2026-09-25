@@ -49,10 +49,10 @@ defmodule Gamend.Lobbies do
   alias Bcrypt
   alias Ecto.Multi
   alias Gamend.Accounts
+  alias Gamend.Accounts.PasswordHash
   alias Gamend.Accounts.User
   alias Gamend.Friends
   alias Gamend.KV
-  alias Gamend.KV.Entry, as: KVEntry
   alias Gamend.Lobbies.Lobby
   alias Gamend.Lobbies.SpectatorTracker
   alias Gamend.Lobbies.States
@@ -73,9 +73,6 @@ defmodule Gamend.Lobbies do
 
   # PubSub topic names
   @lobbies_topic "lobbies"
-
-  @lobby_cache_ttl_ms 60_000
-  @stats_cache_ttl_ms 60_000
 
   defp lobby_cache_version(lobby_id) when is_binary(lobby_id) do
     Gamend.Cache.get!({:lobbies, :lobby_version, lobby_id}) || 1
@@ -118,7 +115,7 @@ defmodule Gamend.Lobbies do
   end
 
   defp broadcast_lobbies(event) do
-    Phoenix.PubSub.broadcast(Gamend.PubSub, @lobbies_topic, load_host(event))
+    Gamend.Broadcast.publish(@lobbies_topic, load_host(event))
   end
 
   # Every subscriber to the global list serializes the lobby independently, so
@@ -138,7 +135,7 @@ defmodule Gamend.Lobbies do
   defp load_host(event), do: event
 
   defp broadcast_lobby(lobby_id, event) do
-    Phoenix.PubSub.broadcast(Gamend.PubSub, "lobby:#{lobby_id}", event)
+    Gamend.Broadcast.publish("lobby:#{lobby_id}", event)
   end
 
   @doc "Broadcast a member presence event (online/offline) to a lobby's PubSub topic."
@@ -355,7 +352,7 @@ defmodule Gamend.Lobbies do
           spectators: non_neg_integer()
         }
   def stats do
-    Gamend.Cache.cached({:lobbies, :stats}, [ttl: @stats_cache_ttl_ms], fn ->
+    Gamend.Cache.cached({:lobbies, :stats}, [ttl: Gamend.Cache.ttl()], fn ->
       lobby_ids = Repo.all(from(l in Lobby, select: l.id))
 
       spectators =
@@ -637,42 +634,50 @@ defmodule Gamend.Lobbies do
     end
   end
 
-  # Wrap count + join in a transaction with advisory lock to prevent
-  # TOCTOU race conditions on PostgreSQL.
+  # The lock guards the seat count against a concurrent join, and only that.
+  # The slow gates run before it: the plugin's hook (up to its timeout) and the
+  # password check (bcrypt, ~250ms). Inside the lock they held the lobby and,
+  # on SQLite, the only database connection, so repeated wrong passwords from
+  # one player stalled every request in the server. The seat check also runs
+  # first, unlocked, so a full lobby is refused without calling the hook.
   defp do_join_with_lock(user, lobby, opts, user_id) do
-    Lock.serialize(:lobby, lobby.id, fn ->
-      member_ids =
-        Repo.all(
-          from(u in User,
-            where: u.lobby_id == ^lobby.id,
-            select: u.id
-          )
-        )
-
-      if length(member_ids) >= lobby.max_users do
-        Repo.rollback(:full)
-      end
-
-      # A block in either direction keeps the pair apart, so the blocker does
-      # not have to be the one already seated.
-      if Friends.any_blocked?(user_id, member_ids) do
-        Repo.rollback(:blocked)
-      end
-
-      case run_before_join_and_validate(user, lobby, opts, user_id) do
-        {:ok, result} -> result
-        {:error, reason} -> Repo.rollback(reason)
-      end
-    end)
+    with :ok <- check_seat(lobby, user_id),
+         :ok <- run_before_join(user, lobby, opts),
+         :ok <- check_password(lobby, opt(opts, :password)) do
+      Lock.serialize(:lobby, lobby.id, fn ->
+        with :ok <- check_seat(lobby, user_id),
+             {:ok, updated_user} <-
+               create_membership(%{lobby_id: lobby.id, user_id: user_id}) do
+          updated_user
+        else
+          {:error, reason} -> Repo.rollback(reason)
+        end
+      end)
+    end
   end
 
-  defp run_before_join_and_validate(user, lobby, opts, user_id) do
-    case Gamend.Hooks.internal_call(:before_lobby_join, [user, lobby, opts]) do
-      {:ok, _} ->
-        validate_and_join(lobby, user_id, opt(opts, :password))
+  defp check_seat(lobby, user_id) do
+    member_ids =
+      Repo.all(
+        from(u in User,
+          where: u.lobby_id == ^lobby.id,
+          select: u.id
+        )
+      )
 
-      {:error, reason} ->
-        {:error, {:hook_rejected, reason}}
+    cond do
+      length(member_ids) >= lobby.max_users -> {:error, :full}
+      # A block in either direction keeps the pair apart, so the blocker does
+      # not have to be the one already seated.
+      Friends.any_blocked?(user_id, member_ids) -> {:error, :blocked}
+      true -> :ok
+    end
+  end
+
+  defp run_before_join(user, lobby, opts) do
+    case Gamend.Hooks.internal_call(:before_lobby_join, [user, lobby, opts]) do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, {:hook_rejected, reason}}
     end
   end
 
@@ -681,27 +686,17 @@ defmodule Gamend.Lobbies do
   defp opt(opts, key, default) when is_list(opts), do: Keyword.get(opts, key, default)
   defp opt(opts, key, default) when is_map(opts), do: Map.get(opts, key, default)
 
-  defp validate_and_join(lobby, user_id, password) do
-    case {lobby.password_hash, password} do
-      {nil, _} ->
-        create_membership(%{lobby_id: lobby.id, user_id: user_id})
+  defp check_password(%Lobby{password_hash: nil}, _password), do: :ok
+  defp check_password(%Lobby{}, nil), do: {:error, :password_required}
 
-      {phash, nil} when phash != nil ->
-        {:error, :password_required}
-
-      {phash, password} ->
-        if Bcrypt.verify_pass(password, phash) do
-          create_membership(%{lobby_id: lobby.id, user_id: user_id})
-        else
-          {:error, :invalid_password}
-        end
-    end
+  defp check_password(%Lobby{password_hash: hash}, password) do
+    if PasswordHash.verify(password, hash), do: :ok, else: {:error, :invalid_password}
   end
 
   @spec get_lobby!(Ecto.UUID.t()) :: Lobby.t()
   @decorate cacheable(
               key: {:lobbies, :get, lobby_cache_version(id), id},
-              opts: [ttl: @lobby_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_lobby!(id), do: Repo.get_uuid!(Lobby, id)
 
@@ -709,7 +704,7 @@ defmodule Gamend.Lobbies do
   @decorate cacheable(
               key: {:lobbies, :get, lobby_cache_version(id), id},
               match: &cache_match/1,
-              opts: [ttl: @lobby_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_lobby(id), do: Repo.get_uuid(Lobby, id)
 
@@ -797,7 +792,7 @@ defmodule Gamend.Lobbies do
         end)
         |> Multi.insert(:lobby, new_lobby_changeset(attrs))
         |> maybe_add_host_membership(attrs)
-        |> Repo.transaction()
+        |> Gamend.AfterCommit.transaction()
 
       {:error, reason} ->
         {:error, {:hook_rejected, reason}}
@@ -954,21 +949,42 @@ defmodule Gamend.Lobbies do
   obvious answer for deleting a key or combining a list, and a rule nobody can
   predict is worse than one they can.
   """
+  @merge_attempts 3
+
   @spec merge_metadata(Lobby.t(), map()) :: {:ok, Lobby.t()} | {:error, term()}
   def merge_metadata(%Lobby{} = lobby, patch) when is_map(patch) do
-    result =
-      Gamend.Lock.serialize(:lobby, lobby.id, fn ->
-        case get_lobby(lobby.id) do
+    do_merge_metadata(lobby.id, Gamend.Parse.string_keys(patch), @merge_attempts)
+  end
+
+  # Optimistic, so the plugins' `before_lobby_update` hook (up to its timeout)
+  # runs outside the lock: merge against a fresh read and ask the hook
+  # unlocked, then write under the lock only if the metadata is still what the
+  # merge started from. A concurrent merge starts it over. The read skips the
+  # cache, which could hand back a version a merge already replaced.
+
+  defp do_merge_metadata(lobby_id, patch, attempts) do
+    with %Lobby{} = current <- Repo.get(Lobby, lobby_id) || {:error, :not_found},
+         merged = Map.merge(current.metadata || %{}, patch),
+         {:ok, attrs} <- run_before_lobby_update(current, %{metadata: merged}) do
+      Gamend.Lock.serialize(:lobby, lobby_id, fn ->
+        case Repo.get(Lobby, lobby_id) do
+          %Lobby{metadata: metadata} = fresh when metadata == current.metadata ->
+            apply_lobby_update(fresh, attrs)
+
+          %Lobby{} ->
+            :stale
+
           nil ->
             {:error, :not_found}
-
-          current ->
-            merged = Map.merge(current.metadata || %{}, Gamend.Parse.string_keys(patch))
-            update_lobby(current, %{metadata: merged})
         end
       end)
-
-    with {:ok, inner} <- result, do: inner
+      |> case do
+        {:ok, :stale} when attempts > 1 -> do_merge_metadata(lobby_id, patch, attempts - 1)
+        {:ok, :stale} -> {:error, :conflict}
+        {:ok, result} -> result
+        {:error, _} = error -> error
+      end
+    end
   end
 
   @doc """
@@ -981,49 +997,51 @@ defmodule Gamend.Lobbies do
   @spec update_lobby(Lobby.t(), Types.lobby_update_attrs()) ::
           {:ok, Lobby.t()} | {:error, Ecto.Changeset.t() | term()}
   def update_lobby(%Lobby{} = lobby, attrs) do
+    with {:ok, attrs_to_use} <- run_before_lobby_update(lobby, attrs) do
+      apply_lobby_update(lobby, attrs_to_use)
+    end
+  end
+
+  # Prefer hook-returned attrs if it's a plain map; if the hook incorrectly
+  # returns something else (eg. a struct) fall back to the original params we
+  # received so updates from the form are not lost.
+  defp run_before_lobby_update(lobby, attrs) do
     case Gamend.Hooks.internal_call(:before_lobby_update, [lobby, attrs]) do
-      {:ok, returned} ->
-        # prefer hook-returned attrs if it's a plain map; if the hook
-        # incorrectly returns something else (eg. a struct) fall back to
-        # the original params we received so updates from the form are not lost.
-        attrs_to_use =
-          if is_map(returned) and not is_struct(returned) do
-            returned
-          else
-            attrs
-          end
+      {:ok, returned} when is_map(returned) and not is_struct(returned) -> {:ok, returned}
+      {:ok, _other} -> {:ok, attrs}
+      {:error, reason} -> {:error, {:hook_rejected, reason}}
+    end
+  end
 
-        attrs_to_use = normalize_changeset_params(attrs_to_use)
+  defp apply_lobby_update(lobby, attrs) do
+    result =
+      lobby
+      |> Lobby.changeset(normalize_changeset_params(attrs))
+      |> Repo.update()
 
-        result =
-          lobby
-          |> Lobby.changeset(attrs_to_use)
-          |> Repo.update()
+    case result do
+      {:ok, updated} ->
+        Gamend.Async.run(fn ->
+          Gamend.Hooks.internal_call(:after_lobby_updated, [updated])
+        end)
 
-        case result do
-          {:ok, updated} ->
-            Gamend.Async.run(fn ->
-              Gamend.Hooks.internal_call(:after_lobby_updated, [updated])
-            end)
+        _ = invalidate_lobby_cache(updated.id)
 
-            _ = invalidate_lobby_cache(updated.id)
+        # After commit, with the members query: a lock around the update
+        # (`merge_metadata/2`) need not wait on either. Members are
+        # materialized once here so the per-socket channel fan-out serializes
+        # the already-loaded list instead of each subscriber re-querying (was
+        # O(N) queries / O(N²) rows per update).
+        Gamend.AfterCommit.defer(fn ->
+          with_members = %{updated | memberships: get_lobby_members(updated.id)}
+          broadcast_lobby(updated.id, {:lobby_updated, with_members})
+          broadcast_lobbies({:lobby_updated, updated})
+        end)
 
-            # Materialize members once here so the per-socket channel fan-out
-            # serializes the already-loaded list instead of each subscriber
-            # re-querying (was O(N) queries / O(N²) rows per update).
-            with_members = %{updated | memberships: get_lobby_members(updated.id)}
+        {:ok, updated}
 
-            # broadcast updates so any UI/channel subscribers get the change
-            broadcast_lobby(updated.id, {:lobby_updated, with_members})
-            broadcast_lobbies({:lobby_updated, updated})
-            {:ok, updated}
-
-          other ->
-            other
-        end
-
-      {:error, reason} ->
-        {:error, {:hook_rejected, reason}}
+      other ->
+        other
     end
   end
 
@@ -1165,13 +1183,14 @@ defmodule Gamend.Lobbies do
   end
 
   defp do_delete_lobby(%Lobby{id: lobby_id} = lobby) when is_binary(lobby_id) do
-    Lock.serialize(:lobby, lobby_id, fn ->
-      # Before anything is unwound: members are about to be detached and the
-      # lobby's KV deleted, so this is the last moment the run's final state is
-      # readable. Gathered synchronously for that reason; the write itself is
-      # buffered outside this transaction, so a rollback still keeps the record.
-      _ = Gamend.LobbySnapshots.capture_lobby(lobby_id, "lobby:deleted", sync: true)
+    # Before anything is unwound: members are about to be detached and the
+    # lobby's KV deleted, so this is the last moment the run's final state is
+    # readable. Gathered before the lock rather than inside it: reading up to
+    # the KV cap, encoding and hashing it held the lobby and, on SQLite, the
+    # only write lock. The write is buffered, so a rollback still keeps it.
+    _ = Gamend.LobbySnapshots.capture_lobby(lobby_id, "lobby:deleted", sync: true)
 
+    Lock.serialize(:lobby, lobby_id, fn ->
       # Whole structs rather than ids: delete_lobby/1 announces the detachment
       # to each of them afterwards, and this is the last moment they are
       # readable as members of this lobby.
@@ -1183,7 +1202,7 @@ defmodule Gamend.Lobbies do
           set: [lobby_id: nil]
         )
 
-      delete_lobby_kv_entries(lobby_id)
+      _ = KV.delete_lobby_entries(lobby_id)
 
       case Repo.delete(lobby) do
         {:ok, deleted} -> {deleted, members}
@@ -1194,17 +1213,6 @@ defmodule Gamend.Lobbies do
     exception -> {:error, exception}
   catch
     kind, reason -> {:error, {kind, reason}}
-  end
-
-  defp delete_lobby_kv_entries(lobby_id) when is_binary(lobby_id) do
-    from(e in KVEntry,
-      where: e.lobby_id == ^lobby_id,
-      select: {e.key, e.user_id, e.lobby_id}
-    )
-    |> Repo.all()
-    |> Enum.each(fn {key, user_id, entry_lobby_id} ->
-      KV.delete(key, user_id: user_id, lobby_id: entry_lobby_id)
-    end)
   end
 
   @spec change_lobby(Lobby.t()) :: Ecto.Changeset.t()
@@ -1308,12 +1316,15 @@ defmodule Gamend.Lobbies do
 
   defp do_leave_lobby(membership, lobby, user_id) do
     lobby_id = lobby.id
+    emptied_capture = prepare_emptied_capture(lobby, user_id, membership.id)
 
     result =
-      Repo.transaction(fn ->
+      Gamend.AfterCommit.transaction(fn ->
         Repo.update!(Ecto.Changeset.change(membership, %{lobby_id: nil}))
         handle_host_transfer(lobby, user_id, membership.id)
       end)
+
+    if match?({:ok, :lobby_deleted}, result), do: Gamend.LobbySnapshots.record(emptied_capture)
 
     # Let plugins react to the state that is about to be wiped (e.g. bank cargo
     # collected in a level the player is abandoning). Runs synchronously, before
@@ -1357,6 +1368,21 @@ defmodule Gamend.Lobbies do
 
   defp clear_lobby_scoped_kv(_user_id, _lobby_id), do: 0
 
+  # The host's leave deletes the lobby when no one else is seated; its final
+  # state is read here, before the transaction, rather than inside it, where
+  # reading and hashing it held the only SQLite write lock. It is recorded only
+  # if the lobby was then deleted. No one else seated is checked again inside:
+  # a player joining in between keeps the lobby, and the capture is dropped.
+  defp prepare_emptied_capture(lobby, user_id, membership_id) do
+    if lobby.host_id == user_id and not lobby.hostless and
+         not Repo.exists?(
+           from u in Gamend.Accounts.User,
+             where: u.lobby_id == ^lobby.id and u.id != ^membership_id
+         ) do
+      Gamend.LobbySnapshots.prepare(lobby.id, "lobby:emptied")
+    end
+  end
+
   defp handle_host_transfer(lobby, user_id, membership_id) do
     # if user was host, transfer host or delete lobby if empty
     if lobby.host_id == user_id and not lobby.hostless do
@@ -1375,8 +1401,8 @@ defmodule Gamend.Lobbies do
           {:host_changed, new_host_id}
 
         [] ->
-          # no members left - delete lobby
-          _ = Gamend.LobbySnapshots.capture_lobby(lobby.id, "lobby:emptied", sync: true)
+          # no members left - delete lobby (its snapshot was gathered before
+          # the transaction, `prepare_emptied_capture/3`)
           _ = Repo.delete(lobby)
           _ = invalidate_lobby_cache(lobby.id)
           :lobby_deleted
@@ -1676,14 +1702,18 @@ defmodule Gamend.Lobbies do
     end
   end
 
+  # Argon2id, as account passwords are (`PasswordHash`): bcrypt at cost 12
+  # spent ~250ms of CPU on every join attempt, ten times Argon2id's here, and a
+  # join is something any signed-in player can repeat. Existing bcrypt hashes
+  # still verify.
   defp maybe_hash_password(attrs) when is_map(attrs) do
     cond do
       Map.has_key?(attrs, "password") and attrs["password"] != nil ->
-        Map.put(attrs, "password_hash", Bcrypt.hash_pwd_salt(attrs["password"]))
+        Map.put(attrs, "password_hash", PasswordHash.hash(attrs["password"]))
         |> Map.delete("password")
 
       Map.has_key?(attrs, :password) and attrs[:password] != nil ->
-        Map.put(attrs, :password_hash, Bcrypt.hash_pwd_salt(attrs[:password]))
+        Map.put(attrs, :password_hash, PasswordHash.hash(attrs[:password]))
         |> Map.delete(:password)
 
       true ->

@@ -27,12 +27,18 @@ defmodule Gamend.Async do
   def run(fun) when is_function(fun, 0) do
     wrapped = wrap(fun)
 
-    if inline?() do
-      wrapped.()
-      :ok
-    else
-      spawn_task(wrapped)
-    end
+    # Inside a transaction the task would start while it holds the database,
+    # see the write before it is committed (or one a rollback then erases), and
+    # on SQLite wait for the very connection its spawner holds. It starts once
+    # the transaction commits instead (`Gamend.AfterCommit`).
+    Gamend.AfterCommit.defer(fn ->
+      if inline?() do
+        wrapped.()
+        :ok
+      else
+        spawn_task(wrapped)
+      end
+    end)
   end
 
   # Tests set `:async_inline` so side effects land before assertions run, and so

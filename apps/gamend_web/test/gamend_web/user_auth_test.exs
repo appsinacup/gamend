@@ -240,6 +240,39 @@ defmodule GamendWeb.UserAuthTest do
     end
   end
 
+  describe "session length (auth.session_days)" do
+    setup do
+      Gamend.SettingsHelpers.put(:gamend_core, Accounts, :session_days, 2)
+      on_exit(fn -> Gamend.SettingsHelpers.delete(:gamend_core, Accounts, :session_days) end)
+    end
+
+    test "the remember-me cookie lasts as long as the session", %{conn: conn, user: user} do
+      conn = conn |> fetch_cookies() |> UserAuth.log_in_user(user, %{"remember_me" => "true"})
+
+      assert %{max_age: max_age} = conn.resp_cookies[@remember_me_cookie]
+      assert max_age == 2 * 86_400
+    end
+
+    test "a session renews at half its length and is gone after it", %{conn: conn, user: user} do
+      young = Accounts.generate_user_session_token(user)
+      offset_user_token(young, -23, :hour)
+
+      kept = conn |> put_session(:user_token, young) |> UserAuth.fetch_current_scope_for_user([])
+      assert get_session(kept, :user_token) == young
+
+      old = Accounts.generate_user_session_token(user)
+      offset_user_token(old, -25, :hour)
+
+      renewed = conn |> put_session(:user_token, old) |> UserAuth.fetch_current_scope_for_user([])
+      assert renewed.assigns.current_scope.user_id == user.id
+      refute get_session(renewed, :user_token) == old
+
+      gone = Accounts.generate_user_session_token(user)
+      offset_user_token(gone, -3, :day)
+      refute Accounts.get_user_by_session_token(gone)
+    end
+  end
+
   describe "on_mount :mount_current_scope" do
     setup %{conn: conn} do
       %{conn: UserAuth.fetch_current_scope_for_user(conn, [])}

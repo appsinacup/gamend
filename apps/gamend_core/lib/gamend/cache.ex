@@ -15,6 +15,14 @@ defmodule Gamend.Cache do
     adapter: Nebulex.Adapters.Multilevel
 
   @doc """
+  How long a cached entity is kept, in milliseconds (`cache.ttl_ms`). Every
+  entity cache uses it; the few entries with a deliberate lifetime of their own
+  (leaderboard records, analytics) do not.
+  """
+  @spec ttl() :: pos_integer()
+  def ttl, do: max(Gamend.Settings.get(Gamend.Cache.Settings, :ttl_ms), 1)
+
+  @doc """
   Cache-through helper: returns the cached value for `key`, or computes and
   caches the result of `fun`.
 
@@ -50,6 +58,11 @@ defmodule Gamend.Cache do
   """
   @spec invalidate(term()) :: :ok
   def invalidate(key) do
+    evict(key)
+    again_after_commit(fn -> evict(key) end)
+  end
+
+  defp evict(key) do
     _ = delete(key)
 
     Phoenix.PubSub.broadcast(
@@ -57,7 +70,15 @@ defmodule Gamend.Cache do
       @invalidation_topic,
       {:cache_invalidate, key, Node.self()}
     )
+  end
 
+  # Inside a transaction, once more after it commits (`Gamend.AfterCommit`).
+  # Until the commit a concurrent read still sees the old row and can cache it
+  # back, on any node, where it would stay until the TTL. The first eviction
+  # stays immediate so the transaction's own reads through the cache see its
+  # writes.
+  defp again_after_commit(fun) do
+    if Gamend.AfterCommit.deferring?(), do: Gamend.AfterCommit.defer(fun)
     :ok
   end
 
@@ -73,6 +94,11 @@ defmodule Gamend.Cache do
   """
   @spec bump_version(term()) :: :ok
   def bump_version(key) do
+    bump(key)
+    again_after_commit(fn -> bump(key) end)
+  end
+
+  defp bump(key) do
     # Nebulex returns {:ok, counter} | {:error, t}; no caller wants either.
     _ = incr(key, 1, default: 1)
 
@@ -81,8 +107,6 @@ defmodule Gamend.Cache do
       @invalidation_topic,
       {:cache_bump_version, key, Node.self()}
     )
-
-    :ok
   end
 
   @doc "PubSub topic that `invalidate/1` broadcasts on."

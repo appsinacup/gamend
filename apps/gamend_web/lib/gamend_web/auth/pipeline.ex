@@ -11,6 +11,10 @@ defmodule GamendWeb.Auth.Pipeline do
     module: GamendWeb.Auth.Guardian,
     error_handler: GamendWeb.Auth.ErrorHandler
 
+  # A personal API token (`gamend_pat_…`) is verified first and put in place
+  # as if it were an access token; everything below then runs on it as is.
+  plug GamendWeb.Auth.ApiTokenAuth
+
   # `claims:` pins the token type. Without it Guardian verifies only the
   # signature, so a 30-day refresh token authenticated every API route as if it
   # were a 15-minute access token — which defeats the point of the short access

@@ -32,9 +32,6 @@ defmodule Gamend.Matchmaking do
   alias Gamend.Matchmaking.Worker
   alias Gamend.Repo
 
-  @default_min_players 2
-  @default_max_players 5
-
   @doc """
   Adds a user — or their whole party — to the matchmaking queue.
 
@@ -64,8 +61,8 @@ defmodule Gamend.Matchmaking do
   def join(%User{} = user, match_params, min_players \\ nil, max_players \\ nil) do
     proposed = %{
       "match_params" => normalize_params(match_params),
-      "min_players" => min_players || @default_min_players,
-      "max_players" => max_players || @default_max_players
+      "min_players" => min_players || default_min_players(),
+      "max_players" => max_players || default_max_players()
     }
 
     # The client proposes; the game decides. A hook may rewrite the params
@@ -87,6 +84,11 @@ defmodule Gamend.Matchmaking do
     end
   end
 
+  # A ticket that leaves its size out gets the server's
+  # (`GAMEND_LIMITS_MATCHMAKING_DEFAULT_*_PLAYERS`).
+  defp default_min_players, do: Limits.get(:matchmaking_default_min_players)
+  defp default_max_players, do: Limits.get(:matchmaking_default_max_players)
+
   defp run_join_hook(user, proposed) do
     case Gamend.Hooks.internal_call(:before_matchmaking_join, [user, proposed]) do
       {:ok, attrs} when is_map(attrs) -> {:ok, attrs}
@@ -103,7 +105,7 @@ defmodule Gamend.Matchmaking do
   defp resolve_queue_group(%User{} = user, proposed) do
     if Gamend.Parties.can_manage_party?(user, user.party_id) do
       members = Gamend.Parties.get_party_members(user.party_id)
-      max = Map.get(proposed, "max_players") || @default_max_players
+      max = Map.get(proposed, "max_players") || default_max_players()
 
       cond do
         length(members) > max ->
@@ -151,15 +153,15 @@ defmodule Gamend.Matchmaking do
     base = %{
       status: Constants.status_queued(),
       match_params: normalize_params(Map.get(attrs, "match_params", %{})),
-      min_players: Map.get(attrs, "min_players") || @default_min_players,
-      max_players: Map.get(attrs, "max_players") || @default_max_players,
+      min_players: Map.get(attrs, "min_players") || default_min_players(),
+      max_players: Map.get(attrs, "max_players") || default_max_players(),
       timeout_ms: Limits.get(:matchmaking_timeout_ms),
       queued_at: now,
       party_id: caller.party_id
     }
 
     result =
-      Repo.transaction(fn ->
+      Gamend.AfterCommit.transaction(fn ->
         Enum.reduce_while(members, [], fn member, acc ->
           %Ticket{}
           |> Ticket.changeset(Map.put(base, :user_id, member.id))

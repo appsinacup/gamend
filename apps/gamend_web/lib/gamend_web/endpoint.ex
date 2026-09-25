@@ -36,6 +36,10 @@ defmodule GamendWeb.Endpoint do
   # redirect can touch it; before everything else so a plain-HTTP request
   # costs one 301 and nothing more.
   plug GamendWeb.Plugs.ForceSSL
+  # A host app's own plugs, ahead of everything that assumes the request is
+  # for this site: a second host name the app answers must not be sent to the
+  # canonical host, given a session, or have its trailing slash taken away.
+  plug :host_plugs
   # After ForceSSL so a plain-HTTP request to an alias costs one redirect to
   # https on the canonical host rather than two hops.
   plug GamendWeb.Plugs.CanonicalHost
@@ -91,15 +95,43 @@ defmodule GamendWeb.Endpoint do
     plug GamendWeb.ResponseContract
   end
 
-  plug Plug.Parsers,
-    parsers: [:urlencoded, :multipart, :json],
-    pass: ["*/*"],
-    length: 1_048_576,
-    body_reader: {GamendWeb.Plugs.RawBodyReader, :read_body, []},
-    json_decoder: Phoenix.json_library()
+  # Before the body is parsed: a request over its limit is refused without
+  # reading up to a megabyte of JSON or multipart first. CORS first, so a 429
+  # still carries the headers a browser needs to let a web client read it.
+  plug GamendWeb.Plugs.DynamicCors
+  plug GamendWeb.Plugs.RateLimiter
+
+  plug :parse_body
 
   plug Plug.MethodOverride
   plug Plug.Head
+
+  @parsers_opts [
+    parsers: [:urlencoded, :multipart, :json],
+    pass: ["*/*"],
+    body_reader: {GamendWeb.Plugs.RawBodyReader, :read_body, []},
+    json_decoder: Phoenix.json_library()
+  ]
+
+  # The body limit is a setting (`GAMEND_HTTP_MAX_BODY_BYTES`), which a plug
+  # declared with `plug Plug.Parsers, length: ...` would fix at compile time.
+  # The parsers are built at runtime instead, once per limit.
+  defp parse_body(conn, _opts), do: Plug.Parsers.call(conn, parsers_opts())
+
+  defp parsers_opts do
+    length = GamendWeb.Http.max_body_bytes()
+    key = {__MODULE__, :parsers, length}
+
+    case :persistent_term.get(key, nil) do
+      nil ->
+        opts = Plug.Parsers.init(Keyword.put(@parsers_opts, :length, length))
+        :persistent_term.put(key, opts)
+        opts
+
+      opts ->
+        opts
+    end
+  end
 
   @compiled_session_opts Plug.Session.init(@session_options)
   plug :maybe_session
@@ -108,8 +140,6 @@ defmodule GamendWeb.Endpoint do
   defp maybe_session(conn, _opts), do: Plug.Session.call(conn, @compiled_session_opts)
 
   plug GamendWeb.Plugs.LocalePath
-  plug GamendWeb.Plugs.DynamicCors
-  plug GamendWeb.Plugs.RateLimiter
   # After the static plugs — a file that exists is served as asked for — and
   # before the router, so `/docs/intro/` becomes `/docs/intro` for every
   # route rather than each page checking its own spelling.
@@ -191,6 +221,35 @@ defmodule GamendWeb.Endpoint do
       conn,
       configurable_static_opts(:bundled_static_opts, :gamend_web, ~w(fonts flags))
     )
+  end
+
+  # `config :gamend_web, :host_plugs, [MyApp.GamesHost, {MyApp.Other, opts}]`.
+  # Each is `init/1`ed once per configuration and cached; the first to halt
+  # ends the request, as any plug in this pipeline would.
+  defp host_plugs(conn, _opts) do
+    Enum.reduce_while(compiled_host_plugs(), conn, fn {plug, opts}, conn ->
+      conn = plug.call(conn, opts)
+      if conn.halted, do: {:halt, conn}, else: {:cont, conn}
+    end)
+  end
+
+  defp compiled_host_plugs do
+    configured = Application.get_env(:gamend_web, :host_plugs, [])
+
+    case :persistent_term.get({__MODULE__, :host_plugs}, nil) do
+      {^configured, compiled} ->
+        compiled
+
+      _ ->
+        compiled =
+          Enum.map(configured, fn
+            {plug, opts} -> {plug, plug.init(opts)}
+            plug -> {plug, plug.init([])}
+          end)
+
+        :persistent_term.put({__MODULE__, :host_plugs}, {configured, compiled})
+        compiled
+    end
   end
 
   defp dispatch_router(conn, _opts) do

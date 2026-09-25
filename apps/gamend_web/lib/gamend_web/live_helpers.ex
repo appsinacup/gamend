@@ -145,12 +145,12 @@ defmodule GamendWeb.LiveHelpers do
 
   def check_rate_limit(ip, :auth) do
     {limit, window} = auth_limits()
-    do_check("lv_auth:#{ip}", window, limit)
+    do_check("lv_auth:#{GamendWeb.RateLimit.ip_key(ip)}", window, limit)
   end
 
   def check_rate_limit(ip, :general) do
     {limit, window} = general_limits()
-    do_check("lv_general:#{ip}", window, limit)
+    do_check("lv_general:#{GamendWeb.RateLimit.ip_key(ip)}", window, limit)
   end
 
   defp do_check(key, window_ms, limit) do

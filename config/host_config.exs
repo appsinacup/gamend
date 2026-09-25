@@ -261,10 +261,10 @@ config :gamend_web, GamendWeb.Auth.Guardian,
   issuer: "gamend",
   secret_key: "REPLACE_THIS_IN_RUNTIME_CONFIG"
 
-# WebRTC DataChannel support (requires ex_webrtc + ex_sctp deps)
-config :gamend_web, :webrtc,
-  enabled: true,
-  ice_servers: [%{urls: "stun:stun.l.google.com:19302"}]
+# WebRTC DataChannel support (requires ex_webrtc + ex_sctp deps). The ICE
+# servers are the GAMEND_WEBRTC_* settings; an `ice_servers:` list here would
+# replace them outright.
+config :gamend_web, :webrtc, enabled: true
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

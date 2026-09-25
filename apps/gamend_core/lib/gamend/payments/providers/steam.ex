@@ -281,7 +281,7 @@ defmodule Gamend.Payments.Providers.Steam do
   end
 
   defp http_client do
-    Application.get_env(:gamend_core, :payments_http_client, Req)
+    Application.get_env(:gamend_core, :payments_http_client, Gamend.HTTP)
   end
 
   # The app_key is the declared setting name, so this resolves through

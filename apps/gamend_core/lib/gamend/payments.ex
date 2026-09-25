@@ -26,14 +26,12 @@ defmodule Gamend.Payments do
   alias Gamend.Repo
   alias Gamend.Repo.AdvisoryLock
 
-  @pubsub Gamend.PubSub
   @store_validation_providers ~w(apple google steam)
 
   # Cached catalog/ledger reads keyed by per-entity version counters bumped on
   # every write to that table via tap_bump/2. Products/provider-products change
   # rarely (kept warm through frequent purchases); purchases have their own
   # version so a buy doesn't evict the catalog.
-  @payments_cache_ttl_ms 60_000
   defp product_version, do: Gamend.Cache.get!({:payments, :product_version}) || 1
 
   defp provider_product_version,
@@ -73,7 +71,7 @@ defmodule Gamend.Payments do
   @decorate cacheable(
               key: {:payments, :product, product_version(), id},
               match: &(&1 != nil),
-              opts: [ttl: @payments_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_product(id), do: Repo.get_uuid(Product, id)
 
@@ -113,7 +111,7 @@ defmodule Gamend.Payments do
   @decorate cacheable(
               key: {:payments, :provider_product, provider_product_version(), id},
               match: &(&1 != nil),
-              opts: [ttl: @payments_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_provider_product(id) do
     ProviderProduct
@@ -229,7 +227,7 @@ defmodule Gamend.Payments do
   @decorate cacheable(
               key: {:payments, :purchase, purchase_version(), id},
               match: &(&1 != nil),
-              opts: [ttl: @payments_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_purchase(id), do: Repo.get_uuid(Purchase, id) |> preload_purchase()
 
@@ -410,6 +408,12 @@ defmodule Gamend.Payments do
 
   @doc delegate_to: {StripeEvents, :cancel_stripe_subscription_at_period_end, 2}
   defdelegate cancel_stripe_subscription_at_period_end(user, entitlement_id), to: StripeEvents
+
+  @doc delegate_to: {StripeEvents, :stripe_customer_id, 1}
+  defdelegate stripe_customer_id(user), to: StripeEvents
+
+  @doc delegate_to: {StripeEvents, :create_stripe_billing_portal, 2}
+  defdelegate create_stripe_billing_portal(user, return_url), to: StripeEvents
 
   # ---------------------------------------------------------------------------
   # Steam
@@ -1208,7 +1212,7 @@ defmodule Gamend.Payments do
   end
 
   defp after_purchase_fulfilled(%Purchase{} = purchase) do
-    Phoenix.PubSub.broadcast(@pubsub, "user:#{purchase.user_id}", {:purchase_updated, purchase})
+    Gamend.Broadcast.publish("user:#{purchase.user_id}", {:purchase_updated, purchase})
 
     Gamend.Async.run(fn ->
       Gamend.Hooks.internal_call(:after_purchase_fulfilled, [purchase])
@@ -1216,7 +1220,7 @@ defmodule Gamend.Payments do
   end
 
   defp after_purchase_revoked(%Purchase{} = purchase) do
-    Phoenix.PubSub.broadcast(@pubsub, "user:#{purchase.user_id}", {:purchase_updated, purchase})
+    Gamend.Broadcast.publish("user:#{purchase.user_id}", {:purchase_updated, purchase})
 
     Gamend.Async.run(fn ->
       Gamend.Hooks.internal_call(:after_purchase_revoked, [purchase])
@@ -1225,8 +1229,7 @@ defmodule Gamend.Payments do
 
   @doc false
   def after_entitlement_changed(%Entitlement{} = entitlement) do
-    Phoenix.PubSub.broadcast(
-      @pubsub,
+    Gamend.Broadcast.publish(
       "user:#{entitlement.user_id}",
       {:entitlement_changed, entitlement}
     )

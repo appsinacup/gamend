@@ -38,9 +38,6 @@ defmodule Gamend.Friends do
   alias Gamend.Types
   @friends_topic "friends"
 
-  @friends_cache_ttl_ms 60_000
-  @friendships_cache_ttl_ms 60_000
-
   @type user_id :: Ecto.UUID.t()
 
   defp friends_cache_version(user_id) when is_binary(user_id) do
@@ -75,7 +72,7 @@ defmodule Gamend.Friends do
               key:
                 {:friends, :pair, friends_cache_version(requester_id),
                  friends_cache_version(target_id), requester_id, target_id},
-              opts: [ttl: @friends_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp get_by_pair_cached(requester_id, target_id)
        when is_binary(requester_id) and is_binary(target_id) do
@@ -94,7 +91,7 @@ defmodule Gamend.Friends do
 
   defp broadcast_user(user_id, event) when is_binary(user_id) do
     # keep existing PubSub behavior (server-side consumers)
-    Phoenix.PubSub.broadcast(Gamend.PubSub, "friends:user:#{user_id}", event)
+    Gamend.Broadcast.publish("friends:user:#{user_id}", event)
 
     # also push a channel-friendly version to the per-user Phoenix channel
     # so clients joined to "user:<id>" receive realtime updates via sockets.
@@ -110,8 +107,7 @@ defmodule Gamend.Friends do
         # Broadcast to the user channel without depending on the web app.
         topic = "user:#{user_id}"
 
-        Phoenix.PubSub.broadcast(
-          Gamend.PubSub,
+        Gamend.Broadcast.publish(
           topic,
           %Phoenix.Socket.Broadcast{topic: topic, event: Atom.to_string(name), payload: payload}
         )
@@ -122,7 +118,7 @@ defmodule Gamend.Friends do
   end
 
   defp broadcast_all(event) do
-    Phoenix.PubSub.broadcast(Gamend.PubSub, @friends_topic, event)
+    Gamend.Broadcast.publish(@friends_topic, event)
   end
 
   # ── Friend notifications ────────────────────────────────────────────────
@@ -359,7 +355,7 @@ defmodule Gamend.Friends do
   @doc "Accept a friend request (only the target may accept). Returns {:ok, friendship}."
   @spec accept_friend_request(Ecto.UUID.t(), User.t()) :: {:ok, Friendship.t()} | {:error, term()}
   def accept_friend_request(friendship_id, %User{id: user_id}) when is_binary(friendship_id) do
-    Repo.transaction(fn ->
+    Gamend.AfterCommit.transaction(fn ->
       with %Friendship{} = f <- get_friendship(friendship_id),
            true <- f.target_id == user_id,
            true <- f.status == "pending",
@@ -381,7 +377,9 @@ defmodule Gamend.Friends do
         broadcast_user(accepted.requester_id, {:friend_accepted, accepted})
         broadcast_user(accepted.target_id, {:friend_accepted, accepted})
         broadcast_all({:friend_accepted, accepted})
-        notify_friend_accepted(accepted)
+        # Its insert, push fan-out and `before_push_send` hook are not the
+        # acceptance: they wait for the commit (`Gamend.AfterCommit`).
+        Gamend.AfterCommit.defer(fn -> notify_friend_accepted(accepted) end)
 
         accepted
       else
@@ -518,7 +516,7 @@ defmodule Gamend.Friends do
   end
 
   defp do_block_user(blocker_id, blocked_id) do
-    Repo.transaction(fn ->
+    Gamend.AfterCommit.transaction(fn ->
       # Drop the reverse row first: the pair is unique per direction, so a
       # reverse row would otherwise survive alongside the canonical block.
       Repo.delete_all(
@@ -1086,7 +1084,7 @@ defmodule Gamend.Friends do
   @spec get_friendship!(Ecto.UUID.t()) :: Friendship.t()
   @decorate cacheable(
               key: {:friends, :friendship, friendship_cache_version(id), id},
-              opts: [ttl: @friendships_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_friendship!(id), do: Repo.get_uuid!(Friendship, id)
 
@@ -1095,7 +1093,7 @@ defmodule Gamend.Friends do
   @decorate cacheable(
               key: {:friends, :friendship, friendship_cache_version(id), id},
               match: &cache_match/1,
-              opts: [ttl: @friendships_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_friendship(id), do: Repo.get_uuid(Friendship, id)
 

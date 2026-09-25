@@ -196,7 +196,7 @@ defmodule Gamend.Groups.JoinRequests do
             role: "member"
           })
         end)
-        |> Repo.transaction()
+        |> Gamend.AfterCommit.transaction()
         |> case do
           {:ok, %{membership: member}} ->
             _ = Shared.invalidate_group_cache(group_id)
@@ -224,8 +224,7 @@ defmodule Gamend.Groups.JoinRequests do
               }
             )
 
-            Phoenix.PubSub.broadcast(
-              Gamend.PubSub,
+            Gamend.Broadcast.publish(
               "user:#{user_id}",
               {:group_join_request_approved, %{group_id: group_id}}
             )
@@ -287,8 +286,7 @@ defmodule Gamend.Groups.JoinRequests do
                 }
               )
 
-              Phoenix.PubSub.broadcast(
-                Gamend.PubSub,
+              Gamend.Broadcast.publish(
                 "user:#{updated.user_id}",
                 {:group_join_request_rejected, %{group_id: group_id}}
               )

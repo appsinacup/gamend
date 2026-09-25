@@ -9,6 +9,7 @@ defmodule Gamend.Accounts.Registration do
 
   import Ecto.Query, warn: false
   require Logger
+  alias Gamend.Accounts.ConfirmationMailer
   alias Gamend.Accounts.User
   alias Gamend.Accounts.UsernameGenerator
   alias Gamend.Accounts.UserNotifier
@@ -98,13 +99,13 @@ defmodule Gamend.Accounts.Registration do
   end
 
   @doc """
-  Register a user and send the confirmation email inside a DB transaction.
+  Register a user and queue its confirmation email.
 
-  The function accepts a `confirmation_url_fun` which must be a function of arity 1
-  that receives the encoded token and returns the confirmation URL string.
-
-  If sending the confirmation email fails the transaction is rolled back and
-  `{:error, reason}` is returned. On success it returns `{:ok, user}`.
+  `confirmation_url_fun` maps an encoded token to the confirmation URL. The
+  email goes out from the `mailers` queue (`Gamend.Accounts.ConfirmationMailer`),
+  enqueued in the transaction that inserts the user: the call returns once
+  both are committed, without waiting on SMTP, and a failed send is retried
+  there. The first user becomes the admin and gets no email.
   """
   @spec register_user_and_deliver(Types.user_registration_attrs(), (String.t() -> String.t())) ::
           {:ok, User.t()} | {:error, Ecto.Changeset.t() | term()}
@@ -119,11 +120,11 @@ defmodule Gamend.Accounts.Registration do
         notifier \\ Gamend.Accounts.UserNotifier
       )
       when is_function(confirmation_url_fun, 1) do
-    register_and_deliver(attrs, &User.email_changeset/2, confirmation_url_fun, notifier)
+    register_and_deliver(attrs, &User.email_changeset/3, confirmation_url_fun, notifier)
   end
 
   @doc """
-  Register a user with an email and a password and send the confirmation
+  Register a user with an email and a password and queue the confirmation
   email, as `register_user_and_deliver/3` does for the browser form: how a
   game client signs up (`POST /api/v1/register`).
   """
@@ -138,7 +139,7 @@ defmodule Gamend.Accounts.Registration do
         notifier \\ Gamend.Accounts.UserNotifier
       )
       when is_function(confirmation_url_fun, 1) do
-    register_and_deliver(attrs, &User.registration_changeset/2, confirmation_url_fun, notifier)
+    register_and_deliver(attrs, &User.registration_changeset/3, confirmation_url_fun, notifier)
   end
 
   defp register_and_deliver(attrs, base_changeset, confirmation_url_fun, notifier) do
@@ -148,28 +149,37 @@ defmodule Gamend.Accounts.Registration do
     # Check if this is the first user and make them admin
     is_first_user = first_user?()
 
-    changeset_fun = fn attrs ->
+    build = fn attrs, opts ->
       %User{}
-      |> base_changeset.(attrs)
+      |> base_changeset.(attrs, opts)
       |> User.username_changeset(attrs)
       |> maybe_make_first_user_admin(is_first_user)
       |> maybe_deactivate_new_user(is_first_user)
     end
 
-    transaction_fun = fn changeset ->
-      case Repo.insert(changeset) do
-        {:ok, %User{} = user} ->
-          case maybe_send_confirmation(user, is_first_user, notifier, confirmation_url_fun) do
-            :ok -> user
-            {:error, reason} -> Repo.rollback(reason)
-          end
+    changeset_fun = &build.(&1, [])
 
-        {:error, %Ecto.Changeset{} = changeset} ->
-          Repo.rollback(changeset)
+    # The plugins' tentative user needs neither the password hash (Argon2id,
+    # ~24ms) nor the email-uniqueness query: the real changeset runs both.
+    # Unhashed, the plaintext would stay on it, so it is dropped.
+    tentative_fun = fn attrs ->
+      attrs
+      |> build.(hash_password: false, validate_unique: false)
+      |> Ecto.Changeset.delete_change(:password)
+    end
+
+    # Two inserts and nothing slow: the confirmation email is a job, queued
+    # here so a committed account always has one, and sent after commit.
+    transaction_fun = fn changeset ->
+      with {:ok, %User{} = user} <- Repo.insert(changeset),
+           :ok <- queue_confirmation(user, is_first_user, confirmation_url_fun, notifier) do
+        user
+      else
+        {:error, reason} -> Repo.rollback(reason)
       end
     end
 
-    with {:ok, attrs} <- run_before_user_register(changeset_fun, attrs),
+    with {:ok, attrs} <- run_before_user_register(tentative_fun, attrs),
          {:ok, %User{} = user} <-
            transact_with_username_retry(changeset_fun, transaction_fun, attrs) do
       Accounts.invalidate_users_count_cache()
@@ -182,17 +192,11 @@ defmodule Gamend.Accounts.Registration do
     end
   end
 
-  defp maybe_send_confirmation(_user, true, _notifier, _fun), do: :ok
+  defp queue_confirmation(_user, true = _is_first_user, _url_fun, _notifier), do: :ok
 
-  defp maybe_send_confirmation(user, false, notifier, confirmation_url_fun) do
-    {encoded_token, user_token} = UserToken.build_email_token(user, "confirm")
-    Repo.insert!(user_token)
-
-    case notifier.deliver_confirmation_instructions(
-           user,
-           confirmation_url_fun.(encoded_token)
-         ) do
-      {:ok, _} -> :ok
+  defp queue_confirmation(user, false, confirmation_url_fun, notifier) do
+    case user |> ConfirmationMailer.new_for(confirmation_url_fun, notifier) |> Oban.insert() do
+      {:ok, _job} -> :ok
       {:error, reason} -> {:error, reason}
     end
   end
@@ -250,7 +254,7 @@ defmodule Gamend.Accounts.Registration do
   defp transact_with_username_retry(changeset_fun, transaction_fun, attrs, attempt \\ 1) do
     changeset = changeset_fun.(attrs)
 
-    case Repo.transaction(fn -> transaction_fun.(changeset) end) do
+    case Gamend.AfterCommit.transaction(fn -> transaction_fun.(changeset) end) do
       {:error, %Ecto.Changeset{} = changeset} = err ->
         case regenerate_username_attrs(attrs, changeset, attempt) do
           {:retry, attrs} ->
@@ -359,7 +363,7 @@ defmodule Gamend.Accounts.Registration do
   end
 
   defp confirm_user_by_token_tx(%User{} = user) do
-    Repo.transaction(fn ->
+    Gamend.AfterCommit.transaction(fn ->
       {:ok, confirmed_user} = confirm_user(user)
 
       Repo.delete_all(

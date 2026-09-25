@@ -208,8 +208,7 @@ defmodule Gamend.Inventory do
   defp topic(user_id), do: @topic_prefix <> user_id
 
   defp broadcast(user_id, item, quantity, delta) do
-    Phoenix.PubSub.broadcast(
-      Gamend.PubSub,
+    Gamend.Broadcast.publish(
       topic(user_id),
       {:inventory_updated, %{item: item, quantity: quantity, delta: delta}}
     )

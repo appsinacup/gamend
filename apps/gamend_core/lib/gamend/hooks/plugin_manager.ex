@@ -32,8 +32,47 @@ defmodule Gamend.Hooks.PluginManager do
   @type plugin_name :: String.t()
   @type plugin_app :: atom()
 
+  # Plugin lifecycle calls (reload, `after_startup`). Hook calls take the
+  # declared `call_timeout_ms` instead.
   @timeout_ms 60_000
-  @default_slow_hook_threshold_ms 200.0
+
+  use Gamend.Settings.Provider,
+    app: :gamend_core,
+    group: :hooks,
+    label: "Hooks"
+
+  setting(:call_timeout_ms, :integer,
+    default: 60_000,
+    doc:
+      "How long a plugin hook or RPC may run before it is killed, in ms. The caller's " <>
+        "request waits that long."
+  )
+
+  setting(:call_timeout_in_transaction_ms, :integer,
+    default: 5_000,
+    doc:
+      "The same, for a hook called inside a database transaction: on SQLite that " <>
+        "transaction holds the only write connection while the hook runs."
+  )
+
+  setting(:slow_threshold_ms, :integer,
+    default: 200,
+    doc: "Log a hook call as slow when it takes longer than this, in ms."
+  )
+
+  @doc """
+  How long a hook call may run, in ms: `call_timeout_in_transaction_ms` inside a
+  `Repo` transaction, `call_timeout_ms` otherwise.
+  """
+  @spec call_timeout_ms() :: pos_integer()
+  def call_timeout_ms do
+    key =
+      if Gamend.Repo.in_transaction?(),
+        do: :call_timeout_in_transaction_ms,
+        else: :call_timeout_ms
+
+    max(Gamend.Settings.get(__MODULE__, key), 1)
+  end
 
   defmodule Plugin do
     @moduledoc """
@@ -193,7 +232,7 @@ defmodule Gamend.Hooks.PluginManager do
   defp do_call_rpc(plugin, fn_name, args, opts) do
     case lookup(plugin) do
       {:ok, %Plugin{status: :ok, hooks_module: mod}} when is_atom(mod) and not is_nil(mod) ->
-        timeout = Keyword.get(opts, :timeout_ms, @timeout_ms)
+        timeout = Keyword.get_lazy(opts, :timeout_ms, &call_timeout_ms/0)
 
         case resolve_function_atom(mod, fn_name, length(args)) do
           {:ok, fun_atom} ->
@@ -377,13 +416,7 @@ defmodule Gamend.Hooks.PluginManager do
     |> :erlang.float_to_binary(decimals: 3)
   end
 
-  defp slow_hook_threshold_ms do
-    Application.get_env(
-      :gamend_core,
-      :slow_hook_threshold_ms,
-      @default_slow_hook_threshold_ms
-    )
-  end
+  defp slow_hook_threshold_ms, do: Gamend.Settings.get(__MODULE__, :slow_threshold_ms)
 
   defp do_reload(prev_state) when is_map(prev_state) do
     # Dynamic RPC exports are derived from the currently loaded plugins.

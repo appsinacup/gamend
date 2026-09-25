@@ -43,6 +43,30 @@ defmodule Gamend.Payments.ProviderConfig do
   @spec environments() :: [String.t()]
   def environments, do: @environments
 
+  # Managed Payments needs this API version or later on the Checkout Session
+  # call (docs.stripe.com/payments/managed-payments/update-checkout).
+  @managed_payments_min_api_version "2025-03-31.basil"
+
+  @doc "Whether checkouts go through Stripe Managed Payments (Stripe as merchant of record)."
+  @spec stripe_managed_payments?() :: boolean()
+  def stripe_managed_payments?,
+    do: Gamend.Settings.get(Gamend.Payments.Settings, :stripe_managed_payments) == true
+
+  @doc """
+  The API version for creating a Checkout Session: the configured one, raised
+  to #{@managed_payments_min_api_version} when Managed Payments is on and the
+  configured one is older. Only that call is raised, so every other request,
+  and the payloads core parses from them, keep the configured version.
+  """
+  @spec stripe_checkout_api_version() :: String.t()
+  def stripe_checkout_api_version do
+    configured = stripe_api_version()
+
+    if stripe_managed_payments?() and configured < @managed_payments_min_api_version,
+      do: @managed_payments_min_api_version,
+      else: configured
+  end
+
   @spec stripe_secret_key() :: String.t() | nil
   def stripe_secret_key, do: stripe_value(:secret_key)
 

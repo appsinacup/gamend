@@ -94,7 +94,7 @@ defmodule Gamend.Accounts.AvatarMirror do
   end
 
   defp fetch(source_url, req_opts) do
-    Req.get(source_url, [decode_body: false] ++ req_opts)
+    Gamend.HTTP.get(source_url, [decode_body: false] ++ req_opts)
   rescue
     e -> {:error, e}
   end

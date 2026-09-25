@@ -43,6 +43,28 @@ defmodule Gamend.JobsObanConfigTest do
     end)
   end
 
+  test "queue sizes and the pruning window follow their settings" do
+    Gamend.SettingsHelpers.put(:gamend_core, Jobs, :queue_hooks, 40)
+    Gamend.SettingsHelpers.put(:gamend_core, Jobs, :prune_after_days, 2)
+
+    on_exit(fn ->
+      Gamend.SettingsHelpers.delete(:gamend_core, Jobs, :queue_hooks)
+      Gamend.SettingsHelpers.delete(:gamend_core, Jobs, :prune_after_days)
+    end)
+
+    with_adapter(Ecto.Adapters.Postgres, fn ->
+      config = Jobs.oban_config()
+
+      assert config[:queues][:hooks] == 40
+      assert config[:queues][:push] == Gamend.Settings.get(Gamend.Push, :queue_concurrency)
+
+      assert {Oban.Plugins.Pruner, pruner} =
+               Enum.find(config[:plugins], &match?({Oban.Plugins.Pruner, _}, &1))
+
+      assert pruner[:max_age] == 2 * 86_400
+    end)
+  end
+
   test "postgres keeps the configured concurrency untouched" do
     with_adapter(Ecto.Adapters.Postgres, fn ->
       config = Jobs.oban_config()

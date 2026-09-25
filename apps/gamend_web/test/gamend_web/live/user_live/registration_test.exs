@@ -104,6 +104,7 @@ defmodule GamendWeb.UserLive.RegistrationDeliveryFailureTest do
   Sync, and kept apart from `RegistrationTest` so the rest of it stays async.
   """
   use GamendWeb.ConnCase, async: false
+  use Oban.Testing, repo: Gamend.Repo
 
   import Phoenix.LiveViewTest
   import Gamend.AccountsFixtures
@@ -125,7 +126,7 @@ defmodule GamendWeb.UserLive.RegistrationDeliveryFailureTest do
     :ok
   end
 
-  test "shows friendly error when confirmation delivery fails", %{conn: conn} do
+  test "sign-up does not wait on the mail server; a failed send is left to the job", %{conn: conn} do
     # ensure this is not the first user so email delivery is attempted
     _existing = user_fixture()
 
@@ -134,10 +135,11 @@ defmodule GamendWeb.UserLive.RegistrationDeliveryFailureTest do
     email = unique_user_email()
     form = form(lv, "#registration_form", user: valid_user_attributes(email: email))
 
-    html = render_submit(form)
+    {:ok, _lv, html} = render_submit(form) |> follow_redirect(conn, ~p"/users/log_in")
+    assert html =~ "Account created. Check your email"
 
-    assert html =~ "Failed"
-
-    refute Gamend.Repo.get_by(Gamend.Accounts.User, email: email)
+    assert [job] = all_enqueued(worker: Gamend.Accounts.ConfirmationMailer)
+    assert {:error, :smtp_failed} = perform_job(Gamend.Accounts.ConfirmationMailer, job.args)
+    assert Gamend.Repo.get_by(Gamend.Accounts.User, email: email)
   end
 end

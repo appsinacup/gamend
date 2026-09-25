@@ -18,10 +18,12 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
       socket
       |> assign(:payment_purchases, Payments.list_user_purchases(user.id, limit: 100))
       |> assign(:payment_entitlements, Payments.list_user_entitlements(user.id))
+      |> assign(:stripe_customer?, is_binary(Payments.stripe_customer_id(user)))
     else
       socket
       |> assign(:payment_purchases, [])
       |> assign(:payment_entitlements, [])
+      |> assign(:stripe_customer?, false)
     end
   end
 
@@ -33,9 +35,21 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
           <div>
             <div class="font-semibold text-lg">{gettext("Payments")}</div>
           </div>
-          <.link navigate={~p"/store"} class="btn btn-sm btn-primary">
-            {gettext("Open Store")}
-          </.link>
+          <div class="flex flex-wrap gap-2">
+            <%!-- Stripe's hosted portal: cancel, change card, invoices. --%>
+            <button
+              :if={@stripe_customer?}
+              id="open-stripe-portal"
+              type="button"
+              phx-click="open_stripe_portal"
+              class="btn btn-sm btn-outline"
+            >
+              {gettext("Manage billing")}
+            </button>
+            <.link navigate={~p"/store"} class="btn btn-sm btn-primary">
+              {gettext("Open Store")}
+            </.link>
+          </div>
         </div>
       </div>
 
@@ -170,6 +184,17 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
 
     <%!-- Data tab --%>
     """
+  end
+
+  def handle_event("open_stripe_portal", _params, socket) do
+    user = Shared.current_user(socket)
+    return_url = GamendWeb.Endpoint.url() <> ~p"/users/settings?tab=payments"
+
+    case user && Payments.create_stripe_billing_portal(user, return_url) do
+      {:ok, url} -> {:noreply, redirect(socket, external: url)}
+      {:error, reason} -> {:noreply, put_flash(socket, :error, payment_error(reason))}
+      nil -> {:noreply, socket}
+    end
   end
 
   def handle_event("cancel_stripe_subscription", %{"id" => id}, socket) do

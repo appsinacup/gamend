@@ -19,6 +19,8 @@ defmodule GamendWeb.Plugs.RateLimiter do
 
   import Plug.Conn
 
+  alias GamendWeb.Plugs.LocalePath
+
   # Declared so the values are documented, env-fed and visible in the admin
   # viewer; the `Keyword.get(config(), key, @default)` reads below are
   # unchanged, because a setting resolves into the app-env key they already
@@ -95,6 +97,28 @@ defmodule GamendWeb.Plugs.RateLimiter do
     doc: "ICE candidate window, in milliseconds."
   )
 
+  # The peer-to-peer signaling channel has budgets of its own: relaying SDP and
+  # ICE between players is chattier than the user channel's traffic.
+  setting(:signaling_ws_limit, :integer,
+    default: 300,
+    doc: "Max signaling channel messages per window, per user."
+  )
+
+  setting(:signaling_ws_window_ms, :integer,
+    default: 10_000,
+    doc: "Signaling channel window, in milliseconds."
+  )
+
+  setting(:signaling_ice_limit, :integer,
+    default: 150,
+    doc: "Max ICE candidates relayed over the signaling channel per window, per user."
+  )
+
+  setting(:signaling_ice_window_ms, :integer,
+    default: 30_000,
+    doc: "Signaling ICE window, in milliseconds."
+  )
+
   def init(opts), do: opts
 
   def call(conn, _opts) do
@@ -105,6 +129,12 @@ defmodule GamendWeb.Plugs.RateLimiter do
     end
   end
 
+  # This plug runs before `LocalePath` (so before the body is parsed), and so
+  # sees `/ro/users/log_in` where the router will see `/users/log_in`: strip the
+  # locale here, or a localized login would count against the general bucket.
+  defp routed_path(["api" | _] = path_info), do: path_info
+  defp routed_path(path_info), do: LocalePath.strip_locale(path_info)
+
   # Skip rate limiting for internal/infrastructure endpoints
   defp skip_path?(%{path_info: ["metrics"]}), do: true
   defp skip_path?(%{path_info: ["health"]}), do: true
@@ -112,7 +142,7 @@ defmodule GamendWeb.Plugs.RateLimiter do
 
   defp do_rate_limit(conn) do
     ip = client_ip(conn)
-    {bucket, scale, limit} = bucket_for(conn, ip)
+    {bucket, scale, limit} = bucket_for(%{conn | path_info: routed_path(conn.path_info)}, ip)
 
     case GamendWeb.RateLimit.hit(bucket, scale, limit) do
       {:allow, _count} ->
@@ -211,10 +241,8 @@ defmodule GamendWeb.Plugs.RateLimiter do
   defp setting(key), do: Gamend.Settings.get(__MODULE__, key)
 
   # Real client IP is already extracted by the RealIp plug earlier in the
-  # endpoint pipeline, so we just format conn.remote_ip.
-  defp client_ip(conn) do
-    conn.remote_ip |> :inet.ntoa() |> to_string()
-  end
+  # endpoint pipeline; IPv6 clients are bucketed by /64 (`RateLimit.ip_key/1`).
+  defp client_ip(conn), do: GamendWeb.RateLimit.ip_key(conn.remote_ip)
 
   defp enabled?, do: setting(:enabled)
 end

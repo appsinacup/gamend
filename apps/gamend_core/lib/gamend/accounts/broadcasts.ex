@@ -5,6 +5,9 @@ defmodule Gamend.Accounts.Broadcasts do
 
   Split out of `Gamend.Accounts`, which still exposes every function here under
   the same name.
+
+  Each runs after commit when called inside a transaction (`Gamend.AfterCommit`),
+  lookups included, so the fan-out sees and announces only committed state.
   """
 
   import Ecto.Query, warn: false
@@ -19,16 +22,17 @@ defmodule Gamend.Accounts.Broadcasts do
   """
   @spec broadcast_user_update(User.t()) :: :ok
   def broadcast_user_update(%User{} = user) do
-    payload = serialize_user_payload(user)
-    topic = "user:#{user.id}"
+    Gamend.AfterCommit.defer(fn ->
+      payload = serialize_user_payload(user)
+      topic = "user:#{user.id}"
 
-    Phoenix.PubSub.broadcast(
-      Gamend.PubSub,
-      topic,
-      %Phoenix.Socket.Broadcast{topic: topic, event: "updated", payload: payload}
-    )
+      Gamend.Broadcast.publish(
+        topic,
+        %Phoenix.Socket.Broadcast{topic: topic, event: "updated", payload: payload}
+      )
 
-    :ok
+      :ok
+    end)
   end
 
   @doc """
@@ -41,30 +45,32 @@ defmodule Gamend.Accounts.Broadcasts do
   """
   @spec broadcast_member_update(User.t()) :: :ok
   def broadcast_member_update(%User{} = user) do
-    if user.lobby_id do
-      Gamend.Lobbies.broadcast_member_presence(
-        user.lobby_id,
-        {:member_updated, user.id}
-      )
-    end
+    Gamend.AfterCommit.defer(fn ->
+      if user.lobby_id do
+        Gamend.Lobbies.broadcast_member_presence(
+          user.lobby_id,
+          {:member_updated, user.id}
+        )
+      end
 
-    if user.party_id do
-      Gamend.Parties.broadcast_member_presence(
-        user.party_id,
-        {:member_updated, user.id}
-      )
-    end
+      if user.party_id do
+        Gamend.Parties.broadcast_member_presence(
+          user.party_id,
+          {:member_updated, user.id}
+        )
+      end
 
-    # Broadcast to all groups the user belongs to
-    for group_id <- Gamend.Groups.user_group_ids(user.id) do
-      Gamend.Groups.broadcast_member_presence(
-        group_id,
-        {:member_updated, user.id}
-      )
-    end
+      # Broadcast to all groups the user belongs to
+      for group_id <- Gamend.Groups.user_group_ids(user.id) do
+        Gamend.Groups.broadcast_member_presence(
+          group_id,
+          {:member_updated, user.id}
+        )
+      end
 
-    broadcast_friend_update(user)
-    :ok
+      broadcast_friend_update(user)
+      :ok
+    end)
   end
 
   @doc """
@@ -75,19 +81,20 @@ defmodule Gamend.Accounts.Broadcasts do
   """
   @spec broadcast_friend_update(User.t()) :: :ok
   def broadcast_friend_update(%User{} = user) do
-    payload = User.serialize_brief(user) |> Map.put(:user_id, user.id)
+    Gamend.AfterCommit.defer(fn ->
+      payload = User.serialize_brief(user) |> Map.put(:user_id, user.id)
 
-    for friend_id <- Gamend.Friends.friend_ids(user.id) do
-      topic = "user:#{friend_id}"
+      for friend_id <- Gamend.Friends.friend_ids(user.id) do
+        topic = "user:#{friend_id}"
 
-      Phoenix.PubSub.broadcast(
-        Gamend.PubSub,
-        topic,
-        %Phoenix.Socket.Broadcast{topic: topic, event: "friend_updated", payload: payload}
-      )
-    end
+        Gamend.Broadcast.publish(
+          topic,
+          %Phoenix.Socket.Broadcast{topic: topic, event: "friend_updated", payload: payload}
+        )
+      end
 
-    :ok
+      :ok
+    end)
   end
 
   @doc """

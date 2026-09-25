@@ -16,6 +16,9 @@ defmodule GamendWeb.Auth.OptionalPipeline do
     module: GamendWeb.Auth.Guardian,
     error_handler: GamendWeb.Auth.ErrorHandler
 
+  # A personal API token counts here as it does in `GamendWeb.Auth.Pipeline`.
+  plug GamendWeb.Auth.ApiTokenAuth
+
   # Same token-type pin as `GamendWeb.Auth.Pipeline` — a refresh token must not
   # authenticate a request just because this pipeline tolerates no token at all.
   plug Guardian.Plug.VerifyHeader,

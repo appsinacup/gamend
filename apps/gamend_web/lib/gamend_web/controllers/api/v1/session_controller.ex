@@ -35,25 +35,38 @@ defmodule GamendWeb.Api.V1.SessionController do
     responses: [
       ok: {"Login successful", "application/json", SessionResponse},
       unauthorized: Schemas.error("Invalid credentials"),
-      forbidden: Schemas.error("Account awaiting activation")
+      forbidden: Schemas.error("Account awaiting activation, or scheduled for deletion"),
+      too_many_requests:
+        Schemas.error(
+          "Too many failed passwords for this email: password sign-in is locked for the " <>
+            "number of seconds in Retry-After (`account_locked`)"
+        )
     ]
   )
 
   def create(conn, %{"email" => email, "password" => password}) do
-    if user = Accounts.get_user_by_email_and_password(email, password) do
-      if Accounts.user_activated?(user) do
-        maybe_attach_device(conn, user)
-        issue_tokens(conn, user)
-      else
-        reply_error(
-          conn,
-          :forbidden,
-          "account_not_activated",
-          "Your account is pending activation by an administrator."
+    case Accounts.authenticate_by_password(email, password) do
+      {:ok, user} ->
+        case Tokens.refusal(user) do
+          nil ->
+            maybe_attach_device(conn, user)
+            issue_tokens(conn, user)
+
+          {status, code, message} ->
+            reply_error(conn, status, code, message)
+        end
+
+      {:error, {:locked, seconds}} ->
+        conn
+        |> put_resp_header("retry-after", Integer.to_string(seconds))
+        |> reply_error(
+          :too_many_requests,
+          "account_locked",
+          "Too many failed sign-in attempts. Try again later, or sign in with an emailed link."
         )
-      end
-    else
-      reply_error(conn, :unauthorized, "invalid_credentials", "Invalid email or password")
+
+      {:error, :invalid_credentials} ->
+        reply_error(conn, :unauthorized, "invalid_credentials", "Invalid email or password")
     end
   end
 
@@ -61,8 +74,9 @@ defmodule GamendWeb.Api.V1.SessionController do
     operation_id: "register",
     summary: "Register",
     description:
-      "Create an account with an email and a password, send its confirmation email " <>
+      "Create an account with an email and a password, queue its confirmation email " <>
         "as browser sign-up does, and sign it in: the tokens come back as from login. " <>
+        "The response does not wait for the email, which is sent and retried in the background. " <>
         "The first account becomes the admin and is confirmed without an email; account " <>
         "activation applies as for every sign-up. When the server requires it " <>
         "(`GAMEND_CAPTCHA_API_REGISTER`), a Cloudflare Turnstile token goes in `captcha_token`.",
@@ -94,11 +108,13 @@ defmodule GamendWeb.Api.V1.SessionController do
       created: {"Account created and signed in", "application/json", SessionResponse},
       bad_request: Schemas.error("Email or password missing (missing_param)"),
       forbidden:
-        Schemas.error("The account awaits activation by an admin, or the captcha failed"),
+        Schemas.error(
+          "The account awaits activation by an admin, the captcha failed, or a plugin " <>
+            "refused the sign-up (registration_refused)"
+        ),
       conflict: Schemas.error("Email or username already taken"),
       unprocessable_entity: Schemas.error("Invalid email, username or password"),
-      service_unavailable:
-        Schemas.error("The confirmation email could not be sent, or the captcha check could not")
+      service_unavailable: Schemas.error("The captcha check could not be completed")
     ]
   )
 
@@ -157,14 +173,11 @@ defmodule GamendWeb.Api.V1.SessionController do
       else: unprocessable(conn, changeset)
   end
 
-  # The mail did not go, and the account was rolled back with it.
-  defp registered({:error, _reason}, conn) do
-    reply_error(
-      conn,
-      :service_unavailable,
-      "email_delivery_failed",
-      "The confirmation email could not be sent"
-    )
+  # A `before_user_register` plugin refused the sign-up. The email is queued,
+  # never sent here, so it cannot fail this request.
+  defp registered({:error, reason}, conn) do
+    message = if is_binary(reason), do: reason, else: "The registration was refused"
+    reply_error(conn, :forbidden, "registration_refused", message)
   end
 
   # An email or a username someone already has: 409, the input was fine.
@@ -193,7 +206,10 @@ defmodule GamendWeb.Api.V1.SessionController do
     responses: [
       ok: {"Login successful", "application/json", SessionResponse},
       bad_request: Schemas.error("Unable to create device user"),
-      forbidden: Schemas.error("Device auth disabled, or account awaiting activation")
+      forbidden:
+        Schemas.error(
+          "Device auth disabled, or account awaiting activation or scheduled for deletion"
+        )
     ]
   )
 
@@ -205,15 +221,9 @@ defmodule GamendWeb.Api.V1.SessionController do
     if Accounts.device_auth_enabled?() do
       case Accounts.find_or_create_from_device(device_id) do
         {:ok, user} ->
-          if Accounts.user_activated?(user) do
-            issue_tokens(conn, user)
-          else
-            reply_error(
-              conn,
-              :forbidden,
-              "account_not_activated",
-              "Your account is pending activation by an administrator."
-            )
+          case Tokens.refusal(user) do
+            nil -> issue_tokens(conn, user)
+            {status, code, message} -> reply_error(conn, status, code, message)
           end
 
         {:error, changeset} ->

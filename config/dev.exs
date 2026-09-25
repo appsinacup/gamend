@@ -171,8 +171,7 @@ config :phoenix_live_view,
 # Configure Guardian for development
 config :gamend_web, GamendWeb.Auth.Guardian,
   issuer: "gamend",
-  secret_key: "l/tTJZ4KUNjIfiUsNQDQLWOTgFlyiOz8RQ2EgSRa7mopMzPLJuu7/8s5pA7iiSgO",
-  ttl: {15, :minutes}
+  secret_key: "l/tTJZ4KUNjIfiUsNQDQLWOTgFlyiOz8RQ2EgSRa7mopMzPLJuu7/8s5pA7iiSgO"
 
 # Looser throttling for local iteration. These were previously the *implicit*
 # dev values — the production numbers only ever applied inside runtime.exs's

@@ -66,8 +66,6 @@ defmodule Gamend.Quests do
 
   @type user_id :: Ecto.UUID.t()
 
-  @cache_ttl_ms 60_000
-
   # Grace before the recovery sweep retries a claimed-but-ungranted row, so it
   # can't race the post-commit grants of an in-flight claim.
   @reward_retry_grace_s 60
@@ -122,19 +120,19 @@ defmodule Gamend.Quests do
 
   defp broadcast_definition_change do
     invalidate_quests_cache()
-    Phoenix.PubSub.broadcast(@pubsub, "quests", {:quests_changed})
+    Gamend.Broadcast.publish("quests", {:quests_changed})
   end
 
   # Progress ticks go to the user's topic only — a global fan-out of every
   # objective increment would scale with total event volume across all
   # players. Completions/claims are rare enough to broadcast globally.
   defp broadcast_progress(:quest_progress = event, user_id, payload) do
-    Phoenix.PubSub.broadcast(@pubsub, "user:#{user_id}", {event, payload})
+    Gamend.Broadcast.publish("user:#{user_id}", {event, payload})
   end
 
   defp broadcast_progress(event, user_id, payload) do
-    Phoenix.PubSub.broadcast(@pubsub, "user:#{user_id}", {event, payload})
-    Phoenix.PubSub.broadcast(@pubsub, "quests", {event, user_id, payload})
+    Gamend.Broadcast.publish("user:#{user_id}", {event, payload})
+    Gamend.Broadcast.publish("quests", {event, user_id, payload})
   end
 
   # ---------------------------------------------------------------------------
@@ -204,7 +202,7 @@ defmodule Gamend.Quests do
   @decorate cacheable(
               key: {:quests, :get, quests_version(), id},
               match: &(&1 != nil),
-              opts: [ttl: @cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_quest(id), do: Repo.get_uuid(Quest, id)
 
@@ -255,7 +253,7 @@ defmodule Gamend.Quests do
           claimed: non_neg_integer()
         }
   def stats do
-    Gamend.Cache.cached({:quests, :stats}, [ttl: @cache_ttl_ms], fn ->
+    Gamend.Cache.cached({:quests, :stats}, [ttl: Gamend.Cache.ttl()], fn ->
       by_status =
         from(p in QuestProgress, group_by: p.status, select: {p.status, count(p.id)})
         |> Repo.all()
@@ -300,7 +298,7 @@ defmodule Gamend.Quests do
   @spec active_quests() :: [Quest.t()]
   @decorate cacheable(
               key: {:quests, :active_all, quests_version()},
-              opts: [ttl: @cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def active_quests do
     from(q in Quest, where: q.active == true, order_by: [asc: q.sort_order, asc: q.key])
@@ -327,7 +325,7 @@ defmodule Gamend.Quests do
   def active_quests_for_event(event) when is_binary(event) do
     Gamend.Cache.cached(
       {:quests, :for_event, event, quests_version()},
-      [ttl: @cache_ttl_ms],
+      [ttl: Gamend.Cache.ttl()],
       fn ->
         Enum.filter(active_quests(), fn quest ->
           Enum.any?(quest.objectives, &(&1.event == event))

@@ -666,13 +666,19 @@ defmodule Gamend.Hooks do
     ])
   end
 
+  # The hooks module leads, a host app's own modules follow, plugins last.
+  # `config :gamend_core, :host_hook_modules, [MyApp.Hooks]` is for a host
+  # that wants a lifecycle event without taking over `:hooks_module`, which
+  # would move every fan-out hook's primary result off `Default`. A host
+  # module exports only what it implements, and is called only for that.
   defp lifecycle_modules do
     base = module()
+    host_mods = Application.get_env(:gamend_core, :host_hook_modules, [])
 
     plugin_mods =
       Enum.map(PluginManager.hook_modules(), fn {_name, mod} -> mod end)
 
-    [base | plugin_mods]
+    ([base | host_mods] ++ plugin_mods)
     |> Enum.uniq()
   end
 
@@ -1500,13 +1506,10 @@ defmodule Gamend.Hooks do
   #
   # Outside a transaction the generous budget stays: a hook doing real work on
   # its own time blocks nothing but its own request.
-  defp default_hook_timeout do
-    if Gamend.Repo.in_transaction?() do
-      Application.get_env(:gamend_core, :hooks_call_timeout_in_transaction, 5_000)
-    else
-      Application.get_env(:gamend_core, :hooks_call_timeout, 60_000)
-    end
-  end
+  #
+  # Both budgets are settings (`GAMEND_HOOKS_CALL_TIMEOUT_MS` and
+  # `GAMEND_HOOKS_CALL_TIMEOUT_IN_TRANSACTION_MS`).
+  defp default_hook_timeout, do: PluginManager.call_timeout_ms()
 end
 
 defmodule Gamend.Hooks.Default do
@@ -1819,32 +1822,49 @@ defmodule Gamend.Hooks.Default do
   @impl true
   def on_custom_hook(_hook, _args), do: {:error, :not_implemented}
 
+  # Optimistic, so the plugins' `before_user_update` hook (up to its timeout)
+  # runs outside the lock: read, merge and ask the hook unlocked, then write
+  # under the lock only if the metadata is still what the merge started from.
+  # A concurrent change starts it over; the lock guards only the write.
+  @payment_metadata_attempts 3
+
   defp update_user_payment_metadata(user_id, fun)
        when is_binary(user_id) and is_function(fun, 1) do
-    case Gamend.Lock.serialize("user_payment_metadata", user_id, fn ->
-           apply_user_payment_metadata(user_id, fun)
-         end) do
-      {:ok, :ok} -> :ok
-      {:ok, {:error, reason}} -> {:error, reason}
-      {:error, reason} -> {:error, reason}
-    end
+    update_user_payment_metadata(user_id, fun, @payment_metadata_attempts)
   end
 
   defp update_user_payment_metadata(_user_id, _fun), do: :ok
 
-  defp apply_user_payment_metadata(user_id, fun) do
-    case Gamend.Accounts.get_user(user_id) do
-      %User{} = user -> update_loaded_user_payment_metadata(user, fun)
-      nil -> {:error, :user_not_found}
+  defp update_user_payment_metadata(user_id, fun, attempts) do
+    with %User{} = user <- Gamend.Repo.get(User, user_id) || {:error, :user_not_found},
+         {:ok, attrs} <-
+           Gamend.Accounts.run_before_user_update(user, %{metadata: fun.(user.metadata)}) do
+      "user_payment_metadata"
+      |> Gamend.Lock.serialize(user_id, fn -> write_payment_metadata(user, attrs) end)
+      |> case do
+        {:ok, :stale} when attempts > 1 ->
+          update_user_payment_metadata(user_id, fun, attempts - 1)
+
+        {:ok, :stale} ->
+          {:error, :conflict}
+
+        {:ok, {:ok, _user}} ->
+          :ok
+
+        {:ok, {:error, reason}} ->
+          {:error, reason}
+
+        {:error, reason} ->
+          {:error, reason}
+      end
     end
   end
 
-  defp update_loaded_user_payment_metadata(%User{} = user, fun) do
-    metadata = fun.(user.metadata)
-
-    case Gamend.Accounts.update_user(user, %{metadata: metadata}) do
-      {:ok, _user} -> :ok
-      {:error, reason} -> {:error, reason}
+  defp write_payment_metadata(%User{id: id, metadata: read}, attrs) do
+    case Gamend.Repo.get(User, id) do
+      %User{metadata: ^read} = current -> Gamend.Accounts.apply_user_update(current, attrs)
+      %User{} -> :stale
+      nil -> {:error, :user_not_found}
     end
   end
 

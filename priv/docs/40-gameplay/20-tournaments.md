@@ -20,6 +20,8 @@ Single-elimination bracket tournaments: players register during a registration w
   and config — "current occurrence per slug" works like leaderboard seasons.
 ```
 
+Transitions, draws, match deadlines and recurrence run on a tick every `GAMEND_TOURNAMENTS_TICK_INTERVAL_SECONDS` (default `30`), so a round can start or time out up to that late. Lower it for short rounds.
+
 ## Entries
 
 A bracket side is an entry, and an entry is a leader (one user). For team tournaments (team_size 2+, advisory) the leader registers and team composition is game policy, enforced in hooks if you care. The server tracks who leads, not who shows up. Entry states: registered → active (after the draw) → eliminated or winner.

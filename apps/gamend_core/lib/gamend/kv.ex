@@ -71,7 +71,6 @@ defmodule Gamend.KV do
           key: String.t()
         ]
 
-  @kv_cache_ttl_ms 60_000
   @pubsub Gamend.PubSub
 
   @doc """
@@ -186,7 +185,7 @@ defmodule Gamend.KV do
               Gamend.Cache.put(
                 cache_key(key, user_id, lobby_id),
                 payload,
-                ttl: @kv_cache_ttl_ms
+                ttl: Gamend.Cache.ttl()
               )
 
             :ok
@@ -295,6 +294,35 @@ defmodule Gamend.KV do
   end
 
   @doc """
+  Delete every entry scoped to a lobby, in one statement: for deleting the lobby.
+
+  The per-entry cache invalidations and `kv_deleted` broadcasts wait for the
+  enclosing transaction to commit (`Gamend.AfterCommit`). One `delete/2` per
+  entry cost a statement and two cache round-trips each while the caller held
+  the lobby's lock. Returns the number of entries deleted.
+  """
+  @spec delete_lobby_entries(Ecto.UUID.t()) :: non_neg_integer()
+  def delete_lobby_entries(lobby_id) when is_binary(lobby_id) do
+    scoped = where(Entry, [e], e.lobby_id == ^lobby_id)
+    entries = scoped |> select([e], {e.key, e.user_id}) |> Repo.all()
+    {count, _} = Repo.delete_all(scoped)
+
+    Gamend.AfterCommit.defer(fn ->
+      Enum.each(entries, fn {key, user_id} ->
+        _ = Gamend.Cache.invalidate(cache_key(key, user_id, lobby_id))
+        _ = broadcast_kv_deleted(key, user_id, lobby_id)
+      end)
+
+      entries
+      |> Enum.map(&elem(&1, 1))
+      |> Enum.uniq()
+      |> Enum.each(&invalidate_entries_cache(&1, lobby_id))
+    end)
+
+    count
+  end
+
+  @doc """
   Delete every entry a user holds inside one lobby.
 
   Called when a user stops being a member of a lobby, so per-member lobby state
@@ -379,7 +407,7 @@ defmodule Gamend.KV do
           )
 
         Gamend.Async.run(fn ->
-          _ = Gamend.Cache.put(cache_key, entries, ttl: @kv_cache_ttl_ms)
+          _ = Gamend.Cache.put(cache_key, entries, ttl: Gamend.Cache.ttl())
           :ok
         end)
 
@@ -418,7 +446,7 @@ defmodule Gamend.KV do
           |> Repo.aggregate(:count)
 
         Gamend.Async.run(fn ->
-          _ = Gamend.Cache.put(cache_key, count, ttl: @kv_cache_ttl_ms)
+          _ = Gamend.Cache.put(cache_key, count, ttl: Gamend.Cache.ttl())
           :ok
         end)
 
@@ -583,8 +611,7 @@ defmodule Gamend.KV do
   end
 
   defp broadcast_kv_updated(key, user_id, lobby_id, value, metadata) do
-    Phoenix.PubSub.broadcast(
-      @pubsub,
+    Gamend.Broadcast.publish(
       topic(key, user_id, lobby_id),
       {:kv_updated,
        %{
@@ -598,8 +625,7 @@ defmodule Gamend.KV do
   end
 
   defp broadcast_kv_deleted(key, user_id, lobby_id) do
-    Phoenix.PubSub.broadcast(
-      @pubsub,
+    Gamend.Broadcast.publish(
       topic(key, user_id, lobby_id),
       {:kv_deleted, %{key: key, user_id: user_id, lobby_id: lobby_id}}
     )
@@ -621,7 +647,7 @@ defmodule Gamend.KV do
         Gamend.Cache.put(
           cache_key(key, user_id, lobby_id),
           %{value: entry.value, metadata: entry.metadata},
-          ttl: @kv_cache_ttl_ms
+          ttl: Gamend.Cache.ttl()
         )
 
       :ok

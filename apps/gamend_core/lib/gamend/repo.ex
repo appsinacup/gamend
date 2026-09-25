@@ -50,7 +50,7 @@ defmodule Gamend.Repo do
   @spec durable_transaction((-> result), keyword()) :: {:ok, result} | {:error, term()}
         when result: term()
   def durable_transaction(fun, opts \\ []) when is_function(fun, 0) do
-    transaction(
+    Gamend.AfterCommit.transaction(
       fn ->
         if postgres?() do
           query!("SET LOCAL synchronous_commit = on", [])

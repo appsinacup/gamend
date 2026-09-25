@@ -65,15 +65,29 @@ defmodule GamendWeb.Api.V1.StorageController do
 
   def upload(conn, _), do: reply_error(conn, :bad_request, "missing_param", "token is required")
 
-  @doc "GET /storage/*key — serve a stored object (local backend)."
+  @doc """
+  GET /storage/*key — serve a stored object. The local backend serves the
+  bytes; any other backend redirects to a signed link (`Storage.url/2` hands
+  out this path for a private S3 bucket, since a signed link expires).
+  """
   def show(conn, %{"key" => segments}) do
     key = Enum.join(segments, "/")
 
-    if publicly_servable?(key) do
-      serve_object(conn, key)
-    else
-      reply_error(conn, :not_found, "not_found")
+    cond do
+      not publicly_servable?(key) -> reply_error(conn, :not_found, "not_found")
+      Storage.adapter() == Storage.Local -> serve_object(conn, key)
+      true -> redirect_to_object(conn, key)
     end
+  end
+
+  # Cached for half the link's life, so a cached redirect never points at an
+  # expired link.
+  defp redirect_to_object(conn, key) do
+    max_age = div(Storage.signed_url_seconds(), 2)
+
+    conn
+    |> put_resp_header("cache-control", "public, max-age=#{max_age}")
+    |> redirect(external: Storage.url(key, signed: true))
   end
 
   # Prefixes this unauthenticated route may serve.

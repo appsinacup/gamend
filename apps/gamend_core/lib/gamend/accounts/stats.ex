@@ -12,10 +12,6 @@ defmodule Gamend.Accounts.Stats do
   alias Gamend.Accounts.User
   alias Gamend.Repo
 
-  @stats_cache_ttl_ms 60_000
-
-  @users_count_cache_ttl_ms 60_000
-
   # Upper bound on cross-node staleness for cached user structs: explicit
   # invalidations propagate immediately via `Gamend.Cache.invalidate/1`,
   # and this TTL caps staleness if an invalidation broadcast is ever missed.
@@ -24,7 +20,7 @@ defmodule Gamend.Accounts.Stats do
   Returns the total number of users.
   """
   @spec count_users() :: non_neg_integer()
-  @decorate cacheable(key: {:accounts, :users_count}, opts: [ttl: @users_count_cache_ttl_ms])
+  @decorate cacheable(key: {:accounts, :users_count}, opts: [ttl: Gamend.Cache.ttl()])
   def count_users, do: Repo.aggregate(User, :count, :id)
 
   @doc """
@@ -51,7 +47,7 @@ defmodule Gamend.Accounts.Stats do
               key:
                 {:accounts, :stats, Accounts.users_stats_cache_version(), :users_with_provider,
                  provider_field},
-              opts: [ttl: @stats_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp count_users_with_provider_cached(provider_field) do
     Repo.one(
@@ -72,7 +68,7 @@ defmodule Gamend.Accounts.Stats do
   @decorate cacheable(
               key:
                 {:accounts, :stats, Accounts.users_stats_cache_version(), :users_with_password},
-              opts: [ttl: @stats_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp count_users_with_password_cached do
     Repo.one(
@@ -119,7 +115,7 @@ defmodule Gamend.Accounts.Stats do
           players_in_parties: non_neg_integer()
         }
   def player_stats do
-    Gamend.Cache.cached({:accounts, :player_stats}, [ttl: @stats_cache_ttl_ms], fn ->
+    Gamend.Cache.cached({:accounts, :player_stats}, [ttl: Gamend.Cache.ttl()], fn ->
       total = count_users()
       online = count_users_online()
 

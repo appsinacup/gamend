@@ -155,19 +155,10 @@ defmodule GamendWeb.HostRuntime do
   # to the Log provider. Credentials are parse-validated here so a bad value
   # degrades to that Log fallback with one loud error instead of handing the
   # dispatcher a config it would crash-loop on.
+  # The push queue's concurrency is applied with the other queues', by
+  # Gamend.Jobs.oban_config/0.
   defp push_entries(setting) do
-    # The push queue lives in Oban's config, so the declared concurrency has
-    # to be copied across rather than read from the setting at runtime.
-    queue_entries =
-      case setting.(Gamend.Push, :queue_concurrency) do
-        concurrency when is_integer(concurrency) and concurrency > 0 ->
-          [{:gamend_core, Oban, [queues: [push: concurrency]]}]
-
-        _ ->
-          []
-      end
-
-    queue_entries ++ fcm_entries(setting) ++ apns_entries(setting)
+    fcm_entries(setting) ++ apns_entries(setting)
   end
 
   # Secret env vars accept inline contents or a path to a file holding them.
@@ -309,13 +300,11 @@ defmodule GamendWeb.HostRuntime do
         url -> redis_conn_opts_from_url(url)
       end
 
-    l1_opts = [
+    local_opts = [
       # Create new generation every 12 hours
       gc_interval: :timer.hours(12),
-      # Max 1M entries
-      max_size: 1_000_000,
-      # Max 500MB of memory
-      allocated_memory: 500_000_000,
+      max_size: setting.(Gamend.Cache.Settings, :max_entries),
+      allocated_memory: setting.(Gamend.Cache.Settings, :max_memory_mb) * 1_000_000,
       # Run size and memory checks every 10 seconds
       gc_memory_check_interval: :timer.seconds(10)
     ]
@@ -323,7 +312,7 @@ defmodule GamendWeb.HostRuntime do
     levels =
       case cache_mode do
         :single ->
-          [{Gamend.Cache.L1, l1_opts}]
+          [{Gamend.Cache.L1, local_opts}]
 
         _ ->
           l2_level =
@@ -338,17 +327,11 @@ defmodule GamendWeb.HostRuntime do
                 {Gamend.Cache.L2.Redis, pool_size: pool_size, conn_opts: redis_conn_opts}
 
               _ ->
-                {Gamend.Cache.L2.Partitioned,
-                 primary: [
-                   # Partitioned uses a local primary storage on each node.
-                   gc_interval: :timer.hours(12),
-                   max_size: 1_000_000,
-                   allocated_memory: 500_000_000,
-                   gc_memory_check_interval: :timer.seconds(10)
-                 ]}
+                # Partitioned uses a local primary storage on each node.
+                {Gamend.Cache.L2.Partitioned, primary: local_opts}
             end
 
-          [{Gamend.Cache.L1, l1_opts}, l2_level]
+          [{Gamend.Cache.L1, local_opts}, l2_level]
       end
 
     [
@@ -537,10 +520,9 @@ defmodule GamendWeb.HostRuntime do
     guardian_secret_key =
       setting.(Gamend.Accounts, :guardian_secret_key) || secret_key_base
 
-    [
-      {:gamend_web, GamendWeb.Auth.Guardian,
-       [issuer: "gamend", secret_key: guardian_secret_key, ttl: {15, :minutes}]}
-    ]
+    # Token lifetimes are not here: GamendWeb.Auth.Guardian reads them from
+    # the auth.*_token_ttl_* settings in every environment.
+    [{:gamend_web, GamendWeb.Auth.Guardian, [issuer: "gamend", secret_key: guardian_secret_key]}]
   end
 
   defp rate_limit_entries(setting) do

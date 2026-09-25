@@ -92,6 +92,22 @@ defmodule Gamend.Storage do
     doc: "CDN or base URL serving stored objects, whichever backend is behind it."
   )
 
+  setting(:upload_ttl_seconds, :integer,
+    default: 600,
+    doc:
+      "How long an upload ticket stays valid, in seconds. Raise it for large uploads " <>
+        "over slow connections."
+  )
+
+  # An S3 bucket with no `public_url` is private, and its objects are reached
+  # through `/storage/<key>`, which redirects to a link signed for this long.
+  setting(:signed_url_seconds, :integer,
+    default: 3600,
+    doc:
+      "Lifetime of the signed link /storage/<key> redirects to, for an S3 bucket with " <>
+        "no public_url. S3 caps it at 604800 (7 days)."
+  )
+
   @adapters %{local: Gamend.Storage.Local, s3: Gamend.Storage.S3}
 
   @doc "The configured backend module (defaults to `Gamend.Storage.Local`)."
@@ -134,9 +150,24 @@ defmodule Gamend.Storage do
   @spec exists?(Adapter.key()) :: boolean()
   def exists?(key), do: adapter().exists?(key)
 
-  @doc "A readable URL for `key` (public or signed, backend-dependent)."
+  @doc """
+  A readable URL for `key`, safe to store: it does not expire.
+
+  For an S3 bucket with no `public_url` that is `/storage/<key>`, which
+  redirects to a freshly signed link. Pass `signed: true` for the signed link
+  itself, which lasts `signed_url_seconds` and must not be stored.
+  """
   @spec url(Adapter.key(), keyword()) :: String.t()
   def url(key, opts \\ []), do: adapter().url(key, opts)
+
+  @doc "Seconds an upload ticket stays valid (`upload_ttl_seconds`)."
+  @spec upload_ttl_seconds() :: pos_integer()
+  def upload_ttl_seconds, do: max(Gamend.Settings.get(__MODULE__, :upload_ttl_seconds), 1)
+
+  @doc "Seconds a signed read link stays valid (`signed_url_seconds`), at most S3's 7 days."
+  @spec signed_url_seconds() :: pos_integer()
+  def signed_url_seconds,
+    do: Gamend.Settings.get(__MODULE__, :signed_url_seconds) |> max(1) |> min(604_800)
 
   @doc "An upload ticket for the client (see the module doc)."
   @spec presigned_upload(Adapter.key(), keyword()) ::

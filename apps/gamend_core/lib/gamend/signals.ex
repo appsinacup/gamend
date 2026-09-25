@@ -50,8 +50,7 @@ defmodule Gamend.Signals do
   """
   @spec emit(String.t(), String.t(), payload()) :: :ok
   def emit(plugin, name, payload \\ nil) do
-    Phoenix.PubSub.broadcast(
-      Gamend.PubSub,
+    Gamend.Broadcast.publish(
       topic(plugin, name),
       {:gd_signal, plugin, name, payload}
     )

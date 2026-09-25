@@ -14,12 +14,10 @@ defmodule Gamend.Accounts.UserToken do
   @hash_algorithm :sha256
   @rand_size 32
 
-  # It is very important to keep the magic link token expiry short,
-  # since someone with access to the email may take over the account.
-  @magic_link_validity_in_minutes 15
-  @change_email_validity_in_days 7
-  @confirm_validity_in_days 7
-  @session_validity_in_days 14
+  # Validity windows are `auth.*` settings on `Gamend.Accounts`, read on every
+  # check. The magic link is capped: whoever can read the email can take over
+  # the account while the link lives, so it must stay short.
+  @magic_link_max_minutes 60
 
   schema "users_tokens" do
     field :token, :binary
@@ -45,26 +43,44 @@ defmodule Gamend.Accounts.UserToken do
   @doc """
   Query selecting token rows that are past their own context's validity window.
 
-  Each context expires on a different clock (session 14d, magic link 15min,
-  email change and confirmation 7d), and those windows live here — so retention inverts the
-  same predicate the verify queries use instead of guessing a single age.
-  Contexts this module does not know are never selected.
+  Each context expires on a different clock (by default session 14d, magic
+  link 15min, email change and confirmation 7d), and those windows live here —
+  so retention inverts the same predicate the verify queries use instead of
+  guessing a single age. Contexts this module does not know are never selected.
   """
   @spec expired_query() :: Ecto.Query.t()
   def expired_query do
+    session_days = session_validity_in_days()
+    magic_link_minutes = magic_link_validity_in_minutes()
+    change_email_days = change_email_validity_in_days()
+    confirm_days = confirm_validity_in_days()
+
     from t in __MODULE__,
       where:
-        (t.context == "session" and t.inserted_at < ago(@session_validity_in_days, "day")) or
-          (t.context == "login" and
-             t.inserted_at < ago(@magic_link_validity_in_minutes, "minute")) or
-          (like(t.context, "change:%") and
-             t.inserted_at < ago(@change_email_validity_in_days, "day")) or
-          (t.context == "confirm" and t.inserted_at < ago(@confirm_validity_in_days, "day"))
+        (t.context == "session" and t.inserted_at < ago(^session_days, "day")) or
+          (t.context == "login" and t.inserted_at < ago(^magic_link_minutes, "minute")) or
+          (like(t.context, "change:%") and t.inserted_at < ago(^change_email_days, "day")) or
+          (t.context == "confirm" and t.inserted_at < ago(^confirm_days, "day"))
   end
 
-  @doc "How long an email confirmation link stays valid, in days."
+  @doc "How long a browser session lasts, in days (`auth.session_days`)."
+  @spec session_validity_in_days() :: pos_integer()
+  def session_validity_in_days, do: setting_at_least_one(:session_days)
+
+  @doc "How long a magic link stays valid, in minutes (`auth.magic_link_minutes`, at most 60)."
+  @spec magic_link_validity_in_minutes() :: pos_integer()
+  def magic_link_validity_in_minutes,
+    do: min(setting_at_least_one(:magic_link_minutes), @magic_link_max_minutes)
+
+  @doc "How long an email-change link stays valid, in days (`auth.change_email_days`)."
+  @spec change_email_validity_in_days() :: pos_integer()
+  def change_email_validity_in_days, do: setting_at_least_one(:change_email_days)
+
+  @doc "How long an email confirmation link stays valid, in days (`auth.confirm_email_days`)."
   @spec confirm_validity_in_days() :: pos_integer()
-  def confirm_validity_in_days, do: @confirm_validity_in_days
+  def confirm_validity_in_days, do: setting_at_least_one(:confirm_email_days)
+
+  defp setting_at_least_one(key), do: max(Gamend.Settings.get(Gamend.Accounts, key), 1)
 
   @doc """
   Generates a token that will be stored in a signed place,
@@ -97,13 +113,15 @@ defmodule Gamend.Accounts.UserToken do
   The query returns the user found by the token, if any, along with the token's creation time.
 
   The token is valid if it matches the value in the database and it has
-  not expired (after @session_validity_in_days).
+  not expired (after `session_validity_in_days/0`).
   """
   def verify_session_token_query(token) do
+    days = session_validity_in_days()
+
     query =
       from token in by_token_and_context_query(token, "session"),
         join: user in assoc(token, :user),
-        where: token.inserted_at > ago(@session_validity_in_days, "day"),
+        where: token.inserted_at > ago(^days, "day"),
         select: {%{user | authenticated_at: token.authenticated_at}, token.inserted_at}
 
     {:ok, query}
@@ -146,17 +164,19 @@ defmodule Gamend.Accounts.UserToken do
 
   The given token is valid if it matches its hashed counterpart in the
   database. This function also checks if the token is being used within
-  15 minutes. The context of a magic link token is always "login".
+  `magic_link_validity_in_minutes/0`. The context of a magic link token is
+  always "login".
   """
   def verify_magic_link_token_query(token) do
     case Base.url_decode64(token, padding: false) do
       {:ok, decoded_token} ->
         hashed_token = :crypto.hash(@hash_algorithm, decoded_token)
+        minutes = magic_link_validity_in_minutes()
 
         query =
           from token in by_token_and_context_query(hashed_token, "login"),
             join: user in assoc(token, :user),
-            where: token.inserted_at > ago(^@magic_link_validity_in_minutes, "minute"),
+            where: token.inserted_at > ago(^minutes, "minute"),
             where: token.sent_to == user.email,
             select: {user, token}
 
@@ -175,17 +195,18 @@ defmodule Gamend.Accounts.UserToken do
   This is used to validate requests to change the user
   email.
   The given token is valid if it matches its hashed counterpart in the
-  database and if it has not expired (after @change_email_validity_in_days).
+  database and if it has not expired (after `change_email_validity_in_days/0`).
   The context must always start with "change:".
   """
   def verify_change_email_token_query(token, "change:" <> _ = context) do
     case Base.url_decode64(token, padding: false) do
       {:ok, decoded_token} ->
         hashed_token = :crypto.hash(@hash_algorithm, decoded_token)
+        days = change_email_validity_in_days()
 
         query =
           from token in by_token_and_context_query(hashed_token, context),
-            where: token.inserted_at > ago(@change_email_validity_in_days, "day")
+            where: token.inserted_at > ago(^days, "day")
 
         {:ok, query}
 

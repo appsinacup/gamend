@@ -43,7 +43,11 @@ defmodule Gamend.Retention do
     on its own window, `GAMEND_RETENTION_ABANDONED_PARTY_MINUTES` (15).
 
   Expired IP bans, OAuth sessions older than a day, user tokens past their own
-  context's validity, and stored avatars whose owner no longer exists are always
+  context's validity, personal API tokens that can no longer authenticate
+  (expired, or older than their owner's last credential change), login
+  lockouts whose window and lock have run out, accounts past the deletion date
+  their owner's request set (`GAMEND_AUTH_DELETION_GRACE_DAYS`), and stored
+  avatars whose owner no longer exists are always
   removed (independent of the env vars above). Deletes are idempotent, so
   running on several instances at once is harmless; each class is batched and
   failure-isolated, and emits `[:gamend, :retention, :pruned]` telemetry with
@@ -69,7 +73,7 @@ defmodule Gamend.Retention do
   require Logger
 
   alias Gamend.Accounts
-  alias Gamend.Accounts.{User, UserToken}
+  alias Gamend.Accounts.{ApiTokens, LoginLockouts, User, UserToken}
   alias Gamend.ClientLogs
   alias Gamend.ClientLogs.Session, as: ClientSession
   alias Gamend.ClientLogs.SessionLobby
@@ -82,25 +86,35 @@ defmodule Gamend.Retention do
   alias Gamend.Repo
   alias Gamend.Storage
 
-  # First run shortly after boot, then every 6 hours.
+  # First run shortly after boot, then every `interval_hours`.
   @initial_delay_ms :timer.minutes(5)
-  @interval_ms :timer.hours(6)
+
+  # The classes that free live game state: a seat, a lobby, a party. Their
+  # windows are minutes long, so they also run on a short cycle of their own
+  # (`live_interval_seconds`). Swept only with everything else, every six hours,
+  # a 15-minute window let a disconnected player sit on `already_in_lobby` and
+  # a dead lobby stay listed for up to six hours longer than it said.
+  @live_classes [
+    :offline_lobby_memberships,
+    :offline_party_memberships,
+    :abandoned_parties,
+    :lobbies
+  ]
 
   # OAuth sessions are ephemeral handshake state (seconds-to-minutes of use);
   # always prune stale rows so the table can't grow unbounded.
   @oauth_session_ttl_days 1
 
-  # Rows deleted per statement. The sweep runs against a live database: on
-  # SQLite one large DELETE holds the write lock long enough to stall gameplay
-  # writes, and on Postgres it bloats a single transaction.
-  @batch 500
+  # Rows deleted per statement come from `batch_size`. The sweep runs against a
+  # live database: on SQLite one large DELETE holds the write lock long enough
+  # to stall gameplay writes, and on Postgres it bloats a single transaction.
 
   # How long a stored avatar is left alone before "its owner does not exist" is
   # read as orphaned rather than as a write still in progress.
   @orphan_avatar_grace_minutes 60
 
-  # Ceiling on how much of the `avatars/` prefix one sweep walks (`@batch` per
-  # page). A run that hits it says so and resumes from the start six hours later.
+  # Ceiling on how much of the `avatars/` prefix one sweep walks (`batch_size` per
+  # page). A run that hits it says so and resumes from the start at the next sweep.
   @orphan_avatar_max_pages 20
 
   # Invites and join requests are only garbage once they stop being actionable.
@@ -130,6 +144,7 @@ defmodule Gamend.Retention do
   @impl true
   def init(_opts) do
     Process.send_after(self(), :prune, @initial_delay_ms)
+    schedule_live()
     {:ok, @never_run}
   end
 
@@ -167,11 +182,30 @@ defmodule Gamend.Retention do
   @impl true
   def handle_info(:prune, _state) do
     state = sweep()
-    Process.send_after(self(), :prune, @interval_ms)
+    Process.send_after(self(), :prune, :timer.hours(max(config(:interval_hours), 1)))
+    {:noreply, state}
+  end
+
+  # Not recorded as the last run: `status/0` describes a full sweep, and this
+  # one touches four classes. Each class still emits its own telemetry.
+  def handle_info(:prune_live, state) do
+    _ = prune_live()
+    schedule_live()
     {:noreply, state}
   end
 
   def handle_info(_msg, state), do: {:noreply, state}
+
+  # 0 folds the live classes back into the full sweep only.
+  defp schedule_live do
+    case config(:live_interval_seconds) do
+      seconds when is_integer(seconds) and seconds > 0 ->
+        Process.send_after(self(), :prune_live, :timer.seconds(seconds))
+
+      _off ->
+        :ok
+    end
+  end
 
   defp sweep do
     started = System.monotonic_time(:millisecond)
@@ -235,12 +269,29 @@ defmodule Gamend.Retention do
       # would drop core's pruning and leave the table growing, which is the
       # failure this module exists to prevent.
       |> Map.merge(Map.drop(registered_classes(), Map.keys(core_classes())))
-      |> Map.new(fn {class, fun} -> {class, run_class(class, fun)} end)
+      |> Map.new(&run_class/1)
 
     pruned = results |> Map.values() |> Enum.sum()
 
     if pruned > 0 do
       Logger.info("retention pruned rows: #{inspect(results)}")
+    end
+
+    results
+  end
+
+  @doc """
+  Runs only the classes that free live game state: offline lobby and party
+  seats, abandoned parties, abandoned lobbies. What the short cycle
+  (`live_interval_seconds`) runs between full sweeps.
+  """
+  @spec prune_live() :: %{atom() => non_neg_integer()}
+  def prune_live do
+    results = Map.new(Map.take(core_classes(), @live_classes), &run_class/1)
+    pruned = results |> Map.values() |> Enum.sum()
+
+    if pruned > 0 do
+      Logger.info("retention released live state: #{inspect(results)}")
     end
 
     results
@@ -264,6 +315,9 @@ defmodule Gamend.Retention do
       end,
       expired_ip_bans: &prune_expired_ip_bans/0,
       expired_user_tokens: &prune_expired_user_tokens/0,
+      login_lockouts: fn -> delete_in_batches(LoginLockouts.expired_query()) end,
+      scheduled_deletions: &delete_due_accounts/0,
+      dead_api_tokens: &prune_dead_api_tokens/0,
       lobby_snapshots: &prune_lobby_snapshots/0,
       client_sessions: &prune_client_sessions/0,
       lobby_snapshot_blobs: &prune_lobby_snapshot_blobs/0,
@@ -532,7 +586,7 @@ defmodule Gamend.Retention do
       where: u.id not in subquery(from(p in Purchase, select: p.user_id)),
       where: u.id not in subquery(from(e in Entitlement, select: e.user_id)),
       where: ^identity_condition(kind),
-      limit: @batch
+      limit: ^batch()
     )
     |> Repo.all()
   end
@@ -565,6 +619,15 @@ defmodule Gamend.Retention do
     Enum.count(users, fn user -> match?({:ok, _}, Accounts.delete_user(user)) end)
   end
 
+  # Accounts their owners deleted, once `auth.deletion_grace_days` has run out.
+  # No exemptions: the owner asked. A batch a sweep, like the other user sweeps.
+  defp delete_due_accounts do
+    Accounts.due_deletions_query()
+    |> limit(^batch())
+    |> Repo.all()
+    |> delete_users()
+  end
+
   # Object storage neither cascades nor takes part in the deletion transaction.
   # `Accounts.delete_user/1` drops the `avatars/<user_id>/` prefix itself, but
   # anything that writes an object for an account that is already gone leaves
@@ -579,7 +642,7 @@ defmodule Gamend.Retention do
   # after `@orphan_avatar_grace_minutes`, so an object mid-write is never
   # mistaken for an orphan.
   #
-  # Walked a page at a time so each pass asks the database about at most `@batch`
+  # Walked a page at a time so each pass asks the database about at most `batch_size`
   # ids. Both backends list in key order, so a single page would only ever see
   # the users whose ids sort first and an orphan past it would never be reached;
   # the offset advances by what the page left behind, since deleting from the
@@ -591,11 +654,11 @@ defmodule Gamend.Retention do
   end
 
   defp sweep_avatar_page(offset, deleted, pages_left, cutoff) do
-    page = Storage.list_objects(prefix: "avatars/", offset: offset, limit: @batch)
+    page = Storage.list_objects(prefix: "avatars/", offset: offset, limit: batch())
     removed = delete_ownerless_avatars(page, cutoff)
 
     cond do
-      length(page) < @batch ->
+      length(page) < batch() ->
         deleted + removed
 
       pages_left <= 1 ->
@@ -697,7 +760,7 @@ defmodule Gamend.Retention do
       where: u.is_online == false,
       where: is_nil(u.last_seen_at) or u.last_seen_at <= ^cutoff,
       order_by: [asc: u.id],
-      limit: @batch
+      limit: ^batch()
     )
     |> Repo.all()
     |> Enum.count(&release_membership/1)
@@ -744,7 +807,7 @@ defmodule Gamend.Retention do
           )
         ),
       order_by: [asc: p.id],
-      limit: @batch
+      limit: ^batch()
     )
     |> Repo.all()
     |> Enum.count(&disband_party/1)
@@ -777,7 +840,7 @@ defmodule Gamend.Retention do
       where: u.is_online == false,
       where: is_nil(u.last_seen_at) or u.last_seen_at <= ^cutoff,
       order_by: [asc: u.id],
-      limit: @batch
+      limit: ^batch()
     )
     |> Repo.all()
     |> Enum.count(&release_party_membership/1)
@@ -847,12 +910,12 @@ defmodule Gamend.Retention do
   end
 
   defp reap_lobbies(query, acc) do
-    lobbies = Repo.all(from(l in query, limit: @batch))
+    lobbies = Repo.all(from(l in query, limit: ^batch()))
     deleted = Enum.count(lobbies, &reap_lobby/1)
 
     cond do
       deleted == 0 -> acc
-      length(lobbies) < @batch -> acc + deleted
+      length(lobbies) < batch() -> acc + deleted
       true -> reap_lobbies(query, acc + deleted)
     end
   end
@@ -869,27 +932,27 @@ defmodule Gamend.Retention do
 
   # One class raising must not cost the whole sweep: every other table still
   # gets pruned, and the failure is logged rather than swallowed.
-  defp run_class(class, fun) do
+  defp run_class({class, fun}) do
     count = fun.()
     :telemetry.execute([:gamend, :retention, :pruned], %{count: count}, %{class: class})
-    count
+    {class, count}
   rescue
     error ->
       Logger.error("retention class #{class} failed: #{Exception.message(error)}")
-      0
+      {class, 0}
   end
 
   # Both adapters reject `DELETE ... LIMIT`, so each pass selects a bounded set
   # of ids and deletes those.
   defp delete_in_batches(queryable, acc \\ 0) do
-    ids = Repo.all(from(r in exclude(queryable, :select), select: r.id, limit: @batch))
+    ids = Repo.all(from(r in exclude(queryable, :select), select: r.id, limit: ^batch()))
 
     if ids == [] do
       acc
     else
       {count, _} = Repo.delete_all(from(r in queryable, where: r.id in ^ids))
 
-      if length(ids) < @batch, do: acc + count, else: delete_in_batches(queryable, acc + count)
+      if length(ids) < batch(), do: acc + count, else: delete_in_batches(queryable, acc + count)
     end
   end
 
@@ -897,6 +960,11 @@ defmodule Gamend.Retention do
   # `UserToken` and this inverts it. Nothing to configure: keeping a token past
   # its validity is dead weight, not a policy choice.
   defp prune_expired_user_tokens, do: delete_in_batches(UserToken.expired_query())
+
+  # A personal API token past its expiry, or made before its owner's last
+  # password or email change, can never authenticate again. Same reasoning as
+  # above: nothing to configure.
+  defp prune_dead_api_tokens, do: delete_in_batches(ApiTokens.dead_query())
 
   # Resolved invites and join requests are a log of past social interactions;
   # pending ones are live UI and are never touched. updated_at is when the row
@@ -1074,5 +1142,26 @@ defmodule Gamend.Retention do
         "0 keeps forever. Below 60 the admin retention cohorts go blank."
   )
 
+  setting(:interval_hours, :integer,
+    default: 6,
+    doc: "Hours between full retention sweeps. The first runs five minutes after boot."
+  )
+
+  setting(:live_interval_seconds, :integer,
+    default: 60,
+    doc:
+      "Seconds between sweeps of the classes that free live state: offline lobby and " <>
+        "party seats, abandoned parties, abandoned lobbies. 0 leaves them to the full sweep."
+  )
+
+  setting(:batch_size, :integer,
+    default: 500,
+    doc:
+      "Rows deleted per statement. Lower it if a sweep stalls gameplay writes on SQLite, " <>
+        "where each statement holds the write lock."
+  )
+
   defp config(key), do: Gamend.Settings.get(__MODULE__, key)
+
+  defp batch, do: max(config(:batch_size), 1)
 end

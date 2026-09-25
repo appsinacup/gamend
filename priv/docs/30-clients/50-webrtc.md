@@ -38,13 +38,12 @@ Client                           Server (ex_webrtc)
 | `"events"` | Yes | Yes | Game events, hook RPC |
 | `"state"` | No | No | High-frequency state (positions) |
 
-Configure ICE in the host config (`enabled: false` rejects offers at runtime):
+The server peer's ICE servers are settings: `GAMEND_WEBRTC_STUN_URLS` (default Google's public STUN server) and, for a server behind NAT or on a network that filters UDP, a TURN relay with `GAMEND_WEBRTC_TURN_URLS`, `GAMEND_WEBRTC_TURN_USERNAME` and `GAMEND_WEBRTC_TURN_CREDENTIAL`. The URL settings take comma-separated lists. These are the server's own servers; a client passes its own to its peer connection. `enabled: false` in the host config rejects offers at runtime, and an `ice_servers:` list there replaces the settings outright:
 
 ```text
 config :gamend_web, :webrtc,
   enabled: true,
   ice_servers: [%{urls: "stun:stun.l.google.com:19302"}]
-  # add a TURN entry for restrictive NATs
 ```
 
 ### UserChannel signaling events

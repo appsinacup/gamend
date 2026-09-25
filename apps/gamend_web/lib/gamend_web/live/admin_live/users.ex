@@ -2,6 +2,7 @@ defmodule GamendWeb.AdminLive.Users do
   use GamendWeb, :live_view
 
   alias Gamend.Accounts
+  alias Gamend.Accounts.LoginLockouts
   alias Gamend.Accounts.User
   alias Gamend.Async
   alias GamendWeb.LiveHelpers
@@ -368,6 +369,13 @@ defmodule GamendWeb.AdminLive.Users do
                       <% else %>
                         <span class="badge badge-error badge-sm">No</span>
                       <% end %>
+                      <span
+                        :if={user.deletion_scheduled_at}
+                        class="badge badge-warning badge-sm"
+                        title="Scheduled for deletion"
+                      >
+                        Deleting
+                      </span>
                     </td>
                     <td>
                       <%= if user.metadata && user.metadata != %{} do %>
@@ -451,6 +459,45 @@ defmodule GamendWeb.AdminLive.Users do
               >
                 KV Data
               </.link>
+            </div>
+
+            <div
+              :if={@selected_user.deletion_scheduled_at}
+              id="admin-user-deletion-scheduled"
+              role="alert"
+              class="alert alert-warning mb-3 flex flex-wrap items-center justify-between gap-2"
+            >
+              <span>
+                The player deleted this account. It is deleted on
+                <.timestamp at={@selected_user.deletion_scheduled_at} format="full" />.
+              </span>
+              <button
+                type="button"
+                id="admin-keep-account"
+                phx-click="cancel_user_deletion"
+                phx-value-id={@selected_user.id}
+                class="btn btn-sm"
+              >
+                Keep account
+              </button>
+            </div>
+
+            <div
+              :if={@login_locked}
+              id="admin-user-login-locked"
+              role="alert"
+              class="alert alert-warning mb-3 flex flex-wrap items-center justify-between gap-2"
+            >
+              <span>Password sign-in is locked after too many failed attempts.</span>
+              <button
+                type="button"
+                id="admin-unlock-login"
+                phx-click="unlock_login"
+                phx-value-id={@selected_user.id}
+                class="btn btn-sm"
+              >
+                Unlock
+              </button>
             </div>
 
             <.form for={@form} id="user-form" phx-submit="save_user">
@@ -635,6 +682,7 @@ defmodule GamendWeb.AdminLive.Users do
      |> assign(:selected_user, nil)
      |> assign(:form, nil)
      |> assign(:user_tokens, [])
+     |> assign(:login_locked, false)
      |> assign(:search_query, "")
      |> assign(:filters, initial_filters)
      |> assign(:sort_field, sort_field)
@@ -653,7 +701,31 @@ defmodule GamendWeb.AdminLive.Users do
      socket
      |> assign(:selected_user, user)
      |> assign(:form, form)
-     |> assign(:user_tokens, tokens)}
+     |> assign(:user_tokens, tokens)
+     |> assign(:login_locked, login_locked?(user))}
+  end
+
+  def handle_event("cancel_user_deletion", %{"id" => id}, socket) do
+    case Accounts.cancel_deletion(Accounts.get_user!(id)) do
+      {:ok, user} ->
+        {:noreply,
+         socket
+         |> assign(:selected_user, user)
+         |> put_flash(:info, "The account will not be deleted")}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Failed")}
+    end
+  end
+
+  def handle_event("unlock_login", %{"id" => id}, socket) do
+    user = Accounts.get_user!(id)
+    :ok = LoginLockouts.clear(user.email)
+
+    {:noreply,
+     socket
+     |> assign(:login_locked, false)
+     |> put_flash(:info, "Password sign-in unlocked")}
   end
 
   # Search / filter handlers
@@ -761,7 +833,8 @@ defmodule GamendWeb.AdminLive.Users do
      socket
      |> assign(:selected_user, nil)
      |> assign(:form, nil)
-     |> assign(:user_tokens, [])}
+     |> assign(:user_tokens, [])
+     |> assign(:login_locked, false)}
   end
 
   def handle_event("revoke_token", %{"id" => id}, socket) do
@@ -1087,6 +1160,11 @@ defmodule GamendWeb.AdminLive.Users do
   end
 
   defp session_count(tokens), do: Enum.count(tokens, &(&1.context == "session"))
+
+  defp login_locked?(%User{email: email}) when is_binary(email),
+    do: LoginLockouts.check(email) != :ok
+
+  defp login_locked?(_user), do: false
 
   # Delegates to Accounts.list_all_users/2 (the reusable, admin-scoped context
   # query) so search/filter/sort logic lives in one place, shared with anything

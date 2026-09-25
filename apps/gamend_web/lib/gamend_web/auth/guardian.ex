@@ -6,7 +6,10 @@ defmodule GamendWeb.Auth.Guardian do
   It works alongside the existing session-based authentication for browser flows.
   """
 
-  use Guardian, otp_app: :gamend_web
+  # Token lifetimes follow the `auth.*_token_ttl_*` settings, in every
+  # environment. An option here wins over the app config, so a host cannot
+  # shadow the settings with a literal `ttl` or `token_ttl`.
+  use Guardian, otp_app: :gamend_web, token_ttl: {GamendWeb.Auth.Tokens, :ttls, []}
 
   alias Gamend.Accounts
 
@@ -49,7 +52,7 @@ defmodule GamendWeb.Auth.Guardian do
 
               # Deactivating an account has to end its API access too, not only
               # block new logins — otherwise an admin who un-approves someone
-              # leaves them refreshing tokens for the full 30-day refresh TTL.
+              # leaves them refreshing tokens for the whole refresh TTL.
               not Accounts.user_activated?(user) ->
                 {:error, :account_deactivated}
 

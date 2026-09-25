@@ -99,8 +99,9 @@ sent: the callback gets an error naming it.
 
 ## Sessions
 
-The access token lasts 15 minutes and the refresh token 30 days. The SDK
-refreshes the access token before it lapses, and once more if a call answers
+The access token lasts 15 minutes and the refresh token 30 days, unless the
+server sets otherwise. The SDK reads the access token's lifetime from
+`expires_in` and refreshes it before it lapses, and once more if a call answers
 `401`. To stay signed in across runs, keep what `on_session_changed` hands you
 and give it back to `restore`:
 

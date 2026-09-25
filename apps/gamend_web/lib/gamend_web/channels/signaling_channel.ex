@@ -51,14 +51,9 @@ defmodule GamendWeb.SignalingChannel do
   alias Gamend.Signaling
   alias GamendWeb.ChannelEvents
 
-  # WebSocket message rate limits (per user) — defaults, overridden by config
-  @default_ws_rate_limit 300
-  @default_ws_rate_window :timer.seconds(10)
-
-  # Separate ICE candidate budget — prevents ICE flooding from starving
-  # other channel events. A typical WebRTC session sends 5–30 candidates.
-  @default_ice_rate_limit 150
-  @default_ice_rate_window :timer.seconds(30)
+  # Per-user message and ICE budgets are the `signaling_*` settings on
+  # GamendWeb.Plugs.RateLimiter. ICE has its own so a flood of candidates cannot
+  # starve other channel events; a typical WebRTC session sends 5–30.
 
   @impl true
   def join("signaling:" <> room_id, _payload, socket) do
@@ -427,12 +422,10 @@ defmodule GamendWeb.SignalingChannel do
   # ── WebSocket rate limiting ─────────────────────────────────────────────
 
   defp check_ws_rate_limit(socket) do
-    config = Application.get_env(:gamend_web, GamendWeb.Plugs.RateLimiter, [])
-
-    if Keyword.get(config, :enabled, true) do
+    if rate_setting(:enabled) do
       user_id = socket.assigns.current_scope.user_id
-      limit = Keyword.get(config, :signaling_ws_limit, @default_ws_rate_limit)
-      window = Keyword.get(config, :signaling_ws_window, @default_ws_rate_window)
+      limit = rate_setting(:signaling_ws_limit)
+      window = rate_setting(:signaling_ws_window_ms)
 
       case GamendWeb.RateLimit.hit("signaling_ws:#{user_id}", window, limit) do
         {:allow, _count} ->
@@ -451,12 +444,10 @@ defmodule GamendWeb.SignalingChannel do
   end
 
   defp check_ice_rate_limit(socket) do
-    config = Application.get_env(:gamend_web, GamendWeb.Plugs.RateLimiter, [])
-
-    if Keyword.get(config, :enabled, true) do
+    if rate_setting(:enabled) do
       user_id = socket.assigns.current_scope.user_id
-      limit = Keyword.get(config, :signaling_ice_limit, @default_ice_rate_limit)
-      window = Keyword.get(config, :signaling_ice_window, @default_ice_rate_window)
+      limit = rate_setting(:signaling_ice_limit)
+      window = rate_setting(:signaling_ice_window_ms)
 
       case GamendWeb.RateLimit.hit("signaling_ice:#{user_id}", window, limit) do
         {:allow, _count} ->
@@ -503,4 +494,6 @@ defmodule GamendWeb.SignalingChannel do
 
   defp validate_signal_payload(_value, socket),
     do: {:reply, {:error, %{error: "invalid_payload"}}, socket}
+
+  defp rate_setting(key), do: Gamend.Settings.get(GamendWeb.Plugs.RateLimiter, key)
 end

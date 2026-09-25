@@ -45,6 +45,42 @@ defmodule Gamend.Jobs do
 
   @type args :: map()
 
+  # Read by `oban_config/0` when Oban starts, so a change needs a restart.
+  use Gamend.Settings.Provider,
+    app: :gamend_core,
+    group: :jobs,
+    label: "Background jobs"
+
+  setting(:queue_default, :integer,
+    default: 10,
+    doc: "Per-node concurrent jobs on the default queue."
+  )
+
+  setting(:queue_hooks, :integer,
+    default: 20,
+    doc: "Per-node concurrent jobs on the hooks queue: enqueued and scheduled plugin hooks."
+  )
+
+  setting(:queue_mailers, :integer,
+    default: 5,
+    doc: "Per-node concurrent email sends."
+  )
+
+  setting(:queue_storage, :integer,
+    default: 5,
+    doc: "Per-node concurrent storage jobs, such as avatar mirroring."
+  )
+
+  setting(:queue_webhooks, :integer,
+    default: 10,
+    doc: "Per-node concurrent outgoing webhook deliveries."
+  )
+
+  setting(:prune_after_days, :integer,
+    default: 7,
+    doc: "Days finished, cancelled and discarded jobs are kept before they are deleted."
+  )
+
   @doc false
   # Internal: enqueue any Oban.Worker module. Plugins use enqueue_hook/enqueue_in.
   @spec enqueue(module(), args(), keyword()) :: {:ok, Oban.Job.t()} | {:error, term()}
@@ -117,8 +153,45 @@ defmodule Gamend.Jobs do
     :gamend_core
     |> Application.fetch_env!(Oban)
     |> Keyword.put(:engine, engine)
+    |> apply_settings()
     |> then(&if postgres?, do: &1, else: throttle_for_sqlite(&1))
   end
+
+  # The declared queue sizes and pruning window win over the compiled Oban
+  # config. A queue a host added to that config keeps its own size.
+  defp apply_settings(opts) do
+    opts
+    |> Keyword.update(:queues, declared_queues(), fn
+      queues when is_list(queues) -> Keyword.merge(queues, declared_queues())
+      other -> other
+    end)
+    |> Keyword.update(:plugins, [], fn
+      plugins when is_list(plugins) -> Enum.map(plugins, &put_prune_age/1)
+      other -> other
+    end)
+  end
+
+  defp declared_queues do
+    [
+      default: queue_setting(__MODULE__, :queue_default),
+      hooks: queue_setting(__MODULE__, :queue_hooks),
+      mailers: queue_setting(__MODULE__, :queue_mailers),
+      storage: queue_setting(__MODULE__, :queue_storage),
+      webhooks: queue_setting(__MODULE__, :queue_webhooks),
+      push: queue_setting(Gamend.Push, :queue_concurrency)
+    ]
+  end
+
+  defp queue_setting(module, key), do: max(Gamend.Settings.get(module, key), 1)
+
+  defp put_prune_age(Oban.Plugins.Pruner), do: put_prune_age({Oban.Plugins.Pruner, []})
+
+  defp put_prune_age({Oban.Plugins.Pruner, plugin_opts}) do
+    days = max(Gamend.Settings.get(__MODULE__, :prune_after_days), 1)
+    {Oban.Plugins.Pruner, Keyword.put(plugin_opts, :max_age, days * 86_400)}
+  end
+
+  defp put_prune_age(plugin), do: plugin
 
   # Queue concurrency is sized for Postgres, which runs writers in parallel.
   # SQLite takes a single database-wide write lock, so that same configuration

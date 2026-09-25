@@ -40,8 +40,6 @@ defmodule Gamend.Chat do
   # Cache helpers
   # ---------------------------------------------------------------------------
 
-  @chat_cache_ttl_ms 60_000
-
   defp chat_version(chat_type, chat_ref_id) do
     Gamend.Cache.get!({:chat, :version, chat_type, chat_ref_id}) || 1
   end
@@ -110,12 +108,12 @@ defmodule Gamend.Chat do
 
   defp broadcast_chat(chat_type, chat_ref_id, sender_id, event) do
     topic = chat_topic(chat_type, chat_ref_id, sender_id)
-    Phoenix.PubSub.broadcast(Gamend.PubSub, topic, event)
+    Gamend.Broadcast.publish(topic, event)
 
     # For friend DMs, also broadcast to the recipient's user topic so the
     # UserChannel can forward the message without subscribing to every pair.
     if chat_type == "friend" do
-      Phoenix.PubSub.broadcast(Gamend.PubSub, "user:#{chat_ref_id}", event)
+      Gamend.Broadcast.publish("user:#{chat_ref_id}", event)
     end
   end
 
@@ -532,7 +530,7 @@ defmodule Gamend.Chat do
               key:
                 {:chat, :list, chat_version(chat_type, chat_ref_id), chat_type, chat_ref_id, page,
                  page_size},
-              opts: [ttl: @chat_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   defp do_list_messages(chat_type, chat_ref_id, page, page_size, _offset) do
     base_query(chat_type, chat_ref_id)
@@ -863,7 +861,7 @@ defmodule Gamend.Chat do
   @decorate cacheable(
               key: {:chat, :message, message_row_version(), id},
               match: &(&1 != nil),
-              opts: [ttl: @chat_cache_ttl_ms]
+              opts: [ttl: Gamend.Cache.ttl()]
             )
   def get_message(id) do
     Repo.get(Message, id)

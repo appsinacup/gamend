@@ -11,8 +11,16 @@ defmodule GamendWeb.Schemas.Session do
     description: "Tokens for a signed-in user",
     type: :object,
     properties: %{
-      access_token: %Schema{type: :string, description: "JWT access token (15 min)"},
-      refresh_token: %Schema{type: :string, description: "JWT refresh token (30 days)"},
+      access_token: %Schema{
+        type: :string,
+        description:
+          "JWT access token (15 min by default: `GAMEND_AUTH_ACCESS_TOKEN_TTL_MINUTES`)"
+      },
+      refresh_token: %Schema{
+        type: :string,
+        description:
+          "JWT refresh token (30 days by default: `GAMEND_AUTH_REFRESH_TOKEN_TTL_DAYS`)"
+      },
       expires_in: %Schema{type: :integer, description: "Seconds until the access token expires"},
       user_id: %Schema{type: :string, format: :uuid},
       username: %Schema{type: :string, description: "Unique handle"},

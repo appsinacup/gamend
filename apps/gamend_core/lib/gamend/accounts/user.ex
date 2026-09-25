@@ -26,7 +26,8 @@ defmodule Gamend.Accounts.User do
           age_method: String.t() | nil,
           age_locked_at: DateTime.t() | nil,
           account_class: String.t() | nil,
-          grandfathered_at: DateTime.t() | nil
+          grandfathered_at: DateTime.t() | nil,
+          deletion_scheduled_at: DateTime.t() | nil
         }
   use Gamend.Schema
   import Ecto.Changeset
@@ -70,6 +71,11 @@ defmodule Gamend.Accounts.User do
     field :age_locked_at, :utc_datetime
     field :account_class, :string, default: "unknown"
     field :grandfathered_at, :utc_datetime
+
+    # Set when the owner asked to delete the account and
+    # `auth.deletion_grace_days` makes that wait. See
+    # `Gamend.Accounts.request_deletion/1`.
+    field :deletion_scheduled_at, :utc_datetime
 
     # membership via users.lobby_id (each user can be in one lobby)
     belongs_to :lobby, Gamend.Lobbies.Lobby

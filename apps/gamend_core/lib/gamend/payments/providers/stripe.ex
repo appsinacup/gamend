@@ -15,11 +15,16 @@ defmodule Gamend.Payments.Providers.Stripe do
       mode = stripe_mode(provider_product.product.kind)
 
       params =
-        checkout_params(provider_product, purchase, success_url, cancel_url, mode, metadata)
+        provider_product
+        |> checkout_params(purchase, success_url, cancel_url, mode, metadata)
+        |> put_checkout_customer(mode, attrs["stripe_customer_id"])
+        |> put_managed_payments(ProviderConfig.stripe_managed_payments?())
 
       case create_checkout_session_with_sdk(
              params,
-             stripe_request_opts(secret_key, purchase)
+             secret_key
+             |> stripe_request_opts(purchase)
+             |> Keyword.put(:api_version, ProviderConfig.stripe_checkout_api_version())
            ) do
         {:ok, session} ->
           {:ok, normalize_stripe_payload(session)}
@@ -67,6 +72,27 @@ defmodule Gamend.Payments.Providers.Stripe do
            ) do
         {:ok, subscription} ->
           {:ok, normalize_stripe_payload(subscription)}
+
+        {:error, reason} ->
+          {:error, {:stripe_error, normalize_stripe_payload(reason)}}
+      end
+    end
+  end
+
+  @doc """
+  A Stripe customer-portal session for `customer_id`: the Stripe-hosted page
+  where the buyer cancels, changes card and downloads invoices. Returns the
+  session; its `"url"` is single-use and short-lived, so open it right away.
+  """
+  def create_billing_portal_session(customer_id, return_url)
+      when is_binary(customer_id) and is_binary(return_url) do
+    with {:ok, secret_key} <- secret_key() do
+      case create_billing_portal_session_with_sdk(
+             %{customer: customer_id, return_url: return_url},
+             stripe_request_opts(secret_key)
+           ) do
+        {:ok, session} ->
+          {:ok, normalize_stripe_payload(session)}
 
         {:error, reason} ->
           {:error, {:stripe_error, normalize_stripe_payload(reason)}}
@@ -123,6 +149,30 @@ defmodule Gamend.Payments.Providers.Stripe do
     }
     |> put_checkout_payment_metadata(mode, metadata)
   end
+
+  # One Stripe customer per account, so the portal shows every purchase. A
+  # returning buyer's checkout reuses their customer; a first one-off payment
+  # asks Stripe to create one (subscription mode always does), without which a
+  # lifetime buyer would have no portal and no receipts in it. The id is
+  # server-supplied (`StripeEvents.create_stripe_checkout/2`), never a
+  # client's, and only a `cus_` id is ever passed through.
+  defp put_checkout_customer(params, _mode, "cus_" <> _rest = customer_id),
+    do: Map.put(params, :customer, customer_id)
+
+  defp put_checkout_customer(params, "payment", _customer_id),
+    do: Map.put(params, :customer_creation, "always")
+
+  defp put_checkout_customer(params, _mode, _customer_id), do: params
+
+  # Stripe as merchant of record. None of the parameters Managed Payments
+  # rejects (automatic_tax, payment_method_types, invoice_creation, shipping,
+  # statement descriptors, Connect fields) is ever sent here, so the flag is
+  # the whole change; the products need a Managed-Payments-eligible tax code
+  # in the Dashboard.
+  defp put_managed_payments(params, true),
+    do: Map.put(params, :managed_payments, %{enabled: true})
+
+  defp put_managed_payments(params, _enabled), do: params
 
   defp put_checkout_payment_metadata(params, "subscription", metadata) do
     Map.put(params, :subscription_data, %{metadata: metadata})
@@ -196,6 +246,12 @@ defmodule Gamend.Payments.Providers.Stripe do
     exception -> {:error, exception}
   end
 
+  defp create_billing_portal_session_with_sdk(params, opts) do
+    stripe_client().create_billing_portal_session(params, opts)
+  rescue
+    exception -> {:error, exception}
+  end
+
   defp construct_webhook_event_with_sdk(raw_body, signature_header, secret, tolerance_seconds) do
     stripe_client().construct_webhook_event(raw_body, signature_header, secret, tolerance_seconds)
   rescue
@@ -226,6 +282,7 @@ defmodule Gamend.Payments.Providers.Stripe do
   defmodule Client do
     @moduledoc false
 
+    alias Stripe.BillingPortal.Session, as: PortalSession
     alias Stripe.Checkout.Session
     alias Stripe.Subscription
     alias Stripe.Webhook
@@ -244,6 +301,10 @@ defmodule Gamend.Payments.Providers.Stripe do
 
     def update_subscription(subscription_id, params, opts) do
       Subscription.update(subscription_id, params, opts)
+    end
+
+    def create_billing_portal_session(params, opts) do
+      PortalSession.create(params, opts)
     end
 
     def construct_webhook_event(raw_body, signature_header, secret, tolerance_seconds) do

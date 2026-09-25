@@ -1,7 +1,7 @@
 // Signing in, and staying signed in.
 //
-// Gamend issues a short-lived access token (`expires_in`, 15 minutes) and a
-// 30-day refresh token. `Auth` keeps both, refreshes the access token when
+// Gamend issues a short-lived access token (`expires_in`, 15 minutes by
+// default) and a refresh token (30 days by default). `Auth` keeps both, refreshes the access token when
 // three quarters of its life have passed, and `Rest` refreshes once more on
 // a 401. The game keeps the session between runs where its platform keeps
 // secrets: `on_session_changed` hands it over, `restore` takes it back.

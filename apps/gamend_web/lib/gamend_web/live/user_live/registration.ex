@@ -122,8 +122,8 @@ defmodule GamendWeb.UserLive.Registration do
            )
            |> push_navigate(to: ~p"/users/log_in/#{token}")}
         else
-          # Not the first user: a confirmation email was sent inside the
-          # registration transaction. Inform the user to check their inbox.
+          # Not the first user: the confirmation email is queued and goes out
+          # in the background. Inform the user to check their inbox.
           {:noreply,
            socket
            |> put_flash(
@@ -137,8 +137,8 @@ defmodule GamendWeb.UserLive.Registration do
         {:noreply, socket |> assign(check_errors: true) |> assign_form(changeset)}
 
       {:error, reason} ->
-        # If email delivery failed the user creation was rolled back. Keep the
-        # form open and present a friendly error message.
+        # A `before_user_register` plugin refused the sign-up (the email is
+        # queued, so it cannot fail here). Keep the form open.
         require Logger
         Logger.error("register_user_and_deliver failed: #{inspect(reason)}")
 

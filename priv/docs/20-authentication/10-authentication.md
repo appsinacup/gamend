@@ -26,10 +26,11 @@ magic-link forms; it does not apply to any of the game-client flows.
 ## JWT token flow (Email / Password / Device)
 
 A game client signs a player up with `POST /api/v1/register` (`email`,
-`password`, optional `username`). It sends the confirmation email as the
-browser form does and answers `201` with the same tokens as login; a taken
-email or username is `409`, and an email that cannot be sent is `503` with no
-account kept.
+`password`, optional `username`). It answers `201` with the same tokens as
+login without waiting on the mail server: the confirmation email is queued,
+as for the browser form, and sent and retried in the background. A taken
+email or username is `409`, and a plugin that refuses the sign-up is
+`403 registration_refused`.
 Deleting an account (`DELETE /api/v1/me`) sends `current_password` when the
 account has one.
 
@@ -53,11 +54,39 @@ account has one.
             ◄── { access_token, refresh_token } ◄─ New access token
 ```
 
-Access tokens are short-lived (15 min). Refresh tokens last 30 days. Both are signed JWTs, but each authenticated request still loads the user from the database. So a token stops working once the account is deactivated or its tokens are revoked (logout, password or email change).
+Access tokens are short-lived: 15 minutes by default, set with `GAMEND_AUTH_ACCESS_TOKEN_TTL_MINUTES`. Refresh tokens last 30 days by default, set with `GAMEND_AUTH_REFRESH_TOKEN_TTL_DAYS`. Every login and refresh answers `expires_in`, the access token's lifetime in seconds; schedule the refresh from it rather than from a fixed interval. A changed setting applies to tokens issued after it. Both are signed JWTs, but each authenticated request still loads the user from the database. So a token stops working once the account is deactivated or its tokens are revoked (logout, password or email change).
 
-Refresh returns a new access token and sends back the same refresh token; it does not issue a new one. Log in again before the refresh token's 30 days run out.
+Refresh returns a new access token and sends back the same refresh token; it does not issue a new one. Log in again before the refresh token runs out.
 
 Token responses wrap their fields in a `data` object (`{"data": {"access_token": "..."}}`); the diagrams leave that wrapper out.
+
+## Browser sessions and emailed links
+
+The website signs in with a session cookie rather than JWTs. The windows are settings on the `auth` group:
+
+| Setting | Default | What it bounds |
+|---|---|---|
+| `GAMEND_AUTH_SESSION_DAYS` | `14` | A browser session and its remember-me cookie. An active session is renewed once it is half this old, so only an idle one runs out. |
+| `GAMEND_AUTH_MAGIC_LINK_MINUTES` | `15` | An emailed login link. Capped at 60: whoever can read the email can sign in while it lives. |
+| `GAMEND_AUTH_CONFIRM_EMAIL_DAYS` | `7` | The link that confirms a new account's email. |
+| `GAMEND_AUTH_CHANGE_EMAIL_DAYS` | `7` | The link that confirms a changed email address. |
+| `GAMEND_AUTH_SUDO_MODE_MINUTES` | `10` | How recently a user must have signed in to open the settings that change their password or email. Submitting the form is allowed ten minutes more. |
+
+## Failed password lockout
+
+The per-IP auth rate limit caps how fast one machine can guess, not guesses spread across many machines at one account. So failed passwords are also counted per email address: `GAMEND_AUTH_LOCKOUT_ATTEMPTS` failures (default `10`, `0` turns it off) within `GAMEND_AUTH_LOCKOUT_WINDOW_MINUTES` (default `15`) lock password sign-in for that address for `GAMEND_AUTH_LOCKOUT_MINUTES` (default `15`). The count lives in the database, so it holds across instances, and a correct password clears it.
+
+While locked, the password is not checked at all: `POST /api/v1/login` answers `429 account_locked` with a `Retry-After` header, and the browser form says to try again later. An address with no account counts and locks exactly like one with an account, so the lock never reveals which addresses are registered. Only password sign-in is locked. An emailed login link and provider sign-ins still work, so someone failing at a player's password cannot shut the player out. An admin can lift a lock from the user's page in **Admin → Users**.
+
+## Deleting an account
+
+`DELETE /api/v1/me` and **Delete account** on the settings page delete the account at once by default. With `GAMEND_AUTH_DELETION_GRACE_DAYS` set, they schedule it that many days out instead, and sign the account out everywhere (sessions, access, refresh and personal API tokens). Until the date:
+
+- **API sign-ins are refused** with `403 deletion_scheduled`: password, device and provider logins alike. A game client may sign in on its own, from a stored device id or a silent provider login, and that must not undo a deletion the player asked for.
+- **Signing in on the website keeps the account**, with a message saying so. A person is at the keyboard there.
+- **An admin can keep it** from the user's page in **Admin → Users**, where a scheduled account is marked **Deleting**.
+
+On the date, the retention sweep deletes the account with `Gamend.Accounts.delete_user/1`, so every cleanup and the `after_user_deleted` hook run as for an immediate deletion. Admin deletions and the retention sweeps of inactive accounts never wait.
 
 ## OAuth: browser redirect (polling)
 
@@ -188,6 +217,14 @@ limit. To guard it too, set `GAMEND_CAPTCHA_API_REGISTER=true`: the client
 then sends a Turnstile token as `captcha_token` (from a web export or a
 webview), and is answered `403 captcha_required` / `captcha_invalid` without
 one. A client that cannot render the widget can then no longer register.
+
+For a public server that takes email sign-ups from game clients, turn it on
+if your clients can show the widget. The per-IP limit is 10 sign-ups a
+minute, and IPv6 clients count per /64 network, but a botnet brings its own
+addresses. Every sign-up it makes queues an email to an address it chose,
+and bounces from made-up addresses cost your domain its reputation. Clients
+that cannot show the widget can sign players in with device login, which
+sends no email, and add an email later.
 
 ### Setup
 

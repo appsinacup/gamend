@@ -206,7 +206,7 @@ invariants code must keep.
 | `Gamend.Push` | [push](priv/docs/40-gameplay/80-push-notifications.md) | Delivery per token (FCM / APNs) on the Oban `push` queue. No public send endpoint |
 | `Gamend.Quests` | [quests](priv/docs/40-gameplay/40-quests.md) | Achievements are quests with `category: "achievement"`; there is no Achievements context. Progress is server-authoritative, rewards pay exactly once |
 | `Gamend.Leaderboards` | [leaderboards](priv/docs/40-gameplay/10-leaderboards.md) | |
-| `Gamend.Tournaments` | [tournaments](priv/docs/40-gameplay/20-tournaments.md) | Hooks and broadcasts are queued and flushed after commit (`defer/1`) |
+| `Gamend.Tournaments` | [tournaments](priv/docs/40-gameplay/20-tournaments.md) | Hooks and broadcasts wait for the commit (`Gamend.AfterCommit`); `tick/1` locks with `Lock.exclusive/3`, one transaction per tournament |
 | `Gamend.Matchmaking`, `Gamend.ReadyChecks` | [matchmaking](priv/docs/40-gameplay/30-matchmaking.md) | A party queues as one unit |
 | `Gamend.Economy`, `Gamend.Inventory` | [economy](priv/docs/50-monetization/05-economy.md) | Ledgered through `Gamend.Ledger`. `Economy.spend/4` is one conditional SQL statement and needs no lock |
 | `Gamend.Payments` | [payments](priv/docs/50-monetization/10-payments.md) | |
@@ -226,7 +226,7 @@ Web-side features with no context: the site search palette (`GamendWeb.SearchInd
 
 - Plugins implement `Gamend.Hooks`. They load from `modules/plugins/*` (`GAMEND_CONTENT_PLUGINS_DIR`) as bundled `ebin/`; run `mix plugin.bundle` after changing one. Examples live in `modules/plugins_examples/`.
 - `before_*` hooks are pipelines: return `{:ok, value}` to allow (optionally modified) or `{:error, reason}` to block. `after_*` hooks run asynchronously via `Gamend.Async.run/1`.
-- **Never** dispatch a hook or broadcast inside a transaction or lock.
+- **Never** dispatch a hook or broadcast inside a transaction or lock. Open transactions with `Gamend.AfterCommit.transaction/2` and broadcast with `Gamend.Broadcast.publish/2`, which wait for the commit; run a `before_*` hook before taking the lock. See [CONTRIBUTING.md](CONTRIBUTING.md#hooks-so-plugins-can-extend-the-feature).
 - Adding a callback touches six places: [CONTRIBUTING.md](CONTRIBUTING.md#hooks-so-plugins-can-extend-the-feature). The full hook list is in the [server scripting guide](priv/docs/40-gameplay/90-server-scripting.md).
 
 ### PubSub & realtime
@@ -240,12 +240,13 @@ Web-side features with no context: the site search palette (`GamendWeb.SearchInd
 ### Caching conventions
 
 - App cache is `Gamend.Cache` (Nebulex 3, multilevel: local L1 + optional Redis/partitioned L2). **Nebulex 3 returns `{:ok, value}` tuples** — use `Gamend.Cache.get!/1` (raw value, `nil` on miss), `fetch/1` or `cached/3`, never bare `get/1` compared against raw values.
-- Read caching uses **version keys**: cache keys embed a `*_cache_version(...)` counter read via `get!(...) || 1`; invalidate with `Gamend.Cache.bump_version/1`, which also bumps the counter on other nodes. Data entries must carry a TTL (typically 60s) — that TTL is the cross-instance staleness bound.
+- Read caching uses **version keys**: cache keys embed a `*_cache_version(...)` counter read via `get!(...) || 1`; invalidate with `Gamend.Cache.bump_version/1`, which also bumps the counter on other nodes. Data entries must carry a TTL, normally `Gamend.Cache.ttl/0` (`GAMEND_CACHE_TTL_MS`, default 60s) — that TTL is the cross-instance staleness bound.
 - When a stale read would be *incorrect* (not merely briefly outdated) — cached users gating auth, sessions, tokens, KV values — invalidate with `Gamend.Cache.invalidate/1` (delete + PubSub broadcast; `Gamend.Cache.Sync` evicts the key from other instances' L1) instead of `delete/1`.
 
 ### Locks
 
-- Any read-modify-write (capacity check before insert, merging a map) runs under `Gamend.Lock.serialize/3`. It uses `pg_advisory_xact_lock` on Postgres and a `:global` mutex (`Gamend.Lock.Local`) on SQLite, so it holds on both.
+- Any read-modify-write (capacity check before insert, merging a map) runs under `Gamend.Lock.serialize/3`. It uses `pg_advisory_xact_lock` on Postgres (behind a node-local mutex, so waiters hold no connection) and a `:global` mutex (`Gamend.Lock.Local`) on SQLite, so it holds on both.
+- `serialize/3` holds a transaction for its whole function, which on SQLite is the only write lock: keep the function to database work. Hooks, hashing and HTTP calls go before it; broadcasts and tasks inside wait for the commit on their own. A job that must run once cluster-wide but writes in pieces takes `Gamend.Lock.exclusive/3` instead.
 - Atom namespaces are registered in `@namespaces` in `Gamend.Repo.AdvisoryLock` (`:lobby` 1, `:group` 2, `:party` 3, `:friendship` 4, and so on through 12). Register a new one there; a string namespace needs no registration.
 - Prefer an atomic write where one exists (`Economy.spend/4`).
 

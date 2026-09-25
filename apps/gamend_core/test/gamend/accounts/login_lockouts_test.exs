@@ -73,7 +73,7 @@ defmodule Gamend.Accounts.LoginLockoutsTest do
     assert {:error, {:locked, _}} = fail(user.email)
 
     past = DateTime.add(DateTime.utc_now(:second), -1, :second)
-    Repo.update_all(LoginLockout, set: [locked_until: past])
+    Repo.update_all(LoginLockout, set: [unlocks_at: past])
 
     assert {:ok, _} = Accounts.authenticate_by_password(user.email, @password)
   end

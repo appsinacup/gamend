@@ -8,7 +8,7 @@ defmodule Gamend.Accounts.LoginLockout do
     itself is never stored
   - `failures` – failed attempts in the current window
   - `window_started_at` – when the current window's first failure happened
-  - `locked_until` – nil, or when the lock the failures set runs out
+  - `unlocks_at` – nil, or when the lock the failures set runs out
 
   See `Gamend.Accounts.LoginLockouts`.
   """
@@ -18,7 +18,7 @@ defmodule Gamend.Accounts.LoginLockout do
     field :key_hash, :binary, redact: true
     field :failures, :integer, default: 0
     field :window_started_at, :utc_datetime
-    field :locked_until, :utc_datetime
+    field :unlocks_at, :utc_datetime
 
     timestamps(type: :utc_datetime)
   end
@@ -29,7 +29,7 @@ defmodule Gamend.Accounts.LoginLockout do
           key_hash: binary() | nil,
           failures: non_neg_integer(),
           window_started_at: DateTime.t() | nil,
-          locked_until: DateTime.t() | nil,
+          unlocks_at: DateTime.t() | nil,
           inserted_at: DateTime.t() | nil,
           updated_at: DateTime.t() | nil
         }

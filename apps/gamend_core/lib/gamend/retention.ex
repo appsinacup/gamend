@@ -622,8 +622,7 @@ defmodule Gamend.Retention do
   # Accounts their owners deleted, once `auth.deletion_grace_days` has run out.
   # No exemptions: the owner asked. A batch a sweep, like the other user sweeps.
   defp delete_due_accounts do
-    Accounts.due_deletions_query()
-    |> limit(^batch())
+    from(u in Accounts.due_deletions_query(), limit: ^batch())
     |> Repo.all()
     |> delete_users()
   end

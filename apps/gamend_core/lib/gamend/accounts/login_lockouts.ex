@@ -38,15 +38,15 @@ defmodule Gamend.Accounts.LoginLockouts do
     if enabled?() do
       now = DateTime.utc_now(:second)
 
-      locked_until =
+      unlocks_at =
         Repo.one(
           from(l in LoginLockout,
-            where: l.key_hash == ^key(email) and l.locked_until > ^now,
-            select: l.locked_until
+            where: l.key_hash == ^key(email) and l.unlocks_at > ^now,
+            select: l.unlocks_at
           )
         )
 
-      if locked_until, do: {:locked, max(DateTime.diff(locked_until, now), 1)}, else: :ok
+      if unlocks_at, do: {:locked, max(DateTime.diff(unlocks_at, now), 1)}, else: :ok
     else
       :ok
     end
@@ -111,10 +111,10 @@ defmodule Gamend.Accounts.LoginLockouts do
     # out the address gets the full number of attempts again.
     {changes, result} =
       if failures >= attempts() do
-        locked_until = DateTime.add(now, lockout_minutes(), :minute)
+        unlocks_at = DateTime.add(now, lockout_minutes(), :minute)
 
-        {%{failures: 0, window_started_at: now, locked_until: locked_until},
-         {:locked, DateTime.diff(locked_until, now)}}
+        {%{failures: 0, window_started_at: now, unlocks_at: unlocks_at},
+         {:locked, DateTime.diff(unlocks_at, now)}}
       else
         {%{failures: failures, window_started_at: started}, :ok}
       end

@@ -16,7 +16,7 @@ defmodule Gamend.Repo.Migrations.CreateLoginLockouts do
       add :key_hash, :binary, null: false
       add :failures, :integer, null: false, default: 0
       add :window_started_at, :utc_datetime, null: false
-      add :locked_until, :utc_datetime
+      add :unlocks_at, :utc_datetime
 
       timestamps(type: :utc_datetime)
     end

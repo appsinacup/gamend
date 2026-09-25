@@ -2,7 +2,7 @@
   "dependencies": {
     "node-datachannel": "^0.33.4",
     "open": "^11.0.4",
-    "phoenix": "^1.8.14",
+    "phoenix": "^1.8.15",
     "protobufjs": "^8.8.0"
   },
   "scripts": {

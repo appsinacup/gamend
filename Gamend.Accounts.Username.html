@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1264">
+    <meta name="project" content="gamend_core v1.0.1265">
 
 
-    <title>Gamend.Accounts.Username — gamend_core v1.0.1264</title>
+    <title>Gamend.Accounts.Username — gamend_core v1.0.1265</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-323B10BE.js"></script>
+    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1264
+          v1.0.1265
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Username</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1264)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
 
     </h1>
 
@@ -133,8 +133,11 @@ twice renders as <code class="inline">café</code>); the stored form also caps t
 That stops stacked-mark &quot;zalgo&quot; text while allowing Vietnamese (<code class="inline">ệ</code> is
 two).</li></ul><p>Nothing else: a CJK letter that resembles a Latin one (<code class="inline">丨</code> for <code class="inline">l</code>, <code class="inline">ㅇ</code>
 for <code class="inline">o</code>) is no more confusable than <code class="inline">1</code> and <code class="inline">0</code>, which any ASCII handle
-holds. Format-control characters (zero-width joiners, direction overrides)
-are not letters, so the format refuses them.</p><p><code class="inline">GAMEND_LIMITS_USERNAME_ASCII_ONLY=true</code> keeps handles to <code class="inline">a-z</code>, <code class="inline">0-9</code> and
+holds.</p><p>A host with other ideas implements the <code class="inline">validate_username/1</code> hook
+(<a href="Gamend.Hooks.html"><code class="inline">Gamend.Hooks</code></a>), which answers for the normalized handle and replaces
+<a href="#default_rules/1"><code class="inline">default_rules/1</code></a> wholesale. Only the floor stays: length, uniqueness, and
+no invisible characters (Unicode's <code class="inline">C</code> categories: controls, zero-width
+joiners, direction overrides).</p><p><code class="inline">GAMEND_LIMITS_USERNAME_ASCII_ONLY=true</code> keeps handles to <code class="inline">a-z</code>, <code class="inline">0-9</code> and
 the separators, the GitHub and Discord model, after the same normalization
 (<code class="inline">ＷＡＮＧ</code> is still <code class="inline">wang</code>); the generator then transliterates or picks a
 word.</p>
@@ -156,12 +159,11 @@ word.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#check_scripts/1" data-no-tooltip="" translate="no">check_scripts(username)</a>
+        <a href="#default_rules/1" data-no-tooltip="" translate="no">default_rules(username)</a>
 
       </div>
 
-        <div class="summary-synopsis"><p>The ASCII-only, script and mark rules (see moduledoc) for a NORMALIZED
-handle: <code class="inline">:ok</code>, or <code class="inline">{:error, message}</code> for the changeset.</p></div>
+        <div class="summary-synopsis"><p>Core's own rules (see moduledoc), for a NORMALIZED handle.</p></div>
 
     </div>
 
@@ -191,7 +193,19 @@ handle: <code class="inline">:ok</code>, or <code class="inline">{:error, messag
 
       </div>
 
-        <div class="summary-synopsis"><p>Format, length and script rules together, for a normalized handle.</p></div>
+        <div class="summary-synopsis"><p>Length and <a href="#validate/1"><code class="inline">validate/1</code></a> together, for a normalized handle.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#validate/1" data-no-tooltip="" translate="no">validate(username)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The rules for a NORMALIZED handle: <code class="inline">:ok</code>, or <code class="inline">{:error, message}</code> for the
+changeset. Invisible characters are refused first; then the
+<code class="inline">validate_username</code> hook answers, or <a href="#default_rules/1"><code class="inline">default_rules/1</code></a> when no plugin does.</p></div>
 
     </div>
 
@@ -209,17 +223,17 @@ handle: <code class="inline">:ok</code>, or <code class="inline">{:error, messag
     </h2>
 
     <div class="functions-list">
-<section class="detail" id="check_scripts/1">
+<section class="detail" id="default_rules/1">
 
   <div class="detail-header">
-    <a href="#check_scripts/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+    <a href="#default_rules/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">check_scripts(username)</h1>
+      <h1 class="signature" translate="no">default_rules(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L103" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -230,12 +244,11 @@ handle: <code class="inline">:ok</code>, or <code class="inline">{:error, messag
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> check_scripts(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}</pre>
+          <pre translate="no"><span class="attribute">@spec</span> default_rules(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}</pre>
 
       </div>
 
-<p>The ASCII-only, script and mark rules (see moduledoc) for a NORMALIZED
-handle: <code class="inline">:ok</code>, or <code class="inline">{:error, message}</code> for the changeset.</p>
+<p>Core's own rules (see moduledoc), for a NORMALIZED handle.</p>
   </section>
 </section>
 <section class="detail" id="format/0">
@@ -248,7 +261,7 @@ handle: <code class="inline">:ok</code>, or <code class="inline">{:error, messag
       <h1 class="signature" translate="no">format()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L74" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -276,7 +289,7 @@ handle: <code class="inline">:ok</code>, or <code class="inline">{:error, messag
       <h1 class="signature" translate="no">normalize(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L65" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L72" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -304,7 +317,7 @@ handle: <code class="inline">:ok</code>, or <code class="inline">{:error, messag
       <h1 class="signature" translate="no">valid?(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L99" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L126" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -319,7 +332,37 @@ handle: <code class="inline">:ok</code>, or <code class="inline">{:error, messag
 
       </div>
 
-<p>Format, length and script rules together, for a normalized handle.</p>
+<p>Length and <a href="#validate/1"><code class="inline">validate/1</code></a> together, for a normalized handle.</p>
+  </section>
+</section>
+<section class="detail" id="validate/1">
+
+  <div class="detail-header">
+    <a href="#validate/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">validate(username)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L89" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> validate(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}</pre>
+
+      </div>
+
+<p>The rules for a NORMALIZED handle: <code class="inline">:ok</code>, or <code class="inline">{:error, message}</code> for the
+changeset. Invisible characters are refused first; then the
+<code class="inline">validate_username</code> hook answers, or <a href="#default_rules/1"><code class="inline">default_rules/1</code></a> when no plugin does.</p>
   </section>
 </section>
 
@@ -331,9 +374,9 @@ handle: <code class="inline">:ok</code>, or <code class="inline">{:error, messag
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1264">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1264">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
 
             </span>
 

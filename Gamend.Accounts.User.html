@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1264">
+    <meta name="project" content="gamend_core v1.0.1265">
 
 
-    <title>Gamend.Accounts.User — gamend_core v1.0.1264</title>
+    <title>Gamend.Accounts.User — gamend_core v1.0.1265</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-323B10BE.js"></script>
+    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1264
+          v1.0.1265
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />User</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1264)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
 
     </h1>
 
@@ -598,7 +598,7 @@ constraint.</p>
       <h1 class="signature" translate="no">avatar_changeset(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user.ex#L562" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user.ex#L560" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -687,7 +687,7 @@ immediately confirmed so the SDK can receive tokens without email confirmation.<
       <h1 class="signature" translate="no">display_name_changeset(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user.ex#L552" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user.ex#L550" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -802,7 +802,7 @@ without the email permission only sees the public profile.</p>
       <h1 class="signature" translate="no">last_seen_at_or_fallback(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user.ex#L587" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user.ex#L585" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -912,7 +912,7 @@ Defaults to <code class="inline">true</code>.</li></ul>
       <h1 class="signature" translate="no">serialize_brief(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user.ex#L597" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user.ex#L595" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -963,7 +963,7 @@ lobbies, and friends. Includes metadata for rendering player appearance.</p>
       <h1 class="signature" translate="no">username_changeset(user_or_changeset, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user.ex#L522" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user.ex#L524" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -976,7 +976,9 @@ lobbies, and friends. Includes metadata for rendering player appearance.</p>
 characters (<a href="Gamend.Limits.html"><code class="inline">Gamend.Limits</code></a> <code class="inline">:min_username</code>/<code class="inline">:max_username</code>) of letters and
 digits in one script, or Latin mixed with Chinese, Japanese or Korean,
 joined by non-consecutive <code class="inline">.</code> <code class="inline">_</code> <code class="inline">-</code> separators and starting and ending on
-a letter or digit — <a href="Gamend.Accounts.Username.html"><code class="inline">Gamend.Accounts.Username</code></a> has the rules and why. Uniqueness is enforced by the DB unique index.</p>
+a letter or digit — <a href="Gamend.Accounts.Username.html"><code class="inline">Gamend.Accounts.Username</code></a> has the rules and why, and a
+plugin replaces them with the <code class="inline">validate_username/1</code> hook. Length and the DB
+unique index stay.</p>
   </section>
 </section>
 <section class="detail" id="valid_password?/2">
@@ -989,7 +991,7 @@ a letter or digit — <a href="Gamend.Accounts.Username.html"><code class="inlin
       <h1 class="signature" translate="no">valid_password?(arg1, password)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user.ex#L574" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user.ex#L572" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1011,9 +1013,9 @@ time a real verification would to avoid timing attacks.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1264">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1264">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
 
             </span>
 

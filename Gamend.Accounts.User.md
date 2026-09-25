@@ -209,7 +209,9 @@ Input is NFKC-normalized and lowercased on cast. Valid usernames are 3–32
 characters (`Gamend.Limits` `:min_username`/`:max_username`) of letters and
 digits in one script, or Latin mixed with Chinese, Japanese or Korean,
 joined by non-consecutive `.` `_` `-` separators and starting and ending on
-a letter or digit — `Gamend.Accounts.Username` has the rules and why. Uniqueness is enforced by the DB unique index.
+a letter or digit — `Gamend.Accounts.Username` has the rules and why, and a
+plugin replaces them with the `validate_username/1` hook. Length and the DB
+unique index stay.
 
 # `valid_password?`
 

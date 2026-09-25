@@ -109,8 +109,9 @@ registration attrs (string keys), which already contain the generated
 `"username"`. Return `{:ok, attrs}` — possibly with a different username
 or other changes — or `{:error, reason}` to abort the registration.
 
-Core re-validates after all hooks ran: format and uniqueness are not
-overridable. A hook-supplied username that is invalid or already taken is
+Core re-validates after all hooks ran, against `c:validate_username/1` or
+its own rules and for uniqueness; this hook cannot skip that. A
+hook-supplied username that is invalid or already taken is
 replaced with a generated one (a plugin bug must never lock a player out
 of login). For strict policy on player-initiated changes — profanity or
 reserved names — use `c:before_user_update/2`, where errors are returned
@@ -130,6 +131,26 @@ to the player:
 ```elixir
 @callback before_user_update(Gamend.Accounts.User.t(), map()) :: hook_result(map())
 ```
+
+# `validate_username`
+*optional* 
+
+```elixir
+@callback validate_username(String.t()) :: :ok | {:error, String.t() | atom()} | :default
+```
+
+Replaces the built-in username rules for one handle.
+
+Receives the handle as it will be stored (NFKC-normalized, lowercased) and
+answers `:ok`, `{:error, message}` (shown to the player), or `:default` to
+keep core's rules: letters and digits of one script or Latin with Chinese,
+Japanese or Korean, joined by `.` `_` `-` (`Gamend.Accounts.Username`).
+Core still enforces length, uniqueness and the absence of invisible
+characters. The generator asks the same question, so a policy that refuses
+every `word-1234` must hand out handles in `c:before_user_register/2`.
+Modules are tried in order and the first real answer wins. A hook that
+raises or times out counts as `:default`, so a plugin bug never locks a
+player out.
 
 # `after_lobby_create`
 *optional* 

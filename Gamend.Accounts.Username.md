@@ -29,22 +29,26 @@ international domain names:
 
 Nothing else: a CJK letter that resembles a Latin one (`丨` for `l`, `ㅇ`
 for `o`) is no more confusable than `1` and `0`, which any ASCII handle
-holds. Format-control characters (zero-width joiners, direction overrides)
-are not letters, so the format refuses them.
+holds.
+
+A host with other ideas implements the `validate_username/1` hook
+(`Gamend.Hooks`), which answers for the normalized handle and replaces
+`default_rules/1` wholesale. Only the floor stays: length, uniqueness, and
+no invisible characters (Unicode's `C` categories: controls, zero-width
+joiners, direction overrides).
 
 `GAMEND_LIMITS_USERNAME_ASCII_ONLY=true` keeps handles to `a-z`, `0-9` and
 the separators, the GitHub and Discord model, after the same normalization
 (`ＷＡＮＧ` is still `wang`); the generator then transliterates or picks a
 word.
 
-# `check_scripts`
+# `default_rules`
 
 ```elixir
-@spec check_scripts(String.t()) :: :ok | {:error, String.t()}
+@spec default_rules(String.t()) :: :ok | {:error, String.t()}
 ```
 
-The ASCII-only, script and mark rules (see moduledoc) for a NORMALIZED
-handle: `:ok`, or `{:error, message}` for the changeset.
+Core's own rules (see moduledoc), for a NORMALIZED handle.
 
 # `format`
 
@@ -68,7 +72,17 @@ The spelling a handle is stored and looked up under.
 @spec valid?(String.t()) :: boolean()
 ```
 
-Format, length and script rules together, for a normalized handle.
+Length and `validate/1` together, for a normalized handle.
+
+# `validate`
+
+```elixir
+@spec validate(String.t()) :: :ok | {:error, String.t()}
+```
+
+The rules for a NORMALIZED handle: `:ok`, or `{:error, message}` for the
+changeset. Invisible characters are refused first; then the
+`validate_username` hook answers, or `default_rules/1` when no plugin does.
 
 ---
 

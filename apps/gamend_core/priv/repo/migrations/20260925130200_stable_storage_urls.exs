@@ -31,13 +31,15 @@ defmodule Gamend.Repo.Migrations.StableStorageUrls do
           from(r in table,
             where: like(field(r, ^column), "%X-Amz-Signature=%"),
             select: {type(r.id, :binary_id), field(r, ^column)}
-          )
+          ),
+          log: false
         )
 
       for {id, url} <- rows, key = storage_key(url, "#{prefix}/#{id}/") do
         repo().update_all(
           from(r in table, where: r.id == type(^id, :binary_id)),
-          set: [{column, "/storage/" <> key}]
+          [set: [{column, "/storage/" <> key}]],
+          log: false
         )
       end
     end

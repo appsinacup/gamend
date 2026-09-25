@@ -24,3 +24,7 @@ config :gamend_web, GamendWeb.Auth.Guardian,
   ttl: {15, :minutes}
 
 config :gamend_web, GamendWeb.Plugs.RateLimiter, enabled: false
+
+# The IP-ban boot load holds a database connection the tests need. Tests drive
+# GamendWeb.Plugs.IpBan.load_persisted/0 directly.
+config :gamend_web, GamendWeb.IpBanSync, enabled: false

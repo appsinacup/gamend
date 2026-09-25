@@ -85,9 +85,10 @@ config :gamend_core, async_inline: true
 # ticker supervised but idle. Tests drive Gamend.Tournaments.tick/0 directly.
 config :gamend_core, Gamend.Tournaments.Ticker, enabled: false
 
-# The live retention cycle would sweep outside any sandbox every minute; the
-# full sweep's first run is five minutes out, past any test.
-config :gamend_core, Gamend.Retention, live_interval_seconds: 0
+# Retention sweeps outside any sandbox: the live cycle every minute, the full
+# one five minutes after boot, which a long suite reaches. Tests call
+# `Gamend.Retention.prune_all/0` and `prune_live/0` themselves.
+config :gamend_core, Gamend.Retention, enabled: false
 
 # Same for the matchmaking sweep: no sandbox connection, and on SQLite it
 # collides with the test's open write transaction ("database is locked").
@@ -97,6 +98,10 @@ config :gamend_core, Gamend.Matchmaking.Worker, enabled: false
 # Same again for the chat-moderation boot load and mute sweep. Tests drive
 # Gamend.Chat.Moderation.Cache.load_persisted/0 directly.
 config :gamend_core, Gamend.Chat.Moderation.Sync, enabled: false
+
+# And for the IP-ban boot load. Tests drive GamendWeb.Plugs.IpBan.load_persisted/0
+# directly.
+config :gamend_web, GamendWeb.IpBanSync, enabled: false
 
 # Disable app-level caching in tests to avoid stale reads across assertions.
 # Still provide the multilevel configuration so the cache can start.

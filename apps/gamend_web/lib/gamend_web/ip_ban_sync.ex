@@ -27,10 +27,17 @@ defmodule GamendWeb.IpBanSync do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
+  # `enabled: false` in the app config keeps it supervised but idle, for test
+  # suites: the load at boot holds a database connection the tests need, and
+  # they call `IpBan.load_persisted/0` and `apply_remote/3` themselves.
   @impl true
   def init(_opts) do
-    Phoenix.PubSub.subscribe(Gamend.PubSub, IpBan.topic())
-    {:ok, %{loaded?: false}, {:continue, :load_persisted}}
+    if Keyword.get(Application.get_env(:gamend_web, __MODULE__, []), :enabled, true) do
+      Phoenix.PubSub.subscribe(Gamend.PubSub, IpBan.topic())
+      {:ok, %{loaded?: false}, {:continue, :load_persisted}}
+    else
+      {:ok, %{loaded?: true}}
+    end
   end
 
   @impl true

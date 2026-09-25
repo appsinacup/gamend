@@ -83,9 +83,10 @@ config :gamend_core, Gamend.Accounts.PresenceWriter, flush_ms: 0
 # ("database is locked"). Tests drive tick/0 and sweep/0 directly.
 config :gamend_core, Gamend.Tournaments.Ticker, enabled: false
 
-# The live retention cycle would sweep outside any sandbox every minute; the
-# full sweep's first run is five minutes out, past any test.
-config :gamend_core, Gamend.Retention, live_interval_seconds: 0
+# Retention sweeps outside any sandbox: the live cycle every minute, the full
+# one five minutes after boot, which a long suite reaches. Tests call
+# `Gamend.Retention.prune_all/0` and `prune_live/0` themselves.
+config :gamend_core, Gamend.Retention, enabled: false
 config :gamend_core, Gamend.Matchmaking.Worker, enabled: false
 
 # NOTE: deliberately NOT setting `async_inline: true` here, unlike the root

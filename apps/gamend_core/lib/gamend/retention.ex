@@ -141,10 +141,17 @@ defmodule Gamend.Retention do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
+  # `enabled: false` in the app config keeps the sweeper supervised but idle,
+  # for test suites: both cycles would sweep outside the SQL sandbox, and a
+  # suite that runs past five minutes meets the first full sweep. `run_now/0`
+  # and `prune_all/0` still work.
   @impl true
   def init(_opts) do
-    Process.send_after(self(), :prune, @initial_delay_ms)
-    schedule_live()
+    if Keyword.get(Application.get_env(:gamend_core, __MODULE__, []), :enabled, true) do
+      Process.send_after(self(), :prune, @initial_delay_ms)
+      schedule_live()
+    end
+
     {:ok, @never_run}
   end
 

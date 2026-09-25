@@ -6,6 +6,7 @@ defmodule GamendHost.Application do
   alias Gamend.Hooks.PluginManager
   alias Gamend.OAuth.Providers
   alias Gamend.Repo.AdvisoryLock
+  alias GamendWeb.Auth.Tokens
 
   @impl true
   def start(_type, _args) do
@@ -162,13 +163,13 @@ defmodule GamendHost.Application do
     end
   end
 
+  # The lifetimes are settings (`auth.*_token_ttl_*`), read through the same
+  # function Guardian signs with, so the line says what tokens really get.
   defp jwt_info do
-    guardian_config =
-      Application.get_env(:gamend_web, GamendWeb.Auth.Guardian, [])
+    %{"access" => {access, access_unit}, "refresh" => {refresh, refresh_unit}} =
+      Tokens.ttls()
 
-    ttl = guardian_config[:ttl]
-    ttl_str = if ttl, do: "#{elem(ttl, 0)} #{elem(ttl, 1)}", else: "default"
-    "JWT: Guardian (TTL: #{ttl_str})"
+    "JWT: Guardian (access TTL: #{access} #{access_unit}, refresh TTL: #{refresh} #{refresh_unit})"
   end
 
   defp oauth_info do

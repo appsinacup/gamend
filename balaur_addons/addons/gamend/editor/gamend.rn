@@ -26,7 +26,7 @@ pub fn state() {
 }
 
 pub fn register() {
-    #{ docks: [#{ id: "gamend", name: "Gamend", tall: true, scrolls: true, draw: draw }] }
+    #{ panels: [#{ id: "gamend", title: "Gamend", tall: true, scrolls: true, draw: draw }] }
 }
 
 fn core_tabs() {
@@ -139,14 +139,14 @@ fn header(S, k, me) {
     let link = gamend::connection();
     let url = link["url"];
     let narrow = ui::available_width() < 560.0;
-    ui::horizontal(#{ height: 26 }, || {
+    ui::row(#{ height: 26 }, || {
         ui::spacing(4, 0);
         for name in ["production", "local"] {
             let at = target[name];
             let on = target["name"] == name && url == at;
-            let role = if on { "chip_on" } else { "chip" };
+            let role = "chip";
             let label = if narrow { name } else { format!("{} · {}", name, host_of(at)) };
-            if ui::pill(label, #{ role: role, tooltip: at }) && !on {
+            if ui::button(label, #{ role: role, checked: on, tooltip: at }) && !on {
                 pick(S, me, name);
             }
         }
@@ -156,7 +156,7 @@ fn header(S, k, me) {
         }
     });
     if narrow {
-        ui::horizontal(#{ height: 26 }, || {
+        ui::row(#{ height: 26 }, || {
             ui::spacing(4, 0);
             links_and_status(k, link);
         });
@@ -166,10 +166,10 @@ fn header(S, k, me) {
 
 fn links_and_status(k, link) {
     let url = link["url"];
-    if ui::pill("Open", #{ role: "chip", tooltip: url }) {
+    if ui::button("Open", #{ role: "chip", tooltip: url }) {
         engine::open_url(url);
     }
-    if ui::pill("Admin", #{ role: "chip", tooltip: url + "/admin" }) {
+    if ui::button("Admin", #{ role: "chip", tooltip: url + "/admin" }) {
         engine::open_url(url + "/admin");
     }
     ui::add_space(8);
@@ -198,8 +198,8 @@ fn status(k, link) {
         topics += socket["topics"].len();
     }
     let sockets = if open > 0 { format!("socket open, {} topics", topics) } else { "no socket open" };
-    let color = if user is String { k.sage } else { k.dim };
-    ui::label(format!("{}  ·  {}", who, sockets), #{ size: 11.5, font: ui::FONT_MONO, color: color, truncate: true });
+    let color = if user is String { k.success_text } else { k.text_muted };
+    ui::label(format!("{}  ·  {}", who, sockets), #{ font_size: 11.5, font_family: ui::FONT_MONO, text_color: color, truncate: true });
 }
 
 fn overview(S, k, me) {
@@ -242,12 +242,12 @@ fn user(S, k, me) {
     field(S, k, "access token", session["access_token"], #{ mask: true, copy: true });
     field(S, k, "expires", expires(session["expires_at"]), #{});
     field(S, k, "refresh token", session["refresh_token"], #{ mask: true, copy: true });
-    ui::horizontal(#{ height: 26 }, || {
+    ui::row(#{ height: 26 }, || {
         ui::spacing(4, 0);
-        if ui::pill("Keep for the next run", #{ role: "chip" }) {
+        if ui::button("Keep for the next run", #{ role: "chip" }) {
             keep_session(session);
         }
-        if ui::pill("Sign out here", #{ role: "chip" }) {
+        if ui::button("Sign out here", #{ role: "chip" }) {
             gamend::restore(());
             forget(me, "");
         }
@@ -259,9 +259,9 @@ fn user(S, k, me) {
 fn signed_out(S, k, me) {
     let empty = S.kit.empty;
     empty(k, "not signed in");
-    ui::horizontal(#{ height: 26 }, || {
+    ui::row(#{ height: 26 }, || {
         ui::spacing(4, 0);
-        if ui::pill("Sign in with this device", #{ role: "chip" }) {
+        if ui::button("Sign in with this device", #{ role: "chip" }) {
             forget(me, "login");
             let (ok, id) = script::attempt(|| gamend::login((), #{ device_id: engine::device_id() }));
             if ok {
@@ -276,7 +276,7 @@ fn signed_out(S, k, me) {
     let asked = me.requests.get("login").unwrap_or(());
     let reply = if login is Tuple && asked is i64 { gamend::reply(asked) } else { login };
     if !(reply is Tuple) {
-        line(brief(reply), k.dim);
+        line(brief(reply), k.text_muted);
     }
     let saved = saved_session();
     if saved is Object {
@@ -289,13 +289,13 @@ fn signed_out(S, k, me) {
             let secret = key.ends_with("token");
             field(S, k, key, saved[key], #{ mask: secret, copy: secret });
         }
-        ui::horizontal(#{ height: 26 }, || {
+        ui::row(#{ height: 26 }, || {
             ui::spacing(4, 0);
-            if ui::pill("Restore it", #{ role: "chip" }) {
+            if ui::button("Restore it", #{ role: "chip" }) {
                 gamend::restore(saved);
                 forget(me, "");
             }
-            if ui::pill("Forget it", #{ role: "chip" }) {
+            if ui::button("Forget it", #{ role: "chip" }) {
                 save::remove(SESSION_SLOT);
             }
         });
@@ -333,11 +333,11 @@ fn data(S, k, me) {
     files(S, k, "gamend-data", #{ only: [SESSION_SLOT + ".toml", PREFS_SLOT + ".toml"] });
     section(k, "On the server, key-value");
     let asked = #{ get: false };
-    ui::horizontal(#{ height: 26 }, || {
+    ui::row(#{ height: 26 }, || {
         ui::spacing(4, 0);
-        let (typed, _, entered) = ui::text_field("gamend:kv", "a key", #{ role: "field", value: me.kv_key, width: 220.0, font: ui::FONT_MONO });
+        let (typed, _, entered) = ui::text_field("gamend:kv", "a key", #{ role: "input", value: me.kv_key, width: 220.0, font_family: ui::FONT_MONO });
         me.kv_key = typed;
-        if ui::pill("Get", #{ role: "chip" }) || entered {
+        if ui::button("Get", #{ role: "chip" }) || entered {
             asked.get = true;
         }
     });
@@ -351,7 +351,7 @@ fn data(S, k, me) {
     section(k, "Rows the game keeps");
     let rows = game_rows(me);
     if rows.len() == 0 {
-        line("none: the rows a playing game subscribed to with `register_kv` show here", k.faint);
+        line("none: the rows a playing game subscribed to with `register_kv` show here", k.text_subtle);
     } else {
         let tree = S.kit.tree;
         tree(S, k, "gamend:rows", rows, #{});
@@ -427,16 +427,15 @@ fn refresh_on(me, newest, topic, key) {
 }
 
 fn activity(S, k, me) {
-    ui::horizontal(#{ height: 26 }, || {
+    ui::row(#{ height: 26 }, || {
         ui::spacing(4, 0);
         for name in ["all", "calls", "messages", "errors"] {
-            let role = if me.filter == name { "chip_on" } else { "chip" };
-            if ui::pill(name, #{ role: role }) {
+            if ui::button(name, #{ role: "chip", checked: me.filter == name }) {
                 me.filter = name;
             }
         }
         ui::add_space(12);
-        if ui::pill("Clear", #{ role: "chip" }) {
+        if ui::button("Clear", #{ role: "chip" }) {
             gamend::clear_activity();
         }
     });
@@ -483,13 +482,13 @@ fn activity_row(S, k, me, row, n) {
     let ms = row["ms"];
     let took = if ms is f64 { format!("{} ms", ms as i64) } else { "" };
     let mark = if open { "▾" } else { "▸" };
-    let color = if failed(row) { k.accent } else if row["kind"] == "message" { k.faint } else { k.dim };
-    ui::horizontal(#{ height: 24 }, || {
+    let color = if failed(row) { k.primary_text } else if row["kind"] == "message" { k.text_subtle } else { k.text_muted };
+    ui::row(#{ height: 24 }, || {
         ui::spacing(4, 0);
-        if ui::pill(format!("{} {}", mark, row["kind"]), #{ role: "chip" }) {
+        if ui::button(format!("{} {}", mark, row["kind"]), #{ role: "chip" }) {
             me.open[key] = !open;
         }
-        ui::label(format!("{}  {}  {}", row["what"], row["status"], took), #{ size: 11.5, font: ui::FONT_MONO, color: color, truncate: true });
+        ui::label(format!("{}  {}  {}", row["what"], row["status"], took), #{ font_size: 11.5, font_family: ui::FONT_MONO, text_color: color, truncate: true });
     });
     if open {
         let tree = S.kit.tree;
@@ -514,12 +513,12 @@ fn logs(S, k) {
         for name in ["shipping", "floor", "run", "pending", "last flush", "accepted", "dropped"] {
             field(S, k, name, report.get(name).unwrap_or(""), #{});
         }
-        if ui::pill("Flush now", #{ role: "chip" }) {
+        if ui::button("Flush now", #{ role: "chip" }) {
             let root = scene::root();
             root.meta[FLUSH_KEY] = "yes";
         }
     } else {
-        line("not shipping: put addons/gamend/log_sink.rn on a node that lives as long as the game", k.faint);
+        line("not shipping: put addons/gamend/log_sink.rn on a node that lives as long as the game", k.text_subtle);
     }
 }
 
@@ -543,13 +542,13 @@ fn feature_tab(S, k, me, name) {
         }
     }
     if !(gamend::session() is Object) {
-        line("not signed in: most of these are the player's own, so sign in on the User tab", k.faint);
+        line("not signed in: most of these are the player's own, so sign in on the User tab", k.text_subtle);
     }
-    ui::horizontal(#{ height: 26 }, || {
+    ui::row(#{ height: 26 }, || {
         ui::spacing(4, 0);
         if feature.id != "" {
             let held = me.ids.get(name).unwrap_or("");
-            let (typed, _, _) = ui::text_field("gamend:id:" + name, feature.id, #{ role: "field", value: held, width: 220.0, font: ui::FONT_MONO });
+            let (typed, _, _) = ui::text_field("gamend:id:" + name, feature.id, #{ role: "input", value: held, width: 220.0, font_family: ui::FONT_MONO });
             me.ids[name] = typed;
         }
         refresh_button(me, name + "/");
@@ -560,7 +559,7 @@ fn feature_tab(S, k, me, name) {
         let path = view[1];
         section(k, format!("{} · GET {}", label, path));
         if path.contains("{id}") && id == "" {
-            line(format!("needs a {}", feature.id), k.faint);
+            line(format!("needs a {}", feature.id), k.text_subtle);
             continue;
         }
         let key = format!("{}/{}/{}", name, label, id);
@@ -569,7 +568,7 @@ fn feature_tab(S, k, me, name) {
 }
 
 fn refresh_button(me, prefix) {
-    if ui::pill("Refresh", #{ role: "chip" }) {
+    if ui::button("Refresh", #{ role: "chip" }) {
         forget(me, prefix);
     }
 }
@@ -621,22 +620,22 @@ fn forget(me, prefix) {
 /// A reply drawn: a structure when it came back, a line when it did not.
 fn show(S, k, key, reply) {
     if reply is Tuple {
-        line("loading…", k.faint);
+        line("loading…", k.text_subtle);
         return;
     }
     if reply["kind"] == "error" {
-        line(reply["error"], k.accent);
+        line(reply["error"], k.primary_text);
         return;
     }
     let status = reply.get("status").unwrap_or(0);
     let body = reply.get("body").unwrap_or(());
     if status >= 400 {
-        line(format!("{}: {}", status, short(body)), k.accent);
+        line(format!("{}: {}", status, short(body)), k.primary_text);
         return;
     }
     let shown = if body is Object && body.contains_key("data") { body["data"] } else { body };
     if shown is Tuple {
-        line(format!("{}: empty", status), k.faint);
+        line(format!("{}: empty", status), k.text_subtle);
         return;
     }
     let tree = S.kit.tree;
@@ -734,5 +733,5 @@ fn listed(items) {
 }
 
 fn line(text, color) {
-    ui::label(text, #{ size: 11.5, font: ui::FONT_MONO, color: color, wrap: true });
+    ui::label(text, #{ font_size: 11.5, font_family: ui::FONT_MONO, text_color: color, wrap: true });
 }

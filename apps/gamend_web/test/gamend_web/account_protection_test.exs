@@ -159,6 +159,15 @@ defmodule GamendWeb.AccountProtectionTest do
     test "keys outside the public prefixes are still not served", %{conn: conn} do
       assert json_response(get(conn, "/storage/backups/db.sql"), 404)
     end
+
+    test "a host can add a prefix of its own", %{conn: conn} do
+      SettingsHelpers.put(:gamend_core, Gamend.Storage, :public_prefixes, ["avatars/", "pdf"])
+      on_exit(fn -> SettingsHelpers.delete(:gamend_core, Gamend.Storage, :public_prefixes) end)
+
+      assert redirected_to(get(conn, "/storage/pdf/abc123.pdf"), 302) =~ "pdf/abc123.pdf"
+      assert json_response(get(build_conn(), "/storage/pdfs-private/x.pdf"), 404)
+      assert json_response(get(build_conn(), "/storage/icons/x.png"), 404)
+    end
   end
 
   test "the request body limit is a setting" do

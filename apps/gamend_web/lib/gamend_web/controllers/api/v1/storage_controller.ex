@@ -90,7 +90,8 @@ defmodule GamendWeb.Api.V1.StorageController do
     |> redirect(external: Storage.url(key, signed: true))
   end
 
-  # Prefixes this unauthenticated route may serve.
+  # Prefixes this unauthenticated route may serve: `Storage.public_prefixes/0`,
+  # `avatars/` and `icons/` unless a host adds its own.
   #
   # It used to serve *any* key in the store. Avatar and icon keys carry 16 bytes
   # of entropy so they are effectively unguessable, but the admin uploader
@@ -99,10 +100,8 @@ defmodule GamendWeb.Api.V1.StorageController do
   # hand-written key like `backups/db.sql` is guessable by construction.
   # Everything outside these prefixes is reachable only through the
   # authenticated admin download route.
-  @public_prefixes ~w(avatars/ icons/)
-
   defp publicly_servable?(key) do
-    Enum.any?(@public_prefixes, &String.starts_with?(key, &1))
+    Enum.any?(Storage.public_prefixes(), &String.starts_with?(key, &1))
   end
 
   defp serve_object(conn, key) do

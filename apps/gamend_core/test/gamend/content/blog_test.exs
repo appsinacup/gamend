@@ -134,6 +134,27 @@ defmodule Gamend.Content.BlogTest do
     assert html =~ "<p>Second paragraph.</p>"
   end
 
+  test "a post that opens with an image still drops its lede from the body", %{root: root} do
+    File.write!(Path.join(root, "2026-09-02-pictured.md"), """
+    # Pictured
+
+    ![A new flag](/img/blog/flag.png)
+
+    The opening paragraph, under a picture.
+
+    Second paragraph.
+    """)
+
+    Content.reload()
+
+    assert Content.get_blog_post("pictured").lede == "The opening paragraph, under a picture."
+
+    html = Content.blog_post_html("pictured")
+    assert html =~ "flag.png"
+    refute html =~ "The opening paragraph"
+    assert html =~ "Second paragraph."
+  end
+
   test "the lede skips an import line left over from MDX" do
     assert Content.get_blog_post("hello").lede == "Opening paragraph that is not the description."
   end

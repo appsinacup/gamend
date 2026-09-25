@@ -134,6 +134,28 @@ defmodule Gamend.RuntimeConfigTest do
     end
   end
 
+  # Outside prod the compiled config owns the cache; the toggle may only turn
+  # it off. Copying the default "on" across overrode every test config's
+  # `bypass_mode: true`.
+  describe "cache outside prod" do
+    @tag env: %{"GAMEND_AUTH_SECRET_KEY_BASE" => String.duplicate("a", 64)}
+    test "leaves the compiled bypass alone while the cache is on" do
+      config = Config.Reader.read!(@runtime_config, env: :test)
+
+      refute Keyword.has_key?(config[:gamend_core][Gamend.Cache] || [], :bypass_mode)
+    end
+
+    @tag env: %{
+           "GAMEND_AUTH_SECRET_KEY_BASE" => String.duplicate("a", 64),
+           "GAMEND_CACHE_ENABLED" => "false"
+         }
+    test "bypasses the cache when it is turned off" do
+      config = Config.Reader.read!(@runtime_config, env: :test)
+
+      assert config[:gamend_core][Gamend.Cache][:bypass_mode] == true
+    end
+  end
+
   describe "endpoint" do
     test "url, port and origins take their shapes from the settings", %{config: config} do
       endpoint = config[:gamend_web][GamendWeb.Endpoint]

@@ -986,16 +986,26 @@ defmodule Gamend.Content do
   # first paragraph — so that paragraph is dropped here or every post opens by
   # repeating itself. Only an exact match is removed; an edited opening
   # paragraph stays.
+  #
+  # The first paragraph with any text, as `extract_lede/1` takes the first
+  # prose line: a post that opens with an image renders it as a `<p>` of its
+  # own, and checking only the first `<p>` left such a post repeating its lede.
   defp strip_lede_paragraph(html, lede) when is_binary(lede) and lede != "" do
-    case Regex.run(~r/\A\s*<p>(.*?)<\/p>\s*/s, html) do
-      [full, text] ->
-        if normalize_text(text) == normalize_text(lede) do
-          String.replace(html, full, "", global: false)
+    ~r/<p>(.*?)<\/p>\s*/s
+    |> Regex.scan(html, return: :index)
+    |> Enum.find(fn [_full, {start, length}] ->
+      normalize_text(binary_part(html, start, length)) != ""
+    end)
+    |> case do
+      [{start, length} = _full, {text_start, text_length}] ->
+        if normalize_text(binary_part(html, text_start, text_length)) == normalize_text(lede) do
+          binary_part(html, 0, start) <>
+            binary_part(html, start + length, byte_size(html) - start - length)
         else
           html
         end
 
-      _ ->
+      nil ->
         html
     end
   end

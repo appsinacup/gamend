@@ -261,13 +261,17 @@ defmodule GamendWeb.HostRuntime do
 
   # Outside prod the cache topology comes from the compiled config; honor the
   # GAMEND_CACHE_ENABLED toggle here so disabling it in dev/test isn't a
-  # silent no-op.
+  # silent no-op. Only turning it off is copied across: the setting defaults
+  # to on, and writing `bypass_mode: false` for that default overrode the
+  # `bypass_mode: true` every test config sets, so suites ran cached.
   defp cache_bypass_entries(:prod, _setting), do: []
 
   defp cache_bypass_entries(_env, setting) do
-    [
-      {:gamend_core, Gamend.Cache, [bypass_mode: not setting.(Gamend.Cache.Settings, :enabled)]}
-    ]
+    if setting.(Gamend.Cache.Settings, :enabled) do
+      []
+    else
+      [{:gamend_core, Gamend.Cache, [bypass_mode: true]}]
+    end
   end
 
   defp prod_entries(env, setting, host, scheme, host_root)

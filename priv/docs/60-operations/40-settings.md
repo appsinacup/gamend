@@ -7,7 +7,7 @@ generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
 # Settings
 
 Every setting the server has, with the environment variable that sets it.
-311 settings across 28 groups.
+312 settings across 28 groups.
 
 A setting is declared in the module that owns it, so this page and
 `.env.example` are generated from the same source the server reads. The
@@ -485,6 +485,7 @@ Live values, and where each one came from, are on the
 | `GAMEND_STORAGE_BUCKET` | string | - | **Required in production when `GAMEND_STORAGE_ADAPTER` is `s3`.** |
 | `GAMEND_STORAGE_DIR` | string | `"priv/storage"` | Directory the local adapter writes objects to. Point this at persistent storage (a mounted volume) in production — the default lives with the app and does not survive a redeploy. |
 | `GAMEND_STORAGE_ENDPOINT` | string | - | Custom endpoint, e.g. https://<account>.r2.cloudflarestorage.com. |
+| `GAMEND_STORAGE_PUBLIC_PREFIXES` | list | `avatars/,icons/` | Key prefixes GET /storage/<key> serves to anyone. Add one only for keys that carry enough randomness to be unguessable; the rest need the admin API. |
 | `GAMEND_STORAGE_PUBLIC_URL` | string | - | CDN or base URL serving stored objects, whichever backend is behind it. |
 | `GAMEND_STORAGE_REGION` | string | `"auto"` | Region, or "auto" for services that do not use one (R2, MinIO). |
 | `GAMEND_STORAGE_SECRET_ACCESS_KEY` | string | - | **Required in production when `GAMEND_STORAGE_ADAPTER` is `s3`.** Secret - never log or commit it. |

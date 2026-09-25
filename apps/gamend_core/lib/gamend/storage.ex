@@ -92,6 +92,18 @@ defmodule Gamend.Storage do
     doc: "CDN or base URL serving stored objects, whichever backend is behind it."
   )
 
+  # What the unauthenticated `GET /storage/<key>` may serve. Avatar and icon
+  # keys carry 16 random bytes, so knowing one is being meant to have it. Admin
+  # uploads go at any path, and a hand-written key like `backups/db.sql` is
+  # guessable, so everything outside these is reached only through the admin
+  # API. A host adds a prefix for keys of its own that are just as random.
+  setting(:public_prefixes, :list,
+    default: ["avatars/", "icons/"],
+    doc:
+      "Key prefixes GET /storage/<key> serves to anyone. Add one only for keys that " <>
+        "carry enough randomness to be unguessable; the rest need the admin API."
+  )
+
   setting(:upload_ttl_seconds, :integer,
     default: 600,
     doc:
@@ -159,6 +171,18 @@ defmodule Gamend.Storage do
   """
   @spec url(Adapter.key(), keyword()) :: String.t()
   def url(key, opts \\ []), do: adapter().url(key, opts)
+
+  @doc """
+  The key prefixes `GET /storage/<key>` serves (`public_prefixes`), each
+  ending in `/` so `pdf` cannot also admit `pdfs-private/`.
+  """
+  @spec public_prefixes() :: [String.t()]
+  def public_prefixes do
+    __MODULE__
+    |> Gamend.Settings.get(:public_prefixes)
+    |> Enum.reject(&(&1 in [nil, "", "/"]))
+    |> Enum.map(&if(String.ends_with?(&1, "/"), do: &1, else: &1 <> "/"))
+  end
 
   @doc "Seconds an upload ticket stays valid (`upload_ttl_seconds`)."
   @spec upload_ttl_seconds() :: pos_integer()

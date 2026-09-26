@@ -135,7 +135,7 @@ fn page(S, k, tab) {
 /// The two servers, the links, and who is signed in over what: one row
 /// where there is room, two in a side dock.
 fn header(S, k, me) {
-    let target = gamend::target();
+    let target = gamend::server();
     let link = gamend::connection();
     let url = link["url"];
     let narrow = ui::available_width() < 560.0;
@@ -179,7 +179,7 @@ fn links_and_status(k, link) {
 /// Talk to the other of the project's servers from now on, remembered for
 /// this person only.
 fn pick(S, me, name) {
-    settings::set("gamend/target", name);
+    settings::set("gamend/server", name);
     let commit = S.kit.save_prefs;
     commit(S);
     gamend::configure(());
@@ -205,7 +205,7 @@ fn status(k, link) {
 fn overview(S, k, me) {
     let section = S.kit.section;
     let field = S.kit.field;
-    let target = gamend::target();
+    let target = gamend::server();
     let link = gamend::connection();
     section(k, "Server");
     field(S, k, "url", link["url"], #{ copy: true });

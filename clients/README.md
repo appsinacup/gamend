@@ -36,6 +36,18 @@ model class (`Lobby`, `SessionResponse`, …):
 node check_js.js http://127.0.0.1:4000
 ```
 
+`check_realtime.mjs` needs no generated client: it drives `GameRealtime`
+(`realtime.js`) through a token that stops being valid, and checks the socket
+comes back with the renewed one. By default it revokes the token, which takes
+seconds; `--expiry` waits for it to expire and refreshes it, against a server
+started with `GAMEND_AUTH_ACCESS_TOKEN_TTL_MINUTES=1`:
+
+```sh
+npm install
+node check_realtime.mjs http://127.0.0.1:4000
+node check_realtime.mjs http://127.0.0.1:4000 --expiry
+```
+
 The Balaur and C++ SDKs come from our own generator, `sdkgen/`: one model of
 the document and the realtime table, one emitter per target. Each script
 refreshes the document first; `--check` fails when the output on disk is

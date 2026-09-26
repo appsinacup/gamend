@@ -19,6 +19,11 @@
  *   const lobbyChannel = realtime.joinLobbyChannel(lobbyId)
  *   lobbyChannel.on('updated', (payload) => console.log('lobby event:', payload))
  *
+ *   // After a token refresh. The server checks the token only when the socket
+ *   // connects, so this is what the next reconnect sends. Or pass a function
+ *   // returning the current token instead of a string.
+ *   realtime.setToken(newAccessToken)
+ *
  *   realtime.disconnect()
  *
  * Dependency: `phoenix` (bundled with @ughuuu/gamend)
@@ -31,13 +36,19 @@ export class GameRealtime {
   /**
    * @param {string} serverUrl  - Base HTTP(S) or WS(S) server URL,
    *                              e.g. "https://game.example.com" or "wss://game.example.com"
-   * @param {string} token      - JWT access token from the REST login endpoints
+   * @param {string|function(): string} token
+   *                            - JWT access token from the REST login endpoints,
+   *                              or a function returning the current one. It is
+   *                              read on every connect and reconnect; see
+   *                              `setToken` for keeping it fresh.
    * @param {Object} socketOpts - Optional Phoenix.Socket constructor options.
    *                              Pass `format: 'protobuf'` to receive server
    *                              events as protobuf binary frames; channels
    *                              obtained through the join helpers decode them
    *                              transparently (timestamps become unix-ms
    *                              numbers, see proto/gamend_realtime.proto).
+   *                              `params` (object or function) are sent
+   *                              alongside the token.
    */
   constructor(serverUrl, token, socketOpts = {}) {
     // Normalise URL: strip trailing slash, ensure ws(s):// scheme, append /socket
@@ -46,14 +57,42 @@ export class GameRealtime {
         .replace(/\/$/, '')
         .replace(/^http(s?):\/\//, (_m, s) => `ws${s}://`) + '/socket'
 
-    const { format, ...opts } = socketOpts
+    const { format, params, ...opts } = socketOpts
     this._token = token
     this._format = format === 'protobuf' ? 'protobuf' : 'json'
-    const params = this._format === 'protobuf' ? { token, format: 'protobuf' } : { token }
-    this._socket = new Socket(wsUrl, { params, ...opts })
+    this._closed = false
+    // A function, so Phoenix reads the token on every reconnect. A value
+    // fixed here is replayed after the access token expires, and the server
+    // refuses the socket from then on.
+    this._socket = new Socket(wsUrl, { ...opts, params: () => this._socketParams(params) })
     this._socket.connect()
     /** @type {Map<string, Object>} topic → Phoenix Channel */
     this._channels = new Map()
+  }
+
+  /**
+   * The access token the next connect or reconnect sends.
+   * @returns {string}
+   */
+  get token() {
+    return typeof this._token === 'function' ? this._token() : this._token
+  }
+
+  /**
+   * Replace the access token, e.g. after `POST /api/v1/refresh`.
+   *
+   * The server checks the token when the socket connects, so an open socket
+   * and its channels carry on untouched; the new token is what the next
+   * reconnect sends. A socket that is down right now (its reconnects refused
+   * with the expired token) retries at once instead of waiting out its
+   * backoff, and its channels rejoin.
+   * @param {string|function(): string} token - the token, or a function returning it
+   */
+  setToken(token) {
+    this._token = token
+    if (!this._closed && !this._socket.isConnected()) {
+      this._socket.disconnect(() => this._socket.connect())
+    }
   }
 
   /**
@@ -83,7 +122,7 @@ export class GameRealtime {
    * Join the user channel for notifications, presence, and real-time events.
    * Topic: `"user:<userId>"`
    * @param {string|number} userId
-   * @param {Object} params - Extra join params merged with the auth token
+   * @param {Object} params - Extra join params
    * @returns {Object} Phoenix Channel
    */
   joinUserChannel(userId, params = {}) {
@@ -180,7 +219,7 @@ export class GameRealtime {
   /**
    * Join an arbitrary channel topic.
    * @param {string} topic  - Full Phoenix channel topic string
-   * @param {Object} params - Join params merged with the auth token
+   * @param {Object} params - Join params
    * @returns {Object} Phoenix Channel
    */
   joinChannel(topic, params = {}) {
@@ -220,6 +259,7 @@ export class GameRealtime {
    * Disconnect the socket and leave all channels.
    */
   disconnect() {
+    this._closed = true
     this._channels.forEach((ch) => { try { ch.leave() } catch (_) {} })
     this._channels.clear()
     this._socket.disconnect()
@@ -227,11 +267,19 @@ export class GameRealtime {
 
   // ── Private ────────────────────────────────────────────────────────────────
 
+  _socketParams(extra) {
+    const params = { token: this.token }
+    if (this._format === 'protobuf') params.format = 'protobuf'
+    return { ...params, ...(typeof extra === 'function' ? extra() : extra) }
+  }
+
+  // No token in the join params: the server authenticates the socket, not the
+  // join, and a token captured here would be replayed stale on every rejoin.
   _join(topic, extraParams = {}) {
     if (this._channels.has(topic)) {
       return this._channels.get(topic)
     }
-    const ch = this._socket.channel(topic, { token: this._token, ...extraParams })
+    const ch = this._socket.channel(topic, extraParams)
     if (this._format === 'protobuf') this._wrapBinaryDecode(ch)
     ch.join()
       .receive('error', (err) =>

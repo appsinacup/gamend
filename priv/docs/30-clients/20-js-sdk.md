@@ -126,3 +126,44 @@ unix-ms numbers.
 `updated` carries the **full** object rather than a delta, so diff against your
 last copy if you need to know which field moved. The complete topic and event
 list is in the Realtime guide.
+
+### Keeping the socket signed in
+
+The server checks the access token when the socket connects, not afterwards,
+so an open socket outlives its token. The token matters again at the next
+reconnect (a network drop, a laptop waking, a server deploy), and a reconnect
+that sends an expired token is refused until it gets a fresh one. Give
+`GameRealtime` the new token whenever you refresh:
+
+```javascript
+const refreshed = (await authApi.refreshToken({
+  refreshTokenRequest: { refresh_token }
+})).data;
+realtime.setToken(refreshed.access_token);
+```
+
+`setToken` leaves an open socket alone, and makes a socket that is down retry
+at once. Or pass a function instead of a string, and every connect reads the
+token you hold at that moment. In React, keep the token in a ref and create
+the socket once:
+
+```javascript
+const tokenRef = useRef(accessToken);
+tokenRef.current = accessToken;
+
+useEffect(() => {
+  const realtime = new GameRealtime(serverUrl, () => tokenRef.current);
+  const user = realtime.joinUserChannel(userId);
+  // ...
+  return () => realtime.disconnect();
+}, [serverUrl, userId]);
+```
+
+Don't create a new `GameRealtime` on every refresh: each one is another
+socket, rejoining every channel, and the server allows 20 sockets per user by
+default (`GAMEND_LIMITS_MAX_SOCKETS_PER_USER`).
+
+On Node 22, call `setToken`. Its built-in WebSocket never reports a refused
+reconnect as closed, so the socket stops retrying, and only `setToken`
+restarts it. Browsers and Node 24 are unaffected. Passing
+`{ transport: WebSocket }` from the `undici` package also fixes it.

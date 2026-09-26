@@ -77,7 +77,7 @@ defmodule GamendWeb.ApiSpec do
         - **Send notifications** to accepted friends with a title, optional content, and optional metadata
         - **List own notifications** with pagination (ordered oldest-first)
         - **Delete notifications** by ID (single or batch)
-        - **Real-time delivery** via the user WebSocket channel (`"notification"` events)
+        - **Real-time delivery** via the user WebSocket channel (`"notification_created"` events)
         - **Offline delivery**: undeleted notifications are replayed on WebSocket reconnect
         - **Push delivery**: notifications also fan out to the recipient's registered mobile devices (see Push notifications)
 
@@ -205,7 +205,9 @@ defmodule GamendWeb.ApiSpec do
         import { GameRealtime } from '@ughuuu/gamend'
         const realtime = new GameRealtime('https://your-server.com', accessToken)
         const userChannel = realtime.joinUserChannel(userId)
-        userChannel.on('notification', payload => console.log(payload))
+        userChannel.on('notification_created', payload => console.log(payload))
+        // after refreshing the access token; the next reconnect sends it
+        realtime.setToken(newAccessToken)
         ```
         `phoenix` ships as a dependency of the package, so no extra install is needed.
 

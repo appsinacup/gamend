@@ -33,6 +33,7 @@ runnable host app at the repository root.
 ### Running the app
 
 - `mix setup` once, then `mix dev.start` (creates the DB, migrates, builds assets, runs `phx.server`).
+- Claude Code cloud sessions: `.claude/cloud-setup.sh` is the environment's setup script (Erlang/OTP and Elixir at CI's versions, libsrtp2, hex; snapshotted between sessions), and the SessionStart hook `.claude/hooks/session-start.sh` fetches and compiles the deps, logging to `/tmp/gamend-session-start.log`.
 - The endpoint module is `GamendWeb.Endpoint`; the host OTP app starts it.
 - `GamendHost.Application` starts `GamendWeb.HostSupervision.children/1`. A core process goes in that list; a host-only one goes in its `:extra` option.
 

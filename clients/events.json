@@ -403,5 +403,120 @@
     "channel": "groups",
     "event": "group_deleted",
     "signal": "group_deleted"
+  },
+  {
+    "channel": "user",
+    "event": "match_found",
+    "signal": "match_found"
+  },
+  {
+    "channel": "user",
+    "event": "chat_muted",
+    "signal": "chat_muted"
+  },
+  {
+    "channel": "user",
+    "event": "chat_unmuted",
+    "signal": "chat_unmuted"
+  },
+  {
+    "channel": "user",
+    "event": "tournament_updated",
+    "signal": "tournament_updated"
+  },
+  {
+    "channel": "user",
+    "event": "tournament_finished",
+    "signal": "tournament_finished"
+  },
+  {
+    "channel": "user",
+    "event": "tournament_match_ready",
+    "signal": "tournament_match_ready"
+  },
+  {
+    "channel": "user",
+    "event": "tournament_match_resolved",
+    "signal": "tournament_match_resolved"
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:answer",
+    "signal": "webrtc_answer"
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:ice",
+    "signal": "webrtc_ice"
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:channel_open",
+    "signal": "webrtc_channel_open"
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:channel_closed",
+    "signal": "webrtc_channel_closed"
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:state",
+    "signal": "webrtc_state"
+  },
+  {
+    "channel": "user",
+    "event": "ready_check_started",
+    "signal": "ready_check_started"
+  },
+  {
+    "channel": "user",
+    "event": "ready_check_updated",
+    "signal": "ready_check_updated"
+  },
+  {
+    "channel": "user",
+    "event": "ready_check_passed",
+    "signal": "ready_check_passed"
+  },
+  {
+    "channel": "user",
+    "event": "ready_check_failed",
+    "signal": "ready_check_failed"
+  },
+  {
+    "channel": "signaling",
+    "event": "user_joined",
+    "signal": "signaling_user_joined"
+  },
+  {
+    "channel": "signaling",
+    "event": "user_rejoined",
+    "signal": "signaling_user_rejoined"
+  },
+  {
+    "channel": "signaling",
+    "event": "user_left",
+    "signal": "signaling_user_left"
+  },
+  {
+    "channel": "signaling",
+    "event": "offer",
+    "signal": "signaling_offer"
+  },
+  {
+    "channel": "signaling",
+    "event": "answer",
+    "signal": "signaling_answer"
+  },
+  {
+    "channel": "signaling",
+    "event": "ice",
+    "signal": "signaling_ice"
+  },
+  {
+    "channel": "signaling",
+    "event": "room_closed",
+    "signal": "signaling_room_closed"
   }
 ]

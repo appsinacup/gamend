@@ -1,8 +1,10 @@
-## What and why
-<!-- The problem, what this changes, and a link to the issue. -->
+## Changes
+<!-- One line per change. Link the issue if there is one. -->
+-
 
-## How it was tested
-<!-- Commands run, manual checks, and anything you could not test. -->
+## Testing
+<!-- One line per check you ran, and anything you could not test. -->
+-
 
 ## Checklist
 - [ ] `mix precommit` passes

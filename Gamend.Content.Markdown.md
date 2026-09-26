@@ -88,6 +88,18 @@ Render markdown source. The frontmatter, if any, is dropped.
 
 Render a file, or `nil` when it cannot be read or parsed.
 
+# `sections`
+
+```elixir
+@spec sections(String.t() | nil) :: [
+  %{id: String.t(), text: String.t(), level: 2 | 3, lede: String.t() | nil}
+]
+```
+
+The `h2` and `h3` sections of rendered HTML: each heading as `toc/1` gives
+it, plus `:lede`, the first sentence of the paragraph that opens the
+section, or nil when the section opens with a list, a table or code.
+
 # `strip_first_h1`
 
 ```elixir

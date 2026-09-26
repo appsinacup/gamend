@@ -135,6 +135,21 @@ Across categories, not within one: the collections are written to be read
 front to back, and stopping at a category boundary would strand the reader on
 the last page of each section.
 
+# `doc_sections`
+
+```elixir
+@spec doc_sections(atom(), String.t()) :: [
+  %{id: String.t(), text: String.t(), level: 2 | 3, lede: String.t() | nil}
+]
+```
+
+A guide's `h2` and `h3` sections: the heading's id and text, as
+`doc_toc/2` gives them, plus `:lede`, the first sentence of the section's
+first paragraph (nil when it opens with a list, a table or code).
+
+For search: a section is a place to go as much as a guide is. Cached until
+`reload/0`, like the HTML it is read from.
+
 # `doc_toc`
 
 ```elixir
@@ -264,6 +279,16 @@ For a flat collection that is the order of `list_doc_categories/1`. For a
 tree it is the tree's own order — a category's page, then its children,
 then the next sibling — which is what previous/next should follow and what
 the grouped view, with the root guides pulled to the front, does not.
+
+# `memoize`
+
+```elixir
+@spec memoize(term(), (-&gt; value)) :: value when value: term()
+```
+
+Caches `fun`'s result under `key` until the next `reload/0`, for data a host
+derives from content (its search entries, say) so it is built once rather
+than on every request. An empty result is not cached.
 
 # `path`
 

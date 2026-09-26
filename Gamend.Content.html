@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1266">
+    <meta name="project" content="gamend_core v1.0.1267">
 
 
-    <title>Gamend.Content — gamend_core v1.0.1266</title>
+    <title>Gamend.Content — gamend_core v1.0.1267</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
+    <script defer src="dist/sidebar_items-DE7B5BAF.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1266
+          v1.0.1267
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Content</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1267)</small>
 
     </h1>
 
@@ -248,6 +248,18 @@ shows.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#doc_sections/2" data-no-tooltip="" translate="no">doc_sections(collection \\ :docs, slug)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A guide's <code class="inline">h2</code> and <code class="inline">h3</code> sections: the heading's id and text, as
+<a href="#doc_toc/2"><code class="inline">doc_toc/2</code></a> gives them, plus <code class="inline">:lede</code>, the first sentence of the section's
+first paragraph (nil when it opens with a list, a table or code).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#doc_toc/2" data-no-tooltip="" translate="no">doc_toc(collection \\ :docs, slug)</a>
 
       </div>
@@ -342,6 +354,18 @@ an <code class="inline">index.md</code> has no guide of its own, and this is how
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#memoize/2" data-no-tooltip="" translate="no">memoize(key, fun)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Caches <code class="inline">fun</code>'s result under <code class="inline">key</code> until the next <a href="#reload/0"><code class="inline">reload/0</code></a>, for data a host
+derives from content (its search entries, say) so it is built once rather
+than on every request. An empty result is not cached.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#path/1" data-no-tooltip="" translate="no">path(name)</a>
 
       </div>
@@ -425,7 +449,7 @@ not configured or the file doesn't exist.</p></div>
       <h1 class="signature" translate="no">apply_changelog_pills(html)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L1063" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L1088" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -488,7 +512,7 @@ source. Returns <code class="inline">nil</code> when not found or path traversal
       <h1 class="signature" translate="no">blog_neighbours(slug)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L648" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L673" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -517,7 +541,7 @@ Either may be <code class="inline">nil</code>.</p>
       <h1 class="signature" translate="no">blog_post_html(slug)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L665" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L690" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -545,7 +569,7 @@ Either may be <code class="inline">nil</code>.</p>
       <h1 class="signature" translate="no">blog_posts_grouped()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L699" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L724" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -728,6 +752,41 @@ front to back, and stopping at a category boundary would strand the reader on
 the last page of each section.</p>
   </section>
 </section>
+<section class="detail" id="doc_sections/2">
+
+    <span id="doc_sections/1"></span>
+
+  <div class="detail-header">
+    <a href="#doc_sections/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">doc_sections(collection \\ :docs, slug)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L505" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> doc_sections(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: [
+  %{id: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), text: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), level: 2 | 3, lede: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil}
+]</pre>
+
+      </div>
+
+<p>A guide's <code class="inline">h2</code> and <code class="inline">h3</code> sections: the heading's id and text, as
+<a href="#doc_toc/2"><code class="inline">doc_toc/2</code></a> gives them, plus <code class="inline">:lede</code>, the first sentence of the section's
+first paragraph (nil when it opens with a list, a table or code).</p><p>For search: a section is a place to go as much as a guide is. Cached until
+<a href="#reload/0"><code class="inline">reload/0</code></a>, like the HTML it is read from.</p>
+  </section>
+</section>
 <section class="detail" id="doc_toc/2">
 
     <span id="doc_toc/1"></span>
@@ -803,7 +862,7 @@ works on either.</p>
       <h1 class="signature" translate="no">frontmatter(content)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L557" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L582" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -833,7 +892,7 @@ lists as lists.</p>
       <h1 class="signature" translate="no">get_blog_post(slug)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L639" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L664" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -922,7 +981,7 @@ an <code class="inline">index.md</code> has no guide of its own, and this is how
       <h1 class="signature" translate="no">list_blog_posts()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L588" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L613" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1023,6 +1082,36 @@ then the next sibling — which is what previous/next should follow and what
 the grouped view, with the root guides pulled to the front, does not.</p>
   </section>
 </section>
+<section class="detail" id="memoize/2">
+
+  <div class="detail-header">
+    <a href="#memoize/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">memoize(key, fun)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L517" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> memoize(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(), (-&gt; value)) :: value when value: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()</pre>
+
+      </div>
+
+<p>Caches <code class="inline">fun</code>'s result under <code class="inline">key</code> until the next <a href="#reload/0"><code class="inline">reload/0</code></a>, for data a host
+derives from content (its search entries, say) so it is built once rather
+than on every request. An empty result is not cached.</p>
+  </section>
+</section>
 <section class="detail" id="path/1">
 
   <div class="detail-header">
@@ -1061,7 +1150,7 @@ the grouped view, with the root guides pulled to the front, does not.</p>
       <h1 class="signature" translate="no">pill(class_suffix, label)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L1087" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L1112" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1125,7 +1214,7 @@ paths alone, for a site whose images live in <code class="inline">priv/static</c
       <h1 class="signature" translate="no">relabel_pills(html, tags)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L1105" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content.ex#L1130" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1218,9 +1307,9 @@ not configured or the file doesn't exist.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1267">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1267">Hex Preview</a>
 
             </span>
 

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1266">
+    <meta name="project" content="gamend_core v1.0.1267">
 
 
-    <title>Gamend.Content.Markdown — gamend_core v1.0.1266</title>
+    <title>Gamend.Content.Markdown — gamend_core v1.0.1267</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
+    <script defer src="dist/sidebar_items-DE7B5BAF.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1266
+          v1.0.1267
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Content.<wbr />Markdown</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1267)</small>
 
     </h1>
 
@@ -201,6 +201,18 @@ HTML, not a directive, and stays as written.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#sections/1" data-no-tooltip="" translate="no">sections(html)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The <code class="inline">h2</code> and <code class="inline">h3</code> sections of rendered HTML: each heading as <a href="#toc/1"><code class="inline">toc/1</code></a> gives
+it, plus <code class="inline">:lede</code>, the first sentence of the paragraph that opens the
+section, or nil when the section opens with a list, a table or code.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#strip_first_h1/1" data-no-tooltip="" translate="no">strip_first_h1(html)</a>
 
       </div>
@@ -299,7 +311,7 @@ folder, so its links resolve against the slug rather than its parent.
       <h1 class="signature" translate="no">plain_text(html)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L146" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L197" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -377,6 +389,38 @@ folder, so its links resolve against the slug rather than its parent.
 <p>Render a file, or <code class="inline">nil</code> when it cannot be read or parsed.</p>
   </section>
 </section>
+<section class="detail" id="sections/1">
+
+  <div class="detail-header">
+    <a href="#sections/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">sections(html)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L143" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> sections(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) :: [
+  %{id: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), text: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), level: 2 | 3, lede: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil}
+]</pre>
+
+      </div>
+
+<p>The <code class="inline">h2</code> and <code class="inline">h3</code> sections of rendered HTML: each heading as <a href="#toc/1"><code class="inline">toc/1</code></a> gives
+it, plus <code class="inline">:lede</code>, the first sentence of the paragraph that opens the
+section, or nil when the section opens with a list, a table or code.</p>
+  </section>
+</section>
 <section class="detail" id="strip_first_h1/1">
 
   <div class="detail-header">
@@ -387,7 +431,7 @@ folder, so its links resolve against the slug rather than its parent.
       <h1 class="signature" translate="no">strip_first_h1(html)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L140" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L191" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -445,9 +489,9 @@ puts the id first on the heading tag, so the pattern is stable.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1267">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1267">Hex Preview</a>
 
             </span>
 

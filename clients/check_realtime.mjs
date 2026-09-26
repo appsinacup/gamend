@@ -28,6 +28,10 @@ import { WebSocket } from 'undici'
 import { GameRealtime } from './realtime.js'
 
 const server = (process.argv.find((a) => /^https?:\/\//.test(a)) || 'http://127.0.0.1:4000').replace(/\/$/, '')
+if (server.startsWith('https:')) {
+  console.log('check_realtime: the relay forwards plain TCP, so give it an http:// server')
+  process.exit(1)
+}
 const useExpiry = process.argv.includes('--expiry')
 const deviceId = `realtime-check-${Date.now()}`
 let failures = 0
@@ -72,7 +76,7 @@ async function waitFor (predicate, ms) {
 function relay (target) {
   const { hostname, port } = new URL(target)
   const open = new Set()
-  const server = net.createServer((client) => {
+  const listener = net.createServer((client) => {
     const upstream = net.connect(Number(port) || 80, hostname)
     const end = () => {
       client.destroy()
@@ -86,30 +90,30 @@ function relay (target) {
     upstream.pipe(client)
     for (const s of [client, upstream]) { s.on('error', end); s.on('close', end) }
   })
-  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve({
-    url: `http://127.0.0.1:${server.address().port}`,
+  return new Promise((resolve) => listener.listen(0, '127.0.0.1', () => resolve({
+    url: `http://127.0.0.1:${listener.address().port}`,
     drop: () => open.forEach((s) => s.destroy()),
-    close: () => { open.forEach((s) => s.destroy()); server.close() }
+    close: () => { open.forEach((s) => s.destroy()); listener.close() }
   })))
 }
 
-// Makes the session's current access token invalid and returns fresh
+// Makes the session's access token invalid, and returns how to get fresh
 // credentials: revoke and sign in again, or wait out the TTL and refresh.
-async function invalidateAndRenew (session) {
+async function invalidate (session) {
   if (useExpiry) {
-    const waitMs = (session.expires_in + 5) * 1000
     console.log(`     waiting ${session.expires_in + 5}s for the access token to expire`)
-    await sleep(waitMs)
-    return { expired: session, renew: () => api('POST', '/refresh', { body: { refresh_token: session.refresh_token } }) }
+    await sleep((session.expires_in + 5) * 1000)
+    return () => api('POST', '/refresh', { body: { refresh_token: session.refresh_token } })
   }
   await api('DELETE', '/logout', { token: session.access_token })
-  return { expired: session, renew: login }
+  return login
 }
 
 function track (realtime) {
-  const state = { opens: 0, errors: 0 }
+  const state = { opens: 0, errors: 0, closes: 0 }
   realtime.socket.onOpen(() => state.opens++)
   realtime.socket.onError(() => state.errors++)
+  realtime.socket.onClose(() => state.closes++)
   return state
 }
 
@@ -131,7 +135,7 @@ async function scenario (name, makeRealtime, afterRenew) {
   check(`${name}: socket connects and joins user:<id>`,
     await waitFor(() => channel.state === 'joined', 5000), `channel state ${channel.state}`)
 
-  const { renew } = await invalidateAndRenew(session)
+  const renew = await invalidate(session)
   check(`${name}: the open socket survives the token going stale`, realtime.socket.isConnected())
 
   const errorsBefore = state.errors
@@ -156,6 +160,31 @@ async function scenario (name, makeRealtime, afterRenew) {
   await api('DELETE', '/logout', { token: session.access_token }).catch(() => {})
 }
 
+// setToken must leave alone what it has no business restarting: an attempt in
+// flight (a refresh right after start-up), and a socket closed on purpose.
+async function edges () {
+  console.log('-- setToken edge cases')
+  const link = await relay(server)
+  const session = await login()
+  const realtime = new GameRealtime(link.url, session.access_token, socketOpts)
+  const state = track(realtime)
+  realtime.setToken(session.access_token)
+  const channel = realtime.joinUserChannel(session.user_id)
+  check('edges: a refresh during the first connect does not abort it',
+    await waitFor(() => channel.state === 'joined', 5000) && state.opens === 1 && state.closes === 0,
+    `channel=${channel.state} opens=${state.opens} closes=${state.closes}`)
+
+  realtime.disconnect()
+  realtime.setToken(session.access_token)
+  await sleep(1000)
+  check('edges: a socket closed with disconnect() stays closed after setToken',
+    !realtime.socket.isConnected() && state.opens === 1,
+    `connected=${realtime.socket.isConnected()} opens=${state.opens}`)
+
+  link.close()
+  await api('DELETE', '/logout', { token: session.access_token }).catch(() => {})
+}
+
 ;(async () => {
   console.log(`check_realtime: ${server} (${useExpiry ? 'token expiry + refresh' : 'token revocation + sign-in'})`)
 
@@ -167,6 +196,8 @@ async function scenario (name, makeRealtime, afterRenew) {
   await scenario('token function',
     (url, holder) => new GameRealtime(url, () => holder.token, socketOpts),
     (_realtime, holder, token) => { holder.token = token })
+
+  await edges()
 
   console.log(`failures=${failures}`)
   process.exit(failures ? 1 : 0)

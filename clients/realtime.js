@@ -48,7 +48,8 @@ export class GameRealtime {
    *                              transparently (timestamps become unix-ms
    *                              numbers, see proto/gamend_realtime.proto).
    *                              `params` (object or function) are sent
-   *                              alongside the token.
+   *                              alongside the token; a `token` key there
+   *                              overrides it, `setToken` included.
    */
   constructor(serverUrl, token, socketOpts = {}) {
     // Normalise URL: strip trailing slash, ensure ws(s):// scheme, append /socket
@@ -60,11 +61,12 @@ export class GameRealtime {
     const { format, params, ...opts } = socketOpts
     this._token = token
     this._format = format === 'protobuf' ? 'protobuf' : 'json'
-    this._closed = false
     // A function, so Phoenix reads the token on every reconnect. A value
     // fixed here is replayed after the access token expires, and the server
     // refuses the socket from then on.
     this._socket = new Socket(wsUrl, { ...opts, params: () => this._socketParams(params) })
+    // The connection whose attempt last failed, for setToken's stall check.
+    this._socket.onError(() => { this._failedConn = this._socket.conn })
     this._socket.connect()
     /** @type {Map<string, Object>} topic → Phoenix Channel */
     this._channels = new Map()
@@ -75,23 +77,44 @@ export class GameRealtime {
    * @returns {string}
    */
   get token() {
-    return typeof this._token === 'function' ? this._token() : this._token
+    if (typeof this._token !== 'function') return this._token
+    // Phoenix calls this from its reconnect timer: a throw there would stop
+    // the timer for good, so a bad getter costs one refused attempt instead.
+    try {
+      const token = this._token()
+      if (typeof token === 'string') return token
+      console.error(`GameRealtime: the token function must return a string, got ${token && typeof token.then === 'function' ? 'a Promise' : typeof token}`)
+    } catch (err) {
+      console.error('GameRealtime: the token function threw', err)
+    }
+    return undefined
   }
 
   /**
    * Replace the access token, e.g. after `POST /api/v1/refresh`.
    *
    * The server checks the token when the socket connects, so an open socket
-   * and its channels carry on untouched; the new token is what the next
-   * reconnect sends. A socket that is down right now (its reconnects refused
-   * with the expired token) retries at once instead of waiting out its
-   * backoff, and its channels rejoin.
+   * and its channels carry on untouched, and so does an attempt in flight;
+   * the new token is what the next attempt sends. A socket that dropped and
+   * is waiting out its backoff (its reconnects refused with the expired
+   * token) retries at once, and its channels rejoin. One closed with
+   * `disconnect()` stays closed.
    * @param {string|function(): string} token - the token, or a function returning it
    */
   setToken(token) {
     this._token = token
-    if (!this._closed && !this._socket.isConnected()) {
-      this._socket.disconnect(() => this._socket.connect())
+    const socket = this._socket
+    if (socket.closeWasClean) return
+    // Node 22's WebSocket reports a refused upgrade with `error` and never
+    // `close`, leaving the attempt CONNECTING; Phoenix reconnects only on
+    // `close`, so without this the socket would never try again.
+    const state = socket.connectionState()
+    const stalled = state === 'connecting' && socket.conn === this._failedConn
+    if (state === 'closed' || stalled) {
+      // Phoenix's own reconnect, now rather than after the backoff: it waits
+      // while the page is hidden, and disconnect() cancels it.
+      socket.reconnectTimer.reset()
+      socket.reconnectTimer.scheduleTimeout()
     }
   }
 
@@ -259,7 +282,6 @@ export class GameRealtime {
    * Disconnect the socket and leave all channels.
    */
   disconnect() {
-    this._closed = true
     this._channels.forEach((ch) => { try { ch.leave() } catch (_) {} })
     this._channels.clear()
     this._socket.disconnect()

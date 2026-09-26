@@ -144,8 +144,9 @@ realtime.setToken(refreshed.access_token);
 
 `setToken` leaves an open socket alone, and makes a socket that is down retry
 at once. Or pass a function instead of a string, and every connect reads the
-token you hold at that moment. In React, keep the token in a ref and create
-the socket once:
+token you hold at that moment. It must return the token itself, not a Promise,
+so refresh in your auth code and keep the result where the function can read
+it. In React, keep the token in a ref and create the socket once:
 
 ```javascript
 const tokenRef = useRef(accessToken);

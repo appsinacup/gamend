@@ -30,9 +30,9 @@ if [ "${GAMEND_SETUP_STRICT:-0}" != "1" ]; then
   trap 'echo "cloud-setup: failed at line $LINENO; the SessionStart hook will retry" >&2; exit 0' ERR
 fi
 
-OTP_VERSION="${OTP_VERSION:-29.0.2}"
+OTP_VERSION="${OTP_VERSION:-29.1.1}"
 # A series ("1.20") would take its newest patch built for this OTP major.
-ELIXIR_VERSION="${ELIXIR_VERSION:-1.20.1}"
+ELIXIR_VERSION="${ELIXIR_VERSION:-1.20.4}"
 
 # Elixir warns under the image's default POSIX locale (latin1 file names).
 export LANG=C.UTF-8 LC_ALL=C.UTF-8

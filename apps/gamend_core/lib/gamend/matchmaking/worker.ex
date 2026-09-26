@@ -63,8 +63,12 @@ defmodule Gamend.Matchmaking.Worker do
   @spec nudge() :: :ok
   def nudge do
     case Process.whereis(__MODULE__) do
-      nil -> :ok
-      pid -> send(pid, :nudge) && :ok
+      nil ->
+        :ok
+
+      pid ->
+        send(pid, :nudge)
+        :ok
     end
   end
 

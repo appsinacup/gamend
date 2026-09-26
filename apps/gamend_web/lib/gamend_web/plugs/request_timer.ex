@@ -103,22 +103,32 @@ defmodule GamendWeb.Plugs.RequestTimer do
 
   defp summarize_hook_args(value), do: sanitize_param(value, @max_param_depth - 1)
 
+  # `code` and `state` are exact matches, not substrings: an OAuth
+  # authorization code is a credential, and these lines are warning-level, so
+  # they reach the admin buffer, the rotating file and whatever ships logs off
+  # the host. Slow OAuth callbacks cross the threshold routinely — they make an
+  # outbound token exchange — so in practice every one of them was logged with
+  # its code.
+  #
+  # Personal data is redacted for the same reason. Sign in with Apple posts its
+  # callback with a `user` field — a JSON string holding the player's email and
+  # full name, sent on their first sign-in only — so every new Apple player's
+  # name and email went into the log. `user` is also the root of every
+  # `user[...]` form; a slow-request line needs none of it.
+  #
+  # Exact matches because `code` appears inside innocent names (`country_code`,
+  # `postcode`) and `name` inside most of them, and over-redacting a
+  # slow-request log makes it useless.
+  @exact_sensitive_keys ~w(code state id_token access_token refresh_token user
+                           first_name last_name full_name firstname lastname fullname)
+  @sensitive_key_parts ~w(password token secret authorization api_key cookie session
+                          email phone)
+
   defp sensitive_key?(key) when is_binary(key) do
     normalized = String.downcase(key)
 
-    # `code` and `state` are exact matches, not substrings: an OAuth
-    # authorization code is a credential, and these lines are warning-level, so
-    # they reach the admin buffer and the rotating file. Slow OAuth callbacks
-    # cross the threshold routinely — they make an outbound token exchange — so
-    # in practice every one of them was logged with its code.
-    #
-    # Exact match because `code` appears inside innocent names (`country_code`,
-    # `postcode`), and over-redacting a slow-request log makes it useless.
-    normalized in ~w(code state id_token access_token refresh_token) or
-      Enum.any?(
-        ~w(password token secret authorization api_key cookie session),
-        &String.contains?(normalized, &1)
-      )
+    normalized in @exact_sensitive_keys or
+      Enum.any?(@sensitive_key_parts, &String.contains?(normalized, &1))
   end
 
   defp param_type(value) when is_binary(value), do: "string"

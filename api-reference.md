@@ -1,9 +1,10 @@
-# gamend_core v1.0.1265 - API Reference
+# gamend_core v1.0.1266 - API Reference
 
 ## Modules
 
 - [Gamend](Gamend.md): Gamend keeps the contexts that define your domain
 and business logic.
+- [Gamend.AfterCommit](Gamend.AfterCommit.md): Side effects that wait for the enclosing transaction to commit.
 - [Gamend.Analytics](Gamend.Analytics.md): The one place aggregate numbers come from. Four families
 - [Gamend.Analytics.ActivityDay](Gamend.Analytics.ActivityDay.md): A user was seen on a UTC day. One row per `(user_id, day)`; written once by
 `Gamend.Analytics.record_activity/2`, never updated.
@@ -23,6 +24,9 @@ stores and sums them. Written by `Gamend.Analytics.count/3`.
 L2 cache.
 - [Gamend.Codegen](Gamend.Codegen.md): Support for the `mix` tasks that write generated files into the repo.
 - [Gamend.Database](Gamend.Database.md): Connection and tuning settings for `Gamend.Repo`.
+- [Gamend.HTTP](Gamend.HTTP.md): `Req` with the declared timeout and retries, for the calls core makes to other
+services while a player waits: payment receipt checks (Apple, Google Play,
+Steam), OAuth code exchanges, Google ID-token checks and avatar mirroring.
 - [Gamend.Ledger](Gamend.Ledger.md): The mechanics both ledgered balances share: `Gamend.Economy` (currency in a
 wallet) and `Gamend.Inventory` (quantity of an item).
 - [Gamend.Mail](Gamend.Mail.md): Outbound email transport.
@@ -45,15 +49,20 @@ clients.
 - Accounts
   - [Gamend.Accounts](Gamend.Accounts.md): The Accounts context.
   - [Gamend.Accounts.AgePolicy](Gamend.Accounts.AgePolicy.md): What a user's age permits.
+  - [Gamend.Accounts.ApiToken](Gamend.Accounts.ApiToken.md): A personal API token's row. The token itself is never stored.
+  - [Gamend.Accounts.ApiTokens](Gamend.Accounts.ApiTokens.md): Personal API tokens: long-lived bearer tokens for scripts and CI.
   - [Gamend.Accounts.AvatarMirror](Gamend.Accounts.AvatarMirror.md): Oban worker that mirrors a user's external (OAuth provider) avatar into our
 own object storage, so avatars render from our storage/CDN instead of
 hotlinking the provider.
   - [Gamend.Accounts.Broadcasts](Gamend.Accounts.Broadcasts.md): Telling connected clients a user changed: the `user:<id>` topic, and the
 member and friend topics that show that user to others.
+  - [Gamend.Accounts.ConfirmationMailer](Gamend.Accounts.ConfirmationMailer.md): Sends a new account's confirmation email, off the request.
   - [Gamend.Accounts.Identities](Gamend.Accounts.Identities.md): How a person signs in without a password — Discord, Apple, Google, Facebook,
 GitHub, Steam or a device id — and linking those identities to an existing account or
 removing them from one.
   - [Gamend.Accounts.InactivityNotifier](Gamend.Accounts.InactivityNotifier.md): Warns a user their account is about to be deleted for inactivity.
+  - [Gamend.Accounts.LoginLockout](Gamend.Accounts.LoginLockout.md): Failed password sign-ins for one email address, and the lock they set.
+  - [Gamend.Accounts.LoginLockouts](Gamend.Accounts.LoginLockouts.md): Per-account lockout after repeated failed password sign-ins.
   - [Gamend.Accounts.PasswordHash](Gamend.Accounts.PasswordHash.md): Password hashing: Argon2id for new hashes, bcrypt still accepted for old ones.
   - [Gamend.Accounts.Presence](Gamend.Accounts.Presence.md): Whether a user is online, and when they were last seen.
   - [Gamend.Accounts.PresenceStatus](Gamend.Accounts.PresenceStatus.md): How recently a user was seen, as the three states the UI actually draws.

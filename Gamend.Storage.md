@@ -142,12 +142,29 @@ or the adapter's own `:offset` and `:limit`.
 
 An upload ticket for the client (see the module doc).
 
+# `public_prefixes`
+
+```elixir
+@spec public_prefixes() :: [String.t()]
+```
+
+The key prefixes `GET /storage/<key>` serves (`public_prefixes`), each
+ending in `/` so `pdf` cannot also admit `pdfs-private/`.
+
 # `put`
 
 ```elixir
 @spec put(Gamend.Storage.Adapter.key(), iodata(), keyword()) ::
   {:ok, Gamend.Storage.Adapter.key()} | {:error, term()}
 ```
+
+# `signed_url_seconds`
+
+```elixir
+@spec signed_url_seconds() :: pos_integer()
+```
+
+Seconds a signed read link stays valid (`signed_url_seconds`), at most S3's 7 days.
 
 # `sniff_content_type`
 
@@ -169,13 +186,25 @@ A declared `Content-Type` is only a header; this is what the bytes say.
 
 Size and stored content type of `key`, without downloading it.
 
+# `upload_ttl_seconds`
+
+```elixir
+@spec upload_ttl_seconds() :: pos_integer()
+```
+
+Seconds an upload ticket stays valid (`upload_ttl_seconds`).
+
 # `url`
 
 ```elixir
 @spec url(Gamend.Storage.Adapter.key(), keyword()) :: String.t()
 ```
 
-A readable URL for `key` (public or signed, backend-dependent).
+A readable URL for `key`, safe to store: it does not expire.
+
+For an S3 bucket with no `public_url` that is `/storage/<key>`, which
+redirects to a freshly signed link. Pass `signed: true` for the signed link
+itself, which lasts `signed_url_seconds` and must not be stored.
 
 # `usage`
 

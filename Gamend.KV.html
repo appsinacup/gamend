@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.KV — gamend_core v1.0.1265</title>
+    <title>Gamend.KV — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />KV</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -230,6 +230,16 @@ Returns <code class="inline">{:ok, entry}</code> or <code class="inline">{:error
       </div>
 
         <div class="summary-synopsis"><p>Delete an entry by its <code class="inline">id</code>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#delete_lobby_entries/1" data-no-tooltip="" translate="no">delete_lobby_entries(lobby_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Delete every entry scoped to a lobby, in one statement: for deleting the lobby.</p></div>
 
     </div>
 
@@ -515,7 +525,7 @@ Returns <code class="inline">{:ok, entry}</code>, <code class="inline">{:error, 
       <h1 class="signature" translate="no">count_entries(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L397" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L425" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -543,7 +553,7 @@ Returns <code class="inline">{:ok, entry}</code>, <code class="inline">{:error, 
       <h1 class="signature" translate="no">create_entry(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L444" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L472" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -576,7 +586,7 @@ Returns <code class="inline">{:ok, entry}</code> or <code class="inline">{:error
       <h1 class="signature" translate="no">delete(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L285" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L284" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -604,7 +614,7 @@ Returns <code class="inline">{:ok, entry}</code> or <code class="inline">{:error
       <h1 class="signature" translate="no">delete_entry(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L566" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L594" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -622,6 +632,37 @@ Returns <code class="inline">{:ok, entry}</code> or <code class="inline">{:error
 <p>Delete an entry by its <code class="inline">id</code>.</p><p>Returns <code class="inline">:ok</code> whether or not the entry existed.</p>
   </section>
 </section>
+<section class="detail" id="delete_lobby_entries/1">
+
+  <div class="detail-header">
+    <a href="#delete_lobby_entries/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">delete_lobby_entries(lobby_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L305" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> delete_lobby_entries(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+
+      </div>
+
+<p>Delete every entry scoped to a lobby, in one statement: for deleting the lobby.</p><p>The per-entry cache invalidations and <code class="inline">kv_deleted</code> broadcasts wait for the
+enclosing transaction to commit (<a href="Gamend.AfterCommit.html"><code class="inline">Gamend.AfterCommit</code></a>). One <a href="#delete/2"><code class="inline">delete/2</code></a> per
+entry cost a statement and two cache round-trips each while the caller held
+the lobby's lock. Returns the number of entries deleted.</p>
+  </section>
+</section>
 <section class="detail" id="delete_user_lobby_entries/2">
 
   <div class="detail-header">
@@ -632,7 +673,7 @@ Returns <code class="inline">{:ok, entry}</code> or <code class="inline">{:error
       <h1 class="signature" translate="no">delete_user_lobby_entries(user_id, lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L307" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L335" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -664,7 +705,7 @@ Entries scoped to the lobby alone, or to the user alone, are left untouched.</p>
       <h1 class="signature" translate="no">get(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L168" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L167" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -693,7 +734,7 @@ Returns <code class="inline">{:ok, %{value: map(), metadata: map()}}</code> when
       <h1 class="signature" translate="no">get_entry(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L434" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L462" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -724,7 +765,7 @@ Returns the <code class="inline">Entry</code> struct or <code class="inline">nil
       <h1 class="signature" translate="no">list_entries(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L346" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L374" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -757,7 +798,7 @@ Returns a list of <code class="inline">Entry</code> structs ordered by most rece
       <h1 class="signature" translate="no">put(key, value, metadata \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L202" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L201" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -786,7 +827,7 @@ Returns a list of <code class="inline">Entry</code> structs ordered by most rece
       <h1 class="signature" translate="no">put(key, value, metadata, opts)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L216" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L215" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -819,7 +860,7 @@ Returns <code class="inline">{:ok, entry}</code> on success or <code class="inli
       <h1 class="signature" translate="no">subscribe(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L80" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -849,7 +890,7 @@ Returns <code class="inline">{:ok, entry}</code> on success or <code class="inli
       <h1 class="signature" translate="no">unsubscribe(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L92" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L91" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -877,7 +918,7 @@ Returns <code class="inline">{:ok, entry}</code> on success or <code class="inli
       <h1 class="signature" translate="no">update_entry(id, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L505" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv.ex#L533" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -908,9 +949,9 @@ Returns <code class="inline">{:ok, entry}</code>, <code class="inline">{:error, 
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

@@ -122,6 +122,19 @@ Delete an entry by its `id`.
 
 Returns `:ok` whether or not the entry existed.
 
+# `delete_lobby_entries`
+
+```elixir
+@spec delete_lobby_entries(Ecto.UUID.t()) :: non_neg_integer()
+```
+
+Delete every entry scoped to a lobby, in one statement: for deleting the lobby.
+
+The per-entry cache invalidations and `kv_deleted` broadcasts wait for the
+enclosing transaction to commit (`Gamend.AfterCommit`). One `delete/2` per
+entry cost a statement and two cache round-trips each while the caller held
+the lobby's lock. Returns the number of entries deleted.
+
 # `delete_user_lobby_entries`
 
 ```elixir

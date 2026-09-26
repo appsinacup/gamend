@@ -149,6 +149,27 @@ Snapshots for a lobby, oldest first.
 
 Load blob content for a list of hashes, as a hash => content map.
 
+# `prepare`
+
+```elixir
+@spec prepare(String.t(), String.t(), keyword()) :: map() | nil
+```
+
+Gathers a capture now without recording it; `record/1` records it later.
+
+For a caller that must read the state before a transaction unwinds it, and
+outside that transaction, but records it only if the transaction commits
+(the last member leaving deletes the lobby). `nil` when snapshots are off or
+there is nothing to read. Takes `capture_lobby/3`'s options but `:sync`.
+
+# `record`
+
+```elixir
+@spec record(map() | nil) :: :ok
+```
+
+Records a capture `prepare/3` gathered. `nil` records nothing.
+
 # `record_coverage_gap`
 
 ```elixir

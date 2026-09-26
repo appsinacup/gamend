@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Storage — gamend_core v1.0.1265</title>
+    <title>Gamend.Storage — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Storage</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -253,9 +253,30 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#public_prefixes/0" data-no-tooltip="" translate="no">public_prefixes()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The key prefixes <code class="inline">GET /storage/&lt;key&gt;</code> serves (<code class="inline">public_prefixes</code>), each
+ending in <code class="inline">/</code> so <code class="inline">pdf</code> cannot also admit <code class="inline">pdfs-private/</code>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#put/3" data-no-tooltip="" translate="no">put(key, data, opts \\ [])</a>
 
       </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#signed_url_seconds/0" data-no-tooltip="" translate="no">signed_url_seconds()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Seconds a signed read link stays valid (<code class="inline">signed_url_seconds</code>), at most S3's 7 days.</p></div>
 
     </div>
 
@@ -282,11 +303,21 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#upload_ttl_seconds/0" data-no-tooltip="" translate="no">upload_ttl_seconds()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Seconds an upload ticket stays valid (<code class="inline">upload_ttl_seconds</code>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#url/2" data-no-tooltip="" translate="no">url(key, opts \\ [])</a>
 
       </div>
 
-        <div class="summary-synopsis"><p>A readable URL for <code class="inline">key</code> (public or signed, backend-dependent).</p></div>
+        <div class="summary-synopsis"><p>A readable URL for <code class="inline">key</code>, safe to store: it does not expire.</p></div>
 
     </div>
 
@@ -334,7 +365,7 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
       <h1 class="signature" translate="no">adapter()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L99" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L127" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -362,7 +393,7 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
       <h1 class="signature" translate="no">build_key(namespace, owner_id, filename)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L185" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L240" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -391,7 +422,7 @@ server-chosen so a client can't overwrite another object.</p>
       <h1 class="signature" translate="no">cache_control(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L110" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L138" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -421,7 +452,7 @@ and set as S3 object metadata at upload.</p>
       <h1 class="signature" translate="no">delete(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L132" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L160" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -449,7 +480,7 @@ and set as S3 object metadata at upload.</p>
       <h1 class="signature" translate="no">delete_prefix(prefix)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L176" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L231" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -477,7 +508,7 @@ and set as S3 object metadata at upload.</p>
       <h1 class="signature" translate="no">exists?(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L135" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L163" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -505,7 +536,7 @@ and set as S3 object metadata at upload.</p>
       <h1 class="signature" translate="no">extension_for(arg1)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L193" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L248" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -533,7 +564,7 @@ and set as S3 object metadata at upload.</p>
       <h1 class="signature" translate="no">get(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L129" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L157" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -563,7 +594,7 @@ and set as S3 object metadata at upload.</p>
       <h1 class="signature" translate="no">list_objects(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L152" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L207" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -595,7 +626,7 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
       <h1 class="signature" translate="no">presigned_upload(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L144" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L199" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -614,6 +645,35 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
 <p>An upload ticket for the client (see the module doc).</p>
   </section>
 </section>
+<section class="detail" id="public_prefixes/0">
+
+  <div class="detail-header">
+    <a href="#public_prefixes/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">public_prefixes()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L180" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> public_prefixes() :: [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]</pre>
+
+      </div>
+
+<p>The key prefixes <code class="inline">GET /storage/&lt;key&gt;</code> serves (<code class="inline">public_prefixes</code>), each
+ending in <code class="inline">/</code> so <code class="inline">pdf</code> cannot also admit <code class="inline">pdfs-private/</code>.</p>
+  </section>
+</section>
 <section class="detail" id="put/3">
 
     <span id="put/2"></span>
@@ -626,7 +686,7 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
       <h1 class="signature" translate="no">put(key, data, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L121" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L149" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -645,6 +705,34 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
 
   </section>
 </section>
+<section class="detail" id="signed_url_seconds/0">
+
+  <div class="detail-header">
+    <a href="#signed_url_seconds/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">signed_url_seconds()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L193" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> signed_url_seconds() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()</pre>
+
+      </div>
+
+<p>Seconds a signed read link stays valid (<code class="inline">signed_url_seconds</code>), at most S3's 7 days.</p>
+  </section>
+</section>
 <section class="detail" id="sniff_content_type/1">
 
   <div class="detail-header">
@@ -655,7 +743,7 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
       <h1 class="signature" translate="no">sniff_content_type(data)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L206" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L261" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -684,7 +772,7 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
       <h1 class="signature" translate="no">stat(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L172" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L227" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -703,6 +791,34 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
 <p>Size and stored content type of <code class="inline">key</code>, without downloading it.</p>
   </section>
 </section>
+<section class="detail" id="upload_ttl_seconds/0">
+
+  <div class="detail-header">
+    <a href="#upload_ttl_seconds/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">upload_ttl_seconds()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L189" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> upload_ttl_seconds() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()</pre>
+
+      </div>
+
+<p>Seconds an upload ticket stays valid (<code class="inline">upload_ttl_seconds</code>).</p>
+  </section>
+</section>
 <section class="detail" id="url/2">
 
     <span id="url/1"></span>
@@ -715,7 +831,7 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
       <h1 class="signature" translate="no">url(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L139" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L173" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -730,7 +846,9 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
 
       </div>
 
-<p>A readable URL for <code class="inline">key</code> (public or signed, backend-dependent).</p>
+<p>A readable URL for <code class="inline">key</code>, safe to store: it does not expire.</p><p>For an S3 bucket with no <code class="inline">public_url</code> that is <code class="inline">/storage/&lt;key&gt;</code>, which
+redirects to a freshly signed link. Pass <code class="inline">signed: true</code> for the signed link
+itself, which lasts <code class="inline">signed_url_seconds</code> and must not be stored.</p>
   </section>
 </section>
 <section class="detail" id="usage/1">
@@ -745,7 +863,7 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
       <h1 class="signature" translate="no">usage(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L168" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L223" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -775,7 +893,7 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
       <h1 class="signature" translate="no">validate_upload(content_type, size, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L221" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L276" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -804,9 +922,9 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

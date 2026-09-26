@@ -98,13 +98,13 @@ See `t:Gamend.Types.user_registration_attrs/0` for available fields.
 ) :: {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t() | term()}
 ```
 
-Register a user and send the confirmation email inside a DB transaction.
+Register a user and queue its confirmation email.
 
-The function accepts a `confirmation_url_fun` which must be a function of arity 1
-that receives the encoded token and returns the confirmation URL string.
-
-If sending the confirmation email fails the transaction is rolled back and
-`{:error, reason}` is returned. On success it returns `{:ok, user}`.
+`confirmation_url_fun` maps an encoded token to the confirmation URL. The
+email goes out from the `mailers` queue (`Gamend.Accounts.ConfirmationMailer`),
+enqueued in the transaction that inserts the user: the call returns once
+both are committed, without waiting on SMTP, and a failed send is retried
+there. The first user becomes the admin and gets no email.
 
 # `register_user_with_password_and_deliver`
 
@@ -116,7 +116,7 @@ If sending the confirmation email fails the transaction is rolled back and
 ) :: {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t() | term()}
 ```
 
-Register a user with an email and a password and send the confirmation
+Register a user with an email and a password and queue the confirmation
 email, as `register_user_and_deliver/3` does for the browser form: how a
 game client signs up (`POST /api/v1/register`).
 

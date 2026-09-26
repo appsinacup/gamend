@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Presence — gamend_core v1.0.1265</title>
+    <title>Gamend.Presence — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Presence</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -114,7 +114,7 @@ gamend_core
 
 
     <section id="moduledoc">
-<p>Cluster-wide tracking of who is connected where.</p><p>Backed by <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html"><code class="inline">Phoenix.Presence</code></a>, so entries are tied to process liveness and
+<p>Cluster-wide tracking of who is connected where.</p><p>Backed by <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html"><code class="inline">Phoenix.Presence</code></a>, so entries are tied to process liveness and
 replicated between nodes by CRDT: a node that dies takes its entries with it,
 with no sweeper to notice. That is the property node-local ETS and database
 flags both lack.</p><p>Used for signaling room membership and lobby spectators. Not for anything
@@ -150,7 +150,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:fetch/2"><code class="inline">Phoenix.Presence.fetch/2</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:fetch/2"><code class="inline">Phoenix.Presence.fetch/2</code></a>.</p></div>
 
     </div>
 
@@ -168,7 +168,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:get_by_key/2"><code class="inline">Phoenix.Presence.get_by_key/2</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:get_by_key/2"><code class="inline">Phoenix.Presence.get_by_key/2</code></a>.</p></div>
 
     </div>
 
@@ -188,7 +188,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:list/1"><code class="inline">Phoenix.Presence.list/1</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:list/1"><code class="inline">Phoenix.Presence.list/1</code></a>.</p></div>
 
     </div>
 
@@ -198,7 +198,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:track/3"><code class="inline">Phoenix.Presence.track/3</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:track/3"><code class="inline">Phoenix.Presence.track/3</code></a>.</p></div>
 
     </div>
 
@@ -208,7 +208,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:track/4"><code class="inline">Phoenix.Presence.track/4</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:track/4"><code class="inline">Phoenix.Presence.track/4</code></a>.</p></div>
 
     </div>
 
@@ -218,7 +218,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:untrack/2"><code class="inline">Phoenix.Presence.untrack/2</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:untrack/2"><code class="inline">Phoenix.Presence.untrack/2</code></a>.</p></div>
 
     </div>
 
@@ -228,7 +228,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:untrack/3"><code class="inline">Phoenix.Presence.untrack/3</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:untrack/3"><code class="inline">Phoenix.Presence.untrack/3</code></a>.</p></div>
 
     </div>
 
@@ -238,7 +238,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:update/3"><code class="inline">Phoenix.Presence.update/3</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:update/3"><code class="inline">Phoenix.Presence.update/3</code></a>.</p></div>
 
     </div>
 
@@ -248,7 +248,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:update/4"><code class="inline">Phoenix.Presence.update/4</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:update/4"><code class="inline">Phoenix.Presence.update/4</code></a>.</p></div>
 
     </div>
 
@@ -327,7 +327,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:fetch/2"><code class="inline">Phoenix.Presence.fetch/2</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:fetch/2"><code class="inline">Phoenix.Presence.fetch/2</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="fetchers_pids/0">
@@ -371,7 +371,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:get_by_key/2"><code class="inline">Phoenix.Presence.get_by_key/2</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:get_by_key/2"><code class="inline">Phoenix.Presence.get_by_key/2</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="last_socket?/1">
@@ -421,7 +421,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:list/1"><code class="inline">Phoenix.Presence.list/1</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:list/1"><code class="inline">Phoenix.Presence.list/1</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="track/3">
@@ -443,7 +443,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:track/3"><code class="inline">Phoenix.Presence.track/3</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:track/3"><code class="inline">Phoenix.Presence.track/3</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="track/4">
@@ -465,7 +465,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:track/4"><code class="inline">Phoenix.Presence.track/4</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:track/4"><code class="inline">Phoenix.Presence.track/4</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="untrack/2">
@@ -487,7 +487,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:untrack/2"><code class="inline">Phoenix.Presence.untrack/2</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:untrack/2"><code class="inline">Phoenix.Presence.untrack/2</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="untrack/3">
@@ -509,7 +509,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:untrack/3"><code class="inline">Phoenix.Presence.untrack/3</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:untrack/3"><code class="inline">Phoenix.Presence.untrack/3</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="update/3">
@@ -531,7 +531,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:update/3"><code class="inline">Phoenix.Presence.update/3</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:update/3"><code class="inline">Phoenix.Presence.update/3</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="update/4">
@@ -553,7 +553,7 @@ table — and not for anything durable, since a full cluster restart empties it.
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.14/Phoenix.Presence.html#c:update/4"><code class="inline">Phoenix.Presence.update/4</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.15/Phoenix.Presence.html#c:update/4"><code class="inline">Phoenix.Presence.update/4</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="users_buckets/0">
@@ -621,9 +621,9 @@ table — and not for anything durable, since a full cluster restart empties it.
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

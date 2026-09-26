@@ -1,8 +1,13 @@
 Gamend.Accounts.AgePolicy.md
+Gamend.Accounts.ApiToken.md
+Gamend.Accounts.ApiTokens.md
 Gamend.Accounts.AvatarMirror.md
 Gamend.Accounts.Broadcasts.md
+Gamend.Accounts.ConfirmationMailer.md
 Gamend.Accounts.Identities.md
 Gamend.Accounts.InactivityNotifier.md
+Gamend.Accounts.LoginLockout.md
+Gamend.Accounts.LoginLockouts.md
 Gamend.Accounts.PasswordHash.md
 Gamend.Accounts.Presence.md
 Gamend.Accounts.PresenceStatus.md
@@ -20,6 +25,7 @@ Gamend.Accounts.UserToken.md
 Gamend.Accounts.Username.md
 Gamend.Accounts.UsernameGenerator.md
 Gamend.Accounts.md
+Gamend.AfterCommit.md
 Gamend.Analytics.ActivityDay.md
 Gamend.Analytics.DailyCount.md
 Gamend.Analytics.md
@@ -72,6 +78,7 @@ Gamend.Groups.GroupMember.md
 Gamend.Groups.Invites.md
 Gamend.Groups.JoinRequests.md
 Gamend.Groups.md
+Gamend.HTTP.md
 Gamend.Hooks.Declarations.md
 Gamend.Hooks.Default.md
 Gamend.Hooks.DynamicRpcs.md

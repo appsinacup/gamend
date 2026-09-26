@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Broadcast — gamend_core v1.0.1265</title>
+    <title>Gamend.Broadcast — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Broadcast</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -149,6 +149,17 @@ moderation cache, its user notices and the IP-ban plug each carried their own
 
     </div>
 
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#publish/2" data-no-tooltip="" translate="no">publish(topic, message)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Broadcasts <code class="inline">message</code> on <code class="inline">topic</code> through <code class="inline">Gamend.PubSub</code> once the enclosing
+transaction commits (<a href="Gamend.AfterCommit.html"><code class="inline">Gamend.AfterCommit</code></a>), or now outside one.</p></div>
+
+    </div>
+
 </div>
 
   </section>
@@ -194,6 +205,38 @@ moderation cache, its user notices and the IP-ban plug each carried their own
 (no PubSub server) is silent, since that is the expected state during boot.</p>
   </section>
 </section>
+<section class="detail" id="publish/2">
+
+  <div class="detail-header">
+    <a href="#publish/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">publish(topic, message)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/broadcast.ex#L41" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> publish(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Broadcasts <code class="inline">message</code> on <code class="inline">topic</code> through <code class="inline">Gamend.PubSub</code> once the enclosing
+transaction commits (<a href="Gamend.AfterCommit.html"><code class="inline">Gamend.AfterCommit</code></a>), or now outside one.</p><p>Subscribers then never see a write before it is visible, nor one a rollback
+erases, and the broadcast never runs while a transaction holds the database.
+Every broadcast in core goes through here; the cache's own invalidation
+messages are the exception (<a href="Gamend.Cache.html"><code class="inline">Gamend.Cache</code></a>).</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -203,9 +246,9 @@ moderation cache, its user notices and the IP-ban plug each carried their own
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

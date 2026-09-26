@@ -18,6 +18,20 @@ The Accounts context.
 
 # `attach_device_to_user`
 
+# `authenticate_by_password`
+
+```elixir
+@spec authenticate_by_password(String.t(), String.t()) ::
+  {:ok, Gamend.Accounts.User.t()}
+  | {:error, :invalid_credentials | {:locked, pos_integer()}}
+```
+
+Checks an email and password, counting failures per address
+(`Gamend.Accounts.LoginLockouts`).
+
+`{:error, {:locked, seconds}}` when the address is locked, before the
+password is looked at, and for the failure that locks it.
+
 # `broadcast_friend_update`
 
 # `broadcast_member_update`
@@ -43,6 +57,15 @@ consistent instead of serving the pre-write struct until the TTL expires.
 ```
 
 Whether `user` may upload an avatar, per `anonymous_can_upload_avatar`.
+
+# `cancel_deletion`
+
+```elixir
+@spec cancel_deletion(Gamend.Accounts.User.t()) ::
+  {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t()}
+```
+
+Keep an account that was scheduled for deletion. A no-op for one that was not.
 
 # `change_user_display_name`
 
@@ -125,6 +148,22 @@ Returns `{:ok, user}` on success or `{:error, changeset}` on failure.
 
 # `delete_user_storage`
 
+# `deletion_grace_days`
+
+```elixir
+@spec deletion_grace_days() :: non_neg_integer()
+```
+
+Days a player's own deletion waits (`auth.deletion_grace_days`); 0 deletes at once.
+
+# `deletion_scheduled?`
+
+```elixir
+@spec deletion_scheduled?(Gamend.Accounts.User.t() | nil) :: boolean()
+```
+
+Whether `user` is waiting out a deletion grace period.
+
 # `deliver_login_instructions`
 
 # `deliver_user_confirmation_instructions`
@@ -171,6 +210,14 @@ four places: parties sent `display_name || ""`, so an invite from a player
 who had set no display name arrived from nobody; group invites wrote
 `display_name || username`; three admin views fell through to the email and
 then the raw id, which `display_label/1` documents as the thing not to do.
+
+# `due_deletions_query`
+
+```elixir
+@spec due_deletions_query() :: Ecto.Query.t()
+```
+
+Accounts whose deletion date has passed. For `Gamend.Retention`.
 
 # `find_or_create_from_apple`
 
@@ -285,7 +332,8 @@ Gets a user by email.
   Gamend.Accounts.User.t() | nil
 ```
 
-Gets a user by email and password.
+Gets a user by email and password. `nil` for a wrong password, and for an
+address locked by too many failures (`authenticate_by_password/2` says which).
 
 ## Examples
 
@@ -391,6 +439,28 @@ Accepts a user ID and clears both the primary and all index caches.
 
 # `register_user_with_password_and_deliver`
 
+# `request_deletion`
+
+```elixir
+@spec request_deletion(Gamend.Accounts.User.t()) ::
+  {:ok, :deleted}
+  | {:ok,
+     {:scheduled, Gamend.Accounts.User.t(), [Gamend.Accounts.UserToken.t()]}}
+  | {:error, Ecto.Changeset.t()}
+```
+
+A player deleting their own account.
+
+With `auth.deletion_grace_days` at 0 the account is deleted now, by
+`delete_user/1`. Otherwise it is scheduled that many days out and signed out
+everywhere (every session, access, refresh and personal API token), and
+`Gamend.Retention` deletes it on the day unless its owner signs in on the
+website first (`cancel_deletion/1`). An account already scheduled keeps its
+date. The expired session tokens come back so the caller can disconnect
+their LiveViews.
+
+Admin deletions and the retention sweeps call `delete_user/1` and never wait.
+
 # `require_account_activation?`
 
 ```elixir
@@ -428,13 +498,28 @@ Returns `{:ok, {user, expired_tokens}}`.
 # `sudo_mode?`
 
 ```elixir
-@spec sudo_mode?(Gamend.Accounts.User.t(), integer()) :: boolean()
+@spec sudo_mode?(Gamend.Accounts.User.t()) :: boolean()
 ```
 
 Checks whether the user is in sudo mode.
 
-The user is in sudo mode when the last authentication was done no further
-than 20 minutes ago. The limit can be given as second argument in minutes.
+With one argument, the window is the one a sudo form is submitted in:
+`sudo_mode_minutes/0` plus ten minutes to fill the form in. The limit can be
+given as second argument in minutes (negative, as an offset from now).
+
+# `sudo_mode?`
+
+```elixir
+@spec sudo_mode?(Gamend.Accounts.User.t(), integer()) :: boolean()
+```
+
+# `sudo_mode_minutes`
+
+```elixir
+@spec sudo_mode_minutes() :: pos_integer()
+```
+
+How recently a user must have signed in to open a sudo page (`auth.sudo_mode_minutes`).
 
 # `touch_last_seen`
 

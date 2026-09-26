@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Lock — gamend_core v1.0.1265</title>
+    <title>Gamend.Lock — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Lock</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -118,14 +118,21 @@ gamend_core
 only one process at a time can execute the critical section for a given
 <code class="inline">(namespace, resource_id)</code> pair.</p><p>This is useful for game RPCs where multiple players may trigger the same
 operation concurrently (e.g. guessing a word, claiming a reward) and the
-logic involves read-modify-write on KV entries or lobby metadata.</p><h2 id="module-how-it-works" class="section-heading"><a href="#module-how-it-works" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">How it works</span></h2><p>Serialized on <strong>both</strong> adapters, per key, by different mechanisms:</p><ul><li><strong>PostgreSQL</strong> — <code class="inline">pg_advisory_xact_lock</code> inside the transaction.</li><li><strong>SQLite</strong> — <a href="Gamend.Lock.Local.html"><code class="inline">Gamend.Lock.Local</code></a>, a <code class="inline">:global</code> mutex taken <em>around</em> the
+logic involves read-modify-write on KV entries or lobby metadata.</p><h2 id="module-how-it-works" class="section-heading"><a href="#module-how-it-works" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">How it works</span></h2><p>Serialized on <strong>both</strong> adapters, per key, by different mechanisms:</p><ul><li><strong>PostgreSQL</strong> — <code class="inline">pg_advisory_xact_lock</code> inside the transaction, taken
+after a node-local mutex so a node's own waiters queue in the BEAM rather
+than each holding a pooled connection while blocked.</li><li><strong>SQLite</strong> — <a href="Gamend.Lock.Local.html"><code class="inline">Gamend.Lock.Local</code></a>, a <code class="inline">:global</code> mutex taken <em>around</em> the
 transaction, since SQLite has no advisory locks and its single-writer rule
 covers neither a read-modify-write across statements nor a critical
 section that never touches the database.</li></ul><p><code class="inline">default_transaction_mode: :immediate</code> is a backstop for callers who forget
 this function, not the mechanism — it does nothing for ETS or process state.</p><h2 id="module-nesting" class="section-heading"><a href="#module-nesting" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Nesting</span></h2><p>Take the lock at the outermost point. A <a href="#serialize/3"><code class="inline">serialize/3</code></a> reached inside an open
 transaction cannot take the mutex — the caller holds the write lock, so
 waiting on a mutex whose holder wants that lock deadlocks — so it runs under
-the outer transaction and relies on the outer lock.</p><h2 id="module-prefer-an-atomic-write" class="section-heading"><a href="#module-prefer-an-atomic-write" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Prefer an atomic write</span></h2><p>Prefer an atomic write where one exists: <code class="inline">Economy.spend/4</code> does
+the outer transaction and relies on the outer lock.</p><h2 id="module-effects" class="section-heading"><a href="#module-effects" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Effects</span></h2><p><a href="#serialize/3"><code class="inline">serialize/3</code></a> is a <a href="Gamend.AfterCommit.html"><code class="inline">Gamend.AfterCommit</code></a> scope: broadcasts, hook tasks
+(<a href="Gamend.Async.html#run/1"><code class="inline">Gamend.Async.run/1</code></a>) and anything else deferred inside <code class="inline">fun</code> run once the
+transaction has committed and the lock is released. Keep <code class="inline">fun</code> to database
+work. Anything slow in it (hashing a password, a plugin's <code class="inline">before_*</code> hook,
+an HTTP call) holds the lock and, on SQLite, the only connection: do it
+before, and re-check inside only what the lock protects.</p><h2 id="module-prefer-an-atomic-write" class="section-heading"><a href="#module-prefer-an-atomic-write" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Prefer an atomic write</span></h2><p>Prefer an atomic write where one exists: <code class="inline">Economy.spend/4</code> does
 <code class="inline">balance = balance - x where balance &gt;= x</code> in one statement, which needs no
 lock at all.</p><h2 id="module-multi-node-safety" class="section-heading"><a href="#module-multi-node-safety" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Multi-node safety</span></h2><p>Both paths are cluster-wide: the Postgres lock lives in the shared database,
 and <code class="inline">:global.trans</code> coordinates across connected nodes. A netsplit can produce
@@ -161,6 +168,19 @@ or <code class="inline">{:error, reason}</code> if the transaction rolls back.</
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#exclusive/3" data-no-tooltip="" translate="no">exclusive(namespace, resource_id, fun)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Runs <code class="inline">fun</code> holding the <code class="inline">(namespace, resource_id)</code> lock but not inside a
+transaction: for a job that must run once cluster-wide and makes its own
+short writes, such as <a href="Gamend.Tournaments.html#tick/1"><code class="inline">Gamend.Tournaments.tick/1</code></a>. Each write inside commits,
+and runs its deferred effects, by itself.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#serialize/3" data-no-tooltip="" translate="no">serialize(namespace, resource_id, fun)</a>
 
       </div>
@@ -183,6 +203,44 @@ or <code class="inline">{:error, reason}</code> if the transaction rolls back.</
     </h2>
 
     <div class="functions-list">
+<section class="detail" id="exclusive/3">
+
+  <div class="detail-header">
+    <a href="#exclusive/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">exclusive(namespace, resource_id, fun)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lock.ex#L179" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> exclusive(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>() | <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), (-&gt; result)) ::
+  {:ok, result} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}
+when result: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()</pre>
+
+      </div>
+
+<p>Runs <code class="inline">fun</code> holding the <code class="inline">(namespace, resource_id)</code> lock but not inside a
+transaction: for a job that must run once cluster-wide and makes its own
+short writes, such as <a href="Gamend.Tournaments.html#tick/1"><code class="inline">Gamend.Tournaments.tick/1</code></a>. Each write inside commits,
+and runs its deferred effects, by itself.</p><p>A transaction held across the whole job kept every row it touched locked
+until the end and, on SQLite, the database's single write lock with them.</p><ul><li><strong>SQLite</strong> — the mutex alone gives the once-only guarantee: SQLite is one
+node.</li><li><strong>Postgres</strong> — a session-level advisory lock on a checked-out
+connection, which <code class="inline">fun</code> then runs on, committing as it goes. It holds one
+pooled connection for the job, not a transaction. If the caller dies,
+DBConnection closes that connection, which releases the lock.</li></ul><p>Returns <code class="inline">{:ok, result}</code>. Inside an open transaction it is <a href="#serialize/3"><code class="inline">serialize/3</code></a>.</p>
+  </section>
+</section>
 <section class="detail" id="serialize/3">
 
   <div class="detail-header">
@@ -193,7 +251,7 @@ or <code class="inline">{:error, reason}</code> if the transaction rolls back.</
       <h1 class="signature" translate="no">serialize(namespace, resource_id, fun)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lock.ex#L97" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lock.ex#L109" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -223,9 +281,9 @@ callers block until the lock is released (on transaction commit/rollback).</p><p
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

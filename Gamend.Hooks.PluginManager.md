@@ -38,6 +38,15 @@ path and uses `Application.load/1` + `Application.ensure_all_started/1`.
   {:ok, any()} | {:error, term()}
 ```
 
+# `call_timeout_ms`
+
+```elixir
+@spec call_timeout_ms() :: pos_integer()
+```
+
+How long a hook call may run, in ms: `call_timeout_in_transaction_ms` inside a
+`Repo` transaction, `call_timeout_ms` otherwise.
+
 # `child_spec`
 
 Returns a specification to start this module under a supervisor.

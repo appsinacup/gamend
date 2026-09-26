@@ -76,6 +76,8 @@ Counts `list_user_entitlements/2`'s entitlements; takes `:include_inactive`.
   | {:error, term()}
 ```
 
+# `create_stripe_billing_portal`
+
 # `create_stripe_checkout`
 
 # `finalize_steam_purchase`
@@ -237,6 +239,8 @@ event id count as a duplicate.
 ```
 
 # `stripe_config_status`
+
+# `stripe_customer_id`
 
 # `update_product`
 

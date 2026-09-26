@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.LobbySnapshots — gamend_core v1.0.1265</title>
+    <title>Gamend.LobbySnapshots — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />LobbySnapshots</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -249,6 +249,26 @@ shows up as gameplay stutter.</p><p>Disabled by default; see <a href="#enabled?/
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#prepare/3" data-no-tooltip="" translate="no">prepare(lobby_id, trigger, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Gathers a capture now without recording it; <a href="#record/1"><code class="inline">record/1</code></a> records it later.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#record/1" data-no-tooltip="" translate="no">record(capture)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Records a capture <a href="#prepare/3"><code class="inline">prepare/3</code></a> gathered. <code class="inline">nil</code> records nothing.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#record_coverage_gap/3" data-no-tooltip="" translate="no">record_coverage_gap(lobby_id, source, details \\ %{})</a>
 
       </div>
@@ -321,7 +341,7 @@ shows up as gameplay stutter.</p><p>Disabled by default; see <a href="#enabled?/
       <h1 class="signature" translate="no">capture_hook(name, caller, result)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L184" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L203" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -389,7 +409,7 @@ retention sweep. Set this when the mutation errored.</li><li><code class="inline
       <h1 class="signature" translate="no">coverage_gap?(kind)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L167" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L186" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -417,7 +437,7 @@ retention sweep. Set this when the mutation errored.</li><li><code class="inline
       <h1 class="signature" translate="no">diff(from, to)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L456" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L479" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -481,7 +501,7 @@ single <code class="inline">Application.get_env</code> when off.</p>
       <h1 class="signature" translate="no">gather_sections(lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L267" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L290" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -511,7 +531,7 @@ single <code class="inline">Application.get_env</code> when off.</p>
       <h1 class="signature" translate="no">list_coverage_gaps(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L153" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L172" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -539,7 +559,7 @@ single <code class="inline">Application.get_env</code> when off.</p>
       <h1 class="signature" translate="no">list_events(lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L526" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L549" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -569,7 +589,7 @@ single <code class="inline">Application.get_env</code> when off.</p>
       <h1 class="signature" translate="no">list_lobbies(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L541" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L564" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -598,7 +618,7 @@ built from the snapshots themselves rather than joined against <code class="inli
       <h1 class="signature" translate="no">list_snapshots(lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L516" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L539" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -626,7 +646,7 @@ built from the snapshots themselves rather than joined against <code class="inli
       <h1 class="signature" translate="no">load_blobs(hashes)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L435" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L458" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -644,6 +664,67 @@ built from the snapshots themselves rather than joined against <code class="inli
 <p>Load blob content for a list of hashes, as a hash =&gt; content map.</p>
   </section>
 </section>
+<section class="detail" id="prepare/3">
+
+    <span id="prepare/2"></span>
+
+  <div class="detail-header">
+    <a href="#prepare/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">prepare(lobby_id, trigger, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L83" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> prepare(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>() | nil</pre>
+
+      </div>
+
+<p>Gathers a capture now without recording it; <a href="#record/1"><code class="inline">record/1</code></a> records it later.</p><p>For a caller that must read the state before a transaction unwinds it, and
+outside that transaction, but records it only if the transaction commits
+(the last member leaving deletes the lobby). <code class="inline">nil</code> when snapshots are off or
+there is nothing to read. Takes <a href="#capture_lobby/3"><code class="inline">capture_lobby/3</code></a>'s options but <code class="inline">:sync</code>.</p>
+  </section>
+</section>
+<section class="detail" id="record/1">
+
+  <div class="detail-header">
+    <a href="#record/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">record(capture)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L90" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> record(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>() | nil) :: :ok</pre>
+
+      </div>
+
+<p>Records a capture <a href="#prepare/3"><code class="inline">prepare/3</code></a> gathered. <code class="inline">nil</code> records nothing.</p>
+  </section>
+</section>
 <section class="detail" id="record_coverage_gap/3">
 
     <span id="record_coverage_gap/2"></span>
@@ -656,7 +737,7 @@ built from the snapshots themselves rather than joined against <code class="inli
       <h1 class="signature" translate="no">record_coverage_gap(lobby_id, source, details \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L142" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L161" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -693,7 +774,7 @@ incomplete. The admin view also lists them across lobbies.</p>
       <h1 class="signature" translate="no">record_event(lobby_id, kind, payload \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L100" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -724,7 +805,7 @@ incomplete. The admin view also lists them across lobbies.</p>
       <h1 class="signature" translate="no">resolved_config(key, default \\ nil)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L603" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L626" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -753,7 +834,7 @@ a copy of it.</p>
       <h1 class="signature" translate="no">state_at(snapshot)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L371" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L394" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -784,7 +865,7 @@ Sections are stored whole, so this is a lookup — never a merge.</p>
       <h1 class="signature" translate="no">timeline(lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L398" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lobby_snapshots.ex#L421" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -817,9 +898,9 @@ has to hand out sequence numbers at write time for this to be stable.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

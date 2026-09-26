@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.40.4">
+    <meta name="project" content="gamend_core v1.0.1266">
+
+
+    <title>Gamend.AfterCommit — gamend_core v1.0.1266</title>
+
+    <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
+
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-MI33G4N7.js"></script>
+
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
+
+<div class="body-wrapper">
+
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<nav id="sidebar" class="sidebar">
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
+
+      <div>
+        <a href="readme.html" class="sidebar-projectName" translate="no">
+gamend_core
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v1.0.1266
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras="Pages"></ul>
+  </div>
+</nav>
+
+<output role="status" id="toast"></output>
+
+<main class="content page-module" id="main" data-type="modules">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of gamend_core</span>
+            <div class="search-input-wrapper">
+              <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+                <i class="ri-close-line ri-lg" title="Cancel search"></i>
+              </button>
+            </div>
+          </label>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <div class="engine-selector" data-multiple="false">
+          <button type="button" class="engine-button" aria-label="Select search engine" aria-haspopup="true" aria-expanded="false">
+            <i class="ri-search-2-line" aria-hidden="true"></i>
+            <span class="engine-name">Default</span>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </button>
+          <div class="engine-dropdown" hidden role="menu">
+
+              <button type="button"
+                      class="engine-option"
+                      data-engine-url="search.html?q="
+                      role="menuitemradio"
+                      aria-checked="true">
+                <span class="name">Default</span>
+                <span class="help">In-browser search</span>
+              </button>
+
+          </div>
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
+
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>
+      <span translate="no">Gamend.<wbr />AfterCommit</span> 
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
+
+    </h1>
+
+<a href="Gamend.AfterCommit.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
+  <i class="ri-markdown-line" aria-hidden="true"></i>
+  <span class="sr-only">Copy Markdown</span>
+</a>
+
+
+
+      <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/after_commit.ex#L1" title="View Source" class="icon-action" rel="help nofollow">
+        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        <span class="sr-only">View Source</span>
+      </a>
+
+  </div>
+
+
+    <section id="moduledoc">
+<p>Side effects that wait for the enclosing transaction to commit.</p><p>A broadcast, a hook dispatch or a spawned task inside a transaction runs
+while the transaction holds the database, which on SQLite (a single
+connection, <code class="inline">BEGIN IMMEDIATE</code>) is every other request's database too. It is
+also observed before the write is visible, and survives a rollback of the
+write it announces. <a href="#defer/1"><code class="inline">defer/1</code></a> queues the effect instead, and the queue runs
+once the outermost <a href="#transaction/2"><code class="inline">transaction/2</code></a> (or <a href="Gamend.Lock.html#serialize/3"><code class="inline">Gamend.Lock.serialize/3</code></a>) has
+committed and released its lock. A rollback or an exception drops it.</p><p>Outside such a scope <a href="#defer/1"><code class="inline">defer/1</code></a> runs the effect at once, so a helper can
+always defer and stay correct whether or not its caller holds a
+transaction. Inside a transaction opened with a bare <code class="inline">Repo.transaction/2</code>
+there is no commit to wait for, and it also runs at once, as before.</p><p>Queued effects run in order, in the calling process, after the lock is
+released. The write is committed by then, so one that raises or exits is
+logged and does not stop the rest or fail the caller. An effect run at once
+behaves as a plain call.</p>
+    </section>
+
+</div>
+
+  <section id="summary" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h2>
+<div class="summary-functions summary">
+  <h3>
+    <a href="#functions">Functions</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#collect/1" data-no-tooltip="" translate="no">collect(body)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Runs <code class="inline">body</code>, which opens a transaction, as the scope <a href="#defer/1"><code class="inline">defer/1</code></a> queues into:
+the queue runs when <code class="inline">body</code> returns <code class="inline">{:ok, _}</code> and is dropped otherwise. For
+wrappers that take a lock around the transaction (<a href="Gamend.Lock.html#serialize/3"><code class="inline">Gamend.Lock.serialize/3</code></a>),
+so the effects run after the lock is released as well.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#defer/1" data-no-tooltip="" translate="no">defer(fun)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Runs <code class="inline">fun</code> once the enclosing scope commits, or now when there is none.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#deferring?/0" data-no-tooltip="" translate="no">deferring?()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether <a href="#defer/1"><code class="inline">defer/1</code></a> would queue rather than run.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#transact/2" data-no-tooltip="" translate="no">transact(fun, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p><code class="inline">Repo.transact/2</code>, with <a href="#defer/1"><code class="inline">defer/1</code></a> inside it queued until it commits.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#transaction/2" data-no-tooltip="" translate="no">transaction(fun_or_multi, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p><code class="inline">Repo.transaction/2</code> (a function or an <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Multi.html"><code class="inline">Ecto.Multi</code></a>), with <a href="#defer/1"><code class="inline">defer/1</code></a> inside
+it queued until it commits. Every transaction in core goes through here.</p></div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="functions" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h2>
+
+    <div class="functions-list">
+<section class="detail" id="collect/1">
+
+  <div class="detail-header">
+    <a href="#collect/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">collect(body)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/after_commit.ex#L56" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> collect((-&gt; result)) :: result when result: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()</pre>
+
+      </div>
+
+<p>Runs <code class="inline">body</code>, which opens a transaction, as the scope <a href="#defer/1"><code class="inline">defer/1</code></a> queues into:
+the queue runs when <code class="inline">body</code> returns <code class="inline">{:ok, _}</code> and is dropped otherwise. For
+wrappers that take a lock around the transaction (<a href="Gamend.Lock.html#serialize/3"><code class="inline">Gamend.Lock.serialize/3</code></a>),
+so the effects run after the lock is released as well.</p><p>Inside an outer scope it only runs <code class="inline">body</code>; the outer scope decides.</p>
+  </section>
+</section>
+<section class="detail" id="defer/1">
+
+  <div class="detail-header">
+    <a href="#defer/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">defer(fun)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/after_commit.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> defer((-&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">any</a>())) :: :ok</pre>
+
+      </div>
+
+<p>Runs <code class="inline">fun</code> once the enclosing scope commits, or now when there is none.</p>
+  </section>
+</section>
+<section class="detail" id="deferring?/0">
+
+  <div class="detail-header">
+    <a href="#deferring?/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">deferring?()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/after_commit.ex#L82" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> deferring?() :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether <a href="#defer/1"><code class="inline">defer/1</code></a> would queue rather than run.</p>
+  </section>
+</section>
+<section class="detail" id="transact/2">
+
+    <span id="transact/1"></span>
+
+  <div class="detail-header">
+    <a href="#transact/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">transact(fun, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/after_commit.ex#L43" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> transact((-&gt; {:ok, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) ::
+  {:ok, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p><code class="inline">Repo.transact/2</code>, with <a href="#defer/1"><code class="inline">defer/1</code></a> inside it queued until it commits.</p>
+  </section>
+</section>
+<section class="detail" id="transaction/2">
+
+    <span id="transaction/1"></span>
+
+  <div class="detail-header">
+    <a href="#transaction/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">transaction(fun_or_multi, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/after_commit.ex#L36" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> transaction((-&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) | <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Multi.html#t:t/0">Ecto.Multi.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) ::
+  {:ok, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()}</pre>
+
+      </div>
+
+<p><code class="inline">Repo.transaction/2</code> (a function or an <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Multi.html"><code class="inline">Ecto.Multi</code></a>), with <a href="#defer/1"><code class="inline">defer/1</code></a> inside
+it queued until it commits. Every transaction in core goes through here.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+    <footer class="footer">
+
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Go to package docs">
+              Go to package docs
+            </button>
+
+              <a href="llms.txt" target="_blank">
+                View llms.txt
+              </a>
+
+
+              <a href="gamend_core.epub">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.4) for the
+
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
+
+        </p>
+
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
+</html>

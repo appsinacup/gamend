@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Hooks.PluginManager — gamend_core v1.0.1265</title>
+    <title>Gamend.Hooks.PluginManager — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Hooks.<wbr />PluginManager</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -166,6 +166,17 @@ path and uses <a href="https://elixir.hexdocs.pm/Application.html#load/1"><code 
         <a href="#call_rpc/4" data-no-tooltip="" translate="no">call_rpc(plugin, fn_name, args, opts \\ [])</a>
 
       </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#call_timeout_ms/0" data-no-tooltip="" translate="no">call_timeout_ms()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How long a hook call may run, in ms: <code class="inline">call_timeout_in_transaction_ms</code> inside a
+<code class="inline">Repo</code> transaction, <code class="inline">call_timeout_ms</code> otherwise.</p></div>
 
     </div>
 
@@ -330,7 +341,7 @@ path and uses <a href="https://elixir.hexdocs.pm/Application.html#load/1"><code 
       <h1 class="signature" translate="no">call_rpc(plugin, fn_name, args, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L108" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L147" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -347,6 +358,35 @@ path and uses <a href="https://elixir.hexdocs.pm/Application.html#load/1"><code 
       </div>
 
 
+  </section>
+</section>
+<section class="detail" id="call_timeout_ms/0">
+
+  <div class="detail-header">
+    <a href="#call_timeout_ms/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">call_timeout_ms()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> call_timeout_ms() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()</pre>
+
+      </div>
+
+<p>How long a hook call may run, in ms: <code class="inline">call_timeout_in_transaction_ms</code> inside a
+<code class="inline">Repo</code> transaction, <code class="inline">call_timeout_ms</code> otherwise.</p>
   </section>
 </section>
 <section class="detail" id="child_spec/1">
@@ -381,7 +421,7 @@ path and uses <a href="https://elixir.hexdocs.pm/Application.html#load/1"><code 
       <h1 class="signature" translate="no">hook_modules()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L91" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L130" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -409,7 +449,7 @@ path and uses <a href="https://elixir.hexdocs.pm/Application.html#load/1"><code 
       <h1 class="signature" translate="no">list()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L80" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L119" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -437,7 +477,7 @@ path and uses <a href="https://elixir.hexdocs.pm/Application.html#load/1"><code 
       <h1 class="signature" translate="no">lookup(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L83" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L122" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -466,7 +506,7 @@ path and uses <a href="https://elixir.hexdocs.pm/Application.html#load/1"><code 
       <h1 class="signature" translate="no">plugins_dir()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L221" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L260" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -494,7 +534,7 @@ path and uses <a href="https://elixir.hexdocs.pm/Application.html#load/1"><code 
       <h1 class="signature" translate="no">reload()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L98" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L137" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -522,7 +562,7 @@ path and uses <a href="https://elixir.hexdocs.pm/Application.html#load/1"><code 
       <h1 class="signature" translate="no">reload_and_after_startup()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L103" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L142" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -555,7 +595,7 @@ path and uses <a href="https://elixir.hexdocs.pm/Application.html#load/1"><code 
       <h1 class="signature" translate="no">start_link(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L70" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L109" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -582,9 +622,9 @@ path and uses <a href="https://elixir.hexdocs.pm/Application.html#load/1"><code 
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

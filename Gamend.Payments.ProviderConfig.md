@@ -50,6 +50,25 @@ production provider credentials for this host.
 @spec stripe_candidate_labels(:secret_key | :webhook_secret) :: [String.t()]
 ```
 
+# `stripe_checkout_api_version`
+
+```elixir
+@spec stripe_checkout_api_version() :: String.t()
+```
+
+The API version for creating a Checkout Session: the configured one, raised
+to 2025-03-31.basil when Managed Payments is on and the
+configured one is older. Only that call is raised, so every other request,
+and the payloads core parses from them, keep the configured version.
+
+# `stripe_managed_payments?`
+
+```elixir
+@spec stripe_managed_payments?() :: boolean()
+```
+
+Whether checkouts go through Stripe Managed Payments (Stripe as merchant of record).
+
 # `stripe_secret_key`
 
 ```elixir

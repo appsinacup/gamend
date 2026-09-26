@@ -46,6 +46,7 @@ HTML, not a directive, and stays as written.
   | {:dir, String.t()}
   | {:base_path, String.t() | nil}
   | {:slug, String.t() | nil}
+  | {:index, boolean()}
   | {:id, String.t()}
 ```
 
@@ -58,6 +59,9 @@ HTML, not a directive, and stays as written.
 * `:base_path` — the route prefix a `.md` link rewrites to; `nil` leaves
   such links untouched
 * `:slug` — the document's slug, which relative links resolve against
+* `:index` — the document is a folder's `index.md`, whose slug *is* its
+  folder, so its links resolve against the slug rather than its parent.
+  `render_file/2` sets it from the file name.
 * `:id` — a stable prefix for element ids (mermaid diagrams need one)
 
 # `plain_text`

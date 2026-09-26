@@ -20,9 +20,10 @@ holds on both adapters.
 
 ## Usage
 
-Always call within a `Repo.transaction`:
+Always call within a transaction, opened through `Gamend.AfterCommit` so
+broadcasts inside wait for the commit (or use `Gamend.Lock.serialize/3`):
 
-    Repo.transaction(fn ->
+    Gamend.AfterCommit.transaction(fn ->
       AdvisoryLock.lock(:lobby, lobby.id)
       count = count_members(lobby.id)
       if count >= lobby.max_users, do: Repo.rollback(:full)
@@ -78,6 +79,20 @@ extra serialization, never lost mutual exclusion).
 Must be called inside a `Repo.transaction`. On PostgreSQL, blocks until
 the lock is available. On SQLite, returns immediately — see the moduledoc.
 
+# `lock_session`
+
+```elixir
+@spec lock_session(atom() | String.t(), String.t()) :: :ok
+```
+
+Takes the session-level lock for `(namespace, resource_id)` on the current
+connection, waiting as long as it takes. It is held until `unlock_session/2`
+or until the connection closes, not until a transaction ends, for a job that
+commits many transactions of its own under one lock (`Gamend.Lock.exclusive/3`).
+
+Postgres only. Call it inside `Repo.checkout/2`, so the lock, the work and
+the unlock share one connection. It shares its key space with `lock/2`.
+
 # `namespace_id`
 
 ```elixir
@@ -105,6 +120,14 @@ The registered lock namespaces and their ids (for introspection).
 ```
 
 Returns true if the Repo was compiled with the PostgreSQL adapter.
+
+# `unlock_session`
+
+```elixir
+@spec unlock_session(atom() | String.t(), String.t()) :: :ok
+```
+
+Releases a lock `lock_session/2` took on this connection.
 
 ---
 

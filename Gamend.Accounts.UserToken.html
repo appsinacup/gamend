@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Accounts.UserToken — gamend_core v1.0.1265</title>
+    <title>Gamend.Accounts.UserToken — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />UserToken</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -172,11 +172,21 @@ tokens do not need to be hashed.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#change_email_validity_in_days/0" data-no-tooltip="" translate="no">change_email_validity_in_days()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How long an email-change link stays valid, in days (<code class="inline">auth.change_email_days</code>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#confirm_validity_in_days/0" data-no-tooltip="" translate="no">confirm_validity_in_days()</a>
 
       </div>
 
-        <div class="summary-synopsis"><p>How long an email confirmation link stays valid, in days.</p></div>
+        <div class="summary-synopsis"><p>How long an email confirmation link stays valid, in days (<code class="inline">auth.confirm_email_days</code>).</p></div>
 
     </div>
 
@@ -187,6 +197,26 @@ tokens do not need to be hashed.</p></div>
       </div>
 
         <div class="summary-synopsis"><p>Query selecting token rows that are past their own context's validity window.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#magic_link_validity_in_minutes/0" data-no-tooltip="" translate="no">magic_link_validity_in_minutes()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How long a magic link stays valid, in minutes (<code class="inline">auth.magic_link_minutes</code>, at most 60).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#session_validity_in_days/0" data-no-tooltip="" translate="no">session_validity_in_days()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How long a browser session lasts, in days (<code class="inline">auth.session_days</code>).</p></div>
 
     </div>
 
@@ -244,7 +274,7 @@ tokens do not need to be hashed.</p></div>
       <h1 class="signature" translate="no">t()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L34" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L32" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -295,7 +325,7 @@ tokens do not need to be hashed.</p></div>
       <h1 class="signature" translate="no">build_email_token(user, context)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L143" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -323,7 +353,7 @@ for example, by phone numbers.</p>
       <h1 class="signature" translate="no">build_session_token(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L88" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L104" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -347,6 +377,34 @@ and devices in the UI and allow users to explicitly expire any
 session they deem invalid.</p>
   </section>
 </section>
+<section class="detail" id="change_email_validity_in_days/0">
+
+  <div class="detail-header">
+    <a href="#change_email_validity_in_days/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">change_email_validity_in_days()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> change_email_validity_in_days() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()</pre>
+
+      </div>
+
+<p>How long an email-change link stays valid, in days (<code class="inline">auth.change_email_days</code>).</p>
+  </section>
+</section>
 <section class="detail" id="confirm_validity_in_days/0">
 
   <div class="detail-header">
@@ -357,7 +415,7 @@ session they deem invalid.</p>
       <h1 class="signature" translate="no">confirm_validity_in_days()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L67" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -372,7 +430,7 @@ session they deem invalid.</p>
 
       </div>
 
-<p>How long an email confirmation link stays valid, in days.</p>
+<p>How long an email confirmation link stays valid, in days (<code class="inline">auth.confirm_email_days</code>).</p>
   </section>
 </section>
 <section class="detail" id="expired_query/0">
@@ -385,7 +443,7 @@ session they deem invalid.</p>
       <h1 class="signature" translate="no">expired_query()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L54" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L52" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -400,10 +458,66 @@ session they deem invalid.</p>
 
       </div>
 
-<p>Query selecting token rows that are past their own context's validity window.</p><p>Each context expires on a different clock (session 14d, magic link 15min,
-email change and confirmation 7d), and those windows live here — so retention inverts the
-same predicate the verify queries use instead of guessing a single age.
-Contexts this module does not know are never selected.</p>
+<p>Query selecting token rows that are past their own context's validity window.</p><p>Each context expires on a different clock (by default session 14d, magic
+link 15min, email change and confirmation 7d), and those windows live here —
+so retention inverts the same predicate the verify queries use instead of
+guessing a single age. Contexts this module does not know are never selected.</p>
+  </section>
+</section>
+<section class="detail" id="magic_link_validity_in_minutes/0">
+
+  <div class="detail-header">
+    <a href="#magic_link_validity_in_minutes/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">magic_link_validity_in_minutes()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L72" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> magic_link_validity_in_minutes() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()</pre>
+
+      </div>
+
+<p>How long a magic link stays valid, in minutes (<code class="inline">auth.magic_link_minutes</code>, at most 60).</p>
+  </section>
+</section>
+<section class="detail" id="session_validity_in_days/0">
+
+  <div class="detail-header">
+    <a href="#session_validity_in_days/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">session_validity_in_days()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> session_validity_in_days() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()</pre>
+
+      </div>
+
+<p>How long a browser session lasts, in days (<code class="inline">auth.session_days</code>).</p>
   </section>
 </section>
 <section class="detail" id="verify_change_email_token_query/2">
@@ -416,7 +530,7 @@ Contexts this module does not know are never selected.</p>
       <h1 class="signature" translate="no">verify_change_email_token_query(token, context)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L181" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L201" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -428,7 +542,7 @@ Contexts this module does not know are never selected.</p>
 <p>Checks if the token is valid and returns its underlying lookup query.</p><p>The query returns the user_token found by the token, if any.</p><p>This is used to validate requests to change the user
 email.
 The given token is valid if it matches its hashed counterpart in the
-database and if it has not expired (after @change_email_validity_in_days).
+database and if it has not expired (after <a href="#change_email_validity_in_days/0"><code class="inline">change_email_validity_in_days/0</code></a>).
 The context must always start with &quot;change:&quot;.</p>
   </section>
 </section>
@@ -442,7 +556,7 @@ The context must always start with &quot;change:&quot;.</p>
       <h1 class="signature" translate="no">verify_magic_link_token_query(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L151" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L170" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -453,7 +567,8 @@ The context must always start with &quot;change:&quot;.</p>
 
 <p>Checks if the token is valid and returns its underlying lookup query.</p><p>If found, the query returns a tuple of the form <code class="inline">{user, token}</code>.</p><p>The given token is valid if it matches its hashed counterpart in the
 database. This function also checks if the token is being used within
-15 minutes. The context of a magic link token is always &quot;login&quot;.</p>
+<a href="#magic_link_validity_in_minutes/0"><code class="inline">magic_link_validity_in_minutes/0</code></a>. The context of a magic link token is
+always &quot;login&quot;.</p>
   </section>
 </section>
 <section class="detail" id="verify_session_token_query/1">
@@ -466,7 +581,7 @@ database. This function also checks if the token is being used within
       <h1 class="signature" translate="no">verify_session_token_query(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L102" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/user_token.ex#L118" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -476,7 +591,7 @@ database. This function also checks if the token is being used within
   <section class="docstring">
 
 <p>Checks if the token is valid and returns its underlying lookup query.</p><p>The query returns the user found by the token, if any, along with the token's creation time.</p><p>The token is valid if it matches the value in the database and it has
-not expired (after @session_validity_in_days).</p>
+not expired (after <a href="#session_validity_in_days/0"><code class="inline">session_validity_in_days/0</code></a>).</p>
   </section>
 </section>
 
@@ -488,9 +603,9 @@ not expired (after @session_validity_in_days).</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

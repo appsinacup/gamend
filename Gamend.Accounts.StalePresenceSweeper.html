@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Accounts.StalePresenceSweeper — gamend_core v1.0.1265</title>
+    <title>Gamend.Accounts.StalePresenceSweeper — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />StalePresenceSweeper</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -117,10 +117,9 @@ gamend_core
 <p>Periodically sweeps users whose <code class="inline">is_online</code> flag is <code class="inline">true</code> but whose
 <code class="inline">last_seen_at</code> timestamp is older than a configurable threshold.</p><p>This is a safety net for node crashes or ungraceful disconnects where the
 <code class="inline">UserChannel.terminate/2</code> callback never fires. Without this, users would
-remain marked as online indefinitely.</p><h2 id="module-configuration" class="section-heading"><a href="#module-configuration" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Configuration</span></h2><pre><code class="makeup elixir" translate="no"><span class="n">config</span><span class="w"> </span><span class="ss">:gamend_core</span><span class="p">,</span><span class="w"> </span><span class="nc">Gamend.Accounts.StalePresenceSweeper</span><span class="p">,</span><span class="w">
-  </span><span class="ss">interval_ms</span><span class="p">:</span><span class="w"> </span><span class="mi">120_000</span><span class="p">,</span><span class="w">       </span><span class="c1"># how often to run the sweep (default 2 min)</span><span class="w">
-  </span><span class="ss">stale_threshold_s</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="p">,</span><span class="w">     </span><span class="c1"># mark offline if last_seen &gt; 5 min ago</span><span class="w">
-  </span><span class="ss">enabled</span><span class="p">:</span><span class="w"> </span><span class="no">true</span><span class="w">               </span><span class="c1"># set false to disable the sweep entirely</span></code></pre>
+remain marked as online indefinitely.</p><h2 id="module-configuration" class="section-heading"><a href="#module-configuration" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Configuration</span></h2><p><code class="inline">interval_ms</code> and <code class="inline">stale_threshold_s</code> are settings (<code class="inline">GAMEND_PRESENCE_*</code>).
+<code class="inline">enabled: false</code> in the app config turns the sweep off entirely (tests).</p><p>A connected socket refreshes <code class="inline">last_seen_at</code> on a heartbeat derived from the
+threshold (<a href="#heartbeat_ms/0"><code class="inline">heartbeat_ms/0</code></a>), so a live player is never swept.</p>
     </section>
 
 </div>
@@ -154,6 +153,18 @@ remain marked as online indefinitely.</p><h2 id="module-configuration" class="se
       </div>
 
         <div class="summary-synopsis"><p>Returns the current configuration used by the sweeper.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#heartbeat_ms/0" data-no-tooltip="" translate="no">heartbeat_ms()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How often a connected socket refreshes <code class="inline">last_seen_at</code>: three fifths of
+<code class="inline">stale_threshold_s</code>, so two refreshes fit before a user reads as stale, and
+never less often than every 3 minutes.</p></div>
 
     </div>
 
@@ -211,7 +222,7 @@ remain marked as online indefinitely.</p><h2 id="module-configuration" class="se
       <h1 class="signature" translate="no">config()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L41" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L60" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -229,6 +240,36 @@ remain marked as online indefinitely.</p><h2 id="module-configuration" class="se
 <p>Returns the current configuration used by the sweeper.</p>
   </section>
 </section>
+<section class="detail" id="heartbeat_ms/0">
+
+  <div class="detail-header">
+    <a href="#heartbeat_ms/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">heartbeat_ms()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L70" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> heartbeat_ms() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()</pre>
+
+      </div>
+
+<p>How often a connected socket refreshes <code class="inline">last_seen_at</code>: three fifths of
+<code class="inline">stale_threshold_s</code>, so two refreshes fit before a user reads as stale, and
+never less often than every 3 minutes.</p>
+  </section>
+</section>
 <section class="detail" id="start_link/1">
 
     <span id="start_link/0"></span>
@@ -241,7 +282,7 @@ remain marked as online indefinitely.</p><h2 id="module-configuration" class="se
       <h1 class="signature" translate="no">start_link(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L33" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/stale_presence_sweeper.ex#L52" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -262,9 +303,9 @@ remain marked as online indefinitely.</p><h2 id="module-configuration" class="se
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

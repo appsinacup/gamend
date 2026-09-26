@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Payments.Providers.Stripe — gamend_core v1.0.1265</title>
+    <title>Gamend.Payments.Providers.Stripe — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Payments.<wbr />Providers.<wbr />Stripe</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -136,6 +136,18 @@ gamend_core
         <a href="#cancel_subscription_at_period_end/1" data-no-tooltip="" translate="no">cancel_subscription_at_period_end(subscription_id)</a>
 
       </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#create_billing_portal_session/2" data-no-tooltip="" translate="no">create_billing_portal_session(customer_id, return_url)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A Stripe customer-portal session for <code class="inline">customer_id</code>: the Stripe-hosted page
+where the buyer cancels, changes card and downloads invoices. Returns the
+session; its <code class="inline">&quot;url&quot;</code> is single-use and short-lived, so open it right away.</p></div>
 
     </div>
 
@@ -195,7 +207,7 @@ gamend_core
       <h1 class="signature" translate="no">cancel_subscription_at_period_end(subscription_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L61" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L66" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -205,6 +217,30 @@ gamend_core
   <section class="docstring">
 
 
+  </section>
+</section>
+<section class="detail" id="create_billing_portal_session/2">
+
+  <div class="detail-header">
+    <a href="#create_billing_portal_session/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">create_billing_portal_session(customer_id, return_url)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L87" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+<p>A Stripe customer-portal session for <code class="inline">customer_id</code>: the Stripe-hosted page
+where the buyer cancels, changes card and downloads invoices. Returns the
+session; its <code class="inline">&quot;url&quot;</code> is single-use and short-lived, so open it right away.</p>
   </section>
 </section>
 <section class="detail" id="create_checkout_session/3">
@@ -239,7 +275,7 @@ gamend_core
       <h1 class="signature" translate="no">retrieve_checkout_session(session_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L33" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L38" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -261,7 +297,7 @@ gamend_core
       <h1 class="signature" translate="no">retrieve_subscription(subscription_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L49" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L54" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -283,7 +319,7 @@ gamend_core
       <h1 class="signature" translate="no">verify_webhook(raw_body, signature_header)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L103" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -304,9 +340,9 @@ gamend_core
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

@@ -256,6 +256,16 @@ PubSub topic that `invalidate/1` broadcasts on.
 
 # `ttl`
 
+```elixir
+@spec ttl() :: pos_integer()
+```
+
+How long a cached entity is kept, in milliseconds (`cache.ttl_ms`). Every
+entity cache uses it; the few entries with a deliberate lifetime of their own
+(leaderboard records, analytics) do not.
+
+# `ttl`
+
 # `ttl`
 
 # `ttl!`

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>API Reference — gamend_core v1.0.1265</title>
+    <title>API Reference — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -92,7 +92,7 @@ gamend_core
 
 <div id="top-content">
   <div class="heading-with-actions top-heading">
-    <h1>API Reference <small class="app-vsn">gamend_core v#1.0.1265</small></h1>
+    <h1>API Reference <small class="app-vsn">gamend_core v#1.0.1266</small></h1>
 <a href="api-reference.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
   <i class="ri-markdown-line" aria-hidden="true"></i>
   <span class="sr-only">Copy Markdown</span>
@@ -139,6 +139,24 @@ and business logic.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Accounts.ApiToken.html" translate="no">Gamend.<wbr />Accounts.<wbr />ApiToken</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A personal API token's row. The token itself is never stored.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Accounts.ApiTokens.html" translate="no">Gamend.<wbr />Accounts.<wbr />ApiTokens</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Personal API tokens: long-lived bearer tokens for scripts and CI.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Accounts.AvatarMirror.html" translate="no">Gamend.<wbr />Accounts.<wbr />AvatarMirror</a>
 
   </div>
@@ -160,6 +178,15 @@ member and friend topics that show that user to others.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Accounts.ConfirmationMailer.html" translate="no">Gamend.<wbr />Accounts.<wbr />ConfirmationMailer</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Sends a new account's confirmation email, off the request.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Accounts.Identities.html" translate="no">Gamend.<wbr />Accounts.<wbr />Identities</a>
 
   </div>
@@ -176,6 +203,24 @@ removing them from one.</p></div>
   </div>
 
     <div class="summary-synopsis"><p>Warns a user their account is about to be deleted for inactivity.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Accounts.LoginLockout.html" translate="no">Gamend.<wbr />Accounts.<wbr />LoginLockout</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Failed password sign-ins for one email address, and the lock they set.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Accounts.LoginLockouts.html" translate="no">Gamend.<wbr />Accounts.<wbr />LoginLockouts</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Per-account lockout after repeated failed password sign-ins.</p></div>
 
 </div>
 <div class="summary-row">
@@ -328,6 +373,15 @@ generator.</p></div>
   </div>
 
     <div class="summary-synopsis"><p>Generates default usernames for new users.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.AfterCommit.html" translate="no">Gamend.<wbr />AfterCommit</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Side effects that wait for the enclosing transaction to commit.</p></div>
 
 </div>
 <div class="summary-row">
@@ -814,6 +868,17 @@ listing/counting pending invites.</p></div>
 
     <div class="summary-synopsis"><p>Join requests for private groups: requesting, listing, approving,
 rejecting, and cancelling.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.HTTP.html" translate="no">Gamend.<wbr />HTTP</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p><a href="https://req.hexdocs.pm/0.7.4/Req.html"><code class="inline">Req</code></a> with the declared timeout and retries, for the calls core makes to other
+services while a player waits: payment receipt checks (Apple, Google Play,
+Steam), OAuth code exchanges, Google ID-token checks and avatar mirroring.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2135,9 +2200,9 @@ commented from each setting's declaration.</p></div>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

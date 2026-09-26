@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Lock.Local — gamend_core v1.0.1265</title>
+    <title>Gamend.Lock.Local — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Lock.<wbr />Local</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -147,6 +147,18 @@ releases on process death.</p>
 
     </div>
 
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#trans_on_node/2" data-no-tooltip="" translate="no">trans_on_node(key, fun)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>As <a href="#trans/2"><code class="inline">trans/2</code></a>, on this node only. On Postgres the advisory lock is the
+cluster-wide one; this queues a node's own callers in the BEAM, where waiting
+is free, instead of each holding a pooled connection blocked on the database.</p></div>
+
+    </div>
+
 </div>
 
   </section>
@@ -189,6 +201,36 @@ releases on process death.</p>
 <p>Runs <code class="inline">fun</code> holding the lock for <code class="inline">key</code>. Blocks; reentrant within a process.</p>
   </section>
 </section>
+<section class="detail" id="trans_on_node/2">
+
+  <div class="detail-header">
+    <a href="#trans_on_node/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">trans_on_node(key, fun)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/lock/local.ex#L28" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> trans_on_node(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(), (-&gt; result)) :: result when result: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()</pre>
+
+      </div>
+
+<p>As <a href="#trans/2"><code class="inline">trans/2</code></a>, on this node only. On Postgres the advisory lock is the
+cluster-wide one; this queues a node's own callers in the BEAM, where waiting
+is free, instead of each holding a pooled connection blocked on the database.</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -198,9 +240,9 @@ releases on process death.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

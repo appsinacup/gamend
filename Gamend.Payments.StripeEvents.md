@@ -24,6 +24,17 @@ the same name.
   | {:error, term()}
 ```
 
+# `create_stripe_billing_portal`
+
+```elixir
+@spec create_stripe_billing_portal(Gamend.Accounts.User.t(), String.t()) ::
+  {:ok, String.t()} | {:error, term()}
+```
+
+Open Stripe's customer portal for this account: cancel, change card, download
+invoices. `{:error, :no_stripe_customer}` when the account never paid through
+Stripe Checkout.
+
 # `create_stripe_checkout`
 
 ```elixir
@@ -56,6 +67,18 @@ the same name.
    }}
   | {:error, term()}
 ```
+
+# `stripe_customer_id`
+
+```elixir
+@spec stripe_customer_id(Gamend.Accounts.User.t()) :: String.t() | nil
+```
+
+The Stripe customer this account has paid as, or nil: the newest Stripe
+purchase whose stored checkout session names one. Stripe creates the customer
+at checkout (subscriptions always; one-off payments since
+`customer_creation: "always"`), and `checkout.session.completed` stores the
+session on the purchase.
 
 ---
 

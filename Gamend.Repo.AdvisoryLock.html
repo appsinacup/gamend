@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Repo.AdvisoryLock — gamend_core v1.0.1265</title>
+    <title>Gamend.Repo.AdvisoryLock — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Repo.<wbr />AdvisoryLock</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -123,7 +123,8 @@ read-modify-write spanning statements, and does nothing at all for a critical
 section held over ETS or process state.</p><p>Callers should not use this module directly for that reason. Go through
 <a href="Gamend.Lock.html#serialize/3"><code class="inline">Gamend.Lock.serialize/3</code></a>, which picks this on Postgres and a keyed
 <code class="inline">:global</code> mutex (<a href="Gamend.Lock.Local.html"><code class="inline">Gamend.Lock.Local</code></a>) everywhere else, so the guarantee
-holds on both adapters.</p><h2 id="module-usage" class="section-heading"><a href="#module-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage</span></h2><p>Always call within a <code class="inline">Repo.transaction</code>:</p><pre><code class="makeup elixir" translate="no"><span class="nc">Repo</span><span class="o">.</span><span class="n">transaction</span><span class="p" data-group-id="group-1">(</span><span class="k" data-group-id="group-2">fn</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
+holds on both adapters.</p><h2 id="module-usage" class="section-heading"><a href="#module-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage</span></h2><p>Always call within a transaction, opened through <a href="Gamend.AfterCommit.html"><code class="inline">Gamend.AfterCommit</code></a> so
+broadcasts inside wait for the commit (or use <a href="Gamend.Lock.html#serialize/3"><code class="inline">Gamend.Lock.serialize/3</code></a>):</p><pre><code class="makeup elixir" translate="no"><span class="nc">Gamend.AfterCommit</span><span class="o">.</span><span class="n">transaction</span><span class="p" data-group-id="group-1">(</span><span class="k" data-group-id="group-2">fn</span><span class="w"> </span><span class="o">-&gt;</span><span class="w">
   </span><span class="nc">AdvisoryLock</span><span class="o">.</span><span class="n">lock</span><span class="p" data-group-id="group-3">(</span><span class="ss">:lobby</span><span class="p">,</span><span class="w"> </span><span class="n">lobby</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="group-3">)</span><span class="w">
   </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">count_members</span><span class="p" data-group-id="group-4">(</span><span class="n">lobby</span><span class="o">.</span><span class="n">id</span><span class="p" data-group-id="group-4">)</span><span class="w">
   </span><span class="k">if</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">lobby</span><span class="o">.</span><span class="n">max_users</span><span class="p">,</span><span class="w"> </span><span class="ss">do</span><span class="p">:</span><span class="w"> </span><span class="nc">Repo</span><span class="o">.</span><span class="n">rollback</span><span class="p" data-group-id="group-5">(</span><span class="ss">:full</span><span class="p" data-group-id="group-5">)</span><span class="w">
@@ -165,6 +166,19 @@ string (e.g. <code class="inline">&quot;word_guessed&quot;</code>, <code class="
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#lock_session/2" data-no-tooltip="" translate="no">lock_session(namespace, resource_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Takes the session-level lock for <code class="inline">(namespace, resource_id)</code> on the current
+connection, waiting as long as it takes. It is held until <a href="#unlock_session/2"><code class="inline">unlock_session/2</code></a>
+or until the connection closes, not until a transaction ends, for a job that
+commits many transactions of its own under one lock (<a href="Gamend.Lock.html#exclusive/3"><code class="inline">Gamend.Lock.exclusive/3</code></a>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#namespace_id/1" data-no-tooltip="" translate="no">namespace_id(namespace)</a>
 
       </div>
@@ -193,6 +207,16 @@ string (e.g. <code class="inline">&quot;word_guessed&quot;</code>, <code class="
 
     </div>
 
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#unlock_session/2" data-no-tooltip="" translate="no">unlock_session(namespace, resource_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Releases a lock <a href="#lock_session/2"><code class="inline">lock_session/2</code></a> took on this connection.</p></div>
+
+    </div>
+
 </div>
 
   </section>
@@ -217,7 +241,7 @@ string (e.g. <code class="inline">&quot;word_guessed&quot;</code>, <code class="
       <h1 class="signature" translate="no">lock(namespace, resource_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo/advisory_lock.ex#L98" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo/advisory_lock.ex#L99" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -239,6 +263,38 @@ extra serialization, never lost mutual exclusion).</p><p>Must be called inside a
 the lock is available. On SQLite, returns immediately — see the moduledoc.</p>
   </section>
 </section>
+<section class="detail" id="lock_session/2">
+
+  <div class="detail-header">
+    <a href="#lock_session/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">lock_session(namespace, resource_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo/advisory_lock.ex#L113" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> lock_session(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>() | <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Takes the session-level lock for <code class="inline">(namespace, resource_id)</code> on the current
+connection, waiting as long as it takes. It is held until <a href="#unlock_session/2"><code class="inline">unlock_session/2</code></a>
+or until the connection closes, not until a transaction ends, for a job that
+commits many transactions of its own under one lock (<a href="Gamend.Lock.html#exclusive/3"><code class="inline">Gamend.Lock.exclusive/3</code></a>).</p><p>Postgres only. Call it inside <code class="inline">Repo.checkout/2</code>, so the lock, the work and
+the unlock share one connection. It shares its key space with <a href="#lock/2"><code class="inline">lock/2</code></a>.</p>
+  </section>
+</section>
 <section class="detail" id="namespace_id/1">
 
   <div class="detail-header">
@@ -249,7 +305,7 @@ the lock is available. On SQLite, returns immediately — see the moduledoc.</p>
       <h1 class="signature" translate="no">namespace_id(namespace)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo/advisory_lock.ex#L114" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo/advisory_lock.ex#L146" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -283,7 +339,7 @@ Postgres CI job.</p>
       <h1 class="signature" translate="no">namespaces()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo/advisory_lock.ex#L84" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo/advisory_lock.ex#L85" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -305,7 +361,7 @@ Postgres CI job.</p>
       <h1 class="signature" translate="no">postgres?()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo/advisory_lock.ex#L173" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo/advisory_lock.ex#L205" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -323,6 +379,34 @@ Postgres CI job.</p>
 <p>Returns true if the Repo was compiled with the PostgreSQL adapter.</p>
   </section>
 </section>
+<section class="detail" id="unlock_session/2">
+
+  <div class="detail-header">
+    <a href="#unlock_session/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">unlock_session(namespace, resource_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo/advisory_lock.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> unlock_session(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>() | <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Releases a lock <a href="#lock_session/2"><code class="inline">lock_session/2</code></a> took on this connection.</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -332,9 +416,9 @@ Postgres CI job.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

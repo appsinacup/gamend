@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Content.Markdown — gamend_core v1.0.1265</title>
+    <title>Gamend.Content.Markdown — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Content.<wbr />Markdown</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -117,9 +117,9 @@ gamend_core
 <p>Markdown to HTML, the way every collection renders it.</p><p>One pipeline: strip the frontmatter, mend table separators, parse with
 MDEx, rewrite the tree — code-language aliases, mermaid fences,
 admonitions, links written to a neighbouring <code class="inline">.md</code> — render through the
-sanitiser, then fix up image paths on the HTML.</p><p>The rewrites work on <a href="https://mdex.hexdocs.pm/0.13.5/MDEx.Document.html"><code class="inline">MDEx.Document</code></a> nodes rather than on rendered HTML: a
-fence inside a list item is still a <a href="https://mdex.hexdocs.pm/0.13.5/MDEx.CodeBlock.html"><code class="inline">MDEx.CodeBlock</code></a>, a <code class="inline">:::tip</code> inside a
-quote still a <a href="https://mdex.hexdocs.pm/0.13.5/MDEx.BlockDirective.html"><code class="inline">MDEx.BlockDirective</code></a>, and a link's <code class="inline">url</code> is a field rather
+sanitiser, then fix up image paths on the HTML.</p><p>The rewrites work on <a href="https://mdex.hexdocs.pm/0.14.0/MDEx.Document.html"><code class="inline">MDEx.Document</code></a> nodes rather than on rendered HTML: a
+fence inside a list item is still a <a href="https://mdex.hexdocs.pm/0.14.0/MDEx.CodeBlock.html"><code class="inline">MDEx.CodeBlock</code></a>, a <code class="inline">:::tip</code> inside a
+quote still a <a href="https://mdex.hexdocs.pm/0.14.0/MDEx.BlockDirective.html"><code class="inline">MDEx.BlockDirective</code></a>, and a link's <code class="inline">url</code> is a field rather
 than an attribute a regex has to find. The one pass left on the HTML is the
 image one, because a <code class="inline">&lt;figure&gt;</code> written in raw HTML carries an <code class="inline">&lt;img&gt;</code> no
 node stands for, and every image gets the same <code class="inline">loading</code>/<code class="inline">decoding</code>
@@ -131,8 +131,8 @@ nothing that runs. Content is the operator's own files, so the sanitiser
 is a guard against a pasted snippet, not against an adversary; it stays on
 because a rule that is on for everyone is a rule nobody has to remember.</p><h2 id="module-admonitions" class="section-heading"><a href="#module-admonitions" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Admonitions</span></h2><p>Two spellings, one markup. <code class="inline">:::tip[Title]</code> … <code class="inline">:::</code> is what Docusaurus
 authors write; <code class="inline">&gt; [!TIP]</code> is GitHub's. MDEx parses the first as a
-<a href="https://mdex.hexdocs.pm/0.13.5/MDEx.BlockDirective.html"><code class="inline">MDEx.BlockDirective</code></a> whose <code class="inline">info</code> is <code class="inline">tip[Title]</code> and the second as a
-<a href="https://mdex.hexdocs.pm/0.13.5/MDEx.Alert.html"><code class="inline">MDEx.Alert</code></a>. Both become a directive rendered as
+<a href="https://mdex.hexdocs.pm/0.14.0/MDEx.BlockDirective.html"><code class="inline">MDEx.BlockDirective</code></a> whose <code class="inline">info</code> is <code class="inline">tip[Title]</code> and the second as a
+<a href="https://mdex.hexdocs.pm/0.14.0/MDEx.Alert.html"><code class="inline">MDEx.Alert</code></a>. Both become a directive rendered as
 <code class="inline">&lt;div class=&quot;admonition admonition-tip&quot;&gt;</code> with a
 <code class="inline">&lt;p class=&quot;admonition-title&quot;&gt;</code> as its first child, which is the one thing
 a stylesheet has to know. A raw <code class="inline">&lt;div class=&quot;note&quot;&gt;</code> an author wrote is
@@ -245,7 +245,7 @@ with their ids and plain text.</p></div>
       <h1 class="signature" translate="no">opt()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L54" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L57" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -262,6 +262,7 @@ with their ids and plain text.</p></div>
   | {:dir, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}
   | {:base_path, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil}
   | {:slug, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil}
+  | {:index, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()}
   | {:id, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}</pre>
 
       </div>
@@ -270,7 +271,9 @@ with their ids and plain text.</p></div>
 collection's asset route; <code class="inline">:static</code> leaves root-absolute paths alone, for
 a site whose images are served from <code class="inline">priv/static</code></li><li><code class="inline">:dir</code> — the file's folder relative to the collection root, for relative
 image paths</li><li><code class="inline">:base_path</code> — the route prefix a <code class="inline">.md</code> link rewrites to; <code class="inline">nil</code> leaves
-such links untouched</li><li><code class="inline">:slug</code> — the document's slug, which relative links resolve against</li><li><code class="inline">:id</code> — a stable prefix for element ids (mermaid diagrams need one)</li></ul>
+such links untouched</li><li><code class="inline">:slug</code> — the document's slug, which relative links resolve against</li><li><code class="inline">:index</code> — the document is a folder's <code class="inline">index.md</code>, whose slug <em>is</em> its
+folder, so its links resolve against the slug rather than its parent.
+<a href="#render_file/2"><code class="inline">render_file/2</code></a> sets it from the file name.</li><li><code class="inline">:id</code> — a stable prefix for element ids (mermaid diagrams need one)</li></ul>
   </section>
 </section>
 
@@ -296,7 +299,7 @@ such links untouched</li><li><code class="inline">:slug</code> — the document'
       <h1 class="signature" translate="no">plain_text(html)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L140" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L146" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -326,7 +329,7 @@ such links untouched</li><li><code class="inline">:slug</code> — the document'
       <h1 class="signature" translate="no">render(content, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L91" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L97" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -356,7 +359,7 @@ such links untouched</li><li><code class="inline">:slug</code> — the document'
       <h1 class="signature" translate="no">render_file(path, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L76" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L80" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -384,7 +387,7 @@ such links untouched</li><li><code class="inline">:slug</code> — the document'
       <h1 class="signature" translate="no">strip_first_h1(html)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L134" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L140" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -413,7 +416,7 @@ prints it twice. Attribute-tolerant, because headings carry ids now.</p>
       <h1 class="signature" translate="no">toc(html)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L119" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/content/markdown.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -442,9 +445,9 @@ puts the id first on the heading tag, so the pattern is stable.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

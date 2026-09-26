@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Payments.StripeEvents — gamend_core v1.0.1265</title>
+    <title>Gamend.Payments.StripeEvents — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Payments.<wbr />StripeEvents</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -144,6 +144,18 @@ the same name.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#create_stripe_billing_portal/2" data-no-tooltip="" translate="no">create_stripe_billing_portal(user, return_url)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Open Stripe's customer portal for this account: cancel, change card, download
+invoices. <code class="inline">{:error, :no_stripe_customer}</code> when the account never paid through
+Stripe Checkout.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#create_stripe_checkout/2" data-no-tooltip="" translate="no">create_stripe_checkout(user, attrs)</a>
 
       </div>
@@ -163,6 +175,20 @@ the same name.</p>
         <a href="#reconcile_stripe_purchase/1" data-no-tooltip="" translate="no">reconcile_stripe_purchase(purchase)</a>
 
       </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#stripe_customer_id/1" data-no-tooltip="" translate="no">stripe_customer_id(user)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The Stripe customer this account has paid as, or nil: the newest Stripe
+purchase whose stored checkout session names one. Stripe creates the customer
+at checkout (subscriptions always; one-off payments since
+<code class="inline">customer_creation: &quot;always&quot;</code>), and <code class="inline">checkout.session.completed</code> stores the
+session on the purchase.</p></div>
 
     </div>
 
@@ -190,7 +216,7 @@ the same name.</p>
       <h1 class="signature" translate="no">cancel_stripe_subscription_at_period_end(user, entitlement_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/stripe_events.ex#L98" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/stripe_events.ex#L151" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -216,6 +242,37 @@ the same name.</p>
       </div>
 
 
+  </section>
+</section>
+<section class="detail" id="create_stripe_billing_portal/2">
+
+  <div class="detail-header">
+    <a href="#create_stripe_billing_portal/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">create_stripe_billing_portal(user, return_url)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/stripe_events.ex#L97" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> create_stripe_billing_portal(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
+  {:ok, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Open Stripe's customer portal for this account: cancel, change card, download
+invoices. <code class="inline">{:error, :no_stripe_customer}</code> when the account never paid through
+Stripe Checkout.</p>
   </section>
 </section>
 <section class="detail" id="create_stripe_checkout/2">
@@ -263,7 +320,7 @@ the same name.</p>
       <h1 class="signature" translate="no">handle_stripe_webhook(raw_body, signature)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/stripe_events.ex#L57" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/stripe_events.ex#L110" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -292,7 +349,7 @@ the same name.</p>
       <h1 class="signature" translate="no">reconcile_stripe_purchase(purchase)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/stripe_events.ex#L74" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/stripe_events.ex#L127" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -317,6 +374,38 @@ the same name.</p>
 
   </section>
 </section>
+<section class="detail" id="stripe_customer_id/1">
+
+  <div class="detail-header">
+    <a href="#stripe_customer_id/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">stripe_customer_id(user)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/stripe_events.ex#L69" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> stripe_customer_id(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil</pre>
+
+      </div>
+
+<p>The Stripe customer this account has paid as, or nil: the newest Stripe
+purchase whose stored checkout session names one. Stripe creates the customer
+at checkout (subscriptions always; one-off payments since
+<code class="inline">customer_creation: &quot;always&quot;</code>), and <code class="inline">checkout.session.completed</code> stores the
+session on the purchase.</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -326,9 +415,9 @@ the same name.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

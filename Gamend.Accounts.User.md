@@ -21,6 +21,7 @@ validations so other domains can reuse them safely.
   birth_month: integer() | nil,
   birth_year: integer() | nil,
   confirmed_at: DateTime.t() | nil,
+  deletion_scheduled_at: DateTime.t() | nil,
   device_id: term(),
   discord_id: term(),
   display_name: String.t() | nil,

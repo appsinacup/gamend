@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.40.4">
+    <meta name="project" content="gamend_core v1.0.1266">
+
+
+    <title>Gamend.Accounts.ApiTokens — gamend_core v1.0.1266</title>
+
+    <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
+
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-MI33G4N7.js"></script>
+
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
+
+<div class="body-wrapper">
+
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<nav id="sidebar" class="sidebar">
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
+
+      <div>
+        <a href="readme.html" class="sidebar-projectName" translate="no">
+gamend_core
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v1.0.1266
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras="Pages"></ul>
+  </div>
+</nav>
+
+<output role="status" id="toast"></output>
+
+<main class="content page-module" id="main" data-type="modules">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of gamend_core</span>
+            <div class="search-input-wrapper">
+              <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+                <i class="ri-close-line ri-lg" title="Cancel search"></i>
+              </button>
+            </div>
+          </label>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <div class="engine-selector" data-multiple="false">
+          <button type="button" class="engine-button" aria-label="Select search engine" aria-haspopup="true" aria-expanded="false">
+            <i class="ri-search-2-line" aria-hidden="true"></i>
+            <span class="engine-name">Default</span>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </button>
+          <div class="engine-dropdown" hidden role="menu">
+
+              <button type="button"
+                      class="engine-option"
+                      data-engine-url="search.html?q="
+                      role="menuitemradio"
+                      aria-checked="true">
+                <span class="name">Default</span>
+                <span class="help">In-browser search</span>
+              </button>
+
+          </div>
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
+
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>
+      <span translate="no">Gamend.<wbr />Accounts.<wbr />ApiTokens</span> 
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
+
+    </h1>
+
+<a href="Gamend.Accounts.ApiTokens.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
+  <i class="ri-markdown-line" aria-hidden="true"></i>
+  <span class="sr-only">Copy Markdown</span>
+</a>
+
+
+
+      <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L1" title="View Source" class="icon-action" rel="help nofollow">
+        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        <span class="sr-only">View Source</span>
+      </a>
+
+  </div>
+
+
+    <section id="moduledoc">
+<p>Personal API tokens: long-lived bearer tokens for scripts and CI.</p><p>An access token from <code class="inline">POST /api/v1/login</code> lasts fifteen minutes and needs a
+password, which suits a game client and nothing that runs unattended — and an
+account made with a social login has no password at all. A personal token is
+created once on the settings page, sent as <code class="inline">Authorization: Bearer gamend_pat_…</code> to any API route that takes an access token, and lasts until it
+expires or is revoked.</p><h2 id="module-what-is-kept" class="section-heading"><a href="#module-what-is-kept" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">What is kept</span></h2><p>Only a SHA-256 of the token, under a unique index: a request is one indexed
+lookup, and the table holds nothing a client could send. The token is shown
+once, at creation. <code class="inline">hint</code> is its first few characters, so a list can say
+which token a CI secret holds without holding it.</p><h2 id="module-when-a-token-stops-working" class="section-heading"><a href="#module-when-a-token-stops-working" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">When a token stops working</span></h2><ul><li>It expires (<a href="#expires_at/1"><code class="inline">expires_at/1</code></a>: its own <code class="inline">expires_at</code>, or <code class="inline">auth.api_token_max_days</code>
+after creation when that is sooner), or its owner revokes it.</li><li>Its owner changes their password or email, or signs out everywhere: each
+bumps <code class="inline">users.token_version</code>, and a token remembers the version it was made
+under. A stolen session therefore cannot leave a token behind that
+survives the password reset that ends it.</li><li>The account is deactivated — the same check an access token gets, in
+<code class="inline">GamendWeb.Auth.Guardian.resource_from_claims/1</code>.</li></ul><p>Tokens are made only through the settings page, never through the API, so a
+leaked token cannot mint another. <a href="Gamend.Retention.html"><code class="inline">Gamend.Retention</code></a> prunes expired and
+superseded rows.</p>
+    </section>
+
+</div>
+
+  <section id="summary" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h2>
+<div class="summary-functions summary">
+  <h3>
+    <a href="#functions">Functions</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#count/1" data-no-tooltip="" translate="no">count(user_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Count for <a href="#list/2"><code class="inline">list/2</code></a>'s pagination.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#create/2" data-no-tooltip="" translate="no">create(user, attrs)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Create a token for <code class="inline">user</code>. Answers the token itself — the only time it
+exists outside the caller — and the stored row.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#dead_query/0" data-no-tooltip="" translate="no">dead_query()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Rows no request can use any more: past <code class="inline">expires_at</code>, or made under an older
+<code class="inline">token_version</code> than their owner's. For <a href="Gamend.Retention.html"><code class="inline">Gamend.Retention</code></a>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#expired?/1" data-no-tooltip="" translate="no">expired?(row)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether the token's own lifetime has run out.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#expires_at/1" data-no-tooltip="" translate="no">expires_at(api_token)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>When the token stops working on its own: its <code class="inline">expires_at</code>, or
+<code class="inline">auth.api_token_max_days</code> after it was made when that comes first. nil when
+it never expires. The cap reaches tokens made before it was set.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#list/2" data-no-tooltip="" translate="no">list(user_id, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A user's tokens, newest first.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#prefix/0" data-no-tooltip="" translate="no">prefix()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>What every personal token starts with; how the auth plug tells one from a JWT.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#revoke/2" data-no-tooltip="" translate="no">revoke(user_id, id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Revoke one of the user's tokens. It stops working on the next request.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#superseded?/2" data-no-tooltip="" translate="no">superseded?(api_token, user)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether the owner's password or email changed since the token was made.
+Such a token is dead; the settings page says so rather than listing it as
+working.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#token?/1" data-no-tooltip="" translate="no">token?(value)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether <code class="inline">value</code> is shaped like a personal token.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#touch/1" data-no-tooltip="" translate="no">touch(api_token)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Record a use, at most once a minute per token, off the request path: the
+caller is an authenticated request and should not wait on a write.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#verify/1" data-no-tooltip="" translate="no">verify(token)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The owner and row of a presented token, or <code class="inline">:error</code> when it is unknown,
+expired, or older than its owner's last credential change.</p></div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="functions" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h2>
+
+    <div class="functions-list">
+<section class="detail" id="count/1">
+
+  <div class="detail-header">
+    <a href="#count/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">count(user_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L188" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> count(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+
+      </div>
+
+<p>Count for <a href="#list/2"><code class="inline">list/2</code></a>'s pagination.</p>
+  </section>
+</section>
+<section class="detail" id="create/2">
+
+  <div class="detail-header">
+    <a href="#create/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">create(user, attrs)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L65" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> create(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
+  {:ok, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="Gamend.Accounts.ApiToken.html#t:t/0">Gamend.Accounts.ApiToken.t</a>()}
+  | {:error, <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | :limit_reached}</pre>
+
+      </div>
+
+<p>Create a token for <code class="inline">user</code>. Answers the token itself — the only time it
+exists outside the caller — and the stored row.</p><p><code class="inline">attrs</code> takes <code class="inline">name</code> and <code class="inline">expires_in_days</code>, one of <code class="inline">ApiToken.expiry_choices/0</code>
+(30, 90, 365, or nil for none, unless <code class="inline">auth.api_token_max_days</code> caps them).
+Refused with <code class="inline">:limit_reached</code> past <a href="Gamend.Limits.html"><code class="inline">Gamend.Limits</code></a> <code class="inline">max_api_tokens_per_user</code>.</p>
+  </section>
+</section>
+<section class="detail" id="dead_query/0">
+
+  <div class="detail-header">
+    <a href="#dead_query/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">dead_query()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L210" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> dead_query() :: <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Query.html#t:t/0">Ecto.Query.t</a>()</pre>
+
+      </div>
+
+<p>Rows no request can use any more: past <code class="inline">expires_at</code>, or made under an older
+<code class="inline">token_version</code> than their owner's. For <a href="Gamend.Retention.html"><code class="inline">Gamend.Retention</code></a>.</p>
+  </section>
+</section>
+<section class="detail" id="expired?/1">
+
+  <div class="detail-header">
+    <a href="#expired?/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">expired?(row)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L131" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> expired?(<a href="Gamend.Accounts.ApiToken.html#t:t/0">Gamend.Accounts.ApiToken.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether the token's own lifetime has run out.</p>
+  </section>
+</section>
+<section class="detail" id="expires_at/1">
+
+  <div class="detail-header">
+    <a href="#expires_at/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">expires_at(api_token)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L118" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> expires_at(<a href="Gamend.Accounts.ApiToken.html#t:t/0">Gamend.Accounts.ApiToken.t</a>()) :: <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>() | nil</pre>
+
+      </div>
+
+<p>When the token stops working on its own: its <code class="inline">expires_at</code>, or
+<code class="inline">auth.api_token_max_days</code> after it was made when that comes first. nil when
+it never expires. The cap reaches tokens made before it was set.</p>
+  </section>
+</section>
+<section class="detail" id="list/2">
+
+    <span id="list/1"></span>
+
+  <div class="detail-header">
+    <a href="#list/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">list(user_id, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L173" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> list(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="Gamend.Accounts.ApiToken.html#t:t/0">Gamend.Accounts.ApiToken.t</a>()]</pre>
+
+      </div>
+
+<p>A user's tokens, newest first.</p>
+  </section>
+</section>
+<section class="detail" id="prefix/0">
+
+  <div class="detail-header">
+    <a href="#prefix/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">prefix()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L48" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> prefix() :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+
+      </div>
+
+<p>What every personal token starts with; how the auth plug tells one from a JWT.</p>
+  </section>
+</section>
+<section class="detail" id="revoke/2">
+
+  <div class="detail-header">
+    <a href="#revoke/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">revoke(user_id, id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L194" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> revoke(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
+  {:ok, <a href="Gamend.Accounts.ApiToken.html#t:t/0">Gamend.Accounts.ApiToken.t</a>()} | {:error, :not_found}</pre>
+
+      </div>
+
+<p>Revoke one of the user's tokens. It stops working on the next request.</p>
+  </section>
+</section>
+<section class="detail" id="superseded?/2">
+
+  <div class="detail-header">
+    <a href="#superseded?/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">superseded?(api_token, user)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L144" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> superseded?(<a href="Gamend.Accounts.ApiToken.html#t:t/0">Gamend.Accounts.ApiToken.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether the owner's password or email changed since the token was made.
+Such a token is dead; the settings page says so rather than listing it as
+working.</p>
+  </section>
+</section>
+<section class="detail" id="token?/1">
+
+  <div class="detail-header">
+    <a href="#token?/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">token?(value)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L52" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> token?(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether <code class="inline">value</code> is shaped like a personal token.</p>
+  </section>
+</section>
+<section class="detail" id="touch/1">
+
+  <div class="detail-header">
+    <a href="#touch/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">touch(api_token)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L152" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> touch(<a href="Gamend.Accounts.ApiToken.html#t:t/0">Gamend.Accounts.ApiToken.t</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Record a use, at most once a minute per token, off the request path: the
+caller is an authenticated request and should not wait on a write.</p>
+  </section>
+</section>
+<section class="detail" id="verify/1">
+
+  <div class="detail-header">
+    <a href="#verify/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">verify(token)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/api_tokens.ex#L92" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> verify(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
+  {:ok, <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="Gamend.Accounts.ApiToken.html#t:t/0">Gamend.Accounts.ApiToken.t</a>()} | :error</pre>
+
+      </div>
+
+<p>The owner and row of a presented token, or <code class="inline">:error</code> when it is unknown,
+expired, or older than its owner's last credential change.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+    <footer class="footer">
+
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Go to package docs">
+              Go to package docs
+            </button>
+
+              <a href="llms.txt" target="_blank">
+                View llms.txt
+              </a>
+
+
+              <a href="gamend_core.epub">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.4) for the
+
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
+
+        </p>
+
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
+</html>

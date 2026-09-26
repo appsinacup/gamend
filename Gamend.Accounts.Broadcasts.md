@@ -7,6 +7,9 @@ member and friend topics that show that user to others.
 Split out of `Gamend.Accounts`, which still exposes every function here under
 the same name.
 
+Each runs after commit when called inside a transaction (`Gamend.AfterCommit`),
+lookups included, so the fan-out sees and announces only committed state.
+
 # `broadcast_friend_update`
 
 ```elixir

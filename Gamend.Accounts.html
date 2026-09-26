@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Accounts — gamend_core v1.0.1265</title>
+    <title>Gamend.Accounts — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -152,6 +152,17 @@ gamend_core
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#authenticate_by_password/2" data-no-tooltip="" translate="no">authenticate_by_password(email, password)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Checks an email and password, counting failures per address
+(<a href="Gamend.Accounts.LoginLockouts.html"><code class="inline">Gamend.Accounts.LoginLockouts</code></a>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#broadcast_friend_update/1" data-no-tooltip="" translate="no">broadcast_friend_update(user)</a>
 
       </div>
@@ -197,6 +208,16 @@ gamend_core
       </div>
 
         <div class="summary-synopsis"><p>Whether <code class="inline">user</code> may upload an avatar, per <code class="inline">anonymous_can_upload_avatar</code>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#cancel_deletion/1" data-no-tooltip="" translate="no">cancel_deletion(user)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Keep an account that was scheduled for deletion. A no-op for one that was not.</p></div>
 
     </div>
 
@@ -422,6 +443,26 @@ gamend_core
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#deletion_grace_days/0" data-no-tooltip="" translate="no">deletion_grace_days()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Days a player's own deletion waits (<code class="inline">auth.deletion_grace_days</code>); 0 deletes at once.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#deletion_scheduled?/1" data-no-tooltip="" translate="no">deletion_scheduled?(user)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether <code class="inline">user</code> is waiting out a deletion grace period.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#deliver_login_instructions/2" data-no-tooltip="" translate="no">deliver_login_instructions(user, magic_link_url_fun)</a>
 
       </div>
@@ -481,6 +522,16 @@ it sends you to name the same person the same way.</p></div>
 
         <div class="summary-synopsis"><p>The short form of <a href="#display_label/1"><code class="inline">display_label/1</code></a>: the display name, or the username when
 there is none. No parenthesised handle.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#due_deletions_query/0" data-no-tooltip="" translate="no">due_deletions_query()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Accounts whose deletion date has passed. For <a href="Gamend.Retention.html"><code class="inline">Gamend.Retention</code></a>.</p></div>
 
     </div>
 
@@ -630,7 +681,8 @@ there is none. No parenthesised handle.</p></div>
 
       </div>
 
-        <div class="summary-synopsis"><p>Gets a user by email and password.</p></div>
+        <div class="summary-synopsis"><p>Gets a user by email and password. <code class="inline">nil</code> for a wrong password, and for an
+address locked by too many failures (<a href="#authenticate_by_password/2"><code class="inline">authenticate_by_password/2</code></a> says which).</p></div>
 
     </div>
 
@@ -858,6 +910,16 @@ Accepts a user ID and clears both the primary and all index caches.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#request_deletion/1" data-no-tooltip="" translate="no">request_deletion(user)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A player deleting their own account.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#require_account_activation?/0" data-no-tooltip="" translate="no">require_account_activation?()</a>
 
       </div>
@@ -940,11 +1002,29 @@ access and refresh tokens (&quot;log out everywhere&quot;).</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#sudo_mode?/2" data-no-tooltip="" translate="no">sudo_mode?(user, minutes \\ -20)</a>
+        <a href="#sudo_mode?/1" data-no-tooltip="" translate="no">sudo_mode?(user)</a>
 
       </div>
 
         <div class="summary-synopsis"><p>Checks whether the user is in sudo mode.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#sudo_mode?/2" data-no-tooltip="" translate="no">sudo_mode?(user, minutes)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#sudo_mode_minutes/0" data-no-tooltip="" translate="no">sudo_mode_minutes()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How recently a user must have signed in to open a sudo page (<code class="inline">auth.sudo_mode_minutes</code>).</p></div>
 
     </div>
 
@@ -1115,7 +1195,7 @@ tables that hold only a <code class="inline">user_id</code>). Nil/duplicate ids 
       <h1 class="signature" translate="no">attach_device_to_user(user, device_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L152" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L151" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1125,6 +1205,38 @@ tables that hold only a <code class="inline">user_id</code>). Nil/duplicate ids 
   <section class="docstring">
 
 <p>See <a href="Gamend.Accounts.Identities.html#attach_device_to_user/2"><code class="inline">Gamend.Accounts.Identities.attach_device_to_user/2</code></a>.</p>
+  </section>
+</section>
+<section class="detail" id="authenticate_by_password/2">
+
+  <div class="detail-header">
+    <a href="#authenticate_by_password/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">authenticate_by_password(email, password)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L348" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> authenticate_by_password(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
+  {:ok, <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()}
+  | {:error, :invalid_credentials | {:locked, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()}}</pre>
+
+      </div>
+
+<p>Checks an email and password, counting failures per address
+(<a href="Gamend.Accounts.LoginLockouts.html"><code class="inline">Gamend.Accounts.LoginLockouts</code></a>).</p><p><code class="inline">{:error, {:locked, seconds}}</code> when the address is locked, before the
+password is looked at, and for the failure that locks it.</p>
   </section>
 </section>
 <section class="detail" id="broadcast_friend_update/1">
@@ -1137,7 +1249,7 @@ tables that hold only a <code class="inline">user_id</code>). Nil/duplicate ids 
       <h1 class="signature" translate="no">broadcast_friend_update(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L262" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L261" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1159,7 +1271,7 @@ tables that hold only a <code class="inline">user_id</code>). Nil/duplicate ids 
       <h1 class="signature" translate="no">broadcast_member_update(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L259" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L258" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1181,7 +1293,7 @@ tables that hold only a <code class="inline">user_id</code>). Nil/duplicate ids 
       <h1 class="signature" translate="no">broadcast_user_update(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L256" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L255" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1203,7 +1315,7 @@ tables that hold only a <code class="inline">user_id</code>). Nil/duplicate ids 
       <h1 class="signature" translate="no">cache_user(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L545" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L575" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1233,7 +1345,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">can_upload_avatar?(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L686" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L716" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1251,6 +1363,35 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
 <p>Whether <code class="inline">user</code> may upload an avatar, per <code class="inline">anonymous_can_upload_avatar</code>.</p>
   </section>
 </section>
+<section class="detail" id="cancel_deletion/1">
+
+  <div class="detail-header">
+    <a href="#cancel_deletion/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">cancel_deletion(user)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L1030" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> cancel_deletion(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
+  {:ok, <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
+
+      </div>
+
+<p>Keep an account that was scheduled for deletion. A no-op for one that was not.</p>
+  </section>
+</section>
 <section class="detail" id="change_user_display_name/2">
 
     <span id="change_user_display_name/1"></span>
@@ -1263,7 +1404,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">change_user_display_name(user, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L209" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L208" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1289,7 +1430,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">change_user_email(user, attrs \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L787" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L905" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1323,7 +1464,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">change_user_password(user, attrs \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L839" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L957" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1355,7 +1496,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">change_user_registration(user, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L121" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L120" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1377,7 +1518,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">change_user_registration_for_validation(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L124" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L123" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1401,7 +1542,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">change_username(user, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L212" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L211" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1423,7 +1564,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">confirm_user(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L115" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L114" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1445,7 +1586,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">confirm_user_by_token(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L118" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L117" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1467,7 +1608,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">count_admins()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L84" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L83" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1491,7 +1632,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">count_list_all_users(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L76" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1513,7 +1654,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">count_search_users(query)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L71" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L70" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1535,7 +1676,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">count_unactivated_users()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L108" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L107" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1557,7 +1698,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">count_user_tokens(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L202" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L201" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1579,7 +1720,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">count_users()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L80" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1601,7 +1742,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">count_users_in_lobbies()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L102" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1623,7 +1764,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">count_users_in_parties()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L105" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L104" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1645,7 +1786,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">count_users_online()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L96" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L95" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1667,7 +1808,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">count_users_with_password()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L90" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L89" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1689,7 +1830,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">count_users_with_provider(provider_field)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L87" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L86" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1711,7 +1852,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">delete_user(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L873" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L1059" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1740,7 +1881,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">delete_user_session_token(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L187" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L186" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1762,7 +1903,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">delete_user_storage(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L218" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L217" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1772,6 +1913,62 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
   <section class="docstring">
 
 <p>See <a href="Gamend.Accounts.Profile.html#delete_user_storage/1"><code class="inline">Gamend.Accounts.Profile.delete_user_storage/1</code></a>.</p>
+  </section>
+</section>
+<section class="detail" id="deletion_grace_days/0">
+
+  <div class="detail-header">
+    <a href="#deletion_grace_days/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">deletion_grace_days()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L985" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> deletion_grace_days() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+
+      </div>
+
+<p>Days a player's own deletion waits (<code class="inline">auth.deletion_grace_days</code>); 0 deletes at once.</p>
+  </section>
+</section>
+<section class="detail" id="deletion_scheduled?/1">
+
+  <div class="detail-header">
+    <a href="#deletion_scheduled?/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">deletion_scheduled?(user)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L1023" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> deletion_scheduled?(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>() | nil) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether <code class="inline">user</code> is waiting out a deletion grace period.</p>
   </section>
 </section>
 <section class="detail" id="deliver_login_instructions/2">
@@ -1784,7 +1981,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">deliver_login_instructions(user, magic_link_url_fun)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L184" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L183" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1806,7 +2003,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">deliver_user_confirmation_instructions(user, confirmation_url_fun)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L127" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L126" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1828,7 +2025,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">deliver_user_update_email_instructions(user, current_email, update_email_url_fun)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L180" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L179" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1850,7 +2047,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">device_auth_enabled?()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L731" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L839" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1878,7 +2075,7 @@ consistent instead of serving the pre-write struct until the TTL expires.</p>
       <h1 class="signature" translate="no">display_label(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L431" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L461" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1910,7 +2107,7 @@ it sends you to name the same person the same way.</p><p>Never falls back to the
       <h1 class="signature" translate="no">display_name(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L497" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L527" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1935,6 +2132,34 @@ who had set no display name arrived from nobody; group invites wrote
 then the raw id, which <a href="#display_label/1"><code class="inline">display_label/1</code></a> documents as the thing not to do.</p>
   </section>
 </section>
+<section class="detail" id="due_deletions_query/0">
+
+  <div class="detail-header">
+    <a href="#due_deletions_query/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">due_deletions_query()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L1043" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> due_deletions_query() :: <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Query.html#t:t/0">Ecto.Query.t</a>()</pre>
+
+      </div>
+
+<p>Accounts whose deletion date has passed. For <a href="Gamend.Retention.html"><code class="inline">Gamend.Retention</code></a>.</p>
+  </section>
+</section>
 <section class="detail" id="find_or_create_from_apple/1">
 
   <div class="detail-header">
@@ -1945,7 +2170,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">find_or_create_from_apple(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L134" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L133" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1969,7 +2194,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">find_or_create_from_device(device_id, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L149" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L148" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1991,7 +2216,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">find_or_create_from_discord(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L131" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L130" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2013,7 +2238,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">find_or_create_from_facebook(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L140" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L139" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2035,7 +2260,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">find_or_create_from_github(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L143" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L142" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2057,7 +2282,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">find_or_create_from_google(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L137" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L136" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2079,7 +2304,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">find_or_create_from_steam(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L146" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L145" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2101,7 +2326,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">generate_user_session_token(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L168" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L167" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2123,7 +2348,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">get_linked_providers(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L1017" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L1203" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2191,7 +2416,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">get_user!(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L389" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L419" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2223,7 +2448,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">get_user_by_apple_id(apple_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L639" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L669" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2251,7 +2476,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">get_user_by_discord_id(discord_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L649" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L679" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2279,7 +2504,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">get_user_by_email(email)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L282" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L281" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2327,7 +2552,8 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
 
       </div>
 
-<p>Gets a user by email and password.</p><h2 id="get_user_by_email_and_password/2-examples" class="section-heading"><a href="#get_user_by_email_and_password/2-examples" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Examples</span></h2><pre><code class="makeup elixir" translate="no"><span class="gp unselectable">iex&gt; </span><span class="n">get_user_by_email_and_password</span><span class="p" data-group-id="group-1">(</span><span class="s">&quot;foo@example.com&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;correct_password&quot;</span><span class="p" data-group-id="group-1">)</span><span class="w">
+<p>Gets a user by email and password. <code class="inline">nil</code> for a wrong password, and for an
+address locked by too many failures (<a href="#authenticate_by_password/2"><code class="inline">authenticate_by_password/2</code></a> says which).</p><h2 id="get_user_by_email_and_password/2-examples" class="section-heading"><a href="#get_user_by_email_and_password/2-examples" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Examples</span></h2><pre><code class="makeup elixir" translate="no"><span class="gp unselectable">iex&gt; </span><span class="n">get_user_by_email_and_password</span><span class="p" data-group-id="group-1">(</span><span class="s">&quot;foo@example.com&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;correct_password&quot;</span><span class="p" data-group-id="group-1">)</span><span class="w">
 </span><span class="p" data-group-id="group-2">%</span><span class="nc" data-group-id="group-2">User</span><span class="p" data-group-id="group-2">{</span><span class="p" data-group-id="group-2">}</span><span class="w">
 
 </span><span class="gp unselectable">iex&gt; </span><span class="n">get_user_by_email_and_password</span><span class="p" data-group-id="group-3">(</span><span class="s">&quot;foo@example.com&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;invalid_password&quot;</span><span class="p" data-group-id="group-3">)</span><span class="w">
@@ -2344,7 +2570,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">get_user_by_facebook_id(facebook_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L659" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L689" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2372,7 +2598,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">get_user_by_github_id(github_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L669" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L699" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2400,7 +2626,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">get_user_by_google_id(google_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L629" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L659" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2428,7 +2654,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">get_user_by_magic_link_token(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L174" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L173" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2450,7 +2676,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">get_user_by_session_token(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L171" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L170" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2472,7 +2698,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">get_user_by_steam_id(steam_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L619" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L649" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2500,7 +2726,7 @@ then the raw id, which <a href="#display_label/1"><code class="inline">display_l
       <h1 class="signature" translate="no">get_user_by_username(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L678" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L708" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2529,7 +2755,7 @@ are stored lowercase).</p>
       <h1 class="signature" translate="no">has_password?(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L1033" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L1219" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2557,7 +2783,7 @@ are stored lowercase).</p>
       <h1 class="signature" translate="no">invalidate_user_cache_by_id(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L604" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L634" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2586,7 +2812,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">link_account(user, attrs, provider_id_field, changeset_fn)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L155" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L154" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2608,7 +2834,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">link_device_id(user, device_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L158" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L157" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2630,7 +2856,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">list_admin_ids()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L93" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L92" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2656,7 +2882,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">list_all_users(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L74" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L73" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2680,7 +2906,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">list_user_tokens(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L199" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L198" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2702,7 +2928,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">login_user_by_magic_link(token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L177" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L176" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2724,7 +2950,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">merge_metadata(user, patch)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L224" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L223" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2746,7 +2972,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">player_stats()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L99" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L98" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2768,7 +2994,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">prune_user_avatars(user_id, keep_key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L221" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L220" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2790,7 +3016,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">refresh_account_class(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L233" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L232" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2812,7 +3038,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">register_user(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L112" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L111" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2836,7 +3062,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">register_user_and_deliver(attrs, confirmation_url_fun, notifier \\ Gamend.Accounts.UserNotifier)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L303" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L302" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2860,7 +3086,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">register_user_with_password_and_deliver(attrs, confirmation_url_fun, notifier \\ Gamend.Accounts.UserNotifier)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L311" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L310" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2870,6 +3096,44 @@ Accepts a user ID and clears both the primary and all index caches.</p>
   <section class="docstring">
 
 <p>See <a href="Gamend.Accounts.Registration.html#register_user_with_password_and_deliver/3"><code class="inline">Gamend.Accounts.Registration.register_user_with_password_and_deliver/3</code></a>.</p>
+  </section>
+</section>
+<section class="detail" id="request_deletion/1">
+
+  <div class="detail-header">
+    <a href="#request_deletion/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">request_deletion(user)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L1004" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> request_deletion(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
+  {:ok, :deleted}
+  | {:ok,
+     {:scheduled, <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), [<a href="Gamend.Accounts.UserToken.html#t:t/0">Gamend.Accounts.UserToken.t</a>()]}}
+  | {:error, <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
+
+      </div>
+
+<p>A player deleting their own account.</p><p>With <code class="inline">auth.deletion_grace_days</code> at 0 the account is deleted now, by
+<a href="#delete_user/1"><code class="inline">delete_user/1</code></a>. Otherwise it is scheduled that many days out and signed out
+everywhere (every session, access, refresh and personal API token), and
+<a href="Gamend.Retention.html"><code class="inline">Gamend.Retention</code></a> deletes it on the day unless its owner signs in on the
+website first (<a href="#cancel_deletion/1"><code class="inline">cancel_deletion/1</code></a>). An account already scheduled keeps its
+date. The expired session tokens come back so the caller can disconnect
+their LiveViews.</p><p>Admin deletions and the retention sweeps call <a href="#delete_user/1"><code class="inline">delete_user/1</code></a> and never wait.</p>
   </section>
 </section>
 <section class="detail" id="require_account_activation?/0">
@@ -2882,7 +3146,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">require_account_activation?()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L737" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L845" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2910,7 +3174,7 @@ Accepts a user ID and clears both the primary and all index caches.</p>
       <h1 class="signature" translate="no">revoke_all_tokens(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L957" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L1143" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2942,7 +3206,7 @@ access and refresh tokens (&quot;log out everywhere&quot;).</p><p>Returns <code 
       <h1 class="signature" translate="no">revoke_all_user_sessions(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L205" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L204" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2966,7 +3230,7 @@ access and refresh tokens (&quot;log out everywhere&quot;).</p><p>Returns <code 
       <h1 class="signature" translate="no">search_users(query, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L67" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2988,7 +3252,7 @@ access and refresh tokens (&quot;log out everywhere&quot;).</p><p>Returns <code 
       <h1 class="signature" translate="no">serialize_user_payload(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L265" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L264" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3010,7 +3274,7 @@ access and refresh tokens (&quot;log out everywhere&quot;).</p><p>Returns <code 
       <h1 class="signature" translate="no">set_user_age(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L230" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L229" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3032,7 +3296,7 @@ access and refresh tokens (&quot;log out everywhere&quot;).</p><p>Returns <code 
       <h1 class="signature" translate="no">set_user_offline(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L249" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L248" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3054,7 +3318,7 @@ access and refresh tokens (&quot;log out everywhere&quot;).</p><p>Returns <code 
       <h1 class="signature" translate="no">set_user_online(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L246" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L245" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3066,19 +3330,47 @@ access and refresh tokens (&quot;log out everywhere&quot;).</p><p>Returns <code 
 <p>See <a href="Gamend.Accounts.Presence.html#set_user_online/1"><code class="inline">Gamend.Accounts.Presence.set_user_online/1</code></a>.</p>
   </section>
 </section>
-<section class="detail" id="sudo_mode?/2">
+<section class="detail" id="sudo_mode?/1">
 
-    <span id="sudo_mode?/1"></span>
+  <div class="detail-header">
+    <a href="#sudo_mode?/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">sudo_mode?(user)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L883" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> sudo_mode?(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Checks whether the user is in sudo mode.</p><p>With one argument, the window is the one a sudo form is submitted in:
+<a href="#sudo_mode_minutes/0"><code class="inline">sudo_mode_minutes/0</code></a> plus ten minutes to fill the form in. The limit can be
+given as second argument in minutes (negative, as an offset from now).</p>
+  </section>
+</section>
+<section class="detail" id="sudo_mode?/2">
 
   <div class="detail-header">
     <a href="#sudo_mode?/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">sudo_mode?(user, minutes \\ -20)</h1>
+      <h1 class="signature" translate="no">sudo_mode?(user, minutes)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L765" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L885" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3093,8 +3385,35 @@ access and refresh tokens (&quot;log out everywhere&quot;).</p><p>Returns <code 
 
       </div>
 
-<p>Checks whether the user is in sudo mode.</p><p>The user is in sudo mode when the last authentication was done no further
-than 20 minutes ago. The limit can be given as second argument in minutes.</p>
+
+  </section>
+</section>
+<section class="detail" id="sudo_mode_minutes/0">
+
+  <div class="detail-header">
+    <a href="#sudo_mode_minutes/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">sudo_mode_minutes()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L872" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> sudo_mode_minutes() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()</pre>
+
+      </div>
+
+<p>How recently a user must have signed in to open a sudo page (<code class="inline">auth.sudo_mode_minutes</code>).</p>
   </section>
 </section>
 <section class="detail" id="touch_last_seen/1">
@@ -3107,7 +3426,7 @@ than 20 minutes ago. The limit can be given as second argument in minutes.</p>
       <h1 class="signature" translate="no">touch_last_seen(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L240" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L239" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3129,7 +3448,7 @@ than 20 minutes ago. The limit can be given as second argument in minutes.</p>
       <h1 class="signature" translate="no">touch_last_seen_by_id(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L243" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L242" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3151,7 +3470,7 @@ than 20 minutes ago. The limit can be given as second argument in minutes.</p>
       <h1 class="signature" translate="no">unlink_device_id(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L161" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L160" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3173,7 +3492,7 @@ than 20 minutes ago. The limit can be given as second argument in minutes.</p>
       <h1 class="signature" translate="no">unlink_provider(user, provider)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L164" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L163" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3195,7 +3514,7 @@ than 20 minutes ago. The limit can be given as second argument in minutes.</p>
       <h1 class="signature" translate="no">update_user(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L1059" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L1245" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3230,7 +3549,7 @@ broadcasts the update on success. It returns the same tuple shape as
       <h1 class="signature" translate="no">update_user_avatar(user, url)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L215" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L214" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3252,7 +3571,7 @@ broadcasts the update on success. It returns the same tuple shape as
       <h1 class="signature" translate="no">update_user_display_name(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L227" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L226" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3274,7 +3593,7 @@ broadcasts the update on success. It returns the same tuple shape as
       <h1 class="signature" translate="no">update_user_email(user, token)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L798" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L916" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3303,7 +3622,7 @@ broadcasts the update on success. It returns the same tuple shape as
       <h1 class="signature" translate="no">update_user_password(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L859" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L977" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3337,7 +3656,7 @@ broadcasts the update on success. It returns the same tuple shape as
       <h1 class="signature" translate="no">update_username(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L236" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L235" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3359,7 +3678,7 @@ broadcasts the update on success. It returns the same tuple shape as
       <h1 class="signature" translate="no">user_activated?(arg1)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L746" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L854" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3389,7 +3708,7 @@ the user's <code class="inline">is_activated</code> flag is <code class="inline"
       <h1 class="signature" translate="no">user_exists?(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L480" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L510" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3434,7 +3753,7 @@ against the database each time rather than being remembered as absent.</p>
       <h1 class="signature" translate="no">users_by_ids(ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L518" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L548" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3465,7 +3784,7 @@ tables that hold only a <code class="inline">user_id</code>). Nil/duplicate ids 
       <h1 class="signature" translate="no">valid_password?(user, password)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L368" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts.ex#L398" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3492,9 +3811,9 @@ tables that hold only a <code class="inline">user_id</code>). Nil/duplicate ids 
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

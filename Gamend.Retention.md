@@ -44,7 +44,11 @@ env vars `GAMEND_RETENTION_*`); `0` or unset keeps data forever:
   on its own window, `GAMEND_RETENTION_ABANDONED_PARTY_MINUTES` (15).
 
 Expired IP bans, OAuth sessions older than a day, user tokens past their own
-context's validity, and stored avatars whose owner no longer exists are always
+context's validity, personal API tokens that can no longer authenticate
+(expired, or older than their owner's last credential change), login
+lockouts whose window and lock have run out, accounts past the deletion date
+their owner's request set (`GAMEND_AUTH_DELETION_GRACE_DAYS`), and stored
+avatars whose owner no longer exists are always
 removed (independent of the env vars above). Deletes are idempotent, so
 running on several instances at once is harmless; each class is batched and
 failure-isolated, and emits `[:gamend, :retention, :pruned]` telemetry with
@@ -76,6 +80,16 @@ See `Supervisor`.
 
 Runs all configured pruning steps once. Returns a map of deleted row
 counts per table.
+
+# `prune_live`
+
+```elixir
+@spec prune_live() :: %{required(atom()) =&gt; non_neg_integer()}
+```
+
+Runs only the classes that free live game state: offline lobby and party
+seats, abandoned parties, abandoned lobbies. What the short cycle
+(`live_interval_seconds`) runs between full sweeps.
 
 # `register_class`
 

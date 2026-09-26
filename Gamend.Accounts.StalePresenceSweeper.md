@@ -10,10 +10,11 @@ remain marked as online indefinitely.
 
 ## Configuration
 
-    config :gamend_core, Gamend.Accounts.StalePresenceSweeper,
-      interval_ms: 120_000,       # how often to run the sweep (default 2 min)
-      stale_threshold_s: 300,     # mark offline if last_seen > 5 min ago
-      enabled: true               # set false to disable the sweep entirely
+`interval_ms` and `stale_threshold_s` are settings (`GAMEND_PRESENCE_*`).
+`enabled: false` in the app config turns the sweep off entirely (tests).
+
+A connected socket refreshes `last_seen_at` on a heartbeat derived from the
+threshold (`heartbeat_ms/0`), so a live player is never swept.
 
 # `child_spec`
 
@@ -28,6 +29,16 @@ See `Supervisor`.
 ```
 
 Returns the current configuration used by the sweeper.
+
+# `heartbeat_ms`
+
+```elixir
+@spec heartbeat_ms() :: pos_integer()
+```
+
+How often a connected socket refreshes `last_seen_at`: three fifths of
+`stale_threshold_s`, so two refreshes fit before a user reads as stale, and
+never less often than every 3 minutes.
 
 # `start_link`
 

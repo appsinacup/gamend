@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.0.1265">
+    <meta name="project" content="gamend_core v1.0.1266">
 
 
-    <title>Gamend.Payments.ProviderConfig — gamend_core v1.0.1265</title>
+    <title>Gamend.Payments.ProviderConfig — gamend_core v1.0.1266</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-94FD78A9.js"></script>
+    <script defer src="dist/sidebar_items-D6E66F29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.0.1265
+          v1.0.1266
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Payments.<wbr />ProviderConfig</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.0.1265)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.0.1266)</small>
 
     </h1>
 
@@ -199,6 +199,29 @@ production provider credentials for this host.</p>
         <a href="#stripe_candidate_labels/1" data-no-tooltip="" translate="no">stripe_candidate_labels(kind)</a>
 
       </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#stripe_checkout_api_version/0" data-no-tooltip="" translate="no">stripe_checkout_api_version()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The API version for creating a Checkout Session: the configured one, raised
+to 2025-03-31.basil when Managed Payments is on and the
+configured one is older. Only that call is raised, so every other request,
+and the payloads core parses from them, keep the configured version.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#stripe_managed_payments?/0" data-no-tooltip="" translate="no">stripe_managed_payments?()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether checkouts go through Stripe Managed Payments (Stripe as merchant of record).</p></div>
 
     </div>
 
@@ -407,7 +430,7 @@ production provider credentials for this host.</p>
       <h1 class="signature" translate="no">stripe_api_version()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L53" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -435,7 +458,7 @@ production provider credentials for this host.</p>
       <h1 class="signature" translate="no">stripe_api_version_source()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L67" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L91" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -463,7 +486,7 @@ production provider credentials for this host.</p>
       <h1 class="signature" translate="no">stripe_candidate_labels(kind)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L85" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L109" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -481,6 +504,65 @@ production provider credentials for this host.</p>
 
   </section>
 </section>
+<section class="detail" id="stripe_checkout_api_version/0">
+
+  <div class="detail-header">
+    <a href="#stripe_checkout_api_version/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">stripe_checkout_api_version()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L62" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> stripe_checkout_api_version() :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+
+      </div>
+
+<p>The API version for creating a Checkout Session: the configured one, raised
+to 2025-03-31.basil when Managed Payments is on and the
+configured one is older. Only that call is raised, so every other request,
+and the payloads core parses from them, keep the configured version.</p>
+  </section>
+</section>
+<section class="detail" id="stripe_managed_payments?/0">
+
+  <div class="detail-header">
+    <a href="#stripe_managed_payments?/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">stripe_managed_payments?()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L52" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> stripe_managed_payments?() :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether checkouts go through Stripe Managed Payments (Stripe as merchant of record).</p>
+  </section>
+</section>
 <section class="detail" id="stripe_secret_key/0">
 
   <div class="detail-header">
@@ -491,7 +573,7 @@ production provider credentials for this host.</p>
       <h1 class="signature" translate="no">stripe_secret_key()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L47" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L71" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -519,7 +601,7 @@ production provider credentials for this host.</p>
       <h1 class="signature" translate="no">stripe_secret_key_source()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L61" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L85" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -547,7 +629,7 @@ production provider credentials for this host.</p>
       <h1 class="signature" translate="no">stripe_webhook_secret()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L50" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L74" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -575,7 +657,7 @@ production provider credentials for this host.</p>
       <h1 class="signature" translate="no">stripe_webhook_secret_source()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L64" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L88" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -602,9 +684,9 @@ production provider credentials for this host.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.0.1265">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.0.1266">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1265">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.0.1266">Hex Preview</a>
 
             </span>
 

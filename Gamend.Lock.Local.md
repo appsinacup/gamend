@@ -21,6 +21,16 @@ releases on process death.
 
 Runs `fun` holding the lock for `key`. Blocks; reentrant within a process.
 
+# `trans_on_node`
+
+```elixir
+@spec trans_on_node(term(), (-&gt; result)) :: result when result: term()
+```
+
+As `trans/2`, on this node only. On Postgres the advisory lock is the
+cluster-wide one; this queues a node's own callers in the BEAM, where waiting
+is free, instead of each holding a pooled connection blocked on the database.
+
 ---
 
 *Consult [api-reference.md](api-reference.md) for complete listing*

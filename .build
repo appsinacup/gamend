@@ -1,9 +1,14 @@
 404.html
 Gamend.Accounts.AgePolicy.html
+Gamend.Accounts.ApiToken.html
+Gamend.Accounts.ApiTokens.html
 Gamend.Accounts.AvatarMirror.html
 Gamend.Accounts.Broadcasts.html
+Gamend.Accounts.ConfirmationMailer.html
 Gamend.Accounts.Identities.html
 Gamend.Accounts.InactivityNotifier.html
+Gamend.Accounts.LoginLockout.html
+Gamend.Accounts.LoginLockouts.html
 Gamend.Accounts.PasswordHash.html
 Gamend.Accounts.Presence.html
 Gamend.Accounts.PresenceStatus.html
@@ -21,6 +26,7 @@ Gamend.Accounts.UserToken.html
 Gamend.Accounts.Username.html
 Gamend.Accounts.UsernameGenerator.html
 Gamend.Accounts.html
+Gamend.AfterCommit.html
 Gamend.Analytics.ActivityDay.html
 Gamend.Analytics.DailyCount.html
 Gamend.Analytics.html
@@ -73,6 +79,7 @@ Gamend.Groups.GroupMember.html
 Gamend.Groups.Invites.html
 Gamend.Groups.JoinRequests.html
 Gamend.Groups.html
+Gamend.HTTP.html
 Gamend.Hooks.Declarations.html
 Gamend.Hooks.Default.html
 Gamend.Hooks.DynamicRpcs.html
@@ -221,8 +228,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-652886C8.js
-dist/sidebar_items-94FD78A9.js
+dist/search_data-413B46D5.js
+dist/sidebar_items-D6E66F29.js
 index.html
 readme.html
 search.html

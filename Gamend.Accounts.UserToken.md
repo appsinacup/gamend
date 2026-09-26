@@ -58,13 +58,21 @@ You could then use this information to display all valid sessions
 and devices in the UI and allow users to explicitly expire any
 session they deem invalid.
 
+# `change_email_validity_in_days`
+
+```elixir
+@spec change_email_validity_in_days() :: pos_integer()
+```
+
+How long an email-change link stays valid, in days (`auth.change_email_days`).
+
 # `confirm_validity_in_days`
 
 ```elixir
 @spec confirm_validity_in_days() :: pos_integer()
 ```
 
-How long an email confirmation link stays valid, in days.
+How long an email confirmation link stays valid, in days (`auth.confirm_email_days`).
 
 # `expired_query`
 
@@ -74,10 +82,26 @@ How long an email confirmation link stays valid, in days.
 
 Query selecting token rows that are past their own context's validity window.
 
-Each context expires on a different clock (session 14d, magic link 15min,
-email change and confirmation 7d), and those windows live here — so retention inverts the
-same predicate the verify queries use instead of guessing a single age.
-Contexts this module does not know are never selected.
+Each context expires on a different clock (by default session 14d, magic
+link 15min, email change and confirmation 7d), and those windows live here —
+so retention inverts the same predicate the verify queries use instead of
+guessing a single age. Contexts this module does not know are never selected.
+
+# `magic_link_validity_in_minutes`
+
+```elixir
+@spec magic_link_validity_in_minutes() :: pos_integer()
+```
+
+How long a magic link stays valid, in minutes (`auth.magic_link_minutes`, at most 60).
+
+# `session_validity_in_days`
+
+```elixir
+@spec session_validity_in_days() :: pos_integer()
+```
+
+How long a browser session lasts, in days (`auth.session_days`).
 
 # `verify_change_email_token_query`
 
@@ -88,7 +112,7 @@ The query returns the user_token found by the token, if any.
 This is used to validate requests to change the user
 email.
 The given token is valid if it matches its hashed counterpart in the
-database and if it has not expired (after @change_email_validity_in_days).
+database and if it has not expired (after `change_email_validity_in_days/0`).
 The context must always start with "change:".
 
 # `verify_magic_link_token_query`
@@ -99,7 +123,8 @@ If found, the query returns a tuple of the form `{user, token}`.
 
 The given token is valid if it matches its hashed counterpart in the
 database. This function also checks if the token is being used within
-15 minutes. The context of a magic link token is always "login".
+`magic_link_validity_in_minutes/0`. The context of a magic link token is
+always "login".
 
 # `verify_session_token_query`
 
@@ -108,7 +133,7 @@ Checks if the token is valid and returns its underlying lookup query.
 The query returns the user found by the token, if any, along with the token's creation time.
 
 The token is valid if it matches the value in the database and it has
-not expired (after @session_validity_in_days).
+not expired (after `session_validity_in_days/0`).
 
 ---
 

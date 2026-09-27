@@ -3189,3 +3189,13 @@ msgstr ""
 msgid "latest %{count} run"
 msgid_plural "latest %{count} runs"
 msgstr[0] ""
+
+#: lib/gamend_web/controllers/user_session_controller.ex:77
+#, elixir-autogen, elixir-format
+msgid "Confirm your email first with the link we sent you, or log in with an emailed link."
+msgstr "Konfirmasikan email Anda terlebih dahulu dengan tautan yang kami kirim, atau masuk dengan tautan melalui email."
+
+#: lib/gamend_web/live/user_live/confirmation.ex:32
+#, elixir-autogen, elixir-format
+msgid "Confirming with this link removes the password this account was registered with, so set a new one in your account settings afterwards. The link in the confirmation email keeps it."
+msgstr "Mengonfirmasi dengan tautan ini akan menghapus kata sandi yang dipakai saat akun ini didaftarkan, jadi setel yang baru di pengaturan akun Anda setelahnya. Tautan di email konfirmasi mempertahankannya."

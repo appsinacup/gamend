@@ -137,7 +137,7 @@ and never `operator[]` on a *const* json with a key that may be missing.
 ## Sessions
 
 `Auth` signs in and keeps the session: `login_device`, `login_email`,
-`register_email`, `login_steam` (an `ISteamUser::GetAuthTicketForWebApi`
+`login_steam` (an `ISteamUser::GetAuthTicketForWebApi`
 ticket), and `sign_in(provider)`, which opens the provider's page through
 `config.open_url` and polls until the player finishes. Every call after that
 carries the access token. It is refreshed when three quarters of its 15
@@ -147,6 +147,11 @@ signs out.
 Signing in never links. To add a provider to the signed-in account,
 `link(provider)` opens its page and polls as `sign_in` does, and
 `link_steam(ticket)` links Steam directly; the session stays as it is.
+
+Registering is not a sign-in either. `register_email(email, password)` makes
+the account and answers it (`models::Registration`); its password signs in
+with `login_email` once the player opens the emailed link, and fails with
+`email_not_confirmed` until then.
 
 Keep the session between runs where your platform keeps secrets:
 

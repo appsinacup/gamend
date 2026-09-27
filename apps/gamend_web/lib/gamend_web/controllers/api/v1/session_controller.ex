@@ -7,7 +7,7 @@ defmodule GamendWeb.Api.V1.SessionController do
   alias GamendWeb.Auth.Guardian
   alias GamendWeb.Auth.Tokens
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{OkResponse, SessionResponse}
+  alias GamendWeb.Schemas.{OkResponse, RegistrationResponse, SessionResponse}
   alias OpenApiSpex.Schema
 
   tags(["Authentication"])
@@ -35,7 +35,11 @@ defmodule GamendWeb.Api.V1.SessionController do
     responses: [
       ok: {"Login successful", "application/json", SessionResponse},
       unauthorized: Schemas.error("Invalid credentials"),
-      forbidden: Schemas.error("Account awaiting activation, or scheduled for deletion"),
+      forbidden:
+        Schemas.error(
+          "The email is not confirmed yet (`email_not_confirmed`), the account awaits " <>
+            "activation, or it is scheduled for deletion"
+        ),
       too_many_requests:
         Schemas.error(
           "Too many failed passwords for this email: password sign-in is locked for the " <>
@@ -65,6 +69,16 @@ defmodule GamendWeb.Api.V1.SessionController do
           "Too many failed sign-in attempts. Try again later, or sign in with an emailed link."
         )
 
+      {:error, :email_not_confirmed} ->
+        reply_error(
+          conn,
+          :forbidden,
+          "email_not_confirmed",
+          "Confirm your email address with the link we sent to it, then log in again. " <>
+            "If the link has expired, sign in on the website with an emailed login link, " <>
+            "then set a new password in your account settings."
+        )
+
       {:error, :invalid_credentials} ->
         reply_error(conn, :unauthorized, "invalid_credentials", "Invalid email or password")
     end
@@ -74,12 +88,16 @@ defmodule GamendWeb.Api.V1.SessionController do
     operation_id: "register",
     summary: "Register",
     description:
-      "Create an account with an email and a password, queue its confirmation email " <>
-        "as browser sign-up does, and sign it in: the tokens come back as from login. " <>
+      "Create an account with an email and a password and queue its confirmation email, " <>
+        "as browser sign-up does. Registering is not a sign-in: it answers the new account, " <>
+        "never tokens. The password signs in with `login` once the player has opened the " <>
+        "emailed link; until then `login` answers `403 email_not_confirmed`. " <>
         "The response does not wait for the email, which is sent and retried in the background. " <>
-        "The first account becomes the admin and is confirmed without an email; account " <>
-        "activation applies as for every sign-up. When the server requires it " <>
-        "(`GAMEND_CAPTCHA_API_REGISTER`), a Cloudflare Turnstile token goes in `captcha_token`.",
+        "The server's first account becomes the admin and is confirmed without an email " <>
+        "(`email_confirmed: true`), so it can log in at once. Account activation " <>
+        "(`GAMEND_AUTH_REQUIRE_ACTIVATION`) applies at login, as for every sign-up. " <>
+        "When the server requires it (`GAMEND_CAPTCHA_API_REGISTER`), a Cloudflare " <>
+        "Turnstile token goes in `captcha_token`.",
     request_body: {
       "Registration",
       "application/json",
@@ -105,12 +123,11 @@ defmodule GamendWeb.Api.V1.SessionController do
       }
     },
     responses: [
-      created: {"Account created and signed in", "application/json", SessionResponse},
+      created: {"Account created; not signed in", "application/json", RegistrationResponse},
       bad_request: Schemas.error("Email or password missing (missing_param)"),
       forbidden:
         Schemas.error(
-          "The account awaits activation by an admin, the captcha failed, or a plugin " <>
-            "refused the sign-up (registration_refused)"
+          "The captcha failed, or a plugin refused the sign-up (registration_refused)"
         ),
       conflict: Schemas.error("Email or username already taken"),
       unprocessable_entity: Schemas.error("Invalid email, username or password"),
@@ -154,17 +171,17 @@ defmodule GamendWeb.Api.V1.SessionController do
     reply_error(conn, :bad_request, "missing_param", "email and password are required")
   end
 
+  # Not a sign-in, unlike device login, which creates an account and signs it
+  # in at once: registering proves nothing about the inbox, and a token here
+  # would let anyone play as any address. The password signs in through
+  # `create/2` once the email is confirmed.
   defp registered({:ok, user}, conn) do
-    if Accounts.user_activated?(user) do
-      conn |> put_status(:created) |> issue_tokens(user)
-    else
-      reply_error(
-        conn,
-        :forbidden,
-        "account_not_activated",
-        "Your account is pending activation by an administrator."
-      )
-    end
+    reply_data(conn, :created, %{
+      user_id: user.id,
+      username: user.username || "",
+      display_name: user.display_name || "",
+      email_confirmed: not is_nil(user.confirmed_at)
+    })
   end
 
   defp registered({:error, %Ecto.Changeset{} = changeset}, conn) do
@@ -334,8 +351,8 @@ defmodule GamendWeb.Api.V1.SessionController do
     :ok
   end
 
-  # Only real logins reach here (password, device and registration); `refresh/2`
-  # keeps its refresh token. Provider sign-ins go through the same
+  # Only real logins reach here (password and device; registering is not one);
+  # `refresh/2` keeps its refresh token. Provider sign-ins go through the same
   # `Tokens.sign_in/1`.
   defp issue_tokens(conn, user), do: reply_data(conn, Tokens.sign_in(user))
 end

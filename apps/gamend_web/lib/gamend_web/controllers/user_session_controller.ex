@@ -69,6 +69,18 @@ defmodule GamendWeb.UserSessionController do
         |> put_flash(:email, String.slice(email, 0, Gamend.Limits.get(:max_email)))
         |> redirect(to: ~p"/users/log_in")
 
+      # Only after the right password, so it reveals nothing to a guesser.
+      {:error, :email_not_confirmed} ->
+        conn
+        |> put_flash(
+          :error,
+          gettext(
+            "Confirm your email first with the link we sent you, or log in with an emailed link."
+          )
+        )
+        |> put_flash(:email, String.slice(email, 0, Gamend.Limits.get(:max_email)))
+        |> redirect(to: ~p"/users/log_in")
+
       {:error, :invalid_credentials} ->
         # In order to prevent user enumeration attacks, don't disclose whether the email is registered.
         conn

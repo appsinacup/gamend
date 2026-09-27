@@ -70,11 +70,16 @@ Callbacks run inside `poll()`, on the thread that calls it, never on a
 network thread. That is where your game can touch its own state safely.
 
 Besides a device id, `Auth` signs in with an email and password
-(`login_email`, `register_email`), a Steam session ticket (`login_steam`),
+(`login_email`), a Steam session ticket (`login_steam`),
 and any configured provider (`sign_in("google")`), which opens the provider's
 page through `config.open_url` and waits for the player to finish. Signing in
 never links: `link("google")` and `link_steam(ticket)` add a provider to the
 signed-in account.
+
+`register_email` makes an account and is not a sign-in: its callback gets the
+new account (`models::Registration`), and the session does not change. The
+password signs in with `login_email` once the player opens the emailed link;
+until then that fails with `email_not_confirmed`.
 
 ## Calls and replies
 

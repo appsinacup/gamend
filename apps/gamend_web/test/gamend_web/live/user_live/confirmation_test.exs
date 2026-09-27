@@ -17,8 +17,24 @@ defmodule GamendWeb.UserLive.ConfirmationTest do
           Accounts.deliver_login_instructions(user, url)
         end)
 
-      {:ok, _lv, html} = live(conn, ~p"/users/log_in/#{token}")
+      {:ok, lv, html} = live(conn, ~p"/users/log_in/#{token}")
       assert html =~ "Confirm"
+      refute has_element?(lv, "#confirmation-password-notice")
+    end
+
+    test "says a password set before confirming goes away", %{
+      conn: conn,
+      unconfirmed_user: user
+    } do
+      user = set_password(user)
+
+      token =
+        extract_user_token(fn url ->
+          Accounts.deliver_login_instructions(user, url)
+        end)
+
+      {:ok, lv, _html} = live(conn, ~p"/users/log_in/#{token}")
+      assert has_element?(lv, "#confirmation_form #confirmation-password-notice")
     end
 
     test "renders login page for confirmed user", %{conn: conn, confirmed_user: user} do

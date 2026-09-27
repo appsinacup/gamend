@@ -52,6 +52,35 @@ defmodule Gamend.AccountsTest do
       assert %User{id: ^id} =
                Accounts.get_user_by_email_and_password(user.email, valid_user_password())
     end
+
+    test "does not return a user whose email is not confirmed" do
+      user = unconfirmed_user_fixture() |> set_password()
+      refute Accounts.get_user_by_email_and_password(user.email, valid_user_password())
+    end
+  end
+
+  describe "authenticate_by_password/2" do
+    test "refuses the right password on an unconfirmed email, and says why" do
+      user = unconfirmed_user_fixture() |> set_password()
+
+      assert {:error, :email_not_confirmed} =
+               Accounts.authenticate_by_password(user.email, valid_user_password())
+    end
+
+    test "a wrong password on an unconfirmed email is only invalid" do
+      user = unconfirmed_user_fixture() |> set_password()
+
+      assert {:error, :invalid_credentials} =
+               Accounts.authenticate_by_password(user.email, "wrong password!")
+    end
+
+    test "signs the user in once the email is confirmed" do
+      %{id: id} = user = unconfirmed_user_fixture() |> set_password()
+      {:ok, _} = Accounts.confirm_user(user)
+
+      assert {:ok, %User{id: ^id}} =
+               Accounts.authenticate_by_password(user.email, valid_user_password())
+    end
   end
 
   describe "get_user!/1" do
@@ -186,7 +215,33 @@ defmodule Gamend.AccountsTest do
         )
 
       assert user.is_admin
+      assert user.confirmed_at
       refute_enqueued(worker: ConfirmationMailer)
+    end
+
+    test "the first user registered with a password signs in with it at once" do
+      email = unique_user_email()
+
+      {:ok, user} =
+        Accounts.register_user_with_password_and_deliver(
+          %{"email" => email, "password" => valid_user_password()},
+          fn t -> "http://x/#{t}" end
+        )
+
+      assert user.is_admin
+      assert {:ok, _} = Accounts.authenticate_by_password(email, valid_user_password())
+    end
+
+    test "later users start unconfirmed" do
+      _existing = user_fixture()
+
+      {:ok, user} =
+        Accounts.register_user_with_password_and_deliver(
+          valid_user_attributes(%{"password" => valid_user_password()}),
+          fn t -> "http://x/#{t}" end
+        )
+
+      refute user.confirmed_at
     end
   end
 
@@ -515,14 +570,16 @@ defmodule Gamend.AccountsTest do
       assert {:error, :not_found} = Accounts.login_user_by_magic_link(encoded_token)
     end
 
-    test "raises when unconfirmed user has password set" do
-      user = unconfirmed_user_fixture()
-      {1, nil} = Repo.update_all(User, set: [hashed_password: "hashed"])
+    # The password was chosen before anyone proved they own the inbox, by
+    # whoever registered the address: it must not survive the owner claiming it.
+    test "confirms an unconfirmed user with a password, and removes the password" do
+      user = unconfirmed_user_fixture() |> set_password()
       {encoded_token, _hashed_token} = generate_user_magic_link_token(user)
 
-      assert_raise RuntimeError, ~r/magic link log in is not allowed/, fn ->
-        Accounts.login_user_by_magic_link(encoded_token)
-      end
+      assert {:ok, {user, _expired}} = Accounts.login_user_by_magic_link(encoded_token)
+      assert user.confirmed_at
+      refute user.hashed_password
+      refute Accounts.get_user_by_email_and_password(user.email, valid_user_password())
     end
   end
 

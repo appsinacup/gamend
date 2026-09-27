@@ -50,10 +50,14 @@ class Auth {
   /// has device sign-in enabled (its default).
   void login_device(std::string device_id, AuthCallback done = {});
   void login_email(std::string email, std::string password, AuthCallback done = {});
-  /// A new account with an email and a password, signed in as it is made.
-  /// The server picks a username when `username` is empty.
+  /// A new account with an email and a password. Not a sign-in, as
+  /// `login_device` is: the session does not change, and `done` gets the new
+  /// account (`models::Registration`). Its password signs in with
+  /// `login_email` once the player opens the emailed link; until then that
+  /// fails with `email_not_confirmed`. The server picks a username when
+  /// `username` is empty.
   void register_email(std::string email, std::string password, std::string username = {},
-                      AuthCallback done = {});
+                      Callback done = {});
   /// A Steam session ticket (`ISteamUser::GetAuthTicketForWebApi`, hex).
   void login_steam(std::string ticket, AuthCallback done = {});
   /// Sign in through a provider (`google`, `discord`, `apple`, ...): opens

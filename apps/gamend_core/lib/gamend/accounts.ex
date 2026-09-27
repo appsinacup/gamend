@@ -315,8 +315,9 @@ defmodule Gamend.Accounts do
               to: Registration
 
   @doc """
-  Gets a user by email and password. `nil` for a wrong password, and for an
-  address locked by too many failures (`authenticate_by_password/2` says which).
+  Gets a user by email and password. `nil` for a wrong password, for an
+  address locked by too many failures, and for an email not yet confirmed
+  (`authenticate_by_password/2` says which).
 
   ## Examples
 
@@ -336,15 +337,25 @@ defmodule Gamend.Accounts do
     end
   end
 
+  @typedoc "Why `authenticate_by_password/2` signed nobody in."
+  @type password_error() ::
+          :invalid_credentials | :email_not_confirmed | {:locked, pos_integer()}
+
   @doc """
   Checks an email and password, counting failures per address
   (`Gamend.Accounts.LoginLockouts`).
 
   `{:error, {:locked, seconds}}` when the address is locked, before the
   password is looked at, and for the failure that locks it.
+
+  `{:error, :email_not_confirmed}` for the right password on an account whose
+  email was never confirmed. Anyone can register any address with a password,
+  so the password signs nobody in until the inbox's owner has confirmed it.
+  It is answered only after the password matched, so it tells nothing to
+  someone who does not know it.
   """
   @spec authenticate_by_password(String.t(), String.t()) ::
-          {:ok, User.t()} | {:error, :invalid_credentials | {:locked, pos_integer()}}
+          {:ok, User.t()} | {:error, password_error()}
   def authenticate_by_password(email, password)
       when is_binary(email) and is_binary(password) do
     case LoginLockouts.check(email) do
@@ -359,7 +370,8 @@ defmodule Gamend.Accounts do
     if User.valid_password?(user, password) do
       maybe_upgrade_password_hash(user, password)
       LoginLockouts.clear(email)
-      {:ok, user}
+
+      if user.confirmed_at, do: {:ok, user}, else: {:error, :email_not_confirmed}
     else
       case LoginLockouts.record_failure(email) do
         :ok -> {:error, :invalid_credentials}

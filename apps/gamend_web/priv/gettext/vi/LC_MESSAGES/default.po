@@ -3189,3 +3189,13 @@ msgstr ""
 msgid "latest %{count} run"
 msgid_plural "latest %{count} runs"
 msgstr[0] ""
+
+#: lib/gamend_web/controllers/user_session_controller.ex:77
+#, elixir-autogen, elixir-format
+msgid "Confirm your email first with the link we sent you, or log in with an emailed link."
+msgstr "Hãy xác nhận email trước bằng liên kết chúng tôi đã gửi, hoặc đăng nhập bằng liên kết qua email."
+
+#: lib/gamend_web/live/user_live/confirmation.ex:32
+#, elixir-autogen, elixir-format
+msgid "Confirming with this link removes the password this account was registered with, so set a new one in your account settings afterwards. The link in the confirmation email keeps it."
+msgstr "Xác nhận bằng liên kết này sẽ xóa mật khẩu mà tài khoản này đã dùng khi đăng ký, vì vậy hãy đặt mật khẩu mới trong phần cài đặt tài khoản sau đó. Liên kết trong email xác nhận sẽ giữ lại mật khẩu."

@@ -21,6 +21,8 @@ defmodule Gamend.Accounts do
   The actual implementation runs on the Gamend.
   """
 
+  @type password_error() :: :invalid_credentials | :email_not_confirmed | {:locked, pos_integer()}
+
   @doc ~S"""
     Attach a device_id to an existing user record. Returns {:ok, user} or
     {:error, changeset} if the device_id is already used.
@@ -54,10 +56,15 @@ defmodule Gamend.Accounts do
     `{:error, {:locked, seconds}}` when the address is locked, before the
     password is looked at, and for the failure that locks it.
     
+    `{:error, :email_not_confirmed}` for the right password on an account whose
+    email was never confirmed. Anyone can register any address with a password,
+    so the password signs nobody in until the inbox's owner has confirmed it.
+    It is answered only after the password matched, so it tells nothing to
+    someone who does not know it.
+    
   """
   @spec authenticate_by_password(String.t(), String.t()) ::
-          {:ok, Gamend.Accounts.User.t()}
-          | {:error, :invalid_credentials | {:locked, pos_integer()}}
+          {:ok, Gamend.Accounts.User.t()} | {:error, password_error()}
   def authenticate_by_password(_email, _password) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -1311,8 +1318,9 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
-    Gets a user by email and password. `nil` for a wrong password, and for an
-    address locked by too many failures (`authenticate_by_password/2` says which).
+    Gets a user by email and password. `nil` for a wrong password, for an
+    address locked by too many failures, and for an email not yet confirmed
+    (`authenticate_by_password/2` says which).
     
     ## Examples
     
@@ -1685,15 +1693,18 @@ defmodule Gamend.Accounts do
     1. The user has already confirmed their email. They are logged in
        and the magic link is expired.
     
-    2. The user has not confirmed their email and no password is set.
-       In this case, the user gets confirmed, logged in, and all tokens -
-       including session ones - are expired. In theory, no other tokens
-       exist but we delete all of them for best security practices.
+    2. The user has not confirmed their email. Opening the link proves they
+       own the inbox, so the user gets confirmed, logged in, and all tokens -
+       including session ones - are expired.
     
-    3. The user has not confirmed their email but a password is set.
-       This cannot happen in the default implementation but may be the
-       source of security pitfalls. See the "Mixing magic link and password registration" section of
-       `mix help phx.gen.auth`.
+    3. As 2, with a password set: registered with one (`POST /api/v1/register`)
+       and never confirmed. The password is removed as the email is confirmed.
+       Whoever registered the address chose it before anyone proved they own
+       the inbox, so it may be someone else's, and kept it would sign them into
+       the account its owner has just claimed (the "Mixing magic link and
+       password registration" section of `mix help phx.gen.auth`). The owner
+       sets a new one in settings; the link in the confirmation email confirms
+       the account and keeps the password.
     
   """
   @spec login_user_by_magic_link(String.t()) ::
@@ -1862,7 +1873,7 @@ defmodule Gamend.Accounts do
     email goes out from the `mailers` queue (`Gamend.Accounts.ConfirmationMailer`),
     enqueued in the transaction that inserts the user: the call returns once
     both are committed, without waiting on SMTP, and a failed send is retried
-    there. The first user becomes the admin and gets no email.
+    there. The first user becomes the admin and is confirmed, with no email.
     
   """
   @spec register_user_and_deliver(Gamend.Types.user_registration_attrs(), (String.t() ->
@@ -1894,7 +1905,7 @@ defmodule Gamend.Accounts do
     email goes out from the `mailers` queue (`Gamend.Accounts.ConfirmationMailer`),
     enqueued in the transaction that inserts the user: the call returns once
     both are committed, without waiting on SMTP, and a failed send is retried
-    there. The first user becomes the admin and gets no email.
+    there. The first user becomes the admin and is confirmed, with no email.
     
   """
   @spec register_user_and_deliver(
@@ -1924,7 +1935,8 @@ defmodule Gamend.Accounts do
   @doc ~S"""
     Register a user with an email and a password and queue the confirmation
     email, as `register_user_and_deliver/3` does for the browser form: how a
-    game client signs up (`POST /api/v1/register`).
+    game client signs up (`POST /api/v1/register`). The password signs in once
+    the email is confirmed (`Gamend.Accounts.authenticate_by_password/2`).
     
   """
   @spec register_user_with_password_and_deliver(

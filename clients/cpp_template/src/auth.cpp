@@ -61,11 +61,13 @@ void Auth::login_email(std::string email, std::string password, AuthCallback don
                std::move(done));
 }
 
+// Not `sign_in_with`: registering answers the account, never tokens.
 void Auth::register_email(std::string email, std::string password, std::string username,
-                          AuthCallback done) {
+                          Callback done) {
   json params = {{"email", std::move(email)}, {"password", std::move(password)}};
   if (!username.empty()) params["username"] = std::move(username);
-  sign_in_with("/api/v1/register", Body::of(std::move(params)), std::move(done));
+  core_.rest.send_anonymous("POST", "/api/v1/register", Body::of(std::move(params)),
+                            std::move(done));
 }
 
 void Auth::login_steam(std::string ticket, AuthCallback done) {

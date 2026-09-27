@@ -55,10 +55,14 @@ defmodule Gamend.Accounts.PasswordHashTest do
       email = "legacy-#{System.unique_integer([:positive])}@example.com"
       {:ok, user} = Accounts.register_user(%{email: email, password: @password})
 
-      # Put the row back the way a pre-Argon2id database would hold it.
+      # Put the row back the way a pre-Argon2id database would hold it, on a
+      # confirmed account: an unconfirmed one does not sign in by password.
       {:ok, user} =
         user
-        |> Ecto.Changeset.change(hashed_password: Bcrypt.hash_pwd_salt(@password))
+        |> Ecto.Changeset.change(
+          hashed_password: Bcrypt.hash_pwd_salt(@password),
+          confirmed_at: DateTime.utc_now(:second)
+        )
         |> Repo.update()
 
       assert String.starts_with?(user.hashed_password, "$2")

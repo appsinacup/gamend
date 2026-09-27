@@ -26,11 +26,15 @@ magic-link forms; it does not apply to any of the game-client flows.
 ## JWT token flow (Email / Password / Device)
 
 A game client signs a player up with `POST /api/v1/register` (`email`,
-`password`, optional `username`). It answers `201` with the same tokens as
-login without waiting on the mail server: the confirmation email is queued,
-as for the browser form, and sent and retried in the background. A taken
-email or username is `409`, and a plugin that refuses the sign-up is
-`403 registration_refused`.
+`password`, optional `username`). Registering is not a sign-in, as device
+login is: it creates the account, queues the confirmation email as the browser
+form does, and answers `201` with the account (`user_id`, `username`,
+`display_name`, `email_confirmed`) and no tokens, without waiting on the mail
+server. Once the player opens the emailed link, `POST /api/v1/login` with the
+same email and password signs in. A taken email or username is `409`, and a
+plugin that refuses the sign-up is `403 registration_refused`. The first
+account on a server is the admin: it is confirmed without an email
+(`email_confirmed: true`), so it can log in at once.
 Deleting an account (`DELETE /api/v1/me`) sends `current_password` when the
 account has one.
 
@@ -59,6 +63,23 @@ Access tokens are short-lived: 15 minutes by default, set with `GAMEND_AUTH_ACCE
 Refresh returns a new access token and sends back the same refresh token; it does not issue a new one. Log in again before the refresh token runs out.
 
 Token responses wrap their fields in a `data` object (`{"data": {"access_token": "..."}}`); the diagrams leave that wrapper out.
+
+### Unconfirmed email
+
+Anyone can register any address, so a password signs nobody in until its
+email is confirmed: `POST /api/v1/login` answers `403 email_not_confirmed`,
+and the browser form says to confirm first. Both say so only after the right
+password, so a guesser learns nothing. Either emailed link confirms:
+
+| Link | The password |
+|---|---|
+| The one in the confirmation email | is kept |
+| An emailed login link (magic link) | is removed: set a new one in the account settings |
+
+A login link proves the player owns the inbox, so it confirms the email too.
+It removes a password set before that, because whoever registered the address
+chose it and may not be its owner; the page the link opens says so first. An
+admin can also mark an email confirmed in **Admin → Users**.
 
 ## Browser sessions and emailed links
 

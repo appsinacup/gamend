@@ -59,15 +59,18 @@ defmodule Gamend.Accounts.Sessions do
   1. The user has already confirmed their email. They are logged in
      and the magic link is expired.
 
-  2. The user has not confirmed their email and no password is set.
-     In this case, the user gets confirmed, logged in, and all tokens -
-     including session ones - are expired. In theory, no other tokens
-     exist but we delete all of them for best security practices.
+  2. The user has not confirmed their email. Opening the link proves they
+     own the inbox, so the user gets confirmed, logged in, and all tokens -
+     including session ones - are expired.
 
-  3. The user has not confirmed their email but a password is set.
-     This cannot happen in the default implementation but may be the
-     source of security pitfalls. See the "Mixing magic link and password registration" section of
-     `mix help phx.gen.auth`.
+  3. As 2, with a password set: registered with one (`POST /api/v1/register`)
+     and never confirmed. The password is removed as the email is confirmed.
+     Whoever registered the address chose it before anyone proved they own
+     the inbox, so it may be someone else's, and kept it would sign them into
+     the account its owner has just claimed (the "Mixing magic link and
+     password registration" section of `mix help phx.gen.auth`). The owner
+     sets a new one in settings; the link in the confirmation email confirms
+     the account and keeps the password.
   """
   @spec login_user_by_magic_link(String.t()) ::
           {:ok, {User.t(), [UserToken.t()]}} | {:error, :not_found | Ecto.Changeset.t() | term()}
@@ -75,16 +78,6 @@ defmodule Gamend.Accounts.Sessions do
     {:ok, query} = UserToken.verify_magic_link_token_query(token)
 
     case Repo.one(query) do
-      # Prevent session fixation attacks by disallowing magic links for unconfirmed users with password
-      {%User{confirmed_at: nil, hashed_password: hash}, _token} when hash != nil ->
-        raise """
-        magic link log in is not allowed for unconfirmed users with a password set!
-
-        This cannot happen with the default implementation, which indicates that you
-        might have adapted the code to a different use case. Please make sure to read the
-        "Mixing magic link and password registration" section of `mix help phx.gen.auth`.
-        """
-
       {%User{confirmed_at: nil} = user, _token} ->
         handle_unconfirmed_login(user)
 
@@ -103,10 +96,13 @@ defmodule Gamend.Accounts.Sessions do
     end
   end
 
+  # Dropping the password is what makes confirming safe (case 3 above); a
+  # user without one is unchanged by it.
   defp handle_unconfirmed_login(user) do
     result =
       user
       |> User.confirm_changeset()
+      |> Ecto.Changeset.put_change(:hashed_password, nil)
       |> Accounts.update_user_and_delete_all_tokens()
 
     case result do

@@ -106,9 +106,7 @@ defmodule GamendWeb.UserLive.Registration do
         is_first_user = user.is_admin
 
         if is_first_user do
-          # First user: auto-confirm and auto-login
-          {:ok, user} = Accounts.confirm_user(user)
-
+          # First user: registered confirmed, and logged in straight away.
           # Generate a magic link token for auto-login
           {token, user_token} = UserToken.build_email_token(user, "login")
           Repo.insert!(user_token)

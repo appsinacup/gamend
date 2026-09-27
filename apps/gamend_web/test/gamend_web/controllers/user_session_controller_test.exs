@@ -60,6 +60,36 @@ defmodule GamendWeb.UserSessionControllerTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Success."
     end
 
+    test "refuses the right password until the email is confirmed", %{
+      conn: conn,
+      unconfirmed_user: user
+    } do
+      user = set_password(user)
+
+      conn =
+        post(conn, ~p"/users/log_in", %{
+          "user" => %{"email" => user.email, "password" => valid_user_password()}
+        })
+
+      refute get_session(conn, :user_token)
+      assert redirected_to(conn) == ~p"/users/log_in"
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Confirm your email first"
+    end
+
+    test "a wrong password on an unconfirmed email says only Failed", %{
+      conn: conn,
+      unconfirmed_user: user
+    } do
+      user = set_password(user)
+
+      conn =
+        post(conn, ~p"/users/log_in", %{
+          "user" => %{"email" => user.email, "password" => "invalid_password"}
+        })
+
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) == "Failed"
+    end
+
     test "redirects to login page with invalid credentials", %{conn: conn, user: user} do
       conn =
         post(conn, ~p"/users/log_in?mode=password", %{
@@ -113,6 +143,23 @@ defmodule GamendWeb.UserSessionControllerTest do
       assert response =~ ~p"/users/log_out"
     end
 
+    test "confirms an unconfirmed user with a password, and removes the password", %{
+      conn: conn,
+      unconfirmed_user: user
+    } do
+      user = set_password(user)
+      {token, _hashed_token} = generate_user_magic_link_token(user)
+
+      conn =
+        post(conn, ~p"/users/log_in", %{
+          "user" => %{"token" => token},
+          "_action" => "confirmed"
+        })
+
+      assert get_session(conn, :user_token)
+      assert %{confirmed_at: %DateTime{}, hashed_password: nil} = Accounts.get_user!(user.id)
+    end
+
     test "redirects to login page when magic link is invalid", %{conn: conn} do
       conn =
         post(conn, ~p"/users/log_in", %{
@@ -140,6 +187,24 @@ defmodule GamendWeb.UserSessionControllerTest do
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Success."
 
       assert Accounts.get_user!(user.id).confirmed_at
+    end
+
+    test "GET /users/confirm/:token keeps the password, which then logs in", %{
+      conn: conn,
+      unconfirmed_user: user
+    } do
+      user = set_password(user)
+      {encoded_token, user_token} = Accounts.UserToken.build_email_token(user, "confirm")
+      Gamend.Repo.insert!(user_token)
+
+      get(conn, ~p"/users/confirm/#{encoded_token}")
+
+      conn =
+        post(build_conn(), ~p"/users/log_in", %{
+          "user" => %{"email" => user.email, "password" => valid_user_password()}
+        })
+
+      assert get_session(conn, :user_token)
     end
 
     test "GET /users/confirm/:token handles invalid token", %{conn: conn} do

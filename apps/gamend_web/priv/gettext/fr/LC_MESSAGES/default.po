@@ -3238,3 +3238,13 @@ msgid "latest %{count} run"
 msgid_plural "latest %{count} runs"
 msgstr[0] ""
 msgstr[1] ""
+
+#: lib/gamend_web/controllers/user_session_controller.ex:77
+#, elixir-autogen, elixir-format
+msgid "Confirm your email first with the link we sent you, or log in with an emailed link."
+msgstr "Confirmez d'abord votre adresse e-mail avec le lien que nous vous avons envoyé, ou connectez-vous avec un lien reçu par e-mail."
+
+#: lib/gamend_web/live/user_live/confirmation.ex:32
+#, elixir-autogen, elixir-format
+msgid "Confirming with this link removes the password this account was registered with, so set a new one in your account settings afterwards. The link in the confirmation email keeps it."
+msgstr "Confirmer avec ce lien supprime le mot de passe avec lequel ce compte a été créé : définissez-en un nouveau ensuite dans les paramètres de votre compte. Le lien de l'e-mail de confirmation le conserve."

@@ -484,7 +484,8 @@ func _schedule_token_refresh() -> void:
 			_refresh_timer.start()
 
 func _verify_login_result(method_name: String, data):
-	if data && method_name in ["oauth_session_status", "oauth_api_callback", "login", "register", "device_login", "refresh_token", "oauth_callback_api_apple_ios", "oauth_google_id_token"]:
+	# Not "register": registering answers the new account, never a session.
+	if data && method_name in ["oauth_session_status", "oauth_api_callback", "login", "device_login", "refresh_token", "oauth_callback_api_apple_ios", "oauth_google_id_token"]:
 		# Every answer is {data: ...}; a polled OAuth sign-in carries its tokens
 		# one level further in, under data.session (null until it completes).
 		var inner = data.bzz_normalize().get("data")
@@ -1061,8 +1062,12 @@ func authenticate_refresh_token(refresh_token: String) -> GamendResult:
 	refresh_param.refresh_token = refresh_token
 	return await _call_api(AuthenticationApi.new(_config), "refresh_token", [refresh_param])
 
-## Register: a new account with an email and a password, signed in as it is
-## made. The server generates a username when none is given.
+## Register: a new account with an email and a password. Not a sign-in, as
+## device login is: the answer is the account (`GamendRegistration`, with
+## `email_confirmed`), and no session is kept. Its password signs in with
+## `authenticate_login` once the player opens the emailed link; until then that
+## answers the error `email_not_confirmed`. The server generates a username when
+## none is given.
 func authenticate_register(email: String, password: String, username := "") -> GamendResult:
 	var register_request := GamendRegisterRequest.new()
 	register_request.email = email

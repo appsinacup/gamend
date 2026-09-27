@@ -22,6 +22,17 @@ defmodule GamendWeb.UserLive.Confirmation do
           phx-trigger-action={@trigger_submit}
         >
           <input type="hidden" name={@form[:token].name} value={@form[:token].value} />
+          <%!-- Confirming by magic link drops a password set before the email
+               was confirmed (Accounts.login_user_by_magic_link/1). --%>
+          <p
+            :if={@user.hashed_password}
+            id="confirmation-password-notice"
+            class="mb-4 text-sm text-base-content/80"
+          >
+            {gettext(
+              "Confirming with this link removes the password this account was registered with, so set a new one in your account settings afterwards. The link in the confirmation email keeps it."
+            )}
+          </p>
           <.button
             name={@form[:remember_me].name}
             value="true"

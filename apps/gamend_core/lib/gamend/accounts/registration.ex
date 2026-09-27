@@ -40,6 +40,15 @@ defmodule Gamend.Accounts.Registration do
 
   def maybe_make_first_user_admin(changeset, false), do: changeset
 
+  # The first account is confirmed as it is created: it gets no email to
+  # confirm with (there may be no mail server configured yet), and a password
+  # does not sign in an unconfirmed account.
+  defp maybe_confirm_first_user(changeset, true = _is_first_user) do
+    Ecto.Changeset.put_change(changeset, :confirmed_at, DateTime.utc_now(:second))
+  end
+
+  defp maybe_confirm_first_user(changeset, false), do: changeset
+
   # When account activation is required, new non-admin users start deactivated.
   # The first user (admin) is always activated.
   @doc false
@@ -105,7 +114,7 @@ defmodule Gamend.Accounts.Registration do
   email goes out from the `mailers` queue (`Gamend.Accounts.ConfirmationMailer`),
   enqueued in the transaction that inserts the user: the call returns once
   both are committed, without waiting on SMTP, and a failed send is retried
-  there. The first user becomes the admin and gets no email.
+  there. The first user becomes the admin and is confirmed, with no email.
   """
   @spec register_user_and_deliver(Types.user_registration_attrs(), (String.t() -> String.t())) ::
           {:ok, User.t()} | {:error, Ecto.Changeset.t() | term()}
@@ -126,7 +135,8 @@ defmodule Gamend.Accounts.Registration do
   @doc """
   Register a user with an email and a password and queue the confirmation
   email, as `register_user_and_deliver/3` does for the browser form: how a
-  game client signs up (`POST /api/v1/register`).
+  game client signs up (`POST /api/v1/register`). The password signs in once
+  the email is confirmed (`Gamend.Accounts.authenticate_by_password/2`).
   """
   @spec register_user_with_password_and_deliver(
           Types.user_registration_attrs(),
@@ -154,6 +164,7 @@ defmodule Gamend.Accounts.Registration do
       |> base_changeset.(attrs, opts)
       |> User.username_changeset(attrs)
       |> maybe_make_first_user_admin(is_first_user)
+      |> maybe_confirm_first_user(is_first_user)
       |> maybe_deactivate_new_user(is_first_user)
     end
 

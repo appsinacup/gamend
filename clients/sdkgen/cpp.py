@@ -44,9 +44,10 @@ RESERVED = {
 }
 
 # Operations that answer a session. `Auth` makes these calls and keeps what
-# they answer; the generated method only makes the call.
+# they answer; the generated method only makes the call. Not `register`: it
+# answers the new account, and signs nobody in.
 SESSION_OPS = {
-    "device_login", "login", "register", "refresh_token", "oauth_api_callback",
+    "device_login", "login", "refresh_token", "oauth_api_callback",
     "oauth_google_id_token", "oauth_callback_api_apple_ios", "oauth_session_status",
 }
 

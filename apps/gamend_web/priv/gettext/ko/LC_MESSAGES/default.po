@@ -3189,3 +3189,13 @@ msgstr ""
 msgid "latest %{count} run"
 msgid_plural "latest %{count} runs"
 msgstr[0] ""
+
+#: lib/gamend_web/controllers/user_session_controller.ex:77
+#, elixir-autogen, elixir-format
+msgid "Confirm your email first with the link we sent you, or log in with an emailed link."
+msgstr "먼저 보내 드린 링크로 이메일을 인증하거나, 이메일로 받은 링크로 로그인하세요."
+
+#: lib/gamend_web/live/user_live/confirmation.ex:32
+#, elixir-autogen, elixir-format
+msgid "Confirming with this link removes the password this account was registered with, so set a new one in your account settings afterwards. The link in the confirmation email keeps it."
+msgstr "이 링크로 인증하면 이 계정을 등록할 때 설정한 비밀번호가 삭제되므로, 이후 계정 설정에서 새 비밀번호를 설정하세요. 인증 이메일의 링크를 사용하면 비밀번호가 유지됩니다."

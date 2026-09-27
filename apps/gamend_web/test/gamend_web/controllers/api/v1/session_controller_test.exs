@@ -52,6 +52,26 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       assert access_token != refresh_token
     end
 
+    test "returns 403 email_not_confirmed for the right password on an unconfirmed email", %{
+      conn: conn,
+      user: user
+    } do
+      user |> Ecto.Changeset.change(confirmed_at: nil) |> Repo.update!()
+
+      conn = post(conn, "/api/v1/login", %{email: @valid_email, password: @valid_password})
+
+      assert %{"error" => "email_not_confirmed", "message" => _} = json_response(conn, 403)
+      refute json_response(conn, 403)["data"]
+    end
+
+    test "a wrong password on an unconfirmed email is still 401", %{conn: conn, user: user} do
+      user |> Ecto.Changeset.change(confirmed_at: nil) |> Repo.update!()
+
+      conn = post(conn, "/api/v1/login", %{email: @valid_email, password: "wrong password!"})
+
+      assert json_response(conn, 401)["error"] == "invalid_credentials"
+    end
+
     test "returns 401 with invalid credentials", %{conn: conn} do
       conn =
         post(conn, "/api/v1/login", %{
@@ -289,18 +309,48 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       :ok
     end
 
-    test "creates an account and signs it in, and its password logs in", %{conn: conn} do
+    test "creates an account without signing it in; its password logs in once confirmed", %{
+      conn: conn
+    } do
       created =
         post(conn, "/api/v1/register", %{email: "new@example.com", password: @valid_password})
 
-      assert %{"data" => %{"access_token" => token, "user_id" => user_id}} =
+      assert %{"data" => %{"user_id" => user_id, "email_confirmed" => false} = data} =
                json_response(created, 201)
 
-      assert is_binary(token)
+      refute Map.has_key?(data, "access_token")
+      refute Map.has_key?(data, "refresh_token")
+
+      login = fn ->
+        post(build_conn(), "/api/v1/login", %{email: "new@example.com", password: @valid_password})
+      end
+
+      assert json_response(login.(), 403)["error"] == "email_not_confirmed"
+
+      {:ok, _} = Gamend.Accounts.confirm_user(Repo.get!(User, user_id))
+
+      assert json_response(login.(), 200)["data"]["user_id"] == user_id
+    end
+
+    test "the first account is the admin, confirmed, and logs in at once", %{
+      conn: conn,
+      user: user
+    } do
+      Repo.delete!(user)
+
+      created =
+        post(conn, "/api/v1/register", %{email: "first@example.com", password: @valid_password})
+
+      assert %{"data" => %{"user_id" => user_id, "email_confirmed" => true} = data} =
+               json_response(created, 201)
+
+      refute Map.has_key?(data, "access_token")
+      assert %User{is_admin: true} = Repo.get(User, user_id)
+      refute_enqueued(worker: Gamend.Accounts.ConfirmationMailer)
 
       login =
         post(build_conn(), "/api/v1/login", %{
-          email: "new@example.com",
+          email: "first@example.com",
           password: @valid_password
         })
 
@@ -387,8 +437,19 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       pending =
         post(conn, "/api/v1/register", %{email: "beta@example.com", password: @valid_password})
 
-      assert json_response(pending, 403)["error"] == "account_not_activated"
-      assert %User{is_activated: false} = Repo.get_by(User, email: "beta@example.com")
+      assert json_response(pending, 201)["data"]["email_confirmed"] == false
+      assert %User{is_activated: false} = user = Repo.get_by(User, email: "beta@example.com")
+
+      # Confirming the email is not activation: that stays an admin's call.
+      {:ok, _} = Gamend.Accounts.confirm_user(user)
+
+      login =
+        post(build_conn(), "/api/v1/login", %{
+          email: "beta@example.com",
+          password: @valid_password
+        })
+
+      assert json_response(login, 403)["error"] == "account_not_activated"
     end
   end
 

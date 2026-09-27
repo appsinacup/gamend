@@ -41,15 +41,19 @@ pub fn login_email(node, email, password) {
     return gamend::login(node, #{ "email": email, "password": password });
 }
 
-/// Make an account from an email and a password and open its session. The
-/// reply reaches `node`'s handler as `kind = "login"`; `username` may be nil,
-/// and the server picks one.
+/// Make an account from an email and a password. Not a sign-in, as
+/// `login_device` is: no session opens, and the reply, a REST call's like any
+/// other (await the returned id, then `gamend::core::unpack`), carries the
+/// account, whose `email_confirmed` says whether it can log in yet. Its
+/// password opens a session with `login_email` once the player opens the
+/// emailed link; until then that answers `email_not_confirmed`. `username`
+/// may be nil, and the server picks one.
 pub fn register_email(node, email, password, username) {
     let account = #{ "email": email, "password": password };
     if username is String {
         account["username"] = username;
     }
-    return gamend::register(node, account);
+    return gamend::authentication::register(node, account);
 }
 
 /// Open the realtime socket. The worker joins this session's own `user:<id>`

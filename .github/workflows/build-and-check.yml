@@ -1112,6 +1112,30 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
+      # Before any publish. Each package's mix.exs takes its version from an
+      # env var (APP_VERSION for the SDK pair, GAMEND_CONTENT_APP_VERSION for
+      # core and web), so this repo's own image and docs carry the CI version.
+      # Shipped that way, a host compiled each package as whatever the var held
+      # on its machine: a Dockerfile exporting GAMEND_CONTENT_APP_VERSION=1.0.0
+      # built gamend_core and gamend_web as 1.0.0, and the SDK pair, whose
+      # @version was never stamped, built as 1.0.26 wherever APP_VERSION was
+      # unset. Both failed a host's `>= 1.0.1266` floor with "the dependency
+      # does not match the requirement". The published mix.exs states the
+      # release's version and reads nothing.
+      - name: Pin the published package versions
+        run: |
+          for f in sdk/mix.exs sdk_tools/mix.exs apps/gamend_core/mix.exs apps/gamend_web/mix.exs; do
+            sed -i \
+              -e "s|@version \"[^\"]*\"|@version \"${APP_VERSION}\"|" \
+              -e "s#version: System.get_env(\"[A-Z_]*\") || @version,#version: @version,#" \
+              "$f"
+            if ! grep -q "@version \"${APP_VERSION}\"" "$f" || ! grep -q "version: @version," "$f" ||
+               grep -q "version: System.get_env" "$f"; then
+              echo "::error::$f: version pin failed - the package would read its version from the environment"
+              exit 1
+            fi
+          done
+
       - name: Publish gamend_sdk
         working-directory: sdk
         run: |
@@ -1137,7 +1161,7 @@ jobs:
             mix hex.publish --yes
           fi
 
-      - name: Rewrite the gamend_core path dep and stamp versions
+      - name: Rewrite the gamend_core path dep
         run: |
           # gamend_web depends on gamend_core by path; Hex only accepts Hex
           # deps, so the published package points at the version being cut.
@@ -1148,9 +1172,6 @@ jobs:
             apps/gamend_web/mix.exs
           grep -q '{:gamend_core, "~> 1.0"}' apps/gamend_web/mix.exs ||
             { echo "::error::gamend_core path dep rewrite failed - gamend_web would publish broken"; exit 1; }
-          sed -i "s|@version \"[^\"]*\"|@version \"${APP_VERSION}\"|g" \
-            apps/gamend_core/mix.exs \
-            apps/gamend_web/mix.exs
 
       # Before gamend_web, which resolves gamend_core from the release this
       # step cuts.

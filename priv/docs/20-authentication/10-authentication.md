@@ -69,17 +69,20 @@ Token responses wrap their fields in a `data` object (`{"data": {"access_token":
 Anyone can register any address, so a password signs nobody in until its
 email is confirmed: `POST /api/v1/login` answers `403 email_not_confirmed`,
 and the browser form says to confirm first. Both say so only after the right
-password, so a guesser learns nothing. Either emailed link confirms:
+password, so a guesser learns nothing. Three things confirm it:
 
-| Link | The password |
+| What | The password |
 |---|---|
-| The one in the confirmation email | is kept |
+| The link in the confirmation email | is kept |
 | An emailed login link (magic link) | is removed: set a new one in the account settings |
+| Signing in with a provider that vouches for the address (a verified email) | is removed, as for a login link |
 
-A login link proves the player owns the inbox, so it confirms the email too.
-It removes a password set before that, because whoever registered the address
-chose it and may not be its owner; the page the link opens says so first. An
-admin can also mark an email confirmed in **Admin → Users**.
+A login link or a provider proves the player owns the inbox, so either
+confirms the email too. Both remove a password set before that, and revoke
+every session and token the account held, because whoever registered the
+address chose that password and may not be its owner; the page a login link
+opens says so first. An admin can also mark an email confirmed in
+**Admin → Users**.
 
 ## Browser sessions and emailed links
 

@@ -297,16 +297,7 @@ defmodule Gamend.Accounts.Identities do
   defp link_provider_to_user(user, attrs, provider_id_field, changeset_fn) do
     if Map.get(attrs, :email_verified) == true do
       attrs = scrub_attrs_for_update(user, attrs, provider_id_field)
-
-      case user |> changeset_fn.(attrs) |> drop_device_credential() |> Repo.update() do
-        {:ok, %User{} = updated} = ok ->
-          Accounts.invalidate_user_cache(user)
-          Accounts.invalidate_user_cache(updated)
-          ok
-
-        other ->
-          other
-      end
+      claim(user, user |> changeset_fn.(attrs) |> drop_device_credential())
     else
       changeset =
         user
@@ -317,6 +308,43 @@ defmodule Gamend.Accounts.Identities do
         )
 
       {:error, %{changeset | action: :update}}
+    end
+  end
+
+  # The provider's changeset confirms the email, and a provider vouching for
+  # the address proves the inbox as an emailed login link does
+  # (`Gamend.Accounts.Sessions.login_user_by_magic_link/1`). Like that link, it
+  # must not keep what was set on an unconfirmed account before anyone proved
+  # the inbox: whoever registered the address chose its password, and was
+  # handed any token issued to it, and may not be its owner. So the password
+  # goes, and every token is revoked, as the owner claims the account.
+  defp claim(%User{confirmed_at: nil} = user, changeset) do
+    result =
+      changeset
+      |> Ecto.Changeset.put_change(:hashed_password, nil)
+      |> Accounts.update_user_and_delete_all_tokens()
+
+    case result do
+      {:ok, {%User{} = updated, _expired}} ->
+        # Drop what the old struct was cached under (a retired device id among
+        # it), then re-warm with the revoked one last, as the revocation does.
+        Accounts.invalidate_user_cache(user)
+        {:ok, Accounts.cache_user(updated)}
+
+      other ->
+        other
+    end
+  end
+
+  defp claim(%User{} = user, changeset) do
+    case Repo.update(changeset) do
+      {:ok, %User{} = updated} = ok ->
+        Accounts.invalidate_user_cache(user)
+        Accounts.invalidate_user_cache(updated)
+        ok
+
+      other ->
+        other
     end
   end
 

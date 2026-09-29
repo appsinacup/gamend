@@ -14,8 +14,8 @@ build_root=$(cd "$build_root" && pwd -P)
 here=$(cd "$(dirname "$0")" && pwd -P)
 repo=$(cd "$here/../.." && pwd -P)
 
-otp_version=${OTP_VERSION:-29.1.1}
-elixir_version=${ELIXIR_VERSION:-1.20.4}
+otp_version=${OTP_VERSION:-29.0.2}
+elixir_version=${ELIXIR_VERSION:-1.20.1}
 
 "$here/static-deps.sh" "$build_root/deps"
 OTP_VERSION=$otp_version "$here/build-otp.sh" "$build_root/otp" "$build_root/deps"

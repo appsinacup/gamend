@@ -35,7 +35,7 @@ runnable host app at the repository root.
 - `mix setup` once, then `mix dev.start` (creates the DB, migrates, builds assets, runs `phx.server`).
 - The endpoint module is `GamendWeb.Endpoint`; the host OTP app starts it.
 - `GamendHost.Application` starts `GamendWeb.HostSupervision.children/1`. A core process goes in that list; a host-only one goes in its `:extra` option.
-- The downloadable release ([guide](priv/docs/10-setup/15-standalone.md)): `rel/overlays/bin/gamend` runs the server and hands every other command to `GamendWeb.CLI`, under the name of the mix task it mirrors (`db.migrate`, `demo.seed`, …). A new `db.*`/seed mix task gets its `GamendWeb.CLI` twin, with the logic in a module both call (`Gamend.DemoSeed`, `Gamend.Release`). A release reads everything relative to the working directory, never `RELEASE_ROOT`. Starter templates live in `priv/starter/<name>`; packaging is `rel/scripts/*` and `.github/workflows/server-binaries.yml`.
+- The downloadable release ([guide](priv/docs/10-setup/15-standalone.md)): `rel/overlays/bin/gamend` runs the server and hands every other command to `GamendWeb.CLI`, under the name of the mix task it mirrors (`db.migrate`, `demo.seed`, …). A new `db.*`/seed mix task gets its `GamendWeb.CLI` twin, with the logic in a module both call (`Gamend.DemoSeed`, `Gamend.Release`). A release reads everything relative to the working directory, never `RELEASE_ROOT`. Starter templates live in `priv/starter/<name>`; packaging is `rel/scripts/*` and the `binaries-*` jobs of `.github/workflows/build-and-check.yml`.
 
 ### Routing ownership / extension point
 

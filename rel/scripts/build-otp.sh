@@ -13,7 +13,7 @@ set -euo pipefail
 
 prefix=${1:?usage: build-otp.sh PREFIX DEPS_PREFIX}
 deps=${2:?usage: build-otp.sh PREFIX DEPS_PREFIX}
-otp_version=${OTP_VERSION:-29.1.1}
+otp_version=${OTP_VERSION:-29.0.2}
 jobs=$(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu)
 
 if [ -x "$prefix/bin/erl" ]; then

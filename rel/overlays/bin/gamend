@@ -23,21 +23,26 @@ release="$root/bin/gamend_host"
 project=$(pwd -P)
 state="$project/.gamend"
 
+# File names are UTF-8 whatever the locale says: a container or CI runner
+# often has none set, and the VM would fall back to latin1.
+ELIXIR_ERL_OPTIONS="${ELIXIR_ERL_OPTIONS:+$ELIXIR_ERL_OPTIONS }+fnu"
+export ELIXIR_ERL_OPTIONS
+
 # The server commands run a distributed node; the others do not, and leave
 # the project folder alone.
 distributed() {
   # One node name per project folder: two projects on one machine do not
   # collide, and `gamend stop` run from a folder reaches the server started
   # there.
-  if [ -z "${RELEASE_NODE:-}" ]; then
-    RELEASE_NODE="gamend_$(printf '%s' "$project" | cksum | cut -d ' ' -f 1)"
-    export RELEASE_NODE
-  fi
+  id="gamend_$(printf '%s' "$project" | cksum | cut -d ' ' -f 1)"
 
   # The cookie inside the archive is the same for everyone who downloads it,
   # and a cookie is all it takes to run code on a node. Each project gets a
-  # private one, and the node takes connections on loopback only. Setting
-  # RELEASE_COOKIE yourself (a cluster) leaves both to you.
+  # private one, and the node takes connections on loopback only, under a
+  # name on 127.0.0.1: named after the host instead, `stop` and `remote`
+  # would look it up wherever the host name resolves (a CI runner's or a
+  # container's own address), where nothing listens. Setting RELEASE_COOKIE
+  # yourself (a cluster) leaves all of it to you.
   if [ -z "${RELEASE_COOKIE:-}" ]; then
     if [ ! -f "$state/cookie" ]; then
       mkdir -p "$state"
@@ -45,9 +50,13 @@ distributed() {
     fi
     RELEASE_COOKIE=$(cat "$state/cookie")
     export RELEASE_COOKIE
-    ELIXIR_ERL_OPTIONS="${ELIXIR_ERL_OPTIONS:+$ELIXIR_ERL_OPTIONS }-kernel inet_dist_use_interface {127,0,0,1}"
+    export RELEASE_DISTRIBUTION="${RELEASE_DISTRIBUTION:-name}"
+    export RELEASE_NODE="${RELEASE_NODE:-$id@127.0.0.1}"
+    ELIXIR_ERL_OPTIONS="$ELIXIR_ERL_OPTIONS -kernel inet_dist_use_interface {127,0,0,1}"
     export ELIXIR_ERL_OPTIONS
     export ERL_EPMD_ADDRESS="${ERL_EPMD_ADDRESS:-127.0.0.1}"
+  else
+    export RELEASE_NODE="${RELEASE_NODE:-$id}"
   fi
 
   # The daemon's pipes and logs (`gamend daemon` writes to .gamend/tmp/log).
@@ -97,6 +106,8 @@ case $command in
       if { [ -f erl_crash.dump ] && [ erl_crash.dump -nt "$marker" ]; } || [ "$tries" -ge 60 ]; then
         echo "The server did not start. Last lines of $RELEASE_TMP/log:" >&2
         tail -n 30 "$RELEASE_TMP"/log/erlang.log.* >&2 2>/dev/null || true
+        # Whatever did come up is not left running behind the error.
+        "$release" stop >/dev/null 2>&1 || true
         exit 1
       fi
       sleep 1

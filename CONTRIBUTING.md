@@ -39,7 +39,7 @@ Adding one callback touches six places — miss one and plugins break in confusi
 2. Add the name to `internal_hooks()` — otherwise clients can invoke it over RPC.
 3. `before_*` hooks: add to `lifecycle_pipeline_hook?/2`, plus a `normalize_pipeline_args/3` clause if the hook only vetoes (returns the value unchanged).
 4. No-op implementation in `Gamend.Hooks.Default`.
-5. Mirror in the SDK (`sdk/lib/gamend/hooks.ex`): `@callback`, `@optional_callbacks`, a default in `default_callbacks` or `more_default_callbacks` (the quoted code `__using__` injects), **and the `overridable_callbacks` list** — a default that isn't listed there cannot be overridden by plugins.
+5. Mirror in the SDK (`sdk/lib/gamend/hooks.ex`): `@callback` and `@optional_callbacks`. The default goes in `Gamend.Hooks.Defaults` (`apps/gamend_core/lib/gamend/hooks/defaults.ex`): in `default_callbacks` or `more_default_callbacks` (the quoted code `use Gamend.Hooks` injects), **and in the `overridable_callbacks` list** — a default that isn't listed there cannot be overridden by plugins. `mix gen.sdk` (in `mix precommit`) copies that file into the SDK, so a plugin gets the same defaults built with Mix or in-process.
 6. Document the hook in `priv/docs/40-gameplay/90-server-scripting.md`.
 
 **Hold the database only for database work.** On SQLite the repo has a single connection and every transaction takes the write lock, so anything slow inside a transaction or `Gamend.Lock.serialize/3` stalls every other request. Open transactions with `Gamend.AfterCommit.transaction/2` (or `serialize/3`) and broadcast with `Gamend.Broadcast.publish/2`: broadcasts, `Gamend.Async.run/1` tasks and anything passed to `Gamend.AfterCommit.defer/1` then wait for the commit, and a rollback drops them. A test in `after_commit_test.exs` fails on a bare `Repo.transaction` or `Phoenix.PubSub.broadcast` in core. Slow gates run *before* the lock: a plugin's `before_*` hook, a password check, an HTTP call. Inside it, re-check only what a concurrent writer could change (see `Lobbies.join_lobby/3`). When the hook needs the value the lock protects, go optimistic: read and ask the hook unlocked, then write under the lock only if the value is unchanged, and retry otherwise (`Lobbies.merge_metadata/2`).
@@ -50,7 +50,7 @@ Adding one callback touches six places — miss one and plugins break in confusi
 - Hand-write struct stubs in `sdk/lib/gamend/<feature>/` (the generator does not create them) — plugins can't compile against a struct that doesn't exist.
 - Add placeholder rules in `gen.sdk` for the new structs (`T | nil` and `{:ok, T}` return types). Without them a stub returns only `nil`/`{:ok, _}`, and every plugin that pattern-matches the other branch gets a bogus "clause cannot match" warning.
 - Verify with `cd modules/plugins_examples/example_hook && mix compile --force` — it must be warning-free.
-- The server loads plugins from their bundled `ebin/`, not from `_build` — after changing a plugin, run `mix plugin.bundle` in its directory (or the admin Config build button) or the running server keeps the old code.
+- The server loads plugins from their bundled `ebin/`, not from `_build` — after changing a plugin, run `mix plugin.bundle` in its directory (or the admin Config build button) or the running server keeps the old code. Without `mix` on the PATH (a release) the button builds in-process (`Gamend.Hooks.PluginBuilder.InProcess`), against the engine's modules rather than the SDK's stubs.
 
 ## Web
 

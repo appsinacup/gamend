@@ -5,6 +5,7 @@ defmodule GamendWeb.PresentationPage do
 
   use GamendWeb, :html
 
+  alias GamendWeb.ProjectStatic
   alias Phoenix.HTML.Safe
 
   @bold_pattern ~r/\*\*(.+?)\*\*/
@@ -81,7 +82,12 @@ defmodule GamendWeb.PresentationPage do
   """
   @spec cached_body(map(), list(), String.t() | nil, String.t()) :: iodata()
   def cached_body(page_map, background_icons, locale, path) do
-    fingerprint = :erlang.phash2({page_map, background_icons})
+    # The static generation is an input too: the srcsets list only the width
+    # variants on disk, and those can be cut after boot (see
+    # `GamendWeb.ResponsiveImages`) without the page map changing at all.
+    fingerprint =
+      :erlang.phash2({page_map, background_icons, ProjectStatic.generation()})
+
     key = {__MODULE__, :body, locale, path}
 
     case :persistent_term.get(key, :miss) do
@@ -1084,14 +1090,13 @@ defmodule GamendWeb.PresentationPage do
     String.replace_suffix(path, ext, "-#{width}#{ext}")
   end
 
+  # Only a variant from the directory that serves the original: a project that
+  # replaces the engine's `banner.webp` with its own must not have the engine's
+  # `banner-480.webp`, a cut of a different picture, offered in its srcset.
   defp variant_exists?(path, width) do
-    variant = width_variant_path(path, width)
-    clean = URI.parse(variant).path || variant
-
-    case static_file_path(clean) do
-      file when is_binary(file) -> File.regular?(file)
-      _ -> false
-    end
+    path
+    |> width_variant_path(width)
+    |> ProjectStatic.derived_from?(path)
   end
 
   # What share of the viewport the slot actually occupies, so the browser picks
@@ -1183,22 +1188,21 @@ defmodule GamendWeb.PresentationPage do
   defp positive_int(_value), do: nil
 
   defp image_src(path) do
-    path = non_empty_string(path)
-
-    cond do
-      is_nil(path) ->
-        nil
-
-      generated = generated_image_path(path) ->
-        if GamendWeb.SRI.integrity(generated) do
-          GamendWeb.SRI.versioned_path(generated) || generated
-        else
-          GamendWeb.SRI.versioned_path(path) || path
-        end
-
-      true ->
-        GamendWeb.SRI.versioned_path(path) || path
+    case non_empty_string(path) do
+      nil -> nil
+      path -> path |> optimized_image_path() |> versioned()
     end
+  end
+
+  defp versioned(path), do: GamendWeb.SRI.versioned_path(path) || path
+
+  # The WebP `mix host.optimize_images` made from a PNG or JPEG, when it was
+  # made from this one: a project's own `/images/logo.png` must not be swapped
+  # for the engine's WebP of the engine's logo.
+  defp optimized_image_path(path) do
+    generated = generated_image_path(path)
+
+    if generated && ProjectStatic.derived_from?(generated, path), do: generated, else: path
   end
 
   defp generated_image_path(path) do
@@ -1219,40 +1223,14 @@ defmodule GamendWeb.PresentationPage do
     end
   end
 
+  # `path_for/1` takes the path as configured, query and all, and answers nil
+  # for an absolute URL rather than measuring a local file that shares its path.
   defp image_dimensions(path) do
-    path = non_empty_string(path)
-    clean_path = path && (URI.parse(path).path || path)
-
-    with clean when is_binary(clean) <- clean_path,
-         file_path when is_binary(file_path) <- static_file_path(clean) do
-      read_image_dimensions(file_path)
-    else
-      _ -> {nil, nil}
+    case ProjectStatic.path_for(non_empty_string(path)) do
+      file_path when is_binary(file_path) -> read_image_dimensions(file_path)
+      nil -> {nil, nil}
     end
   end
-
-  defp static_file_path(clean_path) do
-    [
-      Application.get_env(:gamend_web, :asset_static_app, :gamend_web),
-      Application.get_env(:gamend_web, :host_static_app, :gamend_web),
-      :gamend_web
-    ]
-    |> Enum.uniq()
-    |> Enum.map(&app_static_dir/1)
-    |> Enum.reject(&is_nil/1)
-    |> Enum.find_value(fn static_dir ->
-      file_path = Path.join(static_dir, String.trim_leading(clean_path, "/"))
-      if File.exists?(file_path), do: file_path
-    end)
-  end
-
-  defp app_static_dir(app) when is_atom(app) do
-    if Application.spec(app, :vsn) do
-      Application.app_dir(app, "priv/static")
-    end
-  end
-
-  defp app_static_dir(_app), do: nil
 
   defp read_image_dimensions(file_path) do
     case File.read(file_path) do

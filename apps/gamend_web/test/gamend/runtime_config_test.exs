@@ -216,6 +216,40 @@ defmodule Gamend.RuntimeConfigTest do
     end
   end
 
+  describe "from a release" do
+    # A release unpacked in one place and started from a project folder keeps
+    # that folder's data and customisations: its .env is read, and the
+    # database and theme defaults resolve there rather than beside the release.
+    @tag :tmp_dir
+    @tag env: %{
+           "GAMEND_DB_URL" => "",
+           "GAMEND_DB_POSTGRES_HOST" => "",
+           "GAMEND_DB_POSTGRES_USER" => "",
+           "GAMEND_DB_SQLITE_PATH" => "",
+           "GAMEND_AUTH_SECRET_KEY_BASE" => String.duplicate("a", 64)
+         }
+    test "resolves .env, the database and the theme against the working directory",
+         %{tmp_dir: dir} do
+      File.write!(Path.join(dir, ".env"), "GAMEND_HTTP_PORT=4555\n")
+      System.put_env("RELEASE_ROOT", "/opt/gamend")
+
+      on_exit(fn ->
+        System.delete_env("RELEASE_ROOT")
+        System.delete_env("GAMEND_HTTP_PORT")
+      end)
+
+      config = File.cd!(dir, fn -> Config.Reader.read!(@runtime_config, env: :prod) end)
+
+      assert config[:gamend_core][Gamend.Repo][:database] ==
+               Path.join(dir, "db/game_server_prod.db")
+
+      assert config[:gamend_core][Gamend.Theme.JSONConfig][:default_config_path] ==
+               "theme/config.json"
+
+      assert config[:gamend_web][GamendWeb.Endpoint][:http][:port] == 4555
+    end
+  end
+
   describe "storage and rate limiting" do
     test "s3 credentials reach the adapter's own config", %{config: config} do
       assert config[:gamend_core][Gamend.Storage][:adapter] == :s3

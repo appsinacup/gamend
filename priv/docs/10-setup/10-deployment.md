@@ -6,8 +6,9 @@ icon: hero-cloud-arrow-up
 
 Deploy your own gamend instance using the starter repository. The quickest path is Docker Compose: clone, configure, and run. If you want a full Elixir host app that you can edit directly, see the [Elixir App Starter](/docs/elixir-app-starter) guide.
 
-There are two supported starting paths:
+There are three supported starting paths:
 
+- [Download and run](/docs/standalone): one download and a project folder of your theme, pages and plugins, with nothing else to install (macOS on Apple silicon, Linux)
 - Docker starter: fastest path to running a server with minimal code changes
 - Elixir app starter: best path when you want to own the host app, routes, branding, and runtime policy in code
 

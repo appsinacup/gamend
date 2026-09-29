@@ -77,6 +77,9 @@ COPY mix.exs mix.lock ./
 # Umbrella apps: include their mix.exs files so deps can be resolved in a cached layer
 COPY apps/gamend_web/mix.exs apps/gamend_web/mix.exs
 COPY apps/gamend_core/mix.exs apps/gamend_core/mix.exs
+# The GDScript transpiler (gamend_plugin_tools), a path dependency of the host.
+# Without its mix.exs here, deps.get would resolve it from GitHub instead.
+COPY sdk_tools/mix.exs sdk_tools/mix.exs
 
 # Install dependencies
 RUN mix deps.get
@@ -144,6 +147,10 @@ FROM builder AS release-build
 
 RUN mix release --overwrite
 
+# The plugin build above skips a missing plugins dir; the release stage copies
+# it unconditionally, so make sure there is one to copy.
+RUN mkdir -p "${GAMEND_CONTENT_PLUGINS_DIR}"
+
 # ── Release runtime ───────────────────────────────────────────────────────
 FROM ${RUNNER_IMAGE} AS release
 
@@ -177,6 +184,16 @@ ENV GAMEND_DB_ADAPTER=${GAMEND_DB_ADAPTER} \
 COPY --from=release-build /app/_build/prod/rel/gamend_host ./
 COPY --from=release-build /app/VERSION ./VERSION
 
+# The release reads its theme, markdown content and plugins relative to the
+# directory it starts in, as `mix phx.server` does. None of them are part of
+# the OTP release, so they come across on their own, to the paths the full
+# image has them at.
+COPY --from=release-build /app/theme ./theme
+COPY --from=release-build /app/CHANGELOG.md /app/ROADMAP.md ./
+COPY --from=release-build /app/blog ./blog
+COPY --from=release-build /app/priv/docs ./priv/docs
+COPY --from=release-build /app/${GAMEND_CONTENT_PLUGINS_DIR} ./${GAMEND_CONTENT_PLUGINS_DIR}
+
 EXPOSE 4000 443
 
 # Mirrors the full target's CMD, with the release's `eval` standing in for the
@@ -184,9 +201,10 @@ EXPOSE 4000 443
 # and the default on most container hosts is 1024-10240; failure is tolerated
 # on purpose so a host that pins the hard limit lower still starts.
 #
-# createdb is allowed to fail (a provisioned Postgres already has the database
-# and the role may not be permitted to create one); migrate is not.
-CMD ["sh", "-c", "ulimit -n 262144 2>/dev/null || true; bin/gamend_host eval 'Gamend.Release.createdb()' 2>/dev/null; bin/gamend_host eval 'Gamend.Release.migrate()' && bin/gamend_host start"]
+# Gamend.Release.prepare/0 creates the database when it can (a provisioned
+# Postgres already has it, and its role may not be permitted to create one)
+# and then migrates, which is not allowed to fail.
+CMD ["sh", "-c", "ulimit -n 262144 2>/dev/null || true; bin/gamend_host eval 'Gamend.Release.prepare()' && bin/gamend_host start"]
 
 # ── Full (default target) ─────────────────────────────────────────────────
 # Last on purpose: `docker build .` with no --target builds the final stage,

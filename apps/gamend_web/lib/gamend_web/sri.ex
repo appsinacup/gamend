@@ -4,7 +4,8 @@ defmodule GamendWeb.SRI do
 
   Returns a `sha384-<base64>` string suitable for the `integrity` attribute
   on `<script>` and `<link>` tags. In environments without code reloading,
-  hashes are cached in `persistent_term` for the lifetime of the BEAM node.
+  hashes are cached in `persistent_term` until the static files are reloaded
+  (`GamendWeb.ProjectStatic.reload/0`, run on a theme reload).
 
   Returns `nil` when the file doesn't exist (e.g. in dev before digest),
   so the attribute is safely omitted from the rendered HTML.
@@ -16,7 +17,21 @@ defmodule GamendWeb.SRI do
 
   The module is aliased as `SRI` in html_helpers, so it's available in all
   templates without an explicit alias.
+
+  ## Project files
+
+  Files are found through `GamendWeb.ProjectStatic.path_for/1`, so a file a
+  project puts in its static overlay is hashed rather than the engine's file at
+  the same path: `versioned_path/1` names the bytes the endpoint actually
+  serves. `integrity/1` is `nil` for any path the overlay could answer: the
+  endpoint checks the overlay on every request while the hash here is cached
+  until a reload, so a file dropped in or edited in between would otherwise be
+  refused by the browser for not matching an integrity it was never hashed for.
+  Same-origin integrity guards against nothing the page itself could not
+  change, so dropping it costs nothing.
   """
+
+  alias GamendWeb.ProjectStatic
 
   @pt_namespace {__MODULE__, :integrity}
 
@@ -29,19 +44,27 @@ defmodule GamendWeb.SRI do
   """
   @spec integrity(String.t() | nil) :: String.t() | nil
   def integrity(path) when is_binary(path) and path != "" do
+    if ProjectStatic.overlay_servable?(path), do: nil, else: hash(path)
+  end
+
+  def integrity(_), do: nil
+
+  # Cached per path until `GamendWeb.ProjectStatic.generation/0` moves (a
+  # theme reload, variants cut after boot): the entry is overwritten then, so
+  # the key set stays bounded by the paths pages link.
+  defp hash(path) do
     if cache_enabled?() do
       key = {@pt_namespace, path}
+      generation = ProjectStatic.generation()
 
       case :persistent_term.get(key, :miss) do
-        :miss -> compute_and_cache(key, path)
-        result -> result
+        {^generation, result} -> result
+        _ -> compute_and_cache(key, generation, path)
       end
     else
       compute(path)
     end
   end
-
-  def integrity(_), do: nil
 
   @doc """
   Returns a cache-busted version of the given static path by appending a
@@ -52,7 +75,7 @@ defmodule GamendWeb.SRI do
   """
   @spec versioned_path(String.t() | nil) :: String.t() | nil
   def versioned_path(path) when is_binary(path) and path != "" do
-    case integrity(path) do
+    case hash(path) do
       nil -> path
       sri -> append_version_query(path, sri)
     end
@@ -60,29 +83,24 @@ defmodule GamendWeb.SRI do
 
   def versioned_path(_), do: nil
 
-  defp compute_and_cache(key, path) do
+  defp compute_and_cache(key, generation, path) do
     hash = compute(path)
 
-    :persistent_term.put(key, hash)
+    :persistent_term.put(key, {generation, hash})
     hash
   end
 
+  # `path_for/1` drops the query and fragment, and answers nil for an absolute
+  # URL: a logo on a CDN is not the local file that happens to share its path.
+  # A file listed but missing (a manifest entry whose file was removed) is nil
+  # too, and the caller links the path as written.
   defp compute(path) do
-    # Strip leading slash and any query string / fragment
-    clean =
-      path
-      |> String.trim_leading("/")
-      |> URI.parse()
-      |> Map.get(:path)
-
-    if is_binary(clean) and clean != "" do
-      file_path = static_file_path(clean)
-
-      if file_path do
-        content = File.read!(file_path)
-        digest = :crypto.hash(:sha384, content) |> Base.encode64()
-        "sha384-#{digest}"
-      end
+    with file_path when is_binary(file_path) <- ProjectStatic.path_for(path),
+         {:ok, content} <- File.read(file_path) do
+      digest = :crypto.hash(:sha384, content) |> Base.encode64()
+      "sha384-#{digest}"
+    else
+      _ -> nil
     end
   end
 
@@ -90,29 +108,6 @@ defmodule GamendWeb.SRI do
     endpoint_config = Application.get_env(:gamend_web, GamendWeb.Endpoint, [])
     not Keyword.get(endpoint_config, :code_reloader, false)
   end
-
-  defp static_file_path(clean) do
-    [
-      Application.get_env(:gamend_web, :asset_static_app, :gamend_web),
-      Application.get_env(:gamend_web, :host_static_app, :gamend_web),
-      :gamend_web
-    ]
-    |> Enum.uniq()
-    |> Enum.map(&app_static_dir/1)
-    |> Enum.reject(&is_nil/1)
-    |> Enum.find_value(fn static_dir ->
-      file_path = Path.join(static_dir, clean)
-      if File.exists?(file_path), do: file_path
-    end)
-  end
-
-  defp app_static_dir(app) when is_atom(app) do
-    if Application.spec(app, :vsn) do
-      Application.app_dir(app, "priv/static")
-    end
-  end
-
-  defp app_static_dir(_app), do: nil
 
   defp append_version_query(path, sri) do
     uri = URI.parse(path)

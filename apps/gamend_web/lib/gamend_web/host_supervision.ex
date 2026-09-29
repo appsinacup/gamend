@@ -89,7 +89,7 @@ defmodule GamendWeb.HostSupervision do
   defp register_host_app(opts) do
     host_app =
       Keyword.get_lazy(opts, :host_app, fn ->
-        Application.get_env(:gamend_web, :host_static_app, :gamend_web)
+        GamendWeb.host_app()
       end)
 
     if host_app not in Gamend.Settings.apps() do
@@ -210,7 +210,11 @@ defmodule GamendWeb.HostSupervision do
         # only one node runs it and start_link returns :ignore on the others.
         Gamend.LobbySnapshots.Writer,
         # Signaling relay for WebRTC user-to-user and client-server topologies
-        {Gamend.Presence, pool_size: pool_size(:presence_pool_size)}
+        {Gamend.Presence, pool_size: pool_size(:presence_pool_size)},
+        # Cuts the theme's srcset width variants for a project's own static
+        # files, at boot and after a theme reload. Its first pass runs after
+        # init returns, so ImageMagick never holds up the boot.
+        GamendWeb.ResponsiveImages
       ] ++
       extra
   end

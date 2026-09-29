@@ -64,7 +64,7 @@ defmodule Mix.Tasks.Gamend.Gdscript.Compile do
 
   # Returns true when the file on disk does not match what we just generated.
   defp write_or_check({module, source}, out, check?) do
-    target = Path.join(out, module_path(module))
+    target = Path.join(out, GDScript.source_path(module))
 
     if check? do
       File.read(target) != {:ok, source}
@@ -74,15 +74,5 @@ defmodule Mix.Tasks.Gamend.Gdscript.Compile do
       Mix.shell().info("compiled -> #{target}")
       false
     end
-  end
-
-  # `Gamend.Modules.Shop` -> `gamend/modules/shop.ex`, the layout `mix compile`
-  # expects and the one a hand-written plugin already uses.
-  defp module_path(module) do
-    module
-    |> String.split(".")
-    |> Enum.map(&Macro.underscore/1)
-    |> Path.join()
-    |> Kernel.<>(".ex")
   end
 end

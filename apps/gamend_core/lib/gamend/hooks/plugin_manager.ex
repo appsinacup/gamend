@@ -143,6 +143,36 @@ defmodule Gamend.Hooks.PluginManager do
     GenServer.call(__MODULE__, :reload_and_after_startup, @timeout_ms)
   end
 
+  @doc """
+  Stops and unloads one plugin, leaving the others running. Returns `true`
+  when the manager had it (loaded or failed), `false` when it did not or the
+  manager is not running.
+
+  The in-process build (`Gamend.Hooks.PluginBuilder`) calls this before it
+  compiles the plugin in this VM. The compiler treats a module that is already
+  loaded as available, so a module compiled against a sibling that is still
+  loaded would take that sibling's *old* macros and structs; unloading the
+  plugin first makes the build see only its own new code. `resume/1` loads it
+  back.
+  """
+  @spec suspend(plugin_name()) :: boolean()
+  def suspend(name) when is_binary(name) do
+    if GenServer.whereis(__MODULE__),
+      do: GenServer.call(__MODULE__, {:suspend, name}, @timeout_ms),
+      else: false
+  end
+
+  @doc """
+  Loads one plugin from disk again and runs its `after_startup/0`, the
+  counterpart of `suspend/1`. Returns the plugin (its `status` says whether it
+  started), or `nil` when the manager is not running or skips the name.
+  """
+  @spec resume(plugin_name()) :: Plugin.t() | nil
+  def resume(name) when is_binary(name) do
+    if GenServer.whereis(__MODULE__),
+      do: GenServer.call(__MODULE__, {:resume, name}, @timeout_ms)
+  end
+
   @spec call_rpc(plugin_name(), String.t(), list(), keyword()) :: {:ok, any()} | {:error, term()}
   def call_rpc(plugin, fn_name, args, opts \\ [])
       when is_binary(plugin) and is_binary(fn_name) and is_list(args) and is_list(opts) do
@@ -289,6 +319,35 @@ defmodule Gamend.Hooks.PluginManager do
     state = do_reload(state)
     results = do_after_startup(state)
     {:reply, %{plugins: state_to_list(state), after_startup: results}, state}
+  end
+
+  def handle_call({:suspend, name}, _from, state) do
+    case Map.pop(state, name) do
+      {nil, _state} ->
+        {:reply, false, state}
+
+      {plugin, rest} ->
+        stop_unload_plugin(plugin)
+        _ = DynamicRpcs.reset_plugin(name)
+        {:reply, true, publish_snapshot(rest)}
+    end
+  end
+
+  def handle_call({:resume, name}, _from, state) do
+    # A full reload may have loaded it again while it was suspended.
+    {previous, rest} = Map.pop(state, name)
+    if previous, do: stop_unload_plugin(previous)
+    _ = DynamicRpcs.reset_plugin(name)
+
+    case load_plugin(plugins_dir(), name) do
+      %Plugin{} = plugin ->
+        state = publish_snapshot(Map.put(rest, name, plugin))
+        _ = do_after_startup(%{name => plugin})
+        {:reply, plugin, state}
+
+      nil ->
+        {:reply, nil, publish_snapshot(rest)}
+    end
   end
 
   # Internals

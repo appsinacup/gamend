@@ -105,6 +105,14 @@ config :gamend_core, Gamend.Storage, adapter: :local
 
 config :ex_aws, json_codec: Jason
 
+# The downloadable releases link libsrtp statically, from the prefix
+# scripts/release/static-deps.sh builds (found through PKG_CONFIG_PATH).
+# Otherwise ex_libsrtp downloads a shared libsrtp and loads it through an rpath,
+# one more library the machine running the release would need.
+if System.get_env("GAMEND_BUILD_STATIC_DEPS") == "true" do
+  config :bundlex, :disable_precompiled_os_deps, apps: [:ex_libsrtp]
+end
+
 host_root = Path.expand("..", __DIR__)
 host_theme_root = Path.join(host_root, "theme")
 web_dep_root = Mix.Project.deps_paths()[:gamend_web]

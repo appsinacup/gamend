@@ -144,18 +144,10 @@ defmodule GamendWeb.AdminLive.ConfigDiagnostics do
   defp ecto_ipv6_recommended(false), do: ""
 
   # Compute dark-variant and fullscreen image existence for theme diagnostics.
-  # Convention: `file.ext` → `file_dark.ext`, detected via File.exists? on priv/static.
+  # Convention: `file.ext` → `file_dark.ext`, looked up the way the endpoint
+  # serves it (`GamendWeb.ProjectStatic`): a project's static overlay first,
+  # then the apps' priv/static.
   def theme_dark_variants(theme_map) do
-    static_dirs =
-      [
-        Application.get_env(:gamend_web, :host_static_app, :gamend_web),
-        Application.get_env(:gamend_web, :asset_static_app, :gamend_web),
-        :gamend_web
-      ]
-      |> Enum.uniq()
-      |> Enum.map(&static_dir_for_app/1)
-      |> Enum.reject(&is_nil/1)
-
     banner_path = (theme_map && Map.get(theme_map, "banner")) || ""
     banner_dark_path = derive_dark_path(banner_path)
 
@@ -169,36 +161,21 @@ defmodule GamendWeb.AdminLive.ConfigDiagnostics do
 
     %{
       banner_dark_path: banner_dark_path,
-      banner_dark_exists?: file_exists_in_static?(static_dirs, banner_dark_path),
+      banner_dark_exists?: file_exists_in_static?(banner_dark_path),
       logo_dark_path: logo_dark_path,
-      logo_dark_exists?: file_exists_in_static?(static_dirs, logo_dark_path),
+      logo_dark_exists?: file_exists_in_static?(logo_dark_path),
       favicon_dark_path: favicon_dark_path,
-      favicon_dark_exists?: file_exists_in_static?(static_dirs, favicon_dark_path),
-      fullscreen_exists?: file_exists_in_static?(static_dirs, "/images/fullscreen.png"),
-      fullscreen_dark_exists?: file_exists_in_static?(static_dirs, "/images/fullscreen_dark.png")
+      favicon_dark_exists?: file_exists_in_static?(favicon_dark_path),
+      fullscreen_exists?: file_exists_in_static?("/images/fullscreen.png"),
+      fullscreen_dark_exists?: file_exists_in_static?("/images/fullscreen_dark.png")
     }
   end
 
   defp derive_dark_path(""), do: ""
   defp derive_dark_path(path), do: String.replace(path, ~r/\.(\w+)$/, "_dark.\\1")
 
-  defp file_exists_in_static?(_static_dirs, ""), do: false
-
-  defp file_exists_in_static?(static_dirs, path) do
-    relative_path = String.trim_leading(path, "/")
-
-    Enum.any?(static_dirs, fn static_dir ->
-      File.exists?(Path.join(static_dir, relative_path))
-    end)
-  end
-
-  defp static_dir_for_app(app) when is_atom(app) do
-    if Application.spec(app, :vsn) do
-      Application.app_dir(app, "priv/static")
-    end
-  end
-
-  defp static_dir_for_app(_app), do: nil
+  defp file_exists_in_static?(""), do: false
+  defp file_exists_in_static?(path), do: GamendWeb.ProjectStatic.path_for(path) != nil
 
   def exported_plugin_functions do
     plugins = PluginManager.hook_modules()

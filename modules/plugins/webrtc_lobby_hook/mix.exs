@@ -24,7 +24,8 @@ defmodule HandleWebRTC.WebRTCLobbyHook do
     [
       shared_dep(:gamend_sdk, "../../../sdk"),
       shared_dep(:gamend_plugin_tools, "../../../sdk_tools"),
-      {:bunt, "~> 1.0"},
+      # Only what the engine ships, so a release can build this plugin
+      # in-process (Gamend.Hooks.PluginBuilder), with no Hex to fetch from.
       {:phoenix, "~> 1.8.3"}
     ]
   end

@@ -15,6 +15,7 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
 
   @doc "The hook plugins: what loaded, and building a bundle."
   attr :plugin_build_available, :any, required: true
+  attr :plugin_build_mode, :atom, default: nil, doc: "`PluginBuilder.mode/0`"
   attr :plugin_build_form, :any, required: true
   attr :plugin_build_options, :any, required: true
   attr :plugin_build_result, :any, required: true
@@ -79,18 +80,26 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
               {if @plugin_build_running, do: "Building…", else: "Build bundle"}
             </button>
 
-            <div class="text-xs font-mono opacity-70 break-all">
-              SRC: {PluginBuilder.sources_dir()} — MIX_ENV: {System.get_env("MIX_ENV") ||
-                "<unset>"}
+            <div id="plugins-build-mode" class="text-xs font-mono opacity-70 break-all">
+              SRC: {PluginBuilder.sources_dir()} — BUILD: {plugin_build_mode_label(@plugin_build_mode)}
             </div>
 
-            <%= if not @plugin_build_available do %>
-              <div class="text-xs opacity-70 max-w-md">
-                Bundling runs <code>mix</code>, which this image does not ship. Build the
-                bundle where the plugin sources live and mount the result, or run an
-                image built from the Dockerfile's <code>full</code>
-                target instead of <code>release</code>.
-              </div>
+            <%= cond do %>
+              <% not @plugin_build_available -> %>
+                <div class="text-xs opacity-70 max-w-md">
+                  This image ships neither <code>mix</code>
+                  nor the Elixir compiler, so it cannot build bundles. Build them where the
+                  plugin sources live and mount the result.
+                </div>
+              <% @plugin_build_mode == :in_process -> %>
+                <div id="plugins-build-in-process" class="text-xs opacity-70 max-w-md">
+                  No <code>mix</code>
+                  here, so bundles compile inside the running server. Elixir and GDScript
+                  plugins build; a dependency the server does not ship has to be prebuilt in
+                  the plugin's <code>deps/&lt;dep&gt;/ebin</code>. A loaded plugin restarts
+                  on the new bundle.
+                </div>
+              <% true -> %>
             <% end %>
           </.form>
         </div>
@@ -1034,6 +1043,12 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
         "#{Float.round(s, 2)}s"
     end
   end
+
+  defp plugin_build_mode_label(:mix),
+    do: "mix (MIX_ENV=#{System.get_env("MIX_ENV") || "<unset>"})"
+
+  defp plugin_build_mode_label(:in_process), do: "in-process"
+  defp plugin_build_mode_label(_mode), do: "unavailable"
 
   defp plugin_build_output(%{steps: steps}) when is_list(steps) do
     steps

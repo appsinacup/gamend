@@ -1,0 +1,109 @@
+name: Set up Gamend
+description: >
+  Installs the Gamend server, creates a project from a starter template and
+  starts it in the background, for end-to-end tests against a real server.
+  Linux (x86_64, arm64) and macOS (Apple silicon) runners.
+
+inputs:
+  version:
+    description: Release tag to install.
+    default: server-latest
+  adapter:
+    description: "Database: sqlite (no service needed) or postgres (set GAMEND_DB_URL in `env`)."
+    default: sqlite
+  project:
+    description: Directory of the project folder, created if missing (default $RUNNER_TEMP/gamend-project).
+    default: ""
+  starter:
+    description: Starter template to copy in (`default`, `website`, a path or a URL); empty for none.
+    default: default
+  port:
+    description: HTTP port.
+    default: "4000"
+  env:
+    description: Extra settings, one KEY=VALUE per line, appended to the project's .env.
+    default: ""
+  seed:
+    description: "Arguments for `gamend demo.seed` (e.g. `--count 50`), run once the server is up; empty to skip."
+    default: ""
+  start:
+    description: Start the server (`gamend daemon`) and wait until it answers.
+    default: "true"
+  timeout:
+    description: Seconds to wait for the server to answer.
+    default: "120"
+
+outputs:
+  url:
+    description: Base URL of the running server, e.g. http://127.0.0.1:4000
+    value: ${{ steps.start.outputs.url }}
+  project:
+    description: The project folder; run `gamend` commands from it.
+    value: ${{ steps.project.outputs.dir }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install gamend
+      shell: bash
+      env:
+        GAMEND_VERSION: ${{ inputs.version }}
+        GAMEND_ADAPTER: ${{ inputs.adapter }}
+        GAMEND_BIN_DIR: ${{ runner.temp }}/gamend-bin
+      run: |
+        sh "$GITHUB_ACTION_PATH/../../scripts/install.sh"
+        echo "$GAMEND_BIN_DIR" >> "$GITHUB_PATH"
+
+    - name: Create the project
+      id: project
+      shell: bash
+      env:
+        PROJECT: ${{ inputs.project }}
+        STARTER: ${{ inputs.starter }}
+        PORT: ${{ inputs.port }}
+        EXTRA_ENV: ${{ inputs.env }}
+      run: |
+        export PATH="$RUNNER_TEMP/gamend-bin:$PATH"
+        PROJECT="${PROJECT:-$RUNNER_TEMP/gamend-project}"
+        mkdir -p "$PROJECT"
+        cd "$PROJECT"
+        if [ -n "$STARTER" ]; then gamend starter "$STARTER"; fi
+        {
+          # `gamend starter` writes the secret; without a starter, make one.
+          if ! grep -qs '^GAMEND_AUTH_SECRET_KEY_BASE=' .env; then
+            echo "GAMEND_AUTH_SECRET_KEY_BASE=$(openssl rand -base64 48 | tr -d '\n')"
+          fi
+          echo "GAMEND_HTTP_PORT=$PORT"
+          if [ -n "$EXTRA_ENV" ]; then printf '%s\n' "$EXTRA_ENV"; fi
+        } >> .env
+        echo "dir=$(pwd -P)" >> "$GITHUB_OUTPUT"
+
+    - name: Start the server
+      id: start
+      if: inputs.start == 'true'
+      shell: bash
+      working-directory: ${{ steps.project.outputs.dir }}
+      env:
+        PORT: ${{ inputs.port }}
+        TIMEOUT: ${{ inputs.timeout }}
+        SEED: ${{ inputs.seed }}
+      run: |
+        export PATH="$RUNNER_TEMP/gamend-bin:$PATH"
+        gamend daemon
+        url="http://127.0.0.1:$PORT"
+        for _ in $(seq 1 "$TIMEOUT"); do
+          curl -fsS "$url/api/v1/health" > /dev/null 2>&1 && break
+          sleep 1
+        done
+        if ! curl -fsS "$url/api/v1/health" > /dev/null; then
+          echo "::error::Gamend did not answer on $url within ${TIMEOUT}s"
+          cat .gamend/tmp/log/erlang.log.* || true
+          exit 1
+        fi
+        if [ -n "$SEED" ]; then
+          # shellcheck disable=SC2086
+          gamend demo.seed $SEED
+        fi
+        echo "url=$url" >> "$GITHUB_OUTPUT"
+        echo "GAMEND_URL=$url" >> "$GITHUB_ENV"
+        echo "Gamend is up on $url"

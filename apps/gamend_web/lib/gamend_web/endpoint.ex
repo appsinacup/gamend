@@ -1,6 +1,7 @@
 defmodule GamendWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :gamend_web
 
+  alias GamendWeb.ProjectStatic
   alias Phoenix.Socket.Transport
   alias Phoenix.Transports.WebSocket
 
@@ -50,6 +51,9 @@ defmodule GamendWeb.Endpoint do
   plug GamendWeb.Plugs.SecurityHeaders
   plug GamendWeb.Plugs.WellKnown
   plug GamendWeb.Plugs.GameHeaders
+  # First of the static plugs: a project's own files (`GamendWeb.ProjectStatic`)
+  # replace the engine's under the same name.
+  plug :serve_project_static
   plug :serve_game_static
   plug :serve_host_static
   plug :serve_asset_static
@@ -208,6 +212,42 @@ defmodule GamendWeb.Endpoint do
   # the same way and describes the site's current shape, so it belongs here too.
   @revalidating_static ~w(robots.txt llms.txt .well-known)
 
+  # The project overlay (`GamendWeb.ProjectStatic`): GAMEND_CONTENT_STATIC_DIRS,
+  # `static/` then `priv/static/` in the working directory by default. A path is served with the options the built-in
+  # file at that path would get (the game build's headers and revalidation, the
+  # crawler files' revalidation, a year for the rest), so moving a file between
+  # the engine and the project changes nothing a browser sees.
+  #
+  # On every static request, so a miss has to cost next to nothing: no overlay
+  # directory is one persistent_term read, and a first path segment the overlay
+  # may not serve (`assets`, `live`, `api`, ...) is one list lookup more.
+  defp serve_project_static(%Plug.Conn{path_info: [first | _]} = conn, _opts) do
+    with [_ | _] = dirs <- ProjectStatic.dirs(),
+         true <- first in ProjectStatic.overlay_paths() do
+      serve_project_dirs(conn, dirs, first)
+    else
+      _ -> conn
+    end
+  end
+
+  defp serve_project_static(conn, _opts), do: conn
+
+  defp serve_project_dirs(conn, dirs, first) do
+    kind =
+      cond do
+        first == "game" -> :game_static_opts
+        first in @revalidating_static -> :revalidating_static_opts
+        true -> :host_static_opts
+      end
+
+    Enum.reduce_while(dirs, conn, fn dir, conn ->
+      case Plug.Static.call(conn, configurable_static_opts(kind, dir, [first])) do
+        %{halted: true} = halted -> {:halt, halted}
+        passed -> {:cont, passed}
+      end
+    end)
+  end
+
   defp serve_host_static(conn, _opts) do
     paths = host_static_paths() -- ~w(game)
 
@@ -215,7 +255,7 @@ defmodule GamendWeb.Endpoint do
       conn,
       configurable_static_opts(
         :host_static_opts,
-        host_static_app(),
+        GamendWeb.host_app(),
         paths -- @revalidating_static
       )
     )
@@ -228,7 +268,7 @@ defmodule GamendWeb.Endpoint do
           passed,
           configurable_static_opts(
             :revalidating_static_opts,
-            host_static_app(),
+            GamendWeb.host_app(),
             paths -- (paths -- @revalidating_static)
           )
         )
@@ -238,14 +278,14 @@ defmodule GamendWeb.Endpoint do
   defp serve_game_static(conn, _opts) do
     Plug.Static.call(
       conn,
-      configurable_static_opts(:game_static_opts, host_static_app(), ~w(game))
+      configurable_static_opts(:game_static_opts, GamendWeb.host_app(), ~w(game))
     )
   end
 
   defp serve_asset_static(conn, _opts) do
     Plug.Static.call(
       conn,
-      configurable_static_opts(:asset_static_opts, asset_static_app(), ~w(assets))
+      configurable_static_opts(:asset_static_opts, GamendWeb.asset_app(), ~w(assets))
     )
   end
 
@@ -373,21 +413,7 @@ defmodule GamendWeb.Endpoint do
     )
   end
 
-  defp host_static_app do
-    Application.get_env(:gamend_web, :host_static_app, :gamend_web)
-  end
-
-  defp asset_static_app do
-    Application.get_env(:gamend_web, :asset_static_app, host_static_app())
-  end
-
-  defp host_static_paths do
-    Application.get_env(
-      :gamend_web,
-      :host_static_paths,
-      ~w(images game favicon.ico robots.txt .well-known theme.css)
-    )
-  end
+  defp host_static_paths, do: ProjectStatic.host_static_paths()
 
   defp gzip_static? do
     Application.get_env(:gamend_web, :gzip_static, false)

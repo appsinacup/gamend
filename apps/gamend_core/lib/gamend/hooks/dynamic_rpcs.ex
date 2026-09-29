@@ -74,6 +74,14 @@ defmodule Gamend.Hooks.DynamicRpcs do
     :ok
   end
 
+  @doc "Forget one plugin's exports, leaving every other plugin's in place."
+  @spec reset_plugin(plugin_name()) :: :ok
+  def reset_plugin(plugin_name) when is_binary(plugin_name) do
+    ensure_table!()
+    true = :ets.match_delete(@table, {{plugin_name, :_}, :_})
+    :ok
+  end
+
   @spec register_exports(plugin_name(), any()) :: {:ok, non_neg_integer()} | {:error, term()}
   def register_exports(plugin_name, raw) when is_binary(plugin_name) do
     ensure_table!()

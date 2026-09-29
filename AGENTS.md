@@ -35,6 +35,7 @@ runnable host app at the repository root.
 - `mix setup` once, then `mix dev.start` (creates the DB, migrates, builds assets, runs `phx.server`).
 - The endpoint module is `GamendWeb.Endpoint`; the host OTP app starts it.
 - `GamendHost.Application` starts `GamendWeb.HostSupervision.children/1`. A core process goes in that list; a host-only one goes in its `:extra` option.
+- The downloadable release ([guide](priv/docs/10-setup/15-standalone.md)): `rel/overlays/bin/gamend` runs the server and hands every other command to `GamendWeb.CLI`, under the name of the mix task it mirrors (`db.migrate`, `demo.seed`, …). A new `db.*`/seed mix task gets its `GamendWeb.CLI` twin, with the logic in a module both call (`Gamend.DemoSeed`, `Gamend.Release`). A release reads everything relative to the working directory, never `RELEASE_ROOT`. Starter templates live in `priv/starter/<name>`; packaging is `scripts/release/*` and `.github/workflows/server-binaries.yml`.
 
 ### Routing ownership / extension point
 
@@ -224,7 +225,7 @@ Web-side features with no context: the site search palette (`GamendWeb.SearchInd
 
 ### Hooks
 
-- Plugins implement `Gamend.Hooks`. They load from `modules/plugins/*` (`GAMEND_CONTENT_PLUGINS_DIR`) as bundled `ebin/`; run `mix plugin.bundle` after changing one. Examples live in `modules/plugins_examples/`.
+- Plugins implement `Gamend.Hooks`. They load from `modules/plugins/*` (`GAMEND_CONTENT_PLUGINS_DIR`) as bundled `ebin/`; run `mix plugin.bundle` after changing one. A release, which has no Mix, builds them in-process with `Gamend.Hooks.PluginBuilder` (`build/1`, `build_all/0`). Examples live in `modules/plugins_examples/`.
 - `before_*` hooks are pipelines: return `{:ok, value}` to allow (optionally modified) or `{:error, reason}` to block. `after_*` hooks run asynchronously via `Gamend.Async.run/1`.
 - **Never** dispatch a hook or broadcast inside a transaction or lock. Open transactions with `Gamend.AfterCommit.transaction/2` and broadcast with `Gamend.Broadcast.publish/2`, which wait for the commit; run a `before_*` hook before taking the lock. See [CONTRIBUTING.md](CONTRIBUTING.md#hooks-so-plugins-can-extend-the-feature).
 - Adding a callback touches six places: [CONTRIBUTING.md](CONTRIBUTING.md#hooks-so-plugins-can-extend-the-feature). The full hook list is in the [server scripting guide](priv/docs/40-gameplay/90-server-scripting.md).

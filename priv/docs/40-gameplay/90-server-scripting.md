@@ -45,6 +45,24 @@ GAMEND_CONTENT_PLUGINS_DIR=modules/plugins
 
 Each plugin is an OTP app directory with an `ebin` folder containing a `.app` file and compiled `.beam` modules. The plugin's `.app` env must include a `hooks_module` entry pointing at the module name.
 
+### Building a plugin
+
+The server loads `ebin/`, not your source, so rebuild after every change:
+
+| Where | How |
+|---|---|
+| Anywhere with Elixir | `mix deps.get && mix plugin.bundle` in the plugin (`mix bundle` for a GDScript plugin) |
+| The admin **Config** page | **Build bundle** on the plugin, then **Reload plugins** |
+
+The **Build bundle** button runs Mix when the server itself runs under Mix (development, the Docker `full` image). The [downloadable engine](/docs/standalone) and the `release` image have no Mix; there the button, and `gamend plugin.bundle` from the command line, compile the plugin with the compiler inside the release, Elixir and GDScript alike, with no Elixir install needed (a `mix` on the PATH is ignored: it belongs to another Elixir install). A plugin that is loaded is stopped for that build and started again afterwards, on the new bundle, or on the old one when the build fails (the old `ebin/` is only replaced by a build that succeeded).
+
+Without Mix the build has limits:
+
+- **Dependencies**: only what the engine already ships (Phoenix, Jason, Req, Ecto, Protobuf, Telemetry, …) or what the plugin carries prebuilt in `deps/<dep>/ebin` (which `mix plugin.bundle` leaves behind). `gamend_sdk` and `gamend_plugin_tools` are ignored. Any other dependency fails the build, named; there is no Hex to fetch it from.
+- **`mix.exs` is read, not run**: only literal values count (`app`, `version`, `elixirc_paths`, `extra_applications`, `mod`, `env`), including module attributes and `deps()`-style helpers that return a literal. Without a literal `hooks_module`, the one module with `use Gamend.Hooks` is picked (for GDScript, the script named after the plugin). `config/config.exs` is not loaded.
+- **No Erlang sources, no Gleam**: build those with their own toolchain and drop the bundle in.
+- **Protocols are consolidated**: a `defimpl` of an engine protocol (`Jason.Encoder`, `String.Chars`) compiles but has no effect, and the compiler says so. Convert with a function of your own instead.
+
 ### Gating resource creation with before hooks
 
 "Before" hooks let you block operations or modify attributes before they are persisted. For example, `before_group_create/2` receives the full user struct and the group attributes map, so you can check metadata (coins, level, etc.) to decide whether the user is allowed to create a group:

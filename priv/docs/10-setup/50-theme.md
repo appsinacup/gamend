@@ -192,6 +192,16 @@ Edit assets/css/app.css when you want to change the full base stylesheet. The co
 
 Changelog, roadmap, and blog pages are host-owned, and their Markdown content now lives at the repository root as CHANGELOG.md, ROADMAP.md, and blog/. They are no longer configured through GAMEND_CONTENT_THEME_CONFIG.
 
+### Your own static files
+
+Put images, a `game/` web export, a favicon or a `theme.css` in a static folder of your project and the server serves them ahead of its own. A file at the same path as a built-in one replaces it: `static/images/banner.webp` is what `/images/banner.webp` returns, and the page links and hashes your file, not the engine's.
+
+The folders are `GAMEND_CONTENT_STATIC_DIRS`, comma-separated, relative to the working directory and searched in order: `static,priv/static` by default. Each is used if it exists when the server starts or `gamend reload` runs.
+
+Only the top-level entries of `:host_static_paths` are served from it (`images/`, `game/`, `favicon.ico`, `robots.txt`, `llms.txt`, `.well-known/`, `theme.css`), with the same cache headers as the built-in ones; `assets/` is always the engine's. A folder that is the app's own `priv/static`, as `priv/static` is when you run `mix phx.server` from this repository, is not served twice. After creating the folder, or adding or replacing a file that pages link (`theme.css`, the logo, theme images), run `gamend reload` (from a [download](/docs/standalone)) or restart the server so the pages link the new file.
+
+Theme images may list `"widths": [480, 960]`: the page then offers `banner-480.webp` and `banner-960.webp` beside `banner.webp` in a `srcset`, but only the ones that exist in the same folder as the original, so a missing variant is never a broken image. `mix host.responsive_images` cuts them into `priv/static` at build time. For your own static folder the server cuts the missing ones itself, at start and after `gamend reload`, next to the original, when ImageMagick is installed (`magick`, or `convert` outside Windows). Without it the server logs once that it skipped them and pages serve the full-size image. A variant is never wider or heavier than its original.
+
 ### Markdown content
 
 Every collection — the guides, the blog, the changelog — renders through one pipeline. A file may open with a `---` frontmatter block of `key: value` lines, `[a, b]` flow lists and `- a` block lists; nothing nested. Headings get ids, so `#section` links and a table of contents work. Footnotes render. An admonition is written either way and looks the same:

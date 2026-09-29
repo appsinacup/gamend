@@ -1,0 +1,5 @@
+# Secrets and machine state. Commit the rest of the project.
+.env
+.gamend/
+db/
+priv/storage/

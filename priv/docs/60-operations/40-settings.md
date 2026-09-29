@@ -7,7 +7,7 @@ generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
 # Settings
 
 Every setting the server has, with the environment variable that sets it.
-313 settings across 29 groups.
+314 settings across 29 groups.
 
 A setting is declared in the module that owns it, so this page and
 `.env.example` are generated from the same source the server reads. The
@@ -130,6 +130,7 @@ Live values, and where each one came from, are on the
 | `GAMEND_CONTENT_APP_VERSION` | string | - | Version reported in the OpenAPI spec and admin pages. |
 | `GAMEND_CONTENT_GEOIP_DB_PATH` | string | - | MaxMind mmdb file. Defaults to data/GeoLite2-Country.mmdb when present. |
 | `GAMEND_CONTENT_PLUGINS_DIR` | string | `"modules/plugins"` | Directory containing OTP hook plugins. |
+| `GAMEND_CONTENT_STATIC_DIRS` | list | `static,priv/static` | Directories of static files served ahead of the built-in ones (images/, game/, favicon.ico, robots.txt, theme.css), relative to the working directory and searched in order. Each is used when it exists. |
 | `GAMEND_CONTENT_THEME_CONFIG` | string | - | Path to the theme JSON. A single file serves every locale; its text is translated via the gettext `theme` domain. |
 
 

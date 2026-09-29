@@ -2139,5 +2139,26 @@ defmodule Gamend.GDScriptTest do
     test "derives a module from the file name" do
       assert GDScript.default_module("scripts/shop_hooks.gd") == "Gamend.Modules.ShopHooks"
     end
+
+    test "places a module's source where mix compile expects it" do
+      assert GDScript.source_path("Gamend.Modules.ShopHooks") == "gamend/modules/shop_hooks.ex"
+    end
+  end
+
+  describe "compile_all/2 with :root" do
+    # The server builds a plugin in-process without changing its working
+    # directory: the files come from `root`, the header names the path as given.
+    test "reads under root and names the relative path" do
+      root = Path.join(System.tmp_dir!(), "gdroot#{System.unique_integer([:positive])}")
+      File.mkdir_p!(Path.join(root, "scripts"))
+      on_exit(fn -> File.rm_rf!(root) end)
+      File.write!(Path.join(root, "scripts/shop.gd"), "func price():\n\treturn 3\n")
+
+      assert [{"Gamend.Modules.Shop", source}] =
+               GDScript.compile_all(["scripts/shop.gd"], root: root)
+
+      assert source =~ "# Generated from scripts/shop.gd by `mix gamend.gdscript.compile`"
+      refute source =~ root
+    end
   end
 end

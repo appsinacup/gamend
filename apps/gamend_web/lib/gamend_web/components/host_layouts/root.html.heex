@@ -56,16 +56,11 @@ reload — the page painted at the top and glided down to where it had been. --%
         Map.get(theme, "tagline") || "" %>
     <% description = String.replace(description_raw, ~r/\*+/, "") %>
     <% banner_path = Map.get(theme, "banner", "") %>
-    <% host_static_app = Application.get_env(:gamend_web, :host_static_app, :gamend_web) %>
-    <% host_static_dir = Application.app_dir(host_static_app, "priv/static") %>
-    <% web_static_dir = Application.app_dir(:gamend_web, "priv/static") %>
     <% banner_dark_path = String.replace(banner_path, ~r/\.(\w+)$/, "_dark.\\1") %>
-    <% banner_dark_rel = String.trim_leading(banner_dark_path, "/") %>
     <% banner_dark_exists? =
       banner_dark_path != "" and
         banner_dark_path != banner_path and
-        (File.exists?(Path.join(host_static_dir, banner_dark_rel)) or
-           File.exists?(Path.join(web_static_dir, banner_dark_rel))) %>
+        GamendWeb.ProjectStatic.derived_from?(banner_dark_path, banner_path) %>
     <%!-- A page's own image first — the page-meta provider's `image/1`, a
           guide's social card or a post's cover — else the theme's banner. --%>
     <% image_path =

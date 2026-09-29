@@ -61,6 +61,7 @@ defmodule GamendWeb.AdminLive.Config do
                 <tbody>
                   <.plugins_row
                     plugin_build_available={@plugin_build_available?}
+                    plugin_build_mode={@plugin_build_mode}
                     plugin_build_form={@plugin_build_form}
                     plugin_build_options={@plugin_build_options}
                     plugin_build_result={@plugin_build_result}
@@ -296,6 +297,7 @@ defmodule GamendWeb.AdminLive.Config do
         plugins_reload_result: nil,
         plugin_build_options: plugin_build_options(),
         plugin_build_available?: PluginBuilder.available?(),
+        plugin_build_mode: PluginBuilder.mode(),
         plugin_build_running?: false,
         plugin_build_result: nil,
         plugin_build_form:
@@ -340,10 +342,16 @@ defmodule GamendWeb.AdminLive.Config do
 
   @impl true
   def handle_info({:plugin_build_finished, _name, {:ok, build_result}}, socket) do
+    # An in-process build restarts a plugin that was loaded, so the list may
+    # have changed under us.
+    plugins = PluginManager.list()
+
     {:noreply,
      socket
      |> assign(:plugin_build_running?, false)
      |> assign(:plugin_build_result, build_result)
+     |> assign(:plugins, plugins)
+     |> assign(:plugins_counts, ConfigDiagnostics.plugin_counts(plugins))
      |> put_flash(:info, "Plugin build finished")}
   end
 
@@ -395,7 +403,7 @@ defmodule GamendWeb.AdminLive.Config do
          put_flash(
            socket,
            :error,
-           "This image has no mix executable, so it cannot build plugin bundles."
+           "This image cannot build plugin bundles: it has neither mix nor the Elixir compiler."
          )}
 
       socket.assigns.plugin_build_options == [] ->

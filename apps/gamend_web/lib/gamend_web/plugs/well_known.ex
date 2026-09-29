@@ -17,12 +17,18 @@ defmodule GamendWeb.Plugs.WellKnown do
 
   def call(conn, _opts), do: conn
 
+  # A project's own file in its static overlay first (`GamendWeb.ProjectStatic`),
+  # so an app built from the project answers for its own bundle id; else the
+  # configured app's. Served here rather than left to the overlay's
+  # `Plug.Static`, which would type an extensionless file as octet-stream.
   defp serve(conn, filename, opts \\ []) do
     static_app =
       Application.get_env(:gamend_web, :well_known_static_app) ||
-        Application.get_env(:gamend_web, :host_static_app, :gamend_web)
+        GamendWeb.host_app()
 
-    path = Path.join(:code.priv_dir(static_app), "static/.well-known/#{filename}")
+    path =
+      GamendWeb.ProjectStatic.overlay_path_for("/.well-known/" <> filename) ||
+        Path.join(:code.priv_dir(static_app), "static/.well-known/#{filename}")
 
     case File.read(path) do
       {:ok, body} when is_binary(body) ->

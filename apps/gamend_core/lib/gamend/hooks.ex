@@ -18,6 +18,7 @@ defmodule Gamend.Hooks do
   alias Gamend.Chat.Report
   alias Gamend.Groups.Group
   alias Gamend.Hooks.Default, as: Default
+  alias Gamend.Hooks.Defaults
   alias Gamend.Hooks.PluginManager
   alias Gamend.Lobbies.Lobby
   alias Gamend.Parties.Party
@@ -352,6 +353,28 @@ defmodule Gamend.Hooks do
   @callback before_kv_get(String.t(), kv_opts()) :: kv_access_result()
 
   @callback after_lobby_host_change(Lobby.t(), String.t()) :: any()
+
+  @doc """
+  Use this macro to get default implementations for all callbacks.
+
+  This allows you to only implement the callbacks you need. It injects the
+  same defaults as the SDK's `use Gamend.Hooks`, so a plugin compiles the same
+  against the SDK (a Mix build) and against the engine (an in-process build,
+  `Gamend.Hooks.PluginBuilder`).
+
+  ## Example
+
+      defmodule MyGame.Hooks do
+        use Gamend.Hooks
+
+        @impl true
+        def after_user_register(user) do
+          # Only implement what you need
+          :ok
+        end
+      end
+  """
+  defmacro __using__(_opts), do: Defaults.quoted()
 
   @doc "Return the configured module that implements the hooks behaviour."
   def module do

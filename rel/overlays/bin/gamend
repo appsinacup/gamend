@@ -1,0 +1,127 @@
+#!/bin/sh
+# The command line of a Gamend release. `gamend help` lists the commands.
+#
+# It wraps bin/gamend_host, the script `mix release` generates: the server
+# commands pass through to it, and the rest run GamendWeb.CLI through its
+# `eval`, under the same names as the mix tasks (`gamend db.migrate` is
+# `mix db.migrate`). Every path is relative to the current directory, the
+# project folder: its .env, theme/, content, plugins and the SQLite database.
+set -e
+
+# Follow symlinks, so a `gamend` linked into ~/.local/bin finds its release.
+self=$0
+while [ -h "$self" ]; do
+  link=$(ls -ld "$self" | sed 's/.* -> //')
+  case $link in
+    /*) self=$link ;;
+    *) self=$(dirname "$self")/$link ;;
+  esac
+done
+root=$(CDPATH='' cd -- "$(dirname -- "$self")/.." && pwd -P)
+release="$root/bin/gamend_host"
+
+project=$(pwd -P)
+state="$project/.gamend"
+
+# The server commands run a distributed node; the others do not, and leave
+# the project folder alone.
+distributed() {
+  # One node name per project folder: two projects on one machine do not
+  # collide, and `gamend stop` run from a folder reaches the server started
+  # there.
+  if [ -z "${RELEASE_NODE:-}" ]; then
+    RELEASE_NODE="gamend_$(printf '%s' "$project" | cksum | cut -d ' ' -f 1)"
+    export RELEASE_NODE
+  fi
+
+  # The cookie inside the archive is the same for everyone who downloads it,
+  # and a cookie is all it takes to run code on a node. Each project gets a
+  # private one, and the node takes connections on loopback only. Setting
+  # RELEASE_COOKIE yourself (a cluster) leaves both to you.
+  if [ -z "${RELEASE_COOKIE:-}" ]; then
+    if [ ! -f "$state/cookie" ]; then
+      mkdir -p "$state"
+      (umask 077 && od -An -N32 -tx1 /dev/urandom | tr -d ' \n' >"$state/cookie")
+    fi
+    RELEASE_COOKIE=$(cat "$state/cookie")
+    export RELEASE_COOKIE
+    ELIXIR_ERL_OPTIONS="${ELIXIR_ERL_OPTIONS:+$ELIXIR_ERL_OPTIONS }-kernel inet_dist_use_interface {127,0,0,1}"
+    export ELIXIR_ERL_OPTIONS
+    export ERL_EPMD_ADDRESS="${ERL_EPMD_ADDRESS:-127.0.0.1}"
+  fi
+
+  # The daemon's pipes and logs (`gamend daemon` writes to .gamend/tmp/log).
+  export RELEASE_TMP="${RELEASE_TMP:-$state/tmp}"
+}
+
+cli() {
+  exec "$release" eval "GamendWeb.CLI.main(System.argv())" -- "$@"
+}
+
+# Create the database when possible, then migrate (`Gamend.Release.prepare/0`).
+prepare() {
+  if [ ! -f .env ] && [ -z "${GAMEND_AUTH_SECRET_KEY_BASE:-}" ]; then
+    echo "No .env in $project and no GAMEND_AUTH_SECRET_KEY_BASE set." >&2
+    echo "Run \`gamend starter\` here first: it writes a .env with a secret key." >&2
+    exit 1
+  fi
+
+  "$release" eval 'Gamend.Release.prepare()'
+}
+
+command=${1:-help}
+
+case $command in
+  start | prod.start | dev.start)
+    distributed
+    export GAMEND_HTTP_SERVER="${GAMEND_HTTP_SERVER:-true}"
+    prepare
+    exec "$release" start
+    ;;
+
+  daemon)
+    distributed
+    export GAMEND_HTTP_SERVER="${GAMEND_HTTP_SERVER:-true}"
+    prepare
+    marker="$state/started"
+    mkdir -p "$state" && : >"$marker"
+    "$release" daemon
+
+    # `daemon` returns at once; wait until the application has started, and
+    # report a server that crashed while booting (a missing secret, a port in
+    # use) instead of claiming it started. The node answers before it has
+    # finished booting, so ask for the application, not just the node.
+    tries=0
+    until "$release" rpc 'true = List.keymember?(Application.started_applications(), :gamend_host, 0)' >/dev/null 2>&1; do
+      tries=$((tries + 1))
+      if { [ -f erl_crash.dump ] && [ erl_crash.dump -nt "$marker" ]; } || [ "$tries" -ge 60 ]; then
+        echo "The server did not start. Last lines of $RELEASE_TMP/log:" >&2
+        tail -n 30 "$RELEASE_TMP"/log/erlang.log.* >&2 2>/dev/null || true
+        exit 1
+      fi
+      sleep 1
+    done
+    echo "Started in the background. Logs: $RELEASE_TMP/log; stop it with: gamend stop"
+    ;;
+
+  reload)
+    # Theme and markdown are cached after the first read; this drops the
+    # caches on the running server, so edits show without a restart.
+    distributed
+    exec "$release" rpc "Gamend.Content.reload(); Gamend.Theme.JSONConfig.reload(); IO.puts(\"Reloaded theme and content\")"
+    ;;
+
+  stop | restart | pid | remote | rpc | start_iex | daemon_iex)
+    distributed
+    exec "$release" "$@"
+    ;;
+
+  version | eval)
+    exec "$release" "$@"
+    ;;
+
+  *)
+    [ $# -gt 0 ] || set -- help
+    cli "$@"
+    ;;
+esac

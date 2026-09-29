@@ -1,0 +1,161 @@
+{
+  "title": "My Game",
+  "tagline": "Play together",
+  "description": "The website and backend of My Game, running on Gamend.",
+  "theme_color": {
+    "light": "#ffffff",
+    "dark": "#292f37"
+  },
+  "pages": {
+    "home": {
+      "path": "/",
+      "hero": {
+        "title": "My Game",
+        "text": "Edit **theme/config.json** to change this page, the menus and the footer. Pictures go in **static/images/**, posts in **blog/**, guides in **priv/docs/**.",
+        "text_align": "center",
+        "buttons": [
+          {
+            "label": "Create an account",
+            "href": "/users/register",
+            "icon": "hero-user-plus-solid",
+            "style": "primary"
+          },
+          {
+            "label": "Leaderboards",
+            "href": "/leaderboards",
+            "icon": "hero-chart-bar-solid"
+          },
+          {
+            "label": "Guides",
+            "href": "/docs/getting-started",
+            "icon": "hero-book-open-solid"
+          }
+        ]
+      },
+      "sections_height": "half",
+      "sections": [
+        {
+          "title": "Your game's backend",
+          "text": "Accounts, lobbies, parties, friends, chat, leaderboards, quests, tournaments and a store are already running here. Your game client talks to them over the REST API and the realtime socket.",
+          "icon": "hero-server-stack-solid",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "API docs",
+              "href": "/api/docs",
+              "icon": "hero-code-bracket-solid"
+            }
+          ]
+        },
+        {
+          "title": "The admin panel",
+          "text": "The first account you register is the admin. The admin panel manages players, content, the economy and every setting.",
+          "icon": "hero-shield-check-solid",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "Open admin",
+              "href": "/admin",
+              "icon": "hero-cog-6-tooth-solid"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "navigation": {
+    "primary_links": [
+      {
+        "label": "Social",
+        "icon": "hero-user-group-solid",
+        "items": [
+          {
+            "label": "Leaderboards",
+            "href": "/leaderboards",
+            "icon": "hero-chart-bar-solid"
+          },
+          {
+            "label": "Quests",
+            "href": "/quests",
+            "icon": "hero-trophy-solid"
+          },
+          {
+            "label": "Tournaments",
+            "href": "/tournaments",
+            "icon": "hero-bolt-solid"
+          },
+          {
+            "label": "Groups",
+            "href": "/groups",
+            "icon": "hero-user-group-solid"
+          }
+        ]
+      },
+      {
+        "label": "News",
+        "icon": "hero-newspaper-solid",
+        "items": [
+          {
+            "label": "Blog",
+            "href": "/blog",
+            "icon": "hero-newspaper-solid"
+          },
+          {
+            "label": "Changelog",
+            "href": "/changelog",
+            "icon": "hero-clock-solid"
+          },
+          {
+            "label": "Roadmap",
+            "href": "/roadmap",
+            "icon": "hero-map-solid"
+          },
+          {
+            "label": "Guides",
+            "href": "/docs/getting-started",
+            "icon": "hero-book-open-solid"
+          }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "sections": [
+      {
+        "title": "My Game",
+        "links": [
+          {
+            "label": "Blog",
+            "href": "/blog"
+          },
+          {
+            "label": "Changelog",
+            "href": "/changelog"
+          },
+          {
+            "label": "Roadmap",
+            "href": "/roadmap"
+          }
+        ]
+      },
+      {
+        "title": "Help",
+        "links": [
+          {
+            "label": "Guides",
+            "href": "/docs/getting-started"
+          },
+          {
+            "label": "API Docs",
+            "href": "/api/docs"
+          },
+          {
+            "label": "Powered by Gamend",
+            "href": "https://gamend.org",
+            "external": true
+          }
+        ]
+      }
+    ]
+  }
+}

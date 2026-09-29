@@ -7,12 +7,9 @@ defmodule Mix.Tasks.Host.Seed do
 
   @impl Mix.Task
   def run(_args) do
-    seeds_path = Path.expand("priv/repo/seeds.exs")
-
-    if File.exists?(seeds_path) do
-      Mix.Task.run("run", [seeds_path])
-    else
-      Mix.shell().info("No seeds file at #{seeds_path}, skipping")
+    case Gamend.Release.seeds_file() do
+      nil -> Mix.shell().info("No seeds file at priv/repo/seeds.exs, skipping")
+      path -> Mix.Task.run("run", [path])
     end
   end
 end

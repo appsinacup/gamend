@@ -60,13 +60,30 @@ defmodule Gamend.GDScript do
   Reference mode is decided once for the whole plugin: a reference handed from
   one script to another has to stay a reference, and mixing modes across files
   would break that.
+
+  Options:
+
+    * `:root` - the directory `paths` are relative to. Each file is read from
+      `Path.join(root, path)`, while `path` as given is what errors and the
+      generated header name. The server's in-process build uses it to produce
+      the same `gen/` as `mix gamend.gdscript.compile` run inside the plugin,
+      without changing the VM's working directory.
   """
   @spec compile_all([Path.t()], keyword()) :: [{String.t(), String.t()}]
   def compile_all(paths, opts \\ []) do
+    root = Keyword.get(opts, :root)
+
     parsed =
       Enum.map(paths, fn path ->
         module = Keyword.get_lazy(opts, :module, fn -> default_module(path) end)
-        statements = path |> File.read!() |> Lexer.tokenize(path) |> Parser.parse(path)
+
+        statements =
+          path
+          |> in_root(root)
+          |> File.read!()
+          |> Lexer.tokenize(path)
+          |> Parser.parse(path)
+
         {path, module, statements}
       end)
 
@@ -104,4 +121,21 @@ defmodule Gamend.GDScript do
 
     "Gamend.Modules." <> name
   end
+
+  @doc """
+  Where the generated source for `module` goes, relative to the output
+  directory: `Gamend.Modules.Shop` -> `gamend/modules/shop.ex`, the layout
+  `mix compile` expects and the one a hand-written plugin already uses.
+  """
+  @spec source_path(String.t()) :: Path.t()
+  def source_path(module) do
+    module
+    |> String.split(".")
+    |> Enum.map(&Macro.underscore/1)
+    |> Path.join()
+    |> Kernel.<>(".ex")
+  end
+
+  defp in_root(path, nil), do: path
+  defp in_root(path, root), do: Path.join(root, path)
 end

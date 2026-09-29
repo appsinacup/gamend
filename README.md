@@ -67,6 +67,19 @@ attached to the [`latest` release](https://github.com/appsinacup/gamend/releases
 - [JavaScript SDK](https://www.npmjs.com/package/@ughuuu/gamend)
 - [Elixir SDK](sdk/) — Stub modules for IDE autocomplete in custom hooks
 
+## Download and run
+
+No Elixir needed: install the server, then start it from a project folder (macOS on Apple silicon, Linux x86_64 and arm64).
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/appsinacup/gamend/main/scripts/install.sh | sh
+mkdir my-game && cd my-game
+gamend starter   # an example site to edit: theme, pages, a post, a guide
+gamend start     # http://localhost:4000
+```
+
+`gamend starter website` gives you the gamend.org site instead. For end-to-end tests in CI, `uses: appsinacup/gamend/actions/setup-gamend@main` starts a server and sets `GAMEND_URL`. Guide: [Download and run](https://gamend.org/docs/standalone).
+
 ## Run Locally
 
 ### Prerequisites

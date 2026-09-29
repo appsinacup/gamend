@@ -1,1 +1,3 @@
 doc/
+# ExUnit @tag :tmp_dir scratch space
+/tmp/

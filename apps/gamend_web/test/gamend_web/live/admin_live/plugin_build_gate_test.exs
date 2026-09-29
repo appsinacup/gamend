@@ -1,8 +1,9 @@
 defmodule GamendWeb.AdminLive.PluginBuildGateTest do
   @moduledoc """
-  The admin Config page offers a "Build bundle" control that shells out to
-  `mix`. An image built from Dockerfile.release ships no `mix`, so the control
-  has to explain itself rather than fail on click.
+  The admin Config page offers a "Build bundle" control. With `mix` on the
+  PATH it shells out to it; an image built from the Dockerfile's `release`
+  target ships no `mix`, and builds in-process with the Elixir compiler the
+  release carries instead. The page says which it will do.
   """
   # Manipulates PATH, which is process-global.
   use GamendWeb.ConnCase, async: false
@@ -12,8 +13,6 @@ defmodule GamendWeb.AdminLive.PluginBuildGateTest do
   alias Gamend.Accounts.User
   alias Gamend.AccountsFixtures
   alias Gamend.Repo
-
-  @unavailable_notice "which this image does not ship"
 
   defp admin_conn(conn) do
     user = AccountsFixtures.user_fixture()
@@ -39,28 +38,26 @@ defmodule GamendWeb.AdminLive.PluginBuildGateTest do
     end
   end
 
-  test "explains itself and disables the control when mix is absent", %{conn: conn} do
+  test "without mix, says it builds in-process instead of refusing", %{conn: conn} do
     conn = admin_conn(conn)
 
-    html =
-      without_mix_on_path(fn ->
-        {:ok, _lv, html} = live(conn, ~p"/admin/config")
-        html
-      end)
+    without_mix_on_path(fn ->
+      {:ok, lv, _html} = live(conn, ~p"/admin/config")
 
-    assert html =~ @unavailable_notice
-    assert html =~ "plugins-build-btn"
-    # The button carries `disabled` regardless of whether plugin sources exist.
-    assert html =~ ~r/id="plugins-build-btn"[^>]*disabled/s
+      assert has_element?(lv, "#plugins-build-mode", "BUILD: in-process")
+      assert has_element?(lv, "#plugins-build-in-process")
+      refute render(lv) =~ "cannot build bundles"
+    end)
   end
 
-  test "says nothing about it when mix is present", %{conn: conn} do
-    {:ok, _lv, html} = live(admin_conn(conn), ~p"/admin/config")
+  test "with mix, says it builds with mix", %{conn: conn} do
+    {:ok, lv, _html} = live(admin_conn(conn), ~p"/admin/config")
 
-    refute html =~ @unavailable_notice
+    assert has_element?(lv, "#plugins-build-mode", "BUILD: mix")
+    refute has_element?(lv, "#plugins-build-in-process")
   end
 
-  test "submitting the form with mix absent flashes instead of erroring", %{conn: conn} do
+  test "submitting the form without mix builds instead of refusing", %{conn: conn} do
     conn = admin_conn(conn)
 
     without_mix_on_path(fn ->
@@ -71,7 +68,7 @@ defmodule GamendWeb.AdminLive.PluginBuildGateTest do
         |> element("#plugins-build-form")
         |> render_submit(%{"plugin_build" => %{"name" => "anything"}})
 
-      assert render =~ "cannot build plugin bundles"
+      refute render =~ "cannot build plugin bundles"
     end)
   end
 end

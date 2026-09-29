@@ -17,6 +17,11 @@ defmodule Gamend.Theme.JSONConfig do
   The decoded file is cached in `:persistent_term`; translation happens per
   read, against the caller's current locale. Call `reload/0` after editing the
   file at runtime.
+
+  `reload/0` emits the telemetry event `[:gamend, :theme, :reload]` once the
+  cache is cleared, so work derived from the file can follow it without core
+  knowing who does it: the web app cuts the responsive image variants a new
+  config asks for (`GamendWeb.ResponsiveImages`).
   """
 
   @behaviour Gamend.Theme
@@ -164,6 +169,10 @@ defmodule Gamend.Theme.JSONConfig do
     for {{mod, :translated, _backend, _locale} = key, _value} <- :persistent_term.get(),
         mod == __MODULE__,
         do: :persistent_term.erase(key)
+
+    :telemetry.execute([:gamend, :theme, :reload], %{system_time: System.system_time()}, %{
+      path: config_path()
+    })
 
     :ok
   end

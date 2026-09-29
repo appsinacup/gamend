@@ -46,6 +46,18 @@ defmodule GamendWeb do
   # are served directly by the host endpoint.
   def static_paths, do: ~w(assets fonts)
 
+  @doc """
+  The host's OTP app: the `:host_static_app` a host sets to name itself,
+  `:gamend_web` when none does. Its `priv/static` is what the endpoint serves
+  and its `priv/starter` is what `gamend starter` copies.
+  """
+  @spec host_app() :: atom()
+  def host_app, do: Application.get_env(:gamend_web, :host_static_app, :gamend_web)
+
+  @doc "The app whose `priv/static/assets` holds the compiled CSS and JS (`:asset_static_app`, else the host app)."
+  @spec asset_app() :: atom()
+  def asset_app, do: Application.get_env(:gamend_web, :asset_static_app, host_app())
+
   def router do
     quote do
       use Phoenix.Router, helpers: false

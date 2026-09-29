@@ -238,6 +238,22 @@ defmodule Gamend.Payments do
     end
   end
 
+  @doc ~S"""
+    Whether the user has EVER held `key`, active or not. What a once-per-account
+    grant (a trial) checks, since the row outlives its end.
+    
+  """
+  @spec entitlement_ever?(Ecto.UUID.t(), String.t()) :: boolean()
+  def entitlement_ever?(_user_id, _key) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :erlang.phash2(make_ref(), 2) == 0
+
+      _ ->
+        raise "Gamend.Payments.entitlement_ever?/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
   @doc false
   @spec finalize_steam_purchase(Gamend.Accounts.User.t(), map()) ::
           {:ok, %{purchase: Gamend.Payments.Purchase.t()}} | {:error, term()}
@@ -385,6 +401,46 @@ defmodule Gamend.Payments do
 
       _ ->
         raise "Gamend.Payments.get_purchase_by_provider_transaction/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    The user's `key` row, active or not, or `nil`.
+  """
+  @spec get_user_entitlement_by_key(Ecto.UUID.t(), String.t()) ::
+          Gamend.Payments.Entitlement.t() | nil
+  def get_user_entitlement_by_key(_user_id, _key) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Payments.get_user_entitlement_by_key/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Grant an entitlement without a purchase: a trial, a contributor's reward,
+    a support gesture. Upserts the one `(user, key)` row.
+    
+    Never shortens what the user already has: an active row with no end (a
+    lifetime purchase) keeps no end, and an active row ending later than
+    `:expires_at` keeps its later end. A row a purchase created keeps its
+    `source_purchase_id`, so its provider sync still finds it.
+    
+    Options: `:expires_at` (a `DateTime`, `nil` for no end), `:metadata` (a map
+    merged into the row's, e.g. `%{"source" => "trial", "granted_by" => id}`).
+    
+  """
+  @spec grant_entitlement(Ecto.UUID.t(), String.t(), keyword()) ::
+          {:ok, Gamend.Payments.Entitlement.t()} | {:error, term()}
+  def grant_entitlement(_user_id, _key, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok, nil}
+
+      _ ->
+        raise "Gamend.Payments.grant_entitlement/3 is a stub - only available at runtime on Gamend"
     end
   end
 

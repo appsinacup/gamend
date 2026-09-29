@@ -18,23 +18,29 @@ defmodule Gamend.Hooks.PluginBuilderTest do
     end
   end
 
-  describe "available?/0" do
-    test "true when a mix executable is reachable" do
+  describe "available?/0 and mode/0" do
+    test "builds with mix when a mix executable is reachable" do
       assert PluginBuilder.available?()
+      assert PluginBuilder.mode() == :mix
     end
 
-    test "false when it is not" do
-      without_mix_on_path(fn -> refute PluginBuilder.available?() end)
+    # A release ships the compiler but no mix: it builds in-process.
+    test "builds in-process when it is not" do
+      without_mix_on_path(fn ->
+        assert PluginBuilder.available?()
+        assert PluginBuilder.mode() == :in_process
+      end)
     end
   end
 
   describe "build/1" do
-    test "refuses up front when mix is unavailable" do
+    test "refuses a forced mix build up front when mix is unavailable" do
       # Without the guard this reaches System.cmd/3, which raises :enoent and
       # surfaces in the admin UI as an opaque build failure. The caller needs
       # to distinguish "this image cannot build" from "this build broke".
       without_mix_on_path(fn ->
-        assert PluginBuilder.build("anything") == {:error, :mix_unavailable}
+        assert PluginBuilder.build("anything", mode: :mix) == {:error, :mix_unavailable}
+        assert PluginBuilder.build("anything") == {:error, {:unknown_plugin, "anything"}}
       end)
     end
 
@@ -49,6 +55,9 @@ defmodule Gamend.Hooks.PluginBuilderTest do
     test "cannot be steered out of the sources directory" do
       assert {:error, {:unknown_plugin, _}} = PluginBuilder.build("../../../../tmp/evil")
       assert {:error, {:unknown_plugin, _}} = PluginBuilder.build("/etc")
+
+      assert {:error, {:unknown_plugin, _}} =
+               PluginBuilder.build("../../../../tmp/evil", mode: :in_process)
     end
   end
 

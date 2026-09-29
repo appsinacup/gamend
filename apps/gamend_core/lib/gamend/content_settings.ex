@@ -1,7 +1,7 @@
 defmodule Gamend.ContentSettings do
   @moduledoc """
   Where the server finds host-supplied content: the theme config, hook plugins,
-  and the GeoIP database.
+  project static files, and the GeoIP database.
   """
 
   use Gamend.Settings.Provider,
@@ -17,6 +17,12 @@ defmodule Gamend.ContentSettings do
   setting(:plugins_dir, :string,
     default: "modules/plugins",
     doc: "Directory containing OTP hook plugins."
+  )
+
+  setting(:static_dirs, :list,
+    default: ["static", "priv/static"],
+    doc:
+      "Directories of static files served ahead of the built-in ones (images/, game/, favicon.ico, robots.txt, theme.css), relative to the working directory and searched in order. Each is used when it exists."
   )
 
   setting(:geoip_db_path, :string,

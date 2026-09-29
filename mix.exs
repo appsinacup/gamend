@@ -23,22 +23,42 @@ defmodule GamendHost.MixProject do
 
   # `mix release` copies config/runtime.exs to releases/<vsn>/runtime.exs and
   # nothing else from config/. Ours is a two-line shim that requires
-  # host_runtime.exs from its own directory, so without this step the release
-  # boots into a Code.LoadError before any application starts. Ship the file
-  # beside the shim that reads it.
+  # host_runtime.exs from its own directory, which in turn requires dotenv.exs
+  # to read the working directory's .env, so without this step the release
+  # boots into a Code.LoadError before any application starts. Ship the files
+  # beside the shim that reads them.
   defp releases do
     [
       gamend_host: [
-        steps: [:assemble, &copy_host_runtime_config/1]
+        steps: [:assemble, &copy_host_runtime_config/1, &copy_starter_env_example/1]
       ]
     ]
   end
 
   defp copy_host_runtime_config(release) do
-    source = Path.join([__DIR__, "config", "host_runtime.exs"])
-    target = Path.join([release.path, "releases", release.version, "host_runtime.exs"])
+    for file <- ["host_runtime.exs", "dotenv.exs"] do
+      source = Path.join([__DIR__, "config", file])
+      target = Path.join([release.path, "releases", release.version, file])
 
-    File.cp!(source, target)
+      File.cp!(source, target)
+    end
+
+    release
+  end
+
+  # `gamend starter` copies priv/starter/<name> into a project. The reference
+  # for every setting is generated at the root (`mix gamend.settings.env_example`),
+  # so it is added to each bundled template here rather than kept twice in git.
+  defp copy_starter_env_example(release) do
+    vsn = release.applications[:gamend_host][:vsn]
+    starters = Path.join([release.path, "lib", "gamend_host-#{vsn}", "priv", "starter"])
+
+    for template <- File.ls!(starters), File.dir?(Path.join(starters, template)) do
+      File.cp!(
+        Path.join(__DIR__, ".env.example"),
+        Path.join([starters, template, ".env.example"])
+      )
+    end
 
     release
   end
@@ -62,6 +82,11 @@ defmodule GamendHost.MixProject do
     [
       shared_dep(:gamend_core, "apps/gamend_core"),
       shared_dep(:gamend_web, "apps/gamend_web"),
+      # The GDScript transpiler, shipped at runtime so a release with no Mix can
+      # still build a GDScript plugin (`Gamend.Hooks.PluginBuilder` calls
+      # `Gamend.GDScript` in-process). Its Mix tasks compile in too; they are
+      # never called outside Mix.
+      shared_dep(:gamend_plugin_tools, "sdk_tools"),
       {:phoenix, "~> 1.8"},
       {:phoenix_ecto, "~> 4.5"},
       {:phoenix_html, "~> 4.1"},
@@ -114,6 +139,7 @@ defmodule GamendHost.MixProject do
       "db.rollback": ["host.rollback -r Gamend.Repo"],
       "db.setup": ["host.db.setup"],
       "db.reset": ["host.db.reset"],
+      "db.seed": ["host.seed"],
       test:
         [
           "ecto.create --quiet -r Gamend.Repo",

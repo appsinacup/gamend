@@ -83,7 +83,11 @@ defmodule GamendCore.MixProject do
       # renders as undifferentiated text.
       {:lumis, "~> 0.1"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.40", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.40", only: :dev, runtime: false},
+      # The GDScript transpiler, for the in-process plugin build tests. At runtime
+      # the host ships it (a dependency of the root app); the core only calls
+      # it when it is loaded, so the core itself does not depend on it.
+      {:gamend_plugin_tools, path: "../../sdk_tools", only: :test}
     ]
   end
 

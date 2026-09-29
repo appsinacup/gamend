@@ -3,7 +3,7 @@ name: Server binaries
 # Downloadable releases of the server: `gamend` for macOS (Apple silicon) and
 # Linux (x86_64, arm64), SQLite and Postgres builds, plus the gamend.org website
 # as a project folder. Every push to main republishes them on the rolling
-# `server-latest` release, which scripts/install.sh and the setup-gamend action
+# `server-latest` release, which rel/install.sh and the setup-gamend action
 # download from. Guide: priv/docs/10-setup/15-standalone.md.
 
 on:
@@ -20,8 +20,6 @@ on:
       - "mix.lock"
       - "priv/starter/**"
       - "rel/**"
-      - "scripts/install.sh"
-      - "scripts/release/**"
   workflow_dispatch:
 
 concurrency:
@@ -72,7 +70,8 @@ jobs:
           apt-get update
           apt-get install -y --no-install-recommends \
             build-essential autoconf pkg-config perl curl ca-certificates git \
-            libncurses-dev jq file binutils unzip xz-utils brotli
+            libncurses-dev jq file binutils unzip xz-utils brotli \
+            imagemagick optipng pngquant
 
       - uses: actions/checkout@v7
         with:
@@ -89,18 +88,18 @@ jobs:
           path: |
             ${{ env.BUILD_ROOT }}/deps
             ${{ env.BUILD_ROOT }}/otp
-          key: otp-${{ matrix.runner }}-ubuntu22-${{ env.OTP_VERSION }}-${{ env.OPENSSL_VERSION }}-${{ env.LIBSRTP_VERSION }}-${{ hashFiles('scripts/release/static-deps.sh', 'scripts/release/build-otp.sh') }}
+          key: otp-${{ matrix.runner }}-ubuntu22-${{ env.OTP_VERSION }}-${{ env.OPENSSL_VERSION }}-${{ env.LIBSRTP_VERSION }}-${{ hashFiles('rel/scripts/static-deps.sh', 'rel/scripts/build-otp.sh') }}
 
       - name: Build the release
-        run: scripts/release/build.sh "$BUILD_ROOT"
+        run: rel/scripts/build.sh "$BUILD_ROOT"
 
       - name: Package
-        run: scripts/release/package.sh "${{ matrix.name }}" dist
+        run: rel/scripts/package.sh "${{ matrix.name }}" dist
 
       - name: Smoke test
         env:
           GAMEND_DB_URL: ${{ matrix.adapter == 'postgres' && 'ecto://postgres:postgres@postgres:5432/gamend_smoke' || '' }}
-        run: scripts/release/smoke.sh "dist/${{ matrix.name }}.tar.gz"
+        run: rel/scripts/smoke.sh "dist/${{ matrix.name }}.tar.gz"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -128,16 +127,24 @@ jobs:
       - name: Version
         run: echo "GAMEND_CONTENT_APP_VERSION=1.0.$(git rev-list --count HEAD)" >> "$GITHUB_ENV"
 
+      # `mix assets.deploy` cuts the theme's responsive images with ImageMagick
+      # and optimizes PNGs, as the Docker build does.
+      - name: Image tools
+        run: |
+          for tool in imagemagick optipng pngquant brotli; do
+            brew list "$tool" > /dev/null 2>&1 || brew install "$tool"
+          done
+
       - name: Cache static OpenSSL, libsrtp and OTP
         uses: actions/cache@v6
         with:
           path: |
             ${{ env.BUILD_ROOT }}/deps
             ${{ env.BUILD_ROOT }}/otp
-          key: otp-macos-15-${{ env.OTP_VERSION }}-${{ env.OPENSSL_VERSION }}-${{ env.LIBSRTP_VERSION }}-${{ hashFiles('scripts/release/static-deps.sh', 'scripts/release/build-otp.sh') }}
+          key: otp-macos-15-${{ env.OTP_VERSION }}-${{ env.OPENSSL_VERSION }}-${{ env.LIBSRTP_VERSION }}-${{ hashFiles('rel/scripts/static-deps.sh', 'rel/scripts/build-otp.sh') }}
 
       - name: Build the release
-        run: scripts/release/build.sh "$BUILD_ROOT"
+        run: rel/scripts/build.sh "$BUILD_ROOT"
 
       - name: Import the signing certificate
         if: github.event_name != 'pull_request'
@@ -167,13 +174,13 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: scripts/release/package.sh "${{ matrix.name }}" dist
+        run: rel/scripts/package.sh "${{ matrix.name }}" dist
 
       # The Postgres build needs a database macOS runners do not have; its
       # linkage is the SQLite build's, checked by package.sh.
       - name: Smoke test
         if: matrix.adapter == 'sqlite'
-        run: scripts/release/smoke.sh "dist/${{ matrix.name }}.tar.gz"
+        run: rel/scripts/smoke.sh "dist/${{ matrix.name }}.tar.gz"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -186,7 +193,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-      - run: scripts/release/website.sh dist
+      - run: rel/scripts/website.sh dist
       - uses: actions/upload-artifact@v7
         with:
           name: gamend-website
@@ -210,14 +217,15 @@ jobs:
           if command -v apt-get > /dev/null; then
             apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
           else
-            dnf install -y curl tar gzip findutils
+            # Fedora ships curl-minimal; --allowerasing lets dnf keep or swap it.
+            dnf install -y --allowerasing curl tar gzip findutils
           fi
       - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with:
           name: gamend-linux-x86_64
           path: dist
-      - run: scripts/release/smoke.sh dist/gamend-linux-x86_64.tar.gz
+      - run: rel/scripts/smoke.sh dist/gamend-linux-x86_64.tar.gz
 
   publish:
     name: Publish server-latest
@@ -236,7 +244,7 @@ jobs:
 
       - name: Checksums and installer
         run: |
-          cp scripts/install.sh dist/install.sh
+          cp rel/install.sh dist/install.sh
           (cd dist && sha256sum *.tar.gz > SHA256SUMS)
           cat dist/SHA256SUMS
 
@@ -247,7 +255,7 @@ jobs:
           version="1.0.$(git rev-list --count HEAD)"
           notes="Gamend server $version, built from ${GITHUB_SHA::12}.
 
-          Install: \`curl -fsSL https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/scripts/install.sh | sh\`
+          Install: \`curl -fsSL https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/rel/install.sh | sh\`
           Guide: https://gamend.org/docs/standalone"
 
           git tag -f server-latest "$GITHUB_SHA"

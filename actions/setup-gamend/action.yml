@@ -51,7 +51,7 @@ runs:
         GAMEND_ADAPTER: ${{ inputs.adapter }}
         GAMEND_BIN_DIR: ${{ runner.temp }}/gamend-bin
       run: |
-        sh "$GITHUB_ACTION_PATH/../../scripts/install.sh"
+        sh "$GITHUB_ACTION_PATH/../../rel/install.sh"
         echo "$GAMEND_BIN_DIR" >> "$GITHUB_PATH"
 
     - name: Create the project

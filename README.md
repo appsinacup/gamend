@@ -72,7 +72,7 @@ attached to the [`latest` release](https://github.com/appsinacup/gamend/releases
 No Elixir needed: install the server, then start it from a project folder (macOS on Apple silicon, Linux x86_64 and arm64).
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/appsinacup/gamend/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/appsinacup/gamend/main/rel/install.sh | sh
 mkdir my-game && cd my-game
 gamend starter   # an example site to edit: theme, pages, a post, a guide
 gamend start     # http://localhost:4000

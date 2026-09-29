@@ -106,7 +106,7 @@ config :gamend_core, Gamend.Storage, adapter: :local
 config :ex_aws, json_codec: Jason
 
 # The downloadable releases link libsrtp statically, from the prefix
-# scripts/release/static-deps.sh builds (found through PKG_CONFIG_PATH).
+# rel/scripts/static-deps.sh builds (found through PKG_CONFIG_PATH).
 # Otherwise ex_libsrtp downloads a shared libsrtp and loads it through an rpath,
 # one more library the machine running the release would need.
 if System.get_env("GAMEND_BUILD_STATIC_DEPS") == "true" do

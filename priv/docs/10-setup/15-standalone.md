@@ -22,7 +22,7 @@ and `-postgres`. Windows and Intel Macs can use the [Docker image](/docs/deploym
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/appsinacup/gamend/main/scripts/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/appsinacup/gamend/main/rel/install.sh | sh
 ```
 
 It downloads the build for your machine into `~/.gamend` and links `gamend`

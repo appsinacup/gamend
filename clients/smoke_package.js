@@ -13,6 +13,7 @@
  *   node clients/smoke_package.js
  */
 
+const crypto = require('crypto')
 const http = require('http')
 const path = require('path')
 
@@ -36,6 +37,41 @@ const server = http.createServer((req, res) => {
   res.end(JSON.stringify({ data: { status: 'ok', timestamp: new Date().toISOString() } }))
 })
 
+// Answers the socket as UserSocket does for tokens: 403 for any token but
+// `fresh`, which opens it.
+const tokensSent = []
+const upgraded = new Set()
+server.on('upgrade', (req, socket) => {
+  const token = new URL(req.url, 'http://x').searchParams.get('token')
+  tokensSent.push(token)
+  if (token !== 'fresh') {
+    socket.end('HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\nConnection: close\r\n\r\n', () => socket.destroy())
+    return
+  }
+  const accept = crypto.createHash('sha1')
+    .update(req.headers['sec-websocket-key'] + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
+    .digest('base64')
+  socket.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n' +
+    `Sec-WebSocket-Accept: ${accept}\r\n\r\n`)
+  upgraded.add(socket)
+})
+
+// Node's WebSocket fires no close after a failed handshake, and a close is what
+// makes Phoenix retry. Browsers fire one (code 1006); this does too.
+class BrowserWebSocket extends WebSocket {
+  constructor (url, protocols) {
+    super(url, protocols)
+    let closed = false
+    this.addEventListener('close', () => { closed = true })
+    this.addEventListener('error', () => setTimeout(() => {
+      if (!closed) {
+        closed = true
+        if (this.onclose) this.onclose({ code: 1006 })
+      }
+    }, 0))
+  }
+}
+
 server.listen(0, '127.0.0.1', async () => {
   const { port } = server.address()
   console.log('smoke_package: exercising the built package')
@@ -51,23 +87,23 @@ server.listen(0, '127.0.0.1', async () => {
     check('GameRealtime is exported', typeof GameRealtime === 'function')
     check('GameWebRTC is exported', typeof GameWebRTC === 'function')
 
-    // Constructing GameRealtime exercises the Phoenix.Socket wrapper and proves
-    // the bundle can reach phoenix. Passing a tokenProvider (4th arg, the fix
-    // for #47) must not throw: Phoenix JS stores params as a function and only
-    // calls it on an actual transport connect, which we pre-empt with disconnect().
-    try {
-      const realtime = new GameRealtime(
-        `ws://127.0.0.1:${port}`,
-        'dummy-token',
-        {},
-        () => 'dummy-token'
-      )
-      check('GameRealtime accepts a tokenProvider (4th arg)', typeof realtime === 'object')
-      realtime.disconnect()
-      check('GameRealtime disconnects cleanly with a tokenProvider', true)
-    } catch (e) {
-      check('GameRealtime accepts a tokenProvider (4th arg)', false, e.message)
-    }
+    let rejected = false
+    try { new GameRealtime(`ws://127.0.0.1:${port}`, 'a-token') } catch (e) { rejected = e instanceof TypeError }
+    check('GameRealtime takes a token function, not a token', rejected)
+
+    // A socket whose token expired: the first connect is refused, and only then
+    // does getToken (async, as an app's refresh is) answer with a fresh token.
+    let asked = 0
+    const getToken = async () => (++asked === 1 ? 'expired' : 'fresh')
+    const realtime = new GameRealtime(`ws://127.0.0.1:${port}`, getToken, { transport: BrowserWebSocket })
+    const opened = await new Promise((resolve) => {
+      const timer = setTimeout(() => resolve(false), 5000)
+      realtime.socket.onOpen(() => { clearTimeout(timer); resolve(true) })
+    })
+    realtime.disconnect()
+    check('GameRealtime reconnects with a refreshed token',
+      opened && tokensSent[0] === 'expired' && tokensSent[tokensSent.length - 1] === 'fresh',
+      `tokens sent: ${tokensSent.join(', ')}`)
 
     // realtime.js pulls phoenix; gamend_realtime.pb.js pulls protobufjs.
     // Requiring them here is what catches an undeclared runtime dependency.
@@ -76,6 +112,7 @@ server.listen(0, '127.0.0.1', async () => {
   } catch (error) {
     check('package loads and runs', false, error && error.message)
   } finally {
+    upgraded.forEach((socket) => socket.destroy())
     server.close()
   }
 

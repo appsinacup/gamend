@@ -39,7 +39,7 @@ All authenticated calls use a JWT access token. Set it once on the client:
 ```javascript
 const authApi = new AuthenticationApi(apiClient);
 
-const { access_token, refresh_token, user_id } = (await authApi.login({
+const { access_token, refresh_token, expires_in, user_id } = (await authApi.login({
   loginRequest: { email: 'user@example.com', password: 'password123' }
 })).data;
 
@@ -103,12 +103,13 @@ try {
 ## Realtime
 
 The package bundles `GameRealtime`, a thin wrapper over Phoenix channels that
-handles the socket URL, the token and protobuf decoding:
+handles the socket URL, the token and protobuf decoding. It takes a function
+that returns the access token ([Tokens and reconnects](#tokens-and-reconnects)):
 
 ```javascript
 import { GameRealtime } from '@ughuuu/gamend';
 
-const realtime = new GameRealtime('https://your-server.com', access_token);
+const realtime = new GameRealtime('https://your-server.com', getAccessToken);
 
 const user = realtime.joinUserChannel(userId);
 user.on('notification_created', payload => console.log('notification', payload));
@@ -127,30 +128,32 @@ unix-ms numbers.
 last copy if you need to know which field moved. The complete topic and event
 list is in the Realtime guide.
 
-### Token refresh on reconnect
+### Tokens and reconnects
 
-Access tokens last 15 minutes. Once one expires, a WebSocket that reconnects
-sends the stale token and the server rejects the handshake with a `403`, putting
-the client in a reconnect loop until the app itself tears the socket down and
-rebuilds it. To avoid that, pass a `tokenProvider` — a zero-argument function
-that returns the current access token — as the **fourth** constructor argument:
+The socket sends the access token on every connect, and access tokens last 15
+minutes. So `GameRealtime` asks for the token instead of holding one: it calls
+your function before the first connect and again after every failed one, and
+Phoenix's next retry carries the answer. A socket that reconnects after its
+token expired (a tab back from the background, a dropped network) recovers on
+its own.
+
+The function returns the token or a promise of it. It also runs while the
+server is unreachable, as often as every 5 seconds, so return the cached token
+while it is valid and refresh only when it is about to expire:
 
 ```javascript
-const realtime = new GameRealtime(
-  'https://your-server.com',
-  access_token,               // initial token, used for the first connection
-  {},                         // socketOpts (e.g. { format: 'protobuf' })
-  () => auth.currentAccessToken  // tokenProvider, called on every reconnect + rejoin
-)
+let session = { access_token, refresh_token, expires_at: Date.now() + expires_in * 1000 };
+
+async function getAccessToken() {
+  if (Date.now() < session.expires_at - 60_000) return session.access_token;
+  const refreshed = (await authApi.refreshToken({
+    refreshTokenRequest: { refresh_token: session.refresh_token }
+  })).data;
+  session.access_token = refreshed.access_token;
+  session.expires_at = Date.now() + refreshed.expires_in * 1000;
+  apiClient.defaultHeaders = { Authorization: `Bearer ${refreshed.access_token}` };
+  return refreshed.access_token;
+}
 ```
 
-When a `tokenProvider` is supplied, the socket stores its params as a function,
-which Phoenix JS evaluates fresh on every `transportConnect()` (reconnect). Your
-auth layer refreshes the token ahead of the 15-minute expiry (see [Authenticate](#authenticate)
-above) and writes the new value to whatever the provider reads, so the next
-reconnect carries the valid token with no instance rebuild. Channel join params
-become a function too, so rejoins after a socket reconnect also use the current
-token. Omitting `tokenProvider` preserves the original behaviour (a static token
-baked at construction). The Godot SDK does the same thing automatically:
-`GamendWebSocket` takes a `_token_provider` Callable and reconnects with a
-refreshed token.
+The Godot client works the same way: `GamendWebSocket` takes a token provider.

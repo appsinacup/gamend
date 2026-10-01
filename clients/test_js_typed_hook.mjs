@@ -29,7 +29,7 @@ const HelloProtoRequest = root.lookupType('HelloProtoRequest')
 const HelloProtoReply = root.lookupType('HelloProtoReply')
 
 const format = process.env.RTC_FORMAT || 'protobuf'
-const realtime = new GameRealtime('http://127.0.0.1:4000', creds.access_token, { format })
+const realtime = new GameRealtime('http://127.0.0.1:4000', () => creds.access_token, { format })
 const channel = realtime.joinUserChannel(creds.user_id)
 await new Promise((resolve) => channel.on('updated', resolve))
 

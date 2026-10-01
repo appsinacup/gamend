@@ -12,7 +12,7 @@
  *
  *   import { GameRealtime, GameWebRTC } from '@ughuuu/gamend'
  *
- *   const realtime = new GameRealtime('https://your-server.com', token)
+ *   const realtime = new GameRealtime('https://your-server.com', getAccessToken)
  *   const userChannel = realtime.joinUserChannel(userId)
  *
  *   const webrtc = new GameWebRTC(userChannel, {

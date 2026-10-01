@@ -272,7 +272,7 @@ async function testWebSocket(accessToken, userId) {
   try {
     console.log('Testing WebSocket (GameRealtime) connection...');
 
-    const realtime = new GameRealtime(basePath, accessToken);
+    const realtime = new GameRealtime(basePath, () => accessToken);
     console.log('✅ GameRealtime created, socket connected');
 
     // Join the user channel

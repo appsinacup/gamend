@@ -203,7 +203,8 @@ defmodule GamendWeb.ApiSpec do
         The `GameRealtime` class (included in this SDK) wraps Phoenix.Socket with convenient channel helpers:
         ```javascript
         import { GameRealtime } from '@ughuuu/gamend'
-        const realtime = new GameRealtime('https://your-server.com', accessToken)
+        // getAccessToken: () => string | Promise<string>, asked again after a failed connect
+        const realtime = new GameRealtime('https://your-server.com', getAccessToken)
         const userChannel = realtime.joinUserChannel(userId)
         userChannel.on('notification', payload => console.log(payload))
         ```
@@ -227,7 +228,7 @@ defmodule GamendWeb.ApiSpec do
         The `GameWebRTC` class (included in this SDK, browser-only) handles signaling automatically:
         ```javascript
         import { GameRealtime, GameWebRTC } from '@ughuuu/gamend'
-        const realtime = new GameRealtime('https://your-server.com', token)
+        const realtime = new GameRealtime('https://your-server.com', getAccessToken)
         const userChannel = realtime.joinUserChannel(userId)
         const webrtc = new GameWebRTC(userChannel, {
           onData: (label, data) => console.log(label, data)

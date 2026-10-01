@@ -21,7 +21,7 @@ function fail(msg) {
 
 const timeout = setTimeout(() => fail('timeout'), 20000)
 
-const realtime = new GameRealtime('http://127.0.0.1:4000', token, { format: 'protobuf' })
+const realtime = new GameRealtime('http://127.0.0.1:4000', () => token, { format: 'protobuf' })
 const channel = realtime.joinUserChannel(userId)
 
 const updated = await new Promise((resolve) => channel.on('updated', resolve))

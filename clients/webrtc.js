@@ -10,10 +10,10 @@
  *
  * Usage:
  *
- *   import { GameRealtime, GameWebRTC } from '@ughuuu/gamend'
+ *   import { GameWebRTC } from '@ughuuu/gamend'
  *
- *   const realtime = new GameRealtime('https://your-server.com', getAccessToken)
- *   const userChannel = realtime.joinUserChannel(userId)
+ *   const realtime = gamend.realtime()  // gamend: a signed-in GamendSession
+ *   const userChannel = realtime.joinUserChannel(gamend.userId)
  *
  *   const webrtc = new GameWebRTC(userChannel, {
  *     dataChannels: [

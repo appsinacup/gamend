@@ -200,12 +200,13 @@ defmodule GamendWeb.ApiSpec do
         - **Party channel** (`party:<party_id>`): party member changes, party updates, party chat
 
         ### **15.3 JS SDK Helper**
-        The `GameRealtime` class (included in this SDK) wraps Phoenix.Socket with convenient channel helpers:
+        The `GameRealtime` class (included in this SDK) wraps Phoenix.Socket with convenient channel helpers. Open it from a `GamendSession`, which keeps the player signed in and gives the socket a valid token whenever it reconnects:
         ```javascript
-        import { GameRealtime } from '@ughuuu/gamend'
-        // getAccessToken: () => string | Promise<string>, asked again after a failed connect
-        const realtime = new GameRealtime('https://your-server.com', getAccessToken)
-        const userChannel = realtime.joinUserChannel(userId)
+        import { GamendSession, AuthenticationApi } from '@ughuuu/gamend'
+        const gamend = new GamendSession('https://your-server.com')
+        await new AuthenticationApi(gamend.client).login({ loginRequest: { email, password } })
+        const realtime = gamend.realtime()
+        const userChannel = realtime.joinUserChannel(gamend.userId)
         userChannel.on('notification', payload => console.log(payload))
         ```
         `phoenix` ships as a dependency of the package, so no extra install is needed.
@@ -227,9 +228,9 @@ defmodule GamendWeb.ApiSpec do
         ### **16.3 JS SDK Helper**
         The `GameWebRTC` class (included in this SDK, browser-only) handles signaling automatically:
         ```javascript
-        import { GameRealtime, GameWebRTC } from '@ughuuu/gamend'
-        const realtime = new GameRealtime('https://your-server.com', getAccessToken)
-        const userChannel = realtime.joinUserChannel(userId)
+        import { GameWebRTC } from '@ughuuu/gamend'
+        const realtime = gamend.realtime() // gamend: a signed-in GamendSession
+        const userChannel = realtime.joinUserChannel(gamend.userId)
         const webrtc = new GameWebRTC(userChannel, {
           onData: (label, data) => console.log(label, data)
         })

@@ -8,7 +8,7 @@
   "scripts": {
     "openapi": "cd .. && mix openapi.spec.json --spec GamendWeb.ApiSpec --filename clients/javascript/openapi.json --pretty=true && cd clients",
     "proto": "npx -p protobufjs-cli pbjs -t static-module -w es6 --keep-case --no-create --no-verify --no-delimited -o gamend_realtime.pb.js ../proto/gamend_realtime.proto",
-    "generate": "mkdir -p javascript/src && rm -rf javascript/src/api javascript/src/model javascript/test/api javascript/test/model javascript/docs javascript/dist && cp openapi-generator-ignore javascript/.openapi-generator-ignore && cd javascript && npx @openapitools/openapi-generator-cli generate -i openapi.json -g javascript -o . --additional-properties usePromises=true,projectName=@ughuuu/gamend,projectVersion=1.0.0 && cp ../realtime.js src/realtime.js && cp ../webrtc.js src/webrtc.js && cp ../gamend_proto.js src/gamend_proto.js && cp ../gamend_realtime.pb.js src/gamend_realtime.pb.js && node ../postgenerate.js && npm i && npm run build && cd ..",
+    "generate": "mkdir -p javascript/src && rm -rf javascript/src/api javascript/src/model javascript/test/api javascript/test/model javascript/docs javascript/dist && cp openapi-generator-ignore javascript/.openapi-generator-ignore && cd javascript && npx @openapitools/openapi-generator-cli generate -i openapi.json -g javascript -o . --additional-properties usePromises=true,projectName=@ughuuu/gamend,projectVersion=1.0.0 && cp ../realtime.js src/realtime.js && cp ../webrtc.js src/webrtc.js && cp ../session.js src/session.js && cp ../gamend_proto.js src/gamend_proto.js && cp ../gamend_realtime.pb.js src/gamend_realtime.pb.js && node ../postgenerate.js && npm i && npm run build && cd ..",
     "start": "node test_js"
   }
 }

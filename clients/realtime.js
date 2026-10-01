@@ -6,11 +6,14 @@
  *
  * Usage (browser / Node.js with bundler):
  *
- *   import { GameRealtime } from '@ughuuu/gamend'
+ *   // Most apps open one from a signed-in GamendSession, which supplies the token:
+ *   const realtime = gamend.realtime()
  *
- *   // getToken returns a valid access token, sync or async. It runs before the
- *   // first connect and after every failed one, so a socket that reconnects
- *   // after its 15-minute token expired carries a fresh token.
+ *   // An app that keeps its own tokens passes a function returning a valid
+ *   // access token, sync or async. It runs before the first connect and after
+ *   // every failed one, so a socket that reconnects after its 15-minute token
+ *   // expired carries a fresh token.
+ *   import { GameRealtime } from '@ughuuu/gamend'
  *   const realtime = new GameRealtime('https://your-server.com', getAccessToken)
  *
  *   // Join the authenticated user channel

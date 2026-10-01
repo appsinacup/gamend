@@ -29,7 +29,7 @@ wss://your-server/socket/websocket?vsn=2.0.0&format=protobuf&token=...
 ```
 
 ```javascript
-const realtime = new GameRealtime(serverUrl, getAccessToken, { format: 'protobuf' })
+const realtime = gamend.realtime({ format: 'protobuf' }) // gamend: a signed-in GamendSession
 ```
 
 ```gdscript

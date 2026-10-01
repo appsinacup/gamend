@@ -3,7 +3,7 @@
  * postgenerate.js
  *
  * Run this after `openapi-generator-cli generate` to inject the handcrafted
- * real-time exports (GameRealtime, GameWebRTC) into the auto-generated
+ * exports (GameRealtime, GameWebRTC, GamendSession) into the auto-generated
  * src/index.js without touching the rest of the generated code.
  *
  * Called automatically by the `generate` npm script in clients/package.json.
@@ -38,6 +38,12 @@ export { GameRealtime, GameRealtime as default_GameRealtime } from './realtime';
  * Uses an existing Phoenix channel for SDP/ICE signaling.
  */
 export { GameWebRTC, GameWebRTC as default_GameWebRTC } from './webrtc';
+
+/**
+ * GamendSession — keeps a player signed in: holds the tokens, refreshes the
+ * access token, and hands GameRealtime a token function.
+ */
+export { GamendSession, GamendSession as default_GamendSession } from './session';
 `
 
 let content = fs.readFileSync(indexPath, 'utf8')
@@ -48,4 +54,4 @@ if (content.includes(MARKER)) {
 }
 
 fs.appendFileSync(indexPath, additions)
-console.log('postgenerate: injected GameRealtime + GameWebRTC exports into src/index.js')
+console.log('postgenerate: injected GameRealtime + GameWebRTC + GamendSession exports into src/index.js')

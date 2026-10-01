@@ -21,42 +21,61 @@ protobuf codec all arrive with the package, so there is nothing else to add.
 ## Connect
 
 ```javascript
-const { ApiClient, HealthApi } = require('@ughuuu/gamend');
+const { GamendSession, HealthApi } = require('@ughuuu/gamend');
 
-const apiClient = new ApiClient();
-apiClient.basePath = 'http://localhost:4000';
+const gamend = new GamendSession('http://localhost:4000');
 
-await new HealthApi(apiClient).index();
+await new HealthApi(gamend.client).index();
 ```
 
-Every other API class takes the same `apiClient`, so configuring it once is
-enough: `new LobbiesApi(apiClient)`, `new LeaderboardsApi(apiClient)`, and so on.
+`GamendSession` keeps the player signed in, and `gamend.client` is the client
+every generated API class takes: `new LobbiesApi(gamend.client)`,
+`new LeaderboardsApi(gamend.client)`, and so on.
 
 ## Authenticate
 
-All authenticated calls use a JWT access token. Set it once on the client:
+Sign in through `gamend.client` and the session keeps what the answer carries:
 
 ```javascript
-const authApi = new AuthenticationApi(apiClient);
+const authApi = new AuthenticationApi(gamend.client);
 
-const { access_token, refresh_token, expires_in, user_id } = (await authApi.login({
+await authApi.login({
   loginRequest: { email: 'user@example.com', password: 'password123' }
-})).data;
+});
 
-apiClient.defaultHeaders = { Authorization: `Bearer ${access_token}` };
+gamend.userId; // the signed-in player
 ```
 
-Access tokens last 15 minutes and refresh tokens 30 days, unless the server
-sets otherwise; `expires_in` on every login and refresh gives the access
-token's lifetime in seconds. Refresh before the access token expires, or retry
-once on a `401`:
+Every sign-in (email, device, a provider) answers an access token, which lasts
+15 minutes, and a refresh token, which lasts 30 days. The session sends the
+access token with every call made through `gamend.client`, refreshes it a
+minute before it expires, and after a `401` refreshes it and retries the call
+once. Concurrent calls share one refresh.
+
+### Keep the session
+
+To stay signed in across reloads, save the session whenever it changes and
+restore it at start-up:
 
 ```javascript
-const refreshed = (await authApi.refreshToken({
-  refreshTokenRequest: { refresh_token }
-})).data;
-apiClient.defaultHeaders = { Authorization: `Bearer ${refreshed.access_token}` };
+gamend.on('session', session => session
+  ? localStorage.setItem('gamend', JSON.stringify(session))
+  : localStorage.removeItem('gamend'));
+gamend.on('authFailed', () => showSignIn());
+
+gamend.restore(JSON.parse(localStorage.getItem('gamend')));
 ```
+
+`session` fires on sign-in, on every refresh and on sign-out, with `null`.
+`authFailed` fires when the server refuses the refresh token: it expired, or
+the player signed out on another device or changed their password. The session
+is gone by then, so show the sign-in screen. The refresh token signs in for 30
+days, so keep it where you would keep a password: any script on the page can
+read `localStorage`.
+
+`await gamend.signOut()` revokes the player's tokens on every device, drops the
+session and disconnects its sockets. It drops the session even when the server
+cannot be reached.
 
 ### OAuth
 
@@ -67,14 +86,14 @@ works from a game client with no redirect handler of its own:
 const { authorization_url, session_id } = (await authApi.oauthRequest('discord')).data;
 window.open(authorization_url, '_blank');
 
-let session;
+let status;
 do {
   await new Promise(r => setTimeout(r, 1000));
-  session = (await authApi.oauthSessionStatus(session_id)).data;
-} while (session.status === 'pending');
+  status = (await authApi.oauthSessionStatus(session_id)).data;
+} while (status.status === 'pending');
 
-if (session.status === 'completed') {
-  const { access_token, refresh_token, user_id } = session.result;
+if (status.status === 'completed') {
+  // gamend took the session from the answer: gamend.signedIn is true
 }
 ```
 
@@ -91,7 +110,7 @@ try {
   await lobbiesApi.joinLobby(id);
 } catch (e) {
   switch (e.status) {
-    case 401: /* token expired - refresh and retry */ break;
+    case 401: /* signed out: the session already tried a refresh */ break;
     case 403: /* not permitted, e.g. not the host */ break;
     case 404: /* gone */ break;
     case 422: console.error(e.body.errors); break;   // validation
@@ -103,15 +122,13 @@ try {
 ## Realtime
 
 The package bundles `GameRealtime`, a thin wrapper over Phoenix channels that
-handles the socket URL, the token and protobuf decoding. It takes a function
-that returns the access token ([Tokens and reconnects](#tokens-and-reconnects)):
+handles the socket URL, the token and protobuf decoding. Open one from the
+session:
 
 ```javascript
-import { GameRealtime } from '@ughuuu/gamend';
+const realtime = gamend.realtime();
 
-const realtime = new GameRealtime('https://your-server.com', getAccessToken);
-
-const user = realtime.joinUserChannel(userId);
+const user = realtime.joinUserChannel(gamend.userId);
 user.on('notification_created', payload => console.log('notification', payload));
 
 const lobby = realtime.joinLobbyChannel(lobbyId);
@@ -120,7 +137,14 @@ lobby.on('updated', lobbyPayload => console.log('lobby changed', lobbyPayload));
 realtime.disconnect();
 ```
 
-Pass `{ format: 'protobuf' }` as the third argument to receive binary frames;
+The server checks the token only when the socket connects, and Phoenix
+reconnects on its own after a dropped network, a sleeping laptop or a tab back
+from the background, often long after the token it started with expired. So the
+socket asks the session for a token before it connects and again after every
+failed connect, and the next retry carries a valid one. Signing out disconnects
+it.
+
+Pass `{ format: 'protobuf' }` to `gamend.realtime` to receive binary frames;
 channels from the join helpers decode them transparently, with timestamps as
 unix-ms numbers.
 
@@ -128,32 +152,18 @@ unix-ms numbers.
 last copy if you need to know which field moved. The complete topic and event
 list is in the Realtime guide.
 
-### Tokens and reconnects
+### Without GamendSession
 
-The socket sends the access token on every connect, and access tokens last 15
-minutes. So `GameRealtime` asks for the token instead of holding one: it calls
-your function before the first connect and again after every failed one, and
-Phoenix's next retry carries the answer. A socket that reconnects after its
-token expired (a tab back from the background, a dropped network) recovers on
-its own.
-
-The function returns the token or a promise of it. It also runs while the
-server is unreachable, as often as every 5 seconds, so return the cached token
-while it is valid and refresh only when it is about to expire:
+An app that keeps its tokens elsewhere passes `GameRealtime` a function that
+returns a valid access token, or a promise of one, and sets the token on its own
+`ApiClient`:
 
 ```javascript
-let session = { access_token, refresh_token, expires_at: Date.now() + expires_in * 1000 };
+apiClient.authentications.authorization.accessToken = accessToken;
 
-async function getAccessToken() {
-  if (Date.now() < session.expires_at - 60_000) return session.access_token;
-  const refreshed = (await authApi.refreshToken({
-    refreshTokenRequest: { refresh_token: session.refresh_token }
-  })).data;
-  session.access_token = refreshed.access_token;
-  session.expires_at = Date.now() + refreshed.expires_in * 1000;
-  apiClient.defaultHeaders = { Authorization: `Bearer ${refreshed.access_token}` };
-  return refreshed.access_token;
-}
+const realtime = new GameRealtime('https://your-server.com', getAccessToken, { format: 'protobuf' });
 ```
 
-The Godot client works the same way: `GamendWebSocket` takes a token provider.
+The function runs before the first connect and after every failed one,
+including while the server is unreachable, as often as every 5 seconds. Return
+the cached token while it is valid and refresh only when it is about to expire.

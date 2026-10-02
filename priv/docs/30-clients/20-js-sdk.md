@@ -126,3 +126,31 @@ unix-ms numbers.
 `updated` carries the **full** object rather than a delta, so diff against your
 last copy if you need to know which field moved. The complete topic and event
 list is in the Realtime guide.
+
+### Token refresh on reconnect
+
+Access tokens last 15 minutes. Once one expires, a WebSocket that reconnects
+sends the stale token and the server rejects the handshake with a `403`, putting
+the client in a reconnect loop until the app itself tears the socket down and
+rebuilds it. To avoid that, pass a `tokenProvider` — a zero-argument function
+that returns the current access token — as the **fourth** constructor argument:
+
+```javascript
+const realtime = new GameRealtime(
+  'https://your-server.com',
+  access_token,               // initial token, used for the first connection
+  {},                         // socketOpts (e.g. { format: 'protobuf' })
+  () => auth.currentAccessToken  // tokenProvider, called on every reconnect + rejoin
+)
+```
+
+When a `tokenProvider` is supplied, the socket stores its params as a function,
+which Phoenix JS evaluates fresh on every `transportConnect()` (reconnect). Your
+auth layer refreshes the token ahead of the 15-minute expiry (see [Authenticate](#authenticate)
+above) and writes the new value to whatever the provider reads, so the next
+reconnect carries the valid token with no instance rebuild. Channel join params
+become a function too, so rejoins after a socket reconnect also use the current
+token. Omitting `tokenProvider` preserves the original behaviour (a static token
+baked at construction). The Godot SDK does the same thing automatically:
+`GamendWebSocket` takes a `_token_provider` Callable and reconnects with a
+refreshed token.

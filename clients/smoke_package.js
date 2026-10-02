@@ -51,6 +51,24 @@ server.listen(0, '127.0.0.1', async () => {
     check('GameRealtime is exported', typeof GameRealtime === 'function')
     check('GameWebRTC is exported', typeof GameWebRTC === 'function')
 
+    // Constructing GameRealtime exercises the Phoenix.Socket wrapper and proves
+    // the bundle can reach phoenix. Passing a tokenProvider (4th arg, the fix
+    // for #47) must not throw: Phoenix JS stores params as a function and only
+    // calls it on an actual transport connect, which we pre-empt with disconnect().
+    try {
+      const realtime = new GameRealtime(
+        `ws://127.0.0.1:${port}`,
+        'dummy-token',
+        {},
+        () => 'dummy-token'
+      )
+      check('GameRealtime accepts a tokenProvider (4th arg)', typeof realtime === 'object')
+      realtime.disconnect()
+      check('GameRealtime disconnects cleanly with a tokenProvider', true)
+    } catch (e) {
+      check('GameRealtime accepts a tokenProvider (4th arg)', false, e.message)
+    }
+
     // realtime.js pulls phoenix; gamend_realtime.pb.js pulls protobufjs.
     // Requiring them here is what catches an undeclared runtime dependency.
     const proto = require(path.join(__dirname, 'javascript', 'dist', 'gamend_proto.js'))

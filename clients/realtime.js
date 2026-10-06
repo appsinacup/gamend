@@ -22,6 +22,18 @@
  *   realtime.disconnect()
  *
  * Dependency: `phoenix` (bundled with @ughuuu/gamend)
+ *
+ * Token refresh on reconnect:
+ *
+ *   Access tokens expire (default 15 min). Pass a tokenProvider so the socket
+ *   reconnects automatically with the current token — no instance rebuild:
+ *
+ *   const realtime = new GameRealtime(
+ *     'https://your-server.com',
+ *     accessToken,            // initial token (used immediately)
+ *     {},                     // socketOpts (e.g. { format: 'protobuf' })
+ *     () => auth.currentAccessToken,  // tokenProvider — called on every reconnect
+ *   )
  */
 
 import { Socket } from 'phoenix'
@@ -29,17 +41,27 @@ import { decodeEvent, registerMetaSchema, registerKvSchema } from './gamend_prot
 
 export class GameRealtime {
   /**
-   * @param {string} serverUrl  - Base HTTP(S) or WS(S) server URL,
-   *                              e.g. "https://game.example.com" or "wss://game.example.com"
-   * @param {string} token      - JWT access token from the REST login endpoints
-   * @param {Object} socketOpts - Optional Phoenix.Socket constructor options.
-   *                              Pass `format: 'protobuf'` to receive server
-   *                              events as protobuf binary frames; channels
-   *                              obtained through the join helpers decode them
-   *                              transparently (timestamps become unix-ms
-   *                              numbers, see proto/gamend_realtime.proto).
+   * @param {string} serverUrl      - Base HTTP(S) or WS(S) server URL,
+   *                                  e.g. "https://game.example.com" or "wss://game.example.com"
+   * @param {string} token          - JWT access token from the REST login endpoints
+   * @param {Object} socketOpts     - Optional Phoenix.Socket constructor options.
+   *                                  Pass `format: 'protobuf'` to receive server
+   *                                  events as protobuf binary frames; channels
+   *                                  obtained through the join helpers decode them
+   *                                  transparently (timestamps become unix-ms
+   *                                  numbers, see proto/gamend_realtime.proto).
+   * @param {Function} [tokenProvider] - Optional function returning the current
+   *                                  JWT access token string. When supplied, the
+   *                                  socket params are evaluated on every
+   *                                  reconnect (and channel rejoin), so an
+   *                                  expired token is replaced with the refreshed
+   *                                  one automatically — no instance rebuild needed.
+   *                                  The initial `token` is used for the first
+   *                                  connection; supply a provider that returns
+   *                                  the live access token (e.g. from your auth
+   *                                  session).
    */
-  constructor(serverUrl, token, socketOpts = {}) {
+  constructor(serverUrl, token, socketOpts = {}, tokenProvider) {
     // Normalise URL: strip trailing slash, ensure ws(s):// scheme, append /socket
     const wsUrl =
       serverUrl
@@ -48,12 +70,26 @@ export class GameRealtime {
 
     const { format, ...opts } = socketOpts
     this._token = token
+    this._tokenProvider = typeof tokenProvider === 'function' ? tokenProvider : null
     this._format = format === 'protobuf' ? 'protobuf' : 'json'
-    const params = this._format === 'protobuf' ? { token, format: 'protobuf' } : { token }
+    // When tokenProvider is set, params is a function: Phoenix JS calls it fresh
+    // on every transportConnect() (reconnect), picking up the current token.
+    // When it is not set, params is a static object (backward compatible).
+    const params = this._tokenProvider ? () => this._socketParams() : this._socketParams()
     this._socket = new Socket(wsUrl, { params, ...opts })
     this._socket.connect()
     /** @type {Map<string, Object>} topic → Phoenix Channel */
     this._channels = new Map()
+  }
+
+  /**
+   * Build the connection params, sourcing the token from tokenProvider when
+   * available so reconnects use the current (possibly refreshed) token.
+   * @returns {Object}
+   */
+  _socketParams() {
+    const token = this._tokenProvider ? this._tokenProvider() : this._token
+    return this._format === 'protobuf' ? { token, format: 'protobuf' } : { token }
   }
 
   /**
@@ -231,7 +267,13 @@ export class GameRealtime {
     if (this._channels.has(topic)) {
       return this._channels.get(topic)
     }
-    const ch = this._socket.channel(topic, { token: this._token, ...extraParams })
+    // When tokenProvider is set, params is a function so Phoenix JS calls it
+    // fresh on every channel rejoin (after a socket reconnect), using the
+    // current token. When not set, params is a static object (backward
+    // compatible).
+    const buildParams = () => ({ ...this._socketParams(), ...extraParams })
+    const params = this._tokenProvider ? buildParams : buildParams()
+    const ch = this._socket.channel(topic, params)
     if (this._format === 'protobuf') this._wrapBinaryDecode(ch)
     ch.join()
       .receive('error', (err) =>

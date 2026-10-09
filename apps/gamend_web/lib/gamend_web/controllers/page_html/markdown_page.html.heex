@@ -5,7 +5,7 @@
   <article class="space-y-6">
     <%!-- `.header` draws the `<h1>`: a second one inside it was two
           headings, the first empty, once the parser closed the outer. --%>
-    <.header>
+    <.header back_href={home_path()}>
       {@page.title}
       <:subtitle :if={@page[:description]}>{@page.description}</:subtitle>
     </.header>

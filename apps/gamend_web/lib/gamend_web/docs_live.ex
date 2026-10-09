@@ -313,7 +313,7 @@ defmodule GamendWeb.DocsLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={@current_path}>
       <div class="space-y-6">
-        <.header>
+        <.header back_href={home_path()}>
           {@title}
           <:subtitle :if={@subtitle}>{@subtitle}</:subtitle>
         </.header>
@@ -426,7 +426,7 @@ defmodule GamendWeb.DocsLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={@current_path} wide>
       <.sidebar_frame tree={@tree} item_path={@item_path} index_path={@index_path} title={@title}>
-        <.header>
+        <.header back_href={home_path()}>
           {@title}
           <:subtitle :if={@subtitle}>{@subtitle}</:subtitle>
         </.header>

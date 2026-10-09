@@ -116,7 +116,9 @@ defmodule GamendWeb.BlogLayoutTest do
       assert html =~ ~s(<img loading="lazy" src="/b.png">)
     end
 
-    test "leaves the way back to the breadcrumb" do
+    # The post's way back is the Back button every page has (2026-10-09),
+    # not the old "Blog /" text crumb before the date.
+    test "goes back to the blog with the Back button, not a text crumb" do
       html =
         render_component(&ContentPages.blog_post/1,
           flash: %{},
@@ -126,7 +128,8 @@ defmodule GamendWeb.BlogLayoutTest do
           next: %{slug: "three", title: "Three"}
         )
 
-      refute html =~ ~s(href="/blog")
+      assert html =~ ~r{<a[^>]*href="/blog"[^>]*title="Back"}
+      refute html =~ ~r{<a[^>]*href="/blog"[^>]*>\s*Blog\s*</a>}
       assert html =~ ~s(href="/blog/one")
       assert html =~ ~s(href="/blog/three")
     end

@@ -101,7 +101,18 @@ defmodule GamendWeb.LeaderboardsLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <div>
+        <%!-- Back: from a board to the list, from the list home. --%>
+        <div class="flex items-center gap-3">
+          <.back_link
+            :if={@selected_leaderboard}
+            navigate={
+              GamendWeb.HostLayouts.localized_href(
+                "/leaderboards",
+                GamendWeb.HostLayouts.current_locale()
+              )
+            }
+          />
+          <.back_link :if={!@selected_leaderboard} href={home_path()} />
           <h1 class="text-4xl font-black text-base-content">
             {gettext("Leaderboards")}
             <span class="text-muted font-normal">({@count})</span>

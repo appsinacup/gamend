@@ -420,7 +420,18 @@ defmodule GamendWeb.TournamentsLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <div>
+        <%!-- Back: from a tournament to the list, from the list home. --%>
+        <div class="flex items-center gap-3">
+          <.back_link
+            :if={@tournament}
+            navigate={
+              GamendWeb.HostLayouts.localized_href(
+                "/tournaments",
+                GamendWeb.HostLayouts.current_locale()
+              )
+            }
+          />
+          <.back_link :if={is_nil(@tournament)} href={home_path()} />
           <h1 class="text-4xl font-black text-base-content">
             {gettext("Tournaments")}
             <span :if={is_nil(@tournament)} class="text-muted font-normal">

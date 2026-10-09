@@ -1,8 +1,11 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
   <div class="text-center">
-    <h1 class="mt-4 text-4xl font-black text-base-content">
-      Terms and Conditions
-    </h1>
+    <div class="mt-4 flex items-center justify-center gap-3">
+      <.back_link href={home_path()} />
+      <h1 class="text-4xl font-black text-base-content">
+        Terms and Conditions
+      </h1>
+    </div>
     <p class="mt-4 leading-7 text-muted max-w-narrow mx-auto">
       These terms and conditions outline the rules and regulations for the use of our service.
     </p>

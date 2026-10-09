@@ -182,20 +182,41 @@ defmodule GamendWeb.Sitemap.Cache do
   def prune do
     current = "#{@prefix}/#{signature()}/"
 
-    # No `is_list` guard: `Gamend.Storage.Adapter`'s `list/1` callback is typed
-    # `[object()]`, so the fallback branch this used to carry was unreachable —
-    # dialyzer flagged it as pattern_match_cov.
-    [prefix: "#{@prefix}/", limit: 1000]
-    |> Storage.list_objects()
-    |> Enum.map(&object_key/1)
-    |> Enum.reject(&(&1 == nil or String.starts_with?(&1, current)))
-    |> Enum.each(&Storage.delete/1)
+    # Every page of the listing, not the first: a host with a thousand
+    # children has more current objects than one page holds, and the keys
+    # sort, so a single page could be all current ones and nothing old was
+    # ever deleted. Each old signature then goes as one prefix.
+    0
+    |> signature_prefixes(MapSet.new())
+    |> MapSet.delete(current)
+    |> Enum.each(&Storage.delete_prefix/1)
 
     :ok
+  end
+
+  @prune_page 1000
+
+  # No `is_list` guard: `Gamend.Storage.Adapter`'s `list/1` callback is typed
+  # `[object()]`, so the fallback branch this used to carry was unreachable —
+  # dialyzer flagged it as pattern_match_cov.
+  defp signature_prefixes(offset, acc) do
+    page = Storage.list_objects(prefix: "#{@prefix}/", offset: offset, limit: @prune_page)
+
+    acc =
+      Enum.reduce(page, acc, fn object, acc ->
+        case object |> object_key() |> String.split("/", parts: 3) do
+          [@prefix, signature, _name] -> MapSet.put(acc, "#{@prefix}/#{signature}/")
+          _ -> acc
+        end
+      end)
+
+    if length(page) < @prune_page,
+      do: acc,
+      else: signature_prefixes(offset + @prune_page, acc)
   end
 
   defp object_key(%{key: key}), do: key
   defp object_key(%{"key" => key}), do: key
   defp object_key(key) when is_binary(key), do: key
-  defp object_key(_), do: nil
+  defp object_key(_), do: ""
 end

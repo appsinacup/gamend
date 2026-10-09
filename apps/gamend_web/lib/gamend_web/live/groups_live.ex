@@ -395,7 +395,18 @@ defmodule GamendWeb.GroupsLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <div>
+        <%!-- Back: from a group to the list, from the list home. --%>
+        <div class="flex items-center gap-3">
+          <.back_link
+            :if={@selected_group}
+            navigate={
+              GamendWeb.HostLayouts.localized_href(
+                "/groups",
+                GamendWeb.HostLayouts.current_locale()
+              )
+            }
+          />
+          <.back_link :if={!@selected_group} href={home_path()} />
           <h1 class="text-4xl font-black text-base-content">{gettext("Groups")}</h1>
         </div>
 

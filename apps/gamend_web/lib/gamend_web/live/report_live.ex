@@ -322,7 +322,10 @@ defmodule GamendWeb.ReportLive do
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="mx-auto max-w-narrow space-y-6">
         <div class="space-y-2">
-          <.page_title>{gettext("Report a problem")}</.page_title>
+          <div class="flex items-center gap-3">
+            <.back_link href={home_path()} />
+            <.page_title class="min-w-0">{gettext("Report a problem")}</.page_title>
+          </div>
           <p class="text-muted">
             {gettext("Tell us what is wrong and we will fix it. No account needed.")}
           </p>

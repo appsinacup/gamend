@@ -790,7 +790,11 @@ defmodule GamendWeb.CoreComponents do
 
   attr :back, :string,
     default: nil,
-    doc: "path to go up to; renders a Back button on the title's own line"
+    doc: "live path to go up to; renders a Back button on the title's own line"
+
+  attr :back_href, :string,
+    default: nil,
+    doc: "the same for a plain page (`home_path/0`), followed with a full load"
 
   attr :back_label, :string, default: nil, doc: ~s(overrides the "Back" wording)
   slot :inner_block, required: true
@@ -803,14 +807,13 @@ defmodule GamendWeb.CoreComponents do
       <div>
         <%!-- The back button sits ON the title line, not above it as a stray
               text link: one place, one shape, on every page that has a parent. --%>
-        <div :if={@back} class="flex flex-wrap items-center gap-3">
-          <.link navigate={@back} class="btn btn-surface btn-sm">
-            <.icon name="hero-arrow-left-solid" class="size-4" />
-            {@back_label || gettext("Back")}
-          </.link>
+        <div :if={@back || @back_href} class="flex flex-wrap items-center gap-3">
+          <.back_link navigate={@back} href={@back_href} label={@back_label} />
           <.page_title class={@class}>{render_slot(@inner_block)}</.page_title>
         </div>
-        <.page_title :if={!@back} class={@class}>{render_slot(@inner_block)}</.page_title>
+        <.page_title :if={!(@back || @back_href)} class={@class}>
+          {render_slot(@inner_block)}
+        </.page_title>
         <p :if={@subtitle != []} class="mt-1 text-sm text-muted">
           {render_slot(@subtitle)}
         </p>
@@ -819,6 +822,43 @@ defmodule GamendWeb.CoreComponents do
     </header>
     """
   end
+
+  attr :href, :string, default: nil, doc: "a plain page"
+  attr :navigate, :string, default: nil, doc: "a live route"
+  attr :label, :string, default: nil, doc: ~s(overrides the "Back" wording)
+  attr :class, :any, default: "btn btn-ghost btn-sm max-sm:btn-circle sm:btn-surface"
+
+  @doc """
+  The Back button: one step up the page's own trail, which the browser's
+  Back is not (it goes wherever the reader came from). Every page under
+  home has one at the start of its title row, the page one step under home
+  pointing at `home_path/0`.
+
+  The word from `sm` up; a phone gets the arrow alone, which is the whole
+  meaning, and the room goes to the heading. `sr-only`, not `hidden`, so it
+  stays the link's name. The arrow is mirrored in a right-to-left locale
+  rather than swapped for another icon.
+
+  Pass `navigate` for a live route and `href` for a plain page; a LiveView
+  that sends `navigate` at a dead route breaks on the way out.
+  """
+  def back_link(assigns) do
+    ~H"""
+    <.link navigate={@navigate} href={@href} class={@class} title={@label || gettext("Back")}>
+      <.icon name="hero-arrow-left-solid" class="size-4 rtl:-scale-x-100" />
+      <span class="sr-only sm:not-sr-only">{@label || gettext("Back")}</span>
+    </.link>
+    """
+  end
+
+  @doc """
+  The home page in the reader's locale (`/de`, `/` in the default one):
+  where Back goes on a page one step under it. A plain page, so pass it to
+  `back_link/1` as `href`.
+  """
+  @spec home_path() :: String.t()
+  def home_path,
+    do: GamendWeb.HostLayouts.localized_href("/", GamendWeb.HostLayouts.current_locale())
 
   @doc """
   Renders a table with generic styling.

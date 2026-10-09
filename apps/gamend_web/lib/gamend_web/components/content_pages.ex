@@ -107,7 +107,10 @@ defmodule GamendWeb.ContentPages do
     ~H"""
     <div class="space-y-6">
       <div class="flex flex-row items-center justify-between gap-3">
-        <h1 class="text-4xl font-black text-base-content">{@title}</h1>
+        <div class="flex min-w-0 items-center gap-3">
+          <.back_link href={home_path()} />
+          <h1 class="text-4xl font-black text-base-content">{@title}</h1>
+        </div>
 
         <.link :if={@sibling_path} href={@sibling_path} class="btn btn-surface btn-sm">
           <.icon name={@sibling_icon} class="size-4" />
@@ -161,7 +164,10 @@ defmodule GamendWeb.ContentPages do
           <%!-- Wraps rather than squeezes: on a phone, "Feuille de route"
                 and "Journal des modifications" do not fit beside the title. --%>
           <div class="mb-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
-            <h1 class="text-3xl font-bold">{gettext("Blog")}</h1>
+            <div class="flex min-w-0 items-center gap-3">
+              <.back_link href={home_path()} />
+              <h1 class="text-3xl font-bold">{gettext("Blog")}</h1>
+            </div>
 
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 whitespace-nowrap">
               <.link
@@ -279,11 +285,21 @@ defmodule GamendWeb.ContentPages do
       <div class="mx-auto max-w-narrow py-8">
         <article class="space-y-10">
           <div class="space-y-4">
-            <div class="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.2em] text-muted">
-              <span><.timestamp at={@post.date} format="date" /></span>
-              <span :if={@post[:reading_minutes]}>
-                · {reading_time(@post.reading_minutes)}
-              </span>
+            <%!-- Back to the blog, beside the date: the post's title is
+                  too big to share a row with. --%>
+            <div class="flex flex-wrap items-center gap-3">
+              <.back_link href={
+                GamendWeb.HostLayouts.localized_href(
+                  "/blog",
+                  GamendWeb.HostLayouts.current_locale()
+                )
+              } />
+              <div class="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.2em] text-muted">
+                <span><.timestamp at={@post.date} format="date" /></span>
+                <span :if={@post[:reading_minutes]}>
+                  · {reading_time(@post.reading_minutes)}
+                </span>
+              </div>
             </div>
 
             <div class="space-y-3">

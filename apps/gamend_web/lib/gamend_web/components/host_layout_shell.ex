@@ -107,13 +107,13 @@ defmodule GamendWeb.HostLayoutShell do
               decoding="sync"
               class="hidden [[data-theme=dark]_&]:block"
             />
-            <%!-- On a phone the logo stands alone and the title is
-                  screen-reader text (2026-10-08, user): a two-word title
-                  fit a 375 px phone's slot only on two lines, and the bar
-                  must stay its 4rem, so a page's sticky parts (`top-16`)
-                  sit under it. `leading-tight` is the net for any width
-                  where a title still wraps: two lines fit the bar. --%>
-            <span class="text-lg font-bold leading-tight max-sm:sr-only @max-[8rem]:sr-only">
+            <%!-- The title shows on a phone too (2026-10-09, user: the logo
+                  alone left the bar empty). A two-word title fits a 375 px
+                  phone's slot on two lines, and `leading-tight` keeps two
+                  lines inside the bar's 4rem, so a page's sticky parts
+                  (`top-16`) still sit under it. Only a slot under 8rem
+                  keeps the logo alone. --%>
+            <span class="text-lg font-bold leading-tight @max-[8rem]:sr-only">
               {Map.get(@theme, "title")}
             </span>
             <span

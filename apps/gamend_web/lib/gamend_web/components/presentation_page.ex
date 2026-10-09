@@ -5,6 +5,8 @@ defmodule GamendWeb.PresentationPage do
 
   use GamendWeb, :html
 
+  require Logger
+
   alias GamendWeb.ProjectStatic
   alias Phoenix.HTML.Safe
 
@@ -573,6 +575,58 @@ defmodule GamendWeb.PresentationPage do
 
   defp has_cards?(_item), do: false
 
+  attr :section, :map, required: true
+
+  @doc """
+  A section's `"component"`: a block the host draws itself, by name.
+
+  The name resolves through `config :gamend_web, :presentation_components,
+  %{"languages" => {MyHost.HomeLanguages, :strip}}` to a function component,
+  called with `%{section: section}` and drawn between the section's text and
+  its links. For the block a config page cannot describe — a strip of every
+  language with its flag, a live count — while the page around it stays
+  config.
+
+  It renders inside `cached_body/4`'s memo, so it must depend on the config
+  and the locale only: a gettext call is fine (the memo is per locale), a
+  reader, a clock or a random source is not. A name the config does not map
+  draws nothing and is logged, so a typo shows in the logs rather than as a
+  blank nobody reports.
+  """
+  def host_component(assigns) do
+    case component_for(assigns.section) do
+      {module, function} ->
+        apply(module, function, [%{__changed__: nil, section: assigns.section}])
+
+      nil ->
+        ~H""
+    end
+  end
+
+  defp component_for(section) do
+    name = non_empty_string(Map.get(section, "component"))
+    components = Application.get_env(:gamend_web, :presentation_components, %{})
+
+    case name && Map.get(components, name) do
+      {module, function} when is_atom(module) and is_atom(function) ->
+        {module, function}
+
+      _ ->
+        if name do
+          Logger.warning(
+            "presentation section names a component the host does not register: #{inspect(name)}"
+          )
+        end
+
+        nil
+    end
+  end
+
+  defp has_component?(item) when is_map(item),
+    do: non_empty_string(Map.get(item, "component")) != nil
+
+  defp has_component?(_item), do: false
+
   attr :entries, :list, required: true, doc: "`%{question: _, answer: _}` maps"
   attr :class, :any, default: nil, doc: "layout only"
 
@@ -882,6 +936,7 @@ defmodule GamendWeb.PresentationPage do
         <div class="max-w-3xl text-base leading-relaxed text-muted">
           {rich_text(Map.get(@section, "text", ""))}
         </div>
+        <.host_component :if={has_component?(@section)} section={@section} />
         <.link_chips :if={has_links?(@section)} links={Map.get(@section, "links")} align="center" />
         <.card_grid :if={has_cards?(@section)} cards={Map.get(@section, "cards")} />
         <.faq
@@ -920,6 +975,7 @@ defmodule GamendWeb.PresentationPage do
         <div class="text-base leading-relaxed text-muted">
           {rich_text(Map.get(@section, "text", ""))}
         </div>
+        <.host_component :if={has_component?(@section)} section={@section} />
         <.link_chips :if={has_links?(@section)} links={Map.get(@section, "links")} />
         <.card_grid :if={has_cards?(@section)} cards={Map.get(@section, "cards")} />
         <.faq

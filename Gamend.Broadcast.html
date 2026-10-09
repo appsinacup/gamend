@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1309">
+    <meta name="project" content="gamend_core v1.1.1310">
 
 
-    <title>Gamend.Broadcast — gamend_core v1.1.1309</title>
+    <title>Gamend.Broadcast — gamend_core v1.1.1310</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1309
+          v1.1.1310
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Broadcast</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1309)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1310)</small>
 
     </h1>
 
@@ -119,7 +119,7 @@ IP ban, a chat mute, a moderation notice. For those, a failed broadcast must
 not undo the local effect: the ban still has to block this node's traffic
 even when PubSub is unavailable, which happens in early boot and in bare
 ExUnit cases.</p><p>The subtle part, and why this is one function rather than three copies:
-<a href="https://phoenix-pubsub.hexdocs.pm/2.4.0/Phoenix.PubSub.html#broadcast/3"><code class="inline">Phoenix.PubSub.broadcast/3</code></a> <em>exits</em> rather than raising when the PubSub
+<a href="https://phoenix-pubsub.hexdocs.pm/2.4.1/Phoenix.PubSub.html#broadcast/3"><code class="inline">Phoenix.PubSub.broadcast/3</code></a> <em>exits</em> rather than raising when the PubSub
 server is not registered, so a <code class="inline">rescue</code> alone does not catch it. The chat
 moderation cache, its user notices and the IP-ban plug each carried their own
 <code class="inline">rescue</code>/<code class="inline">catch :exit</code> pair to get this right.</p>
@@ -246,9 +246,9 @@ messages are the exception (<a href="Gamend.Cache.html"><code class="inline">Gam
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1309">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1310">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1309">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1310">Hex Preview</a>
 
             </span>
 

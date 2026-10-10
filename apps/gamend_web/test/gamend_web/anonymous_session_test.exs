@@ -247,6 +247,21 @@ defmodule GamendWeb.AnonymousSessionTest do
       assert %User{} = Accounts.get_user(existing.id)
     end
 
+    # A guest has no address to confirm: the login page is the way to the
+    # account they already have, so its email fields take one. A real account
+    # coming back to confirm itself keeps its own, fixed.
+    test "the login page lets a guest type an email", %{conn: conn} do
+      {:ok, view, html} = conn |> log_in_user(guest()) |> live(~p"/users/log_in")
+
+      refute has_element?(view, "#login_form_magic input[type=email][readonly]")
+      refute has_element?(view, "#login_form_password input[type=email][readonly]")
+      refute html =~ "Confirm"
+
+      real = Gamend.AccountsFixtures.user_fixture()
+      {:ok, view, _html} = conn |> recycle() |> log_in_user(real) |> live(~p"/users/log_in")
+      assert has_element?(view, "#login_form_magic input[type=email][readonly]")
+    end
+
     test "a real account signing in to another never deletes the first" do
       first = Gamend.AccountsFixtures.user_fixture()
       second = Gamend.AccountsFixtures.user_fixture()

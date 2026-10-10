@@ -16,7 +16,7 @@ defmodule GamendWeb.UserLive.Login do
             <h1 class="text-4xl font-black text-base-content">{gettext("Log in")}</h1>
           </div>
           <p class="text-sm text-muted mt-2">
-            <%= if @current_scope do %>
+            <%= if @reauth? do %>
               {gettext("Confirm")}
             <% else %>
               <.link
@@ -48,7 +48,7 @@ defmodule GamendWeb.UserLive.Login do
             phx-submit="submit_magic"
           >
             <.input
-              readonly={!!@current_scope}
+              readonly={@reauth?}
               field={f[:email]}
               value={@email}
               type="email"
@@ -80,7 +80,7 @@ defmodule GamendWeb.UserLive.Login do
             phx-trigger-action={@trigger_submit}
           >
             <.input
-              readonly={!!@current_scope}
+              readonly={@reauth?}
               field={f[:email]}
               value={@email}
               type="email"
@@ -154,6 +154,10 @@ defmodule GamendWeb.UserLive.Login do
        # reconnect's form recovery can put a typed address back without
        # re-rendering (and emptying) the password input beside it.
        email: email,
+       # Confirming the account already signed in: its address, fixed. Only
+       # an account with one: a guest (a device account) or a provider-only
+       # one has none to fix, and comes here to log in to another account.
+       reauth?: is_binary(current_user && current_user.email),
        trigger_submit: false,
        page_title: gettext("Log in"),
        client_ip: client_ip

@@ -278,6 +278,17 @@ defmodule Gamend.Hooks do
   @callback after_chat_message_reported(Report.t()) :: any()
   @callback after_user_muted(Mute.t()) :: any()
 
+  # Content reports (`Gamend.Reports`): a page, a word, anything a report kind
+  # describes. `before_report_create/1` is a pipeline over the attrs about to
+  # be inserted (string keys: kind, topic, subject_ref, subject, data,
+  # description, email, user_id…): `{:ok, attrs}` files it, `{:error, reason}`
+  # refuses it. The two `after_*` hooks are fire-and-forget.
+  # `after_report_resolved/1` runs each time an open report is closed, so a
+  # reward paid from it needs an idempotency key on the report id.
+  @callback before_report_create(map()) :: hook_result(map())
+  @callback after_report_created(Gamend.Reports.Report.t()) :: any()
+  @callback after_report_resolved(Gamend.Reports.Report.t()) :: any()
+
   # Push delivery hooks. `before_push_send/2` runs once per recipient before
   # any delivery job is enqueued: return `{:ok, message}` (possibly rewritten)
   # or `{:error, reason}` to drop the push for that user (per-user opt-out,
@@ -513,24 +524,36 @@ defmodule Gamend.Hooks do
   function doesn't exist.
   """
   def invoke(name, args \\ []) when is_atom(name) and is_list(args) do
-    mod = module()
     arity = length(args)
 
-    if exports_function?(mod, name, arity) do
-      try do
-        case apply(mod, name, args) do
-          :ok -> :ok
-          {:ok, _} = ok -> ok
-          {:error, _} = err -> err
-          other -> {:ok, other}
+    # The same modules the lifecycle fan-out calls, not `module/0` alone: a
+    # plugin `PluginManager` loaded never sets `:hooks_module`, so resolving
+    # through it alone answered `Default` for every scheduled hook
+    # (`Gamend.Schedule`, `Gamend.Jobs.enqueue_hook/3`) and `HookWorker`
+    # discarded the job — a host's nightly jobs (its daily pool, its
+    # leaderboard roll, its cache sweep) were discarded every night for a
+    # week before anyone looked (2026-10-08). `Default` exports a no-op for
+    # every standard callback, so a module that is not it wins when both
+    # export the name.
+    exporting = Enum.filter(lifecycle_modules(), &exports_function?(&1, name, arity))
+
+    case Enum.find(exporting, &(&1 != Default)) || List.first(exporting) do
+      nil ->
+        {:error, {:not_found, {module(), name, arity}}}
+
+      mod ->
+        try do
+          case apply(mod, name, args) do
+            :ok -> :ok
+            {:ok, _} = ok -> ok
+            {:error, _} = err -> err
+            other -> {:ok, other}
+          end
+        rescue
+          e -> rescued(e, __STACKTRACE__, {mod, name, args})
+        catch
+          kind, reason -> {:error, {kind, reason}}
         end
-      rescue
-        e -> rescued(e, __STACKTRACE__, {mod, name, args})
-      catch
-        kind, reason -> {:error, {kind, reason}}
-      end
-    else
-      {:error, {:not_found, {mod, name, arity}}}
     end
   end
 
@@ -540,6 +563,9 @@ defmodule Gamend.Hooks do
   # Gamend.Hooks` still injects no-op defaults for anyone who wants them.
   @optional_callbacks after_chat_message: 1,
                       after_chat_message_reported: 1,
+                      after_report_created: 1,
+                      after_report_resolved: 1,
+                      before_report_create: 1,
                       after_group_create: 1,
                       after_group_deleted: 1,
                       after_group_join: 2,
@@ -636,6 +662,9 @@ defmodule Gamend.Hooks do
       :after_chat_message,
       :after_chat_message_reported,
       :after_user_muted,
+      :before_report_create,
+      :after_report_created,
+      :after_report_resolved,
       :before_push_send,
       :after_push_sent,
       :before_lobby_leave,
@@ -769,6 +798,7 @@ defmodule Gamend.Hooks do
       :before_party_create,
       :before_party_update,
       :before_chat_message,
+      :before_report_create,
       :before_push_send,
       :before_lobby_update,
       :before_lobby_delete,
@@ -1690,6 +1720,15 @@ defmodule Gamend.Hooks.Default do
   def after_chat_message_reported(_report), do: :ok
 
   @impl true
+  def before_report_create(attrs), do: {:ok, attrs}
+
+  @impl true
+  def after_report_created(_report), do: :ok
+
+  @impl true
+  def after_report_resolved(_report), do: :ok
+
+  @impl true
   def after_user_muted(_mute), do: :ok
 
   @impl true
@@ -1871,51 +1910,19 @@ defmodule Gamend.Hooks.Default do
   @impl true
   def on_custom_hook(_hook, _args), do: {:error, :not_implemented}
 
-  # Optimistic, so the plugins' `before_user_update` hook (up to its timeout)
-  # runs outside the lock: read, merge and ask the hook unlocked, then write
-  # under the lock only if the metadata is still what the merge started from.
-  # A concurrent change starts it over; the lock guards only the write.
-  @payment_metadata_attempts 3
-
+  # `Accounts.update_user_metadata/2`: the plugins' `before_user_update` hook
+  # runs with no lock held, and a write that landed in between (a plugin's own
+  # metadata key) starts it over instead of being overwritten.
   defp update_user_payment_metadata(user_id, fun)
        when is_binary(user_id) and is_function(fun, 1) do
-    update_user_payment_metadata(user_id, fun, @payment_metadata_attempts)
+    case Gamend.Accounts.update_user_metadata(user_id, fun) do
+      {:ok, _user} -> :ok
+      {:error, :not_found} -> {:error, :user_not_found}
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   defp update_user_payment_metadata(_user_id, _fun), do: :ok
-
-  defp update_user_payment_metadata(user_id, fun, attempts) do
-    with %User{} = user <- Gamend.Repo.get(User, user_id) || {:error, :user_not_found},
-         {:ok, attrs} <-
-           Gamend.Accounts.run_before_user_update(user, %{metadata: fun.(user.metadata)}) do
-      "user_payment_metadata"
-      |> Gamend.Lock.serialize(user_id, fn -> write_payment_metadata(user, attrs) end)
-      |> case do
-        {:ok, :stale} when attempts > 1 ->
-          update_user_payment_metadata(user_id, fun, attempts - 1)
-
-        {:ok, :stale} ->
-          {:error, :conflict}
-
-        {:ok, {:ok, _user}} ->
-          :ok
-
-        {:ok, {:error, reason}} ->
-          {:error, reason}
-
-        {:error, reason} ->
-          {:error, reason}
-      end
-    end
-  end
-
-  defp write_payment_metadata(%User{id: id, metadata: read}, attrs) do
-    case Gamend.Repo.get(User, id) do
-      %User{metadata: ^read} = current -> Gamend.Accounts.apply_user_update(current, attrs)
-      %User{} -> :stale
-      nil -> {:error, :user_not_found}
-    end
-  end
 
   defp put_payment_child(metadata, child_key, item_key, value) do
     payments = metadata |> Map.get("payments") |> map_or_empty()

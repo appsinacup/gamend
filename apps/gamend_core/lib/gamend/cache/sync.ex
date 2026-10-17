@@ -27,6 +27,9 @@ defmodule Gamend.Cache.Sync do
   @impl true
   def handle_info({:cache_invalidate, key, from_node}, state) do
     if from_node != Node.self() do
+      # As `Gamend.Cache.invalidate/1` does locally, so a fill in flight here
+      # drops what it read before the write.
+      _ = Cache.bump_generation_local(key)
       _ = L1.delete(key)
     end
 

@@ -8,7 +8,7 @@ msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "Відкритий ігровий сервер на Elixir для багатокористувацьких ігор у реальному часі."
 
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 msgid "Discord"
 msgstr "Discord"
@@ -31,26 +31,29 @@ msgstr "Посібники"
 msgid "API Docs"
 msgstr "Документація API"
 
+msgid "UI elements"
+msgstr "Елементи інтерфейсу"
+
 msgid "Elixir Docs"
 msgstr "Документація Elixir"
 
 msgid "Deployment Tutorial"
-msgstr ""
+msgstr "Посібник із розгортання"
 
 msgid "Scaling Guide"
-msgstr ""
+msgstr "Посібник із масштабування"
 
 msgid "Docs"
-msgstr ""
+msgstr "Документація"
 
 msgid "Starter Template"
-msgstr ""
+msgstr "Стартовий шаблон"
 
 msgid "Store"
 msgstr "Магазин"
 
 msgid "Server Stats"
-msgstr ""
+msgstr "Статистика сервера"
 
 msgid "Help"
 msgstr "Довідка"
@@ -80,7 +83,7 @@ msgid "Groups"
 msgstr "Групи"
 
 msgid "News"
-msgstr ""
+msgstr "Новини"
 
 msgid "Getting Started"
 msgstr "Початок роботи"
@@ -89,28 +92,28 @@ msgid "Presentation Video"
 msgstr "Презентаційне відео"
 
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
-msgstr ""
+msgstr "Ігровий сервер на Elixir **з відкритим кодом** для багатокористувацьких ігор у реальному часі: бекенд, сайт для гравців і панель адміністратора в одному."
 
 msgid "Gamend"
 msgstr "Gamend"
 
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
-msgstr ""
+msgstr "Огляд панелі адміністратора Gamend, завдань, магазину та серверних хуків"
 
 msgid "Benchmarks"
-msgstr ""
+msgstr "Бенчмарки"
 
 msgid "Godot SDK"
-msgstr ""
+msgstr "Godot SDK"
 
 msgid "C++ SDK"
-msgstr ""
+msgstr "C++ SDK"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
-msgstr ""
+msgstr "**Бекенд для твоєї багатокористувацької гри**: облікові записи, лобі, чат, таблиці лідерів і все, чого гравці очікують навколо самої гри. Він також містить вебінтерфейс навколо неї: готовий сайт для гравців (магазин, таблиці лідерів, турніри, завдання, групи, чат) і повноцінну панель адміністратора. Серверні скрипти виконують твою власну логіку там, де гравці не можуть до неї дістатися. Ти запускаєш його на власному сервері; хостингового сервісу немає."
 
 msgid "What is Gamend?"
-msgstr ""
+msgstr "Що таке Gamend?"
 
 msgid "Log in"
 msgstr "Увійти"
@@ -119,7 +122,7 @@ msgid "Register"
 msgstr "Зареєструватися"
 
 msgid "The login page with magic link, password and five OAuth providers"
-msgstr ""
+msgstr "Сторінка входу з магічним посиланням, паролем і п'ятьма провайдерами OAuth"
 
 msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
 msgstr "Ел. пошта, магічне посилання, OAuth, JWT і сесія. Реєстрація, вхід, скидання пароля та підтвердження пошти."
@@ -128,22 +131,22 @@ msgid "Authentication & Users"
 msgstr "Автентифікація та користувачі"
 
 msgid "Lobbies"
-msgstr ""
+msgstr "Лобі"
 
 msgid "Matchmaking"
-msgstr ""
+msgstr "Добір гравців"
 
 msgid "The matchmaking admin page with live queues, tickets and ready checks"
-msgstr ""
+msgstr "Адмінсторінка добору гравців із чергами в реальному часі, заявками та перевірками готовності"
 
 msgid "Real-time lobbies with passwords, quick join and live updates. Ephemeral parties that join and get matched **as one unit**, a ticket-queue matchmaker and ready checks before anything starts."
-msgstr ""
+msgstr "Лобі в реальному часі з паролями, швидким входом і живими оновленнями. Тимчасові групи, які приєднуються та підбираються **як єдине ціле**, добір гравців на основі черги заявок і перевірки готовності перед будь-яким стартом."
 
 msgid "Lobbies, Parties & Matchmaking"
 msgstr "Лобі, групи та добір гравців"
 
 msgid "The public groups browser"
-msgstr ""
+msgstr "Публічний каталог груп"
 
 msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
 msgstr "Запити в друзі, блокування, присутність у реальному часі. Публічні, приватні та приховані групи. Особисті та групові повідомлення."
@@ -152,33 +155,31 @@ msgid "Friends, Groups & Chat"
 msgstr "Друзі, групи та чат"
 
 msgid "The quests page with daily, achievement and event quests"
-msgstr ""
+msgstr "Сторінка завдань із щоденними завданнями, досягненнями та завданнями подій"
 
 msgid "One server-authoritative quest engine for achievements, dailies, seasonal events and quest chains. Bracket tournaments, leaderboards with seasons, and real-time plus push notifications across every feature."
-msgstr ""
+msgstr "Єдиний рушій завдань з авторитетним сервером для досягнень, щоденних завдань, сезонних подій і ланцюжків завдань. Турніри із сітками, таблиці лідерів із сезонами, а також сповіщення в реальному часі та push-сповіщення в усіх функціях."
 
 msgid "Quests, Tournaments & Leaderboards"
-msgstr ""
+msgstr "Завдання, турніри та таблиці лідерів"
 
-#, fuzzy
 msgid "Server Scripting"
-msgstr "Серверні скрипти та планування"
+msgstr "Серверні скрипти"
 
 msgid "GDScript Hooks"
-msgstr ""
+msgstr "Хуки на GDScript"
 
 msgid "Runtime introspection listing every hook with its implementing plugins"
-msgstr ""
+msgstr "Інтроспекція під час виконання: список усіх хуків із плагінами, що їх реалізують"
 
 msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
-msgstr ""
+msgstr "Пиши серверні хуки на **Elixir, GDScript або Gleam** для підрахунку очок, нагород, правил добору гравців і валідації там, де гравці не можуть до них дістатися. Вбудовані надійні фонові завдання та планування за cron."
 
 msgid "Server Scripting & Scheduling"
 msgstr "Серверні скрипти та планування"
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
-msgstr "REST API, канали WebSocket у реальному часі та WebRTC DataChannels із низькою затримкою. Портал адміністратора та вебінтерфейс."
+msgstr "REST API, канали WebSocket у реальному часі та WebRTC DataChannels із низькою затримкою, з опційним форматом protobuf для реального часу. Портал адміністратора та вебінтерфейс, перекладені 30 мовами."
 
 msgid "HTTP, WebSocket & WebRTC"
 msgstr "HTTP, WebSocket і WebRTC"
@@ -190,43 +191,43 @@ msgid "Payment Docs"
 msgstr "Документація з платежів"
 
 msgid "The built-in store page with priced products"
-msgstr ""
+msgstr "Вбудована сторінка магазину з товарами та цінами"
 
 msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
-msgstr "Платежі на боці сервера через Stripe, Google Play, App Store і Steam. Перевіряйте чеки, обробляйте підписані вебхуки, надавайте права, скасовуйте повернення та переглядайте все в адмінці."
+msgstr "Платежі на боці сервера через Stripe, Google Play, App Store і Steam. Перевіряй чеки, обробляй підписані вебхуки, надавай права, скасовуй повернення та переглядай усе в адмінці."
 
 msgid "Payments & Store Integrations"
 msgstr "Платежі та інтеграції з магазинами"
 
 msgid "Economy"
-msgstr ""
+msgstr "Економіка"
 
 msgid "Key-Value Store"
-msgstr ""
+msgstr "Сховище ключ-значення"
 
 msgid "The economy admin page with wallets and grant and spend controls"
-msgstr ""
+msgstr "Адмінсторінка економіки з гаманцями та елементами керування для надання й витрачання"
 
 msgid "Virtual currency wallets with an atomic, append-only ledger. Item stacks with grant and consume. A per-player and per-lobby **key-value store**, and object storage with presigned uploads on local disk or any S3-compatible backend."
-msgstr ""
+msgstr "Гаманці віртуальної валюти з атомарним журналом, до якого можна лише дописувати. Стоси предметів із наданням і витрачанням. **Сховище ключ-значення** для кожного гравця й кожного лобі, а також об'єктне сховище з попередньо підписаними завантаженнями на локальний диск або будь-який S3-сумісний бекенд."
 
 msgid "Economy, Inventory & Storage"
-msgstr ""
+msgstr "Економіка, інвентар і сховище"
 
 msgid "Player Analytics"
-msgstr ""
+msgstr "Аналітика гравців"
 
 msgid "Client Logs"
-msgstr ""
+msgstr "Журнали клієнта"
 
 msgid "The analytics admin page with DAU and D1, D7 and D30 retention"
-msgstr ""
+msgstr "Адмінсторінка аналітики з DAU та утриманням D1, D7 і D30"
 
 msgid "D1 / D7 / D30 retention, DAU and payer conversion built in. Client log sessions correlated with the server's own tail for per-player debugging. Prometheus metrics with Grafana, and a load-test harness with published benchmarks."
-msgstr ""
+msgstr "Вбудовані утримання D1 / D7 / D30, DAU і конверсія в платників. Сесії журналів клієнта зіставляються з власними журналами сервера для налагодження окремих гравців. Метрики Prometheus із Grafana та стенд навантажувального тестування з опублікованими бенчмарками."
 
 msgid "Analytics, Logs & Observability"
-msgstr ""
+msgstr "Аналітика, журнали та спостережуваність"
 
 msgid "Game + Backend"
 msgstr "Гра + бекенд"

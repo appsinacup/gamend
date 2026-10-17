@@ -43,6 +43,30 @@ defmodule GamendWeb.Api.V1.PublicListingGatesTest do
     end
   end
 
+  describe "the payment API ways in" do
+    test "the catalog and the Stripe checkout are on by default, and 404 when off", %{
+      conn: conn
+    } do
+      user = AccountsFixtures.user_fixture()
+      {:ok, token, _claims} = Guardian.encode_and_sign(user)
+      authed = Plug.Conn.put_req_header(conn, "authorization", "Bearer " <> token)
+
+      assert conn |> get("/api/v1/payments/catalog") |> json_response(200)
+      # On: the endpoint answers (a missing product here, not a missing route).
+      assert authed |> post("/api/v1/payments/checkout/stripe", %{}) |> json_response(400)
+
+      disable(:list_payments_catalog)
+      disable(:stripe_checkout_api)
+
+      assert conn |> get("/api/v1/payments/catalog") |> response(404)
+      assert authed |> post("/api/v1/payments/checkout/stripe", %{}) |> response(404)
+      # Signed out too: a 404, never a 401 that says the route exists.
+      assert conn |> post("/api/v1/payments/checkout/stripe", %{}) |> response(404)
+      # The rest of the payments API is not part of either flag.
+      assert authed |> get("/api/v1/payments/entitlements") |> json_response(200)
+    end
+  end
+
   describe "LIST_USERS_ENABLED=false" do
     test "GET /users and /users/:id return 404", %{conn: conn} do
       user = AccountsFixtures.user_fixture()

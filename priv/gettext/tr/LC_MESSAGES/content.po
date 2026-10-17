@@ -17,7 +17,7 @@ msgstr "Aramıza hoş geldin"
 
 #. quests
 msgid "Log in for the first time."
-msgstr "İlk kez giriş yapın."
+msgstr "İlk kez giriş yap."
 
 #. quests
 msgid "Daily check-in"
@@ -25,7 +25,7 @@ msgstr "Günlük giriş"
 
 #. quests
 msgid "Log in today."
-msgstr "Bugün giriş yapın."
+msgstr "Bugün giriş yap."
 
 #. quests
 msgid "Weekly regular"
@@ -33,7 +33,7 @@ msgstr "Haftanın müdavimi"
 
 #. quests
 msgid "Log in on five different days this week."
-msgstr "Bu hafta beş farklı gün giriş yapın."
+msgstr "Bu hafta beş farklı gün giriş yap."
 
 #. quests
 msgid "Monthly devotee"
@@ -41,7 +41,7 @@ msgstr "Ayın müdavimi"
 
 #. quests
 msgid "Log in twenty times this month."
-msgstr "Bu ay yirmi kez giriş yapın."
+msgstr "Bu ay yirmi kez giriş yap."
 
 #. quests
 msgid "Stop by again"
@@ -49,7 +49,7 @@ msgstr "Yine uğrayın"
 
 #. quests
 msgid "Log in. Becomes available again three days later."
-msgstr "Giriş yapın. Üç gün sonra yeniden açılır."
+msgstr "Giriş yap. Üç gün sonra yeniden açılır."
 
 #. quests
 msgid "Loyal veteran"
@@ -57,7 +57,7 @@ msgstr "Sadık kıdemli"
 
 #. quests
 msgid "Log in fifty times, once you have said hello."
-msgstr "Merhaba dedikten sonra elli kez giriş yapın."
+msgstr "Merhaba dedikten sonra elli kez giriş yap."
 
 #. quests
 msgid "Night owl"
@@ -89,4 +89,5 @@ msgstr "Haftalık Kupa"
 
 #. tournaments
 msgid "Register any time; the bracket is drawn every Monday."
-msgstr "İstediğiniz zaman kaydolun; eşleşme tablosu her pazartesi çekilir."
+
+msgstr "İstediğin zaman kaydol; eşleşme tablosu her pazartesi çekilir."

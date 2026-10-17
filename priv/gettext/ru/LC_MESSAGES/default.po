@@ -11,43 +11,22 @@ msgstr ""
 "Language: ru\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100 != 11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10||n%100>=20) ? 1 : 2);\n"
 
-#: lib/gamend_web/live/blog_live.ex:105
-#: lib/gamend_web/live/blog_live.ex:177
+#: lib/gamend_host/search.ex:96
 #, elixir-autogen, elixir-format
 msgid "Blog"
 msgstr "Блог"
 
-#: lib/gamend_web/live/blog_live.ex:119
-#, elixir-autogen, elixir-format
-msgid "Changelog"
-msgstr "Список изменений"
-
+#: lib/gamend_host/search.ex:58
+#: lib/gamend_host/search.ex:78
 #: lib/gamend_web/host_public_docs.ex:24
 #, elixir-autogen, elixir-format
 msgid "Documentation"
 msgstr "Документация"
 
-#: lib/gamend_web/live/blog_live.ex:205
-#, elixir-autogen, elixir-format
-msgid "Newer"
-msgstr "Новее"
-
 #: lib/gamend_host/host_layout_translations.ex:27
-#: lib/gamend_web/live/blog_live.ex:80
-#: lib/gamend_web/live/blog_live.ex:127
 #, elixir-autogen, elixir-format
 msgid "No results."
 msgstr "Нет результатов."
-
-#: lib/gamend_web/live/blog_live.ex:220
-#, elixir-autogen, elixir-format
-msgid "Older"
-msgstr "Старее"
-
-#: lib/gamend_web/live/blog_live.ex:112
-#, elixir-autogen, elixir-format
-msgid "Roadmap"
-msgstr "Дорожная карта"
 
 #: lib/gamend_host/host_layout_translations.ex:15
 #, elixir-autogen, elixir-format
@@ -112,24 +91,24 @@ msgstr "Закрыть"
 #: lib/gamend_web/host_public_docs.ex:24
 #, elixir-autogen, elixir-format
 msgid "No guides found."
-msgstr ""
+msgstr "Руководства не найдены."
 
 #: lib/gamend_web/host_public_docs.ex:34
 #, elixir-autogen, elixir-format
 msgid "Platform setup, OAuth providers, payments, email, and server hooks"
-msgstr ""
+msgstr "Настройка платформы, провайдеры OAuth, платежи, электронная почта и серверные хуки"
 
 #: lib/gamend_host/host_layout_translations.ex:9
 #, elixir-autogen, elixir-format
 msgid "Quests"
-msgstr ""
+msgstr "Задания"
 
 #: lib/gamend_host/host_layout_translations.ex:26
 #, elixir-autogen, elixir-format
 msgid "Search"
-msgstr ""
+msgstr "Поиск"
 
 #: lib/gamend_web/host_public_docs.ex:30
 #, elixir-autogen, elixir-format
 msgid "Setup & Guides"
-msgstr ""
+msgstr "Настройка и руководства"

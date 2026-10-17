@@ -1,6 +1,7 @@
 {
   "cancel_lobby_ready_check": "ready_checks_cancel_lobby",
   "cancel_party_ready_check": "ready_checks_cancel_party",
+  "confirm_registration": "authenticate_confirm_registration",
   "create_current_user_avatar_upload_url": "user_create_current_user_avatar_upload_url",
   "delete_current_user": "user_delete_current_user",
   "device_login": "authenticate_device_login",
@@ -36,6 +37,7 @@
   "payments_validate_store_purchase": "payments_validate_store_purchase",
   "refresh_token": "authenticate_refresh_token",
   "register": "authenticate_register",
+  "resend_confirmation": "authenticate_resend_confirmation",
   "resolve_leaderboard_slugs": "leaderboards_resolve_slugs",
   "respond_ready_check": "ready_checks_respond",
   "set_current_user_avatar": "user_set_current_user_avatar",

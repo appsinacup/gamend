@@ -552,7 +552,7 @@ defmodule GamendWeb.AdminLive.ConfigSections do
         ICE Candidates: {@config.rate_limit_ice_limit} / {@config.rate_limit_ice_window}ms<br />
         Max DataChannels per peer: {@config.webrtc_max_channels}<br />
         Max DC message size: {@config.webrtc_max_message_size} bytes<br />
-        <span class="text-xs text-base-content/60">
+        <span class="text-xs text-muted">
           Set via GAMEND_RATELIMIT_* env vars
         </span>
       </td>

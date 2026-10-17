@@ -210,6 +210,11 @@ defmodule GamendWeb.Schemas.AnalyticsSummary do
     type: :object,
     properties: %{
       day: %Schema{type: :string, format: :date},
+      segment: %Schema{
+        type: :string,
+        enum: ["all", "registered", "guest"],
+        description: "Which accounts the numbers count"
+      },
       dau: %Schema{type: :integer},
       wau: %Schema{type: :integer},
       mau: %Schema{type: :integer},
@@ -224,6 +229,7 @@ defmodule GamendWeb.Schemas.AnalyticsSummary do
     },
     required: [
       :day,
+      :segment,
       :dau,
       :wau,
       :mau,
@@ -248,17 +254,33 @@ defmodule GamendWeb.Schemas.AnalyticsDay do
 
   OpenApiSpex.schema(%{
     title: "AnalyticsDay",
-    description: "A day's active and new players, and that cohort's D1 / D7 / D30",
+    description:
+      "A day's active players, the 7 and 30 days ending on it, its new players " <>
+        "and that cohort's D1 / D7 / D30",
     type: :object,
     properties: %{
       day: %Schema{type: :string, format: :date},
       active: %Schema{type: :integer},
+      wau: %Schema{
+        type: :integer,
+        description: "Distinct players of the 7 days ending on the day"
+      },
+      mau: %Schema{
+        type: :integer,
+        description: "Distinct players of the 30 days ending on the day"
+      },
+      stickiness: %Schema{
+        type: :number,
+        format: :float,
+        nullable: true,
+        description: "active ÷ mau of the day"
+      },
       new_users: %Schema{type: :integer},
       d1: @rate,
       d7: @rate,
       d30: @rate
     },
-    required: [:day, :active, :new_users, :d1, :d7, :d30]
+    required: [:day, :active, :wau, :mau, :stickiness, :new_users, :d1, :d7, :d30]
   })
 end
 

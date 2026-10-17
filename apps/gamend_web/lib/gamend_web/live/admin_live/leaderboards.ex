@@ -134,8 +134,11 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                       <% else %>
                         <span class="badge badge-neutral badge-sm">Ended</span>
                       <% end %>
+                      <span :if={lb.hidden} class="badge badge-ghost badge-sm">Hidden</span>
                     </td>
-                    <td class="text-sm">{Leaderboards.count_records(lb.id)}</td>
+                    <td class="text-sm">
+                      {Leaderboards.count_records(lb.id, key: :all, guests: true)}
+                    </td>
                     <td class="text-sm">
                       <.timestamp at={lb.inserted_at} />
                     </td>
@@ -228,7 +231,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                     disabled
                   />
                   <label class="label">
-                    <span class="label-text-alt text-base-content/70">
+                    <span class="label-text-alt text-muted">
                       Slug cannot be changed after creation
                     </span>
                   </label>
@@ -276,6 +279,11 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                 label="Starts at (optional)"
               />
               <.input field={@form[:ends_at]} type="utc-datetime-local" label="Ends at (optional)" />
+              <.input
+                field={@form[:hidden]}
+                type="checkbox"
+                label="Hidden (left out of the public leaderboards page and API list)"
+              />
 
               <div class="form-control">
                 <label class="label"><span class="label-text">Metadata (JSON)</span></label>
@@ -318,6 +326,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                   <tr>
                     <th>Rank</th>
                     <th>User / Label</th>
+                    <th>Key</th>
                     <th>Display Name</th>
                     <th>Score</th>
                     <th>Updated</th>
@@ -328,6 +337,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                   <tr :for={record <- @records} id={"record-#{record.id}"}>
                     <td class="font-mono">#{record.rank}</td>
                     <td class="font-mono text-sm">{record.label || record.user_id || "-"}</td>
+                    <td class="font-mono text-sm">{record.key}</td>
                     <td class="text-sm">
                       {cond do
                         record.label -> record.label
@@ -771,11 +781,11 @@ defmodule GamendWeb.AdminLive.Leaderboards do
     page_size = socket.assigns[:page_size] || 25
 
     opts =
-      [page: page, page_size: page_size]
+      [page: page, page_size: page_size, include_hidden: true]
       |> maybe_add_filter(socket.assigns[:filter])
 
     leaderboards = Leaderboards.list_leaderboards(opts)
-    count = Leaderboards.count_leaderboards(Keyword.take(opts, [:active]))
+    count = Leaderboards.count_leaderboards(Keyword.take(opts, [:active, :include_hidden]))
     total_pages = LiveHelpers.total_pages(count, page_size)
 
     socket
@@ -803,8 +813,11 @@ defmodule GamendWeb.AdminLive.Leaderboards do
     page = socket.assigns[:records_page] || 1
     page_size = 25
 
-    records = Leaderboards.list_records(lb.id, page: page, page_size: page_size)
-    count = Leaderboards.count_records(lb.id)
+    # Every key's rows, ranked together: the admin sees what the board holds.
+    records =
+      Leaderboards.list_records(lb.id, key: :all, guests: true, page: page, page_size: page_size)
+
+    count = Leaderboards.count_records(lb.id, key: :all, guests: true)
     total_pages = LiveHelpers.total_pages(count, page_size)
 
     socket

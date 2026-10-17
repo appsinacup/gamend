@@ -21,7 +21,6 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
     |> assign(:api_tokens_page, 1)
     |> assign(:api_token_created, nil)
     |> assign(:api_token_form, blank_form())
-    |> reload_api_tokens()
   end
 
   def tab(assigns) do
@@ -30,7 +29,7 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
       <div class="card bg-base-200 p-4 rounded-lg mt-6 space-y-4">
         <div>
           <div class="font-semibold text-lg">{gettext("API tokens")}</div>
-          <div class="text-sm text-base-content/70">
+          <div class="text-sm text-muted">
             {gettext(
               "For scripts and CI: send one as a Bearer token to any API route that takes an access token. A password or email change revokes them all."
             )}
@@ -82,7 +81,7 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
           </button>
         </.form>
 
-        <div :if={@api_tokens == []} class="text-sm text-base-content/60">
+        <div :if={@api_tokens == []} class="text-sm text-muted">
           {gettext("No API tokens.")}
         </div>
 

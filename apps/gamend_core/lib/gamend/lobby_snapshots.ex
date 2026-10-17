@@ -39,8 +39,8 @@ defmodule Gamend.LobbySnapshots do
   @doc """
   Capture the current state of a lobby, attributing it to `trigger`.
 
-  `trigger` names what caused the mutation — `"hook:finish_boat_game"`,
-  `"timer:scheduled_collision"`, `"lobby:deleted"`. Options:
+  `trigger` names what caused the mutation — `"hook:finish_race"`,
+  `"timer:obstacle"`, `"lobby:deleted"`. Options:
 
   - `:sync` — gather inline instead of off the caller's process. Required when
     the state is about to disappear (lobby teardown), where an async gather
@@ -469,7 +469,7 @@ defmodule Gamend.LobbySnapshots do
 
   Returns `%{section => [%{path: ["a", "b"], from: term, to: term}]}`, with
   unchanged sections omitted entirely. Paths are flattened, so a field buried in
-  nested maps reads as `["boat_adventure", "effects", "speed_reduced"]` rather
+  nested maps reads as `["race", "effects", "speed_reduced"]` rather
   than requiring the reader to walk two nested objects to spot it.
 
   This is the point of the whole system: a value that reverts between snapshots

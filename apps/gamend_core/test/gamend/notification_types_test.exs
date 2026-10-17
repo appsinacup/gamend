@@ -26,7 +26,7 @@ defmodule Gamend.NotificationTypesTest do
                    lobby_kicked
                    chat_friend chat_group chat_lobby chat_party
                    chat_report chat_report_resolved chat_warning chat_mute
-                   quest_completed) do
+                   quest_completed report report_resolved) do
       assert Types.known?(code), "core code #{code} is not registered"
     end
   end

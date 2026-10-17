@@ -76,10 +76,12 @@ page through `config.open_url` and waits for the player to finish. Signing in
 never links: `link("google")` and `link_steam(ticket)` add a provider to the
 signed-in account.
 
-`register_email` makes an account and is not a sign-in: its callback gets the
-new account (`models::Registration`), and the session does not change. The
-password signs in with `login_email` once the player opens the emailed link;
-until then that fails with `email_not_confirmed`.
+`register_email` makes an account and is not a sign-in: it takes no password,
+its callback gets the new account (`models::Registration`), and the session
+does not change. The server emails a link and a six-digit code. The game asks
+for the code and a password and calls `confirm_registration(email, code,
+password)`, which signs in; `resend_confirmation(email)` sends a new code. A
+player who opens the link instead sets the password on the website.
 
 ## Calls and replies
 

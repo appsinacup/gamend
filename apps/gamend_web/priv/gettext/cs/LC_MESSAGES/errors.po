@@ -88,7 +88,7 @@ msgstr "musí být rovno %{number}"
 #: lib/gamend_web/i18n/errors_catalog.ex:18
 #, elixir-autogen, elixir-format
 msgid "cannot friend yourself"
-msgstr "nemůžete si přidat sami sebe jako přítele"
+msgstr "nemůžeš si přidat sám sebe jako přítele"
 
 #: lib/gamend_web/i18n/errors_catalog.ex:19
 #, elixir-autogen, elixir-format

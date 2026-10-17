@@ -42,7 +42,20 @@ defmodule GamendWeb.AdminPagesRenderTest do
     {"/admin/retention", "Retention"},
     {"/admin/storage", "Storage"},
     {"/admin/economy", "Economy"},
-    {"/admin/analytics", "Analytics"}
+    {"/admin/analytics", "Analytics"},
+    {"/admin/settings", "Settings"},
+    {"/admin/lobbies/live", "Lobbies"},
+    {"/admin/reports", "Reports"},
+    {"/admin/connections", "Connections"},
+    {"/admin/rate_limiting", "Rate limiting"},
+    {"/admin/logs", "Logs"},
+    {"/admin/geo", "Geo"},
+    {"/admin/system", "System"},
+    {"/admin/analytics/features", "Features"},
+    {"/admin/analytics/explore", "Explore"},
+    {"/admin/analytics/people", "People"},
+    {"/admin/analytics/counters", "Counters"},
+    {"/admin/analytics/economy", "Economy"}
   ]
 
   defp create_admin(_context) do

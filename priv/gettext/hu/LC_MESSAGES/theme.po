@@ -8,7 +8,7 @@ msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "Nyílt forráskódú Elixir játékszerver valós idejű többjátékos játékokhoz."
 
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 msgid "Discord"
 msgstr "Discord"
@@ -31,26 +31,29 @@ msgstr "Útmutatók"
 msgid "API Docs"
 msgstr "API-dokumentáció"
 
+msgid "UI elements"
+msgstr "Felületi elemek"
+
 msgid "Elixir Docs"
 msgstr "Elixir-dokumentáció"
 
 msgid "Deployment Tutorial"
-msgstr ""
+msgstr "Telepítési oktatóanyag"
 
 msgid "Scaling Guide"
-msgstr ""
+msgstr "Skálázási útmutató"
 
 msgid "Docs"
-msgstr ""
+msgstr "Dokumentáció"
 
 msgid "Starter Template"
-msgstr ""
+msgstr "Kezdősablon"
 
 msgid "Store"
 msgstr "Bolt"
 
 msgid "Server Stats"
-msgstr ""
+msgstr "Szerverstatisztika"
 
 msgid "Help"
 msgstr "Súgó"
@@ -80,7 +83,7 @@ msgid "Groups"
 msgstr "Csoportok"
 
 msgid "News"
-msgstr ""
+msgstr "Hírek"
 
 msgid "Getting Started"
 msgstr "Első lépések"
@@ -89,28 +92,28 @@ msgid "Presentation Video"
 msgstr "Bemutatóvideó"
 
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
-msgstr ""
+msgstr "**Nyílt forráskódú** Elixir játékszerver valós idejű többjátékos játékokhoz: háttérrendszer, játékosoldal és adminpanel egyben."
 
 msgid "Gamend"
 msgstr "Gamend"
 
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
-msgstr ""
+msgstr "Körbevezetés a Gamend adminpaneljén, küldetésein, boltján és szerveroldali hookjain"
 
 msgid "Benchmarks"
-msgstr ""
+msgstr "Teljesítménymérések"
 
 msgid "Godot SDK"
-msgstr ""
+msgstr "Godot SDK"
 
 msgid "C++ SDK"
-msgstr ""
+msgstr "C++ SDK"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
-msgstr ""
+msgstr "A **többjátékos játékod háttérrendszere**: fiókok, lobbik, csevegés, ranglisták és minden, amit a játékosok magán a játékon túl elvárnak. A köré épülő webes felületet is tartalmazza: egy kész játékosoldalt (bolt, ranglisták, versenyek, küldetések, csoportok, csevegés) és egy teljes adminpanelt. A szerveroldali szkriptek a saját logikádat ott futtatják, ahol a játékosok nem érhetik el. A saját szervereden futtatod; nincs hosztolt szolgáltatás."
 
 msgid "What is Gamend?"
-msgstr ""
+msgstr "Mi az a Gamend?"
 
 msgid "Log in"
 msgstr "Bejelentkezés"
@@ -119,7 +122,7 @@ msgid "Register"
 msgstr "Regisztráció"
 
 msgid "The login page with magic link, password and five OAuth providers"
-msgstr ""
+msgstr "A bejelentkezési oldal varázslinkkel, jelszóval és öt OAuth-szolgáltatóval"
 
 msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
 msgstr "E-mail, varázslinkek, OAuth, JWT és munkamenet. Regisztráció, bejelentkezés, jelszó-visszaállítás és e-mail-ellenőrzés."
@@ -128,22 +131,22 @@ msgid "Authentication & Users"
 msgstr "Hitelesítés és felhasználók"
 
 msgid "Lobbies"
-msgstr ""
+msgstr "Lobbik"
 
 msgid "Matchmaking"
-msgstr ""
+msgstr "Játékostársítás"
 
 msgid "The matchmaking admin page with live queues, tickets and ready checks"
-msgstr ""
+msgstr "A játékostársítás adminoldala élő sorokkal, jegyekkel és készenléti ellenőrzésekkel"
 
 msgid "Real-time lobbies with passwords, quick join and live updates. Ephemeral parties that join and get matched **as one unit**, a ticket-queue matchmaker and ready checks before anything starts."
-msgstr ""
+msgstr "Valós idejű lobbik jelszavakkal, gyors csatlakozással és élő frissítésekkel. Ideiglenes csapatok, amelyek **egy egységként** csatlakoznak és kapnak párosítást, jegysoros párosító és készenléti ellenőrzések, mielőtt bármi elindulna."
 
 msgid "Lobbies, Parties & Matchmaking"
 msgstr "Előszobák, csapatok és játékostársítás"
 
 msgid "The public groups browser"
-msgstr ""
+msgstr "A nyilvános csoportböngésző"
 
 msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
 msgstr "Ismerőskérések, letiltás, valós idejű jelenlét. Nyilvános, privát és rejtett csoportok. Közvetlen és csoportos üzenetek."
@@ -152,33 +155,31 @@ msgid "Friends, Groups & Chat"
 msgstr "Ismerősök, csoportok és csevegés"
 
 msgid "The quests page with daily, achievement and event quests"
-msgstr ""
+msgstr "A küldetések oldala napi, eredmény- és eseményküldetésekkel"
 
 msgid "One server-authoritative quest engine for achievements, dailies, seasonal events and quest chains. Bracket tournaments, leaderboards with seasons, and real-time plus push notifications across every feature."
-msgstr ""
+msgstr "Egyetlen szerveroldali hitelességű küldetésmotor eredményekhez, napi küldetésekhez, szezonális eseményekhez és küldetésláncokhoz. Ágrajzos versenyek, szezonokra bontott ranglisták, valamint valós idejű és push-értesítések minden funkcióban."
 
 msgid "Quests, Tournaments & Leaderboards"
-msgstr ""
+msgstr "Küldetések, versenyek és ranglisták"
 
-#, fuzzy
 msgid "Server Scripting"
-msgstr "Szerveroldali szkriptek és ütemezés"
+msgstr "Szerveroldali szkriptek"
 
 msgid "GDScript Hooks"
-msgstr ""
+msgstr "GDScript hookok"
 
 msgid "Runtime introspection listing every hook with its implementing plugins"
-msgstr ""
+msgstr "Futásidejű introspekció, amely minden hookot felsorol az azt megvalósító bővítményekkel"
 
 msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
-msgstr ""
+msgstr "Írj szerveroldali hookokat **Elixir, GDScript vagy Gleam** nyelven pontozáshoz, jutalmakhoz, párosítási szabályokhoz és validáláshoz, ott, ahol a játékosok nem érhetik el őket. Tartós háttérfeladatok és cron-ütemezés beépítve."
 
 msgid "Server Scripting & Scheduling"
 msgstr "Szerveroldali szkriptek és ütemezés"
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
-msgstr "REST API, valós idejű WebSocket-csatornák és alacsony késleltetésű WebRTC-adatcsatornák. Adminisztrációs portál és webes felület."
+msgstr "REST API, valós idejű WebSocket-csatornák és alacsony késleltetésű WebRTC DataChannels, opcionális protobuf valós idejű formátummal. Adminportál és webes felület, 30 nyelvre lefordítva."
 
 msgid "HTTP, WebSocket & WebRTC"
 msgstr "HTTP, WebSocket és WebRTC"
@@ -190,7 +191,7 @@ msgid "Payment Docs"
 msgstr "Fizetési dokumentáció"
 
 msgid "The built-in store page with priced products"
-msgstr ""
+msgstr "A beépített boltoldal árazott termékekkel"
 
 msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
 msgstr "Szerveroldali fizetés Stripe, Google Play, App Store és Steam szolgáltatókkal. Ellenőrizd a nyugtákat, dolgozd fel az aláírt webhookokat, adj jogosultságokat, vond vissza a visszatérítéseket, és nézd meg mindezt az adminban."
@@ -199,34 +200,34 @@ msgid "Payments & Store Integrations"
 msgstr "Fizetések és áruházi integrációk"
 
 msgid "Economy"
-msgstr ""
+msgstr "Gazdaság"
 
 msgid "Key-Value Store"
-msgstr ""
+msgstr "Kulcs-érték tár"
 
 msgid "The economy admin page with wallets and grant and spend controls"
-msgstr ""
+msgstr "A gazdaság adminoldala tárcákkal, valamint jóváírási és költési vezérlőkkel"
 
 msgid "Virtual currency wallets with an atomic, append-only ledger. Item stacks with grant and consume. A per-player and per-lobby **key-value store**, and object storage with presigned uploads on local disk or any S3-compatible backend."
-msgstr ""
+msgstr "Virtuális pénznemtárcák atomi, csak hozzáfűzhető főkönyvvel. Tárgyhalmok jóváírással és felhasználással. Játékosonkénti és lobbinkénti **kulcs-érték tár**, valamint objektumtár előre aláírt feltöltésekkel helyi lemezre vagy bármely S3-kompatibilis háttértárra."
 
 msgid "Economy, Inventory & Storage"
-msgstr ""
+msgstr "Gazdaság, leltár és tárolás"
 
 msgid "Player Analytics"
-msgstr ""
+msgstr "Játékosanalitika"
 
 msgid "Client Logs"
-msgstr ""
+msgstr "Kliensnaplók"
 
 msgid "The analytics admin page with DAU and D1, D7 and D30 retention"
-msgstr ""
+msgstr "Az analitika adminoldala DAU-val és D1, D7, D30 megtartással"
 
 msgid "D1 / D7 / D30 retention, DAU and payer conversion built in. Client log sessions correlated with the server's own tail for per-player debugging. Prometheus metrics with Grafana, and a load-test harness with published benchmarks."
-msgstr ""
+msgstr "Beépített D1 / D7 / D30 megtartás, DAU és fizetői konverzió. Kliensnapló-munkamenetek összevetve a szerver saját naplójának végével, játékosonkénti hibakereséshez. Prometheus-metrikák a Grafana használatával, valamint terheléses tesztkörnyezet közzétett teljesítménymérésekkel."
 
 msgid "Analytics, Logs & Observability"
-msgstr ""
+msgstr "Analitika, naplók és megfigyelhetőség"
 
 msgid "Game + Backend"
 msgstr "Játék + háttérrendszer"

@@ -6,9 +6,13 @@ defmodule GamendWeb.Components.UserAvatarTest do
   unless it carries `Cross-Origin-Resource-Policy` or is fetched in CORS mode —
   and the OAuth avatar CDNs send no CORP header.
 
-  So the `crossorigin` attribute is what keeps avatars visible on those pages.
-  Drop it and every OAuth avatar silently vanishes on the play page only, which
-  no page-level test would catch.
+  So the `crossorigin` attribute is what keeps avatars visible on those pages
+  when storage is served from another origin (a bucket or CDN). Drop it and
+  every avatar silently vanishes on the play page only, which no page-level
+  test would catch.
+
+  Only an avatar we host is drawn (`User.public_avatar_url/1`): a provider's
+  URL would send the viewer's IP to the provider.
   """
   use GamendWeb.ConnCase, async: true
 
@@ -17,17 +21,35 @@ defmodule GamendWeb.Components.UserAvatarTest do
   alias Gamend.Accounts.User
   alias GamendWeb.CoreComponents
 
+  @id "0190c0de-0000-7000-8000-000000000001"
+  @hosted "https://cdn.example.com/avatars/#{@id}/abc.png"
+
   test "an avatar is fetched in CORS mode so COEP pages can display it" do
-    user = %User{profile_url: "https://lh3.googleusercontent.com/a/abc=s96-c"}
+    user = %User{id: @id, profile_url: @hosted}
 
     html = render_component(&CoreComponents.user_avatar/1, user: user)
 
     assert html =~ ~s(crossorigin="anonymous")
-    assert html =~ ~s(src="https://lh3.googleusercontent.com/a/abc=s96-c")
+    assert html =~ ~s(src="#{@hosted}")
+  end
+
+  test "a provider's avatar not yet mirrored is never drawn" do
+    for url <- [
+          "https://cdn.discordapp.com/avatars/123456789012345678/abc.png",
+          "https://lh3.googleusercontent.com/a/abc=s96-c",
+          # Another user's stored avatar is not this user's.
+          "https://cdn.example.com/avatars/0190c0de-0000-7000-8000-000000000002/abc.png"
+        ] do
+      html =
+        render_component(&CoreComponents.user_avatar/1, user: %User{id: @id, profile_url: url})
+
+      refute html =~ "<img", url
+      assert html =~ "hero-user-circle-solid"
+    end
   end
 
   test "a broken image carries the CSP-safe fallback marker" do
-    user = %User{profile_url: "https://example.com/not-ready-yet.png"}
+    user = %User{id: @id, profile_url: @hosted}
 
     html = render_component(&CoreComponents.user_avatar/1, user: user)
 
@@ -49,7 +71,7 @@ defmodule GamendWeb.Components.UserAvatarTest do
   test "the size class is applied to whichever branch renders" do
     with_avatar =
       render_component(&CoreComponents.user_avatar/1,
-        user: %User{profile_url: "https://example.com/a.png"},
+        user: %User{id: @id, profile_url: @hosted},
         class: "w-16 h-16"
       )
 

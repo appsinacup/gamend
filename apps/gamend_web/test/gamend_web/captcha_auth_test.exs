@@ -207,7 +207,7 @@ defmodule GamendWeb.CaptchaAuthTest do
         conn,
         ~p"/api/v1/register",
         Map.merge(
-          %{"email" => unique_user_email(), "password" => valid_user_password()},
+          %{"email" => unique_user_email()},
           extra
         )
       )

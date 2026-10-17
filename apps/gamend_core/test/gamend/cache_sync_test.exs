@@ -40,6 +40,20 @@ defmodule Gamend.CacheSyncTest do
     assert Cache.L1.get!({:test, :remote_key}) == nil
   end
 
+  test "an event from another node moves the key's generation, so a fill in flight is dropped" do
+    generation = {Gamend.Cache, :generation, {:test, :remote_generation}}
+    before = Cache.L1.get!(generation) || 0
+
+    send(
+      Process.whereis(Gamend.Cache.Sync),
+      {:cache_invalidate, {:test, :remote_generation}, :"other@remote-host"}
+    )
+
+    _ = :sys.get_state(Gamend.Cache.Sync)
+
+    assert Cache.L1.get!(generation) == before + 1
+  end
+
   test "an event from this node is skipped (already deleted locally)" do
     Cache.L1.put({:test, :local_key}, "value")
 

@@ -11,19 +11,20 @@ msgstr ""
 "Language: cs\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
-#: lib/gamend_web/components/core_components.ex:651
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:244
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:759
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:805
+#: lib/gamend_web/components/core_components.ex:853
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:243
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:762
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:808
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr "Akce"
 
 #: lib/gamend_web/live/user_live/login.ex:52
 #: lib/gamend_web/live/user_live/login.ex:84
-#: lib/gamend_web/live/user_live/registration.ex:26
+#: lib/gamend_web/live/user_live/registration.ex:27
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:92
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:137
+#: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr "E-mail"
@@ -39,18 +40,18 @@ msgstr "Žebříčky"
 #: lib/gamend_web/live/auth_success_live.ex:52
 #: lib/gamend_web/live/groups_live.ex:554
 #: lib/gamend_web/live/groups_live.ex:730
-#: lib/gamend_web/live/tournaments_live.ex:737
-#: lib/gamend_web/live/user_live/confirmation.ex:56
-#: lib/gamend_web/live/user_live/confirmation.ex:71
+#: lib/gamend_web/live/tournaments_live.ex:742
+#: lib/gamend_web/live/user_live/confirmation.ex:73
+#: lib/gamend_web/live/user_live/confirmation.ex:88
 #: lib/gamend_web/live/user_live/login.ex:14
 #: lib/gamend_web/live/user_live/login.ex:124
 #: lib/gamend_web/live/user_live/login.ex:155
-#: lib/gamend_web/live/user_live/registration.ex:17
+#: lib/gamend_web/live/user_live/registration.ex:18
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr "Přihlásit se"
 
-#: lib/gamend_web/live/lobby_live/index.ex:815
+#: lib/gamend_web/live/lobby_live/index.ex:816
 #: lib/gamend_web/live/user_live/login.ex:92
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:149
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:170
@@ -58,62 +59,68 @@ msgstr "Přihlásit se"
 msgid "Password"
 msgstr "Heslo"
 
-#: lib/gamend_web/components/core_components.ex:476
+#: lib/gamend_web/components/core_components.ex:673
 #: lib/gamend_web/live/user_live/login.ex:63
 #, elixir-autogen, elixir-format
 msgid "or"
 msgstr "nebo"
 
 #: lib/gamend_web/live/groups_live.ex:656
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1216
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1219
 #, elixir-autogen, elixir-format
 msgid "Admin"
 msgstr "Admin"
 
 #: lib/gamend_web/live/user_live/login.ex:23
-#: lib/gamend_web/live/user_live/registration.ex:14
-#: lib/gamend_web/live/user_live/registration.ex:38
-#: lib/gamend_web/live/user_live/registration.ex:63
+#: lib/gamend_web/live/user_live/registration.ex:15
+#: lib/gamend_web/live/user_live/registration.ex:57
+#: lib/gamend_web/live/user_live/registration.ex:91
 #, elixir-autogen, elixir-format
 msgid "Register"
 msgstr "Registrovat se"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:70
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:728
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:69
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:731
 #, elixir-autogen, elixir-format
 msgid "Accept"
 msgstr "Přijmout"
 
 #: lib/gamend_web/live/admin_live/chat_reports.ex:388
 #: lib/gamend_web/live/groups_live.ex:435
-#: lib/gamend_web/live/quests_live.ex:330
-#: lib/gamend_web/live/quests_live.ex:376
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:599
+#: lib/gamend_web/live/quests_live.ex:471
+#: lib/gamend_web/live/quests_live.ex:517
+#: lib/gamend_web/live/quests_live.ex:720
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:602
 #, elixir-autogen, elixir-format
 msgid "All"
 msgstr "Vše"
 
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:52
+#: lib/gamend_web/live/quests_live.ex:718
+#, elixir-autogen, elixir-format
+msgid "Quest group"
+msgstr "Skupina úkolů"
+
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:51
 #, elixir-autogen, elixir-format
 msgid "Apply"
 msgstr "Použít"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:353
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:354
 #, elixir-autogen, elixir-format
 msgid "Approve"
 msgstr "Schválit"
 
-#: lib/gamend_web/components/core_components.ex:595
+#: lib/gamend_web/components/core_components.ex:801
 #: lib/gamend_web/live/groups_live.ex:565
 #: lib/gamend_web/live/leaderboards_live.ex:192
-#: lib/gamend_web/live/tournaments_live.ex:507
-#: lib/gamend_web/live/tournaments_live.ex:784
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:63
+#: lib/gamend_web/live/tournaments_live.ex:512
+#: lib/gamend_web/live/tournaments_live.ex:789
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:62
 #, elixir-autogen, elixir-format
 msgid "Back"
 msgstr "Zpět"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:80
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:79
 #, elixir-autogen, elixir-format
 msgid "Block"
 msgstr "Zablokovat"
@@ -121,64 +128,64 @@ msgstr "Zablokovat"
 #: lib/gamend_web/live/admin_live/chat_filter.ex:541
 #: lib/gamend_web/live/admin_live/chat_mutes.ex:593
 #: lib/gamend_web/live/admin_live/chat_reports.ex:630
-#: lib/gamend_web/live/admin_live/lobbies.ex:399
+#: lib/gamend_web/live/admin_live/lobbies.ex:401
 #: lib/gamend_web/live/admin_live/matchmaking.ex:217
 #: lib/gamend_web/live/chat_live.ex:255
-#: lib/gamend_web/live/lobby_live/index.ex:822
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:113
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:74
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:169
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:783
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:827
+#: lib/gamend_web/live/lobby_live/index.ex:823
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:112
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:73
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:168
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:786
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:830
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr "Zrušit"
 
-#: lib/gamend_web/live/lobby_live/index.ex:873
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:54
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:610
+#: lib/gamend_web/live/lobby_live/index.ex:874
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:53
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:613
 #, elixir-autogen, elixir-format
 msgid "Clear"
 msgstr "Vymazat"
 
-#: lib/gamend_web/components/core_components.ex:181
-#: lib/gamend_web/live/lobby_live/index.ex:884
-#: lib/gamend_web/live/lobby_live/index.ex:954
+#: lib/gamend_web/components/core_components.ex:240
+#: lib/gamend_web/live/lobby_live/index.ex:885
+#: lib/gamend_web/live/lobby_live/index.ex:955
 #, elixir-autogen, elixir-format
 msgid "Close"
 msgstr "Zavřít"
 
-#: lib/gamend_web/live/lobby_live/index.ex:819
-#: lib/gamend_web/live/user_live/confirmation.ex:37
-#: lib/gamend_web/live/user_live/confirmation.ex:90
+#: lib/gamend_web/live/lobby_live/index.ex:820
+#: lib/gamend_web/live/user_live/confirmation.ex:54
+#: lib/gamend_web/live/user_live/confirmation.ex:108
 #: lib/gamend_web/live/user_live/login.ex:17
 #, elixir-autogen, elixir-format
 msgid "Confirm"
 msgstr "Potvrdit"
 
 #: lib/gamend_web/live/auth_success_live.ex:116
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:74
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:73
 #, elixir-autogen, elixir-format
 msgid "Content"
 msgstr "Obsah"
 
-#: lib/gamend_web/live/lobby_live/index.ex:699
-#: lib/gamend_web/live/lobby_live/index.ex:718
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:76
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:85
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:122
+#: lib/gamend_web/live/lobby_live/index.ex:700
+#: lib/gamend_web/live/lobby_live/index.ex:719
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:75
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:84
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:121
 #, elixir-autogen, elixir-format
 msgid "Create"
 msgstr "Vytvořit"
 
 #: lib/gamend_web/live/groups_live.ex:457
 #: lib/gamend_web/live/notifications_live.ex:44
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:73
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:198
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:706
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:804
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:62
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:62
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:72
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:197
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:709
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:807
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:76
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:61
 #, elixir-autogen, elixir-format
 msgid "Date"
 msgstr "Datum"
@@ -191,27 +198,27 @@ msgstr "Datum"
 msgid "Delete"
 msgstr "Smazat"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:295
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:296
 #, elixir-autogen, elixir-format
 msgid "Demote"
 msgstr "Degradovat"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:102
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:144
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:178
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:101
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:143
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:177
 #, elixir-autogen, elixir-format
 msgid "Description"
 msgstr "Popis"
 
 #: lib/gamend_web/live/notifications_live.ex:43
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:705
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:708
 #, elixir-autogen, elixir-format
 msgid "From"
 msgstr "Od"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:704
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:756
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:802
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:707
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:759
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:805
 #, elixir-autogen, elixir-format
 msgid "Group"
 msgstr "Skupina"
@@ -220,83 +227,83 @@ msgstr "Skupina"
 #: lib/gamend_web/live/groups_live.ex:48
 #: lib/gamend_web/live/groups_live.ex:101
 #: lib/gamend_web/live/groups_live.ex:399
-#: lib/gamend_web/live/user_live/settings.ex:93
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:58
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:480
+#: lib/gamend_web/live/user_live/settings.ex:100
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:57
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:483
 #, elixir-autogen, elixir-format
 msgid "Groups"
 msgstr "Skupiny"
 
-#: lib/gamend_web/live/lobby_live/index.ex:867
-#: lib/gamend_web/live/quests_live.ex:757
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:111
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:154
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1213
+#: lib/gamend_web/live/lobby_live/index.ex:868
+#: lib/gamend_web/live/quests_live.ex:941
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:110
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:153
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1216
 #, elixir-autogen, elixir-format
 msgid "Hidden"
 msgstr "Skrytá"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:91
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:71
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:70
 #, elixir-autogen, elixir-format
 msgid "ID"
 msgstr "ID"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:369
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:420
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:459
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:370
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:423
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:462
 #, elixir-autogen, elixir-format
 msgid "Invite"
 msgstr "Pozvat"
 
 #: lib/gamend_web/live/groups_live.ex:540
 #: lib/gamend_web/live/groups_live.ex:715
-#: lib/gamend_web/live/lobby_live/index.ex:783
-#: lib/gamend_web/live/lobby_live/index.ex:795
-#: lib/gamend_web/live/tournaments_live.ex:749
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:663
+#: lib/gamend_web/live/lobby_live/index.ex:784
+#: lib/gamend_web/live/lobby_live/index.ex:796
+#: lib/gamend_web/live/tournaments_live.ex:754
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:666
 #, elixir-autogen, elixir-format
 msgid "Join"
 msgstr "Připojit se"
 
 #: lib/gamend_web/live/groups_live.ex:186
 #: lib/gamend_web/live/groups_live.ex:213
-#: lib/gamend_web/live/lobby_live/index.ex:430
-#: lib/gamend_web/live/lobby_live/index.ex:721
-#: lib/gamend_web/live/tournaments_live.ex:116
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:242
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:651
+#: lib/gamend_web/live/lobby_live/index.ex:431
+#: lib/gamend_web/live/lobby_live/index.ex:722
+#: lib/gamend_web/live/tournaments_live.ex:121
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:241
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:654
 #, elixir-autogen, elixir-format
 msgid "Joined"
 msgstr "Připojil(a) se"
 
-#: lib/gamend_web/live/lobby_live/index.ex:920
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:305
+#: lib/gamend_web/live/lobby_live/index.ex:921
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:306
 #, elixir-autogen, elixir-format
 msgid "Kick"
 msgstr "Vyhodit"
 
 #: lib/gamend_web/live/groups_live.ex:704
-#: lib/gamend_web/live/lobby_live/index.ex:909
-#: lib/gamend_web/live/lobby_live/index.ex:945
-#: lib/gamend_web/live/tournaments_live.ex:743
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:225
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:568
+#: lib/gamend_web/live/lobby_live/index.ex:910
+#: lib/gamend_web/live/lobby_live/index.ex:946
+#: lib/gamend_web/live/tournaments_live.ex:748
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:224
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:571
 #, elixir-autogen, elixir-format
 msgid "Leave"
 msgstr "Opustit"
 
-#: lib/gamend_web/live/lobby_live/index.ex:776
-#: lib/gamend_web/live/lobby_live/index.ex:788
-#: lib/gamend_web/live/lobby_live/index.ex:858
-#: lib/gamend_web/live/quests_live.ex:705
+#: lib/gamend_web/live/lobby_live/index.ex:777
+#: lib/gamend_web/live/lobby_live/index.ex:789
+#: lib/gamend_web/live/lobby_live/index.ex:859
+#: lib/gamend_web/live/quests_live.ex:887
 #, elixir-autogen, elixir-format
 msgid "Locked"
 msgstr "Uzamčeno"
 
 #: lib/gamend_web/live/groups_live.ex:531
 #: lib/gamend_web/live/groups_live.ex:658
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1217
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1220
 #, elixir-autogen, elixir-format
 msgid "Member"
 msgstr "Člen"
@@ -304,9 +311,9 @@ msgstr "Člen"
 #: lib/gamend_web/live/groups_live.ex:500
 #: lib/gamend_web/live/groups_live.ex:599
 #: lib/gamend_web/live/groups_live.ex:613
-#: lib/gamend_web/live/lobby_live/index.ex:891
-#: lib/gamend_web/live/lobby_live/index.ex:929
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:234
+#: lib/gamend_web/live/lobby_live/index.ex:892
+#: lib/gamend_web/live/lobby_live/index.ex:930
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:233
 #, elixir-autogen, elixir-format
 msgid "Members"
 msgstr "Členové"
@@ -314,14 +321,16 @@ msgstr "Členové"
 #: lib/gamend_web/live/groups_live.ex:459
 #: lib/gamend_web/live/groups_live.ex:636
 #: lib/gamend_web/live/leaderboards_live.ex:314
-#: lib/gamend_web/live/tournaments_live.ex:660
+#: lib/gamend_web/live/tournaments_live.ex:665
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:120
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:72
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:232
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:141
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:176
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:240
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:391
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:66
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:92
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:71
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:231
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:140
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:175
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:239
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:392
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr "Jméno"
@@ -331,12 +340,12 @@ msgstr "Jméno"
 msgid "Newest"
 msgstr "Nejnovější"
 
-#: lib/gamend_web/components/core_components.ex:1098
+#: lib/gamend_web/components/core_components.ex:1321
 #, elixir-autogen, elixir-format
 msgid "Next"
 msgstr "Další"
 
-#: lib/gamend_web/components/core_components.ex:1082
+#: lib/gamend_web/components/core_components.ex:1305
 #, elixir-autogen, elixir-format
 msgid "Prev"
 msgstr "Předchozí"
@@ -344,15 +353,15 @@ msgstr "Předchozí"
 #: lib/gamend_web/live/groups_live.ex:437
 #: lib/gamend_web/live/groups_live.ex:490
 #: lib/gamend_web/live/groups_live.ex:580
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:110
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:153
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:601
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1212
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:109
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:152
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:604
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1215
 #, elixir-autogen, elixir-format
 msgid "Private"
 msgstr "Soukromá"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:286
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:287
 #, elixir-autogen, elixir-format
 msgid "Promote"
 msgstr "Povýšit"
@@ -360,51 +369,51 @@ msgstr "Povýšit"
 #: lib/gamend_web/live/groups_live.ex:436
 #: lib/gamend_web/live/groups_live.ex:488
 #: lib/gamend_web/live/groups_live.ex:578
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:109
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:152
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:600
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1211
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:108
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:151
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:603
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1214
 #, elixir-autogen, elixir-format
 msgid "Public"
 msgstr "Veřejná"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:73
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:360
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:72
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:361
 #, elixir-autogen, elixir-format
 msgid "Reject"
 msgstr "Odmítnout"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:222
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:226
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:79
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:157
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:223
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:227
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:78
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:156
 #, elixir-autogen, elixir-format
 msgid "Remove"
 msgstr "Odebrat"
 
 #: lib/gamend_web/live/groups_live.ex:548
 #: lib/gamend_web/live/groups_live.ex:724
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:671
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:674
 #, elixir-autogen, elixir-format
 msgid "Request"
 msgstr "Žádost"
 
 #: lib/gamend_web/live/groups_live.ex:637
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:203
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:241
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:515
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:202
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:240
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:518
 #, elixir-autogen, elixir-format
 msgid "Role"
 msgstr "Role"
 
 #: lib/gamend_web/live/admin_live/chat_mutes.ex:595
 #: lib/gamend_web/live/chat_live.ex:252
-#: lib/gamend_web/live/lobby_live/index.ex:877
+#: lib/gamend_web/live/lobby_live/index.ex:878
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:107
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:124
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:142
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:181
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:163
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:162
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr "Uložit"
@@ -417,80 +426,80 @@ msgid "Saving..."
 msgstr "Ukládání..."
 
 #: lib/gamend_web/live/chat_live.ex:316
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:251
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:250
 #, elixir-autogen, elixir-format
 msgid "Send"
 msgstr "Odeslat"
 
 #: lib/gamend_web/live/admin_live/chat_reports.ex:415
 #: lib/gamend_web/live/admin_live/matchmaking.ex:196
-#: lib/gamend_web/live/quests_live.ex:889
+#: lib/gamend_web/live/quests_live.ex:1073
 #: lib/gamend_web/live/store_live/index.ex:154
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:49
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:757
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:59
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:48
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:760
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:73
 #, elixir-autogen, elixir-format
 msgid "Status"
 msgstr "Stav"
 
-#: lib/gamend_web/live/lobby_live/index.ex:716
+#: lib/gamend_web/live/lobby_live/index.ex:717
 #: lib/gamend_web/live/notifications_live.ex:42
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:96
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:512
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:591
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:621
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:95
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:515
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:594
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:624
 #, elixir-autogen, elixir-format
 msgid "Title"
 msgstr "Název"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:107
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:149
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:182
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:513
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:597
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:622
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:106
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:148
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:181
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:516
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:600
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:625
 #, elixir-autogen, elixir-format
 msgid "Type"
 msgstr "Typ"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:198
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:197
 #, elixir-autogen, elixir-format
 msgid "Unblock"
 msgstr "Odblokovat"
 
-#: lib/gamend_web/live/lobby_live/index.ex:764
-#: lib/gamend_web/live/lobby_live/index.ex:773
+#: lib/gamend_web/live/lobby_live/index.ex:765
+#: lib/gamend_web/live/lobby_live/index.ex:774
 #: lib/gamend_web/live/notifications_live.ex:201
 #: lib/gamend_web/live/notifications_live.ex:202
 #: lib/gamend_web/live/notifications_live.ex:205
 #: lib/gamend_web/live/notifications_live.ex:207
 #: lib/gamend_web/live/notifications_live.ex:210
 #: lib/gamend_web/live/notifications_live.ex:213
-#: lib/gamend_web/live/notifications_live.ex:243
-#: lib/gamend_web/live/notifications_live.ex:246
-#: lib/gamend_web/live/notifications_live.ex:249
-#: lib/gamend_web/live/notifications_live.ex:252
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:560
+#: lib/gamend_web/live/notifications_live.ex:250
+#: lib/gamend_web/live/notifications_live.ex:253
+#: lib/gamend_web/live/notifications_live.ex:256
+#: lib/gamend_web/live/notifications_live.ex:259
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:563
 #, elixir-autogen, elixir-format
 msgid "View"
 msgstr "Zobrazit"
 
 #: lib/gamend_web/live/chat_live.ex:224
-#: lib/gamend_web/live/leaderboards_live.ex:349
-#: lib/gamend_web/live/tournaments_live.ex:682
-#: lib/gamend_web/live/tournaments_live.ex:746
-#: lib/gamend_web/live/tournaments_live.ex:814
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:308
+#: lib/gamend_web/live/leaderboards_live.ex:351
+#: lib/gamend_web/live/tournaments_live.ex:687
+#: lib/gamend_web/live/tournaments_live.ex:751
+#: lib/gamend_web/live/tournaments_live.ex:819
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:309
 #, elixir-autogen, elixir-format
 msgid "You"
 msgstr "Ty"
 
 #: lib/gamend_web/live/groups_live.ex:425
 #: lib/gamend_web/live/leaderboards_live.ex:302
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:47
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:225
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:374
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:382
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:46
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:224
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:375
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:383
 #, elixir-autogen, elixir-format
 msgid "Search..."
 msgstr "Hledat..."
@@ -500,9 +509,9 @@ msgstr "Hledat..."
 msgid "(edited)"
 msgstr "(upraveno)"
 
-#: lib/gamend_web/live/user_live/settings.ex:55
-#: lib/gamend_web/live/user_live/settings.ex:91
-#: lib/gamend_web/live/user_live/settings.ex:151
+#: lib/gamend_web/live/user_live/settings.ex:61
+#: lib/gamend_web/live/user_live/settings.ex:97
+#: lib/gamend_web/live/user_live/settings.ex:165
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:42
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:188
 #, elixir-autogen, elixir-format
@@ -515,7 +524,7 @@ msgstr "Účet"
 msgid "Chat"
 msgstr "Chat"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:735
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:738
 #, elixir-autogen, elixir-format
 msgid "Decline"
 msgstr "Odmítnout"
@@ -524,17 +533,17 @@ msgstr "Odmítnout"
 #: lib/gamend_web/live/admin_live/chat_mutes.ex:497
 #: lib/gamend_web/live/chat_live.ex:271
 #: lib/gamend_web/live/chat_live.ex:273
-#: lib/gamend_web/live/lobby_live/index.ex:755
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:217
+#: lib/gamend_web/live/lobby_live/index.ex:756
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:216
 #, elixir-autogen, elixir-format
 msgid "Edit"
 msgstr "Upravit"
 
 #: lib/gamend_web/live/chat_live.ex:115
-#: lib/gamend_web/live/user_live/settings.ex:92
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:45
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:130
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:436
+#: lib/gamend_web/live/user_live/settings.ex:99
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:44
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:129
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:439
 #, elixir-autogen, elixir-format
 msgid "Friends"
 msgstr "Přátelé"
@@ -547,6 +556,8 @@ msgstr "Domů"
 
 #: lib/gamend_web/live/notifications_live.ex:17
 #: lib/gamend_web/live/notifications_live.ex:129
+#: lib/gamend_web/live/user_live/settings.ex:98
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:30
 #, elixir-autogen, elixir-format
 msgid "Notifications"
 msgstr "Oznámení"
@@ -557,17 +568,17 @@ msgstr "Oznámení"
 msgid "Select a conversation"
 msgstr "Vyber konverzaci"
 
-#: lib/gamend_web/components/content_pages.ex:255
+#: lib/gamend_web/components/content_pages.ex:319
 #: lib/gamend_web/live/leaderboards_live.ex:250
-#: lib/gamend_web/live/tournaments_live.ex:559
+#: lib/gamend_web/live/tournaments_live.ex:564
 #, elixir-autogen, elixir-format
 msgid "Newer"
 msgstr "Novější"
 
-#: lib/gamend_web/components/content_pages.ex:269
+#: lib/gamend_web/components/content_pages.ex:333
 #: lib/gamend_web/live/chat_live.ex:203
 #: lib/gamend_web/live/leaderboards_live.ex:235
-#: lib/gamend_web/live/tournaments_live.ex:548
+#: lib/gamend_web/live/tournaments_live.ex:553
 #, elixir-autogen, elixir-format
 msgid "Older"
 msgstr "Starší"
@@ -575,12 +586,12 @@ msgstr "Starší"
 #: lib/gamend_web/live/auth_success_live.ex:78
 #: lib/gamend_web/live/auth_success_live.ex:110
 #: lib/gamend_web/live/auth_success_live.ex:198
-#: lib/gamend_web/live/user_live/confirmation.ex:28
-#: lib/gamend_web/live/user_live/confirmation.ex:34
-#: lib/gamend_web/live/user_live/confirmation.ex:53
-#: lib/gamend_web/live/user_live/confirmation.ex:62
-#: lib/gamend_web/live/user_live/confirmation.ex:68
-#: lib/gamend_web/live/user_live/registration.ex:35
+#: lib/gamend_web/live/user_live/confirmation.ex:45
+#: lib/gamend_web/live/user_live/confirmation.ex:51
+#: lib/gamend_web/live/user_live/confirmation.ex:70
+#: lib/gamend_web/live/user_live/confirmation.ex:79
+#: lib/gamend_web/live/user_live/confirmation.ex:85
+#: lib/gamend_web/live/user_live/registration.ex:54
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:141
 #, elixir-autogen, elixir-format
 msgid "Loading..."
@@ -595,22 +606,23 @@ msgstr "Načítání..."
 #: lib/gamend_web/live/lobby_live/index.ex:152
 #: lib/gamend_web/live/lobby_live/index.ex:176
 #: lib/gamend_web/live/lobby_live/index.ex:191
-#: lib/gamend_web/live/tournaments_live.ex:396
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:458
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1381
-#: lib/gamend_web/live_helpers.ex:230
+#: lib/gamend_web/live/tournaments_live.ex:401
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:475
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1384
+#: lib/gamend_web/live_helpers.ex:252
 #, elixir-autogen, elixir-format
 msgid "Not found"
 msgstr "Nenalezeno"
 
-#: lib/gamend_web/controllers/auth_controller.ex:632
-#: lib/gamend_web/controllers/auth_controller.ex:671
-#: lib/gamend_web/controllers/auth_controller.ex:974
+#: lib/gamend_web/controllers/auth_controller.ex:273
+#: lib/gamend_web/controllers/auth_controller.ex:300
+#: lib/gamend_web/controllers/auth_controller.ex:345
+#: lib/gamend_web/controllers/auth_controller.ex:674
 #: lib/gamend_web/controllers/user_session_controller.ex:9
 #: lib/gamend_web/controllers/user_session_controller.ex:13
-#: lib/gamend_web/controllers/user_session_controller.ex:73
-#: lib/gamend_web/controllers/user_session_controller.ex:83
-#: lib/gamend_web/controllers/user_session_controller.ex:94
+#: lib/gamend_web/controllers/user_session_controller.ex:104
+#: lib/gamend_web/controllers/user_session_controller.ex:114
+#: lib/gamend_web/controllers/user_session_controller.ex:128
 #: lib/gamend_web/live/auth_success_live.ex:45
 #: lib/gamend_web/live/auth_success_live.ex:70
 #: lib/gamend_web/live/auth_success_live.ex:98
@@ -619,27 +631,27 @@ msgstr "Nenalezeno"
 #: lib/gamend_web/live/lobby_live/index.ex:270
 #: lib/gamend_web/live/notifications_live.ex:163
 #: lib/gamend_web/live/notifications_live.ex:178
-#: lib/gamend_web/live/user_live/registration.ex:121
-#: lib/gamend_web/live/user_live/settings.ex:136
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:327
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:357
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:423
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:441
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:584
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:118
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:303
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1084
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1109
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1128
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1146
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1194
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1221
+#: lib/gamend_web/live/user_live/registration.ex:169
+#: lib/gamend_web/live/user_live/settings.ex:150
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:329
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:359
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:425
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:443
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:601
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:117
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:302
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1087
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1112
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1131
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1149
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1197
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1224
 #, elixir-autogen, elixir-format
 msgid "Success."
 msgstr "Hotovo."
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:781
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:825
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:784
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:828
 #, elixir-autogen, elixir-format
 msgid "Cancel?"
 msgstr "Zrušit?"
@@ -650,14 +662,14 @@ msgid "Cannot be empty."
 msgstr "Nesmí být prázdné."
 
 #: lib/gamend_web/live/chat_live.ex:278
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:76
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:75
 #, elixir-autogen, elixir-format
 msgid "Delete?"
 msgstr "Smazat?"
 
-#: lib/gamend_web/components/content_pages.ex:116
-#: lib/gamend_web/components/content_pages.ex:142
-#: lib/gamend_web/components/content_pages.ex:171
+#: lib/gamend_web/components/content_pages.ex:125
+#: lib/gamend_web/components/content_pages.ex:156
+#: lib/gamend_web/components/content_pages.ex:187
 #: lib/gamend_web/live/blog_live.ex:45
 #: lib/gamend_web/live/chat_live.ex:118
 #: lib/gamend_web/live/chat_live.ex:149
@@ -665,22 +677,22 @@ msgstr "Smazat?"
 #: lib/gamend_web/live/groups_live.ex:508
 #: lib/gamend_web/live/groups_live.ex:668
 #: lib/gamend_web/live/leaderboards_live.ex:169
-#: lib/gamend_web/live/leaderboards_live.ex:363
-#: lib/gamend_web/live/quests_live.ex:510
-#: lib/gamend_web/live/tournaments_live.ex:484
-#: lib/gamend_web/live/tournaments_live.ex:710
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:430
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:466
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:505
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:630
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:697
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:749
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:796
-#: lib/gamend_web/live/user_live/settings/items_tab.ex:59
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:49
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:103
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:34
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:92
+#: lib/gamend_web/live/leaderboards_live.ex:365
+#: lib/gamend_web/live/quests_live.ex:661
+#: lib/gamend_web/live/tournaments_live.ex:489
+#: lib/gamend_web/live/tournaments_live.ex:715
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:433
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:469
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:508
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:633
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:700
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:752
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:799
+#: lib/gamend_web/live/user_live/settings/items_tab.ex:58
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:63
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:117
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:33
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:91
 #, elixir-autogen, elixir-format
 msgid "No results."
 msgstr "Žádné výsledky."
@@ -692,19 +704,22 @@ msgstr "Žádné výsledky."
 #: lib/gamend_web/live/notifications_live.ex:228
 #: lib/gamend_web/live/notifications_live.ex:235
 #: lib/gamend_web/live/notifications_live.ex:236
-#: lib/gamend_web/live/notifications_live.ex:251
+#: lib/gamend_web/live/notifications_live.ex:246
+#: lib/gamend_web/live/notifications_live.ex:258
 #, elixir-autogen, elixir-format
 msgid "Open"
 msgstr "Otevřená"
 
-#: lib/gamend_web/controllers/auth_controller.ex:649
-#: lib/gamend_web/controllers/auth_controller.ex:662
-#: lib/gamend_web/controllers/auth_controller.ex:690
-#: lib/gamend_web/controllers/auth_controller.ex:931
+#: lib/gamend_web/controllers/auth_controller.ex:280
+#: lib/gamend_web/controllers/auth_controller.ex:323
+#: lib/gamend_web/controllers/auth_controller.ex:336
+#: lib/gamend_web/controllers/auth_controller.ex:364
+#: lib/gamend_web/controllers/auth_controller.ex:631
 #: lib/gamend_web/controllers/user_session_controller.ex:34
-#: lib/gamend_web/controllers/user_session_controller.ex:56
-#: lib/gamend_web/controllers/user_session_controller.ex:76
-#: lib/gamend_web/controllers/user_session_controller.ex:104
+#: lib/gamend_web/controllers/user_session_controller.ex:87
+#: lib/gamend_web/controllers/user_session_controller.ex:107
+#: lib/gamend_web/controllers/user_session_controller.ex:138
+#: lib/gamend_web/controllers/user_session_controller.ex:145
 #: lib/gamend_web/live/admin_live/matchmaking.ex:186
 #: lib/gamend_web/live/auth_success_live.ex:72
 #: lib/gamend_web/live/auth_success_live.ex:74
@@ -719,55 +734,59 @@ msgstr "Otevřená"
 #: lib/gamend_web/live/lobby_live/index.ex:132
 #: lib/gamend_web/live/lobby_live/index.ex:179
 #: lib/gamend_web/live/lobby_live/index.ex:284
-#: lib/gamend_web/live/lobby_live/index.ex:319
-#: lib/gamend_web/live/lobby_live/index.ex:370
-#: lib/gamend_web/live/lobby_live/index.ex:414
-#: lib/gamend_web/live/lobby_live/index.ex:462
-#: lib/gamend_web/live/tournaments_live.ex:174
-#: lib/gamend_web/live/user_live/confirmation.ex:95
-#: lib/gamend_web/live/user_live/registration.ex:151
-#: lib/gamend_web/live/user_live/settings.ex:139
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:427
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:430
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:445
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:553
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:588
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:122
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:308
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:322
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:336
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:350
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:364
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:378
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:392
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:883
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1096
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1115
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1133
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1151
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1206
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1224
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:202
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:203
-#: lib/gamend_web/live_helpers.ex:315
-#: lib/gamend_web/user_auth.ex:256
-#: lib/gamend_web/user_auth.ex:280
-#: lib/gamend_web/user_auth.ex:298
-#: lib/gamend_web/user_auth.ex:347
-#: lib/gamend_web/user_auth.ex:364
+#: lib/gamend_web/live/lobby_live/index.ex:320
+#: lib/gamend_web/live/lobby_live/index.ex:371
+#: lib/gamend_web/live/lobby_live/index.ex:415
+#: lib/gamend_web/live/lobby_live/index.ex:463
+#: lib/gamend_web/live/tournaments_live.ex:179
+#: lib/gamend_web/live/user_live/confirmation.ex:113
+#: lib/gamend_web/live/user_live/registration.ex:199
+#: lib/gamend_web/live/user_live/settings.ex:153
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:429
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:432
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:462
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:570
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:605
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:186
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:121
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:307
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:321
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:335
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:349
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:363
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:377
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:391
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:886
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1099
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1118
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1136
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1154
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1209
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1227
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:150
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:166
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:173
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:227
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:228
+#: lib/gamend_web/live_helpers.ex:337
+#: lib/gamend_web/user_auth.ex:417
+#: lib/gamend_web/user_auth.ex:441
+#: lib/gamend_web/user_auth.ex:462
+#: lib/gamend_web/user_auth.ex:579
+#: lib/gamend_web/user_auth.ex:621
 #, elixir-autogen, elixir-format
 msgid "Failed"
 msgstr "Selhalo"
 
-#: lib/gamend_web/controllers/auth_controller.ex:677
+#: lib/gamend_web/controllers/auth_controller.ex:351
 #: lib/gamend_web/controllers/user_session_controller.ex:28
-#: lib/gamend_web/controllers/user_session_controller.ex:50
-#: lib/gamend_web/controllers/user_session_controller.ex:98
+#: lib/gamend_web/controllers/user_session_controller.ex:51
+#: lib/gamend_web/controllers/user_session_controller.ex:132
 #, elixir-autogen, elixir-format
 msgid "Your account is pending activation."
 msgstr "Tvůj účet čeká na aktivaci."
 
-#: lib/gamend_web/live/quests_live.ex:377
+#: lib/gamend_web/live/quests_live.ex:518
 #, elixir-autogen, elixir-format
 msgid "In Progress"
 msgstr "Probíhá"
@@ -776,9 +795,9 @@ msgstr "Probíhá"
 #: lib/gamend_web/live/groups_live.ex:216
 #: lib/gamend_web/live/groups_live.ex:533
 #: lib/gamend_web/live/groups_live.ex:707
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:655
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:770
-#: lib/gamend_web/live_helpers.ex:312
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:658
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:773
+#: lib/gamend_web/live_helpers.ex:334
 #, elixir-autogen, elixir-format
 msgid "Pending"
 msgstr "Čeká"
@@ -788,8 +807,8 @@ msgstr "Čeká"
 #: lib/gamend_web/live/stats_live.ex:90
 #: lib/gamend_web/live/stats_live.ex:95
 #: lib/gamend_web/live/store_live/index.ex:156
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:65
-#: lib/gamend_web/live_helpers.ex:319
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:64
+#: lib/gamend_web/live_helpers.ex:341
 #, elixir-autogen, elixir-format
 msgid "Active"
 msgstr "Aktivní"
@@ -800,31 +819,31 @@ msgstr "Aktivní"
 msgid "Ended"
 msgstr "Ukončeno"
 
-#: lib/gamend_web/live/lobby_live/index.ex:902
-#: lib/gamend_web/live/lobby_live/index.ex:940
+#: lib/gamend_web/live/lobby_live/index.ex:903
+#: lib/gamend_web/live/lobby_live/index.ex:941
 #, elixir-autogen, elixir-format
 msgid "Host"
 msgstr "Hostitel"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:303
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:304
 #, elixir-autogen, elixir-format
 msgid "Kick?"
 msgstr "Vyhodit?"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:223
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:566
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:222
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:569
 #, elixir-autogen, elixir-format
 msgid "Leave?"
 msgstr "Opustit?"
 
 #: lib/gamend_web/live/lobby_live/index.ex:42
-#: lib/gamend_web/live/lobby_live/index.ex:729
+#: lib/gamend_web/live/lobby_live/index.ex:730
 #: lib/gamend_web/live/stats_live.ex:109
 #, elixir-autogen, elixir-format
 msgid "Lobbies"
 msgstr "Lobby"
 
-#: lib/gamend_web/controllers/page_controller.ex:16
+#: lib/gamend_web/controllers/page_controller.ex:33
 #, elixir-autogen, elixir-format
 msgid "Privacy"
 msgstr "Soukromí"
@@ -835,29 +854,29 @@ msgstr "Soukromí"
 msgid "Rank"
 msgstr "Pořadí"
 
-#: lib/gamend_web/live/lobby_live/index.ex:574
+#: lib/gamend_web/live/lobby_live/index.ex:575
 #, elixir-autogen, elixir-format
 msgid "Removed"
 msgstr "Odebráno"
 
-#: lib/gamend_web/live/leaderboards_live.ex:510
+#: lib/gamend_web/live/leaderboards_live.ex:512
 #, elixir-autogen, elixir-format
 msgid "Score"
 msgstr "Skóre"
 
-#: lib/gamend_web/controllers/page_controller.ex:30
+#: lib/gamend_web/controllers/page_controller.ex:57
 #, elixir-autogen, elixir-format
 msgid "Terms"
 msgstr "Podmínky"
 
-#: lib/gamend_web/live/user_live/settings.ex:97
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:32
+#: lib/gamend_web/live/user_live/settings.ex:104
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:31
 #, elixir-autogen, elixir-format
 msgid "Data"
 msgstr "Data"
 
 #: lib/gamend_web/live/user_live/login.ex:191
-#: lib/gamend_web/live/user_live/registration.ex:79
+#: lib/gamend_web/live/user_live/registration.ex:109
 #, elixir-autogen, elixir-format
 msgid "Too many attempts. Please try again later."
 msgstr "Příliš mnoho pokusů. Zkus to prosím později."
@@ -867,17 +886,17 @@ msgstr "Příliš mnoho pokusů. Zkus to prosím později."
 msgid "API only"
 msgstr "Pouze API"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:60
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:74
 #, elixir-autogen, elixir-format
 msgid "Amount"
 msgstr "Částka"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:133
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:147
 #, elixir-autogen, elixir-format
 msgid "Auto-renews"
 msgstr "Automaticky se obnovuje"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:179
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:178
 #, elixir-autogen, elixir-format
 msgid "Blocked users"
 msgstr "Blokovaní uživatelé"
@@ -887,29 +906,64 @@ msgstr "Blokovaní uživatelé"
 msgid "Buy"
 msgstr "Koupit"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:149
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:163
 #, elixir-autogen, elixir-format
 msgid "Cancel renewal"
 msgstr "Zrušit obnovení"
+
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:121
+#, elixir-autogen, elixir-format
+msgid "Refund"
+msgstr "Vrátit peníze"
+
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:115
+#, elixir-autogen, elixir-format
+msgid "Refund %{product}? It ends now and the payment goes back to you."
+msgstr "Vrátit peníze za %{product}? Hned to skončí a platba se ti vrátí."
+
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:105
+#, elixir-autogen, elixir-format
+msgid "Refund sent"
+msgstr "Vrácení odesláno"
+
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:250
+#, elixir-autogen, elixir-format
+msgid "Refund sent. The money is back in 5 to 10 days."
+msgstr "Vrácení odesláno. Peníze budou zpět za 5 až 10 dní."
+
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:281
+#, elixir-autogen, elixir-format
+msgid "The time to ask for a refund has passed."
+msgstr "Lhůta pro žádost o vrácení peněz uplynula."
 
 #: lib/gamend_web/live/user_live/settings/payments_tab.ex:47
 #, elixir-autogen, elixir-format
 msgid "Manage billing"
 msgstr "Správa plateb"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:234
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:259
 #, elixir-autogen, elixir-format
 msgid "Cancels"
 msgstr "Končí"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:155
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:169
 #, elixir-autogen, elixir-format
 msgid "Cancels at period end"
 msgstr "Končí na konci období"
 
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:205
+#, elixir-autogen, elixir-format
+msgid "Resume renewal"
+msgstr "Obnovit prodlužování"
+
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:258
+#, elixir-autogen, elixir-format
+msgid "Subscription renews again."
+msgstr "Předplatné se bude znovu obnovovat."
+
 #: lib/gamend_web/live/store_live/index.ex:85
 #, elixir-autogen, elixir-format
-msgid "Checkout cancelled."
+msgid "Checkout canceled."
 msgstr "Nákup zrušen."
 
 #: lib/gamend_web/live/store_live/index.ex:256
@@ -928,14 +982,14 @@ msgstr "Nákup se nezdařil: %{reason}"
 #: lib/gamend_web/live/store_live/index.ex:261
 #, elixir-autogen, elixir-format
 msgid "Checkout is already open for this item. Finish or cancel that checkout first."
-msgstr "Pokladna pro tuto položku je již otevřena. Nejprve ji dokončete nebo zrušte."
+msgstr "Pokladna pro tuto položku je již otevřena. Nejprve ji dokonči nebo zruš."
 
 #: lib/gamend_web/live/store_live/index.ex:74
 #, elixir-autogen, elixir-format
 msgid "Checkout returned."
 msgstr "Návrat z nákupu."
 
-#: lib/gamend_web/live/user_live/confirmation.ex:31
+#: lib/gamend_web/live/user_live/confirmation.ex:48
 #, elixir-autogen, elixir-format
 msgid "Confirm and remember me"
 msgstr "Potvrdit a zapamatovat si mě"
@@ -945,17 +999,17 @@ msgstr "Potvrdit a zapamatovat si mě"
 msgid "Create products and provider SKUs in Admin -> Payments."
 msgstr "Vytvoř produkty a SKU poskytovatelů v Admin -> Payments."
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:246
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:247
 #, elixir-autogen, elixir-format
 msgid "Danger zone"
 msgstr "Nebezpečná zóna"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:261
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:263
 #, elixir-autogen, elixir-format
 msgid "Delete account"
 msgstr "Smazat účet"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:162
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:176
 #, elixir-autogen, elixir-format
 msgid "Download"
 msgstr "Stáhnout"
@@ -965,13 +1019,15 @@ msgstr "Stáhnout"
 msgid "Downloadable"
 msgstr "Ke stažení"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:61
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:75
 #, elixir-autogen, elixir-format
 msgid "Environment"
 msgstr "Prostředí"
 
 #: lib/gamend_web/live/admin_live/chat_mutes.ex:465
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:240
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:75
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:96
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:265
 #, elixir-autogen, elixir-format
 msgid "Expires"
 msgstr "Vyprší"
@@ -982,40 +1038,40 @@ msgid "Grant"
 msgstr "Udělit"
 
 #: lib/gamend_web/live/store_live/index.ex:156
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:68
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:67
 #, elixir-autogen, elixir-format
 msgid "Inactive"
 msgstr "Neaktivní"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:51
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:50
 #, elixir-autogen, elixir-format
 msgid "Incoming requests"
 msgstr "Příchozí žádosti"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:207
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:232
 #, elixir-autogen, elixir-format
 msgid "Invalid payment state"
 msgstr "Neplatný stav platby"
 
 #: lib/gamend_web/live/admin_live/matchmaking.ex:195
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:124
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:138
 #, elixir-autogen, elixir-format
 msgid "Kind"
 msgstr "Druh"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:230
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:231
 #, elixir-autogen, elixir-format
 msgid "Link"
 msgstr "Propojit"
 
-#: lib/gamend_web/live/user_live/confirmation.ex:65
+#: lib/gamend_web/live/user_live/confirmation.ex:82
 #, elixir-autogen, elixir-format
 msgid "Log in and remember me"
 msgstr "Přihlásit se a zapamatovat si mě"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:239
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:75
-#: lib/gamend_web/live/user_live/settings/items_tab.ex:42
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:240
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:74
+#: lib/gamend_web/live/user_live/settings/items_tab.ex:41
 #, elixir-autogen, elixir-format
 msgid "Metadata"
 msgstr "Metadata"
@@ -1030,12 +1086,12 @@ msgstr "Žádné nakonfigurované produkty."
 msgid "No purchase was fulfilled."
 msgstr "Žádný nákup nebyl dokončen."
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:37
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:50
 #, elixir-autogen, elixir-format
 msgid "Open Store"
 msgstr "Otevřít obchod"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:56
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:70
 #, elixir-autogen, elixir-format
 msgid "Order"
 msgstr "Objednávka"
@@ -1056,19 +1112,19 @@ msgid "Order %{order_id} returned from checkout."
 msgstr "Objednávka %{order_id} se vrátila z nákupu."
 
 #: lib/gamend_web/live/store_live/index.ex:170
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:98
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:112
 #, elixir-autogen, elixir-format
 msgid "Owned"
 msgstr "Vlastněno"
 
-#: lib/gamend_web/controllers/page_controller.ex:11
+#: lib/gamend_web/controllers/page_controller.ex:17
 #, elixir-autogen, elixir-format
 msgid "Page"
 msgstr "Strana"
 
 #: lib/gamend_web/live/store_live/index.ex:66
-#: lib/gamend_web/live/user_live/settings.ex:96
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:34
+#: lib/gamend_web/live/user_live/settings.ex:103
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:36
 #, elixir-autogen, elixir-format
 msgid "Payments"
 msgstr "Platby"
@@ -1078,30 +1134,30 @@ msgstr "Platby"
 msgid "Price"
 msgstr "Cena"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:57
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:71
 #, elixir-autogen, elixir-format
 msgid "Product"
 msgstr "Produkt"
 
 #: lib/gamend_web/live/store_live/index.ex:140
 #: lib/gamend_web/live/store_live/index.ex:287
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:46
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:58
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:45
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:72
 #, elixir-autogen, elixir-format
 msgid "Provider"
 msgstr "Poskytovatel"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:47
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:58
 #, elixir-autogen, elixir-format
 msgid "Purchases"
 msgstr "Nákupy"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:252
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:253
 #, elixir-autogen, elixir-format
 msgid "Read data deletion instructions"
 msgstr "Přečti si pokyny ke smazání dat"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:237
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:262
 #, elixir-autogen, elixir-format
 msgid "Renews"
 msgstr "Obnovuje se"
@@ -1111,7 +1167,7 @@ msgstr "Obnovuje se"
 msgid "SKU"
 msgstr "SKU"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:98
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:97
 #, elixir-autogen, elixir-format
 msgid "Sent requests"
 msgstr "Odeslané žádosti"
@@ -1132,7 +1188,7 @@ msgstr "Položka obchodu"
 msgid "Stripe is not configured."
 msgstr "Stripe není nakonfigurován."
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:182
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:207
 #, elixir-autogen, elixir-format
 msgid "Subscription will cancel at the end of the period."
 msgstr "Předplatné skončí na konci období."
@@ -1162,213 +1218,213 @@ msgstr "Tuto položku již vlastníš."
 msgid "Send magic link"
 msgstr "Odeslat magický odkaz"
 
-#: lib/gamend_web/live/tournaments_live.ex:360
-#: lib/gamend_web/live/tournaments_live.ex:585
-#: lib/gamend_web/live/tournaments_live.ex:661
-#: lib/gamend_web/live/tournaments_live.ex:692
-#: lib/gamend_web/live/tournaments_live.ex:788
+#: lib/gamend_web/live/tournaments_live.ex:365
+#: lib/gamend_web/live/tournaments_live.ex:590
+#: lib/gamend_web/live/tournaments_live.ex:666
+#: lib/gamend_web/live/tournaments_live.ex:697
+#: lib/gamend_web/live/tournaments_live.ex:793
 #, elixir-autogen, elixir-format
 msgid "Bracket"
 msgstr "Pavouk"
 
-#: lib/gamend_web/live/tournaments_live.ex:570
+#: lib/gamend_web/live/tournaments_live.ex:575
 #, elixir-autogen, elixir-format
 msgid "Bracket size"
 msgstr "Velikost pavouka"
 
-#: lib/gamend_web/live/tournaments_live.ex:571
 #: lib/gamend_web/live/tournaments_live.ex:576
+#: lib/gamend_web/live/tournaments_live.ex:581
 #, elixir-autogen, elixir-format
 msgid "Brackets"
 msgstr "Pavouci"
 
 #: lib/gamend_web/live/admin_live/matchmaking.ex:187
-#: lib/gamend_web/live/tournaments_live.ex:972
-#: lib/gamend_web/live_helpers.ex:316
+#: lib/gamend_web/live/tournaments_live.ex:977
+#: lib/gamend_web/live_helpers.ex:338
 #, elixir-autogen, elixir-format
-msgid "Cancelled"
+msgid "Canceled"
 msgstr "Zrušeno"
 
-#: lib/gamend_web/live/tournaments_live.ex:931
+#: lib/gamend_web/live/tournaments_live.ex:936
 #, elixir-autogen, elixir-format
 msgid "Final"
 msgstr "Finále"
 
-#: lib/gamend_web/live/tournaments_live.ex:971
+#: lib/gamend_web/live/tournaments_live.ex:976
 #, elixir-autogen, elixir-format
 msgid "Finished"
 msgstr "Ukončeno"
 
 #: lib/gamend_web/live/admin_live/chat_mutes.ex:461
-#: lib/gamend_web/live/tournaments_live.ex:392
-#: lib/gamend_web/live/tournaments_live.ex:917
+#: lib/gamend_web/live/tournaments_live.ex:397
+#: lib/gamend_web/live/tournaments_live.ex:922
 #, elixir-autogen, elixir-format
 msgid "Player"
 msgstr "Hráč"
 
-#: lib/gamend_web/live/tournaments_live.ex:933
+#: lib/gamend_web/live/tournaments_live.ex:938
 #, elixir-autogen, elixir-format
 msgid "Quarterfinal"
 msgstr "Čtvrtfinále"
 
-#: lib/gamend_web/live/tournaments_live.ex:969
+#: lib/gamend_web/live/tournaments_live.ex:974
 #, elixir-autogen, elixir-format
 msgid "Registration open"
 msgstr "Registrace otevřena"
 
-#: lib/gamend_web/live/tournaments_live.ex:934
+#: lib/gamend_web/live/tournaments_live.ex:939
 #, elixir-autogen, elixir-format
 msgid "Round %{n}"
 msgstr "Kolo %{n}"
 
-#: lib/gamend_web/live/tournaments_live.ex:970
+#: lib/gamend_web/live/tournaments_live.ex:975
 #, elixir-autogen, elixir-format
 msgid "Running"
 msgstr "Probíhá"
 
-#: lib/gamend_web/live/tournaments_live.ex:968
+#: lib/gamend_web/live/tournaments_live.ex:973
 #, elixir-autogen, elixir-format
 msgid "Scheduled"
 msgstr "Naplánováno"
 
-#: lib/gamend_web/live/tournaments_live.ex:932
+#: lib/gamend_web/live/tournaments_live.ex:937
 #, elixir-autogen, elixir-format
 msgid "Semifinal"
 msgstr "Semifinále"
 
-#: lib/gamend_web/live/tournaments_live.ex:524
-#: lib/gamend_web/live/tournaments_live.ex:799
+#: lib/gamend_web/live/tournaments_live.ex:529
+#: lib/gamend_web/live/tournaments_live.ex:804
 #, elixir-autogen, elixir-format
 msgid "Starts manually"
 msgstr "Ruční start"
 
-#: lib/gamend_web/live/tournaments_live.ex:32
-#: lib/gamend_web/live/tournaments_live.ex:248
-#: lib/gamend_web/live/tournaments_live.ex:420
+#: lib/gamend_web/live/tournaments_live.ex:37
+#: lib/gamend_web/live/tournaments_live.ex:253
+#: lib/gamend_web/live/tournaments_live.ex:425
 #, elixir-autogen, elixir-format
 msgid "Tournaments"
 msgstr "Turnaje"
 
-#: lib/gamend_web/live/tournaments_live.ex:905
+#: lib/gamend_web/live/tournaments_live.ex:910
 #, elixir-autogen, elixir-format
 msgid "bye"
 msgstr "volný los"
 
-#: lib/gamend_web/live/tournaments_live.ex:590
+#: lib/gamend_web/live/tournaments_live.ex:595
 #, elixir-autogen, elixir-format
 msgid "matches decided"
 msgstr "zápasů rozhodnuto"
 
 #: lib/gamend_web/live/stats_live.ex:79
-#: lib/gamend_web/live/tournaments_live.ex:478
-#: lib/gamend_web/live/tournaments_live.ex:569
-#: lib/gamend_web/live/tournaments_live.ex:613
+#: lib/gamend_web/live/tournaments_live.ex:483
+#: lib/gamend_web/live/tournaments_live.ex:574
+#: lib/gamend_web/live/tournaments_live.ex:618
 #, elixir-autogen, elixir-format
 msgid "Players"
 msgstr "Hráči"
 
-#: lib/gamend_web/live/tournaments_live.ex:587
-#: lib/gamend_web/live/tournaments_live.ex:793
+#: lib/gamend_web/live/tournaments_live.ex:592
+#: lib/gamend_web/live/tournaments_live.ex:798
 #, elixir-autogen, elixir-format
 msgid "Slots"
 msgstr "Místa"
 
-#: lib/gamend_web/live/tournaments_live.ex:624
-#: lib/gamend_web/live/tournaments_live.ex:962
+#: lib/gamend_web/live/tournaments_live.ex:629
+#: lib/gamend_web/live/tournaments_live.ex:967
 #, elixir-autogen, elixir-format
 msgid "Champion"
 msgstr "Šampion"
 
-#: lib/gamend_web/live/tournaments_live.ex:630
-#: lib/gamend_web/live/tournaments_live.ex:964
+#: lib/gamend_web/live/tournaments_live.ex:635
+#: lib/gamend_web/live/tournaments_live.ex:969
 #, elixir-autogen, elixir-format
 msgid "Eliminated"
 msgstr "Vyřazen"
 
-#: lib/gamend_web/live/tournaments_live.ex:627
-#: lib/gamend_web/live/tournaments_live.ex:963
+#: lib/gamend_web/live/tournaments_live.ex:632
+#: lib/gamend_web/live/tournaments_live.ex:968
 #, elixir-autogen, elixir-format
 msgid "Playing"
 msgstr "Hraje"
 
-#: lib/gamend_web/live/tournaments_live.ex:633
-#: lib/gamend_web/live/tournaments_live.ex:965
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:47
+#: lib/gamend_web/live/tournaments_live.ex:638
+#: lib/gamend_web/live/tournaments_live.ex:970
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:46
 #, elixir-autogen, elixir-format
 msgid "Registered"
 msgstr "Registrován"
 
-#: lib/gamend_web/live/tournaments_live.ex:663
+#: lib/gamend_web/live/tournaments_live.ex:668
 #, elixir-autogen, elixir-format
 msgid "Result"
 msgstr "Výsledek"
 
 #: lib/gamend_web/live/groups_live.ex:625
-#: lib/gamend_web/live/tournaments_live.ex:648
+#: lib/gamend_web/live/tournaments_live.ex:653
 #, elixir-autogen, elixir-format
 msgid "Search players..."
 msgstr "Hledat hráče..."
 
-#: lib/gamend_web/live/tournaments_live.ex:811
+#: lib/gamend_web/live/tournaments_live.ex:816
 #, elixir-autogen, elixir-format
 msgid "Showing"
 msgstr "Zobrazuje se"
 
-#: lib/gamend_web/live/tournaments_live.ex:662
-#: lib/gamend_web/live/tournaments_live.ex:820
+#: lib/gamend_web/live/tournaments_live.ex:667
+#: lib/gamend_web/live/tournaments_live.ex:825
 #, elixir-autogen, elixir-format
 msgid "Wins"
 msgstr "Výhry"
 
-#: lib/gamend_web/live/tournaments_live.ex:125
+#: lib/gamend_web/live/tournaments_live.ex:130
 #, elixir-autogen, elixir-format
 msgid "Left"
-msgstr "Odešli jste"
+msgstr "Odchod"
 
-#: lib/gamend_web/live/tournaments_live.ex:157
-#: lib/gamend_web/live_helpers.ex:290
+#: lib/gamend_web/live/tournaments_live.ex:162
+#: lib/gamend_web/live_helpers.ex:312
 #, elixir-autogen, elixir-format
 msgid "Registration is closed."
 msgstr "Registrace je uzavřena."
 
-#: lib/gamend_web/live/tournaments_live.ex:161
+#: lib/gamend_web/live/tournaments_live.ex:166
 #, elixir-autogen, elixir-format
 msgid "The bracket has already been drawn."
 msgstr "Pavouk už byl vylosován."
 
-#: lib/gamend_web/live/tournaments_live.ex:159
+#: lib/gamend_web/live/tournaments_live.ex:164
 #, elixir-autogen, elixir-format
 msgid "This tournament is full."
 msgstr "Tento turnaj je plný."
 
-#: lib/gamend_web/live/tournaments_live.ex:158
-#: lib/gamend_web/live_helpers.ex:288
+#: lib/gamend_web/live/tournaments_live.ex:163
+#: lib/gamend_web/live_helpers.ex:310
 #, elixir-autogen, elixir-format
 msgid "You are already registered."
-msgstr "Již jste zaregistrováni."
+msgstr "Už jsi zaregistrovaný."
 
-#: lib/gamend_web/live/tournaments_live.ex:160
-#: lib/gamend_web/live_helpers.ex:289
+#: lib/gamend_web/live/tournaments_live.ex:165
+#: lib/gamend_web/live_helpers.ex:311
 #, elixir-autogen, elixir-format
 msgid "You are not registered."
-msgstr "Nejste zaregistrováni."
+msgstr "Nejsi zaregistrovaný."
 
-#: lib/gamend_web/live/tournaments_live.ex:621
+#: lib/gamend_web/live/tournaments_live.ex:626
 #, elixir-autogen, elixir-format
 msgid "All results"
 msgstr "Všechny výsledky"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:496
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:513
 #, elixir-autogen, elixir-format
 msgid "Avatar updated."
 msgstr "Avatar byl aktualizován."
 
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:65
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:64
 #, elixir-autogen, elixir-format
 msgid "Balance"
 msgstr "Zůstatek"
 
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:64
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:63
 #, elixir-autogen, elixir-format
 msgid "Change"
 msgstr "Změna"
@@ -1378,12 +1434,12 @@ msgstr "Změna"
 msgid "Change avatar"
 msgstr "Změnit avatar"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:500
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:517
 #, elixir-autogen, elixir-format
 msgid "Could not update avatar."
 msgstr "Avatar se nepodařilo aktualizovat."
 
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:63
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:62
 #, elixir-autogen, elixir-format
 msgid "Currency"
 msgstr "Měna"
@@ -1393,13 +1449,13 @@ msgstr "Měna"
 msgid "File is too large or not a supported image."
 msgstr "Soubor je příliš velký nebo není podporovaný obrázek."
 
-#: lib/gamend_web/live/user_live/settings/items_tab.ex:40
+#: lib/gamend_web/live/user_live/settings/items_tab.ex:39
 #, elixir-autogen, elixir-format
 msgid "Item"
 msgstr "Položka"
 
-#: lib/gamend_web/live/user_live/settings.ex:95
-#: lib/gamend_web/live/user_live/settings/items_tab.ex:29
+#: lib/gamend_web/live/user_live/settings.ex:102
+#: lib/gamend_web/live/user_live/settings/items_tab.ex:28
 #, elixir-autogen, elixir-format
 msgid "Items"
 msgstr "Položky"
@@ -1409,12 +1465,12 @@ msgstr "Položky"
 msgid "Open chat"
 msgstr "Otevřít chat"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:504
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:521
 #, elixir-autogen, elixir-format
 msgid "Please choose an image first."
-msgstr "Nejprve vyberte obrázek."
+msgstr "Nejprve vyber obrázek."
 
-#: lib/gamend_web/live/user_live/settings/items_tab.ex:41
+#: lib/gamend_web/live/user_live/settings/items_tab.ex:40
 #, elixir-autogen, elixir-format
 msgid "Quantity"
 msgstr "Množství"
@@ -1425,7 +1481,7 @@ msgstr "Množství"
 #: lib/gamend_web/live/admin_live/chat_reports.ex:414
 #: lib/gamend_web/live/admin_live/chat_reports.ex:575
 #: lib/gamend_web/live/admin_live/matchmaking.ex:197
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:66
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:65
 #, elixir-autogen, elixir-format
 msgid "Reason"
 msgstr "Důvod"
@@ -1435,121 +1491,122 @@ msgstr "Důvod"
 msgid "Remove selected file"
 msgstr "Odebrat vybraný soubor"
 
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:49
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:48
 #, elixir-autogen, elixir-format
 msgid "Transactions"
 msgstr "Transakce"
 
-#: lib/gamend_web/live/user_live/settings.ex:94
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:30
+#: lib/gamend_web/live/user_live/settings.ex:101
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:29
 #, elixir-autogen, elixir-format
 msgid "Wallet"
 msgstr "Peněženka"
 
-#: lib/gamend_web/live/quests_live.ex:91
+#: lib/gamend_web/live/quests_live.ex:118
 #, elixir-autogen, elixir-format
 msgid "Already claimed."
 msgstr "Již vyzvednuto."
 
-#: lib/gamend_web/live/quests_live.ex:869
+#: lib/gamend_web/live/quests_live.ex:1053
 #, elixir-autogen, elixir-format
 msgid "Claim"
 msgstr "Vyzvednout"
 
-#: lib/gamend_web/live/quests_live.ex:378
+#: lib/gamend_web/live/quests_live.ex:519
 #, elixir-autogen, elixir-format
 msgid "Claimable"
 msgstr "K vyzvednutí"
 
-#: lib/gamend_web/live/quests_live.ex:351
-#: lib/gamend_web/live/quests_live.ex:710
-#: lib/gamend_web/live/quests_live.ex:875
+#: lib/gamend_web/live/quests_live.ex:492
+#: lib/gamend_web/live/quests_live.ex:892
+#: lib/gamend_web/live/quests_live.ex:1059
 #: lib/gamend_web/live/stats_live.ex:134
 #, elixir-autogen, elixir-format
 msgid "Claimed"
 msgstr "Vyzvednuto"
 
-#: lib/gamend_web/live/quests_live.ex:352
-#: lib/gamend_web/live/quests_live.ex:379
-#: lib/gamend_web/live/quests_live.ex:712
-#: lib/gamend_web/live/quests_live.ex:884
+#: lib/gamend_web/live/quests_live.ex:493
+#: lib/gamend_web/live/quests_live.ex:520
+#: lib/gamend_web/live/quests_live.ex:894
+#: lib/gamend_web/live/quests_live.ex:1068
 #: lib/gamend_web/live/stats_live.ex:133
-#: lib/gamend_web/live_helpers.ex:314
+#: lib/gamend_web/live_helpers.ex:336
 #, elixir-autogen, elixir-format
 msgid "Completed"
 msgstr "Dokončeno"
 
-#: lib/gamend_web/live/quests_live.ex:94
+#: lib/gamend_web/live/quests_live.ex:121
 #, elixir-autogen, elixir-format
 msgid "Could not claim this quest."
 msgstr "Tento úkol se nepodařilo vyzvednout."
 
-#: lib/gamend_web/live/quests_live.ex:364
+#: lib/gamend_web/live/quests_live.ex:505
 #, elixir-autogen, elixir-format
 msgid "Daily"
 msgstr "Denní"
 
-#: lib/gamend_web/live/quests_live.ex:842
+#: lib/gamend_web/live/quests_live.ex:1026
 #, elixir-autogen, elixir-format
 msgid "Ends in %{time}"
 msgstr "Končí za %{time}"
 
-#: lib/gamend_web/live/quests_live.ex:38
-#: lib/gamend_web/live/quests_live.ex:453
-#: lib/gamend_web/live/quests_live.ex:667
+#: lib/gamend_web/live/quests_live.ex:54
+#: lib/gamend_web/live/quests_live.ex:599
+#: lib/gamend_web/live/quests_live.ex:849
 #: lib/gamend_web/live/stats_live.ex:130
 #: lib/gamend_web/live/stats_live.ex:132
 #, elixir-autogen, elixir-format
 msgid "Quests"
 msgstr "Úkoly"
 
-#: lib/gamend_web/live/quests_live.ex:844
+#: lib/gamend_web/live/quests_live.ex:1028
 #, elixir-autogen, elixir-format
 msgid "Resets in %{time}"
 msgstr "Obnoví se za %{time}"
 
-#: lib/gamend_web/live/quests_live.ex:87
+#: lib/gamend_web/live/quests_live.ex:114
 #, elixir-autogen, elixir-format
 msgid "Rewards claimed!"
 msgstr "Odměny vyzvednuty!"
 
-#: lib/gamend_web/live/quests_live.ex:365
+#: lib/gamend_web/live/quests_live.ex:506
 #, elixir-autogen, elixir-format
 msgid "Weekly"
 msgstr "Týdenní"
 
-#: lib/gamend_web/live/quests_live.ex:369
+#: lib/gamend_web/live/quests_live.ex:510
 #, elixir-autogen, elixir-format
 msgid "Every %{count}d"
 msgstr "Každých %{count} d"
 
-#: lib/gamend_web/live/quests_live.ex:366
+#: lib/gamend_web/live/quests_live.ex:507
 #, elixir-autogen, elixir-format
 msgid "Monthly"
 msgstr "Měsíční"
 
-#: lib/gamend_web/live/user_live/settings.ex:98
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:30
+#: lib/gamend_web/live/user_live/settings.ex:105
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:29
 #, elixir-autogen, elixir-format
 msgid "Devices"
 msgstr "Zařízení"
 
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:32
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:31
 #, elixir-autogen, elixir-format
 msgid "Devices registered for push notifications."
 msgstr "Zařízení registrovaná pro push oznámení."
 
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:48
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:95
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:47
 #, elixir-autogen, elixir-format
 msgid "Last used"
 msgstr "Naposledy použito"
 
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:38
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:37
 #, elixir-autogen, elixir-format
 msgid "No devices registered."
 msgstr "Žádná registrovaná zařízení."
 
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:45
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:44
 #, elixir-autogen, elixir-format
 msgid "Platform"
 msgstr "Platforma"
@@ -1559,7 +1616,7 @@ msgstr "Platforma"
 msgid "Passed"
 msgstr "Splněno"
 
-#: lib/gamend_web/live/admin_live/lobbies.ex:429
+#: lib/gamend_web/live/admin_live/lobbies.ex:431
 #: lib/gamend_web/live/admin_live/matchmaking.ex:198
 #, elixir-autogen, elixir-format
 msgid "Ready"
@@ -1571,54 +1628,55 @@ msgid "Ready checks"
 msgstr "Kontroly připravenosti"
 
 #: lib/gamend_web/live/admin_live/matchmaking.ex:199
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:94
 #, elixir-autogen, elixir-format
 msgid "Created"
 msgstr "Vytvořeno"
 
-#: lib/gamend_web/live/admin_live/lobbies.ex:386
+#: lib/gamend_web/live/admin_live/lobbies.ex:388
 #, elixir-autogen, elixir-format
 msgid "Ready check"
 msgstr "Kontrola připravenosti"
 
-#: lib/gamend_web/live/quests_live.ex:353
-#: lib/gamend_web/live/quests_live.ex:713
+#: lib/gamend_web/live/quests_live.ex:494
+#: lib/gamend_web/live/quests_live.ex:895
 #, elixir-autogen, elixir-format
 msgid "In progress"
 msgstr "Probíhá"
 
-#: lib/gamend_web/live/quests_live.ex:354
-#: lib/gamend_web/live/quests_live.ex:714
+#: lib/gamend_web/live/quests_live.ex:495
+#: lib/gamend_web/live/quests_live.ex:896
 #, elixir-autogen, elixir-format
 msgid "Not started"
 msgstr "Nezahájeno"
 
-#: lib/gamend_web/live/quests_live.ex:568
+#: lib/gamend_web/live/quests_live.ex:750
 #, elixir-autogen, elixir-format
 msgid "Quest chain"
 msgstr "Řetěz úkolů"
 
-#: lib/gamend_web/live/quests_live.ex:350
-#: lib/gamend_web/live/quests_live.ex:711
+#: lib/gamend_web/live/quests_live.ex:491
+#: lib/gamend_web/live/quests_live.ex:893
 #, elixir-autogen, elixir-format
 msgid "Ready to claim"
 msgstr "Připraveno k vyzvednutí"
 
-#: lib/gamend_web/live/quests_live.ex:803
+#: lib/gamend_web/live/quests_live.ex:987
 #, elixir-autogen, elixir-format
 msgid "View quest chain"
 msgstr "Zobrazit řetěz úkolů"
 
-#: lib/gamend_web/live_helpers.ex:184
+#: lib/gamend_web/live_helpers.ex:206
 #, elixir-autogen, elixir-format
 msgid "Captcha check failed. Please try again."
 msgstr "Ověření captchy se nezdařilo. Zkus to prosím znovu."
 
-#: lib/gamend_web/live_helpers.ex:187
+#: lib/gamend_web/live_helpers.ex:209
 #, elixir-autogen, elixir-format
 msgid "Could not reach the captcha service. Please try again."
 msgstr "Službu captcha se nepodařilo kontaktovat. Zkus to prosím znovu."
 
-#: lib/gamend_web/live_helpers.ex:180
+#: lib/gamend_web/live_helpers.ex:202
 #, elixir-autogen, elixir-format
 msgid "Please complete the captcha."
 msgstr "Dokonči prosím captchu."
@@ -1694,7 +1752,7 @@ msgstr "Stáří"
 msgid "All scopes"
 msgstr "Všechny rozsahy"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:388
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:390
 #, elixir-autogen, elixir-format
 msgid "Avatar uploads are not available."
 msgstr "Nahrávání avatara není k dispozici."
@@ -1952,8 +2010,8 @@ msgstr "Normalizováno"
 
 #: lib/gamend_web/components/presence_indicator.ex:33
 #: lib/gamend_web/live/stats_live.ex:81
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:144
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:260
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:143
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:259
 #, elixir-autogen, elixir-format
 msgid "Online"
 msgstr "Online"
@@ -2111,7 +2169,7 @@ msgstr "Systém"
 msgid "Test a phrase"
 msgstr "Otestovat frázi"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:483
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:500
 #, elixir-autogen, elixir-format
 msgid "That file is not a valid image."
 msgstr "Tento soubor není platný obrázek."
@@ -2291,7 +2349,7 @@ msgstr "Varovat hráče"
 msgid "Warned from the report queue"
 msgstr "Varován z fronty nahlášení"
 
-#: lib/gamend_web/live/quests_live.ex:811
+#: lib/gamend_web/live/quests_live.ex:995
 #, elixir-autogen, elixir-format
 msgid "View every quest in this group"
 msgstr "Zobrazit všechny úkoly v této skupině"
@@ -2307,27 +2365,26 @@ msgstr "%{n} na tomto uzlu"
 msgid "Active today"
 msgstr "Aktivní dnes"
 
-#: lib/gamend_web/components/content_pages.ex:57
+#: lib/gamend_web/components/content_pages.ex:66
 #, elixir-autogen, elixir-format
 msgid "Add a changelog file at CHANGELOG.md to display it here."
-msgstr "Přidejte seznam změn do souboru CHANGELOG.md a zobrazí se zde."
+msgstr "Přidej seznam změn do souboru CHANGELOG.md a zobrazí se zde."
 
-#: lib/gamend_web/components/content_pages.ex:80
+#: lib/gamend_web/components/content_pages.ex:89
 #, elixir-autogen, elixir-format
 msgid "Add a roadmap file at ROADMAP.md to display it here."
-msgstr "Přidejte plán vývoje do souboru ROADMAP.md a zobrazí se zde."
+msgstr "Přidej plán vývoje do souboru ROADMAP.md a zobrazí se zde."
 
-#: lib/gamend_web/components/content_pages.ex:148
-#: lib/gamend_web/components/content_pages.ex:229
+#: lib/gamend_web/components/content_pages.ex:164
 #: lib/gamend_web/live/blog_live.ex:23
 #: lib/gamend_web/live/blog_live.ex:36
 #, elixir-autogen, elixir-format
 msgid "Blog"
 msgstr "Blog"
 
-#: lib/gamend_web/components/content_pages.ex:51
-#: lib/gamend_web/components/content_pages.ex:78
-#: lib/gamend_web/components/content_pages.ex:163
+#: lib/gamend_web/components/content_pages.ex:60
+#: lib/gamend_web/components/content_pages.ex:87
+#: lib/gamend_web/components/content_pages.ex:179
 #: lib/gamend_web/live/changelog_live.ex:20
 #, elixir-autogen, elixir-format
 msgid "Changelog"
@@ -2349,70 +2406,70 @@ msgstr "Končí za %{n} h"
 msgid "Closes in under an hour"
 msgstr "Končí za méně než hodinu"
 
-#: lib/gamend_web/docs_live.ex:322
+#: lib/gamend_web/docs_live.ex:392
 #, elixir-autogen, elixir-format
 msgid "More in %{category}"
 msgstr "Více v kategorii %{category}"
 
-#: lib/gamend_web/docs_live.ex:305
+#: lib/gamend_web/docs_live.ex:818
 #, elixir-autogen, elixir-format
 msgid "More pages"
 msgstr "Další stránky"
 
-#: lib/gamend_web/controllers/error_html.ex:103
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:372
-#: lib/gamend_web/live_helpers.ex:224
-#: lib/gamend_web/live_helpers.ex:227
+#: lib/gamend_web/controllers/error_html.ex:115
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:374
+#: lib/gamend_web/live_helpers.ex:246
+#: lib/gamend_web/live_helpers.ex:249
 #, elixir-autogen, elixir-format
 msgid "Not allowed"
 msgstr "Nepovoleno"
 
-#: lib/gamend_web/controllers/error_html.ex:102
+#: lib/gamend_web/controllers/error_html.ex:114
 #, elixir-autogen, elixir-format
 msgid "Page not found"
 msgstr "Stránka nenalezena"
 
-#: lib/gamend_web/components/presentation_page.ex:553
+#: lib/gamend_web/components/presentation_page.ex:661
 #, elixir-autogen, elixir-format
 msgid "Play video"
 msgstr "Přehrát video"
 
-#: lib/gamend_web/components/content_pages.ex:143
+#: lib/gamend_web/components/content_pages.ex:157
 #, elixir-autogen, elixir-format
 msgid "Register a blog directory to display posts here."
-msgstr "Zaregistrujte adresář blogu a příspěvky se zobrazí zde."
+msgstr "Zaregistruj adresář blogu a příspěvky se zobrazí zde."
 
-#: lib/gamend_web/components/content_pages.ex:55
-#: lib/gamend_web/components/content_pages.ex:74
-#: lib/gamend_web/components/content_pages.ex:156
+#: lib/gamend_web/components/content_pages.ex:64
+#: lib/gamend_web/components/content_pages.ex:83
+#: lib/gamend_web/components/content_pages.ex:172
 #: lib/gamend_web/live/roadmap_live.ex:17
 #, elixir-autogen, elixir-format
 msgid "Roadmap"
 msgstr "Plán vývoje"
 
-#: lib/gamend_web/controllers/error_html.ex:134
+#: lib/gamend_web/controllers/error_html.ex:146
 #, elixir-autogen, elixir-format
 msgid "Something broke on our side. It has been logged, and the rest of the site is fine."
 msgstr "Na naší straně se něco pokazilo. Chyba byla zaznamenána a zbytek webu funguje."
 
-#: lib/gamend_web/controllers/error_html.ex:105
+#: lib/gamend_web/controllers/error_html.ex:117
 #: lib/gamend_web/live/auth_success_live.ex:137
 #: lib/gamend_web/live/auth_success_live.ex:161
 #, elixir-autogen, elixir-format
 msgid "Something went wrong"
 msgstr "Něco se pokazilo"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:563
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:580
 #, elixir-autogen, elixir-format
 msgid "That account has its own sign-in method. Sign in to it and unlink the provider there."
-msgstr "Tento účet má vlastní způsob přihlášení. Přihlaste se do něj a odpojte poskytovatele tam."
+msgstr "Tento účet má vlastní způsob přihlášení. Přihlas se do něj a odpoj poskytovatele tam."
 
-#: lib/gamend_web/controllers/error_html.ex:108
+#: lib/gamend_web/controllers/error_html.ex:120
 #, elixir-autogen, elixir-format
 msgid "The page you were looking for has moved or never existed. The rest of the site is fine."
-msgstr "Stránka, kterou hledáte, byla přesunuta nebo nikdy neexistovala. Zbytek webu funguje."
+msgstr "Stránka, kterou hledáš, byla přesunuta nebo nikdy neexistovala. Zbytek webu funguje."
 
-#: lib/gamend_web/controllers/error_html.ex:104
+#: lib/gamend_web/controllers/error_html.ex:116
 #, elixir-autogen, elixir-format
 msgid "Too many requests"
 msgstr "Příliš mnoho požadavků"
@@ -2432,15 +2489,15 @@ msgstr "Platná ztlumení načtená v paměti tohoto uzlu. Vynucování čte tat
 msgid "Where to go next"
 msgstr "Kam dál"
 
-#: lib/gamend_web/controllers/error_html.ex:114
+#: lib/gamend_web/controllers/error_html.ex:126
 #, elixir-autogen, elixir-format
 msgid "You do not have access to this page. Signing in may help."
-msgstr "K této stránce nemáte přístup. Přihlášení může pomoci."
+msgstr "K této stránce nemáš přístup. Přihlášení může pomoci."
 
-#: lib/gamend_web/controllers/error_html.ex:118
+#: lib/gamend_web/controllers/error_html.ex:130
 #, elixir-autogen, elixir-format
 msgid "You have made a lot of requests in a short time. Please wait a moment and try again."
-msgstr "V krátké době jste odeslali mnoho požadavků. Chvíli počkejte a zkuste to znovu."
+msgstr "V krátké době jsi odeslal mnoho požadavků. Chvíli počkej a zkus to znovu."
 
 #: lib/gamend_web/live/stats_live.ex:97
 #, elixir-autogen, elixir-format
@@ -2453,12 +2510,12 @@ msgstr "posledních 30 dní"
 msgid "last 7 days"
 msgstr "posledních 7 dní"
 
-#: lib/gamend_web/components/core_components.ex:494
+#: lib/gamend_web/components/core_components.ex:691
 #, elixir-autogen, elixir-format
 msgid "Log in with %{provider}"
 msgstr "Přihlásit se přes %{provider}"
 
-#: lib/gamend_web/components/core_components.ex:495
+#: lib/gamend_web/components/core_components.ex:692
 #, elixir-autogen, elixir-format
 msgid "Register with %{provider}"
 msgstr "Registrovat se přes %{provider}"
@@ -2482,126 +2539,126 @@ msgstr "Pošli si magický odkaz pro přihlášení a poté si na stránce Úče
 #, elixir-autogen, elixir-format
 msgid "%{count} country"
 msgid_plural "%{count} countries"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} země"
+msgstr[1] "%{count} země"
+msgstr[2] "%{count} zemí"
 
 #: lib/gamend_web/live/admin_live/lobby_snapshots.ex:52
 #, elixir-autogen, elixir-format
 msgid "%{count} coverage gap"
 msgid_plural "%{count} coverage gaps"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} mezera v pokrytí"
+msgstr[1] "%{count} mezery v pokrytí"
+msgstr[2] "%{count} mezer v pokrytí"
 
 #: lib/gamend_web/live/admin_live/logs.ex:47
 #: lib/gamend_web/live/admin_live/rate_limiting.ex:145
 #, elixir-autogen, elixir-format
 msgid "%{count} entry"
 msgid_plural "%{count} entries"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} záznam"
+msgstr[1] "%{count} záznamy"
+msgstr[2] "%{count} záznamů"
 
-#: lib/gamend_web/live/admin_live/logs.ex:439
+#: lib/gamend_web/live/admin_live/logs.ex:447
 #, elixir-autogen, elixir-format
 msgid "%{count} entry never arrived"
 msgid_plural "%{count} entries never arrived"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} záznam nikdy nedorazil"
+msgstr[1] "%{count} záznamy nikdy nedorazily"
+msgstr[2] "%{count} záznamů nikdy nedorazilo"
 
 #: lib/gamend_web/live/admin_live/index.ex:98
 #: lib/gamend_web/live/admin_live/logs.ex:52
 #, elixir-autogen, elixir-format
 msgid "%{count} error"
 msgid_plural "%{count} errors"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} chyba"
+msgstr[1] "%{count} chyby"
+msgstr[2] "%{count} chyb"
 
-#: lib/gamend_web/live/admin_live/config_system_sections.ex:1011
+#: lib/gamend_web/live/admin_live/config_system_sections.ex:1020
 #, elixir-autogen, elixir-format
 msgid "%{count} job registered."
 msgid_plural "%{count} jobs registered."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Registrována %{count} úloha."
+msgstr[1] "Registrovány %{count} úlohy."
+msgstr[2] "Registrováno %{count} úloh."
 
-#: lib/gamend_web/live/admin_live/index.ex:385
+#: lib/gamend_web/live/admin_live/index.ex:386
 #, elixir-autogen, elixir-format
 msgid "%{count} language"
 msgid_plural "%{count} languages"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} jazyk"
+msgstr[1] "%{count} jazyky"
+msgstr[2] "%{count} jazyků"
 
 #: lib/gamend_web/live/admin_live/config_sections.ex:374
 #, elixir-autogen, elixir-format
 msgid "%{count} link"
 msgid_plural "%{count} links"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} odkaz"
+msgstr[1] "%{count} odkazy"
+msgstr[2] "%{count} odkazů"
 
-#: lib/gamend_web/live/admin_live/index.ex:473
+#: lib/gamend_web/live/admin_live/index.ex:474
 #, elixir-autogen, elixir-format
 msgid "%{count} node"
 msgid_plural "%{count} nodes"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} uzel"
+msgstr[1] "%{count} uzly"
+msgstr[2] "%{count} uzlů"
 
 #: lib/gamend_web/live/admin_live/lobby_snapshots.ex:95
 #, elixir-autogen, elixir-format
 msgid "%{count} run"
 msgid_plural "%{count} runs"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} běh"
+msgstr[1] "%{count} běhy"
+msgstr[2] "%{count} běhů"
 
 #: lib/gamend_web/live/admin_live/config_sections.ex:319
 #, elixir-autogen, elixir-format
 msgid "%{count} section"
 msgid_plural "%{count} sections"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count} sekce"
+msgstr[1] "%{count} sekce"
+msgstr[2] "%{count} sekcí"
 
 #: lib/gamend_web/live/admin_live/lobby_snapshots.ex:50
 #, elixir-autogen, elixir-format
 msgid "%{count}+ coverage gap"
 msgid_plural "%{count}+ coverage gaps"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "%{count}+ mezera v pokrytí"
+msgstr[1] "%{count}+ mezery v pokrytí"
+msgstr[2] "%{count}+ mezer v pokrytí"
 
-#: lib/gamend_web/live_helpers.ex:278
+#: lib/gamend_web/live_helpers.ex:300
 #, elixir-autogen, elixir-format
 msgid "A password is required."
 msgstr "Heslo je povinné."
 
-#: lib/gamend_web/live/user_live/registration.ex:131
+#: lib/gamend_web/live/user_live/registration.ex:179
 #, elixir-autogen, elixir-format
 msgid "Account created. Check your email for a link to confirm it."
 msgstr "Účet vytvořen. V e-mailu najdeš odkaz k jeho potvrzení."
 
-#: lib/gamend_web/live_helpers.ex:261
+#: lib/gamend_web/live_helpers.ex:283
 #, elixir-autogen, elixir-format
 msgid "Already a member."
 msgstr "Už je členem."
 
-#: lib/gamend_web/live_helpers.ex:262
+#: lib/gamend_web/live_helpers.ex:284
 #, elixir-autogen, elixir-format
 msgid "Already an admin."
 msgstr "Už je adminem."
 
-#: lib/gamend_web/live_helpers.ex:283
+#: lib/gamend_web/live_helpers.ex:305
 #, elixir-autogen, elixir-format
 msgid "Already invited."
 msgstr "Už pozván."
 
-#: lib/gamend_web/live_helpers.ex:313
+#: lib/gamend_web/live_helpers.ex:335
 #, elixir-autogen, elixir-format
 msgid "Awaiting payment"
 msgstr "Čeká na platbu"
@@ -2615,11 +2672,11 @@ msgstr "Koupit ve hře"
 #, elixir-autogen, elixir-format
 msgid "Channel processes running on %{count} WebSocket connection."
 msgid_plural "Channel processes running on %{count} WebSocket connections."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Procesy kanálů běží na %{count} spojení WebSocket."
+msgstr[1] "Procesy kanálů běží na %{count} spojeních WebSocket."
+msgstr[2] "Procesy kanálů běží na %{count} spojeních WebSocket."
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:298
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:300
 #, elixir-autogen, elixir-format
 msgid "Check your new email address for a link to confirm the change."
 msgstr "Na nové e-mailové adrese najdeš odkaz k potvrzení změny."
@@ -2637,92 +2694,92 @@ msgstr[2] "Končí za %{count} dní"
 msgid "Confirm password"
 msgstr "Potvrdit heslo"
 
-#: lib/gamend_web/live_helpers.ex:307
+#: lib/gamend_web/live_helpers.ex:329
 #, elixir-autogen, elixir-format
 msgid "Consumable"
 msgstr "Spotřební"
 
-#: lib/gamend_web/controllers/page_controller.ex:23
+#: lib/gamend_web/controllers/page_controller.ex:40
 #, elixir-autogen, elixir-format
 msgid "Data deletion"
 msgstr "Smazání dat"
 
-#: lib/gamend_web/live/admin_live/lobbies.ex:390
+#: lib/gamend_web/live/admin_live/lobbies.ex:392
 #, elixir-autogen, elixir-format
 msgid "Deadline"
-msgstr ""
+msgstr "Termín"
 
 #: lib/gamend_web/live/admin_live/kv.ex:33
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected KV entry?"
 msgid_plural "Delete %{count} selected KV entries?"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazat %{count} vybraný záznam KV?"
+msgstr[1] "Smazat %{count} vybrané záznamy KV?"
+msgstr[2] "Smazat %{count} vybraných záznamů KV?"
 
-#: lib/gamend_web/live/admin_live/groups.ex:41
+#: lib/gamend_web/live/admin_live/groups.ex:42
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected group?"
 msgid_plural "Delete %{count} selected groups?"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazat %{count} vybranou skupinu?"
+msgstr[1] "Smazat %{count} vybrané skupiny?"
+msgstr[2] "Smazat %{count} vybraných skupin?"
 
-#: lib/gamend_web/live/admin_live/leaderboards.ex:44
+#: lib/gamend_web/live/admin_live/leaderboards.ex:45
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected leaderboard and all its records?"
 msgid_plural "Delete %{count} selected leaderboards and all their records?"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazat %{count} vybraný žebříček a všechny jeho záznamy?"
+msgstr[1] "Smazat %{count} vybrané žebříčky a všechny jejich záznamy?"
+msgstr[2] "Smazat %{count} vybraných žebříčků a všechny jejich záznamy?"
 
-#: lib/gamend_web/live/admin_live/lobbies.ex:63
+#: lib/gamend_web/live/admin_live/lobbies.ex:65
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected lobby?"
 msgid_plural "Delete %{count} selected lobbies?"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazat %{count} vybrané lobby?"
+msgstr[1] "Smazat %{count} vybraná lobby?"
+msgstr[2] "Smazat %{count} vybraných lobby?"
 
 #: lib/gamend_web/live/admin_live/chat.ex:35
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected message?"
 msgid_plural "Delete %{count} selected messages?"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazat %{count} vybranou zprávu?"
+msgstr[1] "Smazat %{count} vybrané zprávy?"
+msgstr[2] "Smazat %{count} vybraných zpráv?"
 
 #: lib/gamend_web/live/admin_live/notifications.ex:92
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected notification?"
 msgid_plural "Delete %{count} selected notifications?"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazat %{count} vybrané oznámení?"
+msgstr[1] "Smazat %{count} vybraná oznámení?"
+msgstr[2] "Smazat %{count} vybraných oznámení?"
 
-#: lib/gamend_web/live/admin_live/parties.ex:55
+#: lib/gamend_web/live/admin_live/parties.ex:56
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected party?"
 msgid_plural "Delete %{count} selected parties?"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazat %{count} vybranou party?"
+msgstr[1] "Smazat %{count} vybrané party?"
+msgstr[2] "Smazat %{count} vybraných party?"
 
-#: lib/gamend_web/live/admin_live/sessions.ex:28
+#: lib/gamend_web/live/admin_live/sessions.ex:29
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected session?"
 msgid_plural "Delete %{count} selected sessions?"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazat %{count} vybranou relaci?"
+msgstr[1] "Smazat %{count} vybrané relace?"
+msgstr[2] "Smazat %{count} vybraných relací?"
 
-#: lib/gamend_web/live/admin_live/users.ex:28
+#: lib/gamend_web/live/admin_live/users.ex:30
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected user?"
 msgid_plural "Delete %{count} selected users?"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazat %{count} vybraného uživatele?"
+msgstr[1] "Smazat %{count} vybrané uživatele?"
+msgstr[2] "Smazat %{count} vybraných uživatelů?"
 
 #: lib/gamend_web/live/notifications_live.ex:30
 #, elixir-autogen, elixir-format
@@ -2734,17 +2791,17 @@ msgstr "Smazat vše"
 msgid "Delete all notifications?"
 msgstr "Smazat všechna oznámení?"
 
-#: lib/gamend_web/live/user_live/settings.ex:78
+#: lib/gamend_web/live/user_live/settings.ex:84
 #, elixir-autogen, elixir-format
 msgid "Delete other account"
 msgstr "Smazat druhý účet"
 
-#: lib/gamend_web/live/user_live/settings.ex:75
+#: lib/gamend_web/live/user_live/settings.ex:81
 #, elixir-autogen, elixir-format
 msgid "Delete the other account permanently? This cannot be undone."
 msgstr "Trvale smazat druhý účet? Tuto akci nelze vrátit."
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:259
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:610
 #, elixir-autogen, elixir-format
 msgid "Delete your account permanently? This cannot be undone."
 msgstr "Trvale smazat tvůj účet? Tuto akci nelze vrátit."
@@ -2753,147 +2810,148 @@ msgstr "Trvale smazat tvůj účet? Tuto akci nelze vrátit."
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} entry"
 msgid_plural "Deleted %{count} entries"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazán %{count} záznam"
+msgstr[1] "Smazány %{count} záznamy"
+msgstr[2] "Smazáno %{count} záznamů"
 
 #: lib/gamend_web/live/admin_live/kv.ex:378
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} entry; %{failed} failed"
 msgid_plural "Deleted %{count} entries; %{failed} failed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazán %{count} záznam; neúspěšně: %{failed}"
+msgstr[1] "Smazány %{count} záznamy; neúspěšně: %{failed}"
+msgstr[2] "Smazáno %{count} záznamů; neúspěšně: %{failed}"
 
-#: lib/gamend_web/live/admin_live/groups.ex:455
+#: lib/gamend_web/live/admin_live/groups.ex:456
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} group"
 msgid_plural "Deleted %{count} groups"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazána %{count} skupina"
+msgstr[1] "Smazány %{count} skupiny"
+msgstr[2] "Smazáno %{count} skupin"
 
-#: lib/gamend_web/live/admin_live/groups.ex:465
+#: lib/gamend_web/live/admin_live/groups.ex:466
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} group; %{failed} failed"
 msgid_plural "Deleted %{count} groups; %{failed} failed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazána %{count} skupina; neúspěšně: %{failed}"
+msgstr[1] "Smazány %{count} skupiny; neúspěšně: %{failed}"
+msgstr[2] "Smazáno %{count} skupin; neúspěšně: %{failed}"
 
-#: lib/gamend_web/live/admin_live/leaderboards.ex:482
+#: lib/gamend_web/live/admin_live/leaderboards.ex:488
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} leaderboard"
 msgid_plural "Deleted %{count} leaderboards"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazán %{count} žebříček"
+msgstr[1] "Smazány %{count} žebříčky"
+msgstr[2] "Smazáno %{count} žebříčků"
 
-#: lib/gamend_web/live/admin_live/leaderboards.ex:492
+#: lib/gamend_web/live/admin_live/leaderboards.ex:498
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} leaderboard; %{failed} failed"
 msgid_plural "Deleted %{count} leaderboards; %{failed} failed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazán %{count} žebříček; neúspěšně: %{failed}"
+msgstr[1] "Smazány %{count} žebříčky; neúspěšně: %{failed}"
+msgstr[2] "Smazáno %{count} žebříčků; neúspěšně: %{failed}"
 
-#: lib/gamend_web/live/admin_live/lobbies.ex:732
+#: lib/gamend_web/live/admin_live/lobbies.ex:738
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} lobby"
 msgid_plural "Deleted %{count} lobbies"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazáno %{count} lobby"
+msgstr[1] "Smazána %{count} lobby"
+msgstr[2] "Smazáno %{count} lobby"
 
-#: lib/gamend_web/live/admin_live/lobbies.ex:742
+#: lib/gamend_web/live/admin_live/lobbies.ex:748
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} lobby; %{failed} failed"
 msgid_plural "Deleted %{count} lobbies; %{failed} failed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazáno %{count} lobby; neúspěšně: %{failed}"
+msgstr[1] "Smazána %{count} lobby; neúspěšně: %{failed}"
+msgstr[2] "Smazáno %{count} lobby; neúspěšně: %{failed}"
 
 #: lib/gamend_web/live/admin_live/chat.ex:268
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} message"
 msgid_plural "Deleted %{count} messages"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazána %{count} zpráva"
+msgstr[1] "Smazány %{count} zprávy"
+msgstr[2] "Smazáno %{count} zpráv"
 
 #: lib/gamend_web/live/admin_live/chat.ex:278
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} message; %{failed} failed"
 msgid_plural "Deleted %{count} messages; %{failed} failed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazána %{count} zpráva; neúspěšně: %{failed}"
+msgstr[1] "Smazány %{count} zprávy; neúspěšně: %{failed}"
+msgstr[2] "Smazáno %{count} zpráv; neúspěšně: %{failed}"
 
 #: lib/gamend_web/live/admin_live/notifications.ex:317
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} notification"
 msgid_plural "Deleted %{count} notifications"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazáno %{count} oznámení"
+msgstr[1] "Smazána %{count} oznámení"
+msgstr[2] "Smazáno %{count} oznámení"
 
 #: lib/gamend_web/live/admin_live/notifications.ex:327
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} notification; %{failed} failed"
 msgid_plural "Deleted %{count} notifications; %{failed} failed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazáno %{count} oznámení; neúspěšně: %{failed}"
+msgstr[1] "Smazána %{count} oznámení; neúspěšně: %{failed}"
+msgstr[2] "Smazáno %{count} oznámení; neúspěšně: %{failed}"
 
-#: lib/gamend_web/live/admin_live/parties.ex:521
+#: lib/gamend_web/live/admin_live/parties.ex:522
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} party"
 msgid_plural "Deleted %{count} parties"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazána %{count} party"
+msgstr[1] "Smazány %{count} party"
+msgstr[2] "Smazáno %{count} party"
 
-#: lib/gamend_web/live/admin_live/parties.ex:531
+#: lib/gamend_web/live/admin_live/parties.ex:532
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} party; %{failed} failed"
 msgid_plural "Deleted %{count} parties; %{failed} failed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazána %{count} party; neúspěšně: %{failed}"
+msgstr[1] "Smazány %{count} party; neúspěšně: %{failed}"
+msgstr[2] "Smazáno %{count} party; neúspěšně: %{failed}"
 
-#: lib/gamend_web/live/admin_live/sessions.ex:216
+#: lib/gamend_web/live/admin_live/sessions.ex:222
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} session"
 msgid_plural "Deleted %{count} sessions"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazána %{count} relace"
+msgstr[1] "Smazány %{count} relace"
+msgstr[2] "Smazáno %{count} relací"
 
-#: lib/gamend_web/live/admin_live/sessions.ex:226
+#: lib/gamend_web/live/admin_live/sessions.ex:232
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} session; %{failed} failed"
 msgid_plural "Deleted %{count} sessions; %{failed} failed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazána %{count} relace; neúspěšně: %{failed}"
+msgstr[1] "Smazány %{count} relace; neúspěšně: %{failed}"
+msgstr[2] "Smazáno %{count} relací; neúspěšně: %{failed}"
 
-#: lib/gamend_web/live/admin_live/users.ex:967
+#: lib/gamend_web/live/admin_live/users.ex:1034
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} user"
 msgid_plural "Deleted %{count} users"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazán %{count} uživatel"
+msgstr[1] "Smazáni %{count} uživatelé"
+msgstr[2] "Smazáno %{count} uživatelů"
 
-#: lib/gamend_web/live/admin_live/users.ex:977
+#: lib/gamend_web/live/admin_live/users.ex:1044
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} user; %{failed} failed"
 msgid_plural "Deleted %{count} users; %{failed} failed"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Smazán %{count} uživatel; neúspěšně: %{failed}"
+msgstr[1] "Smazáni %{count} uživatelé; neúspěšně: %{failed}"
+msgstr[2] "Smazáno %{count} uživatelů; neúspěšně: %{failed}"
 
-#: lib/gamend_web/live_helpers.ex:320
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:115
+#: lib/gamend_web/live_helpers.ex:342
 #, elixir-autogen, elixir-format
 msgid "Expired"
 msgstr "Vypršelo"
@@ -2901,14 +2959,14 @@ msgstr "Vypršelo"
 #: lib/gamend_web/live/admin_live/chat_reports.ex:401
 #, elixir-autogen, elixir-format
 msgid "Filter by reported user ID"
-msgstr ""
+msgstr "Filtrovat podle id nahlášeného uživatele"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:481
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:484
 #, elixir-autogen, elixir-format
 msgid "Find groups"
 msgstr "Najít skupiny"
 
-#: lib/gamend_web/live/play_live.ex:62
+#: lib/gamend_web/live/play_live.ex:67
 #, elixir-autogen, elixir-format
 msgid "Game"
 msgstr "Hra"
@@ -2922,51 +2980,51 @@ msgstr "Pokud k tomuto e-mailu existuje účet, poslali jsme na něj odkaz k př
 #, elixir-autogen, elixir-format
 msgid "Imported %{count} word from the %{lang} list"
 msgid_plural "Imported %{count} words from the %{lang} list"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Importováno %{count} slovo ze seznamu %{lang}"
+msgstr[1] "Importována %{count} slova ze seznamu %{lang}"
+msgstr[2] "Importováno %{count} slov ze seznamu %{lang}"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:482
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:485
 #, elixir-autogen, elixir-format
 msgid "Invitations"
 msgstr "Pozvánky"
 
-#: lib/gamend_web/live_helpers.ex:270
+#: lib/gamend_web/live_helpers.ex:292
 #, elixir-autogen, elixir-format
 msgid "It is full."
 msgstr "Je plno."
 
-#: lib/gamend_web/live_helpers.ex:277
+#: lib/gamend_web/live_helpers.ex:299
 #, elixir-autogen, elixir-format
 msgid "It is locked."
 msgstr "Je uzamčeno."
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:331
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:332
 #, elixir-autogen, elixir-format
 msgid "Join requests"
 msgstr "Žádosti o vstup"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:211
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:212
 #, elixir-autogen, elixir-format
 msgid "Linked"
 msgstr "Propojeno"
 
-#: lib/gamend_web/live_helpers.ex:263
+#: lib/gamend_web/live_helpers.ex:285
 #, elixir-autogen, elixir-format
 msgid "Make someone else an admin first."
 msgstr "Nejprve udělej adminem někoho jiného."
 
 #: lib/gamend_web/live/groups_live.ex:460
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:117
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:159
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:195
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:514
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:623
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:116
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:158
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:194
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:517
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:626
 #, elixir-autogen, elixir-format
 msgid "Max members"
 msgstr "Max. členů"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:483
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:486
 #, elixir-autogen, elixir-format
 msgid "My requests"
 msgstr "Moje žádosti"
@@ -2979,9 +3037,9 @@ msgstr "Noví hráči"
 #: lib/gamend_web/live/admin_live/chat_filter.ex:396
 #, elixir-autogen, elixir-format
 msgid "No bundled lists are available. Drop one at apps/gamend_core/priv/chat_filter/<lang>.txt."
-msgstr ""
+msgstr "Nejsou k dispozici žádné přibalené seznamy. Vlož jeden do apps/gamend_core/priv/chat_filter/<lang>.txt."
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:211
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:212
 #, elixir-autogen, elixir-format
 msgid "Not linked"
 msgstr "Nepropojeno"
@@ -2992,33 +3050,33 @@ msgid "Nothing is for sale right now."
 msgstr "Momentálně není nic na prodej."
 
 #: lib/gamend_web/components/presence_indicator.ex:35
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:144
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:260
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:143
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:259
 #, elixir-autogen, elixir-format
 msgid "Offline"
 msgstr "Offline"
 
-#: lib/gamend_web/live_helpers.ex:244
+#: lib/gamend_web/live_helpers.ex:266
 #, elixir-autogen, elixir-format
 msgid "One of you has blocked the other."
-msgstr "Jeden z vás zablokoval druhého."
+msgstr "Jeden z dvojice zablokoval druhého."
 
-#: lib/gamend_web/live_helpers.ex:306
+#: lib/gamend_web/live_helpers.ex:328
 #, elixir-autogen, elixir-format
 msgid "One-time"
 msgstr "Jednorázový"
 
-#: lib/gamend_web/live_helpers.ex:256
+#: lib/gamend_web/live_helpers.ex:278
 #, elixir-autogen, elixir-format
 msgid "Only a group admin can do that."
 msgstr "To může udělat jen admin skupiny."
 
-#: lib/gamend_web/live_helpers.ex:276
+#: lib/gamend_web/live_helpers.ex:298
 #, elixir-autogen, elixir-format
 msgid "Only the host can do that."
 msgstr "To může udělat jen hostitel."
 
-#: lib/gamend_web/live_helpers.ex:282
+#: lib/gamend_web/live_helpers.ex:304
 #, elixir-autogen, elixir-format
 msgid "Only the party leader can do that."
 msgstr "To může udělat jen vůdce party."
@@ -3029,7 +3087,7 @@ msgid "Order %{order_id} is waiting for payment confirmation."
 msgstr "Objednávka %{order_id} čeká na potvrzení platby."
 
 #: lib/gamend_web/live/auth_success_live.ex:229
-#: lib/gamend_web/live_helpers.ex:232
+#: lib/gamend_web/live_helpers.ex:254
 #, elixir-autogen, elixir-format
 msgid "Player not found."
 msgstr "Hráč nenalezen."
@@ -3049,7 +3107,7 @@ msgstr "Pořadí"
 msgid "Recently online"
 msgstr "Nedávno online"
 
-#: lib/gamend_web/live_helpers.ex:317
+#: lib/gamend_web/live_helpers.ex:339
 #, elixir-autogen, elixir-format
 msgid "Refunded"
 msgstr "Vráceno"
@@ -3058,11 +3116,11 @@ msgstr "Vráceno"
 #, elixir-autogen, elixir-format
 msgid "Removed %{count} word tagged %{lang}"
 msgid_plural "Removed %{count} words tagged %{lang}"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Odebráno %{count} slovo označené %{lang}"
+msgstr[1] "Odebrána %{count} slova označená %{lang}"
+msgstr[2] "Odebráno %{count} slov označených %{lang}"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:758
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:761
 #, elixir-autogen, elixir-format
 msgid "Requested"
 msgstr "Odesláno"
@@ -3071,33 +3129,33 @@ msgstr "Odesláno"
 #, elixir-autogen, elixir-format
 msgid "Retention sweep affected %{count} row."
 msgid_plural "Retention sweep affected %{count} rows."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Úklid podle pravidel uchovávání se dotkl %{count} řádku."
+msgstr[1] "Úklid podle pravidel uchovávání se dotkl %{count} řádků."
+msgstr[2] "Úklid podle pravidel uchovávání se dotkl %{count} řádků."
 
-#: lib/gamend_web/live/admin_live/users.ex:501
+#: lib/gamend_web/live/admin_live/users.ex:577
 #, elixir-autogen, elixir-format
 msgid "Revoke this user's %{count} session?"
 msgid_plural "Revoke all %{count} of this user's sessions?"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Odvolat %{count} relaci tohoto uživatele?"
+msgstr[1] "Odvolat všechny %{count} relace tohoto uživatele?"
+msgstr[2] "Odvolat všech %{count} relací tohoto uživatele?"
 
-#: lib/gamend_web/live_helpers.ex:318
+#: lib/gamend_web/live_helpers.ex:340
 #, elixir-autogen, elixir-format
 msgid "Revoked"
 msgstr "Odebráno"
 
-#: lib/gamend_web/live/admin_live/users.ex:760
+#: lib/gamend_web/live/admin_live/users.ex:867
 #, elixir-autogen, elixir-format
 msgid "Revoked %{count} session"
 msgid_plural "Revoked %{count} sessions"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Odvolána %{count} relace"
+msgstr[1] "Odvolány %{count} relace"
+msgstr[2] "Odvoláno %{count} relací"
 
-#: lib/gamend_web/components/presentation_page.ex:171
-#: lib/gamend_web/components/presentation_page.ex:223
+#: lib/gamend_web/components/presentation_page.ex:177
+#: lib/gamend_web/components/presentation_page.ex:229
 #, elixir-autogen, elixir-format
 msgid "Scroll to content"
 msgstr "Přejít k obsahu"
@@ -3106,11 +3164,11 @@ msgstr "Přejít k obsahu"
 #, elixir-autogen, elixir-format
 msgid "Search %{count} entry..."
 msgid_plural "Search %{count} entries..."
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "Hledat v %{count} záznamu..."
+msgstr[1] "Hledat v %{count} záznamech..."
+msgstr[2] "Hledat v %{count} záznamech..."
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:485
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:488
 #, elixir-autogen, elixir-format
 msgid "Sent invitations"
 msgstr "Odeslané pozvánky"
@@ -3120,59 +3178,59 @@ msgstr "Odeslané pozvánky"
 msgid "Sort by:"
 msgstr "Řadit podle:"
 
-#: lib/gamend_web/live_helpers.ex:308
+#: lib/gamend_web/live_helpers.ex:330
 #, elixir-autogen, elixir-format
 msgid "Subscription"
 msgstr "Předplatné"
 
-#: lib/gamend_web/live_helpers.ex:267
+#: lib/gamend_web/live_helpers.ex:289
 #, elixir-autogen, elixir-format
 msgid "That is fewer than the current number of members."
 msgstr "To je méně než současný počet členů."
 
-#: lib/gamend_web/live_helpers.ex:286
+#: lib/gamend_web/live_helpers.ex:308
 #, elixir-autogen, elixir-format
 msgid "That message is not allowed."
 msgstr "Tato zpráva není povolena."
 
-#: lib/gamend_web/controllers/error_html.ex:124
+#: lib/gamend_web/controllers/error_html.ex:136
 #, elixir-autogen, elixir-format
 msgid "That was too large to send. Try a smaller file."
 msgstr "Je to příliš velké na odeslání. Zkus menší soubor."
 
-#: lib/gamend_web/live_helpers.ex:273
+#: lib/gamend_web/live_helpers.ex:295
 #, elixir-autogen, elixir-format
 msgid "The invite is no longer valid."
 msgstr "Pozvánka už neplatí."
 
-#: lib/gamend_web/controllers/error_html.ex:130
+#: lib/gamend_web/controllers/error_html.ex:142
 #, elixir-autogen, elixir-format
 msgid "The request could not be handled. Go back and try again."
 msgstr "Požadavek se nepodařilo zpracovat. Vrať se zpět a zkus to znovu."
 
 #: lib/gamend_web/live/auth_success_live.ex:232
 #, elixir-autogen, elixir-format
-msgid "The sign-in was cancelled or did not complete. Please try again."
+msgid "The sign-in was canceled or did not complete. Please try again."
 msgstr "Přihlášení bylo zrušeno nebo nebylo dokončeno. Zkus to prosím znovu."
 
 #: lib/gamend_web/live/auth_success_live.ex:141
 #: lib/gamend_web/live/auth_success_live.ex:223
-#: lib/gamend_web/live/user_live/settings.ex:65
+#: lib/gamend_web/live/user_live/settings.ex:71
 #, elixir-autogen, elixir-format
 msgid "This sign-in is already linked to another account"
 msgstr "Tento způsob přihlášení je už propojen s jiným účtem"
 
-#: lib/gamend_web/live_helpers.ex:272
+#: lib/gamend_web/live_helpers.ex:294
 #, elixir-autogen, elixir-format
 msgid "This was already answered."
 msgstr "Na tohle už bylo odpovězeno."
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:803
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:806
 #, elixir-autogen, elixir-format
 msgid "To"
 msgstr "Komu"
 
-#: lib/gamend_web/live_helpers.ex:251
+#: lib/gamend_web/live_helpers.ex:273
 #, elixir-autogen, elixir-format
 msgid "Too many pending requests. Wait for some to be answered."
 msgstr "Příliš mnoho čekajících žádostí. Počkej, až na některé přijde odpověď."
@@ -3180,82 +3238,74 @@ msgstr "Příliš mnoho čekajících žádostí. Počkej, až na některé při
 #: lib/gamend_web/live/admin_live/chat_filter.ex:483
 #, elixir-autogen, elixir-format
 msgid "Words loaded into this node's in-memory matcher. A number that differs from the database count means this node missed a change broadcast."
-msgstr ""
+msgstr "Slova načtená v paměťovém porovnávači tohoto uzlu. Pokud se číslo liší od počtu v databázi, tento uzel zmeškal rozeslání změny."
 
-#: lib/gamend_web/live_helpers.ex:279
+#: lib/gamend_web/live_helpers.ex:301
 #, elixir-autogen, elixir-format
 msgid "Wrong password."
 msgstr "Nesprávné heslo."
 
-#: lib/gamend_web/live_helpers.ex:246
+#: lib/gamend_web/live_helpers.ex:268
 #, elixir-autogen, elixir-format
 msgid "You already sent a request."
 msgstr "Žádost už jsi odeslal."
 
-#: lib/gamend_web/live_helpers.ex:245
+#: lib/gamend_web/live_helpers.ex:267
 #, elixir-autogen, elixir-format
 msgid "You are already friends."
-msgstr "Už jste přátelé."
+msgstr "Tento hráč už je tvůj přítel."
 
-#: lib/gamend_web/live_helpers.ex:274
+#: lib/gamend_web/live_helpers.ex:296
 #, elixir-autogen, elixir-format
 msgid "You are already in a lobby."
 msgstr "Už jsi v lobby."
 
-#: lib/gamend_web/live_helpers.ex:280
+#: lib/gamend_web/live_helpers.ex:302
 #, elixir-autogen, elixir-format
 msgid "You are already in a party."
 msgstr "Už jsi v partě."
 
-#: lib/gamend_web/live_helpers.ex:284
+#: lib/gamend_web/live_helpers.ex:306
 #, elixir-autogen, elixir-format
 msgid "You are muted."
 msgstr "Jsi umlčen."
 
-#: lib/gamend_web/live_helpers.ex:259
+#: lib/gamend_web/live_helpers.ex:281
 #, elixir-autogen, elixir-format
 msgid "You are not a member of this group."
 msgstr "Nejsi členem této skupiny."
 
-#: lib/gamend_web/live_helpers.ex:281
+#: lib/gamend_web/live_helpers.ex:303
 #, elixir-autogen, elixir-format
 msgid "You are not in a party."
 msgstr "Nejsi v žádné partě."
 
-#: lib/gamend_web/live_helpers.ex:275
+#: lib/gamend_web/live_helpers.ex:297
 #, elixir-autogen, elixir-format
 msgid "You are not in this lobby."
 msgstr "Nejsi v tomto lobby."
 
-#: lib/gamend_web/live_helpers.ex:285
+#: lib/gamend_web/live_helpers.ex:307
 #, elixir-autogen, elixir-format
 msgid "You are sending messages too fast."
 msgstr "Posíláš zprávy příliš rychle."
 
-#: lib/gamend_web/live_helpers.ex:254
+#: lib/gamend_web/live_helpers.ex:276
 #, elixir-autogen, elixir-format
 msgid "You can only invite friends or players who share a group with you."
 msgstr "Pozvat můžeš jen přátele nebo hráče, se kterými sdílíš skupinu."
 
-#: lib/gamend_web/live_helpers.ex:287
+#: lib/gamend_web/live_helpers.ex:309
 #, elixir-autogen, elixir-format
 msgid "You can only message friends."
 msgstr "Psát můžeš jen přátelům."
 
-#: lib/gamend_web/live_helpers.ex:242
+#: lib/gamend_web/live_helpers.ex:264
 #, elixir-autogen, elixir-format
 msgid "You cannot do that to yourself."
 msgstr "Tohle nemůžeš udělat sám sobě."
 
-#: lib/gamend_web/live/quests_live.ex:496
-#, elixir-autogen, elixir-format
-msgid "You have %{count} quest ready to claim!"
-msgid_plural "You have %{count} quests ready to claim!"
-msgstr[0] "Máš %{count} úkol k vyzvednutí!"
-msgstr[1] "Máš %{count} úkoly k vyzvednutí!"
-msgstr[2] "Máš %{count} úkolů k vyzvednutí!"
-
-#: lib/gamend_web/live_helpers.ex:264
+#: lib/gamend_web/live_helpers.ex:286
 #, elixir-autogen, elixir-format
 msgid "You have created too many groups."
 msgstr "Vytvořil jsi příliš mnoho skupin."
@@ -3265,7 +3315,7 @@ msgstr "Vytvořil jsi příliš mnoho skupin."
 msgid "Your account is waiting for an administrator to activate it."
 msgstr "Tvůj účet čeká na aktivaci administrátorem."
 
-#: lib/gamend_web/live_helpers.ex:247
+#: lib/gamend_web/live_helpers.ex:269
 #, elixir-autogen, elixir-format
 msgid "Your friend list is full."
 msgstr "Tvůj seznam přátel je plný."
@@ -3278,151 +3328,347 @@ msgstr "Platba se stále zpracovává. Za chvíli tuto stránku obnov."
 #: lib/gamend_web/live/admin_live/matchmaking.ex:181
 #, elixir-autogen, elixir-format
 msgid "counts: last 24h · list: 10 most recent"
-msgstr ""
+msgstr "počty: posledních 24 h · seznam: 10 nejnovějších"
 
 #: lib/gamend_web/live/admin_live/lobby_snapshots.ex:93
 #, elixir-autogen, elixir-format
 msgid "latest %{count} run"
 msgid_plural "latest %{count} runs"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "poslední %{count} běh"
+msgstr[1] "poslední %{count} běhy"
+msgstr[2] "posledních %{count} běhů"
 
 #: lib/gamend_web/controllers/user_session_controller.ex:77
 #, elixir-autogen, elixir-format
 msgid "Confirm your email first with the link we sent you, or log in with an emailed link."
 msgstr "Nejdřív potvrď svůj e-mail odkazem, který jsme ti poslali, nebo se přihlas odkazem z e-mailu."
 
-#: lib/gamend_web/live/user_live/confirmation.ex:32
+#: lib/gamend_web/live/user_live/confirmation.ex:38
 #, elixir-autogen, elixir-format
-msgid "Confirming with this link removes the password this account was registered with, so set a new one in your account settings afterwards. The link in the confirmation email keeps it."
-msgstr "Potvrzení tímto odkazem odstraní heslo, se kterým byl účet zaregistrován, takže si pak nastav nové v nastavení účtu. Odkaz v potvrzovacím e-mailu ho zachová."
+msgid "Confirming with this link removes the password this account was registered with, so set a new one in your account settings afterwards."
+msgstr "Potvrzení tímto odkazem odstraní heslo, se kterým byl účet zaregistrován, takže si pak nastav nové v nastavení účtu."
 
-#: lib/gamend_web/components/content_pages.ex:413
+#: lib/gamend_web/components/content_pages.ex:409
 #, elixir-autogen, elixir-format
 msgid "%{count} min read"
 msgstr "%{count} min čtení"
 
+#: lib/gamend_web/notification_email.ex:24
 #, elixir-autogen, elixir-format
 msgid "Account and security"
 msgstr "Účet a zabezpečení"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:90
 #, elixir-autogen, elixir-format
 msgid "Account messages, such as sign-in links, are always sent."
 msgstr "Zprávy o účtu, například odkazy pro přihlášení, posíláme vždy."
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:103
 #, elixir-autogen, elixir-format
 msgid "Automatic (this device): %{zone}"
 msgstr "Automaticky (toto zařízení): %{zone}"
 
+#: lib/gamend_web/notification_email.ex:26
 #, elixir-autogen, elixir-format
 msgid "Chat messages"
 msgstr "Zprávy v chatu"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:52
 #, elixir-autogen, elixir-format
 msgid "Choose what we send you"
 msgstr "Vyber, co ti posíláme"
 
+#: lib/gamend_web/notification_email.ex:81
 #, elixir-autogen, elixir-format
 msgid "Choose what we send you: %{url}"
 msgstr "Vyber, co ti posíláme: %{url}"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:32
 #, elixir-autogen, elixir-format
 msgid "Choose what we tell you, and where."
 msgstr "Vyber, o čem a kde ti dáme vědět."
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:13
 #, elixir-autogen, elixir-format
 msgid "Done. No more emails about: %{group}."
 msgstr "Hotovo. Už žádné e-maily o: %{group}."
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:16
 #, elixir-autogen, elixir-format
 msgid "Done. We will not email you anything but account messages."
 msgstr "Hotovo. E-mailem ti budeme posílat jen zprávy o účtu."
 
+#: lib/gamend_web/live/user_live/registration.ex:47
 #, elixir-autogen, elixir-format
 msgid "Email me: %{group}"
 msgstr "Pošli mi e-mail: %{group}"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:25
+#: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:40
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:10
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:64
 #, elixir-autogen, elixir-format
 msgid "Email settings"
 msgstr "Nastavení e-mailů"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:20
 #, elixir-autogen, elixir-format
 msgid "Emails about: %{group}"
 msgstr "E-maily o: %{group}"
 
+#: lib/gamend_web/notification_email.ex:25
 #, elixir-autogen, elixir-format
 msgid "Friends and groups"
 msgstr "Přátelé a skupiny"
 
+#: lib/gamend_web/notification_email.ex:32
 #, elixir-autogen, elixir-format
 msgid "On the site"
 msgstr "Na webu"
 
+#: lib/gamend_web/notification_email.ex:34
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "Telefon"
 
+#: lib/gamend_web/notification_email.ex:27
 #, elixir-autogen, elixir-format
 msgid "Quests and rewards"
 msgstr "Úkoly a odměny"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:67
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr "Nastavení"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:42
 #, elixir-autogen, elixir-format
 msgid "Stop all emails"
 msgstr "Odhlásit všechny e-maily"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:30
 #, elixir-autogen, elixir-format
 msgid "Stop these emails"
 msgstr "Odhlásit tyto e-maily"
 
+#: lib/gamend_web/notification_email.ex:80
 #, elixir-autogen, elixir-format
 msgid "Stop these emails: %{url}"
 msgstr "Odhlásit tyto e-maily: %{url}"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:65
 #, elixir-autogen, elixir-format
 msgid "This link does not work. Sign in to choose what we send you."
 msgstr "Tento odkaz nefunguje. Přihlas se a vyber, co ti posíláme."
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:95
 #, elixir-autogen, elixir-format
 msgid "Time zone"
 msgstr "Časové pásmo"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:74
 #, elixir-autogen, elixir-format
 msgid "Turn email back on"
 msgstr "Znovu zapnout e-maily"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:86
 #, elixir-autogen, elixir-format
 msgid "Turn notifications back on"
 msgstr "Znovu zapnout oznámení"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:73
 #, elixir-autogen, elixir-format
 msgid "Turn off all email"
 msgstr "Vypnout všechny e-maily"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:79
 #, elixir-autogen, elixir-format
 msgid "Turn off all phone notifications"
 msgstr "Vypnout všechna oznámení na telefonu"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:85
 #, elixir-autogen, elixir-format
 msgid "Turn off everything"
 msgstr "Vypnout vše"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:80
 #, elixir-autogen, elixir-format
 msgid "Turn phone notifications back on"
 msgstr "Znovu zapnout oznámení na telefonu"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:46
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "Žádný z těchto e-mailů nedostáváš."
 
+#: lib/gamend_web/notification_email.ex:77
 #, elixir-autogen, elixir-format
 msgid "You get this email because you turned on emails for: %{group}."
 msgstr "Tento e-mail dostáváš, protože sis zapnul e-maily pro: %{group}."
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:114
 #, elixir-autogen, elixir-format
 msgid "Your day and your reminders follow it."
 msgstr "Tvůj den a připomínky se jím řídí."
+
+#: lib/gamend_web/docs_live.ex:804
+#, elixir-autogen, elixir-format
+msgid "%{count} page"
+msgid_plural "%{count} pages"
+msgstr[0] "%{count} stránka"
+msgstr[1] "%{count} stránky"
+msgstr[2] "%{count} stránek"
+
+#: lib/gamend_web/live/user_live/settings.ex:106
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:31
+#, elixir-autogen, elixir-format
+msgid "API tokens"
+msgstr "API tokeny"
+
+#: lib/gamend_web/docs_live.ex:748
+#, elixir-autogen, elixir-format
+msgid "Breadcrumb"
+msgstr "Drobečková navigace"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:46
+#, elixir-autogen, elixir-format
+msgid "Copy it now. It will not be shown again."
+msgstr "Zkopíruj si ho teď. Znovu se už nezobrazí."
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:80
+#, elixir-autogen, elixir-format
+msgid "Create token"
+msgstr "Vytvořit token"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:613
+#, elixir-autogen, elixir-format
+msgid "Delete your account? It will be deleted in %{count} day, and signing in before then keeps it."
+msgid_plural "Delete your account? It will be deleted in %{count} days, and signing in before then keeps it."
+msgstr[0] "Smazat tvůj účet? Bude smazán za %{count} den a přihlášením do té doby ho zachováš."
+msgstr[1] "Smazat tvůj účet? Bude smazán za %{count} dny a přihlášením do té doby ho zachováš."
+msgstr[2] "Smazat tvůj účet? Bude smazán za %{count} dní a přihlášením do té doby ho zachováš."
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:52
+#, elixir-autogen, elixir-format
+msgid "Done"
+msgstr "Hotovo"
+
+#: lib/gamend_web/docs_live.ex:562
+#, elixir-autogen, elixir-format
+msgid "Edit this page"
+msgstr "Upravit tuto stránku"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:33
+#, elixir-autogen, elixir-format
+msgid "For scripts and CI: send one as a Bearer token to any API route that takes an access token. A password or email change revokes them all."
+msgstr "Pro skripty a CI: pošli ho jako Bearer token na libovolnou API trasu, která přijímá přístupový token. Změna hesla nebo e-mailu je všechny odvolá."
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:225
+#, elixir-autogen, elixir-format
+msgid "In %{count} day"
+msgid_plural "In %{count} days"
+msgstr[0] "Za %{count} den"
+msgstr[1] "Za %{count} dny"
+msgstr[2] "Za %{count} dní"
+
+#: lib/gamend_web/live/admin_live/shared.ex:122
+#, elixir-autogen, elixir-format
+msgid "It no longer exists. It was deleted after this page loaded."
+msgstr "Už neexistuje. Smazání proběhlo po načtení této stránky."
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:106
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:117
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:224
+#, elixir-autogen, elixir-format
+msgid "Never"
+msgstr "Nikdy"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:85
+#, elixir-autogen, elixir-format
+msgid "No API tokens."
+msgstr "Žádné API tokeny."
+
+#: lib/gamend_web/docs_live.ex:538
+#: lib/gamend_web/docs_live.ex:628
+#: lib/gamend_web/docs_live.ex:630
+#, elixir-autogen, elixir-format
+msgid "On this page"
+msgstr "Na této stránce"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:130
+#, elixir-autogen, elixir-format
+msgid "Revoke"
+msgstr "Odvolat"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:127
+#, elixir-autogen, elixir-format
+msgid "Revoke this token? Anything using it stops working."
+msgstr "Odvolat tento token? Vše, co ho používá, přestane fungovat."
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:112
+#, elixir-autogen, elixir-format
+msgid "Revoked by a password or email change"
+msgstr "Odvoláno změnou hesla nebo e-mailu"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:93
+#, elixir-autogen, elixir-format
+msgid "Token"
+msgstr "Token"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:183
+#, elixir-autogen, elixir-format
+msgid "Token revoked."
+msgstr "Token odvolán."
+
+#: lib/gamend_web/controllers/user_session_controller.ex:63
+#, elixir-autogen, elixir-format
+msgid "Too many failed attempts. Try again in %{count} minute, or sign in with an emailed link."
+msgid_plural "Too many failed attempts. Try again in %{count} minutes, or sign in with an emailed link."
+msgstr[0] "Příliš mnoho neúspěšných pokusů. Zkus to znovu za %{count} minutu, nebo se přihlas odkazem z e-mailu."
+msgstr[1] "Příliš mnoho neúspěšných pokusů. Zkus to znovu za %{count} minuty, nebo se přihlas odkazem z e-mailu."
+msgstr[2] "Příliš mnoho neúspěšných pokusů. Zkus to znovu za %{count} minut, nebo se přihlas odkazem z e-mailu."
+
+#: lib/gamend_web/controllers/page_controller.ex:50
+#: lib/gamend_web/controllers/page_html/ui.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "UI elements"
+msgstr "Prvky rozhraní"
+
+#: lib/gamend_web/user_auth.ex:84
+#, elixir-autogen, elixir-format
+msgid "Welcome back. Your account will not be deleted."
+msgstr "Vítej zpět. Tvůj účet nebude smazán."
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:169
+#, elixir-autogen, elixir-format
+msgid "You have reached the token limit. Revoke one first."
+msgstr "Limit tokenů je vyčerpán. Nejdřív jeden odvolej."
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:453
+#, elixir-autogen, elixir-format
+msgid "Your account will be deleted in %{count} day. Sign in before then to keep it."
+msgid_plural "Your account will be deleted in %{count} days. Sign in before then to keep it."
+msgstr[0] "Tvůj účet bude smazán za %{count} den. Přihlas se do té doby a účet zůstane zachován."
+msgstr[1] "Tvůj účet bude smazán za %{count} dny. Přihlas se do té doby a účet zůstane zachován."
+msgstr[2] "Tvůj účet bude smazán za %{count} dní. Přihlas se do té doby a účet zůstane zachován."
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:67
+#, elixir-autogen, elixir-format
+msgid "e.g. release script"
+msgstr "např. skript pro vydání"
+
+#: lib/gamend_web/live/quests_live.ex:1139
+#, elixir-autogen, elixir-format
+msgid "Register to claim"
+msgstr "Zaregistruj se a vyzvedni"
+
+#: lib/gamend_web/live/quests_live.ex:124
+#, elixir-autogen, elixir-format
+msgid "Register to claim your reward."
+msgstr "Zaregistruj se a vyzvedni si odměnu."
+
+#: lib/gamend_web/live/leaderboards_live.ex:296
+#, elixir-autogen, elixir-format
+msgid "Only you see this rank. Register to appear on the board."
+msgstr "Toto pořadí vidíš jen ty. Zaregistruj se a objev se v žebříčku."

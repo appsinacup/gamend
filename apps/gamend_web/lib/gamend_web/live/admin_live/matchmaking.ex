@@ -133,19 +133,19 @@ defmodule GamendWeb.AdminLive.Matchmaking do
       <div class="grid gap-4 sm:grid-cols-3 mb-6">
         <div class="card bg-base-200">
           <div class="card-body py-4">
-            <span class="text-sm text-base-content/70">Queued</span>
+            <span class="text-sm text-muted">Queued</span>
             <div class="text-2xl font-bold">{@stats.queued}</div>
           </div>
         </div>
         <div class="card bg-base-200">
           <div class="card-body py-4">
-            <span class="text-sm text-base-content/70">Matched (total)</span>
+            <span class="text-sm text-muted">Matched (total)</span>
             <div class="text-2xl font-bold">{@stats.matched}</div>
           </div>
         </div>
         <div class="card bg-base-200">
           <div class="card-body py-4">
-            <span class="text-sm text-base-content/70">Cancelled (total)</span>
+            <span class="text-sm text-muted">Cancelled (total)</span>
             <div class="text-2xl font-bold">{@stats.cancelled}</div>
           </div>
         </div>
@@ -177,14 +177,14 @@ defmodule GamendWeb.AdminLive.Matchmaking do
         <div class="card-body">
           <h2 class="card-title">
             {gettext("Ready checks")}
-            <span class="text-sm font-normal text-base-content/70">
+            <span class="text-sm font-normal text-muted">
               {gettext("counts: last 24h · list: 10 most recent")}
             </span>
           </h2>
           <div class="flex flex-wrap gap-4 text-sm">
             <span>{gettext("Passed")}: <b>{Map.get(@ready_stats, "passed", 0)}</b></span>
             <span>{gettext("Failed")}: <b>{Map.get(@ready_stats, "failed", 0)}</b></span>
-            <span>{gettext("Cancelled")}: <b>{Map.get(@ready_stats, "cancelled", 0)}</b></span>
+            <span>{gettext("Canceled")}: <b>{Map.get(@ready_stats, "cancelled", 0)}</b></span>
             <span>{gettext("Pending")}: <b>{Map.get(@ready_stats, "pending", 0)}</b></span>
           </div>
 
@@ -306,7 +306,7 @@ defmodule GamendWeb.AdminLive.Matchmaking do
             </table>
           </div>
 
-          <div :if={@tickets == []} class="text-center py-8 text-base-content/60">
+          <div :if={@tickets == []} class="text-center py-8 text-muted">
             No tickets.
           </div>
 

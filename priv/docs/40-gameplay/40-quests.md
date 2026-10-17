@@ -8,7 +8,7 @@ One engine for achievements, dailies, seasonal events and quest lines. A quest i
 
 | Setting | What it does |
 |---|---|
-| reset | When progress restarts: `never`, `daily`, `weekly`, `monthly`, or `interval` with `reset_interval_days` (biweekly = 14, any cadence). Every period boundary is 00:00 UTC, the same instant for every player - so a daily rolls over at noon in New Zealand and the previous afternoon on the US west coast. Show players the countdown a quest already carries rather than a reset time. |
+| reset | When progress restarts: `never`, `daily`, `weekly`, `monthly`, `interval` with `reset_interval_days` (biweekly = 14, any cadence), or `repeat` (again the moment it is claimed, no clock). Every period boundary is 00:00 UTC, the same instant for every player - so a daily rolls over at noon in New Zealand and the previous afternoon on the US west coast. Show players the countdown a quest already carries rather than a reset time. |
 | starts_at / ends_at | Availability window. Set them and it is an "event". |
 | prerequisite_quest_key | Must be completed first. Set it and it is a "chain" — hidden and frozen until unlocked. |
 | category | Free-form label for your UI tabs. No engine behavior. |
@@ -107,6 +107,12 @@ Player endpoints live under `/api/v1/me/quests` and the catalogue under
   the rewards paid. A quest not yet completed answers `not_completed` (403), a
   second claim `already_claimed` (409), and a `before_quest_claim` veto
   `rejected` (403) with the hook's reason as `message`.
+- **A finished run never expires.** A completed run waits for its claim
+  whatever period it finished in: a claim pays the oldest one, and the list
+  shows it until then, then the next. A daily finished on three days and never
+  claimed is three claims. A `repeat` quest banks the same way: it keeps
+  counting while it waits, its objective counts pass the target, and each
+  target's worth is one claim.
 - **Channel events:** `quest_progress`, `quest_completed`, `quest_claimed`
 - **Hooks:** `before_quest_claim/3` (may veto), `after_quest_completed/1`,
   `after_quest_claimed/1`

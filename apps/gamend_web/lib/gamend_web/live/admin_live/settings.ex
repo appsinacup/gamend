@@ -123,7 +123,7 @@ defmodule GamendWeb.AdminLive.Settings do
 
         <div>
           <h1 class="text-3xl font-bold">Settings</h1>
-          <p class="mt-1 text-sm text-base-content/70">
+          <p class="mt-1 text-sm text-muted">
             Every setting the server declares — {length(Settings.all())} across {length(@groups)} groups.
             Values resolve once at boot; change one in your config or environment and restart.
           </p>
@@ -176,7 +176,7 @@ defmodule GamendWeb.AdminLive.Settings do
           </form>
         </div>
 
-        <p :if={@rows == []} class="text-sm text-base-content/70">No settings match that filter.</p>
+        <p :if={@rows == []} class="text-sm text-muted">No settings match that filter.</p>
 
         <div :for={{label, rows} <- @rows} class="card bg-base-100 shadow-sm">
           <div class="card-body">
@@ -195,10 +195,10 @@ defmodule GamendWeb.AdminLive.Settings do
                   <tr :for={row <- rows}>
                     <td class="align-top">
                       <div class="font-mono text-sm">{row.key}</div>
-                      <div :if={row.doc != ""} class="text-xs text-base-content/70 mt-1">
+                      <div :if={row.doc != ""} class="text-xs text-muted mt-1">
                         {row.doc}
                       </div>
-                      <div :if={gate_text(row)} class="text-xs text-base-content/70 mt-1 italic">
+                      <div :if={gate_text(row)} class="text-xs text-muted mt-1 italic">
                         {gate_text(row)}
                       </div>
                     </td>
@@ -208,7 +208,7 @@ defmodule GamendWeb.AdminLive.Settings do
                     <td class="align-top">
                       <span class="font-mono text-sm break-all">{display_value(row)}</span>
                       <span :if={row.secret} class="badge badge-ghost badge-sm ml-2">secret</span>
-                      <div :if={row.source == :config} class="text-xs text-base-content/70 mt-1">
+                      <div :if={row.source == :config} class="text-xs text-muted mt-1">
                         default: {inspect(row.default)}
                       </div>
                     </td>

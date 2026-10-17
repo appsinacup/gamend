@@ -3,6 +3,7 @@ defmodule GamendWeb.AdminLive.Quests do
 
   alias Gamend.Quests
   alias Gamend.Quests.Quest
+  alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
   @resets Quest.resets()
@@ -281,7 +282,7 @@ defmodule GamendWeb.AdminLive.Quests do
                     disabled
                   />
                   <label class="label">
-                    <span class="label-text-alt text-base-content/70">
+                    <span class="label-text-alt text-muted">
                       Key cannot be changed after creation
                     </span>
                   </label>
@@ -392,7 +393,7 @@ defmodule GamendWeb.AdminLive.Quests do
             <h3 class="font-bold text-lg">
               Grant: {@selected_quest && @selected_quest.title}
             </h3>
-            <p class="text-sm text-base-content/60 mt-1">
+            <p class="text-sm text-muted mt-1">
               Force-completes every objective for the current period (auto-claim quests pay out immediately).
             </p>
 
@@ -445,14 +446,14 @@ defmodule GamendWeb.AdminLive.Quests do
   end
 
   def handle_event("edit_quest", %{"id" => id}, socket) do
-    quest = Quests.get_quest(id)
-
-    {:noreply,
-     socket
-     |> assign(:selected_quest, quest)
-     |> assign(:objectives_json, Jason.encode!(quest.objectives))
-     |> assign(:rewards_json, Jason.encode!(quest.rewards))
-     |> assign(:form, to_form(Quests.change_quest(quest), as: "quest"))}
+    Shared.with_record(socket, Quests.get_quest(id), fn quest ->
+      {:noreply,
+       socket
+       |> assign(:selected_quest, quest)
+       |> assign(:objectives_json, Jason.encode!(quest.objectives))
+       |> assign(:rewards_json, Jason.encode!(quest.rewards))
+       |> assign(:form, to_form(Quests.change_quest(quest), as: "quest"))}
+    end)
   end
 
   def handle_event("cancel_edit", _, socket) do
@@ -517,10 +518,12 @@ defmodule GamendWeb.AdminLive.Quests do
   end
 
   def handle_event("grant_form", %{"id" => id}, socket) do
-    {:noreply,
-     socket
-     |> assign(:selected_quest, Quests.get_quest(id))
-     |> assign(:grant_form, to_form(%{"user_id" => ""}, as: "grant"))}
+    Shared.with_record(socket, Quests.get_quest(id), fn quest ->
+      {:noreply,
+       socket
+       |> assign(:selected_quest, quest)
+       |> assign(:grant_form, to_form(%{"user_id" => ""}, as: "grant"))}
+    end)
   end
 
   def handle_event("cancel_grant", _, socket) do

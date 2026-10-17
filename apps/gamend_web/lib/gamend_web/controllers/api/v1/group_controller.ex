@@ -1347,7 +1347,9 @@ defmodule GamendWeb.Api.V1.GroupController do
 
     username = if user_loaded?, do: member.user.username, else: nil
     display_name = if user_loaded?, do: member.user.display_name, else: nil
-    profile_url = if user_loaded? and authenticated?, do: member.user.profile_url, else: nil
+
+    profile_url =
+      if user_loaded? and authenticated?, do: User.public_avatar_url(member.user), else: nil
 
     is_online =
       if user_loaded? and authenticated?, do: member.user.is_online || false, else: false

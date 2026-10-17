@@ -115,15 +115,18 @@ defmodule GamendWeb.UserSessionController do
     |> UserAuth.log_out_user()
   end
 
-  def confirm(conn, %{"token" => token}) do
+  # The button on the page an emailed confirmation link opens
+  # (`UserLive.Confirmation`, `:confirm_email`).
+  def confirm(conn, %{"user" => %{"token" => token} = user_params}) when is_binary(token) do
     case Accounts.confirm_user_by_token(token) do
       {:ok, user} ->
         if Accounts.user_activated?(user) do
-          # Auto-login the user after successful confirmation and send them to settings
+          # Signed in and sent to settings: an account confirmed by its link
+          # has no password yet, and that is where it sets one.
           conn
           |> put_session(:user_return_to, ~p"/users/settings")
           |> put_flash(:info, gettext("Success."))
-          |> UserAuth.log_in_user(user, %{})
+          |> UserAuth.log_in_user(user, user_params)
         else
           conn
           |> put_flash(:info, gettext("Your account is pending activation."))
@@ -135,5 +138,11 @@ defmodule GamendWeb.UserSessionController do
         |> put_flash(:error, gettext("Failed"))
         |> redirect(to: ~p"/users/log_in")
     end
+  end
+
+  def confirm(conn, _params) do
+    conn
+    |> put_flash(:error, gettext("Failed"))
+    |> redirect(to: ~p"/users/log_in")
   end
 end

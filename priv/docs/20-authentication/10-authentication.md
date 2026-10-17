@@ -25,16 +25,41 @@ magic-link forms; it does not apply to any of the game-client flows.
 
 ## JWT token flow (Email / Password / Device)
 
-A game client signs a player up with `POST /api/v1/register` (`email`,
-`password`, optional `username`). Registering is not a sign-in, as device
-login is: it creates the account, queues the confirmation email as the browser
-form does, and answers `201` with the account (`user_id`, `username`,
-`display_name`, `email_confirmed`) and no tokens, without waiting on the mail
-server. Once the player opens the emailed link, `POST /api/v1/login` with the
-same email and password signs in. A taken email or username is `409`, and a
-plugin that refuses the sign-up is `403 registration_refused`. The first
-account on a server is the admin: it is confirmed without an email
-(`email_confirmed: true`), so it can log in at once.
+A game client signs a player up in two steps, and the password comes second:
+
+1. `POST /api/v1/register` (`email`, optional `username`) creates the account
+   and queues the confirmation email, as the browser form does. It answers
+   `201` with the account (`user_id`, `username`, `display_name`,
+   `email_confirmed: false`) and no tokens, without waiting on the mail
+   server.
+2. The email carries a link and a six-digit code. The game asks the player for
+   the code and a password and sends them to `POST /api/v1/register/confirm`
+   (`email`, `code`, `password`), which confirms the email, sets the password
+   and answers a session, as login does. From then on `POST /api/v1/login`
+   signs in with that password. A player who opens the link instead confirms
+   on the website and sets a password in their settings.
+
+Why the password waits: anyone can type any address. A password chosen at
+registration would belong to whoever typed it, and once the address's owner
+opened the confirmation email, the account they confirmed would let that
+person in. The code proves the inbox, so the password set with it is the
+owner's.
+
+A wrong, spent or expired code, an address with no account waiting, and one
+already confirmed all answer `401 invalid_code`. Wrong codes count toward the
+address's lockout (below), shared with passwords; the
+one that locks it answers `429 account_locked` and voids the code. A password
+the server refuses is `422`, checked before the code so it costs no attempt.
+`POST /api/v1/register/resend` (`email`) emails a new code, and only the
+newest works; it answers `{"ok": true}` whatever the address, and sends at
+most one email per account a minute. Codes and links last
+`GAMEND_AUTH_CONFIRM_EMAIL_DAYS`.
+
+A taken email or username is `409`, and a plugin that refuses the sign-up is
+`403 registration_refused`. The first account on a server is the admin. The
+browser form confirms it as it is created and signs it in, since a fresh
+server may have no mail set up yet; from a game client it confirms with its
+email like any other.
 Deleting an account (`DELETE /api/v1/me`) sends `current_password` when the
 account has one.
 
@@ -66,23 +91,27 @@ Token responses wrap their fields in a `data` object (`{"data": {"access_token":
 
 ### Unconfirmed email
 
-Anyone can register any address, so a password signs nobody in until its
-email is confirmed: `POST /api/v1/login` answers `403 email_not_confirmed`,
-and the browser form says to confirm first. Both say so only after the right
-password, so a guesser learns nothing. Three things confirm it:
+Registering takes no password, so an unconfirmed account normally has none.
+One can still hold one: a guest account given an email, or an account
+registered before registration stopped taking a password. That password signs
+nobody in until the email is confirmed: `POST /api/v1/login` answers
+`403 email_not_confirmed`, and the browser form says to confirm first. Both
+say so only after the right password, so a guesser learns nothing. Four things
+confirm it:
 
 | What | The password |
 |---|---|
-| The link in the confirmation email | is kept |
-| An emailed login link (magic link) | is removed: set a new one in the account settings |
+| The code in the confirmation email (`POST /api/v1/register/confirm`) | is the one sent with the code |
+| The link in the confirmation email | is removed: set one in the account settings it opens |
+| An emailed login link (magic link) | is removed, as for the confirmation link |
 | Signing in with a provider that vouches for the address (a verified email) | is removed, as for a login link |
 
-A login link or a provider proves the player owns the inbox, so either
-confirms the email too. Both remove a password set before that, and revoke
-every session and token the account held, because whoever registered the
-address chose that password and may not be its owner; the page a login link
-opens says so first. An admin can also mark an email confirmed in
-**Admin → Users**.
+Each proves the player owns the inbox. None keeps a password set before that,
+because whoever set it may not be the address's owner; the page a link opens
+says so first, and only after its button does it confirm, so a mail scanner
+that opens every link confirms nothing. The code, a login link and a provider
+also revoke every session and token the account held. An admin can also mark
+an email confirmed in **Admin → Users**.
 
 ## Browser sessions and emailed links
 
@@ -92,7 +121,7 @@ The website signs in with a session cookie rather than JWTs. The windows are set
 |---|---|---|
 | `GAMEND_AUTH_SESSION_DAYS` | `14` | A browser session and its remember-me cookie. An active session is renewed once it is half this old, so only an idle one runs out. |
 | `GAMEND_AUTH_MAGIC_LINK_MINUTES` | `15` | An emailed login link. Capped at 60: whoever can read the email can sign in while it lives. |
-| `GAMEND_AUTH_CONFIRM_EMAIL_DAYS` | `7` | The link that confirms a new account's email. |
+| `GAMEND_AUTH_CONFIRM_EMAIL_DAYS` | `7` | The link and the code that confirm a new account's email. |
 | `GAMEND_AUTH_CHANGE_EMAIL_DAYS` | `7` | The link that confirms a changed email address. |
 | `GAMEND_AUTH_SUDO_MODE_MINUTES` | `10` | How recently a user must have signed in to open the settings that change their password or email. Submitting the form is allowed ten minutes more. |
 
@@ -100,7 +129,11 @@ The website signs in with a session cookie rather than JWTs. The windows are set
 
 The per-IP auth rate limit caps how fast one machine can guess, not guesses spread across many machines at one account. So failed passwords are also counted per email address: `GAMEND_AUTH_LOCKOUT_ATTEMPTS` failures (default `10`, `0` turns it off) within `GAMEND_AUTH_LOCKOUT_WINDOW_MINUTES` (default `15`) lock password sign-in for that address for `GAMEND_AUTH_LOCKOUT_MINUTES` (default `15`). The count lives in the database, so it holds across instances, and a correct password clears it.
 
-While locked, the password is not checked at all: `POST /api/v1/login` answers `429 account_locked` with a `Retry-After` header, and the browser form says to try again later. An address with no account counts and locks exactly like one with an account, so the lock never reveals which addresses are registered. Only password sign-in is locked. An emailed login link and provider sign-ins still work, so someone failing at a player's password cannot shut the player out. An admin can lift a lock from the user's page in **Admin → Users**.
+While locked, the password is not checked at all: `POST /api/v1/login` answers `429 account_locked` with a `Retry-After` header, and the browser form says to try again later. An address with no account counts and locks exactly like one with an account, so the lock never reveals which addresses are registered.
+
+A wrong registration code (`POST /api/v1/register/confirm`) counts as a failure too, and a locked address refuses codes as it refuses passwords. The failure that locks it also voids the account's code, so each new email gives a guesser only a few tries at six digits. With the lockout off, codes are left to the per-IP rate limit alone.
+
+Only password sign-in and codes are locked. An emailed login link, the confirmation link and provider sign-ins still work, so someone failing at a player's password cannot shut the player out. An admin can lift a lock from the user's page in **Admin → Users**.
 
 ## Deleting an account
 

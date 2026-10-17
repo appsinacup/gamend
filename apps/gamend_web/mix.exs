@@ -88,7 +88,7 @@ defmodule GamendWeb.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false},
       {:guardian, "~> 2.3"},
-      {:ueberauth_steam_strategy, "~> 0.2.1"},
+      {:ueberauth_steam_strategy, "~> 0.2.2"},
       {:corsica, "~> 2.0"},
       {:hammer, "~> 7.2"},
       {:hammer_backend_redis, "~> 7.1"},

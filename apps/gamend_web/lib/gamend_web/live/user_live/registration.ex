@@ -2,7 +2,7 @@ defmodule GamendWeb.UserLive.Registration do
   use GamendWeb, :live_view
 
   alias Gamend.Accounts
-  alias Gamend.Accounts.{User, UserToken}
+  alias Gamend.Accounts.{Scope, User, UserToken}
   alias Gamend.Notifications.Preferences
   alias Gamend.Repo
 
@@ -10,10 +10,13 @@ defmodule GamendWeb.UserLive.Registration do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <div class="mx-auto max-w-sm lg:max-w-4xl space-y-4">
+      <div class="mx-auto max-w-narrow space-y-4">
         <div class="text-center">
-          <h1 class="text-4xl font-black text-base-content/95">{gettext("Register")}</h1>
-          <p class="text-sm text-base-content/70 mt-2">
+          <div class="flex items-center justify-center gap-3">
+            <.back_link href={home_path()} />
+            <.page_title icon="hero-user-plus-solid">{gettext("Register")}</.page_title>
+          </div>
+          <p class="text-sm text-muted mt-2">
             <.link navigate={~p"/users/log_in"} class="font-semibold text-brand hover:underline">
               {gettext("Log in")}
             </.link>
@@ -65,14 +68,23 @@ defmodule GamendWeb.UserLive.Registration do
   end
 
   @impl true
-  def mount(_params, _session, %{assigns: %{current_scope: %{user_id: user_id}}} = socket)
+  # A guest (an anonymous account, `Scope.anonymous?/1`) registers like anyone
+  # else; the email then goes on the account they are already using, so it
+  # keeps everything (`Accounts.upgrade_anonymous_user_and_deliver/4`).
+  def mount(params, session, %{assigns: %{current_scope: %{user_id: user_id} = scope}} = socket)
       when is_binary(user_id) do
-    require Logger
-    Logger.info("[Registration] User already logged in, redirecting to signed_in_path")
-    {:ok, Phoenix.LiveView.redirect(socket, external: ~p"/users/settings")}
+    if Scope.anonymous?(scope) do
+      mount_form(params, session, socket)
+    else
+      require Logger
+      Logger.info("[Registration] User already logged in, redirecting to signed_in_path")
+      {:ok, Phoenix.LiveView.redirect(socket, external: ~p"/users/settings")}
+    end
   end
 
-  def mount(_params, session, socket) do
+  def mount(params, session, socket), do: mount_form(params, session, socket)
+
+  defp mount_form(_params, session, socket) do
     changeset = Accounts.change_user_email(%User{}, %{}, validate_unique: false)
 
     client_ip = GamendWeb.LiveHelpers.client_ip(socket, session)
@@ -121,15 +133,25 @@ defmodule GamendWeb.UserLive.Registration do
   defp notify_params(%{"notify" => %{} = notify}), do: notify
   defp notify_params(_params), do: %{}
 
+  # A guest's email goes on the account they already have, which keeps what
+  # they did; anyone else gets a new account.
+  defp register(socket, user_params, notifier) do
+    url_fun = fn t -> url(~p"/users/confirm/#{t}") end
+
+    case Scope.user(socket.assigns[:current_scope]) do
+      %User{} = user ->
+        Accounts.upgrade_anonymous_user_and_deliver(user, user_params, url_fun, notifier)
+
+      nil ->
+        Accounts.register_user_and_deliver(user_params, url_fun, notifier)
+    end
+  end
+
   defp do_save(user_params, notify, socket) do
     notifier =
       Application.get_env(:gamend_web, :user_notifier, Gamend.Accounts.UserNotifier)
 
-    case Accounts.register_user_and_deliver(
-           user_params,
-           fn t -> url(~p"/users/confirm/#{t}") end,
-           notifier
-         ) do
+    case register(socket, user_params, notifier) do
       {:ok, user} ->
         opt_in(user, notify, socket.assigns.signup_groups)
 

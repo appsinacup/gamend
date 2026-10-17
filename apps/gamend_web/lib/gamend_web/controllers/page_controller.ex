@@ -102,10 +102,21 @@ defmodule GamendWeb.PageController do
         conn
         |> assign(:page_title, PresentationPage.page_title(page, fallback_title))
         |> render(:presentation_page,
-          presentation_body: PresentationPage.cached_body(page, background_icons, locale, path),
+          presentation_body: presentation_body(conn, page, background_icons, locale, path),
           theme: theme
         )
     end
+  end
+
+  # A signed-in reader's page is rendered for them, so a host component on
+  # it may draw their own things (the languages they opened last); a visitor
+  # and a crawler get the body memoised per locale and path.
+  defp presentation_body(conn, page, background_icons, locale, path) do
+    scope = conn.assigns[:current_scope]
+
+    if scope && Gamend.Accounts.Scope.user(scope),
+      do: PresentationPage.personal_body(page, background_icons, scope),
+      else: PresentationPage.cached_body(page, background_icons, locale, path)
   end
 
   defp missing_home_page(theme, "/") do

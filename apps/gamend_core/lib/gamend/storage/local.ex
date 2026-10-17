@@ -96,14 +96,28 @@ defmodule Gamend.Storage.Local do
 
   defp all_objects(prefix) do
     root = root_dir()
+    start = Path.join(root, prefix_dir(prefix))
 
-    if File.dir?(root) do
-      root
+    if File.dir?(start) do
+      start
       |> walk()
-      |> Enum.map(fn path ->
-        key = Path.relative_to(path, root)
-        stat = File.stat!(path, time: :posix)
-        %{key: key, size: stat.size, last_modified: DateTime.from_unix!(stat.mtime)}
+      |> Enum.flat_map(fn path ->
+        # Listed, then gone: a file deleted between the walk and the stat (a
+        # concurrent delete, Finder's `.DS_Store`) is simply not there. A
+        # `File.stat!` here failed the whole retention class on it.
+        case File.stat(path, time: :posix) do
+          {:ok, %File.Stat{type: :regular} = stat} ->
+            [
+              %{
+                key: Path.relative_to(path, root),
+                size: stat.size,
+                last_modified: DateTime.from_unix!(stat.mtime)
+              }
+            ]
+
+          _gone ->
+            []
+        end
       end)
       |> Enum.filter(&String.starts_with?(&1.key, prefix))
     else
@@ -111,12 +125,29 @@ defmodule Gamend.Storage.Local do
     end
   end
 
+  # The directory a prefix names in full — `avatars/user-a/` walks
+  # `avatars/user-a`, `pdf/es` walks `pdf`, since a prefix need not end on a
+  # directory boundary. Walking that rather than the whole root keeps a scan
+  # of the avatars from statting every cached PDF in the store. `..` and `.`
+  # are dropped, as in `path_for/1`.
+  defp prefix_dir(prefix) do
+    prefix
+    |> String.split("/")
+    |> Enum.drop(-1)
+    |> Enum.reject(&(&1 in ["", ".", ".."]))
+    |> case do
+      [] -> ""
+      parts -> Path.join(parts)
+    end
+  end
+
   defp walk(path) do
     cond do
       File.dir?(path) ->
-        path
-        |> File.ls!()
-        |> Enum.flat_map(fn entry -> walk(Path.join(path, entry)) end)
+        case File.ls(path) do
+          {:ok, entries} -> Enum.flat_map(entries, &walk(Path.join(path, &1)))
+          {:error, _gone} -> []
+        end
 
       File.regular?(path) ->
         [path]

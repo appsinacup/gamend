@@ -20,7 +20,6 @@ defmodule GamendWeb.UserLive.Settings.DataTab do
     |> assign(:kv_filter_form, to_form(%{"key" => ""}, as: :filters))
     |> assign(:kv_count, 0)
     |> assign(:kv_total_pages, 0)
-    |> reload_kv_entries()
   end
 
   def tab(assigns) do

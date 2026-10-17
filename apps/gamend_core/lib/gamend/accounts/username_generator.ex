@@ -47,17 +47,29 @@ defmodule Gamend.Accounts.UsernameGenerator do
 
   Uses `attrs["display_name"]` when it slugs to something usable, a random
   word otherwise. Attempts beyond 3 widen the numeric suffix.
+
+  Draws from a random state of its own, never the calling process's `:rand`
+  state: a caller that seeded `:rand` for a repeatable draw and left it
+  seeded made every account it created try the same names, and once those
+  were taken registration gave up.
   """
   @spec generate(map(), pos_integer()) :: String.t()
   def generate(attrs \\ %{}, attempt \\ 1) do
-    base = slug(attrs["display_name"]) || Enum.random(@words)
+    rand = :rand.seed_s(:exsss)
+
+    {base, rand} =
+      case slug(attrs["display_name"]) do
+        nil -> random_word(rand)
+        slug -> {slug, rand}
+      end
+
     digits = if attempt > 3, do: @wide_suffix_digits, else: @suffix_digits
     max_base = Gamend.Limits.get(:max_username) - digits - 1
 
     base
     |> String.slice(0, max_base)
     |> String.replace(~r/[._-]+$/, "")
-    |> Kernel.<>("-" <> suffix(digits))
+    |> Kernel.<>("-" <> suffix(digits, rand))
   end
 
   @doc """
@@ -104,10 +116,16 @@ defmodule Gamend.Accounts.UsernameGenerator do
     |> String.replace(~r/^[._-]+|[._-]+$/, "")
   end
 
-  defp suffix(digits) do
-    limit = Integer.pow(10, digits)
+  defp random_word(rand) do
+    {index, rand} = :rand.uniform_s(length(@words), rand)
+    {Enum.at(@words, index - 1), rand}
+  end
 
-    (:rand.uniform(limit) - 1)
+  defp suffix(digits, rand) do
+    limit = Integer.pow(10, digits)
+    {n, _rand} = :rand.uniform_s(limit, rand)
+
+    (n - 1)
     |> Integer.to_string()
     |> String.pad_leading(digits, "0")
   end

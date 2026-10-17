@@ -20,7 +20,6 @@ defmodule GamendWeb.UserLive.Settings.WalletTab do
     |> assign(:ledger_page_size, @page_size)
     |> assign(:ledger_count, 0)
     |> assign(:ledger_total_pages, 0)
-    |> load_wallet()
   end
 
   def tab(assigns) do
@@ -30,7 +29,7 @@ defmodule GamendWeb.UserLive.Settings.WalletTab do
         <div class="font-semibold text-lg">{gettext("Wallet")}</div>
 
         <div class="mt-4">
-          <div :if={@wallet_balances == []} class="text-sm text-base-content/70 italic">
+          <div :if={@wallet_balances == []} class="text-sm text-muted italic">
             {gettext("No results.")}
           </div>
           <div :if={@wallet_balances != []} class="flex flex-wrap gap-3">
@@ -38,7 +37,7 @@ defmodule GamendWeb.UserLive.Settings.WalletTab do
               :for={{currency, balance} <- @wallet_balances}
               class="rounded-lg bg-base-100 px-4 py-3 min-w-32"
             >
-              <div class="text-xs uppercase tracking-wide text-base-content/70">{currency}</div>
+              <div class="text-xs uppercase tracking-wide text-muted">{currency}</div>
               <div class="text-xl font-bold tabular-nums">{balance}</div>
             </div>
           </div>
@@ -87,7 +86,7 @@ defmodule GamendWeb.UserLive.Settings.WalletTab do
           </table>
           <div
             :if={@ledger_count == 0}
-            class="text-sm text-base-content/70 italic py-4 text-center"
+            class="text-sm text-muted italic py-4 text-center"
           >
             {gettext("No results.")}
           </div>

@@ -192,6 +192,7 @@ defmodule GamendWeb.SearchIndexTest do
           ]
         },
         %{"label" => "Coins", "readonly" => true},
+        %{"label" => "Soon", "href" => "/soon", "disabled" => true},
         %{"label" => "{Nope.gone}", "href" => "/nowhere"}
       ],
       "account_links" => [%{"label" => "Admin", "href" => "/admin"}]
@@ -209,6 +210,12 @@ defmodule GamendWeb.SearchIndexTest do
       links = GamendWeb.HostLayoutNavigation.flat_links(@navigation, nil)
 
       refute Enum.any?(links, &(&1.title == "Coins"))
+    end
+
+    test "a disabled (coming soon) link is not a destination" do
+      links = GamendWeb.HostLayoutNavigation.flat_links(@navigation, nil)
+
+      refute Enum.any?(links, &(&1.href == "/soon"))
     end
 
     test "a dynamic label that resolves to nothing is dropped" do

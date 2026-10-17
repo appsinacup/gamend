@@ -346,7 +346,7 @@ defmodule GamendWeb.AdminLive.ChatMutes do
             <button phx-click="refresh" class="btn btn-ghost btn-sm">{gettext("Refresh")}</button>
           </div>
 
-          <p class="text-sm text-base-content/70">
+          <p class="text-sm text-muted">
             {gettext(
               "A muted player's messages are rejected before they are stored. A global mute covers every chat including friend DMs; a scoped mute silences one lobby, group or party."
             )}
@@ -470,12 +470,12 @@ defmodule GamendWeb.AdminLive.ChatMutes do
                 <tr :for={mute <- @mutes} id={"mute-#{mute.id}"}>
                   <td>
                     {user_display(mute.user)}
-                    <div class="font-mono text-xs text-base-content/60">{mute.user_id}</div>
+                    <div class="font-mono text-xs text-muted">{mute.user_id}</div>
                   </td>
                   <td>{muted_by_label(mute)}</td>
                   <td>
                     <span class="badge badge-sm">{mute.scope}</span>
-                    <div :if={mute.scope_ref_id} class="font-mono text-xs text-base-content/60">
+                    <div :if={mute.scope_ref_id} class="font-mono text-xs text-muted">
                       {mute.scope_ref_id}
                     </div>
                   </td>
@@ -511,7 +511,7 @@ defmodule GamendWeb.AdminLive.ChatMutes do
             </table>
           </div>
 
-          <div :if={@mutes == []} class="text-center py-8 text-base-content/60">
+          <div :if={@mutes == []} class="text-center py-8 text-muted">
             {gettext("No mutes.")}
           </div>
 
@@ -532,7 +532,7 @@ defmodule GamendWeb.AdminLive.ChatMutes do
       <div :if={@edit_form} class="modal modal-open">
         <div class="modal-box">
           <h3 class="font-bold text-lg">{gettext("Edit mute")}</h3>
-          <p class="text-sm text-base-content/70 mt-1">
+          <p class="text-sm text-muted mt-1">
             {user_display(@edit_mute.user)}
             <span class="badge badge-sm ml-1">{@edit_mute.scope}</span>
           </p>

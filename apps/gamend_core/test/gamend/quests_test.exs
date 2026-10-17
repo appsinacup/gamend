@@ -599,6 +599,65 @@ defmodule Gamend.QuestsTest do
       assert Quests.count_user_quests(user.id) == 1
     end
 
+    test "user_quest_page/2 is the list, its count and the tabs, from one read" do
+      create_quest(%{key: "pg_a", category: "learn", objectives: [%{event: "e", target: 1}]})
+
+      create_quest(%{
+        key: "pg_b",
+        category: "learn",
+        prerequisite_quest_key: "pg_a",
+        objectives: [%{event: "e", target: 2}]
+      })
+
+      create_quest(%{
+        key: "pg_c",
+        category: "daily",
+        reset: "daily",
+        objectives: [%{event: "f", target: 1}]
+      })
+
+      for i <- 1..3 do
+        create_quest(%{
+          key: "pg_g#{i}",
+          category: "explore",
+          group_key: "pg_g",
+          objectives: [%{event: "g", target: 1}]
+        })
+      end
+
+      user = user_fixture()
+      {:ok, _} = Quests.report_event(user.id, "e")
+
+      for opts <- [
+            [],
+            [category: "learn"],
+            [status: "claimable"],
+            [group: "pg_g"],
+            [drop_groups: ["pg_g"]],
+            [page: 2, page_size: 2]
+          ] do
+        page = Quests.user_quest_page(user.id, opts)
+        assert page.entries == Quests.list_user_quests(user.id, opts), inspect(opts)
+
+        assert page.total ==
+                 Quests.count_user_quests(user.id, Keyword.drop(opts, [:page, :page_size]))
+
+        assert page.categories == Quests.visible_categories(user.id)
+      end
+
+      # The pending-rewards heal, then the user's progress read once (no repeat
+      # quest here, so that heal has nothing to ask). Listing, counting and
+      # the tabs separately read it three times (each was two queries before
+      # this period's rows and the done prerequisites became one).
+      assert {_, 2} = quest_progress_queries(fn -> Quests.user_quest_page(user.id) end)
+
+      assert {_, 4} =
+               quest_progress_queries(fn ->
+                 {Quests.list_user_quests(user.id), Quests.count_user_quests(user.id),
+                  Quests.visible_categories(user.id)}
+               end)
+    end
+
     test "hidden quests are listed as teasers and stay listed once earned" do
       create_quest(%{key: "secret", hidden: true, objectives: [%{event: "e", target: 1}]})
       user = user_fixture()
@@ -955,9 +1014,10 @@ defmodule Gamend.QuestsTest do
 
       old = DateTime.add(DateTime.utc_now(:second), -100 * 86_400)
 
+      # Claimed: a completed row waits for its claim and is never pruned.
       Repo.update_all(
         from(p in QuestProgress, where: p.quest_key == "prune_daily"),
-        set: [inserted_at: old]
+        set: [inserted_at: old, status: "claimed"]
       )
 
       Repo.update_all(
@@ -1023,6 +1083,40 @@ defmodule Gamend.QuestsTest do
       create_quest(%{key: "vis_plain", metadata: %{"members_only" => true}})
 
       assert "vis_plain" in Enum.map(Quests.list_user_quests(user.id), & &1.quest.key)
+    end
+  end
+
+  # How many `quest_progress` queries this process sends while `fun` runs.
+  defp quest_progress_queries(fun) do
+    ref = make_ref()
+    handler = "quests-test-#{inspect(ref)}"
+
+    :ok =
+      :telemetry.attach(
+        handler,
+        [:gamend, :repo, :query],
+        &__MODULE__.count_query/4,
+        {self(), ref}
+      )
+
+    try do
+      result = fun.()
+      {result, drain_queries(ref, 0)}
+    after
+      :telemetry.detach(handler)
+    end
+  end
+
+  @doc false
+  def count_query(_event, _measurements, metadata, {pid, ref}) do
+    if self() == pid and metadata[:source] == "quest_progress", do: send(pid, {ref, :query})
+  end
+
+  defp drain_queries(ref, count) do
+    receive do
+      {^ref, :query} -> drain_queries(ref, count + 1)
+    after
+      0 -> count
     end
   end
 end

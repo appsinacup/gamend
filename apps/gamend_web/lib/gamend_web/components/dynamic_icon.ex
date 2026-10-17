@@ -16,9 +16,6 @@ defmodule GamendWeb.Components.DynamicIcon do
 
   use Phoenix.Component
 
-  # Forgiving whitelist: only letters, numbers, dash and underscore
-  @safe_re ~r/^[a-zA-Z0-9_\-]+$/
-
   attr :name, :string, required: true
   attr :class, :string, default: ""
 
@@ -48,9 +45,17 @@ defmodule GamendWeb.Components.DynamicIcon do
     end
   end
 
-  defp safe_name?(name) when is_binary(name) do
-    String.trim(name) != "" && Regex.match?(@safe_re, name)
-  end
+  # Forgiving whitelist: only letters, numbers, dash and underscore. Byte by
+  # byte rather than a regex: it runs for every icon on every render.
+  defp safe_name?(""), do: false
+  defp safe_name?(name) when is_binary(name), do: safe_chars?(name)
+
+  defp safe_chars?(<<c, rest::binary>>)
+       when c in ?a..?z or c in ?A..?Z or c in ?0..?9 or c in [?_, ?-],
+       do: safe_chars?(rest)
+
+  defp safe_chars?(<<>>), do: true
+  defp safe_chars?(_), do: false
 
   # Was an ETS table created lazily by whichever REQUEST process happened to
   # render an icon first. An ETS table dies with its owner, so the cache was

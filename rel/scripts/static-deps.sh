@@ -12,8 +12,8 @@
 set -euo pipefail
 
 prefix=${1:?usage: static-deps.sh PREFIX}
-openssl_version=${OPENSSL_VERSION:-3.5.8}
-libsrtp_version=${LIBSRTP_VERSION:-2.7.0}
+openssl_version=${OPENSSL_VERSION:-3.5.9}
+libsrtp_version=${LIBSRTP_VERSION:-2.8.1}
 jobs=$(getconf _NPROCESSORS_ONLN 2>/dev/null || sysctl -n hw.ncpu)
 
 mkdir -p "$prefix"

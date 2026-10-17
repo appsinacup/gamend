@@ -477,7 +477,7 @@ defmodule Gamend.Parties do
   def list_party_invitations(_user, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        %{}
+        []
 
       _ ->
         raise "Gamend.Parties.list_party_invitations/2 is a stub - only available at runtime on Gamend"
@@ -497,7 +497,7 @@ defmodule Gamend.Parties do
   def list_sent_party_invitations(_leader, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        %{}
+        []
 
       _ ->
         raise "Gamend.Parties.list_sent_party_invitations/2 is a stub - only available at runtime on Gamend"
@@ -550,7 +550,7 @@ defmodule Gamend.Parties do
   def stats() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        0
+        %{}
 
       _ ->
         raise "Gamend.Parties.stats/0 is a stub - only available at runtime on Gamend"

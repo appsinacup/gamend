@@ -13,8 +13,9 @@ defmodule Gamend.Accounts.AvatarMirror do
   rate-limit (Google answers 429 readily), so the download is retried with
   backoff, and a run that exhausts its attempts does not poison the user
   forever — the next sign-in enqueues a fresh job. Until one succeeds the
-  provider URL stays as the fallback, which is why an un-mirrored avatar can
-  still 429 in the browser.
+  provider URL stays in `profile_url`, but nothing shows it: every page and
+  payload reads `User.public_avatar_url/1`, which answers nil for it, so the
+  player has the default icon instead of a hotlink to the provider.
   """
   use Oban.Worker, queue: :storage, max_attempts: 5
 

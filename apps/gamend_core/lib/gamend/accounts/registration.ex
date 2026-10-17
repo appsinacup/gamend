@@ -10,6 +10,7 @@ defmodule Gamend.Accounts.Registration do
   import Ecto.Query, warn: false
   require Logger
   alias Gamend.Accounts.ConfirmationMailer
+  alias Gamend.Accounts.LoginLockouts
   alias Gamend.Accounts.User
   alias Gamend.Accounts.UsernameGenerator
   alias Gamend.Accounts.UserNotifier
@@ -114,7 +115,16 @@ defmodule Gamend.Accounts.Registration do
   email goes out from the `mailers` queue (`Gamend.Accounts.ConfirmationMailer`),
   enqueued in the transaction that inserts the user: the call returns once
   both are committed, without waiting on SMTP, and a failed send is retried
-  there. The first user becomes the admin and is confirmed, with no email.
+  there. The email carries a link and a code (`confirm_user_by_code/3`).
+
+  The first user becomes the admin and is confirmed, with no email: the
+  browser form signs it in itself. A caller that cannot uses
+  `register_unconfirmed_user_and_deliver/3`.
+
+  No password is taken. Whoever registers an address has not shown they own
+  it, so a password chosen now could be someone else's, and it would sign them
+  into the account once the address's owner confirmed it. The password is set
+  after the inbox is proved: with the code, or in the settings the link opens.
   """
   @spec register_user_and_deliver(Types.user_registration_attrs(), (String.t() -> String.t())) ::
           {:ok, User.t()} | {:error, Ecto.Changeset.t() | term()}
@@ -129,61 +139,107 @@ defmodule Gamend.Accounts.Registration do
         notifier \\ Gamend.Accounts.UserNotifier
       )
       when is_function(confirmation_url_fun, 1) do
-    register_and_deliver(attrs, &User.email_changeset/3, confirmation_url_fun, notifier)
+    register_and_deliver(attrs, confirmation_url_fun, notifier, true)
   end
 
   @doc """
-  Register a user with an email and a password and queue the confirmation
-  email, as `register_user_and_deliver/3` does for the browser form: how a
-  game client signs up (`POST /api/v1/register`). The password signs in once
-  the email is confirmed (`Gamend.Accounts.authenticate_by_password/2`).
+  `register_user_and_deliver/3` for a game client (`POST /api/v1/register`):
+  every account it makes starts unconfirmed and is sent the email, the first
+  one too. A client has no page to sign the first account in, and with no
+  password it could not sign in any other way, so it confirms with the code
+  like everyone else (`confirm_user_by_code/3`). It still becomes the admin.
   """
-  @spec register_user_with_password_and_deliver(
+  @spec register_unconfirmed_user_and_deliver(
           Types.user_registration_attrs(),
           (String.t() -> String.t()),
           module()
         ) :: {:ok, User.t()} | {:error, Ecto.Changeset.t() | term()}
-  def register_user_with_password_and_deliver(
+  def register_unconfirmed_user_and_deliver(
         attrs,
         confirmation_url_fun,
         notifier \\ Gamend.Accounts.UserNotifier
       )
       when is_function(confirmation_url_fun, 1) do
-    register_and_deliver(attrs, &User.registration_changeset/3, confirmation_url_fun, notifier)
+    register_and_deliver(attrs, confirmation_url_fun, notifier, false)
   end
 
-  defp register_and_deliver(attrs, base_changeset, confirmation_url_fun, notifier) do
-    # Normalize keys to strings to match form submissions
+  @doc """
+  Sign-up for a visitor who is already playing on an anonymous account: the
+  email goes on THAT account, and the confirmation email is queued exactly as
+  for a new one. Same account id, so everything it holds stays; the link in the
+  email signs in to it on any device and confirms the address.
+
+  `{:error, :not_anonymous}` for an account that already has an identity.
+  """
+  @spec upgrade_anonymous_user_and_deliver(
+          User.t(),
+          Types.user_registration_attrs(),
+          (String.t() -> String.t()),
+          module()
+        ) :: {:ok, User.t()} | {:error, Ecto.Changeset.t() | term()}
+  def upgrade_anonymous_user_and_deliver(
+        %User{} = user,
+        attrs,
+        confirmation_url_fun,
+        notifier \\ Gamend.Accounts.UserNotifier
+      )
+      when is_function(confirmation_url_fun, 1) do
+    if User.anonymous?(user) do
+      attrs = Map.new(attrs, fn {k, v} -> {to_string(k), v} end)
+
+      Gamend.AfterCommit.transaction(fn ->
+        with {:ok, %User{} = updated} <- user |> User.email_changeset(attrs) |> Repo.update(),
+             :ok <- queue_confirmation(updated, false, confirmation_url_fun, notifier) do
+          updated
+        else
+          {:error, reason} -> Repo.rollback(reason)
+        end
+      end)
+      |> case do
+        {:ok, updated} ->
+          Accounts.invalidate_user_cache(updated)
+          {:ok, updated}
+
+        other ->
+          other
+      end
+    else
+      {:error, :not_anonymous}
+    end
+  end
+
+  # `confirm_first_user?`: whether the first account is confirmed as it is
+  # created and gets no email (the browser form, which signs it in), or goes
+  # through the email like any other (a game client).
+  defp register_and_deliver(attrs, confirmation_url_fun, notifier, confirm_first_user?) do
+    # Normalize keys to strings to match form submissions. Only the email
+    # and the username are cast (`User.email_changeset/3`).
     attrs = Map.new(attrs, fn {k, v} -> {to_string(k), v} end)
 
     # Check if this is the first user and make them admin
     is_first_user = first_user?()
+    confirmed_first_user = is_first_user and confirm_first_user?
 
     build = fn attrs, opts ->
       %User{}
-      |> base_changeset.(attrs, opts)
+      |> User.email_changeset(attrs, opts)
       |> User.username_changeset(attrs)
       |> maybe_make_first_user_admin(is_first_user)
-      |> maybe_confirm_first_user(is_first_user)
+      |> maybe_confirm_first_user(confirmed_first_user)
       |> maybe_deactivate_new_user(is_first_user)
     end
 
     changeset_fun = &build.(&1, [])
 
-    # The plugins' tentative user needs neither the password hash (Argon2id,
-    # ~24ms) nor the email-uniqueness query: the real changeset runs both.
-    # Unhashed, the plaintext would stay on it, so it is dropped.
-    tentative_fun = fn attrs ->
-      attrs
-      |> build.(hash_password: false, validate_unique: false)
-      |> Ecto.Changeset.delete_change(:password)
-    end
+    # The plugins' tentative user does not need the email-uniqueness query:
+    # the real changeset runs it.
+    tentative_fun = &build.(&1, validate_unique: false)
 
     # Two inserts and nothing slow: the confirmation email is a job, queued
     # here so a committed account always has one, and sent after commit.
     transaction_fun = fn changeset ->
       with {:ok, %User{} = user} <- Repo.insert(changeset),
-           :ok <- queue_confirmation(user, is_first_user, confirmation_url_fun, notifier) do
+           :ok <- queue_confirmation(user, confirmed_first_user, confirmation_url_fun, notifier) do
         user
       else
         {:error, reason} -> Repo.rollback(reason)
@@ -203,7 +259,7 @@ defmodule Gamend.Accounts.Registration do
     end
   end
 
-  defp queue_confirmation(_user, true = _is_first_user, _url_fun, _notifier), do: :ok
+  defp queue_confirmation(_user, true = _confirmed, _url_fun, _notifier), do: :ok
 
   defp queue_confirmation(user, false, confirmation_url_fun, notifier) do
     case user |> ConfirmationMailer.new_for(confirmation_url_fun, notifier) |> Oban.insert() do
@@ -335,54 +391,207 @@ defmodule Gamend.Accounts.Registration do
   end
 
   @doc """
-  Confirm a user by an email confirmation token (context: "confirm").
-
-  Returns {:ok, user} when the token is valid and user was confirmed.
-  Returns {:error, :not_found} or {:error, :expired} when token is invalid/expired.
+  The account an emailed confirmation link belongs to, or `nil` for a link
+  that is malformed, spent or expired. It only reads: the page the link opens
+  shows the account, and confirming waits for its button
+  (`confirm_user_by_token/1`), so a mail scanner that opens every link in an
+  email confirms nothing and spends nothing.
   """
-  @spec confirm_user_by_token(String.t()) :: {:ok, User.t()} | {:error, :invalid | :not_found}
-  def confirm_user_by_token(token) when is_binary(token) do
-    with {:ok, decoded} <- Base.url_decode64(token, padding: false),
-         hashed <- :crypto.hash(:sha256, decoded),
-         {:ok, %User{} = user} <- fetch_user_for_confirm_token(hashed),
-         {:ok, %User{} = confirmed_user} <- confirm_user_by_token_tx(user) do
-      {:ok, Accounts.get_user(confirmed_user.id)}
-    else
-      :error ->
-        {:error, :invalid}
-
-      {:error, :not_found} ->
-        {:error, :not_found}
-
-      {:error, _} ->
-        {:error, :not_found}
+  @spec get_user_by_confirm_token(String.t()) :: User.t() | nil
+  def get_user_by_confirm_token(token) when is_binary(token) do
+    case fetch_user_for_confirm_token(token) do
+      {:ok, user} -> user
+      {:error, _} -> nil
     end
   end
 
-  defp fetch_user_for_confirm_token(hashed) do
-    query =
-      from t in UserToken,
-        where: t.token == ^hashed and t.context == "confirm",
-        where: t.inserted_at > ago(^UserToken.confirm_validity_in_days(), "day"),
-        join: u in assoc(t, :user),
-        select: {u, t}
+  @doc """
+  Confirm a user by the token in the emailed link (context: "confirm").
 
-    case Repo.one(query) do
-      {%User{} = user, _token} -> {:ok, user}
-      nil -> {:error, :not_found}
+  Returns {:ok, user} when the token is valid and user was confirmed.
+  Returns {:error, :not_found} or {:error, :invalid} when token is invalid/expired.
+
+  Confirming spends the link and the code sent with it. An account confirmed
+  this way has no password: registration takes none, and one set before the
+  address was proved is removed, since whoever set it may not own the inbox
+  (an account registered when the API still took one, or a guest account
+  that was given an email). Its owner sets one in settings, where the link's
+  page signs them in, or confirms with the code instead.
+  """
+  @spec confirm_user_by_token(String.t()) :: {:ok, User.t()} | {:error, :invalid | :not_found}
+  def confirm_user_by_token(token) when is_binary(token) do
+    with {:ok, %User{} = user} <- fetch_user_for_confirm_token(token),
+         {:ok, %User{} = confirmed_user} <- confirm_user_by_token_tx(user) do
+      {:ok, Accounts.get_user(confirmed_user.id)}
+    end
+  end
+
+  defp fetch_user_for_confirm_token(token) do
+    case Base.url_decode64(token, padding: false) do
+      {:ok, decoded} ->
+        query =
+          from t in UserToken,
+            where: t.token == ^:crypto.hash(:sha256, decoded) and t.context == "confirm",
+            where: t.inserted_at > ago(^UserToken.confirm_validity_in_days(), "day"),
+            join: u in assoc(t, :user),
+            select: u
+
+        case Repo.one(query) do
+          %User{} = user -> {:ok, user}
+          nil -> {:error, :not_found}
+        end
+
+      :error ->
+        {:error, :invalid}
     end
   end
 
   defp confirm_user_by_token_tx(%User{} = user) do
-    Gamend.AfterCommit.transaction(fn ->
-      {:ok, confirmed_user} = confirm_user(user)
+    changeset =
+      if user.confirmed_at,
+        do: User.confirm_changeset(user),
+        else: user |> User.confirm_changeset() |> Ecto.Changeset.put_change(:hashed_password, nil)
 
-      Repo.delete_all(
-        from(ut in UserToken, where: ut.user_id == ^confirmed_user.id and ut.context == "confirm")
+    result =
+      Gamend.AfterCommit.transaction(fn ->
+        confirmed_user = Repo.update!(changeset)
+        Repo.delete_all(confirmation_tokens_query(confirmed_user))
+        confirmed_user
+      end)
+
+    with {:ok, confirmed_user} <- result do
+      Accounts.invalidate_user_cache(user)
+      Accounts.invalidate_user_cache(confirmed_user)
+      {:ok, confirmed_user}
+    end
+  end
+
+  # Every link and code still waiting for `user`'s inbox.
+  defp confirmation_tokens_query(%User{id: user_id}) do
+    from(t in UserToken,
+      where: t.user_id == ^user_id and t.context in ["confirm", "confirm_code"]
+    )
+  end
+
+  @doc """
+  Confirms the unconfirmed account registered to `email` with the code from
+  its confirmation email, sets its password, and returns it signed in by the
+  caller (`POST /api/v1/register/confirm`).
+
+  The code is the proof that the caller reads the inbox, which is why the
+  password is set here and never at registration.
+
+  - `{:error, %Ecto.Changeset{}}` for a password the account would refuse.
+    It is checked before the code, so it costs no attempt and says nothing
+    about the code.
+  - `{:error, :invalid_code}` for a wrong, spent or expired code, an address
+    with no unconfirmed account, or one already confirmed: the same answer,
+    so it tells no one which addresses are registered.
+  - `{:error, {:locked, seconds}}`: a wrong code counts toward the address's
+    sign-in lockout (`Gamend.Accounts.LoginLockouts`), shared with passwords.
+    The failure that locks it also voids the code, so guessing needs a fresh
+    email for every few tries; the link keeps working.
+
+  Success revokes every earlier token of the account, as a password change
+  does, and returns them so the caller can disconnect the sessions.
+  """
+  @spec confirm_user_by_code(String.t(), String.t(), String.t()) ::
+          {:ok, {User.t(), [UserToken.t()]}}
+          | {:error, :invalid_code | {:locked, pos_integer()} | Ecto.Changeset.t()}
+  def confirm_user_by_code(email, code, password)
+      when is_binary(email) and is_binary(code) and is_binary(password) do
+    attrs = %{"password" => password}
+    checked = User.password_changeset(%User{}, attrs, hash_password: false)
+
+    with {:password, true} <- {:password, checked.valid?},
+         :ok <- LoginLockouts.check(email) do
+      # Read off an email, so spaces and a dash between the digit groups pass.
+      redeem_code(email, String.replace(code, ~r/[\s-]/u, ""), attrs)
+    else
+      {:password, false} -> {:error, %{checked | action: :validate}}
+      {:locked, seconds} -> {:error, {:locked, seconds}}
+    end
+  end
+
+  defp redeem_code(email, code, attrs) do
+    with %User{confirmed_at: nil} = user <- user_by_email_uncached(email),
+         true <- Repo.exists?(UserToken.verify_confirm_code_query(user, code)) do
+      LoginLockouts.clear(email)
+
+      # Hashed here, before `update_user_and_delete_all_tokens/1` opens its
+      # transaction: the hash is the slow part.
+      user
+      |> User.password_changeset(attrs)
+      |> Ecto.Changeset.put_change(:confirmed_at, DateTime.utc_now(:second))
+      |> Accounts.update_user_and_delete_all_tokens()
+    else
+      _ -> code_failure(email)
+    end
+  end
+
+  # Straight from the table, as `ConfirmationMailer` reads: this write sets a
+  # password and bumps `token_version` from the struct it is given, which a
+  # stale cached copy would get wrong.
+  defp user_by_email_uncached(email) do
+    case email |> String.trim() |> String.downcase() do
+      "" -> nil
+      normalized -> Repo.get_by(User, email: normalized)
+    end
+  end
+
+  defp code_failure(email) do
+    case LoginLockouts.record_failure(email) do
+      :ok ->
+        {:error, :invalid_code}
+
+      {:locked, seconds} ->
+        with %User{confirmed_at: nil} = user <- user_by_email_uncached(email) do
+          Repo.delete_all(where(confirmation_tokens_query(user), context: "confirm_code"))
+        end
+
+        {:error, {:locked, seconds}}
+    end
+  end
+
+  @doc """
+  Sends the confirmation email again, with a new code, to the unconfirmed
+  account registered to `email` (`POST /api/v1/register/resend`). Only the
+  newest code works; links already sent keep working until they expire.
+
+  Always `:ok`, whether or not such an account exists, so it tells no one
+  which addresses are registered. At most one email per account per minute
+  is queued; the rest are dropped.
+  """
+  @spec resend_confirmation(String.t(), (String.t() -> String.t()), module()) :: :ok
+  def resend_confirmation(email, confirmation_url_fun, notifier \\ Gamend.Accounts.UserNotifier)
+      when is_binary(email) and is_function(confirmation_url_fun, 1) do
+    with %User{confirmed_at: nil, email: address} = user when is_binary(address) <-
+           Accounts.get_user_by_email(email) do
+      user
+      |> ConfirmationMailer.new_for(confirmation_url_fun, notifier,
+        unique: [period: 60, keys: [:user_id]]
       )
+      |> Oban.insert!()
+    end
 
-      confirmed_user
-    end)
+    :ok
+  end
+
+  @doc false
+  # Mints one email's link and code for `user`, replacing any earlier code.
+  # Returns `{encoded_link_token, code}`.
+  def insert_confirmation_tokens(%User{} = user) do
+    {encoded, link_token} = UserToken.build_email_token(user, "confirm")
+    {code, code_token} = UserToken.build_confirm_code_token(user)
+
+    {:ok, _} =
+      Gamend.AfterCommit.transaction(fn ->
+        Repo.delete_all(where(confirmation_tokens_query(user), context: "confirm_code"))
+        Repo.insert!(link_token)
+        Repo.insert!(code_token)
+      end)
+
+    {encoded, code}
   end
 
   @spec change_user_registration(User.t()) :: Ecto.Changeset.t()
@@ -417,12 +626,12 @@ defmodule Gamend.Accounts.Registration do
     if user.confirmed_at do
       {:error, :already_confirmed}
     else
-      {encoded_token, user_token} = UserToken.build_email_token(user, "confirm")
-      Repo.insert!(user_token)
+      {encoded_token, code} = insert_confirmation_tokens(user)
 
       UserNotifier.deliver_confirmation_instructions(
         user,
-        confirmation_url_fun.(encoded_token)
+        confirmation_url_fun.(encoded_token),
+        code
       )
     end
   end

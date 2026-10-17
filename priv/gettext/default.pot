@@ -11,42 +11,21 @@
 msgid ""
 msgstr ""
 
-#: lib/gamend_web/live/blog_live.ex:105
-#: lib/gamend_web/live/blog_live.ex:177
+#: lib/gamend_host/search.ex:96
 #, elixir-autogen, elixir-format
 msgid "Blog"
 msgstr ""
 
-#: lib/gamend_web/live/blog_live.ex:119
-#, elixir-autogen, elixir-format
-msgid "Changelog"
-msgstr ""
-
+#: lib/gamend_host/search.ex:58
+#: lib/gamend_host/search.ex:78
 #: lib/gamend_web/host_public_docs.ex:24
 #, elixir-autogen, elixir-format
 msgid "Documentation"
 msgstr ""
 
-#: lib/gamend_web/live/blog_live.ex:205
-#, elixir-autogen, elixir-format
-msgid "Newer"
-msgstr ""
-
 #: lib/gamend_host/host_layout_translations.ex:27
-#: lib/gamend_web/live/blog_live.ex:80
-#: lib/gamend_web/live/blog_live.ex:127
 #, elixir-autogen, elixir-format
 msgid "No results."
-msgstr ""
-
-#: lib/gamend_web/live/blog_live.ex:220
-#, elixir-autogen, elixir-format
-msgid "Older"
-msgstr ""
-
-#: lib/gamend_web/live/blog_live.ex:112
-#, elixir-autogen, elixir-format
-msgid "Roadmap"
 msgstr ""
 
 #: lib/gamend_host/host_layout_translations.ex:15

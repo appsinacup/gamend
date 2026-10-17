@@ -19,6 +19,7 @@ defmodule GamendWeb.Plugs.RateLimiter do
 
   import Plug.Conn
 
+  alias GamendWeb.Plugs.GeoCountry
   alias GamendWeb.Plugs.LocalePath
 
   # Declared so the values are documented, env-fed and visible in the admin
@@ -39,6 +40,12 @@ defmodule GamendWeb.Plugs.RateLimiter do
   setting(:general_limit, :integer,
     default: 240,
     doc: "Max general HTTP requests per window, per IP."
+  )
+
+  setting(:exempt_ips, :string,
+    default: "",
+    doc:
+      "Client addresses never throttled, comma-separated, exact (IPv4 or IPv6), as `RealIp` resolves them: a load test from a known machine, a monitor. Empty: nobody."
   )
 
   setting(:general_window_ms, :integer,
@@ -122,12 +129,27 @@ defmodule GamendWeb.Plugs.RateLimiter do
   def init(opts), do: opts
 
   def call(conn, _opts) do
-    if enabled?() and not skip_path?(conn) do
+    if enabled?() and not skip_path?(conn) and not exempt_ip?(conn) do
       do_rate_limit(conn)
     else
       conn
     end
   end
+
+  # The addresses `exempt_ips` names. Split per request: the setting is empty
+  # or a few addresses, and the split costs less than a bucket lookup.
+  defp exempt_ip?(%{remote_ip: ip}) when is_tuple(ip) do
+    case setting(:exempt_ips) do
+      list when is_binary(list) and list != "" ->
+        address = ip |> :inet.ntoa() |> to_string()
+        address in (list |> String.split(",") |> Enum.map(&String.trim/1))
+
+      _ ->
+        false
+    end
+  end
+
+  defp exempt_ip?(_conn), do: false
 
   # This plug runs before `LocalePath` (so before the body is parsed), and so
   # sees `/ro/users/log_in` where the router will see `/users/log_in`: strip the
@@ -150,6 +172,8 @@ defmodule GamendWeb.Plugs.RateLimiter do
 
       {:deny, retry_after_ms} ->
         retry_secs = max(div(retry_after_ms, 1000), 1)
+        # Who was throttled — a person, Googlebot, a scraper — for Admin → Geo.
+        GeoCountry.record_rate_limited(conn)
 
         conn
         |> put_resp_header("retry-after", to_string(retry_secs))

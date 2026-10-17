@@ -60,7 +60,8 @@ defmodule Gamend.Chat.Moderation.Notices do
     Enum.each(Accounts.list_admin_ids(), fn admin_id ->
       deliver(admin_id, @report_title, content, %{
         "type" => "chat_report",
-        "open_reports" => open_count
+        "open_reports" => open_count,
+        "url" => "/admin/chat/reports"
       })
     end)
 

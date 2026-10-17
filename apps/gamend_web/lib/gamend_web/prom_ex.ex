@@ -18,6 +18,10 @@ defmodule GamendWeb.PromEx do
 
   Set `METRICS_ENABLED=false` to disable (default: enabled).
 
+  A host adds its own plugins (`use PromEx.Plugin`) with
+  `config :gamend_web, :host_prom_ex_plugins, [MyHost.PromEx.SomePlugin]`;
+  they are appended to the list above when PromEx starts.
+
   The `/metrics` endpoint is public by design (Prometheus scrapes it).
   In production, restrict access at the network/firewall level or via
   the `GAMEND_OBSERVABILITY_METRICS_TOKEN` setting (Bearer token check;
@@ -44,8 +48,13 @@ defmodule GamendWeb.PromEx do
       # Geo traffic metrics (request count by country)
       GamendWeb.PromEx.GeoPlugin,
       GamendWeb.PromEx.CachePlugin
-    ]
+    ] ++ host_plugins()
   end
+
+  # A host's own PromEx plugins, appended to core's:
+  # `config :gamend_web, :host_prom_ex_plugins, [MyHost.PromEx.BootPlugin]`.
+  # Read at PromEx's start, like `:host_plugs` is at the endpoint's.
+  defp host_plugins, do: Application.get_env(:gamend_web, :host_prom_ex_plugins, [])
 
   @impl true
   def dashboard_assigns do

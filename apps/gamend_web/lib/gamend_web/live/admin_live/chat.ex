@@ -143,7 +143,7 @@ defmodule GamendWeb.AdminLive.Chat do
                       <td class="text-sm" title={m.sender_id}>
                         {user_display(m.sender)}
                         <%= if Ecto.assoc_loaded?(m.sender) and m.sender do %>
-                          <div class="text-xs text-base-content/60 truncate max-w-[120px]">
+                          <div class="text-xs text-muted truncate max-w-[120px]">
                             {m.sender.email}
                           </div>
                         <% end %>

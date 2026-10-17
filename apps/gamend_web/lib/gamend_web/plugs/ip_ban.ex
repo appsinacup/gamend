@@ -174,15 +174,17 @@ defmodule GamendWeb.Plugs.IpBan do
   @doc """
   Return recent ban/unban log entries as a list of maps, newest first.
 
-  Each entry: `%{action: :ban | :unban, ip: String.t(), ttl: term(), at: DateTime.t()}`
+  Each entry: `%{seq: integer(), action: :ban | :unban, ip: String.t(), ttl: term()}`,
+  `seq` its place in the log (unique, so a page can key a row by it: the same
+  IP banned twice is two rows).
   """
   def list_log do
     init_table()
 
     :ets.tab2list(@log_table)
     |> Enum.sort_by(fn {ts, _action, _ip, _ttl} -> ts end, :desc)
-    |> Enum.map(fn {_ts, action, ip, ttl} ->
-      %{action: action, ip: ip, ttl: ttl}
+    |> Enum.map(fn {ts, action, ip, ttl} ->
+      %{seq: ts, action: action, ip: ip, ttl: ttl}
     end)
   end
 

@@ -89,15 +89,15 @@ defmodule GamendWeb.QuestsLiveLockTest do
     refute html =~ "???"
   end
 
-  test "the claimable banner does not count what it cannot offer", %{conn: conn} do
+  test "the Claimable count does not count what it cannot offer", %{conn: conn} do
     Application.put_env(:gamend_core, :quest_lock_filter, {LockAll, :label})
 
     html = conn |> signed_in() |> page()
 
     # Both quests completed on login; only the free one is claimable, so the
-    # banner must say one. Counting two sends the reader hunting for a button
-    # that is deliberately not there.
-    assert html =~ "You have 1 quest ready to claim!"
+    # Claimable chip must say one. Counting two sends the reader hunting for a
+    # button that is deliberately not there.
+    assert html =~ ~r/<span class="badge badge-sm">\s*1\s*<\/span>/
   end
 
   test "a blank label is not a lock", %{conn: conn} do

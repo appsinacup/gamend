@@ -131,6 +131,14 @@ defmodule GamendWeb.HostLayoutsTest do
       assert Map.has_key?(changed, :notif_unread_count)
     end
 
+    ## A nav label can read something the page changes (the coin badge after a
+    ## purchase): `nav_key` is how the page says it moved.
+    test "a new nav key re-renders the shell" do
+      changed = HostLayouts.prepare_app_assigns(app_assigns(%{nav_key: true})).__changed__
+
+      assert Map.has_key?(changed, :navigation)
+    end
+
     ## `nil` is how the engine says "not change tracking" — a dead render, or a
     ## first render. Freezing anything there would leave the navbar unrendered.
     test "a render with no change tracking renders everything" do

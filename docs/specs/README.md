@@ -80,7 +80,7 @@ Spec deleted; the code, its moduledocs and the CHANGELOG are the record.
 | Ready checks | `Gamend.ReadyChecks` |
 | Lobby state | server-owned lifecycle column with legal transitions |
 | i18n | one theme config plus a `theme` PO domain; content translated at render |
-| Locking on SQLite | `Lock.serialize/3` per-key on both adapters, via a `:global` mutex |
+| Locking on SQLite | `Lock.serialize/3` per-key on both adapters, via a keyed mutex whose waiters queue in order (`Gamend.Lock.Local`) |
 | Chat moderation | word filter, report queue and mutes in `before_chat_message`; three admin pages |
 
 ## Resolved — rejected

@@ -39,7 +39,6 @@ defmodule Gamend.Payments.Admin do
     webhook_secret = ProviderConfig.stripe_webhook_secret()
     secret_key_source = ProviderConfig.stripe_secret_key_source()
     webhook_secret_source = ProviderConfig.stripe_webhook_secret_source()
-    api_version_source = ProviderConfig.stripe_api_version_source()
 
     %{
       configured: Params.present?(secret_key) and Params.present?(webhook_secret),
@@ -51,7 +50,7 @@ defmodule Gamend.Payments.Admin do
       expected_secret_keys: ProviderConfig.stripe_candidate_labels(:secret_key),
       expected_webhook_secrets: ProviderConfig.stripe_candidate_labels(:webhook_secret),
       api_version: ProviderConfig.stripe_api_version(),
-      api_version_source: Payments.source_label(api_version_source) || "stripity_stripe default",
+      api_version_source: "pinned in Gamend.Payments.ProviderConfig",
       masked_secret_key: mask_secret(secret_key),
       masked_webhook_secret: mask_secret(webhook_secret),
       environment: ProviderConfig.environment()

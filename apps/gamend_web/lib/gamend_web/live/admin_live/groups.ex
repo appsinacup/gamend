@@ -54,7 +54,7 @@ defmodule GamendWeb.AdminLive.Groups do
 
             <form phx-change="filter" phx-no-unused-field id="groups-filter-form">
               <div class="flex items-center gap-3 mt-4">
-                <label class="text-sm text-base-content/70">Sort by:</label>
+                <label class="text-sm text-muted">Sort by:</label>
                 <select
                   name="sort_by"
                   class="select select-bordered select-sm"
@@ -264,7 +264,7 @@ defmodule GamendWeb.AdminLive.Groups do
               <textarea name="group[metadata]" class="textarea textarea-bordered" rows="4"><%= Jason.encode!(@selected_group.metadata || %{}) %></textarea>
             </div>
 
-            <div class="mt-4 text-sm text-base-content/70 space-y-1">
+            <div class="mt-4 text-sm text-muted space-y-1">
               <div>
                 Creator: <span class="font-mono">{@selected_group.creator_id}</span>
               </div>

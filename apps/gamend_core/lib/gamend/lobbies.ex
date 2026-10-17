@@ -57,6 +57,7 @@ defmodule Gamend.Lobbies do
   alias Gamend.Lobbies.SpectatorTracker
   alias Gamend.Lobbies.States
   alias Gamend.Lock
+  alias Gamend.Lock.Local
   alias Gamend.Repo
   alias Gamend.Types
 
@@ -966,7 +967,11 @@ defmodule Gamend.Lobbies do
 
   @spec merge_metadata(Lobby.t(), map()) :: {:ok, Lobby.t()} | {:error, term()}
   def merge_metadata(%Lobby{} = lobby, patch) when is_map(patch) do
-    do_merge_metadata(lobby.id, Gamend.Parse.string_keys(patch), @merge_attempts)
+    patch = Gamend.Parse.string_keys(patch)
+
+    Local.in_turn({:lobby_metadata_merge, lobby.id}, fn ->
+      do_merge_metadata(lobby.id, patch, @merge_attempts)
+    end)
   end
 
   # Optimistic, so the plugins' `before_lobby_update` hook (up to its timeout)

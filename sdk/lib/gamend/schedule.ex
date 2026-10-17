@@ -227,7 +227,7 @@ defmodule Gamend.Schedule do
   def list() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        ""
+        []
 
       _ ->
         raise "Gamend.Schedule.list/0 is a stub - only available at runtime on Gamend"

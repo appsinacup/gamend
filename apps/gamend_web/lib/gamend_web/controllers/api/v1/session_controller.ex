@@ -88,16 +88,17 @@ defmodule GamendWeb.Api.V1.SessionController do
     operation_id: "register",
     summary: "Register",
     description:
-      "Create an account with an email and a password and queue its confirmation email, " <>
-        "as browser sign-up does. Registering is not a sign-in: it answers the new account, " <>
-        "never tokens. The password signs in with `login` once the player has opened the " <>
-        "emailed link; until then `login` answers `403 email_not_confirmed`. " <>
-        "The response does not wait for the email, which is sent and retried in the background. " <>
-        "The server's first account becomes the admin and is confirmed without an email " <>
-        "(`email_confirmed: true`), so it can log in at once. Account activation " <>
-        "(`GAMEND_AUTH_REQUIRE_ACTIVATION`) applies at login, as for every sign-up. " <>
-        "When the server requires it (`GAMEND_CAPTCHA_API_REGISTER`), a Cloudflare " <>
-        "Turnstile token goes in `captcha_token`.",
+      "Create an account with an email and queue its confirmation email, as browser " <>
+        "sign-up does. The email carries a link and a six-digit code. Registering is not " <>
+        "a sign-in: it answers the new account, never tokens. The password is chosen " <>
+        "once the inbox is proved, with the code (`confirm_registration`, which also " <>
+        "signs in), or in the settings the link opens. The response does not wait for " <>
+        "the email, which is sent and " <>
+        "retried in the background (`resend_confirmation` sends it again). The server's " <>
+        "first account becomes the admin, and confirms with its email like any other. " <>
+        "Account activation (`GAMEND_AUTH_REQUIRE_ACTIVATION`) applies at sign-in, as for " <>
+        "every sign-up. When the server requires it (`GAMEND_CAPTCHA_API_REGISTER`), a " <>
+        "Cloudflare Turnstile token goes in `captcha_token`.",
     request_body: {
       "Registration",
       "application/json",
@@ -105,7 +106,6 @@ defmodule GamendWeb.Api.V1.SessionController do
         type: :object,
         properties: %{
           email: %Schema{type: :string, format: :email, description: "User email"},
-          password: %Schema{type: :string, format: :password, description: "User password"},
           username: %Schema{
             type: :string,
             description: "Optional; one is generated when it is left out"
@@ -115,40 +115,31 @@ defmodule GamendWeb.Api.V1.SessionController do
             description: "Turnstile token, when the server requires a captcha"
           }
         },
-        required: [:email, :password],
-        example: %{
-          email: "user@example.com",
-          password: "securepassword123"
-        }
+        required: [:email],
+        example: %{email: "user@example.com"}
       }
     },
     responses: [
       created: {"Account created; not signed in", "application/json", RegistrationResponse},
-      bad_request: Schemas.error("Email or password missing (missing_param)"),
+      bad_request: Schemas.error("Email missing (missing_param)"),
       forbidden:
         Schemas.error(
           "The captcha failed, or a plugin refused the sign-up (registration_refused)"
         ),
       conflict: Schemas.error("Email or username already taken"),
-      unprocessable_entity: Schemas.error("Invalid email, username or password"),
+      unprocessable_entity: Schemas.error("Invalid email or username"),
       service_unavailable: Schemas.error("The captcha check could not be completed")
     ]
   )
 
-  def register(conn, %{"email" => email, "password" => password} = params)
-      when is_binary(email) and is_binary(password) do
-    # The notifier the browser sign-up reads, so both paths send one email.
-    notifier = Application.get_env(:gamend_web, :user_notifier, Gamend.Accounts.UserNotifier)
+  def register(conn, %{"email" => email} = params) when is_binary(email) do
     ip = conn.remote_ip |> :inet.ntoa() |> to_string()
 
     case Captcha.verify_api_register(params["captcha_token"], ip) do
       :ok ->
         params
-        |> Map.take(["email", "password", "username"])
-        |> Accounts.register_user_with_password_and_deliver(
-          fn token -> url(~p"/users/confirm/#{token}") end,
-          notifier
-        )
+        |> Map.take(["email", "username"])
+        |> Accounts.register_unconfirmed_user_and_deliver(&confirm_url/1, notifier())
         |> registered(conn)
 
       {:error, :unavailable} ->
@@ -168,13 +159,131 @@ defmodule GamendWeb.Api.V1.SessionController do
   end
 
   def register(conn, _params) do
-    reply_error(conn, :bad_request, "missing_param", "email and password are required")
+    reply_error(conn, :bad_request, "missing_param", "email is required")
   end
+
+  operation(:confirm_registration,
+    operation_id: "confirm_registration",
+    summary: "Confirm a registration with its code",
+    description:
+      "Confirm the account `register` made with the six-digit code from its email, " <>
+        "choose its password, and sign in: answers a session, as `login` does. The code " <>
+        "proves the inbox, so this is where the password is set. Spaces and a dash in the " <>
+        "code are ignored. A wrong, spent or expired code, an address with no account " <>
+        "waiting, and one already confirmed all answer `401 invalid_code`. Wrong codes " <>
+        "count toward the address's sign-in lockout, shared with passwords: the one that " <>
+        "locks it answers `429 account_locked` and voids the code, so `resend_confirmation` " <>
+        "sends a new one once the lock lifts; the link in the email keeps working. The " <>
+        "password is checked before the code, so a refused one (`422`) costs no attempt. " <>
+        "Signing in revokes every earlier token of the account.",
+    request_body: {
+      "Registration code",
+      "application/json",
+      %Schema{
+        type: :object,
+        properties: %{
+          email: %Schema{type: :string, format: :email, description: "The address registered"},
+          code: %Schema{type: :string, description: "The six digits from the email"},
+          password: %Schema{
+            type: :string,
+            format: :password,
+            description: "The account's password from now on"
+          }
+        },
+        required: [:email, :code, :password],
+        example: %{email: "user@example.com", code: "042137", password: "securepassword123"}
+      }
+    },
+    responses: [
+      ok: {"Confirmed and signed in", "application/json", SessionResponse},
+      bad_request: Schemas.error("Email, code or password missing (missing_param)"),
+      unauthorized: Schemas.error("Wrong, spent or expired code (invalid_code)"),
+      forbidden:
+        Schemas.error("Confirmed, but the account awaits activation or is scheduled for deletion"),
+      unprocessable_entity: Schemas.error("The password is refused"),
+      too_many_requests:
+        Schemas.error("Too many wrong codes or passwords for this address (account_locked)")
+    ]
+  )
+
+  def confirm_registration(conn, %{"email" => email, "code" => code, "password" => password})
+      when is_binary(email) and is_binary(code) and is_binary(password) do
+    case Accounts.confirm_user_by_code(email, code, password) do
+      {:ok, {user, expired_tokens}} ->
+        GamendWeb.UserAuth.disconnect_sessions(expired_tokens)
+
+        case Tokens.refusal(user) do
+          nil -> issue_tokens(conn, user)
+          {status, error_code, message} -> reply_error(conn, status, error_code, message)
+        end
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        unprocessable(conn, changeset)
+
+      {:error, {:locked, seconds}} ->
+        conn
+        |> put_resp_header("retry-after", Integer.to_string(seconds))
+        |> reply_error(
+          :too_many_requests,
+          "account_locked",
+          "Too many wrong attempts. Try again later, or confirm with the link in the email."
+        )
+
+      {:error, :invalid_code} ->
+        reply_error(conn, :unauthorized, "invalid_code", "Wrong or expired code")
+    end
+  end
+
+  def confirm_registration(conn, _params) do
+    reply_error(conn, :bad_request, "missing_param", "email, code and password are required")
+  end
+
+  operation(:resend_confirmation,
+    operation_id: "resend_confirmation",
+    summary: "Send the confirmation email again",
+    description:
+      "Queue a new confirmation email, with a new code, for the account `register` made " <>
+        "and nobody has confirmed. Only the newest code works. Always answers " <>
+        "`{\"ok\": true}`, whether or not the address has such an account, so it tells " <>
+        "no one which addresses are registered; at most one email per account per minute " <>
+        "goes out.",
+    request_body: {
+      "Address",
+      "application/json",
+      %Schema{
+        type: :object,
+        properties: %{
+          email: %Schema{type: :string, format: :email, description: "The address registered"}
+        },
+        required: [:email],
+        example: %{email: "user@example.com"}
+      }
+    },
+    responses: [
+      ok: {"Queued, if there was anything to send", "application/json", OkResponse},
+      bad_request: Schemas.error("Email missing (missing_param)")
+    ]
+  )
+
+  def resend_confirmation(conn, %{"email" => email}) when is_binary(email) do
+    :ok = Accounts.resend_confirmation(email, &confirm_url/1, notifier())
+    reply_ok(conn)
+  end
+
+  def resend_confirmation(conn, _params) do
+    reply_error(conn, :bad_request, "missing_param", "email is required")
+  end
+
+  defp confirm_url(token), do: url(~p"/users/confirm/#{token}")
+
+  # The notifier the browser sign-up reads, so both paths send one email.
+  defp notifier,
+    do: Application.get_env(:gamend_web, :user_notifier, Gamend.Accounts.UserNotifier)
 
   # Not a sign-in, unlike device login, which creates an account and signs it
   # in at once: registering proves nothing about the inbox, and a token here
-  # would let anyone play as any address. The password signs in through
-  # `create/2` once the email is confirmed.
+  # would let anyone play as any address. The emailed code signs in, through
+  # `confirm_registration/2`.
   defp registered({:ok, user}, conn) do
     reply_data(conn, :created, %{
       user_id: user.id,
@@ -351,7 +460,8 @@ defmodule GamendWeb.Api.V1.SessionController do
     :ok
   end
 
-  # Only real logins reach here (password and device; registering is not one);
+  # Only real logins reach here (password, device and a registration's code;
+  # registering is not one);
   # `refresh/2` keeps its refresh token. Provider sign-ins go through the same
   # `Tokens.sign_in/1`.
   defp issue_tokens(conn, user), do: reply_data(conn, Tokens.sign_in(user))

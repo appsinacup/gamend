@@ -17,7 +17,7 @@ msgstr "Ласкаво просимо"
 
 #. quests
 msgid "Log in for the first time."
-msgstr "Увійдіть уперше."
+msgstr "Увійди вперше."
 
 #. quests
 msgid "Daily check-in"
@@ -25,7 +25,7 @@ msgstr "Щоденний вхід"
 
 #. quests
 msgid "Log in today."
-msgstr "Увійдіть сьогодні."
+msgstr "Увійди сьогодні."
 
 #. quests
 msgid "Weekly regular"
@@ -33,7 +33,7 @@ msgstr "Завсідник тижня"
 
 #. quests
 msgid "Log in on five different days this week."
-msgstr "Увійдіть у п'ять різних днів цього тижня."
+msgstr "Увійди в п'ять різних днів цього тижня."
 
 #. quests
 msgid "Monthly devotee"
@@ -41,15 +41,15 @@ msgstr "Відданий місяця"
 
 #. quests
 msgid "Log in twenty times this month."
-msgstr "Увійдіть двадцять разів цього місяця."
+msgstr "Увійди двадцять разів цього місяця."
 
 #. quests
 msgid "Stop by again"
-msgstr "Завітайте ще раз"
+msgstr "Завітай ще раз"
 
 #. quests
 msgid "Log in. Becomes available again three days later."
-msgstr "Увійдіть. Знову стане доступним через три дні."
+msgstr "Увійди. Знову стане доступним через три дні."
 
 #. quests
 msgid "Loyal veteran"
@@ -57,7 +57,7 @@ msgstr "Вірний ветеран"
 
 #. quests
 msgid "Log in fifty times, once you have said hello."
-msgstr "Увійдіть п'ятдесят разів, після того як привіталися."
+msgstr "Увійди п'ятдесят разів після першого привітання."
 
 #. quests
 msgid "Night owl"
@@ -89,4 +89,5 @@ msgstr "Щотижневий кубок"
 
 #. tournaments
 msgid "Register any time; the bracket is drawn every Monday."
-msgstr "Реєструйтеся будь-коли; сітку жеребкують щопонеділка."
+
+msgstr "Реєструйся будь-коли; сітку жеребкують щопонеділка."

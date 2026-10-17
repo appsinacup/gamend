@@ -15,30 +15,30 @@ defmodule GamendWeb.AdminLive.System do
         <%!-- Top-level stats --%>
         <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4">
           <div class="bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="text-xs text-base-content/60">Uptime</div>
+            <div class="text-xs text-muted">Uptime</div>
             <div class="text-xl font-bold">
               {ConnectionTracker.format_uptime(@sys.uptime_seconds)}
             </div>
           </div>
           <div class="bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="text-xs text-base-content/60">OTP</div>
+            <div class="text-xs text-muted">OTP</div>
             <div class="text-xl font-bold">{@sys.otp_release}</div>
           </div>
           <div class="bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="text-xs text-base-content/60">Schedulers</div>
+            <div class="text-xs text-muted">Schedulers</div>
             <div class="text-xl font-bold">{@sys.schedulers}</div>
-            <div class="text-xs text-base-content/70">{@scheduler_util}% busy</div>
+            <div class="text-xs text-muted">{@scheduler_util}% busy</div>
           </div>
           <div class="bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="text-xs text-base-content/60">Node</div>
+            <div class="text-xs text-muted">Node</div>
             <div class="text-sm font-bold font-mono break-all">{@sys.node}</div>
           </div>
           <div class="bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="text-xs text-base-content/60">Cluster Nodes</div>
+            <div class="text-xs text-muted">Cluster Nodes</div>
             <div class="text-xl font-bold">{@sys.cluster_size}</div>
           </div>
           <div class="bg-base-100 rounded-lg shadow-sm p-4">
-            <div class="text-xs text-base-content/60">Elixir</div>
+            <div class="text-xs text-muted">Elixir</div>
             <div class="text-xl font-bold">{@elixir_version}</div>
           </div>
         </div>
@@ -49,7 +49,7 @@ defmodule GamendWeb.AdminLive.System do
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h2 class="card-title text-lg">Metrics</h2>
-                <p class="text-sm text-base-content/60">
+                <p class="text-sm text-muted">
                   Grafana contains host, container, app, and log history.
                 </p>
               </div>
@@ -70,7 +70,7 @@ defmodule GamendWeb.AdminLive.System do
           <div class="card bg-base-200 shadow">
             <div class="card-body">
               <h2 class="card-title text-lg">Memory (BEAM VM)</h2>
-              <p class="text-xs text-base-content/60 mb-2">
+              <p class="text-xs text-muted mb-2">
                 Memory allocated by the Erlang VM. Does not include OS-level overhead.
               </p>
               <div class="overflow-x-auto">
@@ -99,7 +99,7 @@ defmodule GamendWeb.AdminLive.System do
                           <span class="font-mono text-xs w-10 text-right">{pct}%</span>
                         </div>
                       </td>
-                      <td class="text-right text-xs text-base-content/60">{desc}</td>
+                      <td class="text-right text-xs text-muted">{desc}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -126,7 +126,7 @@ defmodule GamendWeb.AdminLive.System do
                     >
                     </div>
                   </div>
-                  <div class="text-xs text-base-content/60 mt-1">
+                  <div class="text-xs text-muted mt-1">
                     {Float.round(@process_pct, 2)}% utilization
                   </div>
                 </div>
@@ -145,7 +145,7 @@ defmodule GamendWeb.AdminLive.System do
                     >
                     </div>
                   </div>
-                  <div class="text-xs text-base-content/60 mt-1">
+                  <div class="text-xs text-muted mt-1">
                     {Float.round(@port_pct, 2)}% utilization
                   </div>
                 </div>
@@ -164,7 +164,7 @@ defmodule GamendWeb.AdminLive.System do
                     >
                     </div>
                   </div>
-                  <div class="text-xs text-base-content/60 mt-1">
+                  <div class="text-xs text-muted mt-1">
                     {Float.round(@atom_pct, 2)}% utilization
                   </div>
                 </div>
@@ -183,7 +183,7 @@ defmodule GamendWeb.AdminLive.System do
                     >
                     </div>
                   </div>
-                  <div class="text-xs text-base-content/60 mt-1">
+                  <div class="text-xs text-muted mt-1">
                     Average busy time across {@sys.schedulers} schedulers
                   </div>
                 </div>
@@ -264,7 +264,7 @@ defmodule GamendWeb.AdminLive.System do
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h2 class="card-title text-lg">Data Retention</h2>
-                <p class="text-sm text-base-content/60">
+                <p class="text-sm text-muted">
                   Windows, last sweep and manual runs live on their own page.
                 </p>
               </div>

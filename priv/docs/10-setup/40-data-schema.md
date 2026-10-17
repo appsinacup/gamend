@@ -38,7 +38,7 @@ These hold everywhere, so the tables below list only what is specific to them:
 | `hashed_password` | string | Argon2id (old bcrypt hashes still verify); null for OAuth-only accounts |
 | `username` | string | Unique lowercase handle, generated at registration |
 | `display_name` | string | Human-friendly, not unique |
-| `profile_url` | string | Avatar URL |
+| `profile_url` | string | Avatar URL. May hold a provider's URL until it is mirrored; only one under `avatars/<id>/` is ever sent (`User.public_avatar_url/1`) |
 | `discord_id` `google_id` `facebook_id` `github_id` `steam_id` `apple_id` `device_id` | string | Linked identities, all nullable |
 | `is_admin` | boolean | Grants `/admin` and the admin API |
 | `is_activated` | boolean | `false` blocks login without deleting the account |

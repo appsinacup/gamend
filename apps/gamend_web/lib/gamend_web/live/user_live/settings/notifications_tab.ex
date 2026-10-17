@@ -16,7 +16,18 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
   alias Gamend.Notifications.Preferences
   alias GamendWeb.NotificationEmail
 
-  def assign_defaults(socket), do: assign(socket, :notify_groups, Preferences.groups())
+  def assign_defaults(socket), do: assign(socket, :notify_groups, shown_groups())
+
+  # A group whose every notification is about a feature the site has switched
+  # off (`GamendWeb.Features`) has nothing to choose on the website: its row
+  # goes. The game still sends that traffic, and the stored choice is kept.
+  defp shown_groups, do: Enum.filter(Preferences.groups(), &shown?/1)
+
+  defp shown?(%{key: "social"}),
+    do: GamendWeb.Features.enabled?(:web_friends) or GamendWeb.Features.enabled?(:web_groups)
+
+  defp shown?(%{key: "chat"}), do: GamendWeb.Features.enabled?(:web_chat)
+  defp shown?(_group), do: true
 
   attr :settings_tab, :string, required: true
   attr :user, :map, required: true
@@ -28,7 +39,7 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
       <div class="card bg-base-200 p-4 rounded-lg mt-6 space-y-4">
         <div>
           <div class="font-semibold text-lg">{gettext("Notifications")}</div>
-          <div class="text-sm text-base-content/70">
+          <div class="text-sm text-muted">
             {gettext("Choose what we tell you, and where.")}
           </div>
         </div>
@@ -86,7 +97,7 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
             on={gettext("Turn notifications back on")}
           />
         </div>
-        <p class="text-sm text-base-content/70">
+        <p class="text-sm text-muted">
           {gettext("Account messages, such as sign-in links, are always sent.")}
         </p>
 
@@ -110,7 +121,7 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
               {zone}
             </option>
           </select>
-          <p class="text-sm text-base-content/70">
+          <p class="text-sm text-muted">
             {gettext("Your day and your reminders follow it.")}
           </p>
         </form>

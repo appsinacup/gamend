@@ -76,17 +76,28 @@ defmodule GamendWeb.HostLayouts do
 
   @theme_translatable_top_keys ~w(title tagline description)
 
+  # `badge` is a link's short tag ("Pro", "Coming soon"), translated like its
+  # label.
   @theme_translatable_array_fields [
     {["footer", "sections"], "title"},
     {["footer", "sections", "links"], "label"},
+    {["footer", "sections", "links"], "badge"},
     {["navigation", "primary_links"], "label"},
+    {["navigation", "primary_links"], "badge"},
     {["navigation", "primary_links", "items"], "label"},
+    {["navigation", "primary_links", "items"], "badge"},
     {["navigation", "guest_links"], "label"},
+    {["navigation", "guest_links"], "badge"},
     {["navigation", "guest_links", "items"], "label"},
+    {["navigation", "guest_links", "items"], "badge"},
     {["navigation", "authenticated_links"], "label"},
+    {["navigation", "authenticated_links"], "badge"},
     {["navigation", "authenticated_links", "items"], "label"},
+    {["navigation", "authenticated_links", "items"], "badge"},
     {["navigation", "account_links"], "label"},
-    {["navigation", "account_links", "items"], "label"}
+    {["navigation", "account_links"], "badge"},
+    {["navigation", "account_links", "items"], "label"},
+    {["navigation", "account_links", "items"], "badge"}
   ]
 
   @doc false
@@ -131,6 +142,11 @@ defmodule GamendWeb.HostLayouts do
     doc:
       "pass `false` when the page paints its own decorative icon layer, as `GamendWeb.PresentationPage` does — otherwise the shell adds a second one on top"
 
+  attr :nav_key, :any,
+    default: nil,
+    doc:
+      "a value the navbar shows that the page itself changes, such as a coin balance a `{Module.fun}` nav label reads: the navbar re-renders when it moves. Without it the navbar keeps what it showed at the first render"
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -166,7 +182,9 @@ defmodule GamendWeb.HostLayouts do
   def resolve_theme(locale, assigned_theme) when map_size(assigned_theme) == 0 do
     base = fetch_theme(locale)
     settings = host_theme_settings()
-    fingerprint = :erlang.phash2({base, settings})
+    # The flags are in the fingerprint because `build_theme/4` drops the
+    # links they close: flipping one must not keep serving the old nav.
+    fingerprint = :erlang.phash2({base, settings, GamendWeb.Features.configured()})
     key = {__MODULE__, :resolved_theme, resolved_theme_locale(locale)}
 
     case :persistent_term.get(key, :miss) do
@@ -180,8 +198,20 @@ defmodule GamendWeb.HostLayouts do
     end
   end
 
+  # The common "overlay" is no overlay at all: `OnMount.Theme` assigns the
+  # resolved theme itself, and LiveView hands that assign back to the root
+  # layout and to `prepare_app_assigns/1`, which used to rebuild it — every
+  # string of the config translated again, ~400 gettext calls per LiveView
+  # page. The pinned match is cheap when it holds: both sides are the same
+  # `:persistent_term` literal, and term comparison checks identity first.
   def resolve_theme(locale, assigned_theme) do
-    build_theme(fetch_theme(locale), host_theme_settings(), assigned_theme, locale)
+    case resolve_theme(locale, %{}) do
+      ^assigned_theme = theme ->
+        theme
+
+      _ ->
+        build_theme(fetch_theme(locale), host_theme_settings(), assigned_theme, locale)
+    end
   end
 
   # `translate_theme/2` falls back to the process locale when it is not handed
@@ -204,6 +234,7 @@ defmodule GamendWeb.HostLayouts do
         if(missing?, do: "Add host theme config or set GAMEND_CONTENT_THEME_CONFIG")
     )
     |> then(&Map.merge(host_theme_settings, &1))
+    |> GamendWeb.Features.drop_disabled()
     |> translate_theme(locale)
   end
 
@@ -318,11 +349,15 @@ defmodule GamendWeb.HostLayouts do
       |> translate_map_field("text")
       |> update_map_at_path(["image"], &translate_map_field(&1, "alt"))
       |> translate_list_field_at_path(["buttons"], "label")
+      |> translate_list_field_at_path(["buttons"], "badge")
     end)
     |> translate_list_field_at_path(["sections"], "title")
     |> translate_list_field_at_path(["sections"], "text")
     |> translate_list_field_at_path(["sections", "buttons"], "label")
+    |> translate_list_field_at_path(["sections", "buttons"], "badge")
     |> translate_list_field_at_path(["sections", "links"], "label")
+    |> translate_list_field_at_path(["sections", "faq"], "question")
+    |> translate_list_field_at_path(["sections", "faq"], "answer")
     |> update_list_at_path(["sections"], fn section ->
       update_map_at_path(section, ["image"], &translate_map_field(&1, "alt"))
     end)
@@ -419,13 +454,16 @@ defmodule GamendWeb.HostLayouts do
   # the life of one render: the locale belongs to the process, the theme config
   # is global and only re-read on deploy, and `:current_path` is kept in step
   # by the `:set_current_path` hook in `GamendWeb.UserAuth`, so a `push_patch`
-  # to another URL does change the nav highlight.
+  # to another URL does change the nav highlight. The one thing that can is
+  # what a `{Module.fun}` nav label reads (a coin balance a hint spends): the
+  # page passes it as `:nav_key`.
   @shell_assign_inputs [
     :background_icons,
     :conn,
     :current_path,
     :current_scope,
     :flush,
+    :nav_key,
     :theme,
     :wide
   ]
@@ -548,22 +586,26 @@ defmodule GamendWeb.HostLayouts do
   # function component, so it only ever sees the attrs a template passes it —
   # a conn assign set by the PageMeta plug would never arrive. Deriving from
   # `current_path` means every page gets a trail without touching a single
-  # template, LiveViews included.
+  # template, LiveViews included. An admin page the provider has no trail for
+  # gets core's (`GamendWeb.AdminBreadcrumbs`).
   defp breadcrumbs_for(current_path, locale) do
-    case Application.get_env(:gamend_web, :page_meta_provider) do
-      nil ->
-        []
+    path = breadcrumb_path(current_path)
 
-      module ->
-        if Code.ensure_loaded?(module) and function_exported?(module, :breadcrumbs, 1) do
-          current_path
-          |> breadcrumb_path()
-          |> module.breadcrumbs()
-          |> Enum.map(fn {label, path} -> {label, localized_href(path, locale)} end)
-        else
-          []
-        end
-    end
+    trail =
+      case provider_breadcrumbs(path) do
+        [] -> GamendWeb.AdminBreadcrumbs.trail(path)
+        trail -> trail
+      end
+
+    Enum.map(trail, fn {label, href} -> {label, localized_href(href, locale)} end)
+  end
+
+  defp provider_breadcrumbs(path) do
+    module = Application.get_env(:gamend_web, :page_meta_provider)
+
+    if module && Code.ensure_loaded?(module) && function_exported?(module, :breadcrumbs, 1),
+      do: module.breadcrumbs(path),
+      else: []
   end
 
   # The plug's path is authoritative: it is already locale-stripped, and it is
@@ -666,6 +708,24 @@ defmodule GamendWeb.HostLayouts do
     navigation_config(resolve_theme(locale), resolve_theme("en"))
   end
 
+  @doc """
+  The navbar's icon for the link to `href` (a primary, signed-in or account
+  link, or one in a group), else `fallback`: the mark a page's title wears
+  (`page_title/1`'s `icon`), so `/quests` is drawn with the icon its link
+  has in this host's navbar. `href` is the configured one, with no locale
+  prefix.
+  """
+  @spec nav_icon(String.t(), String.t() | nil) :: String.t() | nil
+  def nav_icon(href, fallback \\ nil) when is_binary(href) do
+    navigation()
+    |> Map.values()
+    |> Enum.concat()
+    |> Enum.flat_map(&[&1 | List.wrap(&1["items"])])
+    |> Enum.find_value(fallback, fn link ->
+      link["href"] == href and is_binary(link["icon"]) and link["icon"]
+    end)
+  end
+
   defp navigation_config(provider_theme, en_theme) do
     provider_navigation = Map.get(provider_theme, "navigation") || %{}
     en_navigation = Map.get(en_theme, "navigation") || %{}
@@ -720,7 +780,8 @@ defmodule GamendWeb.HostLayouts do
       %{
         "label" => translate("Play"),
         "href" => "/play",
-        "icon" => "hero-play-solid"
+        "icon" => "hero-play-solid",
+        "feature" => "play"
       },
       %{
         "label" => translate("Social"),
@@ -739,16 +800,19 @@ defmodule GamendWeb.HostLayouts do
           %{
             "label" => translate("Tournaments"),
             "href" => "/tournaments",
-            "icon" => "hero-bolt-solid"
+            "icon" => "hero-bolt-solid",
+            "feature" => "web_tournaments"
           },
           %{
             "label" => translate("Groups"),
             "href" => "/groups",
-            "icon" => "hero-user-group-solid"
+            "icon" => "hero-user-group-solid",
+            "feature" => "web_groups"
           }
         ]
       }
     ]
+    |> GamendWeb.Features.drop_disabled()
   end
 
   defp default_account_nav_links do

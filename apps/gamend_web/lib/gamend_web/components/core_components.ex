@@ -29,6 +29,7 @@ defmodule GamendWeb.CoreComponents do
   use Phoenix.Component
   use Gettext, backend: GamendWeb.Gettext
 
+  alias Gamend.Accounts.User
   alias Gamend.Captcha
   alias Gamend.OAuth.Providers
   alias Phoenix.Component
@@ -131,7 +132,7 @@ defmodule GamendWeb.CoreComponents do
     ~H"""
     <img
       :if={@code}
-      src={"/flags/#{@code}.svg"}
+      src={flag_src(@code)}
       alt=""
       aria-hidden="true"
       loading={if(@eager or @priority, do: "eager", else: "lazy")}
@@ -151,11 +152,51 @@ defmodule GamendWeb.CoreComponents do
   # url and start a rule of its own. Every real code is an ISO alpha-2 or a
   # dashed subdivision ("sh-ac", "es-ga"), so anything else simply renders
   # nothing rather than a URL built from it.
-  defp flag_url(code) when is_binary(code) do
-    if code =~ ~r/\A[a-z0-9-]{2,6}\z/, do: "/flags/#{code}.svg"
+  defp flag_url(code) when is_binary(code) and byte_size(code) in 2..6 do
+    if flag_code?(code), do: flag_src(code)
   end
 
   defp flag_url(_code), do: nil
+
+  # `[a-z0-9-]+`, byte by byte: a regex here ran for every flag on every
+  # page (the language menus draw ~160), about 2.5 times the cost.
+  defp flag_code?(<<c, rest::binary>>) when c in ?a..?z or c in ?0..?9 or c == ?-,
+    do: flag_code?(rest)
+
+  defp flag_code?(<<>>), do: true
+  defp flag_code?(_), do: false
+
+  # The WebP a host wrote beside a flag's SVG where it is the smaller file
+  # (the reference host's `mix host.flag_rasters`: a flag with a coat of arms
+  # is ~50 KB of SVG and 6 ms to draw, ~1.5 KB and 0.1 ms as a 120x90 WebP),
+  # else the SVG. Which codes have one is read from the host's
+  # `priv/static/flags` once and kept, like the rest of the static files.
+  defp flag_src(code) do
+    if MapSet.member?(raster_flags(), code),
+      do: "/flags/#{code}.webp",
+      else: "/flags/#{code}.svg"
+  end
+
+  defp raster_flags do
+    case :persistent_term.get({__MODULE__, :raster_flags}, nil) do
+      nil ->
+        flags = load_raster_flags()
+        :persistent_term.put({__MODULE__, :raster_flags}, flags)
+        flags
+
+      flags ->
+        flags
+    end
+  end
+
+  defp load_raster_flags do
+    GamendWeb.host_app()
+    |> Application.app_dir("priv/static/flags")
+    |> Path.join("*.webp")
+    |> Path.wildcard()
+    |> Enum.reject(&Regex.match?(~r/-[0-9a-f]{32}\.webp$/, &1))
+    |> MapSet.new(&Path.basename(&1, ".webp"))
+  end
 
   @doc """
   Renders flash notices.
@@ -283,6 +324,15 @@ defmodule GamendWeb.CoreComponents do
 
   attr :tag, :string, default: "h1"
   attr :class, :any, default: nil, doc: "layout only (`flex items-center gap-3`), never a size"
+
+  attr :icon, :string,
+    default: nil,
+    doc: "a `hero-*` mark before the words (`title_icon/1`): the page's navbar icon"
+
+  attr :icon_class, :string,
+    default: nil,
+    doc: "on the mark, layout only: `max-sm:hidden` where a switcher shares a phone's row"
+
   attr :rest, :global
   slot :inner_block, required: true
 
@@ -291,16 +341,43 @@ defmodule GamendWeb.CoreComponents do
   step smaller on a phone so a heading row with a Back button and a switcher
   still fits one line. `header/1` draws it; a page that builds its own
   heading row uses this rather than restating the classes.
+
+  `icon` is the page's mark beside its words (2026-10-16): the one its link
+  in the navbar wears (`GamendWeb.HostLayouts.nav_icon/2`), so a reader
+  sees where they are by the same picture.
   """
   def page_title(assigns) do
     ~H"""
     <.dynamic_tag
       tag_name={@tag}
-      class={["text-3xl font-black text-base-content/95 sm:text-4xl", @class]}
+      class={[
+        "text-3xl font-black text-base-content sm:text-4xl",
+        @icon && "flex min-w-0 items-center gap-3",
+        @class
+      ]}
       {@rest}
     >
-      {render_slot(@inner_block)}
+      <%= if @icon do %>
+        <.title_icon name={@icon} class={@icon_class} />
+        <span class="min-w-0 break-words">{render_slot(@inner_block)}</span>
+      <% else %>
+        {render_slot(@inner_block)}
+      <% end %>
     </.dynamic_tag>
+    """
+  end
+
+  attr :name, :string, required: true, doc: "a `hero-*` icon"
+  attr :class, :string, default: nil, doc: "layout only"
+
+  @doc """
+  The mark beside a page's title, at the title's size and in the muted
+  text colour: `page_title/1` draws it from its `icon`; a heading whose
+  words are a switcher's button draws it beside them.
+  """
+  def title_icon(assigns) do
+    ~H"""
+    <.icon name={@name} class={"size-8 shrink-0 text-muted sm:size-9 #{@class}"} />
     """
   end
 
@@ -310,15 +387,22 @@ defmodule GamendWeb.CoreComponents do
   slot :inner_block, required: true
 
   @doc """
-  The small heading over a group: a panel's title, a list's name, a form
+  Every heading under a page's title: a section of the page (`tag="h2"`:
+  "Level", "Category", "Your tests"), a panel's title, a list's name, a form
   field's label on a dashboard. Small, uppercase, spaced and muted, the one
-  way the site says it.
+  way the site says it: a subtitle says less than the title, so a page never
+  draws one bigger (`text-xl font-black`) of its own.
+
+      <section class="space-y-2">
+        <.eyebrow tag="h2">Category</.eyebrow>
+        …
+      </section>
   """
   def eyebrow(assigns) do
     ~H"""
     <.dynamic_tag
       tag_name={@tag}
-      class={["text-xs font-semibold uppercase tracking-[0.2em] text-base-content/55", @class]}
+      class={["text-xs font-semibold uppercase tracking-[0.2em] text-muted", @class]}
       {@rest}
     >
       {render_slot(@inner_block)}
@@ -533,7 +617,7 @@ defmodule GamendWeb.CoreComponents do
           {@rest}
         />
       </label>
-      <p class="text-xs text-base-content/70 mt-1" data-local-zone-note></p>
+      <p class="text-xs text-muted mt-1" data-local-zone-note></p>
       <.error :for={msg <- @errors}>{msg}</.error>
     </div>
     """
@@ -726,7 +810,7 @@ defmodule GamendWeb.CoreComponents do
 
   @doc """
   Renders a page header: the `<h1>` in the one style every page title uses
-  (`text-4xl font-black text-base-content/95`), an optional subtitle and
+  (`text-4xl font-black text-base-content`), an optional subtitle and
   actions.
 
   The inner block IS the title text — pass words, an icon, a badge; never
@@ -739,10 +823,15 @@ defmodule GamendWeb.CoreComponents do
   every page stays the same size without each caller restating it.
   """
   attr :class, :any, default: nil, doc: "extra classes on the <h1>"
+  attr :icon, :string, default: nil, doc: "the title's mark (`page_title/1`'s `icon`)"
 
   attr :back, :string,
     default: nil,
-    doc: "path to go up to; renders a Back button on the title's own line"
+    doc: "live path to go up to; renders a Back button on the title's own line"
+
+  attr :back_href, :string,
+    default: nil,
+    doc: "the same for a plain page (`home_path/0`), followed with a full load"
 
   attr :back_label, :string, default: nil, doc: ~s(overrides the "Back" wording)
   slot :inner_block, required: true
@@ -755,15 +844,14 @@ defmodule GamendWeb.CoreComponents do
       <div>
         <%!-- The back button sits ON the title line, not above it as a stray
               text link: one place, one shape, on every page that has a parent. --%>
-        <div :if={@back} class="flex flex-wrap items-center gap-3">
-          <.link navigate={@back} class="btn btn-surface btn-sm">
-            <.icon name="hero-arrow-left-solid" class="size-4" />
-            {@back_label || gettext("Back")}
-          </.link>
-          <.page_title class={@class}>{render_slot(@inner_block)}</.page_title>
+        <div :if={@back || @back_href} class="flex flex-wrap items-center gap-3">
+          <.back_link navigate={@back} href={@back_href} label={@back_label} />
+          <.page_title class={@class} icon={@icon}>{render_slot(@inner_block)}</.page_title>
         </div>
-        <.page_title :if={!@back} class={@class}>{render_slot(@inner_block)}</.page_title>
-        <p :if={@subtitle != []} class="mt-1 text-sm text-base-content/70">
+        <.page_title :if={!(@back || @back_href)} class={@class} icon={@icon}>
+          {render_slot(@inner_block)}
+        </.page_title>
+        <p :if={@subtitle != []} class="mt-1 text-sm text-muted">
           {render_slot(@subtitle)}
         </p>
       </div>
@@ -771,6 +859,52 @@ defmodule GamendWeb.CoreComponents do
     </header>
     """
   end
+
+  attr :href, :string, default: nil, doc: "a plain page"
+  attr :navigate, :string, default: nil, doc: "a live route"
+  attr :label, :string, default: nil, doc: ~s(overrides the "Back" wording)
+  attr :class, :any, default: "btn btn-ghost btn-sm max-sm:btn-circle sm:btn-surface"
+
+  @doc """
+  The Back button. Every page under home has one at the start of its title
+  row, its link one step up the page's own trail (the page one step under
+  home pointing at `home_path/0`). A click goes back to the page the reader
+  came from instead, when they came by a click inside the site
+  (`back_link.js`, on `data-back`): from a finished round's results, Back is
+  the round, not the progress page. Arriving from elsewhere, in a new tab or
+  in another language, it follows the link.
+
+  The word from `sm` up; a phone gets the arrow alone, which is the whole
+  meaning, and the room goes to the heading. `sr-only`, not `hidden`, so it
+  stays the link's name. The arrow is mirrored in a right-to-left locale
+  rather than swapped for another icon.
+
+  Pass `navigate` for a live route and `href` for a plain page; a LiveView
+  that sends `navigate` at a dead route breaks on the way out.
+  """
+  def back_link(assigns) do
+    ~H"""
+    <.link
+      navigate={@navigate}
+      href={@href}
+      class={@class}
+      title={@label || gettext("Back")}
+      data-back
+    >
+      <.icon name="hero-arrow-left-solid" class="size-4 rtl:-scale-x-100" />
+      <span class="sr-only sm:not-sr-only">{@label || gettext("Back")}</span>
+    </.link>
+    """
+  end
+
+  @doc """
+  The home page in the reader's locale (`/de`, `/` in the default one):
+  where Back goes on a page one step under it. A plain page, so pass it to
+  `back_link/1` as `href`.
+  """
+  @spec home_path() :: String.t()
+  def home_path,
+    do: GamendWeb.HostLayouts.localized_href("/", GamendWeb.HostLayouts.current_locale())
 
   @doc """
   Renders a table with generic styling.
@@ -911,7 +1045,15 @@ defmodule GamendWeb.CoreComponents do
 
   With `navigate` the card is a `<.link>`; without it a `<div>`, and any
   `phx-click`/`title` in `rest` lands on it. `class` appends to the wrapper —
-  state borders (`border-success`), `cursor-pointer`, and the like.
+  state borders (`border-success`) and the like.
+
+  With `href` the card is a `<div>` whose title is a link stretched over the
+  whole card (`after:inset-0`), so a click anywhere follows it while the card
+  still holds buttons of its own, which a link cannot. A button meant to be
+  pressed instead sits above the stretch with `relative z-10`.
+
+  A card that does something on a click (`navigate`, `href` or a
+  `phx-click`) rises a little on hover; one that does nothing stays still.
   """
   attr :title, :string, required: true
   attr :icon_url, :string, default: nil
@@ -923,6 +1065,7 @@ defmodule GamendWeb.CoreComponents do
 
   attr :description, :string, default: nil
   attr :navigate, :string, default: nil
+  attr :href, :string, default: nil
   attr :class, :any, default: nil
   attr :rest, :global
 
@@ -931,41 +1074,66 @@ defmodule GamendWeb.CoreComponents do
 
   def entity_card(%{navigate: navigate} = assigns) when is_binary(navigate) do
     ~H"""
-    <.link navigate={@navigate} class={[card_classes(), "cursor-pointer", @class]} {@rest}>
+    <.link navigate={@navigate} class={[card_classes(), clickable_classes(), @class]} {@rest}>
       {render_slot_card_body(assigns)}
     </.link>
     """
   end
 
   def entity_card(assigns) do
+    assigns =
+      assign(
+        assigns,
+        :clickable?,
+        is_binary(assigns.href) or assigns.rest[:"phx-click"] not in [nil, false]
+      )
+
     ~H"""
-    <div class={[card_classes(), @class]} {@rest}>
+    <div
+      class={[card_classes(), @href && "relative", @clickable? && clickable_classes(), @class]}
+      {@rest}
+    >
       {render_slot_card_body(assigns)}
     </div>
     """
   end
 
-  defp card_classes, do: "card bg-base-200 hover:bg-base-300 transition-colors"
+  defp card_classes, do: "card bg-base-200 transition"
+
+  defp clickable_classes,
+    do: "cursor-pointer hover:bg-base-300 hover:shadow-md motion-safe:hover:-translate-y-0.5"
 
   defp render_slot_card_body(assigns) do
     ~H"""
     <div class="card-body">
       <div class="flex items-start justify-between">
-        <h3 class="card-title text-lg">
+        <%!-- `h2`: a list of these sits straight under the page's `h1`
+              (leaderboards, quests, groups), and an `h3` there skips a
+              level (axe `heading-order`). The look is the classes'. --%>
+        <h2 class="card-title text-lg">
           <.entity_icon
             icon_url={@icon_url}
             icon={@icon}
             type={@type}
-            class="w-6 h-6 shrink-0 text-base-content/60"
+            class="w-6 h-6 shrink-0 text-muted"
           />
-          {@title}
-        </h3>
+          <.link
+            :if={@href}
+            href={@href}
+            class="after:absolute after:inset-0 after:rounded-box focus:outline-none focus-visible:after:outline-2 focus-visible:after:outline-primary"
+          >
+            {@title}
+          </.link>
+          <%= if !@href do %>
+            {@title}
+          <% end %>
+        </h2>
         <div :if={@badges != []} class="flex flex-col items-end gap-1 shrink-0">
           {render_slot(@badges)}
         </div>
       </div>
 
-      <p :if={@description not in [nil, ""]} class="text-sm text-base-content/70 line-clamp-2">
+      <p :if={@description not in [nil, ""]} class="text-sm text-muted line-clamp-2">
         {@description}
       </p>
 
@@ -1083,9 +1251,9 @@ defmodule GamendWeb.CoreComponents do
       ]}
       {@rest}
     >
-      <.icon :if={@icon} name={@icon} class="mx-auto mb-3 size-12 text-base-content/40" />
+      <.icon :if={@icon} name={@icon} class="mx-auto mb-3 size-12 text-muted" />
       <p class={if @compact, do: "text-sm font-semibold", else: "font-bold"}>{@title}</p>
-      <p :if={@text} class="mt-1 text-sm text-base-content/70">{@text}</p>
+      <p :if={@text} class="mt-1 text-sm text-muted">{@text}</p>
       <div :if={@actions != []} class={["mt-3 flex flex-wrap gap-2", !@compact && "justify-center"]}>
         {render_slot(@actions)}
       </div>
@@ -1264,7 +1432,7 @@ defmodule GamendWeb.CoreComponents do
       >
         {gettext("Prev")}
       </button>
-      <div :if={@multi_page?} class="text-xs text-base-content/70">
+      <div :if={@multi_page?} class="text-xs text-muted">
         <%= if @total_count do %>
           {@page} / {@total_pages} ({@total_count})
         <% else %>
@@ -1347,7 +1515,7 @@ defmodule GamendWeb.CoreComponents do
   host that changes where the title lives changes one config key.
   """
   attr :user, :any, required: true
-  attr :class, :string, default: "text-xs text-base-content/60"
+  attr :class, :string, default: "text-xs text-muted"
 
   def user_title(assigns) do
     assigns = assign(assigns, :title, user_title_text(assigns.user))
@@ -1375,34 +1543,34 @@ defmodule GamendWeb.CoreComponents do
   defp user_metadata(_), do: nil
 
   @doc """
-  A user's avatar as a round image when they have one (`profile_url`), falling
-  back to the generic person icon. Pass `class` for sizing, e.g. `"w-5 h-5"`.
-  If the image URL fails to load (provider not ready yet, expired CDN link,
-  rate-limited avatar CDN), `assets/js/avatar_fallback.js` hides the broken
-  image and reveals the same icon. That lives in a real script rather than an
-  `onerror` attribute because the CSP here has no `script-src 'unsafe-inline'`,
-  so an inline handler is refused and the fallback would never fire.
+  A user's avatar as a round image when they have one we host
+  (`User.public_avatar_url/1`), falling back to the generic person icon. A
+  provider's URL is never drawn: it would send the viewer's IP to that provider,
+  so an avatar not yet mirrored shows the icon. Pass `class` for sizing, e.g.
+  `"w-5 h-5"`. If the image fails to load (an object gone from storage),
+  `assets/js/avatar_fallback.js` hides the broken image and reveals the same
+  icon. That lives in a real script rather than an `onerror` attribute because
+  the CSP here has no `script-src 'unsafe-inline'`, so an inline handler is
+  refused and the fallback would never fire.
 
   `crossorigin="anonymous"` is load-bearing, not decoration: `/play` and
   `/game/*` are served cross-origin isolated for Godot's `SharedArrayBuffer`
   (see `GamendWeb.Plugs.GameHeaders`), and under
   `Cross-Origin-Embedder-Policy: require-corp` a cross-origin subresource is
   blocked unless it either sends `Cross-Origin-Resource-Policy` or is fetched in
-  CORS mode. OAuth avatar CDNs (Google, Discord, Steam, Gravatar) send no CORP
-  header but do send `Access-Control-Allow-Origin: *`, so asking for CORS mode
-  is what makes them load on those pages. Same-origin and object-storage avatars
-  are unaffected — buckets already need CORS for the presigned upload flow.
+  CORS mode. A bucket or CDN on another origin (`storage.public_url`) is that
+  case; it already sends CORS for the presigned upload flow. Same-origin
+  avatars are unaffected.
   """
   attr :user, :any, default: nil
   attr :class, :string, default: "w-6 h-6"
 
   def user_avatar(assigns) do
-    assigns = assign(assigns, :avatar_url, avatar_url(assigns.user))
+    assigns = assign(assigns, :avatar_url, User.public_avatar_url(assigns.user))
 
     ~H"""
-    <%!-- no-referrer: Google's avatar CDN (lh3) rate-limits requests carrying
-          an unrecognized Referer far more aggressively — localhost dev hits
-          429s within a few reloads. Without the header it serves normally. --%>
+    <%!-- no-referrer: a storage CDN on another origin has no need to learn
+          which page showed the avatar. --%>
     <img
       :if={@avatar_url}
       src={@avatar_url}
@@ -1416,7 +1584,4 @@ defmodule GamendWeb.CoreComponents do
     <.icon :if={!@avatar_url} name="hero-user-circle-solid" class={@class} />
     """
   end
-
-  defp avatar_url(%{profile_url: url}) when is_binary(url) and url != "", do: url
-  defp avatar_url(_), do: nil
 end

@@ -17,7 +17,7 @@ defmodule Gamend.Lock do
     * **PostgreSQL** — `pg_advisory_xact_lock` inside the transaction, taken
       after a node-local mutex so a node's own waiters queue in the BEAM rather
       than each holding a pooled connection while blocked.
-    * **SQLite** — `Gamend.Lock.Local`, a `:global` mutex taken *around* the
+    * **SQLite** — `Gamend.Lock.Local`, a keyed mutex taken *around* the
       transaction, since SQLite has no advisory locks and its single-writer rule
       covers neither a read-modify-write across statements nor a critical
       section that never touches the database.

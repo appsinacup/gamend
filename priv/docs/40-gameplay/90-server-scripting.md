@@ -406,6 +406,7 @@ change is committed and its return value is ignored.
 | Parties | `before_party_create` `before_party_join` `before_party_kick` `before_party_update` | `after_party_create` `after_party_disband` `after_party_join` `after_party_kick` `after_party_leave` `after_party_updated` |
 | Groups | `before_group_create` `before_group_delete` `before_group_join` `before_group_kick` `before_group_update` | `after_group_create` `after_group_deleted` `after_group_join` `after_group_kick` `after_group_leave` `after_group_updated` |
 | Chat | `before_chat_message` | `after_chat_message` `after_chat_message_reported` `after_user_muted` |
+| Reports | `before_report_create` | `after_report_created` `after_report_resolved` |
 | Quests | `before_quest_claim` | `after_quest_claimed` `after_quest_completed` |
 | Matchmaking | `before_matchmaking_join` | `after_matchmaking_cancel` `after_matchmaking_join` `after_matchmaking_matched` |
 | Ready checks | `before_ready_check_open` | `after_ready_check_failed` `after_ready_check_passed` |

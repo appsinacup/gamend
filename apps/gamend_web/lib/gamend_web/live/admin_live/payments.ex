@@ -37,7 +37,7 @@ defmodule GamendWeb.AdminLive.Payments do
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 class="text-3xl font-bold">Payments</h1>
-            <p class="mt-1 text-sm text-base-content/70">
+            <p class="mt-1 text-sm text-muted">
               Payment configuration, catalog, purchases, entitlements, and provider events.
             </p>
           </div>
@@ -71,10 +71,10 @@ defmodule GamendWeb.AdminLive.Payments do
                 <div :for={adapter <- @store_adapters} class="flex items-center justify-between gap-3">
                   <div>
                     <div class="font-semibold capitalize">{adapter.provider}</div>
-                    <div class="font-mono text-xs text-base-content/60">
+                    <div class="font-mono text-xs text-muted">
                       {inspect(adapter.module)}
                     </div>
-                    <div class="mt-1 text-xs text-base-content/70">
+                    <div class="mt-1 text-xs text-muted">
                       {adapter_status_summary(adapter.status)}
                     </div>
                   </div>
@@ -93,7 +93,7 @@ defmodule GamendWeb.AdminLive.Payments do
                     </span>
                   </div>
                 </div>
-                <div class="text-xs text-base-content/60">
+                <div class="text-xs text-muted">
                   Provider secrets and exact environment variables live in Admin > Config.
                 </div>
               </div>
@@ -212,7 +212,7 @@ defmodule GamendWeb.AdminLive.Payments do
                     <td class="font-mono text-xs break-all">{pp.external_id}</td>
                     <td>
                       <div class="font-mono text-xs">{pp.product && pp.product.sku}</div>
-                      <div class="text-xs text-base-content/60">#{pp.product_id}</div>
+                      <div class="text-xs text-muted">#{pp.product_id}</div>
                     </td>
                     <td class="font-mono text-xs">{format_amount(pp.unit_amount, pp.currency)}</td>
                     <td>{active_badge(pp.active)}</td>
@@ -287,6 +287,16 @@ defmodule GamendWeb.AdminLive.Payments do
                         class="btn btn-xs btn-outline btn-primary"
                       >
                         Reconcile Stripe
+                      </button>
+                      <button
+                        :if={Payments.admin_stripe_refundable?(p)}
+                        type="button"
+                        phx-click="refund_stripe_purchase"
+                        phx-value-id={p.id}
+                        data-confirm="Refund this purchase in full? A subscription is cancelled now. The webhook revokes what it bought."
+                        class="btn btn-xs btn-outline btn-warning"
+                      >
+                        Refund
                       </button>
                     </td>
                   </tr>
@@ -711,6 +721,22 @@ defmodule GamendWeb.AdminLive.Payments do
         {:noreply,
          socket
          |> put_flash(:error, "Stripe reconcile failed: #{admin_error(reason)}")
+         |> reload_all()}
+    end
+  end
+
+  def handle_event("refund_stripe_purchase", %{"id" => id}, socket) do
+    case Payments.admin_refund_stripe_purchase(parse_id(id)) do
+      {:ok, %{refund: refund}} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Stripe refund #{refund["id"]} created (#{refund["status"]})")
+         |> reload_all()}
+
+      {:error, reason} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Stripe refund failed: #{admin_error(reason)}")
          |> reload_all()}
     end
   end

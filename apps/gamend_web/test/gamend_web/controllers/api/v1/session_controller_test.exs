@@ -292,7 +292,7 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
   end
 
   defmodule FailNotifier do
-    def deliver_confirmation_instructions(_user, _url), do: {:error, :smtp_failed}
+    def deliver_confirmation_instructions(_user, _url, _code), do: {:error, :smtp_failed}
   end
 
   defmodule RefuseRegisterHooks do
@@ -302,6 +302,27 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
     def before_user_register(_user, _attrs), do: {:error, "closed beta"}
   end
 
+  # Sends the queued confirmation email; answers the code in it.
+  defp emailed_code(email) do
+    assert %{success: _} = Oban.drain_queue(queue: :mailers)
+    assert_received {:email, %Swoosh.Email{to: [{_, ^email}], text_body: body}}
+    [_, code] = Regex.run(~r/^\s*(\d{6})\s*$/m, body)
+    code
+  end
+
+  defp register_and_get_code(email) do
+    assert json_response(post(build_conn(), "/api/v1/register", %{email: email}), 201)
+    emailed_code(email)
+  end
+
+  defp confirm(email, code, password \\ @valid_password) do
+    post(build_conn(), "/api/v1/register/confirm", %{
+      email: email,
+      code: code,
+      password: password
+    })
+  end
+
   describe "POST /api/v1/register" do
     setup do
       accounts = Application.get_env(:gamend_core, Gamend.Accounts, [])
@@ -309,63 +330,43 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       :ok
     end
 
-    test "creates an account without signing it in; its password logs in once confirmed", %{
-      conn: conn
-    } do
-      created =
-        post(conn, "/api/v1/register", %{email: "new@example.com", password: @valid_password})
+    test "creates an account without signing it in", %{conn: conn} do
+      created = post(conn, "/api/v1/register", %{email: "new@example.com"})
 
       assert %{"data" => %{"user_id" => user_id, "email_confirmed" => false} = data} =
                json_response(created, 201)
 
       refute Map.has_key?(data, "access_token")
       refute Map.has_key?(data, "refresh_token")
-
-      login = fn ->
-        post(build_conn(), "/api/v1/login", %{email: "new@example.com", password: @valid_password})
-      end
-
-      assert json_response(login.(), 403)["error"] == "email_not_confirmed"
-
-      {:ok, _} = Gamend.Accounts.confirm_user(Repo.get!(User, user_id))
-
-      assert json_response(login.(), 200)["data"]["user_id"] == user_id
+      refute Repo.get!(User, user_id).hashed_password
     end
 
-    test "the first account is the admin, confirmed, and logs in at once", %{
+    test "the first account is the admin, and confirms by email like any other", %{
       conn: conn,
       user: user
     } do
       Repo.delete!(user)
 
-      created =
-        post(conn, "/api/v1/register", %{email: "first@example.com", password: @valid_password})
+      created = post(conn, "/api/v1/register", %{email: "first@example.com"})
 
-      assert %{"data" => %{"user_id" => user_id, "email_confirmed" => true} = data} =
+      assert %{"data" => %{"user_id" => user_id, "email_confirmed" => false}} =
                json_response(created, 201)
 
-      refute Map.has_key?(data, "access_token")
       assert %User{is_admin: true} = Repo.get(User, user_id)
-      refute_enqueued(worker: Gamend.Accounts.ConfirmationMailer)
-
-      login =
-        post(build_conn(), "/api/v1/login", %{
-          email: "first@example.com",
-          password: @valid_password
-        })
-
-      assert json_response(login, 200)["data"]["user_id"] == user_id
+      code = emailed_code("first@example.com")
+      assert json_response(confirm("first@example.com", code), 200)["data"]["user_id"] == user_id
     end
 
-    test "queues the confirmation email, as browser sign-up does", %{conn: conn} do
-      post(conn, "/api/v1/register", %{email: "mailed@example.com", password: @valid_password})
+    test "emails a link and a code, as browser sign-up does", %{conn: conn} do
+      post(conn, "/api/v1/register", %{email: "mailed@example.com"})
 
       assert %{success: 1} = Oban.drain_queue(queue: :mailers)
 
-      Swoosh.TestAssertions.assert_email_sent(
-        to: "mailed@example.com",
-        subject: "Confirmation instructions"
-      )
+      assert_received {:email,
+                       %Swoosh.Email{subject: "Confirmation instructions", text_body: body}}
+
+      assert body =~ "/users/confirm/"
+      assert body =~ ~r/^\s*\d{6}\s*$/m
     end
 
     test "answers without waiting for the email; a failed send keeps the account", %{conn: conn} do
@@ -378,8 +379,7 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
           else: Application.delete_env(:gamend_web, :user_notifier)
       end)
 
-      created =
-        post(conn, "/api/v1/register", %{email: "bounced@example.com", password: @valid_password})
+      created = post(conn, "/api/v1/register", %{email: "bounced@example.com"})
 
       assert json_response(created, 201)
       assert [job] = all_enqueued(worker: Gamend.Accounts.ConfirmationMailer)
@@ -392,8 +392,7 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       Application.put_env(:gamend_core, :hooks_module, __MODULE__.RefuseRegisterHooks)
       on_exit(fn -> Application.put_env(:gamend_core, :hooks_module, hooks) end)
 
-      refused =
-        post(conn, "/api/v1/register", %{email: "beta@example.com", password: @valid_password})
+      refused = post(conn, "/api/v1/register", %{email: "beta@example.com"})
 
       assert %{"error" => "registration_refused", "message" => "closed beta"} =
                json_response(refused, 403)
@@ -402,54 +401,131 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
     end
 
     test "keeps a username the caller picked", %{conn: conn} do
-      created =
-        post(conn, "/api/v1/register", %{
-          email: "named@example.com",
-          password: @valid_password,
-          username: "quail"
-        })
+      created = post(conn, "/api/v1/register", %{email: "named@example.com", username: "quail"})
 
       assert json_response(created, 201)["data"]["username"] == "quail"
     end
 
     test "answers 409 for an email already taken", %{conn: conn} do
-      taken = post(conn, "/api/v1/register", %{email: @valid_email, password: @valid_password})
+      taken = post(conn, "/api/v1/register", %{email: @valid_email})
 
       assert %{"error" => "validation_failed", "errors" => %{"email" => _}} =
                json_response(taken, 409)
     end
 
-    test "answers 422 for a password too short", %{conn: conn} do
-      short = post(conn, "/api/v1/register", %{email: "short@example.com", password: "x"})
-
-      assert %{"errors" => %{"password" => _}} = json_response(short, 422)
-    end
-
-    test "answers 400 without a password", %{conn: conn} do
-      missing = post(conn, "/api/v1/register", %{email: "nopass@example.com"})
+    test "answers 400 without an email", %{conn: conn} do
+      missing = post(conn, "/api/v1/register", %{password: @valid_password})
 
       assert json_response(missing, 400)["error"] == "missing_param"
     end
 
-    test "keeps an account awaiting activation but signs nobody in", %{conn: conn} do
+    test "keeps an account awaiting activation but signs nobody in" do
       put_accounts_setting(:require_activation, true)
 
-      pending =
-        post(conn, "/api/v1/register", %{email: "beta@example.com", password: @valid_password})
-
-      assert json_response(pending, 201)["data"]["email_confirmed"] == false
-      assert %User{is_activated: false} = user = Repo.get_by(User, email: "beta@example.com")
+      code = register_and_get_code("beta@example.com")
+      assert %User{is_activated: false} = Repo.get_by(User, email: "beta@example.com")
 
       # Confirming the email is not activation: that stays an admin's call.
-      {:ok, _} = Gamend.Accounts.confirm_user(user)
+      assert json_response(confirm("beta@example.com", code), 403)["error"] ==
+               "account_not_activated"
+
+      assert %User{confirmed_at: %DateTime{}} = Repo.get_by(User, email: "beta@example.com")
+    end
+  end
+
+  describe "POST /api/v1/register/confirm" do
+    setup do
+      accounts = Application.get_env(:gamend_core, Gamend.Accounts, [])
+      on_exit(fn -> Application.put_env(:gamend_core, Gamend.Accounts, accounts) end)
+      :ok
+    end
+
+    test "confirms with the emailed code, sets the password and signs in" do
+      code = register_and_get_code("coded@example.com")
+
+      assert %{"data" => %{"access_token" => _, "refresh_token" => _, "user_id" => user_id}} =
+               json_response(confirm("coded@example.com", code), 200)
+
+      assert %User{confirmed_at: %DateTime{}} = Repo.get!(User, user_id)
 
       login =
         post(build_conn(), "/api/v1/login", %{
-          email: "beta@example.com",
+          email: "coded@example.com",
           password: @valid_password
         })
 
-      assert json_response(login, 403)["error"] == "account_not_activated"
+      assert json_response(login, 200)["data"]["user_id"] == user_id
+
+      # Spent.
+      assert json_response(confirm("coded@example.com", code), 401)["error"] == "invalid_code"
+    end
+
+    test "a wrong code is 401 invalid_code" do
+      code = register_and_get_code("wrong@example.com")
+      wrong = if code == "123456", do: "654321", else: "123456"
+
+      assert json_response(confirm("wrong@example.com", wrong), 401)["error"] == "invalid_code"
+    end
+
+    test "a refused password is 422, and the code still works" do
+      code = register_and_get_code("weak@example.com")
+
+      assert %{"errors" => %{"password" => _}} =
+               json_response(confirm("weak@example.com", code, "x"), 422)
+
+      assert json_response(confirm("weak@example.com", code), 200)
+    end
+
+    test "the wrong code that locks the address is 429 with retry-after" do
+      put_accounts_setting(:lockout_attempts, 1)
+      code = register_and_get_code("locked@example.com")
+      wrong = if code == "123456", do: "654321", else: "123456"
+
+      locked = confirm("locked@example.com", wrong)
+
+      assert json_response(locked, 429)["error"] == "account_locked"
+      assert [_seconds] = get_resp_header(locked, "retry-after")
+    end
+
+    test "answers 400 without an email, a code or a password" do
+      missing = post(build_conn(), "/api/v1/register/confirm", %{email: "x@example.com"})
+
+      assert json_response(missing, 400)["error"] == "missing_param"
+    end
+  end
+
+  describe "POST /api/v1/register/resend" do
+    test "emails a new code; the newest one confirms" do
+      first = register_and_get_code("again@example.com")
+
+      # A minute after the first email, so it is not dropped as a repeat.
+      Repo.update_all(Oban.Job,
+        set: [inserted_at: DateTime.add(DateTime.utc_now(), -2, :minute)]
+      )
+
+      resent = post(build_conn(), "/api/v1/register/resend", %{email: "again@example.com"})
+      assert json_response(resent, 200) == %{"ok" => true}
+
+      code = emailed_code("again@example.com")
+
+      if code != first do
+        assert json_response(confirm("again@example.com", first), 401)
+      end
+
+      assert json_response(confirm("again@example.com", code), 200)
+    end
+
+    test "answers the same for an address with nothing to confirm" do
+      resent = post(build_conn(), "/api/v1/register/resend", %{email: "nobody@example.com"})
+
+      assert json_response(resent, 200) == %{"ok" => true}
+      refute_enqueued(worker: Gamend.Accounts.ConfirmationMailer)
+    end
+
+    test "answers 400 without an email" do
+      missing = post(build_conn(), "/api/v1/register/resend", %{})
+
+      assert json_response(missing, 400)["error"] == "missing_param"
     end
   end
 

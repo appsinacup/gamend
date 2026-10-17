@@ -17,7 +17,7 @@ msgstr "Καλώς όρισες"
 
 #. quests
 msgid "Log in for the first time."
-msgstr "Συνδεθείτε για πρώτη φορά."
+msgstr "Συνδέσου για πρώτη φορά."
 
 #. quests
 msgid "Daily check-in"
@@ -25,7 +25,7 @@ msgstr "Ημερήσια είσοδος"
 
 #. quests
 msgid "Log in today."
-msgstr "Συνδεθείτε σήμερα."
+msgstr "Συνδέσου σήμερα."
 
 #. quests
 msgid "Weekly regular"
@@ -33,7 +33,7 @@ msgstr "Θαμώνας της εβδομάδας"
 
 #. quests
 msgid "Log in on five different days this week."
-msgstr "Συνδεθείτε πέντε διαφορετικές ημέρες αυτή την εβδομάδα."
+msgstr "Συνδέσου πέντε διαφορετικές ημέρες αυτή την εβδομάδα."
 
 #. quests
 msgid "Monthly devotee"
@@ -41,7 +41,7 @@ msgstr "Αφοσιωμένος του μήνα"
 
 #. quests
 msgid "Log in twenty times this month."
-msgstr "Συνδεθείτε είκοσι φορές αυτόν τον μήνα."
+msgstr "Συνδέσου είκοσι φορές αυτόν τον μήνα."
 
 #. quests
 msgid "Stop by again"
@@ -49,7 +49,7 @@ msgstr "Πέρνα ξανά"
 
 #. quests
 msgid "Log in. Becomes available again three days later."
-msgstr "Συνδεθείτε. Ξαναγίνεται διαθέσιμη σε τρεις ημέρες."
+msgstr "Συνδέσου. Ξαναγίνεται διαθέσιμη σε τρεις ημέρες."
 
 #. quests
 msgid "Loyal veteran"
@@ -57,7 +57,7 @@ msgstr "Πιστός βετεράνος"
 
 #. quests
 msgid "Log in fifty times, once you have said hello."
-msgstr "Συνδεθείτε πενήντα φορές, αφού πρώτα πείτε ένα γεια."
+msgstr "Συνδέσου πενήντα φορές, αφού πρώτα πεις ένα γεια."
 
 #. quests
 msgid "Night owl"
@@ -89,4 +89,5 @@ msgstr "Εβδομαδιαίο Κύπελλο"
 
 #. tournaments
 msgid "Register any time; the bracket is drawn every Monday."
-msgstr "Δηλώστε συμμετοχή όποτε θέλετε· η κλήρωση γίνεται κάθε Δευτέρα."
+
+msgstr "Δήλωσε συμμετοχή όποτε θέλεις· η κλήρωση γίνεται κάθε Δευτέρα."

@@ -179,7 +179,12 @@ defmodule Gamend.Accounts.UserNotifier do
     """)
   end
 
-  def deliver_confirmation_instructions(user, url) do
+  @doc """
+  Deliver the email that confirms an account: a link, and with `code` the
+  same confirmation as six digits to type into the game. A magic link sent to
+  an account not yet confirmed comes here too, with no code.
+  """
+  def deliver_confirmation_instructions(user, url, code \\ nil) do
     deliver(user.email, "Confirmation instructions", """
 
     ==============================
@@ -189,11 +194,22 @@ defmodule Gamend.Accounts.UserNotifier do
     You can confirm your account by visiting the URL below:
 
     #{url}
-
+    #{code_instructions(code)}
     If you didn't create an account with us, please ignore this.
 
     ==============================
     """)
+  end
+
+  defp code_instructions(nil), do: ""
+
+  defp code_instructions(code) do
+    """
+
+    Or enter this code in the game, where you also choose your password:
+
+    #{code}
+    """
   end
 
   @doc """

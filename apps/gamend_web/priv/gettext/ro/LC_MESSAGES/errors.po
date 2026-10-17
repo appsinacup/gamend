@@ -88,7 +88,7 @@ msgstr "trebuie să fie egal cu %{number}"
 #: lib/gamend_web/i18n/errors_catalog.ex:18
 #, elixir-autogen, elixir-format
 msgid "cannot friend yourself"
-msgstr "nu vă puteți adăuga pe voi ca prieten"
+msgstr "nu te poți adăuga ca prieten"
 
 #: lib/gamend_web/i18n/errors_catalog.ex:19
 #, elixir-autogen, elixir-format

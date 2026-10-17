@@ -84,7 +84,7 @@ defmodule GamendWeb.AdminLive.Translations do
                   >
                   </div>
                 </div>
-                <div class="text-xs text-base-content/60 mt-1">
+                <div class="text-xs text-muted mt-1">
                   {stats.translated}/{stats.total} strings
                 </div>
               </div>
@@ -97,7 +97,7 @@ defmodule GamendWeb.AdminLive.Translations do
           <div class="card-body">
             <h2 class="card-title">
               Translation Strings — {String.upcase(@selected_locale)}
-              <span class="text-sm font-normal text-base-content/60">({@total} strings)</span>
+              <span class="text-sm font-normal text-muted">({@total} strings)</span>
             </h2>
 
             <%!-- Filters --%>
@@ -166,7 +166,7 @@ defmodule GamendWeb.AdminLive.Translations do
                 </thead>
                 <tbody>
                   <tr :if={@page_strings == []} id="translations-empty-row">
-                    <td colspan="4" class="text-center text-base-content/60 py-8">
+                    <td colspan="4" class="text-center text-muted py-8">
                       No strings match the current filters.
                     </td>
                   </tr>
@@ -175,7 +175,7 @@ defmodule GamendWeb.AdminLive.Translations do
                     <td class="text-sm break-all max-w-xs">{s.msgid}</td>
                     <td class={[
                       "text-sm break-all max-w-xs",
-                      !s.translated? && "text-base-content/70 italic"
+                      !s.translated? && "text-muted italic"
                     ]}>
                       {if s.translated?, do: s.msgstr, else: "—"}
                     </td>

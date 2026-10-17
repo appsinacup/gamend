@@ -299,7 +299,10 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   operation(:me,
     operation_id: "get_my_record",
     summary: "Get current user's record",
-    description: "Return the authenticated user's record and rank on this leaderboard.",
+    description:
+      "Return the authenticated user's record and rank on this leaderboard. A guest's " <>
+        "record on a public board that lists registered players only comes with " <>
+        "`hidden: true`: others never see it, and `rank` is where it would stand.",
     parameters: [
       id: [
         in: :path,
@@ -343,6 +346,7 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   defp serialize_record(record) do
     base = %{
       rank: record.rank,
+      hidden: record.hidden == true,
       score: record.score,
       metadata: record.metadata || %{},
       updated_at: record.updated_at

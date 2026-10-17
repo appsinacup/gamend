@@ -423,7 +423,7 @@ defmodule Gamend.DemoSeed do
           reset: "never",
           category: "Exploration",
           group_key: @quest_key_prefix <> "world-tour",
-          group_title: "Sail the world",
+          group_title: "World tour",
           sort_order: i,
           objectives: [
             %{event: "demo_city_visited", target: 5, params: %{"country" => country}}
@@ -978,9 +978,9 @@ defmodule Gamend.DemoSeed do
     Application.put_env(:gamend_core, Gamend.LobbySnapshots, previous)
   end
 
-  # Run 0 is the interesting one: it replays the shape of the July 2026
-  # rubber-banding bug, where the boat's distance and the slow's anchor both
-  # revert. Expanding snapshot 4 in the admin view shows it as a change *back*.
+  # Run 0 is the interesting one: it replays the shape of a rubber-banding
+  # bug, where the racer's distance and the slow's anchor both revert.
+  # Expanding snapshot 4 in the admin view shows it as a change *back*.
   defp record_run(host_id, 0), do: play(host_id, "rubber-band", rubber_band_frames())
   defp record_run(host_id, 1), do: play(host_id, "hook error", error_frames())
   defp record_run(host_id, index), do: play(host_id, "run #{index}", normal_frames(index))
@@ -1012,58 +1012,58 @@ defmodule Gamend.DemoSeed do
     end)
   end
 
-  defp boat(distance, speed, anchor) do
+  defp race(distance, speed, anchor) do
     %{
-      "boat_adventure" => %{
+      "race" => %{
         "distance" => distance,
         "speed" => speed,
         "effects" => %{
           "speed_reduced" => %{"distance_at_start" => anchor, "duration_ms" => 4000}
         },
-        "actors" => [%{"type" => "starfish", "wave" => 1, "hp" => 2}]
+        "actors" => [%{"type" => "rock", "wave" => 1, "hp" => 2}]
       },
-      "word_match" => %{"score" => round(distance / 10), "current_word" => "harbour"},
+      "quiz" => %{"score" => round(distance / 10), "current_question" => "q7"},
       "game_state" => "running"
     }
   end
 
   defp rubber_band_frames do
     [
-      %{trigger: "hook:start_boat_game", metadata: boat(0.0, 100, 0.0)},
+      %{trigger: "hook:start_race", metadata: race(0.0, 100, 0.0)},
       %{
-        trigger: "hook:guess_word",
-        metadata: boat(120.0, 100, 0.0),
-        events: [{"boat.speed", %{"from" => 100, "to" => 100, "gap" => 91.2}}]
+        trigger: "hook:answer",
+        metadata: race(120.0, 100, 0.0),
+        events: [{"race.speed", %{"from" => 100, "to" => 100, "gap" => 91.2}}]
       },
       %{
-        trigger: "timer:scheduled_collision",
-        metadata: boat(250.0, 50, 250.0),
+        trigger: "timer:obstacle",
+        metadata: race(250.0, 50, 250.0),
         events: [
-          {"boat.collision", %{"actor" => "starfish", "wave" => 1, "damage" => 1}},
-          {"boat.speed", %{"from" => 100, "to" => 50, "gap" => 78.39, "targets_ahead" => 8}}
+          {"race.collision", %{"actor" => "rock", "wave" => 1, "damage" => 1}},
+          {"race.speed", %{"from" => 100, "to" => 50, "gap" => 78.39, "targets_ahead" => 8}}
         ]
       },
-      %{trigger: "hook:guess_word", metadata: boat(370.0, 50, 250.0)},
+      %{trigger: "hook:answer", metadata: race(370.0, 50, 250.0)},
       # The bug: a stale client echo re-anchors the slow, dragging distance back.
       %{
-        trigger: "hook:guess_word",
-        metadata: boat(250.0, 50, 250.0),
-        events: [{"boat.merge_divergence", %{"current" => 370.0, "incoming" => 250.0}}]
+        trigger: "hook:answer",
+        metadata: race(250.0, 50, 250.0),
+        events: [{"race.merge_divergence", %{"current" => 370.0, "incoming" => 250.0}}]
       },
-      %{trigger: "hook:guess_word", metadata: boat(480.0, 100, 250.0)},
-      %{trigger: "lobby:deleted", metadata: boat(480.0, 100, 250.0) |> finished()}
+      %{trigger: "hook:answer", metadata: race(480.0, 100, 250.0)},
+      %{trigger: "lobby:deleted", metadata: race(480.0, 100, 250.0) |> finished()}
     ]
   end
 
   defp error_frames do
     [
-      %{trigger: "hook:start_boat_game", metadata: boat(0.0, 100, 0.0)},
-      %{trigger: "hook:guess_word", metadata: boat(90.0, 100, 0.0)},
+      %{trigger: "hook:start_race", metadata: race(0.0, 100, 0.0)},
+      %{trigger: "hook:answer", metadata: race(90.0, 100, 0.0)},
       %{
-        trigger: "hook:finish_boat_game",
-        metadata: boat(90.0, 100, 0.0),
+        trigger: "hook:finish_race",
+        metadata: race(90.0, 100, 0.0),
         flagged: true,
-        events: [{"hook.error", %{"reason" => "function_clause", "hook" => "finish_boat_game"}}]
+        events: [{"hook.error", %{"reason" => "function_clause", "hook" => "finish_race"}}]
       }
     ]
   end
@@ -1077,11 +1077,11 @@ defmodule Gamend.DemoSeed do
         speed = if rem(step, 3) == 2, do: 50, else: 100
 
         %{
-          trigger: if(step == 0, do: "hook:start_boat_game", else: "hook:guess_word"),
-          metadata: boat(distance, speed, if(speed == 50, do: distance, else: 0.0)),
+          trigger: if(step == 0, do: "hook:start_race", else: "hook:answer"),
+          metadata: race(distance, speed, if(speed == 50, do: distance, else: 0.0)),
           events:
             if(speed == 50,
-              do: [{"boat.speed", %{"from" => 100, "to" => 50, "gap" => 62.5}}],
+              do: [{"race.speed", %{"from" => 100, "to" => 50, "gap" => 62.5}}],
               else: []
             )
         }

@@ -25,7 +25,7 @@ defmodule Gamend.ClientLogs do
   Every emitted line carries a logfmt prefix naming its session, user, lobby
   and screen:
 
-      [client] session=0f1e… user=9ab3… level=info cat=game lobby=77c1… screen=boat seq=42 | Game starting
+      [client] session=0f1e… user=9ab3… level=info cat=game lobby=77c1… screen=race seq=42 | Game starting
 
   In the *message*, deliberately, not only in `Logger` metadata. Metadata reaches
   stdout only for the keys a host lists in its `:default_formatter` config, and

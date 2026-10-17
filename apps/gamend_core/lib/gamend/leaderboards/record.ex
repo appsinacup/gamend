@@ -6,8 +6,12 @@ defmodule Gamend.Leaderboards.Record do
   Records can be either **user-based** (one per user per leaderboard)
   or **label-based** (one per label per leaderboard, no user required).
 
-  - User-based: `user_id` is set, `label` is nil. Uniqueness on `(leaderboard_id, user_id)`.
-  - Label-based: `label` is set, `user_id` is nil. Uniqueness on `(leaderboard_id, label)`.
+  - User-based: `user_id` is set, `label` is nil. Uniqueness on `(leaderboard_id, user_id, key)`.
+  - Label-based: `label` is set, `user_id` is nil. Uniqueness on `(leaderboard_id, label, key)`.
+
+  `key` splits a board into separate rankings: one record per user (or
+  label) per key, each key ranked on its own. `""`, the default, is a board
+  with one ranking. The record's metadata says what its key stands for.
   """
   use Gamend.Schema
 
@@ -22,17 +26,22 @@ defmodule Gamend.Leaderboards.Record do
     belongs_to :user, User
 
     field :label, :string
+    field :key, :string, default: ""
     field :score, :integer, default: 0
     field :metadata, :map, default: %{}
 
     # Virtual field for rank (computed in queries)
     field :rank, :integer, virtual: true
 
+    # A guest's own record on a public board that lists registered players
+    # only (`Gamend.AccountRequired`): its rank is where it would stand.
+    field :hidden, :boolean, virtual: true, default: false
+
     timestamps(type: :utc_datetime)
   end
 
   @required_fields ~w(leaderboard_id score)a
-  @optional_fields ~w(user_id label metadata)a
+  @optional_fields ~w(user_id label key metadata)a
 
   @doc """
   Changeset for creating a new record.
@@ -45,8 +54,9 @@ defmodule Gamend.Leaderboards.Record do
     |> validate_user_or_label()
     |> foreign_key_constraint(:leaderboard_id)
     |> foreign_key_constraint(:user_id)
-    |> unique_constraint([:leaderboard_id, :user_id])
-    |> unique_constraint([:leaderboard_id, :label])
+    |> validate_length(:key, max: 255)
+    |> unique_constraint([:leaderboard_id, :user_id, :key])
+    |> unique_constraint([:leaderboard_id, :label, :key])
     |> Gamend.Limits.validate_metadata_size(:metadata)
   end
 
@@ -89,6 +99,7 @@ defimpl Jason.Encoder, for: Gamend.Leaderboards.Record do
         :leaderboard_id,
         :user_id,
         :label,
+        :key,
         :score,
         :rank,
         :metadata,

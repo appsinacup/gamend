@@ -115,9 +115,8 @@ export const rankEntry = (entry, needle) => {
 // Two adjacent letters swapped count as ONE edit. Plain Levenshtein prices a
 // swap at two, which is the difference between reading "hosue" as "house"
 // and offering "hose" — a real word one plain edit away and the wrong
-// answer. `GamendHost.Vocabulary.edit_distance/3` counts the same way; the
-// two must agree on what a typo is, or the page and the palette disagree
-// about the same query.
+// answer. A host that also matches typos on the server should count the
+// same way, or its page and the palette disagree about the same query.
 export const editDistance = (a, b, max) => {
   if (a === b) return 0
   if (Math.abs(a.length - b.length) > max) return max + 1

@@ -191,7 +191,7 @@ defmodule GamendWeb.AdminLive.Runtime do
         <div class="card-body">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="card-title">Runtime introspection</h2>
-            <span class="text-xs text-base-content/60">
+            <span class="text-xs text-muted">
               Read-only; reflects the running node
             </span>
           </div>
@@ -264,11 +264,11 @@ defmodule GamendWeb.AdminLive.Runtime do
             >
               Rendering…
             </div>
-            <p class="text-xs text-base-content/70 mt-1">
+            <p class="text-xs text-muted mt-1">
               Boxes are domains · thick edges cross a domain boundary · scroll to zoom · drag to pan
             </p>
             <details class="mt-2">
-              <summary class="cursor-pointer text-xs text-base-content/60">
+              <summary class="cursor-pointer text-xs text-muted">
                 Mermaid source (copyable)
               </summary>
               <pre class="text-xs overflow-x-auto mt-2"><code>{@diagram}</code></pre>
@@ -279,7 +279,7 @@ defmodule GamendWeb.AdminLive.Runtime do
             <.tab_table tab={@tab} rows={@rows} expanded={@expanded} />
           </div>
 
-          <div :if={@rows == []} class="text-center py-8 text-base-content/60">
+          <div :if={@rows == []} class="text-center py-8 text-muted">
             Nothing matches.
           </div>
 
@@ -338,7 +338,7 @@ defmodule GamendWeb.AdminLive.Runtime do
             <td class="text-xs">
               {if row.implementers == [], do: "—", else: Enum.join(row.implementers, ", ")}
             </td>
-            <td class="font-mono text-xs text-base-content/70 max-w-md truncate">
+            <td class="font-mono text-xs text-muted max-w-md truncate">
               {row.signature}
             </td>
           </tr>
@@ -377,10 +377,10 @@ defmodule GamendWeb.AdminLive.Runtime do
               {if row.set, do: "set", else: "unset"}
             </span>
           </td>
-          <td class="font-mono text-xs text-base-content/60">{row.type}</td>
+          <td class="font-mono text-xs text-muted">{row.type}</td>
           <td class="font-mono text-xs">{row.value || "—"}</td>
           <td class="font-mono text-xs">{row.default}</td>
-          <td class="text-xs text-base-content/80">{row.description}</td>
+          <td class="text-xs text-muted">{row.description}</td>
         </tr>
       </tbody>
     </table>
@@ -460,7 +460,7 @@ defmodule GamendWeb.AdminLive.Runtime do
         <tr :for={row <- @rows}>
           <td class="font-mono text-xs">{row.pattern}</td>
           <td class="font-mono text-xs">{row.module}</td>
-          <td class="text-xs text-base-content/80">{row.description}</td>
+          <td class="text-xs text-muted">{row.description}</td>
         </tr>
       </tbody>
     </table>
@@ -495,7 +495,7 @@ defmodule GamendWeb.AdminLive.Runtime do
             </span>
           </td>
           <td class="text-xs">{row.payload}</td>
-          <td class="text-xs text-base-content/80">{row.description}</td>
+          <td class="text-xs text-muted">{row.description}</td>
         </tr>
       </tbody>
     </table>
@@ -520,7 +520,7 @@ defmodule GamendWeb.AdminLive.Runtime do
               {row.source}
             </span>
           </td>
-          <td class="text-xs text-base-content/80">{row.description}</td>
+          <td class="text-xs text-muted">{row.description}</td>
         </tr>
       </tbody>
     </table>
@@ -663,7 +663,7 @@ defmodule GamendWeb.AdminLive.Runtime do
               {row.payload}
             </span>
           </td>
-          <td class="text-xs text-base-content/80 max-w-md truncate" title={row.description}>
+          <td class="text-xs text-muted max-w-md truncate" title={row.description}>
             {row.description}
           </td>
         </tr>

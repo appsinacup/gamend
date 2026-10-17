@@ -27,6 +27,10 @@ defmodule GamendWeb.UserLive.Settings do
   @valid_tabs ~w(account notifications friends groups wallet items payments data devices
                  api_tokens)
 
+  # Tabs a feature flag can close. A closed tab is not drawn, not opened from
+  # `?tab=` and refuses its events, so it reads as absent rather than broken.
+  @feature_tabs %{"groups" => :web_groups, "friends" => :web_friends}
+
   @account_events ~w(validate_email update_email validate_display_name update_display_name
                      validate_username update_username validate_avatar save_avatar cancel_avatar
                      validate_password update_password unlink_provider delete_user
@@ -36,7 +40,7 @@ defmodule GamendWeb.UserLive.Settings do
                      incoming_prev incoming_next outgoing_prev outgoing_next friends_prev
                      friends_next blocked_prev blocked_next)
   @notifications_events ~w(notify_toggle notify_switch notify_time_zone)
-  @payments_events ~w(cancel_stripe_subscription open_stripe_portal)
+  @payments_events ~w(cancel_stripe_subscription open_stripe_portal refund_stripe_purchase resume_stripe_subscription)
   @wallet_events ~w(wallet_ledger_prev wallet_ledger_next)
   @items_events ~w(items_prev items_next)
   @data_events ~w(kv_prev kv_next kv_filters_change kv_filters_apply kv_filters_clear)
@@ -57,8 +61,9 @@ defmodule GamendWeb.UserLive.Settings do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <div>
-        <h1 class="text-4xl font-black text-base-content/95">{gettext("Account")}</h1>
+      <div class="flex items-center gap-3">
+        <.back_link href={home_path()} />
+        <.page_title icon="hero-user-circle-solid">{gettext("Account")}</.page_title>
       </div>
 
       <div class="text-center">
@@ -69,7 +74,7 @@ defmodule GamendWeb.UserLive.Settings do
             <div class="flex items-start justify-between">
               <div>
                 <strong>{gettext("This sign-in is already linked to another account")}</strong>
-                <div class="text-sm text-base-content/70">
+                <div class="text-sm text-muted">
                   {@conflict_provider} ({@conflict_user.id})
                 </div>
               </div>
@@ -93,18 +98,22 @@ defmodule GamendWeb.UserLive.Settings do
       <div class="mt-6 flex gap-1 border-b border-base-300 pb-0 overflow-x-auto">
         <button
           :for={
-            {tab, label} <- [
-              {"account", gettext("Account")},
-              {"notifications", gettext("Notifications")},
-              {"friends", gettext("Friends")},
-              {"groups", gettext("Groups")},
-              {"wallet", gettext("Wallet")},
-              {"items", gettext("Items")},
-              {"payments", gettext("Payments")},
-              {"data", gettext("Data")},
-              {"devices", gettext("Devices")},
-              {"api_tokens", gettext("API tokens")}
-            ]
+            {tab, label} <-
+              Enum.filter(
+                [
+                  {"account", gettext("Account")},
+                  {"notifications", gettext("Notifications")},
+                  {"friends", gettext("Friends")},
+                  {"groups", gettext("Groups")},
+                  {"wallet", gettext("Wallet")},
+                  {"items", gettext("Items")},
+                  {"payments", gettext("Payments")},
+                  {"data", gettext("Data")},
+                  {"devices", gettext("Devices")},
+                  {"api_tokens", gettext("API tokens")}
+                ],
+                fn {tab, _label} -> tab_enabled?(tab) end
+              )
           }
           phx-click="settings_tab"
           phx-value-tab={tab}
@@ -112,7 +121,7 @@ defmodule GamendWeb.UserLive.Settings do
             "px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap",
             if(@settings_tab == tab,
               do: "bg-primary text-primary-content shadow-sm",
-              else: "text-base-content/60 hover:text-base-content hover:bg-base-200/50"
+              else: "text-muted hover:text-base-content hover:bg-base-200/50"
             )
           ]}
         >
@@ -133,7 +142,7 @@ defmodule GamendWeb.UserLive.Settings do
       <DataTab.tab {tab_assigns(assigns)} />
       <DevicesTab.tab {tab_assigns(assigns)} />
       <ApiTokensTab.tab {tab_assigns(assigns)} />
-      <GroupsTab.tab {tab_assigns(assigns)} />
+      <GroupsTab.tab :if={tab_enabled?("groups")} {tab_assigns(assigns)} />
     </Layouts.app>
     """
   end
@@ -167,16 +176,18 @@ defmodule GamendWeb.UserLive.Settings do
       |> assign(:user, user)
       |> assign(:conflict_user, conflict_user)
       |> assign(:conflict_provider, conflict_provider)
+      # Empty defaults only: a tab's data is read when it is opened
+      # (`load_tab/2`, from `handle_params/3`). Reading all ten on every
+      # mount was ~30 queries a render for the one tab on screen.
       |> AccountTab.assign_defaults(user)
       |> NotificationsTab.assign_defaults()
-      |> FriendsTab.assign_defaults(user)
+      |> FriendsTab.assign_defaults()
       |> DataTab.assign_defaults()
       |> DevicesTab.assign_defaults()
       |> ApiTokensTab.assign_defaults()
       |> WalletTab.assign_defaults()
       |> ItemsTab.assign_defaults()
       |> GroupsTab.assign_defaults()
-      |> PaymentsTab.assign_payment_data()
 
     if connected?(socket) do
       Friends.subscribe_user(user.id)
@@ -189,7 +200,9 @@ defmodule GamendWeb.UserLive.Settings do
 
   @impl true
   def handle_event("settings_tab", %{"tab" => tab}, socket) when tab in @valid_tabs do
-    {:noreply, push_patch(socket, to: ~p"/users/settings?tab=#{tab}")}
+    if tab_enabled?(tab),
+      do: {:noreply, push_patch(socket, to: ~p"/users/settings?tab=#{tab}")},
+      else: {:noreply, socket}
   end
 
   def handle_event(event, params, socket) when event in @account_events,
@@ -198,8 +211,11 @@ defmodule GamendWeb.UserLive.Settings do
   def handle_event(event, params, socket) when event in @notifications_events,
     do: NotificationsTab.handle_event(event, params, socket)
 
-  def handle_event(event, params, socket) when event in @friends_events,
-    do: FriendsTab.handle_event(event, params, socket)
+  def handle_event(event, params, socket) when event in @friends_events do
+    if tab_enabled?("friends"),
+      do: FriendsTab.handle_event(event, params, socket),
+      else: {:noreply, socket}
+  end
 
   def handle_event(event, params, socket) when event in @payments_events,
     do: PaymentsTab.handle_event(event, params, socket)
@@ -219,8 +235,11 @@ defmodule GamendWeb.UserLive.Settings do
   def handle_event(event, params, socket) when event in @api_tokens_events,
     do: ApiTokensTab.handle_event(event, params, socket)
 
-  def handle_event(event, params, socket) when event in @groups_events,
-    do: GroupsTab.handle_event(event, params, socket)
+  def handle_event(event, params, socket) when event in @groups_events do
+    if tab_enabled?("groups"),
+      do: GroupsTab.handle_event(event, params, socket),
+      else: {:noreply, socket}
+  end
 
   def handle_event(_event, _params, socket), do: {:noreply, socket}
 
@@ -237,13 +256,13 @@ defmodule GamendWeb.UserLive.Settings do
              :friend_removed,
              :friend_unblocked
            ] do
-    {:noreply, FriendsTab.refresh_friend_lists(socket, Shared.current_user(socket))}
+    {:noreply, reload_if_open(socket, "friends")}
   end
 
   # Online status change broadcast from UserChannel (via PubSub on "user:<id>")
   def handle_info(%Phoenix.Socket.Broadcast{event: event}, socket)
       when event in ["friend_online", "friend_offline"] do
-    {:noreply, FriendsTab.refresh_friend_lists(socket, Shared.current_user(socket))}
+    {:noreply, reload_if_open(socket, "friends")}
   end
 
   # Ignore other broadcasts on the user topic (e.g. "updated" events from channel)
@@ -270,7 +289,7 @@ defmodule GamendWeb.UserLive.Settings do
              :join_request_approved,
              :join_request_rejected
            ] do
-    {:noreply, GroupsTab.reload_groups(socket)}
+    {:noreply, reload_if_open(socket, "groups")}
   end
 
   # Catch-all: ignore unhandled PubSub messages (e.g. :chat_message_created,
@@ -285,7 +304,7 @@ defmodule GamendWeb.UserLive.Settings do
     conflict_provider = socket.assigns[:conflict_provider]
 
     tab =
-      if Map.get(params, "tab") in @valid_tabs,
+      if Map.get(params, "tab") in @valid_tabs and tab_enabled?(params["tab"]),
         do: params["tab"],
         else: socket.assigns[:settings_tab] || "account"
 
@@ -296,20 +315,40 @@ defmodule GamendWeb.UserLive.Settings do
        conflict_provider: conflict_provider,
        settings_tab: tab
      )
-     |> PaymentsTab.assign_payment_data()
-     |> GroupsTab.apply_params(params)
-     |> refresh_streams_for_tab(tab)}
+     |> apply_group_params(params)
+     |> load_tab(tab)}
   end
 
-  # Stream inserts are consumed on the next render even when the tab's
-  # container is hidden behind a false `:if`, so re-stream the collections of
-  # the tab that just became active.
-  defp refresh_streams_for_tab(socket, "friends"),
+  defp apply_group_params(socket, params) do
+    if tab_enabled?("groups"), do: GroupsTab.apply_params(socket, params), else: socket
+  end
+
+  defp tab_enabled?(tab) do
+    case Map.fetch(@feature_tabs, tab) do
+      {:ok, feature} -> GamendWeb.Features.enabled?(feature)
+      :error -> true
+    end
+  end
+
+  # The open tab's data, read when it opens (and again on a patch within it):
+  # every tab's template is behind `:if={@settings_tab == ...}`, so nothing
+  # else is drawn. Streams are re-sent here too, since an insert is consumed
+  # on the next render even while its container is hidden.
+  defp load_tab(socket, "friends"),
     do: FriendsTab.refresh_friend_lists(socket, Shared.current_user(socket))
 
-  defp refresh_streams_for_tab(socket, "data"), do: DataTab.reload_kv_entries(socket)
-  defp refresh_streams_for_tab(socket, "wallet"), do: WalletTab.load_wallet(socket)
-  defp refresh_streams_for_tab(socket, "items"), do: ItemsTab.reload_items(socket)
-  defp refresh_streams_for_tab(socket, "groups"), do: GroupsTab.reload_groups(socket)
-  defp refresh_streams_for_tab(socket, _tab), do: socket
+  defp load_tab(socket, "data"), do: DataTab.reload_kv_entries(socket)
+  defp load_tab(socket, "wallet"), do: WalletTab.load_wallet(socket)
+  defp load_tab(socket, "items"), do: ItemsTab.reload_items(socket)
+  defp load_tab(socket, "groups"), do: GroupsTab.reload_groups(socket)
+  defp load_tab(socket, "payments"), do: PaymentsTab.assign_payment_data(socket)
+  defp load_tab(socket, "devices"), do: DevicesTab.reload_devices(socket)
+  defp load_tab(socket, "api_tokens"), do: ApiTokensTab.reload_api_tokens(socket)
+  defp load_tab(socket, _tab), do: socket
+
+  # A friend or group event reloads its tab only while it is open; opening it
+  # reads it fresh anyway. Every friend's online/offline was eight queries.
+  defp reload_if_open(socket, tab) do
+    if socket.assigns.settings_tab == tab, do: load_tab(socket, tab), else: socket
+  end
 end

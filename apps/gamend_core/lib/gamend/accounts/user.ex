@@ -597,6 +597,32 @@ defmodule Gamend.Accounts.User do
     do: last_seen_at
 
   @doc """
+  The avatar URL anyone outside the server may see: `profile_url` when it is
+  one we host (key `avatars/<id>/…`, an upload or an `AvatarMirror` copy),
+  else nil.
+
+  A sign-in stores the provider's URL (Discord, Google, GitHub, Facebook,
+  Steam) until `Gamend.Accounts.AvatarMirror` replaces it with our copy, and
+  keeps it when the mirror fails. Shown, it would send every viewer's IP to the
+  provider, and a Discord URL carries the player's Discord id. So every page,
+  payload and API answer reads the avatar through here, and an avatar not yet
+  mirrored is no avatar.
+  """
+  @spec public_avatar_url(t() | map() | nil) :: String.t() | nil
+  def public_avatar_url(%{id: id, profile_url: url}) do
+    if hosted_avatar_url?(id, url), do: url
+  end
+
+  def public_avatar_url(_), do: nil
+
+  @doc "Whether `url` is an avatar we store for user `id`: its key is `avatars/<id>/…`."
+  @spec hosted_avatar_url?(term(), term()) :: boolean()
+  def hosted_avatar_url?(id, url) when is_binary(id) and id != "" and is_binary(url),
+    do: String.contains?(url, "avatars/#{id}/")
+
+  def hosted_avatar_url?(_id, _url), do: false
+
+  @doc """
   Serialize a user into a compact public map suitable for member lists in parties,
   lobbies, and friends. Includes metadata for rendering player appearance.
   """
@@ -606,7 +632,7 @@ defmodule Gamend.Accounts.User do
       id: user.id,
       username: user.username || "",
       display_name: user.display_name || "",
-      profile_url: user.profile_url || "",
+      profile_url: public_avatar_url(user) || "",
       metadata: user.metadata || %{},
       is_online: user.is_online || false,
       is_activated: user.is_activated,
@@ -621,7 +647,7 @@ defimpl Jason.Encoder, for: Gamend.Accounts.User do
       id: user.id,
       username: user.username || "",
       display_name: user.display_name || "",
-      profile_url: user.profile_url || "",
+      profile_url: Gamend.Accounts.User.public_avatar_url(user) || "",
       metadata: user.metadata || %{},
       lobby_id: user.lobby_id || "",
       party_id: user.party_id || "",

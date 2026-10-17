@@ -116,7 +116,7 @@ func _ready() -> void:
 
 
 ## [param base_url] is the scheme+host+port of the server, e.g.
-## `https://polyglotpirates.com`. [param token_provider] is optional and may
+## `https://game.example.com`. [param token_provider] is optional and may
 ## return an empty string; entries sent without a token are recorded
 ## anonymously and adopted once the same run signs in.
 func setup(base_url: String, token_provider: Callable = Callable()) -> void:

@@ -127,7 +127,7 @@ defmodule GamendWeb.Serializers do
     %{
       id: user.id,
       email: user.email || "",
-      profile_url: user.profile_url || "",
+      profile_url: User.public_avatar_url(user) || "",
       metadata: user.metadata || %{},
       username: user.username || "",
       display_name: user.display_name || "",

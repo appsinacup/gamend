@@ -34,6 +34,12 @@ defmodule Gamend.Quests do
   Quests with `auto_claim` grant immediately on completion (skipping the
   `before_quest_claim` hook — there is no player request to veto).
 
+  **A finished run never expires.** A completed row waits for its claim
+  whatever period it finished in: `claim/2` pays the oldest one first, the list
+  shows that one until it is claimed and then the next, and the retention
+  prune keeps completed rows. A daily finished three days running and never
+  claimed is three claims, one after another.
+
   ## Resets
 
   `period_key` is derived from **UTC time** by the quest's reset (daily →
@@ -48,11 +54,23 @@ defmodule Gamend.Quests do
   reset would cap the payout at once per period. It reuses `"static"` as its
   period and counts claims on the row instead (see `claim_count`).
 
+  A `repeat` row also **banks**: it keeps counting while it waits for its
+  claim (its objective counts pass the target), and each target's worth is
+  one claim. A claim takes one run's worth off every objective; the row stays
+  completed while another run is left, so the next claim is ready at once.
+
   UTC means one global rollover instant rather than one per player: a daily
   turns over at noon in New Zealand and mid-afternoon the day before on the US
-  west coast. That is deliberate — everyone races the same clock — but it is
+  west coast. That is the default — everyone races the same clock — but it is
   why the API exposes the *remaining time* on a period and never a reset
   timestamp, and why clients should show a countdown rather than an hour.
+
+  `config :gamend_core, :quest_clock, :player` reads each player's periods on
+  their own clock instead: a daily turns over at their midnight, a weekly at
+  their Monday's, from the time zone in their preferences
+  (`Gamend.Accounts.TimeZone`; UTC when unknown). Only the period moves:
+  windows and every timestamp stay UTC. A player whose zone changes mid-day
+  may land on a period already played or one not yet started, once.
 
 
   **Note:** This is an SDK stub. Calling these functions will raise an error.
@@ -229,13 +247,19 @@ defmodule Gamend.Quests do
   end
 
   @doc ~S"""
-    Claim a completed quest's rewards for the current period.
+    Claim a completed quest's rewards: its oldest finished run still waiting,
+    whatever period it finished in, so claiming again pays the next one.
     
     Runs the `before_quest_claim` pipeline hook (veto), then transitions
     `completed → claimed` atomically — only the winner grants rewards.
     
+    A guest is refused with `:account_required` when the host requires an
+    account to claim (`Gamend.AccountRequired`, `:quest_claims`); the quest
+    stays completed and pays once they register.
+    
     Returns `{:ok, %{progress: progress, rewards: rewards}}` or
-    `{:error, :quest_not_found | :not_completed | :already_claimed | term()}`.
+    `{:error, :quest_not_found | :account_required | :not_completed |
+    :already_claimed | term()}`.
     
   """
   @spec claim(user_id(), String.t(), keyword()) ::
@@ -268,7 +292,10 @@ defmodule Gamend.Quests do
   end
 
   @doc ~S"""
-    Number of completed-but-unclaimed quests for a user (badge count).
+    Claims waiting for a user (badge count): every finished run of an active
+    quest not yet claimed, whatever period it finished in, and each run a
+    `repeat` row banked.
+    
   """
   @spec claimable_count(user_id()) :: non_neg_integer()
   def claimable_count(_user_id) do
@@ -340,6 +367,23 @@ defmodule Gamend.Quests do
 
       _ ->
         raise "Gamend.Quests.count_user_quests/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    The number `%{n}` stands for: the resolved counter, else the first run's
+    (`counter_start`, or 1). An unresolved counter is the anonymous catalog,
+    which pairs no row: the run a visitor would start.
+    
+  """
+  @spec counter(Gamend.Quests.Quest.t()) :: integer()
+  def counter(_quest) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.Quests.counter/1 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -433,7 +477,7 @@ defmodule Gamend.Quests do
   def funnel(_quest_key) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        0
+        %{}
 
       _ ->
         raise "Gamend.Quests.funnel/1 is a stub - only available at runtime on Gamend"
@@ -580,10 +624,35 @@ defmodule Gamend.Quests do
   def groups(_user_id, _category \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        ""
+        []
 
       _ ->
         raise "Gamend.Quests.groups/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Where this viewer goes to work on this quest, as a path on this site — or
+    `nil`. Set `config :gamend_core, :quest_action, {Module, :function}`; it is
+    called as `function(user_id | nil, Quest.t())`.
+    
+    The quests page makes the whole card a link to it whenever there is nothing
+    to claim: before the quest is done, the way to do it, and after it is
+    claimed, the way back to more of it. A quest only says what to do ("Visit
+    20 cities"), never where, and only the host knows its own pages.
+    
+    A path starts with one `/` (`"/games"`); a URL or `"//…"` is dropped. The
+    page keeps the reader's locale prefix on it.
+    
+  """
+  @spec host_action(Gamend.Quests.Quest.t(), user_id() | nil) :: String.t() | nil
+  def host_action(_quest, _user_id) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Quests.host_action/2 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -695,7 +764,7 @@ defmodule Gamend.Quests do
   def list_user_completions(_user_id, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        %{}
+        []
 
       _ ->
         raise "Gamend.Quests.list_user_completions/2 is a stub - only available at runtime on Gamend"
@@ -743,7 +812,8 @@ defmodule Gamend.Quests do
   end
 
   @doc ~S"""
-    The reset bucket a quest is in at `now` (UTC).
+    The reset bucket a quest is in at `now`, on the date `now` carries (UTC,
+    or a player's own zone with `:quest_clock` `:player`; see "Resets").
     
     `"static"` when it never resets, else the current day (`"2026-07-22"`),
     ISO week (`"2026-W30"`), month (`"2026-07"`), or interval bucket
@@ -779,6 +849,7 @@ defmodule Gamend.Quests do
   @doc ~S"""
     Deletes daily/weekly progress rows whose period ended more than
     `max_quest_period_history` days ago (called from `Gamend.Retention`).
+    A completed row stays until it is claimed: a finished run never expires.
     
   """
   @spec prune_old_periods() :: non_neg_integer()
@@ -834,8 +905,8 @@ defmodule Gamend.Quests do
     
     For consumers that emit the stored string as-is. Anything that translates
     interpolates through Gettext instead, so the placeholder survives long
-    enough to be looked up. An unresolved counter reads as run 1 — an anonymous
-    visitor browsing the catalog is looking at the run they would start.
+    enough to be looked up. An unresolved counter reads as the first run
+    (`counter/1`).
     
   """
   @spec render_counter(Gamend.Quests.Quest.t()) :: Gamend.Quests.Quest.t()
@@ -892,6 +963,15 @@ defmodule Gamend.Quests do
     
     Non-repeat quests and titles without the placeholder pass through untouched,
     so this is invisible to everything that does not opt in.
+    
+    ## Counting from somewhere else
+    
+    `metadata["counter_start"]` and `metadata["counter_step"]` (both default 1)
+    turn the run into a number: run `r` reads `start + step * (r - 1)`. A
+    ladder that pays every 50 wins after 100 says "Wins × 150", "Wins × 200"
+    with `start: 150, step: 50`. A non-repeat quest has one run, so its `%{n}`
+    is its `counter_start` (`counter/1`): every step of a chain can share one
+    title, "Wins × %{n}", and one msgid with it.
     
   """
   @spec resolve_counter(Gamend.Quests.Quest.t(), Gamend.Quests.QuestProgress.t() | nil) ::
@@ -978,6 +1058,38 @@ defmodule Gamend.Quests do
   end
 
   @doc ~S"""
+    What a quest page draws, from one read of the user's progress: `:entries`,
+    the page `list_user_quests/2` returns for these `opts`; `:total`, what
+    `count_user_quests/2` counts for them; `:categories`, what
+    `visible_categories/1` lists (the tabs, so every filter but none). The three
+    separately read the same rows three times.
+    
+  """
+  @spec user_quest_page(
+          user_id(),
+          keyword()
+        ) :: %{
+          entries: [
+            %{
+              quest: Gamend.Quests.Quest.t(),
+              progress: Gamend.Quests.QuestProgress.t() | nil,
+              claimable: boolean()
+            }
+          ],
+          total: non_neg_integer(),
+          categories: [String.t()]
+        }
+  def user_quest_page(_user_id, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Quests.user_quest_page/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     The categories that actually have something behind them for this viewer.
     
     Derived from the same visibility rule as `list_user_quests/2` rather than
@@ -990,7 +1102,7 @@ defmodule Gamend.Quests do
   def visible_categories(_user_id \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        ""
+        []
 
       _ ->
         raise "Gamend.Quests.visible_categories/1 is a stub - only available at runtime on Gamend"

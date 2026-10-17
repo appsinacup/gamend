@@ -18,7 +18,7 @@ defmodule Gamend.Accounts do
   """
 
   import Ecto.Query, warn: false
-  use Nebulex.Caching, cache: Gamend.Cache
+  alias Gamend.Lock.Local
   alias Gamend.Repo
   alias Gamend.Types
 
@@ -117,6 +117,20 @@ defmodule Gamend.Accounts do
 
   @doc delegate_to: {Registration, :confirm_user_by_token, 1}
   defdelegate confirm_user_by_token(token), to: Registration
+
+  @doc delegate_to: {Registration, :get_user_by_confirm_token, 1}
+  defdelegate get_user_by_confirm_token(token), to: Registration
+
+  @doc delegate_to: {Registration, :confirm_user_by_code, 3}
+  defdelegate confirm_user_by_code(email, code, password), to: Registration
+
+  @doc delegate_to: {Registration, :resend_confirmation, 3}
+  defdelegate resend_confirmation(
+                email,
+                confirmation_url_fun,
+                notifier \\ Gamend.Accounts.UserNotifier
+              ),
+              to: Registration
 
   @doc delegate_to: {Registration, :change_user_registration, 2}
   defdelegate change_user_registration(user, attrs \\ %{}), to: Registration
@@ -300,6 +314,15 @@ defmodule Gamend.Accounts do
     :ok
   end
 
+  @doc delegate_to: {Registration, :upgrade_anonymous_user_and_deliver, 4}
+  defdelegate upgrade_anonymous_user_and_deliver(
+                user,
+                attrs,
+                confirmation_url_fun,
+                notifier \\ Gamend.Accounts.UserNotifier
+              ),
+              to: Registration
+
   @doc delegate_to: {Registration, :register_user_and_deliver, 3}
   defdelegate register_user_and_deliver(
                 attrs,
@@ -308,8 +331,8 @@ defmodule Gamend.Accounts do
               ),
               to: Registration
 
-  @doc delegate_to: {Registration, :register_user_with_password_and_deliver, 3}
-  defdelegate register_user_with_password_and_deliver(
+  @doc delegate_to: {Registration, :register_unconfirmed_user_and_deliver, 3}
+  defdelegate register_unconfirmed_user_and_deliver(
                 attrs,
                 confirmation_url_fun,
                 notifier \\ Gamend.Accounts.UserNotifier
@@ -351,9 +374,10 @@ defmodule Gamend.Accounts do
   password is looked at, and for the failure that locks it.
 
   `{:error, :email_not_confirmed}` for the right password on an account whose
-  email was never confirmed. Anyone can register any address with a password,
-  so the password signs nobody in until the inbox's owner has confirmed it.
-  It is answered only after the password matched, so it tells nothing to
+  email was never confirmed: registering takes no password, so only a guest
+  account given an email, or one registered when the API still took one, can
+  have it. The password signs nobody in until the inbox's owner has confirmed
+  it. It is answered only after the password matched, so it tells nothing to
   someone who does not know it.
   """
   @spec authenticate_by_password(String.t(), String.t()) ::
@@ -455,12 +479,17 @@ defmodule Gamend.Accounts do
 
   """
   @spec get_user(Ecto.UUID.t()) :: User.t() | nil
-  @decorate cacheable(
-              key: {:accounts, :user, id},
-              match: &cache_match/1,
-              opts: [ttl: Gamend.Cache.ttl()]
-            )
-  def get_user(id), do: Repo.get_uuid(User, id)
+  def get_user(id) do
+    # Through `Gamend.Cache.cached/3`, whose fill is dropped when the user was
+    # written while it queried: a request in flight during a logout would
+    # otherwise cache the old `token_version` and keep the revoked JWT valid
+    # until the TTL.
+    Gamend.Cache.cached(
+      {:accounts, :user, id},
+      [ttl: Gamend.Cache.ttl(), match: &cache_match/1],
+      fn -> Repo.get_uuid(User, id) end
+    )
+  end
 
   @doc """
   How to name a user in text a PLAYER reads: `"Ana (drift-2378)"`, or just the
@@ -568,14 +597,26 @@ defmodule Gamend.Accounts do
   end
 
   @doc false
-  @decorate cacheable(
-              key: {:accounts, :user_by, field, value},
-              references: &(&1 && keyref({:accounts, :user, &1.id})),
-              match: &cache_match/1,
-              opts: [ttl: Gamend.Cache.ttl()]
-            )
+  # The index caches only the id; the user itself comes from `get_user/1`, so
+  # a user is cached in one place and both fills are guarded the same way. An
+  # index entry left behind when the field changed (an email or username given
+  # up) is caught by comparing the field, and the database answers instead.
   def get_user_by_field(field, value) when is_atom(field) do
-    Repo.get_by(User, [{field, value}])
+    {:accounts, :user_by, field, value}
+    |> Gamend.Cache.cached([ttl: Gamend.Cache.ttl(), match: &is_binary/1], fn ->
+      Repo.one(from(u in User, where: field(u, ^field) == ^value, select: u.id))
+    end)
+    |> case do
+      nil ->
+        nil
+
+      id ->
+        user = get_user(id)
+
+        if user && Map.get(user, field) == value,
+          do: user,
+          else: Repo.get_by(User, [{field, value}])
+    end
   end
 
   @doc """
@@ -740,7 +781,9 @@ defmodule Gamend.Accounts do
   setting(:device_auth_enabled, :boolean,
     default: true,
     doc:
-      "Allow POST /api/v1/login/device. When on, any unknown device_id creates an anonymous account."
+      "Allow POST /api/v1/login/device. When on, any unknown device_id creates an anonymous " <>
+        "account, and the website may give a signed-out visitor one the same way " <>
+        "(`GamendWeb.UserAuth.ensure_user/1`)."
   )
 
   setting(:anonymous_can_upload_avatar, :boolean,
@@ -825,8 +868,9 @@ defmodule Gamend.Accounts do
   setting(:lockout_attempts, :integer,
     default: 10,
     doc:
-      "Failed passwords for one email address that lock its password sign-in. Counted per " <>
-        "address across every IP. 0 disables the lockout."
+      "Failed passwords and email confirmation codes for one email address that lock its " <>
+        "password sign-in and its code. Counted per address across every IP. 0 disables " <>
+        "the lockout, which leaves the six-digit codes to the per-IP auth rate limit alone."
   )
 
   setting(:lockout_window_minutes, :integer,
@@ -1084,6 +1128,10 @@ defmodule Gamend.Accounts do
     # before the DB cascade silently removes the membership rows.
     best_effort(user, "group cleanup", fn -> Gamend.Groups.handle_user_deletion(user.id) end)
 
+    # A report can carry an email address and a screenshot. Before the delete:
+    # the FK nils the user id, after which nothing says whose they were.
+    best_effort(user, "report cleanup", fn -> Gamend.Reports.forget_user(user.id) end)
+
     # Mark the user offline and notify friends before deleting the row.
     # Re-fetch to get current is_online state (the passed struct may be stale).
     fresh_user = Repo.get(User, user.id)
@@ -1233,6 +1281,60 @@ defmodule Gamend.Accounts do
     user.hashed_password != nil
   end
 
+  @metadata_attempts 5
+
+  @doc """
+  Changes a user's `metadata` from the row as it is stored now.
+
+  `fun` gets the stored map (`%{}` for none) and answers the new one,
+  `:unchanged` to write nothing, or `{:error, reason}` to refuse. It can run
+  more than once, so it must only compute.
+
+  `metadata` is one map that core (payments), plugins and the host all write
+  their own keys into, and a write replaces all of it: a writer that builds the
+  map from a user it read earlier puts every other writer's keys back as they
+  were then. This reads the row, asks `fun`, runs the `before_user_update` hook
+  with no database lock held, and writes under the user's lock only if the
+  stored map is still the one `fun` started from. When it is not, it starts
+  over, up to #{@metadata_attempts} times, then answers `{:error, :conflict}`.
+  Calls for one user on one node take turns (`Gamend.Lock.Local.in_turn/2`),
+  so they do not all read at once and retry in lockstep.
+
+  Answers `{:ok, user}` (the stored user when nothing was written),
+  `{:error, :not_found}`, the refusal, or the hook's or changeset's error.
+  """
+  @spec update_user_metadata(Ecto.UUID.t(), (map() -> map() | :unchanged | {:error, term()})) ::
+          {:ok, User.t()} | {:error, term()}
+  def update_user_metadata(user_id, fun) when is_binary(user_id) and is_function(fun, 1) do
+    Local.in_turn({:user_metadata_update, user_id}, fn ->
+      update_user_metadata(user_id, fun, @metadata_attempts)
+    end)
+  end
+
+  defp update_user_metadata(user_id, fun, attempts) do
+    with %User{metadata: read} = user <- Repo.get_uuid(User, user_id) || {:error, :not_found},
+         metadata when is_map(metadata) <- fun.(read || %{}),
+         {:ok, attrs} <- run_before_user_update(user, %{metadata: metadata}) do
+      "user_metadata"
+      |> Gamend.Lock.serialize(user_id, fn ->
+        case Repo.get(User, user_id) do
+          %User{metadata: ^read} = current -> apply_user_update(current, attrs)
+          %User{} -> :stale
+          nil -> {:error, :not_found}
+        end
+      end)
+      |> case do
+        {:ok, :stale} when attempts > 1 -> update_user_metadata(user_id, fun, attempts - 1)
+        {:ok, :stale} -> {:error, :conflict}
+        {:ok, result} -> result
+        {:error, reason} -> {:error, reason}
+      end
+    else
+      :unchanged -> {:ok, Repo.get_uuid(User, user_id)}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
   @doc """
   Updates a user with the given attributes.
 
@@ -1263,7 +1365,7 @@ defmodule Gamend.Accounts do
 
   # `update_user/2` in two halves, for a read-modify-write that must not hold
   # its lock across the plugin's hook: ask the hook first, then write under the
-  # lock (`Gamend.Hooks.Default`'s payment metadata).
+  # lock (`update_user_metadata/2`).
   @doc false
   @spec run_before_user_update(User.t(), map()) :: {:ok, map()} | {:error, term()}
   def run_before_user_update(%User{} = user, attrs) when is_map(attrs) do

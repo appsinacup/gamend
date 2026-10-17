@@ -65,7 +65,7 @@ defmodule GamendCore.MixProject do
       {:dns_cluster, "~> 0.3.0"},
       {:ueberauth, "~> 0.10"},
       {:ueberauth_apple, "~> 0.7"},
-      {:ueberauth_steam_strategy, "~> 0.2.1"},
+      {:ueberauth_steam_strategy, "~> 0.2.2"},
       {:jose, "~> 1.11"},
       {:guardian, "~> 2.3"},
       {:oban, "~> 2.19"},

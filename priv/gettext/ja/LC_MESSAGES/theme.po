@@ -8,7 +8,7 @@ msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "リアルタイムマルチプレイヤーゲームのためのオープンソースの Elixir ゲームサーバー。"
 
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 msgid "Discord"
 msgstr "Discord"
@@ -31,26 +31,29 @@ msgstr "ガイド"
 msgid "API Docs"
 msgstr "API ドキュメント"
 
+msgid "UI elements"
+msgstr "UI 要素"
+
 msgid "Elixir Docs"
 msgstr "Elixir ドキュメント"
 
 msgid "Deployment Tutorial"
-msgstr ""
+msgstr "デプロイチュートリアル"
 
 msgid "Scaling Guide"
-msgstr ""
+msgstr "スケーリングガイド"
 
 msgid "Docs"
-msgstr ""
+msgstr "ドキュメント"
 
 msgid "Starter Template"
-msgstr ""
+msgstr "スターターテンプレート"
 
 msgid "Store"
 msgstr "ストア"
 
 msgid "Server Stats"
-msgstr ""
+msgstr "サーバー統計"
 
 msgid "Help"
 msgstr "ヘルプ"
@@ -80,7 +83,7 @@ msgid "Groups"
 msgstr "グループ"
 
 msgid "News"
-msgstr ""
+msgstr "ニュース"
 
 msgid "Getting Started"
 msgstr "はじめに"
@@ -89,28 +92,28 @@ msgid "Presentation Video"
 msgstr "紹介動画"
 
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
-msgstr ""
+msgstr "リアルタイムマルチプレイヤーゲームのための**オープンソース**の Elixir ゲームサーバー。バックエンド、プレイヤー向けウェブサイト、管理パネルをひとつに。"
 
 msgid "Gamend"
 msgstr "Gamend"
 
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
-msgstr ""
+msgstr "Gamend の管理パネル、クエスト、ストア、サーバーフックの紹介"
 
 msgid "Benchmarks"
-msgstr ""
+msgstr "ベンチマーク"
 
 msgid "Godot SDK"
-msgstr ""
+msgstr "Godot SDK"
 
 msgid "C++ SDK"
-msgstr ""
+msgstr "C++ SDK"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
-msgstr ""
+msgstr "**マルチプレイヤーゲームのためのバックエンド**：アカウント、ロビー、チャット、リーダーボードなど、ゲーム本体の周りでプレイヤーが期待するものをすべて備えています。さらに、その周りの Web UI として、すぐに使えるプレイヤー向けウェブサイト（ストア、リーダーボード、トーナメント、クエスト、グループ、チャット）と本格的な管理パネルも同梱しています。サーバーサイドスクリプトで、独自のロジックをプレイヤーの手が届かない場所で実行できます。自分のサーバーで運用するもので、ホスティングサービスはありません。"
 
 msgid "What is Gamend?"
-msgstr ""
+msgstr "Gamend とは？"
 
 msgid "Log in"
 msgstr "ログイン"
@@ -119,7 +122,7 @@ msgid "Register"
 msgstr "登録"
 
 msgid "The login page with magic link, password and five OAuth providers"
-msgstr ""
+msgstr "マジックリンク、パスワード、5 つの OAuth プロバイダーに対応したログインページ"
 
 msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
 msgstr "メール、マジックリンク、OAuth、JWT、セッション。登録、ログイン、パスワード再設定、メール認証。"
@@ -128,22 +131,22 @@ msgid "Authentication & Users"
 msgstr "認証とユーザー"
 
 msgid "Lobbies"
-msgstr ""
+msgstr "ロビー"
 
 msgid "Matchmaking"
-msgstr ""
+msgstr "マッチメイキング"
 
 msgid "The matchmaking admin page with live queues, tickets and ready checks"
-msgstr ""
+msgstr "ライブのキュー、チケット、準備確認を表示するマッチメイキング管理ページ"
 
 msgid "Real-time lobbies with passwords, quick join and live updates. Ephemeral parties that join and get matched **as one unit**, a ticket-queue matchmaker and ready checks before anything starts."
-msgstr ""
+msgstr "パスワード、クイック参加、ライブ更新に対応したリアルタイムロビー。**ひとつの単位として**参加・マッチングされる一時的なパーティー、チケットキュー方式のマッチメイカー、そして開始前の準備確認。"
 
 msgid "Lobbies, Parties & Matchmaking"
 msgstr "ロビー、パーティー、マッチメイキング"
 
 msgid "The public groups browser"
-msgstr ""
+msgstr "公開グループの一覧"
 
 msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
 msgstr "フレンド申請、ブロック、リアルタイムのプレゼンス。公開・非公開・非表示のグループ。ダイレクトメッセージとグループメッセージ。"
@@ -152,33 +155,31 @@ msgid "Friends, Groups & Chat"
 msgstr "フレンド、グループ、チャット"
 
 msgid "The quests page with daily, achievement and event quests"
-msgstr ""
+msgstr "デイリー、実績、イベントのクエストが並ぶクエストページ"
 
 msgid "One server-authoritative quest engine for achievements, dailies, seasonal events and quest chains. Bracket tournaments, leaderboards with seasons, and real-time plus push notifications across every feature."
-msgstr ""
+msgstr "実績、デイリー、シーズンイベント、クエストチェーンをひとつで扱う、サーバー権威型のクエストエンジン。トーナメント表形式のトーナメント、シーズン制のリーダーボード、そしてすべての機能にわたるリアルタイム通知とプッシュ通知。"
 
 msgid "Quests, Tournaments & Leaderboards"
-msgstr ""
+msgstr "クエスト、トーナメント、リーダーボード"
 
-#, fuzzy
 msgid "Server Scripting"
-msgstr "サーバースクリプトとスケジューリング"
+msgstr "サーバースクリプト"
 
 msgid "GDScript Hooks"
-msgstr ""
+msgstr "GDScript フック"
 
 msgid "Runtime introspection listing every hook with its implementing plugins"
-msgstr ""
+msgstr "すべてのフックとそれを実装するプラグインを一覧表示するランタイムイントロスペクション"
 
 msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
-msgstr ""
+msgstr "スコア計算、報酬、マッチメイキングのルール、検証のためのサーバーフックを **Elixir、GDScript、Gleam** で記述し、プレイヤーの手が届かない場所で実行できます。永続的なバックグラウンドジョブと cron スケジューリングも組み込み済みです。"
 
 msgid "Server Scripting & Scheduling"
 msgstr "サーバースクリプトとスケジューリング"
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
-msgstr "REST API、リアルタイム WebSocket チャンネル、低遅延の WebRTC DataChannel。管理ポータルと Web UI。"
+msgstr "REST API、リアルタイム WebSocket チャンネル、低遅延の WebRTC DataChannels に加え、オプトインの protobuf リアルタイム形式にも対応。管理ポータルと Web UI は 30 言語に翻訳済み。"
 
 msgid "HTTP, WebSocket & WebRTC"
 msgstr "HTTP、WebSocket、WebRTC"
@@ -190,7 +191,7 @@ msgid "Payment Docs"
 msgstr "決済ドキュメント"
 
 msgid "The built-in store page with priced products"
-msgstr ""
+msgstr "価格付きの商品が並ぶ組み込みストアページ"
 
 msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
 msgstr "Stripe、Google Play、App Store、Steam に対応したサーバーサイド決済。レシート検証、署名付き Webhook の処理、権利の付与、返金の取り消し、そのすべてを管理画面で確認できます。"
@@ -199,34 +200,34 @@ msgid "Payments & Store Integrations"
 msgstr "決済とストア連携"
 
 msgid "Economy"
-msgstr ""
+msgstr "エコノミー"
 
 msgid "Key-Value Store"
-msgstr ""
+msgstr "キーバリューストア"
 
 msgid "The economy admin page with wallets and grant and spend controls"
-msgstr ""
+msgstr "ウォレットと付与・消費の操作を備えたエコノミー管理ページ"
 
 msgid "Virtual currency wallets with an atomic, append-only ledger. Item stacks with grant and consume. A per-player and per-lobby **key-value store**, and object storage with presigned uploads on local disk or any S3-compatible backend."
-msgstr ""
+msgstr "アトミックな追記専用台帳を備えた仮想通貨ウォレット。付与と消費に対応したアイテムスタック。プレイヤー単位・ロビー単位の**キーバリューストア**と、ローカルディスクまたは任意の S3 互換バックエンドへの署名付きアップロードに対応したオブジェクトストレージ。"
 
 msgid "Economy, Inventory & Storage"
-msgstr ""
+msgstr "エコノミー、インベントリ、ストレージ"
 
 msgid "Player Analytics"
-msgstr ""
+msgstr "プレイヤー分析"
 
 msgid "Client Logs"
-msgstr ""
+msgstr "クライアントログ"
 
 msgid "The analytics admin page with DAU and D1, D7 and D30 retention"
-msgstr ""
+msgstr "DAU と D1・D7・D30 リテンションを表示する分析管理ページ"
 
 msgid "D1 / D7 / D30 retention, DAU and payer conversion built in. Client log sessions correlated with the server's own tail for per-player debugging. Prometheus metrics with Grafana, and a load-test harness with published benchmarks."
-msgstr ""
+msgstr "D1 / D7 / D30 リテンション、DAU、課金者コンバージョンを標準搭載。クライアントのログセッションをサーバー自身のログ末尾と関連付け、プレイヤーごとのデバッグが可能。Prometheus メトリクスと Grafana、公開ベンチマーク付きの負荷テストハーネス。"
 
 msgid "Analytics, Logs & Observability"
-msgstr ""
+msgstr "分析、ログ、オブザーバビリティ"
 
 msgid "Game + Backend"
 msgstr "ゲーム + バックエンド"

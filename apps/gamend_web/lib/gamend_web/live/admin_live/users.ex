@@ -186,7 +186,7 @@ defmodule GamendWeb.AdminLive.Users do
                   />
                   <span class="label-text ml-2">Email (password)</span>
                 </label>
-                <span class="text-base-content/50">|</span>
+                <span class="text-muted">|</span>
                 <label class="label cursor-pointer">
                   <input
                     type="checkbox"
@@ -322,7 +322,9 @@ defmodule GamendWeb.AdminLive.Users do
                     <td>
                       <%= if user.profile_url do %>
                         <div class="flex items-center gap-2">
-                          <img src={user.profile_url} alt="avatar" class="w-8 h-8 rounded-full" />
+                          <%!-- Our copy only: a provider's URL is never hotlinked,
+                                not even here (`User.public_avatar_url/1`). --%>
+                          <.user_avatar user={user} class="w-8 h-8" />
                           <a href={user.profile_url} target="_blank" class="text-sm link">Profile</a>
                         </div>
                       <% else %>
@@ -460,6 +462,12 @@ defmodule GamendWeb.AdminLive.Users do
               >
                 KV Data
               </.link>
+              <.link
+                navigate={~p"/admin/analytics/people?user=#{@selected_user.id}"}
+                class="btn btn-surface btn-xs"
+              >
+                Activity
+              </.link>
             </div>
 
             <div
@@ -516,7 +524,7 @@ defmodule GamendWeb.AdminLive.Users do
                   disabled
                 />
                 <label class="label">
-                  <span class="label-text-alt text-base-content/70">
+                  <span class="label-text-alt text-muted">
                     Only the player can change their email, from their account page
                   </span>
                 </label>

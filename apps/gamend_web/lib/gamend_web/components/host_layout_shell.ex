@@ -61,10 +61,17 @@ defmodule GamendWeb.HostLayoutShell do
               tracking, so the three of them re-rendered — and re-sent the
               logo's URL — on every diff the page sent, long after the theme
               stopped moving. --%>
-        <div class="flex-1">
+        <%!-- A container as wide as the room the buttons leave: where that
+              is too narrow for the title (a phone, 360 px), the title is
+              screen-reader text and the logo stands alone, rather than the
+              name spilling under the search button. --%>
+        <%!-- The breadcrumb trail rides beside the name, so it costs the page
+              no row of its own. Same container: the trail shows only while
+              the room the buttons leave holds it (`breadcrumbs/1`). --%>
+        <div class="@container min-w-0 flex-1 flex items-center gap-2">
           <a
             href={GamendWeb.HostLayouts.localized_href(~p"/", @locale)}
-            class="flex-1 flex w-fit items-center gap-2"
+            class="flex shrink-0 w-fit items-center gap-2"
           >
             <%!-- Same rule as `CoreComponents.flag/1`: this is on screen at
                   load on every page, so it is fetched with the HTML, decoded
@@ -100,19 +107,28 @@ defmodule GamendWeb.HostLayoutShell do
               decoding="sync"
               class="hidden [[data-theme=dark]_&]:block"
             />
-            <span class="text-lg font-bold">{Map.get(@theme, "title")}</span>
+            <%!-- The title shows on a phone too (2026-10-09, user: the logo
+                  alone left the bar empty). A two-word title fits a 375 px
+                  phone's slot on two lines, and `leading-tight` keeps two
+                  lines inside the bar's 4rem, so a page's sticky parts
+                  (`top-16`) still sit under it. Only a slot under 8rem
+                  keeps the logo alone. --%>
+            <span class="text-lg font-bold leading-tight @max-[8rem]:sr-only">
+              {Map.get(@theme, "title")}
+            </span>
             <span
-              :if={theme_tagline(@theme)}
+              :if={theme_tagline(@theme) && length(@breadcrumbs) < 2}
               class="text-sm opacity-80 ms-1 hidden xl:inline"
             >
               {theme_tagline(@theme)}
             </span>
           </a>
+          <.breadcrumbs trail={@breadcrumbs} />
         </div>
         <%!-- The language picker sits outside both navs: one button in the bar
               at every width, rather than a dropdown up here and a different
               control buried in the phone menu. --%>
-        <div class="flex-none flex items-center gap-2">
+        <div class="flex-none flex items-center gap-1 xl:gap-2">
           <GamendWeb.HostLayoutNavigation.desktop_nav
             current_scope={@current_scope}
             current_path={@current_path}
@@ -141,13 +157,21 @@ defmodule GamendWeb.HostLayoutShell do
             <.icon name="hero-magnifying-glass-solid" class="w-5 h-5" />
           </button>
 
-          <GamendWeb.HostLayoutNavigation.language_dropdown
-            :if={length(@known_locales) > 1}
-            locale={@locale}
-            current_path={@current_path}
-            current_query={@current_query}
-            known_locales={@known_locales}
-          />
+          <%!-- From `xl`, last in the bar, after the nav. Below it the phone
+                bar's items join this row (`mobile_nav/1` is `contents`
+                there) and the picker sits between its icons and the menu
+                (2026-10-16, user: rightmost, but left of the menu). One
+                picker in the page: its list of locales is not drawn twice.
+                The order goes on the picker's button and dropdown, two
+                levels down: both wrappers are `contents`. --%>
+          <div :if={length(@known_locales) > 1} class="contents max-xl:[&>*>*]:order-1">
+            <GamendWeb.HostLayoutNavigation.language_dropdown
+              locale={@locale}
+              current_path={@current_path}
+              current_query={@current_query}
+              known_locales={@known_locales}
+            />
+          </div>
 
           <GamendWeb.HostLayoutNavigation.mobile_nav
             current_scope={@current_scope}
@@ -186,25 +210,17 @@ defmodule GamendWeb.HostLayoutShell do
         <GamendWeb.HostLayouts.flash_group flash={@flash} />
       <% else %>
         <main id="main-content" class="relative z-[2] px-4 py-4 sm:px-6 lg:px-8 flex-1">
-          <%!-- The trail sits above the content and pushes it down, which
-                knocks a full-height hero off centre. `--breadcrumb-offset` is
-                the trail's own height plus the stack gap; a hero subtracts it
-                from `100dvh` so its first screen still ends at the fold. --%>
           <%!-- Reading width by default. A `wide` page brings its own side
                 columns — a docs sidebar, a table of contents — and the article
                 between them is what should keep the reading width, so the
                 frame lets it out to the screen. --%>
-          <div
-            class={[
-              "mx-auto space-y-4",
-              if(@wide,
-                do: "max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-screen-2xl",
-                else: "max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-6xl"
-              )
-            ]}
-            style={if length(@breadcrumbs) > 1, do: "--breadcrumb-offset: 2.25rem"}
-          >
-            <.breadcrumbs trail={@breadcrumbs} />
+          <div class={[
+            "mx-auto",
+            if(@wide,
+              do: "max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-7xl 2xl:max-w-screen-2xl",
+              else: "max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-6xl"
+            )
+          ]}>
             <%!-- The page's own frame, applied here so no page has to know it:
                   one gap between blocks and one landing before the footer,
                   whichever repo wrote the page. A page that set its own `py-6`
@@ -218,7 +234,7 @@ defmodule GamendWeb.HostLayoutShell do
         </main>
 
         <GamendWeb.HostLayouts.flash_group flash={@flash} />
-        <footer class="px-4 py-8 sm:px-6 lg:px-8 text-sm text-base-content/70">
+        <footer class="px-4 py-8 sm:px-6 lg:px-8 text-sm text-muted">
           <div class="mx-auto grid max-w-2xl gap-6 md:max-w-3xl md:grid-cols-2 lg:max-w-4xl xl:max-w-6xl xl:grid-cols-4">
             <%!-- The column label is a `<p>`, not an `<h2>`: these name link
                   groups, not document sections, and as headings they were half
@@ -231,15 +247,26 @@ defmodule GamendWeb.HostLayoutShell do
                 {section["title"]}
               </p>
               <nav aria-label={section["title"]} class="flex flex-col gap-1.5">
-                <a
-                  :for={link <- visible_footer_links(section, @current_scope)}
-                  href={link["href"]}
-                  target={if(link["external"], do: "_blank", else: nil)}
-                  rel={if(link["external"], do: "noopener noreferrer", else: nil)}
-                  class="w-fit hover:text-base-content hover:underline"
-                >
-                  {link["label"]}
-                </a>
+                <%= for link <- visible_footer_links(section, @current_scope) do %>
+                  <span
+                    :if={GamendWeb.HostLayoutNavigation.disabled?(link)}
+                    aria-disabled="true"
+                    class="inline-flex w-fit items-center gap-1.5 opacity-70"
+                  >
+                    {link["label"]}
+                    <GamendWeb.HostLayoutNavigation.nav_badge entry={link} />
+                  </span>
+                  <a
+                    :if={!GamendWeb.HostLayoutNavigation.disabled?(link)}
+                    href={link["href"]}
+                    target={if(link["external"], do: "_blank", else: nil)}
+                    rel={if(link["external"], do: "noopener noreferrer", else: nil)}
+                    class="inline-flex w-fit items-center gap-1.5 hover:text-base-content hover:underline"
+                  >
+                    {link["label"]}
+                    <GamendWeb.HostLayoutNavigation.nav_badge entry={link} />
+                  </a>
+                <% end %>
               </nav>
             </div>
           </div>
@@ -339,7 +366,7 @@ defmodule GamendWeb.HostLayoutShell do
         >
         </ul>
 
-        <p data-gamend-search-empty hidden class="px-3 py-4 text-sm text-base-content/60">
+        <p data-gamend-search-empty hidden class="px-3 py-4 text-sm text-muted">
           {GamendWeb.HostLayouts.translate("No results.")}
         </p>
 
@@ -356,7 +383,7 @@ defmodule GamendWeb.HostLayoutShell do
               class="flex w-full min-w-0 items-center justify-between gap-3 rounded-lg px-3 py-2"
             >
               <span data-row-title class="min-w-0 truncate font-semibold"></span>
-              <span data-row-subtitle class="min-w-0 truncate text-xs opacity-60"></span>
+              <span data-row-subtitle class="min-w-0 truncate text-xs text-muted"></span>
             </a>
           </li>
         </template>
@@ -373,21 +400,56 @@ defmodule GamendWeb.HostLayoutShell do
 
   Renders nothing for a bare `[{"Home", nil}]`: a trail with no ancestors tells
   the reader nothing, and Google ignores a single-item `BreadcrumbList`.
+
+  Drawn in the navbar, after the site name, so the first crumb (the home page)
+  is left out: the name beside it is that link. One line: where the trail is
+  longer than the room, its EARLIEST crumbs go, whole, and the page's own
+  stay. A crumb cut to a few letters each (`Dicti… / Spa… / Pe…`) said
+  nothing. The line is filled from the current page backwards (`order`, laid
+  out `flex-row-reverse`), and what does not fit wraps to a second line the
+  `h-5` clips. The markup keeps the trail's order, so a screen reader hears
+  all of it. A crumb alone on the line and still too long is cut short, its
+  full name on `title`.
+
+  Shown only where there is room for it. Not on a phone (below `sm`), and not
+  while the navbar's buttons leave its container narrower than `22rem`: from
+  `xl` the whole nav is in the bar, and the trail comes back from about
+  1440 px. Below that the page's own heading (its Back, its menus) is the way
+  up.
   """
   def breadcrumbs(assigns) do
+    assigns = assign(assigns, :crumbs, assigns.trail |> Enum.drop(1) |> Enum.with_index())
+    assigns = assign(assigns, :last, length(assigns.crumbs) - 1)
+
     ~H"""
     <nav
       :if={length(@trail) > 1}
       aria-label={GamendWeb.HostLayouts.translate("Breadcrumb")}
-      class="text-sm text-base-content/60"
+      class="hidden min-w-0 text-sm text-muted sm:flex @max-[22rem]:hidden"
     >
-      <ol class="flex flex-wrap items-center gap-2">
-        <li :for={{{label, path}, index} <- Enum.with_index(@trail)} class="flex items-center gap-2">
-          <span :if={index > 0} aria-hidden="true">/</span>
-          <.link :if={path} href={path} class="hover:text-primary transition-colors">
+      <ol class="flex h-5 min-w-0 flex-row-reverse flex-wrap items-center justify-end gap-x-2 overflow-hidden">
+        <li
+          :for={{{label, path}, index} <- @crumbs}
+          class="flex min-w-0 items-center gap-2"
+          style={"order: #{@last - index}"}
+        >
+          <span aria-hidden="true" class="shrink-0">/</span>
+          <.link
+            :if={path}
+            href={path}
+            title={label}
+            class="truncate hover:text-primary transition-colors"
+          >
             {label}
           </.link>
-          <span :if={is_nil(path)} aria-current="page" class="text-base-content/90">{label}</span>
+          <span
+            :if={is_nil(path)}
+            aria-current="page"
+            title={label}
+            class="truncate text-base-content"
+          >
+            {label}
+          </span>
         </li>
       </ol>
     </nav>

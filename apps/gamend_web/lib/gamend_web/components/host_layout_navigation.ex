@@ -127,7 +127,8 @@ defmodule GamendWeb.HostLayoutNavigation do
   def user_menu(assigns) do
     assigns =
       assign(assigns,
-        custom_link_active?: any_entry_active?(assigns.account_links, assigns.current_path)
+        custom_link_active?: any_entry_active?(assigns.account_links, assigns.current_path),
+        anonymous?: Scope.anonymous?(assigns.current_scope)
       )
 
     ~H"""
@@ -145,12 +146,7 @@ defmodule GamendWeb.HostLayoutNavigation do
       ]}>
         <.user_avatar user={Scope.user(@current_scope)} class="w-6 h-6" />
         <.player_name name={display_name(Scope.user(@current_scope))} class="max-w-[8rem]" />
-        <span
-          :if={@notif_unread_count > 0}
-          class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 text-xs font-bold rounded-full bg-error text-error-content"
-        >
-          {@notif_unread_count}
-        </span>
+        <.count_pill count={@notif_unread_count} />
         <.icon name="hero-chevron-down-solid" class="w-3 h-3" />
       </summary>
       <ul class="menu menu-sm dropdown-content mt-2 z-[1] p-2 shadow-lg bg-base-100 rounded-box w-56">
@@ -165,6 +161,9 @@ defmodule GamendWeb.HostLayoutNavigation do
               class="max-w-full font-semibold"
             />
             <.user_title user={Scope.user(@current_scope)} />
+            <span :if={@anonymous?} class="text-xs font-normal text-muted">
+              {GamendWeb.HostLayouts.translate("Guest")}
+            </span>
           </span>
         </li>
         <li>
@@ -189,15 +188,10 @@ defmodule GamendWeb.HostLayoutNavigation do
           >
             <.icon name="hero-bell-solid" class="w-4 h-4" />
             {GamendWeb.HostLayouts.translate("Notifications")}
-            <span
-              :if={@notif_unread_count > 0}
-              class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 text-xs font-bold rounded-full bg-error text-error-content"
-            >
-              {@notif_unread_count}
-            </span>
+            <.count_pill count={@notif_unread_count} />
           </.link>
         </li>
-        <li>
+        <li :if={GamendWeb.Features.enabled?(:web_chat)}>
           <.link
             href={lp(~p"/chat")}
             class={[if(here?(@current_path, "/chat"), do: "menu-active", else: "")]}
@@ -206,12 +200,30 @@ defmodule GamendWeb.HostLayoutNavigation do
             {GamendWeb.HostLayouts.translate("Chat")}
           </.link>
         </li>
-        <li class="border-t border-base-300 mt-1 pt-1">
-          <.link href={~p"/users/log_out"} method="delete">
-            <.icon name="hero-arrow-left-on-rectangle-solid" class="w-4 h-4" />
-            {GamendWeb.HostLayouts.translate("Log out")}
-          </.link>
-        </li>
+        <%!-- A guest account has no way back in once its session is gone, so
+              it is never offered Log out: Register keeps everything on it,
+              Log in moves it onto an account they already have. --%>
+        <%= if @anonymous? do %>
+          <li class="border-t border-base-300 mt-1 pt-1">
+            <.link href={lp(~p"/users/register")}>
+              <.icon name="hero-user-plus-solid" class="w-4 h-4" />
+              {GamendWeb.HostLayouts.translate("Register")}
+            </.link>
+          </li>
+          <li>
+            <.link href={lp(~p"/users/log_in")}>
+              <.icon name="hero-arrow-right-on-rectangle-solid" class="w-4 h-4" />
+              {GamendWeb.HostLayouts.translate("Log in")}
+            </.link>
+          </li>
+        <% else %>
+          <li class="border-t border-base-300 mt-1 pt-1">
+            <.link href={~p"/users/log_out"} method="delete">
+              <.icon name="hero-arrow-left-on-rectangle-solid" class="w-4 h-4" />
+              {GamendWeb.HostLayouts.translate("Log out")}
+            </.link>
+          </li>
+        <% end %>
       </ul>
     </details>
     """
@@ -239,14 +251,30 @@ defmodule GamendWeb.HostLayoutNavigation do
         authenticated_links: Enum.reject(assigns.authenticated_links, &pinned_link?/1)
       )
 
+    # On a phone every count is behind the hamburger, so it shows their total.
+    menu_count =
+      if(assigns.current_scope, do: assigns.notif_unread_count, else: 0) +
+        Enum.sum(
+          Enum.map(
+            assigns.primary_links ++ assigns.authenticated_links ++ assigns.account_links,
+            &Map.get(&1, "count", 0)
+          )
+        )
+
+    assigns = assign(assigns, :menu_count, menu_count)
+
     ~H"""
-    <div class="xl:hidden flex items-center gap-1">
+    <%!-- `contents` below `xl`: its icons and its menu are items of the
+          bar's row, so the site language's picker (ordered `1`) sits
+          between them and the menu (ordered `2`). --%>
+    <div class="max-xl:contents xl:hidden">
       <.mobile_pinned_links links={@pinned_links} current_path={@current_path} />
-      <details class="dropdown dropdown-end" data-navbar-dropdown>
+      <details class="dropdown dropdown-end max-xl:order-2" data-navbar-dropdown>
         <summary
           aria-label={GamendWeb.HostLayouts.translate("Open navigation menu")}
-          class="btn btn-ghost btn-circle list-none"
+          class="btn btn-ghost btn-circle list-none relative"
         >
+          <.count_pill count={@menu_count} class="absolute -top-1 -end-1" />
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -264,12 +292,18 @@ defmodule GamendWeb.HostLayoutNavigation do
               not cut it off) and scroll inside. `overscroll-contain` keeps the
               scroll from continuing into the page behind it.
 
-              `flex-nowrap` is what makes the cap scroll instead of reflow:
+              `grid` is also what makes the cap scroll instead of reflow:
               daisyUI's `.menu` is `flex-flow: column wrap`, so a max-height on
               its own wrapped the items into a SECOND COLUMN off to the side —
               vertically unscrollable and horizontally clipped, which is worse
-              than the overflow it was meant to fix. --%>
-        <ul class="menu menu-sm dropdown-content mt-3 z-[1] max-h-[calc(100dvh-5rem)] flex-nowrap overflow-y-auto overflow-x-hidden overscroll-contain p-2 shadow bg-base-100 rounded-box w-80 text-lg">
+              than the overflow it was meant to fix.
+
+              The rows are left-aligned in ONE centred column: the track is as
+              wide as the widest row (`fit-content`, never past the panel), and
+              at least 12.5rem (the widest row in any locale: Russian, 197px), so
+              opening a group with a longer label does not shift the column
+              sideways. --%>
+        <ul class="menu menu-sm dropdown-content mt-3 z-[1] max-h-[calc(100dvh-5rem)] grid grid-cols-[fit-content(100%)] justify-center content-start *:min-w-50 overflow-y-auto overflow-x-hidden overscroll-contain px-5 py-4 shadow bg-base-100 rounded-box w-72 text-lg">
           <%= if @current_scope do %>
             <.mobile_account_menu
               current_scope={@current_scope}
@@ -282,19 +316,21 @@ defmodule GamendWeb.HostLayoutNavigation do
               links={@primary_links ++ @authenticated_links}
               current_path={@current_path}
               inactive_class="btn-ghost"
+              group="mobile-nav"
             />
           <% else %>
             <.mobile_nav_links
               links={@guest_links}
               current_path={@current_path}
               inactive_class="btn-ghost"
+              group="mobile-nav"
             />
 
             <li>
               <a
                 href={lp(~p"/users/log_in")}
                 class={[
-                  "btn w-full",
+                  "btn w-full justify-start",
                   if(here?(@current_path, "/users/log_in"),
                     do: "btn-primary",
                     else: "btn-ghost"
@@ -309,7 +345,7 @@ defmodule GamendWeb.HostLayoutNavigation do
               <a
                 href={lp(~p"/users/register")}
                 class={[
-                  "btn w-full",
+                  "btn w-full justify-start",
                   if(here?(@current_path, "/users/register"),
                     do: "btn-primary",
                     else: "btn-ghost"
@@ -325,13 +361,14 @@ defmodule GamendWeb.HostLayoutNavigation do
               links={@primary_links}
               current_path={@current_path}
               inactive_class="btn-ghost"
+              group="mobile-nav"
             />
           <% end %>
 
           <%!-- The language picker lives in the header bar beside this menu,
                 rendered once for both layouts — see `desktop_nav/1`. --%>
           <li class="mt-2">
-            <div class="flex justify-center">
+            <div class="flex justify-start">
               <GamendWeb.HostLayouts.theme_toggle />
             </div>
           </li>
@@ -457,11 +494,11 @@ defmodule GamendWeb.HostLayoutNavigation do
             <.icon name="hero-globe-alt-solid" class="w-4 h-4" />
             {@label}
           </h3>
-          <label
-            for="lang-modal"
-            aria-label={GamendWeb.HostLayouts.translate("Close language picker")}
-            class="btn btn-ghost btn-square btn-sm"
-          >
+          <%!-- The name is text: a `<label>` may not carry `aria-label`. --%>
+          <label for="lang-modal" class="btn btn-ghost btn-square btn-sm">
+            <span class="sr-only">
+              {GamendWeb.HostLayouts.translate("Close language picker")}
+            </span>
             <.icon name="hero-x-mark-solid" class="size-4" />
           </label>
         </div>
@@ -494,9 +531,14 @@ defmodule GamendWeb.HostLayoutNavigation do
   defp locale_option(assigns) do
     ~H"""
     <li class="min-w-0 list-none">
+      <%!-- `data-no-live-nav`: a language switch is the HTTP request that
+            `LocalePath` reads (`?setlang=`, a new prefix). Moved over the
+            socket, `/x?setlang=en` from an unprefixed page in another
+            language would mount in the language being left. --%>
       <a
         href={@link.href}
         rel={@link[:rel]}
+        data-no-live-nav
         aria-current={if(@link.locale == @locale, do: "true")}
         class={[
           "flex min-w-0 items-center gap-2 rounded px-2 py-2 text-sm transition-colors",
@@ -543,6 +585,7 @@ defmodule GamendWeb.HostLayoutNavigation do
   attr :links, :list, default: []
   attr :current_path, :string, default: nil
   attr :inactive_class, :string, required: true
+  attr :group, :string, default: nil
 
   defp mobile_nav_links(assigns) do
     assigns = assign(assigns, :best_href, best_href(assigns.links, assigns.current_path))
@@ -555,6 +598,7 @@ defmodule GamendWeb.HostLayoutNavigation do
           current_path={@current_path}
           best_href={@best_href}
           inactive_class={@inactive_class}
+          group={@group}
         />
       </li>
     <% end %>
@@ -565,26 +609,41 @@ defmodule GamendWeb.HostLayoutNavigation do
   attr :current_path, :string, default: nil
 
   # Compact inline buttons for "mobile": "pinned" leaf links, shown left of the
-  # hamburger. Icon + (possibly dynamic) label, no dropdown wrapping.
+  # hamburger. Icon + (possibly dynamic) label, no dropdown wrapping. A link
+  # with an icon shows the icon alone, its label for a screen reader and on
+  # hover: five pinned sections fit a phone's bar as icons, not as words. A
+  # readonly entry (a coin balance) keeps its label: the number is the point.
   defp mobile_pinned_links(assigns) do
     ~H"""
     <a
       :for={link <- @links}
-      href={if(readonly?(link), do: nil, else: link["href"])}
-      aria-disabled={if(readonly?(link), do: "true")}
+      href={if(inert?(link), do: nil, else: link["href"])}
+      title={if(icon_only?(link), do: translate_label(link["label"]))}
+      aria-disabled={if(inert?(link), do: "true")}
+      data-motion-text={if(readonly?(link), do: "pop")}
       class={
-        if readonly?(link) do
-          "inline-flex items-center gap-1 px-2 pointer-events-none cursor-default"
-        else
-          [
-            "btn btn-ghost btn-sm gap-1 px-2",
-            if(entry_active?(link, @current_path), do: "btn-active")
-          ]
+        cond do
+          readonly?(link) ->
+            "inline-flex items-center gap-1 px-2 pointer-events-none cursor-default"
+
+          disabled?(link) ->
+            "btn btn-ghost btn-sm gap-1 px-2 pointer-events-none cursor-default opacity-70"
+
+          # The page's own link is `btn-primary`, as on the desktop bar.
+          true ->
+            [
+              "btn btn-sm gap-1 px-2",
+              if(entry_active?(link, @current_path), do: "btn-primary", else: "btn-ghost")
+            ]
         end
       }
     >
       <.icon :if={link["icon"]} name={link["icon"]} class={icon_class(link["color"])} />
-      <span class="text-sm font-semibold">{translate_label(link["label"])}</span>
+      <span class={["text-sm font-semibold", icon_only?(link) && "sr-only"]}>
+        {translate_label(link["label"])}
+      </span>
+      <.nav_badge entry={link} />
+      <.count_pill count={link["count"]} />
     </a>
     """
   end
@@ -594,14 +653,19 @@ defmodule GamendWeb.HostLayoutNavigation do
     Map.get(entry, "mobile") == "pinned" and not dropdown_entry?(entry)
   end
 
+  # A pinned link drawn as its icon on a phone: one with an icon that is not
+  # a readonly badge.
+  defp icon_only?(entry), do: is_binary(entry["icon"]) and not readonly?(entry)
+
   attr :current_scope, :map, required: true
   attr :current_path, :string, default: nil
   attr :notif_unread_count, :integer, default: 0
   attr :account_links, :list, default: []
 
   # Mobile account section: collapsible group headed by the user's name (like
-  # the desktop user menu). Holds Account, Notifications, Chat, then the
-  # config account_links (admin items) last, then Log out.
+  # the desktop user menu). Holds Account, Notifications, Chat (unless
+  # `web_chat` is off), then the config account_links (admin items) last,
+  # then Log out.
   defp mobile_account_menu(assigns) do
     active? =
       account_path_active?(assigns.current_path, "/users/settings") or
@@ -609,35 +673,34 @@ defmodule GamendWeb.HostLayoutNavigation do
         account_path_active?(assigns.current_path, "/chat") or
         any_entry_active?(assigns.account_links, assigns.current_path)
 
-    assigns = assign(assigns, active?: active?)
+    assigns =
+      assign(assigns, active?: active?, anonymous?: Scope.anonymous?(assigns.current_scope))
 
     ~H"""
     <li class="w-full">
-      <details open={@active?} class="group w-full">
+      <details open={@active?} name="mobile-nav" class="group w-full">
         <summary class={[
-          "btn w-full relative cursor-pointer list-none summary-no-marker",
+          "btn w-full justify-start pe-10 relative cursor-pointer list-none summary-no-marker",
           if(@active?, do: "btn-primary", else: "btn-ghost")
         ]}>
           <span class="flex items-center gap-2">
             <.user_avatar user={Scope.user(@current_scope)} class="w-5 h-5" />
             <.player_name name={display_name(Scope.user(@current_scope))} class="max-w-full" />
-            <span
-              :if={@notif_unread_count > 0}
-              class="ms-0.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 text-xs font-bold rounded-full bg-error text-error-content"
-            >
-              {@notif_unread_count}
-            </span>
+            <.count_pill count={@notif_unread_count} class="ms-0.5" />
           </span>
           <.icon
             name="hero-chevron-down-solid"
-            class="w-3 h-3 absolute end-3 transition-transform group-open:rotate-180"
+            class="w-3 h-3 absolute end-4 transition-transform group-open:rotate-180"
           />
         </summary>
-        <ul class="ps-4 mt-1 w-full">
+        <ul class="mt-1">
           <li class="w-full">
             <a
               href={lp(~p"/users/settings")}
-              class={["btn w-full", account_item_class(@current_path, "/users/settings")]}
+              class={[
+                "btn w-full justify-start",
+                account_item_class(@current_path, "/users/settings")
+              ]}
             >
               <.icon name="hero-user-circle-solid" class="w-4 h-4" />
               {GamendWeb.HostLayouts.translate("Account")}
@@ -646,20 +709,18 @@ defmodule GamendWeb.HostLayoutNavigation do
           <li class="w-full">
             <a
               href={lp(~p"/notifications")}
-              class={["btn w-full", account_item_class(@current_path, "/notifications")]}
+              class={["btn w-full justify-start", account_item_class(@current_path, "/notifications")]}
             >
               <.icon name="hero-bell-solid" class="w-4 h-4" />
               {GamendWeb.HostLayouts.translate("Notifications")}
-              <span
-                :if={@notif_unread_count > 0}
-                class="ms-0.5 inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 text-xs font-bold rounded-full bg-error text-error-content"
-              >
-                {@notif_unread_count}
-              </span>
+              <.count_pill count={@notif_unread_count} class="ms-0.5" />
             </a>
           </li>
-          <li class="w-full">
-            <a href={lp(~p"/chat")} class={["btn w-full", account_item_class(@current_path, "/chat")]}>
+          <li :if={GamendWeb.Features.enabled?(:web_chat)} class="w-full">
+            <a
+              href={lp(~p"/chat")}
+              class={["btn w-full justify-start", account_item_class(@current_path, "/chat")]}
+            >
               <.icon name="hero-chat-bubble-left-right-solid" class="w-4 h-4" />
               {GamendWeb.HostLayouts.translate("Chat")}
             </a>
@@ -669,12 +730,31 @@ defmodule GamendWeb.HostLayoutNavigation do
             current_path={@current_path}
             inactive_class="btn-ghost"
           />
-          <li class="border-t border-base-300 mt-1 pt-1 w-full">
-            <.link href={~p"/users/log_out"} method="delete" class="btn btn-ghost w-full">
-              <.icon name="hero-arrow-left-on-rectangle-solid" class="w-4 h-4" />
-              {GamendWeb.HostLayouts.translate("Log out")}
-            </.link>
-          </li>
+          <%= if @anonymous? do %>
+            <li class="border-t border-base-300 mt-1 pt-1 w-full">
+              <a href={lp(~p"/users/register")} class="btn btn-ghost w-full justify-start">
+                <.icon name="hero-user-plus-solid" class="w-4 h-4" />
+                {GamendWeb.HostLayouts.translate("Register")}
+              </a>
+            </li>
+            <li class="w-full">
+              <a href={lp(~p"/users/log_in")} class="btn btn-ghost w-full justify-start">
+                <.icon name="hero-arrow-right-on-rectangle-solid" class="w-4 h-4" />
+                {GamendWeb.HostLayouts.translate("Log in")}
+              </a>
+            </li>
+          <% else %>
+            <li class="border-t border-base-300 mt-1 pt-1 w-full">
+              <.link
+                href={~p"/users/log_out"}
+                method="delete"
+                class="btn btn-ghost w-full justify-start"
+              >
+                <.icon name="hero-arrow-left-on-rectangle-solid" class="w-4 h-4" />
+                {GamendWeb.HostLayouts.translate("Log out")}
+              </.link>
+            </li>
+          <% end %>
         </ul>
       </details>
     </li>
@@ -706,6 +786,7 @@ defmodule GamendWeb.HostLayoutNavigation do
         ]}>
           <.icon :if={@link["icon"]} name={@link["icon"]} class={icon_class(@link["color"])} />
           {translate_label(@link["label"])}
+          <.count_pill count={@link["count"]} />
           <.icon name="hero-chevron-down-solid" class="w-3 h-3" />
         </summary>
         <ul class="menu menu-sm dropdown-content mt-2 z-[1] p-2 shadow-lg bg-base-100 rounded-box w-64">
@@ -714,20 +795,28 @@ defmodule GamendWeb.HostLayoutNavigation do
       </details>
     <% else %>
       <a
-        href={if(readonly?(@link), do: nil, else: @link["href"])}
+        href={if(inert?(@link), do: nil, else: @link["href"])}
         target={if(@link["external"], do: "_blank", else: nil)}
         rel={if(@link["external"], do: "noopener noreferrer", else: nil)}
-        aria-disabled={if(readonly?(@link), do: "true")}
+        aria-disabled={if(inert?(@link), do: "true")}
+        data-motion-text={if(readonly?(@link), do: "pop")}
         class={
-          if readonly?(@link) do
-            "inline-flex items-center gap-2 px-2 pointer-events-none cursor-default"
-          else
-            ["btn", if(@active?, do: "btn-primary", else: @inactive_class)]
+          cond do
+            readonly?(@link) ->
+              "inline-flex items-center gap-2 px-2 pointer-events-none cursor-default"
+
+            disabled?(@link) ->
+              ["btn pointer-events-none cursor-default opacity-70", @inactive_class]
+
+            true ->
+              ["btn", if(@active?, do: "btn-primary", else: @inactive_class)]
           end
         }
       >
         <.icon :if={@link["icon"]} name={@link["icon"]} class={icon_class(@link["color"])} />
         {translate_label(@link["label"])}
+        <.nav_badge entry={@link} />
+        <.count_pill count={@link["count"]} />
       </a>
     <% end %>
     """
@@ -738,6 +827,12 @@ defmodule GamendWeb.HostLayoutNavigation do
   attr :inactive_class, :string, required: true
   attr :best_href, :string, default: nil
 
+  # `group` is the top-level groups' shared `<details name>`: the browser keeps
+  # one of them open, so opening Social closes Learn and the rest stay on a
+  # phone's screen. Nested groups get none — one sharing its parent's name
+  # would close the parent it sits in.
+  attr :group, :string, default: nil
+
   defp mobile_nav_link_item(assigns) do
     active? = sibling_active?(assigns.link, assigns.current_path, assigns[:best_href])
 
@@ -745,21 +840,22 @@ defmodule GamendWeb.HostLayoutNavigation do
 
     ~H"""
     <%= if dropdown_entry?(@link) do %>
-      <details open={@active?} class="group w-full">
+      <details open={@active?} name={@group} class="group w-full">
         <summary class={[
-          "btn w-full relative cursor-pointer list-none summary-no-marker",
+          "btn w-full justify-start pe-10 relative cursor-pointer list-none summary-no-marker",
           if(@active?, do: "btn-primary", else: @inactive_class)
         ]}>
           <span class="flex items-center gap-2">
             <.icon :if={@link["icon"]} name={@link["icon"]} class={icon_class(@link["color"])} />
             <span>{translate_label(@link["label"])}</span>
+            <.count_pill count={@link["count"]} />
           </span>
           <.icon
             name="hero-chevron-down-solid"
-            class="w-3 h-3 absolute end-3 transition-transform group-open:rotate-180"
+            class="w-3 h-3 absolute end-4 transition-transform group-open:rotate-180"
           />
         </summary>
-        <ul class="ps-4 mt-1 w-full">
+        <ul class="mt-1">
           <.mobile_nav_links
             links={@link["items"]}
             current_path={@current_path}
@@ -769,20 +865,31 @@ defmodule GamendWeb.HostLayoutNavigation do
       </details>
     <% else %>
       <a
-        href={if(readonly?(@link), do: nil, else: @link["href"])}
+        href={if(inert?(@link), do: nil, else: @link["href"])}
         target={if(@link["external"], do: "_blank", else: nil)}
         rel={if(@link["external"], do: "noopener noreferrer", else: nil)}
-        aria-disabled={if(readonly?(@link), do: "true")}
+        aria-disabled={if(inert?(@link), do: "true")}
+        data-motion-text={if(readonly?(@link), do: "pop")}
         class={
-          if readonly?(@link) do
-            "inline-flex items-center gap-2 px-2 w-full pointer-events-none cursor-default"
-          else
-            ["btn w-full", if(@active?, do: "btn-primary", else: @inactive_class)]
+          cond do
+            readonly?(@link) ->
+              "inline-flex items-center gap-2 px-2 w-full pointer-events-none cursor-default"
+
+            disabled?(@link) ->
+              [
+                "btn w-full justify-start pointer-events-none cursor-default opacity-70",
+                @inactive_class
+              ]
+
+            true ->
+              ["btn w-full justify-start", if(@active?, do: "btn-primary", else: @inactive_class)]
           end
         }
       >
         <.icon :if={@link["icon"]} name={@link["icon"]} class={icon_class(@link["color"])} />
         {translate_label(@link["label"])}
+        <.nav_badge entry={@link} />
+        <.count_pill count={@link["count"]} />
       </a>
     <% end %>
     """
@@ -817,6 +924,7 @@ defmodule GamendWeb.HostLayoutNavigation do
           <summary class={[if(@active?, do: "menu-active", else: "")]}>
             <.icon :if={@entry["icon"]} name={@entry["icon"]} class={icon_class(@entry["color"])} />
             {translate_label(@entry["label"])}
+            <.count_pill count={@entry["count"]} />
           </summary>
           <ul>
             <.dropdown_menu_entries entries={@entry["items"]} current_path={@current_path} />
@@ -826,17 +934,20 @@ defmodule GamendWeb.HostLayoutNavigation do
     <% else %>
       <li>
         <a
-          href={if(readonly?(@entry), do: nil, else: @entry["href"])}
+          href={if(inert?(@entry), do: nil, else: @entry["href"])}
           target={if(@entry["external"], do: "_blank", else: nil)}
           rel={if(@entry["external"], do: "noopener noreferrer", else: nil)}
-          aria-disabled={if(readonly?(@entry), do: "true")}
+          aria-disabled={if(inert?(@entry), do: "true")}
           class={[
             if(@active?, do: "menu-active", else: ""),
-            if(readonly?(@entry), do: "pointer-events-none cursor-default")
+            if(inert?(@entry), do: "pointer-events-none cursor-default"),
+            if(disabled?(@entry), do: "opacity-70")
           ]}
         >
           <.icon :if={@entry["icon"]} name={@entry["icon"]} class={icon_class(@entry["color"])} />
           {translate_label(@entry["label"])}
+          <.nav_badge entry={@entry} />
+          <.count_pill count={@entry["count"]} />
         </a>
       </li>
     <% end %>
@@ -847,23 +958,74 @@ defmodule GamendWeb.HostLayoutNavigation do
     scope = assigns.current_scope
     auth_level = auth_level(Scope.user(scope))
 
+    entries = fn key, default_auth ->
+      assigns.navigation
+      |> section_entries(key, auth_level, default_auth, scope)
+      |> Enum.map(&resolve_entry_count(&1, scope))
+      |> Enum.map(&resolve_entry_href(&1, scope, assigns[:current_path], assigns[:locale]))
+    end
+
     assign(assigns,
-      primary_links:
-        section_entries(assigns.navigation, "primary_links", auth_level, "any", scope),
-      guest_links:
-        section_entries(assigns.navigation, "guest_links", auth_level, "unauthenticated", scope),
-      authenticated_links:
-        section_entries(
-          assigns.navigation,
-          "authenticated_links",
-          auth_level,
-          "authenticated",
-          scope
-        ),
-      account_links:
-        section_entries(assigns.navigation, "account_links", auth_level, "authenticated", scope)
+      primary_links: entries.("primary_links", "any"),
+      guest_links: entries.("guest_links", "unauthenticated"),
+      authenticated_links: entries.("authenticated_links", "authenticated"),
+      account_links: entries.("account_links", "authenticated")
     )
   end
+
+  # An entry's `"count"`: a `{Module.fun}` token that resolves to a number of
+  # things waiting for the viewer there (quests to claim), drawn as the same
+  # pill as the unread notifications. A group shows its items' total, so a
+  # count inside a closed dropdown still shows on the dropdown. Resolved here
+  # and not in `section_entries/5`, which `flat_links/2` shares: a search
+  # index has no use for the numbers and should not pay for them.
+  defp resolve_entry_count(%{"items" => items} = entry, scope) when is_list(items) do
+    items = Enum.map(items, &resolve_entry_count(&1, scope))
+
+    entry
+    |> Map.put("items", items)
+    |> Map.put("count", Enum.sum(Enum.map(items, &Map.get(&1, "count", 0))))
+  end
+
+  defp resolve_entry_count(%{"count" => token} = entry, scope) when is_binary(token) do
+    count =
+      case token |> resolve_dynamic_tokens(scope) |> String.trim() |> Integer.parse() do
+        {n, ""} when n > 0 -> n
+        _ -> 0
+      end
+
+    Map.put(entry, "count", count)
+  end
+
+  defp resolve_entry_count(entry, _scope), do: Map.delete(entry, "count")
+
+  # An entry's `"href"` as a `{Module.fun}` token: the function is given the
+  # scope and the current path (arity 2) and answers the path to link, which
+  # then takes the reader's locale prefix the way a configured path does. For
+  # a link whose target depends on the reader: a host's "Word games" that
+  # opens the language the reader is on, or the one they opened last. A
+  # group's items resolve too. Resolved here, beside the counts, for the
+  # same reason: a search index has no reader to resolve them for.
+  defp resolve_entry_href(%{"items" => items} = entry, scope, current_path, locale)
+       when is_list(items) do
+    Map.put(entry, "items", Enum.map(items, &resolve_entry_href(&1, scope, current_path, locale)))
+  end
+
+  defp resolve_entry_href(%{"href" => "{" <> _ = token} = entry, scope, current_path, locale) do
+    href =
+      case token
+           |> String.trim("{")
+           |> String.trim("}")
+           |> String.trim()
+           |> resolve_token([scope, current_path]) do
+        "" -> "/"
+        path -> GamendWeb.HostLayouts.localized_href(path, locale)
+      end
+
+    Map.put(entry, "href", href)
+  end
+
+  defp resolve_entry_href(entry, _scope, _current_path, _locale), do: entry
 
   defp section_entries(navigation, key, auth_level, default_auth, scope) do
     navigation
@@ -910,11 +1072,13 @@ defmodule GamendWeb.HostLayoutNavigation do
 
   defp resolve_dynamic_tokens(label, scope) do
     Regex.replace(~r/\{([^{}]+)\}/, label, fn _match, token ->
-      resolve_token(String.trim(token), scope)
+      resolve_token(String.trim(token), [scope])
     end)
   end
 
-  defp resolve_token(token, scope) do
+  # `args` is what the provider is called with: the scope for a label or a
+  # count, the scope and the current path for an href.
+  defp resolve_token(token, args) do
     parts = String.split(token, ".")
     {fun_str, mod_parts} = List.pop_at(parts, -1)
 
@@ -925,8 +1089,8 @@ defmodule GamendWeb.HostLayoutNavigation do
          module = Module.concat(mod_parts),
          true <- Code.ensure_loaded?(module),
          fun = String.to_atom(fun_str),
-         true <- function_exported?(module, fun, 1) do
-      module |> apply(fun, [scope]) |> to_string()
+         true <- function_exported?(module, fun, length(args)) do
+      module |> apply(fun, args) |> to_string()
     else
       _ -> ""
     end
@@ -944,14 +1108,60 @@ defmodule GamendWeb.HostLayoutNavigation do
 
   defp valid_link?(%{"label" => label} = entry) do
     is_binary(label) and label != "" and
-      (readonly?(entry) or (is_binary(entry["href"]) and entry["href"] != ""))
+      (inert?(entry) or (is_binary(entry["href"]) and entry["href"] != ""))
   end
 
   defp valid_link?(_link), do: false
 
   # A display-only item ("readonly": true) renders as a non-interactive badge
-  # (icon + label, no href/click) — e.g. a live status/value indicator.
+  # (icon + label, no href/click) — e.g. a live status/value indicator. It
+  # carries `data-motion-text="pop"`: a host's motion script plays a pop when
+  # its value changes on the page (a coin balance a claim or a purchase
+  # moved); without one the attribute does nothing.
   defp readonly?(entry), do: Map.get(entry, "readonly") == true
+
+  # A link to something announced and not there yet ("disabled": true): drawn
+  # as the link, never followed, usually with a `"badge"` ("Coming soon").
+  @doc false
+  def disabled?(entry), do: Map.get(entry, "disabled") == true
+
+  defp inert?(entry), do: readonly?(entry) or disabled?(entry)
+
+  attr :entry, :map, required: true
+
+  @doc """
+  An entry's `"badge"`: a short tag after its label ("Pro", "Coming soon").
+  Shared by the nav and the footer.
+  """
+  def nav_badge(assigns) do
+    ~H"""
+    <span
+      :if={is_binary(@entry["badge"]) and @entry["badge"] != ""}
+      class="badge badge-xs badge-primary whitespace-nowrap"
+    >
+      {translate_label(@entry["badge"])}
+    </span>
+    """
+  end
+
+  attr :count, :any, default: 0
+  attr :class, :string, default: nil
+
+  # The red number on the nav: unread notifications, an entry's `"count"`
+  # (quests to claim). Nothing at zero.
+  defp count_pill(assigns) do
+    ~H"""
+    <span
+      :if={is_integer(@count) and @count > 0}
+      class={[
+        "inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 text-xs font-bold rounded-full bg-error text-error-content",
+        @class
+      ]}
+    >
+      {@count}
+    </span>
+    """
+  end
 
   @doc """
   Whether `entry` should be shown to a viewer with this `current_scope`.
@@ -979,8 +1189,8 @@ defmodule GamendWeb.HostLayoutNavigation do
   with the public "any" default would offer admin pages to a stranger.
 
   Dynamic `{Module.fn}` labels resolve the way the nav resolves them; one that
-  resolves to nothing is dropped, as is a `readonly` badge. Neither is a place
-  you can go.
+  resolves to nothing is dropped, as is a `readonly` badge or a `disabled`
+  ("coming soon") link. None of them is a place you can go.
   """
   @spec flat_links(map(), map() | nil) :: [
           %{title: String.t(), href: String.t(), group: String.t() | nil}
@@ -1013,7 +1223,7 @@ defmodule GamendWeb.HostLayoutNavigation do
     href = Map.get(entry, "href")
     title = label_presence(entry)
 
-    if readonly?(entry) or is_nil(title) or not (is_binary(href) and href != "") do
+    if inert?(entry) or is_nil(title) or not (is_binary(href) and href != "") do
       []
     else
       [%{title: title, href: href, group: group}]
@@ -1111,7 +1321,7 @@ defmodule GamendWeb.HostLayoutNavigation do
 
       case Map.get(link, "match", "prefix") do
         "exact" -> current_path == href
-        _ -> String.starts_with?(current_path, href)
+        _ -> path_prefix?(current_path, href)
       end
     end
   end
@@ -1129,10 +1339,19 @@ defmodule GamendWeb.HostLayoutNavigation do
   defp here?(current_path, prefix) when is_binary(current_path) do
     current_path
     |> GamendWeb.HostLayouts.strip_locale_prefix(GamendWeb.GettextSync.known_locales())
-    |> String.starts_with?(prefix)
+    |> path_prefix?(prefix)
   end
 
   defp here?(_current_path, _prefix), do: false
+
+  # A prefix match stops at a path segment: `/game` covers `/game/web`, not
+  # `/games`, a different page that shares the letters. A prefix ending in
+  # `/` (`/`, `/docs/`) already marks the boundary.
+  defp path_prefix?(path, prefix) do
+    path == prefix or
+      (String.ends_with?(prefix, "/") and String.starts_with?(path, prefix)) or
+      String.starts_with?(path, prefix <> "/")
+  end
 
   defp external_href?(href) do
     String.starts_with?(href, "http://") or String.starts_with?(href, "https://")

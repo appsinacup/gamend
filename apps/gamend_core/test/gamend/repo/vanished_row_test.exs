@@ -10,6 +10,7 @@ defmodule Gamend.Repo.VanishedRowTest do
   alias Gamend.Lobbies
   alias Gamend.Lobbies.Lobby
   alias Gamend.Repo
+  alias Gamend.Repo.AdvisoryLock
 
   defp rename(lobby, title), do: lobby |> Ecto.Changeset.change(title: title) |> Repo.update()
 
@@ -45,7 +46,7 @@ defmodule Gamend.Repo.VanishedRowTest do
   test "rows are locked on Postgres and the query is left alone on SQLite" do
     query = from(l in Lobby, where: l.hostless)
 
-    if Repo.__adapter__() == Ecto.Adapters.Postgres do
+    if AdvisoryLock.postgres?() do
       assert inspect(Repo.lock_rows(query, :update)) =~ "FOR UPDATE"
       assert inspect(Repo.lock_rows(query, :share)) =~ "FOR SHARE"
     else

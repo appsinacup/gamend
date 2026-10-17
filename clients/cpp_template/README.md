@@ -148,10 +148,14 @@ Signing in never links. To add a provider to the signed-in account,
 `link(provider)` opens its page and polls as `sign_in` does, and
 `link_steam(ticket)` links Steam directly; the session stays as it is.
 
-Registering is not a sign-in either. `register_email(email, password)` makes
-the account and answers it (`models::Registration`); its password signs in
-with `login_email` once the player opens the emailed link, and fails with
-`email_not_confirmed` until then.
+Registering is not a sign-in either, and takes no password.
+`register_email(email)` makes the account and answers it
+(`models::Registration`); the server emails a link and a six-digit code.
+`confirm_registration(email, code, password)` sets the password the player
+chooses and signs in, failing with `invalid_code` for a wrong or spent code;
+`resend_confirmation(email)` sends a new one. The password is chosen only
+once the code proves the inbox: anyone can type any address, and a password
+picked before that would let them into the account its owner confirms.
 
 Keep the session between runs where your platform keeps secrets:
 

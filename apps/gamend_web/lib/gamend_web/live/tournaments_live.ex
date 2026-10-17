@@ -28,7 +28,7 @@ defmodule GamendWeb.TournamentsLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    unless FeatureGate.enabled?(:list_tournaments) do
+    unless FeatureGate.enabled?(:list_tournaments) and FeatureGate.enabled?(:web_tournaments) do
       raise GamendWeb.NotFoundError
     end
 
@@ -420,13 +420,49 @@ defmodule GamendWeb.TournamentsLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <div>
-          <h1 class="text-4xl font-black text-base-content/95">
-            {gettext("Tournaments")}
-            <span :if={is_nil(@tournament)} class="text-base-content/70 font-normal">
-              ({@count})
+        <%!-- One title: a tournament's own (its icon and name, and the
+              bracket on a bracket), else the list's. Back: from a bracket to
+              its tournament, from a tournament to the list, from the list home. --%>
+        <div class="flex items-center gap-3">
+          <.back_link
+            :if={@bracket}
+            navigate={
+              GamendWeb.HostLayouts.localized_href(
+                @base_path,
+                GamendWeb.HostLayouts.current_locale()
+              )
+            }
+          />
+          <.back_link
+            :if={@tournament && is_nil(@bracket)}
+            navigate={
+              GamendWeb.HostLayouts.localized_href(
+                "/tournaments",
+                GamendWeb.HostLayouts.current_locale()
+              )
+            }
+          />
+          <.back_link :if={is_nil(@tournament)} href={home_path()} />
+          <.page_title :if={@tournament} class="flex min-w-0 items-center gap-3">
+            <.entity_icon
+              icon_url={@tournament.icon_url}
+              type={:tournament}
+              class="size-8 shrink-0 text-muted sm:size-9"
+            />
+            <span class="min-w-0 break-words">
+              {@tournament.title}
+              <span :if={@bracket} class="text-muted font-normal">
+                · {gettext("Bracket")} {@bracket.index + 1}
+              </span>
             </span>
-          </h1>
+          </.page_title>
+          <.page_title
+            :if={is_nil(@tournament)}
+            icon={GamendWeb.HostLayouts.nav_icon("/tournaments", "hero-bolt-solid")}
+          >
+            {gettext("Tournaments")}
+            <span class="text-muted font-normal">({@count})</span>
+          </.page_title>
         </div>
 
         <%= cond do %>
@@ -479,13 +515,13 @@ defmodule GamendWeb.TournamentsLive do
           <.state_badge state={group.state} />
         </:badges>
 
-        <div class="text-sm text-base-content/60">
+        <div class="text-sm text-muted">
           {gettext("Players")}: {group.entry_count}
         </div>
       </.entity_card>
     </div>
 
-    <div :if={@groups == []} class="text-center py-12 text-base-content/60">
+    <div :if={@groups == []} class="text-center py-12 text-muted">
       <p>{gettext("No results.")}</p>
     </div>
 
@@ -507,29 +543,15 @@ defmodule GamendWeb.TournamentsLive do
   defp detail_view(assigns) do
     ~H"""
     <div class="flex flex-col gap-4 mb-6">
-      <div class="flex items-center gap-4">
-        <.link navigate={~p"/tournaments"} class="btn btn-surface btn-sm">
-          {gettext("Back")}
-        </.link>
-        <div>
-          <h2 class="text-2xl font-bold flex items-center gap-2">
-            <.entity_icon
-              icon_url={@tournament.icon_url}
-              type={:tournament}
-              class="w-7 h-7 text-base-content/60"
-            />
-            {@tournament.title}
-          </h2>
-          <div class="flex items-center gap-2 mt-1">
-            <.state_badge state={@tournament.state} />
-            <span :if={@tournament.starts_at} class="text-sm text-base-content/60">
-              <.timestamp at={@tournament.starts_at} format="date" />
-            </span>
-            <span :if={is_nil(@tournament.starts_at)} class="text-sm text-base-content/60">
-              {gettext("Starts manually")}
-            </span>
-          </div>
-        </div>
+      <%!-- The title row (Back, icon, name) is the page's; this is the edition's state. --%>
+      <div class="flex flex-wrap items-center gap-2">
+        <.state_badge state={@tournament.state} />
+        <span :if={@tournament.starts_at} class="text-sm text-muted">
+          <.timestamp at={@tournament.starts_at} format="date" />
+        </span>
+        <span :if={is_nil(@tournament.starts_at)} class="text-sm text-muted">
+          {gettext("Starts manually")}
+        </span>
 
         <div class="ms-auto">
           <.join_action
@@ -554,7 +576,7 @@ defmodule GamendWeb.TournamentsLive do
         </button>
         <div class="text-sm">
           <span class="font-medium">{"##{length(@editions) - @edition_index}"}</span>
-          <span class="text-base-content/60">{"/ #{length(@editions)}"}</span>
+          <span class="text-muted">{"/ #{length(@editions)}"}</span>
         </div>
         <button
           phx-click="newer_edition"
@@ -566,7 +588,7 @@ defmodule GamendWeb.TournamentsLive do
       </div>
     </div>
 
-    <p :if={@tournament.description not in [nil, ""]} class="text-base-content/70 mb-6">
+    <p :if={@tournament.description not in [nil, ""]} class="text-muted mb-6">
       {@tournament.description}
     </p>
 
@@ -588,7 +610,7 @@ defmodule GamendWeb.TournamentsLive do
           >
             <div class="card-body p-4 gap-1">
               <div class="font-semibold">{gettext("Bracket")} {b.index + 1}</div>
-              <div class="text-xs text-base-content/60">
+              <div class="text-xs text-muted">
                 {gettext("Slots")}: {b.size} · {elem(@bracket_progress[b.index] || {0, 0}, 0)}/{elem(
                   @bracket_progress[b.index] || {0, 0},
                   1
@@ -616,7 +638,7 @@ defmodule GamendWeb.TournamentsLive do
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h2 class="card-title">
             {gettext("Players")}
-            <span class="text-base-content/70 font-normal text-base">({@players_count})</span>
+            <span class="text-muted font-normal text-base">({@players_count})</span>
           </h2>
 
           <div class="flex flex-col sm:flex-row gap-2">
@@ -697,7 +719,7 @@ defmodule GamendWeb.TournamentsLive do
                       {gettext("Bracket")} {e.bracket_index + 1}
                     </.link>
                   <% else %>
-                    <span class="text-base-content/70">—</span>
+                    <span class="text-muted">—</span>
                   <% end %>
                 </td>
                 <td :if={@drawn?} class="text-end font-mono">{e.wins}</td>
@@ -711,7 +733,7 @@ defmodule GamendWeb.TournamentsLive do
           </table>
         </div>
 
-        <div :if={@entries == []} class="text-center py-8 text-base-content/60">
+        <div :if={@entries == []} class="text-center py-8 text-muted">
           <p>{gettext("No results.")}</p>
         </div>
 
@@ -765,7 +787,7 @@ defmodule GamendWeb.TournamentsLive do
     ~H"""
     <div class="card bg-base-200">
       <div class="card-body py-4">
-        <span class="text-sm text-base-content/70">{@label}</span>
+        <span class="text-sm text-muted">{@label}</span>
         <div class="text-2xl font-bold">{@value}</div>
       </div>
     </div>
@@ -784,27 +806,18 @@ defmodule GamendWeb.TournamentsLive do
 
   defp bracket_view(assigns) do
     ~H"""
-    <div class="flex items-center gap-4 mb-6">
-      <.link navigate={@base_path} class="btn btn-surface btn-sm">
-        {gettext("Back")}
-      </.link>
-      <div>
-        <h2 class="text-2xl font-bold">
-          {@tournament.title} — {gettext("Bracket")} {@bracket.index + 1}
-        </h2>
-        <div class="flex items-center gap-2 mt-1">
-          <.state_badge state={@tournament.state} />
-          <span class="text-sm text-base-content/60">
-            {gettext("Slots")}: {@bracket.size}
-          </span>
-          <span :if={@tournament.starts_at} class="text-sm text-base-content/60">
-            <.timestamp at={@tournament.starts_at} format="date" />
-          </span>
-          <span :if={is_nil(@tournament.starts_at)} class="text-sm text-base-content/60">
-            {gettext("Starts manually")}
-          </span>
-        </div>
-      </div>
+    <%!-- The title row (Back, name, bracket) is the page's; this is its state. --%>
+    <div class="flex flex-wrap items-center gap-2 mb-6">
+      <.state_badge state={@tournament.state} />
+      <span class="text-sm text-muted">
+        {gettext("Slots")}: {@bracket.size}
+      </span>
+      <span :if={@tournament.starts_at} class="text-sm text-muted">
+        <.timestamp at={@tournament.starts_at} format="date" />
+      </span>
+      <span :if={is_nil(@tournament.starts_at)} class="text-sm text-muted">
+        {gettext("Starts manually")}
+      </span>
     </div>
 
     <div
@@ -813,16 +826,16 @@ defmodule GamendWeb.TournamentsLive do
     >
       <div class="card-body py-4 flex-row items-center justify-between gap-4">
         <div>
-          <span class="text-sm text-base-content/70">{gettext("Showing")}</span>
+          <span class="text-sm text-muted">{gettext("Showing")}</span>
           <div class="text-xl font-bold flex items-center gap-2">
             <.player_name name={leader_name(@highlight.leader)} />
             <span :if={@own?} class="badge badge-primary badge-sm">{gettext("You")}</span>
           </div>
-          <.user_title user={@highlight.leader} class="text-sm text-base-content/60" />
+          <.user_title user={@highlight.leader} class="text-sm text-muted" />
         </div>
         <div class="flex items-center gap-4 text-end">
           <div>
-            <span class="text-sm text-base-content/70">{gettext("Wins")}</span>
+            <span class="text-sm text-muted">{gettext("Wins")}</span>
             <div class="text-xl font-bold font-mono">{@highlight.wins}</div>
           </div>
           <span class={["badge", entry_state_class(@highlight.state)]}>
@@ -840,7 +853,7 @@ defmodule GamendWeb.TournamentsLive do
         <div class="overflow-x-auto pb-2">
           <div class="flex gap-6 min-w-max w-fit mx-auto items-stretch">
             <div :for={{round, matches} <- @rounds} class="flex flex-col gap-3 min-w-56">
-              <div class="text-xs font-semibold uppercase tracking-wider text-base-content/70 text-center">
+              <div class="text-xs font-semibold uppercase tracking-wider text-muted text-center">
                 {round_label(round, length(@rounds))}
               </div>
               <div class="flex flex-col justify-around flex-1 gap-3">
@@ -904,12 +917,12 @@ defmodule GamendWeb.TournamentsLive do
             <span class="truncate">{slot_name(@entries, @entry_id)}</span>
             <.user_title
               user={slot_leader(@entries, @entry_id)}
-              class="text-xs font-normal text-base-content/60"
+              class="text-xs font-normal text-muted"
             />
           <% @round == 1 -> %>
-            <span class="text-base-content/70">{gettext("bye")}</span>
+            <span class="text-muted">{gettext("bye")}</span>
           <% true -> %>
-            <span class="text-base-content/70">—</span>
+            <span class="text-muted">—</span>
         <% end %>
       </span>
       <span :if={@won?} class="text-success text-xs">✓</span>
@@ -974,6 +987,6 @@ defmodule GamendWeb.TournamentsLive do
   defp state_label("registration"), do: gettext("Registration open")
   defp state_label("running"), do: gettext("Running")
   defp state_label("finished"), do: gettext("Finished")
-  defp state_label("cancelled"), do: gettext("Cancelled")
+  defp state_label("cancelled"), do: gettext("Canceled")
   defp state_label(other), do: other
 end

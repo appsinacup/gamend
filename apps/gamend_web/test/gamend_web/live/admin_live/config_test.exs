@@ -146,13 +146,6 @@ defmodule GamendWeb.AdminLive.ConfigTest do
     Gamend.SettingsHelpers.put(
       :gamend_core,
       Gamend.Payments.Settings,
-      :stripe_api_version,
-      "2022-11-15"
-    )
-
-    Gamend.SettingsHelpers.put(
-      :gamend_core,
-      Gamend.Payments.Settings,
       :environment,
       :sandbox
     )
@@ -291,8 +284,7 @@ defmodule GamendWeb.AdminLive.ConfigTest do
     assert html =~ "Payment Providers"
     assert html =~ "GAMEND_PAYMENTS_STRIPE_SANDBOX_SECRET_KEY"
     assert html =~ "GAMEND_PAYMENTS_STRIPE_SANDBOX_WEBHOOK_SECRET"
-    assert html =~ "STRIPE_API_VERSION"
-    assert html =~ "2022-11-15"
+    assert html =~ "API version: 2025-11-17.clover"
     assert html =~ "GAMEND_PAYMENTS_GOOGLE_PLAY_PACKAGE_NAME"
     assert html =~ "GAMEND_PAYMENTS_APPLE_BUNDLE_ID"
     assert html =~ "GAMEND_PAYMENTS_STEAM_WEB_API_KEY"

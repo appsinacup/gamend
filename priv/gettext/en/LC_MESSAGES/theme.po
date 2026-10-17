@@ -38,6 +38,9 @@ msgstr ""
 msgid "API Docs"
 msgstr ""
 
+msgid "UI elements"
+msgstr ""
+
 msgid "Elixir Docs"
 msgstr ""
 
@@ -167,7 +170,6 @@ msgstr ""
 msgid "Quests, Tournaments & Leaderboards"
 msgstr ""
 
-#, fuzzy
 msgid "Server Scripting"
 msgstr ""
 
@@ -183,7 +185,6 @@ msgstr ""
 msgid "Server Scripting & Scheduling"
 msgstr ""
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
 msgstr ""
 

@@ -386,9 +386,10 @@ defmodule Gamend.Accounts.Identities do
 
   # Our stored avatars live under the `avatars/<user_id>/…` key namespace, so a
   # profile URL containing that segment is one we already host (uploaded or
-  # previously mirrored) — anything else is an external provider link.
+  # previously mirrored) — anything else is an external provider link. The same
+  # test decides what is ever shown (`User.public_avatar_url/1`).
   defp our_stored_avatar?(%User{id: id, profile_url: url}),
-    do: is_binary(url) and String.contains?(url, "avatars/#{id}")
+    do: User.hosted_avatar_url?(id, url)
 
   # True when the profile URL points at our own avatar storage but the object
   # is gone. Storage errors count as "not dangling": healing on uncertainty

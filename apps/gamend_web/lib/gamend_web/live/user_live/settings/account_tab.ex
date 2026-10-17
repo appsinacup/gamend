@@ -43,7 +43,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
 
           <div class="flex items-center gap-4 mt-3">
             <.user_avatar user={@user} class="w-16 h-16" />
-            <p :if={!@can_upload_avatar} class="text-xs text-base-content/60 max-w-xs">
+            <p :if={!@can_upload_avatar} class="text-xs text-muted max-w-xs">
               {gettext("Link an email or a sign-in provider to set a custom avatar.")}
             </p>
             <form
@@ -63,7 +63,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
               <div :for={entry <- @uploads.avatar.entries} class="flex items-center gap-2 text-xs">
                 <.live_img_preview entry={entry} class="w-8 h-8 rounded-full object-cover" />
                 <span class="truncate max-w-[10rem]">{entry.client_name}</span>
-                <span class="text-base-content/60">{entry.progress}%</span>
+                <span class="text-muted">{entry.progress}%</span>
                 <button
                   type="button"
                   phx-click="cancel_avatar"
@@ -87,7 +87,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
             </form>
           </div>
 
-          <div class="text-sm mt-2 space-y-1 text-base-content/80">
+          <div class="text-sm mt-2 space-y-1 text-muted">
             <div><strong>{gettext("ID")}:</strong> {@user.id}</div>
             <div><strong>{gettext("Email")}:</strong> {@current_email}</div>
 
@@ -208,7 +208,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
           >
             <div>
               <strong>{provider_name(provider)}</strong>
-              <div class="text-sm text-base-content/70">
+              <div class="text-sm text-muted">
                 {if linked_id, do: gettext("Linked"), else: gettext("Not linked")}
               </div>
             </div>
@@ -238,14 +238,14 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
 
       <div class="card bg-base-200 p-4 rounded-lg mt-6">
         <div class="font-semibold">{gettext("Metadata")}</div>
-        <div class="text-sm mt-2 font-mono text-xs bg-base-300 p-3 rounded-lg overflow-auto text-base-content/80">
+        <div class="text-sm mt-2 font-mono text-xs bg-base-300 p-3 rounded-lg overflow-auto text-muted">
           <pre phx-no-curly-interpolation><%= Jason.encode!(@user.metadata || %{}, pretty: true) %></pre>
         </div>
       </div>
 
       <div class="card bg-error/10 border-error p-4 rounded-lg mt-6">
         <div class="font-semibold text-error">{gettext("Danger zone")}</div>
-        <div class="text-sm mt-2 text-base-content/80">
+        <div class="text-sm mt-2 text-muted">
           <.link
             href={~p"/data_deletion"}
             class="link link-primary"

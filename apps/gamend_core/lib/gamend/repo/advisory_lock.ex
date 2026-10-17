@@ -14,8 +14,8 @@ defmodule Gamend.Repo.AdvisoryLock do
 
   Callers should not use this module directly for that reason. Go through
   `Gamend.Lock.serialize/3`, which picks this on Postgres and a keyed
-  `:global` mutex (`Gamend.Lock.Local`) everywhere else, so the guarantee
-  holds on both adapters.
+  mutex (`Gamend.Lock.Local`) everywhere else, so the guarantee holds on both
+  adapters.
 
   ## Usage
 

@@ -25,6 +25,11 @@ config :gamend_web, GamendWeb.Auth.Guardian,
 
 config :gamend_web, GamendWeb.Plugs.RateLimiter, enabled: false
 
+# A cold test request (first render, first query) routinely passes the 200ms
+# slow-request threshold, and each one would print a warning into the run.
+# Tests that assert on the log lower it themselves.
+config :gamend_web, :slow_request_threshold_ms, 60_000.0
+
 # The IP-ban boot load holds a database connection the tests need. Tests drive
 # GamendWeb.Plugs.IpBan.load_persisted/0 directly.
 config :gamend_web, GamendWeb.IpBanSync, enabled: false

@@ -45,7 +45,6 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     |> assign(:group_editing, false)
     |> assign(:group_edit_form, nil)
     |> assign(:group_join_requests, [])
-    |> reload_groups()
   end
 
   def tab(assigns) do
@@ -307,7 +306,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                               {gettext("Kick")}
                             </button>
                           <% else %>
-                            <span class="text-xs text-base-content/70">{gettext("You")}</span>
+                            <span class="text-xs text-muted">{gettext("You")}</span>
                           <% end %>
                         </td>
                       <% end %>
@@ -341,7 +340,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     <div class="text-sm font-medium">
                       <.player_name name={LiveHelpers.public_user_name(req.user)} />
                     </div>
-                    <span class="text-xs text-base-content/70">
+                    <span class="text-xs text-muted">
                       {LiveHelpers.public_user_handle(req.user)} &mdash;
                       <.timestamp at={req.inserted_at} />
                     </span>
@@ -389,7 +388,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
               <%!-- Search results --%>
               <div :if={@invite_search_results != []} class="mb-4">
-                <div class="text-xs font-medium text-base-content/60 mb-1">
+                <div class="text-xs font-medium text-muted mb-1">
                   {gettext("Name")}
                 </div>
                 <div class="space-y-1 max-h-48 overflow-y-auto">
@@ -409,7 +408,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                         <span class="text-sm font-medium"><.player_name name={
                           LiveHelpers.public_user_name(u)
                         } /></span>
-                        <span class="text-xs text-base-content/70 ms-1">
+                        <span class="text-xs text-muted ms-1">
                           {LiveHelpers.public_user_handle(u)}
                         </span>
                       </div>
@@ -429,14 +428,14 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
               <div
                 :if={@invite_search_query != "" && @invite_search_results == []}
-                class="mb-4 text-sm text-base-content/70"
+                class="mb-4 text-sm text-muted"
               >
                 {gettext("No results.")}
               </div>
 
               <%!-- Quick invite from friends --%>
               <div :if={@invite_friends != []} class="mt-3">
-                <div class="text-xs font-medium text-base-content/60 mb-1">
+                <div class="text-xs font-medium text-muted mb-1">
                   {gettext("Friends")}
                 </div>
                 <div class="space-y-1 max-h-48 overflow-y-auto">
@@ -466,7 +465,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                 </div>
               </div>
 
-              <div :if={@invite_friends == []} class="mt-3 text-sm text-base-content/70">
+              <div :if={@invite_friends == []} class="mt-3 text-sm text-muted">
                 {gettext("No results.")}
               </div>
             </div>
@@ -505,7 +504,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           <%!-- My Groups tab --%>
           <%= if @groups_tab == "my_groups" do %>
             <%= if @groups_count == 0 do %>
-              <div class="mt-4 text-sm text-base-content/60">
+              <div class="mt-4 text-sm text-muted">
                 {gettext("No results.")}
               </div>
             <% else %>
@@ -629,8 +628,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   </tr>
                 </thead>
                 <tbody id="browse-groups" phx-update="stream">
-                  <tr class="hidden only:table-row">
-                    <td colspan="4" class="text-center text-sm text-base-content/60">
+                  <tr id="browse-groups-empty" class="hidden only:table-row">
+                    <td colspan="4" class="text-center text-sm text-muted">
                       {gettext("No results.")}
                     </td>
                   </tr>
@@ -675,7 +674,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                             {gettext("Request")}
                           </button>
                         <% true -> %>
-                          <span class="text-xs text-base-content/70">-</span>
+                          <span class="text-xs text-muted">-</span>
                       <% end %>
                     </td>
                   </tr>
@@ -697,7 +696,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           <%!-- Invitations tab --%>
           <%= if @groups_tab == "invitations" do %>
             <%= if length(@group_invitations) == 0 do %>
-              <div class="mt-4 text-sm text-base-content/60">
+              <div class="mt-4 text-sm text-muted">
                 {gettext("No results.")}
               </div>
             <% else %>
@@ -749,7 +748,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           <%!-- My Pending Requests tab --%>
           <%= if @groups_tab == "requests" do %>
             <%= if length(@group_pending_requests) == 0 do %>
-              <div class="mt-4 text-sm text-base-content/60">
+              <div class="mt-4 text-sm text-muted">
                 {gettext("No results.")}
               </div>
             <% else %>
@@ -797,7 +796,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           <%!-- Sent Invitations tab --%>
           <%= if @groups_tab == "sent_invitations" do %>
             <%= if @group_sent_invitations == [] do %>
-              <div class="mt-4 text-sm text-base-content/60">{gettext("No results.")}</div>
+              <div class="mt-4 text-sm text-muted">{gettext("No results.")}</div>
             <% else %>
               <div class="overflow-x-auto mt-4">
                 <table id="group-sent-invitations-table" class="table table-zebra w-full">

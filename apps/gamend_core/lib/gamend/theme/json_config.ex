@@ -28,6 +28,9 @@ defmodule Gamend.Theme.JSONConfig do
 
   alias Gamend.Theme.Translatable
 
+  @theme_key {__MODULE__, :theme_cache}
+  @generation_key {__MODULE__, :generation}
+
   @impl true
   def get_theme do
     get_theme(nil)
@@ -42,9 +45,9 @@ defmodule Gamend.Theme.JSONConfig do
   """
   @spec get_theme(String.t() | nil) :: map()
   def get_theme(locale) when is_binary(locale) or is_nil(locale) do
-    case raw_theme() do
-      config when map_size(config) == 0 -> config
-      config -> translate(config, locale)
+    case cached_theme() do
+      {_generation, config} when map_size(config) == 0 -> config
+      {generation, config} -> translate(config, generation, locale)
     end
   end
 
@@ -56,21 +59,34 @@ defmodule Gamend.Theme.JSONConfig do
   """
   @spec raw_theme() :: map()
   def raw_theme do
-    case :persistent_term.get({__MODULE__, :theme_cache}, :not_cached) do
-      :not_cached ->
+    {_generation, config} = cached_theme()
+    config
+  end
+
+  # Every cached entry carries the `reload/0` generation it was read under. A
+  # read that began before a reload can finish after it: the reload's own
+  # telemetry has `GamendWeb.ResponsiveImages` read the file in its process
+  # while the caller moves on. Its write then lands on top of the fresh entry,
+  # and untagged it would serve the old file until the next reload; tagged, it
+  # is a miss.
+  defp cached_theme do
+    generation = :persistent_term.get(@generation_key, :initial)
+
+    case :persistent_term.get(@theme_key, :not_cached) do
+      {^generation, _config} = cached ->
+        cached
+
+      _missing_or_stale ->
         result = do_get_theme()
 
         # Only cache a non-empty result, or an empty one when nothing is
         # configured at all: at startup the file may not be readable yet, and
         # caching empty would keep it empty forever.
         if result != %{} or config_path() == nil do
-          :persistent_term.put({__MODULE__, :theme_cache}, result)
+          :persistent_term.put(@theme_key, {generation, result})
         end
 
-        result
-
-      cached ->
-        cached
+        {generation, result}
     end
   end
 
@@ -85,24 +101,28 @@ defmodule Gamend.Theme.JSONConfig do
   # `locale` is resolved before it becomes the key: a nil locale means "use
   # the caller's", which is a different answer per process, and keying on nil
   # would serve the first caller's language to everyone.
-  defp translate(config, locale) do
+  #
+  # Tagged with the generation of the config it was built from, for the same
+  # late-write race `cached_theme/0` guards.
+  defp translate(config, generation, locale) do
     case gettext_backend() do
       nil -> config
-      backend -> translate_with(config, backend, locale)
+      backend -> translate_with(config, generation, backend, locale)
     end
   end
 
-  defp translate_with(config, backend, locale) do
+  defp translate_with(config, generation, backend, locale) do
     resolved = locale || Gettext.get_locale(backend)
+    key = {__MODULE__, :translated, backend, resolved}
 
-    case :persistent_term.get({__MODULE__, :translated, backend, resolved}, :not_cached) do
-      :not_cached ->
-        result = do_translate(config, backend, resolved)
-        :persistent_term.put({__MODULE__, :translated, backend, resolved}, result)
+    case :persistent_term.get(key, :not_cached) do
+      {^generation, result} ->
         result
 
-      cached ->
-        cached
+      _missing_or_stale ->
+        result = do_translate(config, backend, resolved)
+        :persistent_term.put(key, {generation, result})
+        result
     end
   end
 
@@ -159,13 +179,16 @@ defmodule Gamend.Theme.JSONConfig do
 
   @impl true
   def reload do
-    # Reset the cache so the next read comes from disk.
-    :persistent_term.erase({__MODULE__, :theme_cache})
+    # A new generation first: whatever was read before this line is stale,
+    # even when it is written after it. A ref, so two reloads never share one.
+    :persistent_term.put(@generation_key, make_ref())
 
-    # And every translation derived from it. Scanning the whole table is fine
-    # here and a generation counter is not: reload is a rare admin action,
-    # while a counter would strand the old entries in a table that is never
-    # garbage collected.
+    # Reset the cache so the next read comes from disk.
+    :persistent_term.erase(@theme_key)
+
+    # And every translation derived from it, keyed per locale rather than per
+    # generation so old ones are not stranded in a table that is never garbage
+    # collected. Scanning the whole table is fine: reload is a rare admin action.
     for {{mod, :translated, _backend, _locale} = key, _value} <- :persistent_term.get(),
         mod == __MODULE__,
         do: :persistent_term.erase(key)

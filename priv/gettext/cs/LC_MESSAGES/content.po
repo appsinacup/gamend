@@ -89,4 +89,5 @@ msgstr "Týdenní pohár"
 
 #. tournaments
 msgid "Register any time; the bracket is drawn every Monday."
-msgstr "Přihlaste se kdykoli; pavouk se losuje každé pondělí."
+
+msgstr "Přihlas se kdykoli; pavouk se losuje každé pondělí."

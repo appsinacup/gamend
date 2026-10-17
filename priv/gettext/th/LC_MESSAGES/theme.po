@@ -8,7 +8,7 @@ msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "เกมเซิร์ฟเวอร์ Elixir โอเพนซอร์สสำหรับเกมผู้เล่นหลายคนแบบเรียลไทม์"
 
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 msgid "Discord"
 msgstr "Discord"
@@ -31,26 +31,29 @@ msgstr "คู่มือ"
 msgid "API Docs"
 msgstr "เอกสาร API"
 
+msgid "UI elements"
+msgstr "องค์ประกอบ UI"
+
 msgid "Elixir Docs"
 msgstr "เอกสาร Elixir"
 
 msgid "Deployment Tutorial"
-msgstr ""
+msgstr "บทแนะนำการดีพลอย"
 
 msgid "Scaling Guide"
-msgstr ""
+msgstr "คู่มือการขยายระบบ"
 
 msgid "Docs"
-msgstr ""
+msgstr "เอกสาร"
 
 msgid "Starter Template"
-msgstr ""
+msgstr "เทมเพลตเริ่มต้น"
 
 msgid "Store"
 msgstr "ร้านค้า"
 
 msgid "Server Stats"
-msgstr ""
+msgstr "สถิติเซิร์ฟเวอร์"
 
 msgid "Help"
 msgstr "ช่วยเหลือ"
@@ -80,7 +83,7 @@ msgid "Groups"
 msgstr "กลุ่ม"
 
 msgid "News"
-msgstr ""
+msgstr "ข่าวสาร"
 
 msgid "Getting Started"
 msgstr "เริ่มต้นใช้งาน"
@@ -89,28 +92,28 @@ msgid "Presentation Video"
 msgstr "วิดีโอแนะนำ"
 
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
-msgstr ""
+msgstr "เกมเซิร์ฟเวอร์ Elixir **โอเพนซอร์ส** สำหรับเกมผู้เล่นหลายคนแบบเรียลไทม์: แบ็กเอนด์ เว็บไซต์สำหรับผู้เล่น และแผงผู้ดูแลระบบในที่เดียว"
 
 msgid "Gamend"
 msgstr "Gamend"
 
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
-msgstr ""
+msgstr "พาชมแผงผู้ดูแลระบบ เควสต์ ร้านค้า และฮุกฝั่งเซิร์ฟเวอร์ของ Gamend"
 
 msgid "Benchmarks"
-msgstr ""
+msgstr "เบนช์มาร์ก"
 
 msgid "Godot SDK"
-msgstr ""
+msgstr "Godot SDK"
 
 msgid "C++ SDK"
-msgstr ""
+msgstr "C++ SDK"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
-msgstr ""
+msgstr "**แบ็กเอนด์สำหรับเกมผู้เล่นหลายคนของคุณ**: บัญชี ล็อบบี้ แชท ตารางอันดับ และทุกสิ่งที่ผู้เล่นคาดหวังรอบตัวเกม นอกจากนี้ยังมาพร้อมเว็บ UI ที่ครอบอยู่ ได้แก่ เว็บไซต์สำหรับผู้เล่นที่พร้อมใช้งาน (ร้านค้า ตารางอันดับ ทัวร์นาเมนต์ เควสต์ กลุ่ม แชท) และแผงผู้ดูแลระบบแบบครบถ้วน สคริปต์ฝั่งเซิร์ฟเวอร์จะรันตรรกะของคุณเองในที่ที่ผู้เล่นเข้าถึงไม่ได้ คุณรันมันบนเซิร์ฟเวอร์ของคุณเอง โดยไม่มีบริการแบบโฮสต์ให้"
 
 msgid "What is Gamend?"
-msgstr ""
+msgstr "Gamend คืออะไร?"
 
 msgid "Log in"
 msgstr "เข้าสู่ระบบ"
@@ -119,7 +122,7 @@ msgid "Register"
 msgstr "สมัครสมาชิก"
 
 msgid "The login page with magic link, password and five OAuth providers"
-msgstr ""
+msgstr "หน้าเข้าสู่ระบบพร้อมลิงก์เวทมนตร์ รหัสผ่าน และผู้ให้บริการ OAuth ห้าราย"
 
 msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
 msgstr "อีเมล ลิงก์เวทมนตร์ OAuth JWT และเซสชัน สมัครสมาชิก เข้าสู่ระบบ รีเซ็ตรหัสผ่าน และยืนยันอีเมล"
@@ -128,22 +131,22 @@ msgid "Authentication & Users"
 msgstr "การยืนยันตัวตนและผู้ใช้"
 
 msgid "Lobbies"
-msgstr ""
+msgstr "ล็อบบี้"
 
 msgid "Matchmaking"
-msgstr ""
+msgstr "การจับคู่"
 
 msgid "The matchmaking admin page with live queues, tickets and ready checks"
-msgstr ""
+msgstr "หน้าผู้ดูแลระบบการจับคู่พร้อมคิวแบบสด ตั๋ว และการตรวจสอบความพร้อม"
 
 msgid "Real-time lobbies with passwords, quick join and live updates. Ephemeral parties that join and get matched **as one unit**, a ticket-queue matchmaker and ready checks before anything starts."
-msgstr ""
+msgstr "ล็อบบี้แบบเรียลไทม์พร้อมรหัสผ่าน การเข้าร่วมด่วน และการอัปเดตสด ปาร์ตี้ชั่วคราวที่เข้าร่วมและถูกจับคู่ **เป็นหน่วยเดียว** ระบบจับคู่แบบคิวตั๋ว และการตรวจสอบความพร้อมก่อนที่ทุกอย่างจะเริ่ม"
 
 msgid "Lobbies, Parties & Matchmaking"
 msgstr "ล็อบบี้ ปาร์ตี้ และการจับคู่"
 
 msgid "The public groups browser"
-msgstr ""
+msgstr "หน้าเรียกดูกลุ่มสาธารณะ"
 
 msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
 msgstr "คำขอเป็นเพื่อน การบล็อก สถานะออนไลน์แบบเรียลไทม์ กลุ่มสาธารณะ ส่วนตัว และซ่อนอยู่ ข้อความส่วนตัวและข้อความกลุ่ม"
@@ -152,33 +155,31 @@ msgid "Friends, Groups & Chat"
 msgstr "เพื่อน กลุ่ม และแชท"
 
 msgid "The quests page with daily, achievement and event quests"
-msgstr ""
+msgstr "หน้าเควสต์พร้อมเควสต์รายวัน เควสต์ความสำเร็จ และเควสต์กิจกรรม"
 
 msgid "One server-authoritative quest engine for achievements, dailies, seasonal events and quest chains. Bracket tournaments, leaderboards with seasons, and real-time plus push notifications across every feature."
-msgstr ""
+msgstr "เอนจินเควสต์หนึ่งเดียวที่เซิร์ฟเวอร์เป็นผู้ตัดสิน สำหรับความสำเร็จ เควสต์รายวัน กิจกรรมตามฤดูกาล และเควสต์ต่อเนื่อง ทัวร์นาเมนต์แบบสายการแข่งขัน ตารางอันดับพร้อมซีซัน และการแจ้งเตือนแบบเรียลไทม์รวมถึงการแจ้งเตือนแบบพุชในทุกฟีเจอร์"
 
 msgid "Quests, Tournaments & Leaderboards"
-msgstr ""
+msgstr "เควสต์ ทัวร์นาเมนต์ และตารางอันดับ"
 
-#, fuzzy
 msgid "Server Scripting"
-msgstr "สคริปต์เซิร์ฟเวอร์และการตั้งเวลา"
+msgstr "สคริปต์เซิร์ฟเวอร์"
 
 msgid "GDScript Hooks"
-msgstr ""
+msgstr "ฮุก GDScript"
 
 msgid "Runtime introspection listing every hook with its implementing plugins"
-msgstr ""
+msgstr "การตรวจสอบขณะรันไทม์ที่แสดงฮุกทุกตัวพร้อมปลั๊กอินที่ใช้งานฮุกนั้น"
 
 msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
-msgstr ""
+msgstr "เขียนฮุกฝั่งเซิร์ฟเวอร์ด้วย **Elixir, GDScript หรือ Gleam** สำหรับการคิดคะแนน รางวัล กฎการจับคู่ และการตรวจสอบความถูกต้อง ในที่ที่ผู้เล่นเข้าถึงไม่ได้ มีงานเบื้องหลังที่คงทนและการตั้งเวลาแบบ cron ในตัว"
 
 msgid "Server Scripting & Scheduling"
 msgstr "สคริปต์เซิร์ฟเวอร์และการตั้งเวลา"
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
-msgstr "REST API ช่อง WebSocket แบบเรียลไทม์ และ WebRTC DataChannel ที่หน่วงต่ำ พร้อมพอร์ทัลผู้ดูแลระบบและเว็บ UI"
+msgstr "REST API ช่อง WebSocket แบบเรียลไทม์ และ WebRTC DataChannels ที่หน่วงต่ำ พร้อมรูปแบบเรียลไทม์ protobuf ที่เลือกเปิดใช้ได้ พอร์ทัลผู้ดูแลระบบและเว็บ UI ที่แปลเป็น 30 ภาษา"
 
 msgid "HTTP, WebSocket & WebRTC"
 msgstr "HTTP, WebSocket และ WebRTC"
@@ -190,7 +191,7 @@ msgid "Payment Docs"
 msgstr "เอกสารการชำระเงิน"
 
 msgid "The built-in store page with priced products"
-msgstr ""
+msgstr "หน้าร้านค้าในตัวพร้อมสินค้าที่ตั้งราคาไว้"
 
 msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
 msgstr "การชำระเงินฝั่งเซิร์ฟเวอร์ด้วย Stripe, Google Play, App Store และ Steam ตรวจสอบใบเสร็จ ประมวลผล webhook ที่ลงลายเซ็น มอบสิทธิ์ เพิกถอนการคืนเงิน และตรวจสอบทั้งหมดในหน้าผู้ดูแลระบบ"
@@ -199,34 +200,34 @@ msgid "Payments & Store Integrations"
 msgstr "การชำระเงินและการเชื่อมต่อร้านค้า"
 
 msgid "Economy"
-msgstr ""
+msgstr "เศรษฐกิจ"
 
 msgid "Key-Value Store"
-msgstr ""
+msgstr "ที่เก็บแบบคีย์-ค่า"
 
 msgid "The economy admin page with wallets and grant and spend controls"
-msgstr ""
+msgstr "หน้าผู้ดูแลระบบเศรษฐกิจพร้อมกระเป๋าเงินและตัวควบคุมการมอบและการใช้จ่าย"
 
 msgid "Virtual currency wallets with an atomic, append-only ledger. Item stacks with grant and consume. A per-player and per-lobby **key-value store**, and object storage with presigned uploads on local disk or any S3-compatible backend."
-msgstr ""
+msgstr "กระเป๋าเงินสกุลเงินเสมือนพร้อมบัญชีแยกประเภทแบบอะตอมมิกที่เพิ่มรายการได้อย่างเดียว กองไอเทมพร้อมการมอบและการใช้ **ที่เก็บแบบคีย์-ค่า** ต่อผู้เล่นและต่อล็อบบี้ และที่เก็บอ็อบเจ็กต์พร้อมการอัปโหลดแบบลงนามล่วงหน้าบนดิสก์ในเครื่องหรือแบ็กเอนด์ใดก็ได้ที่เข้ากันได้กับ S3"
 
 msgid "Economy, Inventory & Storage"
-msgstr ""
+msgstr "เศรษฐกิจ คลังไอเทม และพื้นที่จัดเก็บ"
 
 msgid "Player Analytics"
-msgstr ""
+msgstr "การวิเคราะห์ผู้เล่น"
 
 msgid "Client Logs"
-msgstr ""
+msgstr "บันทึกฝั่งไคลเอนต์"
 
 msgid "The analytics admin page with DAU and D1, D7 and D30 retention"
-msgstr ""
+msgstr "หน้าผู้ดูแลระบบการวิเคราะห์พร้อม DAU และอัตราการกลับมาเล่น D1, D7 และ D30"
 
 msgid "D1 / D7 / D30 retention, DAU and payer conversion built in. Client log sessions correlated with the server's own tail for per-player debugging. Prometheus metrics with Grafana, and a load-test harness with published benchmarks."
-msgstr ""
+msgstr "อัตราการกลับมาเล่น D1 / D7 / D30, DAU และอัตราการเปลี่ยนเป็นผู้จ่ายเงินมีมาในตัว เซสชันบันทึกฝั่งไคลเอนต์เชื่อมโยงกับบันทึกของเซิร์ฟเวอร์เองเพื่อดีบักรายผู้เล่น เมตริก Prometheus พร้อม Grafana และชุดทดสอบโหลดพร้อมผลเบนช์มาร์กที่เผยแพร่แล้ว"
 
 msgid "Analytics, Logs & Observability"
-msgstr ""
+msgstr "การวิเคราะห์ บันทึก และการสังเกตการณ์ระบบ"
 
 msgid "Game + Backend"
 msgstr "เกม + แบ็กเอนด์"

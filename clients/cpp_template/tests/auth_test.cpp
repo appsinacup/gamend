@@ -53,13 +53,13 @@ TEST_CASE("a refused sign-in says why and keeps nothing") {
   CHECK(h.changes.empty());
 }
 
-TEST_CASE("register sends a username only when there is one") {
+TEST_CASE("register sends no password, and a username only when there is one") {
   Harness h;
   Seen seen;
-  h.client->auth().register_email("ann@example.com", "secret-pass", {}, seen.callback());
+  h.client->auth().register_email("ann@example.com", seen.callback());
   auto plain = h.server->next();
   CHECK(plain.url == "http://game.test/api/v1/register");
-  CHECK(json::parse(plain.body) == json{{"email", "ann@example.com"}, {"password", "secret-pass"}});
+  CHECK(json::parse(plain.body) == json{{"email", "ann@example.com"}});
   CHECK(FakeHttp::header(plain, "authorization").empty());
   h.server->reply(
       201, R"({"data": {"user_id": "u1", "username": "ann", "display_name": "", "email_confirmed": false}})");
@@ -68,15 +68,16 @@ TEST_CASE("register sends a username only when there is one") {
   CHECK(seen.last.ok());
   CHECK(seen.last.data()["email_confirmed"] == false);
 
-  h.client->auth().register_email("bob@example.com", "secret-pass", "bob", nullptr);
-  CHECK(json::parse(h.server->next().body)["username"] == "bob");
+  h.client->auth().register_email("bob@example.com", "bob", nullptr);
+  CHECK(json::parse(h.server->next().body) ==
+        json{{"email", "bob@example.com"}, {"username", "bob"}});
 }
 
 TEST_CASE("registering is not a sign-in") {
   Harness h;
   h.signed_in();
   Seen seen;
-  h.client->auth().register_email("ann@example.com", "secret-pass", {}, seen.callback());
+  h.client->auth().register_email("ann@example.com", seen.callback());
   h.server->next();
   // Even an answer that carried tokens would not be taken as a session.
   h.server->reply(201, harness::session_reply(2));
@@ -85,6 +86,42 @@ TEST_CASE("registering is not a sign-in") {
   CHECK(seen.calls == 1);
   CHECK(h.client->auth().session()->access_token == "a1");
   CHECK(h.changes.empty());
+}
+
+TEST_CASE("the emailed code confirms the registration, sets the password and signs in") {
+  Harness h;
+  SeenAuth seen;
+  h.client->auth().confirm_registration("ann@example.com", "042137", "secret-pass",
+                                        seen.callback());
+  auto request = h.server->next();
+  CHECK(request.url == "http://game.test/api/v1/register/confirm");
+  CHECK(json::parse(request.body) ==
+        json{{"email", "ann@example.com"}, {"code", "042137"}, {"password", "secret-pass"}});
+  CHECK(FakeHttp::header(request, "authorization").empty());
+  h.server->reply(200, harness::session_reply());
+  h.client->poll();
+  CHECK(seen.last.ok);
+  CHECK(h.client->auth().signed_in());
+
+  h.client->auth().confirm_registration("ann@example.com", "000000", "secret-pass",
+                                        seen.callback());
+  h.server->next();
+  h.server->reply(401, R"({"error": "invalid_code"})");
+  h.client->poll();
+  CHECK_FALSE(seen.last.ok);
+  CHECK(seen.last.error == "invalid_code");
+}
+
+TEST_CASE("a new code is asked for with the address alone") {
+  Harness h;
+  Seen seen;
+  h.client->auth().resend_confirmation("ann@example.com", seen.callback());
+  auto request = h.server->next();
+  CHECK(request.url == "http://game.test/api/v1/register/resend");
+  CHECK(json::parse(request.body) == json{{"email", "ann@example.com"}});
+  h.server->reply(200, R"({"ok": true})");
+  h.client->poll();
+  CHECK(seen.last.ok());
 }
 
 TEST_CASE("Steam signs in with a ticket; an answer with no token signs nobody in") {

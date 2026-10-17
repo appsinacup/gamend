@@ -13,7 +13,7 @@ let reply = task::wait(gamend::lobbies::quick_join(this.node, #{
 if e["kind"] == gamend::events::lobby::MEMBER_JOINED { }
 ```
 
-260 operations in 40 modules, and 90 realtime events.
+264 operations in 41 modules, and 90 realtime events.
 
 Beside the generated modules and `events.rn`, written by hand:
 
@@ -37,7 +37,7 @@ Admin – Analytics.
 | `get_analytics_daily(node, options)` | `GET /api/v1/admin/analytics/daily` | Per-day active / new users and cohort retention (admin) |
 | `get_analytics_economy(node, options)` | `GET /api/v1/admin/analytics/economy` | Currency granted / spent per day per ledger reason (admin) |
 | `get_analytics_snapshot(node)` | `GET /api/v1/admin/analytics/snapshot` | Live counters: players, lobbies, parties, quests, matchmaking, tournaments (admin) |
-| `get_analytics_summary(node)` | `GET /api/v1/admin/analytics` | DAU / WAU / MAU, D1 / D7 / D30 and payer conversion (admin) |
+| `get_analytics_summary(node, options)` | `GET /api/v1/admin/analytics` | DAU / WAU / MAU, D1 / D7 / D30 and payer conversion (admin) |
 
 ## gamend::admin_chat
 
@@ -248,6 +248,7 @@ Authentication.
 
 | Function | Call | What it does |
 | --- | --- | --- |
+| `confirm_registration(node, params)` | `POST /api/v1/register/confirm` | Confirm a registration with its code |
 | `device_login(node, params)` | `POST /api/v1/login/device` | Device login |
 | `link_apple_ios(node, params)` | `POST /api/v1/me/providers/apple/ios` | Link Apple (native iOS) |
 | `link_device(node, params)` | `POST /api/v1/me/device` | Link device ID |
@@ -265,6 +266,7 @@ Authentication.
 | `oauth_session_status(node, session_id)` | `GET /api/v1/auth/session/{session_id}` | Poll a provider sign-in |
 | `refresh_token(node, params)` | `POST /api/v1/refresh` | Refresh access token |
 | `register(node, params)` | `POST /api/v1/register` | Register |
+| `resend_confirmation(node, params)` | `POST /api/v1/register/resend` | Send the confirmation email again |
 | `unlink_device(node)` | `DELETE /api/v1/me/device` | Unlink device ID |
 | `unlink_provider(node, provider)` | `DELETE /api/v1/me/providers/{provider}` | Unlink OAuth provider |
 
@@ -510,6 +512,15 @@ Ready checks.
 | `open_lobby_ready_check(node, params)` | `POST /api/v1/lobbies/ready_check` | Open (or reset) the ready board in the caller's lobby (host only) |
 | `open_party_ready_check(node, params)` | `POST /api/v1/parties/ready_check` | Open (or reset) the ready board in the caller's party (leader only) |
 | `respond_ready_check(node, params)` | `POST /api/v1/me/ready_check` | Answer one of the caller's open ready checks |
+
+## gamend::reports
+
+Reports.
+
+| Function | Call | What it does |
+| --- | --- | --- |
+| `create_report(node, params)` | `POST /api/v1/reports` | File a report |
+| `list_report_kinds(node)` | `GET /api/v1/reports/kinds` | Report kinds |
 
 ## gamend::signaling
 

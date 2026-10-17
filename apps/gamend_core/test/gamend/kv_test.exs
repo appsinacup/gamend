@@ -1,6 +1,8 @@
 defmodule Gamend.KVTest do
   use Gamend.DataCase, async: true
 
+  import Ecto.Query
+
   alias Gamend.AccountsFixtures
   alias Gamend.KV
 
@@ -28,6 +30,69 @@ defmodule Gamend.KVTest do
 
     assert :ok = KV.delete("my_game:key1", user_id: user.id)
     assert :error == KV.get("my_game:key1", user_id: user.id)
+  end
+
+  test "prune_prefix deletes old rows under a prefix, and nothing else" do
+    user = AccountsFixtures.user_fixture()
+
+    {:ok, _} = KV.put("hist:2026-01-01", %{"v" => 1}, %{}, user_id: user.id)
+    {:ok, _} = KV.put("hist:2026-09-30", %{"v" => 2}, %{}, user_id: user.id)
+    {:ok, _} = KV.put("hist_summary", %{"v" => 3}, %{}, user_id: user.id)
+    {:ok, _} = KV.put("other:2026-01-01", %{"v" => 4}, %{}, user_id: user.id)
+
+    # Read before the prune: the cached copy must not outlive the row.
+    assert {:ok, _} = KV.get("hist:2026-01-01", user_id: user.id)
+    assert length(KV.list_entries(user_id: user.id, key: "hist:")) == 2
+
+    long_ago =
+      DateTime.add(DateTime.utc_now(), -400 * 86_400, :second) |> DateTime.truncate(:second)
+
+    Gamend.Repo.update_all(
+      from(e in Gamend.KV.Entry,
+        where: e.key in ["hist:2026-01-01", "hist_summary", "other:2026-01-01"]
+      ),
+      set: [updated_at: long_ago]
+    )
+
+    assert KV.prune_prefix("hist:", 365) == 1
+
+    assert :error == KV.get("hist:2026-01-01", user_id: user.id)
+    assert {:ok, _} = KV.get("hist:2026-09-30", user_id: user.id)
+    # Another key family, and one only LIKE-shaped like it, are left alone.
+    assert {:ok, _} = KV.get("hist_summary", user_id: user.id)
+    assert {:ok, _} = KV.get("other:2026-01-01", user_id: user.id)
+    assert [%{key: "hist:2026-09-30"}] = KV.list_entries(user_id: user.id, key: "hist:")
+
+    assert KV.prune_prefix("", 1) == 0
+    assert KV.prune_prefix("hist:", 0) == 0
+  end
+
+  test "register_kv_prefix runs as a retention class, its window read at each sweep" do
+    user = AccountsFixtures.user_fixture()
+    {:ok, _} = KV.put("hist2:old", %{"v" => 1}, %{}, user_id: user.id)
+
+    long_ago =
+      DateTime.add(DateTime.utc_now(), -40 * 86_400, :second) |> DateTime.truncate(:second)
+
+    Gamend.Repo.update_all(from(e in Gamend.KV.Entry, where: e.key == "hist2:old"),
+      set: [updated_at: long_ago]
+    )
+
+    window = :counters.new(1, [])
+
+    :ok =
+      Gamend.Retention.register_kv_prefix(:test_hist2, "hist2:", fn ->
+        :counters.get(window, 1)
+      end)
+
+    on_exit(fn -> Gamend.Retention.unregister_class(:test_hist2) end)
+    class = Gamend.Retention.registered_classes()[:test_hist2]
+
+    # 0 keeps everything; the window is read when the sweep runs.
+    assert class.() == 0
+    :counters.put(window, 1, 30)
+    assert class.() == 1
+    assert :error == KV.get("hist2:old", user_id: user.id)
   end
 
   test "list/count entries supports global_only" do

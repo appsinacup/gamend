@@ -8,7 +8,7 @@ msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "Server de joc Elixir open source pentru jocuri multiplayer în timp real."
 
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 msgid "Discord"
 msgstr "Discord"
@@ -31,26 +31,29 @@ msgstr "Ghid"
 msgid "API Docs"
 msgstr "Documentație API"
 
+msgid "UI elements"
+msgstr "Elemente de interfață"
+
 msgid "Elixir Docs"
 msgstr "Documente despre elixir"
 
 msgid "Deployment Tutorial"
-msgstr ""
+msgstr "Tutorial de implementare"
 
 msgid "Scaling Guide"
-msgstr ""
+msgstr "Ghid de scalare"
 
 msgid "Docs"
-msgstr ""
+msgstr "Documentație"
 
 msgid "Starter Template"
-msgstr ""
+msgstr "Șablon de pornire"
 
 msgid "Store"
 msgstr "Magazin"
 
 msgid "Server Stats"
-msgstr ""
+msgstr "Statistici server"
 
 msgid "Help"
 msgstr "Ajutor"
@@ -80,7 +83,7 @@ msgid "Groups"
 msgstr "Grupuri"
 
 msgid "News"
-msgstr ""
+msgstr "Noutăți"
 
 msgid "Getting Started"
 msgstr "Noțiuni de bază"
@@ -89,28 +92,28 @@ msgid "Presentation Video"
 msgstr "Prezentare video"
 
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
-msgstr ""
+msgstr "Server de joc Elixir **open source** pentru jocuri multiplayer în timp real: backend, site pentru jucători și panou de administrare, toate într-unul."
 
 msgid "Gamend"
 msgstr "Gamend"
 
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
-msgstr ""
+msgstr "Un tur al panoului de administrare Gamend, al misiunilor, al magazinului și al hook-urilor de server"
 
 msgid "Benchmarks"
-msgstr ""
+msgstr "Benchmark-uri"
 
 msgid "Godot SDK"
-msgstr ""
+msgstr "Godot SDK"
 
 msgid "C++ SDK"
-msgstr ""
+msgstr "C++ SDK"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
-msgstr ""
+msgstr "**Backend-ul pentru jocul tău multiplayer**: conturi, lobby-uri, chat, clasamente și tot ce așteaptă jucătorii în jurul jocului propriu-zis. Include și interfața web din jurul lui: un site gata făcut pentru jucători (magazin, clasamente, turnee, misiuni, grupuri, chat) și un panou de administrare complet. Scriptarea pe server rulează propria ta logică acolo unde jucătorii nu o pot atinge. Îl rulezi pe propriul tău server; nu există un serviciu găzduit."
 
 msgid "What is Gamend?"
-msgstr ""
+msgstr "Ce este Gamend?"
 
 msgid "Log in"
 msgstr "Conectare"
@@ -119,7 +122,7 @@ msgid "Register"
 msgstr "Înregistrare"
 
 msgid "The login page with magic link, password and five OAuth providers"
-msgstr ""
+msgstr "Pagina de conectare cu magic link, parolă și cinci furnizori OAuth"
 
 msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
 msgstr "E-mail, Magic-link, OAuth, JWT și Sesiune. Înregistrare, conectare, resetare parolă și verificare e-mail."
@@ -128,22 +131,22 @@ msgid "Authentication & Users"
 msgstr "Autentificare și utilizatori"
 
 msgid "Lobbies"
-msgstr ""
+msgstr "Lobby-uri"
 
 msgid "Matchmaking"
-msgstr ""
+msgstr "Matchmaking"
 
 msgid "The matchmaking admin page with live queues, tickets and ready checks"
-msgstr ""
+msgstr "Pagina de administrare pentru matchmaking cu cozi în timp real, tichete și verificări de pregătire"
 
 msgid "Real-time lobbies with passwords, quick join and live updates. Ephemeral parties that join and get matched **as one unit**, a ticket-queue matchmaker and ready checks before anything starts."
-msgstr ""
+msgstr "Lobby-uri în timp real cu parole, intrare rapidă și actualizări live. Party-uri temporare care intră și sunt potrivite **ca o singură unitate**, un sistem de matchmaking cu coadă de tichete și verificări de pregătire înainte să înceapă orice."
 
 msgid "Lobbies, Parties & Matchmaking"
 msgstr "Lobby-uri, party-uri și matchmaking"
 
 msgid "The public groups browser"
-msgstr ""
+msgstr "Lista publică a grupurilor"
 
 msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
 msgstr "Cereri de prietenie, blocare, prezență în timp real. Grupuri publice, private și ascunse. Mesagerie directă și de grup."
@@ -152,33 +155,31 @@ msgid "Friends, Groups & Chat"
 msgstr "Prieteni, Grupuri și Chat"
 
 msgid "The quests page with daily, achievement and event quests"
-msgstr ""
+msgstr "Pagina de misiuni cu misiuni zilnice, de realizări și de evenimente"
 
 msgid "One server-authoritative quest engine for achievements, dailies, seasonal events and quest chains. Bracket tournaments, leaderboards with seasons, and real-time plus push notifications across every feature."
-msgstr ""
+msgstr "Un singur motor de misiuni cu autoritate pe server pentru realizări, misiuni zilnice, evenimente sezoniere și lanțuri de misiuni. Turnee cu tablouri, clasamente cu sezoane și notificări în timp real și push în toate funcționalitățile."
 
 msgid "Quests, Tournaments & Leaderboards"
-msgstr ""
+msgstr "Misiuni, turnee și clasamente"
 
-#, fuzzy
 msgid "Server Scripting"
-msgstr "Scriptare și programare server"
+msgstr "Scriptare server"
 
 msgid "GDScript Hooks"
-msgstr ""
+msgstr "Hook-uri GDScript"
 
 msgid "Runtime introspection listing every hook with its implementing plugins"
-msgstr ""
+msgstr "Introspecție la rulare care listează fiecare hook împreună cu pluginurile care îl implementează"
 
 msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
-msgstr ""
+msgstr "Scrie hook-uri de server în **Elixir, GDScript sau Gleam** pentru punctaj, recompense, reguli de matchmaking și validare, acolo unde jucătorii nu le pot atinge. Sarcini persistente în fundal și programare cron integrate."
 
 msgid "Server Scripting & Scheduling"
 msgstr "Scriptare și programare server"
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
-msgstr "API REST, canale WebSocket în timp real și canale de date WebRTC cu latență redusă. Portal de administrare și interfață web."
+msgstr "API REST, canale WebSocket în timp real și WebRTC DataChannels cu latență redusă, cu un format protobuf opțional pentru timp real. Portal de administrare și interfață web, traduse în 30 de limbi."
 
 msgid "HTTP, WebSocket & WebRTC"
 msgstr "HTTP, WebSocket și WebRTC"
@@ -190,7 +191,7 @@ msgid "Payment Docs"
 msgstr "Documentație plăți"
 
 msgid "The built-in store page with priced products"
-msgstr ""
+msgstr "Pagina de magazin integrată, cu produse și prețuri"
 
 msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
 msgstr "Plăți pe server cu furnizorii Stripe, Google Play, App Store și Steam. Validează chitanțe, procesează webhook-uri semnate, acordă drepturi, revocă rambursări și inspectează totul în administrare."
@@ -199,34 +200,34 @@ msgid "Payments & Store Integrations"
 msgstr "Plăți și integrări de magazin"
 
 msgid "Economy"
-msgstr ""
+msgstr "Economie"
 
 msgid "Key-Value Store"
-msgstr ""
+msgstr "Stocare cheie-valoare"
 
 msgid "The economy admin page with wallets and grant and spend controls"
-msgstr ""
+msgstr "Pagina de administrare a economiei cu portofele și controale pentru acordare și cheltuire"
 
 msgid "Virtual currency wallets with an atomic, append-only ledger. Item stacks with grant and consume. A per-player and per-lobby **key-value store**, and object storage with presigned uploads on local disk or any S3-compatible backend."
-msgstr ""
+msgstr "Portofele de monedă virtuală cu un registru atomic, în care doar se adaugă. Stive de obiecte cu acordare și consum. O **stocare cheie-valoare** per jucător și per lobby, plus stocare de obiecte cu încărcări presemnate pe disc local sau pe orice backend compatibil S3."
 
 msgid "Economy, Inventory & Storage"
-msgstr ""
+msgstr "Economie, inventar și stocare"
 
 msgid "Player Analytics"
-msgstr ""
+msgstr "Analiza jucătorilor"
 
 msgid "Client Logs"
-msgstr ""
+msgstr "Jurnale client"
 
 msgid "The analytics admin page with DAU and D1, D7 and D30 retention"
-msgstr ""
+msgstr "Pagina de administrare a analizelor cu DAU și retenție D1, D7 și D30"
 
 msgid "D1 / D7 / D30 retention, DAU and payer conversion built in. Client log sessions correlated with the server's own tail for per-player debugging. Prometheus metrics with Grafana, and a load-test harness with published benchmarks."
-msgstr ""
+msgstr "Retenție D1 / D7 / D30, DAU și conversia plătitorilor, incluse. Sesiuni de jurnale client corelate cu jurnalul propriu al serverului pentru depanare per jucător. Metrici Prometheus cu Grafana și un sistem de teste de încărcare cu benchmark-uri publicate."
 
 msgid "Analytics, Logs & Observability"
-msgstr ""
+msgstr "Analize, jurnale și observabilitate"
 
 msgid "Game + Backend"
 msgstr "Joc + Backend"

@@ -2,6 +2,8 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
   use GamendWeb, :controller
   use OpenApiSpex.ControllerSpecs
 
+  require Logger
+
   alias Gamend.Payments
   alias GamendWeb.Api.V1.PaymentErrors
   alias GamendWeb.Schemas
@@ -69,6 +71,7 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
         reply_data(conn, %{status: to_string(status)})
 
       {:error, reason} ->
+        refused("google", reason)
         PaymentErrors.reply(conn, reason)
     end
   end
@@ -88,8 +91,19 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
         reply_data(conn, %{status: to_string(status)})
 
       {:error, reason} ->
+        refused("apple", reason)
         PaymentErrors.reply(conn, reason)
     end
+  end
+
+  # A non-2xx answer makes the provider retry and, past its limit, give up:
+  # an unverifiable token or a handler that failed is a lost notification
+  # unless someone reads why. Stripe's are logged with the event in
+  # `Gamend.Payments.StripeEvents`.
+  defp refused(provider, reason) do
+    Logger.warning(
+      "Payment webhook #{provider} refused reason=#{inspect(reason) |> String.slice(0, 500)}"
+    )
   end
 
   defp query_token(%{"token" => token}) when is_binary(token) and token != "",

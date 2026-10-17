@@ -1,26 +1,35 @@
 defmodule GamendWeb.Plugs.ColorMode do
   @moduledoc """
-  Reads the `phx_theme` cookie (set by the client-side theme switcher) and
-  assigns `:color_mode` so that the root layout can render the `data-theme`
+  Assigns `:color_mode` so that the root layout can render the `data-theme`
   attribute server-side, preventing a Flash of Unstyled Content (FOUC) when
-  the user has selected dark mode.
+  the reader has chosen dark mode.
 
-  Only accepts `"dark"` or `"light"` — any other value is ignored.
+  A signed-in reader's saved theme (`Gamend.Accounts.Preferences.theme/1`)
+  wins, and is also assigned as `:theme_saved`, which the layout hands to
+  `theme-init.js` so the browser's copy follows the account. Otherwise the
+  `phx_theme` cookie the client-side switcher sets. Runs after the scope is
+  fetched. Only `"dark"` or `"light"` — any other value is ignored.
   """
 
   import Plug.Conn
+
+  alias Gamend.Accounts.Preferences
+  alias Gamend.Accounts.Scope
 
   def init(opts), do: opts
 
   def call(conn, _opts) do
     conn = fetch_cookies(conn)
 
-    case conn.cookies["phx_theme"] do
-      theme when theme in ["dark", "light"] ->
-        assign(conn, :color_mode, theme)
+    case Preferences.theme(Scope.user(conn.assigns[:current_scope])) do
+      nil ->
+        case conn.cookies["phx_theme"] do
+          theme when theme in ["dark", "light"] -> assign(conn, :color_mode, theme)
+          _ -> conn
+        end
 
-      _ ->
-        conn
+      saved ->
+        conn |> assign(:color_mode, saved) |> assign(:theme_saved, saved)
     end
   end
 end

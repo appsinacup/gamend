@@ -33,6 +33,7 @@ defmodule GamendWeb.HostSupervision do
   """
 
   alias Gamend.Chat.Moderation.Cache, as: ModerationCache
+  alias Gamend.Repo.SlowLog
   alias GamendWeb.Plugs.GeoCountry
   alias GamendWeb.Plugs.IpBan
 
@@ -73,11 +74,18 @@ defmodule GamendWeb.HostSupervision do
 
     Application.start(:os_mon)
 
+    # Every host gets the slow query and long transaction lines in its log:
+    # without them a "database is locked" names the waiter and never the
+    # holder.
+    SlowLog.attach()
+
     # ETS owner for the Schedule registry + protected-callback set — must exist
     # before the Oban Cron tick fires.
     Gamend.Schedule.start_link()
     IpBan.init_table()
     GeoCountry.init_table()
+    # The crawler token pattern and the DNS-check cache, read per request.
+    GamendWeb.Crawlers.init()
     # Word blocklist + active mutes, read on every outgoing chat message.
     ModerationCache.init_table()
 
@@ -165,6 +173,8 @@ defmodule GamendWeb.HostSupervision do
       GamendWeb.Telemetry,
       GamendWeb.PromEx,
       Gamend.Repo,
+      # The line callers wait in for `Gamend.Lock` (`Gamend.Lock.Local`)
+      Gamend.Lock.Queue,
       {Gamend.Cache, []},
       # Aggregates cache hit/miss + overload counters for the admin dashboard
       Gamend.Cache.Stats,
@@ -191,10 +201,17 @@ defmodule GamendWeb.HostSupervision do
         # Coalesces is_online transitions into one write per window, so a
         # connect storm of distinct players is not one transaction each.
         Gamend.Accounts.PresenceWriter,
+        # Gathers analytics counters and events and lands them in batches
+        # (`Gamend.Analytics.track/3`), so a page view is never a database
+        # write on the request's connection.
+        Gamend.Analytics.Buffer,
         # Periodically mark stale online users as offline (safety net for crashes)
         Gamend.Accounts.StalePresenceSweeper,
         # Prune old chat messages / notifications / payment events (RETENTION_* env vars)
         Gamend.Retention,
+        # Hourly: Stripe checkouts still open past their session's life are
+        # reconciled, for a webhook that never arrived
+        Gamend.Payments.StripeSweeper,
         # Tournament lifecycle: transitions, draws, match deadlines, recurrence
         Gamend.Tournaments.Ticker,
         # Push delivery processes (Goth + Pigeon dispatchers); supervises

@@ -16,7 +16,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
 
         <div>
           <h1 class="text-3xl font-bold">Rate Limiting & IP Bans</h1>
-          <p class="mt-1 text-sm text-base-content/70">
+          <p class="mt-1 text-sm text-muted">
             Manage IP bans and monitor rate limiting across HTTP, Auth, WebSocket, and WebRTC.
           </p>
         </div>
@@ -25,11 +25,11 @@ defmodule GamendWeb.AdminLive.RateLimiting do
               counts, and bans live in IpBan's own table — the first card. --%>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="card bg-base-200 p-4">
-            <div class="text-xs text-base-content/60">Active IP Bans</div>
+            <div class="text-xs text-muted">Active IP Bans</div>
             <div class="text-2xl font-bold">{length(@ip_bans)}</div>
           </div>
           <div class="card bg-base-200 p-4">
-            <div class="text-xs text-base-content/60">Rate Limited (now)</div>
+            <div class="text-xs text-muted">Rate Limited (now)</div>
             <div class={[
               "text-2xl font-bold",
               @rate_stats.limited > 0 && "text-warning"
@@ -38,11 +38,11 @@ defmodule GamendWeb.AdminLive.RateLimiting do
             </div>
           </div>
           <div class="card bg-base-200 p-4">
-            <div class="text-xs text-base-content/60">IPs Tracked</div>
+            <div class="text-xs text-muted">IPs Tracked</div>
             <div class="text-2xl font-bold">{length(@rate_stats.usage)}</div>
           </div>
           <div class="card bg-base-200 p-4">
-            <div class="text-xs text-base-content/60">Ban Log Entries</div>
+            <div class="text-xs text-muted">Ban Log Entries</div>
             <div class="text-2xl font-bold">{length(@ban_log)}</div>
           </div>
         </div>
@@ -51,8 +51,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
         <div class="card bg-base-200 shadow">
           <div class="card-body">
             <h2 class="card-title text-lg">
-              Traffic by Bucket Type
-              <span class="text-xs font-normal text-base-content/60">(live)</span>
+              Traffic by Bucket Type <span class="text-xs font-normal text-muted">(live)</span>
             </h2>
             <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-2">
               <%= for {type, label, badge_class} <- bucket_types() do %>
@@ -62,9 +61,9 @@ defmodule GamendWeb.AdminLive.RateLimiting do
                     <span class={["badge badge-xs font-bold", badge_class]}>{label}</span>
                   </div>
                   <div class="text-lg font-bold">
-                    {bucket.count} <span class="text-xs font-normal text-base-content/60">IPs</span>
+                    {bucket.count} <span class="text-xs font-normal text-muted">IPs</span>
                   </div>
-                  <div class="text-xs text-base-content/60">
+                  <div class="text-xs text-muted">
                     {bucket.total_hits} total hits
                   </div>
                   <%= if bucket.limited > 0 do %>
@@ -82,7 +81,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
         <div class="card bg-base-200 shadow">
           <div class="card-body">
             <h2 class="card-title text-lg">Configuration</h2>
-            <p class="text-xs text-base-content/60 mb-3">
+            <p class="text-xs text-muted mb-3">
               Rate limit settings (set via GAMEND_RATELIMIT_* env vars — restart required to change).
             </p>
             <div class="overflow-x-auto">
@@ -141,11 +140,11 @@ defmodule GamendWeb.AdminLive.RateLimiting do
           <div class="card-body">
             <h2 class="card-title text-lg">
               Rate Limit Load — All Tracked IPs
-              <span class="text-xs font-normal text-base-content/60">
+              <span class="text-xs font-normal text-muted">
                 ({ngettext("%{count} entry", "%{count} entries", length(@rate_stats.usage))}, auto-refreshes every 5s)
               </span>
             </h2>
-            <p class="text-xs text-base-content/60">
+            <p class="text-xs text-muted">
               All IPs with active Hammer bucket entries, sorted by usage (descending).
             </p>
             <p :if={not @ets_backend?} class="text-xs text-warning">
@@ -209,7 +208,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
                     </td>
                   </tr>
                   <tr :if={@rate_stats.usage == []}>
-                    <td colspan="4" class="text-center text-xs text-base-content/70 py-4 italic">
+                    <td colspan="4" class="text-center text-xs text-muted py-4 italic">
                       No significant traffic in current window.
                     </td>
                   </tr>
@@ -284,7 +283,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
                       </td>
                     </tr>
                     <tr :if={@ip_bans == []}>
-                      <td colspan="3" class="text-center text-xs text-base-content/70 py-4 italic">
+                      <td colspan="3" class="text-center text-xs text-muted py-4 italic">
                         No active IP bans.
                       </td>
                     </tr>
@@ -298,8 +297,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
           <div class="card bg-base-200 shadow">
             <div class="card-body">
               <h2 class="card-title text-lg">
-                Ban History
-                <span class="text-xs font-normal text-base-content/60">(in-memory, last 100)</span>
+                Ban History <span class="text-xs font-normal text-muted">(in-memory, last 100)</span>
               </h2>
 
               <div class="overflow-x-auto max-h-80 overflow-y-auto">
@@ -312,7 +310,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
                     </tr>
                   </thead>
                   <tbody>
-                    <tr :for={entry <- @ban_log} id={"log-#{entry.ip}-#{entry.action}"}>
+                    <tr :for={entry <- @ban_log} id={"log-#{entry.seq}"}>
                       <td>
                         <%= if entry.action == :ban do %>
                           <span class="badge badge-error badge-xs">BAN</span>
@@ -326,7 +324,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
                       </td>
                     </tr>
                     <tr :if={@ban_log == []}>
-                      <td colspan="3" class="text-center text-xs text-base-content/70 py-4 italic">
+                      <td colspan="3" class="text-center text-xs text-muted py-4 italic">
                         No ban history yet.
                       </td>
                     </tr>

@@ -69,7 +69,7 @@ defmodule GamendWeb.AdminLive.Parties do
 
             <form phx-change="filter" phx-no-unused-field id="parties-filter-form">
               <div class="flex items-center gap-3 mt-4">
-                <label class="text-sm text-base-content/70">Sort by:</label>
+                <label class="text-sm text-muted">Sort by:</label>
                 <select
                   name="sort_by"
                   class="select select-bordered select-sm"
@@ -168,7 +168,7 @@ defmodule GamendWeb.AdminLive.Parties do
                       <td class="text-sm">
                         <span class="font-mono">{p.leader_id}</span>
                         <%= if p.leader do %>
-                          <span class="text-base-content/60 ml-1">
+                          <span class="text-muted ml-1">
                             ({Gamend.Accounts.display_label(p.leader)})
                           </span>
                         <% end %>
@@ -254,7 +254,7 @@ defmodule GamendWeb.AdminLive.Parties do
               <textarea name="party[metadata]" class="textarea textarea-bordered" rows="4"><%= Jason.encode!(@selected_party.metadata || %{}) %></textarea>
             </div>
 
-            <div class="mt-4 text-sm text-base-content/70 space-y-1">
+            <div class="mt-4 text-sm text-muted space-y-1">
               <div>
                 Leader: <span class="font-mono">{@selected_party.leader_id}</span>
               </div>

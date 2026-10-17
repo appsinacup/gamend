@@ -8,8 +8,11 @@ defmodule Gamend.Accounts.Scope do
   through `Gamend.Accounts.get_user/1`'s cache. This keeps mutable state
   (lobby_id, online, is_admin) current instead of frozen at connect time.
 
-  A `%Scope{}` always represents an authenticated caller — `for_user/1` returns
-  `nil` for an anonymous one — so a `%Scope{}` match implies a present user_id.
+  A `%Scope{}` always represents a signed-in caller — `for_user/1` returns
+  `nil` for a signed-out one — so a `%Scope{}` match implies a present user_id.
+  That caller may still be an anonymous account (a device id and nothing else,
+  `User.anonymous?/1`): a game client's, or the one the website gives a visitor
+  (`GamendWeb.UserAuth.ensure_user/1`). `anonymous?/1` tells them apart.
 
   `authenticated_at` is a session fact (from the session token, virtual on
   `User`) that cannot be re-derived from the DB row, so it is carried on the
@@ -21,7 +24,9 @@ defmodule Gamend.Accounts.Scope do
 
   defstruct user_id: nil, authenticated_at: nil
 
-  @doc "Creates a scope for the given user, or nil when anonymous."
+  @type t :: %__MODULE__{user_id: Ecto.UUID.t() | nil, authenticated_at: DateTime.t() | nil}
+
+  @doc "Creates a scope for the given user, or nil when signed out."
   def for_user(%User{} = user),
     do: %__MODULE__{user_id: user.id, authenticated_at: user.authenticated_at}
 
@@ -43,4 +48,17 @@ defmodule Gamend.Accounts.Scope do
   end
 
   def user(_), do: nil
+
+  @doc """
+  True when the caller is signed in with an anonymous account: no email and no
+  sign-in provider, only a device id. False for a signed-out (nil) scope.
+  """
+  def anonymous?(%__MODULE__{} = scope) do
+    case user(scope) do
+      %User{} = user -> User.anonymous?(user)
+      _ -> false
+    end
+  end
+
+  def anonymous?(_), do: false
 end

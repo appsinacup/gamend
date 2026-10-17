@@ -110,7 +110,7 @@ defmodule GamendWeb.UserLive.RegistrationDeliveryFailureTest do
   import Gamend.AccountsFixtures
 
   defmodule FailNotifier do
-    def deliver_confirmation_instructions(_user, _url), do: {:error, :smtp_failed}
+    def deliver_confirmation_instructions(_user, _url, _code), do: {:error, :smtp_failed}
   end
 
   setup do

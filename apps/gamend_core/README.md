@@ -32,7 +32,7 @@ Everything runs on **SQLite or PostgreSQL** — the same migrations target both.
 ```elixir
 def deps do
   [
-    {:gamend_core, "~> 1.0.0"}
+    {:gamend_core, "~> 1.1"}
   ]
 end
 ```

@@ -14,6 +14,8 @@ defmodule Gamend.Cache do
     otp_app: :gamend_core,
     adapter: Nebulex.Adapters.Multilevel
 
+  alias Gamend.Cache.L1
+
   @doc """
   How long a cached entity is kept, in milliseconds (`cache.ttl_ms`). Every
   entity cache uses it; the few entries with a deliberate lifetime of their own
@@ -28,9 +30,19 @@ defmodule Gamend.Cache do
 
   Cached `nil` results are honored — `fun` only runs on a real cache miss.
 
+  A fill is kept only if `key` was not invalidated while `fun` ran. A read
+  that queries a row, then loses the CPU to a write that commits and evicts
+  `key`, would otherwise cache the row as it was before the write, until the
+  TTL: a revoked user, a spent balance. `invalidate/1` moves the key's
+  generation (`generation/1`); the fill compares it before and after its put.
+
+  Inside a transaction nothing is cached: the read may see a write a rollback
+  undoes.
+
   ## Options
 
   - `:ttl` — time-to-live in milliseconds
+  - `:match` — `(result -> boolean)`, whether to cache a result (default: all)
   """
   @spec cached(term(), keyword(), (-> term())) :: term()
   def cached(key, opts \\ [], fun) when is_function(fun, 0) do
@@ -39,11 +51,51 @@ defmodule Gamend.Cache do
         value
 
       {:error, _miss_or_error} ->
+        {match, opts} = Keyword.pop(opts, :match, fn _ -> true end)
+        generation = generation(key)
         result = fun.()
-        _ = put(key, result, opts)
+
+        if match.(result) and not Gamend.Repo.in_transaction?() do
+          fill(key, generation, result, opts)
+        end
+
         result
     end
   end
+
+  @doc """
+  How many times `key` has been invalidated, as far as this node knows; read
+  it before the query whose result `fill/4` caches.
+  """
+  @spec generation(term()) :: non_neg_integer()
+  def generation(key), do: get!(generation_key(key)) || 0
+
+  @doc """
+  Caches `value` at `key` unless `key` was invalidated since `generation`
+  was read. Put first, then compare, so an invalidation that lands between the
+  two still removes the value.
+  """
+  @spec fill(term(), non_neg_integer(), term(), keyword()) :: :ok
+  def fill(key, generation, value, opts \\ []) do
+    _ = put(key, value, opts)
+    if generation(key) != generation, do: _ = delete(key)
+    :ok
+  end
+
+  @doc false
+  # Kept well past any fill in flight; one that outlives it reads 0, which
+  # differs from the count it started with unless that was 0 too.
+  def bump_generation_local(key) do
+    _ = L1.incr(generation_key(key), 1, default: 0, ttl: ttl() * 2)
+    :ok
+  end
+
+  defp bump_generation(key) do
+    _ = incr(generation_key(key), 1, default: 0, ttl: ttl() * 2)
+    :ok
+  end
+
+  defp generation_key(key), do: {__MODULE__, :generation, key}
 
   @invalidation_topic "cache:invalidate"
 
@@ -63,6 +115,8 @@ defmodule Gamend.Cache do
   end
 
   defp evict(key) do
+    # Generation first: a fill that puts after the delete then sees it moved.
+    bump_generation(key)
     _ = delete(key)
 
     Phoenix.PubSub.broadcast(

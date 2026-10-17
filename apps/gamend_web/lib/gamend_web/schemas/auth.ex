@@ -47,15 +47,15 @@ end
 defmodule GamendWeb.Schemas.Registration do
   @moduledoc """
   The account `POST /api/v1/register` created. Not a session: registering
-  signs nobody in, and the password signs in with `POST /api/v1/login` once
-  the email is confirmed.
+  signs nobody in. The emailed code signs in (`POST /api/v1/register/confirm`),
+  setting the password as it confirms the email.
   """
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
     title: "Registration",
-    description: "An account just created with an email and a password",
+    description: "An account just created with an email, waiting for it to be confirmed",
     type: :object,
     properties: %{
       user_id: %Schema{type: :string, format: :uuid},
@@ -67,9 +67,9 @@ defmodule GamendWeb.Schemas.Registration do
       email_confirmed: %Schema{
         type: :boolean,
         description:
-          "False until the player opens the emailed link; login answers " <>
-            "`403 email_not_confirmed` until then. True only for the server's first " <>
-            "account, the admin, which is confirmed without an email"
+          "False: the account has no password until the emailed code confirms it " <>
+            "(`POST /api/v1/register/confirm`), or the player opens the emailed link " <>
+            "and sets one in their settings"
       }
     },
     required: [:user_id, :username, :display_name, :email_confirmed],

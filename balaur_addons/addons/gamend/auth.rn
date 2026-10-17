@@ -103,6 +103,28 @@ async fn provider_page(node, provider, start, poll) {
     return ();
 }
 
+/// Confirm a `client::register_email` account with the code from its email,
+/// set its password, and sign in: the session is restored, kept for the next
+/// run, and answered. Nil when the server refused, and the warning says why:
+/// `invalid_code` (wrong, spent or expired), `account_locked` (too many wrong
+/// codes; the code is void, so ask for a new one with
+/// `client::resend_confirmation`), or `validation_failed` (the password).
+pub async fn confirm_registration(node, email, code, password) {
+    let params = #{ "email": email, "code": code, "password": password };
+    let reply = task::wait(gamend::authentication::confirm_registration(node, params)).await;
+    if !gamend::core::ok(reply) {
+        log::warn(gamend::core::error_of(reply));
+        return ();
+    }
+    let session = data_of(gamend::core::body(reply));
+    if !(session is Object) {
+        return ();
+    }
+    gamend::restore(session);
+    keep(session);
+    return session;
+}
+
 /// What `{"data": ...}` carries, or nil for any other body.
 fn data_of(body) {
     if body is Object && body.contains_key("data") {

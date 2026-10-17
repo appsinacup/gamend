@@ -78,7 +78,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
 
             <form phx-change="filter" phx-no-unused-field id="lobbies-filter-form">
               <div class="flex items-center gap-3 mt-4">
-                <label class="text-sm text-base-content/70">Sort by:</label>
+                <label class="text-sm text-muted">Sort by:</label>
                 <select
                   name="sort_by"
                   class="select select-bordered select-sm"
@@ -347,7 +347,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
               <textarea name="lobby[metadata]" class="textarea textarea-bordered" rows="4"><%= Jason.encode!(@selected_lobby.metadata || %{}) %></textarea>
             </div>
 
-            <div class="mt-4 text-sm text-base-content/70 space-y-1">
+            <div class="mt-4 text-sm text-muted space-y-1">
               <div>
                 Created:
                 <span class="font-mono">
@@ -378,7 +378,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
           <h3 class="font-bold text-lg">
             Lobby #{@selected_lobby.id} members ({length(@members)})
           </h3>
-          <p class="text-sm text-base-content/70 mt-1">
+          <p class="text-sm text-muted mt-1">
             Spectators: {Map.get(@spectator_counts, @selected_lobby.id, 0)}
             <span class="ml-2">State: <span class="font-mono">{@selected_lobby.state}</span></span>
           </p>

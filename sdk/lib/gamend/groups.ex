@@ -120,7 +120,7 @@ defmodule Gamend.Groups do
   def batch_member_counts(_group_ids) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        0
+        %{}
 
       _ ->
         raise "Gamend.Groups.batch_member_counts/1 is a stub - only available at runtime on Gamend"
@@ -753,7 +753,7 @@ defmodule Gamend.Groups do
   def list_invitations(_user_id, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        %{}
+        []
 
       _ ->
         raise "Gamend.Groups.list_invitations/2 is a stub - only available at runtime on Gamend"
@@ -786,7 +786,7 @@ defmodule Gamend.Groups do
   def list_sent_invitations(_user_id, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        %{}
+        []
 
       _ ->
         raise "Gamend.Groups.list_sent_invitations/2 is a stub - only available at runtime on Gamend"
@@ -817,7 +817,7 @@ defmodule Gamend.Groups do
   def list_user_groups_with_role(_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        ""
+        []
 
       _ ->
         raise "Gamend.Groups.list_user_groups_with_role/1 is a stub - only available at runtime on Gamend"

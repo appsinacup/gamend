@@ -24,6 +24,14 @@ var provider_timeout_sec := 60.0
 var user_update_timeout_sec := 10.0
 ## localStorage key for the persistent web device id.
 var web_device_id_storage_key := "gamend_device_id"
+## Override the id `device_auth()` logs in with. Empty means the real device.
+##
+## The device id is hardware-derived (`OS.get_unique_id()`), so every guest
+## login from one machine lands in the SAME server-side account. Automated runs
+## set a fresh id per run to get a genuinely new guest.
+##
+## Test seam only. Production leaves it empty and gets the real device.
+var device_id_override := ""
 ## Default persistent storage for the refresh token / web device id.
 var auth_store_path := "user://gamend_auth.cfg"
 ## Optional storage overrides — set BOTH to use your own settings system or a
@@ -116,11 +124,19 @@ func restore_session() -> String:
 ## Log in with this device's stable id (web: a generated id persisted to both
 ## the injected store and localStorage, so clearing one still finds the other).
 func device_auth() -> String:
-	var unique_id := _get_or_create_web_device_id() if OS.get_name() == "Web" else OS.get_unique_id()
+	var unique_id := _device_id()
 	var response = await _api.authenticate_device_login(unique_id)
 	if response.error:
 		return "Error: " + str(response.error.message)
 	return await save_session()
+
+
+## This device's login id: `device_id_override` when one is set, otherwise the
+## real device (web keeps a generated id in both stores; native uses the OS id).
+func _device_id() -> String:
+	if not device_id_override.is_empty():
+		return device_id_override
+	return _get_or_create_web_device_id() if OS.get_name() == "Web" else OS.get_unique_id()
 
 
 ## Browser OAuth for any provider (GamendApi.PROVIDER_*): request the URL,

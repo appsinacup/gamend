@@ -46,7 +46,11 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
             >
               {gettext("Manage billing")}
             </button>
-            <.link navigate={~p"/store"} class="btn btn-sm btn-primary">
+            <.link
+              :if={GamendWeb.Features.enabled?(:web_store)}
+              navigate={~p"/store"}
+              class="btn btn-sm btn-primary"
+            >
               {gettext("Open Store")}
             </.link>
           </div>
@@ -59,7 +63,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
         </div>
 
         <%= if @payment_purchases == [] do %>
-          <div class="mt-4 rounded-lg border border-base-300 bg-base-100 p-4 text-sm text-base-content/70">
+          <div class="mt-4 rounded-lg border border-base-300 bg-base-100 p-4 text-sm text-muted">
             {gettext("No results.")}
           </div>
         <% else %>
@@ -80,21 +84,43 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
                 <tr :for={purchase <- @payment_purchases} id={"payment-purchase-#{purchase.id}"}>
                   <td>
                     <div class="font-mono text-xs break-all">{purchase.order_id}</div>
-                    <div class="font-mono text-xs text-base-content/70 break-all">
+                    <div class="font-mono text-xs text-muted break-all">
                       {purchase.provider_transaction_id || "-"}
                     </div>
                   </td>
                   <td>
                     <div class="font-medium">{payment_product_title(purchase)}</div>
-                    <div class="font-mono text-xs text-base-content/60">
+                    <div class="font-mono text-xs text-muted">
                       {payment_product_sku(purchase)}
                     </div>
                   </td>
                   <td>{LiveHelpers.payment_provider_label(purchase.provider)}</td>
                   <td>
-                    <span class={["badge badge-sm", payment_status_badge_class(purchase.status)]}>
-                      {LiveHelpers.payment_status_label(purchase.status)}
-                    </span>
+                    <div class="flex flex-col items-start gap-2">
+                      <span class={["badge badge-sm", payment_status_badge_class(purchase.status)]}>
+                        {LiveHelpers.payment_status_label(purchase.status)}
+                      </span>
+                      <%!-- Until the refund's webhook ends the purchase. --%>
+                      <span :if={payment_refund_sent?(purchase)} class="badge badge-sm badge-warning">
+                        {gettext("Refund sent")}
+                      </span>
+                      <button
+                        :if={Payments.stripe_refundable?(purchase)}
+                        id={"refund-purchase-#{purchase.id}"}
+                        type="button"
+                        phx-click="refund_stripe_purchase"
+                        phx-value-id={purchase.id}
+                        data-confirm={
+                          gettext(
+                            "Refund %{product}? It ends now and the payment goes back to you.",
+                            product: payment_product_title(purchase)
+                          )
+                        }
+                        class="btn btn-xs btn-outline btn-warning"
+                      >
+                        {gettext("Refund")}
+                      </button>
+                    </div>
                   </td>
                   <td>{payment_amount(purchase)}</td>
                   <%!-- Sandbox vs production is setup detail, not the player's. --%>
@@ -113,7 +139,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
         </div>
 
         <%= if @payment_entitlements == [] do %>
-          <div class="mt-4 rounded-lg border border-base-300 bg-base-100 p-4 text-sm text-base-content/70">
+          <div class="mt-4 rounded-lg border border-base-300 bg-base-100 p-4 text-sm text-muted">
             {gettext("No results.")}
           </div>
         <% else %>
@@ -126,7 +152,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
               <div class="flex items-start justify-between gap-3">
                 <div>
                   <div class="font-semibold">{payment_entitlement_title(entitlement)}</div>
-                  <div class="font-mono text-xs text-base-content/60">{entitlement.key}</div>
+                  <div class="font-mono text-xs text-muted">{entitlement.key}</div>
                 </div>
                 <span class={["badge badge-sm", payment_status_badge_class(entitlement.status)]}>
                   {LiveHelpers.payment_status_label(entitlement.status)}
@@ -135,11 +161,11 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
 
               <div class="mt-3 grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <div class="text-xs uppercase text-base-content/70">{gettext("Kind")}</div>
+                  <div class="text-xs uppercase text-muted">{gettext("Kind")}</div>
                   <div>{LiveHelpers.payment_kind_label(payment_entitlement_kind(entitlement))}</div>
                 </div>
                 <div>
-                  <div class="text-xs uppercase text-base-content/70">
+                  <div class="text-xs uppercase text-muted">
                     {payment_entitlement_period_label(entitlement)}
                   </div>
                   <div>
@@ -168,6 +194,16 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
                 >
                   {gettext("Cancels at period end")}
                 </span>
+                <button
+                  :if={payment_stripe_subscription_resumable?(entitlement)}
+                  id={"resume-subscription-#{entitlement.id}"}
+                  type="button"
+                  phx-click="resume_stripe_subscription"
+                  phx-value-id={entitlement.id}
+                  class="btn btn-sm btn-surface"
+                >
+                  {gettext("Resume renewal")}
+                </button>
                 <.link
                   :if={payment_downloadable?(entitlement)}
                   href={~p"/payments/downloads/#{entitlement.id}"}
@@ -212,6 +248,41 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
     end
   end
 
+  def handle_event("resume_stripe_subscription", %{"id" => id}, socket) do
+    user = Shared.current_user(socket)
+
+    case Payments.resume_stripe_subscription(user, parse_payment_id(id)) do
+      {:ok, _result} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, gettext("Subscription renews again."))
+         |> assign_payment_data()}
+
+      {:error, reason} ->
+        {:noreply, socket |> put_flash(:error, payment_error(reason)) |> assign_payment_data()}
+    end
+  end
+
+  # Refunds and ends the purchase now. Nothing is revoked here: Stripe's
+  # refund and cancellation webhooks do it, as for one made in its Dashboard.
+  def handle_event("refund_stripe_purchase", %{"id" => id}, socket) do
+    user = Shared.current_user(socket)
+
+    case user && Payments.refund_stripe_purchase(user, parse_payment_id(id)) do
+      {:ok, _result} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, gettext("Refund sent. The money is back in 5 to 10 days."))
+         |> assign_payment_data()}
+
+      {:error, reason} ->
+        {:noreply, socket |> put_flash(:error, payment_error(reason)) |> assign_payment_data()}
+
+      nil ->
+        {:noreply, socket}
+    end
+  end
+
   defp parse_payment_id(id) when is_binary(id) do
     case Ecto.UUID.cast(id) do
       {:ok, uuid} -> uuid
@@ -230,6 +301,12 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
   end
 
   defp payment_error_detail(%Ecto.Changeset{}), do: gettext("Invalid payment state")
+
+  defp payment_error_detail(:refund_limit_reached),
+    do: gettext("This account has used its refunds from here. Contact support for another.")
+
+  defp payment_error_detail(:refund_window_closed),
+    do: gettext("The time to ask for a refund has passed.")
 
   defp payment_error_detail({:stripe_error, %{"message" => message}}) when is_binary(message),
     do: message
@@ -290,13 +367,28 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
 
   defp payment_downloadable?(entitlement), do: is_map(payment_download_config(entitlement))
 
+  defp payment_refund_sent?(%{status: "completed", metadata: %{"stripe_refund" => %{} = refund}}),
+    do: is_binary(refund["refund_id"])
+
+  defp payment_refund_sent?(_purchase), do: false
+
   defp payment_stripe_subscription_cancelable?(entitlement) do
+    payment_current_stripe_subscription?(entitlement) and
+      not payment_subscription_cancel_scheduled?(entitlement)
+  end
+
+  # Until the period ends: after it, Stripe has ended the subscription.
+  defp payment_stripe_subscription_resumable?(entitlement) do
+    payment_current_stripe_subscription?(entitlement) and
+      payment_subscription_cancel_scheduled?(entitlement)
+  end
+
+  defp payment_current_stripe_subscription?(entitlement) do
     ((payment_entitlement_kind(entitlement) == "subscription" and
         payment_current_entitlement?(entitlement) and
         entitlement.source_purchase) &&
        entitlement.source_purchase.provider == "stripe") and
-      payment_stripe_subscription_id(entitlement.source_purchase) != nil and
-      not payment_subscription_cancel_scheduled?(entitlement)
+      payment_stripe_subscription_id(entitlement.source_purchase) != nil
   end
 
   defp payment_current_entitlement?(%{status: "active", expires_at: nil}), do: true

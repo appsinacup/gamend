@@ -195,6 +195,13 @@ defmodule GamendHost.MixProject do
           # Theme text lives in data, so `gettext.extract` cannot see it.
           "gamend.theme.extract",
           "test",
+          # The Balaur SDK (`balaur_addons/addons/gamend`), from the OpenAPI
+          # document, after `test` so the app the document needs is already up.
+          # The document is gitignored, so a local copy older than the last API
+          # change kept a stale SDK passing here while CI's `sdkgen balaur
+          # --check` failed on it (the reports endpoints).
+          "openapi.spec.json --spec GamendWeb.ApiSpec --filename clients/godot/openapi.json --pretty=true",
+          "cmd python3 clients/sdkgen balaur",
           "credo --strict",
           "gamend.api.lint"
         ] ++

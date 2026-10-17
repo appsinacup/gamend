@@ -55,15 +55,19 @@ Request bodies follow the operation: `GamendCreateLobbyRequest`,
 The SDK captures tokens for you: after `authenticate_login`,
 `authenticate_device_login`, `authenticate_refresh_token`,
 `authenticate_oauth_session_status` (once it answers a `session`),
-`authenticate_oauth_api_callback`, `authenticate_oauth_google_id_token` or
-`authenticate_oauth_callback_api_apple_ios` it stores the access and refresh
+`authenticate_oauth_api_callback`, `authenticate_oauth_google_id_token`,
+`authenticate_oauth_callback_api_apple_ios` or
+`authenticate_confirm_registration` it stores the access and refresh
 tokens, calls `authorize()` itself, and schedules a refresh before expiry. You
 never pass a token to a later call.
 
-`authenticate_register` is not a sign-in: it answers the new account
-(`email_confirmed` says whether it can log in yet) and keeps no session. Once
-the player opens the emailed link, `authenticate_login` with the same email
-and password signs in; until then it answers `email_not_confirmed`.
+`authenticate_register_email(email, username)` is not a sign-in and takes no
+password: it answers the new account and keeps no session. The server emails
+a link and a six-digit code. Ask the player for the code and a password, then
+`authenticate_confirm_registration(email, code, password)` sets the password
+and signs in; `authenticate_resend_confirmation(email)` sends a new code.
+(`authenticate_register(email, password)` is gone, under a new name so an old
+call fails rather than send the password as the username.)
 
 Those always sign in, even when a player is signed in already. To add a
 provider to the signed-in account, use the link calls instead:

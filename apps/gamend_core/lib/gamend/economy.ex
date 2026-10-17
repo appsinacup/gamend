@@ -42,24 +42,42 @@ defmodule Gamend.Economy do
   @type currency :: String.t()
 
   # ── Reads ───────────────────────────────────────────────────────────────
+  #
+  # Both reads come from one cached map per user (`Gamend.Cache`), filled by a
+  # single query for every currency and evicted by every change
+  # (`change_balance/4`). A page shows the balance in the desktop nav, the
+  # mobile nav and often the page itself, and each was a query of its own.
+  #
+  # Inside a transaction the cache is skipped both ways: a read there may see
+  # an uncommitted write, which a rollback would leave cached. Spends never
+  # trust a read — the decrement is conditional in SQL — so a balance that is
+  # a moment stale can only ever be displayed, not overspent.
 
   @doc "Current balance of one currency (0 when the user has no wallet for it)."
   @spec balance(user_id(), currency()) :: non_neg_integer()
   def balance(user_id, currency) do
-    Repo.one(
-      from w in Wallet,
-        where: w.user_id == ^user_id and w.currency == ^currency,
-        select: w.balance
-    ) || 0
+    user_id |> balances() |> Map.get(currency, 0)
   end
 
-  @doc "All non-zero balances for a user, as a `%{currency => balance}` map."
+  @doc "All of a user's balances, as a `%{currency => balance}` map."
   @spec balances(user_id()) :: %{currency() => non_neg_integer()}
   def balances(user_id) do
+    if Repo.in_transaction?() do
+      read_balances(user_id)
+    else
+      Gamend.Cache.cached(balances_key(user_id), [ttl: Gamend.Cache.ttl()], fn ->
+        read_balances(user_id)
+      end)
+    end
+  end
+
+  defp read_balances(user_id) do
     from(w in Wallet, where: w.user_id == ^user_id, select: {w.currency, w.balance})
     |> Repo.all()
     |> Map.new()
   end
+
+  defp balances_key(user_id), do: {:economy, :balances, user_id}
 
   # ── Mutations ───────────────────────────────────────────────────────────
 
@@ -127,7 +145,10 @@ defmodule Gamend.Economy do
       true ->
         case run_change(user_id, currency, delta, reason, idem, metadata) do
           {:ok, new_balance} = ok ->
-            # Post-commit: push to the user's socket and fire the plugin hook.
+            # Post-commit: drop the cached balances, push to the user's socket
+            # and fire the plugin hook. Inside a caller's transaction
+            # `Gamend.Cache.invalidate/1` evicts once more after it commits.
+            _ = Gamend.Cache.invalidate(balances_key(user_id))
             broadcast_wallet(user_id, currency, new_balance, delta)
 
             change = %{

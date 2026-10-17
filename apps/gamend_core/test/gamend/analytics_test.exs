@@ -9,6 +9,7 @@ defmodule Gamend.AnalyticsTest do
   alias Gamend.AccountsFixtures
   alias Gamend.Analytics
   alias Gamend.Analytics.ActivityDay
+  alias Gamend.Analytics.Event
   alias Gamend.Repo
 
   @today ~D[2026-08-16]
@@ -234,6 +235,198 @@ defmodule Gamend.AnalyticsTest do
         end)
 
       assert log =~ "daily count level.finished failed"
+    end
+  end
+
+  describe "track/3" do
+    test "counts the name and each dimension, and keeps the row with its fields" do
+      user = AccountsFixtures.user_fixture()
+
+      :ok =
+        Analytics.track(
+          "web.game.finished",
+          %{game: "hangman", lang: "ro", mode: :daily, timed: false, score: 7, total: 10},
+          user_id: user.id,
+          at: at(@today)
+        )
+
+      totals = "web.game.finished*" |> Analytics.count_totals(1, @today) |> Map.new()
+      assert totals["web.game.finished"] == 1
+      assert totals["web.game.finished.game:hangman"] == 1
+      assert totals["web.game.finished.lang:ro"] == 1
+      assert totals["web.game.finished.mode:daily"] == 1
+      assert totals["web.game.finished.timed:false"] == 1
+      # A number is a measure: in the row, never a counter.
+      refute Enum.any?(totals, fn {key, _} -> String.contains?(key, "score") end)
+
+      assert [event] = Repo.all(Event)
+      assert event.name == "web.game.finished"
+      assert event.user_id == user.id
+      assert event.inserted_at == DateTime.truncate(at(@today), :second)
+
+      assert event.dims == %{
+               "game" => "hangman",
+               "lang" => "ro",
+               "mode" => "daily",
+               "timed" => "false",
+               "score" => 7,
+               "total" => 10
+             }
+    end
+
+    test "a visitor's event is counted and not kept, a nil field is dropped, a bad field is dropped with a warning" do
+      log =
+        capture_log(fn ->
+          :ok =
+            Analytics.track("web.page", %{section: "games", lang: nil, odd: [1, 2], "Bad Key": 1},
+              at: at(@today)
+            )
+        end)
+
+      assert log =~ "field odd = [1, 2] dropped"
+      assert log =~ "field \"Bad Key\" dropped"
+
+      assert Repo.all(Event) == []
+
+      assert Analytics.count_totals("web.page*", 1, @today) == [
+               {"web.page", 1},
+               {"web.page.section:games", 1}
+             ]
+    end
+
+    test "a bad name or caller is dropped with a warning, never raised" do
+      log =
+        capture_log(fn ->
+          assert :ok = Analytics.track("Web.Game", %{}, at: at(@today))
+          assert :ok = Analytics.track("web.game", %{}, user_id: 42, at: at(@today))
+          assert :ok = Analytics.track("web.game", %{}, at: "yesterday")
+          assert :ok = Analytics.track(:web, %{})
+        end)
+
+      assert log =~ "dropped"
+      assert Repo.all(Event) == []
+      assert Analytics.counts("*", 7, @today) == %{}
+    end
+
+    test "a deleted account's events stay, without the user" do
+      user = AccountsFixtures.user_fixture()
+      :ok = Analytics.track("web.test.finished", %{lang: "ro"}, user_id: user.id, at: at(@today))
+
+      Repo.delete!(user)
+
+      assert [%Event{user_id: nil, name: "web.test.finished"}] = Repo.all(Event)
+    end
+  end
+
+  describe "families/3" do
+    test "groups a key with its dimensions, largest first" do
+      :ok = Analytics.count("level.started", 3, at(@today))
+      :ok = Analytics.count("level.started.lang:ro", 2, at(@today))
+      :ok = Analytics.count("level.started.lang:es", 1, at(Date.add(@today, -1)))
+      :ok = Analytics.count("level.started.mode:solo", 3, at(@today))
+      :ok = Analytics.count("level.failed", 1, at(@today))
+      # A dimension with no bare key still makes a family.
+      :ok = Analytics.count("continue.bought.attempt:1", 2, at(@today))
+
+      # Largest total first; a family that is only dimensions has none.
+      assert [started, failed, continue] = Analytics.families("*", 7, @today)
+
+      assert started.key == "level.started"
+      assert started.total == 3
+      assert started.by_day == %{@today => 3}
+      assert started.dims == %{"lang" => [{"ro", 2}, {"es", 1}], "mode" => [{"solo", 3}]}
+
+      assert %{key: "level.failed", total: 1, dims: %{}} = failed
+      assert %{key: "continue.bought", total: 0, dims: %{"attempt" => [{"1", 2}]}} = continue
+
+      assert Analytics.families("level.*", 7, @today) |> Enum.map(& &1.key) ==
+               ~w(level.started level.failed)
+    end
+  end
+
+  describe "feature_summary/1" do
+    test "distinct users per day, new to the feature, and back at the horizons" do
+      a = AccountsFixtures.user_fixture()
+      b = AccountsFixtures.user_fixture()
+      week_ago = Date.add(@today, -7)
+
+      :ok = Analytics.track("web.test.finished", %{lang: "ro"}, user_id: a.id, at: at(week_ago))
+      :ok = Analytics.track("web.test.finished", %{lang: "ro"}, user_id: a.id, at: at(@today))
+      # Twice today is one active user.
+      :ok = Analytics.track("web.test.finished", %{lang: "es"}, user_id: a.id, at: at(@today))
+      :ok = Analytics.track("web.test.finished", %{lang: "ro"}, user_id: b.id, at: at(@today))
+      # A visitor is counted, not kept: no row, so no feature.
+      :ok = Analytics.track("web.test.finished", %{lang: "ro"}, at: at(@today))
+      :ok = Analytics.track("web.page", %{section: "home"}, at: at(@today))
+
+      assert [tests] = Analytics.feature_summary(@today)
+
+      assert tests.name == "web.test.finished"
+      assert tests.dau == 2
+      assert tests.wau == 2
+      assert tests.mau == 2
+      assert tests.stickiness == 1.0
+      # The week is today and the six days before: a's first day is out of it.
+      assert tests.events_7d == 3
+      assert tests.new_7d == 1
+      assert tests.new_30d == 2
+      # a's day 7 is today, and a is here; b has not reached any horizon.
+      assert tests.d7 == 1.0
+      assert tests.d1 == 0.0
+      assert tests.d30 == nil
+    end
+  end
+
+  describe "people_by_dimension/4" do
+    test "distinct people and events per value of one dimension, largest first" do
+      a = AccountsFixtures.user_fixture()
+      b = AccountsFixtures.user_fixture()
+
+      for {user, game} <- [{a, "hangman"}, {a, "hangman"}, {b, "hangman"}, {b, "crossword"}] do
+        :ok =
+          Analytics.track("web.game.started", %{game: game, lang: "ro"},
+            user_id: user.id,
+            at: at(@today)
+          )
+      end
+
+      # A round without the dimension is "none"; a visitor's is not kept.
+      :ok = Analytics.track("web.game.started", %{lang: "ro"}, user_id: b.id, at: at(@today))
+      :ok = Analytics.track("web.game.started", %{game: "hangman"}, at: at(@today))
+      # Outside the window.
+      :ok =
+        Analytics.track("web.game.started", %{game: "memory"},
+          user_id: a.id,
+          at: at(Date.add(@today, -40))
+        )
+
+      assert Analytics.people_by_dimension("web.game.started", "game", 30, @today) == [
+               %{value: "hangman", people: 2, events: 3},
+               %{value: "crossword", people: 1, events: 1},
+               %{value: "none", people: 1, events: 1}
+             ]
+
+      assert Analytics.people_by_dimension("web.game.started", "lang", 30, @today) == [
+               %{value: "ro", people: 2, events: 5}
+             ]
+
+      assert Analytics.people_by_dimension("web.test.started", "lang", 30, @today) == []
+    end
+  end
+
+  describe "recent_events/1" do
+    test "newest first, as many as asked" do
+      user = AccountsFixtures.user_fixture()
+
+      for n <- 1..3 do
+        :ok =
+          Analytics.track("e.#{n}", %{},
+            user_id: user.id,
+            at: DateTime.add(at(@today), n, :minute)
+          )
+      end
+
+      assert Analytics.recent_events(2) |> Enum.map(& &1.name) == ["e.3", "e.2"]
     end
   end
 

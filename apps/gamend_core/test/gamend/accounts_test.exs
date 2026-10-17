@@ -162,8 +162,8 @@ defmodule Gamend.AccountsTest do
       attrs = valid_user_attributes(%{"email" => email})
 
       defmodule SuccessNotifier do
-        def deliver_confirmation_instructions(_user, url) do
-          send(self(), {:confirmation_url, url})
+        def deliver_confirmation_instructions(_user, url, code) do
+          send(self(), {:confirmation, url, code})
           {:ok, :sent}
         end
       end
@@ -180,7 +180,8 @@ defmodule Gamend.AccountsTest do
       assert job.args["url"] == "http://x/__gamend_confirm_token__"
 
       assert :ok = perform_job(ConfirmationMailer, job.args)
-      assert_received {:confirmation_url, "http://x/" <> token}
+      assert_received {:confirmation, "http://x/" <> token, code}
+      assert code =~ ~r/^\d{6}$/
       assert {:ok, %User{confirmed_at: %DateTime{}}} = Accounts.confirm_user_by_token(token)
     end
 
@@ -191,7 +192,7 @@ defmodule Gamend.AccountsTest do
       attrs = valid_user_attributes(%{"email" => email})
 
       defmodule FailNotifier do
-        def deliver_confirmation_instructions(_user, _url), do: {:error, :smtp_failed}
+        def deliver_confirmation_instructions(_user, _url, _code), do: {:error, :smtp_failed}
       end
 
       assert {:ok, user} =
@@ -219,29 +220,29 @@ defmodule Gamend.AccountsTest do
       refute_enqueued(worker: ConfirmationMailer)
     end
 
-    test "the first user registered with a password signs in with it at once" do
-      email = unique_user_email()
-
+    test "a game client's first user is the admin, and confirms by email like any other" do
       {:ok, user} =
-        Accounts.register_user_with_password_and_deliver(
-          %{"email" => email, "password" => valid_user_password()},
+        Accounts.register_unconfirmed_user_and_deliver(
+          valid_user_attributes(),
           fn t -> "http://x/#{t}" end
         )
 
       assert user.is_admin
-      assert {:ok, _} = Accounts.authenticate_by_password(email, valid_user_password())
+      refute user.confirmed_at
+      assert [_job] = all_enqueued(worker: ConfirmationMailer)
     end
 
-    test "later users start unconfirmed" do
+    test "a registered account has no password until it is confirmed" do
       _existing = user_fixture()
 
       {:ok, user} =
-        Accounts.register_user_with_password_and_deliver(
-          valid_user_attributes(%{"password" => valid_user_password()}),
+        Accounts.register_unconfirmed_user_and_deliver(
+          valid_user_attributes(),
           fn t -> "http://x/#{t}" end
         )
 
       refute user.confirmed_at
+      refute Repo.get!(User, user.id).hashed_password
     end
   end
 

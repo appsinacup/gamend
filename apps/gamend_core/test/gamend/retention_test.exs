@@ -64,6 +64,25 @@ defmodule Gamend.RetentionTest do
     assert Repo.get(Gamend.Chat.Message, fresh.id)
   end
 
+  test "prunes analytics events older than their window, never the counters" do
+    Application.put_env(:gamend_core, Gamend.Retention, analytics_events_days: 30)
+
+    old_day = DateTime.add(DateTime.utc_now(), -40, :day)
+    user = AccountsFixtures.user_fixture()
+    :ok = Gamend.Analytics.track("web.page", %{section: "home"}, user_id: user.id, at: old_day)
+    :ok = Gamend.Analytics.track("web.page", %{section: "home"}, user_id: user.id)
+
+    results = Retention.prune_all()
+
+    assert results.analytics_events == 1
+    assert [fresh] = Repo.all(Gamend.Analytics.Event)
+    assert DateTime.diff(DateTime.utc_now(), fresh.inserted_at, :day) == 0
+    # The day's counter is the sum and stays.
+    assert Gamend.Analytics.count_totals("web.page", 1, DateTime.to_date(old_day)) == [
+             {"web.page", 1}
+           ]
+  end
+
   test "retention of 0 keeps everything" do
     Application.put_env(:gamend_core, Gamend.Retention, chat_messages_days: 0)
 

@@ -64,17 +64,18 @@ defmodule GamendWeb.AuthControllerApiTest do
       assert_error_sent 404, fn -> get(conn, ~p"/api/v1/auth/invalid-provider") end
     end
 
-    test "steam returns OpenID URL and session id", %{conn: conn} do
+    test "steam returns its request URL and session id", %{conn: conn} do
       conn = get(conn, ~p"/api/v1/auth/steam")
 
       assert conn.status == 200
 
       body = json_response(conn, 200)["data"]
 
-      assert is_binary(body["authorization_url"]) and
-               String.contains?(body["authorization_url"], "steamcommunity.com/openid/login")
-
       assert is_binary(body["session_id"]) and byte_size(body["session_id"]) > 0
+
+      # Ueberauth's request phase, so the browser gets its state cookie
+      assert %URI{path: "/auth/steam", query: query} = URI.parse(body["authorization_url"])
+      assert URI.decode_query(query) == %{"session_id" => body["session_id"]}
 
       # server should have created a pending session record
       session = Gamend.OAuthSessions.get_session(body["session_id"])

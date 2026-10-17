@@ -1,19 +1,22 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
   <div class="text-center">
-    <h1 class="mt-4 text-4xl font-black text-base-content/95">
-      Privacy Policy
-    </h1>
-    <p class="mt-4 leading-7 text-base-content/70 max-w-2xl mx-auto">
+    <div class="mt-4 flex items-center justify-center gap-3">
+      <.back_link href={home_path()} />
+      <h1 class="text-4xl font-black text-base-content">
+        Privacy Policy
+      </h1>
+    </div>
+    <p class="mt-4 leading-7 text-muted max-w-narrow mx-auto">
       Your privacy is important to us. This Privacy Policy explains how we collect, use,
       disclose, and safeguard your information when you visit our application and use our
       services.
     </p>
   </div>
 
-  <div class="mt-12 max-w-4xl mx-auto space-y-8">
+  <div class="mt-12 max-w-narrow mx-auto space-y-8">
     <section>
       <h2 class="text-xl font-semibold mb-4">Information We Collect</h2>
-      <ul class="list-disc ps-6 space-y-2 text-base-content/80">
+      <ul class="list-disc ps-6 space-y-2 text-muted">
         <li>
           Account details (email, provider IDs): stored when you sign up or sign in with OAuth
           providers like Discord, Google, Facebook, GitHub, Apple or Steam.
@@ -27,6 +30,12 @@
           leaderboard entries. This content is visible to other players.
         </li>
         <li>
+          Reports you send about a problem, from the report form or the game: what you write, the
+          page or item it is about, any screenshot you add, your browser and screen size, and an
+          email address if you give one. Screenshots are seen only by the site's admins. A report
+          is deleted 180 days after it is closed, and with your account.
+        </li>
+        <li>
           Network information such as IP address, processed transiently for security, rate limiting,
           abuse prevention, and approximate country-level request statistics. If an IP address is
           banned for abuse, it is stored until the ban is lifted or expires.
@@ -36,7 +45,7 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">How We Use Your Information</h2>
-      <ul class="list-disc ps-6 space-y-2 text-base-content/80">
+      <ul class="list-disc ps-6 space-y-2 text-muted">
         <li>To authenticate and identify you when you log in.</li>
         <li>To provide, operate and maintain our services.</li>
         <li>
@@ -50,21 +59,22 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Cookies and Local Storage</h2>
-      <p class="text-base-content/80">
+      <p class="text-muted">
         We use cookies and local storage for core app features and payments, such as sessions,
-        remember-me login, CSRF protection, theme preference, banner dismissal, and game
-        authentication tokens. We do not use analytics cookies, advertising cookies, or third-party
+        remember-me login, CSRF protection, theme preference, banner dismissal, game
+        authentication tokens, and the last page you visited in the tab (so the report form can
+        fill it in). We do not use analytics cookies, advertising cookies, or third-party
         tracking cookies.
       </p>
     </section>
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Third-Party Services</h2>
-      <p class="text-base-content/80">
+      <p class="text-muted">
         We use third-party services that collect or process personal data on our behalf. Depending
         on which features are turned on, these include:
       </p>
-      <ul class="list-disc ps-6 mt-2 space-y-2 text-base-content/80">
+      <ul class="list-disc ps-6 mt-2 space-y-2 text-muted">
         <li>OAuth sign-in providers, when you sign in with one.</li>
         <li>Stripe, which processes payments made on the website.</li>
         <li>Platform stores (Apple, Google, Steam), when you make a purchase in an app.</li>
@@ -82,14 +92,14 @@
         </li>
         <li>Error monitoring, to diagnose crashes.</li>
       </ul>
-      <p class="mt-2 text-base-content/80">
+      <p class="mt-2 text-muted">
         Please review those providers' privacy policies for details.
       </p>
     </section>
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Data Retention &amp; Security</h2>
-      <p class="text-base-content/80">
+      <p class="text-muted">
         We keep personal data as long as necessary for service operation and to comply with legal
         obligations. We use reasonable safeguards to protect your data.
       </p>
@@ -97,13 +107,13 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Your Rights</h2>
-      <p :if={@contact_email} class="text-base-content/80">
+      <p :if={@contact_email} class="text-muted">
         You may request access, correction, or deletion of your personal data by emailing <a
           href={"mailto:" <> @contact_email}
           class="link link-primary"
         >{@contact_email}</a>.
       </p>
-      <p :if={!@contact_email} class="text-base-content/80">
+      <p :if={!@contact_email} class="text-muted">
         You may request access, correction, or deletion of your personal data by contacting us
         through the app or support channels.
       </p>
@@ -111,20 +121,20 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Contact</h2>
-      <p :if={@contact_email} class="text-base-content/80">
+      <p :if={@contact_email} class="text-muted">
         If you have any questions about this Privacy Policy, email us at <a
           href={"mailto:" <> @contact_email}
           class="link link-primary"
         >{@contact_email}</a>.
       </p>
-      <p :if={!@contact_email} class="text-base-content/80">
+      <p :if={!@contact_email} class="text-muted">
         If you have any questions about this Privacy Policy, please contact us via the project's
         contact channels.
       </p>
     </section>
 
     <div class="text-center pt-8 border-t border-base-300">
-      <small class="text-xs text-base-content/60">Last updated: September 2026</small>
+      <small class="text-xs text-muted">Last updated: September 2026</small>
     </div>
   </div>
 </Layouts.app>

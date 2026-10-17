@@ -13,6 +13,7 @@ reload — the page painted at the top and glided down to where it had been. --%
   dir={GamendWeb.Plugs.LocalePath.text_direction(GamendWeb.HostLayouts.current_locale())}
   class="bg-base-100"
   data-theme={assigns[:color_mode]}
+  data-theme-saved={assigns[:theme_saved]}
 >
   <head>
     <meta charset="utf-8" />
@@ -20,6 +21,12 @@ reload — the page painted at the top and glided down to where it had been. --%
       name="viewport"
       content="width=device-width, initial-scale=1"
     />
+    <%!-- A LiveView page: where `live_nav.js` reads the route table, and this
+    page's `live_session`, so a plain link to another LiveView page of the
+    same session moves over the open socket (`GamendWeb.LiveNav`). --%>
+    <%= if live_nav = GamendWeb.LiveNav.meta(assigns) do %>
+      <meta name="gamend-live-nav" content={live_nav.url} data-session={live_nav.session} />
+    <% end %>
     <%!--
     Minting a CSRF token dirties the session, and a dirty session means a
     `Set-Cookie` on the response — which makes it uncacheable by every shared

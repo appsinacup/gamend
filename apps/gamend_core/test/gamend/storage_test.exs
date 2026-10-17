@@ -88,6 +88,21 @@ defmodule Gamend.StorageTest do
     assert Storage.exists?("avatars/user-b/1.png")
   end
 
+  test "listing a prefix returns its objects and nothing outside it" do
+    {:ok, _} = Storage.put("avatars/user-a/1.png", "x")
+    {:ok, _} = Storage.put("avatars/user-ab/1.png", "y")
+    {:ok, _} = Storage.put("pdf/test/1.pdf", "z")
+
+    keys = fn prefix -> [prefix: prefix] |> Storage.list_objects() |> Enum.map(& &1.key) end
+
+    assert keys.("avatars/user-a/") == ["avatars/user-a/1.png"]
+    # Not on a directory boundary: both owners whose id starts that way.
+    assert keys.("avatars/user-a") == ["avatars/user-a/1.png", "avatars/user-ab/1.png"]
+    assert keys.("avatars/") |> length() == 2
+    assert keys.("") |> length() == 3
+    assert keys.("nothing/") == []
+  end
+
   test "path traversal in a key cannot escape the storage root" do
     # A crafted key with .. segments resolves inside the root, not above it.
     key = "avatars/../../etc/passwd"

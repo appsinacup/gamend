@@ -53,7 +53,7 @@ defmodule GamendWeb.Plugs.LocalePath do
   # is not — the post bodies are English-only markdown, and advertising
   # translations that do not exist invites duplicate-content penalties.
   @default_localized_paths ~w(
-    / /about /contact /credits /screenshots /translators
+    / /about /contact
     /blog /changelog /roadmap /privacy /terms /data_deletion /ui
   )
 
@@ -74,12 +74,16 @@ defmodule GamendWeb.Plugs.LocalePath do
 
       case classify(conn) do
         {:switch, locale, target} ->
-          # A switch is per-reader, never a property of the URL: 302 so nothing
-          # caches it, and drop the param so the address they land on is the
-          # canonical one.
+          # A switch is per-reader, never a property of the URL: drop the
+          # param so the address they land on is the canonical one. 301, so
+          # a search engine folds a `?setlang=` URL it found into the clean
+          # page (a 302 let Google keep 22 of them in its results), and
+          # `no-store`, so a browser never caches the redirect and skips the
+          # session write on the reader's next switch.
           conn
           |> put_session(@session_key, locale)
-          |> put_status(:found)
+          |> put_resp_header("cache-control", "no-store")
+          |> put_status(:moved_permanently)
           |> Phoenix.Controller.redirect(to: target)
           |> halt()
 

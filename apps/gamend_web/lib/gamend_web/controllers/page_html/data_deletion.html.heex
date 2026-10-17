@@ -1,17 +1,20 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
   <div class="text-center">
-    <h1 class="mt-4 text-4xl font-black text-base-content/95">
-      Data Deletion Instructions
-    </h1>
-    <p class="mt-4 leading-7 text-base-content/70 max-w-2xl mx-auto">
+    <div class="mt-4 flex items-center justify-center gap-3">
+      <.back_link href={home_path()} />
+      <h1 class="text-4xl font-black text-base-content">
+        Data Deletion Instructions
+      </h1>
+    </div>
+    <p class="mt-4 leading-7 text-muted max-w-narrow mx-auto">
       Follow these instructions to request deletion of your personal data from our service.
     </p>
   </div>
 
-  <div class="mt-12 max-w-4xl mx-auto space-y-8">
+  <div class="mt-12 max-w-narrow mx-auto space-y-8">
     <section>
       <h2 class="text-xl font-semibold mb-4">How to Request Data Deletion</h2>
-      <div class="space-y-4 text-base-content/80">
+      <div class="space-y-4 text-muted">
         <p>To request deletion of your personal data, you can:</p>
         <ol class="list-decimal ps-6 space-y-2">
           <li>
@@ -39,7 +42,7 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">What Data Will Be Deleted</h2>
-      <ul class="list-disc ps-6 space-y-2 text-base-content/80">
+      <ul class="list-disc ps-6 space-y-2 text-muted">
         <li>Your account information (email, username, profile data)</li>
         <li>OAuth provider connections and associated data</li>
         <li>Any user-generated content or metadata</li>
@@ -49,7 +52,7 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">What Data Cannot Be Deleted</h2>
-      <ul class="list-disc ps-6 space-y-2 text-base-content/80">
+      <ul class="list-disc ps-6 space-y-2 text-muted">
         <li>Data required for legal compliance or regulatory purposes</li>
         <li>Aggregated statistics that no longer identify you</li>
         <li>
@@ -60,7 +63,7 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Processing Time</h2>
-      <p class="text-base-content/80">
+      <p class="text-muted">
         Deleting your account in the app or through the API takes effect immediately. Requests sent
         to support are typically processed within 30 days, and we reply once the deletion is
         complete.
@@ -69,20 +72,20 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Contact Information</h2>
-      <p :if={@contact_email} class="text-base-content/80">
+      <p :if={@contact_email} class="text-muted">
         If you have questions about the data deletion process or need assistance, email us at <a
           href={"mailto:" <> @contact_email}
           class="link link-primary"
         >{@contact_email}</a>.
       </p>
-      <p :if={!@contact_email} class="text-base-content/80">
+      <p :if={!@contact_email} class="text-muted">
         If you have questions about the data deletion process or need assistance, please contact
         us through the project's support channels.
       </p>
     </section>
 
     <div class="text-center pt-8 border-t border-base-300">
-      <small class="text-xs text-base-content/60">Last updated: September 2026</small>
+      <small class="text-xs text-muted">Last updated: September 2026</small>
     </div>
   </div>
 </Layouts.app>

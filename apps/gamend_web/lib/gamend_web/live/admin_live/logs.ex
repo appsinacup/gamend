@@ -42,7 +42,7 @@ defmodule GamendWeb.AdminLive.Logs do
             <h1 class="text-xl font-bold">Logs</h1>
           </div>
 
-          <div class="flex items-center gap-2 text-xs text-base-content/70">
+          <div class="flex items-center gap-2 text-xs text-muted">
             <span>
               Buffer: {ngettext("%{count} entry", "%{count} entries", @total_buffered)}
             </span>
@@ -197,7 +197,7 @@ defmodule GamendWeb.AdminLive.Logs do
         phx-hook={if @auto_scroll, do: "AutoScroll", else: nil}
       >
         <div class="p-3 space-y-0.5">
-          <div :if={@logs == []} class="text-center text-base-content/70 py-8 italic">
+          <div :if={@logs == []} class="text-center text-muted py-8 italic">
             No logs match the current filters.
           </div>
           <div
@@ -209,7 +209,7 @@ defmodule GamendWeb.AdminLive.Logs do
               entry.level == :warning && "bg-warning/5"
             ]}
           >
-            <span class="text-base-content/70 whitespace-nowrap shrink-0">
+            <span class="text-muted whitespace-nowrap shrink-0">
               <.timestamp at={entry.timestamp} format="time" empty="" />
             </span>
             <span class={[
@@ -237,7 +237,7 @@ defmodule GamendWeb.AdminLive.Logs do
         </div>
       </div>
 
-      <div class="flex items-center justify-between text-xs text-base-content/70">
+      <div class="flex items-center justify-between text-xs text-muted">
         <%!-- Two numbers, because they answer two different questions: how much
               the filters match, and how much is in the buffer behind them. One
               number here read as "the buffer only has one error in it". --%>
@@ -354,7 +354,7 @@ defmodule GamendWeb.AdminLive.Logs do
           </thead>
           <tbody>
             <tr :if={@sessions == []}>
-              <td colspan="7" class="text-center text-base-content/70 py-8 italic">
+              <td colspan="7" class="text-center text-muted py-8 italic">
                 No client sessions match these filters.
               </td>
             </tr>
@@ -402,7 +402,7 @@ defmodule GamendWeb.AdminLive.Logs do
         </table>
       </div>
 
-      <div class="flex items-center justify-between text-xs text-base-content/70">
+      <div class="flex items-center justify-between text-xs text-muted">
         <span>Showing {length(@sessions)} of {@session_total} sessions</span>
         <div class="flex gap-2">
           <button
@@ -436,7 +436,7 @@ defmodule GamendWeb.AdminLive.Logs do
             <h2 class="font-semibold font-mono text-sm">{@selected.client_session_id}</h2>
             <span :if={@selected.flagged} class="badge badge-sm badge-warning">flagged</span>
           </div>
-          <div class="text-xs text-base-content/70 flex flex-wrap gap-x-3 gap-y-1">
+          <div class="text-xs text-muted flex flex-wrap gap-x-3 gap-y-1">
             <span>{@selected.platform} &middot; {version(@selected)} &middot; {@selected.build}</span>
             <span :if={@selected.locale != ""}>locale {@selected.locale}</span>
             <span :if={@selected.device_id != ""} class="font-mono">device {short(@selected.device_id)}</span>
@@ -489,7 +489,7 @@ defmodule GamendWeb.AdminLive.Logs do
       <%!-- The buffer is a ring and does not survive a restart, so what is
             missing here is not evidence that nothing happened. --%>
       <div class="space-y-1">
-        <div class="flex items-center justify-between text-xs text-base-content/70">
+        <div class="flex items-center justify-between text-xs text-muted">
           <span>
             Recent lines still in the buffer: {length(@selected_entries)} of {@selected.entry_count} this session recorded
           </span>
@@ -513,7 +513,7 @@ defmodule GamendWeb.AdminLive.Logs do
             <span class="break-all">{entry.message}</span>
           </div>
         </div>
-        <div class="text-xs text-base-content/70">
+        <div class="text-xs text-muted">
           Full history lives in the log store. Search it for
           <code class="bg-base-200 px-1 rounded font-mono select-all">
             session={@selected.client_session_id}
@@ -920,9 +920,9 @@ defmodule GamendWeb.AdminLive.Logs do
   defp level_color(:error), do: "text-error"
   defp level_color(:warning), do: "text-warning"
   defp level_color(:info), do: "text-info"
-  defp level_color(:debug), do: "text-base-content/70"
+  defp level_color(:debug), do: "text-muted"
   defp level_color(:notice), do: "text-info"
-  defp level_color(_), do: "text-base-content/70"
+  defp level_color(_), do: "text-muted"
 
   # The buffer's ETS table may not exist yet during boot, and a log viewer that
   # crashes the moment there is nothing to view is worse than an empty one.

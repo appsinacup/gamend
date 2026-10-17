@@ -1,6 +1,10 @@
 // Theme initializer — runs synchronously before CSS to prevent FOUC.
 // This file is a separate esbuild entry point loaded without `defer`.
 (function () {
+  // A signed-in reader's saved theme (`GamendWeb.Plugs.ColorMode`) is the
+  // browser's from now on.
+  var saved = document.documentElement.getAttribute("data-theme-saved");
+  if (saved === "dark" || saved === "light") localStorage.setItem("phx:theme", saved);
   var t = localStorage.getItem("phx:theme");
   var d =
     t ||

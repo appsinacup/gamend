@@ -19,10 +19,10 @@ defmodule Gamend.LockHoldTest do
   defmodule ProbeHooks do
     use Gamend.TestSupport.NoopHooks
 
+    alias Gamend.Lock.Queue
+
     def probe(namespace, id) do
-      key = {{Gamend.Lock.Local, {namespace, id}}, make_ref()}
-      free = :global.set_lock(key, [node()], 0)
-      if free, do: :global.del_lock(key, [node()])
+      free = Queue.holder({namespace, id}) == nil
       send(Application.get_env(:gamend_core, :lock_probe_pid), {:lock_free, namespace, free})
     end
 
@@ -46,7 +46,7 @@ defmodule Gamend.LockHoldTest do
 
     @impl true
     def before_user_update(user, attrs) do
-      probe("user_payment_metadata", user.id)
+      probe("user_metadata", user.id)
       {:ok, attrs}
     end
   end
@@ -148,7 +148,7 @@ defmodule Gamend.LockHoldTest do
     }
 
     assert :ok = Default.after_entitlement_changed(entitlement)
-    assert_received {:lock_free, "user_payment_metadata", true}
+    assert_received {:lock_free, "user_metadata", true}
 
     metadata = Repo.get!(User, player.id).metadata
     assert get_in(metadata, ["payments", "entitlements", "vip"]) == true

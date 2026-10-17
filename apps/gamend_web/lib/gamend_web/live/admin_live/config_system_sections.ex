@@ -239,7 +239,7 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
           <% end %>
         </div>
 
-        <div class="mt-2 text-xs text-base-content/60">
+        <div class="mt-2 text-xs text-muted">
           Partitioned L2 caching requires Erlang distribution + clustering.
           For Redis L2, you do not need node clustering.
         </div>
@@ -309,7 +309,7 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
           <br /> L2 opts: <span class="break-all">{inspect(@config.cache_l2_opts)}</span>
         </div>
 
-        <div class="mt-2 text-xs text-base-content/60">
+        <div class="mt-2 text-xs text-muted">
           <p class="mb-1">
             This app supports single-level (L1 local) or two-level (L1 + L2).
           </p>
@@ -411,7 +411,7 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
           </div>
 
           <div class="mt-3 pt-2 border-t border-base-300/60 text-xs">
-            <div class="font-semibold text-base-content/70">Runtime tuning</div>
+            <div class="font-semibold text-muted">Runtime tuning</div>
             <div class="mt-1 space-y-1">
               <div>
                 GAMEND_DB_POOL_SIZE:
@@ -505,7 +505,7 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
 
         <%= if @config.ssl_cert_info do %>
           <div class="mt-3 pt-2 border-t border-base-300/60">
-            <div class="text-xs font-semibold text-base-content/70 mb-1">
+            <div class="text-xs font-semibold text-muted mb-1">
               Certificate details
             </div>
             <div class="font-mono text-xs space-y-0.5">
@@ -577,12 +577,12 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
       <td colspan="2">
         <%= if @config.geoip_available? do %>
           <span class="badge badge-success badge-sm">MMDB database loaded</span>
-          <span class="text-xs text-base-content/60 ml-2">
+          <span class="text-xs text-muted ml-2">
             GAMEND_CONTENT_GEOIP_DB_PATH: {@config.geoip_db_path || "configured"}
           </span>
         <% else %>
           <span class="badge badge-warning badge-sm">MMDB not configured</span>
-          <span class="text-xs text-base-content/60 ml-2">
+          <span class="text-xs text-muted ml-2">
             Falling back to CF-IPCountry header (Cloudflare only). Place GeoLite2-Country.mmdb under data or set GAMEND_CONTENT_GEOIP_DB_PATH for a custom lookup path.
           </span>
         <% end %>
@@ -592,7 +592,7 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
       <td class="font-semibold">Metrics</td>
       <td colspan="2">
         <span class="badge badge-success badge-sm">PromEx enabled</span>
-        <span class="text-xs text-base-content/60 ml-2">
+        <span class="text-xs text-muted ml-2">
           /metrics endpoint — {if @config.metrics_auth_token,
             do:
               "loopback always allowed; every other caller, private/Docker IPs included, must send the bearer token",
@@ -983,7 +983,7 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
           </button>
         </h2>
         <%= if @scheduled_jobs == [] do %>
-          <div class="text-sm text-base-content/60">
+          <div class="text-sm text-muted">
             No scheduled jobs registered. Use <code class="font-mono">Schedule.hourly/2</code>, <code class="font-mono">Schedule.daily/2</code>, etc. in your hook's
             <code class="font-mono">after_startup/0</code>
             callback.
@@ -1016,7 +1016,7 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
               </tbody>
             </table>
           </div>
-          <div class="text-xs text-base-content/60 mt-2">
+          <div class="text-xs text-muted mt-2">
             {ngettext(
               "%{count} job registered.",
               "%{count} jobs registered.",

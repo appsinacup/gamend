@@ -172,16 +172,16 @@ defmodule GamendWeb.UserSessionControllerTest do
       assert redirected_to(conn) == ~p"/users/log_in"
     end
 
-    test "GET /users/confirm/:token confirms unconfirmed user", %{
+    test "POST /users/confirm confirms an unconfirmed user and signs them in", %{
       conn: conn,
       unconfirmed_user: user
     } do
       {encoded_token, user_token} = Accounts.UserToken.build_email_token(user, "confirm")
       Gamend.Repo.insert!(user_token)
 
-      conn = get(conn, ~p"/users/confirm/#{encoded_token}")
+      conn = post(conn, ~p"/users/confirm", %{"user" => %{"token" => encoded_token}})
 
-      # Confirmation should auto-login the user and redirect to settings
+      # Signed in and sent to settings, where the account sets a password.
       assert get_session(conn, :user_token)
       assert redirected_to(conn) == ~p"/users/settings"
       assert Phoenix.Flash.get(conn.assigns.flash, :info) =~ "Success."
@@ -189,7 +189,7 @@ defmodule GamendWeb.UserSessionControllerTest do
       assert Accounts.get_user!(user.id).confirmed_at
     end
 
-    test "GET /users/confirm/:token keeps the password, which then logs in", %{
+    test "POST /users/confirm removes a password set before the email was confirmed", %{
       conn: conn,
       unconfirmed_user: user
     } do
@@ -197,18 +197,20 @@ defmodule GamendWeb.UserSessionControllerTest do
       {encoded_token, user_token} = Accounts.UserToken.build_email_token(user, "confirm")
       Gamend.Repo.insert!(user_token)
 
-      get(conn, ~p"/users/confirm/#{encoded_token}")
+      post(conn, ~p"/users/confirm", %{"user" => %{"token" => encoded_token}})
+
+      assert %{confirmed_at: %DateTime{}, hashed_password: nil} = Accounts.get_user!(user.id)
 
       conn =
         post(build_conn(), ~p"/users/log_in", %{
           "user" => %{"email" => user.email, "password" => valid_user_password()}
         })
 
-      assert get_session(conn, :user_token)
+      refute get_session(conn, :user_token)
     end
 
-    test "GET /users/confirm/:token handles invalid token", %{conn: conn} do
-      conn = get(conn, ~p"/users/confirm/invalid-token")
+    test "POST /users/confirm handles an invalid token", %{conn: conn} do
+      conn = post(conn, ~p"/users/confirm", %{"user" => %{"token" => "invalid-token"}})
 
       assert redirected_to(conn) == ~p"/users/log_in"
 

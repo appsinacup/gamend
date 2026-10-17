@@ -44,6 +44,40 @@ Gamend.Leaderboards.list_records_around_user(board.id, user_id, limit: 5)
 Gamend.Leaderboards.end_leaderboard(board)
 ```
 
+## Many rankings on one board
+
+A record is unique per user (or label) **and key**, and every read ranks within
+one key (`""` by default). So one board can keep a best per player for each
+set of settings, instead of a board per set:
+
+```elixir
+key = "match|60|es_es"
+
+Gamend.Leaderboards.submit_score(board.id, user_id, 23, %{"game" => "match", "lang" => "es_es"},
+  key: key
+)
+
+Gamend.Leaderboards.list_records(board.id, key: key)
+Gamend.Leaderboards.get_user_record(board.id, user_id, key: key)
+
+# Across keys: every row whose metadata matches, each player's best once.
+Gamend.Leaderboards.list_records(board.id,
+  key: :all,
+  meta: %{"game" => "match"},
+  best_per_user: true
+)
+```
+
+Make the key the finest grain a reader may want: a coarser view is a `meta:`
+filter over keys, a finer one cannot be made after the fact.
+
+## Hidden boards
+
+`hidden: true` keeps a board out of the public listings (`/leaderboards`, the
+API index, `list_leaderboards/1` and `list_leaderboard_groups/1` unless
+`include_hidden: true`). It is still a board: scores submit and rank, and it
+reads by id or slug. For a board a host shows on its own pages.
+
 ## Icons
 
 Leaderboards carry an optional `icon_url` (admin form or API). When unset,

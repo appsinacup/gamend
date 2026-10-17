@@ -8,7 +8,7 @@ msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "Avoimen lähdekoodin Elixir-pelipalvelin reaaliaikaisiin moninpeleihin."
 
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 msgid "Discord"
 msgstr "Discord"
@@ -31,26 +31,29 @@ msgstr "Oppaat"
 msgid "API Docs"
 msgstr "API-dokumentaatio"
 
+msgid "UI elements"
+msgstr "Käyttöliittymäelementit"
+
 msgid "Elixir Docs"
 msgstr "Elixir-dokumentaatio"
 
 msgid "Deployment Tutorial"
-msgstr ""
+msgstr "Julkaisuopas"
 
 msgid "Scaling Guide"
-msgstr ""
+msgstr "Skaalausopas"
 
 msgid "Docs"
-msgstr ""
+msgstr "Dokumentaatio"
 
 msgid "Starter Template"
-msgstr ""
+msgstr "Aloituspohja"
 
 msgid "Store"
 msgstr "Kauppa"
 
 msgid "Server Stats"
-msgstr ""
+msgstr "Palvelimen tilastot"
 
 msgid "Help"
 msgstr "Ohje"
@@ -80,7 +83,7 @@ msgid "Groups"
 msgstr "Ryhmät"
 
 msgid "News"
-msgstr ""
+msgstr "Uutiset"
 
 msgid "Getting Started"
 msgstr "Aloitus"
@@ -89,28 +92,28 @@ msgid "Presentation Video"
 msgstr "Esittelyvideo"
 
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
-msgstr ""
+msgstr "**Avoimen lähdekoodin** Elixir-pelipalvelin reaaliaikaisiin moninpeleihin: taustapalvelu, pelaajien verkkosivusto ja ylläpitopaneeli samassa paketissa."
 
 msgid "Gamend"
 msgstr "Gamend"
 
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
-msgstr ""
+msgstr "Esittely Gamendin ylläpitopaneelista, tehtävistä, kaupasta ja palvelinkoukuista"
 
 msgid "Benchmarks"
-msgstr ""
+msgstr "Suorituskykytestit"
 
 msgid "Godot SDK"
-msgstr ""
+msgstr "Godot SDK"
 
 msgid "C++ SDK"
-msgstr ""
+msgstr "C++ SDK"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
-msgstr ""
+msgstr "**Taustapalvelu moninpeliisi**: tilit, aulat, chat, tulostaulukot ja kaikki, mitä pelaajat odottavat itse pelin ympärille. Mukana tulee myös sen ympärille rakennettu verkkokäyttöliittymä: valmis pelaajien verkkosivusto (kauppa, tulostaulukot, turnaukset, tehtävät, ryhmät, chat) ja täysi ylläpitopaneeli. Palvelinpuolen skriptit ajavat omaa logiikkaasi paikassa, johon pelaajat eivät pääse käsiksi. Ajat sitä omalla palvelimellasi; isännöityä palvelua ei ole."
 
 msgid "What is Gamend?"
-msgstr ""
+msgstr "Mikä on Gamend?"
 
 msgid "Log in"
 msgstr "Kirjaudu"
@@ -119,7 +122,7 @@ msgid "Register"
 msgstr "Rekisteröidy"
 
 msgid "The login page with magic link, password and five OAuth providers"
-msgstr ""
+msgstr "Kirjautumissivu, jossa on taikalinkki, salasana ja viisi OAuth-palveluntarjoajaa"
 
 msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
 msgstr "Sähköposti, taikalinkki, OAuth, JWT ja istunto. Rekisteröityminen, kirjautuminen, salasanan palautus ja sähköpostin vahvistus."
@@ -128,22 +131,22 @@ msgid "Authentication & Users"
 msgstr "Todennus ja käyttäjät"
 
 msgid "Lobbies"
-msgstr ""
+msgstr "Aulat"
 
 msgid "Matchmaking"
-msgstr ""
+msgstr "Pelaajahaku"
 
 msgid "The matchmaking admin page with live queues, tickets and ready checks"
-msgstr ""
+msgstr "Pelaajahaun ylläpitosivu, jossa näkyvät reaaliaikaiset jonot, tiketit ja valmiustarkistukset"
 
 msgid "Real-time lobbies with passwords, quick join and live updates. Ephemeral parties that join and get matched **as one unit**, a ticket-queue matchmaker and ready checks before anything starts."
-msgstr ""
+msgstr "Reaaliaikaiset aulat salasanoilla, pikaliittymisellä ja reaaliaikaisilla päivityksillä. Väliaikaiset seurueet, jotka liittyvät ja joille haetaan ottelu **yhtenä yksikkönä**, tikettijonoon perustuva pelaajahaku ja valmiustarkistukset ennen kuin mikään alkaa."
 
 msgid "Lobbies, Parties & Matchmaking"
 msgstr "Aulat, seurueet ja pelaajahaku"
 
 msgid "The public groups browser"
-msgstr ""
+msgstr "Julkisten ryhmien selaus"
 
 msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
 msgstr "Kaveripyynnöt, estot, reaaliaikainen läsnäolo. Julkiset, yksityiset ja piilotetut ryhmät. Yksityis- ja ryhmäviestit."
@@ -152,33 +155,31 @@ msgid "Friends, Groups & Chat"
 msgstr "Kaverit, ryhmät ja chat"
 
 msgid "The quests page with daily, achievement and event quests"
-msgstr ""
+msgstr "Tehtäväsivu, jossa on päivittäisiä tehtäviä, saavutuksia ja tapahtumatehtäviä"
 
 msgid "One server-authoritative quest engine for achievements, dailies, seasonal events and quest chains. Bracket tournaments, leaderboards with seasons, and real-time plus push notifications across every feature."
-msgstr ""
+msgstr "Yksi palvelimen hallitsema tehtävämoottori saavutuksille, päivittäisille tehtäville, kausitapahtumille ja tehtäväketjuille. Kaaviopohjaiset turnaukset, kausittaiset tulostaulukot sekä reaaliaikaiset ja push-ilmoitukset kaikissa ominaisuuksissa."
 
 msgid "Quests, Tournaments & Leaderboards"
-msgstr ""
+msgstr "Tehtävät, turnaukset ja tulostaulukot"
 
-#, fuzzy
 msgid "Server Scripting"
-msgstr "Palvelinskriptit ja ajastus"
+msgstr "Palvelinskriptit"
 
 msgid "GDScript Hooks"
-msgstr ""
+msgstr "GDScript-koukut"
 
 msgid "Runtime introspection listing every hook with its implementing plugins"
-msgstr ""
+msgstr "Ajonaikainen introspektio, joka listaa jokaisen koukun ja sen toteuttavat lisäosat"
 
 msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
-msgstr ""
+msgstr "Kirjoita palvelinkoukkuja kielillä **Elixir, GDScript tai Gleam** pisteytykseen, palkintoihin, pelaajahaun sääntöihin ja validointiin paikassa, johon pelaajat eivät pääse käsiksi. Pysyvät taustatyöt ja cron-ajastus ovat sisäänrakennettuja."
 
 msgid "Server Scripting & Scheduling"
 msgstr "Palvelinskriptit ja ajastus"
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
-msgstr "REST-rajapinta, reaaliaikaiset WebSocket-kanavat ja matalan viiveen WebRTC-datakanavat. Ylläpitoportaali ja verkkokäyttöliittymä."
+msgstr "REST API, reaaliaikaiset WebSocket-kanavat ja matalan viiveen WebRTC DataChannels sekä valinnainen protobuf-reaaliaikamuoto. Ylläpitoportaali ja verkkokäyttöliittymä käännettynä 30 kielelle."
 
 msgid "HTTP, WebSocket & WebRTC"
 msgstr "HTTP, WebSocket ja WebRTC"
@@ -190,7 +191,7 @@ msgid "Payment Docs"
 msgstr "Maksudokumentaatio"
 
 msgid "The built-in store page with priced products"
-msgstr ""
+msgstr "Sisäänrakennettu kauppasivu hinnoiteltuine tuotteineen"
 
 msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
 msgstr "Palvelinpuolen maksut Stripen, Google Playn, App Storen ja Steamin kautta. Vahvista kuitit, käsittele allekirjoitetut webhookit, myönnä oikeudet, peru hyvitykset ja tarkastele kaikkea ylläpidossa."
@@ -199,34 +200,34 @@ msgid "Payments & Store Integrations"
 msgstr "Maksut ja kauppaintegraatiot"
 
 msgid "Economy"
-msgstr ""
+msgstr "Talous"
 
 msgid "Key-Value Store"
-msgstr ""
+msgstr "Avain-arvo-tallennus"
 
 msgid "The economy admin page with wallets and grant and spend controls"
-msgstr ""
+msgstr "Talouden ylläpitosivu, jossa on lompakot sekä myöntö- ja kulutustoiminnot"
 
 msgid "Virtual currency wallets with an atomic, append-only ledger. Item stacks with grant and consume. A per-player and per-lobby **key-value store**, and object storage with presigned uploads on local disk or any S3-compatible backend."
-msgstr ""
+msgstr "Virtuaalivaluutan lompakot atomisella kirjanpidolla, johon voi vain lisätä. Esinepinot myöntämisellä ja kuluttamisella. Pelaaja- ja aulakohtainen **avain-arvo-tallennus** sekä objektitallennus esiallekirjoitetuilla latauksilla paikalliselle levylle tai mihin tahansa S3-yhteensopivaan taustajärjestelmään."
 
 msgid "Economy, Inventory & Storage"
-msgstr ""
+msgstr "Talous, inventaario ja tallennus"
 
 msgid "Player Analytics"
-msgstr ""
+msgstr "Pelaaja-analytiikka"
 
 msgid "Client Logs"
-msgstr ""
+msgstr "Asiakaslokit"
 
 msgid "The analytics admin page with DAU and D1, D7 and D30 retention"
-msgstr ""
+msgstr "Analytiikan ylläpitosivu, jossa näkyvät DAU sekä D1-, D7- ja D30-pysyvyys"
 
 msgid "D1 / D7 / D30 retention, DAU and payer conversion built in. Client log sessions correlated with the server's own tail for per-player debugging. Prometheus metrics with Grafana, and a load-test harness with published benchmarks."
-msgstr ""
+msgstr "D1 / D7 / D30 -pysyvyys, DAU ja maksavien pelaajien konversio sisäänrakennettuina. Asiakaslokien istunnot yhdistettynä palvelimen oman lokin loppuun pelaajakohtaista vianetsintää varten. Prometheus-mittarit Grafanan kanssa sekä kuormitustestiympäristö julkaistuine suorituskykytesteineen."
 
 msgid "Analytics, Logs & Observability"
-msgstr ""
+msgstr "Analytiikka, lokit ja havaittavuus"
 
 msgid "Game + Backend"
 msgstr "Peli + taustapalvelu"

@@ -1,6 +1,7 @@
 defmodule GamendWeb.AdminLive.Geo do
   use GamendWeb, :live_view
 
+  alias GamendWeb.Crawlers
   alias GamendWeb.Plugs.GeoCountry
 
   @refresh_interval 5_000
@@ -10,6 +11,12 @@ defmodule GamendWeb.AdminLive.Geo do
     {"24h", :day},
     {"7d", :week},
     {"All", :all}
+  ]
+
+  @traffic [
+    {"Everyone", :all},
+    {"People", :people},
+    {"Crawlers", :crawlers}
   ]
 
   @impl true
@@ -25,7 +32,7 @@ defmodule GamendWeb.AdminLive.Geo do
           </div>
 
           <div class="flex items-center gap-3">
-            <span class="text-xs text-base-content/60">
+            <span class="text-xs text-muted">
               Source:
               <span class="font-semibold">
                 {if(@geoip_available?, do: "MMDB database", else: "CF-IPCountry header")}
@@ -41,44 +48,72 @@ defmodule GamendWeb.AdminLive.Geo do
           </div>
         </div>
 
-        <%!-- Time window selector --%>
-        <div class="flex flex-wrap gap-2">
-          <button
-            :for={{label, window} <- @windows}
-            phx-click="set_window"
-            phx-value-window={window}
-            class={[
-              "btn btn-sm",
-              if(@window == window, do: "btn-primary", else: "btn-ghost")
-            ]}
-          >
-            {label}
-          </button>
+        <%!-- Time window and traffic selectors --%>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap gap-2">
+            <button
+              :for={{label, window} <- @windows}
+              phx-click="set_window"
+              phx-value-window={window}
+              class={[
+                "btn btn-sm",
+                if(@window == window, do: "btn-primary", else: "btn-ghost")
+              ]}
+            >
+              {label}
+            </button>
+          </div>
+          <div class="flex flex-wrap gap-2" id="geo-traffic">
+            <button
+              :for={{label, traffic} <- @traffic_options}
+              id={"geo-traffic-#{traffic}"}
+              phx-click="set_traffic"
+              phx-value-traffic={traffic}
+              class={[
+                "btn btn-sm",
+                if(@traffic == traffic, do: "btn-primary", else: "btn-ghost")
+              ]}
+            >
+              {label}
+            </button>
+          </div>
         </div>
 
         <%!-- Summary stats --%>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <div class="card bg-base-100 p-3 text-center">
-            <div class="text-2xl font-bold font-mono">{format_number(@total)}</div>
-            <div class="text-xs text-base-content/60">Requests</div>
+            <div class="text-2xl font-bold font-mono">{format_number(@snapshot.total)}</div>
+            <div class="text-xs text-muted">Requests</div>
+          </div>
+          <div class="card bg-base-100 p-3 text-center" id="geo-people">
+            <div class="text-2xl font-bold font-mono">{format_number(@snapshot.people)}</div>
+            <div class="text-xs text-muted">
+              People &middot; {share(@snapshot.people, @snapshot.total)}%
+            </div>
+          </div>
+          <div class="card bg-base-100 p-3 text-center" id="geo-crawlers">
+            <div class="text-2xl font-bold font-mono">{format_number(@snapshot.crawlers)}</div>
+            <div class="text-xs text-muted">
+              Crawlers &middot; {share(@snapshot.crawlers, @snapshot.total)}%
+            </div>
+          </div>
+          <div class="card bg-base-100 p-3 text-center" id="geo-rate-limited">
+            <div class="text-2xl font-bold font-mono">
+              {format_number(@snapshot.rate_limited.people + @snapshot.rate_limited.crawlers)}
+            </div>
+            <div class="text-xs text-muted">
+              429s &middot; {format_number(@snapshot.rate_limited.people)} people, {format_number(
+                @snapshot.rate_limited.crawlers
+              )} crawlers
+            </div>
           </div>
           <div class="card bg-base-100 p-3 text-center">
             <div class="text-2xl font-bold font-mono">{length(@stats)}</div>
-            <div class="text-xs text-base-content/60">Countries</div>
+            <div class="text-xs text-muted">Countries</div>
           </div>
           <div class="card bg-base-100 p-3 text-center">
-            <div class="text-2xl font-bold font-mono">
-              {if(@top_country,
-                do:
-                  "#{GamendWeb.AdminLive.Shared.country_flag(elem(@top_country, 0))} #{elem(@top_country, 0)}",
-                else: "—"
-              )}
-            </div>
-            <div class="text-xs text-base-content/60">Top Country</div>
-          </div>
-          <div class="card bg-base-100 p-3 text-center">
-            <div class="text-2xl font-bold font-mono">{@unknown_count}</div>
-            <div class="text-xs text-base-content/60">Unknown (XX)</div>
+            <div class="text-2xl font-bold font-mono">{format_number(@unknown_count)}</div>
+            <div class="text-xs text-muted">Unknown (XX)</div>
           </div>
         </div>
 
@@ -122,7 +157,7 @@ defmodule GamendWeb.AdminLive.Geo do
               phx-debounce="300"
             />
           </.form>
-          <div class="flex items-center gap-2 text-xs text-base-content/60">
+          <div class="flex items-center gap-2 text-xs text-muted">
             <span>Sort:</span>
             <button
               phx-click="toggle_sort"
@@ -137,10 +172,12 @@ defmodule GamendWeb.AdminLive.Geo do
         <div class="card bg-base-100 overflow-x-auto">
           <table class="table table-sm">
             <thead>
-              <tr class="text-xs text-base-content/60">
+              <tr class="text-xs text-muted">
                 <th class="w-8">#</th>
                 <th>Country</th>
                 <th class="text-right">Requests</th>
+                <th class="text-right">People</th>
+                <th class="text-right">Crawlers</th>
                 <th class="text-right w-20">%</th>
                 <th class="w-1/3">Distribution</th>
               </tr>
@@ -148,7 +185,7 @@ defmodule GamendWeb.AdminLive.Geo do
             <tbody>
               <%= if @filtered_stats == [] do %>
                 <tr>
-                  <td colspan="5" class="text-center py-8 text-base-content/70">
+                  <td colspan="7" class="text-center py-8 text-muted">
                     <%= if @stats == [] do %>
                       No geo data yet — traffic will appear as requests come in
                     <% else %>
@@ -158,21 +195,27 @@ defmodule GamendWeb.AdminLive.Geo do
                 </tr>
               <% else %>
                 <tr
-                  :for={{idx, country, count, pct} <- @filtered_stats}
+                  :for={{idx, country, count, pct, row} <- @filtered_stats}
                   class={[
                     country == "XX" && "opacity-60"
                   ]}
                 >
-                  <td class="font-mono text-base-content/70">{idx}</td>
+                  <td class="font-mono text-muted">{idx}</td>
                   <td>
                     <span class="text-lg mr-1">{GamendWeb.AdminLive.Shared.country_flag(country)}</span>
                     <span class="font-mono font-semibold">{country}</span>
-                    <span :if={country == "XX"} class="text-xs text-base-content/70 ml-1">
+                    <span :if={country == "XX"} class="text-xs text-muted ml-1">
                       (Unknown)
                     </span>
                   </td>
                   <td class="text-right font-mono">{format_number(count)}</td>
-                  <td class="text-right font-mono text-base-content/60">{pct}%</td>
+                  <td class="text-right font-mono text-muted">
+                    {format_number(row.people)}
+                  </td>
+                  <td class="text-right font-mono text-muted">
+                    {format_number(row.crawlers)}
+                  </td>
+                  <td class="text-right font-mono text-muted">{pct}%</td>
                   <td>
                     <div class="w-full bg-base-200 rounded-full h-2">
                       <div
@@ -191,13 +234,78 @@ defmodule GamendWeb.AdminLive.Geo do
           </table>
         </div>
 
+        <%!-- Crawlers --%>
+        <div class="space-y-2">
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-muted">
+            Crawlers
+          </h2>
+          <div :if={@snapshot.kinds != []} class="flex flex-wrap gap-2" id="geo-crawler-kinds">
+            <span
+              :for={{kind, count} <- @snapshot.kinds}
+              class={["badge badge-sm", kind == :impostor && "badge-error"]}
+            >
+              {Crawlers.label(kind)} &middot; {format_number(count)}
+            </span>
+          </div>
+          <div class="card bg-base-100 overflow-x-auto">
+            <table class="table table-sm" id="geo-crawlers-table">
+              <thead>
+                <tr class="text-xs text-muted">
+                  <th class="w-8">#</th>
+                  <th>Crawler</th>
+                  <th>Kind</th>
+                  <th class="text-right">Requests</th>
+                  <th class="text-right w-20">%</th>
+                  <th class="text-right">429s</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr :if={@snapshot.bots == []}>
+                  <td colspan="6" class="text-center py-8 text-muted">
+                    No crawler traffic in this window
+                  </td>
+                </tr>
+                <tr
+                  :for={{bot, idx} <- Enum.with_index(@snapshot.bots, 1)}
+                  id={"geo-bot-#{bot.kind}-#{idx}"}
+                  class={[bot.kind == :impostor && "text-error"]}
+                >
+                  <td class="font-mono text-muted">{idx}</td>
+                  <td class="font-semibold">{bot.name}</td>
+                  <td class="text-muted">{Crawlers.label(bot.kind)}</td>
+                  <td class="text-right font-mono">{format_number(bot.count)}</td>
+                  <td class="text-right font-mono text-muted">
+                    {share(bot.count, @snapshot.crawlers)}%
+                  </td>
+                  <td class={[
+                    "text-right font-mono",
+                    if(bot.rate_limited > 0, do: "text-warning", else: "text-muted")
+                  ]}>
+                    {format_number(bot.rate_limited)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-muted">
+            Named by user-agent (<code class="bg-base-200 px-1 rounded">GamendWeb.Crawlers</code>).
+            A request naming a search engine is checked against that engine's reverse DNS {if(
+              @verify?,
+              do: "(on)",
+              else: "(off: GAMEND_CRAWLERS_VERIFY)"
+            )}; a failed
+            check counts as a fake search bot. Static files are not counted.
+          </p>
+        </div>
+
         <%!-- Footer --%>
-        <div class="text-xs text-base-content/70 text-center">
+        <div class="text-xs text-muted text-center">
           Auto-refreshes every {div(@refresh_interval, 1000)}s &middot;
           7-day retention &middot;
           Data is in-memory (ETS) &middot;
-          Exported to Prometheus as
-          <code class="bg-base-200 px-1 rounded">gamend_geo_requests_total</code>
+          Exported to Prometheus as <code class="bg-base-200 px-1 rounded">gamend_geo_requests_total</code>,
+          <code class="bg-base-200 px-1 rounded">gamend_crawler_requests_total</code>
+          and <code class="bg-base-200 px-1 rounded">gamend_crawler_rate_limited_total</code>
         </div>
       </div>
     </Layouts.app>
@@ -208,35 +316,36 @@ defmodule GamendWeb.AdminLive.Geo do
   def mount(_params, _session, socket) do
     if connected?(socket), do: schedule_refresh()
 
-    window = :all
-    stats = GeoCountry.country_stats(window: window)
-    total = GeoCountry.total_requests(window: window)
-
     {:ok,
      socket
      |> assign(
-       stats: stats,
-       total: total,
-       window: window,
+       window: :all,
        windows: @windows,
+       traffic: :all,
+       traffic_options: @traffic,
        geoip_available?: GeoCountry.geoip_available?(),
+       verify?: Gamend.Settings.get(Crawlers, :verify),
        search: "",
        sort: :count,
        refresh_interval: @refresh_interval
      )
-     |> compute_derived()}
+     |> load_snapshot()}
   end
 
   @impl true
   def handle_event("set_window", %{"window" => window_str}, socket) do
-    window = String.to_existing_atom(window_str)
-    stats = GeoCountry.country_stats(window: window)
-    total = GeoCountry.total_requests(window: window)
+    window =
+      Enum.find_value(@windows, :all, fn {_, w} -> if to_string(w) == window_str, do: w end)
 
-    {:noreply,
-     socket
-     |> assign(stats: stats, total: total, window: window)
-     |> compute_derived()}
+    {:noreply, socket |> assign(window: window) |> load_snapshot()}
+  end
+
+  @impl true
+  def handle_event("set_traffic", %{"traffic" => traffic_str}, socket) do
+    traffic =
+      Enum.find_value(@traffic, :all, fn {_, t} -> if to_string(t) == traffic_str, do: t end)
+
+    {:noreply, socket |> assign(traffic: traffic) |> compute_derived()}
   end
 
   @impl true
@@ -256,8 +365,7 @@ defmodule GamendWeb.AdminLive.Geo do
 
     {:noreply,
      socket
-     |> assign(stats: [], total: 0)
-     |> compute_derived()
+     |> load_snapshot()
      |> put_flash(:info, "Geo traffic counters reset.")}
   end
 
@@ -265,14 +373,10 @@ defmodule GamendWeb.AdminLive.Geo do
   def handle_info(:refresh, socket) do
     schedule_refresh()
 
-    window = socket.assigns.window
-    stats = GeoCountry.country_stats(window: window)
-    total = GeoCountry.total_requests(window: window)
-
     {:noreply,
      socket
-     |> assign(stats: stats, total: total, geoip_available?: GeoCountry.geoip_available?())
-     |> compute_derived()}
+     |> assign(geoip_available?: GeoCountry.geoip_available?())
+     |> load_snapshot()}
   end
 
   @impl true
@@ -280,40 +384,60 @@ defmodule GamendWeb.AdminLive.Geo do
 
   # --- Derived state ---
 
+  defp load_snapshot(socket) do
+    socket
+    |> assign(snapshot: GeoCountry.traffic_snapshot(window: socket.assigns.window))
+    |> compute_derived()
+  end
+
   defp compute_derived(socket) do
-    %{stats: stats, total: total, search: search, sort: sort} = socket.assigns
+    %{snapshot: snapshot, traffic: traffic, search: search, sort: sort} = socket.assigns
+
+    # `{country, count, row}` for the chosen traffic, busiest first.
+    stats =
+      snapshot.countries
+      |> Enum.map(fn row -> {row.country, traffic_count(row, traffic), row} end)
+      |> Enum.reject(fn {_country, count, _row} -> count == 0 end)
+      |> Enum.sort_by(fn {_country, count, _row} -> count end, :desc)
+
+    total = traffic_count(snapshot, traffic)
 
     sorted =
       case sort do
         :count -> stats
-        :alpha -> Enum.sort_by(stats, fn {country, _} -> country end)
+        :alpha -> Enum.sort_by(stats, fn {country, _, _} -> country end)
       end
 
     filtered =
       if search == "" do
         sorted
       else
-        Enum.filter(sorted, fn {country, _} -> String.contains?(country, search) end)
+        Enum.filter(sorted, fn {country, _, _} -> String.contains?(country, search) end)
       end
 
     # Add rank, percentage
     filtered_with_meta =
       filtered
       |> Enum.with_index(1)
-      |> Enum.map(fn {{country, count}, idx} ->
-        pct = if total > 0, do: Float.round(count / total * 100, 1), else: 0.0
-        {idx, country, count, pct}
+      |> Enum.map(fn {{country, count, row}, idx} ->
+        {idx, country, count, share(count, total), row}
       end)
 
-    top_country = List.first(stats)
-    unknown_count = Enum.find_value(stats, 0, fn {c, cnt} -> if c == "XX", do: cnt end)
+    unknown_count = Enum.find_value(stats, 0, fn {c, cnt, _} -> if c == "XX", do: cnt end)
 
     assign(socket,
+      stats: stats,
       filtered_stats: filtered_with_meta,
-      top_country: top_country,
       unknown_count: unknown_count
     )
   end
+
+  defp traffic_count(row, :all), do: row.people + row.crawlers
+  defp traffic_count(row, :people), do: row.people
+  defp traffic_count(row, :crawlers), do: row.crawlers
+
+  defp share(_count, total) when total in [0, nil], do: 0.0
+  defp share(count, total), do: Float.round(count / total * 100, 1)
 
   # --- Helpers ---
 

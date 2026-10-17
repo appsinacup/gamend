@@ -77,7 +77,7 @@ defmodule GamendWeb.AdminLive.Push do
                 <.input field={@send_form[:body]} type="text" label="Body (optional)" />
                 <button type="submit" class="btn btn-primary btn-sm">Send Push</button>
               </.form>
-              <p class="text-sm text-base-content/70 mt-2">
+              <p class="text-sm text-muted mt-2">
                 Queued to every live device of that user; with no provider configured the
                 delivery lands in the server log (Log provider).
               </p>

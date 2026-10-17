@@ -73,6 +73,9 @@ defmodule Gamend.KV do
 
   @pubsub Gamend.PubSub
 
+  # What `get/2` caches for a key with no row.
+  @missing :kv_missing
+
   @doc """
   Subscribe the current process to changes for a specific key/scope.
   """
@@ -168,31 +171,21 @@ defmodule Gamend.KV do
     user_id = Keyword.get(opts, :user_id)
     lobby_id = Keyword.get(opts, :lobby_id)
 
-    cached = Gamend.Cache.get!(cache_key(key, user_id, lobby_id))
-
-    if is_map(cached) and Map.has_key?(cached, :value) and Map.has_key?(cached, :metadata) do
-      {:ok, cached}
-    else
+    # A key that is not there is read as often as one that is — a player with
+    # no saved curriculum, no quota row yet today — so the absence is cached
+    # too. `Gamend.Cache.cached/3` keeps neither when a write evicted the key
+    # while the query ran, and caches nothing inside a transaction, whose row
+    # may yet be written or rolled back.
+    cache_key(key, user_id, lobby_id)
+    |> Gamend.Cache.cached([ttl: Gamend.Cache.ttl()], fn ->
       case fetch_entry(key, user_id, lobby_id) do
-        nil ->
-          :error
-
-        %Entry{value: value, metadata: metadata} ->
-          payload = %{value: value, metadata: metadata}
-
-          Gamend.Async.run(fn ->
-            _ =
-              Gamend.Cache.put(
-                cache_key(key, user_id, lobby_id),
-                payload,
-                ttl: Gamend.Cache.ttl()
-              )
-
-            :ok
-          end)
-
-          {:ok, payload}
+        nil -> @missing
+        %Entry{value: value, metadata: metadata} -> %{value: value, metadata: metadata}
       end
+    end)
+    |> case do
+      %{value: _, metadata: _} = payload -> {:ok, payload}
+      _missing -> :error
     end
   end
 
@@ -233,8 +226,8 @@ defmodule Gamend.KV do
              conflict_target: kv_conflict_target(user_id, lobby_id)
            ) do
         {:ok, entry} ->
-          _ = cache_put(key, user_id, lobby_id, entry)
           _ = invalidate_entries_cache(user_id, lobby_id)
+          _ = evict(key, user_id, lobby_id)
           _ = broadcast_kv_updated(key, user_id, lobby_id, value, metadata)
           {:ok, entry}
 
@@ -496,8 +489,8 @@ defmodule Gamend.KV do
     try do
       case Repo.insert(changeset) do
         {:ok, entry} ->
-          _ = cache_put(entry.key, entry.user_id, entry.lobby_id, entry)
           _ = invalidate_entries_cache(entry.user_id, entry.lobby_id)
+          _ = evict(entry.key, entry.user_id, entry.lobby_id)
           _ = broadcast_kv_updated(entry)
           {:ok, entry}
 
@@ -544,15 +537,12 @@ defmodule Gamend.KV do
           case Repo.update(changeset) do
             {:ok, updated} ->
               if cache_key(updated.key, updated.user_id, updated.lobby_id) != old_cache_key do
-                Gamend.Async.run(fn ->
-                  _ = Gamend.Cache.invalidate(old_cache_key)
-                  :ok
-                end)
+                _ = Gamend.Cache.invalidate(old_cache_key)
               end
 
-              _ = cache_put(updated.key, updated.user_id, updated.lobby_id, updated)
               _ = invalidate_entries_cache(entry.user_id, entry.lobby_id)
               _ = invalidate_entries_cache(updated.user_id, updated.lobby_id)
+              _ = evict(updated.key, updated.user_id, updated.lobby_id)
 
               if cache_key(updated.key, updated.user_id, updated.lobby_id) != old_cache_key do
                 _ = broadcast_kv_deleted(entry.key, entry.user_id, entry.lobby_id)
@@ -606,6 +596,62 @@ defmodule Gamend.KV do
     end
   end
 
+  @doc """
+  Delete every entry whose key starts with `prefix` and that has not been
+  written for `days` days, in batches of `batch` (default 500), and answer
+  how many went. For a key family that is history — one row per day, say —
+  which nothing else ever trims. Hand it to the retention sweep with
+  `Gamend.Retention.register_kv_prefix/3` rather than calling it directly.
+
+  The prefix is matched literally (`%` and `_` in it are not wildcards). An
+  empty prefix or a window of `0` deletes nothing. Each deleted row's
+  cache and its scope's listing are invalidated, as `delete/2` does.
+  """
+  @spec prune_prefix(String.t(), pos_integer(), keyword()) :: non_neg_integer()
+  def prune_prefix(prefix, days, opts \\ [])
+
+  def prune_prefix(prefix, days, opts)
+      when is_binary(prefix) and prefix != "" and is_integer(days) and days > 0 do
+    cutoff = DateTime.add(DateTime.utc_now(), -days * 86_400, :second)
+    pattern = Repo.escape_like(prefix) <> "%"
+    prune_batches(pattern, cutoff, Keyword.get(opts, :batch, 500), 0)
+  end
+
+  def prune_prefix(_prefix, _days, _opts), do: 0
+
+  defp prune_batches(pattern, cutoff, batch, deleted) do
+    rows =
+      Repo.all(
+        from(e in Entry,
+          where: fragment("? LIKE ? ESCAPE '\\'", e.key, ^pattern) and e.updated_at < ^cutoff,
+          select: {e.id, e.key, e.user_id, e.lobby_id},
+          limit: ^batch
+        )
+      )
+
+    case rows do
+      [] ->
+        deleted
+
+      rows ->
+        ids = Enum.map(rows, &elem(&1, 0))
+        {count, _} = Repo.delete_all(from(e in Entry, where: e.id in ^ids))
+
+        for {_id, key, user_id, lobby_id} <- rows do
+          _ = Gamend.Cache.invalidate(cache_key(key, user_id, lobby_id))
+        end
+
+        rows
+        |> Enum.map(fn {_id, _key, user_id, lobby_id} -> {user_id, lobby_id} end)
+        |> Enum.uniq()
+        |> Enum.each(fn {user_id, lobby_id} -> invalidate_entries_cache(user_id, lobby_id) end)
+
+        if length(rows) < batch,
+          do: deleted + count,
+          else: prune_batches(pattern, cutoff, batch, deleted + count)
+    end
+  end
+
   defp broadcast_kv_updated(%Entry{} = entry) do
     broadcast_kv_updated(entry.key, entry.user_id, entry.lobby_id, entry.value, entry.metadata)
   end
@@ -636,22 +682,13 @@ defmodule Gamend.KV do
   defp cache_key(key, nil, lobby_id), do: {:kv, :lobby, lobby_id, key}
   defp cache_key(key, user_id, lobby_id), do: {:kv, :user_lobby, user_id, lobby_id, key}
 
-  defp cache_put(key, user_id, lobby_id, %Entry{} = entry) do
-    Gamend.Async.run(fn ->
-      # Evict the key on all other instances first so their L1 refetches the
-      # fresh value (from L2 or the DB) instead of serving the old one until
-      # the TTL expires. The put below re-warms this node and L2.
-      _ = Gamend.Cache.invalidate(cache_key(key, user_id, lobby_id))
-
-      _ =
-        Gamend.Cache.put(
-          cache_key(key, user_id, lobby_id),
-          %{value: entry.value, metadata: entry.metadata},
-          ttl: Gamend.Cache.ttl()
-        )
-
-      :ok
-    end)
+  # Evicts the key everywhere, now and again once an open transaction commits.
+  # The writer does not cache what it wrote: two writes can reach the cache in
+  # the opposite order to the database, leaving the older value cached until
+  # the TTL. The next read caches the row as it is (`get/2`).
+  defp evict(key, user_id, lobby_id) do
+    _ = Gamend.Cache.invalidate(cache_key(key, user_id, lobby_id))
+    :ok
   end
 
   defp fetch_entry(key, user_id, lobby_id) do

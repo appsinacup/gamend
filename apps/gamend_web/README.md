@@ -30,7 +30,7 @@ Add `gamend_web` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:gamend_web, "~> 1.0.0"}
+    {:gamend_web, "~> 1.1"}
   ]
 end
 ```

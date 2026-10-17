@@ -96,9 +96,9 @@ defmodule GamendWeb.Router.Shared do
         plug :protect_from_forgery
         plug :put_secure_browser_headers, RouterShared.browser_headers()
         plug GamendWeb.Plugs.CaptchaCsp
-        plug GamendWeb.Plugs.ColorMode
         plug GamendWeb.Plugs.PageMeta
         plug :fetch_current_scope_for_user
+        plug GamendWeb.Plugs.ColorMode
       end
 
       pipeline :api do
@@ -113,8 +113,8 @@ defmodule GamendWeb.Router.Shared do
         plug :put_root_layout, html: {GamendWeb.Layouts, :root}
         plug :put_secure_browser_headers, RouterShared.browser_headers()
         plug GamendWeb.Plugs.CaptchaCsp
-        plug GamendWeb.Plugs.ColorMode
         plug :fetch_current_scope_for_user
+        plug GamendWeb.Plugs.ColorMode
       end
 
       pipeline :api_auth do
@@ -187,6 +187,14 @@ defmodule GamendWeb.Router.Shared do
 
       pipeline :public_stats_gate do
         plug GamendWeb.Plugs.FeatureGate, feature: :public_stats
+      end
+
+      pipeline :list_payments_catalog_gate do
+        plug GamendWeb.Plugs.FeatureGate, feature: :list_payments_catalog
+      end
+
+      pipeline :stripe_checkout_api_gate do
+        plug GamendWeb.Plugs.FeatureGate, feature: :stripe_checkout_api
       end
 
       pipeline :metrics_auth do
@@ -299,6 +307,7 @@ defmodule GamendWeb.Router.Shared do
       gamend_hook_leaderboard_party_api_routes()
       gamend_tournament_api_routes()
       gamend_matchmaking_api_routes()
+      gamend_report_api_routes()
       gamend_chat_api_routes(update: unquote(chat_update))
       gamend_admin_api_routes()
       gamend_api_auth_routes()
@@ -330,13 +339,20 @@ defmodule GamendWeb.Router.Shared do
         get "/time", TimeController, :show
         post "/login", SessionController, :create
         post "/register", SessionController, :register
+        post "/register/confirm", SessionController, :confirm_registration
+        post "/register/resend", SessionController, :resend_confirmation
         post "/login/device", SessionController, :create_device
         post "/refresh", SessionController, :refresh
         delete "/logout", SessionController, :delete
-        get "/payments/catalog", PaymentController, :catalog
         post "/payments/webhooks/stripe", PaymentWebhookController, :stripe
         post "/payments/webhooks/google", PaymentWebhookController, :google
         post "/payments/webhooks/apple", PaymentWebhookController, :apple
+      end
+
+      scope "/api/v1", GamendWeb.Api.V1, as: :api_v1 do
+        pipe_through [:api, :list_payments_catalog_gate]
+
+        get "/payments/catalog", PaymentController, :catalog
       end
 
       # Before the listing scopes: "/users/stats" would otherwise be captured
@@ -416,6 +432,22 @@ defmodule GamendWeb.Router.Shared do
     end
   end
 
+  @doc """
+  Content reports (`Gamend.Reports`) from a game client. Signed in, unlike
+  the website's `/report`: a client always holds at least a device token, and
+  an account is what the per-account daily cap counts against.
+  """
+  defmacro gamend_report_api_routes do
+    quote do
+      scope "/api/v1", GamendWeb.Api.V1, as: :api_v1 do
+        pipe_through [:api, :api_auth]
+
+        get "/reports/kinds", ReportController, :kinds
+        post "/reports", ReportController, :create
+      end
+    end
+  end
+
   defmacro gamend_matchmaking_api_routes do
     quote do
       # Mutations and the caller's own ticket are authenticated. Aggregate queue
@@ -486,6 +518,16 @@ defmodule GamendWeb.Router.Shared do
 
   defmacro gamend_account_lobby_api_routes do
     quote do
+      # Its own scope for its own flag: a host that sells through its own
+      # page (and decides the price there) turns the API way in off. The gate
+      # before the auth, so a switched-off route is a 404 to everyone, never a
+      # 401 that says it exists.
+      scope "/api/v1", GamendWeb.Api.V1, as: :api_v1 do
+        pipe_through [:api, :stripe_checkout_api_gate, :api_auth]
+
+        post "/payments/checkout/stripe", PaymentController, :stripe_checkout
+      end
+
       scope "/api/v1", GamendWeb.Api.V1, as: :api_v1 do
         pipe_through [:api, :api_auth]
 
@@ -516,7 +558,6 @@ defmodule GamendWeb.Router.Shared do
         get "/me/wallet/ledger", EconomyController, :ledger
         get "/me/inventory", EconomyController, :inventory
         get "/payments/entitlements", PaymentController, :entitlements
-        post "/payments/checkout/stripe", PaymentController, :stripe_checkout
         post "/payments/checkout/steam", PaymentController, :steam_checkout
         post "/payments/steam/finalize", PaymentController, :steam_finalize
         post "/payments/validate/:provider", PaymentController, :validate
@@ -820,6 +861,11 @@ defmodule GamendWeb.Router.Shared do
         pipe_through [:browser, :require_admin_user]
 
         live_dashboard "/admin/dashboard", metrics: GamendWeb.Telemetry
+
+        # A report's images are never public (`Gamend.Reports`): only an admin
+        # reads them, through here.
+        get "/admin/reports/:id/attachments/:index", GamendWeb.AdminReportController, :attachment
+        get "/admin/reports/export/:kind", GamendWeb.AdminReportController, :export
       end
 
       scope "/" do
@@ -886,6 +932,7 @@ defmodule GamendWeb.Router.Shared do
           live "/admin/chat/reports", AdminLive.ChatReports, :index
           live "/admin/chat/mutes", AdminLive.ChatMutes, :index
           live "/admin/chat/filter", AdminLive.ChatFilter, :index
+          live "/admin/reports", AdminLive.Reports, :index
           live "/admin/quests", AdminLive.Quests, :index
           live "/admin/payments", AdminLive.Payments, :index
           live "/admin/translations", AdminLive.Translations, :index
@@ -900,6 +947,11 @@ defmodule GamendWeb.Router.Shared do
           live "/admin/storage", AdminLive.Storage, :index
           live "/admin/economy", AdminLive.Economy, :index
           live "/admin/analytics", AdminLive.Analytics, :index
+          live "/admin/analytics/features", AdminLive.AnalyticsFeatures, :index
+          live "/admin/analytics/explore", AdminLive.AnalyticsExplore, :index
+          live "/admin/analytics/people", AdminLive.AnalyticsPeople, :index
+          live "/admin/analytics/counters", AdminLive.AnalyticsCounters, :index
+          live "/admin/analytics/economy", AdminLive.AnalyticsEconomy, :index
         end
       end
     end
@@ -1017,6 +1069,7 @@ defmodule GamendWeb.Router.Shared do
           live "/groups", GroupsLive, :index
           live "/groups/:id", GroupsLive, :show
           live "/quests", QuestsLive, :index
+          live "/report", ReportLive, :index
           live "/stats", StatsLive, :index
           live "/tournaments", TournamentsLive, :index
           # Slug-first for SEO; older editions get a stable 1-based number.
@@ -1030,7 +1083,9 @@ defmodule GamendWeb.Router.Shared do
           live "/leaderboards/:slug", LeaderboardsLive, :show_active
           live "/users/log_in", UserLive.Login, :new
           live "/users/log_in/:token", UserLive.Confirmation, :new
-          get "/users/confirm/:token", UserSessionController, :confirm
+          # Shows the account and confirms on its button, a POST below: a mail
+          # scanner that opens every link in an email confirms nothing.
+          live "/users/confirm/:token", UserLive.Confirmation, :confirm_email
           unquote(docs_route)
           unquote(changelog_route)
           unquote(roadmap_route)
@@ -1040,7 +1095,14 @@ defmodule GamendWeb.Router.Shared do
         end
 
         post "/users/log_in", UserSessionController, :create
+        post "/users/confirm", UserSessionController, :confirm
         delete "/users/log_out", UserSessionController, :delete
+        # The anonymous account a page made (`UserAuth.ensure_user/1`), written
+        # into the session by `app.js`; a LiveView cannot write the cookie.
+        post "/users/anonymous_session", AnonymousSessionController, :create
+        # A preference the page sets (the theme, the host's own), saved to
+        # the account (`Gamend.Accounts.Preferences.put_client/3`).
+        put "/preferences", PreferenceController, :update
       end
     end
   end

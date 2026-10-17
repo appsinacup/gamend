@@ -10,6 +10,22 @@ defmodule GamendWeb.UserLive.SettingsTest do
   import Gamend.AccountsFixtures
 
   describe "Settings page" do
+    test "reads only the open tab's data", %{conn: conn} do
+      conn = log_in_user(conn, user_fixture())
+
+      # The dead render runs here, so its queries are this process's. Every
+      # tab's data on every render was ~30 queries for the one tab shown.
+      {_, sources} = query_sources(fn -> get(conn, ~p"/users/settings") end)
+
+      for table <- ~w(friendships purchases entitlements groups inventory_items api_tokens) do
+        refute table in sources, "the account tab read #{table}"
+      end
+
+      {_, sources} = query_sources(fn -> get(conn, ~p"/users/settings?tab=friends") end)
+      assert "friendships" in sources
+      refute "purchases" in sources
+    end
+
     test "renders settings page", %{conn: conn} do
       user = user_fixture()
 
@@ -563,6 +579,40 @@ defmodule GamendWeb.UserLive.SettingsTest do
       assert path == ~p"/users/log_in"
       assert %{"error" => message} = flash
       assert message == "Failed"
+    end
+  end
+
+  # The tables this process queries while `fun` runs.
+  defp query_sources(fun) do
+    ref = make_ref()
+    handler = "settings-test-#{inspect(ref)}"
+
+    :ok =
+      :telemetry.attach(
+        handler,
+        [:gamend, :repo, :query],
+        &__MODULE__.send_source/4,
+        {self(), ref}
+      )
+
+    try do
+      result = fun.()
+      {result, drain_sources(ref, [])}
+    after
+      :telemetry.detach(handler)
+    end
+  end
+
+  @doc false
+  def send_source(_event, _measurements, metadata, {pid, ref}) do
+    if self() == pid, do: send(pid, {ref, metadata[:source]})
+  end
+
+  defp drain_sources(ref, acc) do
+    receive do
+      {^ref, source} -> drain_sources(ref, [source | acc])
+    after
+      0 -> acc
     end
   end
 end

@@ -5,6 +5,9 @@ defmodule GamendWeb.AuthController do
   # Before Ueberauth, so a disabled Steam is 404'd ahead of its request phase.
   plug :ensure_provider_enabled
 
+  # Before Ueberauth too: its request phase halts, so nothing after it runs.
+  plug :stash_steam_session
+
   # Only use Ueberauth for Steam (OpenID), other providers use custom implementation
   plug Ueberauth, only: [:request, :callback], providers: [:steam]
 
@@ -19,6 +22,8 @@ defmodule GamendWeb.AuthController do
   alias GamendWeb.UserAuth
 
   @browser_state_prefix "browser:"
+
+  @steam_session_key "steam_oauth_session_id"
 
   @provider_atom %{
     "discord" => :discord,
@@ -45,6 +50,32 @@ defmodule GamendWeb.AuthController do
       Providers.enabled?(provider) -> conn
       true -> raise GamendWeb.NotFoundError
     end
+  end
+
+  # The polled Steam flow (`OAuthExchange.start_session/2`) opens
+  # `/auth/steam?session_id=…`, so Ueberauth's request phase runs in the
+  # browser that signs in and sets its signed state cookie there: a Steam URL
+  # built by hand never had that cookie, and its callback always failed
+  # Ueberauth's state check. OpenID 2.0 has no `state` of its own and
+  # Ueberauth's rides in `return_to`, so the session id waits in the Plug
+  # session for the callback (`pop_steam_session/1`). A plain browser sign-in
+  # clears it, so a game's flow left unfinished cannot complete a later one.
+  defp stash_steam_session(conn, _opts) do
+    case {Phoenix.Controller.action_name(conn), conn.params} do
+      {:request, %{"provider" => "steam", "session_id" => session_id}}
+      when is_binary(session_id) and session_id != "" ->
+        put_session(conn, @steam_session_key, session_id)
+
+      {:request, %{"provider" => "steam"}} ->
+        delete_session(conn, @steam_session_key)
+
+      _other ->
+        conn
+    end
+  end
+
+  defp pop_steam_session(conn) do
+    {delete_session(conn, @steam_session_key), get_session(conn, @steam_session_key)}
   end
 
   # ── Browser OAuth CSRF helpers ──────────────────────────────────────────
@@ -246,6 +277,16 @@ defmodule GamendWeb.AuthController do
     redirect(conn, to: ~p"/users/log_in")
   end
 
+  # The browser started a polled Steam flow whose session is no longer
+  # pending: redeemed already (a replay, as `dispatch_browser_oauth_state/2`
+  # reads it), or never there and aged out.
+  defp steam_session_gone(conn, session_id) do
+    case OAuthSessions.get_session(session_id) do
+      %{status: status} when status != "pending" -> browser_oauth_replay_redirect(conn, "steam")
+      _ -> browser_oauth_error_redirect(conn, "steam", "oauth_session_expired")
+    end
+  end
+
   # Show a helpful dev-mode flash for browser flows when exchanges fail
   defp browser_oauth_error_redirect(conn, provider, error) do
     # Log the error at controller level as well
@@ -267,11 +308,28 @@ defmodule GamendWeb.AuthController do
     |> redirect(to: ~p"/users/log_in")
   end
 
+  defp sign_in_guest_to_existing(conn, existing, config) do
+    if Accounts.user_activated?(existing) do
+      conn
+      |> put_flash(:info, gettext("Success."))
+      |> UserAuth.log_in_user(existing)
+    else
+      require Logger
+      Logger.warning("#{config.label} already linked to another user id=#{existing.id}")
+
+      conn
+      |> put_flash(:error, gettext("Failed"))
+      |> redirect(to: ~p"/users/settings")
+    end
+  end
+
   defp handle_browser_oauth_callback(conn, provider, user_params) do
     config = OAuthExchange.provider!(provider)
 
     case Scope.user(conn.assigns[:current_scope]) do
       %User{} = current_user ->
+        guest? = User.anonymous?(current_user)
+
         case Accounts.link_account(
                current_user,
                user_params,
@@ -282,6 +340,12 @@ defmodule GamendWeb.AuthController do
             conn
             |> put_flash(:info, gettext("Success."))
             |> redirect(to: ~p"/users/settings")
+
+          # A guest (anonymous account) whose provider identity already has an
+          # account is signing in to it, not linking: that account stays as it
+          # is and `log_in_user/3` deletes the guest one.
+          {:error, {:conflict, other_user}} when guest? ->
+            sign_in_guest_to_existing(conn, other_user, config)
 
           {:error, {:conflict, other_user}} ->
             require Logger
@@ -528,7 +592,7 @@ defmodule GamendWeb.AuthController do
 
   def callback(
         %Plug.Conn{assigns: %{ueberauth_auth: auth}} = conn,
-        %{"provider" => "steam"} = params
+        %{"provider" => "steam"}
       ) do
     uid = to_string(auth.uid)
     info = auth.info || %{}
@@ -551,34 +615,31 @@ defmodule GamendWeb.AuthController do
       profile_url: profile_url
     }
 
-    case params["state"] do
-      nil ->
+    case pop_steam_session(conn) do
+      {conn, nil} ->
         handle_browser_oauth_callback(conn, "steam", user_params)
 
-      session_id ->
+      {conn, session_id} ->
         # Only a pending Steam session, as `dispatch_oauth_state/2` requires
         # for the other providers: a finished one redeemed again would hand
         # this player's tokens to whoever started it.
         case OAuthSessions.get_pending_session(session_id, "steam") do
-          nil ->
-            handle_browser_oauth_callback(conn, "steam", user_params)
-
-          _ ->
-            handle_session_oauth_callback(conn, session_id, user_params, "steam")
+          nil -> steam_session_gone(conn, session_id)
+          _ -> handle_session_oauth_callback(conn, session_id, user_params, "steam")
         end
     end
   end
 
   def callback(
         %Plug.Conn{assigns: %{ueberauth_failure: failure}} = conn,
-        %{"provider" => "steam"} = params
+        %{"provider" => "steam"}
       ) do
-    case params["state"] do
-      nil ->
+    case pop_steam_session(conn) do
+      {conn, nil} ->
         browser_oauth_error_redirect(conn, "steam", failure)
 
-      session_id ->
-        case OAuthSessions.get_session(session_id) do
+      {conn, session_id} ->
+        case OAuthSessions.get_pending_session(session_id, "steam") do
           nil ->
             browser_oauth_error_redirect(conn, "steam", failure)
 

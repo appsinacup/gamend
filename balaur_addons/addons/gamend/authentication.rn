@@ -11,6 +11,21 @@
 //! answers, to await with `task::wait`.
 
 
+/// Confirm a registration with its code
+/// `POST /api/v1/register/confirm`
+pub fn confirm_registration(node, params) {
+    if !gamend::core::given(params, "email") {
+        return gamend::core::missing("gamend::authentication::confirm_registration", "email");
+    }
+    if !gamend::core::given(params, "code") {
+        return gamend::core::missing("gamend::authentication::confirm_registration", "code");
+    }
+    if !gamend::core::given(params, "password") {
+        return gamend::core::missing("gamend::authentication::confirm_registration", "password");
+    }
+    gamend::rest(node, "POST", "/api/v1/register/confirm", params)
+}
+
 /// Device login
 /// `POST /api/v1/login/device`
 pub fn device_login(node, params) {
@@ -146,10 +161,16 @@ pub fn register(node, params) {
     if !gamend::core::given(params, "email") {
         return gamend::core::missing("gamend::authentication::register", "email");
     }
-    if !gamend::core::given(params, "password") {
-        return gamend::core::missing("gamend::authentication::register", "password");
-    }
     gamend::rest(node, "POST", "/api/v1/register", params)
+}
+
+/// Send the confirmation email again
+/// `POST /api/v1/register/resend`
+pub fn resend_confirmation(node, params) {
+    if !gamend::core::given(params, "email") {
+        return gamend::core::missing("gamend::authentication::resend_confirmation", "email");
+    }
+    gamend::rest(node, "POST", "/api/v1/register/resend", params)
 }
 
 /// Unlink device ID

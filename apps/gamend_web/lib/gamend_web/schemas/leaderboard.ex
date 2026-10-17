@@ -89,6 +89,13 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
     type: :object,
     properties: %{
       rank: %Schema{type: :integer, description: "1 is the top of the board"},
+      hidden: %Schema{
+        type: :boolean,
+        description:
+          "True on a guest's own record that the board does not list (the server " <>
+            "requires an account to be listed): `rank` is where it would stand. " <>
+            "Register to be listed."
+      },
       user_id: %Schema{type: :string, description: "Empty for a label record"},
       username: %Schema{type: :string, description: "Empty for a label record"},
       display_name: %Schema{
@@ -99,9 +106,19 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
       metadata: %Schema{type: :object, description: "Per-record metadata"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
-    required: [:rank, :user_id, :username, :display_name, :score, :metadata, :updated_at],
+    required: [
+      :rank,
+      :hidden,
+      :user_id,
+      :username,
+      :display_name,
+      :score,
+      :metadata,
+      :updated_at
+    ],
     example: %{
       rank: 1,
+      hidden: false,
       user_id: "0198c0de-0002-7000-8000-000000000002",
       username: "progamer123-4821",
       display_name: "ProGamer123",

@@ -32,12 +32,18 @@ import {startAvatarFallback} from "./avatar_fallback"
 import {startVideoClickToPlay} from "./video_click_to_play"
 import {startConnectionState} from "./connection_state"
 import {startSearchPalette} from "./search_palette"
+import {startAnonymousSession} from "./anonymous_session"
+import {startLiveNav} from "./live_nav"
+import {startBackLink} from "./back_link"
+import {ReportForm, ReportPagePath, startLastPage} from "./report_form"
 import topbar from "../vendor/topbar"
 
 // Custom hooks
 const Hooks = {
   Captcha,
   LocalDatetimeInput,
+  ReportForm,
+  ReportPagePath,
 
 
 
@@ -451,6 +457,12 @@ function createLiveSocket(extraHooks) {
     // so "today" and "this evening" are theirs, not UTC's.
     params: {_csrf_token: csrfToken, timezone: browserTimeZone()},
     hooks: {...colocatedHooks, ...Hooks, ...extraHooks},
+    // A `phx-remove` plays when a patch takes its element away, never when
+    // the page is left. LiveView 1.2 defaults this to true: on a live
+    // navigation every `phx-remove` in the old page played at the click, so
+    // a list item faded out (a hub's Continue card, a pinned tile) and a
+    // panel folded shut, and the page sat that way until the next one came.
+    cascadePhxRemoveOnNavigation: false,
   })
 }
 
@@ -460,6 +472,9 @@ startAvatarFallback()
 // Before the poster can be shown: the overlay button is in the server-rendered
 // markup, so the listener must exist by the time the first click can land.
 startVideoClickToPlay()
+// Before the socket: a page can push the anonymous account it made on the
+// first event it handles.
+startAnonymousSession({getLiveSocket: () => window.liveSocket})
 
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
@@ -472,6 +487,7 @@ startLocalTime()
 // re-rendered by any `push_patch`, which would drop a listener bound to an
 // element. Started here so it works on pages with no LiveView at all.
 startSearchPalette()
+startLastPage()
 
 // Smooth scrolling for in-page anchors — armed on the reader's first input,
 // not in the markup. `scroll-behavior: smooth` on <html> also governs scrolls
@@ -540,12 +556,20 @@ function nativeScrollRestoreOnReload() {
 }
 nativeScrollRestoreOnReload()
 
+// Back returns to the page the reader came from, when that was a click
+// inside the site; else its link, the page's trail (`back_link.js`).
+startBackLink()
+
 loadExtraHooks().then((extraHooks) => {
   const liveSocket = createLiveSocket(extraHooks)
   startConnectionState(liveSocket.getSocket())
 
   // connect if there are any LiveViews on the page
   liveSocket.connect()
+
+  // A plain link to another LiveView page of this `live_session` moves over
+  // the open socket rather than loading the page (`GamendWeb.LiveNav`).
+  startLiveNav(liveSocket)
 
   // expose liveSocket on window for web console debug logs and latency simulation:
   // >> liveSocket.enableDebug()

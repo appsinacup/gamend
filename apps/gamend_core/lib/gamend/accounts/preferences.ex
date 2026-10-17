@@ -12,6 +12,12 @@ defmodule Gamend.Accounts.Preferences do
 
   Writes are serialized per user (`Gamend.Lock`) and re-read the row, so two
   settings changed at once cannot lose each other.
+
+  Some are set by the page itself (`put_client/3`, `PUT /preferences`): the
+  site's theme, and whatever a host adds to
+  `config :gamend_core, :client_preferences` (a map of key to allowed
+  values, e.g. `%{"game_sounds" => ~w(on off)}`). Only those keys, with only
+  those values, can be written that way.
   """
 
   alias Gamend.Accounts
@@ -28,6 +34,41 @@ defmodule Gamend.Accounts.Preferences do
   def locale(user) do
     case get(user)["locale"] do
       locale when is_binary(locale) -> locale
+      _ -> nil
+    end
+  end
+
+  @client %{"theme" => ~w(dark light system)}
+
+  @doc """
+  The preferences a page may set (`put_client/3`): core's `theme` and the
+  host's `:client_preferences`, each with its allowed values.
+  """
+  @spec client_keys() :: %{String.t() => [String.t()]}
+  def client_keys,
+    do: Map.merge(@client, Application.get_env(:gamend_core, :client_preferences, %{}))
+
+  @doc """
+  Save a preference a page set: `{:ok, user}`, or `{:error, :invalid}` for a
+  key or value not in `client_keys/0`. The theme's `"system"` removes the
+  saved theme, so the device decides again.
+  """
+  @spec put_client(User.t(), String.t(), String.t()) :: {:ok, User.t()} | {:error, term()}
+  def put_client(%User{} = user, key, value) when is_binary(key) and is_binary(value) do
+    cond do
+      value not in Map.get(client_keys(), key, []) -> {:error, :invalid}
+      key == "theme" and value == "system" -> update(user, &Map.delete(&1, key))
+      true -> update(user, &Map.put(&1, key, value))
+    end
+  end
+
+  def put_client(_user, _key, _value), do: {:error, :invalid}
+
+  @doc ~s[The theme the user saved, `"dark"` or `"light"`, or nil.]
+  @spec theme(User.t() | nil) :: String.t() | nil
+  def theme(user) do
+    case get(user)["theme"] do
+      theme when theme in ["dark", "light"] -> theme
       _ -> nil
     end
   end

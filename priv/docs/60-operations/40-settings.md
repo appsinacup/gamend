@@ -7,7 +7,7 @@ generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
 # Settings
 
 Every setting the server has, with the environment variable that sets it.
-314 settings across 29 groups.
+334 settings across 31 groups.
 
 A setting is declared in the module that owns it, so this page and
 `.env.example` are generated from the same source the server reads. The
@@ -53,9 +53,9 @@ Live values, and where each one came from, are on the
 | `GAMEND_AUTH_CHANGE_EMAIL_DAYS` | integer | `7` | How long the link confirming a new email address stays valid, in days. |
 | `GAMEND_AUTH_CONFIRM_EMAIL_DAYS` | integer | `7` | How long an email confirmation link stays valid, in days. |
 | `GAMEND_AUTH_DELETION_GRACE_DAYS` | integer | `0` | Days between a player deleting their own account and it being deleted. Signing in on the website within that time keeps the account. 0 deletes at once. |
-| `GAMEND_AUTH_DEVICE_AUTH_ENABLED` | boolean | `true` | Allow POST /api/v1/login/device. When on, any unknown device_id creates an anonymous account. |
+| `GAMEND_AUTH_DEVICE_AUTH_ENABLED` | boolean | `true` | Allow POST /api/v1/login/device. When on, any unknown device_id creates an anonymous account, and the website may give a signed-out visitor one the same way (`GamendWeb.UserAuth.ensure_user/1`). |
 | `GAMEND_AUTH_GUARDIAN_SECRET_KEY` | string | - | JWT signing key. Defaults to secret_key_base when unset. Secret - never log or commit it. |
-| `GAMEND_AUTH_LOCKOUT_ATTEMPTS` | integer | `10` | Failed passwords for one email address that lock its password sign-in. Counted per address across every IP. 0 disables the lockout. |
+| `GAMEND_AUTH_LOCKOUT_ATTEMPTS` | integer | `10` | Failed passwords and email confirmation codes for one email address that lock its password sign-in and its code. Counted per address across every IP. 0 disables the lockout, which leaves the six-digit codes to the per-IP auth rate limit alone. |
 | `GAMEND_AUTH_LOCKOUT_MINUTES` | integer | `15` | How long a lock lasts. Emailed login links and provider sign-in still work meanwhile, so the owner is never shut out. |
 | `GAMEND_AUTH_LOCKOUT_WINDOW_MINUTES` | integer | `15` | The failures must fall within this many minutes to lock. |
 | `GAMEND_AUTH_MAGIC_LINK_MINUTES` | integer | `15` | How long an emailed login link stays valid, in minutes. Capped at 60: anyone who can read the email can sign in while the link lives. |
@@ -134,6 +134,13 @@ Live values, and where each one came from, are on the
 | `GAMEND_CONTENT_THEME_CONFIG` | string | - | Path to the theme JSON. A single file serves every locale; its text is translated via the gettext `theme` domain. |
 
 
+## Crawler statistics
+
+| Variable | Type | Default | Notes |
+|---|---|---|---|
+| `GAMEND_CRAWLERS_VERIFY` | boolean | `true` | Check a request that claims a search engine's crawler (Googlebot, Bingbot, …) against that engine's reverse DNS, and count a failed check as an impostor. One lookup per address and day, in the background. |
+
+
 ## Database
 
 | Variable | Type | Default | Notes |
@@ -151,6 +158,8 @@ Live values, and where each one came from, are on the
 | `GAMEND_DB_QUERY_TIMEOUT_MS` | integer | `15000` |  |
 | `GAMEND_DB_QUEUE_INTERVAL_MS` | integer | `1000` |  |
 | `GAMEND_DB_QUEUE_TARGET` | integer | `10000` |  |
+| `GAMEND_DB_SLOW_QUERY_MS` | integer | `1000` | Log a query that runs, or waits for a connection, longer than N ms, with where in the code it came from (`Gamend.Repo.SlowLog`). 0 turns it off. |
+| `GAMEND_DB_SLOW_TRANSACTION_MS` | integer | `2000` | Log a transaction that holds its connection longer than N ms. On SQLite that is the write lock others wait on, so this names what a "database is locked" waited for. 0 turns it off. |
 | `GAMEND_DB_SQLITE_BUSY_TIMEOUT_MS` | integer | `15000` | Wait this long for a lock instead of failing with "database is locked". |
 | `GAMEND_DB_SQLITE_CACHE_SIZE_KB` | integer | `200000` |  |
 | `GAMEND_DB_SQLITE_PATH` | string | - | Where the SQLite file lives. Point at a mounted volume in production. |
@@ -340,11 +349,13 @@ Live values, and where each one came from, are on the
 | `GAMEND_PAYMENTS_GOOGLE_PLAY_RTDN_TOKEN` | string | - | Shared bearer token on the Pub/Sub push webhook. Without it the RTDN endpoint fails closed in production. Secret - never log or commit it. |
 | `GAMEND_PAYMENTS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | string | - | Inline service-account JSON. Use the _PATH variant to read it from a file instead. Warns if unset once `GAMEND_PAYMENTS_GOOGLE_PLAY_PACKAGE_NAME` is set. Secret - never log or commit it. |
 | `GAMEND_PAYMENTS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_PATH` | string | - |  |
+| `GAMEND_PAYMENTS_REFUND_WINDOW_DAYS` | integer | `14` | Days after paying in which a buyer can refund a Stripe purchase themselves (account settings, Payments): a one-off payment, or a subscription's last payment with the subscription cancelled now. 0 turns it off. Admins can refund any Stripe purchase at any time. |
+| `GAMEND_PAYMENTS_SELF_REFUNDS_PER_ACCOUNT` | integer | `1` | How many refunds a buyer can make themselves (account settings, Payments) over the account's life, so buy, use and refund cannot repeat. 0 for no limit. Admins are not limited. |
 | `GAMEND_PAYMENTS_STEAM_APP_ID` | string | - |  |
 | `GAMEND_PAYMENTS_STEAM_MICROTXN_BASE_URL` | string | - |  |
 | `GAMEND_PAYMENTS_STEAM_WEB_API_KEY` | string | - | Falls back to the OAuth Steam key when unset. Secret - never log or commit it. |
-| `GAMEND_PAYMENTS_STRIPE_API_VERSION` | string | `"2022-11-15"` |  |
 | `GAMEND_PAYMENTS_STRIPE_MANAGED_PAYMENTS` | boolean | `false` | Sell through Stripe Managed Payments (Stripe is merchant of record: it charges and remits the buyer's VAT). Accept the terms and set a tax code on every product in the Stripe Dashboard first. |
+| `GAMEND_PAYMENTS_STRIPE_PAST_DUE_GRACE_DAYS` | integer | `7` | Days a Stripe subscription whose renewal failed (`past_due`) keeps its entitlement past the period it paid for, while Stripe retries the card. An `unpaid`, `incomplete` or `paused` one keeps none: the entitlement ends where the payments did. Set Stripe's failed-payment setting to cancel the subscription when the retries run out. |
 | `GAMEND_PAYMENTS_STRIPE_PRODUCTION_SECRET_KEY` | string | - | sk_live_... key, used when environment is production. Warns if unset when `GAMEND_PAYMENTS_ENVIRONMENT` is `production`. Secret - never log or commit it. |
 | `GAMEND_PAYMENTS_STRIPE_PRODUCTION_WEBHOOK_SECRET` | string | - | Secret - never log or commit it. |
 | `GAMEND_PAYMENTS_STRIPE_SANDBOX_SECRET_KEY` | string | - | sk_test_... key, used when environment is sandbox. Secret - never log or commit it. |
@@ -367,15 +378,22 @@ Live values, and where each one came from, are on the
 | `GAMEND_FEATURES_LIST_LEADERBOARDS` | boolean | `true` | Public GET/resolve /api/v1/leaderboards* and the /leaderboards pages. |
 | `GAMEND_FEATURES_LIST_LOBBIES` | boolean | `true` | GET /api/v1/lobbies and the "lobbies" channel. |
 | `GAMEND_FEATURES_LIST_MATCHMAKING` | boolean | `true` | GET /api/v1/matchmaking/stats. Own-ticket endpoints stay. |
+| `GAMEND_FEATURES_LIST_PAYMENTS_CATALOG` | boolean | `true` | Public GET /api/v1/payments/catalog: every active product with its provider row, id and price. Off for a host that sells through its own page, where the price shown depends on who asks (a country band) — the listing names every row, cheaper ones included. |
 | `GAMEND_FEATURES_LIST_QUESTS` | boolean | `true` | Public GET /api/v1/quests* and the /quests page. |
 | `GAMEND_FEATURES_LIST_TOURNAMENTS` | boolean | `true` | Public GET /api/v1/tournaments* and the /tournaments pages. |
 | `GAMEND_FEATURES_LIST_USERS` | boolean | `true` | GET /api/v1/users and /users/:id. |
 | `GAMEND_FEATURES_MAILBOX_PREVIEW` | boolean | `false` | Serve the in-browser mailbox at /dev/mailbox outside dev. Every sent email is readable there. |
 | `GAMEND_FEATURES_OPENAPI` | boolean | `true` | OpenAPI spec + Swagger UI. A complete map of your API — consider off in production. |
-| `GAMEND_FEATURES_PLAY` | boolean | `true` | The /play page, which hands a signed-in player a token for the game client. |
+| `GAMEND_FEATURES_PLAY` | boolean | `true` | The /play page, which hands a signed-in player a token for the game client. Off, it also closes every theme page and link marked `"feature": "play"` and every guide whose front matter says `feature: play` (a collection registered with `visible: {GamendWeb.Features, :doc_visible?}`): a host whose game is not out yet hides it from the site in one switch. The game client's API is untouched. |
 | `GAMEND_FEATURES_PUBLIC_STATS` | boolean | `true` | The unauthenticated stats endpoints: GET /api/v1/stats, /api/v1/users/stats, /api/v1/lobbies/stats, /api/v1/parties/stats, /api/v1/quests/stats, /api/v1/signaling/stats and /api/v1/matchmaking/stats, plus the /stats page. Aggregate counts only, never per-row data — but they do reveal how busy the server is. |
 | `GAMEND_FEATURES_PUBLIC_USER_METADATA_KEYS` | list | - | Top-level `user.metadata` keys GET /api/v1/users and /users/:id may return. Empty means none. Those endpoints are unauthenticated, so anything named here is world-readable and findable by name prefix — never list a key holding position, routing or contact data. |
+| `GAMEND_FEATURES_STRIPE_CHECKOUT_API` | boolean | `true` | POST /api/v1/payments/checkout/stripe: a signed-in client opens a Stripe Checkout for any active Stripe row it names. Off for a host that sells only through its own page (which calls `Gamend.Payments.create_stripe_checkout/3` itself and picks the row), so a client cannot pick a row the page would not offer. Webhooks, the store page (`web_store`) and the other providers are untouched. |
 | `GAMEND_FEATURES_USER_IMAGE_UPLOADS` | boolean | `true` | Player-supplied images: avatars (POST /api/v1/me/avatar*) and group icons (POST /api/v1/groups/:id/icon*). Objects land in public storage and are served without authentication, so on a service children can reach this is an unscreened image surface — turn it off unless the game actually uses it and you have a way to screen what arrives. |
+| `GAMEND_FEATURES_WEB_CHAT` | boolean | `true` | Chat on the website: the /chat page, its link in the account menu, the Open links on chat notifications, and every link marked `"feature": "web_chat"`. The chat API and the game client are untouched. |
+| `GAMEND_FEATURES_WEB_FRIENDS` | boolean | `true` | Friends on the website: the Friends tab in account settings, the View link on friend-request notifications, and the "Friends and groups" row on the Notifications tab (shown while `web_friends` or `web_groups` is on). The friends API and the game client are untouched. |
+| `GAMEND_FEATURES_WEB_GROUPS` | boolean | `true` | Groups on the website: the /groups pages, the Groups tab in account settings, and every nav, footer or page link marked `"feature": "web_groups"`. The groups API and the game client are untouched — `list_groups` gates the public listing. |
+| `GAMEND_FEATURES_WEB_STORE` | boolean | `true` | The store on the website: the /store pages (every active product, any provider row), the Open Store button in account settings, and every link marked `"feature": "web_store"`. Off for a host that sells through its own page instead. The payments API and the game client are untouched. |
+| `GAMEND_FEATURES_WEB_TOURNAMENTS` | boolean | `true` | Tournaments on the website: the /tournaments pages and every nav, footer or page link marked `"feature": "web_tournaments"`. The tournaments API and the game client are untouched — `list_tournaments` gates the public listing. |
 
 
 ## Push notifications
@@ -405,6 +423,7 @@ Live values, and where each one came from, are on the
 | `GAMEND_RATELIMIT_DC_LIMIT` | integer | `300` | Max WebRTC DataChannel messages per window, per user. |
 | `GAMEND_RATELIMIT_DC_WINDOW_MS` | integer | `10000` | WebRTC DataChannel window, in milliseconds. |
 | `GAMEND_RATELIMIT_ENABLED` | boolean | `true` | Master switch for all request/message throttling. |
+| `GAMEND_RATELIMIT_EXEMPT_IPS` | string | - | Client addresses never throttled, comma-separated, exact (IPv4 or IPv6), as `RealIp` resolves them: a load test from a known machine, a monitor. Empty: nobody. |
 | `GAMEND_RATELIMIT_GENERAL_LIMIT` | integer | `240` | Max general HTTP requests per window, per IP. |
 | `GAMEND_RATELIMIT_GENERAL_WINDOW_MS` | integer | `60000` | General HTTP window, in milliseconds. |
 | `GAMEND_RATELIMIT_ICE_LIMIT` | integer | `150` | Max ICE candidate messages per window, per user. |
@@ -430,6 +449,18 @@ Live values, and where each one came from, are on the
 | `GAMEND_REALTIME_SOCKET_TIMEOUT_MS` | integer | `300000` | How long a game socket may stay silent before it is closed, in ms. Longer keeps alt-tabbed players; shorter frees half-open sockets (and their seats) sooner. |
 
 
+## Reports
+
+| Variable | Type | Default | Notes |
+|---|---|---|---|
+| `GAMEND_REPORTS_DAILY_LIMIT` | integer | `500` | Most reports accepted in 24 hours across everyone. 0 means no cap. |
+| `GAMEND_REPORTS_ENABLED` | boolean | `true` | Accept reports from /report and POST /api/v1/reports. |
+| `GAMEND_REPORTS_IP_HOURLY_LIMIT` | integer | `10` | Most reports one IP address may file in an hour (counted in memory). 0 means no cap. |
+| `GAMEND_REPORTS_MAX_ATTACHMENT_BYTES` | integer | `2000000` | Largest image a report may carry, in bytes. |
+| `GAMEND_REPORTS_RETENTION_DAYS` | integer | `180` | Delete a closed report, and its images, N days after it was closed. Open reports are kept. 0 keeps everything. |
+| `GAMEND_REPORTS_USER_DAILY_LIMIT` | integer | `20` | Most reports one account may file in 24 hours. 0 means no cap. |
+
+
 ## Retention
 
 | Variable | Type | Default | Notes |
@@ -437,6 +468,7 @@ Live values, and where each one came from, are on the
 | `GAMEND_RETENTION_ABANDONED_LOBBY_MINUTES` | integer | `15` | Delete lobbies nobody has been seen in for N minutes, and release the seat of a player offline that long in a lobby still in use. 0 disables both. |
 | `GAMEND_RETENTION_ABANDONED_PARTY_MINUTES` | integer | `15` | Disband parties nobody has been seen in for N minutes. 0 disables. |
 | `GAMEND_RETENTION_ACTIVITY_DAYS` | integer | `0` | Delete per-user daily activity rows (DAU / D1-D7-D30 source) older than N days. 0 keeps forever. Below 60 the admin retention cohorts go blank. |
+| `GAMEND_RETENTION_ANALYTICS_EVENTS_DAYS` | integer | `365` | Delete analytics event rows (per-feature DAU, Grafana product dashboards) older than N days. 0 keeps forever. The daily counters summed from them are kept whatever this says. |
 | `GAMEND_RETENTION_ANONYMOUS_USERS_DAYS` | integer | `90` | Delete device-only accounts inactive for N days. 0 keeps forever. These accounts cost one unauthenticated request to create, so they are the tier that actually needs a sweep. |
 | `GAMEND_RETENTION_BATCH_SIZE` | integer | `500` | Rows deleted per statement. Lower it if a sweep stalls gameplay writes on SQLite, where each statement holds the write lock. |
 | `GAMEND_RETENTION_CHAT_MESSAGES_DAYS` | integer | `0` | Delete chat messages older than N days. 0 keeps forever. |

@@ -90,6 +90,10 @@ config :gamend_core, Gamend.Tournaments.Ticker, enabled: false
 # `Gamend.Retention.prune_all/0` and `prune_live/0` themselves.
 config :gamend_core, Gamend.Retention, enabled: false
 
+# The Stripe sweep reconciles open checkouts outside the sandbox, seven
+# minutes after boot. Tests call `Gamend.Payments.StripeSweeper.sweep/1`.
+config :gamend_core, Gamend.Payments.StripeSweeper, enabled: false
+
 # Same for the matchmaking sweep: no sandbox connection, and on SQLite it
 # collides with the test's open write transaction ("database is locked").
 # Tests drive Gamend.Matchmaking.Worker.sweep/0 directly.
@@ -127,6 +131,15 @@ config :gamend_web, GamendWeb.Auth.Guardian,
 # Disable rate limiting in tests
 config :gamend_web, GamendWeb.Plugs.RateLimiter, enabled: false
 
+# No reverse-DNS lookups from tests: a request naming Googlebot would ask the
+# real resolver. `crawlers_test.exs` turns it on with a fake one.
+config :gamend_web, GamendWeb.Crawlers, verify: false
+
+# A cold test request (first render, first query) routinely passes the 200ms
+# slow-request threshold, and each one would print a warning into the run.
+# Tests that assert on the log lower it themselves.
+config :gamend_web, :slow_request_threshold_ms, 60_000.0
+
 # Background presence sweeping fights with sandbox ownership in tests and can
 # keep logging after the test task itself is done.
 config :gamend_core, Gamend.Accounts.StalePresenceSweeper, enabled: false
@@ -135,6 +148,11 @@ config :gamend_core, Gamend.Accounts.StalePresenceSweeper, enabled: false
 # assert on the flag immediately after set_user_online/1 and so a buffered write
 # can never outlive the sandbox owner.
 config :gamend_core, Gamend.Accounts.PresenceWriter, flush_ms: 0
+
+# Analytics counters and events are written through synchronously too, for the
+# same reasons: a test reads a counter the moment a page wrote it, and nothing
+# buffered can outlive the sandbox owner.
+config :gamend_core, Gamend.Analytics.Buffer, flush_ms: 0
 
 # Jobs run inline on demand in tests (no queues/plugins/cron); assert with
 # Oban.Testing helpers and drain explicitly. Keeps the Cron tick from firing

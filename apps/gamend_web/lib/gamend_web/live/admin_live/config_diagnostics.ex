@@ -524,8 +524,7 @@ defmodule GamendWeb.AdminLive.ConfigDiagnostics do
             ProviderConfig.stripe_webhook_secret(),
             secret: true
           ),
-          "API version source: #{stripe.api_version_source}",
-          env_line("GAMEND_PAYMENTS_STRIPE_API_VERSION", stripe.api_version)
+          "API version: #{stripe.api_version} (pinned; the webhook endpoint must use the same release)"
         ]
       },
       %{

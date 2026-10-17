@@ -164,4 +164,24 @@ defmodule Gamend.Theme.JSONConfigTest do
     assert Map.get(theme, "roadmap") == "/ROADMAP.md"
     assert Map.get(theme, "blog") == "/blog"
   end
+
+  # A read that began before `reload/0` can finish after it: the reload event
+  # has `GamendWeb.ResponsiveImages` read the file in its own process. Its
+  # write is stood in for here by putting the entry it would put.
+  test "a read that started before a reload cannot put the old theme back" do
+    path = Path.join(System.tmp_dir!(), "theme_test_#{System.unique_integer([:positive])}.json")
+    File.write!(path, Jason.encode!(%{"title" => "New"}))
+    on_exit(fn -> File.rm(path) end)
+
+    Gamend.SettingsHelpers.put(:gamend_core, Gamend.ContentSettings, :theme_config, path)
+    before_reload = :persistent_term.get({JSONConfig, :generation}, :initial)
+    JSONConfig.reload()
+
+    assert JSONConfig.raw_theme()["title"] == "New"
+
+    :persistent_term.put({JSONConfig, :theme_cache}, {before_reload, %{"title" => "Old"}})
+
+    assert JSONConfig.raw_theme()["title"] == "New"
+    assert JSONConfig.get_theme()["title"] == "New"
+  end
 end

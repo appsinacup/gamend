@@ -20,6 +20,7 @@
           {"forms", "Forms"},
           {"alerts", "Alerts"},
           {"surfaces", "Surfaces"},
+          {"widths", "Widths"},
           {"colours", "Colours"},
           {"type", "Type"},
           {"feedback", "Feedback"}
@@ -89,11 +90,8 @@
             <.icon name="hero-play-solid" class="size-5" />
           </button>
         </.specimen>
-        <.specimen code="btn btn-ghost btn-sm sm:btn-surface">
-          <button type="button" class="btn btn-ghost btn-sm sm:btn-surface">
-            <.icon name="hero-arrow-left-solid" class="size-4" />
-            <span class="sr-only sm:not-sr-only">Back</span>
-          </button>
+        <.specimen code="<.back_link href={home_path()} /> (every page's Back)">
+          <.back_link href="#" />
         </.specimen>
       </.ui_row>
 
@@ -298,7 +296,7 @@
           <div class="card border border-base-300 bg-base-100">
             <div class="card-body p-4">
               <h3 class="card-title text-base">A card</h3>
-              <p class="text-sm text-base-content/70">With a title and actions.</p>
+              <p class="text-sm text-muted">With a title and actions.</p>
               <div class="card-actions justify-end">
                 <button type="button" class="btn btn-primary btn-sm">Open</button>
               </div>
@@ -306,6 +304,21 @@
           </div>
         </.specimen>
       </div>
+    </.ui_section>
+
+    <.ui_section id="widths" title="Widths">
+      <:intro>
+        A page is the layout's column: the default, or <code>&lt;Layouts.app wide&gt;</code>
+        for a page with its own side columns. Anything narrower (a form, a game board, an article, a whole login page) is <code>max-w-narrow</code>, centred with <code>mx-auto</code>. There is no other width.
+      </:intro>
+
+      <.specimen code="mx-auto max-w-narrow">
+        <div class="w-full max-w-narrow rounded-lg bg-base-200 p-3 text-sm">
+          48rem: the column's own width at <code>md</code>, so it narrows a page only from
+          <code>lg</code>
+          up.
+        </div>
+      </.specimen>
     </.ui_section>
 
     <.ui_section id="colours" title="Colours">
@@ -322,24 +335,64 @@
           <div class={["size-14 rounded-box border border-base-300", class]}></div>
         </.specimen>
       </.ui_row>
+
+      <%!-- Two text tones. `text-muted` (base-content at 70%, a `@utility`
+            the host stylesheet declares) is the lightest that reads at 4.5:1
+            on every base of both themes; `/60` fell to 4.46 on the light
+            base-200, `/55` (the eyebrow's) to 3.9 (Lighthouse, 2026-10-08). --%>
+      <.ui_row title="Text">
+        <.specimen
+          :for={class <- ~w(text-base-content text-muted)}
+          code={class}
+        >
+          <div class="flex gap-2">
+            <p
+              :for={bg <- ~w(bg-base-100 bg-base-200 bg-base-300)}
+              class={["rounded-box border border-base-300 px-3 py-2 text-sm", bg, class]}
+            >
+              Aa
+            </p>
+          </div>
+        </.specimen>
+      </.ui_row>
+      <p class="text-sm text-muted">
+        Text is <code>text-base-content</code>, or <code>text-muted</code>
+        for a detail. No <code>text-base-content/NN</code>
+        of a page's own: anything lighter reads below 4.5:1 on the light theme. An
+        <code>opacity</code>
+        on a box fades the text in it too, so a muted line inside a faded box falls under it.
+      </p>
     </.ui_section>
 
     <.ui_section id="type" title="Type">
+      <:intro>
+        A page has one title, <code>&lt;.page_title&gt;</code>, with the icon its link wears in the navbar beside the words. Every heading under it is an <code>&lt;.eyebrow&gt;</code>: a section of the page (<code>tag="h2"</code>), a panel's title (<code>&lt;.panel title=…&gt;</code>), a group inside either. A subtitle says less than the title, so it is never a size of its own.
+      </:intro>
+
       <div class="space-y-4">
-        <.specimen code="<.page_title> (a page's h1)">
-          <.page_title tag="p">Explore</.page_title>
+        <.specimen code={
+          ~s|<.page_title icon="hero-trophy-solid"> (a page's h1, with its navbar icon: HostLayouts.nav_icon/2)|
+        }>
+          <.page_title tag="p" icon="hero-trophy-solid">Quests</.page_title>
         </.specimen>
-        <.specimen code="text-xl font-semibold (a section's h2)">
-          <p class="text-xl font-semibold">Buttons</p>
-        </.specimen>
-        <.specimen code="<.eyebrow> (a group's small heading)">
-          <.eyebrow>A small heading</.eyebrow>
+        <.specimen code={~s|<.eyebrow tag="h2"> (a section's heading: "Level", "Category")|}>
+          <div class="space-y-2">
+            <.eyebrow>Category</.eyebrow>
+            <div class="flex gap-3">
+              <div class="rounded-xl border border-base-300 bg-base-100 px-4 py-3 font-black">
+                Food
+              </div>
+              <div class="rounded-xl border border-base-300 bg-base-100 px-4 py-3 font-black">
+                Home
+              </div>
+            </div>
+          </div>
         </.specimen>
         <.specimen code="(body)">
           <p>Body text reads at the base size.</p>
         </.specimen>
-        <.specimen code="text-sm text-base-content/70">
-          <p class="text-sm text-base-content/70">A line of detail under something.</p>
+        <.specimen code="text-sm text-muted">
+          <p class="text-sm text-muted">A line of detail under something.</p>
         </.specimen>
         <.specimen code="link link-primary">
           <a href="#type" class="link link-primary">A link in a sentence</a>

@@ -39,7 +39,7 @@ defmodule Gamend.LeaderboardsMetaFilterTest do
   end
 
   test "it keeps only the language asked for", %{board: board} do
-    records = Leaderboards.list_records(board.id, meta: {"target_lang", "es_es"})
+    records = Leaderboards.list_records(board.id, meta: %{"target_lang" => "es_es"})
 
     assert length(records) == 3
     assert Enum.map(records, & &1.score) == [100, 90, 80]
@@ -47,31 +47,35 @@ defmodule Gamend.LeaderboardsMetaFilterTest do
   end
 
   test "ranks are within the filter, not the whole board", %{board: board} do
-    records = Leaderboards.list_records(board.id, meta: {"target_lang", "fr"})
+    records = Leaderboards.list_records(board.id, meta: %{"target_lang" => "fr"})
 
     assert Enum.map(records, &{&1.score, &1.rank}) == [{95, 1}, {85, 2}]
   end
 
   test "it paginates within the filter", %{board: board} do
     page =
-      Leaderboards.list_records(board.id, meta: {"target_lang", "es_es"}, page: 2, page_size: 2)
+      Leaderboards.list_records(board.id,
+        meta: %{"target_lang" => "es_es"},
+        page: 2,
+        page_size: 2
+      )
 
     assert Enum.map(page, &{&1.score, &1.rank}) == [{80, 3}]
   end
 
   test "count_records/2 counts the filtered set", %{board: board} do
-    assert Leaderboards.count_records(board.id, meta: {"target_lang", "es_es"}) == 3
-    assert Leaderboards.count_records(board.id, meta: {"target_lang", "fr"}) == 2
+    assert Leaderboards.count_records(board.id, meta: %{"target_lang" => "es_es"}) == 3
+    assert Leaderboards.count_records(board.id, meta: %{"target_lang" => "fr"}) == 2
     assert Leaderboards.count_records(board.id) == 5
   end
 
   test "a language nobody has played answers nothing", %{board: board} do
-    assert Leaderboards.list_records(board.id, meta: {"target_lang", "ja"}) == []
-    assert Leaderboards.count_records(board.id, meta: {"target_lang", "ja"}) == 0
+    assert Leaderboards.list_records(board.id, meta: %{"target_lang" => "ja"}) == []
+    assert Leaderboards.count_records(board.id, meta: %{"target_lang" => "ja"}) == 0
   end
 
   test "no filter is still the whole board, off the cached path", %{board: board} do
-    for bad <- [nil, {"target_lang", ""}, "nonsense"] do
+    for bad <- [nil, %{"target_lang" => ""}, "nonsense"] do
       assert length(Leaderboards.list_records(board.id, meta: bad)) == 5
     end
   end

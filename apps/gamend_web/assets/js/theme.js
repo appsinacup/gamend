@@ -52,11 +52,26 @@ window
     }
   });
 
+// A choice made on the page is the account's too (`PUT /preferences`); a
+// visitor's stays in this browser. Without a CSRF token (a cached reading
+// page) there is no account to save to.
+const saveTheme = (theme) => {
+  const token = document.querySelector("meta[name='csrf-token']")?.getAttribute("content");
+  if (!token) return;
+  fetch("/preferences", {
+    method: "PUT",
+    headers: { "content-type": "application/json", "x-csrf-token": token },
+    body: JSON.stringify({ key: "theme", value: theme }),
+    credentials: "same-origin",
+  }).catch(() => {});
+};
+
 window.addEventListener("phx:set-theme", (e) => {
   // Find the button with data-phx-theme attribute (could be the target or its parent)
   const button = e.target.closest("[data-phx-theme]");
   if (button) {
     setTheme(button.dataset.phxTheme);
+    saveTheme(button.dataset.phxTheme);
   }
 });
 

@@ -54,6 +54,13 @@ defmodule Gamend.Content do
     * `:asset_root` - `:self` or `:dirname` when serving assets
     * `:post_render` - `{module, function}` applied to a guide's or a blog
       post's rendered HTML
+    * `:visible` - `{module, function}` called as `function(guide)` for each
+      guide of a collection; one it answers `false` for is left out of every
+      listing and lookup (index, tree, previous/next, `get_doc/2`), so its
+      URL is a 404. Run on every call, outside the cache, so a switch that
+      changes at runtime takes effect at once. A category left with no guide
+      goes too. `GamendWeb.Features.doc_visible?/1` hides a guide whose front
+      matter names a switched-off feature (`feature: play`)
     * `:nesting` - `:flat` (the default: one folder level, slugs are file
       names) or `:tree` (any depth, slugs are paths; see `Gamend.Content.Tree`)
     * `:base_path` - the route prefix guides are served under, such as
@@ -266,12 +273,43 @@ defmodule Gamend.Content do
   """
   @spec list_doc_categories(atom()) :: [%{category: String.t() | nil, guides: [map()]}]
   def list_doc_categories(collection \\ :docs) when is_atom(collection) do
-    cached({:doc_categories, collection}, fn ->
+    {:doc_categories, collection}
+    |> cached(fn ->
       case {path(collection), nesting(collection)} do
         {nil, _nesting} -> []
         {dir, :flat} -> flat_categories(dir)
-        {_dir, :tree} -> tree_categories(doc_tree(collection))
+        {_dir, :tree} -> tree_categories(unfiltered_doc_tree(collection))
       end
+    end)
+    |> visible_categories(visible_hook(collection))
+  end
+
+  defp visible_hook(collection) do
+    case Map.get(registered_paths(), normalize_registered_name(collection)) do
+      %{visible: {module, function}} -> &apply(module, function, [&1])
+      _ -> nil
+    end
+  end
+
+  defp visible_categories(categories, nil), do: categories
+
+  defp visible_categories(categories, visible?) do
+    for category <- categories,
+        guides = Enum.filter(category.guides, visible?),
+        guides != [],
+        do: %{category | guides: guides}
+  end
+
+  defp visible_tree(tree, nil), do: tree
+
+  defp visible_tree(tree, visible?) do
+    Enum.flat_map(tree, fn
+      %{type: :doc} = doc ->
+        if visible?.(doc), do: [doc], else: []
+
+      %{type: :category} = category ->
+        children = visible_tree(category.children, visible?)
+        if children == [], do: [], else: [%{category | children: children}]
     end)
   end
 
@@ -322,6 +360,12 @@ defmodule Gamend.Content do
   """
   @spec doc_tree(atom()) :: [Tree.entry()]
   def doc_tree(collection \\ :docs) when is_atom(collection) do
+    collection
+    |> unfiltered_doc_tree()
+    |> visible_tree(visible_hook(collection))
+  end
+
+  defp unfiltered_doc_tree(collection) do
     cached({:doc_tree, collection}, fn ->
       case {path(collection), nesting(collection)} do
         {nil, _nesting} ->
@@ -496,6 +540,14 @@ defmodule Gamend.Content do
   def doc_html(collection \\ :docs, slug)
 
   def doc_html(collection, slug) when is_atom(collection) and is_binary(slug) do
+    # Looked up outside the cache too: a guide that `:visible` hides after
+    # its HTML was cached must not keep being served.
+    if get_doc(collection, slug), do: cached_doc_html(collection, slug)
+  end
+
+  def doc_html(_collection, _slug), do: nil
+
+  defp cached_doc_html(collection, slug) do
     cached({:doc_html, collection, slug}, fn ->
       case get_doc(collection, slug) do
         nil ->
@@ -521,8 +573,6 @@ defmodule Gamend.Content do
       end
     end)
   end
-
-  def doc_html(_collection, _slug), do: nil
 
   @doc "The headings of a rendered guide, for a table of contents."
   @spec doc_toc(atom(), String.t()) :: [%{id: String.t(), text: String.t(), level: 2 | 3}]
@@ -585,7 +635,8 @@ defmodule Gamend.Content do
       icon: string(meta["icon"]) || @default_doc_icon,
       category: category_dir(path, root),
       dir: category_dir(path, root),
-      path: path
+      path: path,
+      meta: meta
     }
   end
 
@@ -944,6 +995,7 @@ defmodule Gamend.Content do
       asset_root: asset_root,
       post_render: normalize_hook!(opts, :post_render),
       image_url: normalize_hook!(opts, :image_url),
+      visible: normalize_hook!(opts, :visible),
       nesting: nesting,
       base_path: Keyword.get(opts, :base_path),
       assets: assets

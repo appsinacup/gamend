@@ -335,7 +335,7 @@ defmodule GamendWeb.LiveHelpers do
   def payment_status_label("requires_action"), do: gettext("Awaiting payment")
   def payment_status_label("completed"), do: gettext("Completed")
   def payment_status_label("failed"), do: gettext("Failed")
-  def payment_status_label("cancelled"), do: gettext("Cancelled")
+  def payment_status_label("cancelled"), do: gettext("Canceled")
   def payment_status_label("refunded"), do: gettext("Refunded")
   def payment_status_label("revoked"), do: gettext("Revoked")
   def payment_status_label("active"), do: gettext("Active")

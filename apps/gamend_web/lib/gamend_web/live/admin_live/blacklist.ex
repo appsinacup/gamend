@@ -89,7 +89,7 @@ defmodule GamendWeb.AdminLive.Blacklist do
             <button phx-click="refresh" class="btn btn-ghost btn-sm">Refresh</button>
           </div>
 
-          <p class="text-sm text-base-content/70">
+          <p class="text-sm text-muted">
             Blocked players are kept out of each other's matches and lobbies, and cannot
             invite or message each other.
           </p>
@@ -124,11 +124,11 @@ defmodule GamendWeb.AdminLive.Blacklist do
                 <tr :for={block <- @blocks} id={"block-#{block.id}"}>
                   <td>
                     {user_name(block.target)}
-                    <div class="font-mono text-xs text-base-content/60">{block.target_id}</div>
+                    <div class="font-mono text-xs text-muted">{block.target_id}</div>
                   </td>
                   <td>
                     {user_name(block.requester)}
-                    <div class="font-mono text-xs text-base-content/60">{block.requester_id}</div>
+                    <div class="font-mono text-xs text-muted">{block.requester_id}</div>
                   </td>
                   <td class="text-xs">
                     <.timestamp at={block.inserted_at} format="full" />
@@ -147,7 +147,7 @@ defmodule GamendWeb.AdminLive.Blacklist do
             </table>
           </div>
 
-          <div :if={@blocks == []} class="text-center py-8 text-base-content/60">
+          <div :if={@blocks == []} class="text-center py-8 text-muted">
             No blocks.
           </div>
 

@@ -248,6 +248,9 @@ defmodule Gamend.Hooks do
   @typedoc "A chat mute struct from Gamend.Chat.Mute"
   @type mute :: Gamend.Chat.Mute.t()
 
+  @typedoc "A content report struct from Gamend.Reports.Report"
+  @type content_report :: Gamend.Reports.Report.t()
+
   @typedoc "Result type for before hooks"
   @type hook_result(t) :: {:ok, t} | {:error, term()}
 
@@ -486,6 +489,25 @@ defmodule Gamend.Hooks do
   @callback after_chat_message_reported(report()) :: any()
 
   @doc """
+  Called before a content report (`Gamend.Reports`: a page, a word, anything a
+  report kind covers) is filed, with the attrs about to be inserted (string
+  keys: kind, topic, subject_ref, subject, data, description, email,
+  user_id…). Return `{:ok, attrs}` to file it, changed or not, or
+  `{:error, reason}` to refuse it.
+  """
+  @callback before_report_create(map()) :: {:ok, map()} | {:error, term()}
+
+  @doc "Called after a content report is filed. Fire-and-forget."
+  @callback after_report_created(content_report()) :: any()
+
+  @doc """
+  Called each time an open content report is closed (fixed, wontfix,
+  duplicate). A report reopened and closed again calls it again, so a reward
+  paid here needs an idempotency key on the report id. Fire-and-forget.
+  """
+  @callback after_report_resolved(content_report()) :: any()
+
+  @doc """
   Called after a user is muted, whether by an admin, a room's own authority
   (lobby host, group admin, party leader) or a plugin. Fire-and-forget: the
   mute is already in effect.
@@ -549,6 +571,9 @@ defmodule Gamend.Hooks do
                       after_chat_message: 1,
                       after_chat_message_reported: 1,
                       after_user_muted: 1,
+                      before_report_create: 1,
+                      after_report_created: 1,
+                      after_report_resolved: 1,
                       before_push_send: 2,
                       after_push_sent: 3,
                       before_ready_check_open: 2,

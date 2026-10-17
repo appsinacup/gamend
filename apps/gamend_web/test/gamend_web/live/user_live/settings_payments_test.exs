@@ -5,6 +5,7 @@ defmodule GamendWeb.UserLive.SettingsPaymentsTest do
 
   alias Gamend.AccountsFixtures
   alias Gamend.Payments
+  alias Gamend.Payments.Purchase
 
   defmodule NoopPaymentHooks do
     use Gamend.TestSupport.NoopHooks
@@ -21,6 +22,10 @@ defmodule GamendWeb.UserLive.SettingsPaymentsTest do
        }}
     end
 
+    def create_refund("pi_settings_" <> _rest = payment_intent, _opts) do
+      {:ok, %{"id" => "re_" <> payment_intent, "object" => "refund", "status" => "succeeded"}}
+    end
+
     def cancel_subscription_at_period_end("sub_settings_cancel") do
       {:ok,
        %{
@@ -28,7 +33,18 @@ defmodule GamendWeb.UserLive.SettingsPaymentsTest do
          "object" => "subscription",
          "status" => "active",
          "cancel_at_period_end" => true,
-         "current_period_end" => 1_900_000_000
+         "items" => %{"data" => [%{"current_period_end" => 1_900_000_000}]}
+       }}
+    end
+
+    def resume_subscription("sub_settings_cancel") do
+      {:ok,
+       %{
+         "id" => "sub_settings_cancel",
+         "object" => "subscription",
+         "status" => "active",
+         "cancel_at_period_end" => false,
+         "items" => %{"data" => [%{"current_period_end" => 1_900_000_000}]}
        }}
     end
   end
@@ -80,7 +96,9 @@ defmodule GamendWeb.UserLive.SettingsPaymentsTest do
     refute rendered =~ "Game Wallet"
   end
 
-  test "regular user can schedule Stripe subscription cancellation", %{conn: conn} do
+  test "regular user can schedule Stripe subscription cancellation, then take it back", %{
+    conn: conn
+  } do
     user = AccountsFixtures.user_fixture()
     {_product, provider_product} = create_subscription_provider_product("stripe")
 
@@ -113,6 +131,82 @@ defmodule GamendWeb.UserLive.SettingsPaymentsTest do
     [entitlement] = Payments.list_user_entitlements(user.id)
     assert entitlement.expires_at == DateTime.from_unix!(1_900_000_000, :second)
     assert entitlement.metadata["stripe_subscription_cancel_at_period_end"] == true
+
+    html = view |> element("#resume-subscription-#{entitlement.id}") |> render_click()
+
+    assert html =~ "Subscription renews again."
+    assert html =~ "Renews"
+    assert html =~ "Cancel renewal"
+    refute html =~ "Cancels at period end"
+    refute has_element?(view, "#resume-subscription-#{entitlement.id}")
+
+    [entitlement] = Payments.list_user_entitlements(user.id)
+    assert entitlement.metadata["stripe_subscription_cancel_at_period_end"] == false
+  end
+
+  test "a buyer refunds a Stripe purchase within the window, once", %{conn: conn} do
+    user = AccountsFixtures.user_fixture()
+    {_product, provider_product} = create_downloadable_provider_product("stripe")
+
+    {:ok, purchase} =
+      Payments.create_purchase(user, provider_product, %{
+        "metadata" => %{"stripe_payment_intent_id" => "pi_settings_refund"}
+      })
+
+    {:ok, purchase} = Payments.fulfill_purchase(purchase)
+
+    {:ok, view, _html} =
+      conn
+      |> log_in_user(user)
+      |> live(~p"/users/settings?tab=payments")
+
+    button = element(view, "#refund-purchase-#{purchase.id}")
+    assert render(button) =~ "Refund Starter Pack? It ends now"
+
+    html = render_click(button)
+
+    assert html =~ "Refund sent. The money is back in 5 to 10 days."
+    assert html =~ "Refund sent"
+    refute has_element?(view, "#refund-purchase-#{purchase.id}")
+
+    refunded = Payments.get_purchase(purchase.id)
+    assert refunded.metadata["stripe_refund"]["refund_id"] == "re_pi_settings_refund"
+    # Ended by Stripe's webhook, not here.
+    assert refunded.status == "completed"
+  end
+
+  test "no Refund button once the window has passed, nor for coins", %{conn: conn} do
+    user = AccountsFixtures.user_fixture()
+    {_product, pass} = create_downloadable_provider_product("stripe")
+    {_product, coins} = create_consumable_provider_product("stripe")
+
+    purchases =
+      for provider_product <- [pass, coins] do
+        {:ok, purchase} =
+          Payments.create_purchase(user, provider_product, %{
+            "metadata" => %{"stripe_payment_intent_id" => "pi_settings_late"}
+          })
+
+        {:ok, purchase} = Payments.fulfill_purchase(purchase)
+        purchase
+      end
+
+    [late, coins_purchase] = purchases
+
+    late
+    |> Purchase.changeset(%{
+      purchased_at: DateTime.add(DateTime.utc_now(:second), -15 * 86_400)
+    })
+    |> Gamend.Repo.update!()
+
+    {:ok, view, _html} =
+      conn
+      |> log_in_user(user)
+      |> live(~p"/users/settings?tab=payments")
+
+    assert has_element?(view, "#payment-purchase-#{late.id}")
+    refute has_element?(view, "#refund-purchase-#{late.id}")
+    refute has_element?(view, "#refund-purchase-#{coins_purchase.id}")
   end
 
   test "Manage billing opens the Stripe portal for an account that paid through Stripe", %{

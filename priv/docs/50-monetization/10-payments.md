@@ -94,6 +94,15 @@ Stripe docs: [API keys](https://docs.stripe.com/keys),
 
 Entitlement and subscription products are buy-once while active: checkout quantity must be 1, and users with an active grant or in-progress checkout cannot start another checkout for that product. Consumables can be bought repeatedly.
 
+The one exception is an upgrade (`Gamend.Payments.Upgrades`). A user who holds the entitlement by a running Stripe subscription can buy a longer product with the same entitlement key: a one-off entitlement (lifetime), or a subscription whose `grant_config.duration_seconds` is longer (monthly to yearly). Once the new purchase is fulfilled it holds the entitlement, and the old subscription ends:
+
+- A subscription bought this way is first charged when the old one's paid period ends (the checkout's `trial_end`, at least 48 hours away). The old one is set to cancel at that period end, and nothing is refunded.
+- Anything else (lifetime, or a period ending within 48 hours) cancels the old subscription now and refunds the unused part of its last payment, pro rata by time.
+
+A Stripe error there is logged and retried by the hourly sweeper. A shorter or equal plan, a grant with no purchase, and another provider's subscription still answer `already_owned`.
+
+A Stripe checkout the player left open (Back from the payment page, a closed tab, a switch from the yearly plan to lifetime) does not hold the next one: a new Stripe checkout for the same entitlement expires the open session at Stripe, cancels its purchase and goes ahead. A session paid meanwhile is never cancelled; it is fulfilled and the new checkout answers `already_owned`, and one whose payment is still clearing answers `purchase_already_in_progress`. An open purchase from another provider (Steam) still refuses. Every Checkout Session expires 31 minutes after it is created, not Stripe's default 24 hours.
+
 Checkout answers `{"data": {"purchase": ..., "checkout_url": ..., "provider_session_id": ...}}`. A refusal is a code: `quantity_not_allowed` (400); `already_owned` or `purchase_already_in_progress` (409); a `*_not_found` product (404); `stripe_not_configured` and every other `*_not_configured` (503), because the server is missing something, not the request. The catalog (`GET /api/v1/payments/catalog`) and the player's entitlements (`GET /api/v1/payments/entitlements`) are pages.
 
 Apple, Google, Steam, and Stripe products that unlock the same thing must point to the same internal product, or their internal products must share the same grant_config.entitlement_key. Ownership checks use that entitlement key across providers.
@@ -112,7 +121,7 @@ Currency display is handled by Stripe Checkout. Enable Stripe Adaptive Pricing i
 
 Authenticated users can open /store to test browser purchases. Stripe rows start Checkout; Apple, Google, and Steam rows remain platform-SDK/API flows.
 
-- `/users/settings?tab=payments` shows order history, active entitlements, Stripe subscription cancellation, and downloads.
+- `/users/settings?tab=payments` shows order history, active entitlements, Stripe subscription cancellation, refunds within the refund window, and downloads.
 - Consumables such as coin packs stay visible in purchase history. Use after_purchase_fulfilled/1 to grant coins or items in your game hooks.
 
 ```json
@@ -148,6 +157,21 @@ Stripe refund and dispute events are callbacks. When one takes effect it updates
 | `refund.created`, `refund.updated`, `charge.refund.updated` | the refund's status is `succeeded` (a pending, failed or cancelled refund changes nothing) | Purchase marked refunded; entitlements revoked |
 | `charge.dispute.created` | always | Purchase marked revoked; entitlements revoked |
 | `charge.dispute.funds_withdrawn` | always | Purchase marked revoked; entitlements revoked |
+
+### Refunding from the site
+
+A buyer refunds a Stripe purchase from the account page (`/users/settings?tab=payments`, Refund) within `GAMEND_PAYMENTS_REFUND_WINDOW_DAYS` of paying (14 by default; 0 turns it off). An admin refunds any Stripe purchase from Admin > Payments, with no window. The refund is always in full.
+
+| Purchase | What happens at Stripe |
+|---|---|
+| Entitlement (one-off) | The payment is refunded |
+| Subscription | It is cancelled now (no proration credit), then its latest invoice's payment is refunded |
+| Consumable | Admin only: coins are spent the moment they land |
+
+- **Nothing is revoked by the refund call.** The webhooks above end the purchase, as for a refund made in the Dashboard: `charge.refunded` or the refund's own events (the refund carries `metadata.purchase_id`) for a one-off payment, `customer.subscription.deleted` for a subscription. Subscribe to them.
+- **The window runs from the last payment.** A one-off purchase from when it was fulfilled; a subscription from its current period start (a renewal, or the first charge after a trial), checked again against the invoice's `paid_at` before anything changes. A subscription still `trialing` has paid nothing and shows no Refund.
+- **Once.** The request and the refund are recorded in the purchase's `metadata["stripe_refund"]` (`requested_at`, `by`, `refund_id`, `amount`, `refunded_at`); a recorded refund or a `refunded` purchase refuses, the refund's idempotency key is `refund-<purchase id>`, and Stripe refuses to refund a refunded payment again.
+- **Cancel first.** If the refund then fails, the subscription is already over (nothing renews) and the Refund button stays, so a retry finishes it. Every refusal and failure is logged with its reason.
 
 Recommended webhook events also include `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `customer.subscription.updated`, `customer.subscription.deleted`, and `charge.succeeded`.
 

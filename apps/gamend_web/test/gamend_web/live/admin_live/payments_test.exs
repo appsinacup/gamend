@@ -51,13 +51,17 @@ defmodule GamendWeb.AdminLive.PaymentsTest do
            "object" => "subscription",
            "status" => "active",
            "cancel_at_period_end" => false,
-           "current_period_end" => 1_900_000_000
+           "items" => %{"data" => [%{"current_period_end" => 1_900_000_000}]}
          }
        }}
     end
 
     def retrieve_checkout_session(_session_id) do
       {:error, {:stripe_error, %{"message" => "No such checkout session"}}}
+    end
+
+    def create_refund("pi_admin_refund", _opts) do
+      {:ok, %{"id" => "re_admin", "object" => "refund", "status" => "succeeded"}}
     end
   end
 
@@ -266,6 +270,35 @@ defmodule GamendWeb.AdminLive.PaymentsTest do
     assert html =~ "Stripe purchase already completed"
     assert [entitlement] = Payments.list_user_entitlements(admin.id)
     assert entitlement.expires_at == DateTime.from_unix!(1_900_000_000, :second)
+  end
+
+  test "admin refunds any Stripe purchase, with no window", %{conn: conn, admin: admin} do
+    {_product, provider_product} = create_provider_product("stripe", "price_admin_refund")
+
+    {:ok, purchase} =
+      Payments.create_purchase(admin, provider_product, %{
+        "metadata" => %{"stripe_payment_intent_id" => "pi_admin_refund"}
+      })
+
+    {:ok, purchase} = Payments.fulfill_purchase(purchase)
+
+    purchase
+    |> Payments.Purchase.changeset(%{
+      purchased_at: DateTime.add(DateTime.utc_now(:second), -90 * 86_400)
+    })
+    |> Repo.update!()
+
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin/payments")
+
+    html =
+      view
+      |> element("#admin-purchase-#{purchase.id} button", "Refund")
+      |> render_click()
+
+    assert html =~ "Stripe refund re_admin created (succeeded)"
+    refute has_element?(view, "#admin-purchase-#{purchase.id} button", "Refund")
+
+    assert Payments.get_purchase(purchase.id).metadata["stripe_refund"]["by"] == "admin"
   end
 
   defp create_provider_product(provider, external_id) do

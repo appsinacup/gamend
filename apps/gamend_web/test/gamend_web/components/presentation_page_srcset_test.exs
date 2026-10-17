@@ -131,8 +131,50 @@ defmodule GamendWeb.Components.PresentationPageSrcsetTest do
     hero =
       render_media(%{"image" => %{"light" => @fixture, "alt" => "x", "widths" => [4]}}, "hero")
 
-    assert section =~ "45vw"
-    assert hero =~ "55vw"
+    # The column's real width, not a share of the viewport: the content box
+    # stops growing at `xl:max-w-6xl`, so a "third" column tops out at 423px.
+    assert section =~
+             ~s{sizes="(min-width: 1280px) 423px, (min-width: 1024px) 320px, } <>
+               ~s{(min-width: 768px) 276px, (min-width: 672px) 624px, calc(100vw - 32px)"}
+
+    assert hero =~
+             ~s{sizes="(min-width: 1280px) 504px, (min-width: 1024px) 376px, } <>
+               ~s{(min-width: 768px) 336px, (min-width: 672px) 608px, calc(100vw - 48px)"}
+  end
+
+  test "sizes follows the column's share and the page's two-up grid" do
+    item = fn width ->
+      %{"image" => %{"light" => @fixture, "alt" => "x", "widths" => [4]}, "media_width" => width}
+    end
+
+    wide = render_media(item.("wide"))
+    full = render_media(item.("third"), "full")
+
+    two_up =
+      render_component(&PresentationPage.media/1,
+        item: item.("third"),
+        variant: "section",
+        columns: 2
+      )
+
+    assert wide =~ "(min-width: 1280px) 608px"
+    assert full =~ "(min-width: 1280px) 1088px"
+    # Two sections a row: each is half the box less the 16px gap between them.
+    assert two_up =~ "(min-width: 1280px) 202px"
+    # Below `md` both grids are one column, so the phone rule is unchanged.
+    assert two_up =~ "calc(100vw - 32px)"
+  end
+
+  test "a section image's box takes the image's shape when its size is known" do
+    known = render_media(%{"image" => %{"light" => @webp_fixture, "alt" => "x"}})
+    unknown = render_media(%{"image" => %{"light" => "/images/not-on-disk.png", "alt" => "x"}})
+
+    # A square box around 16:9 art letterboxes it, and audits flag the
+    # mismatch as a distorted image.
+    assert known =~ ~s{width="12" height="8"}
+    refute known =~ "aspect-square"
+    # With no size to go on, the square still holds the slot before load.
+    assert unknown =~ "aspect-square"
   end
 
   test "an explicit sizes in the config wins over the per-slot default" do
@@ -142,7 +184,7 @@ defmodule GamendWeb.Components.PresentationPageSrcsetTest do
       })
 
     assert html =~ "42vw"
-    refute html =~ "45vw"
+    refute html =~ "calc(100vw - 32px)"
   end
 
   test "the light/dark pair gets a srcset per theme, from each one's own variants" do

@@ -254,7 +254,7 @@ defmodule GamendWeb.AdminLive.Economy do
               </tbody>
             </table>
           </div>
-          <div :if={@wallets == []} class="text-center py-6 text-base-content/60">No wallets.</div>
+          <div :if={@wallets == []} class="text-center py-6 text-muted">No wallets.</div>
           <div class="mt-4 flex justify-center">
             <.pagination
               page={@page}
@@ -319,7 +319,7 @@ defmodule GamendWeb.AdminLive.Economy do
               </tbody>
             </table>
           </div>
-          <div :if={@items == []} class="text-center py-6 text-base-content/60">No items.</div>
+          <div :if={@items == []} class="text-center py-6 text-muted">No items.</div>
         </div>
       </div>
 
@@ -355,7 +355,7 @@ defmodule GamendWeb.AdminLive.Economy do
               </tbody>
             </table>
           </div>
-          <div :if={@ledger == []} class="text-center py-6 text-base-content/60">
+          <div :if={@ledger == []} class="text-center py-6 text-muted">
             No ledger entries.
           </div>
         </div>

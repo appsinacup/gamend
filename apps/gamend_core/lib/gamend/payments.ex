@@ -12,7 +12,9 @@ defmodule Gamend.Payments do
   use Nebulex.Caching, cache: Gamend.Cache
 
   alias Gamend.Accounts.User
+  alias Gamend.Lock
   alias Gamend.Payments.Admin
+  alias Gamend.Payments.Counters
   alias Gamend.Payments.Entitlement
   alias Gamend.Payments.Params
   alias Gamend.Payments.Product
@@ -23,6 +25,8 @@ defmodule Gamend.Payments do
   alias Gamend.Payments.Purchase
   alias Gamend.Payments.StoreEvents
   alias Gamend.Payments.StripeEvents
+  alias Gamend.Payments.StripeRefunds
+  alias Gamend.Payments.Upgrades
   alias Gamend.Repo
 
   @store_validation_providers ~w(apple google steam)
@@ -324,34 +328,141 @@ defmodule Gamend.Payments do
     Repo.durable_transaction(fn ->
       purchase =
         Purchase
+        |> Repo.lock_rows(:update)
         |> Repo.get!(purchase.id)
         |> Repo.preload(:product)
 
-      status = attrs["status"] || "revoked"
+      status = revoked_status(purchase.status, attrs["status"] || "revoked")
+      reason = revocation_reason(purchase, status, attrs["reason"] || "purchase_revoked")
 
       {:ok, updated} =
         purchase
         |> Purchase.changeset(%{
           status: status,
-          revoked_at: now,
+          revoked_at: purchase.revoked_at || now,
+          # Why it ended, on the purchase itself: a dispute that is later won
+          # hands back only what a dispute took (`restore_purchase/2`).
+          metadata: Map.put(purchase.metadata || %{}, "revocation_reason", reason),
           raw_provider_payload:
             Params.merge_payload(purchase.raw_provider_payload, attrs["payload"] || %{})
         })
         |> Repo.update()
         |> tap_bump({:payments, :purchase_version})
 
-      entitlements = revoke_entitlements_for_purchase(updated, now, attrs["reason"])
+      entitlements = revoke_entitlements_for_purchase(updated, now, reason)
       {updated, entitlements}
     end)
     |> case do
       {:ok, {purchase, entitlements}} ->
-        after_purchase_revoked(purchase)
+        # Entitlements first: the cache is evicted before the purchase hook
+        # runs, so a hook asking "does this player still hold it?" gets the
+        # answer after the revocation, not the cached one before it.
         Enum.each(entitlements, &after_entitlement_changed/1)
+        after_purchase_revoked(purchase)
         {:ok, purchase}
 
       {:error, reason} ->
         {:error, reason}
     end
+  end
+
+  # A refund or a lost dispute is the purchase's end. The subscription's own
+  # cancellation, which a refund sets off and whose webhook can arrive after
+  # the refund's, does not walk it back to "cancelled".
+  defp revoked_status(current, "cancelled") when current in ["refunded", "revoked"], do: current
+  defp revoked_status(_current, requested), do: requested
+
+  # The reason that ended it stays when a later event keeps the same status
+  # (the subscription's deletion after its dispute): it is what a won dispute
+  # is checked against.
+  defp revocation_reason(
+         %Purchase{status: status, metadata: %{"revocation_reason" => kept}},
+         status,
+         _new
+       )
+       when is_binary(kept),
+       do: kept
+
+  defp revocation_reason(_purchase, _status, reason), do: reason
+
+  @doc """
+  Hand a purchase back after a dispute the seller won: the purchase completes
+  again and its entitlements are active again, with the end they had. Only a
+  purchase a dispute revoked (`metadata["revocation_reason"]` a
+  `charge.dispute.*` event) — a refund is final. `{:ok, :unchanged}` for any
+  other.
+  """
+  @spec restore_purchase(Purchase.t(), map()) ::
+          {:ok, Purchase.t()} | {:ok, :unchanged} | {:error, term()}
+  def restore_purchase(%Purchase{} = purchase, payload \\ %{}) when is_map(payload) do
+    Repo.durable_transaction(fn ->
+      purchase =
+        Purchase
+        |> Repo.lock_rows(:update)
+        |> Repo.get!(purchase.id)
+        |> Repo.preload(:product)
+
+      if disputed?(purchase) do
+        {:ok, updated} =
+          purchase
+          |> Purchase.changeset(%{
+            status: "completed",
+            revoked_at: nil,
+            # `disputed?/1` matched the reason inside it, so it is a map.
+            metadata:
+              purchase.metadata
+              |> Map.delete("revocation_reason")
+              |> Map.put("restored_at", DateTime.utc_now(:second) |> DateTime.to_iso8601()),
+            raw_provider_payload: Params.merge_payload(purchase.raw_provider_payload, payload)
+          })
+          |> Repo.update()
+          |> tap_bump({:payments, :purchase_version})
+
+        {updated, restore_entitlements_for_purchase(updated)}
+      else
+        :unchanged
+      end
+    end)
+    |> case do
+      {:ok, {purchase, entitlements}} ->
+        Enum.each(entitlements, &after_entitlement_changed/1)
+        Gamend.Broadcast.publish("user:#{purchase.user_id}", {:purchase_updated, purchase})
+        log_purchase("restored", purchase)
+        Counters.count("purchase.restored", purchase_dims(purchase))
+        {:ok, preload_purchase(purchase)}
+
+      {:ok, :unchanged} ->
+        {:ok, :unchanged}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # A subscription's dispute cancelled the subscription, so there is no
+  # running plan to hand back: only a one-off purchase is restored.
+  defp disputed?(%Purchase{
+         status: "revoked",
+         product: %Product{kind: kind},
+         metadata: %{"revocation_reason" => reason}
+       })
+       when kind != "subscription" and is_binary(reason),
+       do: String.starts_with?(reason, "charge.dispute")
+
+  defp disputed?(_purchase), do: false
+
+  defp restore_entitlements_for_purchase(%Purchase{} = purchase) do
+    from(e in Entitlement, where: e.source_purchase_id == ^purchase.id)
+    |> Repo.all()
+    |> Enum.map(fn entitlement ->
+      entitlement
+      |> Entitlement.changeset(%{
+        status: "active",
+        revoked_at: nil,
+        metadata: Map.delete(entitlement.metadata || %{}, "revocation_reason")
+      })
+      |> Repo.update!()
+    end)
   end
 
   # ---------------------------------------------------------------------------
@@ -398,8 +509,8 @@ defmodule Gamend.Payments do
   # Stripe
   # ---------------------------------------------------------------------------
 
-  @doc delegate_to: {StripeEvents, :create_stripe_checkout, 2}
-  defdelegate create_stripe_checkout(user, attrs), to: StripeEvents
+  @doc delegate_to: {StripeEvents, :create_stripe_checkout, 3}
+  defdelegate create_stripe_checkout(user, attrs, opts \\ []), to: StripeEvents
 
   @doc delegate_to: {StripeEvents, :handle_stripe_webhook, 2}
   defdelegate handle_stripe_webhook(raw_body, signature), to: StripeEvents
@@ -410,11 +521,31 @@ defmodule Gamend.Payments do
   @doc delegate_to: {StripeEvents, :cancel_stripe_subscription_at_period_end, 2}
   defdelegate cancel_stripe_subscription_at_period_end(user, entitlement_id), to: StripeEvents
 
+  @doc delegate_to: {StripeEvents, :resume_stripe_subscription, 2}
+  defdelegate resume_stripe_subscription(user, entitlement_id), to: StripeEvents
+
   @doc delegate_to: {StripeEvents, :stripe_customer_id, 1}
   defdelegate stripe_customer_id(user), to: StripeEvents
 
   @doc delegate_to: {StripeEvents, :create_stripe_billing_portal, 2}
   defdelegate create_stripe_billing_portal(user, return_url), to: StripeEvents
+
+  @doc delegate_to: {StripeRefunds, :refund_stripe_purchase, 2}
+  defdelegate refund_stripe_purchase(user, purchase_id), to: StripeRefunds
+
+  @doc delegate_to: {StripeRefunds, :admin_refund_stripe_purchase, 1}
+  defdelegate admin_refund_stripe_purchase(purchase_id), to: StripeRefunds
+
+  @doc delegate_to: {StripeRefunds, :refundable?, 2}
+  defdelegate stripe_refundable?(purchase, now \\ DateTime.utc_now(:second)),
+    to: StripeRefunds,
+    as: :refundable?
+
+  @doc delegate_to: {StripeRefunds, :admin_refundable?, 1}
+  defdelegate admin_stripe_refundable?(purchase), to: StripeRefunds, as: :admin_refundable?
+
+  @doc delegate_to: {StripeRefunds, :refund_window_days, 0}
+  defdelegate refund_window_days(), to: StripeRefunds
 
   # ---------------------------------------------------------------------------
   # Steam
@@ -435,6 +566,10 @@ defmodule Gamend.Payments do
       |> client_checkout_attrs()
       |> Map.put("order_id", generate_steam_order_id())
 
+    with_checkout_lock(user, fn -> open_steam_checkout(user, attrs) end)
+  end
+
+  defp open_steam_checkout(%User{} = user, attrs) do
     with {:ok, provider_product} <- resolve_provider_product("steam", attrs),
          :ok <- ensure_checkout_allowed(user, provider_product, attrs),
          {:ok, purchase} <- create_purchase(user, provider_product, attrs) do
@@ -442,6 +577,7 @@ defmodule Gamend.Payments do
         {:ok, result} ->
           with {:ok, updated_purchase} <- mark_steam_purchase_requires_action(purchase, result) do
             params = steam_response_params(result)
+            Counters.count("checkout.opened", purchase_dims(updated_purchase))
 
             {:ok,
              %{
@@ -456,8 +592,24 @@ defmodule Gamend.Payments do
           {:error, reason}
       end
     else
-      {:error, reason} -> {:error, reason}
+      {:error, reason} ->
+        count_checkout_refused("steam", reason)
+        {:error, reason}
     end
+  end
+
+  @doc false
+  # One checkout per player at a time. Without it a double-click ran the
+  # one-open-checkout check twice before either purchase existed, and both
+  # sessions could be paid: two subscriptions for one entitlement, the second
+  # taking the row over while the first kept charging. Node-local, like
+  # `StripeRefunds`; the window it closes is milliseconds wide.
+  def with_checkout_lock(%User{id: user_id}, fun) when is_function(fun, 0),
+    do: Lock.Local.trans({__MODULE__, :checkout, user_id}, fun)
+
+  @doc false
+  def count_checkout_refused(provider, reason) do
+    Counters.count("checkout.refused", provider: provider, reason: provider_error_code(reason))
   end
 
   @spec finalize_steam_purchase(User.t(), map()) ::
@@ -527,19 +679,51 @@ defmodule Gamend.Payments do
     end
   end
 
+  @doc """
+  Whether the user holds `key` right now: an active row with no end, or an end
+  still ahead.
+
+  Answered from `entitlement_rows/1`, so a page asking about several keys (a
+  paid plan and its trial, on every render) costs one query between changes.
+  """
   @spec has_entitlement?(Ecto.UUID.t(), String.t()) :: boolean()
   def has_entitlement?(user_id, key) when is_binary(user_id) and is_binary(key) do
     now = DateTime.utc_now(:second)
 
-    from(e in Entitlement,
-      where:
-        e.user_id == ^user_id and e.key == ^key and e.status == "active" and
-          (is_nil(e.expires_at) or e.expires_at > ^now),
-      select: count(e.id)
-    )
-    |> Repo.one()
-    |> Kernel.>(0)
+    user_id
+    |> entitlement_rows()
+    |> Enum.any?(fn {row_key, status, expires_at} ->
+      row_key == key and status == "active" and
+        (is_nil(expires_at) or DateTime.compare(expires_at, now) == :gt)
+    end)
   end
+
+  # Every one of the user's entitlement rows as `{key, status, expires_at}` —
+  # a handful at most — cached in `Gamend.Cache` and evicted by
+  # `after_entitlement_changed/1`, which every write calls (grants, purchases,
+  # revocations, Stripe renewals). Whether a row is active is decided at read
+  # time against the clock, so one that expires while cached stops counting on
+  # the second it ends. Inside a transaction the cache is skipped both ways: a
+  # read there may see a write a rollback would undo.
+  defp entitlement_rows(user_id) do
+    if Repo.in_transaction?() do
+      read_entitlement_rows(user_id)
+    else
+      Gamend.Cache.cached(entitlements_key(user_id), [ttl: Gamend.Cache.ttl()], fn ->
+        read_entitlement_rows(user_id)
+      end)
+    end
+  end
+
+  defp read_entitlement_rows(user_id) do
+    Repo.all(
+      from e in Entitlement,
+        where: e.user_id == ^user_id,
+        select: {e.key, e.status, e.expires_at}
+    )
+  end
+
+  defp entitlements_key(user_id), do: {:payments, :entitlements, user_id}
 
   @doc """
   Grant an entitlement without a purchase: a trial, a contributor's reward,
@@ -613,7 +797,7 @@ defmodule Gamend.Payments do
   """
   @spec entitlement_ever?(Ecto.UUID.t(), String.t()) :: boolean()
   def entitlement_ever?(user_id, key) when is_binary(user_id) and is_binary(key) do
-    Repo.exists?(from e in Entitlement, where: e.user_id == ^user_id and e.key == ^key)
+    user_id |> entitlement_rows() |> Enum.any?(fn {row_key, _, _} -> row_key == key end)
   end
 
   @doc "The user's `key` row, active or not, or `nil`."
@@ -790,6 +974,11 @@ defmodule Gamend.Payments do
     end
   end
 
+  # A SKU may have several active rows for one provider (a host pricing by
+  # country keeps one Stripe price per band). Picking one with `limit: 1` and
+  # no order sold whichever the database returned first, a cheaper band
+  # included, so a SKU that names more than one row has to be bought by
+  # `provider_product_id`, which the host's own page chooses.
   def resolve_provider_product(provider, %{"product_sku" => sku}) when is_binary(sku) do
     query =
       from pp in ProviderProduct,
@@ -797,11 +986,12 @@ defmodule Gamend.Payments do
         where:
           pp.provider == ^provider and pp.active == true and p.active == true and p.sku == ^sku,
         preload: [product: p],
-        limit: 1
+        limit: 2
 
-    case Repo.one(query) do
-      %ProviderProduct{} = provider_product -> {:ok, provider_product}
-      nil -> {:error, :provider_product_not_found}
+    case Repo.all(query) do
+      [%ProviderProduct{} = provider_product] -> {:ok, provider_product}
+      [] -> {:error, :provider_product_not_found}
+      [_first, _second] -> {:error, :ambiguous_product_sku}
     end
   end
 
@@ -849,7 +1039,9 @@ defmodule Gamend.Payments do
     key = product_entitlement_key(product)
 
     cond do
-      has_entitlement?(user.id, key) ->
+      # Held already, unless it is a longer plan than the subscription the
+      # user holds it by (`Upgrades`): that one replaces it.
+      has_entitlement?(user.id, key) and not Upgrades.upgrade?(user.id, product) ->
         {:error, :already_owned}
 
       purchase_in_progress?(user.id, key) ->
@@ -862,13 +1054,17 @@ defmodule Gamend.Payments do
 
   defp ensure_single_ownership_available(_user, _product), do: :ok
 
-  defp purchase_in_progress?(user_id, entitlement_key) do
+  defp purchase_in_progress?(user_id, entitlement_key),
+    do: purchases_in_progress(user_id, entitlement_key) != []
+
+  @doc false
+  def purchases_in_progress(user_id, entitlement_key) do
     from(p in Purchase,
       where: p.user_id == ^user_id and p.status == "requires_action",
       preload: [:product]
     )
     |> Repo.all()
-    |> Enum.any?(fn %Purchase{product: product} ->
+    |> Enum.filter(fn %Purchase{product: product} ->
       product_entitlement_key(product) == entitlement_key
     end)
   end
@@ -889,17 +1085,37 @@ defmodule Gamend.Payments do
       |> Repo.update()
       |> tap_bump({:payments, :purchase_version})
 
+    # In the message, not only as metadata: the admin Logs page and the file
+    # handler print the message, and the reason is the part worth reading.
     Logger.warning(
-      "Payment checkout failed",
-      purchase_id: purchase.id,
-      order_id: purchase.order_id,
+      "Payment checkout failed provider=#{purchase.provider} reason=#{reason} " <>
+        "purchase_id=#{purchase.id} order_id=#{purchase.order_id} " <>
+        "provider_reason=#{inspect(provider_reason) |> String.slice(0, 500)}"
+    )
+
+    Counters.count("checkout.failed",
       provider: purchase.provider,
-      reason: reason,
-      provider_reason: inspect(provider_reason)
+      reason: provider_error_code(provider_reason)
     )
 
     result
   end
+
+  @doc """
+  A short code for a failure, for a counter's dimension: Stripe's own error
+  code when it sent one (`card_declined`, `resource_missing`), the atom for
+  ours, never the message.
+  """
+  @spec provider_error_code(term()) :: String.t()
+  def provider_error_code({:stripe_error, %{} = error}) do
+    code = get_in(error, ["extra", "raw_error", "code"]) || error["code"]
+    if is_binary(code) or is_atom(code), do: to_string(code), else: "stripe_error"
+  end
+
+  def provider_error_code({reason, _detail}) when is_atom(reason), do: Atom.to_string(reason)
+  def provider_error_code(reason) when is_atom(reason), do: Atom.to_string(reason)
+  def provider_error_code(%Ecto.Changeset{}), do: "invalid"
+  def provider_error_code(_reason), do: "error"
 
   @doc false
   def mark_purchase_requires_action(%Purchase{} = purchase, session) when is_map(session) do
@@ -1015,6 +1231,8 @@ defmodule Gamend.Payments do
     expires_at = purchase.expires_at || entitlement_expiry(product)
     now = DateTime.utc_now(:second)
 
+    entitlement = Repo.get_by(Entitlement, user_id: purchase.user_id, key: key) || %Entitlement{}
+
     attrs = %{
       user_id: purchase.user_id,
       product_id: product.id,
@@ -1024,17 +1242,11 @@ defmodule Gamend.Payments do
       starts_at: now,
       expires_at: expires_at,
       revoked_at: nil,
-      metadata: %{"product_sku" => product.sku, "provider" => purchase.provider}
+      metadata:
+        entitlement.metadata
+        |> carried_metadata()
+        |> Map.merge(%{"product_sku" => product.sku, "provider" => purchase.provider})
     }
-
-    entitlement =
-      case Repo.get_by(Entitlement, user_id: purchase.user_id, key: key) do
-        nil ->
-          %Entitlement{}
-
-        %Entitlement{} = existing ->
-          existing
-      end
 
     case entitlement |> Entitlement.changeset(attrs) |> Repo.insert_or_update() do
       {:ok, entitlement} ->
@@ -1045,6 +1257,19 @@ defmodule Gamend.Payments do
         {:error, changeset}
     end
   end
+
+  # What a row keeps when a new purchase takes it over: a note a grant or the
+  # host left, never the previous purchase's subscription or its revocation.
+  # A stale `stripe_subscription_status` of "past_due" from an old plan would
+  # otherwise read as the new purchase's.
+  defp carried_metadata(metadata) when is_map(metadata) do
+    Map.reject(metadata, fn {key, _value} ->
+      String.starts_with?(key, "stripe_") or
+        key in ["revocation_reason", "product_sku", "provider", "paid_through"]
+    end)
+  end
+
+  defp carried_metadata(_metadata), do: %{}
 
   defp create_validated_store_purchase(%User{} = user, provider_product, validation) do
     validated_status =
@@ -1207,11 +1432,18 @@ defmodule Gamend.Payments do
     end
   end
 
+  # A refund object counts only when it is one of ours (`StripeRefunds` puts
+  # the purchase id on it, and refunds in full): a refund made in the
+  # Dashboard may be partial, and its object does not say what share of the
+  # charge it was. A full one also sends `charge.refunded`, which does.
   def reversal_effective?(_refund_event, object) do
-    case object["status"] do
-      status when is_binary(status) -> status == "succeeded"
-      _unknown -> true
-    end
+    ours? = is_binary(get_in(object, ["metadata", "purchase_id"]))
+
+    ours? and
+      case object["status"] do
+        status when is_binary(status) -> status == "succeeded"
+        _unknown -> true
+      end
   end
 
   defp purchase_from_original_transaction(nil), do: {:error, :purchase_not_found}
@@ -1257,40 +1489,76 @@ defmodule Gamend.Payments do
   defp steam_response_params(%{"response" => params}) when is_map(params), do: params
   defp steam_response_params(params) when is_map(params), do: params
 
+  # One row at a time, to keep each row's metadata: it was overwritten with
+  # the reason alone, losing the subscription's id and whatever a grant had
+  # recorded on the same row. A purchase has one or two rows.
   defp revoke_entitlements_for_purchase(%Purchase{} = purchase, now, reason) do
-    query = from(e in Entitlement, where: e.source_purchase_id == ^purchase.id)
-
-    query
-    |> Repo.update_all(
-      set: [
+    from(e in Entitlement, where: e.source_purchase_id == ^purchase.id)
+    |> Repo.all()
+    |> Enum.map(fn entitlement ->
+      entitlement
+      |> Entitlement.changeset(%{
         status: "revoked",
-        revoked_at: now,
-        updated_at: now,
-        metadata: %{"revocation_reason" => reason || "purchase_revoked"}
-      ]
-    )
-
-    Repo.all(query)
+        revoked_at: entitlement.revoked_at || now,
+        metadata: Map.put(entitlement.metadata || %{}, "revocation_reason", reason)
+      })
+      |> Repo.update!()
+    end)
   end
 
   defp after_purchase_fulfilled(%Purchase{} = purchase) do
     Gamend.Broadcast.publish("user:#{purchase.user_id}", {:purchase_updated, purchase})
+    log_purchase("fulfilled", purchase)
+    Counters.count("purchase.fulfilled", purchase_dims(purchase))
 
     Gamend.Async.run(fn ->
       Gamend.Hooks.internal_call(:after_purchase_fulfilled, [purchase])
     end)
+
+    # A purchase that took an entitlement over from a Stripe subscription
+    # ends that subscription (`Upgrades.supersede/1`). After the commit, and
+    # never in the fulfilment's way: a Stripe error is logged, counted and
+    # left for `StripeSweeper`.
+    Gamend.Async.run(fn -> Upgrades.supersede(purchase) end)
   end
 
   defp after_purchase_revoked(%Purchase{} = purchase) do
     Gamend.Broadcast.publish("user:#{purchase.user_id}", {:purchase_updated, purchase})
+    log_purchase("revoked", purchase)
+
+    Counters.count(
+      "purchase.revoked",
+      [{:reason, purchase.status} | purchase_dims(purchase)]
+    )
 
     Gamend.Async.run(fn ->
       Gamend.Hooks.internal_call(:after_purchase_revoked, [purchase])
     end)
   end
 
+  # One line per change of hands, at info so production keeps it: a payment
+  # left no trace in the logs at all before.
+  defp log_purchase(what, %Purchase{} = purchase) do
+    Logger.info(
+      "Payment #{what} provider=#{purchase.provider} sku=#{purchase_sku(purchase)} " <>
+        "status=#{purchase.status} purchase_id=#{purchase.id} order_id=#{purchase.order_id} " <>
+        "user_id=#{purchase.user_id} reason=#{(purchase.metadata || %{})["revocation_reason"]}"
+    )
+  end
+
+  @doc false
+  def purchase_dims(%Purchase{} = purchase),
+    do: [provider: purchase.provider, sku: purchase_sku(purchase)]
+
+  defp purchase_sku(%Purchase{product: %Product{sku: sku}}), do: sku
+  defp purchase_sku(%Purchase{}), do: nil
+
   @doc false
   def after_entitlement_changed(%Entitlement{} = entitlement) do
+    # The one eviction point for `entitlement_rows/1`: every entitlement write
+    # ends here. Inside a transaction `invalidate/1` evicts again on commit.
+    _ = Gamend.Cache.invalidate(entitlements_key(entitlement.user_id))
+
     Gamend.Broadcast.publish(
       "user:#{entitlement.user_id}",
       {:entitlement_changed, entitlement}

@@ -134,6 +134,7 @@ defmodule Gamend.Types do
     * `:starts_at` - Optional start time (UTC)
     * `:ends_at` - Optional end time (UTC)
     * `:metadata` - Arbitrary key-value data
+    * `:hidden` - Left out of every public listing (default false)
 
   ## Example
 
@@ -159,7 +160,8 @@ defmodule Gamend.Types do
           optional(:operator) => :set | :best | :incr | :decr,
           optional(:starts_at) => DateTime.t(),
           optional(:ends_at) => DateTime.t(),
-          optional(:metadata) => map()
+          optional(:metadata) => map(),
+          optional(:hidden) => boolean()
         }
 
   @typedoc """
@@ -174,6 +176,7 @@ defmodule Gamend.Types do
     * `:starts_at` - Start time (UTC)
     * `:ends_at` - End time (UTC)
     * `:metadata` - Arbitrary key-value data
+    * `:hidden` - Left out of every public listing (default false)
 
   ## Example
 
@@ -188,7 +191,8 @@ defmodule Gamend.Types do
           optional(:description) => String.t(),
           optional(:starts_at) => DateTime.t(),
           optional(:ends_at) => DateTime.t(),
-          optional(:metadata) => map()
+          optional(:metadata) => map(),
+          optional(:hidden) => boolean()
         }
 
   # ---------------------------------------------------------------------------

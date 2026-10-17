@@ -485,7 +485,8 @@ func _schedule_token_refresh() -> void:
 
 func _verify_login_result(method_name: String, data):
 	# Not "register": registering answers the new account, never a session.
-	if data && method_name in ["oauth_session_status", "oauth_api_callback", "login", "device_login", "refresh_token", "oauth_callback_api_apple_ios", "oauth_google_id_token"]:
+	# Its code does ("confirm_registration").
+	if data && method_name in ["oauth_session_status", "oauth_api_callback", "login", "device_login", "refresh_token", "oauth_callback_api_apple_ios", "oauth_google_id_token", "confirm_registration"]:
 		# Every answer is {data: ...}; a polled OAuth sign-in carries its tokens
 		# one level further in, under data.session (null until it completes).
 		var inner = data.bzz_normalize().get("data")
@@ -1062,19 +1063,38 @@ func authenticate_refresh_token(refresh_token: String) -> GamendResult:
 	refresh_param.refresh_token = refresh_token
 	return await _call_api(AuthenticationApi.new(_config), "refresh_token", [refresh_param])
 
-## Register: a new account with an email and a password. Not a sign-in, as
-## device login is: the answer is the account (`GamendRegistration`, with
-## `email_confirmed`), and no session is kept. Its password signs in with
-## `authenticate_login` once the player opens the emailed link; until then that
-## answers the error `email_not_confirmed`. The server generates a username when
-## none is given.
-func authenticate_register(email: String, password: String, username := "") -> GamendResult:
+## Register: a new account with an email, and no password yet. Not a sign-in,
+## as device login is: the answer is the account (`GamendRegistration`), and no
+## session is kept. The server emails a link and a six-digit code; pass the code
+## and the password the player chooses to `authenticate_confirm_registration`,
+## which signs in. The server generates a username when none is given.
+## (It replaces `authenticate_register(email, password)`, under a new name so an
+## old call fails instead of sending the password as the username.)
+func authenticate_register_email(email: String, username := "") -> GamendResult:
 	var register_request := GamendRegisterRequest.new()
 	register_request.email = email
-	register_request.password = password
 	if username != "":
 		register_request.username = username
 	return await _call_api(AuthenticationApi.new(_config), "register", [register_request])
+
+## Confirm a registration with the code from its email, set the account's
+## password, and sign in (the session is kept, as `authenticate_login` does).
+## Errors: `invalid_code` (wrong, spent or expired), `account_locked` (too many
+## wrong codes; the code is void, ask for a new one), `validation_failed` (the
+## password is refused; that costs no attempt).
+func authenticate_confirm_registration(email: String, code: String, password: String) -> GamendResult:
+	var confirm_request := GamendConfirmRegistrationRequest.new()
+	confirm_request.email = email
+	confirm_request.code = code
+	confirm_request.password = password
+	return await _call_api(AuthenticationApi.new(_config), "confirm_registration", [confirm_request])
+
+## Email a registration a new code; only the newest works. Succeeds whether or
+## not the address has an account waiting.
+func authenticate_resend_confirmation(email: String) -> GamendResult:
+	var resend_request := GamendResendConfirmationRequest.new()
+	resend_request.email = email
+	return await _call_api(AuthenticationApi.new(_config), "resend_confirmation", [resend_request])
 
 ### FRIENDS
 

@@ -22,6 +22,10 @@ defmodule GamendWeb.Api.V1.PaymentControllerTest do
        }}
     end
 
+    def expire_checkout_session(session_id) do
+      {:ok, %{"id" => session_id, "object" => "checkout.session", "status" => "expired"}}
+    end
+
     def verify_webhook(raw_body, _signature), do: Jason.decode(raw_body)
   end
 
@@ -225,26 +229,59 @@ defmodule GamendWeb.Api.V1.PaymentControllerTest do
       assert response["error"] == "already_owned"
     end
 
-    test "rejects duplicate in-progress checkout for entitlement products", %{conn: conn} do
+    test "a second checkout for an entitlement replaces the open one", %{conn: conn} do
       user = AccountsFixtures.user_fixture()
 
       {product, _provider_product} =
         create_entitlement_provider_product("stripe", "price_artbook")
 
+      params = %{
+        "product_sku" => product.sku,
+        "success_url" => "https://example.test/success",
+        "cancel_url" => "https://example.test/cancel"
+      }
+
       first =
         conn
         |> auth_conn(user)
-        |> post("/api/v1/payments/checkout/stripe", %{
-          "product_sku" => product.sku,
-          "success_url" => "https://example.test/success",
-          "cancel_url" => "https://example.test/cancel"
-        })
+        |> post("/api/v1/payments/checkout/stripe", params)
         |> json_response(200)
 
       assert first["data"]["purchase"]["status"] == "requires_action"
 
-      response =
+      second =
         build_conn()
+        |> auth_conn(user)
+        |> post("/api/v1/payments/checkout/stripe", params)
+        |> json_response(200)
+
+      assert second["data"]["purchase"]["status"] == "requires_action"
+      assert second["data"]["purchase"]["id"] != first["data"]["purchase"]["id"]
+
+      statuses = user.id |> Payments.list_user_purchases() |> Enum.map(& &1.status)
+      assert Enum.sort(statuses) == ["cancelled", "requires_action"]
+    end
+
+    test "rejects checkout while another provider's purchase is in progress", %{conn: conn} do
+      user = AccountsFixtures.user_fixture()
+
+      {product, _provider_product} =
+        create_entitlement_provider_product("stripe", "price_artbook")
+
+      {:ok, steam_product} =
+        Payments.create_provider_product(%{
+          "product_id" => product.id,
+          "provider" => "steam",
+          "external_id" => "steam_artbook_#{System.unique_integer([:positive])}",
+          "currency" => "USD",
+          "unit_amount" => 999
+        })
+
+      {:ok, _steam_open} =
+        Payments.create_purchase(user, steam_product, %{"status" => "requires_action"})
+
+      response =
+        conn
         |> auth_conn(user)
         |> post("/api/v1/payments/checkout/stripe", %{
           "product_sku" => product.sku,
@@ -380,12 +417,13 @@ defmodule GamendWeb.Api.V1.PaymentControllerTest do
       refund_body =
         Jason.encode!(%{
           "id" => "evt_refund_created",
-          "type" => "refund.created",
+          "type" => "charge.refunded",
           "data" => %{
             "object" => %{
-              "id" => "re_paid",
-              "object" => "refund",
-              "charge" => "ch_paid"
+              "id" => "ch_paid",
+              "object" => "charge",
+              "amount" => 999,
+              "amount_refunded" => 999
             }
           }
         })
@@ -467,7 +505,7 @@ defmodule GamendWeb.Api.V1.PaymentControllerTest do
                 "id" => "sub_webhook",
                 "status" => "active",
                 "cancel_at_period_end" => false,
-                "current_period_end" => 1_900_000_000
+                "items" => %{"data" => [%{"current_period_end" => 1_900_000_000}]}
               },
               "metadata" => %{
                 "purchase_id" => to_string(purchase.id),
@@ -495,7 +533,7 @@ defmodule GamendWeb.Api.V1.PaymentControllerTest do
               "id" => "sub_webhook",
               "status" => "active",
               "cancel_at_period_end" => true,
-              "current_period_end" => 1_901_000_000,
+              "items" => %{"data" => [%{"current_period_end" => 1_901_000_000}]},
               "metadata" => %{"purchase_id" => to_string(purchase.id)}
             }
           }
@@ -520,7 +558,7 @@ defmodule GamendWeb.Api.V1.PaymentControllerTest do
               "id" => "sub_webhook",
               "status" => "canceled",
               "cancel_at_period_end" => true,
-              "current_period_end" => 1_901_000_000,
+              "items" => %{"data" => [%{"current_period_end" => 1_901_000_000}]},
               "metadata" => %{"purchase_id" => to_string(purchase.id)}
             }
           }

@@ -104,7 +104,7 @@ defmodule GamendWeb.AdminLive.Friends do
             <button phx-click="refresh" class="btn btn-ghost btn-sm">Refresh</button>
           </div>
 
-          <p class="text-sm text-base-content/70">
+          <p class="text-sm text-muted">
             Every friend request and friendship, in any status. Blocks live on the
             <.link navigate={~p"/admin/blacklist"} class="link">Blacklist</.link>
             page.
@@ -148,13 +148,13 @@ defmodule GamendWeb.AdminLive.Friends do
                 <tr :for={friendship <- @friendships} id={"friendship-#{friendship.id}"}>
                   <td>
                     {user_name(friendship.requester)}
-                    <div class="font-mono text-xs text-base-content/60">
+                    <div class="font-mono text-xs text-muted">
                       {friendship.requester_id}
                     </div>
                   </td>
                   <td>
                     {user_name(friendship.target)}
-                    <div class="font-mono text-xs text-base-content/60">{friendship.target_id}</div>
+                    <div class="font-mono text-xs text-muted">{friendship.target_id}</div>
                   </td>
                   <td>
                     <span class={["badge badge-sm", status_class(friendship.status)]}>
@@ -182,7 +182,7 @@ defmodule GamendWeb.AdminLive.Friends do
             </table>
           </div>
 
-          <div :if={@friendships == []} class="text-center py-8 text-base-content/60">
+          <div :if={@friendships == []} class="text-center py-8 text-muted">
             No friendships.
           </div>
 

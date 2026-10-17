@@ -11,43 +11,22 @@ msgstr ""
 "Language: ar\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
 
-#: lib/gamend_web/live/blog_live.ex:105
-#: lib/gamend_web/live/blog_live.ex:177
+#: lib/gamend_host/search.ex:96
 #, elixir-autogen, elixir-format
 msgid "Blog"
 msgstr "المدونة"
 
-#: lib/gamend_web/live/blog_live.ex:119
-#, elixir-autogen, elixir-format
-msgid "Changelog"
-msgstr "سجل التغييرات"
-
+#: lib/gamend_host/search.ex:58
+#: lib/gamend_host/search.ex:78
 #: lib/gamend_web/host_public_docs.ex:24
 #, elixir-autogen, elixir-format
 msgid "Documentation"
 msgstr "التوثيق"
 
-#: lib/gamend_web/live/blog_live.ex:205
-#, elixir-autogen, elixir-format
-msgid "Newer"
-msgstr "أحدث"
-
 #: lib/gamend_host/host_layout_translations.ex:27
-#: lib/gamend_web/live/blog_live.ex:80
-#: lib/gamend_web/live/blog_live.ex:127
 #, elixir-autogen, elixir-format
 msgid "No results."
 msgstr "لا نتائج."
-
-#: lib/gamend_web/live/blog_live.ex:220
-#, elixir-autogen, elixir-format
-msgid "Older"
-msgstr "أقدم"
-
-#: lib/gamend_web/live/blog_live.ex:112
-#, elixir-autogen, elixir-format
-msgid "Roadmap"
-msgstr "خريطة الطريق"
 
 #: lib/gamend_host/host_layout_translations.ex:15
 #, elixir-autogen, elixir-format
@@ -112,24 +91,24 @@ msgstr "إغلاق"
 #: lib/gamend_web/host_public_docs.ex:24
 #, elixir-autogen, elixir-format
 msgid "No guides found."
-msgstr ""
+msgstr "لم يُعثر على أي أدلة."
 
 #: lib/gamend_web/host_public_docs.ex:34
 #, elixir-autogen, elixir-format
 msgid "Platform setup, OAuth providers, payments, email, and server hooks"
-msgstr ""
+msgstr "إعداد المنصة ومزوّدو OAuth والمدفوعات والبريد الإلكتروني وخطافات الخادم"
 
 #: lib/gamend_host/host_layout_translations.ex:9
 #, elixir-autogen, elixir-format
 msgid "Quests"
-msgstr ""
+msgstr "المهام"
 
 #: lib/gamend_host/host_layout_translations.ex:26
 #, elixir-autogen, elixir-format
 msgid "Search"
-msgstr ""
+msgstr "بحث"
 
 #: lib/gamend_web/host_public_docs.ex:30
 #, elixir-autogen, elixir-format
 msgid "Setup & Guides"
-msgstr ""
+msgstr "الإعداد والأدلة"

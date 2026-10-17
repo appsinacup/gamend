@@ -256,6 +256,7 @@ Use the navigation object to move nav structure into config. Each section accept
 | `external` | boolean | When true, opens in a new tab with rel="noopener noreferrer" |
 | `auth` | string | Visibility level: `"any"` — visible to everyone (default) `"unauthenticated"` — visible only to signed-out visitors `"authenticated"` — visible only to logged-in users `"admin"` — visible only to admin users |
 | `admin_only` | boolean | Shortcut for auth="admin" on links or dropdown groups. |
+| `count` | string | A `{Module.fun}` token: `fun/1` gets the reader's scope and returns how many things wait for them there (quests to claim). Drawn as a red number after the label, like unread notifications; nothing at 0. A dropdown group shows its items' total. |
 
 Example: grouped public links plus admin-only account entry:
 

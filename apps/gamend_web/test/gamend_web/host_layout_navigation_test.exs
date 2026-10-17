@@ -90,6 +90,55 @@ defmodule GamendWeb.HostLayoutNavigationTest do
     assert html =~ ~s(aria-disabled="true")
   end
 
+  test "a disabled link keeps its button look, has no href and shows its badge" do
+    link = %{
+      "label" => "Play",
+      "href" => "/play",
+      "icon" => "hero-play-solid",
+      "badge" => "Coming soon",
+      "disabled" => true
+    }
+
+    for render <- [&HostLayoutNavigation.desktop_nav/1, &HostLayoutNavigation.mobile_nav/1] do
+      html = render_component(render, base_assigns([link]))
+
+      refute html =~ ~s(href="/play")
+      assert html =~ ~s(aria-disabled="true")
+      assert html =~ "btn"
+      assert html =~ ~r/Play.*badge.*Coming soon/s
+    end
+  end
+
+  test "a disabled link inside a dropdown has no href and shows its badge" do
+    nav = [
+      %{
+        "label" => "Learn",
+        "items" => [
+          %{"label" => "Tests", "href" => "/tests"},
+          %{"label" => "Play", "href" => "/play", "badge" => "Coming soon", "disabled" => true}
+        ]
+      }
+    ]
+
+    html = render_component(&HostLayoutNavigation.desktop_nav/1, base_assigns(nav))
+
+    assert html =~ ~s(href="/tests")
+    refute html =~ ~s(href="/play")
+    assert html =~ "Coming soon"
+  end
+
+  test "a badge on a working link keeps the link" do
+    html =
+      render_component(
+        &HostLayoutNavigation.desktop_nav/1,
+        base_assigns([%{"label" => "Classes", "href" => "/classes", "badge" => "Pro"}])
+      )
+
+    assert html =~ ~s(href="/classes")
+    assert html =~ ~r/Classes.*badge.*Pro/s
+    refute html =~ "aria-disabled"
+  end
+
   test "desktop dropdown highlights the active sub-item with daisyUI menu-active" do
     nav = [
       %{
@@ -127,14 +176,33 @@ defmodule GamendWeb.HostLayoutNavigationTest do
     assert desktop =~ ~r{href="/docs/reference"\s+class="menu-active"}
 
     mobile = render_component(&HostLayoutNavigation.mobile_nav/1, assigns)
-    refute mobile =~ ~r{href="/docs"\s+class="btn w-full btn-primary"}
-    assert mobile =~ ~r{href="/docs/reference"\s+class="btn w-full btn-primary"}
+    refute mobile =~ ~r{href="/docs"\s+class="btn w-full justify-start btn-primary"}
+    assert mobile =~ ~r{href="/docs/reference"\s+class="btn w-full justify-start btn-primary"}
 
     # A page only the broad link matches still lights it.
     guide = %{assigns | current_path: "/docs/manual/scenes"}
 
     assert render_component(&HostLayoutNavigation.desktop_nav/1, guide) =~
              ~r{href="/docs"\s+class="menu-active"}
+  end
+
+  # `/games` starts with the letters of `/game`; they are different pages, in
+  # different groups, so the sibling rule above cannot settle it.
+  test "a prefix match stops at a path segment" do
+    nav = [
+      %{"label" => "Learn", "items" => [%{"label" => "Word games", "href" => "/games"}]},
+      %{"label" => "News", "items" => [%{"label" => "The Game", "href" => "/game"}]}
+    ]
+
+    games = %{base_assigns(nav) | current_path: "/games"}
+    html = render_component(&HostLayoutNavigation.desktop_nav/1, games)
+    assert html =~ ~r{href="/games"\s+class="menu-active"}
+    refute html =~ ~r{href="/game"\s+class="menu-active"}
+
+    nested = %{games | current_path: "/game/web"}
+    html = render_component(&HostLayoutNavigation.desktop_nav/1, nested)
+    assert html =~ ~r{href="/game"\s+class="menu-active"}
+    refute html =~ ~r{href="/games"\s+class="menu-active"}
   end
 
   test "mobile hamburger is a <details> toggle (native open/close, focus-independent)" do
@@ -152,6 +220,28 @@ defmodule GamendWeb.HostLayoutNavigationTest do
     assert html =~ ~r/<summary[^>]*aria-label/
     refute html =~ ~s(<button\n)
     refute html =~ ~s(tabindex="0")
+  end
+
+  test "mobile: one top-level group open at a time, nested groups left alone" do
+    html =
+      render_component(
+        &HostLayoutNavigation.mobile_nav/1,
+        base_assigns([
+          %{
+            "label" => "Learn",
+            "items" => [
+              %{"label" => "Words", "href" => "/words"},
+              %{"label" => "More", "items" => [%{"label" => "Tests", "href" => "/tests"}]}
+            ]
+          },
+          %{"label" => "Social", "items" => [%{"label" => "Friends", "href" => "/friends"}]}
+        ])
+      )
+
+    # A shared `<details name>` is the browser's own accordion. The nested
+    # "More" must not share it, or opening it would close "Learn" around it.
+    assert length(Regex.scan(~r/<details[^>]*name="mobile-nav"/, html)) == 2
+    assert length(Regex.scan(~r/<details(?![^>]*data-navbar-dropdown)[^>]*>/, html)) == 3
   end
 
   test "mobile: pinned items render inline (outside the dropdown menu)" do

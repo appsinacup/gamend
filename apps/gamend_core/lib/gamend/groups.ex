@@ -802,9 +802,9 @@ defmodule Gamend.Groups do
   # because `can_manage_group?/2` is admin-membership only. The group could not
   # be recovered; it could only be emptied until it auto-deleted.
   #
-  # A single query, evaluated inside neither a lock nor a transaction: this
-  # closes the ordinary case, while the genuinely concurrent one is closed by
-  # `Gamend.Lock.serialize/3` around the write (see AUDIT.md, advisory locks).
+  # Asked twice: once without a lock, so the ordinary refusal costs nothing,
+  # and again inside `change_member/4`'s lock, which is what closes the
+  # concurrent case (see AUDIT.md, "Group can be left with zero admins").
   defp would_orphan_group?(group_id, target_id) do
     case get_membership(group_id, target_id) do
       %GroupMember{role: "admin"} -> last_admin?(group_id)
@@ -949,57 +949,77 @@ defmodule Gamend.Groups do
       would_orphan_group?(group_id, target_id) ->
         {:error, :last_admin}
 
-      true ->
-        case get_membership(group_id, target_id) do
-          nil ->
-            {:error, :not_member}
+      is_nil(get_membership(group_id, target_id)) ->
+        {:error, :not_member}
 
-          member ->
-            with {:ok, _} <-
-                   Gamend.Hooks.internal_call(:before_group_kick, [
-                     admin_id,
-                     target_id,
-                     group_id
-                   ]) do
-              do_kick_member(member, admin_id, target_id, group_id)
-            end
+      true ->
+        with {:ok, _} <-
+               Gamend.Hooks.internal_call(:before_group_kick, [admin_id, target_id, group_id]),
+             {:ok, deleted} <- change_member(admin_id, group_id, target_id, &remove_member/1) do
+          after_kick(deleted, admin_id, target_id, group_id)
         end
     end
   end
 
-  defp do_kick_member(member, admin_id, target_id, group_id) do
-    case Repo.delete(member) do
-      {:ok, deleted} ->
-        _ = invalidate_group_cache(group_id)
-        broadcast_group(group_id, {:member_kicked, group_id, target_id})
+  defp remove_member(%GroupMember{group_id: group_id, user_id: target_id} = member) do
+    if would_orphan_group?(group_id, target_id),
+      do: {:error, :last_admin},
+      else: Repo.rescue_stale(:not_member, fn -> Repo.delete(member) end)
+  end
 
-        # Notify the kicked user
-        group = get_group(group_id)
-        group_title = (group && group.title) || ""
+  defp after_kick(deleted, admin_id, target_id, group_id) do
+    _ = invalidate_group_cache(group_id)
+    broadcast_group(group_id, {:member_kicked, group_id, target_id})
 
-        Gamend.Notifications.admin_create_notification(
-          admin_id,
-          target_id,
-          %{
-            "title" => "Removed from #{group_title}",
-            "content" => "",
-            "metadata" => %{
-              "type" => "group_kicked",
-              "group_id" => group_id,
-              "group_title" => group_title
-            }
-          }
-        )
+    # Notify the kicked user
+    group = get_group(group_id)
+    group_title = (group && group.title) || ""
 
-        Gamend.Async.run(fn ->
-          Gamend.Hooks.internal_call(:after_group_kick, [admin_id, target_id, group_id])
-        end)
+    Gamend.Notifications.admin_create_notification(
+      admin_id,
+      target_id,
+      %{
+        "title" => "Removed from #{group_title}",
+        "content" => "",
+        "metadata" => %{
+          "type" => "group_kicked",
+          "group_id" => group_id,
+          "group_title" => group_title
+        }
+      }
+    )
 
-        {:ok, deleted}
+    Gamend.Async.run(fn ->
+      Gamend.Hooks.internal_call(:after_group_kick, [admin_id, target_id, group_id])
+    end)
 
-      error ->
-        error
-    end
+    {:ok, deleted}
+  end
+
+  # The checks above read without a lock, so a fast refusal costs nothing.
+  # The write happens here, under the group's lock, against rows read again:
+  # an admin kicked or demoted since, a target who left or was removed, and the
+  # last admin are decided as things are now, and two admins demoting or
+  # kicking each other cannot both land and leave the group with none.
+  # `change` gets the target's membership and answers the write.
+  defp change_member(admin_id, group_id, target_id, change) do
+    Lock.serialize(:group, group_id, fn ->
+      member = get_membership(group_id, target_id)
+
+      cond do
+        not can_manage_group?(admin_id, group_id) ->
+          Repo.rollback(:not_admin)
+
+        is_nil(member) ->
+          Repo.rollback(:not_member)
+
+        true ->
+          case change.(member) do
+            {:ok, result} -> result
+            {:error, reason} -> Repo.rollback(reason)
+          end
+      end
+    end)
   end
 
   # ---------------------------------------------------------------------------
@@ -1019,48 +1039,14 @@ defmodule Gamend.Groups do
         {:error, :cannot_promote_self}
 
       true ->
-        case get_membership(group_id, target_id) do
-          nil ->
-            {:error, :not_member}
-
-          %GroupMember{role: "admin"} ->
-            {:error, :already_admin}
-
-          member ->
-            member
-            |> Ecto.Changeset.change(%{role: "admin"})
-            |> Repo.update()
-            |> case do
-              {:ok, updated} ->
-                _ = invalidate_group_cache(group_id)
-                broadcast_group(group_id, {:member_promoted, group_id, target_id})
-
-                # Notify the promoted user
-                group = get_group(group_id)
-                group_title = (group && group.title) || ""
-
-                Gamend.Notifications.admin_create_notification(
-                  admin_id,
-                  target_id,
-                  %{
-                    "title" => "Promoted to admin in #{group_title}",
-                    "content" => "",
-                    "metadata" => %{
-                      "type" => "group_promoted",
-                      "group_id" => group_id,
-                      "group_title" => group_title
-                    }
-                  }
-                )
-
-                {:ok, updated}
-
-              error ->
-                error
-            end
+        with {:ok, updated} <- change_member(admin_id, group_id, target_id, &make_admin/1) do
+          notify_role_change(updated, admin_id, :member_promoted, "group_promoted")
         end
     end
   end
+
+  defp make_admin(%GroupMember{role: "admin"}), do: {:error, :already_admin}
+  defp make_admin(member), do: set_role(member, "admin")
 
   @doc "Demote an admin to member. Only admins can demote other admins."
   @spec demote_member(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
@@ -1078,47 +1064,51 @@ defmodule Gamend.Groups do
         {:error, :last_admin}
 
       true ->
-        case get_membership(group_id, target_id) do
-          nil ->
-            {:error, :not_member}
-
-          %GroupMember{role: "member"} ->
-            {:error, :already_member}
-
-          member ->
-            member
-            |> Ecto.Changeset.change(%{role: "member"})
-            |> Repo.update()
-            |> case do
-              {:ok, updated} ->
-                _ = invalidate_group_cache(group_id)
-                broadcast_group(group_id, {:member_demoted, group_id, target_id})
-
-                # Notify the demoted user
-                group = get_group(group_id)
-                group_title = (group && group.title) || ""
-
-                Gamend.Notifications.admin_create_notification(
-                  admin_id,
-                  target_id,
-                  %{
-                    "title" => "Demoted to member in #{group_title}",
-                    "content" => "",
-                    "metadata" => %{
-                      "type" => "group_demoted",
-                      "group_id" => group_id,
-                      "group_title" => group_title
-                    }
-                  }
-                )
-
-                {:ok, updated}
-
-              error ->
-                error
-            end
+        with {:ok, updated} <- change_member(admin_id, group_id, target_id, &make_member/1) do
+          notify_role_change(updated, admin_id, :member_demoted, "group_demoted")
         end
     end
+  end
+
+  defp make_member(%GroupMember{role: "member"}), do: {:error, :already_member}
+
+  defp make_member(%GroupMember{group_id: group_id, user_id: target_id} = member) do
+    if would_orphan_group?(group_id, target_id),
+      do: {:error, :last_admin},
+      else: set_role(member, "member")
+  end
+
+  defp set_role(member, role) do
+    Repo.rescue_stale(:not_member, fn ->
+      member |> Ecto.Changeset.change(%{role: role}) |> Repo.update()
+    end)
+  end
+
+  defp notify_role_change(%GroupMember{} = updated, admin_id, event, type) do
+    %GroupMember{group_id: group_id, user_id: target_id} = updated
+    _ = invalidate_group_cache(group_id)
+    broadcast_group(group_id, {event, group_id, target_id})
+
+    group = get_group(group_id)
+    group_title = (group && group.title) || ""
+
+    title =
+      case event do
+        :member_promoted -> "Promoted to admin in #{group_title}"
+        :member_demoted -> "Demoted to member in #{group_title}"
+      end
+
+    Gamend.Notifications.admin_create_notification(
+      admin_id,
+      target_id,
+      %{
+        "title" => title,
+        "content" => "",
+        "metadata" => %{"type" => type, "group_id" => group_id, "group_title" => group_title}
+      }
+    )
+
+    {:ok, updated}
   end
 
   # ---------------------------------------------------------------------------

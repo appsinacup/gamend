@@ -14,6 +14,9 @@ defmodule Gamend.Retention do
     forever": snapshots hold user metadata, and the window is what bounds that
     exposure. Runs flagged anomalous keep
     `GAMEND_RETENTION_LOBBY_SNAPSHOTS_FLAGGED_DAYS` instead (default 90).
+  - Closed reports (`Gamend.Reports`) and their images, on that module's own
+    `retention_days` (180), counted from when they were closed. Open reports
+    are never pruned.
   - Client log sessions (`Gamend.ClientLogs`), on their own settings rather
     than a `GAMEND_RETENTION_*` var: `retention_days` (14) and
     `retention_flagged_days` (90), keyed off `last_seen_at`. This prunes the
@@ -29,6 +32,10 @@ defmodule Gamend.Retention do
   - `GAMEND_RETENTION_TOURNAMENTS_DAYS` / `GAMEND_RETENTION_LEDGER_DAYS` — finished
     tournaments and the wallet/inventory ledgers. Both default to `0`: they
     are history an operator may be required to keep.
+  - `GAMEND_RETENTION_ANALYTICS_EVENTS_DAYS` — `analytics_events` rows (one per
+    thing a player did, behind the per-feature DAU and the Grafana product
+    dashboards) older than N days. Defaults to 365; the daily counters summed
+    from them are never pruned.
   - `GAMEND_RETENTION_ACTIVITY_DAYS` — `user_activity_days` rows (one per user per
     UTC day seen, behind DAU and D1/D7/D30) older than N days. Defaults to
     `0`; the table grows by at most one row per active user per day, and a
@@ -65,6 +72,14 @@ defmodule Gamend.Retention do
   The function takes no arguments and answers how many rows it deleted.
   Registering the same name twice replaces the first, so a module can call this
   at every boot without accumulating duplicates.
+
+  A key family in `Gamend.KV` that is history (one row per day, per game…)
+  has its own one-liner, `register_kv_prefix/3`, whose window can be a fixed
+  number or a setting the host declares:
+
+      Gamend.Retention.register_kv_prefix(:daily_results, "daily:", fn ->
+        Gamend.Settings.get(MyGame.Daily, :history_days)
+      end)
   """
 
   use GenServer
@@ -246,6 +261,32 @@ defmodule Gamend.Retention do
     Application.put_env(:gamend_core, __MODULE__, put_class(class, fun))
   end
 
+  @doc """
+  Register a `Gamend.KV` key family as history: every entry whose key starts
+  with `prefix` is deleted once it has not been written for `days` days
+  (`Gamend.KV.prune_prefix/2`). The class runs, is isolated and reports
+  exactly like any other.
+
+  `days` is a number, or a function answering one, called at every sweep. A
+  function is how the window becomes a setting an operator can change
+  without a deploy: declare it with `Gamend.Settings.Provider` (which gives
+  it an env var, a config key and a row on the admin Settings page) and read
+  it here. `0` keeps everything, as for core's own classes.
+
+      Gamend.Retention.register_kv_prefix(:daily_results, "daily:", fn ->
+        Gamend.Settings.get(MyGame.Daily, :history_days)
+      end)
+  """
+  @spec register_kv_prefix(atom(), String.t(), non_neg_integer() | (-> non_neg_integer())) :: :ok
+  def register_kv_prefix(class, prefix, days)
+      when is_atom(class) and is_binary(prefix) and prefix != "" and
+             ((is_integer(days) and days >= 0) or is_function(days, 0)) do
+    register_class(class, fn -> Gamend.KV.prune_prefix(prefix, window(days)) end)
+  end
+
+  defp window(days) when is_function(days, 0), do: days.()
+  defp window(days), do: days
+
   @doc "Undoes `register_class/2`."
   @spec unregister_class(atom()) :: :ok
   def unregister_class(class) when is_atom(class) do
@@ -345,6 +386,9 @@ defmodule Gamend.Retention do
       activity_days: fn ->
         prune_older_than(Gamend.Analytics.ActivityDay, config(:activity_days))
       end,
+      analytics_events: fn ->
+        prune_older_than(Gamend.Analytics.Event, config(:analytics_events_days))
+      end,
       quest_periods: &Gamend.Quests.prune_old_periods/0,
       quest_reward_recoveries: &Gamend.Quests.recover_pending_rewards/0,
       push_tokens: &prune_push_tokens/0,
@@ -353,7 +397,8 @@ defmodule Gamend.Retention do
       inactive_user_warnings: &warn_inactive_users/0,
       inactive_users: &prune_inactive_users/0,
       orphaned_avatars: &prune_orphaned_avatars/0,
-      orphaned_chat: &prune_orphaned_chat/0
+      orphaned_chat: &prune_orphaned_chat/0,
+      reports: &Gamend.Reports.prune/0
     }
   end
 
@@ -1198,6 +1243,13 @@ defmodule Gamend.Retention do
     doc:
       "Delete per-user daily activity rows (DAU / D1-D7-D30 source) older than N days. " <>
         "0 keeps forever. Below 60 the admin retention cohorts go blank."
+  )
+
+  setting(:analytics_events_days, :integer,
+    default: 365,
+    doc:
+      "Delete analytics event rows (per-feature DAU, Grafana product dashboards) older " <>
+        "than N days. 0 keeps forever. The daily counters summed from them are kept whatever this says."
   )
 
   setting(:interval_hours, :integer,

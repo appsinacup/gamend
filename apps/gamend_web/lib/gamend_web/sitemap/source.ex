@@ -76,7 +76,7 @@ defmodule GamendWeb.Sitemap.Source do
   def urls_for(keys) do
     module = source()
 
-    if module && function_exported?(module, :urls, 1) do
+    if module && Code.ensure_loaded?(module) && function_exported?(module, :urls, 1) do
       Enum.flat_map(keys, &module.urls/1)
     else
       []
@@ -94,7 +94,11 @@ defmodule GamendWeb.Sitemap.Source do
   def signature_inputs do
     module = source()
 
-    if module && function_exported?(module, :signature_inputs, 0) do
+    # `function_exported?/3` is false for a module not loaded yet, and the
+    # `full` image runs `mix phx.server`, which loads lazily: the first
+    # request after boot cached the sitemap under a signature without the
+    # host's inputs, and every later request hit it.
+    if module && Code.ensure_loaded?(module) && function_exported?(module, :signature_inputs, 0) do
       module.signature_inputs()
     else
       []

@@ -567,7 +567,7 @@ defmodule Gamend.ReadyChecks do
   def stats(_hours \\ 24) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        0
+        %{}
 
       _ ->
         raise "Gamend.ReadyChecks.stats/1 is a stub - only available at runtime on Gamend"

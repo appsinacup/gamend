@@ -55,6 +55,13 @@ defmodule Gamend.Content.MarkdownTest do
              ]
     end
 
+    test "a heading keeps its id and loses the empty anchor link" do
+      html = render!("## Rules\n\nx\n")
+
+      assert html =~ ~s(<h2 id="rules">Rules</h2>)
+      refute html =~ "class=\"anchor\""
+    end
+
     test "strip_first_h1 tolerates the id the heading now carries" do
       assert Markdown.strip_first_h1(
                ~s(<h1 id="t">T<a href="#t" class="anchor"></a></h1>\n<p>x</p>)

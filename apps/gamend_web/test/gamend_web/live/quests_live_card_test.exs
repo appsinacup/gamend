@@ -302,7 +302,7 @@ defmodule GamendWeb.QuestsLiveCardTest do
     html = page(conn)
 
     assert html =~ "card-title text-lg"
-    assert html =~ "text-sm text-base-content/70 line-clamp-2"
+    assert html =~ "text-sm text-muted line-clamp-2"
   end
 
   test "a signed-out visitor gets no per-viewer status badge", %{conn: conn} do

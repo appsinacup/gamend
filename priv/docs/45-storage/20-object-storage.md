@@ -79,6 +79,7 @@ Gamend.Storage.list_objects(prefix: "icons/", offset: 0, limit: 50)
 - **Admin → Storage** (`/admin/storage`): usage summary (object count and bytes), a paginated object list filterable by key prefix with preview and per-object delete, and a direct upload. Backend-agnostic: the page works the same over local disk and S3.
 - The admin HTTP API mirrors it: `GET` / `DELETE /api/v1/admin/storage` (a page of objects), `GET /api/v1/admin/storage/usage` (count and bytes under a `prefix`), and `PUT` / `GET /api/v1/admin/storage/object`.
 - Stored avatars whose owner no longer exists are swept automatically; see [Data Retention](/docs/data-retention).
+- An OAuth sign-in stores the provider's avatar URL, and `Gamend.Accounts.AvatarMirror` (queue `storage`) copies the image to `avatars/<user_id>/…` and points `profile_url` at the copy. Until it succeeds, and when it gives up, the provider URL stays in the row and is never shown: pages, realtime payloads and API answers read `User.public_avatar_url/1`, which returns only an avatar under the user's own `avatars/<id>/` key and nil otherwise. A hotlinked provider image would send each viewer's IP to the provider, and a Discord one names the player's Discord account.
 
 ## Reference
 

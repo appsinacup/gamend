@@ -554,7 +554,7 @@ defmodule Gamend.Tournaments do
   def list_tournament_groups(_opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        %{}
+        []
 
       _ ->
         raise "Gamend.Tournaments.list_tournament_groups/1 is a stub - only available at runtime on Gamend"
@@ -762,7 +762,7 @@ defmodule Gamend.Tournaments do
   def standard_seed_order(_size) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        0
+        []
 
       _ ->
         raise "Gamend.Tournaments.standard_seed_order/1 is a stub - only available at runtime on Gamend"

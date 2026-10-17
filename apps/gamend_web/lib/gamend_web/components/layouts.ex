@@ -27,6 +27,11 @@ defmodule GamendWeb.Layouts do
     doc:
       "pass `false` when the page paints its own decorative icon layer, as `GamendWeb.PresentationPage` does — otherwise the shell adds a second one on top"
 
+  attr :nav_key, :any,
+    default: nil,
+    doc:
+      "a value the navbar shows that the page itself changes, such as a coin balance a `{Module.fun}` nav label reads: the navbar re-renders when it moves. Without it the navbar keeps what it showed at the first render"
+
   slot :inner_block, required: true
 
   def app(assigns) do

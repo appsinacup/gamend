@@ -63,14 +63,15 @@ defmodule Gamend.Accounts.Sessions do
      own the inbox, so the user gets confirmed, logged in, and all tokens -
      including session ones - are expired.
 
-  3. As 2, with a password set: registered with one (`POST /api/v1/register`)
-     and never confirmed. The password is removed as the email is confirmed.
-     Whoever registered the address chose it before anyone proved they own
-     the inbox, so it may be someone else's, and kept it would sign them into
-     the account its owner has just claimed (the "Mixing magic link and
-     password registration" section of `mix help phx.gen.auth`). The owner
-     sets a new one in settings; the link in the confirmation email confirms
-     the account and keeps the password.
+  3. As 2, with a password set: registered when `POST /api/v1/register` still
+     took one, or a guest account given an email, and never confirmed. The
+     password is removed as the email is confirmed. Whoever set it did so
+     before anyone proved they own the inbox, so it may be someone else's,
+     and kept it would sign them into the account its owner has just claimed
+     (the "Mixing magic link and password registration" section of
+     `mix help phx.gen.auth`). The owner sets a new one in settings. The
+     confirmation email's link removes it the same way
+     (`Gamend.Accounts.confirm_user_by_token/1`); its code sets the password.
   """
   @spec login_user_by_magic_link(String.t()) ::
           {:ok, {User.t(), [UserToken.t()]}} | {:error, :not_found | Ecto.Changeset.t() | term()}

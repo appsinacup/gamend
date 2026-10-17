@@ -12,10 +12,15 @@ defmodule GamendWeb.NotificationsLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <div class="flex items-center justify-between">
+        <%!-- Wraps: on a 360 px phone the title and Delete all overran the
+              screen by 10 px. --%>
+        <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 class="text-4xl font-black text-base-content/95">{gettext("Notifications")}</h1>
-            <p class="text-base-content/60 mt-1">
+            <div class="flex items-center gap-3">
+              <.back_link href={home_path()} />
+              <.page_title icon="hero-bell-solid">{gettext("Notifications")}</.page_title>
+            </div>
+            <p class="text-muted mt-1">
               {@notif_count} / {@notif_unread_count}
             </p>
           </div>
@@ -55,7 +60,7 @@ defmodule GamendWeb.NotificationsLive do
                         <.entity_icon
                           icon_url={n.icon_url}
                           type={:notification}
-                          class="w-4 h-4 shrink-0 text-base-content/60"
+                          class="w-4 h-4 shrink-0 text-muted"
                         />
                         {translate_notification_title(n)}
                       </div>
@@ -78,7 +83,10 @@ defmodule GamendWeb.NotificationsLive do
                     <td class="flex gap-1 flex-wrap">
                       <%= if action = notification_action(n) do %>
                         <% {label, path} = action %>
-                        <.link navigate={path} class="btn btn-sm btn-outline btn-primary">
+                        <%!-- `href`, not `navigate`: a notice leads anywhere
+                        (`/admin/reports` is another live_session), and
+                        `live_nav.js` makes a same-session link live. --%>
+                        <.link href={path} class="btn btn-sm btn-outline btn-primary">
                           {label}
                         </.link>
                       <% end %>
@@ -191,8 +199,40 @@ defmodule GamendWeb.NotificationsLive do
   def handle_info(_msg, socket), do: {:noreply, socket}
 
   defp notification_action(n) do
-    action_for_type(n.metadata["type"], n) || action_for_metadata(n.metadata)
+    case action_for_type(n.metadata["type"], n) || action_for_metadata(n.metadata) do
+      {_label, path} = action -> if page_open?(path), do: action
+      nil -> nil
+    end
   end
+
+  # A notification still arrives when its page is switched off on the site
+  # (the game sends chat, friend, group and cup traffic regardless), so its
+  # button goes.
+  defp page_open?(path) do
+    cond do
+      under?(path, "/chat") ->
+        GamendWeb.Features.enabled?(:web_chat)
+
+      under?(path, "/groups") ->
+        GamendWeb.Features.enabled?(:web_groups) and GamendWeb.Features.enabled?(:list_groups)
+
+      under?(path, "/tournaments") ->
+        GamendWeb.Features.enabled?(:web_tournaments) and
+          GamendWeb.Features.enabled?(:list_tournaments)
+
+      path == ~p"/users/settings?#{[tab: "friends"]}" ->
+        GamendWeb.Features.enabled?(:web_friends)
+
+      under?(path, "/play") ->
+        GamendWeb.Features.enabled?(:play)
+
+      true ->
+        true
+    end
+  end
+
+  defp under?(path, root),
+    do: path == root or String.starts_with?(path, [root <> "/", root <> "?"])
 
   defp action_for_type("group_invite", n) do
     group_id = n.metadata["group_id"]

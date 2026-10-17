@@ -57,9 +57,10 @@ defmodule Gamend.Accounts do
     password is looked at, and for the failure that locks it.
     
     `{:error, :email_not_confirmed}` for the right password on an account whose
-    email was never confirmed. Anyone can register any address with a password,
-    so the password signs nobody in until the inbox's owner has confirmed it.
-    It is answered only after the password matched, so it tells nothing to
+    email was never confirmed: registering takes no password, so only a guest
+    account given an email, or one registered when the API still took one, can
+    have it. The password signs nobody in until the inbox's owner has confirmed
+    it. It is answered only after the password matched, so it tells nothing to
     someone who does not know it.
     
   """
@@ -474,10 +475,53 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
-    Confirm a user by an email confirmation token (context: "confirm").
+    Confirms the unconfirmed account registered to `email` with the code from
+    its confirmation email, sets its password, and returns it signed in by the
+    caller (`POST /api/v1/register/confirm`).
+    
+    The code is the proof that the caller reads the inbox, which is why the
+    password is set here and never at registration.
+    
+    - `{:error, %Ecto.Changeset{}}` for a password the account would refuse.
+      It is checked before the code, so it costs no attempt and says nothing
+      about the code.
+    - `{:error, :invalid_code}` for a wrong, spent or expired code, an address
+      with no unconfirmed account, or one already confirmed: the same answer,
+      so it tells no one which addresses are registered.
+    - `{:error, {:locked, seconds}}`: a wrong code counts toward the address's
+      sign-in lockout (`Gamend.Accounts.LoginLockouts`), shared with passwords.
+      The failure that locks it also voids the code, so guessing needs a fresh
+      email for every few tries; the link keeps working.
+    
+    Success revokes every earlier token of the account, as a password change
+    does, and returns them so the caller can disconnect the sessions.
+    
+  """
+  @spec confirm_user_by_code(String.t(), String.t(), String.t()) ::
+          {:ok, {Gamend.Accounts.User.t(), [Gamend.Accounts.UserToken.t()]}}
+          | {:error, :invalid_code | {:locked, pos_integer()} | Ecto.Changeset.t()}
+  def confirm_user_by_code(_email, _code, _password) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Accounts.confirm_user_by_code/3 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Confirm a user by the token in the emailed link (context: "confirm").
     
     Returns {:ok, user} when the token is valid and user was confirmed.
-    Returns {:error, :not_found} or {:error, :expired} when token is invalid/expired.
+    Returns {:error, :not_found} or {:error, :invalid} when token is invalid/expired.
+    
+    Confirming spends the link and the code sent with it. An account confirmed
+    this way has no password: registration takes none, and one set before the
+    address was proved is removed, since whoever set it may not own the inbox
+    (an account registered when the API still took one, or a guest account
+    that was given an email). Its owner sets one in settings, where the link's
+    page signs them in, or confirms with the code instead.
     
   """
   @spec confirm_user_by_token(String.t()) ::
@@ -1258,6 +1302,35 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
+    The account an emailed confirmation link belongs to, or `nil` for a link
+    that is malformed, spent or expired. It only reads: the page the link opens
+    shows the account, and confirming waits for its button
+    (`confirm_user_by_token/1`), so a mail scanner that opens every link in an
+    email confirms nothing and spends nothing.
+    
+  """
+  @spec get_user_by_confirm_token(String.t()) :: Gamend.Accounts.User.t() | nil
+  def get_user_by_confirm_token(_token) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        if :erlang.phash2(make_ref(), 2) == 0,
+          do: nil,
+          else: %Gamend.Accounts.User{
+            id: 0,
+            email: "",
+            display_name: nil,
+            metadata: %{},
+            is_admin: false,
+            inserted_at: ~U[1970-01-01 00:00:00Z],
+            updated_at: ~U[1970-01-01 00:00:00Z]
+          }
+
+      _ ->
+        raise "Gamend.Accounts.get_user_by_confirm_token/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Get a user by their Discord ID.
     
     Returns `%User{}` or `nil`.
@@ -1698,14 +1771,15 @@ defmodule Gamend.Accounts do
        own the inbox, so the user gets confirmed, logged in, and all tokens -
        including session ones - are expired.
     
-    3. As 2, with a password set: registered with one (`POST /api/v1/register`)
-       and never confirmed. The password is removed as the email is confirmed.
-       Whoever registered the address chose it before anyone proved they own
-       the inbox, so it may be someone else's, and kept it would sign them into
-       the account its owner has just claimed (the "Mixing magic link and
-       password registration" section of `mix help phx.gen.auth`). The owner
-       sets a new one in settings; the link in the confirmation email confirms
-       the account and keeps the password.
+    3. As 2, with a password set: registered when `POST /api/v1/register` still
+       took one, or a guest account given an email, and never confirmed. The
+       password is removed as the email is confirmed. Whoever set it did so
+       before anyone proved they own the inbox, so it may be someone else's,
+       and kept it would sign them into the account its owner has just claimed
+       (the "Mixing magic link and password registration" section of
+       `mix help phx.gen.auth`). The owner sets a new one in settings. The
+       confirmation email's link removes it the same way
+       (`Gamend.Accounts.confirm_user_by_token/1`); its code sets the password.
     
   """
   @spec login_user_by_magic_link(String.t()) ::
@@ -1830,6 +1904,42 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
+    `register_user_and_deliver/3` for a game client (`POST /api/v1/register`):
+    every account it makes starts unconfirmed and is sent the email, the first
+    one too. A client has no page to sign the first account in, and with no
+    password it could not sign in any other way, so it confirms with the code
+    like everyone else (`confirm_user_by_code/3`). It still becomes the admin.
+    
+  """
+  @spec register_unconfirmed_user_and_deliver(
+          Gamend.Types.user_registration_attrs(),
+          (String.t() -> String.t()),
+          module()
+        ) :: {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t() | term()}
+  def register_unconfirmed_user_and_deliver(
+        _attrs,
+        _confirmation_url_fun,
+        _notifier \\ Gamend.Accounts.UserNotifier
+      ) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok,
+         %Gamend.Accounts.User{
+           id: 0,
+           email: "",
+           display_name: nil,
+           metadata: %{},
+           is_admin: false,
+           inserted_at: ~U[1970-01-01 00:00:00Z],
+           updated_at: ~U[1970-01-01 00:00:00Z]
+         }}
+
+      _ ->
+        raise "Gamend.Accounts.register_unconfirmed_user_and_deliver/3 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Registers a user.
     
     ## Attributes
@@ -1874,7 +1984,16 @@ defmodule Gamend.Accounts do
     email goes out from the `mailers` queue (`Gamend.Accounts.ConfirmationMailer`),
     enqueued in the transaction that inserts the user: the call returns once
     both are committed, without waiting on SMTP, and a failed send is retried
-    there. The first user becomes the admin and is confirmed, with no email.
+    there. The email carries a link and a code (`confirm_user_by_code/3`).
+    
+    The first user becomes the admin and is confirmed, with no email: the
+    browser form signs it in itself. A caller that cannot uses
+    `register_unconfirmed_user_and_deliver/3`.
+    
+    No password is taken. Whoever registers an address has not shown they own
+    it, so a password chosen now could be someone else's, and it would sign them
+    into the account once the address's owner confirmed it. The password is set
+    after the inbox is proved: with the code, or in the settings the link opens.
     
   """
   @spec register_user_and_deliver(Gamend.Types.user_registration_attrs(), (String.t() ->
@@ -1906,7 +2025,16 @@ defmodule Gamend.Accounts do
     email goes out from the `mailers` queue (`Gamend.Accounts.ConfirmationMailer`),
     enqueued in the transaction that inserts the user: the call returns once
     both are committed, without waiting on SMTP, and a failed send is retried
-    there. The first user becomes the admin and is confirmed, with no email.
+    there. The email carries a link and a code (`confirm_user_by_code/3`).
+    
+    The first user becomes the admin and is confirmed, with no email: the
+    browser form signs it in itself. A caller that cannot uses
+    `register_unconfirmed_user_and_deliver/3`.
+    
+    No password is taken. Whoever registers an address has not shown they own
+    it, so a password chosen now could be someone else's, and it would sign them
+    into the account once the address's owner confirmed it. The password is set
+    after the inbox is proved: with the code, or in the settings the link opens.
     
   """
   @spec register_user_and_deliver(
@@ -1930,41 +2058,6 @@ defmodule Gamend.Accounts do
 
       _ ->
         raise "Gamend.Accounts.register_user_and_deliver/3 is a stub - only available at runtime on Gamend"
-    end
-  end
-
-  @doc ~S"""
-    Register a user with an email and a password and queue the confirmation
-    email, as `register_user_and_deliver/3` does for the browser form: how a
-    game client signs up (`POST /api/v1/register`). The password signs in once
-    the email is confirmed (`Gamend.Accounts.authenticate_by_password/2`).
-    
-  """
-  @spec register_user_with_password_and_deliver(
-          Gamend.Types.user_registration_attrs(),
-          (String.t() -> String.t()),
-          module()
-        ) :: {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t() | term()}
-  def register_user_with_password_and_deliver(
-        _attrs,
-        _confirmation_url_fun,
-        _notifier \\ Gamend.Accounts.UserNotifier
-      ) do
-    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
-      :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
-
-      _ ->
-        raise "Gamend.Accounts.register_user_with_password_and_deliver/3 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -2008,6 +2101,31 @@ defmodule Gamend.Accounts do
 
       _ ->
         raise "Gamend.Accounts.require_account_activation?/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Sends the confirmation email again, with a new code, to the unconfirmed
+    account registered to `email` (`POST /api/v1/register/resend`). Only the
+    newest code works; links already sent keep working until they expire.
+    
+    Always `:ok`, whether or not such an account exists, so it tells no one
+    which addresses are registered. At most one email per account per minute
+    is queued; the rest are dropped.
+    
+  """
+  @spec resend_confirmation(String.t(), (String.t() -> String.t()), module()) :: :ok
+  def resend_confirmation(
+        _email,
+        _confirmation_url_fun,
+        _notifier \\ Gamend.Accounts.UserNotifier
+      ) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :ok
+
+      _ ->
+        raise "Gamend.Accounts.resend_confirmation/3 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -2470,6 +2588,48 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
+    Changes a user's `metadata` from the row as it is stored now.
+    
+    `fun` gets the stored map (`%{}` for none) and answers the new one,
+    `:unchanged` to write nothing, or `{:error, reason}` to refuse. It can run
+    more than once, so it must only compute.
+    
+    `metadata` is one map that core (payments), plugins and the host all write
+    their own keys into, and a write replaces all of it: a writer that builds the
+    map from a user it read earlier puts every other writer's keys back as they
+    were then. This reads the row, asks `fun`, runs the `before_user_update` hook
+    with no database lock held, and writes under the user's lock only if the
+    stored map is still the one `fun` started from. When it is not, it starts
+    over, up to 5 times, then answers `{:error, :conflict}`.
+    Calls for one user on one node take turns (`Gamend.Lock.Local.in_turn/2`),
+    so they do not all read at once and retry in lockstep.
+    
+    Answers `{:ok, user}` (the stored user when nothing was written),
+    `{:error, :not_found}`, the refusal, or the hook's or changeset's error.
+    
+  """
+  @spec update_user_metadata(Ecto.UUID.t(), (map() -> map() | :unchanged | {:error, term()})) ::
+          {:ok, Gamend.Accounts.User.t()} | {:error, term()}
+  def update_user_metadata(_user_id, _fun) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok,
+         %Gamend.Accounts.User{
+           id: 0,
+           email: "",
+           display_name: nil,
+           metadata: %{},
+           is_admin: false,
+           inserted_at: ~U[1970-01-01 00:00:00Z],
+           updated_at: ~U[1970-01-01 00:00:00Z]
+         }}
+
+      _ ->
+        raise "Gamend.Accounts.update_user_metadata/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Updates the user password.
     
     Returns a tuple with the updated user, as well as a list of expired tokens.
@@ -2524,6 +2684,45 @@ defmodule Gamend.Accounts do
 
       _ ->
         raise "Gamend.Accounts.update_username/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Sign-up for a visitor who is already playing on an anonymous account: the
+    email goes on THAT account, and the confirmation email is queued exactly as
+    for a new one. Same account id, so everything it holds stays; the link in the
+    email signs in to it on any device and confirms the address.
+    
+    `{:error, :not_anonymous}` for an account that already has an identity.
+    
+  """
+  @spec upgrade_anonymous_user_and_deliver(
+          Gamend.Accounts.User.t(),
+          Gamend.Types.user_registration_attrs(),
+          (String.t() -> String.t()),
+          module()
+        ) :: {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t() | term()}
+  def upgrade_anonymous_user_and_deliver(
+        _user,
+        _attrs,
+        _confirmation_url_fun,
+        _notifier \\ Gamend.Accounts.UserNotifier
+      ) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok,
+         %Gamend.Accounts.User{
+           id: 0,
+           email: "",
+           display_name: nil,
+           metadata: %{},
+           is_admin: false,
+           inserted_at: ~U[1970-01-01 00:00:00Z],
+           updated_at: ~U[1970-01-01 00:00:00Z]
+         }}
+
+      _ ->
+        raise "Gamend.Accounts.upgrade_anonymous_user_and_deliver/4 is a stub - only available at runtime on Gamend"
     end
   end
 

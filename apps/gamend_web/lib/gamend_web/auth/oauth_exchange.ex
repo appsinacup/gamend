@@ -161,19 +161,13 @@ defmodule GamendWeb.Auth.OAuthExchange do
     )
   end
 
-  # Steam is OpenID, not OAuth: the session id rides in `return_to`, and the
-  # callback reads it back as `state`.
-  def authorization_url("steam", state) do
-    base = GamendWeb.endpoint().url()
-
-    query("https://steamcommunity.com/openid/login", [
-      {"openid.ns", "http://specs.openid.net/auth/2.0"},
-      {"openid.mode", "checkid_setup"},
-      {"openid.return_to", "#{base}/auth/steam/callback?#{URI.encode_query(state: state)}"},
-      {"openid.realm", base},
-      {"openid.identity", "http://specs.openid.net/auth/2.0/identifier_select"},
-      {"openid.claimed_id", "http://specs.openid.net/auth/2.0/identifier_select"}
-    ])
+  # Steam is OpenID, run by Ueberauth, whose callback checks a state cookie
+  # only its own request phase sets. So the page is that request,
+  # `/auth/steam`, in the browser that will sign in; the session id rides
+  # along and waits for the callback in the Plug session
+  # (`GamendWeb.AuthController`'s `stash_steam_session/2`).
+  def authorization_url("steam", session_id) do
+    query("#{GamendWeb.endpoint().url()}/auth/steam", session_id: session_id)
   end
 
   @doc """

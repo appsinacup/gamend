@@ -10,6 +10,11 @@ defmodule Gamend.Leaderboards.Leaderboard do
   across multiple leaderboard instances (seasons). Use the slug to always target the
   currently active leaderboard, or use the integer `id` for a specific instance.
 
+  ## Hidden
+  A hidden board is ranked and read like any other — by id, by slug, its
+  records — but no public listing shows it (the leaderboards page, the API
+  index). A host that shows a board on its own pages hides it.
+
   ## Icon
   `icon_url` is optional; when nil, clients show their default leaderboard
   icon (the web UI uses `GamendWeb.Icons.default(:leaderboard)`).
@@ -44,6 +49,7 @@ defmodule Gamend.Leaderboards.Leaderboard do
     field :starts_at, :utc_datetime
     field :ends_at, :utc_datetime
     field :metadata, :map, default: %{}
+    field :hidden, :boolean, default: false
 
     has_many :records, Gamend.Leaderboards.Record
 
@@ -51,7 +57,7 @@ defmodule Gamend.Leaderboards.Leaderboard do
   end
 
   @required_fields ~w(slug title)a
-  @optional_fields ~w(description icon_url sort_order operator starts_at ends_at metadata)a
+  @optional_fields ~w(description icon_url sort_order operator starts_at ends_at metadata hidden)a
 
   @doc """
   Changeset for creating a new leaderboard.
@@ -78,7 +84,7 @@ defmodule Gamend.Leaderboards.Leaderboard do
   """
   def update_changeset(leaderboard, attrs) do
     leaderboard
-    |> cast(attrs, [:title, :description, :icon_url, :starts_at, :ends_at, :metadata])
+    |> cast(attrs, [:title, :description, :icon_url, :starts_at, :ends_at, :metadata, :hidden])
     |> validate_length(:icon_url, max: Gamend.Limits.get(:max_profile_url))
     |> validate_length(:title, min: 1, max: Gamend.Limits.get(:max_leaderboard_title))
     |> validate_length(:description, max: Gamend.Limits.get(:max_leaderboard_description))
@@ -116,6 +122,7 @@ defimpl Jason.Encoder, for: Gamend.Leaderboards.Leaderboard do
         :starts_at,
         :ends_at,
         :metadata,
+        :hidden,
         :inserted_at,
         :updated_at
       ],

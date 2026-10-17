@@ -20,7 +20,7 @@ defmodule GamendWeb.AdminLive.Retention do
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h2 class="card-title text-lg">Data Retention</h2>
-                <p class="text-sm text-base-content/60">
+                <p class="text-sm text-muted">
                   Sweeps every 6 hours. Windows are set per class with
                   <code class="text-xs">GAMEND_RETENTION_*</code>
                   env vars (client log sessions with <code class="text-xs">GAMEND_CLIENT_LOGS_RETENTION_*</code>).
@@ -30,7 +30,7 @@ defmodule GamendWeb.AdminLive.Retention do
               </div>
               <div class="flex items-center gap-3">
                 <div class="text-right">
-                  <div class="text-xs text-base-content/60">Last run</div>
+                  <div class="text-xs text-muted">Last run</div>
                   <div class="text-sm font-mono">
                     <.timestamp at={@retention.last_run_at} format="full" empty="never" />
                   </div>
@@ -56,7 +56,7 @@ defmodule GamendWeb.AdminLive.Retention do
                   </tr>
                 </tbody>
               </table>
-              <div class="text-xs text-base-content/70 mt-1">
+              <div class="text-xs text-muted mt-1">
                 Took {@retention.duration_ms} ms. Classes that affected no rows are hidden.
                 Most classes delete rows; a few release seats or send warnings instead.
               </div>
@@ -68,7 +68,7 @@ defmodule GamendWeb.AdminLive.Retention do
         <div class="card bg-base-200 shadow">
           <div class="card-body">
             <h2 class="card-title text-lg">Configured Windows</h2>
-            <p class="text-xs text-base-content/60 mb-2">
+            <p class="text-xs text-muted mb-2">
               Every declared retention setting, client log sessions included, with its
               effective value. Values marked default were never configured by the host.
             </p>
@@ -90,7 +90,7 @@ defmodule GamendWeb.AdminLive.Retention do
                         default
                       </span>
                     </td>
-                    <td class="text-xs text-base-content/60">{window.doc}</td>
+                    <td class="text-xs text-muted">{window.doc}</td>
                   </tr>
                 </tbody>
               </table>

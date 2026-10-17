@@ -42,7 +42,9 @@ defmodule Gamend.Notifications.Types do
     "chat_report_resolved" => "A report you filed was reviewed",
     "chat_warning" => "A moderator sent a warning",
     "chat_mute" => "Muted in chat",
-    "quest_completed" => "A quest or achievement was completed"
+    "quest_completed" => "A quest or achievement was completed",
+    "report" => "A report is waiting for review",
+    "report_resolved" => "A report you filed was reviewed"
   }
 
   @doc "Core notification codes, mapped to their description."

@@ -86,6 +86,21 @@ defmodule Gamend.Database do
   setting(:queue_interval_ms, :integer, default: 1_000)
   setting(:query_timeout_ms, :integer, default: 15_000)
 
+  setting(:slow_query_ms, :integer,
+    default: 1_000,
+    doc:
+      "Log a query that runs, or waits for a connection, longer than N ms, with " <>
+        "where in the code it came from (`Gamend.Repo.SlowLog`). 0 turns it off."
+  )
+
+  setting(:slow_transaction_ms, :integer,
+    default: 2_000,
+    doc:
+      "Log a transaction that holds its connection longer than N ms. On SQLite that " <>
+        "is the write lock others wait on, so this names what a \"database is locked\" " <>
+        "waited for. 0 turns it off."
+  )
+
   setting(:sqlite_path, :string,
     doc: "Where the SQLite file lives. Point at a mounted volume in production."
   )

@@ -28,7 +28,7 @@ defmodule GamendWeb.AdminLive.LobbySnapshots do
             <h1 class="text-xl font-bold">Lobby snapshots</h1>
           </div>
 
-          <div class="flex items-center gap-2 text-xs text-base-content/60">
+          <div class="flex items-center gap-2 text-xs text-muted">
             <span :if={not @enabled} class="badge badge-warning badge-sm">capture disabled</span>
             <span>Buffered: {@writer.buffered}</span>
             <span :if={@writer.dropped > 0} class="text-error font-semibold">
@@ -88,7 +88,7 @@ defmodule GamendWeb.AdminLive.LobbySnapshots do
             >
               flagged only
             </button>
-            <span class="text-xs text-base-content/60">
+            <span class="text-xs text-muted">
               <%= if length(@lobbies) >= @run_limit do %>
                 {ngettext("latest %{count} run", "latest %{count} runs", @run_limit)}
               <% else %>
@@ -97,7 +97,7 @@ defmodule GamendWeb.AdminLive.LobbySnapshots do
             </span>
           </div>
 
-          <div :if={@lobbies == []} class="text-sm text-base-content/60 py-8 text-center">
+          <div :if={@lobbies == []} class="text-sm text-muted py-8 text-center">
             {if @flagged_only, do: "No flagged runs.", else: "No runs recorded yet."}
           </div>
 
@@ -170,7 +170,7 @@ defmodule GamendWeb.AdminLive.LobbySnapshots do
             </form>
           </div>
 
-          <div :if={@filter != ""} class="text-xs text-base-content/60">
+          <div :if={@filter != ""} class="text-xs text-muted">
             Showing rows and events matching <span class="font-mono">{@filter}</span>. Snapshots
             with no match are still listed so the timeline keeps its shape.
           </div>
@@ -197,22 +197,22 @@ defmodule GamendWeb.AdminLive.LobbySnapshots do
                     flagged
                   </span>
                 </div>
-                <span class="text-xs text-base-content/70">
+                <span class="text-xs text-muted">
                   <.timestamp at={interval.snapshot.inserted_at} format="full" empty="—" />
                 </span>
               </button>
 
               <div :if={@expanded == interval.snapshot.id} class="mt-3 space-y-3">
-                <div :if={@diff == %{} and interval.index == 1} class="text-xs text-base-content/60">
+                <div :if={@diff == %{} and interval.index == 1} class="text-xs text-muted">
                   First snapshot of the run — nothing to compare against. Full state below.
                 </div>
-                <div :if={@diff == %{} and interval.index > 1} class="text-xs text-base-content/60">
+                <div :if={@diff == %{} and interval.index > 1} class="text-xs text-muted">
                   No changes from the previous snapshot.
                 </div>
 
                 <div :for={{section, changes} <- @diff} class="space-y-1">
                   <div class="flex items-center justify-between gap-2">
-                    <div class="text-xs font-semibold uppercase tracking-wide text-base-content/70">
+                    <div class="text-xs font-semibold uppercase tracking-wide text-muted">
                       {section}
                       <span class="opacity-50 normal-case font-normal">
                         {shown_count(changes, @filter, @section_filters[section])}
@@ -258,7 +258,7 @@ defmodule GamendWeb.AdminLive.LobbySnapshots do
                     </table>
                     <div
                       :if={visible_changes(changes, @filter, @section_filters[section]) == []}
-                      class="text-xs text-base-content/70 py-2"
+                      class="text-xs text-muted py-2"
                     >
                       No rows match.
                     </div>
@@ -266,7 +266,7 @@ defmodule GamendWeb.AdminLive.LobbySnapshots do
                 </div>
 
                 <details class="text-xs">
-                  <summary class="cursor-pointer text-base-content/60">Raw sections</summary>
+                  <summary class="cursor-pointer text-muted">Raw sections</summary>
                   <pre class="mt-2 p-2 bg-base-200 rounded overflow-x-auto text-xs">{@raw}</pre>
                 </details>
               </div>
@@ -313,7 +313,7 @@ defmodule GamendWeb.AdminLive.LobbySnapshots do
 
     ~H"""
     <div :if={@events != []} class="pl-4 border-l-2 border-base-300 space-y-1">
-      <div :if={@label} class="text-xs text-base-content/70">
+      <div :if={@label} class="text-xs text-muted">
         {@label}
         <span :if={@total != length(@events)} class="opacity-70">
           — {length(@events)} of {@total} match
@@ -359,7 +359,7 @@ defmodule GamendWeb.AdminLive.LobbySnapshots do
       <%!-- Rendered as discrete key/value chips rather than one inspect/1 blob:
             the blob was truncated mid-token ("serialized" => tru), which is both
             unreadable and unsearchable. --%>
-      <span :for={{key, value} <- @fields} class="font-mono text-base-content/60">
+      <span :for={{key, value} <- @fields} class="font-mono text-muted">
         <span class="opacity-70">{key}=</span>{value}
       </span>
     </div>

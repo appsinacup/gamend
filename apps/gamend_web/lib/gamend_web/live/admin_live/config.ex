@@ -548,17 +548,6 @@ defmodule GamendWeb.AdminLive.Config do
 
   def handle_event("prefill_hook", _params, socket), do: {:noreply, socket}
 
-  def handle_event("prefill_args", %{"args" => args_text}, socket) do
-    seq = System.unique_integer([:positive])
-    {:noreply, assign(socket, :hooks_args_prefill, %{value: args_text, seq: seq})}
-  end
-
-  def handle_event("show_docs", %{"doc" => doc, "name" => name, "arity" => arity}, socket) do
-    # arity may arrive as string; keep it as-is for display
-    full_name = "#{name}/#{arity}"
-    {:noreply, assign(socket, hooks_full_doc: doc, hooks_full_name: full_name)}
-  end
-
   def handle_event("close_docs", _params, socket),
     do: {:noreply, assign(socket, hooks_full_doc: nil, hooks_full_name: nil)}
 

@@ -16,11 +16,11 @@ permissions:
 
 env:
   IMAGE: ghcr.io/${{ github.repository }}
-  ELIXIR_VERSION: "1.20.1"
-  OTP_VERSION: "29.0.2"
+  ELIXIR_VERSION: "1.20.4"
+  OTP_VERSION: "29.1.2"
   # Linked statically into the server binaries (rel/scripts/static-deps.sh).
-  OPENSSL_VERSION: "3.5.8"
-  LIBSRTP_VERSION: "2.7.0"
+  OPENSSL_VERSION: "3.5.9"
+  LIBSRTP_VERSION: "2.8.1"
 
 jobs:
   build:
@@ -67,7 +67,8 @@ jobs:
           git config --global --add safe.directory $GITHUB_WORKSPACE || true
           git fetch --prune --unshallow || true
           COMMIT_COUNT=$(git rev-list --count HEAD)
-          VERSION="1.0.${COMMIT_COUNT}"
+          # <major.minor from the VERSION file>.<commit count>, e.g. 1.1.1302
+          VERSION="$(tr -d '[:space:]' < VERSION).${COMMIT_COUNT}"
           echo "Generated version=${VERSION}"
           echo "APP_VERSION=${VERSION}" >> $GITHUB_ENV
           echo "GAMEND_CONTENT_APP_VERSION=${VERSION}" >> $GITHUB_ENV
@@ -256,7 +257,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: elixir:1.20.1-otp-29
+      image: elixir:1.20.4-otp-29
 
     steps:
       - name: Checkout
@@ -333,7 +334,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: elixir:1.20.1-otp-29
+      image: elixir:1.20.4-otp-29
 
     steps:
       - name: Checkout
@@ -406,7 +407,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: elixir:1.20.1-otp-29
+      image: elixir:1.20.4-otp-29
 
     steps:
       - name: Checkout
@@ -455,7 +456,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: elixir:1.20.1-otp-29
+      image: elixir:1.20.4-otp-29
 
     steps:
       - name: Checkout
@@ -523,7 +524,7 @@ jobs:
           --health-retries 5
 
     container:
-      image: elixir:1.20.1-otp-29
+      image: elixir:1.20.4-otp-29
 
     # config/test.exs switches to Postgres on GAMEND_DB_POSTGRES_*; the old
     # POSTGRES_* names matched nothing, so this job silently tested SQLite.
@@ -576,7 +577,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: elixir:1.20.1-otp-29
+      image: elixir:1.20.4-otp-29
 
     steps:
       - name: Checkout
@@ -627,8 +628,8 @@ jobs:
           git config --global --add safe.directory $GITHUB_WORKSPACE || true
           git fetch --prune --unshallow || true
           COMMIT_COUNT=$(git rev-list --count HEAD)
-          # Build a simple semver style version used on CI: 1.0.<commit_count>
-          VERSION="1.0.${COMMIT_COUNT}"
+          # <major.minor from the VERSION file>.<commit count>, e.g. 1.1.1302
+          VERSION="$(tr -d '[:space:]' < VERSION).${COMMIT_COUNT}"
           echo "Generated version=${VERSION}"
 
           # Export for remaining steps in this job
@@ -645,7 +646,7 @@ jobs:
           install-rebar: false
 
       - name: Install Java (for openapi generator)
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v6
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -798,8 +799,8 @@ jobs:
           git config --global --add safe.directory $GITHUB_WORKSPACE || true
           git fetch --prune --unshallow || true
           COMMIT_COUNT=$(git rev-list --count HEAD)
-          # Build a simple semver style version used on CI: 1.0.<commit_count>
-          VERSION="1.0.${COMMIT_COUNT}"
+          # <major.minor from the VERSION file>.<commit count>, e.g. 1.1.1302
+          VERSION="$(tr -d '[:space:]' < VERSION).${COMMIT_COUNT}"
           echo "Generated version=${VERSION}"
 
           # Export for remaining steps in this job
@@ -956,7 +957,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: elixir:1.20.1-otp-29
+      image: elixir:1.20.4-otp-29
 
     # For every step, not only the server's: bench mode is compile-time
     # config, so the deps have to be built under it too.
@@ -1015,12 +1016,30 @@ jobs:
           exit 1
 
       # The first account on a fresh database is the admin; step 6 writes KV
-      # as one.
+      # as one. Registering takes no password: the code in the confirmation
+      # email sets it, read here from the dev server's mailbox.
       - name: Sign up the admin
         run: |
           curl -sf -X POST http://127.0.0.1:4000/api/v1/register \
             -H 'content-type: application/json' \
-            -d '{"email":"admin@example.com","password":"conformance-password-1"}' > /dev/null
+            -d '{"email":"admin@example.com"}' > /dev/null
+          code=""
+          for i in $(seq 1 30); do
+            code=$(curl -sf http://127.0.0.1:4000/dev/mailbox/json | python3 -c '
+          import json, re, sys
+          for email in json.load(sys.stdin)["data"]:
+              found = re.search(r"^\s*(\d{6})\s*$", email.get("text_body") or "", re.M)
+              if found:
+                  print(found.group(1))
+                  break
+          ' || true)
+            if [ -n "$code" ]; then break; fi
+            sleep 1
+          done
+          if [ -z "$code" ]; then tail -100 server.log; exit 1; fi
+          curl -sf -X POST http://127.0.0.1:4000/api/v1/register/confirm \
+            -H 'content-type: application/json' \
+            -d "{\"email\":\"admin@example.com\",\"code\":\"$code\",\"password\":\"conformance-password-1\"}" > /dev/null
 
       - name: Download the C++ SDK
         uses: actions/download-artifact@v8
@@ -1077,7 +1096,6 @@ jobs:
   publish-hex:
     name: Publish Hex packages
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
-    needs: [test-sqlite]
     runs-on: ubuntu-latest
 
     env:
@@ -1095,7 +1113,8 @@ jobs:
           git config --global --add safe.directory $GITHUB_WORKSPACE || true
           git fetch --prune --unshallow || true
           COMMIT_COUNT=$(git rev-list --count HEAD)
-          VERSION="1.0.${COMMIT_COUNT}"
+          # <major.minor from the VERSION file>.<commit count>, e.g. 1.1.1302
+          VERSION="$(tr -d '[:space:]' < VERSION).${COMMIT_COUNT}"
           echo "Generated version=${VERSION}"
           echo "APP_VERSION=${VERSION}" >> $GITHUB_ENV
           echo "GAMEND_CONTENT_APP_VERSION=${VERSION}" >> $GITHUB_ENV
@@ -1171,9 +1190,10 @@ jobs:
           # This matched `in_umbrella: true` for months, which the file never
           # said — so the substitution silently did nothing and every
           # gamend_web publish failed.
-          sed -i "s|{:gamend_core, path: \"../gamend_core\"}|{:gamend_core, \"~> 1.0\"}|g" \
+          MINOR=$(tr -d '[:space:]' < VERSION)
+          sed -i "s|{:gamend_core, path: \"../gamend_core\"}|{:gamend_core, \"~> ${MINOR}\"}|g" \
             apps/gamend_web/mix.exs
-          grep -q '{:gamend_core, "~> 1.0"}' apps/gamend_web/mix.exs ||
+          grep -q "{:gamend_core, \"~> ${MINOR}\"}" apps/gamend_web/mix.exs ||
             { echo "::error::gamend_core path dep rewrite failed - gamend_web would publish broken"; exit 1; }
 
       # Before gamend_web, which resolves gamend_core from the release this
@@ -1226,8 +1246,8 @@ jobs:
           git config --global --add safe.directory $GITHUB_WORKSPACE || true
           git fetch --prune --unshallow || true
           COMMIT_COUNT=$(git rev-list --count HEAD)
-          # Build a simple semver style version used on CI: 1.0.<commit_count>
-          VERSION="1.0.${COMMIT_COUNT}"
+          # <major.minor from the VERSION file>.<commit count>, e.g. 1.1.1302
+          VERSION="$(tr -d '[:space:]' < VERSION).${COMMIT_COUNT}"
           echo "Generated version=${VERSION}"
 
           # Export for remaining steps in this job
@@ -1330,7 +1350,7 @@ jobs:
       - name: Version
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          echo "GAMEND_CONTENT_APP_VERSION=1.0.$(git rev-list --count HEAD)" >> "$GITHUB_ENV"
+          echo "GAMEND_CONTENT_APP_VERSION=$(tr -d '[:space:]' < VERSION).$(git rev-list --count HEAD)" >> "$GITHUB_ENV"
 
       - name: Cache static OpenSSL, libsrtp and OTP
         uses: actions/cache@v6
@@ -1379,7 +1399,7 @@ jobs:
           fetch-depth: 0
 
       - name: Version
-        run: echo "GAMEND_CONTENT_APP_VERSION=1.0.$(git rev-list --count HEAD)" >> "$GITHUB_ENV"
+        run: echo "GAMEND_CONTENT_APP_VERSION=$(tr -d '[:space:]' < VERSION).$(git rev-list --count HEAD)" >> "$GITHUB_ENV"
 
       # `mix assets.deploy` cuts the theme's responsive images with ImageMagick
       # and optimizes PNGs, as the Docker build does.
@@ -1509,7 +1529,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          version="1.0.$(git rev-list --count HEAD)"
+          version="$(tr -d '[:space:]' < VERSION).$(git rev-list --count HEAD)"
           notes="Gamend server $version, built from ${GITHUB_SHA::12}.
 
           Install: \`curl -fsSL https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/rel/install.sh | sh\`

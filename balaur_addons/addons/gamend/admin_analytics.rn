@@ -21,7 +21,7 @@ pub fn get_analytics_counts(node, options) {
 /// Per-day active / new users and cohort retention (admin)
 /// `GET /api/v1/admin/analytics/daily`
 pub fn get_analytics_daily(node, options) {
-    let query = gamend::core::query(options, ["days"]);
+    let query = gamend::core::query(options, ["days", "segment"]);
     gamend::rest(node, "GET", `/api/v1/admin/analytics/daily${query}`)
 }
 
@@ -41,6 +41,7 @@ pub fn get_analytics_snapshot(node) {
 
 /// DAU / WAU / MAU, D1 / D7 / D30 and payer conversion (admin)
 /// `GET /api/v1/admin/analytics`
-pub fn get_analytics_summary(node) {
-    gamend::rest(node, "GET", "/api/v1/admin/analytics")
+pub fn get_analytics_summary(node, options) {
+    let query = gamend::core::query(options, ["segment"]);
+    gamend::rest(node, "GET", `/api/v1/admin/analytics${query}`)
 }

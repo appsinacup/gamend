@@ -80,7 +80,7 @@ defmodule Gamend.Inventory do
   def inventory(_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        0
+        %{}
 
       _ ->
         raise "Gamend.Inventory.inventory/1 is a stub - only available at runtime on Gamend"

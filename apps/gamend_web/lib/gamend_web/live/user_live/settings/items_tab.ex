@@ -19,7 +19,6 @@ defmodule GamendWeb.UserLive.Settings.ItemsTab do
     |> assign(:items_page_size, @page_size)
     |> assign(:items_count, 0)
     |> assign(:items_total_pages, 0)
-    |> reload_items()
   end
 
   def tab(assigns) do
@@ -54,7 +53,7 @@ defmodule GamendWeb.UserLive.Settings.ItemsTab do
           </table>
           <div
             :if={@items_count == 0}
-            class="text-sm text-base-content/70 italic py-4 text-center"
+            class="text-sm text-muted italic py-4 text-center"
           >
             {gettext("No results.")}
           </div>

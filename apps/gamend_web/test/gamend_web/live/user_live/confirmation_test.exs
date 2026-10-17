@@ -119,4 +119,50 @@ defmodule GamendWeb.UserLive.ConfirmationTest do
       assert html =~ "Failed"
     end
   end
+
+  describe "the confirmation email's link" do
+    defp confirm_token(user) do
+      {encoded, user_token} = Accounts.UserToken.build_email_token(user, "confirm")
+      Gamend.Repo.insert!(user_token)
+      encoded
+    end
+
+    test "opening it confirms nothing; its button does", %{conn: conn, unconfirmed_user: user} do
+      token = confirm_token(user)
+
+      {:ok, lv, _html} = live(conn, ~p"/users/confirm/#{token}")
+      assert has_element?(lv, "#confirmation_form")
+      refute has_element?(lv, "#login_form")
+      refute Accounts.get_user!(user.id).confirmed_at
+
+      form = form(lv, "#confirmation_form", %{"user" => %{"token" => token}})
+      render_submit(form)
+      conn = follow_trigger_action(form, conn)
+
+      assert redirected_to(conn) == ~p"/users/settings"
+      assert get_session(conn, :user_token)
+      assert Accounts.get_user!(user.id).confirmed_at
+    end
+
+    test "says a password set before confirming goes away", %{
+      conn: conn,
+      unconfirmed_user: user
+    } do
+      token = user |> set_password() |> confirm_token()
+
+      {:ok, lv, _html} = live(conn, ~p"/users/confirm/#{token}")
+      assert has_element?(lv, "#confirmation_form #confirmation-password-notice")
+    end
+
+    test "a spent or unknown link goes to the login page", %{conn: conn, unconfirmed_user: user} do
+      token = confirm_token(user)
+      {:ok, _} = Accounts.confirm_user_by_token(token)
+
+      {:ok, _lv, html} =
+        live(conn, ~p"/users/confirm/#{token}")
+        |> follow_redirect(conn, ~p"/users/log_in")
+
+      assert html =~ "Failed"
+    end
+  end
 end

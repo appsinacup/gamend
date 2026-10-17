@@ -87,4 +87,38 @@ defmodule Gamend.QuestsRepeatCounterTest do
       assert Quests.resolve_counter(quest, progress(9)) == quest
     end
   end
+
+  describe "counter_start and counter_step" do
+    # A ladder that pays every 50 wins after 100: run 1 is "Wins x 150".
+    defp ladder_tail do
+      %Quest{
+        reset: "repeat",
+        title: "Wins x %{n}",
+        description: "Win %{n} games",
+        metadata: %{"counter_start" => 150, "counter_step" => 50}
+      }
+    end
+
+    test "a repeat quest counts from start in steps" do
+      assert rendered(ladder_tail(), nil).title == "Wins x 150"
+      assert rendered(ladder_tail(), progress(0)).title == "Wins x 150"
+      assert rendered(ladder_tail(), progress(2)).description == "Win 250 games"
+      assert rendered(ladder_tail(), progress(2, "claimed")).title == "Wins x 200"
+    end
+
+    test "a step of a chain reads its own start, so every step shares one msgid" do
+      quest = %Quest{reset: "never", title: "Wins x %{n}", metadata: %{"counter_start" => 30}}
+
+      assert Quests.counter(quest) == 30
+
+      assert Quests.render_counter(Quests.resolve_counter(quest, progress(0))).title ==
+               "Wins x 30"
+    end
+
+    test "missing or bad settings read as 1" do
+      assert Quests.counter(%Quest{title: "x %{n}"}) == 1
+      assert Quests.counter(%Quest{title: "x %{n}", metadata: %{"counter_start" => "7"}}) == 1
+      assert Quests.counter(%Quest{title: "x %{n}", metadata: %{"counter_start" => -3}}) == 1
+    end
+  end
 end

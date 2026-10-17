@@ -19,7 +19,7 @@ runnable host app at the repository root.
 
 ## Project guidelines
 
-- Run `mix precommit` when done and fix what it reports. It compiles with `--warnings-as-errors`, formats, regenerates the SDK and settings docs, extracts theme strings, runs `test`, `credo --strict` and `gamend.api.lint`, and repeats the compile/format/credo steps in `apps/gamend_core` and `apps/gamend_web` (plus `format` in plugins, `sdk` and `sdk_tools`). CI also runs dialyzer and `deps.audit`.
+- Run `mix precommit` when done and fix what it reports. It compiles with `--warnings-as-errors`, formats, regenerates the SDK and settings docs, extracts theme strings, runs `test`, regenerates the Balaur SDK from a fresh OpenAPI document (CI fails a stale one), runs `credo --strict` and `gamend.api.lint`, and repeats the compile/format/credo steps in `apps/gamend_core` and `apps/gamend_web` (plus `format` in plugins, `sdk` and `sdk_tools`). CI also runs dialyzer and `deps.audit`.
 - Use `:req` (`Req`) for HTTP. **Avoid** `:httpoison`, `:tesla` and `:httpc`.
 - Declare settings with `Gamend.Settings.Provider`; never read `System.get_env/1`. The env var name derives from the declaration: `GAMEND_<GROUP>_<NAME>` (`GAMEND_DB_URL`, `GAMEND_LIMITS_MAX_PAGE_SIZE`, `GAMEND_FEATURES_LIST_QUESTS`). `.env.example` and the Settings guide are generated (`mix gamend.settings.env_example`, `mix gamend.settings.guide`).
 - Update `CHANGELOG.md` for new features and for changes to config or public APIs. Format: [CONTRIBUTING.md](CONTRIBUTING.md#finish).
@@ -87,6 +87,7 @@ custom classes must fully style the input
 - **Always use and maintain this import syntax** in the app.css file
 - **Never** use `@apply` when writing raw css
 - daisyUI 5 is loaded as a Tailwind plugin (`assets/vendor/daisyui.js`) and the UI is built on its tokens and component classes. Follow existing pages; radii and colours come from daisyUI tokens ([RULES.md](RULES.md))
+- **Three widths.** A page is the layout's column: the default, or `<Layouts.app wide>` for a page with its own side columns. Anything narrower (a form, an article, a whole login page) is `max-w-narrow` (`--container-narrow`, 48rem, declared in every host stylesheet). Never another `max-w-*` on a page or a centred block; `page_width_test.exs` fails on one, and `/ui` shows it
 - The esbuild bundles are fixed in `config/host_config.exs`: `app.js`, `theme-init.js`, `mermaid.js` from `apps/gamend_web/assets/js`, plus the host's `assets/js/host_hooks.js`
   - You cannot reference an external vendor'd script `src` or link `href` in the layouts
   - You must import the vendor deps into app.js and app.css to use them
@@ -105,6 +106,10 @@ custom classes must fully style the input
 ## Authentication
 
 This application uses both session-based authentication (for browser flows) and JWT authentication (for API flows).
+
+**Where identity travels, and nowhere else.** The website's identity is the session cookie (`UserAuth`, the remember-me cookie); the SDK's is the JWT flow it already uses. A URL carries a path and settings, never an auth token, a signed or encrypted user id, or anything else that says who the caller is: URLs end up in logs, history, `Referer` headers and copied links. A request that needs the caller reads the cookie or the token. When the identity changes mid-page (a guest account made by `UserAuth.ensure_user/1`), the cookie is written by a POST and the socket reconnects; a page that fetched something before then fetches it again on `reconnected()`, it does not carry the identity some other way.
+
+**A provider's avatar is ours to copy, never to show.** An OAuth sign-in stores the provider's image URL only so `Gamend.Accounts.AvatarMirror` can download it once into `avatars/<user_id>/`. No page, payload, API answer or admin screen ever hotlinks it: every viewer's load would spend the provider's rate limit (Google answers 429 readily), send the viewer's IP to the provider, and a Discord URL names the player's Discord account. Anything that draws or sends an avatar reads `User.public_avatar_url/1`, which answers only our copy; an avatar not yet mirrored is the default icon.
 
 ### Browser Authentication
 
@@ -198,7 +203,7 @@ invariants code must keep.
 
 | Context | Guide | Invariants |
 |---|---|---|
-| `Gamend.Accounts` | [authentication](priv/docs/20-authentication/10-authentication.md) | Split into `Accounts.*` submodules; the public API stays on `Gamend.Accounts`. Cache users only via `Accounts.cache_user/1`, never `Cache.put` the `{:accounts, :user, id}` key |
+| `Gamend.Accounts` | [authentication](priv/docs/20-authentication/10-authentication.md) | Split into `Accounts.*` submodules; the public API stays on `Gamend.Accounts`. Cache users only via `Accounts.cache_user/1`, never `Cache.put` the `{:accounts, :user, id}` key. Change `users.metadata` through `Accounts.update_user_metadata/2`, which writes only if the map is still the one it read: core's payments and every plugin keep keys in it |
 | `Gamend.Lobbies` | [lobbies](priv/docs/40-gameplay/02-lobbies.md) | One lobby per user (`users.lobby_id`). Hidden lobbies never appear in public lists. Hostless lobbies are server-managed |
 | `Gamend.Parties` | [parties](priv/docs/40-gameplay/04-parties.md) | One party per user (`users.party_id`). Invite-only; only the leader steers. A party enters a lobby all or nothing |
 | `Gamend.Groups` | [groups](priv/docs/40-gameplay/06-groups.md) | `public` / `private` / `hidden`. Invites in `Groups.Invites`, join requests in `Groups.JoinRequests`, re-exported from `Gamend.Groups` |
@@ -207,7 +212,7 @@ invariants code must keep.
 | `Gamend.Notifications` | [notifications](priv/docs/40-gameplay/70-notifications.md) | The type set is closed: `Notifications.Types` plus plugin `notification_types/0`; an unknown `metadata.type` (string or atom key) is rejected at write. A code core emits goes in `Types` and in the list in `notification_types_test.exs`. Invite records are independent of the notification they send. What a user gets, per group and channel, is `Notifications.Preferences` (private `users.preferences`, never `metadata`); existing sends follow them through their type's group (`group_for_type/1`), and a notice that should also email goes through `notify/3` |
 | `Gamend.Push` | [push](priv/docs/40-gameplay/80-push-notifications.md) | Delivery per token (FCM / APNs) on the Oban `push` queue. No public send endpoint |
 | `Gamend.Quests` | [quests](priv/docs/40-gameplay/40-quests.md) | Achievements are quests with `category: "achievement"`; there is no Achievements context. Progress is server-authoritative, rewards pay exactly once |
-| `Gamend.Leaderboards` | [leaderboards](priv/docs/40-gameplay/10-leaderboards.md) | |
+| `Gamend.Leaderboards` | [leaderboards](priv/docs/40-gameplay/10-leaderboards.md) | A record is unique per user (or label) and `key` (`""` by default); every read ranks within one key, `key: :all` reads across. `hidden` boards are left out of every public listing |
 | `Gamend.Tournaments` | [tournaments](priv/docs/40-gameplay/20-tournaments.md) | Hooks and broadcasts wait for the commit (`Gamend.AfterCommit`); `tick/1` locks with `Lock.exclusive/3`, one transaction per tournament |
 | `Gamend.Matchmaking`, `Gamend.ReadyChecks` | [matchmaking](priv/docs/40-gameplay/30-matchmaking.md) | A party queues as one unit |
 | `Gamend.Economy`, `Gamend.Inventory` | [economy](priv/docs/50-monetization/05-economy.md) | Ledgered through `Gamend.Ledger`. `Economy.spend/4` is one conditional SQL statement and needs no lock |
@@ -244,10 +249,16 @@ Web-side features with no context: the site search palette (`GamendWeb.SearchInd
 - App cache is `Gamend.Cache` (Nebulex 3, multilevel: local L1 + optional Redis/partitioned L2). **Nebulex 3 returns `{:ok, value}` tuples** — use `Gamend.Cache.get!/1` (raw value, `nil` on miss), `fetch/1` or `cached/3`, never bare `get/1` compared against raw values.
 - Read caching uses **version keys**: cache keys embed a `*_cache_version(...)` counter read via `get!(...) || 1`; invalidate with `Gamend.Cache.bump_version/1`, which also bumps the counter on other nodes. Data entries must carry a TTL, normally `Gamend.Cache.ttl/0` (`GAMEND_CACHE_TTL_MS`, default 60s) — that TTL is the cross-instance staleness bound.
 - When a stale read would be *incorrect* (not merely briefly outdated) — cached users gating auth, sessions, tokens, KV values — invalidate with `Gamend.Cache.invalidate/1` (delete + PubSub broadcast; `Gamend.Cache.Sync` evicts the key from other instances' L1) instead of `delete/1`.
+- A fixed-key read-through goes through `Gamend.Cache.cached/3` (or `generation/1` + `fill/4`), not a bare `put` after the query: `invalidate/1` moves the key's generation, and a fill that saw it move while it queried drops what it read. Otherwise a read in flight caches the row from before a write until the TTL (a revoked `token_version`, an old balance). A writer evicts and does not re-cache what it wrote, since two writes can reach the cache in the opposite order to the database. `Gamend.CacheFillRaceTest` stops a reader between its query and its put.
+- Per-user reads a page repeats are cached whole, filled by one query and evicted at the write's single choke point: `Economy.balances/1` (every currency; `change_balance/4` evicts), `Payments` entitlement rows (`{key, status, expires_at}`, active-ness decided against the clock at read time; `after_entitlement_changed/1` evicts), and a KV key with no row (`get/2`, guarded by the scope's entries version). All three skip the cache inside a transaction, both reading and writing: a read there can see a write a rollback undoes. A writer evicts its own node's copy synchronously, so it reads back what it wrote. A new read of this kind follows the same three rules. `Gamend.UserReadCacheTest` runs them on a real cache. The session-token lookup is deliberately not cached: tokens are deleted from too many places for an eviction to be trusted with a revocation.
+
+### Moving between LiveView pages
+
+- A page that ever needs a socket is a LiveView and has it from its first load; a page that never does is a controller page. A plain `<a href>` from a connected LiveView page to another LiveView of the same `live_session` (and the same locale prefix) moves over the open socket: `live_nav.js` reads `GamendWeb.LiveNav`'s route table and marks the link at click time. Nothing to do in a template; `data-no-live-nav` opts a link out, and `<.link navigate>` still works. Because pages now swap without a reload, a hook must remove in `destroyed/0` every window/document listener, interval and observer it adds, and a starter that binds to page content must run again on `phx:page-loading-stop`.
 
 ### Locks
 
-- Any read-modify-write (capacity check before insert, merging a map) runs under `Gamend.Lock.serialize/3`. It uses `pg_advisory_xact_lock` on Postgres (behind a node-local mutex, so waiters hold no connection) and a `:global` mutex (`Gamend.Lock.Local`) on SQLite, so it holds on both.
+- Any read-modify-write (capacity check before insert, merging a map) runs under `Gamend.Lock.serialize/3`. It uses `pg_advisory_xact_lock` on Postgres (behind a node-local mutex, so waiters hold no connection) and a keyed mutex (`Gamend.Lock.Local`) on SQLite, so it holds on both. Waiters queue in arrival order (`Gamend.Lock.Queue`); a bare `:global.trans` retries on a random sleep up to 8 s and leaves a busy lock idle, so code needing an in-memory lock uses `Gamend.Lock.Local.trans/2`.
 - `serialize/3` holds a transaction for its whole function, which on SQLite is the only write lock: keep the function to database work. Hooks, hashing and HTTP calls go before it; broadcasts and tasks inside wait for the commit on their own. A job that must run once cluster-wide but writes in pieces takes `Gamend.Lock.exclusive/3` instead.
 - Atom namespaces are registered in `@namespaces` in `Gamend.Repo.AdvisoryLock` (`:lobby` 1, `:group` 2, `:party` 3, `:friendship` 4, and so on through 12). Register a new one there; a string namespace needs no registration.
 - Prefer an atomic write where one exists (`Economy.spend/4`).

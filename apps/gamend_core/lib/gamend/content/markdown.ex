@@ -107,8 +107,18 @@ defmodule Gamend.Content.Markdown do
 
     with {:ok, document} <- MDEx.parse_document(source, options()),
          {:ok, html} <- document |> transform(opts) |> MDEx.to_html(options()) do
-      {:ok, rewrite_images(html, opts)}
+      {:ok, html |> drop_heading_anchors() |> rewrite_images(opts)}
     end
+  end
+
+  # `header_id_prefix` gives every heading an id AND an empty
+  # `<a class="anchor">` inside it. The id is what a `#section` link and the
+  # table of contents point at; the link draws nothing (no stylesheet styles
+  # it) yet sits in the tab order with no name, which a screen reader reads
+  # as "link" (axe `link-name`, Lighthouse 2026-10-08). So it goes.
+  @doc false
+  def drop_heading_anchors(html) do
+    String.replace(html, ~r{<a\b[^>]*\bclass="anchor"[^>]*>\s*</a>}, "")
   end
 
   defp transform(document, opts) do

@@ -78,6 +78,11 @@ config :gamend_core, Gamend.Accounts.StalePresenceSweeper, enabled: false
 # can never outlive the sandbox owner.
 config :gamend_core, Gamend.Accounts.PresenceWriter, flush_ms: 0
 
+# Analytics counters and events are written through synchronously too, for the
+# same reasons: a test reads a counter the moment a page wrote it, and nothing
+# buffered can outlive the sandbox owner.
+config :gamend_core, Gamend.Analytics.Buffer, flush_ms: 0
+
 # The other periodic workers, for the same reason: neither owns a sandbox
 # connection, and on SQLite they collide with the test's open write transaction
 # ("database is locked"). Tests drive tick/0 and sweep/0 directly.
@@ -113,9 +118,3 @@ config :gamend_core, Gamend.Storage.Local,
 # sandbox receipt buying real goods on a production server — so the test suite
 # has to declare that it is not a production payment environment.
 config :gamend_core, Gamend.Payments.Settings, environment: :sandbox
-
-# The server's deployment environment is the host's `:gamend_web` key, and a
-# few core readers — the Google RTDN webhook's fail-closed check among them —
-# default it to `:prod` when unset. The web app sets it from `config_env()`;
-# the core suite runs without the web app, so it says `:test` itself.
-config :gamend_web, environment: :test

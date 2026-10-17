@@ -61,13 +61,32 @@ void Auth::login_email(std::string email, std::string password, AuthCallback don
                std::move(done));
 }
 
-// Not `sign_in_with`: registering answers the account, never tokens.
-void Auth::register_email(std::string email, std::string password, std::string username,
-                          Callback done) {
-  json params = {{"email", std::move(email)}, {"password", std::move(password)}};
+void Auth::register_email(std::string email, Callback done) {
+  register_email(std::move(email), {}, std::move(done));
+}
+
+// Not `sign_in_with`: registering answers the account, never tokens. Two
+// overloads rather than a defaulted username: the old `(email, password)`
+// call would otherwise compile and send the password as the username.
+void Auth::register_email(std::string email, std::string username, Callback done) {
+  json params = {{"email", std::move(email)}};
   if (!username.empty()) params["username"] = std::move(username);
   core_.rest.send_anonymous("POST", "/api/v1/register", Body::of(std::move(params)),
                             std::move(done));
+}
+
+void Auth::confirm_registration(std::string email, std::string code, std::string password,
+                                AuthCallback done) {
+  sign_in_with("/api/v1/register/confirm",
+               Body::of({{"email", std::move(email)},
+                         {"code", std::move(code)},
+                         {"password", std::move(password)}}),
+               std::move(done));
+}
+
+void Auth::resend_confirmation(std::string email, Callback done) {
+  core_.rest.send_anonymous("POST", "/api/v1/register/resend",
+                            Body::of({{"email", std::move(email)}}), std::move(done));
 }
 
 void Auth::login_steam(std::string ticket, AuthCallback done) {

@@ -160,10 +160,10 @@ defmodule GamendWeb.AdminLive.Storage do
             <button phx-click="refresh" class="btn btn-ghost btn-sm">Refresh</button>
           </div>
           <div class="flex flex-wrap gap-6 text-sm">
-            <div><span class="text-base-content/60">Backend:</span> <b>{@adapter}</b></div>
-            <div><span class="text-base-content/60">Objects:</span> <b>{@count}</b></div>
+            <div><span class="text-muted">Backend:</span> <b>{@adapter}</b></div>
+            <div><span class="text-muted">Objects:</span> <b>{@count}</b></div>
             <div>
-              <span class="text-base-content/60">Total size:</span> <b>{format_bytes(@bytes)}</b>
+              <span class="text-muted">Total size:</span> <b>{format_bytes(@bytes)}</b>
             </div>
           </div>
 
@@ -200,7 +200,7 @@ defmodule GamendWeb.AdminLive.Storage do
               class="flex items-center gap-2 text-xs"
             >
               <span class="font-mono truncate max-w-[14rem]">{entry.client_name}</span>
-              <span class="text-base-content/60">{entry.progress}%</span>
+              <span class="text-muted">{entry.progress}%</span>
               <button
                 type="button"
                 phx-click="cancel_upload_entry"
@@ -260,7 +260,7 @@ defmodule GamendWeb.AdminLive.Storage do
                       class="w-10 h-10 object-cover rounded"
                       loading="lazy"
                     />
-                    <span :if={!image?(obj.key)} class="text-base-content/70 text-xs">file</span>
+                    <span :if={!image?(obj.key)} class="text-muted text-xs">file</span>
                   </td>
                   <td class="font-mono text-xs break-all">{obj.key}</td>
                   <td class="text-xs whitespace-nowrap">{format_bytes(obj.size)}</td>
@@ -289,7 +289,7 @@ defmodule GamendWeb.AdminLive.Storage do
             </table>
           </div>
 
-          <div :if={@objects == []} class="text-center py-8 text-base-content/60">
+          <div :if={@objects == []} class="text-center py-8 text-muted">
             No objects.
           </div>
 

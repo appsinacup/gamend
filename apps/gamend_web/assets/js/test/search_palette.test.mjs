@@ -319,7 +319,7 @@ describe("naming the language in the query", () => {
 describe("typos", () => {
   const pages = [
     {title: "Clasamente", href: "/leaderboards"},
-    {title: "Pirate Pass", href: "/pirate_pass"},
+    {title: "Season Pass", href: "/season_pass"},
     {title: "Spaniolă", href: "/vocabulary/spanish", keywords: ["Spanish"]},
   ]
 
@@ -345,7 +345,7 @@ describe("typos", () => {
     const rows = searchEntries(pages.concat([{title: "Clase", href: "/clase"}]), "clas")
 
     // "clas" is a prefix of both, so neither is a typo and both rank honestly.
-    assert.ok(rows.every((row) => row.href !== "/pirate_pass"))
+    assert.ok(rows.every((row) => row.href !== "/season_pass"))
   })
 
   test("three letters are too few to guess from", () => {

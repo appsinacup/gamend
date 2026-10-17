@@ -91,6 +91,10 @@ Status: `[ ]` open · `[x]` fixed · `[~]` partially fixed (the note says what r
   `repo/advisory_lock.ex:8` says so itself; callers should use `Gamend.Lock.serialize/3`.
 - [x] **Group can be left with zero admins.** `groups.ex:962` (demote), `:837` (kick)
   have no last-admin guard and no lock. Group becomes permanently unmanageable.
+  The audit's fix added the guard but not the lock, so two admins demoting or
+  kicking each other at once still both landed. Since October 2026 kick, promote
+  and demote re-check under `Lock.serialize(:group, …)` (`change_member/4`), and
+  `Gamend.GroupAdminRaceTest` races them directly.
 - [x] **Party leader handover is lockless.** `parties.ex:933`. Concurrent leaves orphan
   the party and lock the successor out of creating one (unique index on `leader_id`).
 

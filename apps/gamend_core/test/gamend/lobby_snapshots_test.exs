@@ -136,11 +136,11 @@ defmodule Gamend.LobbySnapshotsTest do
       :ok = Writer.flush()
 
       capture(lobby.id, "test:first")
-      :ok = LobbySnapshots.record_event(lobby.id, "boat.speed", %{from: 100, to: 50})
+      :ok = LobbySnapshots.record_event(lobby.id, "race.speed", %{from: 100, to: 50})
       :ok = Writer.flush()
 
       capture(lobby.id, "test:second")
-      :ok = LobbySnapshots.record_event(lobby.id, "boat.collision", %{target: "starfish"})
+      :ok = LobbySnapshots.record_event(lobby.id, "race.collision", %{target: "rock"})
       :ok = Writer.flush()
 
       timeline = LobbySnapshots.timeline(lobby.id)
@@ -151,10 +151,10 @@ defmodule Gamend.LobbySnapshotsTest do
       assert [first, second] = timeline.intervals
       assert first.index == 1
       assert first.snapshot.trigger == "test:first"
-      assert [%{kind: "boat.speed", payload: %{"from" => 100, "to" => 50}}] = first.events
+      assert [%{kind: "race.speed", payload: %{"from" => 100, "to" => 50}}] = first.events
 
       assert second.index == 2
-      assert [%{kind: "boat.collision"}] = second.events
+      assert [%{kind: "race.collision"}] = second.events
     end
 
     test "members section stores ids and in-lobby state, never profile fields", %{
@@ -181,10 +181,10 @@ defmodule Gamend.LobbySnapshotsTest do
       # A tuple or pid reaching the insert would fail encoding and take the
       # writer's whole batch with it, losing unrelated events too.
       :ok =
-        LobbySnapshots.record_event(lobby.id, "boat.weird", %{
+        LobbySnapshots.record_event(lobby.id, "race.weird", %{
           tuple: {:collision, 3},
           pid: self(),
-          nested: %{list: [{:a, 1}], atom: :starfish},
+          nested: %{list: [{:a, 1}], atom: :rock},
           binary: <<0xFF, 0xFE>>
         })
 
@@ -193,18 +193,18 @@ defmodule Gamend.LobbySnapshotsTest do
       assert [event] = LobbySnapshots.list_events(lobby.id)
       assert event.payload["tuple"] == ["collision", 3]
       assert event.payload["nested"]["list"] == [["a", 1]]
-      assert event.payload["nested"]["atom"] == "starfish"
+      assert event.payload["nested"]["atom"] == "rock"
       assert is_binary(event.payload["pid"])
       assert is_binary(event.payload["binary"])
     end
 
     test "a bad payload does not take unrelated events down with it", %{lobby: lobby} do
-      :ok = LobbySnapshots.record_event(lobby.id, "boat.fine", %{ok: 1})
-      :ok = LobbySnapshots.record_event(lobby.id, "boat.weird", %{pid: self()})
+      :ok = LobbySnapshots.record_event(lobby.id, "race.fine", %{ok: 1})
+      :ok = LobbySnapshots.record_event(lobby.id, "race.weird", %{pid: self()})
       :ok = Writer.flush()
 
       kinds = lobby.id |> LobbySnapshots.list_events() |> Enum.map(& &1.kind) |> Enum.sort()
-      assert kinds == ["boat.fine", "boat.weird"]
+      assert kinds == ["race.fine", "race.weird"]
     end
   end
 
@@ -232,7 +232,7 @@ defmodule Gamend.LobbySnapshotsTest do
 
       :ok = LobbySnapshots.record_coverage_gap(lobby.id, "unserialized_write")
       :ok = LobbySnapshots.record_coverage_gap(other_lobby.id, "unserialized_write")
-      :ok = LobbySnapshots.record_event(lobby.id, "boat.speed", %{from: 100, to: 50})
+      :ok = LobbySnapshots.record_event(lobby.id, "race.speed", %{from: 100, to: 50})
       :ok = Writer.flush()
 
       gaps = LobbySnapshots.list_coverage_gaps()
@@ -245,7 +245,7 @@ defmodule Gamend.LobbySnapshotsTest do
 
     test "coverage_gap? distinguishes gaps from game decisions" do
       assert LobbySnapshots.coverage_gap?("coverage:unserialized_write")
-      refute LobbySnapshots.coverage_gap?("boat.speed")
+      refute LobbySnapshots.coverage_gap?("race.speed")
     end
   end
 

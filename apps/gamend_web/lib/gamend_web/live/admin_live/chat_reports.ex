@@ -372,7 +372,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
             <button phx-click="refresh" class="btn btn-ghost btn-sm">{gettext("Refresh")}</button>
           </div>
 
-          <p class="text-sm text-base-content/70">
+          <p class="text-sm text-muted">
             {gettext(
               "Reports players filed about a chat message, plus the ones the word filter files itself. Acting on a report resolves it."
             )}
@@ -427,7 +427,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                     >
                       {user_display(report.reported_user)}
                     </button>
-                    <div class="font-mono text-xs text-base-content/60">
+                    <div class="font-mono text-xs text-muted">
                       {report.reported_user_id}
                     </div>
                   </td>
@@ -440,13 +440,13 @@ defmodule GamendWeb.AdminLive.ChatReports do
                     <span class={["badge badge-sm", status_class(report.status)]}>
                       {report.status}
                     </span>
-                    <div :if={report.resolved_by_user} class="text-xs text-base-content/60">
+                    <div :if={report.resolved_by_user} class="text-xs text-muted">
                       {gettext("by")} {user_display(report.resolved_by_user)}
                     </div>
                   </td>
                   <td class="text-xs whitespace-nowrap">
                     {age(report.inserted_at)}
-                    <div class="text-base-content/60">
+                    <div class="text-muted">
                       <.timestamp at={report.inserted_at} format="full" />
                     </div>
                   </td>
@@ -501,7 +501,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
             </table>
           </div>
 
-          <div :if={@reports == []} class="text-center py-8 text-base-content/60">
+          <div :if={@reports == []} class="text-center py-8 text-muted">
             {gettext("No reports.")}
           </div>
 
@@ -522,7 +522,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
       <div :if={@form} class="modal modal-open">
         <div class="modal-box">
           <h3 class="font-bold text-lg">{action_title(@action)}</h3>
-          <p class="text-sm text-base-content/70 mt-1">
+          <p class="text-sm text-muted mt-1">
             {user_display(@action_report.reported_user)}
           </p>
 

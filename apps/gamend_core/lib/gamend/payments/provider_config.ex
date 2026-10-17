@@ -7,7 +7,17 @@ defmodule Gamend.Payments.ProviderConfig do
   """
 
   @environments ~w(production sandbox)
-  @stripe_sdk_api_version "2022-11-15"
+
+  # The one Stripe API version every request names: the version
+  # stripity_stripe is generated against (`Stripe.API`'s `@api_version`), so
+  # its parameters and Stripe's answers agree. Not a setting: the code reads
+  # one shape of each object (a subscription's period on its items, an
+  # invoice's payments in `payments`, its subscription under `parent`), and an
+  # older version sends another. Bump it with the SDK, read the changelog for
+  # the objects `Gamend.Payments.StripeEvents` reads, and move the webhook
+  # endpoint to the same version in the Stripe Dashboard. Managed Payments
+  # needs 2025-03-31.basil or later.
+  @stripe_api_version "2025-11-17.clover"
 
   @type environment :: String.t()
 
@@ -43,29 +53,10 @@ defmodule Gamend.Payments.ProviderConfig do
   @spec environments() :: [String.t()]
   def environments, do: @environments
 
-  # Managed Payments needs this API version or later on the Checkout Session
-  # call (docs.stripe.com/payments/managed-payments/update-checkout).
-  @managed_payments_min_api_version "2025-03-31.basil"
-
   @doc "Whether checkouts go through Stripe Managed Payments (Stripe as merchant of record)."
   @spec stripe_managed_payments?() :: boolean()
   def stripe_managed_payments?,
     do: Gamend.Settings.get(Gamend.Payments.Settings, :stripe_managed_payments) == true
-
-  @doc """
-  The API version for creating a Checkout Session: the configured one, raised
-  to #{@managed_payments_min_api_version} when Managed Payments is on and the
-  configured one is older. Only that call is raised, so every other request,
-  and the payloads core parses from them, keep the configured version.
-  """
-  @spec stripe_checkout_api_version() :: String.t()
-  def stripe_checkout_api_version do
-    configured = stripe_api_version()
-
-    if stripe_managed_payments?() and configured < @managed_payments_min_api_version,
-      do: @managed_payments_min_api_version,
-      else: configured
-  end
 
   @spec stripe_secret_key() :: String.t() | nil
   def stripe_secret_key, do: stripe_value(:secret_key)
@@ -73,37 +64,30 @@ defmodule Gamend.Payments.ProviderConfig do
   @spec stripe_webhook_secret() :: String.t() | nil
   def stripe_webhook_secret, do: stripe_value(:webhook_secret)
 
+  @doc "The Stripe API version every request names, and webhooks are expected in."
   @spec stripe_api_version() :: String.t()
-  def stripe_api_version do
-    case stripe_api_version_source() do
-      {_source, value} -> value
-      nil -> @stripe_sdk_api_version
+  def stripe_api_version, do: @stripe_api_version
+
+  @doc """
+  The release a Stripe API version belongs to (`"clover"` for
+  `"2025-11-17.clover"`), or nil for a version older than the named releases.
+  Inside one release Stripe only adds; a breaking change starts the next.
+  """
+  @spec stripe_api_release(String.t() | nil) :: String.t() | nil
+  def stripe_api_release(version) when is_binary(version) do
+    case String.split(version, ".", parts: 2) do
+      [_date, release] when release != "" -> release
+      _unnamed -> nil
     end
   end
+
+  def stripe_api_release(_version), do: nil
 
   @spec stripe_secret_key_source() :: {String.t(), String.t()} | nil
   def stripe_secret_key_source, do: stripe_source(:secret_key)
 
   @spec stripe_webhook_secret_source() :: {String.t(), String.t()} | nil
   def stripe_webhook_secret_source, do: stripe_source(:webhook_secret)
-
-  @spec stripe_api_version_source() :: {String.t(), String.t()} | nil
-  def stripe_api_version_source do
-    cond do
-      present_string?(Gamend.Settings.get(Gamend.Payments.Settings, :stripe_api_version)) ->
-        {"GAMEND_PAYMENTS_STRIPE_API_VERSION",
-         Gamend.Payments.Settings
-         |> then(&Gamend.Settings.get(&1, :stripe_api_version))
-         |> String.trim()}
-
-      present_string?(Application.get_env(:gamend_core, :stripe_api_version)) ->
-        {"app :stripe_api_version",
-         String.trim(Application.get_env(:gamend_core, :stripe_api_version))}
-
-      true ->
-        nil
-    end
-  end
 
   @spec stripe_candidate_labels(:secret_key | :webhook_secret) :: [String.t()]
   def stripe_candidate_labels(kind) do
@@ -118,8 +102,6 @@ defmodule Gamend.Payments.ProviderConfig do
       nil -> nil
     end
   end
-
-  defp present_string?(value), do: is_binary(value) and String.trim(value) != ""
 
   defp stripe_source(kind) do
     environment = environment()

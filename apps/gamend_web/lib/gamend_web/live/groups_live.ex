@@ -15,7 +15,7 @@ defmodule GamendWeb.GroupsLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    unless FeatureGate.enabled?(:list_groups) do
+    unless FeatureGate.enabled?(:list_groups) and FeatureGate.enabled?(:web_groups) do
       raise GamendWeb.NotFoundError
     end
 
@@ -163,10 +163,6 @@ defmodule GamendWeb.GroupsLive do
 
   def handle_event("view_group", %{"id" => id}, socket) do
     {:noreply, push_patch(socket, to: ~p"/groups/#{id}")}
-  end
-
-  def handle_event("back_to_list", _params, socket) do
-    {:noreply, push_patch(socket, to: ~p"/groups")}
   end
 
   def handle_event("join_group", %{"id" => id}, socket) do
@@ -395,8 +391,33 @@ defmodule GamendWeb.GroupsLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <div>
-          <h1 class="text-4xl font-black text-base-content/95">{gettext("Groups")}</h1>
+        <%!-- One title: a group's own (its icon and name), else the list's.
+              Back: from a group to the list, from the list home. --%>
+        <div class="flex items-center gap-3">
+          <.back_link
+            :if={@selected_group}
+            navigate={
+              GamendWeb.HostLayouts.localized_href(
+                "/groups",
+                GamendWeb.HostLayouts.current_locale()
+              )
+            }
+          />
+          <.back_link :if={!@selected_group} href={home_path()} />
+          <.page_title :if={@selected_group} class="flex min-w-0 items-center gap-3">
+            <.entity_icon
+              icon_url={@selected_group.icon_url}
+              type={:group}
+              class="size-8 shrink-0 text-muted sm:size-9"
+            />
+            <span class="min-w-0 break-words">{@selected_group.title}</span>
+          </.page_title>
+          <.page_title
+            :if={!@selected_group}
+            icon={GamendWeb.HostLayouts.nav_icon("/groups", "hero-user-group-solid")}
+          >
+            {gettext("Groups")}
+          </.page_title>
         </div>
 
         <%= if @selected_group do %>
@@ -450,7 +471,7 @@ defmodule GamendWeb.GroupsLive do
     </div>
 
     <div class="flex gap-2 items-center" id="groups-sort">
-      <span class="text-sm text-base-content/60">{gettext("Sort by:")}</span>
+      <span class="text-sm text-muted">{gettext("Sort by:")}</span>
       <button
         :for={
           {label, value} <- [
@@ -504,7 +525,7 @@ defmodule GamendWeb.GroupsLive do
     </div>
 
     <%= if @groups == [] do %>
-      <div class="text-center py-12 text-base-content/60" id="groups-empty">
+      <div class="text-center py-12 text-muted" id="groups-empty">
         <p>{gettext("No results.")}</p>
       </div>
     <% end %>
@@ -559,36 +580,20 @@ defmodule GamendWeb.GroupsLive do
 
   defp render_group_detail(assigns) do
     ~H"""
-    <div class="flex flex-col gap-4 mb-6">
-      <div class="flex items-center gap-4">
-        <button phx-click="back_to_list" class="btn btn-surface btn-sm" id="groups-back-btn">
-          ← {gettext("Back")}
-        </button>
-        <div>
-          <h2 class="text-2xl font-bold flex items-center gap-2">
-            <.entity_icon
-              icon_url={@selected_group.icon_url}
-              type={:group}
-              class="w-7 h-7 text-base-content/60"
-            />
-            {@selected_group.title}
-          </h2>
-          <div class="flex items-center gap-2 mt-1">
-            <%= if @selected_group.type == "public" do %>
-              <span class="badge badge-success">{gettext("Public")}</span>
-            <% else %>
-              <span class="badge badge-warning">{gettext("Private")}</span>
-            <% end %>
-            <span class="text-sm text-base-content/60">
-              <.timestamp at={@selected_group.inserted_at} format="date" />
-            </span>
-          </div>
-        </div>
-      </div>
+    <%!-- The title row (Back, icon, name) is the page's; this is the group's state. --%>
+    <div class="flex flex-wrap items-center gap-2 mb-6">
+      <%= if @selected_group.type == "public" do %>
+        <span class="badge badge-success">{gettext("Public")}</span>
+      <% else %>
+        <span class="badge badge-warning">{gettext("Private")}</span>
+      <% end %>
+      <span class="text-sm text-muted">
+        <.timestamp at={@selected_group.inserted_at} format="date" />
+      </span>
     </div>
 
     <%= if @selected_group.description && @selected_group.description != "" do %>
-      <p class="text-base-content/70 mb-6">{@selected_group.description}</p>
+      <p class="text-muted mb-6">{@selected_group.description}</p>
     <% end %>
 
     <%!-- Action card --%>
@@ -596,7 +601,7 @@ defmodule GamendWeb.GroupsLive do
       <div class="card-body py-4">
         <div class="flex items-center justify-between">
           <div>
-            <span class="text-sm text-base-content/70">{gettext("Members")}</span>
+            <span class="text-sm text-muted">{gettext("Members")}</span>
             <div class="text-2xl font-bold">{@members_total} / {@selected_group.max_members}</div>
           </div>
           <div>
@@ -664,7 +669,7 @@ defmodule GamendWeb.GroupsLive do
         </div>
 
         <%= if @selected_members == [] do %>
-          <div class="text-center py-8 text-base-content/60">
+          <div class="text-center py-8 text-muted">
             <p>{gettext("No results.")}</p>
           </div>
         <% end %>

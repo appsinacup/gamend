@@ -678,7 +678,7 @@ defmodule GamendWeb.AuthControllerTest do
     assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Failed to authenticate"
   end
 
-  test "callback (steam) on error with state creates oauth session", %{conn: conn} do
+  test "callback (steam) on error with a polled session marks it failed", %{conn: conn} do
     session_id = "session-#{System.unique_integer([:positive])}"
 
     failure = %{errors: [reason: :invalid]}
@@ -688,8 +688,9 @@ defmodule GamendWeb.AuthControllerTest do
 
     _conn =
       conn
+      |> init_test_session(%{"steam_oauth_session_id" => session_id})
       |> assign(:ueberauth_failure, failure)
-      |> get("/auth/steam/callback?state=#{session_id}")
+      |> get("/auth/steam/callback")
 
     sess = OAuthSessions.get_session(session_id)
     assert sess.status == "error"
@@ -760,12 +761,15 @@ defmodule GamendWeb.AuthControllerTest do
     conn1 = conn |> assign(:ueberauth_auth, auth) |> get("/auth/steam/callback")
     assert redirected_to(conn1) =~ "/"
 
-    # api flow (state) updates existing session
+    # api flow (the session id /auth/steam kept) updates existing session
     session_id = "s-#{System.unique_integer([:positive])}"
     OAuthSessions.create_session(session_id, %{provider: "steam", status: "pending"})
 
     _conn2 =
-      conn |> assign(:ueberauth_auth, auth) |> get("/auth/steam/callback?state=#{session_id}")
+      conn
+      |> init_test_session(%{"steam_oauth_session_id" => session_id})
+      |> assign(:ueberauth_auth, auth)
+      |> get("/auth/steam/callback")
 
     session = OAuthSessions.get_session(session_id)
     assert session.status == "completed"

@@ -50,14 +50,27 @@ class Auth {
   /// has device sign-in enabled (its default).
   void login_device(std::string device_id, AuthCallback done = {});
   void login_email(std::string email, std::string password, AuthCallback done = {});
-  /// A new account with an email and a password. Not a sign-in, as
+  /// A new account with an email, and no password yet. Not a sign-in, as
   /// `login_device` is: the session does not change, and `done` gets the new
-  /// account (`models::Registration`). Its password signs in with
-  /// `login_email` once the player opens the emailed link; until then that
-  /// fails with `email_not_confirmed`. The server picks a username when
-  /// `username` is empty.
-  void register_email(std::string email, std::string password, std::string username = {},
-                      Callback done = {});
+  /// account (`models::Registration`). The server emails a link and a
+  /// six-digit code; `confirm_registration` takes the code and the password
+  /// the player chooses, and signs in. A password is never sent here: anyone
+  /// can type any address, and a password chosen before the inbox is proved
+  /// would let them into the account once its owner confirmed it.
+  void register_email(std::string email, Callback done = {});
+  /// `register_email` with the username the player picked. The server picks
+  /// one when `username` is empty.
+  void register_email(std::string email, std::string username, Callback done);
+  /// Confirm a `register_email` account with the code from its email, set
+  /// its password, and sign in. Fails with `invalid_code` for a wrong, spent
+  /// or expired code, `account_locked` after too many wrong ones (the code is
+  /// then void: `resend_confirmation`), or `validation_failed` for a password
+  /// the server refuses, which costs no attempt.
+  void confirm_registration(std::string email, std::string code, std::string password,
+                            AuthCallback done = {});
+  /// Email a `register_email` account a new code; only the newest works.
+  /// Always succeeds, whether or not the address has an account waiting.
+  void resend_confirmation(std::string email, Callback done = {});
   /// A Steam session ticket (`ISteamUser::GetAuthTicketForWebApi`, hex).
   void login_steam(std::string ticket, AuthCallback done = {});
   /// Sign in through a provider (`google`, `discord`, `apple`, ...): opens

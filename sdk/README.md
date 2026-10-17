@@ -10,7 +10,7 @@ Add `gamend_sdk` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:gamend_sdk, "~> 0.1.0", runtime: false, optional: true}
+    {:gamend_sdk, "~> 1.1", runtime: false, optional: true}
   ]
 end
 ```

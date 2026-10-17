@@ -2,18 +2,21 @@ defmodule GamendWeb.UserLive.Login do
   use GamendWeb, :live_view
 
   alias Gamend.Accounts
-  alias Gamend.Accounts.Scope
+  alias Gamend.Accounts.{Scope, User}
   require Logger
 
   @impl true
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <div class="mx-auto max-w-sm lg:max-w-4xl space-y-4">
+      <div class="mx-auto max-w-narrow space-y-4">
         <div class="text-center">
-          <h1 class="text-4xl font-black text-base-content/95">{gettext("Log in")}</h1>
-          <p class="text-sm text-base-content/70 mt-2">
-            <%= if @current_scope do %>
+          <div class="flex items-center justify-center gap-3">
+            <.back_link href={home_path()} />
+            <.page_title icon="hero-arrow-right-on-rectangle-solid">{gettext("Log in")}</.page_title>
+          </div>
+          <p class="text-sm text-muted mt-2">
+            <%= if @reauth? do %>
               {gettext("Confirm")}
             <% else %>
               <.link
@@ -35,7 +38,7 @@ defmodule GamendWeb.UserLive.Login do
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <.form
             :let={f}
             for={@form}
@@ -45,7 +48,7 @@ defmodule GamendWeb.UserLive.Login do
             phx-submit="submit_magic"
           >
             <.input
-              readonly={!!@current_scope}
+              readonly={@reauth?}
               field={f[:email]}
               value={@email}
               type="email"
@@ -60,7 +63,7 @@ defmodule GamendWeb.UserLive.Login do
             </.button>
           </.form>
 
-          <div class="divider lg:hidden">{gettext("or")}</div>
+          <div class="divider md:hidden">{gettext("or")}</div>
 
           <%!-- `phx-change` on the email input, not the form: a form-level
                 change event serializes every field, and the password has no
@@ -77,7 +80,7 @@ defmodule GamendWeb.UserLive.Login do
             phx-trigger-action={@trigger_submit}
           >
             <.input
-              readonly={!!@current_scope}
+              readonly={@reauth?}
               field={f[:email]}
               value={@email}
               type="email"
@@ -115,7 +118,7 @@ defmodule GamendWeb.UserLive.Login do
                 {gettext("Forgot password?")}
               </button>
             </div>
-            <p id="forgot_password_hint" class="hidden text-sm text-base-content/70 mb-2">
+            <p id="forgot_password_hint" class="hidden text-sm text-muted mb-2">
               {gettext(
                 "Send yourself a magic link to log in, then set a new password on your Account page."
               )}
@@ -151,6 +154,10 @@ defmodule GamendWeb.UserLive.Login do
        # reconnect's form recovery can put a typed address back without
        # re-rendering (and emptying) the password input beside it.
        email: email,
+       # Confirming the account already signed in: its address, fixed. Only
+       # an account with one: a guest (a device account) or a provider-only
+       # one has none to fix, and comes here to log in to another account.
+       reauth?: is_binary(current_user && current_user.email),
        trigger_submit: false,
        page_title: gettext("Log in"),
        client_ip: client_ip
@@ -171,8 +178,18 @@ defmodule GamendWeb.UserLive.Login do
   def handle_event("submit_magic", %{"user" => %{"email" => email}} = params, socket) do
     with :ok <- GamendWeb.LiveHelpers.check_rate_limit(socket.assigns.client_ip, :auth),
          :ok <- GamendWeb.LiveHelpers.check_captcha(socket, params) do
-      if user = Accounts.get_user_by_email(email) do
-        deliver_magic_link(user)
+      case Accounts.get_user_by_email(email) do
+        # Not confirmed yet: no login link. The confirmation email goes out
+        # again instead, at most once a minute, so asking right after
+        # registering sends nothing new.
+        %User{confirmed_at: nil} ->
+          Accounts.resend_confirmation(email, &url(~p"/users/confirm/#{&1}"), notifier())
+
+        %User{} = user ->
+          deliver_magic_link(user)
+
+        nil ->
+          :ok
       end
 
       info =
@@ -210,6 +227,10 @@ defmodule GamendWeb.UserLive.Login do
       Logger.error("magic link delivery crashed user=#{user.id}: #{Exception.message(e)}")
       :error
   end
+
+  # The notifier the sign-up reads, so a resend is the same email.
+  defp notifier,
+    do: Application.get_env(:gamend_web, :user_notifier, Gamend.Accounts.UserNotifier)
 
   # Only show the local-mailbox helper in development builds.
   # In production we may use Swoosh.Local when no SMTP is configured, but we

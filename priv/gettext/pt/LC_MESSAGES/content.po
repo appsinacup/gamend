@@ -17,7 +17,7 @@ msgstr "Bem-vindo a bordo"
 
 #. quests
 msgid "Log in for the first time."
-msgstr "Inicie sessão pela primeira vez."
+msgstr "Inicia sessão pela primeira vez."
 
 #. quests
 msgid "Daily check-in"
@@ -25,7 +25,7 @@ msgstr "Visita diária"
 
 #. quests
 msgid "Log in today."
-msgstr "Inicie sessão hoje."
+msgstr "Inicia sessão hoje."
 
 #. quests
 msgid "Weekly regular"
@@ -33,7 +33,7 @@ msgstr "Frequentador da semana"
 
 #. quests
 msgid "Log in on five different days this week."
-msgstr "Inicie sessão em cinco dias diferentes esta semana."
+msgstr "Inicia sessão em cinco dias diferentes esta semana."
 
 #. quests
 msgid "Monthly devotee"
@@ -41,7 +41,7 @@ msgstr "Devoto mensal"
 
 #. quests
 msgid "Log in twenty times this month."
-msgstr "Inicie sessão vinte vezes este mês."
+msgstr "Inicia sessão vinte vezes este mês."
 
 #. quests
 msgid "Stop by again"
@@ -49,7 +49,7 @@ msgstr "Volte cá"
 
 #. quests
 msgid "Log in. Becomes available again three days later."
-msgstr "Inicie sessão. Fica disponível novamente três dias depois."
+msgstr "Inicia sessão. Fica disponível novamente três dias depois."
 
 #. quests
 msgid "Loyal veteran"
@@ -57,7 +57,7 @@ msgstr "Veterano leal"
 
 #. quests
 msgid "Log in fifty times, once you have said hello."
-msgstr "Inicie sessão cinquenta vezes, depois de ter dito olá."
+msgstr "Inicia sessão cinquenta vezes, depois de teres dito olá."
 
 #. quests
 msgid "Night owl"

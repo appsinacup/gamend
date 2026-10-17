@@ -44,7 +44,10 @@ if ! curl -fsS "http://127.0.0.1:$port/api/v1/health"; then
 fi
 echo
 
-curl -fsS "http://127.0.0.1:$port/" | grep -q "My Game"
+# `grep >/dev/null`, never `grep -q`, after a curl: -q exits on the first
+# match and closes the pipe, so a page longer than that curl writes into a
+# closed pipe, fails with 23, and pipefail fails the run.
+curl -fsS "http://127.0.0.1:$port/" | grep "My Game" >/dev/null
 curl -fsS -o /dev/null "http://127.0.0.1:$port/docs/getting-started"
 
 token=$(curl -fsS -X POST "http://127.0.0.1:$port/api/v1/login/device" \
@@ -52,9 +55,9 @@ token=$(curl -fsS -X POST "http://127.0.0.1:$port/api/v1/login/device" \
   grep -o '"access_token":"[^"]*"' | cut -d '"' -f 4)
 curl -fsS -X POST "http://127.0.0.1:$port/api/v1/hooks/call" \
   -H "authorization: Bearer $token" -H 'content-type: application/json' \
-  -d '{"plugin":"hello","fn":"hello","args":["smoke"]}' | grep -q "Hello, smoke!"
+  -d '{"plugin":"hello","fn":"hello","args":["smoke"]}' | grep "Hello, smoke!" >/dev/null
 "$gamend" demo.seed --count 5 --only leaderboard
-curl -fsS "http://127.0.0.1:$port/api/v1/leaderboards" | grep -q demo_seed
+curl -fsS "http://127.0.0.1:$port/api/v1/leaderboards" | grep demo_seed >/dev/null
 "$gamend" stop
 
 # The database commands, against the stopped server's database.

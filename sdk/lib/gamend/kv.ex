@@ -282,6 +282,29 @@ defmodule Gamend.KV do
   end
 
   @doc ~S"""
+    Delete every entry whose key starts with `prefix` and that has not been
+    written for `days` days, in batches of `batch` (default 500), and answer
+    how many went. For a key family that is history — one row per day, say —
+    which nothing else ever trims. Hand it to the retention sweep with
+    `Gamend.Retention.register_kv_prefix/3` rather than calling it directly.
+    
+    The prefix is matched literally (`%` and `_` in it are not wildcards). An
+    empty prefix or a window of `0` deletes nothing. Each deleted row's
+    cache and its scope's listing are invalidated, as `delete/2` does.
+    
+  """
+  @spec prune_prefix(String.t(), pos_integer(), keyword()) :: non_neg_integer()
+  def prune_prefix(_prefix, _days, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.KV.prune_prefix/3 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Store `value` with optional `metadata` at `key`.
     
     When using the 4-arity, supported options include `user_id: id` or `lobby_id: id` to scope

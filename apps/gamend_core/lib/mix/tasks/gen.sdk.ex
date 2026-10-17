@@ -227,8 +227,12 @@ defmodule Mix.Tasks.Gen.Sdk do
                 entry
             end
 
+          target_types = local_types(mod)
+
           target_specs =
-            for {{^fun, a}, forms} <- get_specs(mod), a <= arity, do: {{name, a}, forms}
+            for {{^fun, a}, forms} <- get_specs(mod), a <= arity do
+              {{name, a}, Enum.map(forms, &inline_local_types(&1, target_types, []))}
+            end
 
           {[doc_entry | docs], target_specs ++ specs}
 
@@ -238,6 +242,53 @@ defmodule Mix.Tasks.Gen.Sdk do
 
     {Enum.reverse(docs), specs}
   end
+
+  # A delegate's spec is copied from the module it points at, so a type local
+  # to that module (`StripeRefunds.result/0`) would reach the stub as a bare
+  # `result()` the stub never defines, and `gamend_sdk` would not compile.
+  # Each one is replaced by its definition, parameters substituted.
+  defp local_types(module) do
+    for {kind, {name, body, params}} <- get_types(module),
+        kind in [:type, :typep, :opaque],
+        into: %{},
+        do: {{name, length(params)}, {Enum.map(params, fn {:var, _, var} -> var end), body}}
+  end
+
+  defp inline_local_types({:user_type, _line, name, args} = form, types, seen) do
+    key = {name, length(args)}
+
+    case Map.fetch(types, key) do
+      {:ok, {params, body}} ->
+        if key in seen, do: raise("recursive type #{name}/#{length(args)}")
+
+        args = Enum.map(args, &inline_local_types(&1, types, seen))
+
+        body
+        |> bind_type_vars(Map.new(Enum.zip(params, args)))
+        |> inline_local_types(types, [key | seen])
+
+      :error ->
+        form
+    end
+  end
+
+  defp inline_local_types(form, types, seen) when is_tuple(form),
+    do: form |> Tuple.to_list() |> inline_local_types(types, seen) |> List.to_tuple()
+
+  defp inline_local_types(forms, types, seen) when is_list(forms),
+    do: Enum.map(forms, &inline_local_types(&1, types, seen))
+
+  defp inline_local_types(other, _types, _seen), do: other
+
+  defp bind_type_vars({:var, _line, var} = form, bindings), do: Map.get(bindings, var, form)
+
+  defp bind_type_vars(form, bindings) when is_tuple(form),
+    do: form |> Tuple.to_list() |> bind_type_vars(bindings) |> List.to_tuple()
+
+  defp bind_type_vars(forms, bindings) when is_list(forms),
+    do: Enum.map(forms, &bind_type_vars(&1, bindings))
+
+  defp bind_type_vars(other, _bindings), do: other
 
   defp output_root do
     cwd = Path.expand(File.cwd!())
@@ -419,13 +470,32 @@ defmodule Mix.Tasks.Gen.Sdk do
     placeholder_expr_for_return_type(return_type) || fallback_placeholder_by_name(function_name)
   end
 
-  defp placeholder_expr_for_return_type(return_type) when is_binary(return_type) do
+  @doc false
+  # Public for `Mix.Tasks.Gen.SdkPlaceholderTest`.
+  def placeholder_expr_for_return_type(return_type) when is_binary(return_type) do
     placeholder_expr_for_named_types(return_type) ||
       placeholder_expr_for_generics(return_type) ||
+      placeholder_expr_for_shape(return_type) ||
       placeholder_expr_for_primitives(return_type)
   end
 
-  defp placeholder_expr_for_return_type(_), do: nil
+  def placeholder_expr_for_return_type(_), do: nil
+
+  # The outermost type decides, before the substring checks below look inside
+  # it: `[map()]` contains `map()` and was given `%{}`, `[String.t()]` `""`,
+  # and `%{ok: boolean()}` a boolean.
+  defp placeholder_expr_for_shape(return_type) do
+    cond do
+      String.starts_with?(return_type, ["[", "list(", "List.t()", "keyword(", "Keyword.t()"]) ->
+        "[]"
+
+      String.starts_with?(return_type, ["%{", "map()"]) ->
+        "%{}"
+
+      true ->
+        nil
+    end
+  end
 
   defp placeholder_expr_for_named_types(return_type) when is_binary(return_type) do
     rules = [

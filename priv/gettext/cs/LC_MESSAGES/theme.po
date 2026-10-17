@@ -8,7 +8,7 @@ msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "Herní server v Elixiru s otevřeným zdrojovým kódem pro realtimové hry pro více hráčů."
 
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 msgid "Discord"
 msgstr "Discord"
@@ -31,26 +31,29 @@ msgstr "Návody"
 msgid "API Docs"
 msgstr "Dokumentace API"
 
+msgid "UI elements"
+msgstr "Prvky rozhraní"
+
 msgid "Elixir Docs"
 msgstr "Dokumentace Elixiru"
 
 msgid "Deployment Tutorial"
-msgstr ""
+msgstr "Návod k nasazení"
 
 msgid "Scaling Guide"
-msgstr ""
+msgstr "Průvodce škálováním"
 
 msgid "Docs"
-msgstr ""
+msgstr "Dokumentace"
 
 msgid "Starter Template"
-msgstr ""
+msgstr "Startovací šablona"
 
 msgid "Store"
 msgstr "Obchod"
 
 msgid "Server Stats"
-msgstr ""
+msgstr "Statistiky serveru"
 
 msgid "Help"
 msgstr "Nápověda"
@@ -80,7 +83,7 @@ msgid "Groups"
 msgstr "Skupiny"
 
 msgid "News"
-msgstr ""
+msgstr "Novinky"
 
 msgid "Getting Started"
 msgstr "Začínáme"
@@ -89,28 +92,28 @@ msgid "Presentation Video"
 msgstr "Prezentační video"
 
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
-msgstr ""
+msgstr "Herní server v Elixiru s **otevřeným zdrojovým kódem** pro realtimové hry pro více hráčů: backend, web pro hráče a administrační panel v jednom."
 
 msgid "Gamend"
 msgstr "Gamend"
 
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
-msgstr ""
+msgstr "Prohlídka administračního panelu Gamendu, úkolů, obchodu a serverových hooků"
 
 msgid "Benchmarks"
-msgstr ""
+msgstr "Benchmarky"
 
 msgid "Godot SDK"
-msgstr ""
+msgstr "Godot SDK"
 
 msgid "C++ SDK"
-msgstr ""
+msgstr "C++ SDK"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
-msgstr ""
+msgstr "**Backend pro tvou hru pro více hráčů**: účty, lobby, chat, žebříčky a vše, co hráči kolem samotné hry očekávají. Dodává také webové rozhraní kolem něj: hotový web pro hráče (obchod, žebříčky, turnaje, úkoly, skupiny, chat) a plnohodnotný administrační panel. Skriptování na straně serveru spouští tvou vlastní logiku tam, kam hráči nedosáhnou. Provozuješ ho na vlastním serveru; žádná hostovaná služba neexistuje."
 
 msgid "What is Gamend?"
-msgstr ""
+msgstr "Co je Gamend?"
 
 msgid "Log in"
 msgstr "Přihlásit se"
@@ -119,7 +122,7 @@ msgid "Register"
 msgstr "Registrovat se"
 
 msgid "The login page with magic link, password and five OAuth providers"
-msgstr ""
+msgstr "Přihlašovací stránka s magickým odkazem, heslem a pěti poskytovateli OAuth"
 
 msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
 msgstr "E-mail, magický odkaz, OAuth, JWT a relace. Registrace, přihlášení, obnovení hesla a ověření e-mailu."
@@ -128,22 +131,22 @@ msgid "Authentication & Users"
 msgstr "Ověřování a uživatelé"
 
 msgid "Lobbies"
-msgstr ""
+msgstr "Lobby"
 
 msgid "Matchmaking"
-msgstr ""
+msgstr "Hledání hry"
 
 msgid "The matchmaking admin page with live queues, tickets and ready checks"
-msgstr ""
+msgstr "Administrační stránka hledání hry s frontami v reálném čase, tikety a kontrolami připravenosti"
 
 msgid "Real-time lobbies with passwords, quick join and live updates. Ephemeral parties that join and get matched **as one unit**, a ticket-queue matchmaker and ready checks before anything starts."
-msgstr ""
+msgstr "Lobby v reálném čase s hesly, rychlým připojením a živými aktualizacemi. Dočasné party, které se připojují a párují **jako jeden celek**, matchmaker s frontou tiketů a kontroly připravenosti před začátkem čehokoli."
 
 msgid "Lobbies, Parties & Matchmaking"
 msgstr "Lobby, party a hledání hry"
 
 msgid "The public groups browser"
-msgstr ""
+msgstr "Veřejný přehled skupin"
 
 msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
 msgstr "Žádosti o přátelství, blokování, přítomnost v reálném čase. Veřejné, soukromé a skryté skupiny. Přímé a skupinové zprávy."
@@ -152,33 +155,31 @@ msgid "Friends, Groups & Chat"
 msgstr "Přátelé, skupiny a chat"
 
 msgid "The quests page with daily, achievement and event quests"
-msgstr ""
+msgstr "Stránka úkolů s denními úkoly, úspěchy a úkoly z událostí"
 
 msgid "One server-authoritative quest engine for achievements, dailies, seasonal events and quest chains. Bracket tournaments, leaderboards with seasons, and real-time plus push notifications across every feature."
-msgstr ""
+msgstr "Jeden systém úkolů s autoritou na serveru pro úspěchy, denní úkoly, sezónní události a řetězy úkolů. Turnaje s pavoukem, žebříčky se sezónami a realtimová i push oznámení napříč všemi funkcemi."
 
 msgid "Quests, Tournaments & Leaderboards"
-msgstr ""
+msgstr "Úkoly, turnaje a žebříčky"
 
-#, fuzzy
 msgid "Server Scripting"
-msgstr "Serverové skripty a plánování"
+msgstr "Serverové skripty"
 
 msgid "GDScript Hooks"
-msgstr ""
+msgstr "Hooky v GDScriptu"
 
 msgid "Runtime introspection listing every hook with its implementing plugins"
-msgstr ""
+msgstr "Introspekce za běhu se seznamem všech hooků a pluginů, které je implementují"
 
 msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
-msgstr ""
+msgstr "Piš serverové hooky v jazycích **Elixir, GDScript nebo Gleam** pro bodování, odměny, pravidla hledání hry a validaci tam, kam hráči nedosáhnou. Odolné úlohy na pozadí a plánování přes cron jsou vestavěné."
 
 msgid "Server Scripting & Scheduling"
 msgstr "Serverové skripty a plánování"
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
-msgstr "REST API, realtimové kanály WebSocket a WebRTC DataChannels s nízkou latencí. Administrační portál a webové rozhraní."
+msgstr "REST API, realtimové kanály WebSocket a WebRTC DataChannels s nízkou latencí, s volitelným realtimovým formátem protobuf. Administrační portál a webové rozhraní přeložené do 30 jazyků."
 
 msgid "HTTP, WebSocket & WebRTC"
 msgstr "HTTP, WebSocket a WebRTC"
@@ -190,43 +191,43 @@ msgid "Payment Docs"
 msgstr "Dokumentace plateb"
 
 msgid "The built-in store page with priced products"
-msgstr ""
+msgstr "Vestavěná stránka obchodu s produkty a cenami"
 
 msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
-msgstr "Platby na straně serveru přes Stripe, Google Play, App Store a Steam. Ověřujte účtenky, zpracovávejte podepsané webhooky, přidělujte oprávnění, rušte vrácené platby a vše si prohlédněte ve správě."
+msgstr "Platby na straně serveru přes Stripe, Google Play, App Store a Steam. Ověřuj účtenky, zpracovávej podepsané webhooky, přiděluj oprávnění, ruš vrácené platby a vše si prohlédni ve správě."
 
 msgid "Payments & Store Integrations"
 msgstr "Platby a integrace obchodů"
 
 msgid "Economy"
-msgstr ""
+msgstr "Ekonomika"
 
 msgid "Key-Value Store"
-msgstr ""
+msgstr "Úložiště klíč–hodnota"
 
 msgid "The economy admin page with wallets and grant and spend controls"
-msgstr ""
+msgstr "Administrační stránka ekonomiky s peněženkami a ovládacími prvky pro přidělování a utrácení"
 
 msgid "Virtual currency wallets with an atomic, append-only ledger. Item stacks with grant and consume. A per-player and per-lobby **key-value store**, and object storage with presigned uploads on local disk or any S3-compatible backend."
-msgstr ""
+msgstr "Peněženky virtuální měny s atomickou účetní knihou, do které se pouze připisuje. Stohy položek s přidělováním a spotřebou. **Úložiště klíč–hodnota** pro každého hráče a každé lobby a objektové úložiště s předem podepsanými nahráváními na místní disk nebo do libovolného backendu kompatibilního s S3."
 
 msgid "Economy, Inventory & Storage"
-msgstr ""
+msgstr "Ekonomika, inventář a úložiště"
 
 msgid "Player Analytics"
-msgstr ""
+msgstr "Analytika hráčů"
 
 msgid "Client Logs"
-msgstr ""
+msgstr "Klientské logy"
 
 msgid "The analytics admin page with DAU and D1, D7 and D30 retention"
-msgstr ""
+msgstr "Administrační stránka analytiky s DAU a retencí D1, D7 a D30"
 
 msgid "D1 / D7 / D30 retention, DAU and payer conversion built in. Client log sessions correlated with the server's own tail for per-player debugging. Prometheus metrics with Grafana, and a load-test harness with published benchmarks."
-msgstr ""
+msgstr "Vestavěná retence D1 / D7 / D30, DAU a konverze platících hráčů. Relace klientských logů propojené s koncem vlastního logu serveru pro ladění jednotlivých hráčů. Metriky pro Prometheus a Grafana a nástroj pro zátěžové testy se zveřejněnými benchmarky."
 
 msgid "Analytics, Logs & Observability"
-msgstr ""
+msgstr "Analytika, logy a pozorovatelnost"
 
 msgid "Game + Backend"
 msgstr "Hra + backend"

@@ -8,15 +8,16 @@ defmodule Gamend.Accounts.ConfirmationMailer do
   repo has a single connection, and a registration that sent its mail inline
   stalled every other query in the server for the length of the SMTP session.
 
-  The job mints the token itself: a token in the job's args would sit in the
-  jobs table in the clear. A failed send is retried with backoff, minting a new
-  token each attempt (the unused ones expire). A job that outlives `timeout/1`
+  The job mints the link token and the code itself: either in the job's args
+  would sit in the jobs table in the clear. A failed send is retried with
+  backoff, minting new ones each attempt (unused links expire; a new code
+  replaces the last). A job that outlives `timeout/1`
   is killed, so a hung relay costs one `mailers` slot, never the database.
   """
 
   use Oban.Worker, queue: :mailers, max_attempts: 5
 
-  alias Gamend.Accounts.{User, UserNotifier, UserToken}
+  alias Gamend.Accounts.{Registration, User, UserNotifier}
   alias Gamend.Repo
 
   # Stands in for the token when the URL is built at enqueue time, where the
@@ -26,10 +27,11 @@ defmodule Gamend.Accounts.ConfirmationMailer do
 
   @doc """
   The job for `user`. `confirmation_url_fun` maps an encoded token to its URL
-  and runs now, with a placeholder; `notifier` delivers.
+  and runs now, with a placeholder; `notifier` delivers. `opts` go to
+  `Oban.Worker.new/2` (a resend passes `:unique`).
   """
-  @spec new_for(User.t(), (String.t() -> String.t()), module()) :: Ecto.Changeset.t()
-  def new_for(%User{id: id}, confirmation_url_fun, notifier \\ UserNotifier)
+  @spec new_for(User.t(), (String.t() -> String.t()), module(), keyword()) :: Ecto.Changeset.t()
+  def new_for(%User{id: id}, confirmation_url_fun, notifier \\ UserNotifier, opts \\ [])
       when is_function(confirmation_url_fun, 1) and is_atom(notifier) do
     url = confirmation_url_fun.(@token)
 
@@ -37,7 +39,7 @@ defmodule Gamend.Accounts.ConfirmationMailer do
       raise ArgumentError, "confirmation URL #{inspect(url)} dropped its token"
     end
 
-    new(%{"user_id" => id, "url" => url, "notifier" => Atom.to_string(notifier)})
+    new(%{"user_id" => id, "url" => url, "notifier" => Atom.to_string(notifier)}, opts)
   end
 
   @impl Oban.Worker
@@ -57,10 +59,10 @@ defmodule Gamend.Accounts.ConfirmationMailer do
   end
 
   defp deliver(user, url, notifier) do
-    {encoded, user_token} = UserToken.build_email_token(user, "confirm")
-    Repo.insert!(user_token)
+    {encoded, code} = Registration.insert_confirmation_tokens(user)
+    url = String.replace(url, @token, encoded)
 
-    case notifier.deliver_confirmation_instructions(user, String.replace(url, @token, encoded)) do
+    case notifier.deliver_confirmation_instructions(user, url, code) do
       {:ok, _} -> :ok
       {:error, reason} -> {:error, reason}
     end

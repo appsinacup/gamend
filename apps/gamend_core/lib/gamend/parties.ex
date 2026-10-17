@@ -616,6 +616,9 @@ defmodule Gamend.Parties do
       # (a concurrent @decorate cacheable put of the nil value can land after
       # do_join_party's cache delete, leaving stale data behind).
       {:ok, _} -> {:ok, Repo.get(User, user.id)}
+      # A kick or a disband took the player out after `user` was read: they
+      # are out of a party already, which is all the join needed.
+      {:error, :not_in_party} -> {:ok, Repo.get(User, user.id)}
       {:error, reason} -> {:error, {:leave_failed, reason}}
     end
   end

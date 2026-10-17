@@ -1,17 +1,20 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
   <div class="text-center">
-    <h1 class="mt-4 text-4xl font-black text-base-content/95">
-      Terms and Conditions
-    </h1>
-    <p class="mt-4 leading-7 text-base-content/70 max-w-2xl mx-auto">
+    <div class="mt-4 flex items-center justify-center gap-3">
+      <.back_link href={home_path()} />
+      <h1 class="text-4xl font-black text-base-content">
+        Terms and Conditions
+      </h1>
+    </div>
+    <p class="mt-4 leading-7 text-muted max-w-narrow mx-auto">
       These terms and conditions outline the rules and regulations for the use of our service.
     </p>
   </div>
 
-  <div class="mt-12 max-w-4xl mx-auto space-y-8">
+  <div class="mt-12 max-w-narrow mx-auto space-y-8">
     <section>
       <h2 class="text-xl font-semibold mb-4">Acceptance of Terms</h2>
-      <p class="text-base-content/80">
+      <p class="text-muted">
         By accessing and using this service, you accept and agree to be bound by the terms and
         provisions of this agreement.
       </p>
@@ -19,7 +22,7 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Use License</h2>
-      <div class="space-y-4 text-base-content/80">
+      <div class="space-y-4 text-muted">
         <p>
           Permission is granted to use this hosted service for personal purposes. This license
           covers the service itself (your account, the servers, and the content we host), and
@@ -42,7 +45,7 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Fair Play</h2>
-      <ul class="list-disc ps-6 space-y-2 text-base-content/80">
+      <ul class="list-disc ps-6 space-y-2 text-muted">
         <li>No cheating, exploiting bugs, or automating gameplay</li>
         <li>No harassment or abusive content in chat or user-generated content</li>
         <li>
@@ -54,7 +57,7 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Virtual Goods</h2>
-      <p class="text-base-content/80">
+      <p class="text-muted">
         In-game currency and cosmetic items have no monetary value, cannot be exchanged for real
         money, and may be adjusted, rebalanced, or discontinued as part of game updates. Purchases
         through platform stores are additionally subject to those stores' terms.
@@ -63,7 +66,7 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">User Accounts</h2>
-      <ul class="list-disc ps-6 space-y-2 text-base-content/80">
+      <ul class="list-disc ps-6 space-y-2 text-muted">
         <li>
           You are responsible for maintaining the confidentiality of your account credentials
         </li>
@@ -76,7 +79,7 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Privacy</h2>
-      <p class="text-base-content/80">
+      <p class="text-muted">
         Your privacy is important to us. Please review our Privacy Policy, which also governs your
         use of the service, to understand our practices.
       </p>
@@ -84,7 +87,7 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Disclaimer</h2>
-      <p class="text-base-content/80">
+      <p class="text-muted">
         The information on this service is provided on an 'as is' basis. To the fullest extent
         permitted by law, we exclude all representations, warranties, conditions and terms whether
         express or implied.
@@ -93,7 +96,7 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Limitations</h2>
-      <p class="text-base-content/80">
+      <p class="text-muted">
         In no event shall we or our suppliers be liable for any damages (including, without
         limitation, damages for loss of data or profit, or due to business interruption) arising
         out of the use or inability to use the service.
@@ -102,20 +105,20 @@
 
     <section>
       <h2 class="text-xl font-semibold mb-4">Contact Information</h2>
-      <p :if={@contact_email} class="text-base-content/80">
+      <p :if={@contact_email} class="text-muted">
         If you have any questions about these Terms and Conditions, email us at <a
           href={"mailto:" <> @contact_email}
           class="link link-primary"
         >{@contact_email}</a>.
       </p>
-      <p :if={!@contact_email} class="text-base-content/80">
+      <p :if={!@contact_email} class="text-muted">
         If you have any questions about these Terms and Conditions, please contact us through the
         project's support channels.
       </p>
     </section>
 
     <div class="text-center pt-8 border-t border-base-300">
-      <small class="text-xs text-base-content/60">Last updated: September 2026</small>
+      <small class="text-xs text-muted">Last updated: September 2026</small>
     </div>
   </div>
 </Layouts.app>

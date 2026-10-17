@@ -8,7 +8,7 @@ msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "Máy chủ game Elixir mã nguồn mở cho các trò chơi nhiều người thời gian thực."
 
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 msgid "Discord"
 msgstr "Discord"
@@ -31,26 +31,29 @@ msgstr "Hướng dẫn"
 msgid "API Docs"
 msgstr "Tài liệu API"
 
+msgid "UI elements"
+msgstr "Thành phần giao diện"
+
 msgid "Elixir Docs"
 msgstr "Tài liệu Elixir"
 
 msgid "Deployment Tutorial"
-msgstr ""
+msgstr "Hướng dẫn triển khai"
 
 msgid "Scaling Guide"
-msgstr ""
+msgstr "Hướng dẫn mở rộng quy mô"
 
 msgid "Docs"
-msgstr ""
+msgstr "Tài liệu"
 
 msgid "Starter Template"
-msgstr ""
+msgstr "Mẫu khởi đầu"
 
 msgid "Store"
 msgstr "Cửa hàng"
 
 msgid "Server Stats"
-msgstr ""
+msgstr "Thống kê máy chủ"
 
 msgid "Help"
 msgstr "Trợ giúp"
@@ -80,7 +83,7 @@ msgid "Groups"
 msgstr "Các nhóm"
 
 msgid "News"
-msgstr ""
+msgstr "Tin tức"
 
 msgid "Getting Started"
 msgstr "Bắt đầu"
@@ -89,28 +92,28 @@ msgid "Presentation Video"
 msgstr "Video giới thiệu"
 
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
-msgstr ""
+msgstr "Máy chủ game Elixir **mã nguồn mở** cho các trò chơi nhiều người thời gian thực: backend, trang web cho người chơi và bảng quản trị trong một."
 
 msgid "Gamend"
 msgstr "Gamend"
 
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
-msgstr ""
+msgstr "Tham quan bảng quản trị, nhiệm vụ, cửa hàng và hook máy chủ của Gamend"
 
 msgid "Benchmarks"
-msgstr ""
+msgstr "Đo hiệu năng"
 
 msgid "Godot SDK"
-msgstr ""
+msgstr "Godot SDK"
 
 msgid "C++ SDK"
-msgstr ""
+msgstr "C++ SDK"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
-msgstr ""
+msgstr "**Backend cho game nhiều người chơi của bạn**: tài khoản, sảnh chờ, trò chuyện, bảng xếp hạng và mọi thứ người chơi mong đợi xung quanh trò chơi. Nó còn đi kèm giao diện web bao quanh: một trang web dựng sẵn cho người chơi (cửa hàng, bảng xếp hạng, giải đấu, nhiệm vụ, nhóm, trò chuyện) và một bảng quản trị đầy đủ. Script phía máy chủ chạy logic riêng của bạn ở nơi người chơi không thể chạm tới. Bạn tự chạy nó trên máy chủ của mình; không có dịch vụ lưu trữ sẵn."
 
 msgid "What is Gamend?"
-msgstr ""
+msgstr "Gamend là gì?"
 
 msgid "Log in"
 msgstr "Đăng nhập"
@@ -119,7 +122,7 @@ msgid "Register"
 msgstr "Đăng ký"
 
 msgid "The login page with magic link, password and five OAuth providers"
-msgstr ""
+msgstr "Trang đăng nhập với liên kết đăng nhập nhanh, mật khẩu và năm nhà cung cấp OAuth"
 
 msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
 msgstr "Email, liên kết đăng nhập nhanh, OAuth, JWT và phiên. Đăng ký, đăng nhập, đặt lại mật khẩu và xác minh email."
@@ -128,22 +131,22 @@ msgid "Authentication & Users"
 msgstr "Xác thực và người dùng"
 
 msgid "Lobbies"
-msgstr ""
+msgstr "Sảnh chờ"
 
 msgid "Matchmaking"
-msgstr ""
+msgstr "Ghép trận"
 
 msgid "The matchmaking admin page with live queues, tickets and ready checks"
-msgstr ""
+msgstr "Trang quản trị ghép trận với hàng đợi trực tiếp, vé và kiểm tra sẵn sàng"
 
 msgid "Real-time lobbies with passwords, quick join and live updates. Ephemeral parties that join and get matched **as one unit**, a ticket-queue matchmaker and ready checks before anything starts."
-msgstr ""
+msgstr "Sảnh chờ thời gian thực với mật khẩu, tham gia nhanh và cập nhật trực tiếp. Nhóm chơi tạm thời tham gia và được ghép trận **như một đơn vị**, bộ ghép trận theo hàng đợi vé và kiểm tra sẵn sàng trước khi bất cứ thứ gì bắt đầu."
 
 msgid "Lobbies, Parties & Matchmaking"
 msgstr "Sảnh chờ, nhóm chơi và ghép trận"
 
 msgid "The public groups browser"
-msgstr ""
+msgstr "Trang duyệt nhóm công khai"
 
 msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
 msgstr "Lời mời kết bạn, chặn, trạng thái trực tuyến thời gian thực. Nhóm công khai, riêng tư và ẩn. Nhắn tin riêng và nhóm."
@@ -152,33 +155,31 @@ msgid "Friends, Groups & Chat"
 msgstr "Bạn bè, nhóm và trò chuyện"
 
 msgid "The quests page with daily, achievement and event quests"
-msgstr ""
+msgstr "Trang nhiệm vụ với nhiệm vụ hằng ngày, nhiệm vụ thành tựu và nhiệm vụ sự kiện"
 
 msgid "One server-authoritative quest engine for achievements, dailies, seasonal events and quest chains. Bracket tournaments, leaderboards with seasons, and real-time plus push notifications across every feature."
-msgstr ""
+msgstr "Một công cụ nhiệm vụ duy nhất do máy chủ quyết định cho thành tựu, nhiệm vụ hằng ngày, sự kiện theo mùa và chuỗi nhiệm vụ. Giải đấu theo nhánh đấu, bảng xếp hạng theo mùa, cùng thông báo thời gian thực và thông báo đẩy cho mọi tính năng."
 
 msgid "Quests, Tournaments & Leaderboards"
-msgstr ""
+msgstr "Nhiệm vụ, giải đấu và bảng xếp hạng"
 
-#, fuzzy
 msgid "Server Scripting"
-msgstr "Script máy chủ và lập lịch"
+msgstr "Script máy chủ"
 
 msgid "GDScript Hooks"
-msgstr ""
+msgstr "Hook GDScript"
 
 msgid "Runtime introspection listing every hook with its implementing plugins"
-msgstr ""
+msgstr "Kiểm tra lúc chạy liệt kê mọi hook cùng các plugin triển khai nó"
 
 msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
-msgstr ""
+msgstr "Viết hook máy chủ bằng **Elixir, GDScript hoặc Gleam** cho tính điểm, phần thưởng, quy tắc ghép trận và xác thực, ở nơi người chơi không thể chạm tới. Tích hợp sẵn tác vụ nền bền vững và lập lịch cron."
 
 msgid "Server Scripting & Scheduling"
 msgstr "Script máy chủ và lập lịch"
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
-msgstr "REST API, kênh WebSocket thời gian thực và DataChannel WebRTC độ trễ thấp. Cổng quản trị và giao diện web."
+msgstr "REST API, kênh WebSocket thời gian thực và WebRTC DataChannels độ trễ thấp, cùng định dạng thời gian thực protobuf tùy chọn. Cổng quản trị và giao diện web, được dịch sang 30 ngôn ngữ."
 
 msgid "HTTP, WebSocket & WebRTC"
 msgstr "HTTP, WebSocket và WebRTC"
@@ -190,7 +191,7 @@ msgid "Payment Docs"
 msgstr "Tài liệu thanh toán"
 
 msgid "The built-in store page with priced products"
-msgstr ""
+msgstr "Trang cửa hàng tích hợp với các sản phẩm có giá"
 
 msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
 msgstr "Thanh toán phía máy chủ với Stripe, Google Play, App Store và Steam. Xác thực biên lai, xử lý webhook có chữ ký, cấp quyền lợi, thu hồi khoản hoàn tiền và xem lại tất cả trong trang quản trị."
@@ -199,34 +200,34 @@ msgid "Payments & Store Integrations"
 msgstr "Thanh toán và tích hợp cửa hàng"
 
 msgid "Economy"
-msgstr ""
+msgstr "Kinh tế"
 
 msgid "Key-Value Store"
-msgstr ""
+msgstr "Kho khóa-giá trị"
 
 msgid "The economy admin page with wallets and grant and spend controls"
-msgstr ""
+msgstr "Trang quản trị kinh tế với ví và các nút điều khiển cấp và chi tiêu"
 
 msgid "Virtual currency wallets with an atomic, append-only ledger. Item stacks with grant and consume. A per-player and per-lobby **key-value store**, and object storage with presigned uploads on local disk or any S3-compatible backend."
-msgstr ""
+msgstr "Ví tiền ảo với sổ cái nguyên tử, chỉ ghi thêm. Chồng vật phẩm với cấp và tiêu hao. **Kho khóa-giá trị** theo từng người chơi và từng sảnh chờ, cùng lưu trữ đối tượng với tải lên được ký trước trên ổ đĩa cục bộ hoặc bất kỳ backend nào tương thích S3."
 
 msgid "Economy, Inventory & Storage"
-msgstr ""
+msgstr "Kinh tế, kho đồ và lưu trữ"
 
 msgid "Player Analytics"
-msgstr ""
+msgstr "Phân tích người chơi"
 
 msgid "Client Logs"
-msgstr ""
+msgstr "Nhật ký máy khách"
 
 msgid "The analytics admin page with DAU and D1, D7 and D30 retention"
-msgstr ""
+msgstr "Trang quản trị phân tích với DAU và tỷ lệ giữ chân D1, D7 và D30"
 
 msgid "D1 / D7 / D30 retention, DAU and payer conversion built in. Client log sessions correlated with the server's own tail for per-player debugging. Prometheus metrics with Grafana, and a load-test harness with published benchmarks."
-msgstr ""
+msgstr "Tích hợp sẵn tỷ lệ giữ chân D1 / D7 / D30, DAU và tỷ lệ chuyển đổi người trả tiền. Phiên nhật ký máy khách được đối chiếu với nhật ký của chính máy chủ để gỡ lỗi theo từng người chơi. Số liệu Prometheus với Grafana, và bộ kiểm thử tải với kết quả đo hiệu năng được công bố."
 
 msgid "Analytics, Logs & Observability"
-msgstr ""
+msgstr "Phân tích, nhật ký và khả năng quan sát"
 
 msgid "Game + Backend"
 msgstr "Game + backend"

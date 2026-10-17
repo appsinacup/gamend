@@ -353,7 +353,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
       <div class="card bg-base-200 mb-4">
         <div class="card-body">
           <h2 class="card-title">{gettext("Bundled lists")}</h2>
-          <p class="text-sm text-base-content/70">
+          <p class="text-sm text-muted">
             {gettext(
               "Matching is language-agnostic: importing a language's list adds its words to one shared set, and lang only records where a row came from."
             )}
@@ -392,13 +392,13 @@ defmodule GamendWeb.AdminLive.ChatFilter do
             </button>
           </form>
 
-          <p :if={@languages == []} class="text-sm text-base-content/60">
+          <p :if={@languages == []} class="text-sm text-muted">
             {gettext(
               "No bundled lists are available. Drop one at apps/gamend_core/priv/chat_filter/<lang>.txt."
             )}
           </p>
 
-          <p class="text-sm text-base-content/60 mt-2">
+          <p class="text-sm text-muted mt-2">
             {gettext("Gamend ships no word list of its own; en.txt holds two placeholders.")}
             <a href={@chat_guide_url} class="link">
               {gettext("The Chat guide lists public sources and how to install one.")}
@@ -410,7 +410,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
       <div class="card bg-base-200 mb-4">
         <div class="card-body">
           <h2 class="card-title">{gettext("Test a phrase")}</h2>
-          <p class="text-sm text-base-content/70">
+          <p class="text-sm text-muted">
             {gettext("Runs the phrase through the live blocklist, exactly as chat does.")}
           </p>
 
@@ -430,7 +430,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
               <span class={["badge", outcome_badge(@test_result.outcome)]}>
                 {outcome_label(@test_result.outcome)}
               </span>
-              <span class="text-sm text-base-content/70">
+              <span class="text-sm text-muted">
                 {outcome_hint(@test_result.outcome)}
               </span>
             </div>
@@ -446,7 +446,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
 
             <p
               :if={@test_result.outcome == :blocked and not @test_result.blocking?}
-              class="text-sm text-base-content/70"
+              class="text-sm text-muted"
             >
               {gettext(
                 "Masking left a match behind, so the message is rejected rather than sent half-masked."
@@ -462,7 +462,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
               </span>
             </div>
 
-            <div class="text-xs text-base-content/60">
+            <div class="text-xs text-muted">
               {gettext("Normalized")}: <code class="font-mono">{@test_result.normalized}</code>
             </div>
           </div>
@@ -623,7 +623,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
             </table>
           </div>
 
-          <div :if={@words == []} class="text-center py-8 text-base-content/60">
+          <div :if={@words == []} class="text-center py-8 text-muted">
             {gettext("No filter words.")}
           </div>
 

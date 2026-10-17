@@ -25,13 +25,26 @@ defmodule GamendWeb.Endpoint do
   # `mount/3` from the dead render and again on connect, and without it the
   # connected mount got `nil` and the highlight dropped a moment after it
   # appeared.
+  #
+  # Join replies are encoded with Elixir's `JSON` (`GamendWeb.LiveSerializer`),
+  # the version-1 protocol as Phoenix ships it.
+  @live_serializers [
+    {Phoenix.Socket.V1.JSONSerializer, "~> 1.0.0"},
+    {GamendWeb.LiveSerializer, "~> 2.0.0"}
+  ]
+
   socket "/live", Phoenix.LiveView.Socket,
     websocket: [
       connect_info: [:peer_data, :user_agent, session: @session_options],
       log: false,
-      compress: true
+      compress: true,
+      serializer: @live_serializers
     ],
-    longpoll: [connect_info: [:user_agent, session: @session_options], log: false]
+    longpoll: [
+      connect_info: [:user_agent, session: @session_options],
+      log: false,
+      serializer: @live_serializers
+    ]
 
   # First, where Phoenix's own socket dispatch runs.
   plug :game_socket
@@ -50,6 +63,8 @@ defmodule GamendWeb.Endpoint do
   plug GamendWeb.Plugs.IndexNowKey
   plug GamendWeb.Plugs.SecurityHeaders
   plug GamendWeb.Plugs.WellKnown
+  # The LiveView route table `live_nav.js` reads (`GamendWeb.LiveNav`).
+  plug GamendWeb.Plugs.LiveNavTable
   plug GamendWeb.Plugs.GameHeaders
   # First of the static plugs: a project's own files (`GamendWeb.ProjectStatic`)
   # replace the engine's under the same name.

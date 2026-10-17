@@ -19,7 +19,7 @@ defmodule GamendWeb.PageHTML do
     <.panel tag="section" id={@id} class="scroll-mt-24 space-y-5">
       <div class="space-y-1">
         <h2 class="text-xl font-semibold">{@title}</h2>
-        <p :if={@intro != []} class="text-sm text-base-content/70">{render_slot(@intro)}</p>
+        <p :if={@intro != []} class="text-sm text-muted">{render_slot(@intro)}</p>
       </div>
       {render_slot(@inner_block)}
     </.panel>
@@ -47,7 +47,7 @@ defmodule GamendWeb.PageHTML do
     ~H"""
     <figure class="flex flex-col items-start gap-1.5">
       {render_slot(@inner_block)}
-      <figcaption class="font-mono text-xs text-base-content/60">{@code}</figcaption>
+      <figcaption class="font-mono text-xs text-muted">{@code}</figcaption>
     </figure>
     """
   end

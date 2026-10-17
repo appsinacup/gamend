@@ -8,7 +8,7 @@ msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "Open-Source-Spieleserver in Elixir für Echtzeit-Mehrspielerspiele."
 
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 msgid "Discord"
 msgstr "Discord"
@@ -31,26 +31,29 @@ msgstr "Anleitungen"
 msgid "API Docs"
 msgstr "API-Dokumentation"
 
+msgid "UI elements"
+msgstr "UI-Elemente"
+
 msgid "Elixir Docs"
 msgstr "Elixir-Dokumentation"
 
 msgid "Deployment Tutorial"
-msgstr ""
+msgstr "Deployment-Tutorial"
 
 msgid "Scaling Guide"
-msgstr ""
+msgstr "Skalierungsleitfaden"
 
 msgid "Docs"
-msgstr ""
+msgstr "Doku"
 
 msgid "Starter Template"
-msgstr ""
+msgstr "Starter-Vorlage"
 
 msgid "Store"
 msgstr "Store"
 
 msgid "Server Stats"
-msgstr ""
+msgstr "Serverstatistiken"
 
 msgid "Help"
 msgstr "Hilfe"
@@ -80,7 +83,7 @@ msgid "Groups"
 msgstr "Gruppen"
 
 msgid "News"
-msgstr ""
+msgstr "Neuigkeiten"
 
 msgid "Getting Started"
 msgstr "Erste Schritte"
@@ -89,28 +92,28 @@ msgid "Presentation Video"
 msgstr "Präsentationsvideo"
 
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
-msgstr ""
+msgstr "**Open-Source**-Spieleserver in Elixir für Echtzeit-Mehrspielerspiele: Backend, Spieler-Website und Admin-Panel in einem."
 
 msgid "Gamend"
 msgstr "Gamend"
 
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
-msgstr ""
+msgstr "Ein Rundgang durch das Gamend-Admin-Panel, Quests, Store und Server-Hooks"
 
 msgid "Benchmarks"
-msgstr ""
+msgstr "Benchmarks"
 
 msgid "Godot SDK"
-msgstr ""
+msgstr "Godot SDK"
 
 msgid "C++ SDK"
-msgstr ""
+msgstr "C++ SDK"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
-msgstr ""
+msgstr "Das **Backend für dein Mehrspielerspiel**: Konten, Lobbys, Chat, Bestenlisten und alles, was Spieler rund um das eigentliche Spiel erwarten. Dazu liefert es die passende Web-Oberfläche mit: eine fertige Spieler-Website (Store, Bestenlisten, Turniere, Quests, Gruppen, Chat) und ein vollständiges Admin-Panel. Serverseitige Skripte führen deine eigene Logik dort aus, wo Spieler nicht herankommen. Du betreibst es auf deinem eigenen Server; einen gehosteten Dienst gibt es nicht."
 
 msgid "What is Gamend?"
-msgstr ""
+msgstr "Was ist Gamend?"
 
 msgid "Log in"
 msgstr "Anmelden"
@@ -119,7 +122,7 @@ msgid "Register"
 msgstr "Registrieren"
 
 msgid "The login page with magic link, password and five OAuth providers"
-msgstr ""
+msgstr "Die Anmeldeseite mit Magic Link, Passwort und fünf OAuth-Anbietern"
 
 msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
 msgstr "E-Mail, Magic Link, OAuth, JWT und Sitzung. Registrieren, anmelden, Passwort zurücksetzen und E-Mail bestätigen."
@@ -128,22 +131,22 @@ msgid "Authentication & Users"
 msgstr "Authentifizierung und Benutzer"
 
 msgid "Lobbies"
-msgstr ""
+msgstr "Lobbys"
 
 msgid "Matchmaking"
-msgstr ""
+msgstr "Matchmaking"
 
 msgid "The matchmaking admin page with live queues, tickets and ready checks"
-msgstr ""
+msgstr "Die Matchmaking-Admin-Seite mit Live-Warteschlangen, Tickets und Bereitschaftschecks"
 
 msgid "Real-time lobbies with passwords, quick join and live updates. Ephemeral parties that join and get matched **as one unit**, a ticket-queue matchmaker and ready checks before anything starts."
-msgstr ""
+msgstr "Echtzeit-Lobbys mit Passwörtern, Schnellbeitritt und Live-Updates. Kurzlebige Partys, die **als eine Einheit** beitreten und gematcht werden, ein Matchmaker mit Ticket-Warteschlange und Bereitschaftschecks, bevor irgendetwas startet."
 
 msgid "Lobbies, Parties & Matchmaking"
 msgstr "Lobbys, Partys und Matchmaking"
 
 msgid "The public groups browser"
-msgstr ""
+msgstr "Der öffentliche Gruppen-Browser"
 
 msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
 msgstr "Freundschaftsanfragen, Blockieren, Echtzeit-Präsenz. Öffentliche, private und versteckte Gruppen. Direkt- und Gruppennachrichten."
@@ -152,33 +155,31 @@ msgid "Friends, Groups & Chat"
 msgstr "Freunde, Gruppen und Chat"
 
 msgid "The quests page with daily, achievement and event quests"
-msgstr ""
+msgstr "Die Quest-Seite mit täglichen Quests, Erfolgs- und Event-Quests"
 
 msgid "One server-authoritative quest engine for achievements, dailies, seasonal events and quest chains. Bracket tournaments, leaderboards with seasons, and real-time plus push notifications across every feature."
-msgstr ""
+msgstr "Eine serverautoritative Quest-Engine für Erfolge, tägliche Quests, saisonale Events und Quest-Ketten. Turniere mit Turnierbaum, Bestenlisten mit Saisons sowie Echtzeit- und Push-Benachrichtigungen für jede Funktion."
 
 msgid "Quests, Tournaments & Leaderboards"
-msgstr ""
+msgstr "Quests, Turniere und Bestenlisten"
 
-#, fuzzy
 msgid "Server Scripting"
-msgstr "Server-Skripte und Zeitplanung"
+msgstr "Server-Skripte"
 
 msgid "GDScript Hooks"
-msgstr ""
+msgstr "GDScript-Hooks"
 
 msgid "Runtime introspection listing every hook with its implementing plugins"
-msgstr ""
+msgstr "Laufzeit-Introspektion, die jeden Hook mit den Plugins auflistet, die ihn implementieren"
 
 msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
-msgstr ""
+msgstr "Schreibe Server-Hooks in **Elixir, GDScript oder Gleam** für Punktewertung, Belohnungen, Matchmaking-Regeln und Validierung, dort, wo Spieler nicht herankommen. Dauerhafte Hintergrundjobs und Cron-Zeitplanung sind integriert."
 
 msgid "Server Scripting & Scheduling"
 msgstr "Server-Skripte und Zeitplanung"
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
-msgstr "REST-API, Echtzeit-WebSocket-Kanäle und WebRTC-DataChannels mit geringer Latenz. Admin-Portal und Web-Oberfläche."
+msgstr "REST-API, Echtzeit-WebSocket-Kanäle und WebRTC-DataChannels mit geringer Latenz, dazu ein optionales protobuf-Echtzeitformat. Admin-Portal und Web-Oberfläche, übersetzt in 30 Sprachen."
 
 msgid "HTTP, WebSocket & WebRTC"
 msgstr "HTTP, WebSocket und WebRTC"
@@ -190,7 +191,7 @@ msgid "Payment Docs"
 msgstr "Zahlungsdokumentation"
 
 msgid "The built-in store page with priced products"
-msgstr ""
+msgstr "Die integrierte Store-Seite mit Produkten und Preisen"
 
 msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
 msgstr "Serverseitige Zahlungen mit Stripe, Google Play, App Store und Steam. Belege prüfen, signierte Webhooks verarbeiten, Berechtigungen vergeben, Rückerstattungen widerrufen und alles im Admin einsehen."
@@ -199,34 +200,34 @@ msgid "Payments & Store Integrations"
 msgstr "Zahlungen und Store-Integrationen"
 
 msgid "Economy"
-msgstr ""
+msgstr "Wirtschaft"
 
 msgid "Key-Value Store"
-msgstr ""
+msgstr "Key-Value-Speicher"
 
 msgid "The economy admin page with wallets and grant and spend controls"
-msgstr ""
+msgstr "Die Wirtschafts-Admin-Seite mit Geldbörsen sowie Steuerelementen zum Gewähren und Ausgeben"
 
 msgid "Virtual currency wallets with an atomic, append-only ledger. Item stacks with grant and consume. A per-player and per-lobby **key-value store**, and object storage with presigned uploads on local disk or any S3-compatible backend."
-msgstr ""
+msgstr "Geldbörsen für virtuelle Währungen mit einem atomaren Hauptbuch, an das nur angehängt wird. Gegenstandsstapel mit Gewähren und Verbrauchen. Ein **Key-Value-Speicher** pro Spieler und pro Lobby sowie Objektspeicher mit vorsignierten Uploads auf die lokale Festplatte oder in ein beliebiges S3-kompatibles Backend."
 
 msgid "Economy, Inventory & Storage"
-msgstr ""
+msgstr "Wirtschaft, Inventar und Speicher"
 
 msgid "Player Analytics"
-msgstr ""
+msgstr "Spieleranalysen"
 
 msgid "Client Logs"
-msgstr ""
+msgstr "Client-Logs"
 
 msgid "The analytics admin page with DAU and D1, D7 and D30 retention"
-msgstr ""
+msgstr "Die Analyse-Admin-Seite mit DAU sowie D1-, D7- und D30-Retention"
 
 msgid "D1 / D7 / D30 retention, DAU and payer conversion built in. Client log sessions correlated with the server's own tail for per-player debugging. Prometheus metrics with Grafana, and a load-test harness with published benchmarks."
-msgstr ""
+msgstr "Retention für D1 / D7 / D30, DAU und Zahler-Conversion sind integriert. Client-Log-Sitzungen, abgeglichen mit dem eigenen Log-Ende des Servers, für Debugging pro Spieler. Prometheus-Metriken mit Grafana und ein Lasttest-Harness mit veröffentlichten Benchmarks."
 
 msgid "Analytics, Logs & Observability"
-msgstr ""
+msgstr "Analysen, Logs und Observability"
 
 msgid "Game + Backend"
 msgstr "Spiel + Backend"

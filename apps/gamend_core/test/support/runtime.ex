@@ -93,6 +93,7 @@ defmodule Gamend.TestSupport.Runtime do
   defp core_services do
     [
       Gamend.Repo,
+      Gamend.Lock.Queue,
       {Gamend.Cache, []},
       Gamend.Cache.Stats,
       {Task.Supervisor, name: Gamend.TaskSupervisor, max_children: 200},

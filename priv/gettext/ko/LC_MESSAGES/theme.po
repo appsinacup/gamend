@@ -8,7 +8,7 @@ msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "실시간 멀티플레이 게임을 위한 오픈 소스 Elixir 게임 서버."
 
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 msgid "Discord"
 msgstr "Discord"
@@ -31,26 +31,29 @@ msgstr "가이드"
 msgid "API Docs"
 msgstr "API 문서"
 
+msgid "UI elements"
+msgstr "UI 요소"
+
 msgid "Elixir Docs"
 msgstr "Elixir 문서"
 
 msgid "Deployment Tutorial"
-msgstr ""
+msgstr "배포 튜토리얼"
 
 msgid "Scaling Guide"
-msgstr ""
+msgstr "스케일링 가이드"
 
 msgid "Docs"
-msgstr ""
+msgstr "문서"
 
 msgid "Starter Template"
-msgstr ""
+msgstr "스타터 템플릿"
 
 msgid "Store"
 msgstr "스토어"
 
 msgid "Server Stats"
-msgstr ""
+msgstr "서버 통계"
 
 msgid "Help"
 msgstr "도움말"
@@ -80,7 +83,7 @@ msgid "Groups"
 msgstr "그룹"
 
 msgid "News"
-msgstr ""
+msgstr "소식"
 
 msgid "Getting Started"
 msgstr "시작하기"
@@ -89,28 +92,28 @@ msgid "Presentation Video"
 msgstr "소개 영상"
 
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
-msgstr ""
+msgstr "실시간 멀티플레이 게임을 위한 **오픈 소스** Elixir 게임 서버: 백엔드, 플레이어 웹사이트, 관리자 패널을 하나로."
 
 msgid "Gamend"
 msgstr "Gamend"
 
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
-msgstr ""
+msgstr "Gamend 관리자 패널, 퀘스트, 스토어, 서버 훅 둘러보기"
 
 msgid "Benchmarks"
-msgstr ""
+msgstr "벤치마크"
 
 msgid "Godot SDK"
-msgstr ""
+msgstr "Godot SDK"
 
 msgid "C++ SDK"
-msgstr ""
+msgstr "C++ SDK"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
-msgstr ""
+msgstr "**멀티플레이 게임을 위한 백엔드**: 계정, 로비, 채팅, 리더보드 등 게임 자체를 둘러싸고 플레이어가 기대하는 모든 것을 제공합니다. 이를 감싸는 웹 UI도 함께 제공합니다. 바로 쓸 수 있는 플레이어 웹사이트(스토어, 리더보드, 토너먼트, 퀘스트, 그룹, 채팅)와 완전한 관리자 패널이 포함되어 있습니다. 서버 측 스크립팅으로 플레이어가 접근할 수 없는 곳에서 자체 로직을 실행합니다. 직접 운영하는 서버에서 실행하며, 호스팅 서비스는 없습니다."
 
 msgid "What is Gamend?"
-msgstr ""
+msgstr "Gamend란?"
 
 msgid "Log in"
 msgstr "로그인"
@@ -119,7 +122,7 @@ msgid "Register"
 msgstr "가입하기"
 
 msgid "The login page with magic link, password and five OAuth providers"
-msgstr ""
+msgstr "매직 링크, 비밀번호, 5개의 OAuth 공급자를 지원하는 로그인 페이지"
 
 msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
 msgstr "이메일, 매직 링크, OAuth, JWT, 세션. 가입, 로그인, 비밀번호 재설정, 이메일 인증."
@@ -128,22 +131,22 @@ msgid "Authentication & Users"
 msgstr "인증 및 사용자"
 
 msgid "Lobbies"
-msgstr ""
+msgstr "로비"
 
 msgid "Matchmaking"
-msgstr ""
+msgstr "매치메이킹"
 
 msgid "The matchmaking admin page with live queues, tickets and ready checks"
-msgstr ""
+msgstr "실시간 대기열, 티켓, 준비 확인을 보여 주는 매치메이킹 관리 페이지"
 
 msgid "Real-time lobbies with passwords, quick join and live updates. Ephemeral parties that join and get matched **as one unit**, a ticket-queue matchmaker and ready checks before anything starts."
-msgstr ""
+msgstr "비밀번호, 빠른 참가, 실시간 업데이트를 지원하는 실시간 로비. **하나의 단위로** 참가하고 매칭되는 임시 파티, 티켓 대기열 방식의 매치메이커, 그리고 시작 전 준비 확인."
 
 msgid "Lobbies, Parties & Matchmaking"
 msgstr "로비, 파티, 매치메이킹"
 
 msgid "The public groups browser"
-msgstr ""
+msgstr "공개 그룹 둘러보기"
 
 msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
 msgstr "친구 요청, 차단, 실시간 접속 상태. 공개, 비공개, 숨김 그룹. 1:1 및 그룹 메시지."
@@ -152,33 +155,31 @@ msgid "Friends, Groups & Chat"
 msgstr "친구, 그룹, 채팅"
 
 msgid "The quests page with daily, achievement and event quests"
-msgstr ""
+msgstr "일일, 업적, 이벤트 퀘스트가 있는 퀘스트 페이지"
 
 msgid "One server-authoritative quest engine for achievements, dailies, seasonal events and quest chains. Bracket tournaments, leaderboards with seasons, and real-time plus push notifications across every feature."
-msgstr ""
+msgstr "업적, 일일 퀘스트, 시즌 이벤트, 퀘스트 체인을 모두 다루는 서버 권한 방식의 단일 퀘스트 엔진. 대진표 방식의 토너먼트, 시즌이 있는 리더보드, 그리고 모든 기능에 걸친 실시간 알림과 푸시 알림."
 
 msgid "Quests, Tournaments & Leaderboards"
-msgstr ""
+msgstr "퀘스트, 토너먼트, 리더보드"
 
-#, fuzzy
 msgid "Server Scripting"
-msgstr "서버 스크립팅 및 스케줄링"
+msgstr "서버 스크립팅"
 
 msgid "GDScript Hooks"
-msgstr ""
+msgstr "GDScript 훅"
 
 msgid "Runtime introspection listing every hook with its implementing plugins"
-msgstr ""
+msgstr "모든 훅과 이를 구현한 플러그인을 나열하는 런타임 인트로스펙션"
 
 msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
-msgstr ""
+msgstr "점수 계산, 보상, 매치메이킹 규칙, 검증을 위한 서버 훅을 **Elixir, GDScript 또는 Gleam**으로 작성해 플레이어가 접근할 수 없는 곳에서 실행하세요. 내구성 있는 백그라운드 작업과 cron 스케줄링이 내장되어 있습니다."
 
 msgid "Server Scripting & Scheduling"
 msgstr "서버 스크립팅 및 스케줄링"
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
-msgstr "REST API, 실시간 WebSocket 채널, 저지연 WebRTC DataChannel. 관리자 포털과 웹 UI."
+msgstr "REST API, 실시간 WebSocket 채널, 저지연 WebRTC DataChannels, 그리고 선택적으로 사용할 수 있는 protobuf 실시간 형식. 30개 언어로 번역된 관리자 포털과 웹 UI."
 
 msgid "HTTP, WebSocket & WebRTC"
 msgstr "HTTP, WebSocket, WebRTC"
@@ -190,7 +191,7 @@ msgid "Payment Docs"
 msgstr "결제 문서"
 
 msgid "The built-in store page with priced products"
-msgstr ""
+msgstr "가격이 책정된 상품이 있는 기본 제공 스토어 페이지"
 
 msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
 msgstr "Stripe, Google Play, App Store, Steam을 지원하는 서버 측 결제. 영수증 검증, 서명된 웹훅 처리, 권한 부여, 환불 취소까지 모두 관리자에서 확인할 수 있습니다."
@@ -199,34 +200,34 @@ msgid "Payments & Store Integrations"
 msgstr "결제 및 스토어 연동"
 
 msgid "Economy"
-msgstr ""
+msgstr "경제"
 
 msgid "Key-Value Store"
-msgstr ""
+msgstr "키-값 저장소"
 
 msgid "The economy admin page with wallets and grant and spend controls"
-msgstr ""
+msgstr "지갑과 지급 및 소비 컨트롤이 있는 경제 관리 페이지"
 
 msgid "Virtual currency wallets with an atomic, append-only ledger. Item stacks with grant and consume. A per-player and per-lobby **key-value store**, and object storage with presigned uploads on local disk or any S3-compatible backend."
-msgstr ""
+msgstr "원자적인 추가 전용 원장을 갖춘 가상 화폐 지갑. 지급과 소비를 지원하는 아이템 스택. 플레이어별·로비별 **키-값 저장소**, 그리고 로컬 디스크나 모든 S3 호환 백엔드에 사전 서명된 업로드를 지원하는 오브젝트 스토리지."
 
 msgid "Economy, Inventory & Storage"
-msgstr ""
+msgstr "경제, 인벤토리, 스토리지"
 
 msgid "Player Analytics"
-msgstr ""
+msgstr "플레이어 분석"
 
 msgid "Client Logs"
-msgstr ""
+msgstr "클라이언트 로그"
 
 msgid "The analytics admin page with DAU and D1, D7 and D30 retention"
-msgstr ""
+msgstr "DAU와 D1, D7, D30 리텐션을 보여 주는 분석 관리 페이지"
 
 msgid "D1 / D7 / D30 retention, DAU and payer conversion built in. Client log sessions correlated with the server's own tail for per-player debugging. Prometheus metrics with Grafana, and a load-test harness with published benchmarks."
-msgstr ""
+msgstr "D1 / D7 / D30 리텐션, DAU, 결제자 전환율 기본 제공. 클라이언트 로그 세션을 서버 자체 로그의 끝부분과 연결해 플레이어별로 디버깅. Grafana를 활용한 Prometheus 메트릭, 그리고 벤치마크 결과가 공개된 부하 테스트 하네스."
 
 msgid "Analytics, Logs & Observability"
-msgstr ""
+msgstr "분석, 로그, 관측성"
 
 msgid "Game + Backend"
 msgstr "게임 + 백엔드"

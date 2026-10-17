@@ -8,7 +8,7 @@ msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "Διακομιστής παιχνιδιών σε Elixir ανοιχτού κώδικα για παιχνίδια πολλών παικτών σε πραγματικό χρόνο."
 
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 msgid "Discord"
 msgstr "Discord"
@@ -31,26 +31,29 @@ msgstr "Οδηγοί"
 msgid "API Docs"
 msgstr "Τεκμηρίωση API"
 
+msgid "UI elements"
+msgstr "Στοιχεία διεπαφής"
+
 msgid "Elixir Docs"
 msgstr "Τεκμηρίωση Elixir"
 
 msgid "Deployment Tutorial"
-msgstr ""
+msgstr "Οδηγός ανάπτυξης"
 
 msgid "Scaling Guide"
-msgstr ""
+msgstr "Οδηγός κλιμάκωσης"
 
 msgid "Docs"
-msgstr ""
+msgstr "Τεκμηρίωση"
 
 msgid "Starter Template"
-msgstr ""
+msgstr "Πρότυπο εκκίνησης"
 
 msgid "Store"
 msgstr "Κατάστημα"
 
 msgid "Server Stats"
-msgstr ""
+msgstr "Στατιστικά διακομιστή"
 
 msgid "Help"
 msgstr "Βοήθεια"
@@ -80,7 +83,7 @@ msgid "Groups"
 msgstr "Ομάδες"
 
 msgid "News"
-msgstr ""
+msgstr "Νέα"
 
 msgid "Getting Started"
 msgstr "Ξεκινώντας με το back-end"
@@ -89,28 +92,28 @@ msgid "Presentation Video"
 msgstr "Βίντεο Παρουσίασης"
 
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
-msgstr ""
+msgstr "Διακομιστής παιχνιδιών σε Elixir **ανοιχτού κώδικα** για παιχνίδια πολλών παικτών σε πραγματικό χρόνο: backend, ιστότοπος για παίκτες και πίνακας διαχείρισης σε ένα."
 
 msgid "Gamend"
 msgstr "Gamend"
 
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
-msgstr ""
+msgstr "Μια περιήγηση στον πίνακα διαχείρισης του Gamend, στις αποστολές, στο κατάστημα και στα hooks διακομιστή"
 
 msgid "Benchmarks"
-msgstr ""
+msgstr "Μετρήσεις επιδόσεων"
 
 msgid "Godot SDK"
-msgstr ""
+msgstr "Godot SDK"
 
 msgid "C++ SDK"
-msgstr ""
+msgstr "C++ SDK"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
-msgstr ""
+msgstr "Το **backend για το παιχνίδι πολλών παικτών σου**: λογαριασμοί, λόμπι, συνομιλία, πίνακες κατάταξης και όλα όσα περιμένουν οι παίκτες γύρω από το ίδιο το παιχνίδι. Περιλαμβάνει επίσης το διαδικτυακό περιβάλλον γύρω από αυτό: έναν έτοιμο ιστότοπο για παίκτες (κατάστημα, πίνακες κατάταξης, τουρνουά, αποστολές, ομάδες, συνομιλία) και έναν πλήρη πίνακα διαχείρισης. Τα σενάρια από την πλευρά του διακομιστή εκτελούν τη δική σου λογική εκεί όπου οι παίκτες δεν έχουν πρόσβαση. Το εκτελείς στον δικό σου διακομιστή· δεν υπάρχει φιλοξενούμενη υπηρεσία."
 
 msgid "What is Gamend?"
-msgstr ""
+msgstr "Τι είναι το Gamend;"
 
 msgid "Log in"
 msgstr "Σύνδεση"
@@ -119,7 +122,7 @@ msgid "Register"
 msgstr "Εγγραφή"
 
 msgid "The login page with magic link, password and five OAuth providers"
-msgstr ""
+msgstr "Η σελίδα σύνδεσης με μαγικό σύνδεσμο, κωδικό πρόσβασης και πέντε παρόχους OAuth"
 
 msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
 msgstr "Email, magic link, OAuth, JWT και συνεδρία. Εγγραφή, σύνδεση, επαναφορά κωδικού και επαλήθευση email."
@@ -128,22 +131,22 @@ msgid "Authentication & Users"
 msgstr "Αυθεντικοποίηση & Χρήστες"
 
 msgid "Lobbies"
-msgstr ""
+msgstr "Λόμπι"
 
 msgid "Matchmaking"
-msgstr ""
+msgstr "Αντιστοίχιση παικτών"
 
 msgid "The matchmaking admin page with live queues, tickets and ready checks"
-msgstr ""
+msgstr "Η σελίδα διαχείρισης αντιστοίχισης παικτών με ζωντανές ουρές, εισιτήρια και ελέγχους ετοιμότητας"
 
 msgid "Real-time lobbies with passwords, quick join and live updates. Ephemeral parties that join and get matched **as one unit**, a ticket-queue matchmaker and ready checks before anything starts."
-msgstr ""
+msgstr "Λόμπι πραγματικού χρόνου με κωδικούς πρόσβασης, γρήγορη συμμετοχή και ζωντανές ενημερώσεις. Προσωρινές παρέες που συμμετέχουν και αντιστοιχίζονται **ως μία μονάδα**, ένα σύστημα αντιστοίχισης με ουρά εισιτηρίων και έλεγχοι ετοιμότητας πριν ξεκινήσει οτιδήποτε."
 
 msgid "Lobbies, Parties & Matchmaking"
 msgstr "Λόμπι, παρέες και αντιστοίχιση παικτών"
 
 msgid "The public groups browser"
-msgstr ""
+msgstr "Ο δημόσιος κατάλογος ομάδων"
 
 msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
 msgstr "Αιτήματα φιλίας, αποκλεισμοί, ζωντανή συνδεσιμότητα. Δημόσια, ιδιωτικά, κρυμμένες ομάδες. Άμεσες ή ομαδικές συνομιλίες."
@@ -152,33 +155,31 @@ msgid "Friends, Groups & Chat"
 msgstr "Φίλοι, Ομάδες & Συνομιλίες"
 
 msgid "The quests page with daily, achievement and event quests"
-msgstr ""
+msgstr "Η σελίδα αποστολών με ημερήσιες αποστολές, επιτεύγματα και αποστολές εκδηλώσεων"
 
 msgid "One server-authoritative quest engine for achievements, dailies, seasonal events and quest chains. Bracket tournaments, leaderboards with seasons, and real-time plus push notifications across every feature."
-msgstr ""
+msgstr "Μία ενιαία μηχανή αποστολών με την εξουσία στον διακομιστή, για επιτεύγματα, ημερήσιες αποστολές, εποχικές εκδηλώσεις και αλυσίδες αποστολών. Τουρνουά με ταμπλό, πίνακες κατάταξης με σεζόν, και ειδοποιήσεις πραγματικού χρόνου και push σε κάθε λειτουργία."
 
 msgid "Quests, Tournaments & Leaderboards"
-msgstr ""
+msgstr "Αποστολές, τουρνουά και πίνακες κατάταξης"
 
-#, fuzzy
 msgid "Server Scripting"
-msgstr "Σενάρια διακομιστή και χρονοπρογραμματισμός"
+msgstr "Σενάρια διακομιστή"
 
 msgid "GDScript Hooks"
-msgstr ""
+msgstr "Hooks GDScript"
 
 msgid "Runtime introspection listing every hook with its implementing plugins"
-msgstr ""
+msgstr "Ενδοσκόπηση χρόνου εκτέλεσης που απαριθμεί κάθε hook μαζί με τα πρόσθετα που το υλοποιούν"
 
 msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
-msgstr ""
+msgstr "Γράψε hooks διακομιστή σε **Elixir, GDScript ή Gleam** για βαθμολόγηση, ανταμοιβές, κανόνες αντιστοίχισης και επικύρωση, εκεί όπου οι παίκτες δεν έχουν πρόσβαση. Ενσωματωμένες ανθεκτικές εργασίες παρασκηνίου και χρονοπρογραμματισμός cron."
 
 msgid "Server Scripting & Scheduling"
 msgstr "Σενάρια διακομιστή και χρονοπρογραμματισμός"
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
-msgstr "REST API, κανάλια WebSocket σε πραγματικό χρόνο και WebRTC DataChannels χαμηλής καθυστέρησης. Πύλη διαχείρισης και διαδικτυακό περιβάλλον."
+msgstr "REST API, κανάλια WebSocket σε πραγματικό χρόνο και WebRTC DataChannels χαμηλής καθυστέρησης, με προαιρετική μορφή πραγματικού χρόνου protobuf. Πύλη διαχείρισης και διαδικτυακό περιβάλλον, μεταφρασμένα σε 30 γλώσσες."
 
 msgid "HTTP, WebSocket & WebRTC"
 msgstr "HTTP, WebSocket και WebRTC"
@@ -190,43 +191,43 @@ msgid "Payment Docs"
 msgstr "Τεκμηρίωση πληρωμών"
 
 msgid "The built-in store page with priced products"
-msgstr ""
+msgstr "Η ενσωματωμένη σελίδα καταστήματος με προϊόντα και τιμές"
 
 msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
-msgstr "Πληρωμές από την πλευρά του διακομιστή με Stripe, Google Play, App Store και Steam. Επικυρώστε αποδείξεις, επεξεργαστείτε υπογεγραμμένα webhooks, παραχωρήστε δικαιώματα, ανακαλέστε επιστροφές χρημάτων και ελέγξτε τα πάντα από τη διαχείριση."
+msgstr "Πληρωμές από την πλευρά του διακομιστή με Stripe, Google Play, App Store και Steam. Επικύρωσε αποδείξεις, επεξεργάσου υπογεγραμμένα webhooks, παραχώρησε δικαιώματα, ανακάλεσε επιστροφές χρημάτων και έλεγξε τα πάντα από τη διαχείριση."
 
 msgid "Payments & Store Integrations"
 msgstr "Πληρωμές και ενσωματώσεις καταστημάτων"
 
 msgid "Economy"
-msgstr ""
+msgstr "Οικονομία"
 
 msgid "Key-Value Store"
-msgstr ""
+msgstr "Αποθήκη κλειδιού-τιμής"
 
 msgid "The economy admin page with wallets and grant and spend controls"
-msgstr ""
+msgstr "Η σελίδα διαχείρισης οικονομίας με πορτοφόλια και χειριστήρια παραχώρησης και δαπάνης"
 
 msgid "Virtual currency wallets with an atomic, append-only ledger. Item stacks with grant and consume. A per-player and per-lobby **key-value store**, and object storage with presigned uploads on local disk or any S3-compatible backend."
-msgstr ""
+msgstr "Πορτοφόλια εικονικού νομίσματος με ατομικό καθολικό μόνο προσθήκης. Στοίβες αντικειμένων με παραχώρηση και κατανάλωση. Μια **αποθήκη κλειδιού-τιμής** ανά παίκτη και ανά λόμπι, και αποθήκευση αντικειμένων με προϋπογεγραμμένες μεταφορτώσεις σε τοπικό δίσκο ή σε οποιοδήποτε backend συμβατό με S3."
 
 msgid "Economy, Inventory & Storage"
-msgstr ""
+msgstr "Οικονομία, απόθεμα και αποθήκευση"
 
 msgid "Player Analytics"
-msgstr ""
+msgstr "Αναλυτικά στοιχεία παικτών"
 
 msgid "Client Logs"
-msgstr ""
+msgstr "Αρχεία καταγραφής πελάτη"
 
 msgid "The analytics admin page with DAU and D1, D7 and D30 retention"
-msgstr ""
+msgstr "Η σελίδα διαχείρισης αναλυτικών στοιχείων με DAU και διατήρηση D1, D7 και D30"
 
 msgid "D1 / D7 / D30 retention, DAU and payer conversion built in. Client log sessions correlated with the server's own tail for per-player debugging. Prometheus metrics with Grafana, and a load-test harness with published benchmarks."
-msgstr ""
+msgstr "Ενσωματωμένη διατήρηση D1 / D7 / D30, DAU και μετατροπή πληρωνόντων. Συνεδρίες αρχείων καταγραφής πελάτη που συσχετίζονται με το τέλος του αρχείου καταγραφής του ίδιου του διακομιστή για αποσφαλμάτωση ανά παίκτη. Μετρικές Prometheus με Grafana και ένα σύστημα δοκιμών φόρτου με δημοσιευμένες μετρήσεις επιδόσεων."
 
 msgid "Analytics, Logs & Observability"
-msgstr ""
+msgstr "Αναλυτικά στοιχεία, αρχεία καταγραφής και παρατηρησιμότητα"
 
 msgid "Game + Backend"
 msgstr "Παιχνίδι + backend"

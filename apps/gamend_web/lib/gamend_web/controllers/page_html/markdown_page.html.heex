@@ -3,8 +3,10 @@
         heading, then the body. `markdown-content` is the host's stylesheet
         for rendered markdown, the same one the guides use. --%>
   <article class="space-y-6">
-    <.header>
-      <h1 class="text-3xl font-bold lg:text-4xl">{@page.title}</h1>
+    <%!-- `.header` draws the `<h1>`: a second one inside it was two
+          headings, the first empty, once the parser closed the outer. --%>
+    <.header back_href={home_path()}>
+      {@page.title}
       <:subtitle :if={@page[:description]}>{@page.description}</:subtitle>
     </.header>
 

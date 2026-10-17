@@ -183,6 +183,42 @@
   }
 }
 
+/* `text-muted`: the site's second text tone, for a detail under something.
+   Text is `text-base-content` or this, nothing else: it is the lightest tone
+   that reads at 4.5:1 on every base of both themes (`/60` was 4.46 on the
+   light base-200, `/55` 3.9; Lighthouse, 2026-10-08), and one name means a
+   page cannot pick its own shade. `TextToneTest` fails on a
+   `text-base-content/NN`. A `@utility` so variants work (`hover:`, `sm:`).
+   Core's templates use it, so every host stylesheet declares it. */
+@utility text-muted {
+  color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
+}
+
+/* daisyUI's own muted text is the site's muted tone: table heads, stat and
+   fieldset labels at 60%, an inactive tab at 50%, a menu title at 40% read
+   below 4.5:1 on the light theme (a table head 4.47 on base-200, a tab
+   3.29; Lighthouse, 2026-10-08). In `utilities` itself, so it beats
+   daisyUI's sub-layers and a colour class on the element still applies. */
+@layer utilities {
+  .table :where(thead, tfoot),
+  .fieldset-label,
+  .stat-title,
+  .stat-desc,
+  .menu-title,
+  .tab:is(.tabs > .tab):not(:checked, label:has(:checked), :hover, .tab-active, [aria-selected="true"], [aria-current="true"], [aria-current="page"]) {
+    @apply text-muted;
+  }
+}
+
+/* `max-w-narrow`: the one width a page narrows a block to (a form, a game
+   board, a card, an article). A page itself is the layout's column, default
+   or `wide`; a centred block inside it is this or nothing. 48rem is the
+   column's own `md` width, so it only narrows from `lg` up. Core's templates
+   use it, so every host stylesheet declares it. */
+@theme {
+  --container-narrow: 48rem;
+}
+
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
 .card.collapsed .card-body > :not(.card-title):not(.card-actions) {

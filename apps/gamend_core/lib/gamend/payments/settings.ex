@@ -23,7 +23,8 @@ defmodule Gamend.Payments.Settings do
   )
 
   # ── Stripe ──────────────────────────────────────────────
-  setting(:stripe_api_version, :string, default: "2022-11-15")
+  # No API version setting: it is pinned in `ProviderConfig`, because the code
+  # reads one version's shapes.
 
   setting(:stripe_sandbox_secret_key, :string,
     secret: true,
@@ -45,6 +46,24 @@ defmodule Gamend.Payments.Settings do
     default: false,
     doc:
       "Sell through Stripe Managed Payments (Stripe is merchant of record: it charges and remits the buyer's VAT). Accept the terms and set a tax code on every product in the Stripe Dashboard first."
+  )
+
+  setting(:refund_window_days, :integer,
+    default: 14,
+    doc:
+      "Days after paying in which a buyer can refund a Stripe purchase themselves (account settings, Payments): a one-off payment, or a subscription's last payment with the subscription cancelled now. 0 turns it off. Admins can refund any Stripe purchase at any time."
+  )
+
+  setting(:self_refunds_per_account, :integer,
+    default: 1,
+    doc:
+      "How many refunds a buyer can make themselves (account settings, Payments) over the account's life, so buy, use and refund cannot repeat. 0 for no limit. Admins are not limited."
+  )
+
+  setting(:stripe_past_due_grace_days, :integer,
+    default: 7,
+    doc:
+      "Days a Stripe subscription whose renewal failed (`past_due`) keeps its entitlement past the period it paid for, while Stripe retries the card. An `unpaid`, `incomplete` or `paused` one keeps none: the entitlement ends where the payments did. Set Stripe's failed-payment setting to cancel the subscription when the retries run out."
   )
 
   # ── Google Play ─────────────────────────────────────────

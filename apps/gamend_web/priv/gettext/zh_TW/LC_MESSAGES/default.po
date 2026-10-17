@@ -11,19 +11,20 @@ msgstr ""
 "Language: zh_TW\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: lib/gamend_web/components/core_components.ex:651
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:244
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:759
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:805
+#: lib/gamend_web/components/core_components.ex:853
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:243
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:762
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:808
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr "操作"
 
 #: lib/gamend_web/live/user_live/login.ex:52
 #: lib/gamend_web/live/user_live/login.ex:84
-#: lib/gamend_web/live/user_live/registration.ex:26
+#: lib/gamend_web/live/user_live/registration.ex:27
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:92
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:137
+#: lib/gamend_web/notification_email.ex:33
 #, elixir-autogen, elixir-format
 msgid "Email"
 msgstr "電子郵件"
@@ -39,18 +40,18 @@ msgstr "排行榜"
 #: lib/gamend_web/live/auth_success_live.ex:52
 #: lib/gamend_web/live/groups_live.ex:554
 #: lib/gamend_web/live/groups_live.ex:730
-#: lib/gamend_web/live/tournaments_live.ex:737
-#: lib/gamend_web/live/user_live/confirmation.ex:56
-#: lib/gamend_web/live/user_live/confirmation.ex:71
+#: lib/gamend_web/live/tournaments_live.ex:742
+#: lib/gamend_web/live/user_live/confirmation.ex:73
+#: lib/gamend_web/live/user_live/confirmation.ex:88
 #: lib/gamend_web/live/user_live/login.ex:14
 #: lib/gamend_web/live/user_live/login.ex:124
 #: lib/gamend_web/live/user_live/login.ex:155
-#: lib/gamend_web/live/user_live/registration.ex:17
+#: lib/gamend_web/live/user_live/registration.ex:18
 #, elixir-autogen, elixir-format
 msgid "Log in"
 msgstr "登入"
 
-#: lib/gamend_web/live/lobby_live/index.ex:815
+#: lib/gamend_web/live/lobby_live/index.ex:816
 #: lib/gamend_web/live/user_live/login.ex:92
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:149
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:170
@@ -58,62 +59,68 @@ msgstr "登入"
 msgid "Password"
 msgstr "密碼"
 
-#: lib/gamend_web/components/core_components.ex:476
+#: lib/gamend_web/components/core_components.ex:673
 #: lib/gamend_web/live/user_live/login.ex:63
 #, elixir-autogen, elixir-format
 msgid "or"
 msgstr "或"
 
 #: lib/gamend_web/live/groups_live.ex:656
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1216
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1219
 #, elixir-autogen, elixir-format
 msgid "Admin"
 msgstr "管理"
 
 #: lib/gamend_web/live/user_live/login.ex:23
-#: lib/gamend_web/live/user_live/registration.ex:14
-#: lib/gamend_web/live/user_live/registration.ex:38
-#: lib/gamend_web/live/user_live/registration.ex:63
+#: lib/gamend_web/live/user_live/registration.ex:15
+#: lib/gamend_web/live/user_live/registration.ex:57
+#: lib/gamend_web/live/user_live/registration.ex:91
 #, elixir-autogen, elixir-format
 msgid "Register"
 msgstr "註冊"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:70
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:728
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:69
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:731
 #, elixir-autogen, elixir-format
 msgid "Accept"
 msgstr "接受"
 
 #: lib/gamend_web/live/admin_live/chat_reports.ex:388
 #: lib/gamend_web/live/groups_live.ex:435
-#: lib/gamend_web/live/quests_live.ex:330
-#: lib/gamend_web/live/quests_live.ex:376
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:599
+#: lib/gamend_web/live/quests_live.ex:471
+#: lib/gamend_web/live/quests_live.ex:517
+#: lib/gamend_web/live/quests_live.ex:720
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:602
 #, elixir-autogen, elixir-format
 msgid "All"
 msgstr "全部"
 
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:52
+#: lib/gamend_web/live/quests_live.ex:718
+#, elixir-autogen, elixir-format
+msgid "Quest group"
+msgstr "任務群組"
+
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:51
 #, elixir-autogen, elixir-format
 msgid "Apply"
 msgstr "套用"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:353
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:354
 #, elixir-autogen, elixir-format
 msgid "Approve"
 msgstr "核准"
 
-#: lib/gamend_web/components/core_components.ex:595
+#: lib/gamend_web/components/core_components.ex:801
 #: lib/gamend_web/live/groups_live.ex:565
 #: lib/gamend_web/live/leaderboards_live.ex:192
-#: lib/gamend_web/live/tournaments_live.ex:507
-#: lib/gamend_web/live/tournaments_live.ex:784
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:63
+#: lib/gamend_web/live/tournaments_live.ex:512
+#: lib/gamend_web/live/tournaments_live.ex:789
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:62
 #, elixir-autogen, elixir-format
 msgid "Back"
 msgstr "返回"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:80
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:79
 #, elixir-autogen, elixir-format
 msgid "Block"
 msgstr "封鎖"
@@ -121,64 +128,64 @@ msgstr "封鎖"
 #: lib/gamend_web/live/admin_live/chat_filter.ex:541
 #: lib/gamend_web/live/admin_live/chat_mutes.ex:593
 #: lib/gamend_web/live/admin_live/chat_reports.ex:630
-#: lib/gamend_web/live/admin_live/lobbies.ex:399
+#: lib/gamend_web/live/admin_live/lobbies.ex:401
 #: lib/gamend_web/live/admin_live/matchmaking.ex:217
 #: lib/gamend_web/live/chat_live.ex:255
-#: lib/gamend_web/live/lobby_live/index.ex:822
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:113
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:74
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:169
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:783
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:827
+#: lib/gamend_web/live/lobby_live/index.ex:823
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:112
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:73
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:168
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:786
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:830
 #, elixir-autogen, elixir-format
 msgid "Cancel"
 msgstr "取消"
 
-#: lib/gamend_web/live/lobby_live/index.ex:873
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:54
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:610
+#: lib/gamend_web/live/lobby_live/index.ex:874
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:53
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:613
 #, elixir-autogen, elixir-format
 msgid "Clear"
 msgstr "清除"
 
-#: lib/gamend_web/components/core_components.ex:181
-#: lib/gamend_web/live/lobby_live/index.ex:884
-#: lib/gamend_web/live/lobby_live/index.ex:954
+#: lib/gamend_web/components/core_components.ex:240
+#: lib/gamend_web/live/lobby_live/index.ex:885
+#: lib/gamend_web/live/lobby_live/index.ex:955
 #, elixir-autogen, elixir-format
 msgid "Close"
 msgstr "關閉"
 
-#: lib/gamend_web/live/lobby_live/index.ex:819
-#: lib/gamend_web/live/user_live/confirmation.ex:37
-#: lib/gamend_web/live/user_live/confirmation.ex:90
+#: lib/gamend_web/live/lobby_live/index.ex:820
+#: lib/gamend_web/live/user_live/confirmation.ex:54
+#: lib/gamend_web/live/user_live/confirmation.ex:108
 #: lib/gamend_web/live/user_live/login.ex:17
 #, elixir-autogen, elixir-format
 msgid "Confirm"
 msgstr "確認"
 
 #: lib/gamend_web/live/auth_success_live.ex:116
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:74
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:73
 #, elixir-autogen, elixir-format
 msgid "Content"
 msgstr "內容"
 
-#: lib/gamend_web/live/lobby_live/index.ex:699
-#: lib/gamend_web/live/lobby_live/index.ex:718
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:76
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:85
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:122
+#: lib/gamend_web/live/lobby_live/index.ex:700
+#: lib/gamend_web/live/lobby_live/index.ex:719
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:75
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:84
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:121
 #, elixir-autogen, elixir-format
 msgid "Create"
 msgstr "建立"
 
 #: lib/gamend_web/live/groups_live.ex:457
 #: lib/gamend_web/live/notifications_live.ex:44
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:73
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:198
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:706
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:804
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:62
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:62
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:72
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:197
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:709
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:807
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:76
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:61
 #, elixir-autogen, elixir-format
 msgid "Date"
 msgstr "日期"
@@ -191,27 +198,27 @@ msgstr "日期"
 msgid "Delete"
 msgstr "刪除"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:295
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:296
 #, elixir-autogen, elixir-format
 msgid "Demote"
 msgstr "降級"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:102
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:144
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:178
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:101
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:143
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:177
 #, elixir-autogen, elixir-format
 msgid "Description"
 msgstr "描述"
 
 #: lib/gamend_web/live/notifications_live.ex:43
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:705
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:708
 #, elixir-autogen, elixir-format
 msgid "From"
 msgstr "來自"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:704
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:756
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:802
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:707
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:759
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:805
 #, elixir-autogen, elixir-format
 msgid "Group"
 msgstr "群組"
@@ -220,83 +227,83 @@ msgstr "群組"
 #: lib/gamend_web/live/groups_live.ex:48
 #: lib/gamend_web/live/groups_live.ex:101
 #: lib/gamend_web/live/groups_live.ex:399
-#: lib/gamend_web/live/user_live/settings.ex:93
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:58
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:480
+#: lib/gamend_web/live/user_live/settings.ex:100
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:57
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:483
 #, elixir-autogen, elixir-format
 msgid "Groups"
 msgstr "群組"
 
-#: lib/gamend_web/live/lobby_live/index.ex:867
-#: lib/gamend_web/live/quests_live.ex:757
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:111
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:154
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1213
+#: lib/gamend_web/live/lobby_live/index.ex:868
+#: lib/gamend_web/live/quests_live.ex:941
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:110
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:153
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1216
 #, elixir-autogen, elixir-format
 msgid "Hidden"
 msgstr "隱藏"
 
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:91
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:71
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:70
 #, elixir-autogen, elixir-format
 msgid "ID"
 msgstr "ID"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:369
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:420
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:459
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:370
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:423
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:462
 #, elixir-autogen, elixir-format
 msgid "Invite"
 msgstr "邀請"
 
 #: lib/gamend_web/live/groups_live.ex:540
 #: lib/gamend_web/live/groups_live.ex:715
-#: lib/gamend_web/live/lobby_live/index.ex:783
-#: lib/gamend_web/live/lobby_live/index.ex:795
-#: lib/gamend_web/live/tournaments_live.ex:749
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:663
+#: lib/gamend_web/live/lobby_live/index.ex:784
+#: lib/gamend_web/live/lobby_live/index.ex:796
+#: lib/gamend_web/live/tournaments_live.ex:754
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:666
 #, elixir-autogen, elixir-format
 msgid "Join"
 msgstr "加入"
 
 #: lib/gamend_web/live/groups_live.ex:186
 #: lib/gamend_web/live/groups_live.ex:213
-#: lib/gamend_web/live/lobby_live/index.ex:430
-#: lib/gamend_web/live/lobby_live/index.ex:721
-#: lib/gamend_web/live/tournaments_live.ex:116
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:242
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:651
+#: lib/gamend_web/live/lobby_live/index.ex:431
+#: lib/gamend_web/live/lobby_live/index.ex:722
+#: lib/gamend_web/live/tournaments_live.ex:121
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:241
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:654
 #, elixir-autogen, elixir-format
 msgid "Joined"
 msgstr "已加入"
 
-#: lib/gamend_web/live/lobby_live/index.ex:920
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:305
+#: lib/gamend_web/live/lobby_live/index.ex:921
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:306
 #, elixir-autogen, elixir-format
 msgid "Kick"
 msgstr "踢出"
 
 #: lib/gamend_web/live/groups_live.ex:704
-#: lib/gamend_web/live/lobby_live/index.ex:909
-#: lib/gamend_web/live/lobby_live/index.ex:945
-#: lib/gamend_web/live/tournaments_live.ex:743
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:225
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:568
+#: lib/gamend_web/live/lobby_live/index.ex:910
+#: lib/gamend_web/live/lobby_live/index.ex:946
+#: lib/gamend_web/live/tournaments_live.ex:748
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:224
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:571
 #, elixir-autogen, elixir-format
 msgid "Leave"
 msgstr "離開"
 
-#: lib/gamend_web/live/lobby_live/index.ex:776
-#: lib/gamend_web/live/lobby_live/index.ex:788
-#: lib/gamend_web/live/lobby_live/index.ex:858
-#: lib/gamend_web/live/quests_live.ex:705
+#: lib/gamend_web/live/lobby_live/index.ex:777
+#: lib/gamend_web/live/lobby_live/index.ex:789
+#: lib/gamend_web/live/lobby_live/index.ex:859
+#: lib/gamend_web/live/quests_live.ex:887
 #, elixir-autogen, elixir-format
 msgid "Locked"
 msgstr "已鎖定"
 
 #: lib/gamend_web/live/groups_live.ex:531
 #: lib/gamend_web/live/groups_live.ex:658
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1217
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1220
 #, elixir-autogen, elixir-format
 msgid "Member"
 msgstr "成員"
@@ -304,9 +311,9 @@ msgstr "成員"
 #: lib/gamend_web/live/groups_live.ex:500
 #: lib/gamend_web/live/groups_live.ex:599
 #: lib/gamend_web/live/groups_live.ex:613
-#: lib/gamend_web/live/lobby_live/index.ex:891
-#: lib/gamend_web/live/lobby_live/index.ex:929
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:234
+#: lib/gamend_web/live/lobby_live/index.ex:892
+#: lib/gamend_web/live/lobby_live/index.ex:930
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:233
 #, elixir-autogen, elixir-format
 msgid "Members"
 msgstr "成員"
@@ -314,14 +321,16 @@ msgstr "成員"
 #: lib/gamend_web/live/groups_live.ex:459
 #: lib/gamend_web/live/groups_live.ex:636
 #: lib/gamend_web/live/leaderboards_live.ex:314
-#: lib/gamend_web/live/tournaments_live.ex:660
+#: lib/gamend_web/live/tournaments_live.ex:665
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:120
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:72
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:232
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:141
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:176
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:240
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:391
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:66
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:92
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:71
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:231
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:140
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:175
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:239
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:392
 #, elixir-autogen, elixir-format
 msgid "Name"
 msgstr "名稱"
@@ -331,12 +340,12 @@ msgstr "名稱"
 msgid "Newest"
 msgstr "最新"
 
-#: lib/gamend_web/components/core_components.ex:1098
+#: lib/gamend_web/components/core_components.ex:1321
 #, elixir-autogen, elixir-format
 msgid "Next"
 msgstr "下一頁"
 
-#: lib/gamend_web/components/core_components.ex:1082
+#: lib/gamend_web/components/core_components.ex:1305
 #, elixir-autogen, elixir-format
 msgid "Prev"
 msgstr "上一頁"
@@ -344,15 +353,15 @@ msgstr "上一頁"
 #: lib/gamend_web/live/groups_live.ex:437
 #: lib/gamend_web/live/groups_live.ex:490
 #: lib/gamend_web/live/groups_live.ex:580
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:110
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:153
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:601
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1212
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:109
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:152
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:604
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1215
 #, elixir-autogen, elixir-format
 msgid "Private"
 msgstr "私密"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:286
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:287
 #, elixir-autogen, elixir-format
 msgid "Promote"
 msgstr "升級"
@@ -360,51 +369,51 @@ msgstr "升級"
 #: lib/gamend_web/live/groups_live.ex:436
 #: lib/gamend_web/live/groups_live.ex:488
 #: lib/gamend_web/live/groups_live.ex:578
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:109
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:152
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:600
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1211
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:108
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:151
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:603
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1214
 #, elixir-autogen, elixir-format
 msgid "Public"
 msgstr "公開"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:73
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:360
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:72
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:361
 #, elixir-autogen, elixir-format
 msgid "Reject"
 msgstr "拒絕"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:222
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:226
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:79
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:157
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:223
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:227
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:78
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:156
 #, elixir-autogen, elixir-format
 msgid "Remove"
 msgstr "移除"
 
 #: lib/gamend_web/live/groups_live.ex:548
 #: lib/gamend_web/live/groups_live.ex:724
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:671
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:674
 #, elixir-autogen, elixir-format
 msgid "Request"
 msgstr "請求"
 
 #: lib/gamend_web/live/groups_live.ex:637
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:203
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:241
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:515
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:202
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:240
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:518
 #, elixir-autogen, elixir-format
 msgid "Role"
 msgstr "角色"
 
 #: lib/gamend_web/live/admin_live/chat_mutes.ex:595
 #: lib/gamend_web/live/chat_live.ex:252
-#: lib/gamend_web/live/lobby_live/index.ex:877
+#: lib/gamend_web/live/lobby_live/index.ex:878
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:107
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:124
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:142
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:181
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:163
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:162
 #, elixir-autogen, elixir-format
 msgid "Save"
 msgstr "儲存"
@@ -417,80 +426,80 @@ msgid "Saving..."
 msgstr "儲存中..."
 
 #: lib/gamend_web/live/chat_live.ex:316
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:251
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:250
 #, elixir-autogen, elixir-format
 msgid "Send"
 msgstr "傳送"
 
 #: lib/gamend_web/live/admin_live/chat_reports.ex:415
 #: lib/gamend_web/live/admin_live/matchmaking.ex:196
-#: lib/gamend_web/live/quests_live.ex:889
+#: lib/gamend_web/live/quests_live.ex:1073
 #: lib/gamend_web/live/store_live/index.ex:154
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:49
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:757
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:59
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:48
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:760
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:73
 #, elixir-autogen, elixir-format
 msgid "Status"
 msgstr "狀態"
 
-#: lib/gamend_web/live/lobby_live/index.ex:716
+#: lib/gamend_web/live/lobby_live/index.ex:717
 #: lib/gamend_web/live/notifications_live.ex:42
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:96
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:512
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:591
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:621
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:95
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:515
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:594
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:624
 #, elixir-autogen, elixir-format
 msgid "Title"
 msgstr "標題"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:107
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:149
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:182
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:513
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:597
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:622
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:106
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:148
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:181
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:516
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:600
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:625
 #, elixir-autogen, elixir-format
 msgid "Type"
 msgstr "類型"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:198
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:197
 #, elixir-autogen, elixir-format
 msgid "Unblock"
 msgstr "解除封鎖"
 
-#: lib/gamend_web/live/lobby_live/index.ex:764
-#: lib/gamend_web/live/lobby_live/index.ex:773
+#: lib/gamend_web/live/lobby_live/index.ex:765
+#: lib/gamend_web/live/lobby_live/index.ex:774
 #: lib/gamend_web/live/notifications_live.ex:201
 #: lib/gamend_web/live/notifications_live.ex:202
 #: lib/gamend_web/live/notifications_live.ex:205
 #: lib/gamend_web/live/notifications_live.ex:207
 #: lib/gamend_web/live/notifications_live.ex:210
 #: lib/gamend_web/live/notifications_live.ex:213
-#: lib/gamend_web/live/notifications_live.ex:243
-#: lib/gamend_web/live/notifications_live.ex:246
-#: lib/gamend_web/live/notifications_live.ex:249
-#: lib/gamend_web/live/notifications_live.ex:252
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:560
+#: lib/gamend_web/live/notifications_live.ex:250
+#: lib/gamend_web/live/notifications_live.ex:253
+#: lib/gamend_web/live/notifications_live.ex:256
+#: lib/gamend_web/live/notifications_live.ex:259
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:563
 #, elixir-autogen, elixir-format
 msgid "View"
 msgstr "檢視"
 
 #: lib/gamend_web/live/chat_live.ex:224
-#: lib/gamend_web/live/leaderboards_live.ex:349
-#: lib/gamend_web/live/tournaments_live.ex:682
-#: lib/gamend_web/live/tournaments_live.ex:746
-#: lib/gamend_web/live/tournaments_live.ex:814
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:308
+#: lib/gamend_web/live/leaderboards_live.ex:351
+#: lib/gamend_web/live/tournaments_live.ex:687
+#: lib/gamend_web/live/tournaments_live.ex:751
+#: lib/gamend_web/live/tournaments_live.ex:819
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:309
 #, elixir-autogen, elixir-format
 msgid "You"
 msgstr "你"
 
 #: lib/gamend_web/live/groups_live.ex:425
 #: lib/gamend_web/live/leaderboards_live.ex:302
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:47
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:225
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:374
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:382
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:46
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:224
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:375
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:383
 #, elixir-autogen, elixir-format
 msgid "Search..."
 msgstr "搜尋..."
@@ -500,9 +509,9 @@ msgstr "搜尋..."
 msgid "(edited)"
 msgstr "（已編輯）"
 
-#: lib/gamend_web/live/user_live/settings.ex:55
-#: lib/gamend_web/live/user_live/settings.ex:91
-#: lib/gamend_web/live/user_live/settings.ex:151
+#: lib/gamend_web/live/user_live/settings.ex:61
+#: lib/gamend_web/live/user_live/settings.ex:97
+#: lib/gamend_web/live/user_live/settings.ex:165
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:42
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:188
 #, elixir-autogen, elixir-format
@@ -515,7 +524,7 @@ msgstr "帳戶"
 msgid "Chat"
 msgstr "聊天"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:735
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:738
 #, elixir-autogen, elixir-format
 msgid "Decline"
 msgstr "拒絕"
@@ -524,17 +533,17 @@ msgstr "拒絕"
 #: lib/gamend_web/live/admin_live/chat_mutes.ex:497
 #: lib/gamend_web/live/chat_live.ex:271
 #: lib/gamend_web/live/chat_live.ex:273
-#: lib/gamend_web/live/lobby_live/index.ex:755
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:217
+#: lib/gamend_web/live/lobby_live/index.ex:756
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:216
 #, elixir-autogen, elixir-format
 msgid "Edit"
 msgstr "編輯"
 
 #: lib/gamend_web/live/chat_live.ex:115
-#: lib/gamend_web/live/user_live/settings.ex:92
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:45
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:130
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:436
+#: lib/gamend_web/live/user_live/settings.ex:99
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:44
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:129
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:439
 #, elixir-autogen, elixir-format
 msgid "Friends"
 msgstr "好友"
@@ -547,6 +556,8 @@ msgstr "首頁"
 
 #: lib/gamend_web/live/notifications_live.ex:17
 #: lib/gamend_web/live/notifications_live.ex:129
+#: lib/gamend_web/live/user_live/settings.ex:98
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:30
 #, elixir-autogen, elixir-format
 msgid "Notifications"
 msgstr "通知"
@@ -557,17 +568,17 @@ msgstr "通知"
 msgid "Select a conversation"
 msgstr "選擇一個對話"
 
-#: lib/gamend_web/components/content_pages.ex:255
+#: lib/gamend_web/components/content_pages.ex:319
 #: lib/gamend_web/live/leaderboards_live.ex:250
-#: lib/gamend_web/live/tournaments_live.ex:559
+#: lib/gamend_web/live/tournaments_live.ex:564
 #, elixir-autogen, elixir-format
 msgid "Newer"
 msgstr "較新"
 
-#: lib/gamend_web/components/content_pages.ex:269
+#: lib/gamend_web/components/content_pages.ex:333
 #: lib/gamend_web/live/chat_live.ex:203
 #: lib/gamend_web/live/leaderboards_live.ex:235
-#: lib/gamend_web/live/tournaments_live.ex:548
+#: lib/gamend_web/live/tournaments_live.ex:553
 #, elixir-autogen, elixir-format
 msgid "Older"
 msgstr "較舊"
@@ -575,12 +586,12 @@ msgstr "較舊"
 #: lib/gamend_web/live/auth_success_live.ex:78
 #: lib/gamend_web/live/auth_success_live.ex:110
 #: lib/gamend_web/live/auth_success_live.ex:198
-#: lib/gamend_web/live/user_live/confirmation.ex:28
-#: lib/gamend_web/live/user_live/confirmation.ex:34
-#: lib/gamend_web/live/user_live/confirmation.ex:53
-#: lib/gamend_web/live/user_live/confirmation.ex:62
-#: lib/gamend_web/live/user_live/confirmation.ex:68
-#: lib/gamend_web/live/user_live/registration.ex:35
+#: lib/gamend_web/live/user_live/confirmation.ex:45
+#: lib/gamend_web/live/user_live/confirmation.ex:51
+#: lib/gamend_web/live/user_live/confirmation.ex:70
+#: lib/gamend_web/live/user_live/confirmation.ex:79
+#: lib/gamend_web/live/user_live/confirmation.ex:85
+#: lib/gamend_web/live/user_live/registration.ex:54
 #: lib/gamend_web/live/user_live/settings/account_tab.ex:141
 #, elixir-autogen, elixir-format
 msgid "Loading..."
@@ -595,22 +606,23 @@ msgstr "載入中..."
 #: lib/gamend_web/live/lobby_live/index.ex:152
 #: lib/gamend_web/live/lobby_live/index.ex:176
 #: lib/gamend_web/live/lobby_live/index.ex:191
-#: lib/gamend_web/live/tournaments_live.ex:396
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:458
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1381
-#: lib/gamend_web/live_helpers.ex:230
+#: lib/gamend_web/live/tournaments_live.ex:401
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:475
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1384
+#: lib/gamend_web/live_helpers.ex:252
 #, elixir-autogen, elixir-format
 msgid "Not found"
 msgstr "找不到"
 
-#: lib/gamend_web/controllers/auth_controller.ex:632
-#: lib/gamend_web/controllers/auth_controller.ex:671
-#: lib/gamend_web/controllers/auth_controller.ex:974
+#: lib/gamend_web/controllers/auth_controller.ex:273
+#: lib/gamend_web/controllers/auth_controller.ex:300
+#: lib/gamend_web/controllers/auth_controller.ex:345
+#: lib/gamend_web/controllers/auth_controller.ex:674
 #: lib/gamend_web/controllers/user_session_controller.ex:9
 #: lib/gamend_web/controllers/user_session_controller.ex:13
-#: lib/gamend_web/controllers/user_session_controller.ex:73
-#: lib/gamend_web/controllers/user_session_controller.ex:83
-#: lib/gamend_web/controllers/user_session_controller.ex:94
+#: lib/gamend_web/controllers/user_session_controller.ex:104
+#: lib/gamend_web/controllers/user_session_controller.ex:114
+#: lib/gamend_web/controllers/user_session_controller.ex:128
 #: lib/gamend_web/live/auth_success_live.ex:45
 #: lib/gamend_web/live/auth_success_live.ex:70
 #: lib/gamend_web/live/auth_success_live.ex:98
@@ -619,27 +631,27 @@ msgstr "找不到"
 #: lib/gamend_web/live/lobby_live/index.ex:270
 #: lib/gamend_web/live/notifications_live.ex:163
 #: lib/gamend_web/live/notifications_live.ex:178
-#: lib/gamend_web/live/user_live/registration.ex:121
-#: lib/gamend_web/live/user_live/settings.ex:136
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:327
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:357
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:423
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:441
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:584
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:118
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:303
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1084
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1109
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1128
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1146
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1194
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1221
+#: lib/gamend_web/live/user_live/registration.ex:169
+#: lib/gamend_web/live/user_live/settings.ex:150
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:329
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:359
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:425
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:443
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:601
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:117
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:302
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1087
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1112
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1131
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1149
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1197
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1224
 #, elixir-autogen, elixir-format
 msgid "Success."
 msgstr "成功。"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:781
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:825
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:784
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:828
 #, elixir-autogen, elixir-format
 msgid "Cancel?"
 msgstr "取消？"
@@ -650,14 +662,14 @@ msgid "Cannot be empty."
 msgstr "不能為空。"
 
 #: lib/gamend_web/live/chat_live.ex:278
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:76
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:75
 #, elixir-autogen, elixir-format
 msgid "Delete?"
 msgstr "刪除？"
 
-#: lib/gamend_web/components/content_pages.ex:116
-#: lib/gamend_web/components/content_pages.ex:142
-#: lib/gamend_web/components/content_pages.ex:171
+#: lib/gamend_web/components/content_pages.ex:125
+#: lib/gamend_web/components/content_pages.ex:156
+#: lib/gamend_web/components/content_pages.ex:187
 #: lib/gamend_web/live/blog_live.ex:45
 #: lib/gamend_web/live/chat_live.ex:118
 #: lib/gamend_web/live/chat_live.ex:149
@@ -665,22 +677,22 @@ msgstr "刪除？"
 #: lib/gamend_web/live/groups_live.ex:508
 #: lib/gamend_web/live/groups_live.ex:668
 #: lib/gamend_web/live/leaderboards_live.ex:169
-#: lib/gamend_web/live/leaderboards_live.ex:363
-#: lib/gamend_web/live/quests_live.ex:510
-#: lib/gamend_web/live/tournaments_live.ex:484
-#: lib/gamend_web/live/tournaments_live.ex:710
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:430
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:466
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:505
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:630
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:697
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:749
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:796
-#: lib/gamend_web/live/user_live/settings/items_tab.ex:59
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:49
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:103
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:34
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:92
+#: lib/gamend_web/live/leaderboards_live.ex:365
+#: lib/gamend_web/live/quests_live.ex:661
+#: lib/gamend_web/live/tournaments_live.ex:489
+#: lib/gamend_web/live/tournaments_live.ex:715
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:433
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:469
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:508
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:633
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:700
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:752
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:799
+#: lib/gamend_web/live/user_live/settings/items_tab.ex:58
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:63
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:117
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:33
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:91
 #, elixir-autogen, elixir-format
 msgid "No results."
 msgstr "沒有結果。"
@@ -692,19 +704,22 @@ msgstr "沒有結果。"
 #: lib/gamend_web/live/notifications_live.ex:228
 #: lib/gamend_web/live/notifications_live.ex:235
 #: lib/gamend_web/live/notifications_live.ex:236
-#: lib/gamend_web/live/notifications_live.ex:251
+#: lib/gamend_web/live/notifications_live.ex:246
+#: lib/gamend_web/live/notifications_live.ex:258
 #, elixir-autogen, elixir-format
 msgid "Open"
 msgstr "開放"
 
-#: lib/gamend_web/controllers/auth_controller.ex:649
-#: lib/gamend_web/controllers/auth_controller.ex:662
-#: lib/gamend_web/controllers/auth_controller.ex:690
-#: lib/gamend_web/controllers/auth_controller.ex:931
+#: lib/gamend_web/controllers/auth_controller.ex:280
+#: lib/gamend_web/controllers/auth_controller.ex:323
+#: lib/gamend_web/controllers/auth_controller.ex:336
+#: lib/gamend_web/controllers/auth_controller.ex:364
+#: lib/gamend_web/controllers/auth_controller.ex:631
 #: lib/gamend_web/controllers/user_session_controller.ex:34
-#: lib/gamend_web/controllers/user_session_controller.ex:56
-#: lib/gamend_web/controllers/user_session_controller.ex:76
-#: lib/gamend_web/controllers/user_session_controller.ex:104
+#: lib/gamend_web/controllers/user_session_controller.ex:87
+#: lib/gamend_web/controllers/user_session_controller.ex:107
+#: lib/gamend_web/controllers/user_session_controller.ex:138
+#: lib/gamend_web/controllers/user_session_controller.ex:145
 #: lib/gamend_web/live/admin_live/matchmaking.ex:186
 #: lib/gamend_web/live/auth_success_live.ex:72
 #: lib/gamend_web/live/auth_success_live.ex:74
@@ -719,55 +734,59 @@ msgstr "開放"
 #: lib/gamend_web/live/lobby_live/index.ex:132
 #: lib/gamend_web/live/lobby_live/index.ex:179
 #: lib/gamend_web/live/lobby_live/index.ex:284
-#: lib/gamend_web/live/lobby_live/index.ex:319
-#: lib/gamend_web/live/lobby_live/index.ex:370
-#: lib/gamend_web/live/lobby_live/index.ex:414
-#: lib/gamend_web/live/lobby_live/index.ex:462
-#: lib/gamend_web/live/tournaments_live.ex:174
-#: lib/gamend_web/live/user_live/confirmation.ex:95
-#: lib/gamend_web/live/user_live/registration.ex:151
-#: lib/gamend_web/live/user_live/settings.ex:139
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:427
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:430
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:445
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:553
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:588
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:122
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:308
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:322
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:336
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:350
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:364
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:378
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:392
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:883
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1096
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1115
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1133
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1151
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1206
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1224
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:202
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:203
-#: lib/gamend_web/live_helpers.ex:315
-#: lib/gamend_web/user_auth.ex:256
-#: lib/gamend_web/user_auth.ex:280
-#: lib/gamend_web/user_auth.ex:298
-#: lib/gamend_web/user_auth.ex:347
-#: lib/gamend_web/user_auth.ex:364
+#: lib/gamend_web/live/lobby_live/index.ex:320
+#: lib/gamend_web/live/lobby_live/index.ex:371
+#: lib/gamend_web/live/lobby_live/index.ex:415
+#: lib/gamend_web/live/lobby_live/index.ex:463
+#: lib/gamend_web/live/tournaments_live.ex:179
+#: lib/gamend_web/live/user_live/confirmation.ex:113
+#: lib/gamend_web/live/user_live/registration.ex:199
+#: lib/gamend_web/live/user_live/settings.ex:153
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:429
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:432
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:462
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:570
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:605
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:186
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:121
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:307
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:321
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:335
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:349
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:363
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:377
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:391
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:886
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1099
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1118
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1136
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1154
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1209
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:1227
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:150
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:166
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:173
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:227
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:228
+#: lib/gamend_web/live_helpers.ex:337
+#: lib/gamend_web/user_auth.ex:417
+#: lib/gamend_web/user_auth.ex:441
+#: lib/gamend_web/user_auth.ex:462
+#: lib/gamend_web/user_auth.ex:579
+#: lib/gamend_web/user_auth.ex:621
 #, elixir-autogen, elixir-format
 msgid "Failed"
 msgstr "失敗"
 
-#: lib/gamend_web/controllers/auth_controller.ex:677
+#: lib/gamend_web/controllers/auth_controller.ex:351
 #: lib/gamend_web/controllers/user_session_controller.ex:28
-#: lib/gamend_web/controllers/user_session_controller.ex:50
-#: lib/gamend_web/controllers/user_session_controller.ex:98
+#: lib/gamend_web/controllers/user_session_controller.ex:51
+#: lib/gamend_web/controllers/user_session_controller.ex:132
 #, elixir-autogen, elixir-format
 msgid "Your account is pending activation."
 msgstr "你的帳戶正在等待啟用。"
 
-#: lib/gamend_web/live/quests_live.ex:377
+#: lib/gamend_web/live/quests_live.ex:518
 #, elixir-autogen, elixir-format
 msgid "In Progress"
 msgstr "進行中"
@@ -776,9 +795,9 @@ msgstr "進行中"
 #: lib/gamend_web/live/groups_live.ex:216
 #: lib/gamend_web/live/groups_live.ex:533
 #: lib/gamend_web/live/groups_live.ex:707
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:655
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:770
-#: lib/gamend_web/live_helpers.ex:312
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:658
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:773
+#: lib/gamend_web/live_helpers.ex:334
 #, elixir-autogen, elixir-format
 msgid "Pending"
 msgstr "待處理"
@@ -788,8 +807,8 @@ msgstr "待處理"
 #: lib/gamend_web/live/stats_live.ex:90
 #: lib/gamend_web/live/stats_live.ex:95
 #: lib/gamend_web/live/store_live/index.ex:156
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:65
-#: lib/gamend_web/live_helpers.ex:319
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:64
+#: lib/gamend_web/live_helpers.ex:341
 #, elixir-autogen, elixir-format
 msgid "Active"
 msgstr "活躍"
@@ -800,31 +819,31 @@ msgstr "活躍"
 msgid "Ended"
 msgstr "已結束"
 
-#: lib/gamend_web/live/lobby_live/index.ex:902
-#: lib/gamend_web/live/lobby_live/index.ex:940
+#: lib/gamend_web/live/lobby_live/index.ex:903
+#: lib/gamend_web/live/lobby_live/index.ex:941
 #, elixir-autogen, elixir-format
 msgid "Host"
 msgstr "房主"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:303
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:304
 #, elixir-autogen, elixir-format
 msgid "Kick?"
 msgstr "踢出？"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:223
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:566
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:222
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:569
 #, elixir-autogen, elixir-format
 msgid "Leave?"
 msgstr "離開？"
 
 #: lib/gamend_web/live/lobby_live/index.ex:42
-#: lib/gamend_web/live/lobby_live/index.ex:729
+#: lib/gamend_web/live/lobby_live/index.ex:730
 #: lib/gamend_web/live/stats_live.ex:109
 #, elixir-autogen, elixir-format
 msgid "Lobbies"
 msgstr "大廳"
 
-#: lib/gamend_web/controllers/page_controller.ex:16
+#: lib/gamend_web/controllers/page_controller.ex:33
 #, elixir-autogen, elixir-format
 msgid "Privacy"
 msgstr "隱私權"
@@ -835,29 +854,29 @@ msgstr "隱私權"
 msgid "Rank"
 msgstr "排名"
 
-#: lib/gamend_web/live/lobby_live/index.ex:574
+#: lib/gamend_web/live/lobby_live/index.ex:575
 #, elixir-autogen, elixir-format
 msgid "Removed"
 msgstr "已移除"
 
-#: lib/gamend_web/live/leaderboards_live.ex:510
+#: lib/gamend_web/live/leaderboards_live.ex:512
 #, elixir-autogen, elixir-format
 msgid "Score"
 msgstr "分數"
 
-#: lib/gamend_web/controllers/page_controller.ex:30
+#: lib/gamend_web/controllers/page_controller.ex:57
 #, elixir-autogen, elixir-format
 msgid "Terms"
 msgstr "條款"
 
-#: lib/gamend_web/live/user_live/settings.ex:97
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:32
+#: lib/gamend_web/live/user_live/settings.ex:104
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:31
 #, elixir-autogen, elixir-format
 msgid "Data"
 msgstr "資料"
 
 #: lib/gamend_web/live/user_live/login.ex:191
-#: lib/gamend_web/live/user_live/registration.ex:79
+#: lib/gamend_web/live/user_live/registration.ex:109
 #, elixir-autogen, elixir-format
 msgid "Too many attempts. Please try again later."
 msgstr "嘗試次數過多，請稍後再試。"
@@ -867,17 +886,17 @@ msgstr "嘗試次數過多，請稍後再試。"
 msgid "API only"
 msgstr "僅 API"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:60
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:74
 #, elixir-autogen, elixir-format
 msgid "Amount"
 msgstr "金額"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:133
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:147
 #, elixir-autogen, elixir-format
 msgid "Auto-renews"
 msgstr "自動續訂"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:179
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:178
 #, elixir-autogen, elixir-format
 msgid "Blocked users"
 msgstr "已封鎖的使用者"
@@ -887,29 +906,64 @@ msgstr "已封鎖的使用者"
 msgid "Buy"
 msgstr "購買"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:149
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:163
 #, elixir-autogen, elixir-format
 msgid "Cancel renewal"
 msgstr "取消續訂"
+
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:121
+#, elixir-autogen, elixir-format
+msgid "Refund"
+msgstr "退款"
+
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:115
+#, elixir-autogen, elixir-format
+msgid "Refund %{product}? It ends now and the payment goes back to you."
+msgstr "要為%{product}退款嗎？它會立即結束，款項將退還給你。"
+
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:105
+#, elixir-autogen, elixir-format
+msgid "Refund sent"
+msgstr "退款已送出"
+
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:250
+#, elixir-autogen, elixir-format
+msgid "Refund sent. The money is back in 5 to 10 days."
+msgstr "退款已送出。款項將在 5 到 10 天內退回。"
+
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:281
+#, elixir-autogen, elixir-format
+msgid "The time to ask for a refund has passed."
+msgstr "申請退款的期限已過。"
 
 #: lib/gamend_web/live/user_live/settings/payments_tab.ex:47
 #, elixir-autogen, elixir-format
 msgid "Manage billing"
 msgstr "管理付款"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:234
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:259
 #, elixir-autogen, elixir-format
 msgid "Cancels"
 msgstr "到期"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:155
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:169
 #, elixir-autogen, elixir-format
 msgid "Cancels at period end"
 msgstr "週期結束時取消"
 
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:205
+#, elixir-autogen, elixir-format
+msgid "Resume renewal"
+msgstr "恢復續訂"
+
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:258
+#, elixir-autogen, elixir-format
+msgid "Subscription renews again."
+msgstr "訂閱將重新續訂。"
+
 #: lib/gamend_web/live/store_live/index.ex:85
 #, elixir-autogen, elixir-format
-msgid "Checkout cancelled."
+msgid "Checkout canceled."
 msgstr "結帳已取消。"
 
 #: lib/gamend_web/live/store_live/index.ex:256
@@ -935,7 +989,7 @@ msgstr "該物品已有進行中的結帳。請先完成或取消該結帳。"
 msgid "Checkout returned."
 msgstr "已從結帳返回。"
 
-#: lib/gamend_web/live/user_live/confirmation.ex:31
+#: lib/gamend_web/live/user_live/confirmation.ex:48
 #, elixir-autogen, elixir-format
 msgid "Confirm and remember me"
 msgstr "確認並保持登入"
@@ -945,17 +999,17 @@ msgstr "確認並保持登入"
 msgid "Create products and provider SKUs in Admin -> Payments."
 msgstr "請在 Admin -> Payments 中建立商品與供應商 SKU。"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:246
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:247
 #, elixir-autogen, elixir-format
 msgid "Danger zone"
 msgstr "危險區域"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:261
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:263
 #, elixir-autogen, elixir-format
 msgid "Delete account"
 msgstr "刪除帳戶"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:162
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:176
 #, elixir-autogen, elixir-format
 msgid "Download"
 msgstr "下載"
@@ -965,13 +1019,15 @@ msgstr "下載"
 msgid "Downloadable"
 msgstr "可下載"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:61
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:75
 #, elixir-autogen, elixir-format
 msgid "Environment"
 msgstr "環境"
 
 #: lib/gamend_web/live/admin_live/chat_mutes.ex:465
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:240
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:75
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:96
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:265
 #, elixir-autogen, elixir-format
 msgid "Expires"
 msgstr "到期"
@@ -982,40 +1038,40 @@ msgid "Grant"
 msgstr "授予"
 
 #: lib/gamend_web/live/store_live/index.ex:156
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:68
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:67
 #, elixir-autogen, elixir-format
 msgid "Inactive"
 msgstr "未啟用"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:51
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:50
 #, elixir-autogen, elixir-format
 msgid "Incoming requests"
 msgstr "收到的請求"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:207
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:232
 #, elixir-autogen, elixir-format
 msgid "Invalid payment state"
 msgstr "無效的付款狀態"
 
 #: lib/gamend_web/live/admin_live/matchmaking.ex:195
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:124
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:138
 #, elixir-autogen, elixir-format
 msgid "Kind"
 msgstr "種類"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:230
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:231
 #, elixir-autogen, elixir-format
 msgid "Link"
 msgstr "連結"
 
-#: lib/gamend_web/live/user_live/confirmation.ex:65
+#: lib/gamend_web/live/user_live/confirmation.ex:82
 #, elixir-autogen, elixir-format
 msgid "Log in and remember me"
 msgstr "登入並保持登入"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:239
-#: lib/gamend_web/live/user_live/settings/data_tab.ex:75
-#: lib/gamend_web/live/user_live/settings/items_tab.ex:42
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:240
+#: lib/gamend_web/live/user_live/settings/data_tab.ex:74
+#: lib/gamend_web/live/user_live/settings/items_tab.ex:41
 #, elixir-autogen, elixir-format
 msgid "Metadata"
 msgstr "中繼資料"
@@ -1030,12 +1086,12 @@ msgstr "未設定商品。"
 msgid "No purchase was fulfilled."
 msgstr "沒有完成的購買。"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:37
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:50
 #, elixir-autogen, elixir-format
 msgid "Open Store"
 msgstr "開啟商店"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:56
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:70
 #, elixir-autogen, elixir-format
 msgid "Order"
 msgstr "訂單"
@@ -1056,19 +1112,19 @@ msgid "Order %{order_id} returned from checkout."
 msgstr "訂單 %{order_id} 已從結帳返回。"
 
 #: lib/gamend_web/live/store_live/index.ex:170
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:98
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:112
 #, elixir-autogen, elixir-format
 msgid "Owned"
 msgstr "已擁有"
 
-#: lib/gamend_web/controllers/page_controller.ex:11
+#: lib/gamend_web/controllers/page_controller.ex:17
 #, elixir-autogen, elixir-format
 msgid "Page"
 msgstr "頁"
 
 #: lib/gamend_web/live/store_live/index.ex:66
-#: lib/gamend_web/live/user_live/settings.ex:96
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:34
+#: lib/gamend_web/live/user_live/settings.ex:103
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:36
 #, elixir-autogen, elixir-format
 msgid "Payments"
 msgstr "付款"
@@ -1078,30 +1134,30 @@ msgstr "付款"
 msgid "Price"
 msgstr "價格"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:57
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:71
 #, elixir-autogen, elixir-format
 msgid "Product"
 msgstr "商品"
 
 #: lib/gamend_web/live/store_live/index.ex:140
 #: lib/gamend_web/live/store_live/index.ex:287
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:46
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:58
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:45
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:72
 #, elixir-autogen, elixir-format
 msgid "Provider"
 msgstr "供應商"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:47
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:58
 #, elixir-autogen, elixir-format
 msgid "Purchases"
 msgstr "購買"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:252
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:253
 #, elixir-autogen, elixir-format
 msgid "Read data deletion instructions"
 msgstr "閱讀資料刪除說明"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:237
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:262
 #, elixir-autogen, elixir-format
 msgid "Renews"
 msgstr "續訂"
@@ -1111,7 +1167,7 @@ msgstr "續訂"
 msgid "SKU"
 msgstr "SKU"
 
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:98
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:97
 #, elixir-autogen, elixir-format
 msgid "Sent requests"
 msgstr "已送出的請求"
@@ -1132,7 +1188,7 @@ msgstr "商店物品"
 msgid "Stripe is not configured."
 msgstr "未設定 Stripe。"
 
-#: lib/gamend_web/live/user_live/settings/payments_tab.ex:182
+#: lib/gamend_web/live/user_live/settings/payments_tab.ex:207
 #, elixir-autogen, elixir-format
 msgid "Subscription will cancel at the end of the period."
 msgstr "訂閱將在週期結束時取消。"
@@ -1162,213 +1218,213 @@ msgstr "你已擁有此物品。"
 msgid "Send magic link"
 msgstr "傳送魔法連結"
 
-#: lib/gamend_web/live/tournaments_live.ex:360
-#: lib/gamend_web/live/tournaments_live.ex:585
-#: lib/gamend_web/live/tournaments_live.ex:661
-#: lib/gamend_web/live/tournaments_live.ex:692
-#: lib/gamend_web/live/tournaments_live.ex:788
+#: lib/gamend_web/live/tournaments_live.ex:365
+#: lib/gamend_web/live/tournaments_live.ex:590
+#: lib/gamend_web/live/tournaments_live.ex:666
+#: lib/gamend_web/live/tournaments_live.ex:697
+#: lib/gamend_web/live/tournaments_live.ex:793
 #, elixir-autogen, elixir-format
 msgid "Bracket"
 msgstr "對戰表"
 
-#: lib/gamend_web/live/tournaments_live.ex:570
+#: lib/gamend_web/live/tournaments_live.ex:575
 #, elixir-autogen, elixir-format
 msgid "Bracket size"
 msgstr "對戰表規模"
 
-#: lib/gamend_web/live/tournaments_live.ex:571
 #: lib/gamend_web/live/tournaments_live.ex:576
+#: lib/gamend_web/live/tournaments_live.ex:581
 #, elixir-autogen, elixir-format
 msgid "Brackets"
 msgstr "對戰表"
 
 #: lib/gamend_web/live/admin_live/matchmaking.ex:187
-#: lib/gamend_web/live/tournaments_live.ex:972
-#: lib/gamend_web/live_helpers.ex:316
+#: lib/gamend_web/live/tournaments_live.ex:977
+#: lib/gamend_web/live_helpers.ex:338
 #, elixir-autogen, elixir-format
-msgid "Cancelled"
+msgid "Canceled"
 msgstr "已取消"
 
-#: lib/gamend_web/live/tournaments_live.ex:931
+#: lib/gamend_web/live/tournaments_live.ex:936
 #, elixir-autogen, elixir-format
 msgid "Final"
 msgstr "決賽"
 
-#: lib/gamend_web/live/tournaments_live.ex:971
+#: lib/gamend_web/live/tournaments_live.ex:976
 #, elixir-autogen, elixir-format
 msgid "Finished"
 msgstr "已結束"
 
 #: lib/gamend_web/live/admin_live/chat_mutes.ex:461
-#: lib/gamend_web/live/tournaments_live.ex:392
-#: lib/gamend_web/live/tournaments_live.ex:917
+#: lib/gamend_web/live/tournaments_live.ex:397
+#: lib/gamend_web/live/tournaments_live.ex:922
 #, elixir-autogen, elixir-format
 msgid "Player"
 msgstr "玩家"
 
-#: lib/gamend_web/live/tournaments_live.ex:933
+#: lib/gamend_web/live/tournaments_live.ex:938
 #, elixir-autogen, elixir-format
 msgid "Quarterfinal"
 msgstr "半準決賽"
 
-#: lib/gamend_web/live/tournaments_live.ex:969
+#: lib/gamend_web/live/tournaments_live.ex:974
 #, elixir-autogen, elixir-format
 msgid "Registration open"
 msgstr "報名開放"
 
-#: lib/gamend_web/live/tournaments_live.ex:934
+#: lib/gamend_web/live/tournaments_live.ex:939
 #, elixir-autogen, elixir-format
 msgid "Round %{n}"
 msgstr "第 %{n} 輪"
 
-#: lib/gamend_web/live/tournaments_live.ex:970
+#: lib/gamend_web/live/tournaments_live.ex:975
 #, elixir-autogen, elixir-format
 msgid "Running"
 msgstr "進行中"
 
-#: lib/gamend_web/live/tournaments_live.ex:968
+#: lib/gamend_web/live/tournaments_live.ex:973
 #, elixir-autogen, elixir-format
 msgid "Scheduled"
 msgstr "已排程"
 
-#: lib/gamend_web/live/tournaments_live.ex:932
+#: lib/gamend_web/live/tournaments_live.ex:937
 #, elixir-autogen, elixir-format
 msgid "Semifinal"
 msgstr "準決賽"
 
-#: lib/gamend_web/live/tournaments_live.ex:524
-#: lib/gamend_web/live/tournaments_live.ex:799
+#: lib/gamend_web/live/tournaments_live.ex:529
+#: lib/gamend_web/live/tournaments_live.ex:804
 #, elixir-autogen, elixir-format
 msgid "Starts manually"
 msgstr "手動開始"
 
-#: lib/gamend_web/live/tournaments_live.ex:32
-#: lib/gamend_web/live/tournaments_live.ex:248
-#: lib/gamend_web/live/tournaments_live.ex:420
+#: lib/gamend_web/live/tournaments_live.ex:37
+#: lib/gamend_web/live/tournaments_live.ex:253
+#: lib/gamend_web/live/tournaments_live.ex:425
 #, elixir-autogen, elixir-format
 msgid "Tournaments"
 msgstr "錦標賽"
 
-#: lib/gamend_web/live/tournaments_live.ex:905
+#: lib/gamend_web/live/tournaments_live.ex:910
 #, elixir-autogen, elixir-format
 msgid "bye"
 msgstr "輪空"
 
-#: lib/gamend_web/live/tournaments_live.ex:590
+#: lib/gamend_web/live/tournaments_live.ex:595
 #, elixir-autogen, elixir-format
 msgid "matches decided"
 msgstr "場比賽已分出勝負"
 
 #: lib/gamend_web/live/stats_live.ex:79
-#: lib/gamend_web/live/tournaments_live.ex:478
-#: lib/gamend_web/live/tournaments_live.ex:569
-#: lib/gamend_web/live/tournaments_live.ex:613
+#: lib/gamend_web/live/tournaments_live.ex:483
+#: lib/gamend_web/live/tournaments_live.ex:574
+#: lib/gamend_web/live/tournaments_live.ex:618
 #, elixir-autogen, elixir-format
 msgid "Players"
 msgstr "玩家"
 
-#: lib/gamend_web/live/tournaments_live.ex:587
-#: lib/gamend_web/live/tournaments_live.ex:793
+#: lib/gamend_web/live/tournaments_live.ex:592
+#: lib/gamend_web/live/tournaments_live.ex:798
 #, elixir-autogen, elixir-format
 msgid "Slots"
 msgstr "席位"
 
-#: lib/gamend_web/live/tournaments_live.ex:624
-#: lib/gamend_web/live/tournaments_live.ex:962
+#: lib/gamend_web/live/tournaments_live.ex:629
+#: lib/gamend_web/live/tournaments_live.ex:967
 #, elixir-autogen, elixir-format
 msgid "Champion"
 msgstr "冠軍"
 
-#: lib/gamend_web/live/tournaments_live.ex:630
-#: lib/gamend_web/live/tournaments_live.ex:964
+#: lib/gamend_web/live/tournaments_live.ex:635
+#: lib/gamend_web/live/tournaments_live.ex:969
 #, elixir-autogen, elixir-format
 msgid "Eliminated"
 msgstr "已淘汰"
 
-#: lib/gamend_web/live/tournaments_live.ex:627
-#: lib/gamend_web/live/tournaments_live.ex:963
+#: lib/gamend_web/live/tournaments_live.ex:632
+#: lib/gamend_web/live/tournaments_live.ex:968
 #, elixir-autogen, elixir-format
 msgid "Playing"
 msgstr "進行中"
 
-#: lib/gamend_web/live/tournaments_live.ex:633
-#: lib/gamend_web/live/tournaments_live.ex:965
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:47
+#: lib/gamend_web/live/tournaments_live.ex:638
+#: lib/gamend_web/live/tournaments_live.ex:970
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:46
 #, elixir-autogen, elixir-format
 msgid "Registered"
 msgstr "已報名"
 
-#: lib/gamend_web/live/tournaments_live.ex:663
+#: lib/gamend_web/live/tournaments_live.ex:668
 #, elixir-autogen, elixir-format
 msgid "Result"
 msgstr "結果"
 
 #: lib/gamend_web/live/groups_live.ex:625
-#: lib/gamend_web/live/tournaments_live.ex:648
+#: lib/gamend_web/live/tournaments_live.ex:653
 #, elixir-autogen, elixir-format
 msgid "Search players..."
 msgstr "搜尋玩家..."
 
-#: lib/gamend_web/live/tournaments_live.ex:811
+#: lib/gamend_web/live/tournaments_live.ex:816
 #, elixir-autogen, elixir-format
 msgid "Showing"
 msgstr "正在顯示"
 
-#: lib/gamend_web/live/tournaments_live.ex:662
-#: lib/gamend_web/live/tournaments_live.ex:820
+#: lib/gamend_web/live/tournaments_live.ex:667
+#: lib/gamend_web/live/tournaments_live.ex:825
 #, elixir-autogen, elixir-format
 msgid "Wins"
 msgstr "勝場"
 
-#: lib/gamend_web/live/tournaments_live.ex:125
+#: lib/gamend_web/live/tournaments_live.ex:130
 #, elixir-autogen, elixir-format
 msgid "Left"
 msgstr "已退出"
 
-#: lib/gamend_web/live/tournaments_live.ex:157
-#: lib/gamend_web/live_helpers.ex:290
+#: lib/gamend_web/live/tournaments_live.ex:162
+#: lib/gamend_web/live_helpers.ex:312
 #, elixir-autogen, elixir-format
 msgid "Registration is closed."
 msgstr "報名已截止。"
 
-#: lib/gamend_web/live/tournaments_live.ex:161
+#: lib/gamend_web/live/tournaments_live.ex:166
 #, elixir-autogen, elixir-format
 msgid "The bracket has already been drawn."
 msgstr "對戰表已抽籤。"
 
-#: lib/gamend_web/live/tournaments_live.ex:159
+#: lib/gamend_web/live/tournaments_live.ex:164
 #, elixir-autogen, elixir-format
 msgid "This tournament is full."
 msgstr "該錦標賽已額滿。"
 
-#: lib/gamend_web/live/tournaments_live.ex:158
-#: lib/gamend_web/live_helpers.ex:288
+#: lib/gamend_web/live/tournaments_live.ex:163
+#: lib/gamend_web/live_helpers.ex:310
 #, elixir-autogen, elixir-format
 msgid "You are already registered."
 msgstr "你已報名。"
 
-#: lib/gamend_web/live/tournaments_live.ex:160
-#: lib/gamend_web/live_helpers.ex:289
+#: lib/gamend_web/live/tournaments_live.ex:165
+#: lib/gamend_web/live_helpers.ex:311
 #, elixir-autogen, elixir-format
 msgid "You are not registered."
 msgstr "你尚未報名。"
 
-#: lib/gamend_web/live/tournaments_live.ex:621
+#: lib/gamend_web/live/tournaments_live.ex:626
 #, elixir-autogen, elixir-format
 msgid "All results"
 msgstr "全部結果"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:496
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:513
 #, elixir-autogen, elixir-format
 msgid "Avatar updated."
 msgstr "頭像已更新。"
 
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:65
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:64
 #, elixir-autogen, elixir-format
 msgid "Balance"
 msgstr "餘額"
 
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:64
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:63
 #, elixir-autogen, elixir-format
 msgid "Change"
 msgstr "變動"
@@ -1378,12 +1434,12 @@ msgstr "變動"
 msgid "Change avatar"
 msgstr "更換頭像"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:500
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:517
 #, elixir-autogen, elixir-format
 msgid "Could not update avatar."
 msgstr "無法更新頭像。"
 
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:63
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:62
 #, elixir-autogen, elixir-format
 msgid "Currency"
 msgstr "貨幣"
@@ -1393,13 +1449,13 @@ msgstr "貨幣"
 msgid "File is too large or not a supported image."
 msgstr "檔案過大或不是支援的圖片格式。"
 
-#: lib/gamend_web/live/user_live/settings/items_tab.ex:40
+#: lib/gamend_web/live/user_live/settings/items_tab.ex:39
 #, elixir-autogen, elixir-format
 msgid "Item"
 msgstr "物品"
 
-#: lib/gamend_web/live/user_live/settings.ex:95
-#: lib/gamend_web/live/user_live/settings/items_tab.ex:29
+#: lib/gamend_web/live/user_live/settings.ex:102
+#: lib/gamend_web/live/user_live/settings/items_tab.ex:28
 #, elixir-autogen, elixir-format
 msgid "Items"
 msgstr "物品"
@@ -1409,12 +1465,12 @@ msgstr "物品"
 msgid "Open chat"
 msgstr "開啟聊天"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:504
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:521
 #, elixir-autogen, elixir-format
 msgid "Please choose an image first."
 msgstr "請先選擇圖片。"
 
-#: lib/gamend_web/live/user_live/settings/items_tab.ex:41
+#: lib/gamend_web/live/user_live/settings/items_tab.ex:40
 #, elixir-autogen, elixir-format
 msgid "Quantity"
 msgstr "數量"
@@ -1425,7 +1481,7 @@ msgstr "數量"
 #: lib/gamend_web/live/admin_live/chat_reports.ex:414
 #: lib/gamend_web/live/admin_live/chat_reports.ex:575
 #: lib/gamend_web/live/admin_live/matchmaking.ex:197
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:66
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:65
 #, elixir-autogen, elixir-format
 msgid "Reason"
 msgstr "原因"
@@ -1435,121 +1491,122 @@ msgstr "原因"
 msgid "Remove selected file"
 msgstr "移除所選檔案"
 
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:49
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:48
 #, elixir-autogen, elixir-format
 msgid "Transactions"
 msgstr "交易記錄"
 
-#: lib/gamend_web/live/user_live/settings.ex:94
-#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:30
+#: lib/gamend_web/live/user_live/settings.ex:101
+#: lib/gamend_web/live/user_live/settings/wallet_tab.ex:29
 #, elixir-autogen, elixir-format
 msgid "Wallet"
 msgstr "錢包"
 
-#: lib/gamend_web/live/quests_live.ex:91
+#: lib/gamend_web/live/quests_live.ex:118
 #, elixir-autogen, elixir-format
 msgid "Already claimed."
 msgstr "已領取過。"
 
-#: lib/gamend_web/live/quests_live.ex:869
+#: lib/gamend_web/live/quests_live.ex:1053
 #, elixir-autogen, elixir-format
 msgid "Claim"
 msgstr "領取"
 
-#: lib/gamend_web/live/quests_live.ex:378
+#: lib/gamend_web/live/quests_live.ex:519
 #, elixir-autogen, elixir-format
 msgid "Claimable"
 msgstr "可領取"
 
-#: lib/gamend_web/live/quests_live.ex:351
-#: lib/gamend_web/live/quests_live.ex:710
-#: lib/gamend_web/live/quests_live.ex:875
+#: lib/gamend_web/live/quests_live.ex:492
+#: lib/gamend_web/live/quests_live.ex:892
+#: lib/gamend_web/live/quests_live.ex:1059
 #: lib/gamend_web/live/stats_live.ex:134
 #, elixir-autogen, elixir-format
 msgid "Claimed"
 msgstr "已領取"
 
-#: lib/gamend_web/live/quests_live.ex:352
-#: lib/gamend_web/live/quests_live.ex:379
-#: lib/gamend_web/live/quests_live.ex:712
-#: lib/gamend_web/live/quests_live.ex:884
+#: lib/gamend_web/live/quests_live.ex:493
+#: lib/gamend_web/live/quests_live.ex:520
+#: lib/gamend_web/live/quests_live.ex:894
+#: lib/gamend_web/live/quests_live.ex:1068
 #: lib/gamend_web/live/stats_live.ex:133
-#: lib/gamend_web/live_helpers.ex:314
+#: lib/gamend_web/live_helpers.ex:336
 #, elixir-autogen, elixir-format
 msgid "Completed"
 msgstr "已完成"
 
-#: lib/gamend_web/live/quests_live.ex:94
+#: lib/gamend_web/live/quests_live.ex:121
 #, elixir-autogen, elixir-format
 msgid "Could not claim this quest."
 msgstr "無法領取該任務。"
 
-#: lib/gamend_web/live/quests_live.ex:364
+#: lib/gamend_web/live/quests_live.ex:505
 #, elixir-autogen, elixir-format
 msgid "Daily"
 msgstr "每日"
 
-#: lib/gamend_web/live/quests_live.ex:842
+#: lib/gamend_web/live/quests_live.ex:1026
 #, elixir-autogen, elixir-format
 msgid "Ends in %{time}"
 msgstr "%{time}後結束"
 
-#: lib/gamend_web/live/quests_live.ex:38
-#: lib/gamend_web/live/quests_live.ex:453
-#: lib/gamend_web/live/quests_live.ex:667
+#: lib/gamend_web/live/quests_live.ex:54
+#: lib/gamend_web/live/quests_live.ex:599
+#: lib/gamend_web/live/quests_live.ex:849
 #: lib/gamend_web/live/stats_live.ex:130
 #: lib/gamend_web/live/stats_live.ex:132
 #, elixir-autogen, elixir-format
 msgid "Quests"
 msgstr "任務"
 
-#: lib/gamend_web/live/quests_live.ex:844
+#: lib/gamend_web/live/quests_live.ex:1028
 #, elixir-autogen, elixir-format
 msgid "Resets in %{time}"
 msgstr "%{time}後重置"
 
-#: lib/gamend_web/live/quests_live.ex:87
+#: lib/gamend_web/live/quests_live.ex:114
 #, elixir-autogen, elixir-format
 msgid "Rewards claimed!"
 msgstr "已領取獎勵！"
 
-#: lib/gamend_web/live/quests_live.ex:365
+#: lib/gamend_web/live/quests_live.ex:506
 #, elixir-autogen, elixir-format
 msgid "Weekly"
 msgstr "每週"
 
-#: lib/gamend_web/live/quests_live.ex:369
+#: lib/gamend_web/live/quests_live.ex:510
 #, elixir-autogen, elixir-format
 msgid "Every %{count}d"
 msgstr "每 %{count} 天"
 
-#: lib/gamend_web/live/quests_live.ex:366
+#: lib/gamend_web/live/quests_live.ex:507
 #, elixir-autogen, elixir-format
 msgid "Monthly"
 msgstr "每月"
 
-#: lib/gamend_web/live/user_live/settings.ex:98
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:30
+#: lib/gamend_web/live/user_live/settings.ex:105
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:29
 #, elixir-autogen, elixir-format
 msgid "Devices"
 msgstr "裝置"
 
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:32
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:31
 #, elixir-autogen, elixir-format
 msgid "Devices registered for push notifications."
 msgstr "已註冊推播通知的裝置。"
 
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:48
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:95
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:47
 #, elixir-autogen, elixir-format
 msgid "Last used"
 msgstr "最後使用"
 
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:38
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:37
 #, elixir-autogen, elixir-format
 msgid "No devices registered."
 msgstr "沒有已註冊的裝置。"
 
-#: lib/gamend_web/live/user_live/settings/devices_tab.ex:45
+#: lib/gamend_web/live/user_live/settings/devices_tab.ex:44
 #, elixir-autogen, elixir-format
 msgid "Platform"
 msgstr "平台"
@@ -1559,7 +1616,7 @@ msgstr "平台"
 msgid "Passed"
 msgstr "通過"
 
-#: lib/gamend_web/live/admin_live/lobbies.ex:429
+#: lib/gamend_web/live/admin_live/lobbies.ex:431
 #: lib/gamend_web/live/admin_live/matchmaking.ex:198
 #, elixir-autogen, elixir-format
 msgid "Ready"
@@ -1571,54 +1628,55 @@ msgid "Ready checks"
 msgstr "準備確認"
 
 #: lib/gamend_web/live/admin_live/matchmaking.ex:199
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:94
 #, elixir-autogen, elixir-format
 msgid "Created"
 msgstr "建立時間"
 
-#: lib/gamend_web/live/admin_live/lobbies.ex:386
+#: lib/gamend_web/live/admin_live/lobbies.ex:388
 #, elixir-autogen, elixir-format
 msgid "Ready check"
 msgstr "準備確認"
 
-#: lib/gamend_web/live/quests_live.ex:353
-#: lib/gamend_web/live/quests_live.ex:713
+#: lib/gamend_web/live/quests_live.ex:494
+#: lib/gamend_web/live/quests_live.ex:895
 #, elixir-autogen, elixir-format
 msgid "In progress"
 msgstr "進行中"
 
-#: lib/gamend_web/live/quests_live.ex:354
-#: lib/gamend_web/live/quests_live.ex:714
+#: lib/gamend_web/live/quests_live.ex:495
+#: lib/gamend_web/live/quests_live.ex:896
 #, elixir-autogen, elixir-format
 msgid "Not started"
 msgstr "未開始"
 
-#: lib/gamend_web/live/quests_live.ex:568
+#: lib/gamend_web/live/quests_live.ex:750
 #, elixir-autogen, elixir-format
 msgid "Quest chain"
 msgstr "任務鏈"
 
-#: lib/gamend_web/live/quests_live.ex:350
-#: lib/gamend_web/live/quests_live.ex:711
+#: lib/gamend_web/live/quests_live.ex:491
+#: lib/gamend_web/live/quests_live.ex:893
 #, elixir-autogen, elixir-format
 msgid "Ready to claim"
 msgstr "可領取"
 
-#: lib/gamend_web/live/quests_live.ex:803
+#: lib/gamend_web/live/quests_live.ex:987
 #, elixir-autogen, elixir-format
 msgid "View quest chain"
 msgstr "檢視任務鏈"
 
-#: lib/gamend_web/live_helpers.ex:184
+#: lib/gamend_web/live_helpers.ex:206
 #, elixir-autogen, elixir-format
 msgid "Captcha check failed. Please try again."
 msgstr "真人驗證失敗，請重試。"
 
-#: lib/gamend_web/live_helpers.ex:187
+#: lib/gamend_web/live_helpers.ex:209
 #, elixir-autogen, elixir-format
 msgid "Could not reach the captcha service. Please try again."
 msgstr "無法連線至真人驗證服務，請重試。"
 
-#: lib/gamend_web/live_helpers.ex:180
+#: lib/gamend_web/live_helpers.ex:202
 #, elixir-autogen, elixir-format
 msgid "Please complete the captcha."
 msgstr "請完成真人驗證。"
@@ -1694,7 +1752,7 @@ msgstr "經過時間"
 msgid "All scopes"
 msgstr "所有範圍"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:388
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:390
 #, elixir-autogen, elixir-format
 msgid "Avatar uploads are not available."
 msgstr "目前無法上傳頭像。"
@@ -1952,8 +2010,8 @@ msgstr "正規化"
 
 #: lib/gamend_web/components/presence_indicator.ex:33
 #: lib/gamend_web/live/stats_live.ex:81
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:144
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:260
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:143
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:259
 #, elixir-autogen, elixir-format
 msgid "Online"
 msgstr "線上"
@@ -2111,7 +2169,7 @@ msgstr "系統"
 msgid "Test a phrase"
 msgstr "測試文字"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:483
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:500
 #, elixir-autogen, elixir-format
 msgid "That file is not a valid image."
 msgstr "該檔案不是有效的圖片。"
@@ -2291,7 +2349,7 @@ msgstr "警告玩家"
 msgid "Warned from the report queue"
 msgstr "已從檢舉佇列警告"
 
-#: lib/gamend_web/live/quests_live.ex:811
+#: lib/gamend_web/live/quests_live.ex:995
 #, elixir-autogen, elixir-format
 msgid "View every quest in this group"
 msgstr "檢視此群組的所有任務"
@@ -2307,27 +2365,26 @@ msgstr "此節點上 %{n}"
 msgid "Active today"
 msgstr "今日活躍"
 
-#: lib/gamend_web/components/content_pages.ex:57
+#: lib/gamend_web/components/content_pages.ex:66
 #, elixir-autogen, elixir-format
 msgid "Add a changelog file at CHANGELOG.md to display it here."
 msgstr "在 CHANGELOG.md 中新增更新日誌即可在此顯示。"
 
-#: lib/gamend_web/components/content_pages.ex:80
+#: lib/gamend_web/components/content_pages.ex:89
 #, elixir-autogen, elixir-format
 msgid "Add a roadmap file at ROADMAP.md to display it here."
 msgstr "在 ROADMAP.md 中新增發展藍圖即可在此顯示。"
 
-#: lib/gamend_web/components/content_pages.ex:148
-#: lib/gamend_web/components/content_pages.ex:229
+#: lib/gamend_web/components/content_pages.ex:164
 #: lib/gamend_web/live/blog_live.ex:23
 #: lib/gamend_web/live/blog_live.ex:36
 #, elixir-autogen, elixir-format
 msgid "Blog"
 msgstr "部落格"
 
-#: lib/gamend_web/components/content_pages.ex:51
-#: lib/gamend_web/components/content_pages.ex:78
-#: lib/gamend_web/components/content_pages.ex:163
+#: lib/gamend_web/components/content_pages.ex:60
+#: lib/gamend_web/components/content_pages.ex:87
+#: lib/gamend_web/components/content_pages.ex:179
 #: lib/gamend_web/live/changelog_live.ex:20
 #, elixir-autogen, elixir-format
 msgid "Changelog"
@@ -2349,70 +2406,70 @@ msgstr "%{n} 小時後關閉"
 msgid "Closes in under an hour"
 msgstr "不到一小時後關閉"
 
-#: lib/gamend_web/docs_live.ex:322
+#: lib/gamend_web/docs_live.ex:392
 #, elixir-autogen, elixir-format
 msgid "More in %{category}"
 msgstr "%{category} 中的更多內容"
 
-#: lib/gamend_web/docs_live.ex:305
+#: lib/gamend_web/docs_live.ex:818
 #, elixir-autogen, elixir-format
 msgid "More pages"
 msgstr "更多頁面"
 
-#: lib/gamend_web/controllers/error_html.ex:103
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:372
-#: lib/gamend_web/live_helpers.ex:224
-#: lib/gamend_web/live_helpers.ex:227
+#: lib/gamend_web/controllers/error_html.ex:115
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:374
+#: lib/gamend_web/live_helpers.ex:246
+#: lib/gamend_web/live_helpers.ex:249
 #, elixir-autogen, elixir-format
 msgid "Not allowed"
 msgstr "不允許"
 
-#: lib/gamend_web/controllers/error_html.ex:102
+#: lib/gamend_web/controllers/error_html.ex:114
 #, elixir-autogen, elixir-format
 msgid "Page not found"
 msgstr "找不到頁面"
 
-#: lib/gamend_web/components/presentation_page.ex:553
+#: lib/gamend_web/components/presentation_page.ex:661
 #, elixir-autogen, elixir-format
 msgid "Play video"
 msgstr "播放影片"
 
-#: lib/gamend_web/components/content_pages.ex:143
+#: lib/gamend_web/components/content_pages.ex:157
 #, elixir-autogen, elixir-format
 msgid "Register a blog directory to display posts here."
 msgstr "註冊一個部落格目錄即可在此顯示文章。"
 
-#: lib/gamend_web/components/content_pages.ex:55
-#: lib/gamend_web/components/content_pages.ex:74
-#: lib/gamend_web/components/content_pages.ex:156
+#: lib/gamend_web/components/content_pages.ex:64
+#: lib/gamend_web/components/content_pages.ex:83
+#: lib/gamend_web/components/content_pages.ex:172
 #: lib/gamend_web/live/roadmap_live.ex:17
 #, elixir-autogen, elixir-format
 msgid "Roadmap"
 msgstr "發展藍圖"
 
-#: lib/gamend_web/controllers/error_html.ex:134
+#: lib/gamend_web/controllers/error_html.ex:146
 #, elixir-autogen, elixir-format
 msgid "Something broke on our side. It has been logged, and the rest of the site is fine."
 msgstr "我們這邊出了問題。已記錄下來，網站的其他部分正常運作。"
 
-#: lib/gamend_web/controllers/error_html.ex:105
+#: lib/gamend_web/controllers/error_html.ex:117
 #: lib/gamend_web/live/auth_success_live.ex:137
 #: lib/gamend_web/live/auth_success_live.ex:161
 #, elixir-autogen, elixir-format
 msgid "Something went wrong"
 msgstr "出了點問題"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:563
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:580
 #, elixir-autogen, elixir-format
 msgid "That account has its own sign-in method. Sign in to it and unlink the provider there."
 msgstr "該帳號有自己的登入方式。請登入該帳號，並在那裡解除與提供者的連結。"
 
-#: lib/gamend_web/controllers/error_html.ex:108
+#: lib/gamend_web/controllers/error_html.ex:120
 #, elixir-autogen, elixir-format
 msgid "The page you were looking for has moved or never existed. The rest of the site is fine."
-msgstr "您要找的頁面已被移動或從未存在。網站的其他部分正常運作。"
+msgstr "你要找的頁面已被移動或從未存在。網站的其他部分正常運作。"
 
-#: lib/gamend_web/controllers/error_html.ex:104
+#: lib/gamend_web/controllers/error_html.ex:116
 #, elixir-autogen, elixir-format
 msgid "Too many requests"
 msgstr "請求過多"
@@ -2432,15 +2489,15 @@ msgstr "載入到此節點記憶體中的未過期禁言。執行時讀取的是
 msgid "Where to go next"
 msgstr "接下來去哪裡"
 
-#: lib/gamend_web/controllers/error_html.ex:114
+#: lib/gamend_web/controllers/error_html.ex:126
 #, elixir-autogen, elixir-format
 msgid "You do not have access to this page. Signing in may help."
-msgstr "您無權存取此頁面。登入後或許可以存取。"
+msgstr "你無權存取此頁面。登入後或許可以存取。"
 
-#: lib/gamend_web/controllers/error_html.ex:118
+#: lib/gamend_web/controllers/error_html.ex:130
 #, elixir-autogen, elixir-format
 msgid "You have made a lot of requests in a short time. Please wait a moment and try again."
-msgstr "您在短時間內發出了大量請求。請稍候再試。"
+msgstr "你在短時間內發出了大量請求。請稍候再試。"
 
 #: lib/gamend_web/live/stats_live.ex:97
 #, elixir-autogen, elixir-format
@@ -2453,12 +2510,12 @@ msgstr "最近 30 天"
 msgid "last 7 days"
 msgstr "最近 7 天"
 
-#: lib/gamend_web/components/core_components.ex:494
+#: lib/gamend_web/components/core_components.ex:691
 #, elixir-autogen, elixir-format
 msgid "Log in with %{provider}"
 msgstr "使用 %{provider} 登入"
 
-#: lib/gamend_web/components/core_components.ex:495
+#: lib/gamend_web/components/core_components.ex:692
 #, elixir-autogen, elixir-format
 msgid "Register with %{provider}"
 msgstr "使用 %{provider} 註冊"
@@ -2482,102 +2539,102 @@ msgstr "傳送魔法連結給自己以登入，然後在帳戶頁面設定新密
 #, elixir-autogen, elixir-format
 msgid "%{count} country"
 msgid_plural "%{count} countries"
-msgstr[0] ""
+msgstr[0] "%{count} 個國家/地區"
 
 #: lib/gamend_web/live/admin_live/lobby_snapshots.ex:52
 #, elixir-autogen, elixir-format
 msgid "%{count} coverage gap"
 msgid_plural "%{count} coverage gaps"
-msgstr[0] ""
+msgstr[0] "%{count} 個覆蓋缺口"
 
 #: lib/gamend_web/live/admin_live/logs.ex:47
 #: lib/gamend_web/live/admin_live/rate_limiting.ex:145
 #, elixir-autogen, elixir-format
 msgid "%{count} entry"
 msgid_plural "%{count} entries"
-msgstr[0] ""
+msgstr[0] "%{count} 個項目"
 
-#: lib/gamend_web/live/admin_live/logs.ex:439
+#: lib/gamend_web/live/admin_live/logs.ex:447
 #, elixir-autogen, elixir-format
 msgid "%{count} entry never arrived"
 msgid_plural "%{count} entries never arrived"
-msgstr[0] ""
+msgstr[0] "有 %{count} 個項目未送達"
 
 #: lib/gamend_web/live/admin_live/index.ex:98
 #: lib/gamend_web/live/admin_live/logs.ex:52
 #, elixir-autogen, elixir-format
 msgid "%{count} error"
 msgid_plural "%{count} errors"
-msgstr[0] ""
+msgstr[0] "%{count} 個錯誤"
 
-#: lib/gamend_web/live/admin_live/config_system_sections.ex:1011
+#: lib/gamend_web/live/admin_live/config_system_sections.ex:1020
 #, elixir-autogen, elixir-format
 msgid "%{count} job registered."
 msgid_plural "%{count} jobs registered."
-msgstr[0] ""
+msgstr[0] "已註冊 %{count} 個工作。"
 
-#: lib/gamend_web/live/admin_live/index.ex:385
+#: lib/gamend_web/live/admin_live/index.ex:386
 #, elixir-autogen, elixir-format
 msgid "%{count} language"
 msgid_plural "%{count} languages"
-msgstr[0] ""
+msgstr[0] "%{count} 種語言"
 
 #: lib/gamend_web/live/admin_live/config_sections.ex:374
 #, elixir-autogen, elixir-format
 msgid "%{count} link"
 msgid_plural "%{count} links"
-msgstr[0] ""
+msgstr[0] "%{count} 個連結"
 
-#: lib/gamend_web/live/admin_live/index.ex:473
+#: lib/gamend_web/live/admin_live/index.ex:474
 #, elixir-autogen, elixir-format
 msgid "%{count} node"
 msgid_plural "%{count} nodes"
-msgstr[0] ""
+msgstr[0] "%{count} 個節點"
 
 #: lib/gamend_web/live/admin_live/lobby_snapshots.ex:95
 #, elixir-autogen, elixir-format
 msgid "%{count} run"
 msgid_plural "%{count} runs"
-msgstr[0] ""
+msgstr[0] "%{count} 次執行"
 
 #: lib/gamend_web/live/admin_live/config_sections.ex:319
 #, elixir-autogen, elixir-format
 msgid "%{count} section"
 msgid_plural "%{count} sections"
-msgstr[0] ""
+msgstr[0] "%{count} 個區段"
 
 #: lib/gamend_web/live/admin_live/lobby_snapshots.ex:50
 #, elixir-autogen, elixir-format
 msgid "%{count}+ coverage gap"
 msgid_plural "%{count}+ coverage gaps"
-msgstr[0] ""
+msgstr[0] "%{count}+ 個覆蓋缺口"
 
-#: lib/gamend_web/live_helpers.ex:278
+#: lib/gamend_web/live_helpers.ex:300
 #, elixir-autogen, elixir-format
 msgid "A password is required."
 msgstr "需要密碼。"
 
-#: lib/gamend_web/live/user_live/registration.ex:131
+#: lib/gamend_web/live/user_live/registration.ex:179
 #, elixir-autogen, elixir-format
 msgid "Account created. Check your email for a link to confirm it."
 msgstr "帳戶已建立。請查看電子郵件中的確認連結。"
 
-#: lib/gamend_web/live_helpers.ex:261
+#: lib/gamend_web/live_helpers.ex:283
 #, elixir-autogen, elixir-format
 msgid "Already a member."
 msgstr "已經是成員。"
 
-#: lib/gamend_web/live_helpers.ex:262
+#: lib/gamend_web/live_helpers.ex:284
 #, elixir-autogen, elixir-format
 msgid "Already an admin."
 msgstr "已經是管理員。"
 
-#: lib/gamend_web/live_helpers.ex:283
+#: lib/gamend_web/live_helpers.ex:305
 #, elixir-autogen, elixir-format
 msgid "Already invited."
 msgstr "已經邀請過。"
 
-#: lib/gamend_web/live_helpers.ex:313
+#: lib/gamend_web/live_helpers.ex:335
 #, elixir-autogen, elixir-format
 msgid "Awaiting payment"
 msgstr "等待付款"
@@ -2591,9 +2648,9 @@ msgstr "在遊戲內購買"
 #, elixir-autogen, elixir-format
 msgid "Channel processes running on %{count} WebSocket connection."
 msgid_plural "Channel processes running on %{count} WebSocket connections."
-msgstr[0] ""
+msgstr[0] "在 %{count} 個 WebSocket 連線上執行的頻道程序。"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:298
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:300
 #, elixir-autogen, elixir-format
 msgid "Check your new email address for a link to confirm the change."
 msgstr "請查看新電子郵件地址中的連結以確認變更。"
@@ -2609,74 +2666,74 @@ msgstr[0] "%{count} 天後關閉"
 msgid "Confirm password"
 msgstr "確認密碼"
 
-#: lib/gamend_web/live_helpers.ex:307
+#: lib/gamend_web/live_helpers.ex:329
 #, elixir-autogen, elixir-format
 msgid "Consumable"
 msgstr "消耗品"
 
-#: lib/gamend_web/controllers/page_controller.ex:23
+#: lib/gamend_web/controllers/page_controller.ex:40
 #, elixir-autogen, elixir-format
 msgid "Data deletion"
 msgstr "資料刪除"
 
-#: lib/gamend_web/live/admin_live/lobbies.ex:390
+#: lib/gamend_web/live/admin_live/lobbies.ex:392
 #, elixir-autogen, elixir-format
 msgid "Deadline"
-msgstr ""
+msgstr "截止時間"
 
 #: lib/gamend_web/live/admin_live/kv.ex:33
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected KV entry?"
 msgid_plural "Delete %{count} selected KV entries?"
-msgstr[0] ""
+msgstr[0] "刪除所選的 %{count} 個 KV 項目？"
 
-#: lib/gamend_web/live/admin_live/groups.ex:41
+#: lib/gamend_web/live/admin_live/groups.ex:42
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected group?"
 msgid_plural "Delete %{count} selected groups?"
-msgstr[0] ""
+msgstr[0] "刪除所選的 %{count} 個群組？"
 
-#: lib/gamend_web/live/admin_live/leaderboards.ex:44
+#: lib/gamend_web/live/admin_live/leaderboards.ex:45
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected leaderboard and all its records?"
 msgid_plural "Delete %{count} selected leaderboards and all their records?"
-msgstr[0] ""
+msgstr[0] "刪除所選的 %{count} 個排行榜及其所有紀錄？"
 
-#: lib/gamend_web/live/admin_live/lobbies.ex:63
+#: lib/gamend_web/live/admin_live/lobbies.ex:65
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected lobby?"
 msgid_plural "Delete %{count} selected lobbies?"
-msgstr[0] ""
+msgstr[0] "刪除所選的 %{count} 個大廳？"
 
 #: lib/gamend_web/live/admin_live/chat.ex:35
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected message?"
 msgid_plural "Delete %{count} selected messages?"
-msgstr[0] ""
+msgstr[0] "刪除所選的 %{count} 則訊息？"
 
 #: lib/gamend_web/live/admin_live/notifications.ex:92
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected notification?"
 msgid_plural "Delete %{count} selected notifications?"
-msgstr[0] ""
+msgstr[0] "刪除所選的 %{count} 則通知？"
 
-#: lib/gamend_web/live/admin_live/parties.ex:55
+#: lib/gamend_web/live/admin_live/parties.ex:56
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected party?"
 msgid_plural "Delete %{count} selected parties?"
-msgstr[0] ""
+msgstr[0] "刪除所選的 %{count} 個隊伍？"
 
-#: lib/gamend_web/live/admin_live/sessions.ex:28
+#: lib/gamend_web/live/admin_live/sessions.ex:29
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected session?"
 msgid_plural "Delete %{count} selected sessions?"
-msgstr[0] ""
+msgstr[0] "刪除所選的 %{count} 個工作階段？"
 
-#: lib/gamend_web/live/admin_live/users.ex:28
+#: lib/gamend_web/live/admin_live/users.ex:30
 #, elixir-autogen, elixir-format
 msgid "Delete %{count} selected user?"
 msgid_plural "Delete %{count} selected users?"
-msgstr[0] ""
+msgstr[0] "刪除所選的 %{count} 位使用者？"
 
 #: lib/gamend_web/live/notifications_live.ex:30
 #, elixir-autogen, elixir-format
@@ -2688,17 +2745,17 @@ msgstr "全部刪除"
 msgid "Delete all notifications?"
 msgstr "刪除所有通知？"
 
-#: lib/gamend_web/live/user_live/settings.ex:78
+#: lib/gamend_web/live/user_live/settings.ex:84
 #, elixir-autogen, elixir-format
 msgid "Delete other account"
 msgstr "刪除另一個帳戶"
 
-#: lib/gamend_web/live/user_live/settings.ex:75
+#: lib/gamend_web/live/user_live/settings.ex:81
 #, elixir-autogen, elixir-format
 msgid "Delete the other account permanently? This cannot be undone."
 msgstr "永久刪除另一個帳戶？此操作無法復原。"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:259
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:610
 #, elixir-autogen, elixir-format
 msgid "Delete your account permanently? This cannot be undone."
 msgstr "永久刪除你的帳戶？此操作無法復原。"
@@ -2707,111 +2764,112 @@ msgstr "永久刪除你的帳戶？此操作無法復原。"
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} entry"
 msgid_plural "Deleted %{count} entries"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 個項目"
 
 #: lib/gamend_web/live/admin_live/kv.ex:378
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} entry; %{failed} failed"
 msgid_plural "Deleted %{count} entries; %{failed} failed"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 個項目；%{failed} 個失敗"
 
-#: lib/gamend_web/live/admin_live/groups.ex:455
+#: lib/gamend_web/live/admin_live/groups.ex:456
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} group"
 msgid_plural "Deleted %{count} groups"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 個群組"
 
-#: lib/gamend_web/live/admin_live/groups.ex:465
+#: lib/gamend_web/live/admin_live/groups.ex:466
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} group; %{failed} failed"
 msgid_plural "Deleted %{count} groups; %{failed} failed"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 個群組；%{failed} 個失敗"
 
-#: lib/gamend_web/live/admin_live/leaderboards.ex:482
+#: lib/gamend_web/live/admin_live/leaderboards.ex:488
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} leaderboard"
 msgid_plural "Deleted %{count} leaderboards"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 個排行榜"
 
-#: lib/gamend_web/live/admin_live/leaderboards.ex:492
+#: lib/gamend_web/live/admin_live/leaderboards.ex:498
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} leaderboard; %{failed} failed"
 msgid_plural "Deleted %{count} leaderboards; %{failed} failed"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 個排行榜；%{failed} 個失敗"
 
-#: lib/gamend_web/live/admin_live/lobbies.ex:732
+#: lib/gamend_web/live/admin_live/lobbies.ex:738
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} lobby"
 msgid_plural "Deleted %{count} lobbies"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 個大廳"
 
-#: lib/gamend_web/live/admin_live/lobbies.ex:742
+#: lib/gamend_web/live/admin_live/lobbies.ex:748
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} lobby; %{failed} failed"
 msgid_plural "Deleted %{count} lobbies; %{failed} failed"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 個大廳；%{failed} 個失敗"
 
 #: lib/gamend_web/live/admin_live/chat.ex:268
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} message"
 msgid_plural "Deleted %{count} messages"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 則訊息"
 
 #: lib/gamend_web/live/admin_live/chat.ex:278
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} message; %{failed} failed"
 msgid_plural "Deleted %{count} messages; %{failed} failed"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 則訊息；%{failed} 則失敗"
 
 #: lib/gamend_web/live/admin_live/notifications.ex:317
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} notification"
 msgid_plural "Deleted %{count} notifications"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 則通知"
 
 #: lib/gamend_web/live/admin_live/notifications.ex:327
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} notification; %{failed} failed"
 msgid_plural "Deleted %{count} notifications; %{failed} failed"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 則通知；%{failed} 則失敗"
 
-#: lib/gamend_web/live/admin_live/parties.ex:521
+#: lib/gamend_web/live/admin_live/parties.ex:522
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} party"
 msgid_plural "Deleted %{count} parties"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 個隊伍"
 
-#: lib/gamend_web/live/admin_live/parties.ex:531
+#: lib/gamend_web/live/admin_live/parties.ex:532
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} party; %{failed} failed"
 msgid_plural "Deleted %{count} parties; %{failed} failed"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 個隊伍；%{failed} 個失敗"
 
-#: lib/gamend_web/live/admin_live/sessions.ex:216
+#: lib/gamend_web/live/admin_live/sessions.ex:222
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} session"
 msgid_plural "Deleted %{count} sessions"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 個工作階段"
 
-#: lib/gamend_web/live/admin_live/sessions.ex:226
+#: lib/gamend_web/live/admin_live/sessions.ex:232
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} session; %{failed} failed"
 msgid_plural "Deleted %{count} sessions; %{failed} failed"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 個工作階段；%{failed} 個失敗"
 
-#: lib/gamend_web/live/admin_live/users.ex:967
+#: lib/gamend_web/live/admin_live/users.ex:1034
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} user"
 msgid_plural "Deleted %{count} users"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 位使用者"
 
-#: lib/gamend_web/live/admin_live/users.ex:977
+#: lib/gamend_web/live/admin_live/users.ex:1044
 #, elixir-autogen, elixir-format
 msgid "Deleted %{count} user; %{failed} failed"
 msgid_plural "Deleted %{count} users; %{failed} failed"
-msgstr[0] ""
+msgstr[0] "已刪除 %{count} 位使用者；%{failed} 位失敗"
 
-#: lib/gamend_web/live_helpers.ex:320
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:115
+#: lib/gamend_web/live_helpers.ex:342
 #, elixir-autogen, elixir-format
 msgid "Expired"
 msgstr "已過期"
@@ -2819,14 +2877,14 @@ msgstr "已過期"
 #: lib/gamend_web/live/admin_live/chat_reports.ex:401
 #, elixir-autogen, elixir-format
 msgid "Filter by reported user ID"
-msgstr ""
+msgstr "依被檢舉使用者 ID 篩選"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:481
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:484
 #, elixir-autogen, elixir-format
 msgid "Find groups"
 msgstr "尋找群組"
 
-#: lib/gamend_web/live/play_live.ex:62
+#: lib/gamend_web/live/play_live.ex:67
 #, elixir-autogen, elixir-format
 msgid "Game"
 msgstr "遊戲"
@@ -2840,49 +2898,49 @@ msgstr "如果該電子郵件有帳戶，我們已寄出登入連結。請查看
 #, elixir-autogen, elixir-format
 msgid "Imported %{count} word from the %{lang} list"
 msgid_plural "Imported %{count} words from the %{lang} list"
-msgstr[0] ""
+msgstr[0] "已從 %{lang} 清單匯入 %{count} 個字詞"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:482
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:485
 #, elixir-autogen, elixir-format
 msgid "Invitations"
 msgstr "邀請"
 
-#: lib/gamend_web/live_helpers.ex:270
+#: lib/gamend_web/live_helpers.ex:292
 #, elixir-autogen, elixir-format
 msgid "It is full."
 msgstr "已滿員。"
 
-#: lib/gamend_web/live_helpers.ex:277
+#: lib/gamend_web/live_helpers.ex:299
 #, elixir-autogen, elixir-format
 msgid "It is locked."
 msgstr "已鎖定。"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:331
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:332
 #, elixir-autogen, elixir-format
 msgid "Join requests"
 msgstr "加入請求"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:211
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:212
 #, elixir-autogen, elixir-format
 msgid "Linked"
 msgstr "已連結"
 
-#: lib/gamend_web/live_helpers.ex:263
+#: lib/gamend_web/live_helpers.ex:285
 #, elixir-autogen, elixir-format
 msgid "Make someone else an admin first."
 msgstr "請先將其他人設為管理員。"
 
 #: lib/gamend_web/live/groups_live.ex:460
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:117
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:159
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:195
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:514
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:623
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:116
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:158
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:194
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:517
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:626
 #, elixir-autogen, elixir-format
 msgid "Max members"
 msgstr "成員上限"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:483
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:486
 #, elixir-autogen, elixir-format
 msgid "My requests"
 msgstr "我的請求"
@@ -2895,9 +2953,9 @@ msgstr "新玩家"
 #: lib/gamend_web/live/admin_live/chat_filter.ex:396
 #, elixir-autogen, elixir-format
 msgid "No bundled lists are available. Drop one at apps/gamend_core/priv/chat_filter/<lang>.txt."
-msgstr ""
+msgstr "沒有可用的內建清單。請將清單放在 apps/gamend_core/priv/chat_filter/<lang>.txt。"
 
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:211
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:212
 #, elixir-autogen, elixir-format
 msgid "Not linked"
 msgstr "未連結"
@@ -2908,33 +2966,33 @@ msgid "Nothing is for sale right now."
 msgstr "目前沒有販售中的商品。"
 
 #: lib/gamend_web/components/presence_indicator.ex:35
-#: lib/gamend_web/live/user_live/settings/friends_tab.ex:144
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:260
+#: lib/gamend_web/live/user_live/settings/friends_tab.ex:143
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:259
 #, elixir-autogen, elixir-format
 msgid "Offline"
 msgstr "離線"
 
-#: lib/gamend_web/live_helpers.ex:244
+#: lib/gamend_web/live_helpers.ex:266
 #, elixir-autogen, elixir-format
 msgid "One of you has blocked the other."
 msgstr "你們其中一方已封鎖對方。"
 
-#: lib/gamend_web/live_helpers.ex:306
+#: lib/gamend_web/live_helpers.ex:328
 #, elixir-autogen, elixir-format
 msgid "One-time"
 msgstr "一次性"
 
-#: lib/gamend_web/live_helpers.ex:256
+#: lib/gamend_web/live_helpers.ex:278
 #, elixir-autogen, elixir-format
 msgid "Only a group admin can do that."
 msgstr "只有群組管理員可以執行此操作。"
 
-#: lib/gamend_web/live_helpers.ex:276
+#: lib/gamend_web/live_helpers.ex:298
 #, elixir-autogen, elixir-format
 msgid "Only the host can do that."
 msgstr "只有房主可以執行此操作。"
 
-#: lib/gamend_web/live_helpers.ex:282
+#: lib/gamend_web/live_helpers.ex:304
 #, elixir-autogen, elixir-format
 msgid "Only the party leader can do that."
 msgstr "只有隊長可以執行此操作。"
@@ -2945,7 +3003,7 @@ msgid "Order %{order_id} is waiting for payment confirmation."
 msgstr "訂單 %{order_id} 正在等待付款確認。"
 
 #: lib/gamend_web/live/auth_success_live.ex:229
-#: lib/gamend_web/live_helpers.ex:232
+#: lib/gamend_web/live_helpers.ex:254
 #, elixir-autogen, elixir-format
 msgid "Player not found."
 msgstr "找不到該玩家。"
@@ -2965,7 +3023,7 @@ msgstr "排名"
 msgid "Recently online"
 msgstr "最近上線"
 
-#: lib/gamend_web/live_helpers.ex:317
+#: lib/gamend_web/live_helpers.ex:339
 #, elixir-autogen, elixir-format
 msgid "Refunded"
 msgstr "已退款"
@@ -2974,9 +3032,9 @@ msgstr "已退款"
 #, elixir-autogen, elixir-format
 msgid "Removed %{count} word tagged %{lang}"
 msgid_plural "Removed %{count} words tagged %{lang}"
-msgstr[0] ""
+msgstr[0] "已移除 %{count} 個標記為 %{lang} 的字詞"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:758
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:761
 #, elixir-autogen, elixir-format
 msgid "Requested"
 msgstr "請求時間"
@@ -2985,27 +3043,27 @@ msgstr "請求時間"
 #, elixir-autogen, elixir-format
 msgid "Retention sweep affected %{count} row."
 msgid_plural "Retention sweep affected %{count} rows."
-msgstr[0] ""
+msgstr[0] "保留期清理影響了 %{count} 列。"
 
-#: lib/gamend_web/live/admin_live/users.ex:501
+#: lib/gamend_web/live/admin_live/users.ex:577
 #, elixir-autogen, elixir-format
 msgid "Revoke this user's %{count} session?"
 msgid_plural "Revoke all %{count} of this user's sessions?"
-msgstr[0] ""
+msgstr[0] "撤銷此使用者的 %{count} 個工作階段？"
 
-#: lib/gamend_web/live_helpers.ex:318
+#: lib/gamend_web/live_helpers.ex:340
 #, elixir-autogen, elixir-format
 msgid "Revoked"
 msgstr "已撤銷"
 
-#: lib/gamend_web/live/admin_live/users.ex:760
+#: lib/gamend_web/live/admin_live/users.ex:867
 #, elixir-autogen, elixir-format
 msgid "Revoked %{count} session"
 msgid_plural "Revoked %{count} sessions"
-msgstr[0] ""
+msgstr[0] "已撤銷 %{count} 個工作階段"
 
-#: lib/gamend_web/components/presentation_page.ex:171
-#: lib/gamend_web/components/presentation_page.ex:223
+#: lib/gamend_web/components/presentation_page.ex:177
+#: lib/gamend_web/components/presentation_page.ex:229
 #, elixir-autogen, elixir-format
 msgid "Scroll to content"
 msgstr "捲動至內容"
@@ -3014,9 +3072,9 @@ msgstr "捲動至內容"
 #, elixir-autogen, elixir-format
 msgid "Search %{count} entry..."
 msgid_plural "Search %{count} entries..."
-msgstr[0] ""
+msgstr[0] "搜尋 %{count} 個項目..."
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:485
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:488
 #, elixir-autogen, elixir-format
 msgid "Sent invitations"
 msgstr "已送出的邀請"
@@ -3026,59 +3084,59 @@ msgstr "已送出的邀請"
 msgid "Sort by:"
 msgstr "排序方式："
 
-#: lib/gamend_web/live_helpers.ex:308
+#: lib/gamend_web/live_helpers.ex:330
 #, elixir-autogen, elixir-format
 msgid "Subscription"
 msgstr "訂閱"
 
-#: lib/gamend_web/live_helpers.ex:267
+#: lib/gamend_web/live_helpers.ex:289
 #, elixir-autogen, elixir-format
 msgid "That is fewer than the current number of members."
 msgstr "這少於目前的成員人數。"
 
-#: lib/gamend_web/live_helpers.ex:286
+#: lib/gamend_web/live_helpers.ex:308
 #, elixir-autogen, elixir-format
 msgid "That message is not allowed."
 msgstr "不允許傳送該訊息。"
 
-#: lib/gamend_web/controllers/error_html.ex:124
+#: lib/gamend_web/controllers/error_html.ex:136
 #, elixir-autogen, elixir-format
 msgid "That was too large to send. Try a smaller file."
 msgstr "檔案太大，無法傳送。請嘗試較小的檔案。"
 
-#: lib/gamend_web/live_helpers.ex:273
+#: lib/gamend_web/live_helpers.ex:295
 #, elixir-autogen, elixir-format
 msgid "The invite is no longer valid."
 msgstr "該邀請已失效。"
 
-#: lib/gamend_web/controllers/error_html.ex:130
+#: lib/gamend_web/controllers/error_html.ex:142
 #, elixir-autogen, elixir-format
 msgid "The request could not be handled. Go back and try again."
 msgstr "無法處理該請求。請返回後重試。"
 
 #: lib/gamend_web/live/auth_success_live.ex:232
 #, elixir-autogen, elixir-format
-msgid "The sign-in was cancelled or did not complete. Please try again."
+msgid "The sign-in was canceled or did not complete. Please try again."
 msgstr "登入已取消或未完成。請重試。"
 
 #: lib/gamend_web/live/auth_success_live.ex:141
 #: lib/gamend_web/live/auth_success_live.ex:223
-#: lib/gamend_web/live/user_live/settings.ex:65
+#: lib/gamend_web/live/user_live/settings.ex:71
 #, elixir-autogen, elixir-format
 msgid "This sign-in is already linked to another account"
 msgstr "此登入方式已連結到另一個帳戶"
 
-#: lib/gamend_web/live_helpers.ex:272
+#: lib/gamend_web/live_helpers.ex:294
 #, elixir-autogen, elixir-format
 msgid "This was already answered."
 msgstr "已經回覆過了。"
 
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:803
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:806
 #, elixir-autogen, elixir-format
 msgid "To"
 msgstr "接收者"
 
-#: lib/gamend_web/live_helpers.ex:251
+#: lib/gamend_web/live_helpers.ex:273
 #, elixir-autogen, elixir-format
 msgid "Too many pending requests. Wait for some to be answered."
 msgstr "待處理的請求過多。請等待部分請求獲得回覆。"
@@ -3086,80 +3144,74 @@ msgstr "待處理的請求過多。請等待部分請求獲得回覆。"
 #: lib/gamend_web/live/admin_live/chat_filter.ex:483
 #, elixir-autogen, elixir-format
 msgid "Words loaded into this node's in-memory matcher. A number that differs from the database count means this node missed a change broadcast."
-msgstr ""
+msgstr "已載入此節點記憶體內比對器的字詞。若此數字與資料庫中的計數不同，表示此節點漏收了一次變更廣播。"
 
-#: lib/gamend_web/live_helpers.ex:279
+#: lib/gamend_web/live_helpers.ex:301
 #, elixir-autogen, elixir-format
 msgid "Wrong password."
 msgstr "密碼錯誤。"
 
-#: lib/gamend_web/live_helpers.ex:246
+#: lib/gamend_web/live_helpers.ex:268
 #, elixir-autogen, elixir-format
 msgid "You already sent a request."
 msgstr "你已送出過請求。"
 
-#: lib/gamend_web/live_helpers.ex:245
+#: lib/gamend_web/live_helpers.ex:267
 #, elixir-autogen, elixir-format
 msgid "You are already friends."
 msgstr "你們已經是好友。"
 
-#: lib/gamend_web/live_helpers.ex:274
+#: lib/gamend_web/live_helpers.ex:296
 #, elixir-autogen, elixir-format
 msgid "You are already in a lobby."
 msgstr "你已在大廳中。"
 
-#: lib/gamend_web/live_helpers.ex:280
+#: lib/gamend_web/live_helpers.ex:302
 #, elixir-autogen, elixir-format
 msgid "You are already in a party."
 msgstr "你已在隊伍中。"
 
-#: lib/gamend_web/live_helpers.ex:284
+#: lib/gamend_web/live_helpers.ex:306
 #, elixir-autogen, elixir-format
 msgid "You are muted."
 msgstr "你已被禁言。"
 
-#: lib/gamend_web/live_helpers.ex:259
+#: lib/gamend_web/live_helpers.ex:281
 #, elixir-autogen, elixir-format
 msgid "You are not a member of this group."
 msgstr "你不是該群組的成員。"
 
-#: lib/gamend_web/live_helpers.ex:281
+#: lib/gamend_web/live_helpers.ex:303
 #, elixir-autogen, elixir-format
 msgid "You are not in a party."
 msgstr "你不在隊伍中。"
 
-#: lib/gamend_web/live_helpers.ex:275
+#: lib/gamend_web/live_helpers.ex:297
 #, elixir-autogen, elixir-format
 msgid "You are not in this lobby."
 msgstr "你不在此大廳中。"
 
-#: lib/gamend_web/live_helpers.ex:285
+#: lib/gamend_web/live_helpers.ex:307
 #, elixir-autogen, elixir-format
 msgid "You are sending messages too fast."
 msgstr "你傳送訊息太快了。"
 
-#: lib/gamend_web/live_helpers.ex:254
+#: lib/gamend_web/live_helpers.ex:276
 #, elixir-autogen, elixir-format
 msgid "You can only invite friends or players who share a group with you."
 msgstr "你只能邀請好友或與你同在一個群組的玩家。"
 
-#: lib/gamend_web/live_helpers.ex:287
+#: lib/gamend_web/live_helpers.ex:309
 #, elixir-autogen, elixir-format
 msgid "You can only message friends."
 msgstr "你只能傳訊息給好友。"
 
-#: lib/gamend_web/live_helpers.ex:242
+#: lib/gamend_web/live_helpers.ex:264
 #, elixir-autogen, elixir-format
 msgid "You cannot do that to yourself."
 msgstr "你不能對自己執行此操作。"
 
-#: lib/gamend_web/live/quests_live.ex:496
-#, elixir-autogen, elixir-format
-msgid "You have %{count} quest ready to claim!"
-msgid_plural "You have %{count} quests ready to claim!"
-msgstr[0] "你有 %{count} 個任務可領取！"
-
-#: lib/gamend_web/live_helpers.ex:264
+#: lib/gamend_web/live_helpers.ex:286
 #, elixir-autogen, elixir-format
 msgid "You have created too many groups."
 msgstr "你建立的群組過多。"
@@ -3169,7 +3221,7 @@ msgstr "你建立的群組過多。"
 msgid "Your account is waiting for an administrator to activate it."
 msgstr "你的帳戶正在等待管理員啟用。"
 
-#: lib/gamend_web/live_helpers.ex:247
+#: lib/gamend_web/live_helpers.ex:269
 #, elixir-autogen, elixir-format
 msgid "Your friend list is full."
 msgstr "你的好友名單已滿。"
@@ -3182,149 +3234,335 @@ msgstr "你的付款仍在處理中。請稍後重新整理此頁面。"
 #: lib/gamend_web/live/admin_live/matchmaking.ex:181
 #, elixir-autogen, elixir-format
 msgid "counts: last 24h · list: 10 most recent"
-msgstr ""
+msgstr "計數：最近 24 小時 · 清單：最近 10 筆"
 
 #: lib/gamend_web/live/admin_live/lobby_snapshots.ex:93
 #, elixir-autogen, elixir-format
 msgid "latest %{count} run"
 msgid_plural "latest %{count} runs"
-msgstr[0] ""
+msgstr[0] "最近 %{count} 次執行"
 
 #: lib/gamend_web/controllers/user_session_controller.ex:77
 #, elixir-autogen, elixir-format
 msgid "Confirm your email first with the link we sent you, or log in with an emailed link."
 msgstr "請先透過我們寄出的連結確認電子郵件，或使用電子郵件中的登入連結登入。"
 
-#: lib/gamend_web/live/user_live/confirmation.ex:32
+#: lib/gamend_web/live/user_live/confirmation.ex:38
 #, elixir-autogen, elixir-format
-msgid "Confirming with this link removes the password this account was registered with, so set a new one in your account settings afterwards. The link in the confirmation email keeps it."
-msgstr "透過此連結確認會移除註冊此帳戶時設定的密碼，請在確認後到帳戶設定中設定新密碼。使用確認電子郵件中的連結則會保留密碼。"
+msgid "Confirming with this link removes the password this account was registered with, so set a new one in your account settings afterwards."
+msgstr "透過此連結確認會移除註冊此帳戶時設定的密碼，請在確認後到帳戶設定中設定新密碼。"
 
-#: lib/gamend_web/components/content_pages.ex:413
+#: lib/gamend_web/components/content_pages.ex:409
 #, elixir-autogen, elixir-format
 msgid "%{count} min read"
 msgstr "閱讀時間 %{count} 分鐘"
 
+#: lib/gamend_web/notification_email.ex:24
 #, elixir-autogen, elixir-format
 msgid "Account and security"
 msgstr "帳戶與安全"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:50
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:90
 #, elixir-autogen, elixir-format
 msgid "Account messages, such as sign-in links, are always sent."
 msgstr "帳戶訊息（例如登入連結）一律會寄送。"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:103
 #, elixir-autogen, elixir-format
 msgid "Automatic (this device): %{zone}"
 msgstr "自動（此裝置）：%{zone}"
 
+#: lib/gamend_web/notification_email.ex:26
 #, elixir-autogen, elixir-format
 msgid "Chat messages"
 msgstr "聊天訊息"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:52
 #, elixir-autogen, elixir-format
 msgid "Choose what we send you"
 msgstr "選擇我們寄給你的內容"
 
+#: lib/gamend_web/notification_email.ex:81
 #, elixir-autogen, elixir-format
 msgid "Choose what we send you: %{url}"
 msgstr "選擇我們寄給你的內容：%{url}"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:32
 #, elixir-autogen, elixir-format
 msgid "Choose what we tell you, and where."
 msgstr "選擇我們通知你什麼，以及在哪裡通知。"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:13
 #, elixir-autogen, elixir-format
 msgid "Done. No more emails about: %{group}."
 msgstr "已完成。不再寄送關於以下內容的郵件：%{group}。"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:16
 #, elixir-autogen, elixir-format
 msgid "Done. We will not email you anything but account messages."
 msgstr "已完成。我們只會透過郵件寄送帳戶相關訊息。"
 
+#: lib/gamend_web/live/user_live/registration.ex:47
 #, elixir-autogen, elixir-format
 msgid "Email me: %{group}"
 msgstr "寄郵件給我：%{group}"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:25
+#: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:40
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:10
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:64
 #, elixir-autogen, elixir-format
 msgid "Email settings"
 msgstr "郵件設定"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:20
 #, elixir-autogen, elixir-format
 msgid "Emails about: %{group}"
 msgstr "關於以下內容的郵件：%{group}"
 
+#: lib/gamend_web/notification_email.ex:25
 #, elixir-autogen, elixir-format
 msgid "Friends and groups"
 msgstr "好友與群組"
 
+#: lib/gamend_web/notification_email.ex:32
 #, elixir-autogen, elixir-format
 msgid "On the site"
 msgstr "在網站上"
 
+#: lib/gamend_web/notification_email.ex:34
 #, elixir-autogen, elixir-format
 msgid "Phone"
 msgstr "手機"
 
+#: lib/gamend_web/notification_email.ex:27
 #, elixir-autogen, elixir-format
 msgid "Quests and rewards"
 msgstr "任務與獎勵"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:67
 #, elixir-autogen, elixir-format
 msgid "Settings"
 msgstr "設定"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:42
 #, elixir-autogen, elixir-format
 msgid "Stop all emails"
 msgstr "不再接收任何郵件"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:30
 #, elixir-autogen, elixir-format
 msgid "Stop these emails"
 msgstr "不再接收這類郵件"
 
+#: lib/gamend_web/notification_email.ex:80
 #, elixir-autogen, elixir-format
 msgid "Stop these emails: %{url}"
 msgstr "不再接收這類郵件：%{url}"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:65
 #, elixir-autogen, elixir-format
 msgid "This link does not work. Sign in to choose what we send you."
 msgstr "此連結無效。請登入後選擇我們寄給你的內容。"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:95
 #, elixir-autogen, elixir-format
 msgid "Time zone"
 msgstr "時區"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:74
 #, elixir-autogen, elixir-format
 msgid "Turn email back on"
 msgstr "重新開啟郵件"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:86
 #, elixir-autogen, elixir-format
 msgid "Turn notifications back on"
 msgstr "重新開啟通知"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:73
 #, elixir-autogen, elixir-format
 msgid "Turn off all email"
 msgstr "關閉所有郵件"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:79
 #, elixir-autogen, elixir-format
 msgid "Turn off all phone notifications"
 msgstr "關閉所有手機通知"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:85
 #, elixir-autogen, elixir-format
 msgid "Turn off everything"
 msgstr "全部關閉"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:80
 #, elixir-autogen, elixir-format
 msgid "Turn phone notifications back on"
 msgstr "重新開啟手機通知"
 
+#: lib/gamend_web/controllers/notification_unsubscribe_html.ex:46
 #, elixir-autogen, elixir-format
 msgid "You get none of these emails."
 msgstr "你不會收到這些郵件。"
 
+#: lib/gamend_web/notification_email.ex:77
 #, elixir-autogen, elixir-format
 msgid "You get this email because you turned on emails for: %{group}."
 msgstr "你收到這封郵件，是因為你開啟了以下內容的郵件：%{group}。"
 
+#: lib/gamend_web/live/user_live/settings/notifications_tab.ex:114
 #, elixir-autogen, elixir-format
 msgid "Your day and your reminders follow it."
 msgstr "你的一天和提醒都依此時區計算。"
+
+#: lib/gamend_web/docs_live.ex:804
+#, elixir-autogen, elixir-format
+msgid "%{count} page"
+msgid_plural "%{count} pages"
+msgstr[0] "%{count} 個頁面"
+
+#: lib/gamend_web/live/user_live/settings.ex:106
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:31
+#, elixir-autogen, elixir-format
+msgid "API tokens"
+msgstr "API 權杖"
+
+#: lib/gamend_web/docs_live.ex:748
+#, elixir-autogen, elixir-format
+msgid "Breadcrumb"
+msgstr "導覽路徑"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:46
+#, elixir-autogen, elixir-format
+msgid "Copy it now. It will not be shown again."
+msgstr "請立即複製。之後不會再顯示。"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:80
+#, elixir-autogen, elixir-format
+msgid "Create token"
+msgstr "建立權杖"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:613
+#, elixir-autogen, elixir-format
+msgid "Delete your account? It will be deleted in %{count} day, and signing in before then keeps it."
+msgid_plural "Delete your account? It will be deleted in %{count} days, and signing in before then keeps it."
+msgstr[0] "刪除你的帳戶？帳戶將在 %{count} 天後刪除，在此之前登入即可保留。"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:52
+#, elixir-autogen, elixir-format
+msgid "Done"
+msgstr "完成"
+
+#: lib/gamend_web/docs_live.ex:562
+#, elixir-autogen, elixir-format
+msgid "Edit this page"
+msgstr "編輯此頁"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:33
+#, elixir-autogen, elixir-format
+msgid "For scripts and CI: send one as a Bearer token to any API route that takes an access token. A password or email change revokes them all."
+msgstr "用於指令碼和 CI：將其作為 Bearer 權杖傳送到任何接受存取權杖的 API 路由。變更密碼或電子郵件會撤銷所有權杖。"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:225
+#, elixir-autogen, elixir-format
+msgid "In %{count} day"
+msgid_plural "In %{count} days"
+msgstr[0] "%{count} 天後"
+
+#: lib/gamend_web/live/admin_live/shared.ex:122
+#, elixir-autogen, elixir-format
+msgid "It no longer exists. It was deleted after this page loaded."
+msgstr "此項目已不存在。它在此頁面載入後被刪除。"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:106
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:117
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:224
+#, elixir-autogen, elixir-format
+msgid "Never"
+msgstr "永不"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:85
+#, elixir-autogen, elixir-format
+msgid "No API tokens."
+msgstr "沒有 API 權杖。"
+
+#: lib/gamend_web/docs_live.ex:538
+#: lib/gamend_web/docs_live.ex:628
+#: lib/gamend_web/docs_live.ex:630
+#, elixir-autogen, elixir-format
+msgid "On this page"
+msgstr "本頁內容"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:130
+#, elixir-autogen, elixir-format
+msgid "Revoke"
+msgstr "撤銷"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:127
+#, elixir-autogen, elixir-format
+msgid "Revoke this token? Anything using it stops working."
+msgstr "撤銷此權杖？所有使用它的地方都會停止運作。"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:112
+#, elixir-autogen, elixir-format
+msgid "Revoked by a password or email change"
+msgstr "因變更密碼或電子郵件而被撤銷"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:93
+#, elixir-autogen, elixir-format
+msgid "Token"
+msgstr "權杖"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:183
+#, elixir-autogen, elixir-format
+msgid "Token revoked."
+msgstr "權杖已撤銷。"
+
+#: lib/gamend_web/controllers/user_session_controller.ex:63
+#, elixir-autogen, elixir-format
+msgid "Too many failed attempts. Try again in %{count} minute, or sign in with an emailed link."
+msgid_plural "Too many failed attempts. Try again in %{count} minutes, or sign in with an emailed link."
+msgstr[0] "失敗嘗試次數過多。請在 %{count} 分鐘後重試，或使用電子郵件中的連結登入。"
+
+#: lib/gamend_web/controllers/page_controller.ex:50
+#: lib/gamend_web/controllers/page_html/ui.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "UI elements"
+msgstr "UI 元素"
+
+#: lib/gamend_web/user_auth.ex:84
+#, elixir-autogen, elixir-format
+msgid "Welcome back. Your account will not be deleted."
+msgstr "歡迎回來。你的帳戶不會被刪除。"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:169
+#, elixir-autogen, elixir-format
+msgid "You have reached the token limit. Revoke one first."
+msgstr "你已達到權杖數量上限。請先撤銷一個。"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:453
+#, elixir-autogen, elixir-format
+msgid "Your account will be deleted in %{count} day. Sign in before then to keep it."
+msgid_plural "Your account will be deleted in %{count} days. Sign in before then to keep it."
+msgstr[0] "你的帳戶將在 %{count} 天後刪除。在此之前登入即可保留。"
+
+#: lib/gamend_web/live/user_live/settings/api_tokens_tab.ex:67
+#, elixir-autogen, elixir-format
+msgid "e.g. release script"
+msgstr "例如：發布指令碼"
+
+#: lib/gamend_web/live/quests_live.ex:1139
+#, elixir-autogen, elixir-format
+msgid "Register to claim"
+msgstr "註冊後領取"
+
+#: lib/gamend_web/live/quests_live.ex:124
+#, elixir-autogen, elixir-format
+msgid "Register to claim your reward."
+msgstr "註冊後即可領取獎勵。"
+
+#: lib/gamend_web/live/leaderboards_live.ex:296
+#, elixir-autogen, elixir-format
+msgid "Only you see this rank. Register to appear on the board."
+msgstr "只有你能看到這個排名。註冊後即可上榜。"

@@ -17,7 +17,7 @@ msgstr "Bienvenue à bord"
 
 #. quests
 msgid "Log in for the first time."
-msgstr "Connectez-vous pour la première fois."
+msgstr "Connecte-toi pour la première fois."
 
 #. quests
 msgid "Daily check-in"
@@ -25,7 +25,7 @@ msgstr "Visite quotidienne"
 
 #. quests
 msgid "Log in today."
-msgstr "Connectez-vous aujourd'hui."
+msgstr "Connecte-toi aujourd'hui."
 
 #. quests
 msgid "Weekly regular"
@@ -33,7 +33,7 @@ msgstr "Habitué de la semaine"
 
 #. quests
 msgid "Log in on five different days this week."
-msgstr "Connectez-vous cinq jours différents cette semaine."
+msgstr "Connecte-toi cinq jours différents cette semaine."
 
 #. quests
 msgid "Monthly devotee"
@@ -41,15 +41,15 @@ msgstr "Fidèle du mois"
 
 #. quests
 msgid "Log in twenty times this month."
-msgstr "Connectez-vous vingt fois ce mois-ci."
+msgstr "Connecte-toi vingt fois ce mois-ci."
 
 #. quests
 msgid "Stop by again"
-msgstr "Repassez nous voir"
+msgstr "Repasse nous voir"
 
 #. quests
 msgid "Log in. Becomes available again three days later."
-msgstr "Connectez-vous. De nouveau disponible trois jours plus tard."
+msgstr "Connecte-toi. De nouveau disponible trois jours plus tard."
 
 #. quests
 msgid "Loyal veteran"
@@ -57,7 +57,7 @@ msgstr "Vétéran fidèle"
 
 #. quests
 msgid "Log in fifty times, once you have said hello."
-msgstr "Connectez-vous cinquante fois, une fois que vous avez dit bonjour."
+msgstr "Connecte-toi cinquante fois, une fois que tu as dit bonjour."
 
 #. quests
 msgid "Night owl"
@@ -89,4 +89,5 @@ msgstr "Coupe hebdomadaire"
 
 #. tournaments
 msgid "Register any time; the bracket is drawn every Monday."
-msgstr "Inscrivez-vous quand vous voulez ; le tableau est tiré chaque lundi."
+
+msgstr "Inscris-toi quand tu veux ; le tableau est tiré chaque lundi."

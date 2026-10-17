@@ -17,6 +17,13 @@ defmodule GamendWeb.Api.V1.Admin.AnalyticsController do
 
   tags(["Admin – Analytics"])
 
+  @segment_param [
+    in: :query,
+    schema: %Schema{type: :string, enum: ["all", "registered", "guest"], default: "all"},
+    description:
+      "Which accounts: registered (an email or a provider), guest (a device or a browser only) or all"
+  ]
+
   operation(:show,
     operation_id: "admin_get_analytics_summary",
     summary: "DAU / WAU / MAU, D1 / D7 / D30 and payer conversion (admin)",
@@ -24,6 +31,7 @@ defmodule GamendWeb.Api.V1.Admin.AnalyticsController do
       "Same numbers as the /admin/analytics page. Days are UTC. Retention is pooled " <>
         "over the sign-up cohorts of the last 60 days that have reached each horizon.",
     security: [%{"authorization" => []}],
+    parameters: [segment: @segment_param],
     responses: [
       ok: {"Summary", "application/json", AnalyticsSummaryResponse},
       unauthorized: Schemas.error("Not authenticated"),
@@ -31,7 +39,8 @@ defmodule GamendWeb.Api.V1.Admin.AnalyticsController do
     ]
   )
 
-  def show(conn, _params), do: reply_data(conn, Analytics.summary())
+  def show(conn, params),
+    do: reply_data(conn, Analytics.summary(Date.utc_today(), segment: parse_segment(params)))
 
   operation(:daily,
     operation_id: "admin_get_analytics_daily",
@@ -42,7 +51,8 @@ defmodule GamendWeb.Api.V1.Admin.AnalyticsController do
         in: :query,
         schema: %Schema{type: :integer, minimum: 1, maximum: 365, default: 30},
         description: "How many UTC days back, ending today"
-      ]
+      ],
+      segment: @segment_param
     ],
     responses: [
       ok: {"Series", "application/json", AnalyticsDailyResponse},
@@ -53,7 +63,8 @@ defmodule GamendWeb.Api.V1.Admin.AnalyticsController do
 
   def daily(conn, params) do
     days = parse_days(params["days"], 30)
-    reply_data(conn, %{days: days, series: Analytics.daily_series(days)})
+    series = Analytics.daily_series(days, Date.utc_today(), segment: parse_segment(params))
+    reply_data(conn, %{days: days, series: series})
   end
 
   operation(:snapshot,
@@ -155,6 +166,8 @@ defmodule GamendWeb.Api.V1.Admin.AnalyticsController do
     do: value
 
   defp parse_days(_, default), do: default
+
+  defp parse_segment(params), do: Analytics.segment(params["segment"])
 
   defp blank_to_nil(nil), do: nil
   defp blank_to_nil(""), do: nil

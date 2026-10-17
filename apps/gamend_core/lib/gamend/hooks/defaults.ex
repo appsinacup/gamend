@@ -173,6 +173,15 @@ defmodule Gamend.Hooks.Defaults do
       def after_chat_message_reported(_report), do: :ok
 
       @impl true
+      def before_report_create(attrs), do: {:ok, attrs}
+
+      @impl true
+      def after_report_created(_report), do: :ok
+
+      @impl true
+      def after_report_resolved(_report), do: :ok
+
+      @impl true
       def after_user_muted(_mute), do: :ok
 
       @impl true
@@ -322,6 +331,9 @@ defmodule Gamend.Hooks.Defaults do
                      before_chat_message: 2,
                      after_chat_message: 1,
                      after_chat_message_reported: 1,
+                     before_report_create: 1,
+                     after_report_created: 1,
+                     after_report_resolved: 1,
                      after_user_muted: 1,
                      before_push_send: 2,
                      after_push_sent: 3,

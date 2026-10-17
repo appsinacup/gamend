@@ -8,7 +8,7 @@ msgid "Open source Elixir game server for real-time multiplayer games."
 msgstr "Server game Elixir sumber terbuka untuk game multipemain waktu nyata."
 
 msgid "GitHub"
-msgstr ""
+msgstr "GitHub"
 
 msgid "Discord"
 msgstr "Discord"
@@ -31,26 +31,29 @@ msgstr "Panduan"
 msgid "API Docs"
 msgstr "Dokumentasi API"
 
+msgid "UI elements"
+msgstr "Elemen UI"
+
 msgid "Elixir Docs"
 msgstr "Dokumentasi Elixir"
 
 msgid "Deployment Tutorial"
-msgstr ""
+msgstr "Tutorial penerapan"
 
 msgid "Scaling Guide"
-msgstr ""
+msgstr "Panduan penskalaan"
 
 msgid "Docs"
-msgstr ""
+msgstr "Dokumentasi"
 
 msgid "Starter Template"
-msgstr ""
+msgstr "Template awal"
 
 msgid "Store"
 msgstr "Toko"
 
 msgid "Server Stats"
-msgstr ""
+msgstr "Statistik server"
 
 msgid "Help"
 msgstr "Bantuan"
@@ -80,7 +83,7 @@ msgid "Groups"
 msgstr "Grup"
 
 msgid "News"
-msgstr ""
+msgstr "Berita"
 
 msgid "Getting Started"
 msgstr "Memulai"
@@ -89,28 +92,28 @@ msgid "Presentation Video"
 msgstr "Video presentasi"
 
 msgid "**Open source** Elixir game server for real-time multiplayer games: backend, player website and admin panel in one."
-msgstr ""
+msgstr "Server game Elixir **sumber terbuka** untuk game multipemain waktu nyata: backend, situs web pemain, dan panel admin dalam satu paket."
 
 msgid "Gamend"
 msgstr "Gamend"
 
 msgid "A tour of the Gamend admin panel, quests, store and server hooks"
-msgstr ""
+msgstr "Tur panel admin Gamend, misi, toko, dan hook server"
 
 msgid "Benchmarks"
-msgstr ""
+msgstr "Benchmark"
 
 msgid "Godot SDK"
-msgstr ""
+msgstr "Godot SDK"
 
 msgid "C++ SDK"
-msgstr ""
+msgstr "C++ SDK"
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
-msgstr ""
+msgstr "**Backend untuk game multipemainmu**: akun, lobi, obrolan, papan peringkat, dan semua hal yang diharapkan pemain di sekitar game itu sendiri. Gamend juga menyertakan antarmuka web di sekelilingnya: situs web pemain siap pakai (toko, papan peringkat, turnamen, misi, grup, obrolan) dan panel admin lengkap. Skrip sisi server menjalankan logikamu sendiri di tempat yang tidak bisa dijangkau pemain. Kamu menjalankannya di servermu sendiri; tidak ada layanan yang di-hosting."
 
 msgid "What is Gamend?"
-msgstr ""
+msgstr "Apa itu Gamend?"
 
 msgid "Log in"
 msgstr "Masuk"
@@ -119,7 +122,7 @@ msgid "Register"
 msgstr "Daftar"
 
 msgid "The login page with magic link, password and five OAuth providers"
-msgstr ""
+msgstr "Halaman masuk dengan tautan ajaib, kata sandi, dan lima penyedia OAuth"
 
 msgid "Email, Magic-link, OAuth, JWT and Session. Register, login, reset password and verify email."
 msgstr "Email, tautan ajaib, OAuth, JWT, dan sesi. Pendaftaran, masuk, atur ulang kata sandi, dan verifikasi email."
@@ -128,22 +131,22 @@ msgid "Authentication & Users"
 msgstr "Autentikasi dan pengguna"
 
 msgid "Lobbies"
-msgstr ""
+msgstr "Lobi"
 
 msgid "Matchmaking"
-msgstr ""
+msgstr "Pencocokan pemain"
 
 msgid "The matchmaking admin page with live queues, tickets and ready checks"
-msgstr ""
+msgstr "Halaman admin pencocokan pemain dengan antrean langsung, tiket, dan pemeriksaan kesiapan"
 
 msgid "Real-time lobbies with passwords, quick join and live updates. Ephemeral parties that join and get matched **as one unit**, a ticket-queue matchmaker and ready checks before anything starts."
-msgstr ""
+msgstr "Lobi waktu nyata dengan kata sandi, gabung cepat, dan pembaruan langsung. Party sementara yang bergabung dan dicocokkan **sebagai satu kesatuan**, matchmaker berbasis antrean tiket, dan pemeriksaan kesiapan sebelum apa pun dimulai."
 
 msgid "Lobbies, Parties & Matchmaking"
 msgstr "Lobi, party, dan pencocokan pemain"
 
 msgid "The public groups browser"
-msgstr ""
+msgstr "Penjelajah grup publik"
 
 msgid "Friend requests, blocking, real-time presence. Public, private and hidden groups. Direct and group messaging."
 msgstr "Permintaan pertemanan, pemblokiran, kehadiran waktu nyata. Grup publik, privat, dan tersembunyi. Pesan langsung dan grup."
@@ -152,33 +155,31 @@ msgid "Friends, Groups & Chat"
 msgstr "Teman, grup, dan obrolan"
 
 msgid "The quests page with daily, achievement and event quests"
-msgstr ""
+msgstr "Halaman misi dengan misi harian, pencapaian, dan acara"
 
 msgid "One server-authoritative quest engine for achievements, dailies, seasonal events and quest chains. Bracket tournaments, leaderboards with seasons, and real-time plus push notifications across every feature."
-msgstr ""
+msgstr "Satu mesin misi yang otoritatif di server untuk pencapaian, misi harian, acara musiman, dan rantai misi. Turnamen dengan bagan, papan peringkat dengan musim, serta notifikasi waktu nyata dan push di semua fitur."
 
 msgid "Quests, Tournaments & Leaderboards"
-msgstr ""
+msgstr "Misi, turnamen, dan papan peringkat"
 
-#, fuzzy
 msgid "Server Scripting"
-msgstr "Skrip server dan penjadwalan"
+msgstr "Skrip server"
 
 msgid "GDScript Hooks"
-msgstr ""
+msgstr "Hook GDScript"
 
 msgid "Runtime introspection listing every hook with its implementing plugins"
-msgstr ""
+msgstr "Introspeksi runtime yang mencantumkan setiap hook beserta plugin yang mengimplementasikannya"
 
 msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards, matchmaking rules and validation, where players cannot reach them. Durable background jobs and cron scheduling built in."
-msgstr ""
+msgstr "Tulis hook server dalam **Elixir, GDScript, atau Gleam** untuk penilaian skor, hadiah, aturan pencocokan pemain, dan validasi, di tempat yang tidak bisa dijangkau pemain. Pekerjaan latar belakang yang tahan lama dan penjadwalan cron sudah tersedia bawaan."
 
 msgid "Server Scripting & Scheduling"
 msgstr "Skrip server dan penjadwalan"
 
-#, fuzzy
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."
-msgstr "REST API, kanal WebSocket waktu nyata, dan DataChannel WebRTC berlatensi rendah. Portal admin dan antarmuka web."
+msgstr "REST API, kanal WebSocket waktu nyata, dan WebRTC DataChannels berlatensi rendah, dengan format waktu nyata protobuf opsional. Portal admin dan antarmuka web, diterjemahkan ke 30 bahasa."
 
 msgid "HTTP, WebSocket & WebRTC"
 msgstr "HTTP, WebSocket, dan WebRTC"
@@ -190,7 +191,7 @@ msgid "Payment Docs"
 msgstr "Dokumentasi pembayaran"
 
 msgid "The built-in store page with priced products"
-msgstr ""
+msgstr "Halaman toko bawaan dengan produk beserta harganya"
 
 msgid "Server-side payments with Stripe, Google Play, App Store, and Steam providers. Validate receipts, process signed webhooks, grant entitlements, revoke refunds, and inspect everything in admin."
 msgstr "Pembayaran sisi server dengan Stripe, Google Play, App Store, dan Steam. Validasi tanda terima, proses webhook bertanda tangan, berikan hak, cabut pengembalian dana, dan periksa semuanya di admin."
@@ -199,34 +200,34 @@ msgid "Payments & Store Integrations"
 msgstr "Pembayaran dan integrasi toko"
 
 msgid "Economy"
-msgstr ""
+msgstr "Ekonomi"
 
 msgid "Key-Value Store"
-msgstr ""
+msgstr "Penyimpanan key-value"
 
 msgid "The economy admin page with wallets and grant and spend controls"
-msgstr ""
+msgstr "Halaman admin ekonomi dengan dompet serta kontrol pemberian dan pembelanjaan"
 
 msgid "Virtual currency wallets with an atomic, append-only ledger. Item stacks with grant and consume. A per-player and per-lobby **key-value store**, and object storage with presigned uploads on local disk or any S3-compatible backend."
-msgstr ""
+msgstr "Dompet mata uang virtual dengan buku besar atomik yang hanya bisa ditambah. Tumpukan item dengan pemberian dan pemakaian. **Penyimpanan key-value** per pemain dan per lobi, serta penyimpanan objek dengan unggahan presigned ke disk lokal atau backend apa pun yang kompatibel dengan S3."
 
 msgid "Economy, Inventory & Storage"
-msgstr ""
+msgstr "Ekonomi, inventaris, dan penyimpanan"
 
 msgid "Player Analytics"
-msgstr ""
+msgstr "Analitik pemain"
 
 msgid "Client Logs"
-msgstr ""
+msgstr "Log klien"
 
 msgid "The analytics admin page with DAU and D1, D7 and D30 retention"
-msgstr ""
+msgstr "Halaman admin analitik dengan DAU serta retensi D1, D7, dan D30"
 
 msgid "D1 / D7 / D30 retention, DAU and payer conversion built in. Client log sessions correlated with the server's own tail for per-player debugging. Prometheus metrics with Grafana, and a load-test harness with published benchmarks."
-msgstr ""
+msgstr "Retensi D1 / D7 / D30, DAU, dan konversi pembayar sudah tersedia bawaan. Sesi log klien dikorelasikan dengan bagian akhir log server itu sendiri untuk debugging per pemain. Metrik Prometheus dengan Grafana, serta harness uji beban dengan benchmark yang dipublikasikan."
 
 msgid "Analytics, Logs & Observability"
-msgstr ""
+msgstr "Analitik, log, dan observabilitas"
 
 msgid "Game + Backend"
 msgstr "Game + backend"

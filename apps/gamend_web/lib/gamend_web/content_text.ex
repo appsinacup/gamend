@@ -78,9 +78,10 @@ defmodule GamendWeb.ContentText do
   def translate(records) when is_list(records), do: Enum.map(records, &translate/1)
 
   # A quest's counter is a binding, not a substitution — see "Placeholders".
-  # `nil` is an anonymous visitor browsing the catalog: no row, so run 1.
+  # An unresolved one is an anonymous visitor browsing the catalog: no row, so
+  # the first run (`Gamend.Quests.counter/1`).
   def translate(%Quest{} = quest) do
-    bindings = %{n: quest.counter || 1}
+    bindings = %{n: Gamend.Quests.counter(quest)}
 
     %{quest | title: t(quest.title, bindings), description: t(quest.description, bindings)}
   end

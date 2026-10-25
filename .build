@@ -87,6 +87,10 @@ Gamend.Economy.Wallet.html
 Gamend.Economy.html
 Gamend.Friends.Friendship.html
 Gamend.Friends.html
+Gamend.GitHub.API.html
+Gamend.GitHub.Installation.html
+Gamend.GitHub.Manifest.html
+Gamend.GitHub.html
 Gamend.Groups.Group.html
 Gamend.Groups.GroupInvite.html
 Gamend.Groups.GroupJoinRequest.html
@@ -255,8 +259,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-14037F03.js
-dist/sidebar_items-8D7884EC.js
+dist/search_data-9E7FB221.js
+dist/sidebar_items-5D0BF338.js
 index.html
 readme.html
 search.html

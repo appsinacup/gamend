@@ -1,4 +1,4 @@
-# gamend_core v1.1.1358 - API Reference
+# gamend_core v1.1.1359 - API Reference
 
 ## Modules
 
@@ -65,6 +65,13 @@ L2 cache.
 - [Gamend.Database](Gamend.Database.md): Connection and tuning settings for `Gamend.Repo`.
 - [Gamend.DemoSeed](Gamend.DemoSeed.md): Fills the database with enough demo data to exercise pagination and the
 list/detail pages at realistic sizes.
+- [Gamend.GitHub](Gamend.GitHub.md): The server's GitHub App: who may use which installation, the credentials a
+job borrows from it, and what its webhook means.
+- [Gamend.GitHub.API](Gamend.GitHub.API.md): The GitHub REST calls a GitHub App makes, and the credentials that make
+them.
+- [Gamend.GitHub.Installation](Gamend.GitHub.Installation.md): One user's access to one installation of the GitHub App.
+- [Gamend.GitHub.Manifest](Gamend.GitHub.Manifest.md): The server's GitHub App, described once, so GitHub creates it rather than a
+person filling in a form.
 - [Gamend.HTTP](Gamend.HTTP.md): `Req` with the declared timeout and retries, for the calls core makes to other
 services while a player waits: payment receipt checks (Apple, Google Play,
 Steam), OAuth code exchanges, Google ID-token checks and avatar mirroring.

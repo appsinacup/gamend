@@ -86,6 +86,10 @@ Gamend.Economy.Wallet.md
 Gamend.Economy.md
 Gamend.Friends.Friendship.md
 Gamend.Friends.md
+Gamend.GitHub.API.md
+Gamend.GitHub.Installation.md
+Gamend.GitHub.Manifest.md
+Gamend.GitHub.md
 Gamend.Groups.Group.md
 Gamend.Groups.GroupInvite.md
 Gamend.Groups.GroupJoinRequest.md

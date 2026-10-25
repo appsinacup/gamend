@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.40.4">
+    <meta name="project" content="gamend_core v1.1.1359">
+
+
+    <title>Gamend.GitHub — gamend_core v1.1.1359</title>
+
+    <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
+
+    <script defer src="dist/sidebar_items-5D0BF338.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-MI33G4N7.js"></script>
+
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
+
+<div class="body-wrapper">
+
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<nav id="sidebar" class="sidebar">
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
+
+      <div>
+        <a href="readme.html" class="sidebar-projectName" translate="no">
+gamend_core
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v1.1.1359
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras="Pages"></ul>
+  </div>
+</nav>
+
+<output role="status" id="toast"></output>
+
+<main class="content page-module" id="main" data-type="modules">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of gamend_core</span>
+            <div class="search-input-wrapper">
+              <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+                <i class="ri-close-line ri-lg" title="Cancel search"></i>
+              </button>
+            </div>
+          </label>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <div class="engine-selector" data-multiple="false">
+          <button type="button" class="engine-button" aria-label="Select search engine" aria-haspopup="true" aria-expanded="false">
+            <i class="ri-search-2-line" aria-hidden="true"></i>
+            <span class="engine-name">Default</span>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </button>
+          <div class="engine-dropdown" hidden role="menu">
+
+              <button type="button"
+                      class="engine-option"
+                      data-engine-url="search.html?q="
+                      role="menuitemradio"
+                      aria-checked="true">
+                <span class="name">Default</span>
+                <span class="help">In-browser search</span>
+              </button>
+
+          </div>
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
+
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>
+      <span translate="no">Gamend.<wbr />GitHub</span> 
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1359)</small>
+
+    </h1>
+
+<a href="Gamend.GitHub.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
+  <i class="ri-markdown-line" aria-hidden="true"></i>
+  <span class="sr-only">Copy Markdown</span>
+</a>
+
+
+
+      <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L1" title="View Source" class="icon-action" rel="help nofollow">
+        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        <span class="sr-only">View Source</span>
+      </a>
+
+  </div>
+
+
+    <section id="moduledoc">
+<p>The server's GitHub App: who may use which installation, the credentials a
+job borrows from it, and what its webhook means.</p><p>For a host that works on its customers' repositories: Forge builds them,
+Gamend Cloud builds a server from one. Core keeps what every such host
+needs (the App's settings, its tokens, the installations a user connected,
+the connect flow at <code class="inline">/github/*</code>, <code class="inline">/admin/github</code>, <code class="inline">mix gamend.github.app</code>);
+the host keeps what it binds to a repository (a project, a server) and the
+webhook route that acts on it.</p><h2 id="module-two-credentials-two-owners" class="section-heading"><a href="#module-two-credentials-two-owners" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Two credentials, two owners</span></h2><p>The App's OAuth client id and secret are its identity to a <em>person</em>:
+<a href="Gamend.OAuth.Providers.html"><code class="inline">Gamend.OAuth.Providers</code></a> declares them as <code class="inline">github</code>, so &quot;Log in with GitHub&quot;
+is the same App, and the connect flow here reads the same pair. The App id,
+slug and private key are what mint installation tokens, and are declared on
+this module (<code class="inline">GAMEND_GITHUB_*</code>). Both are operator configuration; neither
+is a customer's, so neither lives in <a href="Gamend.Secrets.html"><code class="inline">Gamend.Secrets</code></a>.</p><h2 id="module-who-may-use-an-installation" class="section-heading"><a href="#module-who-may-use-an-installation" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Who may use an installation</span></h2><p>GitHub decides. After the App is installed, <code class="inline">GET /user/installations</code> with
+the person's own token lists the installations that person may see, and
+those rows, only those, become theirs in <code class="inline">github_installations</code>. Trusting
+the <code class="inline">installation_id</code> GitHub appends to the setup redirect would let anyone
+type a number into a URL and claim somebody else's organisation. A host
+that binds something to an installation checks <a href="#get_installation/2"><code class="inline">get_installation/2</code></a> first.</p><h2 id="module-where-the-token-goes" class="section-heading"><a href="#module-where-the-token-goes" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Where the token goes</span></h2><p>Into <code class="inline">git</code>'s environment (<a href="#git_env/1"><code class="inline">git_env/1</code></a>), and nowhere else. A clone URL
+carrying it is written to the clone's <code class="inline">.git/config</code>, which a build may
+read; a log that prints the repository URL never had it.</p><h2 id="module-the-webhook" class="section-heading"><a href="#module-the-webhook" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">The webhook</span></h2><p>The App has one webhook URL, the host's route. The host verifies a delivery
+with <a href="#verify_webhook/2"><code class="inline">verify_webhook/2</code></a> over the raw body, hands every verified one to
+<a href="#installation_event/2"><code class="inline">installation_event/2</code></a> (which keeps this module's rows in step and says
+what the host has to unbind), and reads a push with <a href="#push_event/1"><code class="inline">push_event/1</code></a>.</p>
+    </section>
+
+</div>
+
+  <section id="summary" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h2>
+<div class="summary-functions summary">
+  <h3>
+    <a href="#functions">Functions</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#app_jwt/0" data-no-tooltip="" translate="no">app_jwt()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A fresh App JWT. Never cached: it is cheap and ten minutes long. Logged at
+error level when the configured key cannot sign one, since nothing that
+asked for it can work until the operator fixes the setting.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#authorize_url/2" data-no-tooltip="" translate="no">authorize_url(state, redirect_uri)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Where to send a person so GitHub can tell us which installations are
+theirs. <code class="inline">state</code> is the OAuth session id the callback consumes;
+<code class="inline">redirect_uri</code> is the callback, registered on the App.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#config/1" data-no-tooltip="" translate="no">config(key)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Read one of this group's settings.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#configured?/0" data-no-tooltip="" translate="no">configured?()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether the App is set up end to end: its own three settings, and the
+client pair that the connect flow and the login button both use.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#count_all_installations/0" data-no-tooltip="" translate="no">count_all_installations()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How many installations the server holds, across every user.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#count_installations/1" data-no-tooltip="" translate="no">count_installations(user_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Count for <a href="#list_installations/1"><code class="inline">list_installations/1</code></a>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#forget_installation_token/1" data-no-tooltip="" translate="no">forget_installation_token(installation_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Drop a cached installation token. An uninstalled App's token is dead on
+GitHub's side already; this stops a job in flight from trying it.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#get_installation/2" data-no-tooltip="" translate="no">get_installation(arg1, installation_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>One of a user's installations, by GitHub's id. <code class="inline">nil</code> if it is not theirs.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#git_env/1" data-no-tooltip="" translate="no">git_env(installation_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The environment a <code class="inline">git</code> needs to clone through an installation.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#install_url/0" data-no-tooltip="" translate="no">install_url()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Where a customer installs the App on their account or organisation.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#installation_deleted/1" data-no-tooltip="" translate="no">installation_deleted(installation_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The App was uninstalled: every user's row for it goes, and its cached token.
+What the host bound to it is the host's to unbind (<a href="#installation_event/2"><code class="inline">installation_event/2</code></a>
+answers <code class="inline">{:deleted, id}</code>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#installation_event/2" data-no-tooltip="" translate="no">installation_event(arg1, payload)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The App's own lifecycle, from a verified delivery's <code class="inline">X-GitHub-Event</code> and
+payload. This module's rows follow it here; the answer is what the host
+has to unbind</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#installation_suspended/2" data-no-tooltip="" translate="no">installation_suspended(installation_id, at)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Record that GitHub suspended, or reinstated, an installation.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#installation_token/1" data-no-tooltip="" translate="no">installation_token(installation_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>An installation token, cached until five minutes before GitHub expires it.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#link_installations/3" data-no-tooltip="" translate="no">link_installations(map, code, redirect_uri)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Turn the code a person brought back into their installations.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#list_all_installations/1" data-no-tooltip="" translate="no">list_all_installations(opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Every installation on this server, newest first, for <code class="inline">/admin/github</code>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#list_installations/1" data-no-tooltip="" translate="no">list_installations(user_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The installations a user connected, by account name.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#push_event/1" data-no-tooltip="" translate="no">push_event(payload)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>What a <code class="inline">push</code> payload means: the ref and commit pushed, the branch when it
+is one, and the repository by GitHub's id and its URLs.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#repositories/2" data-no-tooltip="" translate="no">repositories(user, installation_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The repositories a user's installation may reach, for a picker. Only the
+fields a form needs, so a GitHub response shape change stays out here.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#repository/3" data-no-tooltip="" translate="no">repository(user, installation_id, repo_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>One repository of a user's installation, by GitHub's id: GitHub's answer,
+so a host binds only a repository the installation really reaches.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#unlink_installation/2" data-no-tooltip="" translate="no">unlink_installation(map, installation_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Forget one of a user's installations. The App stays installed on GitHub.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#usage/0" data-no-tooltip="" translate="no">usage()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>What the host's usage callback answers, or <code class="inline">nil</code> when it counts nothing
+(<a href="#list_all_installations/1"><code class="inline">list_all_installations/1</code></a>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#verify_webhook/2" data-no-tooltip="" translate="no">verify_webhook(raw_body, arg2)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Verify a delivery's <code class="inline">X-Hub-Signature-256</code> against the raw request body.</p></div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="functions" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h2>
+
+    <div class="functions-list">
+<section class="detail" id="app_jwt/0">
+
+  <div class="detail-header">
+    <a href="#app_jwt/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">app_jwt()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L113" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> app_jwt() :: {:ok, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()} | {:error, :invalid_private_key}</pre>
+
+      </div>
+
+<p>A fresh App JWT. Never cached: it is cheap and ten minutes long. Logged at
+error level when the configured key cannot sign one, since nothing that
+asked for it can work until the operator fixes the setting.</p>
+  </section>
+</section>
+<section class="detail" id="authorize_url/2">
+
+  <div class="detail-header">
+    <a href="#authorize_url/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">authorize_url(state, redirect_uri)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L197" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> authorize_url(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+
+      </div>
+
+<p>Where to send a person so GitHub can tell us which installations are
+theirs. <code class="inline">state</code> is the OAuth session id the callback consumes;
+<code class="inline">redirect_uri</code> is the callback, registered on the App.</p>
+  </section>
+</section>
+<section class="detail" id="config/1">
+
+  <div class="detail-header">
+    <a href="#config/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">config(key)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L87" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> config(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()</pre>
+
+      </div>
+
+<p>Read one of this group's settings.</p>
+  </section>
+</section>
+<section class="detail" id="configured?/0">
+
+  <div class="detail-header">
+    <a href="#configured?/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">configured?()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L94" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> configured?() :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether the App is set up end to end: its own three settings, and the
+client pair that the connect flow and the login button both use.</p>
+  </section>
+</section>
+<section class="detail" id="count_all_installations/0">
+
+  <div class="detail-header">
+    <a href="#count_all_installations/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">count_all_installations()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L309" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> count_all_installations() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+
+      </div>
+
+<p>How many installations the server holds, across every user.</p>
+  </section>
+</section>
+<section class="detail" id="count_installations/1">
+
+  <div class="detail-header">
+    <a href="#count_installations/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">count_installations(user_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L334" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> count_installations(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+
+      </div>
+
+<p>Count for <a href="#list_installations/1"><code class="inline">list_installations/1</code></a>.</p>
+  </section>
+</section>
+<section class="detail" id="forget_installation_token/1">
+
+  <div class="detail-header">
+    <a href="#forget_installation_token/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">forget_installation_token(installation_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L158" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> forget_installation_token(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Drop a cached installation token. An uninstalled App's token is dead on
+GitHub's side already; this stops a job in flight from trying it.</p>
+  </section>
+</section>
+<section class="detail" id="get_installation/2">
+
+  <div class="detail-header">
+    <a href="#get_installation/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">get_installation(arg1, installation_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L340" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> get_installation(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>()) ::
+  <a href="Gamend.GitHub.Installation.html#t:t/0">Gamend.GitHub.Installation.t</a>() | nil</pre>
+
+      </div>
+
+<p>One of a user's installations, by GitHub's id. <code class="inline">nil</code> if it is not theirs.</p>
+  </section>
+</section>
+<section class="detail" id="git_env/1">
+
+  <div class="detail-header">
+    <a href="#git_env/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">git_env(installation_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L173" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> git_env(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>() | nil) :: {:ok, [{<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}]} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>The environment a <code class="inline">git</code> needs to clone through an installation.</p><p>Empty for none. Otherwise the token rides in as an <code class="inline">http.extraheader</code> for
+github.com only: <code class="inline">git</code> reads it, nothing the clone writes holds it, and
+<code class="inline">ps</code> shows only the variable names. Prompting is switched off so a token
+GitHub refuses fails the clone rather than hanging the job.</p>
+  </section>
+</section>
+<section class="detail" id="install_url/0">
+
+  <div class="detail-header">
+    <a href="#install_url/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">install_url()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L103" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> install_url() :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+
+      </div>
+
+<p>Where a customer installs the App on their account or organisation.</p>
+  </section>
+</section>
+<section class="detail" id="installation_deleted/1">
+
+  <div class="detail-header">
+    <a href="#installation_deleted/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">installation_deleted(installation_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L362" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> installation_deleted(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>()) :: :ok</pre>
+
+      </div>
+
+<p>The App was uninstalled: every user's row for it goes, and its cached token.
+What the host bound to it is the host's to unbind (<a href="#installation_event/2"><code class="inline">installation_event/2</code></a>
+answers <code class="inline">{:deleted, id}</code>).</p>
+  </section>
+</section>
+<section class="detail" id="installation_event/2">
+
+  <div class="detail-header">
+    <a href="#installation_event/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">installation_event(arg1, payload)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L532" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> installation_event(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
+  {:deleted, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>()} | {:repositories_removed, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>(), [<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>()]} | :ok</pre>
+
+      </div>
+
+<p>The App's own lifecycle, from a verified delivery's <code class="inline">X-GitHub-Event</code> and
+payload. This module's rows follow it here; the answer is what the host
+has to unbind:</p><ul><li><code class="inline">{:deleted, installation_id}</code>: the App was uninstalled;</li><li><code class="inline">{:repositories_removed, installation_id, repo_ids}</code>: the installation
+no longer reaches those repositories;</li><li><code class="inline">:ok</code>: nothing for the host (a suspension, any other event).</li></ul><p>An uninstall is the customer withdrawing access, so what borrowed it stops
+the moment GitHub says so rather than at the next failed clone.</p>
+  </section>
+</section>
+<section class="detail" id="installation_suspended/2">
+
+  <div class="detail-header">
+    <a href="#installation_suspended/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">installation_suspended(installation_id, at)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L374" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> installation_suspended(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>(), <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>() | nil) :: :ok</pre>
+
+      </div>
+
+<p>Record that GitHub suspended, or reinstated, an installation.</p>
+  </section>
+</section>
+<section class="detail" id="installation_token/1">
+
+  <div class="detail-header">
+    <a href="#installation_token/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">installation_token(installation_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L132" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> installation_token(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>()) :: {:ok, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>An installation token, cached until five minutes before GitHub expires it.</p><p>Cached under <a href="Gamend.Cache.html"><code class="inline">Gamend.Cache</code></a> rather than in the process: jobs for one
+installation run in parallel and each would otherwise mint its own, and
+GitHub counts those against the App.</p>
+  </section>
+</section>
+<section class="detail" id="link_installations/3">
+
+  <div class="detail-header">
+    <a href="#link_installations/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">link_installations(map, code, redirect_uri)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L213" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> link_installations(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
+  {:ok, [<a href="Gamend.GitHub.Installation.html#t:t/0">Gamend.GitHub.Installation.t</a>()]} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Turn the code a person brought back into their installations.</p><p>The user token is used for exactly one request and dropped: nothing here
+needs to act as the person later, and a token that is not stored cannot
+leak. What is kept is GitHub's answer, the installations, written as this
+user's. Ones GitHub no longer lists are removed, so revoking access on
+GitHub's side is enough to revoke it here.</p>
+  </section>
+</section>
+<section class="detail" id="list_all_installations/1">
+
+    <span id="list_all_installations/0"></span>
+
+  <div class="detail-header">
+    <a href="#list_all_installations/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">list_all_installations(opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L282" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> list_all_installations(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()]</pre>
+
+      </div>
+
+<p>Every installation on this server, newest first, for <code class="inline">/admin/github</code>.</p><p>Each row carries the user who connected it and, when the host counts them
+(<code class="inline">config :gamend_core, :github_usage, {module, function}</code>, answering
+<code class="inline">%{installation_id =&gt; count}</code>), how many of the host's things use it in
+<code class="inline">uses</code> (<code class="inline">nil</code> when the host counts nothing). A suspended or unused
+installation is then visible as such: the first is GitHub's doing and the
+second is a customer who left.</p>
+  </section>
+</section>
+<section class="detail" id="list_installations/1">
+
+  <div class="detail-header">
+    <a href="#list_installations/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">list_installations(user_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L325" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> list_installations(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: [<a href="Gamend.GitHub.Installation.html#t:t/0">Gamend.GitHub.Installation.t</a>()]</pre>
+
+      </div>
+
+<p>The installations a user connected, by account name.</p>
+  </section>
+</section>
+<section class="detail" id="push_event/1">
+
+  <div class="detail-header">
+    <a href="#push_event/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">push_event(payload)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L477" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> push_event(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
+  {:ok,
+   %{
+     ref: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(),
+     branch: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil,
+     sha: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(),
+     repo_id: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>() | nil,
+     repo_urls: [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]
+   }}
+  | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
+
+      </div>
+
+<p>What a <code class="inline">push</code> payload means: the ref and commit pushed, the branch when it
+is one, and the repository by GitHub's id and its URLs.</p><p>A delete carries no commit and is <code class="inline">{:error, :deleted}</code>.</p>
+  </section>
+</section>
+<section class="detail" id="repositories/2">
+
+  <div class="detail-header">
+    <a href="#repositories/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">repositories(user, installation_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L390" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> repositories(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>()) ::
+  {:ok, [<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()]} | {:error, :not_linked | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>The repositories a user's installation may reach, for a picker. Only the
+fields a form needs, so a GitHub response shape change stays out here.</p>
+  </section>
+</section>
+<section class="detail" id="repository/3">
+
+  <div class="detail-header">
+    <a href="#repository/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">repository(user, installation_id, repo_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L404" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> repository(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>()) ::
+  {:ok, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()} | {:error, :not_linked | :not_found | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>One repository of a user's installation, by GitHub's id: GitHub's answer,
+so a host binds only a repository the installation really reaches.</p>
+  </section>
+</section>
+<section class="detail" id="unlink_installation/2">
+
+  <div class="detail-header">
+    <a href="#unlink_installation/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">unlink_installation(map, installation_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L348" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> unlink_installation(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Forget one of a user's installations. The App stays installed on GitHub.</p>
+  </section>
+</section>
+<section class="detail" id="usage/0">
+
+  <div class="detail-header">
+    <a href="#usage/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">usage()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L316" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> usage() :: %{required(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">integer</a>()) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()} | nil</pre>
+
+      </div>
+
+<p>What the host's usage callback answers, or <code class="inline">nil</code> when it counts nothing
+(<a href="#list_all_installations/1"><code class="inline">list_all_installations/1</code></a>).</p>
+  </section>
+</section>
+<section class="detail" id="verify_webhook/2">
+
+  <div class="detail-header">
+    <a href="#verify_webhook/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">verify_webhook(raw_body, arg2)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/github.ex#L435" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> verify_webhook(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">binary</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
+
+      </div>
+
+<p>Verify a delivery's <code class="inline">X-Hub-Signature-256</code> against the raw request body.</p><p>Over the raw body, in constant time, and never over the parsed params,
+which are a re-encoding and would let a crafted payload pass a check its
+own bytes would fail. Refuses when no secret is configured: an endpoint
+anyone can POST to and that starts work must not be open by default.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+    <footer class="footer">
+
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/gamend_core/1.1.1359">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1359">Hex Preview</a>
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Go to package docs">
+              Go to package docs
+            </button>
+
+              <a href="llms.txt" target="_blank">
+                View llms.txt
+              </a>
+
+
+              <a href="gamend_core.epub">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.4) for the
+
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
+
+        </p>
+
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
+</html>

@@ -243,6 +243,7 @@ Mix.Tasks.Demo.Seed.html
 Mix.Tasks.Gamend.Api.Lint.html
 Mix.Tasks.Gamend.Content.Extract.html
 Mix.Tasks.Gamend.Content.MigrateMetadata.html
+Mix.Tasks.Gamend.Gen.Dockerfile.html
 Mix.Tasks.Gamend.Settings.EnvExample.html
 Mix.Tasks.Gamend.Settings.Guide.html
 Mix.Tasks.Gamend.Stripe.Setup.html
@@ -260,8 +261,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-7B6B1C11.js
-dist/sidebar_items-B190B392.js
+dist/search_data-1ECEF127.js
+dist/sidebar_items-97F1C63C.js
 index.html
 readme.html
 search.html

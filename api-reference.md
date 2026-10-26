@@ -1,4 +1,4 @@
-# gamend_core v1.1.1361 - API Reference
+# gamend_core v1.1.1362 - API Reference
 
 ## Modules
 
@@ -455,6 +455,8 @@ options; a release runs the same code as `gamend demo.seed`.
 - [mix gamend.content.extract](Mix.Tasks.Gamend.Content.Extract.md): Writes `content.pot` from the titles and descriptions stored on quests,
 leaderboards and tournaments.
 - [mix gamend.content.migrate_metadata](Mix.Tasks.Gamend.Content.MigrateMetadata.md): One-shot migration for instances that stored translations in the database.
+- [mix gamend.gen.dockerfile](Mix.Tasks.Gamend.Gen.Dockerfile.md): Writes `Dockerfile` from Gamend's one template, filled in from the app's
+own `mix.exs`, so Gamend, the starter and every host build the same way.
 - [mix gamend.settings.env_example](Mix.Tasks.Gamend.Settings.EnvExample.md): Writes `.env.example` from `Gamend.Settings.all/0`, grouped and
 commented from each setting's declaration.
 - [mix gamend.settings.guide](Mix.Tasks.Gamend.Settings.Guide.md): Writes the public Settings guide from `Gamend.Settings.all/0`.

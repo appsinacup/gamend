@@ -173,6 +173,18 @@ exit status and the end of its output, and `{:build_timeout, log}`.
 
 Copy `path` out of a container, running or stopped, to `dest` on this machine.
 
+# `copy_tar`
+
+```elixir
+@spec copy_tar(String.t(), String.t(), Path.t()) :: :ok | {:error, term()}
+```
+
+The tree at `path` in a container, running or stopped, as a tar archive in
+the file `dest` on this machine (`podman cp … -`), written as podman
+produces it and never held in memory: a volume's files handed over whole,
+however large. `{:error, :not_found}` for a container or a path that is
+not there.
+
 # `create`
 
 ```elixir

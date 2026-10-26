@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1361">
+    <meta name="project" content="gamend_core v1.1.1362">
 
 
-    <title>Gamend.Containers — gamend_core v1.1.1361</title>
+    <title>Gamend.Containers — gamend_core v1.1.1362</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-B190B392.js"></script>
+    <script defer src="dist/sidebar_items-97F1C63C.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1361
+          v1.1.1362
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Containers</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1361)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1362)</small>
 
     </h1>
 
@@ -215,6 +215,20 @@ it <code class="inline">tag:</code>. Answers the image's id and the end of the b
       </div>
 
         <div class="summary-synopsis"><p>Copy <code class="inline">path</code> out of a container, running or stopped, to <code class="inline">dest</code> on this machine.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#copy_tar/3" data-no-tooltip="" translate="no">copy_tar(name, path, dest)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The tree at <code class="inline">path</code> in a container, running or stopped, as a tar archive in
+the file <code class="inline">dest</code> on this machine (<code class="inline">podman cp … -</code>), written as podman
+produces it and never held in memory: a volume's files handed over whole,
+however large. <code class="inline">{:error, :not_found}</code> for a container or a path that is
+not there.</p></div>
 
     </div>
 
@@ -750,6 +764,38 @@ exit status and the end of its output, and <code class="inline">{:build_timeout,
 <p>Copy <code class="inline">path</code> out of a container, running or stopped, to <code class="inline">dest</code> on this machine.</p>
   </section>
 </section>
+<section class="detail" id="copy_tar/3">
+
+  <div class="detail-header">
+    <a href="#copy_tar/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">copy_tar(name, path, dest)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L691" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> copy_tar(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/Path.html#t:t/0">Path.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>The tree at <code class="inline">path</code> in a container, running or stopped, as a tar archive in
+the file <code class="inline">dest</code> on this machine (<code class="inline">podman cp … -</code>), written as podman
+produces it and never held in memory: a volume's files handed over whole,
+however large. <code class="inline">{:error, :not_found}</code> for a container or a path that is
+not there.</p>
+  </section>
+</section>
 <section class="detail" id="create/1">
 
   <div class="detail-header">
@@ -884,7 +930,7 @@ and stderr together. A non-zero exit is <code class="inline">{:podman_failed, :e
       <h1 class="signature" translate="no">executable()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L801" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L835" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -970,7 +1016,7 @@ it streams through a port as it comes.</p>
       <h1 class="signature" translate="no">inspect_image(image, format)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L688" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L722" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1537,7 +1583,7 @@ limit (<code class="inline">memory.max</code> read <code class="inline">max</cod
       <h1 class="signature" translate="no">write_env_file(path, env)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L869" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L903" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1570,9 +1616,9 @@ the file once podman has read it.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1361">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1362">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1361">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1362">Hex Preview</a>
 
             </span>
 

@@ -242,6 +242,7 @@ Mix.Tasks.Demo.Seed.md
 Mix.Tasks.Gamend.Api.Lint.md
 Mix.Tasks.Gamend.Content.Extract.md
 Mix.Tasks.Gamend.Content.MigrateMetadata.md
+Mix.Tasks.Gamend.Gen.Dockerfile.md
 Mix.Tasks.Gamend.Settings.EnvExample.md
 Mix.Tasks.Gamend.Settings.Guide.md
 Mix.Tasks.Gamend.Stripe.Setup.md

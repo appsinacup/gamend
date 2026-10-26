@@ -14,6 +14,8 @@ context remains the source of truth for what a user owns inside the game.
 
 # `cancel_stripe_subscription_at_period_end`
 
+# `change_stripe_subscription`
+
 # `count_catalog`
 
 ```elixir

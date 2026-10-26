@@ -168,6 +168,7 @@ Gamend.Payments.ReconciliationCursor.md
 Gamend.Payments.Settings.md
 Gamend.Payments.StoreEvents.md
 Gamend.Payments.StripeEvents.md
+Gamend.Payments.StripePlanChange.md
 Gamend.Payments.StripeRefunds.md
 Gamend.Payments.StripeSetup.md
 Gamend.Payments.StripeSweeper.md

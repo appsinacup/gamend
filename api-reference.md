@@ -1,4 +1,4 @@
-# gamend_core v1.1.1360 - API Reference
+# gamend_core v1.1.1361 - API Reference
 
 ## Modules
 
@@ -290,6 +290,9 @@ them once, and applying what they say to purchases and entitlements.
   - [Gamend.Payments.StripeEvents](Gamend.Payments.StripeEvents.md): Stripe: starting a checkout, and keeping purchases and entitlements in step
 with what Stripe says — webhooks as they arrive, reconciliation when one was
 missed, and cancelling a subscription at the end of its period.
+  - [Gamend.Payments.StripePlanChange](Gamend.Payments.StripePlanChange.md): Moving a running Stripe subscription to another product of the same period:
+a hosted server's size, a tier of a monthly plan. Not a longer plan
+(monthly to yearly), which is a new checkout (`Gamend.Payments.Upgrades`).
   - [Gamend.Payments.StripeRefunds](Gamend.Payments.StripeRefunds.md): Refunding a Stripe purchase in full: the buyer's own, within
 `refund_window_days` of paying (account settings, Payments), or any Stripe
 purchase from the admin page.

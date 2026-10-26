@@ -12,6 +12,19 @@ no final invoice (`prorate`/`invoice_now` false, Stripe's defaults, sent so
 a changed default cannot add a credit on top of a refund). Stripe then
 sends `customer.subscription.deleted`.
 
+# `change_subscription_price`
+
+Moves a subscription's item `item_id` to the price `price_id`: a plan
+change. Prorated and invoiced at once (`always_invoice`), so a dearer price
+is charged its difference for the rest of the period now and a cheaper one
+leaves a credit on the customer's balance for the next invoices.
+`error_if_incomplete`: when that invoice cannot be paid, Stripe answers an
+error and the subscription stays as it was.
+
+`end_trial: true` ends a trial now (`trial_end: "now"`), so the new price
+is charged in full from today. `idempotency_key:` makes a retry of the
+same change answer the first one's result.
+
 # `create_billing_portal_session`
 
 A Stripe customer-portal session for `customer_id`: the Stripe-hosted page

@@ -169,6 +169,7 @@ Gamend.Payments.ReconciliationCursor.html
 Gamend.Payments.Settings.html
 Gamend.Payments.StoreEvents.html
 Gamend.Payments.StripeEvents.html
+Gamend.Payments.StripePlanChange.html
 Gamend.Payments.StripeRefunds.html
 Gamend.Payments.StripeSetup.html
 Gamend.Payments.StripeSweeper.html
@@ -259,8 +260,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-9E7FB221.js
-dist/sidebar_items-5D0BF338.js
+dist/search_data-7B6B1C11.js
+dist/sidebar_items-B190B392.js
 index.html
 readme.html
 search.html

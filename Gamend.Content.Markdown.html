@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1363">
+    <meta name="project" content="gamend_core v1.1.1364">
 
 
-    <title>Gamend.Content.Markdown — gamend_core v1.1.1363</title>
+    <title>Gamend.Content.Markdown — gamend_core v1.1.1364</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1363
+          v1.1.1364
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Content.<wbr />Markdown</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1363)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1364)</small>
 
     </h1>
 
@@ -117,9 +117,9 @@ gamend_core
 <p>Markdown to HTML, the way every collection renders it.</p><p>One pipeline: strip the frontmatter, mend table separators, parse with
 MDEx, rewrite the tree — code-language aliases, mermaid fences,
 admonitions, links written to a neighbouring <code class="inline">.md</code> — render through the
-sanitiser, then fix up image paths on the HTML.</p><p>The rewrites work on <a href="https://mdex.hexdocs.pm/0.14.2/MDEx.Document.html"><code class="inline">MDEx.Document</code></a> nodes rather than on rendered HTML: a
-fence inside a list item is still a <a href="https://mdex.hexdocs.pm/0.14.2/MDEx.CodeBlock.html"><code class="inline">MDEx.CodeBlock</code></a>, a <code class="inline">:::tip</code> inside a
-quote still a <a href="https://mdex.hexdocs.pm/0.14.2/MDEx.BlockDirective.html"><code class="inline">MDEx.BlockDirective</code></a>, and a link's <code class="inline">url</code> is a field rather
+sanitiser, then fix up image paths on the HTML.</p><p>The rewrites work on <a href="https://mdex.hexdocs.pm/0.14.3/MDEx.Document.html"><code class="inline">MDEx.Document</code></a> nodes rather than on rendered HTML: a
+fence inside a list item is still a <a href="https://mdex.hexdocs.pm/0.14.3/MDEx.CodeBlock.html"><code class="inline">MDEx.CodeBlock</code></a>, a <code class="inline">:::tip</code> inside a
+quote still a <a href="https://mdex.hexdocs.pm/0.14.3/MDEx.BlockDirective.html"><code class="inline">MDEx.BlockDirective</code></a>, and a link's <code class="inline">url</code> is a field rather
 than an attribute a regex has to find. The one pass left on the HTML is the
 image one, because a <code class="inline">&lt;figure&gt;</code> written in raw HTML carries an <code class="inline">&lt;img&gt;</code> no
 node stands for, and every image gets the same <code class="inline">loading</code>/<code class="inline">decoding</code>
@@ -131,8 +131,8 @@ nothing that runs. Content is the operator's own files, so the sanitiser
 is a guard against a pasted snippet, not against an adversary; it stays on
 because a rule that is on for everyone is a rule nobody has to remember.</p><h2 id="module-admonitions" class="section-heading"><a href="#module-admonitions" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Admonitions</span></h2><p>Two spellings, one markup. <code class="inline">:::tip[Title]</code> … <code class="inline">:::</code> is what Docusaurus
 authors write; <code class="inline">&gt; [!TIP]</code> is GitHub's. MDEx parses the first as a
-<a href="https://mdex.hexdocs.pm/0.14.2/MDEx.BlockDirective.html"><code class="inline">MDEx.BlockDirective</code></a> whose <code class="inline">info</code> is <code class="inline">tip[Title]</code> and the second as a
-<a href="https://mdex.hexdocs.pm/0.14.2/MDEx.Alert.html"><code class="inline">MDEx.Alert</code></a>. Both become a directive rendered as
+<a href="https://mdex.hexdocs.pm/0.14.3/MDEx.BlockDirective.html"><code class="inline">MDEx.BlockDirective</code></a> whose <code class="inline">info</code> is <code class="inline">tip[Title]</code> and the second as a
+<a href="https://mdex.hexdocs.pm/0.14.3/MDEx.Alert.html"><code class="inline">MDEx.Alert</code></a>. Both become a directive rendered as
 <code class="inline">&lt;div class=&quot;admonition admonition-tip&quot;&gt;</code> with a
 <code class="inline">&lt;p class=&quot;admonition-title&quot;&gt;</code> as its first child, which is the one thing
 a stylesheet has to know. A raw <code class="inline">&lt;div class=&quot;note&quot;&gt;</code> an author wrote is
@@ -582,9 +582,9 @@ puts the id first on the heading tag, so the pattern is stable.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1363">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1364">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1363">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1364">Hex Preview</a>
 
             </span>
 

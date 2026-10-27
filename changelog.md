@@ -1,5 +1,6 @@
 # October 2026
 
+- [fixed] **`Gamend.Containers` failures say what podman said.** A usage error ends with `See 'podman create --help'`, and that hint was the whole reason (`{:podman_failed, :create, 125, "See 'podman create --help'"}`); the line before it is kept now (`Error: unknown flag: --runtime`).
 - [added] **One-screen pages.** `<Layouts.app screen>` draws no footer and no landing for one under the content, and the page neither bounces at its ends nor pulls to refresh (`overscroll-behavior-y: none` on the root): a game or a test scrolls only as far as its own content, and a tap that drags a little moves nothing.
 - [changed] **The phone's tab bar is one row.** Each tab's label stays on one line, the tab as wide as its label and the room left shared out, cut short only where the tabs cannot all fit; the bar is 3.75rem, and the page is padded by that. **Hosts:** an element kept above the bar (`sticky`, `fixed`) sits `calc(3.75rem + env(safe-area-inset-bottom))` from the bottom.
 - [added] **`Gamend.Containers.copy_tar/3`**: a folder of a container, running or stopped, as a tar archive written straight to a file as podman produces it, never held in memory (`{:error, :not_found}` for a path that is not there). Gamend Cloud hands a server's stored files over with it.

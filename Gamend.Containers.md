@@ -21,7 +21,8 @@ Every call answers `{:error, reason}` on an expected failure:
   * `:not_found` — no such container, volume, network, image or build
     context.
   * `{:podman_failed, verb, status, line}` — the CLI exited non-zero; `line`
-    is its last line of output, which is where podman puts the reason.
+    is its last line of output, which is where podman puts the reason
+    (before a usage error's `See 'podman … --help'`, which is skipped).
 
 A build answers its own, since its reason is a compiler's output, not
 podman's last line (`build/2`).

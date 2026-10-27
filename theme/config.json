@@ -114,7 +114,8 @@
             {
               "label": "Register",
               "href": "/users/register",
-              "icon": "hero-user-plus-solid"
+              "icon": "hero-user-plus-solid",
+              "feature": "web_registration"
             }
           ]
         },

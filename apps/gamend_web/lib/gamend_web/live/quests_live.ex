@@ -328,6 +328,13 @@ defmodule GamendWeb.QuestsLive do
   defp register_href(locale),
     do: GamendWeb.HostLayouts.localized_href(~p"/users/register", locale)
 
+  # A guest's claimable card leads to the registration page. With
+  # `web_registration` off they register in the game, so it leads nowhere and
+  # its "Register to claim" says why.
+  defp register_click do
+    if GamendWeb.Features.enabled?(:web_registration), do: :register
+  end
+
   # Keep an open chain modal current when quest data changes underneath it
   # (a claim, a PubSub progress event). Closes it if the chain dissolved.
   defp refresh_chain(socket) do
@@ -991,7 +998,7 @@ defmodule GamendWeb.QuestsLive do
     click =
       cond do
         assigns.logged_in and claimable and is_nil(lock_label) and assigns.must_register ->
-          :register
+          register_click()
 
         assigns.logged_in and claimable and is_nil(lock_label) ->
           :claim

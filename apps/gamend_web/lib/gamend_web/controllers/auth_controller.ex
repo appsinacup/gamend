@@ -379,7 +379,7 @@ defmodule GamendWeb.AuthController do
         end
 
       _ ->
-        case config.finder.(user_params) do
+        case find_or_create_for_browser(config, user_params) do
           {:ok, user} ->
             if Accounts.user_activated?(user) do
               conn
@@ -394,6 +394,14 @@ defmodule GamendWeb.AuthController do
               |> redirect(to: ~p"/users/log_in")
             end
 
+          {:error, :web_registration_off} ->
+            require Logger
+            Logger.info("#{config.label} sign-in reached no account; web_registration is off")
+
+            conn
+            |> put_flash(:error, gettext("Failed"))
+            |> redirect(to: ~p"/users/log_in")
+
           {:error, changeset} ->
             require Logger
 
@@ -406,6 +414,28 @@ defmodule GamendWeb.AuthController do
             |> redirect(to: ~p"/users/log_in")
         end
     end
+  end
+
+  # A signed-out visitor's provider sign-in finds their account, or makes one.
+  # With `web_registration` off the game registers its players, so the website
+  # makes none: an identity that reaches no account is refused. It reaches one
+  # as the finder looks — by the provider's id, then by the email, which the
+  # finder links (or refuses, unverified) but never registers again. The polled
+  # flow a game client starts (`handle_session_oauth_callback/4`) is the
+  # game's, and still makes the account.
+  defp find_or_create_for_browser(config, user_params) do
+    if GamendWeb.Features.enabled?(:web_registration) or
+         existing_account?(user_params, config.id_field),
+       do: config.finder.(user_params),
+       else: {:error, :web_registration_off}
+  end
+
+  defp existing_account?(user_params, id_field) do
+    provider_id = Map.get(user_params, id_field)
+    email = Map.get(user_params, :email)
+
+    (provider_id != nil and Accounts.get_user_by_field(id_field, provider_id) != nil) or
+      (is_binary(email) and Accounts.get_user_by_email(email) != nil)
   end
 
   defp dev_env? do

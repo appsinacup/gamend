@@ -68,11 +68,25 @@ defmodule GamendWeb.UserLive.Registration do
   end
 
   @impl true
+  # `web_registration` off: the game registers its players, and this page
+  # does not exist for anyone, signed in or not (`GamendWeb.Features`).
+  def mount(params, session, socket) do
+    unless GamendWeb.Features.enabled?(:web_registration) do
+      raise GamendWeb.NotFoundError
+    end
+
+    mount_registration(params, session, socket)
+  end
+
   # A guest (an anonymous account, `Scope.anonymous?/1`) registers like anyone
   # else; the email then goes on the account they are already using, so it
   # keeps everything (`Accounts.upgrade_anonymous_user_and_deliver/4`).
-  def mount(params, session, %{assigns: %{current_scope: %{user_id: user_id} = scope}} = socket)
-      when is_binary(user_id) do
+  defp mount_registration(
+         params,
+         session,
+         %{assigns: %{current_scope: %{user_id: user_id} = scope}} = socket
+       )
+       when is_binary(user_id) do
     if Scope.anonymous?(scope) do
       mount_form(params, session, socket)
     else
@@ -82,7 +96,7 @@ defmodule GamendWeb.UserLive.Registration do
     end
   end
 
-  def mount(params, session, socket), do: mount_form(params, session, socket)
+  defp mount_registration(params, session, socket), do: mount_form(params, session, socket)
 
   defp mount_form(_params, session, socket) do
     changeset = Accounts.change_user_email(%User{}, %{}, validate_unique: false)

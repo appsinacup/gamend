@@ -212,6 +212,90 @@ defmodule GamendWeb.AuthControllerTest do
     end
   end
 
+  describe "with web_registration off" do
+    # The code names the Discord account: `known` has a Gamend account,
+    # `known-email` shares its verified email with one, `new` has neither.
+    defmodule TestExchanger.RegistrationOffDiscord do
+      def exchange_discord_code("known", _client_id, _secret, _redirect),
+        do: {:ok, %{"id" => "d-known", "email" => "known@example.com", "username" => "known"}}
+
+      def exchange_discord_code("known-email", _client_id, _secret, _redirect) do
+        {:ok,
+         %{
+           "id" => "d-other",
+           "email" => "kept@example.com",
+           "verified" => true,
+           "username" => "other"
+         }}
+      end
+
+      def exchange_discord_code("new", _client_id, _secret, _redirect),
+        do: {:ok, %{"id" => "d-new", "email" => "new@example.com", "username" => "new"}}
+    end
+
+    setup do
+      orig = Application.get_env(:gamend_web, :oauth_exchanger)
+      Application.put_env(:gamend_web, :oauth_exchanger, TestExchanger.RegistrationOffDiscord)
+      SettingsHelpers.put(:gamend_web, GamendWeb.Features, :web_registration, false)
+
+      on_exit(fn ->
+        Application.put_env(:gamend_web, :oauth_exchanger, orig)
+        SettingsHelpers.delete(:gamend_web, GamendWeb.Features, :web_registration)
+      end)
+
+      :ok
+    end
+
+    # A browser flow's state, as the request step issues it.
+    defp browser_callback(conn, code) do
+      state = "browser:#{System.unique_integer([:positive])}"
+      OAuthSessions.create_session(state, %{provider: "discord", status: "pending"})
+      get(conn, "/auth/discord/callback?code=#{code}&state=#{state}")
+    end
+
+    test "signing in on the website makes no account", %{conn: conn} do
+      conn = browser_callback(conn, "new")
+
+      assert redirected_to(conn) == "/users/log_in"
+      assert Phoenix.Flash.get(conn.assigns.flash, :error)
+      refute get_session(conn, :user_token)
+      refute Accounts.get_user_by_discord_id("d-new")
+      refute Accounts.get_user_by_email("new@example.com")
+    end
+
+    test "signing in on the website still reaches an account that exists", %{conn: conn} do
+      {:ok, user} =
+        Accounts.find_or_create_from_discord(%{
+          discord_id: "d-known",
+          email: "known@example.com"
+        })
+
+      conn = browser_callback(conn, "known")
+
+      assert get_session(conn, :user_token)
+      assert Accounts.get_user_by_discord_id("d-known").id == user.id
+    end
+
+    test "an account with the provider's verified email is reached too", %{conn: conn} do
+      user = Gamend.AccountsFixtures.user_fixture(%{email: "kept@example.com"})
+
+      conn = browser_callback(conn, "known-email")
+
+      assert get_session(conn, :user_token)
+      assert Accounts.get_user_by_discord_id("d-other").id == user.id
+    end
+
+    test "the game's polled sign-in still makes the account", %{conn: conn} do
+      session_id = "sid-#{System.unique_integer([:positive])}"
+      OAuthSessions.create_session(session_id, %{provider: "discord", status: "pending"})
+
+      _conn = get(conn, "/auth/discord/callback?code=new&state=#{session_id}")
+
+      assert OAuthSessions.get_session(session_id).status == "completed"
+      assert Accounts.get_user_by_discord_id("d-new")
+    end
+  end
+
   test "callback (google) success browser and api flows", %{conn: conn} do
     orig = Application.get_env(:gamend_web, :oauth_exchanger)
 

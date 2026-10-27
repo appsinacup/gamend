@@ -671,7 +671,8 @@ defmodule GamendWeb.UserAuth do
   use either: a signed-out visitor goes to log in, a guest to register, which
   keeps what they did (`Accounts.upgrade_anonymous_user_and_deliver/4`). For a
   feature a host keeps for real accounts, where `require_authenticated_user`
-  would let any guest through.
+  would let any guest through. With `web_registration` off the game registers
+  its players, and a guest goes to log in too.
   """
   def require_registered_user(conn, _opts) do
     scope = conn.assigns.current_scope
@@ -681,8 +682,13 @@ defmodule GamendWeb.UserAuth do
         conn
 
       Scope.user(scope) ->
+        page =
+          if GamendWeb.Features.enabled?(:web_registration),
+            do: ~p"/users/register",
+            else: ~p"/users/log_in"
+
         conn
-        |> redirect(to: sign_in_redirect(conn, ~p"/users/register"))
+        |> redirect(to: sign_in_redirect(conn, page))
         |> halt()
 
       true ->

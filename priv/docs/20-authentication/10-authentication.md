@@ -9,7 +9,8 @@ The platform supports multiple authentication methods. All API authentication us
 ## Supported methods
 
 - **Email / Password** — registration in the browser with a confirmation email,
-  or from a game client with `POST /api/v1/register`
+  or from a game client with `POST /api/v1/register` (a host can leave it to
+  the game: see "Registering only in the game" below)
 - **Magic link** — passwordless login via email link
 - **Device token** — anonymous / guest authentication via unique device IDs
 - **OAuth** — Discord, Google, Apple, Facebook, GitHub, Steam
@@ -149,6 +150,10 @@ A reader who signs in comes back to the page they were on, by a password, an ema
 2. else the page the link was on, from the `Referer` header (this site's host only). No page needs to pass anything.
 
 Only a path on this site counts (`UserAuth.safe_return_to/1`: one leading `/`, no host, no scheme, not a sign-in page). With neither, the session keeps what it had, so a failed password, which reloads the page, keeps it too. A guest who registers is still signed in to the same account, so the registration page sends them straight back. The sign-in pages are always loaded by a request, never over the socket (`GamendWeb.LiveNav` lists them as controller pages), so the `Referer` is always sent. A browser that strips it lands on the default page. Grants carry idempotency keys and the other steps only move what the account lacks, so a retried sign-in adds nothing twice.
+
+### Registering only in the game
+
+A game whose players register in the game turns the website's registration off with `GAMEND_FEATURES_WEB_REGISTRATION=false`. `/users/register` then answers 404, the navbar offers Log in alone, the log-in page and a guest's prompts lose their Register links, and so does every theme link marked `"feature": "web_registration"`. A provider sign-in on the website reaches only an account that already exists; one it would have made is refused. Signing in, the emailed links and the game's own flows (`POST /api/v1/register`, device login, the polled provider sign-in) are unchanged. The first account on a server is its admin: register it before turning registration off.
 
 ## Failed password lockout
 

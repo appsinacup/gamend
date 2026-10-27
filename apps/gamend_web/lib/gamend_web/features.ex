@@ -8,10 +8,10 @@ defmodule GamendWeb.Features do
   want third parties browsing or scraping its data turns off what it does not
   need.
 
-  `web_groups`, `web_friends`, `web_chat`, `web_tournaments` and `web_store`
-  are website-only: they close a page and every link to it (`drop_disabled/1`)
-  and leave the API to the game client, so a host can park a feature on the
-  site without breaking the game.
+  `web_groups`, `web_friends`, `web_chat`, `web_tournaments`, `web_store` and
+  `web_registration` are website-only: they close a page and every link to it
+  (`drop_disabled/1`) and leave the API to the game client, so a host can park
+  a feature on the site without breaking the game.
 
   Read through `GamendWeb.Plugs.FeatureGate`, which 404s a disabled route.
   """
@@ -76,6 +76,12 @@ defmodule GamendWeb.Features do
     default: true,
     doc:
       "The store on the website: the /store pages (every active product, any provider row), the Open Store button in account settings, and every link marked `\"feature\": \"web_store\"`. Off for a host that sells through its own page instead. The payments API and the game client are untouched."
+  )
+
+  setting(:web_registration, :boolean,
+    default: true,
+    doc:
+      "Registration on the website: the /users/register page, its Register buttons and links (the navbar, the log-in page, a guest's prompts) and every link marked `\"feature\": \"web_registration\"`. Off, the navbar offers Log in alone, and a provider sign-in on the website (Discord, Google, …) reaches only an account that already exists instead of making one. Off for a game whose players register in the game. POST /api/v1/register, the emailed confirmation and the game client are untouched."
   )
 
   setting(:list_payments_catalog, :boolean,

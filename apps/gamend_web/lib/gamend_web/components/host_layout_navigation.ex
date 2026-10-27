@@ -379,7 +379,7 @@ defmodule GamendWeb.HostLayoutNavigation do
                 {GamendWeb.HostLayouts.translate("Log in")}
               </a>
             </li>
-            <li>
+            <li :if={GamendWeb.Features.enabled?(:web_registration)}>
               <a
                 href={lp(~p"/users/register")}
                 class={[
@@ -923,7 +923,11 @@ defmodule GamendWeb.HostLayoutNavigation do
         any_entry_active?(assigns.account_links, assigns.current_path)
 
     assigns =
-      assign(assigns, active?: active?, anonymous?: Scope.anonymous?(assigns.current_scope))
+      assign(assigns,
+        active?: active?,
+        anonymous?: Scope.anonymous?(assigns.current_scope),
+        register?: GamendWeb.Features.enabled?(:web_registration)
+      )
 
     ~H"""
     <li class="w-full">
@@ -983,14 +987,16 @@ defmodule GamendWeb.HostLayoutNavigation do
             current_path={@current_path}
             inactive_class="btn-ghost"
           />
+          <%!-- Without `web_registration` a guest registers in the game, and
+                Log in opens the section instead. --%>
           <%= if @anonymous? do %>
-            <li class="border-t border-base-300 mt-1 pt-1 w-full">
+            <li :if={@register?} class="border-t border-base-300 mt-1 pt-1 w-full">
               <a href={lp(~p"/users/register")} class="btn btn-ghost w-full justify-start">
                 <.icon name="hero-user-plus-solid" class="w-4 h-4" />
                 {GamendWeb.HostLayouts.translate("Register")}
               </a>
             </li>
-            <li class="w-full">
+            <li class={["w-full", !@register? && "border-t border-base-300 mt-1 pt-1"]}>
               <a href={lp(~p"/users/log_in")} class="btn btn-ghost w-full justify-start">
                 <.icon name="hero-arrow-right-on-rectangle-solid" class="w-4 h-4" />
                 {GamendWeb.HostLayouts.translate("Log in")}
@@ -1923,17 +1929,20 @@ defmodule GamendWeb.HostLayoutNavigation do
   # stage `navbar_fit.js` steps through: an icon alone reads as neither, and
   # the bar gives way to the menu before it would drop them. One is
   # `btn-primary` (2026-10-23, user): the page the reader is on, else
-  # Register, the one a new reader should press.
+  # Register, the one a new reader should press. With `web_registration` off
+  # the game registers its players: Log in stands alone, and is the one.
   defp auth_buttons(assigns) do
-    primary =
-      if here?(assigns.current_path, ~p"/users/log_in"),
-        do: ~p"/users/log_in",
-        else: ~p"/users/register"
+    register? = GamendWeb.Features.enabled?(:web_registration)
 
-    assigns = assign(assigns, :primary, primary)
+    primary =
+      if register? and not here?(assigns.current_path, ~p"/users/log_in"),
+        do: ~p"/users/register",
+        else: ~p"/users/log_in"
+
+    assigns = assign(assigns, entries: auth_entries(register?), primary: primary)
 
     ~H"""
-    <li :for={{path, icon, label} <- auth_entries()}>
+    <li :for={{path, icon, label} <- @entries}>
       <.link
         href={lp(path)}
         class={["btn gap-1", if(path == @primary, do: "btn-primary", else: "btn-surface")]}
@@ -1945,11 +1954,11 @@ defmodule GamendWeb.HostLayoutNavigation do
     """
   end
 
-  defp auth_entries do
-    [
-      {~p"/users/log_in", "hero-arrow-right-on-rectangle-solid", "Log in"},
-      {~p"/users/register", "hero-user-plus-solid", "Register"}
-    ]
+  defp auth_entries(register?) do
+    log_in = {~p"/users/log_in", "hero-arrow-right-on-rectangle-solid", "Log in"}
+    register = {~p"/users/register", "hero-user-plus-solid", "Register"}
+
+    if register?, do: [log_in, register], else: [log_in]
   end
 
   attr :class, :any, default: nil

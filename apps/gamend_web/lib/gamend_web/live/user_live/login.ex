@@ -15,7 +15,12 @@ defmodule GamendWeb.UserLive.Login do
             <.back_link href={home_path()} />
             <.page_title icon="hero-arrow-right-on-rectangle-solid">{gettext("Log in")}</.page_title>
           </div>
-          <p class="text-sm text-muted mt-2">
+          <%!-- No Register with `web_registration` off: the game registers
+                its players, and the page would not be found. --%>
+          <p
+            :if={@reauth? or GamendWeb.Features.enabled?(:web_registration)}
+            class="text-sm text-muted mt-2"
+          >
             <%= if @reauth? do %>
               {gettext("Confirm")}
             <% else %>

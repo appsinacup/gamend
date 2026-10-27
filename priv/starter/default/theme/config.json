@@ -18,7 +18,8 @@
             "label": "Create an account",
             "href": "/users/register",
             "icon": "hero-user-plus-solid",
-            "style": "primary"
+            "style": "primary",
+            "feature": "web_registration"
           },
           {
             "label": "Leaderboards",

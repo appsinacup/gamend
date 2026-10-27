@@ -348,7 +348,8 @@ defmodule GamendWeb.LeaderboardsLive do
           </div>
           <%!-- A guest's record: kept, but the board lists registered
                 players only (`Gamend.AccountRequired`). The rank is where
-                it would stand. --%>
+                it would stand. With `web_registration` off they register
+                in the game, so the line stays and the button goes. --%>
           <div
             :if={@user_record.hidden}
             class="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-primary/20 pt-3"
@@ -356,7 +357,11 @@ defmodule GamendWeb.LeaderboardsLive do
             <p class="text-sm text-muted">
               {gettext("Only you see this rank. Register to appear on the board.")}
             </p>
-            <.link href={register_href(@locale)} class="btn btn-primary btn-sm">
+            <.link
+              :if={GamendWeb.Features.enabled?(:web_registration)}
+              href={register_href(@locale)}
+              class="btn btn-primary btn-sm"
+            >
               <.icon name="hero-user-plus" class="size-4" />
               {gettext("Register")}
             </.link>

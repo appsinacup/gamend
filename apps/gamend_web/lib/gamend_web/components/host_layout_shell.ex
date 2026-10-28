@@ -280,7 +280,16 @@ defmodule GamendWeb.HostLayoutShell do
         </div>
         <GamendWeb.HostLayouts.flash_group flash={@flash} />
       <% else %>
-        <main id="main-content" class="relative z-[2] px-4 py-4 sm:px-6 lg:px-8 flex-1">
+        <%!-- A one-screen page (`screen`) has no padding under its content:
+              where the content nearly fit, the page scrolled into the
+              padding, past the last thing on it. --%>
+        <main
+          id="main-content"
+          class={[
+            "relative z-[2] px-4 sm:px-6 lg:px-8 flex-1",
+            if(@screen, do: "pt-4", else: "py-4")
+          ]}
+        >
           <%!-- Reading width by default. A `wide` page brings its own side
                 columns — a docs sidebar, a table of contents — and the article
                 between them is what should keep the reading width, so the

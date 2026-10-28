@@ -22,6 +22,19 @@ defmodule Gamend.Notifications.Preferences do
   offers its email on the registration form, unticked: an email nobody asked
   for is spam, so the user opts in. The "account" group — sign-in links, email
   changes — is email that cannot be turned off: it is how the account works.
+  `admin: true` is a group for the site's admins only (a queue to work
+  through): nobody else sees its row (`groups_for/1`) or gets it
+  (`enabled?/3`).
+
+  Which channel a group defaults to follows one rule (2026-10-28):
+
+    * **email on**: what the person asked for and waits on, a queue an admin
+      must work through, or what they lose if they miss it: "Your reports"
+      (a report's answer, a moderator's warning), "Reports to review";
+    * **email off, theirs to turn on**: news and nudges ("Friends and
+      groups", a host's streak reminder);
+    * **on the site only**: what comes often and matters in the moment
+      ("Chat messages", "Quests and rewards").
 
   Stored in the user's private preferences (`Gamend.Accounts.Preferences`)
   under `"notifications"`:
@@ -43,7 +56,30 @@ defmodule Gamend.Notifications.Preferences do
       defaults: %{"in_app" => false, "email" => true, "push" => false},
       configurable: [],
       types: [],
-      signup: false
+      signup: false,
+      admin: false
+    },
+    # The answer to a report the user filed (`Gamend.Reports`, chat's), and
+    # a moderator's warning or mute: each an answer someone waits for, or a
+    # change to what they may do.
+    %{
+      key: "reports",
+      label: "Your reports",
+      defaults: %{"in_app" => true, "email" => true, "push" => true},
+      configurable: ~w(email push),
+      types: ~w(report_resolved chat_report_resolved chat_warning chat_mute),
+      signup: false,
+      admin: false
+    },
+    # The admins' queues: a report, a chat report waiting for review.
+    %{
+      key: "moderation",
+      label: "Reports to review",
+      defaults: %{"in_app" => true, "email" => true, "push" => true},
+      configurable: ~w(email push),
+      types: ~w(report chat_report),
+      signup: false,
+      admin: true
     },
     %{
       key: "social",
@@ -51,7 +87,8 @@ defmodule Gamend.Notifications.Preferences do
       defaults: %{"in_app" => true, "email" => false, "push" => true},
       configurable: ~w(email push),
       types: [],
-      signup: false
+      signup: false,
+      admin: false
     },
     %{
       key: "chat",
@@ -59,15 +96,19 @@ defmodule Gamend.Notifications.Preferences do
       defaults: %{"in_app" => true, "email" => false, "push" => true},
       configurable: ~w(push),
       types: [],
-      signup: false
+      signup: false,
+      admin: false
     },
+    # On the site: a quest finishes while the user is playing, and an email
+    # an hour later tells them nothing they did not see.
     %{
       key: "quests",
       label: "Quests and rewards",
       defaults: %{"in_app" => true, "email" => false, "push" => false},
-      configurable: ~w(email push),
+      configurable: ~w(push),
       types: [],
-      signup: false
+      signup: false,
+      admin: false
     }
   ]
 
@@ -77,7 +118,7 @@ defmodule Gamend.Notifications.Preferences do
 
   @doc """
   Every group, core's first then the host's: `%{key, label, defaults,
-  configurable, types}`, `configurable` a list of channels.
+  configurable, types, signup, admin}`, `configurable` a list of channels.
   """
   @spec groups() :: [map()]
   def groups do
@@ -89,9 +130,18 @@ defmodule Gamend.Notifications.Preferences do
     @core_groups ++ host
   end
 
+  @doc "The groups `user` may get: every one but the admins' (`admin: true`) for anyone else."
+  @spec groups_for(User.t() | nil) :: [map()]
+  def groups_for(user), do: Enum.filter(groups(), &for_user?(&1, user))
+
+  defp for_user?(%{admin: true}, user), do: admin?(user)
+  defp for_user?(_group, _user), do: true
+
+  defp admin?(user), do: match?(%User{is_admin: true}, user)
+
   @doc "The groups whose email the registration form offers (`signup: true`)."
   @spec signup_groups() :: [map()]
-  def signup_groups, do: Enum.filter(groups(), & &1.signup)
+  def signup_groups, do: Enum.filter(groups(), &(&1.signup and not &1.admin))
 
   @doc "One group, or nil."
   @spec group(String.t()) :: map() | nil
@@ -125,7 +175,8 @@ defmodule Gamend.Notifications.Preferences do
       defaults: Map.new(group[:defaults] || %{}, fn {k, v} -> {to_string(k), v == true} end),
       configurable: Enum.map(group[:configurable] || @channels, &to_string/1),
       types: Enum.map(group[:types] || [], &to_string/1),
-      signup: group[:signup] == true and "email" in (group[:configurable] || @channels)
+      signup: group[:signup] == true and "email" in (group[:configurable] || @channels),
+      admin: group[:admin] == true
     }
   end
 
@@ -136,6 +187,7 @@ defmodule Gamend.Notifications.Preferences do
   defp to_atom_key("configurable"), do: :configurable
   defp to_atom_key("types"), do: :types
   defp to_atom_key("signup"), do: :signup
+  defp to_atom_key("admin"), do: :admin
   defp to_atom_key(other), do: other
 
   @doc "A user's stored choices (see the moduledoc's shape)."
@@ -146,7 +198,8 @@ defmodule Gamend.Notifications.Preferences do
   Whether `user` gets `group` through `channel`. A channel the group does not
   let the user change is its default; otherwise the switches win (everything
   off, then all email / all push off), then the user's own choice, then the
-  default. An unknown group is off.
+  default. An unknown group is off, and so is an admins' group for anyone
+  else.
   """
   @spec enabled?(User.t() | nil, String.t(), String.t()) :: boolean()
   def enabled?(user, group_key, channel) when channel in @channels do
@@ -159,6 +212,9 @@ defmodule Gamend.Notifications.Preferences do
         prefs = stored(user)
 
         cond do
+          group.admin and not admin?(user) ->
+            false
+
           channel not in group.configurable ->
             default
 
@@ -187,6 +243,9 @@ defmodule Gamend.Notifications.Preferences do
   def put(%User{} = user, group_key, channel, on?) when is_boolean(on?) do
     case group(group_key) do
       nil ->
+        {:error, :unknown_group}
+
+      %{admin: true} when user.is_admin != true ->
         {:error, :unknown_group}
 
       %{configurable: configurable} ->

@@ -240,7 +240,10 @@ reload — the page painted at the top and glided down to where it had been. --%
     >
     </script>
   </head>
-  <body class="min-h-screen bg-base-100 text-base-content antialiased">
+  <%!-- `min-h-dvh`, never `min-h-screen`: on a phone `100vh` is the height
+        with the browser's bars hidden, so a page shorter than that (a game,
+        a deck, a test) scrolled by the bars' height into nothing. --%>
+  <body class="min-h-dvh bg-base-100 text-base-content antialiased">
     {@inner_content}
   </body>
 </html>

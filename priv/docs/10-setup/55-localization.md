@@ -19,7 +19,15 @@ The host tree is served by its own backend, wired in with one line of config:
 config :gamend_web, host_gettext_backend: GamendHost.Gettext
 ```
 
-`GamendWeb.GettextSync.put_locale/1` sets the locale on both backends at once, so a request is never half-translated.
+With it set, every page translates through the host's backend, core's own pages included, so a host's backend should fall back to core's catalogue. `GamendWeb.HostGettext` is that backend: a string not in the host's tree is looked up in core's, in the same locale and domain, and an entry the host does hold wins.
+
+```elixir
+defmodule GamendHost.Gettext do
+  use GamendWeb.HostGettext, otp_app: :gamend_host
+end
+```
+
+`GamendWeb.GettextSync.put_locale/1` sets the locale on both backends at once, so a request is never half-translated. A host's tests can hold its catalogues to core's rules with `GamendWeb.CatalogChecks`: informal address (`formal_address/1`), American msgids (`british_spellings/1`) and placeholders kept (`placeholder_mismatches/1`).
 
 ## How a page picks its locale
 

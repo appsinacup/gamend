@@ -4,8 +4,8 @@ defmodule GamendWeb.Workers.NotificationEmail do
   (which queues this job by name: core cannot build the site's links).
 
   The user's choice is read again at send time, so an unsubscribe between
-  queueing and sending is honoured. The same notification queued twice in an
-  hour goes out once. The footer is written in the language the user last
+  queueing and sending is honoured. One email per user, group and subject an
+  hour (`Gamend.Notifications`' `@email_unique`, set where the job is made). The footer is written in the language the user last
   read the site in (`Gamend.Accounts.Preferences.locale/1`); the subject and
   text are the caller's, already in it.
   """

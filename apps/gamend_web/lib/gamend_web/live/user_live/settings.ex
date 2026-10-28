@@ -172,7 +172,7 @@ defmodule GamendWeb.UserLive.Settings do
       # (`load_tab/2`, from `handle_params/3`). Reading all ten on every
       # mount was ~30 queries a render for the one tab on screen.
       |> AccountTab.assign_defaults(user)
-      |> NotificationsTab.assign_defaults()
+      |> NotificationsTab.assign_defaults(user)
       |> FriendsTab.assign_defaults()
       |> DataTab.assign_defaults()
       |> DevicesTab.assign_defaults()

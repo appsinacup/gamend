@@ -79,7 +79,8 @@ defmodule Gamend.Notifications.PreferencesTest do
       assert Preferences.group_for_type("friend_request") == "social"
       assert Preferences.group_for_type("quest_completed") == "quests"
       assert Preferences.group_for_type("streak_ending") == "streak"
-      assert Preferences.group_for_type("chat_warning") == nil
+      assert Preferences.group_for_type("chat_warning") == "reports"
+      assert Preferences.group_for_type("report") == "moderation"
       assert Preferences.group_for_type(nil) == nil
     end
 

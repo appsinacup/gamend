@@ -1,0 +1,12 @@
+# A host's catalogue for GamendWeb.HostGettextTest: one string of its own,
+# and one of core's said its own way.
+msgid ""
+msgstr ""
+"Language: de\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Only the host says this"
+msgstr "Nur der Host sagt das"
+
+msgid "Cancel"
+msgstr "Lieber nicht"

@@ -412,8 +412,13 @@ defmodule Gamend.Notifications do
   end
 
   # The email is the web app's to build (it knows the site's URL and signs the
-  # unsubscribe link), so core queues its job by the worker's name.
+  # unsubscribe link), so core queues its job by the worker's name. A job made
+  # by name carries none of the worker's own options, so the uniqueness is
+  # here: one email per user, group and subject an hour. A queue's standing
+  # alert ("3 reports are waiting") changes its text with every item, and
+  # would otherwise mail once per item; the site's row keeps the count.
   @email_worker "GamendWeb.Workers.NotificationEmail"
+  @email_unique [period: 3600, fields: [:worker, :args], keys: [:user_id, :group, :subject]]
 
   defp enqueue_email(%{email: email} = user, group, attrs) when is_binary(email) do
     args =
@@ -428,7 +433,14 @@ defmodule Gamend.Notifications do
         fn {_k, v} -> is_nil(v) end
       )
 
-    job = Oban.Job.new(args, worker: @email_worker, queue: :mailers, max_attempts: 5)
+    job =
+      Oban.Job.new(args,
+        worker: @email_worker,
+        queue: :mailers,
+        max_attempts: 5,
+        unique: @email_unique
+      )
+
     match?({:ok, _}, Oban.insert(job))
   end
 

@@ -3394,6 +3394,11 @@ msgstr "Telefon"
 msgid "Quests and rewards"
 msgstr "Oppdrag og belønninger"
 
+#: lib/gamend_web/notification_email.ex
+#, elixir-autogen, elixir-format
+msgid "Your reports"
+msgstr "Rapportene dine"
+
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:67
 #, elixir-autogen, elixir-format
 msgid "Settings"

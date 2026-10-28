@@ -3442,6 +3442,11 @@ msgstr "Телефон"
 msgid "Quests and rewards"
 msgstr "Завдання та нагороди"
 
+#: lib/gamend_web/notification_email.ex
+#, elixir-autogen, elixir-format
+msgid "Your reports"
+msgstr "Твої скарги"
+
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:67
 #, elixir-autogen, elixir-format
 msgid "Settings"

@@ -3586,6 +3586,11 @@ msgstr "الهاتف"
 msgid "Quests and rewards"
 msgstr "المهام والمكافآت"
 
+#: lib/gamend_web/notification_email.ex
+#, elixir-autogen, elixir-format
+msgid "Your reports"
+msgstr "بلاغاتك"
+
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:67
 #, elixir-autogen, elixir-format
 msgid "Settings"

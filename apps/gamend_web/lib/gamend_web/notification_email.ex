@@ -25,6 +25,7 @@ defmodule GamendWeb.NotificationEmail do
   def group_label(%{key: "social"}), do: gettext("Friends and groups")
   def group_label(%{key: "chat"}), do: gettext("Chat messages")
   def group_label(%{key: "quests"}), do: gettext("Quests and rewards")
+  def group_label(%{key: "reports"}), do: gettext("Your reports")
   def group_label(%{label: label}), do: GamendWeb.HostLayouts.translate(label)
 
   @doc "A channel's name."

@@ -135,19 +135,20 @@ defmodule GamendWeb.AdminLive.AnalyticsCounters do
                 </tr>
               </thead>
               <tbody>
-                <tr :for={{entry, fam} <- rows} class="align-top">
+                <tr
+                  :for={{entry, fam} <- rows}
+                  class={["align-top", entry.kind == :event && clickable_row()]}
+                >
                   <td>
-                    <div>{entry.label}</div>
+                    <div>
+                      <.row_link :if={entry.kind == :event} navigate={explore(entry.name, @days)}>
+                        {entry.label}
+                      </.row_link>
+                      <span :if={entry.kind != :event}>{entry.label}</span>
+                    </div>
                     <div :if={entry.label != entry.name} class="font-mono text-xs text-muted">
                       {entry.name}
                     </div>
-                    <.link
-                      :if={entry.kind == :event}
-                      navigate={explore(entry.name, @days)}
-                      class="link link-hover text-xs"
-                    >
-                      Explore
-                    </.link>
                   </td>
                   <td>
                     <.spark points={

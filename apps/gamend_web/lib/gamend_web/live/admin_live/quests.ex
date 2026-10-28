@@ -81,9 +81,24 @@ defmodule GamendWeb.AdminLive.Quests do
                   </tr>
                 </thead>
                 <tbody>
-                  <tr :for={q <- @quests} id={"admin-quest-#{q.id}"}>
+                  <tr
+                    :for={q <- @quests}
+                    id={"admin-quest-#{q.id}"}
+                    class={clickable_row()}
+                    phx-click="edit_quest"
+                    phx-value-id={q.id}
+                  >
                     <td class="font-mono text-sm">{q.key}</td>
-                    <td class="text-sm">{q.title}</td>
+                    <td class="text-sm">
+                      <button
+                        type="button"
+                        phx-click="edit_quest"
+                        phx-value-id={q.id}
+                        class="link link-hover text-left"
+                      >
+                        {q.title}
+                      </button>
+                    </td>
                     <td class="text-sm">
                       <span class={["badge badge-sm", reset_badge(q.reset)]}>{reset_text(q)}</span>
                       <span :if={q.hidden} class="badge badge-warning badge-sm ml-1">hidden</span>
@@ -108,13 +123,6 @@ defmodule GamendWeb.AdminLive.Quests do
                     <td class="text-xs font-mono">{funnel_summary(@funnels[q.key])}</td>
                     <td class="text-sm">
                       <div class="flex flex-wrap gap-1">
-                        <button
-                          phx-click="edit_quest"
-                          phx-value-id={q.id}
-                          class="btn btn-xs btn-outline btn-info"
-                        >
-                          Edit
-                        </button>
                         <button
                           phx-click="grant_form"
                           phx-value-id={q.id}

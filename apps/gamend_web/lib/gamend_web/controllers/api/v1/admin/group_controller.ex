@@ -64,6 +64,7 @@ defmodule GamendWeb.Api.V1.Admin.GroupController do
         type: :object,
         properties: %{
           title: %Schema{type: :string},
+          slug: %Schema{type: :string, description: "Unique among the creator's groups"},
           description: %Schema{type: :string},
           type: %Schema{type: :string},
           max_members: %Schema{type: :integer},

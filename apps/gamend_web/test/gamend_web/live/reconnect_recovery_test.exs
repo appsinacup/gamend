@@ -198,15 +198,14 @@ defmodule GamendWeb.ReconnectRecoveryTest do
       group = own_group(user)
       {:ok, view, _html} = live(conn, ~p"/users/settings?tab=groups")
 
-      view
-      |> element(~s(#my-group-#{group.id} button[phx-click="group_view_detail"]), "View")
-      |> render_click()
+      view |> element("#my-group-#{group.id} a") |> render_click()
+      ref = Gamend.Groups.full_slug(group)
 
-      assert_patch(view, ~p"/users/settings?#{[tab: "groups", group: group.id]}")
+      assert_patch(view, ~p"/users/settings?#{[tab: "groups", group: ref]}")
 
       view |> element(~s(button[phx-click="group_toggle_edit"])) |> render_click()
 
-      assert_patch(view, ~p"/users/settings?#{[tab: "groups", group: group.id, edit: 1]}")
+      assert_patch(view, ~p"/users/settings?#{[tab: "groups", group: ref, edit: 1]}")
       assert has_element?(view, "#group-edit-form")
     end
 

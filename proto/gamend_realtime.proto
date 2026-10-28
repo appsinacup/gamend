@@ -159,6 +159,7 @@ message Group {
   optional int64 updated_at_ms = 12;
   optional bytes metadata_pb = 13;
   optional string icon_url = 14;
+  optional string slug = 15;
 }
 
 message Party {

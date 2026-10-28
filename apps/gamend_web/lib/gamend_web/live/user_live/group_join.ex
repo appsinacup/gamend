@@ -63,12 +63,12 @@ defmodule GamendWeb.UserLive.GroupJoin do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <div class="mx-auto mt-8 max-w-md">
+      <div class="mx-auto mt-8 max-w-narrow">
         <div id="group-join" class="card border border-base-300 bg-base-100">
           <div :if={@link == nil} class="card-body items-center text-center">
-            <.icon name="hero-link-slash" class="size-10 text-base-content/50" />
+            <.icon name="hero-link-slash" class="size-10 text-muted" />
             <h1 class="text-lg font-semibold">{gettext("This invite link no longer works")}</h1>
-            <p class="text-sm text-base-content/70">
+            <p class="text-sm text-muted">
               {gettext("It expired, or an admin made a new one. Ask them for the new link.")}
             </p>
           </div>
@@ -76,13 +76,13 @@ defmodule GamendWeb.UserLive.GroupJoin do
           <div :if={@link} class="card-body items-center text-center">
             <.icon name="hero-user-group" class="size-10 text-primary" />
             <h1 class="text-xl font-semibold">{@link.group.title}</h1>
-            <p :if={@link.created_by} class="text-sm text-base-content/70">
+            <p :if={@link.created_by} class="text-sm text-muted">
               {gettext("%{name} invited you to join.",
                 name: Gamend.Accounts.display_name(@link.created_by)
               )}
             </p>
-            <p class="text-sm text-base-content/70">
-              {ngettext("1 member", "%{count} members", @count)}
+            <p class="text-sm text-muted">
+              {gettext("Members: %{count}", count: @count)}
             </p>
 
             <div class="card-actions mt-4">

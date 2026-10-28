@@ -3887,3 +3887,129 @@ msgstr "الموسم"
 #, elixir-autogen, elixir-format
 msgid "Guest account created. Register any time to keep your progress on every device."
 msgstr "تم إنشاء حساب ضيف. سجّل في أي وقت لتحتفظ بتقدمك على كل أجهزتك."
+
+#: lib/gamend_web/live/new_group_component.ex
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Slug"
+msgstr "معرّف الرابط"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} invited you to join."
+msgstr "دعاك %{name} للانضمام."
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "Members: %{count}"
+msgstr "الأعضاء: %{count}"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "It expired, or an admin made a new one. Ask them for the new link."
+msgstr "انتهت صلاحيته، أو أنشأ أحد المشرفين رابطًا جديدًا. اطلب منهم الرابط الجديد."
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "Not now"
+msgstr "ليس الآن"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "This invite link no longer works"
+msgstr "رابط الدعوة هذا لم يعد يعمل"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "You are already in it."
+msgstr "أنت عضو فيها بالفعل."
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "You joined %{name}."
+msgstr "انضممت إلى %{name}."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Anyone signed in who opens it joins as a member."
+msgstr "أي شخص مسجّل الدخول يفتحه ينضم كعضو."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Copied"
+msgstr "تم النسخ"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Copy"
+msgstr "نسخ"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Create link"
+msgstr "إنشاء رابط"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Invite link"
+msgstr "رابط الدعوة"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Invited"
+msgstr "مدعو"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Pending invites"
+msgstr "دعوات معلّقة"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "New link"
+msgstr "رابط جديد"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Share a link: anyone signed in who opens it joins as a member, until it expires."
+msgstr "شارك رابطًا: أي شخص مسجّل الدخول يفتحه ينضم كعضو، حتى تنتهي صلاحيته."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "The current link stops working."
+msgstr "سيتوقف الرابط الحالي عن العمل."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Turn off"
+msgstr "إيقاف"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Joined through it: %{count}."
+msgstr "انضم عبره: %{count}."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "by %{name}"
+msgstr "من %{name}"
+
+#: lib/gamend_web/live/new_group_component.ex
+#, elixir-autogen, elixir-format
+msgid "New group"
+msgstr "مجموعة جديدة"
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Hidden: only the people invited see it."
+msgstr "مخفية: لا يراها إلا من دُعي إليها."
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Private: listed, and people ask to join."
+msgstr "خاصة: مدرجة، ويطلب الناس الانضمام."
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Public: listed, and anyone joins."
+msgstr "عامة: مدرجة، ويمكن لأي شخص الانضمام."

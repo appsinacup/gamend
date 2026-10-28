@@ -66,18 +66,29 @@ defmodule GamendWeb.AdminLive.Tournaments do
                   </tr>
                 </thead>
                 <tbody>
-                  <tr :for={t <- @tournaments}>
+                  <tr
+                    :for={t <- @tournaments}
+                    class={clickable_row()}
+                    phx-click="open_detail"
+                    phx-value-id={t.id}
+                  >
                     <td class="font-mono text-xs">{t.slug}</td>
-                    <td>{t.title}</td>
+                    <td>
+                      <button
+                        type="button"
+                        phx-click="open_detail"
+                        phx-value-id={t.id}
+                        class="link link-hover text-left"
+                      >
+                        {t.title}
+                      </button>
+                    </td>
                     <td><span class={state_badge(t.state)}>{t.state}</span></td>
                     <td class="text-xs">{t.starts_at}</td>
                     <td>{Tournaments.count_entries(t.id)}</td>
                     <td class="text-xs">{t.bracket_size} / {t.round_window_sec}s</td>
                     <td class="font-mono text-xs">{t.recur}</td>
                     <td class="flex gap-1">
-                      <button phx-click="open_detail" phx-value-id={t.id} class="btn btn-xs">
-                        View
-                      </button>
                       <button phx-click="edit_tournament" phx-value-id={t.id} class="btn btn-xs">
                         Edit
                       </button>

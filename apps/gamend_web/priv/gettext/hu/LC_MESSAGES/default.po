@@ -3676,3 +3676,129 @@ msgstr "Szezon"
 #, elixir-autogen, elixir-format
 msgid "Guest account created. Register any time to keep your progress on every device."
 msgstr "Vendégfiók létrehozva. Regisztrálj bármikor, hogy a haladásod minden eszközödön megmaradjon."
+
+#: lib/gamend_web/live/new_group_component.ex
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Slug"
+msgstr "URL-név"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} invited you to join."
+msgstr "%{name} meghívott, hogy csatlakozz."
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "Members: %{count}"
+msgstr "Tagok: %{count}"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "It expired, or an admin made a new one. Ask them for the new link."
+msgstr "Lejárt, vagy egy admin újat készített. Kérd el tőle az új linket."
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "Not now"
+msgstr "Most nem"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "This invite link no longer works"
+msgstr "Ez a meghívólink már nem működik"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "You are already in it."
+msgstr "Már tag vagy."
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "You joined %{name}."
+msgstr "Csatlakoztál: %{name}."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Anyone signed in who opens it joins as a member."
+msgstr "Aki bejelentkezve megnyitja, tagként csatlakozik."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Copied"
+msgstr "Másolva"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Copy"
+msgstr "Másolás"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Create link"
+msgstr "Link létrehozása"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Invite link"
+msgstr "Meghívólink"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Invited"
+msgstr "Meghívva"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Pending invites"
+msgstr "Függő meghívások"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "New link"
+msgstr "Új link"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Share a link: anyone signed in who opens it joins as a member, until it expires."
+msgstr "Ossz meg egy linket: aki bejelentkezve megnyitja, tagként csatlakozik, amíg le nem jár."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "The current link stops working."
+msgstr "A jelenlegi link nem fog működni."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Turn off"
+msgstr "Kikapcsolás"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Joined through it: %{count}."
+msgstr "Rajta keresztül csatlakozott: %{count}."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "by %{name}"
+msgstr "küldte: %{name}"
+
+#: lib/gamend_web/live/new_group_component.ex
+#, elixir-autogen, elixir-format
+msgid "New group"
+msgstr "Új csoport"
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Hidden: only the people invited see it."
+msgstr "Rejtett: csak a meghívottak látják."
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Private: listed, and people ask to join."
+msgstr "Privát: listázva van, és kérni kell a csatlakozást."
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Public: listed, and anyone joins."
+msgstr "Nyilvános: listázva van, és bárki csatlakozhat."

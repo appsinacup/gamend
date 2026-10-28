@@ -3622,3 +3622,129 @@ msgstr "Musim"
 #, elixir-autogen, elixir-format
 msgid "Guest account created. Register any time to keep your progress on every device."
 msgstr "Akun tamu dibuat. Daftar kapan saja untuk menyimpan progresmu di semua perangkat."
+
+#: lib/gamend_web/live/new_group_component.ex
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Slug"
+msgstr "Slug"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} invited you to join."
+msgstr "%{name} mengundangmu untuk bergabung."
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "Members: %{count}"
+msgstr "Anggota: %{count}"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "It expired, or an admin made a new one. Ask them for the new link."
+msgstr "Tautan ini kedaluwarsa, atau admin membuat yang baru. Minta tautan barunya."
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "Not now"
+msgstr "Nanti saja"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "This invite link no longer works"
+msgstr "Tautan undangan ini sudah tidak berlaku"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "You are already in it."
+msgstr "Kamu sudah bergabung."
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "You joined %{name}."
+msgstr "Kamu bergabung dengan %{name}."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Anyone signed in who opens it joins as a member."
+msgstr "Siapa pun yang sudah masuk dan membukanya akan bergabung sebagai anggota."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Copied"
+msgstr "Disalin"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Copy"
+msgstr "Salin"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Create link"
+msgstr "Buat tautan"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Invite link"
+msgstr "Tautan undangan"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Invited"
+msgstr "Diundang"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Pending invites"
+msgstr "Undangan tertunda"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "New link"
+msgstr "Tautan baru"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Share a link: anyone signed in who opens it joins as a member, until it expires."
+msgstr "Bagikan tautan: siapa pun yang sudah masuk dan membukanya akan bergabung sebagai anggota, sampai tautannya kedaluwarsa."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "The current link stops working."
+msgstr "Tautan saat ini akan berhenti berfungsi."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Turn off"
+msgstr "Matikan"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Joined through it: %{count}."
+msgstr "Bergabung lewat tautan ini: %{count}."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "by %{name}"
+msgstr "oleh %{name}"
+
+#: lib/gamend_web/live/new_group_component.ex
+#, elixir-autogen, elixir-format
+msgid "New group"
+msgstr "Grup baru"
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Hidden: only the people invited see it."
+msgstr "Tersembunyi: hanya orang yang diundang yang bisa melihatnya."
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Private: listed, and people ask to join."
+msgstr "Privat: terdaftar, dan orang meminta untuk bergabung."
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Public: listed, and anyone joins."
+msgstr "Publik: terdaftar, dan siapa pun bisa bergabung."

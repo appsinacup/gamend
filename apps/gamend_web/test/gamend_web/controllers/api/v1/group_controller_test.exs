@@ -81,8 +81,19 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
 
       conn = get(conn, "/api/v1/groups/#{group.id}")
       resp = json_response(conn, 200)["data"]
-      assert %{"id" => _, "title" => "Shown"} = resp
+      assert %{"id" => _, "title" => "Shown", "slug" => "shown"} = resp
       assert Map.has_key?(resp, "creator_name")
+    end
+
+    test "shows a hidden group to its members only", %{conn: conn} do
+      owner = create_user()
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "Covert", "type" => "hidden"})
+
+      member_conn = conn |> auth_conn(owner) |> get("/api/v1/groups/#{group.id}")
+      assert %{"title" => "Covert"} = json_response(member_conn, 200)["data"]
+
+      stranger_conn = conn |> auth_conn(create_user()) |> get("/api/v1/groups/#{group.id}")
+      assert json_response(stranger_conn, 404)
     end
 
     test "returns 404 for missing group", %{conn: conn} do

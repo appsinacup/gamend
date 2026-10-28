@@ -3622,3 +3622,129 @@ msgstr "ฤดูกาล"
 #, elixir-autogen, elixir-format
 msgid "Guest account created. Register any time to keep your progress on every device."
 msgstr "สร้างบัญชีผู้เยี่ยมชมแล้ว ลงทะเบียนได้ทุกเมื่อเพื่อเก็บความคืบหน้าไว้ในทุกอุปกรณ์"
+
+#: lib/gamend_web/live/new_group_component.ex
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Slug"
+msgstr "ชื่อใน URL"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} invited you to join."
+msgstr "%{name} ชวนคุณเข้าร่วม"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "Members: %{count}"
+msgstr "สมาชิก: %{count}"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "It expired, or an admin made a new one. Ask them for the new link."
+msgstr "ลิงก์หมดอายุแล้ว หรือผู้ดูแลสร้างลิงก์ใหม่ ขอลิงก์ใหม่จากผู้ดูแล"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "Not now"
+msgstr "ไว้ทีหลัง"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "This invite link no longer works"
+msgstr "ลิงก์คำเชิญนี้ใช้ไม่ได้แล้ว"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "You are already in it."
+msgstr "คุณอยู่ในกลุ่มนี้แล้ว"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "You joined %{name}."
+msgstr "คุณเข้าร่วม %{name} แล้ว"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Anyone signed in who opens it joins as a member."
+msgstr "ใครที่เข้าสู่ระบบแล้วเปิดลิงก์นี้ จะเข้าร่วมเป็นสมาชิก"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Copied"
+msgstr "คัดลอกแล้ว"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Copy"
+msgstr "คัดลอก"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Create link"
+msgstr "สร้างลิงก์"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Invite link"
+msgstr "ลิงก์คำเชิญ"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Invited"
+msgstr "เชิญแล้ว"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Pending invites"
+msgstr "คำเชิญที่รอตอบ"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "New link"
+msgstr "ลิงก์ใหม่"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Share a link: anyone signed in who opens it joins as a member, until it expires."
+msgstr "แชร์ลิงก์: ใครที่เข้าสู่ระบบแล้วเปิดลิงก์ จะเข้าร่วมเป็นสมาชิกได้จนกว่าลิงก์จะหมดอายุ"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "The current link stops working."
+msgstr "ลิงก์ปัจจุบันจะใช้ไม่ได้อีก"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Turn off"
+msgstr "ปิด"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Joined through it: %{count}."
+msgstr "เข้าร่วมผ่านลิงก์นี้: %{count}"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "by %{name}"
+msgstr "โดย %{name}"
+
+#: lib/gamend_web/live/new_group_component.ex
+#, elixir-autogen, elixir-format
+msgid "New group"
+msgstr "กลุ่มใหม่"
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Hidden: only the people invited see it."
+msgstr "ซ่อน: เฉพาะคนที่ได้รับเชิญเท่านั้นที่เห็น"
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Private: listed, and people ask to join."
+msgstr "ส่วนตัว: แสดงในรายการ และคนต้องขอเข้าร่วม"
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Public: listed, and anyone joins."
+msgstr "สาธารณะ: แสดงในรายการ และใครก็เข้าร่วมได้"

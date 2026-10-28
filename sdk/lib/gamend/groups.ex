@@ -11,9 +11,16 @@ defmodule Gamend.Groups do
   - **hidden** – only invited users can join (via notifications / invite API)
 
   A host picks which of them players may use (`types`), whom an admin may
-  invite (`invites`) and how long an invite link lasts (`link_days`). Forge
-  and Gamend Cloud, whose groups are teams of colleagues, allow `hidden` and
-  `private` and invite `anyone`.
+  invite (`invites`), how long an invite link lasts (`link_days`), whether
+  every group holds the same number of members (`max_members`) and whether
+  two groups may share a title (`unique_titles`). Forge and Gamend Cloud,
+  whose groups are teams of colleagues, allow `hidden` alone, invite
+  `anyone`, hold 100 and let titles repeat.
+
+  A group's slug is its name in a URL, unique per creator, and reads
+  `<owner>/<slug>` with the creator's username (`full_slug/1`,
+  `get_group_by_full_slug/1`). One is made from the title when none is
+  given.
 
   ## Usage
 
@@ -168,8 +175,9 @@ defmodule Gamend.Groups do
   end
 
   @doc ~S"""
-    Cancel (delete) a group invitation that the current user sent.
-    Only the sender can cancel their own invitation.
+    Cancel (delete) a pending group invitation: one the current user sent, or
+    any of a group they are an admin of, as its page lists them
+    (`list_group_invites/3`).
     
   """
   @spec cancel_invite(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
@@ -237,6 +245,20 @@ defmodule Gamend.Groups do
 
       _ ->
         raise "Gamend.Groups.count_all_members/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Count a group's pending invitations.
+  """
+  @spec count_group_invites(Ecto.UUID.t()) :: non_neg_integer()
+  def count_group_invites(_group_id) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.Groups.count_group_invites/1 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -480,6 +502,51 @@ defmodule Gamend.Groups do
   end
 
   @doc ~S"""
+    Every group's member cap when the host fixes it (`max_members`), else nil.
+  """
+  @spec fixed_max_members() :: pos_integer() | nil
+  def fixed_max_members() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Groups.fixed_max_members/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    The slug a new group of `user_id`'s titled `title` gets: its nearest free one.
+  """
+  @spec free_slug(Ecto.UUID.t(), String.t() | nil) :: String.t()
+  def free_slug(_user_id, _title) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        ""
+
+      _ ->
+        raise "Gamend.Groups.free_slug/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    A group's name in a URL: `<owner>/<slug>`, the owner its creator's
+    username. A group whose creator is gone, or has no username, is its id.
+    A username changed moves it, as on GitHub.
+    
+  """
+  @spec full_slug(Gamend.Groups.Group.t()) :: String.t()
+  def full_slug(_group) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        ""
+
+      _ ->
+        raise "Gamend.Groups.full_slug/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Get a group by ID (cached).
   """
   @spec get_group(Ecto.UUID.t()) :: Gamend.Groups.Group.t() | nil
@@ -491,6 +558,7 @@ defmodule Gamend.Groups do
           else: %Gamend.Groups.Group{
             id: "",
             title: "",
+            slug: "",
             description: "",
             icon_url: nil,
             type: "public",
@@ -522,7 +590,40 @@ defmodule Gamend.Groups do
   end
 
   @doc ~S"""
-    Get a group by its unique title.
+    The group a URL names: `<owner>/<slug>` (`full_slug/1`), or its id. Nil
+    for neither.
+    
+  """
+  @spec get_group_by_full_slug(String.t()) :: Gamend.Groups.Group.t() | nil
+  def get_group_by_full_slug(_ref) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        if :erlang.phash2(make_ref(), 2) == 0,
+          do: nil,
+          else: %Gamend.Groups.Group{
+            id: "",
+            title: "",
+            slug: "",
+            description: "",
+            icon_url: nil,
+            type: "public",
+            max_members: 100,
+            metadata: %{},
+            slowdown: 0,
+            creator_id: nil,
+            inserted_at: ~U[1970-01-01 00:00:00Z],
+            updated_at: ~U[1970-01-01 00:00:00Z]
+          }
+
+      _ ->
+        raise "Gamend.Groups.get_group_by_full_slug/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Get a group by its title: the oldest of that title when the host lets
+    titles repeat (`unique_titles`).
+    
   """
   @spec get_group_by_title(String.t()) :: Gamend.Groups.Group.t() | nil
   def get_group_by_title(_title) do
@@ -533,6 +634,7 @@ defmodule Gamend.Groups do
           else: %Gamend.Groups.Group{
             id: "",
             title: "",
+            slug: "",
             description: "",
             icon_url: nil,
             type: "public",
@@ -845,6 +947,24 @@ defmodule Gamend.Groups do
   end
 
   @doc ~S"""
+    A group's pending invitations, newest first, whoever sent them: what its
+    admins see on the group's page, to cancel one that should not stand.
+    Admins only.
+    
+  """
+  @spec list_group_invites(Ecto.UUID.t(), Ecto.UUID.t(), keyword()) ::
+          {:ok, [map()]} | {:error, :not_admin}
+  def list_group_invites(_admin_id, _group_id, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok, nil}
+
+      _ ->
+        raise "Gamend.Groups.list_group_invites/3 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     List groups visible to the public (excludes hidden).
     
     ## Filters
@@ -944,7 +1064,7 @@ defmodule Gamend.Groups do
   end
 
   @doc ~S"""
-    List groups the user belongs to, together with the membership role.
+    List groups the user belongs to, together with the membership role, creators loaded (`full_slug/1`).
   """
   @spec list_user_groups_with_role(Ecto.UUID.t()) :: [{Gamend.Groups.Group.t(), String.t()}]
   def list_user_groups_with_role(_user_id) do
@@ -1150,6 +1270,20 @@ defmodule Gamend.Groups do
 
       _ ->
         raise "Gamend.Groups.types/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Whether a group's title must be unique (`unique_titles`).
+  """
+  @spec unique_titles?() :: boolean()
+  def unique_titles?() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :erlang.phash2(make_ref(), 2) == 0
+
+      _ ->
+        raise "Gamend.Groups.unique_titles?/0 is a stub - only available at runtime on Gamend"
     end
   end
 

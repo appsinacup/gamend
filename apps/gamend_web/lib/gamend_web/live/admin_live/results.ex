@@ -380,14 +380,17 @@ defmodule GamendWeb.AdminLive.Results do
                 </tr>
               </thead>
               <tbody>
-                <tr :for={result <- @results} id={"result-#{result.id}"} class="hover">
+                <tr :for={result <- @results} id={"result-#{result.id}"} class={clickable_row()}>
                   <td>
-                    <.link navigate={~p"/admin/results/#{result.id}"} class="link font-mono">
+                    <.row_link navigate={~p"/admin/results/#{result.id}"} class="link font-mono">
                       {result.kind}
-                    </.link>
+                    </.row_link>
                   </td>
                   <td>
-                    <.link navigate={~p"/admin/results?#{[user_id: result.user_id]}"} class="link">
+                    <.link
+                      navigate={~p"/admin/results?#{[user_id: result.user_id]}"}
+                      class={["link", row_control()]}
+                    >
                       {player_label(@players, result.user_id)}
                     </.link>
                   </td>
@@ -412,7 +415,7 @@ defmodule GamendWeb.AdminLive.Results do
                     <.link
                       :if={result.lobby_id}
                       navigate={~p"/admin/results?#{[lobby_id: result.lobby_id]}"}
-                      class="link font-mono text-xs"
+                      class={["link font-mono text-xs", row_control()]}
                     >
                       {short(result.lobby_id)}
                     </.link>

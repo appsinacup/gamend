@@ -3728,3 +3728,129 @@ msgstr "Sezon"
 #, elixir-autogen, elixir-format
 msgid "Guest account created. Register any time to keep your progress on every device."
 msgstr "Cont de invitat creat. Înregistrează-te oricând ca să-ți păstrezi progresul pe orice dispozitiv."
+
+#: lib/gamend_web/live/new_group_component.ex
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Slug"
+msgstr "Descriptor"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "%{name} invited you to join."
+msgstr "%{name} te invită să te alături."
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "Members: %{count}"
+msgstr "Membri: %{count}"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "It expired, or an admin made a new one. Ask them for the new link."
+msgstr "A expirat sau un administrator a creat unul nou. Cere-i linkul nou."
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "Not now"
+msgstr "Nu acum"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "This invite link no longer works"
+msgstr "Acest link de invitație nu mai funcționează"
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "You are already in it."
+msgstr "Faci deja parte."
+
+#: lib/gamend_web/live/user_live/group_join.ex
+#, elixir-autogen, elixir-format
+msgid "You joined %{name}."
+msgstr "Te-ai alăturat grupului %{name}."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Anyone signed in who opens it joins as a member."
+msgstr "Oricine e conectat și îl deschide intră ca membru."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Copied"
+msgstr "Copiat"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Copy"
+msgstr "Copiază"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Create link"
+msgstr "Creează link"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Invite link"
+msgstr "Link de invitație"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Invited"
+msgstr "Invitat"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Pending invites"
+msgstr "Invitații în așteptare"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "New link"
+msgstr "Link nou"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Share a link: anyone signed in who opens it joins as a member, until it expires."
+msgstr "Distribuie un link: oricine e conectat și îl deschide intră ca membru, până expiră."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "The current link stops working."
+msgstr "Linkul actual nu va mai funcționa."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Turn off"
+msgstr "Dezactivează"
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "Joined through it: %{count}."
+msgstr "Au intrat prin el: %{count}."
+
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex
+#, elixir-autogen, elixir-format
+msgid "by %{name}"
+msgstr "de la %{name}"
+
+#: lib/gamend_web/live/new_group_component.ex
+#, elixir-autogen, elixir-format
+msgid "New group"
+msgstr "Grup nou"
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Hidden: only the people invited see it."
+msgstr "Ascuns: îl văd doar persoanele invitate."
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Private: listed, and people ask to join."
+msgstr "Privat: apare în listă, iar oamenii cer să intre."
+
+#: lib/gamend_web/group_labels.ex
+#, elixir-autogen, elixir-format
+msgid "Public: listed, and anyone joins."
+msgstr "Public: apare în listă și oricine poate intra."

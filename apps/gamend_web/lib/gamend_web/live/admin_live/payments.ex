@@ -141,13 +141,27 @@ defmodule GamendWeb.AdminLive.Payments do
                     <th>Active</th>
                     <th>Grant config</th>
                     <th>Created</th>
-                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr :for={product <- @products} id={"admin-payment-product-#{product.id}"}>
+                  <tr
+                    :for={product <- @products}
+                    id={"admin-payment-product-#{product.id}"}
+                    class={clickable_row()}
+                    phx-click="edit_product"
+                    phx-value-id={product.id}
+                  >
                     <td class="font-mono text-xs">{product.id}</td>
-                    <td class="font-mono text-xs break-all">{product.sku}</td>
+                    <td class="font-mono text-xs break-all">
+                      <button
+                        type="button"
+                        phx-click="edit_product"
+                        phx-value-id={product.id}
+                        class="link link-hover text-left"
+                      >
+                        {product.sku}
+                      </button>
+                    </td>
                     <td class="text-sm">{product.title}</td>
                     <td><span class="badge badge-outline">{product.kind}</span></td>
                     <td>{active_badge(product.active)}</td>
@@ -156,16 +170,6 @@ defmodule GamendWeb.AdminLive.Payments do
                     </td>
                     <td class="font-mono text-xs">
                       <.timestamp at={product.inserted_at} format="full" />
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        phx-click="edit_product"
-                        phx-value-id={product.id}
-                        class="btn btn-xs btn-outline btn-info"
-                      >
-                        Edit
-                      </button>
                     </td>
                   </tr>
                 </tbody>
@@ -200,16 +204,30 @@ defmodule GamendWeb.AdminLive.Payments do
                     <th>Price</th>
                     <th>Active</th>
                     <th>Metadata</th>
-                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr :for={pp <- @provider_products} id={"admin-provider-product-#{pp.id}"}>
+                  <tr
+                    :for={pp <- @provider_products}
+                    id={"admin-provider-product-#{pp.id}"}
+                    class={clickable_row()}
+                    phx-click="edit_provider_product"
+                    phx-value-id={pp.id}
+                  >
                     <td class="font-mono text-xs">{pp.id}</td>
                     <td>
                       <span class={["badge", provider_badge_class(pp.provider)]}>{pp.provider}</span>
                     </td>
-                    <td class="font-mono text-xs break-all">{pp.external_id}</td>
+                    <td class="font-mono text-xs break-all">
+                      <button
+                        type="button"
+                        phx-click="edit_provider_product"
+                        phx-value-id={pp.id}
+                        class="link link-hover text-left"
+                      >
+                        {pp.external_id}
+                      </button>
+                    </td>
                     <td>
                       <div class="font-mono text-xs">{pp.product && pp.product.sku}</div>
                       <div class="text-xs text-muted">#{pp.product_id}</div>
@@ -218,16 +236,6 @@ defmodule GamendWeb.AdminLive.Payments do
                     <td>{active_badge(pp.active)}</td>
                     <td>
                       <pre class="text-xs font-mono whitespace-pre-wrap max-h-24 overflow-auto bg-base-100/60 rounded p-2">{json_preview(pp.metadata)}</pre>
-                    </td>
-                    <td>
-                      <button
-                        type="button"
-                        phx-click="edit_provider_product"
-                        phx-value-id={pp.id}
-                        class="btn btn-xs btn-outline btn-info"
-                      >
-                        Edit
-                      </button>
                     </td>
                   </tr>
                 </tbody>

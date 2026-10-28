@@ -10,6 +10,8 @@ defmodule GamendWeb.Api.V1.GroupController do
   alias GamendWeb.Schemas
 
   alias GamendWeb.Schemas.{
+    GroupInviteLinkPreviewResponse,
+    GroupInviteLinkResponse,
     GroupInviteOutcomeResponse,
     GroupInvitePage,
     GroupJoinRequestPage,
@@ -22,6 +24,7 @@ defmodule GamendWeb.Api.V1.GroupController do
     UploadTicketResponse
   }
 
+  alias GamendWeb.GroupLinks
   alias GamendWeb.Serializers
   alias GamendWeb.Uploads
   alias OpenApiSpex.Schema
@@ -108,7 +111,15 @@ defmodule GamendWeb.Api.V1.GroupController do
         type: :object,
         required: [:title],
         properties: %{
-          title: %Schema{type: :string, description: "Display title (unique)"},
+          title: %Schema{
+            type: :string,
+            description: "Display title (unique unless the host lets titles repeat)"
+          },
+          slug: %Schema{
+            type: :string,
+            description:
+              "Its name in a URL, unique among the creator's groups; made from the title when omitted"
+          },
           description: %Schema{type: :string, description: "Optional description"},
           icon_url: %Schema{type: :string, description: "Optional icon URL"},
           type: %Schema{
@@ -116,7 +127,10 @@ defmodule GamendWeb.Api.V1.GroupController do
             enum: ["public", "private", "hidden"],
             default: "public"
           },
-          max_members: %Schema{type: :integer, description: "Max members (default: 100)"},
+          max_members: %Schema{
+            type: :integer,
+            description: "Max members (default: 100; ignored when the host fixes it)"
+          },
           metadata: %Schema{type: :object, description: "Server metadata"},
           slowdown: %Schema{
             type: :integer,
@@ -128,7 +142,7 @@ defmodule GamendWeb.Api.V1.GroupController do
     },
     responses: [
       created: {"Group created", "application/json", GroupResponse},
-      conflict: Schemas.error("Title taken or validation error"),
+      conflict: Schemas.error("Title or slug taken, or validation error"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -154,10 +168,17 @@ defmodule GamendWeb.Api.V1.GroupController do
         type: :object,
         properties: %{
           title: %Schema{type: :string},
+          slug: %Schema{
+            type: :string,
+            description: "Its name in a URL, unique among the creator's groups"
+          },
           description: %Schema{type: :string},
           icon_url: %Schema{type: :string},
           type: %Schema{type: :string, enum: ["public", "private", "hidden"]},
-          max_members: %Schema{type: :integer},
+          max_members: %Schema{
+            type: :integer,
+            description: "Ignored when the host fixes every group's"
+          },
           metadata: %Schema{type: :object},
           slowdown: %Schema{
             type: :integer,
@@ -612,8 +633,10 @@ defmodule GamendWeb.Api.V1.GroupController do
 
   operation(:cancel_invite,
     operation_id: "cancel_group_invite",
-    summary: "Cancel a sent group invitation",
-    description: "Cancel (delete) a group invitation that the authenticated user sent.",
+    summary: "Cancel a pending group invitation",
+    description:
+      "Cancel (delete) a pending group invitation the authenticated user sent, or any pending " <>
+        "invitation of a group they are an admin of (`GET /api/v1/groups/{id}/invites`).",
     security: [%{"authorization" => []}],
     parameters: [
       invite_id: [
@@ -625,8 +648,152 @@ defmodule GamendWeb.Api.V1.GroupController do
     ],
     responses: [
       ok: {"Invitation cancelled", "application/json", OkResponse},
-      forbidden: Schemas.error("Not allowed"),
+      forbidden: Schemas.error("Neither its sender nor an admin of its group"),
       not_found: Schemas.error("Invitation not found"),
+      unauthorized: Schemas.error("Not authenticated")
+    ]
+  )
+
+  operation(:invite_link,
+    operation_id: "get_group_invite_link",
+    summary: "Get a group's invite link (admin only)",
+    description:
+      "The group's working invite link: anyone signed in who opens its `url`, or joins with its " <>
+        "`token` (`POST /api/v1/groups/invite_links/{token}/join`), becomes a member. " <>
+        "404 when the group has none, or it expired or was replaced.",
+    security: [%{"authorization" => []}],
+    parameters: [
+      id: [
+        in: :path,
+        schema: %Schema{type: :string, format: :uuid},
+        description: "Group ID",
+        required: true
+      ]
+    ],
+    responses: [
+      ok: {"The link", "application/json", GroupInviteLinkResponse},
+      forbidden: Schemas.error("Not admin"),
+      not_found: Schemas.error("Group not found, or no working link"),
+      unauthorized: Schemas.error("Not authenticated")
+    ]
+  )
+
+  operation(:create_invite_link,
+    operation_id: "create_group_invite_link",
+    summary: "Make a group's invite link (admin only)",
+    description:
+      "Make a new invite link for the group, lasting `GAMEND_GROUPS_LINK_DAYS` days; the old one " <>
+        "stops working at once. 403 `links_off` when the server has invite links off.",
+    security: [%{"authorization" => []}],
+    parameters: [
+      id: [
+        in: :path,
+        schema: %Schema{type: :string, format: :uuid},
+        description: "Group ID",
+        required: true
+      ]
+    ],
+    responses: [
+      ok: {"The new link", "application/json", GroupInviteLinkResponse},
+      forbidden: Schemas.error("Not admin, or invite links off"),
+      not_found: Schemas.error("Group not found"),
+      unauthorized: Schemas.error("Not authenticated")
+    ]
+  )
+
+  operation(:delete_invite_link,
+    operation_id: "delete_group_invite_link",
+    summary: "Turn a group's invite link off (admin only)",
+    description: "Turn the group's invite link off: it opens nothing from now on.",
+    security: [%{"authorization" => []}],
+    parameters: [
+      id: [
+        in: :path,
+        schema: %Schema{type: :string, format: :uuid},
+        description: "Group ID",
+        required: true
+      ]
+    ],
+    responses: [
+      ok: {"Link turned off", "application/json", OkResponse},
+      forbidden: Schemas.error("Not admin, or invite links off"),
+      not_found: Schemas.error("Group not found"),
+      unauthorized: Schemas.error("Not authenticated")
+    ]
+  )
+
+  operation(:group_invites,
+    operation_id: "list_group_invites",
+    summary: "List a group's pending invitations (admin only)",
+    description:
+      "The group's pending invitations, whoever sent them, newest first. An admin may cancel any " <>
+        "of them (`DELETE /api/v1/groups/sent_invitations/{invite_id}`).",
+    security: [%{"authorization" => []}],
+    parameters: [
+      id: [
+        in: :path,
+        schema: %Schema{type: :string, format: :uuid},
+        description: "Group ID",
+        required: true
+      ],
+      page: [in: :query, schema: %Schema{type: :integer}, description: "Page number (default: 1)"],
+      page_size: [
+        in: :query,
+        schema: %Schema{type: :integer},
+        description: "Items per page (default: 25)"
+      ]
+    ],
+    responses: [
+      ok: {"Pending invitations", "application/json", GroupInvitePage},
+      forbidden: Schemas.error("Not admin"),
+      not_found: Schemas.error("Group not found"),
+      unauthorized: Schemas.error("Not authenticated")
+    ]
+  )
+
+  operation(:invite_link_preview,
+    operation_id: "preview_group_invite_link",
+    summary: "See the group an invite link opens",
+    description:
+      "The group an invite link opens, who made the link, and whether the caller is already in it: " <>
+        "what to show before joining. 404 for a token that opens nothing (unknown, expired, replaced " <>
+        "or turned off), which never says which group it was for.",
+    security: [%{"authorization" => []}],
+    parameters: [
+      token: [
+        in: :path,
+        schema: %Schema{type: :string},
+        description: "The invite link's token",
+        required: true
+      ]
+    ],
+    responses: [
+      ok: {"The link's group", "application/json", GroupInviteLinkPreviewResponse},
+      not_found: Schemas.error("No working link with this token"),
+      unauthorized: Schemas.error("Not authenticated")
+    ]
+  )
+
+  operation(:join_by_invite_link,
+    operation_id: "join_group_by_invite_link",
+    summary: "Join a group through its invite link",
+    description:
+      "Join the group an invite link opens, as a member, whatever its type. The admin who made the " <>
+        "link is told.",
+    security: [%{"authorization" => []}],
+    parameters: [
+      token: [
+        in: :path,
+        schema: %Schema{type: :string},
+        description: "The invite link's token",
+        required: true
+      ]
+    ],
+    responses: [
+      ok: {"Joined", "application/json", GroupMemberResponse},
+      conflict: Schemas.error("Already a member"),
+      forbidden: Schemas.error("Cannot join (full, too many groups, blocked)"),
+      not_found: Schemas.error("No working link with this token"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -692,7 +859,7 @@ defmodule GamendWeb.Api.V1.GroupController do
     case Groups.get_group(group_id) do
       %{type: "hidden"} = group ->
         case Scope.user(conn.assigns[:current_scope]) do
-          %User{id: user_id} -> if Groups.member?(user_id, group_id), do: group
+          %User{id: user_id} -> if Groups.member?(group_id, user_id), do: group
           _ -> nil
         end
 
@@ -1317,6 +1484,97 @@ defmodule GamendWeb.Api.V1.GroupController do
     end)
   end
 
+  def invite_link(conn, %{"id" => id}) do
+    with_auth(conn, fn user ->
+      with group_id when is_binary(group_id) <- parse_id(id),
+           %{} <- Groups.get_group(group_id),
+           true <- Groups.can_manage_group?(user.id, group_id) || :not_admin,
+           %{} = link <- Groups.get_invite_link(group_id) do
+        reply_data(conn, serialize_invite_link(conn, link))
+      else
+        :not_admin -> reply_error(conn, :forbidden, "not_admin")
+        _none -> reply_error(conn, :not_found, "not_found")
+      end
+    end)
+  end
+
+  def create_invite_link(conn, %{"id" => id}) do
+    with_auth(conn, fn user ->
+      with group_id when is_binary(group_id) <- parse_id(id),
+           {:ok, link} <- Groups.create_invite_link(user.id, group_id) do
+        reply_data(conn, serialize_invite_link(conn, link))
+      else
+        {:error, reason} when reason in [:not_admin, :links_off] ->
+          reply_error(conn, :forbidden, reason)
+
+        _not_found ->
+          reply_error(conn, :not_found, "not_found")
+      end
+    end)
+  end
+
+  def delete_invite_link(conn, %{"id" => id}) do
+    with_auth(conn, fn user ->
+      with group_id when is_binary(group_id) <- parse_id(id),
+           :ok <- Groups.delete_invite_link(user.id, group_id) do
+        reply_ok(conn)
+      else
+        {:error, reason} when reason in [:not_admin, :links_off] ->
+          reply_error(conn, :forbidden, reason)
+
+        _not_found ->
+          reply_error(conn, :not_found, "not_found")
+      end
+    end)
+  end
+
+  def group_invites(conn, %{"id" => id} = params) do
+    with_auth(conn, fn user ->
+      {page, page_size} = GamendWeb.Pagination.params(params)
+
+      with group_id when is_binary(group_id) <- parse_id(id),
+           %{} <- Groups.get_group(group_id),
+           {:ok, invites} <-
+             Groups.list_group_invites(user.id, group_id, page: page, page_size: page_size) do
+        reply_page(conn, invites, page, page_size, Groups.count_group_invites(group_id))
+      else
+        {:error, :not_admin} -> reply_error(conn, :forbidden, "not_admin")
+        _not_found -> reply_error(conn, :not_found, "not_found")
+      end
+    end)
+  end
+
+  def invite_link_preview(conn, %{"token" => token}) do
+    with_auth(conn, fn user ->
+      case Groups.get_invite_link_by_token(token) do
+        nil ->
+          reply_error(conn, :not_found, "not_found")
+
+        link ->
+          reply_data(conn, %{
+            group_id: link.group_id,
+            group_title: link.group.title,
+            group_type: link.group.type,
+            member_count: Groups.count_group_members(link.group_id),
+            creator_name: Gamend.Accounts.display_name(link.created_by),
+            expires_at: link.expires_at,
+            member: Groups.member?(link.group_id, user.id)
+          })
+      end
+    end)
+  end
+
+  def join_by_invite_link(conn, %{"token" => token}) do
+    with_auth(conn, fn user ->
+      case Groups.join_by_invite_link(user.id, token) do
+        {:ok, member} -> reply_data(conn, serialize_member(member))
+        {:error, :not_found} -> reply_error(conn, :not_found, "not_found")
+        {:error, :already_member} -> reply_error(conn, :conflict, "already_member")
+        {:error, reason} -> reply_error(conn, :forbidden, reason)
+      end
+    end)
+  end
+
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
@@ -1326,6 +1584,17 @@ defmodule GamendWeb.Api.V1.GroupController do
       %User{} = user -> fun.(user)
       _ -> reply_error(conn, :unauthorized, "not_authenticated")
     end
+  end
+
+  # A group's invite link, its full URL on this host beside the token.
+  defp serialize_invite_link(conn, link) do
+    %{
+      group_id: link.group_id,
+      token: link.token,
+      url: GroupLinks.join_url(conn, link.token),
+      expires_at: link.expires_at,
+      uses: link.uses
+    }
   end
 
   defp serialize_group(group, member_counts \\ %{}) do

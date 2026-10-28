@@ -9,6 +9,7 @@ defmodule Gamend.Groups.Group do
 
   - `id` - Group ID (integer)
   - `title` - Group title (string)
+  - `slug` - Its name in a URL, unique per creator (string); `Gamend.Groups.full_slug/1` is `<owner>/<slug>`
   - `description` - Group description (string)
   - `icon_url` - Optional icon URL; nil means clients show their type default
   - `type` - Group type: `"public"`, `"private"`, or `"hidden"` (string)
@@ -23,6 +24,7 @@ defmodule Gamend.Groups.Group do
   @type t :: %__MODULE__{
           id: integer(),
           title: String.t(),
+          slug: String.t(),
           description: String.t(),
           icon_url: String.t() | nil,
           type: String.t(),
@@ -37,6 +39,7 @@ defmodule Gamend.Groups.Group do
   defstruct [
     :id,
     :title,
+    :slug,
     :description,
     :icon_url,
     :type,

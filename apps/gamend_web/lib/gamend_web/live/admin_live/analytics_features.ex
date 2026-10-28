@@ -113,14 +113,14 @@ defmodule GamendWeb.AdminLive.AnalyticsFeatures do
                     </p>
                   </th>
                 </tr>
-                <tr :for={{event, f} <- rows} class="hover:bg-base-200">
+                <tr :for={{event, f} <- rows} class={clickable_row()}>
                   <td>
-                    <.link
+                    <.row_link
                       navigate={explore(event.name, Atom.to_string(@segment))}
                       class="link link-hover"
                     >
                       {event.label}
-                    </.link>
+                    </.row_link>
                     <div :if={event.label != event.name} class="font-mono text-xs text-muted">
                       {event.name}
                     </div>

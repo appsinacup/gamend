@@ -361,7 +361,7 @@ defmodule GamendWeb.AdminLive.Logs do
             <tr
               :for={session <- @sessions}
               class={[
-                "hover cursor-pointer",
+                clickable_row(),
                 @selected && @selected.client_session_id == session.client_session_id &&
                   "bg-base-200"
               ]}
@@ -373,7 +373,14 @@ defmodule GamendWeb.AdminLive.Logs do
               </td>
               <td class="font-mono text-xs">
                 <span class="flex items-center gap-1">
-                  {short(session.client_session_id)}
+                  <button
+                    type="button"
+                    phx-click="select_session"
+                    phx-value-id={session.client_session_id}
+                    class="link link-hover"
+                  >
+                    {short(session.client_session_id)}
+                  </button>
                   <span :if={session.flagged} class="badge badge-xs badge-warning">flagged</span>
                 </span>
               </td>

@@ -7,7 +7,7 @@ generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
 # Settings
 
 Every setting the server has, with the environment variable that sets it.
-337 settings across 31 groups.
+339 settings across 31 groups.
 
 A setting is declared in the module that owns it, so this page and
 `.env.example` are generated from the same source the server reads. The
@@ -200,7 +200,9 @@ Live values, and where each one came from, are on the
 |---|---|---|---|
 | `GAMEND_GROUPS_INVITES` | atom | `:friends` | Whom a group's admin may invite: `friends` (someone who accepted their friend request) or `anyone` (any account, found by name or exact email). For a host whose groups are teams of colleagues; the invite is still the recipient's to accept. |
 | `GAMEND_GROUPS_LINK_DAYS` | integer | `7` | How many days a group's invite link lasts: anyone signed in who opens it joins the group as a member. 0 turns invite links off. |
+| `GAMEND_GROUPS_MAX_MEMBERS` | integer | `0` | Every new group's member cap, the same for all: a group's admins are not asked it and the API ignores it (an operator still may change one group's on the admin page). 0 lets each group's admin pick, up to the `max_group_members` limit. |
 | `GAMEND_GROUPS_TYPES` | list | `public,private,hidden` | The types a group may be created as or changed to, the first one the default: public, private, hidden. `hidden` alone makes every group invite-only and unlisted. |
+| `GAMEND_GROUPS_UNIQUE_TITLES` | boolean | `true` | Whether a group's title must be unique. Off for a host whose groups are hidden, so a taken title tells no one that a hidden group exists; the slug (`<owner>/<slug>`) stays unique. |
 
 
 ## Hooks

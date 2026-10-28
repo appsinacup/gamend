@@ -60,7 +60,7 @@ defmodule GamendWeb.AdminLive.ChatFilterTest do
     add(view, "grumpwizet")
     saved = word("grumpwizet")
 
-    render_click(view, "edit_word", %{"id" => saved.id})
+    view |> element("#filter-word-#{saved.id}") |> render_click()
     assert assigns(view).word_form["id"] == saved.id
     render_change(view, "word_form_change", %{"severity" => "mask", "match_mode" => "exact"})
     render_submit(view, "save_word", %{})

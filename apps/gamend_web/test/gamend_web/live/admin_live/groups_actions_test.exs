@@ -67,7 +67,7 @@ defmodule GamendWeb.AdminLive.GroupsActionsTest do
     group: group
   } do
     view = page(conn, admin)
-    render_click(view, "edit_group", %{"id" => group.id})
+    view |> element("#admin-group-#{group.id}") |> render_click()
     assert assigns(view).selected_group.id == group.id
     render_click(view, "cancel_edit", %{})
     assert assigns(view).selected_group == nil

@@ -118,7 +118,8 @@ chat and friend requests.
 
 | Column | Type | Notes |
 |---|---|---|
-| `title` | string | Display name |
+| `title` | string | Display name; unique unless `GAMEND_GROUPS_UNIQUE_TITLES=false` (checked in the changeset, plain index) |
+| `slug` | string | Its name in a URL, unique per creator (`creator_id, slug`): `<owner>/<slug>` |
 | `type` | string | `public` / `private` / `hidden`, default `public` |
 | `max_members` | integer | Default 100 |
 | `creator_id` | FK users | Owner |

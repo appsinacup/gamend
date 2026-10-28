@@ -52,8 +52,9 @@ defmodule GamendWeb.NotificationsLive do
                 </thead>
                 <tbody>
                   <tr
-                    :for={n <- @notifications}
+                    :for={{n, path} <- Enum.map(@notifications, &{&1, notification_path(&1)})}
                     id={"notif-" <> to_string(n.id)}
+                    class={path && clickable_row()}
                   >
                     <td class="text-sm">
                       <div class="flex items-center gap-2">
@@ -62,7 +63,13 @@ defmodule GamendWeb.NotificationsLive do
                           type={:notification}
                           class="w-4 h-4 shrink-0 text-muted"
                         />
-                        {translate_notification_title(n)}
+                        <%!-- `href`, not `navigate`: a notice leads anywhere
+                        (`/admin/reports` is another live_session), and
+                        `live_nav.js` makes a same-session link live. --%>
+                        <.row_link :if={path} href={path}>
+                          {translate_notification_title(n)}
+                        </.row_link>
+                        <span :if={!path}>{translate_notification_title(n)}</span>
                       </div>
                     </td>
                     <td class="text-sm">
@@ -80,21 +87,12 @@ defmodule GamendWeb.NotificationsLive do
                     <td class="text-sm whitespace-nowrap">
                       <.timestamp at={n.inserted_at} />
                     </td>
-                    <td class="flex gap-1 flex-wrap">
-                      <%= if action = notification_action(n) do %>
-                        <% {label, path} = action %>
-                        <%!-- `href`, not `navigate`: a notice leads anywhere
-                        (`/admin/reports` is another live_session), and
-                        `live_nav.js` makes a same-session link live. --%>
-                        <.link href={path} class="btn btn-sm btn-outline btn-primary">
-                          {label}
-                        </.link>
-                      <% end %>
+                    <td class="text-end">
                       <button
                         type="button"
                         phx-click="delete"
                         phx-value-id={n.id}
-                        class="btn btn-sm btn-outline btn-error"
+                        class={["btn btn-sm btn-outline btn-error", row_control()]}
                       >
                         {gettext("Delete")}
                       </button>
@@ -198,16 +196,17 @@ defmodule GamendWeb.NotificationsLive do
 
   def handle_info(_msg, socket), do: {:noreply, socket}
 
-  defp notification_action(n) do
-    case action_for_type(n.metadata["type"], n) || action_for_metadata(n.metadata) do
-      {_label, path} = action -> if page_open?(path), do: action
+  # Where the row leads, or nil when it leads nowhere.
+  defp notification_path(n) do
+    case path_for_type(n.metadata["type"], n) || path_for_metadata(n.metadata) do
       nil -> nil
+      path -> if page_open?(path), do: path
     end
   end
 
   # A notification still arrives when its page is switched off on the site
   # (the game sends chat, friend, group and cup traffic regardless), so its
-  # button goes.
+  # row leads nowhere.
   defp page_open?(path) do
     cond do
       under?(path, "/chat") ->
@@ -234,70 +233,51 @@ defmodule GamendWeb.NotificationsLive do
   defp under?(path, root),
     do: path == root or String.starts_with?(path, [root <> "/", root <> "?"])
 
-  defp action_for_type("group_invite", n) do
-    group_id = n.metadata["group_id"]
-
-    if group_id,
-      do: {gettext("View"), ~p"/groups/#{group_id}"},
-      else: {gettext("View"), ~p"/groups"}
+  defp path_for_type("group_invite", n) do
+    case n.metadata["group_id"] do
+      nil -> ~p"/groups"
+      group_id -> ~p"/groups/#{group_id}"
+    end
   end
 
-  defp action_for_type("party_invite", _n), do: {gettext("View"), ~p"/play"}
-  defp action_for_type("chat_lobby", _n), do: {gettext("Open"), ~p"/play"}
-  defp action_for_type("chat_party", _n), do: {gettext("View"), ~p"/play"}
+  defp path_for_type(type, _n) when type in ["party_invite", "chat_lobby", "chat_party"],
+    do: ~p"/play"
 
-  defp action_for_type("friend_request", _n),
-    do: {gettext("View"), ~p"/users/settings?#{[tab: "friends"]}"}
+  defp path_for_type("friend_request", _n), do: ~p"/users/settings?#{[tab: "friends"]}"
+  defp path_for_type("quest_completed", _n), do: ~p"/quests"
 
-  defp action_for_type("quest_completed", _n),
-    do: {gettext("View"), ~p"/quests"}
+  defp path_for_type("chat_group", n), do: chat_path("group", n.metadata["group_id"])
 
-  defp action_for_type("chat_group", n) do
-    group_id = n.metadata["group_id"]
+  defp path_for_type("chat_friend", n),
+    do: chat_path("friend", n.metadata["friend_id"] || n.metadata["sender_id"])
 
-    if group_id,
-      do: {gettext("Open"), ~p"/chat?#{[type: "group", id: group_id]}"},
-      else: {gettext("Open"), ~p"/chat"}
-  end
+  defp path_for_type("friend_accepted", n),
+    do: chat_path("friend", n.metadata["friend_id"] || n.sender_id)
 
-  defp action_for_type("chat_friend", n) do
-    friend_id = n.metadata["friend_id"] || n.metadata["sender_id"]
+  defp path_for_type(_type, _n), do: nil
 
-    if friend_id,
-      do: {gettext("Open"), ~p"/chat?#{[type: "friend", id: friend_id]}"},
-      else: {gettext("Open"), ~p"/chat"}
-  end
+  defp chat_path(_type, nil), do: ~p"/chat"
+  defp chat_path(type, id), do: ~p"/chat?#{[type: type, id: id]}"
 
-  defp action_for_type("friend_accepted", n) do
-    friend_id = n.metadata["friend_id"] || n.sender_id
-
-    if friend_id,
-      do: {gettext("Open"), ~p"/chat?#{[type: "friend", id: friend_id]}"},
-      else: {gettext("Open"), ~p"/chat"}
-  end
-
-  defp action_for_type(_type, _n), do: nil
-
-  # Fallback: infer action from metadata keys for notifications without a known type
+  # Fallback: infer the path from metadata keys for notifications without a known type
   # A server notification (`Gamend.Notifications.notify/3`) says where it
   # leads. Only a path on this site: never another host.
-  defp action_for_metadata(%{"url" => url}) when is_binary(url) do
+  defp path_for_metadata(%{"url" => url}) when is_binary(url) do
     if String.starts_with?(url, "/") and not String.starts_with?(url, ["//", "/\\"]),
-      do: {gettext("Open"), url}
+      do: url
   end
 
-  defp action_for_metadata(%{"leaderboard_slug" => slug}) when is_binary(slug),
-    do: {gettext("View"), ~p"/leaderboards/#{slug}"}
+  defp path_for_metadata(%{"leaderboard_slug" => slug}) when is_binary(slug),
+    do: ~p"/leaderboards/#{slug}"
 
-  defp action_for_metadata(%{"leaderboard_id" => _}),
-    do: {gettext("View"), ~p"/leaderboards"}
+  defp path_for_metadata(%{"leaderboard_id" => _}), do: ~p"/leaderboards"
 
-  defp action_for_metadata(%{"group_id" => group_id}) when is_binary(group_id),
-    do: {gettext("View"), ~p"/groups/#{group_id}"}
+  defp path_for_metadata(%{"group_id" => group_id}) when is_binary(group_id),
+    do: ~p"/groups/#{group_id}"
 
-  defp action_for_metadata(%{"lobby_id" => _}), do: {gettext("Open"), ~p"/play"}
-  defp action_for_metadata(%{"party_id" => _}), do: {gettext("View"), ~p"/play"}
-  defp action_for_metadata(_), do: nil
+  defp path_for_metadata(%{"lobby_id" => _}), do: ~p"/play"
+  defp path_for_metadata(%{"party_id" => _}), do: ~p"/play"
+  defp path_for_metadata(_), do: nil
 
   defp reload_notifications(socket) do
     user = Scope.user(socket.assigns.current_scope)

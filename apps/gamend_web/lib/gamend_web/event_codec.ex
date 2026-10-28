@@ -356,7 +356,8 @@ defmodule GamendWeb.EventCodec do
       slowdown: get(p, :slowdown),
       inserted_at_ms: ms(p, :inserted_at),
       updated_at_ms: ms(p, :updated_at),
-      icon_url: get(p, :icon_url)
+      icon_url: get(p, :icon_url),
+      slug: get(p, :slug)
     }
   end
 

@@ -589,8 +589,23 @@ defmodule GamendWeb.AdminLive.ChatFilter do
                 </tr>
               </thead>
               <tbody>
-                <tr :for={word <- @words} id={"filter-word-#{word.id}"}>
-                  <td class="font-mono text-xs">{word.word}</td>
+                <tr
+                  :for={word <- @words}
+                  id={"filter-word-#{word.id}"}
+                  phx-click="edit_word"
+                  phx-value-id={word.id}
+                  class={clickable_row()}
+                >
+                  <td class="font-mono text-xs">
+                    <button
+                      type="button"
+                      phx-click="edit_word"
+                      phx-value-id={word.id}
+                      class="link link-hover"
+                    >
+                      {word.word}
+                    </button>
+                  </td>
                   <td>
                     <span class={["badge badge-sm", severity_badge(word.severity)]}>
                       {word.severity}
@@ -602,13 +617,6 @@ defmodule GamendWeb.AdminLive.ChatFilter do
                     <.timestamp at={word.inserted_at} format="full" />
                   </td>
                   <td class="text-right whitespace-nowrap">
-                    <button
-                      phx-click="edit_word"
-                      phx-value-id={word.id}
-                      class="btn btn-surface btn-xs"
-                    >
-                      {gettext("Edit")}
-                    </button>
                     <button
                       phx-click="delete_word"
                       phx-value-id={word.id}

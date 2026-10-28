@@ -98,6 +98,50 @@ defmodule Gamend.GroupsTest do
       assert {:error, _changeset} = Groups.create_group(owner.id, %{"title" => "Unique"})
     end
 
+    test "makes the slug from the title, and the creator's second of it gets -2", %{
+      owner: owner
+    } do
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "My Cool Group!"})
+      assert group.slug == "my-cool-group"
+      assert Groups.full_slug(group) == owner.username <> "/my-cool-group"
+
+      assert Groups.free_slug(owner.id, "My Cool Group") == "my-cool-group-2"
+
+      assert Groups.free_slug(AccountsFixtures.user_fixture().id, "My Cool Group") ==
+               "my-cool-group"
+    end
+
+    test "takes a slug given, refuses a malformed or taken one", %{owner: owner} do
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "One", "slug" => "Crew_1"})
+      assert group.slug == "crew_1"
+
+      assert {:error, changeset} =
+               Groups.create_group(owner.id, %{"title" => "Two", "slug" => "crew_1"})
+
+      assert %{slug: ["is taken"]} = errors_on(changeset)
+
+      assert {:error, changeset} =
+               Groups.create_group(owner.id, %{"title" => "Three", "slug" => "no spaces"})
+
+      assert %{slug: [_]} = errors_on(changeset)
+    end
+
+    test "finds a group by its full slug or its id, and an admin renames the slug", %{
+      owner: owner
+    } do
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "Found"})
+      ref = Groups.full_slug(group)
+
+      assert %{id: id} = Groups.get_group_by_full_slug(ref)
+      assert id == group.id
+      assert %{id: ^id} = Groups.get_group_by_full_slug(group.id)
+      assert Groups.get_group_by_full_slug("nobody-here/found") == nil
+      assert Groups.get_group_by_full_slug("a/b/c") == nil
+
+      assert {:ok, %{slug: "renamed"}} = Groups.update_group(owner.id, id, %{"slug" => "renamed"})
+      assert %{id: ^id} = Groups.get_group_by_full_slug(owner.username <> "/renamed")
+    end
+
     test "validates title is required", %{owner: owner} do
       assert {:error, _changeset} = Groups.create_group(owner.id, %{"description" => "no title"})
     end

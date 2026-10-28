@@ -287,6 +287,7 @@ defmodule GamendWeb.Serializers do
     %{
       id: group.id,
       title: group.title,
+      slug: group.slug || "",
       description: group.description || "",
       icon_url: group.icon_url || "",
       type: group.type,

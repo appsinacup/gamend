@@ -109,7 +109,13 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                   </tr>
                 </thead>
                 <tbody>
-                  <tr :for={lb <- @leaderboards} id={"admin-lb-#{lb.id}"}>
+                  <tr
+                    :for={lb <- @leaderboards}
+                    id={"admin-lb-#{lb.id}"}
+                    class={clickable_row()}
+                    phx-click="edit_leaderboard"
+                    phx-value-id={lb.id}
+                  >
                     <td class="w-10">
                       <input
                         type="checkbox"
@@ -121,7 +127,16 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                     </td>
                     <td class="font-mono text-sm">{lb.id}</td>
                     <td class="font-mono text-sm">{lb.slug}</td>
-                    <td class="text-sm">{lb.title}</td>
+                    <td class="text-sm">
+                      <button
+                        type="button"
+                        phx-click="edit_leaderboard"
+                        phx-value-id={lb.id}
+                        class="link link-hover text-left"
+                      >
+                        {lb.title}
+                      </button>
+                    </td>
                     <td class="text-sm">
                       <span class="badge badge-ghost badge-sm">{lb.sort_order}</span>
                     </td>
@@ -150,13 +165,6 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                           class="btn btn-surface btn-xs"
                         >
                           Records
-                        </button>
-                        <button
-                          phx-click="edit_leaderboard"
-                          phx-value-id={lb.id}
-                          class="btn btn-xs btn-outline btn-info"
-                        >
-                          Edit
                         </button>
                         <%= if Leaderboard.active?(lb) do %>
                           <button
@@ -334,9 +342,24 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                   </tr>
                 </thead>
                 <tbody>
-                  <tr :for={record <- @records} id={"record-#{record.id}"}>
+                  <tr
+                    :for={record <- @records}
+                    id={"record-#{record.id}"}
+                    class={clickable_row()}
+                    phx-click="edit_record"
+                    phx-value-id={record.id}
+                  >
                     <td class="font-mono">#{record.rank}</td>
-                    <td class="font-mono text-sm">{record.label || record.user_id || "-"}</td>
+                    <td class="font-mono text-sm">
+                      <button
+                        type="button"
+                        phx-click="edit_record"
+                        phx-value-id={record.id}
+                        class="link link-hover text-left"
+                      >
+                        {record.label || record.user_id || "-"}
+                      </button>
+                    </td>
                     <td class="font-mono text-sm">{record.key}</td>
                     <td class="text-sm">
                       {cond do
@@ -350,13 +373,6 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                       <.timestamp at={record.updated_at} />
                     </td>
                     <td class="flex gap-1">
-                      <button
-                        phx-click="edit_record"
-                        phx-value-id={record.id}
-                        class="btn btn-xs btn-outline btn-info"
-                      >
-                        Edit
-                      </button>
                       <button
                         phx-click="delete_record"
                         phx-value-id={record.id}

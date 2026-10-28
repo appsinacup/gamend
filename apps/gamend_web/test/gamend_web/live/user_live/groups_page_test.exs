@@ -68,6 +68,59 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     assert_patch(view, "/users/groups")
   end
 
+  test "a fixed cap is not asked; the slug follows the title until typed into", %{
+    conn: conn,
+    user: user
+  } do
+    Application.put_env(
+      :gamend_core,
+      Groups,
+      Keyword.merge(Application.get_env(:gamend_core, Groups), max_members: 100)
+    )
+
+    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups?create=1")
+    refute has_element?(view, "#create-group-form input[name='group[max_members]']")
+
+    render_change(view, "group_validate_create", %{"group" => %{"title" => "Big Studio"}})
+    assert has_element?(view, "#create-group-form input[name='group[slug]'][value='big-studio']")
+
+    render_change(view, "group_validate_create", %{
+      "group" => %{"title" => "Big Studio 2", "slug" => "big-studio"}
+    })
+
+    assert has_element?(
+             view,
+             "#create-group-form input[name='group[slug]'][value='big-studio-2']"
+           )
+
+    render_change(view, "group_validate_create", %{
+      "group" => %{"title" => "Big Studio 3", "slug" => "mine"}
+    })
+
+    assert has_element?(view, "#create-group-form input[name='group[slug]'][value='mine']")
+
+    render_submit(view, "group_create", %{
+      "group" => %{"title" => "Big Studio 3", "slug" => "mine"}
+    })
+
+    assert [{%{slug: "mine", max_members: 100}, "admin"}] = assigns(view).my_groups
+  end
+
+  test "a row opens its group, by slug in the URL; leaving is on the group's page", %{
+    conn: conn,
+    user: user
+  } do
+    {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
+    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups")
+
+    refute has_element?(view, "#my-group-#{team.id} button", "Leave")
+    view |> element("#my-group-#{team.id} a") |> render_click()
+
+    assert_patch(view, "/users/groups?" <> URI.encode_query(group: "#{user.username}/studio"))
+    assert assigns(view).group_detail.id == team.id
+    assert has_element?(view, "button[phx-click='group_leave']")
+  end
+
   test "a team opens from its URL and a colleague is invited by email", %{
     conn: conn,
     user: user,
@@ -156,6 +209,47 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
 
     assert {:error, {:redirect, %{to: to}}} = live(conn, "/users/groups/join/#{token}")
     assert to =~ "/users/log_in"
+  end
+
+  test "an admin sees the group's pending invites, the invited stay marked, and one is cancelled",
+       %{conn: conn, user: user, other: other} do
+    {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
+    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups?group=#{team.id}")
+    refute has_element?(view, "#group-pending-invites")
+
+    render_keyup(view, "group_invite_search", %{"value" => other.email})
+    render_click(view, "group_invite_user", %{"group_id" => team.id, "user_id" => other.id})
+
+    # Still in the results, marked Invited, and listed under the group.
+    assert [%{id: other_id}] = assigns(view).invite_search_results
+    assert other_id == other.id
+    assert render(view) =~ "Invited"
+
+    refute has_element?(
+             view,
+             "button[phx-click='group_invite_user'][phx-value-user_id='#{other.id}']"
+           )
+
+    assert [%{id: invite_id}] = assigns(view).group_pending_invites
+    assert has_element?(view, "#group-pending-invite-#{invite_id}")
+
+    view |> element("#group-pending-invite-#{invite_id} button") |> render_click()
+    refute has_element?(view, "#group-pending-invites")
+    assert {:ok, []} = Groups.list_group_invites(user.id, team.id)
+  end
+
+  test "someone with an invite lands on Invitations, and on their groups once it is accepted",
+       %{conn: conn, user: user, other: other} do
+    {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
+    {:ok, _invite} = Groups.invite_to_group(user.id, team.id, other.id)
+
+    {:ok, view, html} = conn |> log_in_user(other) |> live("/users/groups")
+    assert assigns(view).groups_tab == "invitations"
+    assert html =~ "Studio"
+
+    view |> element("button[phx-click='group_accept_invite']") |> render_click()
+    assert assigns(view).groups_tab == "my_groups"
+    assert Groups.member?(team.id, other.id)
   end
 
   test "a stranger's team does not open", %{conn: conn, user: user, other: other} do

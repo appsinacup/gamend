@@ -512,6 +512,7 @@ defmodule GamendWeb.Router.Shared do
         get "/groups/me", GroupController, :my_groups
         get "/groups/sent_invitations", GroupController, :sent_invitations
         delete "/groups/sent_invitations/:invite_id", GroupController, :cancel_invite
+        get "/groups/invite_links/:token", GroupController, :invite_link_preview
       end
 
       # Optional auth, because these stay public for public and private groups —
@@ -666,6 +667,11 @@ defmodule GamendWeb.Router.Shared do
         post "/groups/:id/join_requests/:request_id/approve", GroupController, :approve_request
         post "/groups/:id/join_requests/:request_id/reject", GroupController, :reject_request
         delete "/groups/:id/join_requests/:request_id", GroupController, :cancel_request
+        get "/groups/:id/invite_link", GroupController, :invite_link
+        post "/groups/:id/invite_link", GroupController, :create_invite_link
+        delete "/groups/:id/invite_link", GroupController, :delete_invite_link
+        get "/groups/:id/invites", GroupController, :group_invites
+        post "/groups/invite_links/:token/join", GroupController, :join_by_invite_link
         post "/groups/:id/invite", GroupController, :invite
       end
 

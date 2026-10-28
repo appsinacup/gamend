@@ -742,7 +742,7 @@ defmodule Mix.Tasks.Gen.Sdk do
   defp group_placeholder_expr do
     dt = dt_placeholder_expr()
 
-    "%Gamend.Groups.Group{id: \"\", title: \"\", description: \"\", icon_url: nil, type: \"public\", max_members: 100, metadata: %{}, slowdown: 0, creator_id: nil, inserted_at: #{dt}, updated_at: #{dt}}"
+    "%Gamend.Groups.Group{id: \"\", title: \"\", slug: \"\", description: \"\", icon_url: nil, type: \"public\", max_members: 100, metadata: %{}, slowdown: 0, creator_id: nil, inserted_at: #{dt}, updated_at: #{dt}}"
   end
 
   defp leaderboard_placeholder_expr do

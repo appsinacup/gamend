@@ -11,11 +11,14 @@ defmodule GamendWeb.GroupLinks do
 
   alias GamendWeb.UserLive
 
-  @doc "The full URL of an invite link's token, for an admin to copy."
-  @spec join_url(Phoenix.LiveView.Socket.t(), String.t()) :: String.t()
-  def join_url(socket, token) do
-    path = String.replace(live_path(socket.router, UserLive.GroupJoin), ":token", token)
-    Phoenix.VerifiedRoutes.unverified_url(socket, path)
+  @doc """
+  The full URL of an invite link's token, for an admin to copy: from a
+  LiveView's socket, or a controller's conn (the API's `url`).
+  """
+  @spec join_url(Phoenix.LiveView.Socket.t() | Plug.Conn.t(), String.t()) :: String.t()
+  def join_url(socket_or_conn, token) do
+    path = String.replace(live_path(router(socket_or_conn), UserLive.GroupJoin), ":token", token)
+    Phoenix.VerifiedRoutes.unverified_url(socket_or_conn, path)
   end
 
   @doc "The path that opens one of the reader's groups."
@@ -26,6 +29,9 @@ defmodule GamendWeb.GroupLinks do
       path -> path <> "?" <> URI.encode_query(group: group_id)
     end
   end
+
+  defp router(%Plug.Conn{} = conn), do: Phoenix.Controller.router_module(conn)
+  defp router(socket), do: socket.router
 
   defp live_path(router, view) do
     Enum.find_value(Phoenix.Router.routes(router), fn

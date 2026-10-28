@@ -37,7 +37,7 @@ defmodule GamendWeb.AdminLive.TournamentsDetailTest do
     {:ok, view, _html} = live(conn, ~p"/admin/tournaments")
 
     html =
-      view |> element("button[phx-click='open_detail'][phx-value-id='#{t.id}']") |> render_click()
+      view |> element("tr[phx-click='open_detail'][phx-value-id='#{t.id}']") |> render_click()
 
     assert html =~ "Player 1"
     assert html =~ "Entries (3)"
@@ -48,7 +48,7 @@ defmodule GamendWeb.AdminLive.TournamentsDetailTest do
     {:ok, view, _html} = live(conn, ~p"/admin/tournaments")
 
     html =
-      view |> element("button[phx-click='open_detail'][phx-value-id='#{t.id}']") |> render_click()
+      view |> element("tr[phx-click='open_detail'][phx-value-id='#{t.id}']") |> render_click()
 
     assert html =~ "Entries (27)"
     assert html =~ "1 / 2 (27)"
@@ -66,7 +66,7 @@ defmodule GamendWeb.AdminLive.TournamentsDetailTest do
     {:ok, view, _html} = live(conn, ~p"/admin/tournaments")
 
     html =
-      view |> element("button[phx-click='open_detail'][phx-value-id='#{t.id}']") |> render_click()
+      view |> element("tr[phx-click='open_detail'][phx-value-id='#{t.id}']") |> render_click()
 
     assert html =~ "Matches — bracket 1"
     assert html =~ "View bracket tree"

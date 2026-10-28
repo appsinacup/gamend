@@ -15,6 +15,11 @@ defmodule GamendWeb.Schemas.Group do
     properties: %{
       id: %Schema{type: :string, format: :uuid},
       title: %Schema{type: :string, description: "Display title"},
+      slug: %Schema{
+        type: :string,
+        description:
+          "Its name in a URL, unique per creator: lowercase letters and digits joined by - or _"
+      },
       description: %Schema{type: :string, description: "Empty when unset"},
       icon_url: %Schema{type: :string, description: "Empty when unset"},
       type: %Schema{
@@ -37,6 +42,7 @@ defmodule GamendWeb.Schemas.Group do
     required: [
       :id,
       :title,
+      :slug,
       :description,
       :icon_url,
       :type,
@@ -48,6 +54,7 @@ defmodule GamendWeb.Schemas.Group do
     example: %{
       id: "0198c0de-0001-7000-8000-000000000001",
       title: "Awesome Guild",
+      slug: "awesome-guild",
       description: "A group for awesome players",
       icon_url: "",
       type: "public",
@@ -216,4 +223,65 @@ end
 defmodule GamendWeb.Schemas.GroupInviteOutcomeResponse do
   @moduledoc "The invitation's outcome under `data`."
   use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.GroupInviteOutcome
+end
+
+defmodule GamendWeb.Schemas.GroupInviteLink do
+  @moduledoc "A group's invite link (`Gamend.Groups.InviteLinks`)."
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  OpenApiSpex.schema(%{
+    title: "GroupInviteLink",
+    description:
+      "A group's invite link: anyone signed in who opens `url`, or joins with `token`, becomes a member",
+    type: :object,
+    properties: %{
+      group_id: %Schema{type: :string, format: :uuid},
+      token: %Schema{type: :string, description: "The link's secret part"},
+      url: %Schema{type: :string, description: "The website page the link opens"},
+      expires_at: %Schema{type: :string, format: :"date-time"},
+      uses: %Schema{type: :integer, description: "How many people joined through it"}
+    },
+    required: [:group_id, :token, :url, :expires_at, :uses]
+  })
+end
+
+defmodule GamendWeb.Schemas.GroupInviteLinkResponse do
+  @moduledoc "A group's invite link under `data`."
+  use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.GroupInviteLink
+end
+
+defmodule GamendWeb.Schemas.GroupInviteLinkPreview do
+  @moduledoc "The group an invite link opens, as its join page shows it."
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  OpenApiSpex.schema(%{
+    title: "GroupInviteLinkPreview",
+    description: "The group an invite link opens, and whether the caller is already in it",
+    type: :object,
+    properties: %{
+      group_id: %Schema{type: :string, format: :uuid},
+      group_title: %Schema{type: :string},
+      group_type: %Schema{type: :string, enum: ["public", "private", "hidden"]},
+      member_count: %Schema{type: :integer},
+      creator_name: %Schema{type: :string, description: "The admin who made the link"},
+      expires_at: %Schema{type: :string, format: :"date-time"},
+      member: %Schema{type: :boolean, description: "Whether the caller is already a member"}
+    },
+    required: [
+      :group_id,
+      :group_title,
+      :group_type,
+      :member_count,
+      :creator_name,
+      :expires_at,
+      :member
+    ]
+  })
+end
+
+defmodule GamendWeb.Schemas.GroupInviteLinkPreviewResponse do
+  @moduledoc "An invite link's group under `data`."
+  use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.GroupInviteLinkPreview
 end

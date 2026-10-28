@@ -221,11 +221,11 @@ defmodule GamendWeb.AdminLive.AnalyticsPeople do
             <.panel title="Events by name" class="xl:col-span-1">
               <table class="table table-sm" id="person-by-name">
                 <tbody>
-                  <tr :for={row <- @person.by_name}>
+                  <tr :for={row <- @person.by_name} class={clickable_row()}>
                     <td>
-                      <.link navigate={explore(@user.id, row.name)} class="link link-hover">
+                      <.row_link navigate={explore(@user.id, row.name)} class="link link-hover">
                         {Map.get(@labels, row.name, row.name)}
-                      </.link>
+                      </.row_link>
                     </td>
                     <td class="text-right tabular-nums">{num(row.events)}</td>
                     <td class="whitespace-nowrap text-right text-xs text-muted">

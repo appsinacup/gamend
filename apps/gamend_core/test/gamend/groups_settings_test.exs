@@ -1,8 +1,10 @@
 defmodule Gamend.GroupsSettingsTest do
   # The host's groups settings (`Gamend.Groups`): the types a group may be
-  # (`types`, the first the default) and whom an admin may invite
-  # (`invites`). Forge and Gamend Cloud allow `hidden` and `private` and
-  # invite `anyone`: teams of colleagues, never public.
+  # (`types`, the first the default), whom an admin may invite (`invites`),
+  # every group's member cap (`max_members`) and whether a title is unique
+  # (`unique_titles`). Forge and Gamend Cloud allow `hidden` alone, invite
+  # `anyone`, hold 100 and let titles repeat: teams of colleagues, never
+  # public, and a taken title would tell of a hidden group.
   use Gamend.DataCase, async: false
 
   alias Gamend.AccountsFixtures
@@ -72,5 +74,37 @@ defmodule Gamend.GroupsSettingsTest do
     put_settings(invites: :anyone)
     assert Groups.invite_anyone?()
     assert {:ok, _invite} = Groups.invite_to_group(owner.id, group.id, other.id)
+  end
+
+  test "a fixed member cap is every new group's, whatever it is asked", %{owner: owner} do
+    assert Groups.fixed_max_members() == nil
+    put_settings(max_members: 100)
+    assert Groups.fixed_max_members() == 100
+
+    assert {:ok, %{max_members: 100} = group} =
+             Groups.create_group(owner.id, %{"title" => title(), "max_members" => 7})
+
+    assert {:ok, %{max_members: 100}} =
+             Groups.update_group(owner.id, group.id, %{max_members: 3, description: "x"})
+  end
+
+  test "with unique titles off two groups share a title; their slugs differ", %{
+    owner: owner,
+    other: other
+  } do
+    {:ok, _} = Groups.create_group(owner.id, %{"title" => "Team"})
+    assert {:error, changeset} = Groups.create_group(other.id, %{"title" => "Team"})
+    assert %{title: ["has already been taken"]} = errors_on(changeset)
+
+    put_settings(unique_titles: false)
+    refute Groups.unique_titles?()
+
+    assert {:ok, %{slug: "team"} = theirs} = Groups.create_group(other.id, %{"title" => "Team"})
+    assert {:ok, %{slug: "team-2"}} = Groups.create_group(owner.id, %{"title" => "Team"})
+
+    assert {:ok, %{title: "Team"}} =
+             Groups.update_group(other.id, theirs.id, %{"description" => "still"})
+
+    assert %{title: "Team"} = Groups.get_group_by_title("Team")
   end
 end

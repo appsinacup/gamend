@@ -1,9 +1,9 @@
 defmodule GamendWeb.NewGroupComponent do
   @moduledoc """
-  A group made without leaving the page: a dialog asking its name, and its
-  type when the host allows more than one (`Gamend.Groups.types/0`, the
-  first picked), and the group made from it (`Gamend.Groups.create_group/2`),
-  its maker its admin. The page then hears
+  A group made without leaving the page: a dialog asking its name, its slug
+  (made from the name until it is typed into), and its type when the host
+  allows more than one (`Gamend.Groups.types/0`, the first picked), and the
+  group made from it (`Gamend.Groups.create_group/2`), its maker its admin. The page then hears
   `{GamendWeb.NewGroupComponent, {:created, group}}` and puts the group
   where it was wanted. Forge's project forms and Gamend Cloud's server forms
   offer the groups a person admins as the owner, and this beside them, so a
@@ -23,13 +23,13 @@ defmodule GamendWeb.NewGroupComponent do
   alias GamendWeb.GroupLabels
   alias GamendWeb.LiveHelpers
 
-  @fields ["title", "type"]
+  @fields ["title", "slug", "type"]
 
   @impl true
   def mount(socket) do
     {:ok,
      socket
-     |> assign(open?: false, error: nil, types: Groups.types())
+     |> assign(open?: false, error: nil, types: Groups.types(), slug_auto: "")
      |> assign_form(Groups.change_group(%Group{}))}
   end
 
@@ -37,23 +37,38 @@ defmodule GamendWeb.NewGroupComponent do
   def handle_event("open", _params, socket) do
     {:noreply,
      socket
-     |> assign(open?: true, error: nil, types: Groups.types())
+     |> assign(open?: true, error: nil, types: Groups.types(), slug_auto: "")
      |> assign_form(Groups.change_group(%Group{}))}
   end
 
   def handle_event("close", _params, socket), do: {:noreply, assign(socket, :open?, false)}
 
+  # The slug follows the name until it is typed into.
   def handle_event("validate", %{"group" => params}, socket) do
+    auto = Gamend.Slug.slugify(params["title"], "")
+
+    params =
+      if params["slug"] in [nil, "", socket.assigns.slug_auto],
+        do: Map.put(params, "slug", auto),
+        else: params
+
     changeset =
       %Group{}
       |> Groups.change_group(Map.take(params, @fields))
       |> Map.put(:action, :validate)
 
-    {:noreply, assign_form(socket, changeset)}
+    {:noreply, socket |> assign(:slug_auto, auto) |> assign_form(changeset)}
   end
 
+  # A slug left as the name made it is the context's to pick, `-2` when the
+  # maker has one of that name already.
   def handle_event("create", %{"group" => params}, socket) do
-    case Groups.create_group(socket.assigns.user.id, Map.take(params, @fields)) do
+    params = Map.take(params, @fields)
+
+    params =
+      if params["slug"] == socket.assigns.slug_auto, do: Map.delete(params, "slug"), else: params
+
+    case Groups.create_group(socket.assigns.user.id, params) do
       {:ok, group} ->
         send(self(), {__MODULE__, {:created, group}})
         {:noreply, assign(socket, :open?, false)}
@@ -67,6 +82,14 @@ defmodule GamendWeb.NewGroupComponent do
   end
 
   defp assign_form(socket, changeset), do: assign(socket, :form, to_form(changeset, as: :group))
+
+  # The name the slug follows: the maker's username, when the page gave it.
+  defp owner(user) do
+    case Map.get(user, :username) do
+      username when is_binary(username) and username != "" -> username
+      _none -> nil
+    end
+  end
 
   @impl true
   def render(assigns) do
@@ -100,6 +123,17 @@ defmodule GamendWeb.NewGroupComponent do
               phx-debounce="300"
               phx-mounted={JS.focus()}
             />
+            <div>
+              <.input
+                field={@form[:slug]}
+                type="text"
+                label={gettext("Slug")}
+                autocomplete="off"
+              />
+              <p :if={owner(@user)} class="mt-1 text-xs text-muted font-mono">
+                {owner(@user)}/{@form[:slug].value}
+              </p>
+            </div>
             <div :if={length(@types) > 1}>
               <.input
                 field={@form[:type]}
@@ -107,7 +141,7 @@ defmodule GamendWeb.NewGroupComponent do
                 label={gettext("Type")}
                 options={GroupLabels.type_options(@types)}
               />
-              <p class="mt-1 text-xs text-base-content/60">{GroupLabels.types_hint(@types)}</p>
+              <p class="mt-1 text-xs text-muted">{GroupLabels.types_hint(@types)}</p>
             </div>
             <p :if={@error} class="text-sm text-error">{@error}</p>
             <div class="modal-action">

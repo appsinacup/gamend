@@ -425,14 +425,14 @@ defmodule GamendWeb.AdminLive.AnalyticsExplore do
                 </tr>
               </thead>
               <tbody>
-                <tr :for={row <- @breakdown} class="hover:bg-base-200">
+                <tr :for={row <- @breakdown} class={clickable_row()}>
                   <td class="font-mono">
-                    <.link
+                    <.row_link
                       patch={nav(assigns, %{where: Map.put(@params.where, @by, row.value)})}
                       class="link link-hover"
                     >
                       {row.value}
-                    </.link>
+                    </.row_link>
                   </td>
                   <td class="text-right tabular-nums">{num(row.people)}</td>
                   <td class="text-right tabular-nums">{num(row.events)}</td>

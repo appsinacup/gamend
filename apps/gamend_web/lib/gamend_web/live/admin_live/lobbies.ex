@@ -209,7 +209,13 @@ defmodule GamendWeb.AdminLive.Lobbies do
                     </tr>
                   </thead>
                   <tbody>
-                    <tr :for={l <- @lobbies} id={"admin-lobby-" <> to_string(l.id)}>
+                    <tr
+                      :for={l <- @lobbies}
+                      id={"admin-lobby-" <> to_string(l.id)}
+                      class={clickable_row()}
+                      phx-click="edit_lobby"
+                      phx-value-id={l.id}
+                    >
                       <td class="w-10">
                         <input
                           type="checkbox"
@@ -220,7 +226,16 @@ defmodule GamendWeb.AdminLive.Lobbies do
                         />
                       </td>
                       <td class="font-mono text-sm">{l.id}</td>
-                      <td class="text-sm">{l.title || "-"}</td>
+                      <td class="text-sm">
+                        <button
+                          type="button"
+                          phx-click="edit_lobby"
+                          phx-value-id={l.id}
+                          class="link link-hover text-left"
+                        >
+                          {l.title || "-"}
+                        </button>
+                      </td>
                       <td class="font-mono text-sm">{l.host_id}</td>
                       <td class="text-sm">{length(l.users || [])} / {l.max_users}</td>
                       <td class="text-sm font-mono">{Map.get(@spectator_counts, l.id, 0)}</td>
@@ -263,14 +278,6 @@ defmodule GamendWeb.AdminLive.Lobbies do
                             class="btn btn-xs btn-outline btn-accent"
                           >
                             Members
-                          </button>
-                          <button
-                            type="button"
-                            phx-click="edit_lobby"
-                            phx-value-id={l.id}
-                            class="btn btn-xs btn-outline btn-info"
-                          >
-                            Edit
                           </button>
                           <button
                             type="button"

@@ -154,7 +154,13 @@ defmodule GamendWeb.AdminLive.Parties do
                     </tr>
                   </thead>
                   <tbody>
-                    <tr :for={p <- @parties} id={"admin-party-" <> to_string(p.id)}>
+                    <tr
+                      :for={p <- @parties}
+                      id={"admin-party-" <> to_string(p.id)}
+                      class={clickable_row()}
+                      phx-click="edit_party"
+                      phx-value-id={p.id}
+                    >
                       <td class="w-10">
                         <input
                           type="checkbox"
@@ -164,7 +170,16 @@ defmodule GamendWeb.AdminLive.Parties do
                           checked={MapSet.member?(@selected_ids, p.id)}
                         />
                       </td>
-                      <td class="font-mono text-sm">{p.id}</td>
+                      <td class="font-mono text-sm">
+                        <button
+                          type="button"
+                          phx-click="edit_party"
+                          phx-value-id={p.id}
+                          class="link link-hover text-left"
+                        >
+                          {p.id}
+                        </button>
+                      </td>
                       <td class="text-sm">
                         <span class="font-mono">{p.leader_id}</span>
                         <%= if p.leader do %>
@@ -194,14 +209,6 @@ defmodule GamendWeb.AdminLive.Parties do
                             class="btn btn-xs btn-outline btn-accent"
                           >
                             Members
-                          </button>
-                          <button
-                            type="button"
-                            phx-click="edit_party"
-                            phx-value-id={p.id}
-                            class="btn btn-xs btn-outline btn-info"
-                          >
-                            Edit
                           </button>
                           <button
                             type="button"

@@ -687,7 +687,10 @@ defmodule GamendWeb.TournamentsLive do
               <tr
                 :for={e <- @entries}
                 id={"entry-#{e.id}"}
-                class={[e.leader_id == @current_user_id && "bg-primary/10"]}
+                class={[
+                  e.leader_id == @current_user_id && "bg-primary/10",
+                  @drawn? && e.bracket_index && clickable_row()
+                ]}
               >
                 <td>
                   <.player_card
@@ -699,12 +702,12 @@ defmodule GamendWeb.TournamentsLive do
                 </td>
                 <td :if={@drawn?}>
                   <%= if e.bracket_index do %>
-                    <.link
+                    <.row_link
                       navigate={"#{@base_path}/brackets/#{e.bracket_index}?entry=#{e.id}"}
                       class="link link-primary whitespace-nowrap"
                     >
                       {gettext("Bracket")} {e.bracket_index + 1}
-                    </.link>
+                    </.row_link>
                   <% else %>
                     <span class="text-muted">—</span>
                   <% end %>

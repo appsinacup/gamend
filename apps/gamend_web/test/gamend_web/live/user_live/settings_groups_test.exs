@@ -166,7 +166,9 @@ defmodule GamendWeb.UserLive.SettingsGroupsTest do
     assert Enum.any?(assigns(view).invite_search_results, &(&1.id == user.id))
 
     render_click(view, "group_invite_user", %{"group_id" => mine.id, "user_id" => user.id})
-    refute Enum.any?(assigns(view).invite_search_results, &(&1.id == user.id))
+    # Still found, now marked Invited: one of the group's pending invites.
+    assert Enum.any?(assigns(view).invite_search_results, &(&1.id == user.id))
+    assert Enum.any?(assigns(view).group_pending_invites, &(&1.recipient_id == user.id))
     # Inviting again replaces the invite rather than adding a second.
     render_click(view, "group_invite_user", %{"group_id" => mine.id, "user_id" => user.id})
     assert length(Groups.list_invitations(user.id)) == 1

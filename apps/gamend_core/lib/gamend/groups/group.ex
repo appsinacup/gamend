@@ -8,11 +8,15 @@ defmodule Gamend.Groups.Group do
 
   ## Fields
 
-  - `title` – human-readable display title (unique)
+  - `title` – human-readable display title, unique unless the host turns
+    `unique_titles` off (`Gamend.Groups`)
+  - `slug` – its name in a URL, unique per creator: `<owner>/<slug>`
+    (`Gamend.Groups.full_slug/1`), made from the title when none is given
   - `description` – optional longer description
   - `icon_url` – optional icon; `nil` means clients show their default group icon
   - `type` – visibility: `"public"`, `"private"`, or `"hidden"`
-  - `max_members` – maximum number of members (default 100)
+  - `max_members` – maximum number of members (default 100, or the host's
+    fixed `max_members`)
   - `metadata` – arbitrary server-managed key/value map
   - `creator_id` – the user who originally created the group
   """
@@ -26,6 +30,7 @@ defmodule Gamend.Groups.Group do
 
   schema "groups" do
     field :title, :string
+    field :slug, :string
     field :description, :string, default: ""
     field :icon_url, :string
     field :type, :string, default: "public"
@@ -40,7 +45,9 @@ defmodule Gamend.Groups.Group do
   end
 
   @required_fields ~w(title)a
-  @optional_fields ~w(description icon_url type max_members metadata slowdown)a
+  @optional_fields ~w(slug description icon_url type max_members metadata slowdown)a
+
+  @max_slug 80
 
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(group, attrs) do
@@ -48,6 +55,10 @@ defmodule Gamend.Groups.Group do
     |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
     |> validate_length(:title, min: 1, max: Gamend.Limits.get(:max_group_title))
+    |> update_change(:slug, &normalize_slug/1)
+    |> put_default_slug()
+    |> validate_required([:slug])
+    |> Gamend.Slug.validate(:slug, max: @max_slug, index: :groups_creator_id_slug_index)
     |> validate_length(:description, max: Gamend.Limits.get(:max_group_description))
     |> validate_length(:icon_url, max: Gamend.Limits.get(:max_profile_url))
     |> put_default_type()
@@ -57,8 +68,33 @@ defmodule Gamend.Groups.Group do
       less_than_or_equal_to: Gamend.Limits.get(:max_group_members)
     )
     |> validate_number(:slowdown, greater_than_or_equal_to: 0, less_than_or_equal_to: 3600)
-    |> unique_constraint(:title)
+    |> validate_unique_title()
     |> Gamend.Limits.validate_metadata_size(:metadata)
+  end
+
+  defp normalize_slug(slug) when is_binary(slug), do: slug |> String.trim() |> String.downcase()
+  defp normalize_slug(slug), do: slug
+
+  # A new group given no slug gets its title's (`Gamend.Groups.create_group/2`
+  # picks a free one first; this is for a group inserted another way).
+  defp put_default_slug(%{data: %{__meta__: %{state: :built}}} = changeset) do
+    case get_field(changeset, :slug) do
+      blank when blank in [nil, ""] ->
+        put_change(changeset, :slug, Gamend.Slug.slugify(get_field(changeset, :title), "group"))
+
+      _slug ->
+        changeset
+    end
+  end
+
+  defp put_default_slug(changeset), do: changeset
+
+  # No unique index holds the title (a host may allow the same one twice),
+  # so with `unique_titles` on it is checked here.
+  defp validate_unique_title(changeset) do
+    if Gamend.Groups.unique_titles?(),
+      do: unsafe_validate_unique(changeset, :title, Gamend.Repo),
+      else: changeset
   end
 
   # A new group given no type is the host's default (`Gamend.Groups.types/0`),
@@ -91,6 +127,7 @@ defimpl Jason.Encoder, for: Gamend.Groups.Group do
       [
         :id,
         :title,
+        :slug,
         :description,
         :icon_url,
         :type,

@@ -162,7 +162,13 @@ defmodule GamendWeb.AdminLive.Groups do
                     </tr>
                   </thead>
                   <tbody>
-                    <tr :for={g <- @groups} id={"admin-group-" <> to_string(g.id)}>
+                    <tr
+                      :for={g <- @groups}
+                      id={"admin-group-" <> to_string(g.id)}
+                      phx-click="edit_group"
+                      phx-value-id={g.id}
+                      class={clickable_row()}
+                    >
                       <td class="w-10">
                         <input
                           type="checkbox"
@@ -173,7 +179,16 @@ defmodule GamendWeb.AdminLive.Groups do
                         />
                       </td>
                       <td class="font-mono text-sm">{g.id}</td>
-                      <td class="text-sm">{g.title || "-"}</td>
+                      <td class="text-sm">
+                        <button
+                          type="button"
+                          phx-click="edit_group"
+                          phx-value-id={g.id}
+                          class="link link-hover"
+                        >
+                          {g.title || "-"}
+                        </button>
+                      </td>
                       <td class="text-sm">
                         <%= cond do %>
                           <% g.type == "public" -> %>
@@ -203,14 +218,6 @@ defmodule GamendWeb.AdminLive.Groups do
                             class="btn btn-xs btn-outline btn-accent"
                           >
                             Members
-                          </button>
-                          <button
-                            type="button"
-                            phx-click="edit_group"
-                            phx-value-id={g.id}
-                            class="btn btn-xs btn-outline btn-info"
-                          >
-                            Edit
                           </button>
                           <button
                             type="button"
@@ -252,7 +259,8 @@ defmodule GamendWeb.AdminLive.Groups do
           <h3 class="font-bold text-lg">Edit Group</h3>
 
           <.form for={@form} id="group-edit-form" phx-submit="save_group">
-            <.input field={@form[:title]} type="text" label="Title (unique)" />
+            <.input field={@form[:title]} type="text" label="Title" />
+            <.input field={@form[:slug]} type="text" label="Slug (unique per creator)" />
             <.input field={@form[:description]} type="text" label="Description" />
             <.input field={@form[:icon_url]} type="text" label="Icon URL (optional)" />
             <.input

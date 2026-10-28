@@ -975,12 +975,12 @@ defmodule GamendWeb.CoreComponents do
           </tr>
         </thead>
         <tbody id={@id} phx-update={is_struct(@rows, Phoenix.LiveView.LiveStream) && "stream"}>
-          <tr :for={row <- @rows} id={@row_id && @row_id.(row)}>
-            <td
-              :for={col <- @col}
-              phx-click={@row_click && @row_click.(row)}
-              class={@row_click && "hover:cursor-pointer"}
-            >
+          <tr
+            :for={row <- @rows}
+            id={@row_id && @row_id.(row)}
+            class={@row_click && "cursor-pointer transition-colors hover:bg-base-300!"}
+          >
+            <td :for={col <- @col} phx-click={@row_click && @row_click.(row)}>
               {render_slot(col, @row_item.(row))}
             </td>
             <td :if={@action != []} class="w-0 font-semibold">
@@ -994,6 +994,47 @@ defmodule GamendWeb.CoreComponents do
         </tbody>
       </table>
     </div>
+    """
+  end
+
+  @doc """
+  The class of a table row that opens what it lists, its main action, by a
+  `row_link/1` in one of its cells: the link's box covers the row (the row
+  is `relative`), so a click anywhere on it, a middle click and a
+  keyboard's Enter on the link all go to the one place.
+
+      <tr :for={server <- @servers} class={clickable_row()}>
+        <td><.row_link navigate={~p"/servers/\#{server.slug}"}>{server.slug}</.row_link></td>
+        <td><div class={row_control()}><button phx-click="restart">Restart</button></div></td>
+      </tr>
+
+  Anything else to click in the row sits above the link (`row_control/0`).
+  A destructive action (leave, delete) belongs on the page the row opens,
+  not on the row.
+  """
+  @spec clickable_row() :: String.t()
+  def clickable_row, do: "relative cursor-pointer transition-colors hover:bg-base-300!"
+
+  @doc "The class of a control inside a `clickable_row/0`, which keeps it clickable above the row's link."
+  @spec row_control() :: String.t()
+  def row_control, do: "relative z-10"
+
+  @doc "The link that opens a `clickable_row/0`'s row: `navigate`, `patch` or `href`."
+  attr :class, :any, default: nil
+  attr :rest, :global, include: ~w(navigate patch href replace method)
+  slot :inner_block, required: true
+
+  def row_link(assigns) do
+    ~H"""
+    <.link
+      class={[
+        "after:absolute after:inset-0 focus:outline-none focus-visible:after:outline-2 focus-visible:after:outline-primary",
+        @class
+      ]}
+      {@rest}
+    >
+      {render_slot(@inner_block)}
+    </.link>
     """
   end
 

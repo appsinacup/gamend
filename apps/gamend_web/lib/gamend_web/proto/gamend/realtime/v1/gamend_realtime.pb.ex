@@ -218,6 +218,7 @@ defmodule Gamend.Realtime.V1.Group do
   field :updated_at_ms, 12, proto3_optional: true, type: :int64, json_name: "updatedAtMs"
   field :metadata_pb, 13, proto3_optional: true, type: :bytes, json_name: "metadataPb"
   field :icon_url, 14, proto3_optional: true, type: :string, json_name: "iconUrl"
+  field :slug, 15, proto3_optional: true, type: :string
 end
 
 defmodule Gamend.Realtime.V1.Party do

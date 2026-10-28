@@ -11,9 +11,16 @@ defmodule Gamend.Groups do
   - **hidden** – only invited users can join (via notifications / invite API)
 
   A host picks which of them players may use (`types`), whom an admin may
-  invite (`invites`) and how long an invite link lasts (`link_days`). Forge
-  and Gamend Cloud, whose groups are teams of colleagues, allow `hidden` and
-  `private` and invite `anyone`.
+  invite (`invites`), how long an invite link lasts (`link_days`), whether
+  every group holds the same number of members (`max_members`) and whether
+  two groups may share a title (`unique_titles`). Forge and Gamend Cloud,
+  whose groups are teams of colleagues, allow `hidden` alone, invite
+  `anyone`, hold 100 and let titles repeat.
+
+  A group's slug is its name in a URL, unique per creator, and reads
+  `<owner>/<slug>` with the creator's username (`full_slug/1`,
+  `get_group_by_full_slug/1`). One is made from the title when none is
+  given.
 
   ## Usage
 
@@ -93,6 +100,18 @@ defmodule Gamend.Groups do
       "How many days a group's invite link lasts: anyone signed in who opens it joins the group as a member. 0 turns invite links off."
   )
 
+  setting(:max_members, :integer,
+    default: 0,
+    doc:
+      "Every new group's member cap, the same for all: a group's admins are not asked it and the API ignores it (an operator still may change one group's on the admin page). 0 lets each group's admin pick, up to the `max_group_members` limit."
+  )
+
+  setting(:unique_titles, :boolean,
+    default: true,
+    doc:
+      "Whether a group's title must be unique. Off for a host whose groups are hidden, so a taken title tells no one that a hidden group exists; the slug (`<owner>/<slug>`) stays unique."
+  )
+
   # ---------------------------------------------------------------------------
   # Settings
   # ---------------------------------------------------------------------------
@@ -113,6 +132,19 @@ defmodule Gamend.Groups do
   @doc "Whether an admin may invite any account, not only a friend (`invites`)."
   @spec invite_anyone?() :: boolean()
   def invite_anyone?, do: Gamend.Settings.get(__MODULE__, :invites) == :anyone
+
+  @doc "Every group's member cap when the host fixes it (`max_members`), else nil."
+  @spec fixed_max_members() :: pos_integer() | nil
+  def fixed_max_members do
+    case Gamend.Settings.get(__MODULE__, :max_members) do
+      max when is_integer(max) and max > 0 -> max
+      _off -> nil
+    end
+  end
+
+  @doc "Whether a group's title must be unique (`unique_titles`)."
+  @spec unique_titles?() :: boolean()
+  def unique_titles?, do: Gamend.Settings.get(__MODULE__, :unique_titles) != false
 
   # ---------------------------------------------------------------------------
   # PubSub
@@ -196,10 +228,66 @@ defmodule Gamend.Groups do
             )
   def get_group!(id), do: Repo.get_uuid!(Group, id)
 
-  @doc "Get a group by its unique title."
+  @doc """
+  Get a group by its title: the oldest of that title when the host lets
+  titles repeat (`unique_titles`).
+  """
   @spec get_group_by_title(String.t()) :: Group.t() | nil
   def get_group_by_title(title) when is_binary(title) do
-    Repo.get_by(Group, title: title)
+    Repo.one(
+      from(g in Group,
+        where: g.title == ^title,
+        order_by: [asc: g.inserted_at, asc: g.id],
+        limit: 1
+      )
+    )
+  end
+
+  @doc """
+  A group's name in a URL: `<owner>/<slug>`, the owner its creator's
+  username. A group whose creator is gone, or has no username, is its id.
+  A username changed moves it, as on GitHub.
+  """
+  @spec full_slug(Group.t()) :: String.t()
+  def full_slug(%Group{creator: %User{username: username}, slug: slug})
+      when is_binary(username) and username != "" and is_binary(slug),
+      do: username <> "/" <> slug
+
+  def full_slug(%Group{creator: %User{}} = group), do: group.id
+
+  def full_slug(%Group{creator_id: creator_id} = group) when is_binary(creator_id),
+    do: full_slug(%{group | creator: Gamend.Accounts.get_user(creator_id) || %User{}})
+
+  def full_slug(%Group{} = group), do: group.id
+
+  @doc """
+  The group a URL names: `<owner>/<slug>` (`full_slug/1`), or its id. Nil
+  for neither.
+  """
+  @spec get_group_by_full_slug(String.t()) :: Group.t() | nil
+  def get_group_by_full_slug(ref) when is_binary(ref) do
+    case String.split(ref, "/") do
+      [owner, slug] ->
+        with %User{id: creator_id} <- Gamend.Accounts.get_user_by_username(owner) do
+          Repo.get_by(Group, creator_id: creator_id, slug: String.downcase(slug))
+        end
+
+      [id] ->
+        get_group(id)
+
+      _other ->
+        nil
+    end
+  end
+
+  @doc "The slug a new group of `user_id`'s titled `title` gets: its nearest free one."
+  @spec free_slug(Ecto.UUID.t(), String.t() | nil) :: String.t()
+  def free_slug(user_id, title) when is_binary(user_id) do
+    title
+    |> Gamend.Slug.slugify("group")
+    |> Gamend.Slug.free(fn slug ->
+      Repo.exists?(from(g in Group, where: g.creator_id == ^user_id and g.slug == ^slug))
+    end)
   end
 
   # ---------------------------------------------------------------------------
@@ -467,7 +555,7 @@ defmodule Gamend.Groups do
     |> paginate(opts)
   end
 
-  @doc "List groups the user belongs to, together with the membership role."
+  @doc "List groups the user belongs to, together with the membership role, creators loaded (`full_slug/1`)."
   @spec list_user_groups_with_role(Ecto.UUID.t()) :: [{Group.t(), String.t()}]
   def list_user_groups_with_role(user_id) when is_binary(user_id) do
     from(g in Group,
@@ -475,6 +563,7 @@ defmodule Gamend.Groups do
       on: m.group_id == g.id,
       where: m.user_id == ^user_id,
       order_by: [asc: g.title],
+      preload: [:creator],
       select: {g, m.role}
     )
     |> Repo.all()
@@ -511,8 +600,11 @@ defmodule Gamend.Groups do
           {:error, :too_many_groups_created}
         else
           case Gamend.Hooks.internal_call(:before_group_create, [user, attrs]) do
-            {:ok, attrs} -> do_create_group(user_id, attrs)
-            {:error, reason} -> {:error, {:hook_rejected, reason}}
+            {:ok, attrs} ->
+              do_create_group(user_id, attrs |> put_fixed_max() |> put_free_slug(user_id))
+
+            {:error, reason} ->
+              {:error, {:hook_rejected, reason}}
           end
         end
     end
@@ -571,7 +663,7 @@ defmodule Gamend.Groups do
       # point the icon at any external URL, and did so even when the
       # `user_image_uploads` feature gate — whose whole purpose is to close that
       # surface — was switched off.
-      attrs = attrs |> normalize_params() |> Map.drop(["icon_url"])
+      attrs = attrs |> normalize_params() |> Map.drop(["icon_url", :icon_url]) |> drop_fixed_max()
 
       new_max = Map.get(attrs, "max_members") || Map.get(attrs, :max_members)
 
@@ -1403,6 +1495,42 @@ defmodule Gamend.Groups do
     end
   end
 
+  # With the host's `max_members` every group holds that many, whatever it
+  # was asked.
+  defp put_fixed_max(attrs) do
+    case fixed_max_members() do
+      nil -> attrs
+      max -> attrs |> Map.drop(["max_members", :max_members]) |> put_param(:max_members, max)
+    end
+  end
+
+  defp drop_fixed_max(attrs) do
+    if fixed_max_members(), do: Map.drop(attrs, ["max_members", :max_members]), else: attrs
+  end
+
+  # A new group asked no slug gets its title's nearest free one; one asked a
+  # slug that is taken is told so by the changeset.
+  defp put_free_slug(attrs, user_id) do
+    case param(attrs, :slug) do
+      blank when blank in [nil, ""] ->
+        attrs
+        |> Map.drop(["slug", :slug])
+        |> put_param(:slug, free_slug(user_id, param(attrs, :title)))
+
+      _slug ->
+        attrs
+    end
+  end
+
+  defp param(attrs, key), do: Map.get(attrs, Atom.to_string(key)) || Map.get(attrs, key)
+
+  # Keyed as the rest of `attrs`, which `cast` wants all strings or all atoms.
+  defp put_param(attrs, key, value) do
+    if Enum.any?(Map.keys(attrs), &is_atom/1),
+      do: Map.put(attrs, key, value),
+      else: Map.put(attrs, Atom.to_string(key), value)
+  end
+
   defp normalize_params(attrs) when is_map(attrs) do
     keys = Map.keys(attrs)
     has_string = Enum.any?(keys, &is_binary/1)
@@ -1471,7 +1599,7 @@ defmodule Gamend.Groups do
   @spec decline_invite(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
   defdelegate decline_invite(user_id, invite_id), to: Invites
 
-  @doc "Cancel a group invitation the current user sent."
+  @doc "Cancel a pending group invitation: one the user sent, or any of a group they admin."
   @spec cancel_invite(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
   defdelegate cancel_invite(user_id, invite_id), to: Invites
 
@@ -1490,6 +1618,15 @@ defmodule Gamend.Groups do
   @doc "Count group invitations sent by a user."
   @spec count_sent_invitations(Ecto.UUID.t()) :: non_neg_integer()
   defdelegate count_sent_invitations(user_id), to: Invites
+
+  @doc "A group's pending invitations, whoever sent them. Admins only."
+  @spec list_group_invites(Ecto.UUID.t(), Ecto.UUID.t(), keyword()) ::
+          {:ok, [map()]} | {:error, :not_admin}
+  defdelegate list_group_invites(admin_id, group_id, opts \\ []), to: Invites
+
+  @doc "Count a group's pending invitations."
+  @spec count_group_invites(Ecto.UUID.t()) :: non_neg_integer()
+  defdelegate count_group_invites(group_id), to: Invites
 
   # ---------------------------------------------------------------------------
   # Invite links (delegated to Gamend.Groups.InviteLinks)

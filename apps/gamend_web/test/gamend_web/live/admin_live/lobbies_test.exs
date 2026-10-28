@@ -50,9 +50,8 @@ defmodule GamendWeb.AdminLive.LobbiesTest do
     # test edit flow via live view: open manage UI, change title and save
     {:ok, view, _html} = conn |> log_in_user(user) |> live(~p"/admin/lobbies")
 
-    # open edit modal for first lobby and verify modal shows created/updated
-    edit_btn = element(view, "#admin-lobby-#{lobby1.id} button", "Edit")
-    render_click(edit_btn)
+    # open edit modal for first lobby (its row) and verify modal shows created/updated
+    view |> element("#admin-lobby-#{lobby1.id}") |> render_click()
 
     modal_html = render(view)
     assert modal_html =~ "Created:"
@@ -130,8 +129,7 @@ defmodule GamendWeb.AdminLive.LobbiesTest do
     {:ok, view_admin, _html} = conn |> log_in_user(admin) |> live(~p"/admin/lobbies")
     assert render(view_admin) =~ "admin-prop"
 
-    edit_btn = element(view_admin, "#admin-lobby-#{lobby.id} button", "Edit")
-    render_click(edit_btn)
+    view_admin |> element("#admin-lobby-#{lobby.id}") |> render_click()
     form = form(view_admin, "#lobby-form", %{"lobby" => %{"title" => "Admin Updated"}})
     render_submit(form)
 

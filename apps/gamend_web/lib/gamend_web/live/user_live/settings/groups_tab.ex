@@ -8,7 +8,12 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   `groups_path` to its URL. It follows the host's groups settings: only the
   types it allows are offered (`Gamend.Groups.types/0`), a host with no
   listed type has no Find or request tabs, and an admin shares the group's
-  invite link (`Gamend.Groups.InviteLinks`).
+  invite link (`Gamend.Groups.InviteLinks`). A host that fixes every group's
+  member cap (`Gamend.Groups.fixed_max_members/0`) is not asked it.
+
+  A group opens by its row, and its URL names it by its slug
+  (`?group=<owner>/<slug>`, `Gamend.Groups.full_slug/1`); its page is where
+  it is left.
   """
 
   use GamendWeb, :html
@@ -64,6 +69,9 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     socket
     |> assign(:groups_path, nil)
     |> assign(:group_types, types)
+    |> assign(:group_fixed_max, Groups.fixed_max_members())
+    |> assign(:group_owner, owner_name(socket))
+    |> assign(:create_slug_auto, "")
     # Public and private groups are listed (`Groups.list_groups/2`); a host
     # that allows neither, or closes the listing, has nothing to find.
     |> assign(
@@ -74,10 +82,11 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     |> assign(:group_requests?, "private" in types)
     |> assign(:group_invite_anyone?, Groups.invite_anyone?())
     |> assign(:group_links?, Groups.invite_links?())
-    |> assign(:group_link_days, Groups.invite_link_days())
     |> assign(:group_invite_link, nil)
     |> assign(:group_invite_link_url, nil)
+    |> assign(:group_pending_invites, [])
     |> assign(:groups_tab, "my_groups")
+    |> assign(:groups_tab_picked?, false)
     |> assign(:my_groups, [])
     |> assign(:groups_count, 0)
     |> assign(:group_invitations, [])
@@ -93,6 +102,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     |> assign(:groups_show_create, false)
     |> assign(:create_group_form, to_form(Groups.change_group(%Group{}), as: :group))
     |> assign(:group_detail, nil)
+    |> assign(:group_detail_ref, nil)
+    |> assign(:group_detail_owner, nil)
     |> assign(:group_detail_role, nil)
     |> assign(:group_members, [])
     |> assign(:group_members_page, 1)
@@ -107,6 +118,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     |> assign(:group_join_requests, [])
     |> assign(:group_invite_link, nil)
     |> assign(:group_invite_link_url, nil)
+    |> assign(:group_pending_invites, [])
   end
 
   def tab(assigns) do
@@ -156,8 +168,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   field={@create_group_form[:title]}
                   type="text"
                   label={gettext("Title")}
+                  phx-debounce="300"
                   required
                 />
+                <.slug_input field={@create_group_form[:slug]} owner={@group_owner} />
                 <.input
                   field={@create_group_form[:description]}
                   type="text"
@@ -170,11 +184,12 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     label={gettext("Type")}
                     options={GroupLabels.type_options(@group_types)}
                   />
-                  <p class="mt-1 text-xs text-base-content/60">
+                  <p class="mt-1 text-xs text-muted">
                     {GroupLabels.types_hint(@group_types)}
                   </p>
                 </div>
                 <.input
+                  :if={is_nil(@group_fixed_max)}
                   field={@create_group_form[:max_members]}
                   type="number"
                   label={gettext("Max members")}
@@ -202,6 +217,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                 class="space-y-3"
               >
                 <.input field={@group_edit_form[:title]} label={gettext("Name")} type="text" />
+                <.slug_input field={@group_edit_form[:slug]} owner={@group_detail_owner} />
                 <.input
                   field={@group_edit_form[:description]}
                   label={gettext("Description")}
@@ -215,6 +231,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   options={GroupLabels.type_options(@group_types, @group_detail.type)}
                 />
                 <.input
+                  :if={is_nil(@group_fixed_max)}
                   field={@group_edit_form[:max_members]}
                   label={gettext("Max members")}
                   type="number"
@@ -234,6 +251,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="space-y-2 text-sm">
                   <div><strong>{gettext("Name")}:</strong> {@group_detail.title}</div>
+                  <div>
+                    <strong>{gettext("Slug")}:</strong>
+                    <span class="font-mono">{@group_detail_ref}</span>
+                  </div>
                   <div>
                     <strong>{gettext("Description")}:</strong> {@group_detail.description ||
                       "-"}
@@ -457,13 +478,12 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       {gettext("Copy")}
                     </button>
                   </div>
-                  <p class="mt-2 text-xs text-base-content/60">
+                  <p class="mt-2 text-xs text-muted">
                     {gettext("Anyone signed in who opens it joins as a member.")}
                     {gettext("Expires")}
-                    <.timestamp at={@group_invite_link.expires_at} />. {ngettext(
-                      "Used once.",
-                      "Used %{count} times.",
-                      @group_invite_link.uses
+                    <.timestamp at={@group_invite_link.expires_at} />. {gettext(
+                      "Joined through it: %{count}.",
+                      count: @group_invite_link.uses
                     )}
                   </p>
                   <div class="mt-2 flex gap-2">
@@ -486,11 +506,9 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     </button>
                   </div>
                 <% else %>
-                  <p class="mt-1 text-xs text-base-content/60">
-                    {ngettext(
-                      "Share a link: anyone signed in who opens it joins as a member, for a day.",
-                      "Share a link: anyone signed in who opens it joins as a member, for %{count} days.",
-                      @group_link_days
+                  <p class="mt-1 text-xs text-muted">
+                    {gettext(
+                      "Share a link: anyone signed in who opens it joins as a member, until it expires."
                     )}
                   </p>
                   <button
@@ -548,8 +566,17 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                         </span>
                       </div>
                     </div>
+                    <span
+                      :if={invited?(@group_pending_invites, u.id)}
+                      class="badge badge-sm badge-ghost"
+                    >
+                      {gettext("Invited")}
+                    </span>
                     <button
-                      :if={u.id != @current_scope.user_id}
+                      :if={
+                        u.id != @current_scope.user_id and
+                          not invited?(@group_pending_invites, u.id)
+                      }
                       phx-click="group_invite_user"
                       phx-value-group_id={@group_detail.id}
                       phx-value-user_id={u.id}
@@ -588,7 +615,14 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       ]} />
                       <span class="text-sm"><.player_name name={LiveHelpers.public_user_name(f)} /></span>
                     </div>
+                    <span
+                      :if={invited?(@group_pending_invites, f.id)}
+                      class="badge badge-sm badge-ghost"
+                    >
+                      {gettext("Invited")}
+                    </span>
                     <button
+                      :if={not invited?(@group_pending_invites, f.id)}
                       phx-click="group_invite_user"
                       phx-value-group_id={@group_detail.id}
                       phx-value-user_id={f.id}
@@ -605,6 +639,35 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                 class="mt-3 text-sm text-muted"
               >
                 {gettext("No results.")}
+              </div>
+
+              <%!-- The group's pending invitations, whoever sent them --%>
+              <div :if={@group_pending_invites != []} id="group-pending-invites" class="mt-5">
+                <div class="text-xs font-medium text-muted mb-1">
+                  {gettext("Pending invites")} ({length(@group_pending_invites)})
+                </div>
+                <div class="space-y-1">
+                  <div
+                    :for={inv <- @group_pending_invites}
+                    id={"group-pending-invite-#{inv.id}"}
+                    class="flex items-center justify-between gap-2 p-2 rounded-lg bg-base-200/40"
+                  >
+                    <div class="text-sm">
+                      <.player_name name={inv.recipient_name} />
+                      <span class="text-xs text-muted ms-1">
+                        {gettext("by %{name}", name: inv.sender_name)} ·
+                        <.timestamp at={inv.inserted_at} />
+                      </span>
+                    </div>
+                    <button
+                      phx-click="group_cancel_invite"
+                      phx-value-invite_id={inv.id}
+                      class="btn btn-xs btn-ghost text-error"
+                    >
+                      {gettext("Cancel")}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -642,24 +705,26 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     <tr>
                       <th>{gettext("Title")}</th>
                       <th :if={length(@group_types) > 1}>{gettext("Type")}</th>
-                      <th>{gettext("Max members")}</th>
+                      <th :if={is_nil(@group_fixed_max)}>{gettext("Max members")}</th>
                       <th>{gettext("Role")}</th>
-                      <th></th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr
                       :for={{group, role} <- @my_groups}
                       id={"my-group-" <> to_string(group.id)}
+                      class={clickable_row()}
                     >
                       <td class="text-sm">
-                        <button
-                          phx-click="group_view_detail"
-                          phx-value-group_id={group.id}
-                          class="link link-primary font-medium inline-flex items-center gap-1"
+                        <.row_link
+                          patch={group_href(@groups_path, group)}
+                          class="link link-primary font-medium"
                         >
                           {group.title}
-                        </button>
+                        </.row_link>
+                        <div class="text-xs text-muted font-mono">
+                          {Groups.full_slug(group)}
+                        </div>
                       </td>
                       <td :if={length(@group_types) > 1}>
                         <span class={[
@@ -673,7 +738,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           {GroupLabels.type(group.type)}
                         </span>
                       </td>
-                      <td class="text-sm">{group.max_members}</td>
+                      <td :if={is_nil(@group_fixed_max)} class="text-sm">{group.max_members}</td>
                       <td>
                         <span class={[
                           "badge badge-sm",
@@ -681,23 +746,6 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                         ]}>
                           {group_role_label(role)}
                         </span>
-                      </td>
-                      <td class="flex gap-1">
-                        <button
-                          phx-click="group_view_detail"
-                          phx-value-group_id={group.id}
-                          class="btn btn-xs btn-ghost"
-                        >
-                          {gettext("View")}
-                        </button>
-                        <button
-                          phx-click="group_leave"
-                          phx-value-group_id={group.id}
-                          class="btn btn-xs btn-outline btn-error"
-                          data-confirm={gettext("Leave?")}
-                        >
-                          {gettext("Leave")}
-                        </button>
                       </td>
                     </tr>
                   </tbody>
@@ -752,21 +800,33 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   <tr>
                     <th>{gettext("Title")}</th>
                     <th>{gettext("Type")}</th>
-                    <th>{gettext("Max members")}</th>
+                    <th :if={is_nil(@group_fixed_max)}>{gettext("Max members")}</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody id="browse-groups" phx-update="stream">
                   <tr id="browse-groups-empty" class="hidden only:table-row">
-                    <td colspan="4" class="text-center text-sm text-muted">
+                    <td
+                      colspan={if(@group_fixed_max, do: 3, else: 4)}
+                      class="text-center text-sm text-muted"
+                    >
                       {gettext("No results.")}
                     </td>
                   </tr>
                   <tr
                     :for={{dom_id, group} <- @streams.browse_groups}
                     id={dom_id}
+                    class={member_of?(@my_groups, group.id) && clickable_row()}
                   >
-                    <td class="text-sm font-medium">{group.title}</td>
+                    <td class="text-sm font-medium">
+                      <.row_link
+                        :if={member_of?(@my_groups, group.id)}
+                        patch={group_href(@groups_path, group)}
+                      >
+                        {group.title}
+                      </.row_link>
+                      <span :if={!member_of?(@my_groups, group.id)}>{group.title}</span>
+                    </td>
                     <td>
                       <span class={[
                         "badge badge-sm",
@@ -775,10 +835,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                         {GroupLabels.type(group.type)}
                       </span>
                     </td>
-                    <td class="text-sm">{group.max_members}</td>
+                    <td :if={is_nil(@group_fixed_max)} class="text-sm">{group.max_members}</td>
                     <td>
                       <%= cond do %>
-                        <% Enum.any?(@my_groups, fn {g, _role} -> g.id == group.id end) -> %>
+                        <% member_of?(@my_groups, group.id) -> %>
                           <span class="badge badge-sm badge-ghost">
                             {gettext("Joined")}
                           </span>
@@ -941,8 +1001,13 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     <tr
                       :for={inv <- @group_sent_invitations}
                       id={"group-sent-inv-" <> to_string(inv.id)}
+                      class={clickable_row()}
                     >
-                      <td class="text-sm font-mono">{inv.group_title}</td>
+                      <td class="text-sm font-mono">
+                        <.row_link patch={group_href(@groups_path, %{id: inv.group_id})}>
+                          {inv.group_title}
+                        </.row_link>
+                      </td>
                       <td class="text-sm font-mono">
                         {inv.recipient_name}
                       </td>
@@ -953,7 +1018,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                         <button
                           phx-click="group_cancel_invite"
                           phx-value-invite_id={inv.id}
-                          class="btn btn-xs btn-outline btn-error"
+                          class={["btn btn-xs btn-outline btn-error", row_control()]}
                           data-confirm={gettext("Cancel?")}
                         >
                           {gettext("Cancel")}
@@ -972,7 +1037,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   end
 
   def handle_event("groups_tab", %{"tab" => tab}, socket) do
-    socket = assign(socket, :groups_tab, tab)
+    socket = assign(socket, groups_tab: tab, groups_tab_picked?: true)
 
     # Stream inserts are consumed by renders even while the browse table is
     # hidden, so refill it when the sub-tab becomes visible.
@@ -985,16 +1050,35 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     {:noreply, patch_groups(socket, create: !socket.assigns.groups_show_create)}
   end
 
+  # The slug follows the title until it is typed into.
   def handle_event("group_validate_create", %{"group" => group_params}, socket) do
+    auto = Gamend.Slug.slugify(group_params["title"], "")
+
+    group_params =
+      if group_params["slug"] in [nil, "", socket.assigns.create_slug_auto],
+        do: Map.put(group_params, "slug", auto),
+        else: group_params
+
     changeset =
       Groups.change_group(%Group{}, group_params)
       |> Map.put(:action, :validate)
 
-    {:noreply, assign(socket, create_group_form: to_form(changeset, as: :group))}
+    {:noreply,
+     assign(socket,
+       create_group_form: to_form(changeset, as: :group),
+       create_slug_auto: auto
+     )}
   end
 
   def handle_event("group_create", %{"group" => group_params}, socket) do
     user = Shared.current_user(socket)
+
+    # A slug left as the title made it is the context's to pick, `-2` when
+    # the creator has one of that name already.
+    group_params =
+      if group_params["slug"] == socket.assigns.create_slug_auto,
+        do: Map.delete(group_params, "slug"),
+        else: group_params
 
     case Groups.create_group(user.id, group_params) do
       {:ok, _group} ->
@@ -1002,6 +1086,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
          socket
          |> put_success_flash()
          |> assign(:groups_show_create, false)
+         |> assign(:create_slug_auto, "")
          |> assign(:create_group_form, to_form(Groups.change_group(%Group{}), as: :group))
          |> assign(:groups_tab, "my_groups")
          |> reload_groups()
@@ -1107,7 +1192,11 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
     case Groups.cancel_invite(user.id, iid) do
       :ok ->
-        {:noreply, socket |> put_success_flash() |> reload_groups()}
+        {:noreply,
+         socket
+         |> put_success_flash()
+         |> reload_groups()
+         |> assign_pending_invites(socket.assigns.group_detail_role)}
 
       {:error, reason} ->
         {:noreply, put_failure_flash(socket, reason)}
@@ -1186,7 +1275,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     do: {:noreply, socket |> LiveHelpers.next_page(:browse_groups_page) |> reload_browse_groups()}
 
   def handle_event("group_view_detail", %{"group_id" => gid}, socket) do
-    {:noreply, patch_groups(socket, group: to_string(gid), edit: false)}
+    case Groups.get_group(to_string(gid)) do
+      nil -> {:noreply, put_flash(socket, :error, gettext("Not found"))}
+      group -> {:noreply, patch_groups(socket, group: Groups.full_slug(group), edit: false)}
+    end
   end
 
   def handle_event("group_close_detail", _params, socket) do
@@ -1211,14 +1303,17 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
     case Groups.update_group(user.id, group.id, group_params) do
       {:ok, updated} ->
+        ref = Groups.full_slug(updated)
+
         {:noreply,
          socket
          |> put_flash(:info, gettext("Success."))
          |> assign(:group_detail, updated)
+         |> assign(:group_detail_ref, ref)
          |> assign(:group_editing, false)
          |> assign(:group_edit_form, nil)
          |> reload_groups()
-         |> patch_groups(edit: false)}
+         |> patch_groups(group: ref, edit: false)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, group_edit_form: to_form(changeset, as: :group))}
@@ -1321,7 +1416,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     uid = to_string(uid)
 
     case Groups.invite_to_group(user.id, gid, uid) do
-      {:ok, _} ->
+      # They had asked to join, and are a member now: off the lists.
+      {:ok, :request_approved} ->
         {:noreply,
          socket
          |> put_flash(:info, gettext("Success."))
@@ -1332,7 +1428,15 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
          |> assign(
            :invite_friends,
            Enum.reject(socket.assigns.invite_friends, &(&1.id == uid))
-         )}
+         )
+         |> reload_group_members()}
+
+      # Still on the lists, marked Invited, and under the group's invites.
+      {:ok, _invite} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, gettext("Success."))
+         |> assign_pending_invites(socket.assigns.group_detail_role)}
 
       {:error, reason} ->
         {:noreply,
@@ -1403,6 +1507,40 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     |> Enum.filter(& &1)
   end
 
+  # A group's own URL on this tab: by its slug, or by its id when only that
+  # is at hand (a sent invitation's).
+  defp group_href(path, %Group{} = group), do: groups_href(path, group: Groups.full_slug(group))
+  defp group_href(path, %{id: id}), do: groups_href(path, group: id)
+
+  defp member_of?(my_groups, group_id),
+    do: Enum.any?(my_groups, fn {g, _role} -> g.id == group_id end)
+
+  # Whose name a slug starts with: the reader's for a new group.
+  defp owner_name(socket) do
+    case Shared.current_user(socket) do
+      %{username: username} when is_binary(username) and username != "" -> username
+      _none -> nil
+    end
+  end
+
+  defp slug_owner([owner, _slug]), do: owner
+  defp slug_owner(_id), do: nil
+
+  attr :field, Phoenix.HTML.FormField, required: true
+  attr :owner, :string, default: nil, doc: "the username the slug follows, nil for none"
+
+  # A group's slug, with the address it makes: `owner/slug`.
+  defp slug_input(assigns) do
+    ~H"""
+    <div>
+      <.input field={@field} type="text" label={gettext("Slug")} autocomplete="off" />
+      <p :if={@owner} class="mt-1 text-xs text-muted font-mono">
+        {@owner}/{@field.value}
+      </p>
+    </div>
+    """
+  end
+
   defp group_role_label("admin"), do: gettext("Admin")
   defp group_role_label("member"), do: gettext("Member")
   defp group_role_label(nil), do: "-"
@@ -1432,6 +1570,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
       |> assign(:group_pending_requests, pending_requests)
       |> assign(:group_sent_invitations, sent_invitations)
       |> assign(:group_unread_counts, %{})
+      |> follow_invitations()
       |> reload_browse_groups()
     else
       socket
@@ -1471,6 +1610,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   defp apply_create_param(socket, true) do
     assign(socket,
       groups_show_create: true,
+      create_slug_auto: "",
       create_group_form: to_form(Groups.change_group(%Group{}), as: :group)
     )
   end
@@ -1479,11 +1619,14 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
   defp apply_detail_param(socket, nil, _edit?), do: close_group_detail(socket)
 
+  defp apply_detail_param(%{assigns: %{group_detail_ref: ref}} = socket, ref, edit?),
+    do: apply_edit_param(socket, edit?)
+
   defp apply_detail_param(%{assigns: %{group_detail: %{id: gid}}} = socket, gid, edit?),
     do: apply_edit_param(socket, edit?)
 
-  defp apply_detail_param(socket, gid, edit?),
-    do: socket |> load_group_detail(gid) |> apply_edit_param(edit?)
+  defp apply_detail_param(socket, ref, edit?),
+    do: socket |> load_group_detail(ref) |> apply_edit_param(edit?)
 
   defp apply_edit_param(
          %{assigns: %{group_detail_role: "admin", group_editing: true}} = socket,
@@ -1507,7 +1650,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   defp patch_groups(socket, changes) do
     state = [
       create: socket.assigns.groups_show_create,
-      group: socket.assigns.group_detail && socket.assigns.group_detail.id,
+      group: socket.assigns.group_detail_ref,
       edit: socket.assigns.group_editing
     ]
 
@@ -1532,6 +1675,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   defp close_group_detail(socket) do
     socket
     |> assign(:group_detail, nil)
+    |> assign(:group_detail_ref, nil)
+    |> assign(:group_detail_owner, nil)
     |> assign(:group_detail_role, nil)
     |> assign(:group_members, [])
     |> assign(:group_members_total, 0)
@@ -1544,11 +1689,11 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     |> assign(:group_join_requests, [])
   end
 
-  # Only the user's own groups open: the id now arrives in the URL, and a
-  # hidden group's member list is not for anyone who can guess the id.
-  defp load_group_detail(socket, gid) do
+  # Only the user's own groups open: the slug or id arrives in the URL, and a
+  # hidden group's member list is not for anyone who can guess it.
+  defp load_group_detail(socket, ref) do
     user = Shared.current_user(socket)
-    group = Groups.get_group(gid)
+    group = Groups.get_group_by_full_slug(ref)
     membership = group && Groups.get_membership(group.id, user.id)
 
     case membership do
@@ -1562,14 +1707,19 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
         join_requests = load_join_requests(role, user.id, group.id)
 
+        ref = Groups.full_slug(group)
+
         socket
         |> close_group_detail()
         |> assign(:group_detail, group)
+        |> assign(:group_detail_ref, ref)
+        |> assign(:group_detail_owner, ref |> String.split("/") |> slug_owner())
         |> assign(:group_detail_role, role)
         |> assign(:group_members_page, 1)
         |> assign(:invite_friends, friends_not_in_group)
         |> assign(:group_join_requests, join_requests)
         |> assign_invite_link(role)
+        |> assign_pending_invites(role)
         |> reload_group_members()
 
       _ ->
@@ -1600,6 +1750,35 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
   defp assign_invite_link(socket, _role),
     do: assign(socket, group_invite_link: nil, group_invite_link_url: nil)
+
+  # The group's pending invitations, for its admins: listed under Invite to
+  # cancel, and what marks a search result or friend Invited rather than
+  # offering them again.
+  defp assign_pending_invites(%{assigns: %{group_detail: %{id: group_id}}} = socket, "admin") do
+    user = Shared.current_user(socket)
+
+    invites =
+      case Groups.list_group_invites(user.id, group_id, page_size: 100) do
+        {:ok, invites} -> invites
+        {:error, _reason} -> []
+      end
+
+    assign(socket, :group_pending_invites, invites)
+  end
+
+  defp assign_pending_invites(socket, _role), do: assign(socket, :group_pending_invites, [])
+
+  defp invited?(invites, user_id), do: Enum.any?(invites, &(&1.recipient_id == user_id))
+
+  # Until the reader picks a tab, the page opens on Invitations while some
+  # are pending, so someone an invite sent here finds it rather than an empty
+  # list, and goes back to their groups once none are left.
+  defp follow_invitations(%{assigns: %{groups_tab_picked?: true}} = socket), do: socket
+
+  defp follow_invitations(socket) do
+    tab = if socket.assigns.group_invitations != [], do: "invitations", else: "my_groups"
+    assign(socket, :groups_tab, tab)
+  end
 
   defp reload_group_members(socket) do
     group = socket.assigns.group_detail

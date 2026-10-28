@@ -407,8 +407,56 @@ defmodule Gamend.Groups.Invites do
   end
 
   @doc """
-  Cancel (delete) a group invitation that the current user sent.
-  Only the sender can cancel their own invitation.
+  A group's pending invitations, newest first, whoever sent them: what its
+  admins see on the group's page, to cancel one that should not stand.
+  Admins only.
+  """
+  @spec list_group_invites(Ecto.UUID.t(), Ecto.UUID.t(), keyword()) ::
+          {:ok, [map()]} | {:error, :not_admin}
+  def list_group_invites(admin_id, group_id, opts \\ [])
+      when is_binary(admin_id) and is_binary(group_id) do
+    import Ecto.Query
+
+    page = Keyword.get(opts, :page, 1)
+    page_size = Keyword.get(opts, :page_size, 25)
+
+    if Groups.can_manage_group?(admin_id, group_id) do
+      invites =
+        from(i in GroupInvite,
+          where: i.group_id == ^group_id and i.status == "pending",
+          join: g in assoc(i, :group),
+          join: s in assoc(i, :sender),
+          join: r in assoc(i, :recipient),
+          order_by: [desc: i.inserted_at],
+          offset: ^((page - 1) * page_size),
+          limit: ^page_size,
+          preload: [group: g, sender: s, recipient: r]
+        )
+        |> Repo.all()
+        |> Enum.map(&serialize_group_invite/1)
+
+      {:ok, invites}
+    else
+      {:error, :not_admin}
+    end
+  end
+
+  @doc "Count a group's pending invitations."
+  @spec count_group_invites(Ecto.UUID.t()) :: non_neg_integer()
+  def count_group_invites(group_id) when is_binary(group_id) do
+    import Ecto.Query
+
+    from(i in GroupInvite,
+      where: i.group_id == ^group_id and i.status == "pending",
+      select: count(i.id)
+    )
+    |> Repo.one()
+  end
+
+  @doc """
+  Cancel (delete) a pending group invitation: one the current user sent, or
+  any of a group they are an admin of, as its page lists them
+  (`list_group_invites/3`).
   """
   @spec cancel_invite(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
   def cancel_invite(user_id, invite_id)
@@ -417,29 +465,32 @@ defmodule Gamend.Groups.Invites do
       nil ->
         {:error, :not_found}
 
-      %GroupInvite{sender_id: ^user_id, status: "pending"} = invite ->
-        Repo.delete(invite)
-        Shared.invalidate_invite_cache(user_id)
-        Shared.invalidate_invite_cache(invite.recipient_id)
-
-        # Retract the invite notification
-        group = Groups.get_group(invite.group_id)
-        group_title = (group && group.title) || ""
-
-        Gamend.Notifications.delete_notification_by(
-          user_id,
-          invite.recipient_id,
-          "Invited to #{group_title}"
-        )
-
-        :ok
-
-      %GroupInvite{status: "pending"} ->
-        {:error, :not_owner}
+      %GroupInvite{status: "pending"} = invite ->
+        if invite.sender_id == user_id or Groups.can_manage_group?(user_id, invite.group_id),
+          do: do_cancel_invite(invite),
+          else: {:error, :not_owner}
 
       _other ->
         {:error, :not_found}
     end
+  end
+
+  defp do_cancel_invite(invite) do
+    Repo.delete(invite)
+    Shared.invalidate_invite_cache(invite.sender_id)
+    Shared.invalidate_invite_cache(invite.recipient_id)
+
+    # Retract the invite notification
+    group = Groups.get_group(invite.group_id)
+    group_title = (group && group.title) || ""
+
+    Gamend.Notifications.delete_notification_by(
+      invite.sender_id,
+      invite.recipient_id,
+      "Invited to #{group_title}"
+    )
+
+    :ok
   end
 
   @doc """

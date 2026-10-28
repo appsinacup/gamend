@@ -271,7 +271,13 @@ defmodule GamendWeb.AdminLive.Users do
                   </tr>
                 </thead>
                 <tbody>
-                  <tr :for={user <- @recent_users} id={"user-#{user.id}"}>
+                  <tr
+                    :for={user <- @recent_users}
+                    id={"user-#{user.id}"}
+                    phx-click="edit_user"
+                    phx-value-id={user.id}
+                    class={clickable_row()}
+                  >
                     <td class="w-10">
                       <input
                         type="checkbox"
@@ -296,7 +302,16 @@ defmodule GamendWeb.AdminLive.Users do
                         <span class="text-gray-500">-</span>
                       <% end %>
                     </td>
-                    <td class="font-mono text-sm">{user.email}</td>
+                    <td class="font-mono text-sm">
+                      <button
+                        type="button"
+                        phx-click="edit_user"
+                        phx-value-id={user.id}
+                        class="link link-hover text-left"
+                      >
+                        {user.email}
+                      </button>
+                    </td>
                     <td class="font-mono text-sm">
                       <%= if user.username && user.username != "" do %>
                         {user.username}
@@ -334,12 +349,10 @@ defmodule GamendWeb.AdminLive.Users do
                     </td>
                     <td>
                       <%= if user.profile_url do %>
-                        <div class="flex items-center gap-2">
-                          <%!-- Our copy only: a provider's URL is never hotlinked,
-                                not even here (`User.public_avatar_url/1`). --%>
-                          <.user_avatar user={user} class="w-8 h-8" />
-                          <a href={user.profile_url} target="_blank" class="text-sm link">Profile</a>
-                        </div>
+                        <%!-- Our copy only: a provider's URL is never hotlinked,
+                              not even here (`User.public_avatar_url/1`), and not
+                              linked from the row, whose click opens the editor. --%>
+                        <.user_avatar user={user} class="w-8 h-8" />
                       <% else %>
                         <span class="text-gray-500">-</span>
                       <% end %>
@@ -428,13 +441,6 @@ defmodule GamendWeb.AdminLive.Users do
                       <.timestamp at={user.updated_at} />
                     </td>
                     <td>
-                      <button
-                        phx-click="edit_user"
-                        phx-value-id={user.id}
-                        class="btn btn-xs btn-outline btn-info mr-2"
-                      >
-                        Edit
-                      </button>
                       <button
                         phx-click="delete_user"
                         phx-value-id={user.id}

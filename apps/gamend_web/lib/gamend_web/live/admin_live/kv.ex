@@ -119,7 +119,13 @@ defmodule GamendWeb.AdminLive.KV do
                   </tr>
                 </thead>
                 <tbody>
-                  <tr :for={e <- @entries} id={"admin-kv-" <> to_string(e.id)}>
+                  <tr
+                    :for={e <- @entries}
+                    id={"admin-kv-" <> to_string(e.id)}
+                    class={clickable_row()}
+                    phx-click="edit_entry"
+                    phx-value-id={e.id}
+                  >
                     <td class="w-10">
                       <input
                         type="checkbox"
@@ -130,7 +136,16 @@ defmodule GamendWeb.AdminLive.KV do
                       />
                     </td>
                     <td class="font-mono text-sm w-16">{e.id}</td>
-                    <td class="font-mono text-sm break-all">{e.key}</td>
+                    <td class="font-mono text-sm break-all">
+                      <button
+                        type="button"
+                        phx-click="edit_entry"
+                        phx-value-id={e.id}
+                        class="link link-hover text-left"
+                      >
+                        {e.key}
+                      </button>
+                    </td>
                     <td class="font-mono text-sm w-20">{e.user_id || ""}</td>
                     <td class="font-mono text-sm w-20">{e.lobby_id || ""}</td>
                     <td class="text-sm w-40">
@@ -145,14 +160,6 @@ defmodule GamendWeb.AdminLive.KV do
                       <pre class="text-xs font-mono whitespace-pre-wrap max-h-24 overflow-auto bg-base-100/60 rounded p-2">{json_preview(e.metadata)}</pre>
                     </td>
                     <td class="text-sm whitespace-nowrap w-32">
-                      <button
-                        type="button"
-                        phx-click="edit_entry"
-                        phx-value-id={e.id}
-                        class="btn btn-xs btn-outline btn-info mr-2"
-                      >
-                        Edit
-                      </button>
                       <button
                         type="button"
                         phx-click="delete_entry"

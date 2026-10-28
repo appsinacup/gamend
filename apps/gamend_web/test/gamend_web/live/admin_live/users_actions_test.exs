@@ -1,8 +1,9 @@
 defmodule GamendWeb.AdminLive.UsersActionsTest do
   # The admin users page's controls the listing tests did not press: sorting
   # (a second press flips it), clearing a search, page size, select all, and
-  # a user's panel: their sessions revoked one at a time or all at once, a
-  # deletion they asked for cancelled, password sign-in unlocked.
+  # a user's panel, opened by their row: their sessions revoked one at a
+  # time or all at once, a deletion they asked for cancelled, password
+  # sign-in unlocked.
   use GamendWeb.ConnCase, async: false
 
   import Phoenix.LiveViewTest
@@ -25,6 +26,22 @@ defmodule GamendWeb.AdminLive.UsersActionsTest do
   end
 
   defp assigns(view), do: :sys.get_state(view.pid).socket.assigns
+
+  test "a user's row opens their panel; it links nowhere else", %{
+    conn: conn,
+    admin: admin,
+    player: player
+  } do
+    {:ok, player} =
+      player |> Ecto.Changeset.change(profile_url: "https://cdn.example/a.png") |> Repo.update()
+
+    view = page(conn, admin)
+    refute has_element?(view, "#user-#{player.id} a[href='https://cdn.example/a.png']")
+    refute has_element?(view, "#user-#{player.id} button", "Edit")
+
+    view |> element("#user-#{player.id}") |> render_click()
+    assert assigns(view).selected_user.id == player.id
+  end
 
   test "a column sorts descending, and a second press ascending", %{conn: conn, admin: admin} do
     view = page(conn, admin)

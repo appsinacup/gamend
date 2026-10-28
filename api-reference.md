@@ -1,4 +1,4 @@
-# gamend_core v1.1.1366 - API Reference
+# gamend_core v1.1.1367 - API Reference
 
 ## Modules
 
@@ -95,6 +95,9 @@ they can never read back.
 - [Gamend.Signaling](Gamend.Signaling.md): WebRTC signaling: who is in a room, and relaying offers between them.
 - [Gamend.Signals](Gamend.Signals.md): Server-side signals: a plugin emits a named event, another part of the plugin
 waits for it.
+- [Gamend.Slug](Gamend.Slug.md): A name that is also its URL, unique per account: a group's
+(`Gamend.Groups`, `<owner>/<slug>`), and in a host a project's or a store
+account's (Forge's `/projects/<owner>/<name>`).
 - [Gamend.Time](Gamend.Time.md): The server's wall clock, in milliseconds since the epoch, for sending to
 clients.
 

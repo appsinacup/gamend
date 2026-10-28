@@ -12,9 +12,16 @@ three visibility types:
 - **hidden** – only invited users can join (via notifications / invite API)
 
 A host picks which of them players may use (`types`), whom an admin may
-invite (`invites`) and how long an invite link lasts (`link_days`). Forge
-and Gamend Cloud, whose groups are teams of colleagues, allow `hidden` and
-`private` and invite `anyone`.
+invite (`invites`), how long an invite link lasts (`link_days`), whether
+every group holds the same number of members (`max_members`) and whether
+two groups may share a title (`unique_titles`). Forge and Gamend Cloud,
+whose groups are teams of colleagues, allow `hidden` alone, invite
+`anyone`, hold 100 and let titles repeat.
+
+A group's slug is its name in a URL, unique per creator, and reads
+`<owner>/<slug>` with the creator's username (`full_slug/1`,
+`get_group_by_full_slug/1`). One is made from the title when none is
+given.
 
 ## Usage
 
@@ -126,7 +133,7 @@ Subject first, resource second, like every other `can_*?` predicate (see
 @spec cancel_invite(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
 ```
 
-Cancel a group invitation the current user sent.
+Cancel a pending group invitation: one the user sent, or any of a group they admin.
 
 # `cancel_join_request`
 
@@ -160,6 +167,14 @@ Count ALL groups matching filters (admin).
 ```
 
 Total member count across all groups.
+
+# `count_group_invites`
+
+```elixir
+@spec count_group_invites(Ecto.UUID.t()) :: non_neg_integer()
+```
+
+Count a group's pending invitations.
 
 # `count_group_members`
 
@@ -286,6 +301,32 @@ Turn a group's invite link off. Admins only.
 
 Demote an admin to member. Only admins can demote other admins.
 
+# `fixed_max_members`
+
+```elixir
+@spec fixed_max_members() :: pos_integer() | nil
+```
+
+Every group's member cap when the host fixes it (`max_members`), else nil.
+
+# `free_slug`
+
+```elixir
+@spec free_slug(Ecto.UUID.t(), String.t() | nil) :: String.t()
+```
+
+The slug a new group of `user_id`'s titled `title` gets: its nearest free one.
+
+# `full_slug`
+
+```elixir
+@spec full_slug(Gamend.Groups.Group.t()) :: String.t()
+```
+
+A group's name in a URL: `<owner>/<slug>`, the owner its creator's
+username. A group whose creator is gone, or has no username, is its id.
+A username changed moves it, as on GitHub.
+
 # `get_group`
 
 ```elixir
@@ -302,13 +343,23 @@ Get a group by ID (cached).
 
 Get a group by ID (raises if not found, cached).
 
+# `get_group_by_full_slug`
+
+```elixir
+@spec get_group_by_full_slug(String.t()) :: Gamend.Groups.Group.t() | nil
+```
+
+The group a URL names: `<owner>/<slug>` (`full_slug/1`), or its id. Nil
+for neither.
+
 # `get_group_by_title`
 
 ```elixir
 @spec get_group_by_title(String.t()) :: Gamend.Groups.Group.t() | nil
 ```
 
-Get a group by its unique title.
+Get a group by its title: the oldest of that title when the host lets
+titles repeat (`unique_titles`).
 
 # `get_group_members`
 
@@ -472,6 +523,15 @@ Leave a group.
 
 List ALL groups including hidden (admin only).
 
+# `list_group_invites`
+
+```elixir
+@spec list_group_invites(Ecto.UUID.t(), Ecto.UUID.t(), keyword()) ::
+  {:ok, [map()]} | {:error, :not_admin}
+```
+
+A group's pending invitations, whoever sent them. Admins only.
+
 # `list_groups`
 
 ```elixir
@@ -534,7 +594,7 @@ List groups the user belongs to.
 ]
 ```
 
-List groups the user belongs to, together with the membership role.
+List groups the user belongs to, together with the membership role, creators loaded (`full_slug/1`).
 
 # `list_user_pending_requests`
 
@@ -664,6 +724,14 @@ Subscribe to global group events.
 The types a group may be created as or changed to, the default first: the
 `types` setting, less any name that is not a type. All three when that
 leaves none, so a typo cannot close group creation.
+
+# `unique_titles?`
+
+```elixir
+@spec unique_titles?() :: boolean()
+```
+
+Whether a group's title must be unique (`unique_titles`).
 
 # `unsubscribe_group`
 

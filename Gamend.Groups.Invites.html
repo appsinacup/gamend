@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1366">
+    <meta name="project" content="gamend_core v1.1.1367">
 
 
-    <title>Gamend.Groups.Invites — gamend_core v1.1.1366</title>
+    <title>Gamend.Groups.Invites — gamend_core v1.1.1367</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-6D8C4155.js"></script>
+    <script defer src="dist/sidebar_items-BC3455D0.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1366
+          v1.1.1367
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Groups.<wbr />Invites</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1366)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1367)</small>
 
     </h1>
 
@@ -150,8 +150,19 @@ Works for all group types (public, private, hidden).</p></div>
 
       </div>
 
-        <div class="summary-synopsis"><p>Cancel (delete) a group invitation that the current user sent.
-Only the sender can cancel their own invitation.</p></div>
+        <div class="summary-synopsis"><p>Cancel (delete) a pending group invitation: one the current user sent, or
+any of a group they are an admin of, as its page lists them
+(<a href="#list_group_invites/3"><code class="inline">list_group_invites/3</code></a>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#count_group_invites/1" data-no-tooltip="" translate="no">count_group_invites(group_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Count a group's pending invitations.</p></div>
 
     </div>
 
@@ -196,6 +207,18 @@ Only the recipient can decline. The invite is marked as <code class="inline">&qu
         <div class="summary-synopsis"><p>Invite a user to a group. Creates a <code class="inline">GroupInvite</code> record and sends
 an informational notification. The invite record is independent of the
 notification — deleting notifications does not affect pending invites.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#list_group_invites/3" data-no-tooltip="" translate="no">list_group_invites(admin_id, group_id, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A group's pending invitations, newest first, whoever sent them: what its
+admins see on the group's page, to cancel one that should not stand.
+Admins only.</p></div>
 
     </div>
 
@@ -274,7 +297,7 @@ Works for all group types (public, private, hidden).</p>
       <h1 class="signature" translate="no">cancel_invite(user_id, invite_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L414" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L462" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -289,8 +312,37 @@ Works for all group types (public, private, hidden).</p>
 
       </div>
 
-<p>Cancel (delete) a group invitation that the current user sent.
-Only the sender can cancel their own invitation.</p>
+<p>Cancel (delete) a pending group invitation: one the current user sent, or
+any of a group they are an admin of, as its page lists them
+(<a href="#list_group_invites/3"><code class="inline">list_group_invites/3</code></a>).</p>
+  </section>
+</section>
+<section class="detail" id="count_group_invites/1">
+
+  <div class="detail-header">
+    <a href="#count_group_invites/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">count_group_invites(group_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L446" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> count_group_invites(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+
+      </div>
+
+<p>Count a group's pending invitations.</p>
   </section>
 </section>
 <section class="detail" id="count_invitations/1">
@@ -359,7 +411,7 @@ Only the sender can cancel their own invitation.</p>
       <h1 class="signature" translate="no">decline_invite(user_id, invite_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L451" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L502" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -419,6 +471,39 @@ required a connection. On a service children can reach, being addable to a
 stranger's group is the contact path that matters, so the two now agree.
 Returns <code class="inline">{:error, :not_connected}</code>. A host that sets <a href="Gamend.Groups.html"><code class="inline">Gamend.Groups</code></a>'
 <code class="inline">invites</code> to <code class="inline">anyone</code> (teams of colleagues) lets an admin invite any account.</p>
+  </section>
+</section>
+<section class="detail" id="list_group_invites/3">
+
+    <span id="list_group_invites/2"></span>
+
+  <div class="detail-header">
+    <a href="#list_group_invites/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">list_group_invites(admin_id, group_id, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L416" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> list_group_invites(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) ::
+  {:ok, [<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()]} | {:error, :not_admin}</pre>
+
+      </div>
+
+<p>A group's pending invitations, newest first, whoever sent them: what its
+admins see on the group's page, to cancel one that should not stand.
+Admins only.</p>
   </section>
 </section>
 <section class="detail" id="list_invitations/2">
@@ -490,9 +575,9 @@ Returns <code class="inline">{:error, :not_connected}</code>. A host that sets <
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1366">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1367">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1366">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1367">Hex Preview</a>
 
             </span>
 

@@ -9,11 +9,15 @@ join-request workflows, and invitation flows.
 
 ## Fields
 
-- `title` – human-readable display title (unique)
+- `title` – human-readable display title, unique unless the host turns
+  `unique_titles` off (`Gamend.Groups`)
+- `slug` – its name in a URL, unique per creator: `<owner>/<slug>`
+  (`Gamend.Groups.full_slug/1`), made from the title when none is given
 - `description` – optional longer description
 - `icon_url` – optional icon; `nil` means clients show their default group icon
 - `type` – visibility: `"public"`, `"private"`, or `"hidden"`
-- `max_members` – maximum number of members (default 100)
+- `max_members` – maximum number of members (default 100, or the host's
+  fixed `max_members`)
 - `metadata` – arbitrary server-managed key/value map
 - `creator_id` – the user who originally created the group
 
@@ -32,6 +36,7 @@ join-request workflows, and invitation flows.
   members: term(),
   metadata: term(),
   slowdown: term(),
+  slug: term(),
   title: term(),
   type: term(),
   updated_at: term()

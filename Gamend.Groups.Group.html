@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1366">
+    <meta name="project" content="gamend_core v1.1.1367">
 
 
-    <title>Gamend.Groups.Group — gamend_core v1.1.1366</title>
+    <title>Gamend.Groups.Group — gamend_core v1.1.1367</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-6D8C4155.js"></script>
+    <script defer src="dist/sidebar_items-BC3455D0.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1366
+          v1.1.1367
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Groups.<wbr />Group</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1366)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1367)</small>
 
     </h1>
 
@@ -116,7 +116,10 @@ gamend_core
     <section id="moduledoc">
 <p>Ecto schema for the <code class="inline">groups</code> table.</p><p>A group is a persistent community that users can join. Unlike lobbies (which
 are ephemeral game sessions), groups are long-lived and support admin roles,
-join-request workflows, and invitation flows.</p><h2 id="module-fields" class="section-heading"><a href="#module-fields" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Fields</span></h2><ul><li><code class="inline">title</code> – human-readable display title (unique)</li><li><code class="inline">description</code> – optional longer description</li><li><code class="inline">icon_url</code> – optional icon; <code class="inline">nil</code> means clients show their default group icon</li><li><code class="inline">type</code> – visibility: <code class="inline">&quot;public&quot;</code>, <code class="inline">&quot;private&quot;</code>, or <code class="inline">&quot;hidden&quot;</code></li><li><code class="inline">max_members</code> – maximum number of members (default 100)</li><li><code class="inline">metadata</code> – arbitrary server-managed key/value map</li><li><code class="inline">creator_id</code> – the user who originally created the group</li></ul>
+join-request workflows, and invitation flows.</p><h2 id="module-fields" class="section-heading"><a href="#module-fields" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Fields</span></h2><ul><li><code class="inline">title</code> – human-readable display title, unique unless the host turns
+<code class="inline">unique_titles</code> off (<a href="Gamend.Groups.html"><code class="inline">Gamend.Groups</code></a>)</li><li><code class="inline">slug</code> – its name in a URL, unique per creator: <code class="inline">&lt;owner&gt;/&lt;slug&gt;</code>
+(<a href="Gamend.Groups.html#full_slug/1"><code class="inline">Gamend.Groups.full_slug/1</code></a>), made from the title when none is given</li><li><code class="inline">description</code> – optional longer description</li><li><code class="inline">icon_url</code> – optional icon; <code class="inline">nil</code> means clients show their default group icon</li><li><code class="inline">type</code> – visibility: <code class="inline">&quot;public&quot;</code>, <code class="inline">&quot;private&quot;</code>, or <code class="inline">&quot;hidden&quot;</code></li><li><code class="inline">max_members</code> – maximum number of members (default 100, or the host's
+fixed <code class="inline">max_members</code>)</li><li><code class="inline">metadata</code> – arbitrary server-managed key/value map</li><li><code class="inline">creator_id</code> – the user who originally created the group</li></ul>
     </section>
 
 </div>
@@ -179,7 +182,7 @@ join-request workflows, and invitation flows.</p><h2 id="module-fields" class="s
       <h1 class="signature" translate="no">t()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/group.ex#L25" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/group.ex#L29" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -202,6 +205,7 @@ join-request workflows, and invitation flows.</p><h2 id="module-fields" class="s
   members: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   metadata: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   slowdown: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
+  slug: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   title: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   type: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   updated_at: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()
@@ -235,7 +239,7 @@ join-request workflows, and invitation flows.</p><h2 id="module-fields" class="s
       <h1 class="signature" translate="no">changeset(group, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/group.ex#L46" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/group.ex#L53" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -262,9 +266,9 @@ join-request workflows, and invitation flows.</p><h2 id="module-fields" class="s
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1366">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1367">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1366">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1367">Hex Preview</a>
 
             </span>
 

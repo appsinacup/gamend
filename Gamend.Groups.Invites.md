@@ -23,8 +23,17 @@ Works for all group types (public, private, hidden).
 @spec cancel_invite(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
 ```
 
-Cancel (delete) a group invitation that the current user sent.
-Only the sender can cancel their own invitation.
+Cancel (delete) a pending group invitation: one the current user sent, or
+any of a group they are an admin of, as its page lists them
+(`list_group_invites/3`).
+
+# `count_group_invites`
+
+```elixir
+@spec count_group_invites(Ecto.UUID.t()) :: non_neg_integer()
+```
+
+Count a group's pending invitations.
 
 # `count_invitations`
 
@@ -77,6 +86,17 @@ required a connection. On a service children can reach, being addable to a
 stranger's group is the contact path that matters, so the two now agree.
 Returns `{:error, :not_connected}`. A host that sets `Gamend.Groups`'
 `invites` to `anyone` (teams of colleagues) lets an admin invite any account.
+
+# `list_group_invites`
+
+```elixir
+@spec list_group_invites(Ecto.UUID.t(), Ecto.UUID.t(), keyword()) ::
+  {:ok, [map()]} | {:error, :not_admin}
+```
+
+A group's pending invitations, newest first, whoever sent them: what its
+admins see on the group's page, to cancel one that should not stand.
+Admins only.
 
 # `list_invitations`
 

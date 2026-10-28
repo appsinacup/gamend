@@ -224,6 +224,7 @@ Gamend.Settings.Provider.md
 Gamend.Settings.md
 Gamend.Signaling.md
 Gamend.Signals.md
+Gamend.Slug.md
 Gamend.Storage.Adapter.md
 Gamend.Storage.Local.md
 Gamend.Storage.S3.md

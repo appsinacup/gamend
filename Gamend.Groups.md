@@ -11,6 +11,11 @@ three visibility types:
 - **private** – anyone can request to join; an admin must approve
 - **hidden** – only invited users can join (via notifications / invite API)
 
+A host picks which of them players may use (`types`), whom an admin may
+invite (`invites`) and how long an invite link lasts (`link_days`). Forge
+and Gamend Cloud, whose groups are teams of colleagues, allow `hidden` and
+`private` and invite `anyone`.
+
 ## Usage
 
     # Create a group (creator becomes admin)
@@ -237,6 +242,15 @@ Count groups the user belongs to.
 
 Create a new group. The creating user becomes an admin member automatically.
 
+# `create_invite_link`
+
+```elixir
+@spec create_invite_link(Ecto.UUID.t(), Ecto.UUID.t()) ::
+  {:ok, Gamend.Groups.GroupInviteLink.t()} | {:error, term()}
+```
+
+Make a group's invite link, replacing its old one. Admins only.
+
 # `decline_invite`
 
 ```elixir
@@ -254,6 +268,14 @@ Decline a pending group invite by invite id (recipient only).
 
 Delete a group. Any of its admins can, members or not: everyone in it is
 removed with it and told, as a kick tells one member.
+
+# `delete_invite_link`
+
+```elixir
+@spec delete_invite_link(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
+```
+
+Turn a group's invite link off. Admins only.
 
 # `demote_member`
 
@@ -308,6 +330,22 @@ Get paginated members of a group with user info.
 
 Pass `:search` to filter by member name (display name or username).
 
+# `get_invite_link`
+
+```elixir
+@spec get_invite_link(Ecto.UUID.t()) :: Gamend.Groups.GroupInviteLink.t() | nil
+```
+
+A group's working invite link, or nil (see `Gamend.Groups.InviteLinks`).
+
+# `get_invite_link_by_token`
+
+```elixir
+@spec get_invite_link_by_token(String.t()) :: Gamend.Groups.GroupInviteLink.t() | nil
+```
+
+The working invite link a token opens, its group preloaded, or nil.
+
 # `get_membership`
 
 ```elixir
@@ -355,6 +393,30 @@ without running the admin-transfer / empty-group logic).
 
 Public wrapper for cache invalidation (used by admin controller).
 
+# `invite_anyone?`
+
+```elixir
+@spec invite_anyone?() :: boolean()
+```
+
+Whether an admin may invite any account, not only a friend (`invites`).
+
+# `invite_link_days`
+
+```elixir
+@spec invite_link_days() :: non_neg_integer()
+```
+
+How many days a new invite link lasts (`link_days`).
+
+# `invite_links?`
+
+```elixir
+@spec invite_links?() :: boolean()
+```
+
+Whether groups may have invite links (`link_days` above 0).
+
 # `invite_to_group`
 
 ```elixir
@@ -365,6 +427,15 @@ Public wrapper for cache invalidation (used by admin controller).
 ```
 
 Invite a user to a group (see `Gamend.Groups.Invites.invite_to_group/3`).
+
+# `join_by_invite_link`
+
+```elixir
+@spec join_by_invite_link(Ecto.UUID.t(), String.t()) ::
+  {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+```
+
+Join the group an invite link opens, as a member.
 
 # `join_group`
 
@@ -583,6 +654,16 @@ Subscribe to a specific group's events.
 ```
 
 Subscribe to global group events.
+
+# `types`
+
+```elixir
+@spec types() :: [String.t()]
+```
+
+The types a group may be created as or changed to, the default first: the
+`types` setting, less any name that is not a type. All three when that
+leaves none, so a typo cannot close group creation.
 
 # `unsubscribe_group`
 

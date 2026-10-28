@@ -1,4 +1,4 @@
-# gamend_core v1.1.1365 - Table of Contents
+# gamend_core v1.1.1366 - Table of Contents
 
 > Core functionality for Gamend, including user management, authentication, friends, matchmaking, and more.
 
@@ -211,8 +211,15 @@ about a chat message.
 leaving, kicking, promoting/demoting members, and handling join requests.
   - [Gamend.Groups.Group](Gamend.Groups.Group.md): Ecto schema for the `groups` table.
   - [Gamend.Groups.GroupInvite](Gamend.Groups.GroupInvite.md): Ecto schema for the `group_invites` table.
+  - [Gamend.Groups.GroupInviteLink](Gamend.Groups.GroupInviteLink.md): Ecto schema for the `group_invite_links` table: a group's invite link
+(`Gamend.Groups.InviteLinks`).
   - [Gamend.Groups.GroupJoinRequest](Gamend.Groups.GroupJoinRequest.md): Ecto schema for the `group_join_requests` table.
   - [Gamend.Groups.GroupMember](Gamend.Groups.GroupMember.md): Ecto schema for the `group_members` join table.
+  - [Gamend.Groups.InviteLinks](Gamend.Groups.InviteLinks.md): A group's invite link: an admin makes one, shares it anywhere, and whoever
+opens it while signed in joins the group as a member, without an invite of
+their own or a request to approve. It works for every group type, hidden
+ones too, and is a pull, like a class code: the person chooses to join,
+nobody is added to anything.
   - [Gamend.Groups.Invites](Gamend.Groups.Invites.md): Group invitations: creating, accepting, declining, cancelling, and
 listing/counting pending invites.
   - [Gamend.Groups.JoinRequests](Gamend.Groups.JoinRequests.md): Join requests for private groups: requesting, listing, approving,
@@ -460,7 +467,8 @@ and booleans keep `null`, where absence is semantic.
 options; a release runs the same code as `gamend demo.seed`.
 - [mix gamend.api.lint](Mix.Tasks.Gamend.Api.Lint.md): Enforces the naming and serialization conventions mechanically.
 - [mix gamend.content.extract](Mix.Tasks.Gamend.Content.Extract.md): Writes `content.pot` from the titles and descriptions stored on quests,
-leaderboards and tournaments.
+leaderboards and tournaments, and the names a quest gives its item rewards
+(`metadata["reward_names"]`).
 - [mix gamend.content.migrate_metadata](Mix.Tasks.Gamend.Content.MigrateMetadata.md): One-shot migration for instances that stored translations in the database.
 - [mix gamend.gen.dockerfile](Mix.Tasks.Gamend.Gen.Dockerfile.md): Writes `Dockerfile` from Gamend's one template, filled in from the app's
 own `mix.exs`, so Gamend, the starter and every host build the same way.

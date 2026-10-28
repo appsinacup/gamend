@@ -93,8 +93,10 @@ Gamend.GitHub.Manifest.html
 Gamend.GitHub.html
 Gamend.Groups.Group.html
 Gamend.Groups.GroupInvite.html
+Gamend.Groups.GroupInviteLink.html
 Gamend.Groups.GroupJoinRequest.html
 Gamend.Groups.GroupMember.html
+Gamend.Groups.InviteLinks.html
 Gamend.Groups.Invites.html
 Gamend.Groups.JoinRequests.html
 Gamend.Groups.html
@@ -261,8 +263,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-62C58B83.js
-dist/sidebar_items-97F1C63C.js
+dist/search_data-12019045.js
+dist/sidebar_items-6D8C4155.js
 index.html
 readme.html
 search.html

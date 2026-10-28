@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1365">
+    <meta name="project" content="gamend_core v1.1.1366">
 
 
-    <title>Gamend.Parse — gamend_core v1.1.1365</title>
+    <title>Gamend.Parse — gamend_core v1.1.1366</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-97F1C63C.js"></script>
+    <script defer src="dist/sidebar_items-6D8C4155.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1365
+          v1.1.1366
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Parse</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1365)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1366)</small>
 
     </h1>
 
@@ -194,6 +194,16 @@ simply never match.</p></div>
 
     </div>
 
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#uuid/1" data-no-tooltip="" translate="no">uuid(value)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A UUID string, or <code class="inline">nil</code>: the 36-character hyphenated form only.</p></div>
+
+    </div>
+
 </div>
 
   </section>
@@ -218,7 +228,7 @@ simply never match.</p></div>
       <h1 class="signature" translate="no">blank_to_nil(value)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parse.ex#L85" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parse.ex#L102" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -277,7 +287,7 @@ allowed). <code class="inline">nil</code> for anything else, including floats an
       <h1 class="signature" translate="no">integer(value, default)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parse.ex#L70" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parse.ex#L87" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -305,7 +315,7 @@ allowed). <code class="inline">nil</code> for anything else, including floats an
       <h1 class="signature" translate="no">string_keys(map)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parse.ex#L43" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parse.ex#L60" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -336,7 +346,7 @@ Hooks and quests each carried a private copy.</p>
       <h1 class="signature" translate="no">string_keys_deep(struct)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parse.ex#L56" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parse.ex#L73" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -356,6 +366,36 @@ for a provider payload read field by field, where a nested atom key would
 simply never match.</p>
   </section>
 </section>
+<section class="detail" id="uuid/1">
+
+  <div class="detail-header">
+    <a href="#uuid/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">uuid(value)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parse.ex#L42" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> uuid(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) :: <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil</pre>
+
+      </div>
+
+<p>A UUID string, or <code class="inline">nil</code>: the 36-character hyphenated form only.</p><p><a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#cast/1"><code class="inline">Ecto.UUID.cast/1</code></a> also takes any 16-byte binary as a raw UUID, so a
+16-character slug or name (<code class="inline">&quot;weekend-gauntlet&quot;</code>) cast to an id and its own
+lookup never ran. Ask this wherever a value may be an id or something else.</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -365,9 +405,9 @@ simply never match.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1365">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1366">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1365">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1366">Hex Preview</a>
 
             </span>
 

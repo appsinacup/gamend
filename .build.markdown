@@ -92,8 +92,10 @@ Gamend.GitHub.Manifest.md
 Gamend.GitHub.md
 Gamend.Groups.Group.md
 Gamend.Groups.GroupInvite.md
+Gamend.Groups.GroupInviteLink.md
 Gamend.Groups.GroupJoinRequest.md
 Gamend.Groups.GroupMember.md
+Gamend.Groups.InviteLinks.md
 Gamend.Groups.Invites.md
 Gamend.Groups.JoinRequests.md
 Gamend.Groups.md

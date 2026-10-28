@@ -2,7 +2,8 @@
 [🔗](https://github.com/appsinacup/gamend/blob/v1.0.7/lib/mix/tasks/gamend.content.extract.ex#L1)
 
 Writes `content.pot` from the titles and descriptions stored on quests,
-leaderboards and tournaments.
+leaderboards and tournaments, and the names a quest gives its item rewards
+(`metadata["reward_names"]`).
 
     mix gamend.content.extract          # write the template
     mix gamend.content.extract --check  # fail if it is out of date

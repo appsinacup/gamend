@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1365">
+    <meta name="project" content="gamend_core v1.1.1366">
 
 
-    <title>Gamend.Groups.Invites — gamend_core v1.1.1365</title>
+    <title>Gamend.Groups.Invites — gamend_core v1.1.1366</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-97F1C63C.js"></script>
+    <script defer src="dist/sidebar_items-6D8C4155.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1365
+          v1.1.1366
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Groups.<wbr />Invites</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1365)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1366)</small>
 
     </h1>
 
@@ -243,7 +243,7 @@ notification — deleting notifications does not affect pending invites.</p></di
       <h1 class="signature" translate="no">accept_invite(user_id, invite_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L197" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L201" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -274,7 +274,7 @@ Works for all group types (public, private, hidden).</p>
       <h1 class="signature" translate="no">cancel_invite(user_id, invite_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L410" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L414" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -359,7 +359,7 @@ Only the sender can cancel their own invitation.</p>
       <h1 class="signature" translate="no">decline_invite(user_id, invite_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L447" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L451" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -389,7 +389,7 @@ Only the recipient can decline. The invite is marked as <code class="inline">&qu
       <h1 class="signature" translate="no">invite_to_group(admin_id, group_id, target_user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L86" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L90" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -417,7 +417,8 @@ into a group with them, which made a group invite a weaker control than a
 party invite, where <code class="inline">Parties.check_leader_connected_to_target/2</code> has always
 required a connection. On a service children can reach, being addable to a
 stranger's group is the contact path that matters, so the two now agree.
-Returns <code class="inline">{:error, :not_connected}</code>.</p>
+Returns <code class="inline">{:error, :not_connected}</code>. A host that sets <a href="Gamend.Groups.html"><code class="inline">Gamend.Groups</code></a>'
+<code class="inline">invites</code> to <code class="inline">anyone</code> (teams of colleagues) lets an admin invite any account.</p>
   </section>
 </section>
 <section class="detail" id="list_invitations/2">
@@ -432,7 +433,7 @@ Returns <code class="inline">{:error, :not_connected}</code>.</p>
       <h1 class="signature" translate="no">list_invitations(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L341" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L345" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -462,7 +463,7 @@ Returns <code class="inline">{:error, :not_connected}</code>.</p>
       <h1 class="signature" translate="no">list_sent_invitations(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L375" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups/invites.ex#L379" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -489,9 +490,9 @@ Returns <code class="inline">{:error, :not_connected}</code>.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1365">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1366">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1365">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1366">Hex Preview</a>
 
             </span>
 

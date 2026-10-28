@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1365">
+    <meta name="project" content="gamend_core v1.1.1366">
 
 
-    <title>Gamend.Groups — gamend_core v1.1.1365</title>
+    <title>Gamend.Groups — gamend_core v1.1.1366</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-97F1C63C.js"></script>
+    <script defer src="dist/sidebar_items-6D8C4155.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1365
+          v1.1.1366
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Groups</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1365)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1366)</small>
 
     </h1>
 
@@ -116,7 +116,10 @@ gamend_core
     <section id="moduledoc">
 <p>Context module for group management: creating, updating, listing, joining,
 leaving, kicking, promoting/demoting members, and handling join requests.</p><p>Groups are persistent communities (unlike ephemeral lobbies). They support
-three visibility types:</p><ul><li><strong>public</strong> – anyone can join directly</li><li><strong>private</strong> – anyone can request to join; an admin must approve</li><li><strong>hidden</strong> – only invited users can join (via notifications / invite API)</li></ul><h2 id="module-usage" class="section-heading"><a href="#module-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage</span></h2><pre><code class="makeup elixir" translate="no"><span class="c1"># Create a group (creator becomes admin)</span><span class="w">
+three visibility types:</p><ul><li><strong>public</strong> – anyone can join directly</li><li><strong>private</strong> – anyone can request to join; an admin must approve</li><li><strong>hidden</strong> – only invited users can join (via notifications / invite API)</li></ul><p>A host picks which of them players may use (<code class="inline">types</code>), whom an admin may
+invite (<code class="inline">invites</code>) and how long an invite link lasts (<code class="inline">link_days</code>). Forge
+and Gamend Cloud, whose groups are teams of colleagues, allow <code class="inline">hidden</code> and
+<code class="inline">private</code> and invite <code class="inline">anyone</code>.</p><h2 id="module-usage" class="section-heading"><a href="#module-usage" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Usage</span></h2><pre><code class="makeup elixir" translate="no"><span class="c1"># Create a group (creator becomes admin)</span><span class="w">
 </span><span class="p" data-group-id="group-1">{</span><span class="ss">:ok</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="p" data-group-id="group-1">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nc">Groups</span><span class="o">.</span><span class="n">create_group</span><span class="p" data-group-id="group-2">(</span><span class="n">user_id</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="group-3">%{</span><span class="s">&quot;title&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="s">&quot;Cool Group&quot;</span><span class="p" data-group-id="group-3">}</span><span class="p" data-group-id="group-2">)</span><span class="w">
 
 </span><span class="c1"># List public/private groups (hidden excluded)</span><span class="w">
@@ -368,6 +371,16 @@ three visibility types:</p><ul><li><strong>public</strong> – anyone can join d
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#create_invite_link/2" data-no-tooltip="" translate="no">create_invite_link(admin_id, group_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Make a group's invite link, replacing its old one. Admins only.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#decline_invite/2" data-no-tooltip="" translate="no">decline_invite(user_id, invite_id)</a>
 
       </div>
@@ -384,6 +397,16 @@ three visibility types:</p><ul><li><strong>public</strong> – anyone can join d
 
         <div class="summary-synopsis"><p>Delete a group. Any of its admins can, members or not: everyone in it is
 removed with it and told, as a kick tells one member.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#delete_invite_link/2" data-no-tooltip="" translate="no">delete_invite_link(admin_id, group_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Turn a group's invite link off. Admins only.</p></div>
 
     </div>
 
@@ -449,6 +472,26 @@ removed with it and told, as a kick tells one member.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#get_invite_link/1" data-no-tooltip="" translate="no">get_invite_link(group_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A group's working invite link, or nil (see <a href="Gamend.Groups.InviteLinks.html"><code class="inline">Gamend.Groups.InviteLinks</code></a>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#get_invite_link_by_token/1" data-no-tooltip="" translate="no">get_invite_link_by_token(token)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The working invite link a token opens, its group preloaded, or nil.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#get_membership/2" data-no-tooltip="" translate="no">get_membership(group_id, user_id)</a>
 
       </div>
@@ -489,11 +532,51 @@ removed with it and told, as a kick tells one member.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#invite_anyone?/0" data-no-tooltip="" translate="no">invite_anyone?()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether an admin may invite any account, not only a friend (<code class="inline">invites</code>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#invite_link_days/0" data-no-tooltip="" translate="no">invite_link_days()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How many days a new invite link lasts (<code class="inline">link_days</code>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#invite_links?/0" data-no-tooltip="" translate="no">invite_links?()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether groups may have invite links (<code class="inline">link_days</code> above 0).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#invite_to_group/3" data-no-tooltip="" translate="no">invite_to_group(admin_id, group_id, target_user_id)</a>
 
       </div>
 
         <div class="summary-synopsis"><p>Invite a user to a group (see <a href="Gamend.Groups.Invites.html#invite_to_group/3"><code class="inline">Gamend.Groups.Invites.invite_to_group/3</code></a>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#join_by_invite_link/2" data-no-tooltip="" translate="no">join_by_invite_link(user_id, token)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Join the group an invite link opens, as a member.</p></div>
 
     </div>
 
@@ -699,6 +782,18 @@ removed with it and told, as a kick tells one member.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#types/0" data-no-tooltip="" translate="no">types()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The types a group may be created as or changed to, the default first: the
+<code class="inline">types</code> setting, less any name that is not a type. All three when that
+leaves none, so a typo cannot close group creation.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#unsubscribe_group/1" data-no-tooltip="" translate="no">unsubscribe_group(group_id)</a>
 
       </div>
@@ -752,7 +847,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">accept_invite(user_id, invite_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1414" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1468" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -781,7 +876,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">admin_delete_group(group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L677" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L731" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -810,7 +905,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">admin_update_group(group, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L604" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L658" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -839,7 +934,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">approve_join_request(admin_id, request_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1387" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1441" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -868,7 +963,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">batch_member_counts(group_ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L325" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L379" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -898,7 +993,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">broadcast_member_presence(group_id, event)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L97" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L151" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -926,7 +1021,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">can_manage_group?(user_id, group)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L373" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L427" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -958,7 +1053,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">cancel_invite(user_id, invite_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1422" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1476" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -986,7 +1081,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">cancel_join_request(user_id, request_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1397" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1451" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1017,7 +1112,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">change_group(group, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L598" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L652" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1047,7 +1142,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">count_all_groups(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L228" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L282" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1075,7 +1170,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">count_all_members()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L241" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L295" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1105,7 +1200,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">count_group_members(group_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L293" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L347" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1133,7 +1228,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">count_groups_by_type(type)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L235" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L289" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1161,7 +1256,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">count_groups_created_by(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L339" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L393" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1189,7 +1284,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">count_invitations(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1434" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1488" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1217,7 +1312,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">count_join_requests(group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1382" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1436" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1247,7 +1342,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">count_list_groups(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L185" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L239" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1275,7 +1370,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">count_sent_invitations(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1438" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1492" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1303,7 +1398,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">count_user_group_memberships(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L350" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L404" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1331,7 +1426,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">count_user_groups(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L431" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L485" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1359,7 +1454,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">create_group(user_id, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L446" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L500" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1378,6 +1473,35 @@ Cannot lower max_members below current member count.</p></div>
 <p>Create a new group. The creating user becomes an admin member automatically.</p>
   </section>
 </section>
+<section class="detail" id="create_invite_link/2">
+
+  <div class="detail-header">
+    <a href="#create_invite_link/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">create_invite_link(admin_id, group_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1517" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> create_invite_link(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+  {:ok, <a href="Gamend.Groups.GroupInviteLink.html#t:t/0">Gamend.Groups.GroupInviteLink.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Make a group's invite link, replacing its old one. Admins only.</p>
+  </section>
+</section>
 <section class="detail" id="decline_invite/2">
 
   <div class="detail-header">
@@ -1388,7 +1512,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">decline_invite(user_id, invite_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1418" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1472" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1416,7 +1540,7 @@ Cannot lower max_members below current member count.</p></div>
       <h1 class="signature" translate="no">delete_group(user_id, group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L613" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L667" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1436,6 +1560,34 @@ Cannot lower max_members below current member count.</p></div>
 removed with it and told, as a kick tells one member.</p>
   </section>
 </section>
+<section class="detail" id="delete_invite_link/2">
+
+  <div class="detail-header">
+    <a href="#delete_invite_link/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">delete_invite_link(admin_id, group_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1521" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> delete_invite_link(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
+
+      </div>
+
+<p>Turn a group's invite link off. Admins only.</p>
+  </section>
+</section>
 <section class="detail" id="demote_member/3">
 
   <div class="detail-header">
@@ -1446,7 +1598,7 @@ removed with it and told, as a kick tells one member.</p>
       <h1 class="signature" translate="no">demote_member(admin_id, group_id, target_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1054" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1108" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1531,7 +1683,7 @@ removed with it and told, as a kick tells one member.</p>
       <h1 class="signature" translate="no">get_group_by_title(title)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L147" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L201" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1559,7 +1711,7 @@ removed with it and told, as a kick tells one member.</p>
       <h1 class="signature" translate="no">get_group_members(group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L268" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L322" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1589,7 +1741,7 @@ removed with it and told, as a kick tells one member.</p>
       <h1 class="signature" translate="no">get_group_members_paginated(group_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L283" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L337" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1609,6 +1761,62 @@ removed with it and told, as a kick tells one member.</p>
 <p>Get paginated members of a group with user info.</p><p>Pass <code class="inline">:search</code> to filter by member name (display name or username).</p>
   </section>
 </section>
+<section class="detail" id="get_invite_link/1">
+
+  <div class="detail-header">
+    <a href="#get_invite_link/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">get_invite_link(group_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1508" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> get_invite_link(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Groups.GroupInviteLink.html#t:t/0">Gamend.Groups.GroupInviteLink.t</a>() | nil</pre>
+
+      </div>
+
+<p>A group's working invite link, or nil (see <a href="Gamend.Groups.InviteLinks.html"><code class="inline">Gamend.Groups.InviteLinks</code></a>).</p>
+  </section>
+</section>
+<section class="detail" id="get_invite_link_by_token/1">
+
+  <div class="detail-header">
+    <a href="#get_invite_link_by_token/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">get_invite_link_by_token(token)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1512" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> get_invite_link_by_token(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="Gamend.Groups.GroupInviteLink.html#t:t/0">Gamend.Groups.GroupInviteLink.t</a>() | nil</pre>
+
+      </div>
+
+<p>The working invite link a token opens, its group preloaded, or nil.</p>
+  </section>
+</section>
 <section class="detail" id="get_membership/2">
 
   <div class="detail-header">
@@ -1619,7 +1827,7 @@ removed with it and told, as a kick tells one member.</p>
       <h1 class="signature" translate="no">get_membership(group_id, user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L361" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L415" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1648,7 +1856,7 @@ removed with it and told, as a kick tells one member.</p>
       <h1 class="signature" translate="no">group_member_ids(group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L257" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L311" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1678,7 +1886,7 @@ user row only to read <code class="inline">user_id</code> from it.</p>
       <h1 class="signature" translate="no">handle_user_deletion(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L698" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L752" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1709,7 +1917,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">invalidate_group_cache_public(group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L120" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L174" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1727,6 +1935,90 @@ without running the admin-transfer / empty-group logic).</p>
 <p>Public wrapper for cache invalidation (used by admin controller).</p>
   </section>
 </section>
+<section class="detail" id="invite_anyone?/0">
+
+  <div class="detail-header">
+    <a href="#invite_anyone?/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">invite_anyone?()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L115" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> invite_anyone?() :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether an admin may invite any account, not only a friend (<code class="inline">invites</code>).</p>
+  </section>
+</section>
+<section class="detail" id="invite_link_days/0">
+
+  <div class="detail-header">
+    <a href="#invite_link_days/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">invite_link_days()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1504" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> invite_link_days() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+
+      </div>
+
+<p>How many days a new invite link lasts (<code class="inline">link_days</code>).</p>
+  </section>
+</section>
+<section class="detail" id="invite_links?/0">
+
+  <div class="detail-header">
+    <a href="#invite_links?/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">invite_links?()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1500" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> invite_links?() :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether groups may have invite links (<code class="inline">link_days</code> above 0).</p>
+  </section>
+</section>
 <section class="detail" id="invite_to_group/3">
 
   <div class="detail-header">
@@ -1737,7 +2029,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">invite_to_group(admin_id, group_id, target_user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1410" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1464" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1758,6 +2050,35 @@ without running the admin-transfer / empty-group logic).</p>
 <p>Invite a user to a group (see <a href="Gamend.Groups.Invites.html#invite_to_group/3"><code class="inline">Gamend.Groups.Invites.invite_to_group/3</code></a>).</p>
   </section>
 </section>
+<section class="detail" id="join_by_invite_link/2">
+
+  <div class="detail-header">
+    <a href="#join_by_invite_link/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">join_by_invite_link(user_id, token)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1526" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> join_by_invite_link(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
+  {:ok, <a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
+
+      </div>
+
+<p>Join the group an invite link opens, as a member.</p>
+  </section>
+</section>
 <section class="detail" id="join_group/2">
 
   <div class="detail-header">
@@ -1768,7 +2089,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">join_group(user_id, group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L727" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L781" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1797,7 +2118,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">kick_member(admin_id, group_id, target_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L940" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L994" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1826,7 +2147,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">leave_group(user_id, group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L762" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L816" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1859,7 +2180,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">list_all_groups(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L221" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L275" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1891,7 +2212,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">list_groups(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L172" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L226" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1921,7 +2242,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">list_invitations(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1426" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1480" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1951,7 +2272,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">list_join_requests(admin_id, group_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1378" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1432" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1982,7 +2303,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">list_sent_invitations(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1430" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1484" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2012,7 +2333,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">list_user_groups(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L405" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L459" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2040,7 +2361,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">list_user_groups_with_role(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L418" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L472" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2070,7 +2391,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">list_user_pending_requests(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1401" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1455" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2100,7 +2421,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">member?(group_id, user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L387" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L441" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2130,7 +2451,7 @@ without running the admin-transfer / empty-group logic).</p>
       <h1 class="signature" translate="no">notify_group(sender_id, group_id, content, metadata \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1148" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1202" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2172,7 +2493,7 @@ message.</p><p>Returns <code class="inline">{:ok, count}</code> with the number 
       <h1 class="signature" translate="no">promote_member(admin_id, group_id, target_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1032" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1086" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2201,7 +2522,7 @@ message.</p><p>Returns <code class="inline">{:ok, count}</code> with the number 
       <h1 class="signature" translate="no">reject_join_request(admin_id, request_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1392" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1446" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2230,7 +2551,7 @@ message.</p><p>Returns <code class="inline">{:ok, count}</code> with the number 
       <h1 class="signature" translate="no">request_join(user_id, group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1373" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L1427" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2259,7 +2580,7 @@ message.</p><p>Returns <code class="inline">{:ok, count}</code> with the number 
       <h1 class="signature" translate="no">set_icon_url(user_id, group_id, url)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L550" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L604" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2293,7 +2614,7 @@ an icon is ever set. Admin rights are still required.</p>
       <h1 class="signature" translate="no">shared_group_member?(user_a_id, user_b_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L393" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L447" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2321,7 +2642,7 @@ an icon is ever set. Admin rights are still required.</p>
       <h1 class="signature" translate="no">subscribe_group(group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L131" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2349,7 +2670,7 @@ an icon is ever set. Admin rights are still required.</p>
       <h1 class="signature" translate="no">subscribe_groups()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L71" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2367,6 +2688,36 @@ an icon is ever set. Admin rights are still required.</p>
 <p>Subscribe to global group events.</p>
   </section>
 </section>
+<section class="detail" id="types/0">
+
+  <div class="detail-header">
+    <a href="#types/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">types()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L106" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> types() :: [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]</pre>
+
+      </div>
+
+<p>The types a group may be created as or changed to, the default first: the
+<code class="inline">types</code> setting, less any name that is not a type. All three when that
+leaves none, so a typo cannot close group creation.</p>
+  </section>
+</section>
 <section class="detail" id="unsubscribe_group/1">
 
   <div class="detail-header">
@@ -2377,7 +2728,7 @@ an icon is ever set. Admin rights are still required.</p>
       <h1 class="signature" translate="no">unsubscribe_group(group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L83" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L137" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2405,7 +2756,7 @@ an icon is ever set. Admin rights are still required.</p>
       <h1 class="signature" translate="no">update_group(user_id, group_id, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L511" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L565" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2435,7 +2786,7 @@ Cannot lower max_members below current member count.</p>
       <h1 class="signature" translate="no">user_group_ids(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L103" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/groups.ex#L157" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2462,9 +2813,9 @@ Cannot lower max_members below current member count.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1365">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1366">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1365">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1366">Hex Preview</a>
 
             </span>
 

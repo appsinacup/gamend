@@ -75,7 +75,8 @@ into a group with them, which made a group invite a weaker control than a
 party invite, where `Parties.check_leader_connected_to_target/2` has always
 required a connection. On a service children can reach, being addable to a
 stranger's group is the contact path that matters, so the two now agree.
-Returns `{:error, :not_connected}`.
+Returns `{:error, :not_connected}`. A host that sets `Gamend.Groups`'
+`invites` to `anyone` (teams of colleagues) lets an admin invite any account.
 
 # `list_invitations`
 

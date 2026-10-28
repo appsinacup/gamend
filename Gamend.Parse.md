@@ -67,6 +67,18 @@ Like `string_keys/1`, but all the way down through nested maps and lists —
 for a provider payload read field by field, where a nested atom key would
 simply never match.
 
+# `uuid`
+
+```elixir
+@spec uuid(term()) :: Ecto.UUID.t() | nil
+```
+
+A UUID string, or `nil`: the 36-character hyphenated form only.
+
+`Ecto.UUID.cast/1` also takes any 16-byte binary as a raw UUID, so a
+16-character slug or name (`"weekend-gauntlet"`) cast to an id and its own
+lookup never ran. Ask this wherever a value may be an id or something else.
+
 ---
 
 *Consult [api-reference.md](api-reference.md) for complete listing*

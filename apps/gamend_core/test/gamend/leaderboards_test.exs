@@ -105,6 +105,22 @@ defmodule Gamend.LeaderboardsTest do
     end
   end
 
+  describe "get_leaderboard/1" do
+    test "takes an id or a slug" do
+      {:ok, lb} = Leaderboards.create_leaderboard(%{slug: "id_or_slug", title: "Both"})
+
+      assert Leaderboards.get_leaderboard(lb.id).id == lb.id
+      assert Leaderboards.get_leaderboard("id_or_slug").id == lb.id
+    end
+
+    # 16 bytes, which Ecto.UUID.cast/1 took for a raw UUID.
+    test "finds a 16-character slug" do
+      {:ok, lb} = Leaderboards.create_leaderboard(%{slug: "demo_high_scores", title: "Sixteen"})
+
+      assert Leaderboards.get_leaderboard("demo_high_scores").id == lb.id
+    end
+  end
+
   describe "get_active_leaderboard_by_slug/1" do
     test "returns active leaderboard with matching slug" do
       {:ok, lb} = Leaderboards.create_leaderboard(%{slug: "active_slug_test", title: "Active"})

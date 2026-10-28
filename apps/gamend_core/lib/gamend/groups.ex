@@ -10,6 +10,11 @@ defmodule Gamend.Groups do
   - **private** – anyone can request to join; an admin must approve
   - **hidden** – only invited users can join (via notifications / invite API)
 
+  A host picks which of them players may use (`types`), whom an admin may
+  invite (`invites`) and how long an invite link lasts (`link_days`). Forge
+  and Gamend Cloud, whose groups are teams of colleagues, allow `hidden` and
+  `private` and invite `anyone`.
+
   ## Usage
 
       # Create a group (creator becomes admin)
@@ -50,15 +55,64 @@ defmodule Gamend.Groups do
   import Ecto.Query, warn: false
   use Nebulex.Caching, cache: Gamend.Cache
 
+  use Gamend.Settings.Provider,
+    app: :gamend_core,
+    group: :groups,
+    label: "Groups"
+
   alias Gamend.Accounts.User
   alias Gamend.Groups.Group
+  alias Gamend.Groups.GroupInviteLink
   alias Gamend.Groups.GroupJoinRequest
   alias Gamend.Groups.GroupMember
+  alias Gamend.Groups.InviteLinks
   alias Gamend.Groups.Invites
   alias Gamend.Groups.JoinRequests
   alias Gamend.Groups.Shared
   alias Gamend.Lock
   alias Gamend.Repo
+
+  @all_types ["public", "private", "hidden"]
+
+  setting(:types, :list,
+    default: @all_types,
+    doc:
+      "The types a group may be created as or changed to, the first one the default: public, private, hidden. `hidden` alone makes every group invite-only and unlisted."
+  )
+
+  setting(:invites, :atom,
+    default: :friends,
+    values: [:friends, :anyone],
+    doc:
+      "Whom a group's admin may invite: `friends` (someone who accepted their friend request) or `anyone` (any account, found by name or exact email). For a host whose groups are teams of colleagues; the invite is still the recipient's to accept."
+  )
+
+  setting(:link_days, :integer,
+    default: 7,
+    doc:
+      "How many days a group's invite link lasts: anyone signed in who opens it joins the group as a member. 0 turns invite links off."
+  )
+
+  # ---------------------------------------------------------------------------
+  # Settings
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  The types a group may be created as or changed to, the default first: the
+  `types` setting, less any name that is not a type. All three when that
+  leaves none, so a typo cannot close group creation.
+  """
+  @spec types() :: [String.t()]
+  def types do
+    case Enum.filter(List.wrap(Gamend.Settings.get(__MODULE__, :types)), &(&1 in @all_types)) do
+      [] -> @all_types
+      types -> types
+    end
+  end
+
+  @doc "Whether an admin may invite any account, not only a friend (`invites`)."
+  @spec invite_anyone?() :: boolean()
+  def invite_anyone?, do: Gamend.Settings.get(__MODULE__, :invites) == :anyone
 
   # ---------------------------------------------------------------------------
   # PubSub
@@ -1436,6 +1490,40 @@ defmodule Gamend.Groups do
   @doc "Count group invitations sent by a user."
   @spec count_sent_invitations(Ecto.UUID.t()) :: non_neg_integer()
   defdelegate count_sent_invitations(user_id), to: Invites
+
+  # ---------------------------------------------------------------------------
+  # Invite links (delegated to Gamend.Groups.InviteLinks)
+  # ---------------------------------------------------------------------------
+
+  @doc "Whether groups may have invite links (`link_days` above 0)."
+  @spec invite_links?() :: boolean()
+  defdelegate invite_links?, to: InviteLinks, as: :links?
+
+  @doc "How many days a new invite link lasts (`link_days`)."
+  @spec invite_link_days() :: non_neg_integer()
+  defdelegate invite_link_days, to: InviteLinks, as: :link_days
+
+  @doc "A group's working invite link, or nil (see `Gamend.Groups.InviteLinks`)."
+  @spec get_invite_link(Ecto.UUID.t()) :: GroupInviteLink.t() | nil
+  defdelegate get_invite_link(group_id), to: InviteLinks
+
+  @doc "The working invite link a token opens, its group preloaded, or nil."
+  @spec get_invite_link_by_token(String.t()) :: GroupInviteLink.t() | nil
+  defdelegate get_invite_link_by_token(token), to: InviteLinks
+
+  @doc "Make a group's invite link, replacing its old one. Admins only."
+  @spec create_invite_link(Ecto.UUID.t(), Ecto.UUID.t()) ::
+          {:ok, GroupInviteLink.t()} | {:error, term()}
+  defdelegate create_invite_link(admin_id, group_id), to: InviteLinks
+
+  @doc "Turn a group's invite link off. Admins only."
+  @spec delete_invite_link(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
+  defdelegate delete_invite_link(admin_id, group_id), to: InviteLinks
+
+  @doc "Join the group an invite link opens, as a member."
+  @spec join_by_invite_link(Ecto.UUID.t(), String.t()) ::
+          {:ok, GroupMember.t()} | {:error, atom()}
+  defdelegate join_by_invite_link(user_id, token), to: InviteLinks
 
   # `String.to_integer/1` raises on anything non-numeric, and these values come
   # straight from query strings and request bodies — so `?min_users=abc` was a

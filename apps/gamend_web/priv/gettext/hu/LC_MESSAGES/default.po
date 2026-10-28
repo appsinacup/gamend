@@ -3671,3 +3671,8 @@ msgstr "Havi"
 msgctxt "leaderboard"
 msgid "Season"
 msgstr "Szezon"
+
+#: lib/gamend_web/user_auth.ex:208
+#, elixir-autogen, elixir-format
+msgid "Guest account created. Register any time to keep your progress on every device."
+msgstr "Vendégfiók létrehozva. Regisztrálj bármikor, hogy a haladásod minden eszközödön megmaradjon."

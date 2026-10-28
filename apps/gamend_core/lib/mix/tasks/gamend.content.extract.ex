@@ -3,7 +3,8 @@ defmodule Mix.Tasks.Gamend.Content.Extract do
 
   @moduledoc """
   Writes `content.pot` from the titles and descriptions stored on quests,
-  leaderboards and tournaments.
+  leaderboards and tournaments, and the names a quest gives its item rewards
+  (`metadata["reward_names"]`).
 
       mix gamend.content.extract          # write the template
       mix gamend.content.extract --check  # fail if it is out of date
@@ -78,6 +79,7 @@ defmodule Mix.Tasks.Gamend.Content.Extract do
         [{row.title, label}, {row.description, label}]
       end)
     end)
+    |> Kernel.++(reward_names())
     |> Enum.reject(fn {text, _label} -> is_nil(text) or String.trim(text) == "" end)
     |> Enum.uniq_by(&elem(&1, 0))
   rescue
@@ -85,6 +87,19 @@ defmodule Mix.Tasks.Gamend.Content.Extract do
     # not crash with a table-missing error.
     error ->
       Mix.raise("could not read content: #{Exception.message(error)}")
+  end
+
+  # The names a quest gives its item rewards, shown on their chips.
+  defp reward_names do
+    from(q in Gamend.Quests.Quest, select: q.metadata)
+    |> Repo.all()
+    |> Enum.flat_map(fn
+      %{"reward_names" => %{} = names} ->
+        for {_code, name} <- names, is_binary(name), do: {name, "quests"}
+
+      _ ->
+        []
+    end)
   end
 
   @doc false

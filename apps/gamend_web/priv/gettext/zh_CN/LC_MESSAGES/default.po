@@ -3617,3 +3617,8 @@ msgstr "月榜"
 msgctxt "leaderboard"
 msgid "Season"
 msgstr "赛季"
+
+#: lib/gamend_web/user_auth.ex:208
+#, elixir-autogen, elixir-format
+msgid "Guest account created. Register any time to keep your progress on every device."
+msgstr "访客账户已创建。随时注册即可在所有设备上保留你的进度。"

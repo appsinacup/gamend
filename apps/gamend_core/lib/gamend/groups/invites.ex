@@ -60,8 +60,11 @@ defmodule Gamend.Groups.Invites do
   #
   # Classes do not lose anything to this: a student joins a class by entering
   # the code their teacher gives out, which is a pull, not an invite.
+  #
+  # A host whose groups are teams of colleagues (`invites: :anyone`) drops it:
+  # a colleague is not a friend there, and the invite is still theirs to accept.
   defp connected?(admin_id, target_user_id) do
-    Friends.friends?(admin_id, target_user_id)
+    Groups.invite_anyone?() or Friends.friends?(admin_id, target_user_id)
   end
 
   @doc """
@@ -79,7 +82,8 @@ defmodule Gamend.Groups.Invites do
   party invite, where `Parties.check_leader_connected_to_target/2` has always
   required a connection. On a service children can reach, being addable to a
   stranger's group is the contact path that matters, so the two now agree.
-  Returns `{:error, :not_connected}`.
+  Returns `{:error, :not_connected}`. A host that sets `Gamend.Groups`'
+  `invites` to `anyone` (teams of colleagues) lets an admin invite any account.
   """
   @spec invite_to_group(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
           {:ok, GroupInvite.t()} | {:ok, :request_approved} | {:error, atom()}

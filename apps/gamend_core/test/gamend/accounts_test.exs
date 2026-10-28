@@ -797,6 +797,17 @@ defmodule Gamend.AccountsTest do
       refute other.id in ids
     end
 
+    # 16 bytes, which Ecto.UUID.cast/1 took for a raw UUID and matched as an id.
+    test "finds a 16-character name" do
+      user = user_fixture()
+
+      {:ok, _} =
+        user |> Ecto.Changeset.change(display_name: "Sixteen Chars Ok") |> Gamend.Repo.update()
+
+      ids = Accounts.list_all_users(%{search: "Sixteen Chars Ok"}) |> Enum.map(& &1.id)
+      assert user.id in ids
+    end
+
     test "admin search matches sensitive fields like email; player search does not" do
       user = user_fixture()
       email = user.email

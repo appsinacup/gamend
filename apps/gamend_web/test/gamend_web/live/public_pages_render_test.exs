@@ -121,7 +121,7 @@ defmodule GamendWeb.PublicPagesRenderTest do
       assert html =~ "Groups"
     end
 
-    test "clicking a chained quest opens the chain with locked tiers ahead", %{
+    test "a chained quest is the tier the player is on: no number, no tiers ahead", %{
       conn: conn,
       user: user
     } do
@@ -155,19 +155,11 @@ defmodule GamendWeb.PublicPagesRenderTest do
 
       {:ok, view, html} = live(conn, ~p"/quests")
 
-      # Tier 3 is hidden from the list until tier 2 completes...
+      # Tier 3 is hidden until tier 2 completes, and nothing numbers the
+      # tiers or opens the ones ahead (user, 2026-10-27).
       refute html =~ "Final step"
-
-      # ...but the chain view shows the whole line, locked tiers included.
-      html = render_click(view, "show_chain", %{"key" => "chain_t2"})
-      assert html =~ "Quest chain"
-      assert html =~ "First step"
-      assert html =~ "Second step"
-      assert html =~ "Final step"
-      assert html =~ "Locked"
-
-      html = render_click(view, "close_chain", %{})
-      refute html =~ "Quest chain"
+      refute html =~ "/3"
+      refute has_element?(view, ~s([phx-click="show_chain"]))
     end
   end
 end

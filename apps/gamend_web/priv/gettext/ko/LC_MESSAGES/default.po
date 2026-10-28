@@ -3617,3 +3617,8 @@ msgstr "월간"
 msgctxt "leaderboard"
 msgid "Season"
 msgstr "시즌"
+
+#: lib/gamend_web/user_auth.ex:208
+#, elixir-autogen, elixir-format
+msgid "Guest account created. Register any time to keep your progress on every device."
+msgstr "게스트 계정이 만들어졌어요. 언제든 가입해서 모든 기기에서 진행 상황을 유지하세요."

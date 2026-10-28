@@ -47,15 +47,7 @@ defmodule GamendWeb.UserLive.Settings do
   @devices_events ~w(devices_prev devices_next device_remove)
   @api_tokens_events ~w(api_token_create api_token_dismiss api_token_revoke api_tokens_prev
                         api_tokens_next)
-  @groups_events ~w(groups_tab groups_toggle_create group_validate_create group_create
-                    group_leave group_join group_request_join group_accept_invite
-                    group_decline_invite group_cancel_request group_cancel_invite
-                    group_approve_request group_reject_request browse_groups_filter
-                    browse_groups_clear browse_groups_prev browse_groups_next
-                    group_view_detail group_close_detail group_toggle_edit
-                    group_validate_edit group_save_edit group_kick group_promote
-                    group_demote group_members_prev group_members_next group_invite_search
-                    group_invite_user)
+  @groups_events GroupsTab.events()
 
   @impl true
   def render(assigns) do

@@ -46,15 +46,11 @@ defmodule Gamend.Accounts.Search do
   # If `q` looks like a UUID, attempt a direct ID lookup and prepend the result
   # (deduplicated) to `results`.  Returns `results` unchanged otherwise.
   defp maybe_prepend_id_match(results, q) do
-    if match?({:ok, _}, Ecto.UUID.cast(q)) do
-      id = q
-
-      case Accounts.get_user(id) do
-        nil -> results
-        user -> [user | Enum.reject(results, &(&1.id == id))]
-      end
+    with id when is_binary(id) <- Gamend.Parse.uuid(q),
+         %{} = user <- Accounts.get_user(id) do
+      [user | Enum.reject(results, &(&1.id == id))]
     else
-      results
+      _ -> results
     end
   end
 
@@ -100,15 +96,12 @@ defmodule Gamend.Accounts.Search do
   # If `q` looks like a UUID, check for an ID match and add 1 to the count
   # only if the user isn't already included in the text results.
   defp maybe_add_id_match_count(text_count, q) do
-    if match?({:ok, _}, Ecto.UUID.cast(q)) do
-      id = q
-
-      case Accounts.get_user(id) do
-        nil -> text_count
-        user -> if text_search_matches_user?(user, q), do: text_count, else: text_count + 1
-      end
+    with id when is_binary(id) <- Gamend.Parse.uuid(q),
+         %{} = user <- Accounts.get_user(id),
+         false <- text_search_matches_user?(user, q) do
+      text_count + 1
     else
-      text_count
+      _ -> text_count
     end
   end
 
@@ -165,13 +158,13 @@ defmodule Gamend.Accounts.Search do
   defp filter_users_by_admin_search(query, ""), do: query
 
   defp filter_users_by_admin_search(query, term) do
-    case Ecto.UUID.cast(term) do
-      # A full id: exact match (mirrors the id lookup in search_users/2).
-      {:ok, id} ->
-        from u in query, where: u.id == ^id
-
-      _ ->
+    case Gamend.Parse.uuid(term) do
+      nil ->
         from u in query, where: ^admin_search_match(term)
+
+      # A full id: exact match (mirrors the id lookup in search_users/2).
+      id ->
+        from u in query, where: u.id == ^id
     end
   end
 

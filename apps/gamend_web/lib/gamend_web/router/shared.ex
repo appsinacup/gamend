@@ -1003,10 +1003,27 @@ defmodule GamendWeb.Router.Shared do
   LiveView for a host's own. The session name is fixed, so a host cannot declare
   a second `live_session :require_authenticated_user` of its own — it extends
   this one or forks the lot.
+
+  `:groups` is a path for the reader's groups as a page of their own
+  (`GamendWeb.UserLive.Groups`, the settings page's Groups tab), for a host
+  whose navigation links to them: Forge and Gamend Cloud pass
+  `"/users/groups"`. Without it there is no such page; the tab is. A
+  group's invite link opens `<groups>/join/:token`
+  (`GamendWeb.UserLive.GroupJoin`), and `/users/groups/join/:token` without
+  one.
   """
   defmacro gamend_authenticated_live_routes(on_mount, opts \\ []) do
     host_routes = Keyword.get(opts, :do)
     chat = Keyword.get(opts, :chat, quote(do: ChatLive))
+
+    groups = Keyword.get(opts, :groups)
+
+    groups_route =
+      if groups do
+        quote(do: live(unquote(groups), UserLive.Groups, :index))
+      end
+
+    join_path = (groups || "/users/groups") <> "/join/:token"
 
     quote do
       scope "/", GamendWeb do
@@ -1024,6 +1041,8 @@ defmodule GamendWeb.Router.Shared do
           live "/store/cancel", StoreLive.Index, :cancel
           live "/notifications", NotificationsLive, :index
           live "/chat", unquote(chat), :index
+          unquote(groups_route)
+          live unquote(join_path), UserLive.GroupJoin, :show
         end
 
         post "/users/update_password", UserSessionController, :update_password

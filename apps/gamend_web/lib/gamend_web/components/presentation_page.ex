@@ -163,9 +163,11 @@ defmodule GamendWeb.PresentationPage do
   @doc """
   A signed-in reader's body: the same page, rendered for this request with
   the reader's scope and never memoised, so a host component may draw what
-  is theirs. A visitor, and so a crawler, gets `cached_body/4`.
+  is theirs. A visitor, and so a crawler, gets `cached_body/4`, unless a
+  host's home controller assigned `presentation_personal` (a visitor with
+  something of their own in the browser): then this, with a nil scope.
   """
-  @spec personal_body(map(), list(), map()) :: iodata()
+  @spec personal_body(map(), list(), map() | nil) :: iodata()
   def personal_body(page_map, background_icons, current_scope) do
     %{
       __changed__: nil,

@@ -52,6 +52,18 @@ defmodule GamendWeb.Api.V1.TournamentControllerTest do
     assert conn |> get("/api/v1/tournaments/#{Ecto.UUID.generate()}") |> json_response(404)
   end
 
+  test "GET /api/v1/tournaments/:id finds a 16-character slug", %{conn: conn} do
+    {:ok, tournament} =
+      Tournaments.create_tournament(%{
+        slug: "weekend-gauntlet",
+        title: "Weekend Gauntlet",
+        round_window_sec: 600
+      })
+
+    resp = conn |> get("/api/v1/tournaments/weekend-gauntlet") |> json_response(200)
+    assert resp["data"]["id"] == tournament.id
+  end
+
   test "join/leave lifecycle over the API", %{auth_conn: auth_conn, tournament: tournament} do
     resp = auth_conn |> post("/api/v1/tournaments/#{tournament.id}/join") |> json_response(200)
     assert resp["data"]["state"] == "registered"

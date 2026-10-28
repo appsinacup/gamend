@@ -339,9 +339,9 @@ defmodule GamendWeb.Api.V1.TournamentController do
 
   # Accepts a tournament id or a slug (current occurrence).
   defp fetch_tournament(id_or_slug) do
-    case Ecto.UUID.cast(id_or_slug) do
-      {:ok, _} -> Tournaments.get_tournament(id_or_slug)
-      :error -> Tournaments.get_tournament_by_slug(id_or_slug)
+    case Gamend.Parse.uuid(id_or_slug) do
+      nil -> Tournaments.get_tournament_by_slug(id_or_slug)
+      id -> Tournaments.get_tournament(id)
     end
   end
 

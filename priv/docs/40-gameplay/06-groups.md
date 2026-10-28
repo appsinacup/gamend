@@ -28,6 +28,8 @@ A request to join a private group is idempotent (asking twice returns the same p
 
 Invites are the admin's tool, and an admin may only invite **friends** ([/docs/friends](/docs/friends)) - a shared group is not enough, since anyone can join a public group and grant themselves that connection. Blocked pairs are refused. Inviting someone who already has a pending join request approves the request instead of creating an invite. Like party invites, the invite record is independent of its notification, and each player holds at most GAMEND_LIMITS_MAX_GROUP_PENDING_INVITES pending invites.
 
+An admin may also share an **invite link** from the group's page on the website: anyone signed in who opens it joins as a member, whatever the group's type, hidden included. It is a pull, like a class code - nobody is added to anything. A group has one link at a time: making a new one stops the old at once, an admin may turn it off, and it stops working when it expires (GAMEND_GROUPS_LINK_DAYS, 7 days by default; 0 turns links off) or when the admin who made it is no longer one. Joining through it takes the same room checks and `before_group_join` hook as any join (source `"invite_link"`), and the admin who made it hears who joined. The link opens `<groups page>/join/<token>` - `/users/groups/join/...` on a host that routes its groups page at `/users/groups`, as Forge and Gamend Cloud do. Website only for now: there is no HTTP endpoint for links.
+
 ## Icons and chat
 
 A group's icon is an uploaded image: POST /groups/:id/icon/upload_url returns a presigned upload ticket, and POST /groups/:id/icon confirms the uploaded key - the same two-step flow every upload uses, see [/docs/object-storage](/docs/object-storage). Members talk in group chat, with per-group slowdown and admin mutes - see [/docs/chat](/docs/chat).
@@ -68,6 +70,7 @@ Hooks fire around create, update, join, leave, kick and delete (`before_group_cr
 
 - The Admin → Groups page (/admin/groups) lists and edits every group, hidden ones included. Admin HTTP mirrors: GET/PATCH/DELETE under /api/v1/admin/groups.
 - The public site serves group pages at /groups (browse - hidden groups excluded, like the API listing) and /groups/:id (detail). These pages, the listing API and the feed all sit behind the `list_groups` feature flag.
+- Private groups only, or teams: GAMEND_GROUPS_TYPES lists the types a group may be made or changed to, the first the default (`hidden` alone makes every group invite-only and unlisted) and GAMEND_GROUPS_INVITES=anyone lets an admin invite any account, found by name or exact email, rather than friends only. `gamend_authenticated_live_routes(on_mount, groups: "/teams")` serves a player's groups on a page of their own.
 - Limits: GAMEND_LIMITS_MAX_GROUP_MEMBERS caps a group's `max_members`, GAMEND_LIMITS_MAX_GROUPS_CREATED_PER_USER caps how many groups one user can found, GAMEND_LIMITS_MAX_GROUPS_PER_USER caps memberships per user, and GAMEND_LIMITS_MAX_GROUP_TITLE / GAMEND_LIMITS_MAX_GROUP_DESCRIPTION cap the strings.
 
 ## Reference

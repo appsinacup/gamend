@@ -3670,3 +3670,8 @@ msgstr "Maandelijks"
 msgctxt "leaderboard"
 msgid "Season"
 msgstr "Seizoen"
+
+#: lib/gamend_web/user_auth.ex:208
+#, elixir-autogen, elixir-format
+msgid "Guest account created. Register any time to keep your progress on every device."
+msgstr "Gastaccount aangemaakt. Registreer je wanneer je wilt om je voortgang op elk apparaat te houden."

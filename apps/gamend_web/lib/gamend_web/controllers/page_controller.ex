@@ -117,11 +117,15 @@ defmodule GamendWeb.PageController do
 
   # A signed-in reader's page is rendered for them, so a host component on
   # it may draw their own things (the languages they opened last); a visitor
-  # and a crawler get the body memoised per locale and path.
+  # and a crawler get the body memoised per locale and path. A host's own
+  # home controller (`gamend_static_page_routes(home: ...)`) may ask for a
+  # visitor's too, `presentation_personal` assigned: one with something of
+  # their own held in the browser (a language picked, for a host that keeps
+  # it there).
   defp presentation_body(conn, page, background_icons, locale, path) do
     scope = conn.assigns[:current_scope]
 
-    if scope && Scope.user(scope),
+    if (scope && Scope.user(scope)) || conn.assigns[:presentation_personal] == true,
       do: PresentationPage.personal_body(page, background_icons, scope),
       else: PresentationPage.cached_body(page, background_icons, locale, path)
   end

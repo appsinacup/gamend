@@ -34,7 +34,7 @@ import {startConnectionState} from "./connection_state"
 import {startSearchPalette} from "./search_palette"
 import {startNavbarFit} from "./navbar_fit"
 import {startSideNav} from "./side_nav"
-import {startAnonymousSession} from "./anonymous_session"
+import {guestNoticeParams, startAnonymousSession} from "./anonymous_session"
 import {startLiveNav} from "./live_nav"
 import {startBackLink} from "./back_link"
 import {ReportForm, ReportPagePath, startLastPage} from "./report_form"
@@ -46,6 +46,29 @@ const Hooks = {
   LocalDatetimeInput,
   ReportForm,
   ReportPagePath,
+
+  /**
+   * CopyText — a button that copies the value of the field its
+   * `data-target` names (a group's invite link), then reads its
+   * `data-copied` label for a moment. Where the Clipboard API is missing (a
+   * page not served over HTTPS) or refuses (a browser that denies the
+   * permission), the field's text is selected for the reader to copy.
+   */
+  CopyText: {
+    mounted() {
+      this.el.addEventListener("click", () => {
+        const field = document.getElementById(this.el.dataset.target)
+        if (!field) return
+        const select = () => { field.focus(); field.select() }
+        if (!navigator.clipboard) return select()
+        navigator.clipboard.writeText(field.value).then(() => {
+          const label = this.el.textContent
+          this.el.textContent = this.el.dataset.copied || label
+          setTimeout(() => { this.el.textContent = label }, 1500)
+        }, select)
+      })
+    },
+  },
 
 
 
@@ -460,8 +483,10 @@ function createLiveSocket(extraHooks) {
     // typing into a page that had already stopped listening.
     heartbeatIntervalMs: 15000,
     // The reader's time zone, saved on their account (`GamendWeb.UserAuth`)
-    // so "today" and "this evening" are theirs, not UTC's.
-    params: {_csrf_token: csrfToken, timezone: browserTimeZone()},
+    // so "today" and "this evening" are theirs, not UTC's. A function, read
+    // on every join: the join after a guest account was made says so once
+    // (`guestNoticeParams`).
+    params: (el) => ({_csrf_token: csrfToken, timezone: browserTimeZone(), ...guestNoticeParams(el)}),
     hooks: {...colocatedHooks, ...Hooks, ...extraHooks},
     // A `phx-remove` plays when a patch takes its element away, never when
     // the page is left. LiveView 1.2 defaults this to true: on a live

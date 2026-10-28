@@ -138,6 +138,10 @@ defmodule GamendWeb.UserAuth do
   reader who only looks never gets an account row. When to call it is the
   page's decision.
 
+  The visitor is told: "Guest account created" (user, 2026-10-27), on the
+  page the socket reconnects with, since a flash put now would go with this
+  mount (`notice` in the push, `put_live_guest_notice/1`).
+
   Returns `{:ok, socket}` with `current_scope` set, or `{:error, reason}`:
   `:disabled` when device accounts are off, `:not_connected` on the static render
   (there is no browser to hand the session to yet), `:rate_limited` past the
@@ -164,7 +168,8 @@ defmodule GamendWeb.UserAuth do
            socket
            |> Phoenix.Component.assign(:current_scope, Scope.for_user(user))
            |> Phoenix.LiveView.push_event("gamend:anonymous_session", %{
-             token: encrypt_anonymous_session(token)
+             token: encrypt_anonymous_session(token),
+             notice: true
            })}
         else
           error -> log_guest_refused(error, inspect(socket.view))
@@ -172,29 +177,9 @@ defmodule GamendWeb.UserAuth do
     end
   end
 
-  @doc """
-  `ensure_user/1` for a controller: the same anonymous account, written to the
-  session and the remember-me cookie straight away, since a plain request can.
-  """
-  @spec ensure_user_conn(Plug.Conn.t()) :: {:ok, Plug.Conn.t()} | {:error, term()}
-  def ensure_user_conn(%Plug.Conn{} = conn) do
-    if Scope.user(conn.assigns[:current_scope]) do
-      {:ok, conn}
-    else
-      with :ok <- guest_rate_limit(conn.remote_ip |> :inet.ntoa() |> to_string()),
-           {:ok, user} <- Accounts.find_or_create_from_device(web_device_id()) do
-        token = Accounts.generate_user_session_token(user)
-
-        {:ok,
-         conn
-         |> put_token_in_session(token)
-         |> write_remember_me_cookie(token)
-         |> assign(:current_scope, Scope.for_user(user))}
-      else
-        error -> log_guest_refused(error, conn.request_path)
-      end
-    end
-  end
+  @doc false
+  def guest_notice,
+    do: gettext("Guest account created. Register any time to keep your progress on every device.")
 
   @doc """
   Writes the anonymous account `ensure_user/1` made into this browser's session.
@@ -379,12 +364,26 @@ defmodule GamendWeb.UserAuth do
   #       |> put_session(:preferred_locale, preferred_locale)
   #     end
   #
-  defp renew_session(conn, _user) do
+  #
+  # Signing in keeps what a host holds for a visitor in their session, the
+  # keys it names (`config :gamend_web, :session_kept_on_log_in, [...]`), so
+  # it can carry it onto the account (Polyglot: the languages a visitor
+  # picked, user 2026-10-27). Logging out keeps nothing.
+  defp renew_session(conn, user) do
     delete_csrf_token()
+    kept = if user, do: kept_on_log_in(conn), else: []
 
     conn
     |> configure_session(renew: true)
     |> clear_session()
+    |> then(&Enum.reduce(kept, &1, fn {key, value}, conn -> put_session(conn, key, value) end))
+  end
+
+  defp kept_on_log_in(conn) do
+    :gamend_web
+    |> Application.get_env(:session_kept_on_log_in, [])
+    |> Enum.map(&{&1, get_session(conn, &1)})
+    |> Enum.reject(fn {_key, value} -> is_nil(value) end)
   end
 
   defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}, _),
@@ -548,6 +547,7 @@ defmodule GamendWeb.UserAuth do
         Scope.for_user(user)
       end)
       |> assign_guest_ip(session)
+      |> put_live_guest_notice()
 
     remember_reader(socket)
     record_reader_day(socket)
@@ -578,6 +578,23 @@ defmodule GamendWeb.UserAuth do
         GamendWeb.LiveHelpers.client_ip(socket, session)
       end)
     end
+  end
+
+  # "Guest account created", on the mount the socket reconnected with it: a
+  # flash put before the reconnect would go with the old mount, so the
+  # browser says so in its connect params, once (`_guest_created`,
+  # `anonymous_session.js`, from `ensure_user/1`'s `notice`).
+  defp put_live_guest_notice(socket) do
+    with true <- Phoenix.LiveView.connected?(socket),
+         true <- Scope.anonymous?(socket.assigns.current_scope),
+         %{"_guest_created" => "1"} <- Phoenix.LiveView.get_connect_params(socket) do
+      Phoenix.LiveView.put_flash(socket, :info, guest_notice())
+    else
+      _ -> socket
+    end
+  rescue
+    # get_connect_params outside mount (a nested live_render) raises.
+    RuntimeError -> socket
   end
 
   # A page mounts with the session it was rendered with, which predates a guest

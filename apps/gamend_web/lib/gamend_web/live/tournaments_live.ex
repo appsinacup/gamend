@@ -194,22 +194,14 @@ defmodule GamendWeb.TournamentsLive do
   # ── Data loading ──────────────────────────────────────────────────────────
 
   defp fetch(id_or_slug) do
-    # Only look up by id for a canonical 36-char UUID string. Ecto.UUID.cast/1
-    # also accepts any 16-byte binary as a raw UUID, so a 16-character slug
-    # (e.g. "weekend-gauntlet") would otherwise be misread as an id and never
-    # resolve. Fall back to the slug lookup whenever the id path misses.
-    with true <- canonical_uuid?(id_or_slug),
-         %Tournament{} = tournament <- Tournaments.get_tournament(id_or_slug) do
+    # Fall back to the slug lookup whenever the id path misses.
+    with id when is_binary(id) <- Gamend.Parse.uuid(id_or_slug),
+         %Tournament{} = tournament <- Tournaments.get_tournament(id) do
       tournament
     else
       _ -> Tournaments.get_tournament_by_slug(id_or_slug)
     end
   end
-
-  defp canonical_uuid?(value) when is_binary(value),
-    do: byte_size(value) == 36 and match?({:ok, _}, Ecto.UUID.cast(value))
-
-  defp canonical_uuid?(_value), do: false
 
   # No edition in the URL means the live one; that is the canonical landing page.
   defp resolve(slug, nil), do: fetch(slug)

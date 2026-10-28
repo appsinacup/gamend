@@ -259,7 +259,10 @@ defmodule GamendWeb.AdminLive.Groups do
               field={@form[:type]}
               type="select"
               label="Type"
-              options={[{"Public", "public"}, {"Private", "private"}, {"Hidden", "hidden"}]}
+              options={
+                for type <- Enum.uniq(Groups.types() ++ [@selected_group.type]),
+                    do: {String.capitalize(type), type}
+              }
             />
             <.input field={@form[:max_members]} type="number" label="Max members" />
 

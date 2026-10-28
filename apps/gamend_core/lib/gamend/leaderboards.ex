@@ -265,9 +265,9 @@ defmodule Gamend.Leaderboards do
   """
   @spec get_leaderboard(String.t()) :: Leaderboard.t() | nil
   def get_leaderboard(id_or_slug) when is_binary(id_or_slug) do
-    case Ecto.UUID.cast(id_or_slug) do
-      {:ok, id} -> get_leaderboard_cached(id)
-      :error -> get_active_leaderboard_by_slug(id_or_slug)
+    case Gamend.Parse.uuid(id_or_slug) do
+      nil -> get_active_leaderboard_by_slug(id_or_slug)
+      id -> get_leaderboard_cached(id)
     end
   end
 

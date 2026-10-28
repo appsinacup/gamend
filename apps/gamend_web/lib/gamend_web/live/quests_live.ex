@@ -60,8 +60,6 @@ defmodule GamendWeb.QuestsLive do
       |> assign(:category, nil)
       |> assign(:group, nil)
       |> assign(:status, nil)
-      |> assign(:chain, nil)
-      |> assign(:chain_focus, nil)
       |> assign(:group_key, default_group(user))
       |> load_quests()
 
@@ -129,25 +127,6 @@ defmodule GamendWeb.QuestsLive do
     end
   end
 
-  def handle_event("show_chain", %{"key" => key}, socket) do
-    user = get_user(socket)
-
-    case Quests.chain(user && user.id, key) do
-      entries when length(entries) > 1 ->
-        {:noreply,
-         socket
-         |> assign(:chain, ContentText.translate(entries))
-         |> assign(:chain_focus, key)}
-
-      _ ->
-        {:noreply, socket}
-    end
-  end
-
-  def handle_event("close_chain", _params, socket) do
-    {:noreply, socket |> assign(:chain, nil) |> assign(:chain_focus, nil)}
-  end
-
   def handle_event("show_group", %{"group" => group_key}, socket) do
     user = get_user(socket)
 
@@ -159,7 +138,7 @@ defmodule GamendWeb.QuestsLive do
 
   def handle_event("close_group", _params, socket), do: {:noreply, assign(socket, :group, nil)}
 
-  def handle_event("chain_noop", _params, socket), do: {:noreply, socket}
+  def handle_event("modal_noop", _params, socket), do: {:noreply, socket}
 
   def handle_event("prev_page", _params, socket),
     do: {:noreply, socket |> LiveHelpers.prev_page() |> load_quests()}
@@ -240,9 +219,7 @@ defmodule GamendWeb.QuestsLive do
     |> assign(:total_pages, max(ceil(total_count / page_size), 1))
     |> assign(:claimable_count, claimable - locked_claimable(entries))
     |> assign(:must_register, user != nil and not AccountRequired.allowed?(user, :quest_claims))
-    |> assign(:chain_positions, chain_positions(active))
     |> assign(:now, DateTime.utc_now(:second))
-    |> refresh_chain()
   end
 
   # The groups the selector covers: the host's pick of them, or all of them
@@ -328,120 +305,6 @@ defmodule GamendWeb.QuestsLive do
   defp register_href(locale),
     do: GamendWeb.HostLayouts.localized_href(~p"/users/register", locale)
 
-  # Keep an open chain modal current when quest data changes underneath it
-  # (a claim, a PubSub progress event). Closes it if the chain dissolved.
-  defp refresh_chain(socket) do
-    case socket.assigns[:chain_focus] do
-      nil ->
-        socket
-
-      key ->
-        user = get_user(socket)
-
-        case Quests.chain(user && user.id, key) do
-          entries when length(entries) > 1 -> assign(socket, :chain, entries)
-          _ -> socket |> assign(:chain, nil) |> assign(:chain_focus, nil)
-        end
-    end
-  end
-
-  # Position of each chained quest within its prerequisite line, as
-  # {position, total} — e.g. tier 3 of 7. Quests without prerequisite links
-  # get no entry.
-  #
-  # Cycles are cut by remembering what has been walked, not by a hop cap. A cap
-  # cannot tell a malformed cycle from a genuinely long chain: at 20 hops the
-  # 52-unit course reported every unit as "1 of 21", silently, because the walk
-  # bottomed out rather than reaching the end.
-  #
-  # Each line is walked once (`chain_index/1`). Walking it from every quest,
-  # and twice for the root, was quadratic in the line's length: a 107-unit
-  # course chain made ~12,000 walk steps and 20 ms of every render.
-  defp chain_positions(quests) do
-    prereq_by_key = Map.new(quests, &{&1.key, &1.prerequisite_quest_key})
-    index = chain_index(prereq_by_key)
-
-    walks =
-      Map.new(prereq_by_key, fn {key, _} ->
-        {key,
-         Map.get_lazy(index, key, fn ->
-           {chain_depth(key, prereq_by_key, %{}), chain_root(key, prereq_by_key, %{})}
-         end)}
-      end)
-
-    totals =
-      Enum.reduce(walks, %{}, fn {_key, {depth, root}}, acc ->
-        Map.update(acc, root, depth + 1, &max(&1, depth + 1))
-      end)
-
-    walks
-    |> Enum.map(fn {key, {depth, root}} ->
-      {key, {depth + 1, Map.get(totals, root, depth + 1)}}
-    end)
-    |> Enum.filter(fn {_key, {_pos, total}} -> total > 1 end)
-    |> Map.new()
-  end
-
-  # `{depth, root}` for every key whose line is free of cycles, memoised as it
-  # goes, so each quest costs one step past the first walk through its line. A
-  # walk that closes a cycle is not kept: its answer depends on where it
-  # entered, so those keys fall back to `chain_depth/3` and `chain_root/3`,
-  # which give the same answer they always did.
-  defp chain_index(prereq_by_key) do
-    Enum.reduce(prereq_by_key, %{}, fn {key, _}, memo ->
-      {_walk, _clean?, memo} = chain_walk(key, prereq_by_key, memo, %{})
-      memo
-    end)
-  end
-
-  defp chain_walk(key, prereq_by_key, memo, seen) do
-    cond do
-      Map.has_key?(memo, key) ->
-        {Map.fetch!(memo, key), true, memo}
-
-      Map.has_key?(seen, key) ->
-        {{0, key}, false, memo}
-
-      true ->
-        case Map.get(prereq_by_key, key) do
-          nil ->
-            {{0, key}, true, Map.put(memo, key, {0, key})}
-
-          prereq ->
-            {{depth, root}, clean?, memo} =
-              chain_walk(prereq, prereq_by_key, memo, Map.put(seen, key, true))
-
-            walk = {depth + 1, root}
-            {walk, clean?, if(clean?, do: Map.put(memo, key, walk), else: memo)}
-        end
-    end
-  end
-
-  # `seen` is a plain map, not a MapSet: dialyzer strips the opacity off a
-  # MapSet built and consumed inside one recursion and then reports the
-  # MapSet.member?/2 call as a type mismatch.
-  defp chain_depth(key, prereq_by_key, seen) do
-    if Map.has_key?(seen, key) do
-      0
-    else
-      case Map.get(prereq_by_key, key) do
-        nil -> 0
-        prereq -> 1 + chain_depth(prereq, prereq_by_key, Map.put(seen, key, true))
-      end
-    end
-  end
-
-  defp chain_root(key, prereq_by_key, seen) do
-    if Map.has_key?(seen, key) do
-      key
-    else
-      case Map.get(prereq_by_key, key) do
-        nil -> key
-        prereq -> chain_root(prereq, prereq_by_key, Map.put(seen, key, true))
-      end
-    end
-  end
-
   defp anonymous_catalog(active, category, group, drop, page, page_size) do
     now = DateTime.utc_now(:second)
 
@@ -517,6 +380,16 @@ defmodule GamendWeb.QuestsLive do
   defp card_status_class(%{claimed?: true}), do: "badge-success"
   defp card_status_class(%{done?: true}), do: "badge-success"
   defp card_status_class(_assigns), do: "badge-neutral"
+
+  # A reward as its chip says it: an item by the name the quest gives its code
+  # (`metadata["reward_names"]`, translated with the quest by
+  # `ContentText.translate/1`), alone for one; else the amount and the code.
+  defp reward_text(%{type: "item", code: code, amount: amount}, %{"reward_names" => names})
+       when is_map_key(names, code) do
+    if amount == 1, do: names[code], else: "#{amount} #{names[code]}"
+  end
+
+  defp reward_text(reward, _metadata), do: "#{reward.amount} #{reward.code}"
 
   defp card_status_label(%{claimable: true}), do: gettext("Ready to claim")
   defp card_status_label(%{claimed?: true}), do: gettext("Claimed")
@@ -696,7 +569,6 @@ defmodule GamendWeb.QuestsLive do
               must_register={@must_register}
               locale={@locale}
               now={@now}
-              chain_position={@chain_positions[entry.quest.key]}
               group_size={Map.get(entry, :group_size, 1)}
             />
           </div>
@@ -716,7 +588,6 @@ defmodule GamendWeb.QuestsLive do
           />
         </div>
 
-        <.chain_modal :if={@chain} chain={@chain} focus={@chain_focus} locale={@locale} />
         <.group_modal :if={@group} group={@group} />
       </div>
     </Layouts.app>
@@ -754,77 +625,9 @@ defmodule GamendWeb.QuestsLive do
     end
   end
 
-  # Full prerequisite chain of one quest, shown when a chained card is clicked.
-  # This is the only place a player sees tiers ahead of the one they are on —
-  # the list itself hides a quest until its prerequisite is done. Hidden quests
-  # keep their teaser ("???") until earned, so the chain never spoils them.
-  defp chain_modal(assigns) do
-    ~H"""
-    <div
-      class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
-      phx-click="close_chain"
-    >
-      <%!-- Inner clicks land on this binding (closest phx-click wins), so they
-            don't reach the backdrop's close_chain. --%>
-      <div
-        class="card bg-base-100 shadow-xl w-full max-w-md max-h-[80vh] overflow-y-auto"
-        phx-click="chain_noop"
-      >
-        <div class="card-body p-5">
-          <div class="flex items-center justify-between mb-2">
-            <h2 class="font-bold text-lg flex items-center gap-2">
-              <.icon name="hero-link" class="w-5 h-5" />
-              {gettext("Quest chain")}
-            </h2>
-            <button phx-click="close_chain" class="btn btn-ghost btn-sm btn-circle" type="button">
-              <.icon name="hero-x-mark" class="w-4 h-4" />
-            </button>
-          </div>
-
-          <ol class="space-y-0">
-            <li :for={{entry, index} <- Enum.with_index(@chain)} class="relative">
-              <div :if={index > 0} class="ms-[15px] h-4 border-s-2 border-base-300"></div>
-              <div class={[
-                "flex items-center gap-3 rounded-lg p-2",
-                entry.quest.key == @focus && "bg-base-200"
-              ]}>
-                <div class={[
-                  "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold",
-                  chain_tier_class(entry)
-                ]}>
-                  <%= if entry_done?(entry) do %>
-                    <.icon name="hero-check" class="w-4 h-4" />
-                  <% else %>
-                    {entry.tier}
-                  <% end %>
-                </div>
-                <div class="min-w-0 flex-1">
-                  <div class="font-medium text-sm truncate">
-                    {entry_title(entry)}
-                  </div>
-                  <div class="text-xs text-muted">
-                    {chain_status_label(entry)}
-                  </div>
-                </div>
-                <%!-- A secret tier must not leak its icon, so it keeps the
-                      shared fallback. --%>
-                <.entity_icon
-                  icon_url={if entry_secret?(entry), do: nil, else: entry.quest.icon_url}
-                  type={:quest}
-                  class="w-6 h-6 flex-shrink-0"
-                />
-              </div>
-            </li>
-          </ol>
-        </div>
-      </div>
-    </div>
-    """
-  end
-
-  # The members behind the one entry a group collapses into. Flat, not a ladder:
-  # every member is live, so unlike the chain modal nothing is numbered or
-  # locked. Hidden members keep their teaser here too.
+  # The members behind the one entry a group collapses into. Flat: every
+  # member is live, so nothing is numbered or locked. Hidden members keep
+  # their teaser here too.
   attr :group, :list, required: true
 
   defp group_modal(assigns) do
@@ -835,7 +638,7 @@ defmodule GamendWeb.QuestsLive do
     >
       <div
         class="card bg-base-100 shadow-xl w-full max-w-md max-h-[80vh] overflow-y-auto"
-        phx-click="chain_noop"
+        phx-click="modal_noop"
       >
         <div class="card-body p-5">
           <div class="flex items-center justify-between mb-2">
@@ -906,18 +709,6 @@ defmodule GamendWeb.QuestsLive do
     if entry_secret?(entry), do: "???", else: entry.quest.title
   end
 
-  defp chain_tier_class(entry) do
-    cond do
-      entry_done?(entry) -> "bg-success/20 text-success"
-      entry.locked -> "bg-base-300 text-muted"
-      true -> "bg-primary/20 text-primary"
-    end
-  end
-
-  # Only chain entries carry `:locked` — a tier waiting on the one before it.
-  defp chain_status_label(%{locked: true}), do: gettext("Locked")
-  defp chain_status_label(entry), do: entry_status_label(entry)
-
   defp entry_status_label(entry) do
     cond do
       entry.progress != nil and entry.progress.status == "claimed" -> gettext("Claimed")
@@ -932,7 +723,7 @@ defmodule GamendWeb.QuestsLive do
   # Components
   # ---------------------------------------------------------------------------
 
-  # A chain's or a group's badge. When the card's own click opens it, the
+  # A group's badge. When the card's own click opens it, the
   # badge is only a label; otherwise (the card claims, or goes where the quest
   # is done) it is a button of its own, above the card's stretched link
   # (`relative z-10`).
@@ -941,7 +732,7 @@ defmodule GamendWeb.QuestsLive do
     doc: "the event it sends, or false when the card's click does"
 
   attr :title, :string, required: true
-  attr :rest, :global, include: ~w(phx-value-key phx-value-group)
+  attr :rest, :global, include: ~w(phx-value-group)
   slot :inner_block, required: true
 
   defp opener(%{event: event} = assigns) when is_binary(event) do
@@ -985,9 +776,10 @@ defmodule GamendWeb.QuestsLive do
 
     # A click anywhere on the card does the one thing it is for (user,
     # 2026-10-15): claims it when it waits for its claim, else goes where the
-    # quest is done (`Quests.host_action/2`), else opens its chain or group.
-    # The chain and group badges open theirs as buttons of their own whenever
-    # the card's click does something else.
+    # quest is done (`Quests.host_action/2`), else opens its group. The group
+    # badge opens it as a button of its own whenever the card's click does
+    # something else. A chain shows the tier the player is on and nothing of
+    # the tiers ahead (user, 2026-10-27): no number, nothing to open.
     click =
       cond do
         assigns.logged_in and claimable and is_nil(lock_label) and assigns.must_register ->
@@ -1001,9 +793,6 @@ defmodule GamendWeb.QuestsLive do
 
         grouped? ->
           :show_group
-
-        assigns.chain_position ->
-          :show_chain
 
         true ->
           nil
@@ -1056,9 +845,9 @@ defmodule GamendWeb.QuestsLive do
           true -> ""
         end
       }
-      phx-click={@click in [:claim, :show_group, :show_chain] && Atom.to_string(@click)}
+      phx-click={@click in [:claim, :show_group] && Atom.to_string(@click)}
       phx-value-group={@click == :show_group && @quest.group_key}
-      phx-value-key={@click in [:claim, :show_chain] && @quest.key}
+      phx-value-key={@click == :claim && @quest.key}
     >
       <:badges>
         <%!-- Progress is a property of the viewer, not the quest, so a
@@ -1083,15 +872,6 @@ defmodule GamendWeb.QuestsLive do
           {reset_label(@quest)}
         </span>
         <.opener
-          :if={@chain_position && not @grouped?}
-          event={@click != :show_chain && "show_chain"}
-          phx-value-key={@quest.key}
-          title={gettext("View quest chain")}
-        >
-          <.icon name="hero-link" class="w-3 h-3" />
-          {elem(@chain_position, 0)}/{elem(@chain_position, 1)}
-        </.opener>
-        <.opener
           :if={@grouped?}
           event={@click != :show_group && "show_group"}
           phx-value-group={@quest.group_key}
@@ -1114,7 +894,7 @@ defmodule GamendWeb.QuestsLive do
               }
               class="w-3 h-3"
             />
-            {reward.amount} {reward.code}
+            {reward_text(reward, @quest.metadata || %{})}
           </span>
         </div>
       <% end %>

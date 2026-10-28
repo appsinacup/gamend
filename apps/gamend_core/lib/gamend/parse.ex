@@ -32,6 +32,23 @@ defmodule Gamend.Parse do
   def integer(_value), do: nil
 
   @doc """
+  A UUID string, or `nil`: the 36-character hyphenated form only.
+
+  `Ecto.UUID.cast/1` also takes any 16-byte binary as a raw UUID, so a
+  16-character slug or name (`"weekend-gauntlet"`) cast to an id and its own
+  lookup never ran. Ask this wherever a value may be an id or something else.
+  """
+  @spec uuid(term()) :: Ecto.UUID.t() | nil
+  def uuid(value) when is_binary(value) and byte_size(value) == 36 do
+    case Ecto.UUID.cast(value) do
+      {:ok, uuid} -> uuid
+      :error -> nil
+    end
+  end
+
+  def uuid(_value), do: nil
+
+  @doc """
   A map with its atom keys turned into strings — the top level only.
 
   Attributes reach a context either atom-keyed (an internal call, a plugin) or

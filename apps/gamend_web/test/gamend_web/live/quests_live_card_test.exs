@@ -374,26 +374,48 @@ defmodule GamendWeb.QuestsLiveCardTest do
            "repeat quests have no cadence label, so they should not render an empty badge"
   end
 
-  test "a long chain reports its real length, not the walk limit", %{conn: conn} do
-    # The depth walk used to stop at 20 hops to survive malformed cycles, which
-    # cannot tell a cycle from a genuinely long chain: the 52-unit course showed
-    # every unit as "1/21". Silent — the number was plausible.
-    for tier <- 1..30 do
+  test "a chain is the tier the player is on: no number, nothing to open", %{conn: conn} do
+    for tier <- 1..40 do
       {:ok, _} =
         Quests.create_quest(%{
-          key: "long_#{tier}",
-          title: "Long tier #{tier}",
+          key: "sets_#{tier}",
+          title: "Sets tier #{tier}",
           description: "Tier #{tier}.",
-          category: "Long",
-          objectives: [%{event: "long_evt", target: 1}],
-          prerequisite_quest_key: if(tier > 1, do: "long_#{tier - 1}")
+          category: "Sets",
+          objectives: [%{event: "sets_evt", target: 1}],
+          prerequisite_quest_key: if(tier > 1, do: "sets_#{tier - 1}")
         })
     end
 
-    html = page(conn)
+    {:ok, view, html} = live(conn, ~p"/quests")
 
-    assert html =~ "1/30", "a 30-long chain must report 30, not the old 21 cap"
-    refute html =~ "1/21"
+    assert html =~ "Sets tier 1"
+    refute html =~ "1/40"
+    refute html =~ "Sets tier 2"
+    refute has_element?(view, ~s([phx-click="show_chain"]))
+  end
+
+  test "an item reward shows by the name the quest gives it, not its code", %{conn: conn} do
+    {:ok, _} =
+      Quests.create_quest(%{
+        key: "titled",
+        title: "Titled",
+        description: "Gives a title.",
+        category: "Titles",
+        metadata: %{"reward_names" => %{"title:navigator" => "Navigator"}},
+        objectives: [%{event: "titled_evt", target: 1}],
+        rewards: [
+          %{type: "currency", code: "coins", amount: 5},
+          %{type: "item", code: "title:navigator", amount: 1},
+          %{type: "item", code: "potion", amount: 2}
+        ]
+      })
+
+    html = page(conn)
+    [card] = Regex.run(~r{Titled[\s\S]*?2 potion}, html)
+    assert card =~ "5 coins"
+    assert card =~ ~r{</span>\s*Navigator\s*</span>}
+    refute card =~ "title:navigator"
   end
 
   test "a category with nothing visible behind it gets no tab", %{conn: conn} do

@@ -3617,3 +3617,8 @@ msgstr "Bulanan"
 msgctxt "leaderboard"
 msgid "Season"
 msgstr "Musim"
+
+#: lib/gamend_web/user_auth.ex:208
+#, elixir-autogen, elixir-format
+msgid "Guest account created. Register any time to keep your progress on every device."
+msgstr "Akun tamu dibuat. Daftar kapan saja untuk menyimpan progresmu di semua perangkat."

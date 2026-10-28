@@ -3670,3 +3670,8 @@ msgstr "Μηνιαία"
 msgctxt "leaderboard"
 msgid "Season"
 msgstr "Σεζόν"
+
+#: lib/gamend_web/user_auth.ex:208
+#, elixir-autogen, elixir-format
+msgid "Guest account created. Register any time to keep your progress on every device."
+msgstr "Δημιουργήθηκε λογαριασμός επισκέπτη. Κάνε εγγραφή όποτε θέλεις για να κρατήσεις την πρόοδό σου σε κάθε συσκευή."

@@ -79,11 +79,17 @@ defmodule GamendWeb.ContentText do
 
   # A quest's counter is a binding, not a substitution — see "Placeholders".
   # An unresolved one is an anonymous visitor browsing the catalog: no row, so
-  # the first run (`Gamend.Quests.counter/1`).
+  # the first run (`Gamend.Quests.counter/1`). The names it gives its item
+  # rewards (`metadata["reward_names"]`) are content too.
   def translate(%Quest{} = quest) do
     bindings = %{n: Gamend.Quests.counter(quest)}
 
-    %{quest | title: t(quest.title, bindings), description: t(quest.description, bindings)}
+    %{
+      quest
+      | title: t(quest.title, bindings),
+        description: t(quest.description, bindings),
+        metadata: translate_reward_names(quest.metadata)
+    }
   end
 
   def translate(%_struct{} = record) do
@@ -113,6 +119,15 @@ defmodule GamendWeb.ContentText do
   end
 
   def translate(other), do: other
+
+  defp translate_reward_names(%{"reward_names" => %{} = names} = metadata) do
+    names =
+      Map.new(names, fn {code, name} -> {code, if(is_binary(name), do: t(name), else: name)} end)
+
+    Map.put(metadata, "reward_names", names)
+  end
+
+  defp translate_reward_names(metadata), do: metadata
 
   # The host's backend when it has one, so a game's own `content` translations
   # are found; the library's otherwise.

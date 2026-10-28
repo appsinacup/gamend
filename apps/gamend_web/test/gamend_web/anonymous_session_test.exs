@@ -1,7 +1,38 @@
+defmodule GamendWeb.AnonymousSessionTest.SaveLive do
+  # A page that saves for its reader the way a host's does: `ensure_user/1`
+  # first.
+  use GamendWeb, :live_view
+
+  alias Gamend.Accounts.Scope
+  alias GamendWeb.UserAuth
+
+  on_mount {GamendWeb.UserAuth, :mount_current_scope}
+
+  def mount(_params, _session, socket), do: {:ok, assign(socket, :saved, nil)}
+
+  def render(assigns) do
+    ~H"""
+    <p id="saved">{@saved}</p>
+    <p id="info">{Phoenix.Flash.get(@flash, :info)}</p>
+    """
+  end
+
+  def handle_event("save", %{"what" => what}, socket) do
+    case UserAuth.ensure_user(socket) do
+      {:ok, socket} ->
+        user_id = Scope.user_id(socket.assigns.current_scope)
+        {:noreply, assign(socket, :saved, "#{what} on #{user_id}")}
+
+      {:error, reason} ->
+        {:noreply, assign(socket, :saved, "#{what} not saved: #{reason}")}
+    end
+  end
+end
+
 defmodule GamendWeb.AnonymousSessionTest do
   @moduledoc """
-  The website's anonymous accounts: made on demand (`UserAuth.ensure_user/1`,
-  `ensure_user_conn/1`) as device accounts, handed to the browser through
+  The website's anonymous accounts: made on demand (`UserAuth.ensure_user/1`)
+  as device accounts, handed to the browser through
   `POST /users/anonymous_session`, and only while device accounts are on.
   """
   use GamendWeb.ConnCase, async: false
@@ -9,9 +40,11 @@ defmodule GamendWeb.AnonymousSessionTest do
   alias Gamend.Accounts
   alias Gamend.Accounts.Scope
   alias Gamend.Accounts.User
+  alias GamendWeb.AnonymousSessionTest.SaveLive
   alias GamendWeb.UserAuth
   alias Phoenix.LiveView.Utils
 
+  import Ecto.Query, only: [from: 2]
   import ExUnit.CaptureLog
   import Phoenix.LiveViewTest
 
@@ -169,17 +202,76 @@ defmodule GamendWeb.AnonymousSessionTest do
     end
   end
 
-  describe "ensure_user_conn/1 in a controller" do
-    test "writes the new account straight into the session", %{conn: conn} do
-      conn =
-        %{conn | secret_key_base: GamendWeb.endpoint().config(:secret_key_base)}
-        |> init_test_session(%{})
-        |> assign(:current_scope, nil)
+  describe "signing in" do
+    test "keeps the session keys a host names, and logging out keeps none", %{conn: conn} do
+      previous = Application.get_env(:gamend_web, :session_kept_on_log_in)
+      Application.put_env(:gamend_web, :session_kept_on_log_in, ["visitor_langs"])
 
-      assert {:ok, conn} = UserAuth.ensure_user_conn(conn)
-      user = Scope.user(conn.assigns.current_scope)
-      assert User.anonymous?(user)
-      assert get_session(conn, :user_token)
+      on_exit(fn ->
+        if previous,
+          do: Application.put_env(:gamend_web, :session_kept_on_log_in, previous),
+          else: Application.delete_env(:gamend_web, :session_kept_on_log_in)
+      end)
+
+      user = Gamend.AccountsFixtures.user_fixture()
+
+      conn =
+        conn
+        |> Map.replace!(:secret_key_base, GamendWeb.endpoint().config(:secret_key_base))
+        |> init_test_session(%{"visitor_langs" => ["ro"], "other" => "gone"})
+        |> fetch_flash()
+        |> assign(:current_scope, nil)
+        |> UserAuth.log_in_user(user)
+
+      assert get_session(conn, "visitor_langs") == ["ro"]
+      refute get_session(conn, "other")
+
+      conn =
+        build_conn()
+        |> Map.replace!(:secret_key_base, GamendWeb.endpoint().config(:secret_key_base))
+        |> init_test_session(%{"visitor_langs" => ["ro"]})
+        |> assign(:current_scope, Scope.for_user(user))
+        |> UserAuth.log_out_user()
+
+      refute get_session(conn, "visitor_langs")
+    end
+  end
+
+  describe "Guest account created" do
+    test "a visitor's save makes the account at once and asks the browser to say so", %{
+      conn: conn
+    } do
+      {:ok, view, _html} = live_isolated(conn, SaveLive)
+      html = render_click(view, "save", %{"what" => "route"})
+
+      assert_push_event(view, "gamend:anonymous_session", %{token: token, notice: true})
+      assert is_binary(token)
+      [user] = Gamend.Repo.all(from u in User, where: like(u.device_id, "web:%"))
+      assert html =~ "route on #{user.id}"
+    end
+
+    test "the page the socket reconnects with says so, once, and only to a guest", %{conn: conn} do
+      guest = guest()
+      notice = UserAuth.guest_notice()
+
+      {:ok, _view, html} =
+        conn
+        |> log_in_user(guest)
+        |> put_connect_params(%{"_guest_created" => "1"})
+        |> live_isolated(SaveLive)
+
+      assert html =~ notice
+
+      {:ok, _view, html} = conn |> log_in_user(guest) |> live_isolated(SaveLive)
+      refute html =~ notice
+
+      {:ok, _view, html} =
+        conn
+        |> log_in_user(Gamend.AccountsFixtures.user_fixture())
+        |> put_connect_params(%{"_guest_created" => "1"})
+        |> live_isolated(SaveLive)
+
+      refute html =~ notice
     end
   end
 
@@ -210,6 +302,8 @@ defmodule GamendWeb.AnonymousSessionTest do
 
       assert html =~ ~s(href="/users/log_in")
       assert html =~ ~s(href="/users/register")
+      # Says it is a guest, as the phone's menu does.
+      assert html =~ "Guest"
       refute html =~ "<details"
       refute html =~ "/users/log_out"
     end

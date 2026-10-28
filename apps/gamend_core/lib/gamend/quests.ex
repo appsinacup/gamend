@@ -1307,75 +1307,11 @@ defmodule Gamend.Quests do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Every quest in `quest_key`'s prerequisite chain, in tier order, each with the
-  user's current-period progress.
-
-  The quest list hides a tier until its prerequisite is done; this is the one
-  read that shows a whole chain — earlier tiers and the ones still ahead. Each
-  entry carries `:tier` (1-based), `:locked` (prerequisite not yet done for
-  this user) and the usual `:progress`/`:claimable`. With a `nil` user every
-  tier after the first is locked and progress is `nil`.
-
-  Returns `[]` for an unknown or inactive key. A quest with no chain links
-  returns just its own entry.
-  """
-  @spec chain(user_id() | nil, String.t()) ::
-          [
-            %{
-              quest: Quest.t(),
-              progress: QuestProgress.t() | nil,
-              claimable: boolean(),
-              locked: boolean(),
-              tier: pos_integer()
-            }
-          ]
-  def chain(user_id, quest_key) when is_binary(quest_key) do
-    quests = active_quests()
-    prereq_by_key = Map.new(quests, &{&1.key, &1.prerequisite_quest_key})
-
-    if Map.has_key?(prereq_by_key, quest_key) do
-      root = walk_to_root(quest_key, prereq_by_key)
-
-      members =
-        quests
-        |> Enum.filter(&(walk_to_root(&1.key, prereq_by_key) == root))
-        |> Enum.sort_by(&chain_hops(&1.key, prereq_by_key, 0))
-
-      now = DateTime.utc_now(:second)
-      rows = chain_progress(user_id, members)
-      waiting = rows |> Map.values() |> oldest_waiting()
-
-      done =
-        for {{key, _period}, progress} <- rows,
-            progress.status in @statuses_done,
-            into: MapSet.new(),
-            do: key
-
-      members
-      |> Enum.with_index(1)
-      |> Enum.map(fn {quest, tier} ->
-        progress = card_progress(waiting, rows, quest, clock(user_id, now))
-        prereq = quest.prerequisite_quest_key
-
-        %{
-          quest: resolve_counter(quest, progress),
-          progress: progress,
-          claimable: progress != nil and progress.status == "completed",
-          locked: prereq != nil and prereq not in done,
-          tier: tier
-        }
-      end)
-    else
-      []
-    end
-  end
-
-  @doc """
   Every member of a group, with the viewer's progress — what a UI shows when the
   player opens the one entry the group collapsed into.
 
-  Ordered by `sort_order` like any list; a group has no tiers, so unlike
-  `chain/2` there is nothing locked and nothing to number. Members the quest
+  Ordered by `sort_order` like any list; a group has no tiers, so there is
+  nothing locked and nothing to number. Members the quest
   list would not show this viewer (out of window, prerequisite unmet) are left
   out too, so the count on the collapsed entry matches what opening it reveals.
 

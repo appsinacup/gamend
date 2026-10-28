@@ -3,7 +3,12 @@
 import {test, beforeEach} from "node:test"
 import assert from "node:assert/strict"
 
-import {ANONYMOUS_SESSION_PATH, startAnonymousSession, stampAnonymousSession} from "../anonymous_session.js"
+import {
+  ANONYMOUS_SESSION_PATH,
+  guestNoticeParams,
+  startAnonymousSession,
+  stampAnonymousSession,
+} from "../anonymous_session.js"
 
 let listeners, socketCalls, liveSocket
 
@@ -73,4 +78,31 @@ test("the pushed event drives it, and an event with no token does nothing", asyn
   await listener({detail: {token: "tok"}})
   assert.equal(calls.length, 1)
   assert.deepEqual(socketCalls, ["disconnect", "connect"])
+})
+
+const main = {hasAttribute: (name) => name === "data-phx-main"}
+const nested = {hasAttribute: () => false}
+
+test("a notice rides the reconnect's main join once", async () => {
+  await stampAnonymousSession("tok", {
+    getLiveSocket: () => liveSocket,
+    fetchImpl: okFetch([]),
+    notice: true,
+  })
+
+  assert.deepEqual(guestNoticeParams(nested), {})
+  assert.deepEqual(guestNoticeParams(main), {_guest_created: "1"})
+  assert.deepEqual(guestNoticeParams(main), {})
+})
+
+test("no notice without one asked, nor when the token is refused", async () => {
+  await stampAnonymousSession("tok", {getLiveSocket: () => liveSocket, fetchImpl: okFetch([])})
+  assert.deepEqual(guestNoticeParams(main), {})
+
+  await stampAnonymousSession("tok", {
+    getLiveSocket: () => liveSocket,
+    fetchImpl: async () => ({ok: false}),
+    notice: true,
+  })
+  assert.deepEqual(guestNoticeParams(main), {})
 })

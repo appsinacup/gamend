@@ -1571,6 +1571,40 @@ defmodule GamendWeb.CoreComponents do
     end
   end
 
+  attr :user, :any, required: true
+  attr :class, :any, default: nil
+
+  @doc """
+  A short tag the host gives a player beside their name, as a badge: "Pro",
+  "Mod". The host answers it from the user:
+
+      config :gamend_web, :user_badge, {MyHost.Players, :badge}
+
+  called with the `%User{}`, answering a string or nil. Nothing when unset,
+  blank, or for a row with no account. `player_card/1` and the account menu
+  draw it after the name, so it shows wherever the title does.
+  """
+  def user_badge(assigns) do
+    assigns = assign(assigns, :badge, user_badge_text(assigns.user))
+
+    ~H"""
+    <span :if={@badge} class={["badge badge-warning badge-xs shrink-0", @class]}>{@badge}</span>
+    """
+  end
+
+  @doc "The badge text `user_badge/1` renders, or nil."
+  def user_badge_text(nil), do: nil
+
+  def user_badge_text(user) do
+    with {module, fun} when is_atom(module) and is_atom(fun) <-
+           Application.get_env(:gamend_web, :user_badge),
+         badge when is_binary(badge) and badge != "" <- apply(module, fun, [user]) do
+      badge
+    else
+      _ -> nil
+    end
+  end
+
   defp meta_path_title(user) do
     with [_ | _] = path <- Application.get_env(:gamend_web, :user_title_meta_path),
          %{} = metadata <- user_metadata(user),
@@ -1660,7 +1694,8 @@ defmodule GamendWeb.CoreComponents do
   A player as every list and header draws one: the avatar (the person icon
   for a row with no account behind it, so every row's name starts in the
   same place), the name on one line, cut with an ellipsis where it does not
-  fit and whole on hover (`player_name/1`), and one line under it, the
+  fit and whole on hover (`player_name/1`), the host's badge after it
+  (`user_badge/1`), and one line under it, the
   host's title for the user (`user_title_text/1`) unless the caller names
   the line itself (a run's language, a made-up runner's mark). The reader's
   own card is bold and says You.
@@ -1679,7 +1714,10 @@ defmodule GamendWeb.CoreComponents do
     <div class={["flex min-w-0 items-center gap-2", @class]} {@rest}>
       <.user_avatar user={@user} class={@avatar_class} />
       <span class="flex min-w-0 flex-col text-start leading-tight">
-        <.player_name name={@name} class={["max-w-full", @you && "font-bold"]} />
+        <span class="flex min-w-0 items-center gap-1">
+          <.player_name name={@name} class={["max-w-full", @you && "font-bold"]} />
+          <.user_badge user={@user} />
+        </span>
         <span
           :if={@line}
           class={["truncate text-xs font-normal", @subtitle_class]}

@@ -3,6 +3,12 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   Groups tab of the user settings page: my groups, browsing/joining,
   invitations, join requests, and per-group management (members, roles,
   editing, notifications).
+
+  Also a page of its own, `GamendWeb.UserLive.Groups`, which sets
+  `groups_path` to its URL. It follows the host's groups settings: only the
+  types it allows are offered (`Gamend.Groups.types/0`), a host with no
+  listed type has no Find or request tabs, and an admin shares the group's
+  invite link (`Gamend.Groups.InviteLinks`).
   """
 
   use GamendWeb, :html
@@ -12,11 +18,65 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   alias Gamend.Friends
   alias Gamend.Groups
   alias Gamend.Groups.Group
+  alias GamendWeb.GroupLabels
+  alias GamendWeb.GroupLinks
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.Shared
 
+  @events ~w(groups_tab groups_toggle_create group_validate_create group_create
+             group_leave group_join group_request_join group_accept_invite
+             group_decline_invite group_cancel_request group_cancel_invite
+             group_approve_request group_reject_request browse_groups_filter
+             browse_groups_clear browse_groups_prev browse_groups_next
+             group_view_detail group_close_detail group_toggle_edit
+             group_validate_edit group_save_edit group_kick group_promote
+             group_demote group_members_prev group_members_next group_invite_search
+             group_invite_user group_link_create group_link_delete)
+
+  @reloads [
+    :group_created,
+    :group_updated,
+    :group_deleted,
+    :group_invite_accepted,
+    :group_invite_cancelled,
+    :group_join_request_approved,
+    :group_join_request_rejected,
+    :member_joined,
+    :member_left,
+    :member_kicked,
+    :member_promoted,
+    :member_demoted,
+    :join_request_approved,
+    :join_request_rejected
+  ]
+
+  @doc "The events `handle_event/3` takes, for the page the tab is on to route."
+  @spec events() :: [String.t()]
+  def events, do: @events
+
+  @doc "The `{event, payload}` messages after which the page reloads the tab (`reload_groups/1`)."
+  @spec reloads() :: [atom()]
+  def reloads, do: @reloads
+
   def assign_defaults(socket) do
+    types = Groups.types()
+
     socket
+    |> assign(:groups_path, nil)
+    |> assign(:group_types, types)
+    # Public and private groups are listed (`Groups.list_groups/2`); a host
+    # that allows neither, or closes the listing, has nothing to find.
+    |> assign(
+      :groups_browse?,
+      Enum.any?(types, &(&1 in ["public", "private"])) and
+        GamendWeb.Features.enabled?(:list_groups)
+    )
+    |> assign(:group_requests?, "private" in types)
+    |> assign(:group_invite_anyone?, Groups.invite_anyone?())
+    |> assign(:group_links?, Groups.invite_links?())
+    |> assign(:group_link_days, Groups.invite_link_days())
+    |> assign(:group_invite_link, nil)
+    |> assign(:group_invite_link_url, nil)
     |> assign(:groups_tab, "my_groups")
     |> assign(:my_groups, [])
     |> assign(:groups_count, 0)
@@ -45,6 +105,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     |> assign(:group_editing, false)
     |> assign(:group_edit_form, nil)
     |> assign(:group_join_requests, [])
+    |> assign(:group_invite_link, nil)
+    |> assign(:group_invite_link_url, nil)
   end
 
   def tab(assigns) do
@@ -53,10 +115,11 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
       <%!-- Groups section --%>
       <div class="card bg-base-200 p-4 rounded-lg mt-6">
         <div class="flex items-center justify-between">
-          <div>
+          <%!-- On a page of its own the page's title says it. --%>
+          <div :if={is_nil(@groups_path)}>
             <div class="font-semibold text-lg">{gettext("Groups")}</div>
           </div>
-          <div class="flex gap-2">
+          <div class="ms-auto flex gap-2">
             <%= if @group_detail do %>
               <button phx-click="group_close_detail" class="btn btn-sm btn-ghost">
                 {gettext("Back")}
@@ -100,16 +163,17 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   type="text"
                   label={gettext("Description")}
                 />
-                <.input
-                  field={@create_group_form[:type]}
-                  type="select"
-                  label={gettext("Type")}
-                  options={[
-                    {gettext("Public"), "public"},
-                    {gettext("Private"), "private"},
-                    {gettext("Hidden"), "hidden"}
-                  ]}
-                />
+                <div :if={length(@group_types) > 1}>
+                  <.input
+                    field={@create_group_form[:type]}
+                    type="select"
+                    label={gettext("Type")}
+                    options={GroupLabels.type_options(@group_types)}
+                  />
+                  <p class="mt-1 text-xs text-base-content/60">
+                    {GroupLabels.types_hint(@group_types)}
+                  </p>
+                </div>
                 <.input
                   field={@create_group_form[:max_members]}
                   type="number"
@@ -144,14 +208,11 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   type="textarea"
                 />
                 <.input
+                  :if={length(@group_types) > 1}
                   field={@group_edit_form[:type]}
                   label={gettext("Type")}
                   type="select"
-                  options={[
-                    {gettext("Public"), "public"},
-                    {gettext("Private"), "private"},
-                    {gettext("Hidden"), "hidden"}
-                  ]}
+                  options={GroupLabels.type_options(@group_types, @group_detail.type)}
                 />
                 <.input
                   field={@group_edit_form[:max_members]}
@@ -177,7 +238,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     <strong>{gettext("Description")}:</strong> {@group_detail.description ||
                       "-"}
                   </div>
-                  <div>
+                  <div :if={length(@group_types) > 1}>
                     <strong>{gettext("Type")}:</strong>
                     <span class={[
                       "badge badge-sm",
@@ -187,7 +248,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                         true -> "badge-error"
                       end
                     ]}>
-                      {group_type_label(@group_detail.type)}
+                      {GroupLabels.type(@group_detail.type)}
                     </span>
                   </div>
                   <div>
@@ -369,6 +430,80 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
             <div :if={@group_detail_role == "admin"} class="mt-6">
               <h4 class="font-semibold text-base mb-3">{gettext("Invite")}</h4>
 
+              <%!-- Invite link: anyone signed in who opens it joins --%>
+              <div
+                :if={@group_links?}
+                id="group-invite-link"
+                class="mb-5 rounded-box border border-base-300 p-3"
+              >
+                <div class="text-sm font-medium">{gettext("Invite link")}</div>
+                <%= if @group_invite_link do %>
+                  <div class="mt-2 flex gap-2">
+                    <input
+                      id="group-invite-link-url"
+                      type="text"
+                      readonly
+                      value={@group_invite_link_url}
+                      class="input input-bordered input-sm w-full font-mono"
+                    />
+                    <button
+                      type="button"
+                      id="group-invite-link-copy"
+                      phx-hook="CopyText"
+                      data-target="group-invite-link-url"
+                      data-copied={gettext("Copied")}
+                      class="btn btn-sm btn-primary"
+                    >
+                      {gettext("Copy")}
+                    </button>
+                  </div>
+                  <p class="mt-2 text-xs text-base-content/60">
+                    {gettext("Anyone signed in who opens it joins as a member.")}
+                    {gettext("Expires")}
+                    <.timestamp at={@group_invite_link.expires_at} />. {ngettext(
+                      "Used once.",
+                      "Used %{count} times.",
+                      @group_invite_link.uses
+                    )}
+                  </p>
+                  <div class="mt-2 flex gap-2">
+                    <button
+                      type="button"
+                      id="group-invite-link-new"
+                      phx-click="group_link_create"
+                      data-confirm={gettext("The current link stops working.")}
+                      class="btn btn-ghost btn-xs"
+                    >
+                      {gettext("New link")}
+                    </button>
+                    <button
+                      type="button"
+                      id="group-invite-link-off"
+                      phx-click="group_link_delete"
+                      class="btn btn-ghost btn-xs text-error"
+                    >
+                      {gettext("Turn off")}
+                    </button>
+                  </div>
+                <% else %>
+                  <p class="mt-1 text-xs text-base-content/60">
+                    {ngettext(
+                      "Share a link: anyone signed in who opens it joins as a member, for a day.",
+                      "Share a link: anyone signed in who opens it joins as a member, for %{count} days.",
+                      @group_link_days
+                    )}
+                  </p>
+                  <button
+                    type="button"
+                    id="group-invite-link-create"
+                    phx-click="group_link_create"
+                    class="btn btn-sm mt-2"
+                  >
+                    {gettext("Create link")}
+                  </button>
+                <% end %>
+              </div>
+
               <%!-- Search by name or user ID --%>
               <div class="form-control mb-3">
                 <label class="label">
@@ -465,7 +600,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                 </div>
               </div>
 
-              <div :if={@invite_friends == []} class="mt-3 text-sm text-muted">
+              <div
+                :if={@invite_friends == [] && !@group_invite_anyone?}
+                class="mt-3 text-sm text-muted"
+              >
                 {gettext("No results.")}
               </div>
             </div>
@@ -478,17 +616,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           <div class="mt-4 border-b border-base-300 pb-2 overflow-x-auto">
             <div class="flex gap-2 min-w-max">
               <button
-                :for={
-                  {tab, label} <- [
-                    {"my_groups", gettext("Groups") <> " (#{@groups_count})"},
-                    {"browse", gettext("Find groups")},
-                    {"invitations", gettext("Invitations") <> " (#{length(@group_invitations)})"},
-                    {"requests", gettext("My requests") <> " (#{length(@group_pending_requests)})"},
-                    {"sent_invitations",
-                     gettext("Sent invitations") <>
-                       " (#{length(@group_sent_invitations)})"}
-                  ]
-                }
+                :for={{tab, label} <- sub_tabs(assigns)}
                 phx-click="groups_tab"
                 phx-value-tab={tab}
                 class={[
@@ -513,7 +641,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   <thead>
                     <tr>
                       <th>{gettext("Title")}</th>
-                      <th>{gettext("Type")}</th>
+                      <th :if={length(@group_types) > 1}>{gettext("Type")}</th>
                       <th>{gettext("Max members")}</th>
                       <th>{gettext("Role")}</th>
                       <th></th>
@@ -533,7 +661,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           {group.title}
                         </button>
                       </td>
-                      <td>
+                      <td :if={length(@group_types) > 1}>
                         <span class={[
                           "badge badge-sm",
                           cond do
@@ -542,7 +670,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                             true -> "badge-error"
                           end
                         ]}>
-                          {group_type_label(group.type)}
+                          {GroupLabels.type(group.type)}
                         </span>
                       </td>
                       <td class="text-sm">{group.max_members}</td>
@@ -599,9 +727,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     type="select"
                     label={gettext("Type")}
                     options={[
-                      {gettext("All"), ""},
-                      {gettext("Public"), "public"},
-                      {gettext("Private"), "private"}
+                      {gettext("All"), ""}
+                      | GroupLabels.type_options(
+                          Enum.filter(@group_types, &(&1 in ["public", "private"]))
+                        )
                     ]}
                   />
                   <div class="flex items-end">
@@ -643,7 +772,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                         "badge badge-sm",
                         if(group.type == "public", do: "badge-success", else: "badge-warning")
                       ]}>
-                        {group_type_label(group.type)}
+                        {GroupLabels.type(group.type)}
                       </span>
                     </td>
                     <td class="text-sm">{group.max_members}</td>
@@ -715,7 +844,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       :for={inv <- @group_invitations}
                       id={"group-inv-" <> to_string(inv.id)}
                     >
-                      <td class="text-sm font-mono">{inv.group_name}</td>
+                      <td class="text-sm font-mono">{inv.group_title}</td>
                       <td class="text-sm font-mono">
                         {inv.sender_name}
                       </td>
@@ -813,7 +942,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       :for={inv <- @group_sent_invitations}
                       id={"group-sent-inv-" <> to_string(inv.id)}
                     >
-                      <td class="text-sm font-mono">{inv.group_name}</td>
+                      <td class="text-sm font-mono">{inv.group_title}</td>
                       <td class="text-sm font-mono">
                         {inv.recipient_name}
                       </td>
@@ -1176,6 +1305,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           |> MapSet.new()
 
         Accounts.search_users(query, page: 1, page_size: 10)
+        |> with_email_match(query)
         |> Enum.reject(fn u -> MapSet.member?(all_member_ids, u.id) end)
       end
 
@@ -1210,11 +1340,68 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
-  # The stored values are lowercase codes; show the words the create form uses.
-  defp group_type_label("public"), do: gettext("Public")
-  defp group_type_label("private"), do: gettext("Private")
-  defp group_type_label("hidden"), do: gettext("Hidden")
-  defp group_type_label(type), do: type
+  # Making one replaces the old link, so this is also New link.
+  def handle_event("group_link_create", _params, socket) do
+    user = Shared.current_user(socket)
+    group = socket.assigns.group_detail
+
+    case group && Groups.create_invite_link(user.id, group.id) do
+      {:ok, _link} ->
+        {:noreply, assign_invite_link(socket, socket.assigns.group_detail_role)}
+
+      {:error, reason} ->
+        {:noreply,
+         put_flash(socket, :error, LiveHelpers.failure_message(gettext("Failed"), reason))}
+
+      nil ->
+        {:noreply, socket}
+    end
+  end
+
+  def handle_event("group_link_delete", _params, socket) do
+    user = Shared.current_user(socket)
+    group = socket.assigns.group_detail
+
+    case group && Groups.delete_invite_link(user.id, group.id) do
+      :ok ->
+        {:noreply, assign(socket, group_invite_link: nil, group_invite_link_url: nil)}
+
+      {:error, reason} ->
+        {:noreply,
+         put_flash(socket, :error, LiveHelpers.failure_message(gettext("Failed"), reason))}
+
+      nil ->
+        {:noreply, socket}
+    end
+  end
+
+  # Where any account may be invited (`Groups.invite_anyone?/0`), an exact
+  # email finds its account too: a colleague is invited by the address they
+  # work at. The result shows the account's public name, never the address.
+  defp with_email_match(results, query) do
+    with true <- Groups.invite_anyone?(),
+         true <- String.contains?(query, "@"),
+         %{} = user <- Accounts.get_user_by_email(query) do
+      [user | Enum.reject(results, &(&1.id == user.id))]
+    else
+      _ -> results
+    end
+  end
+
+  # The sub-tabs this host has: no Find without a listed type, no requests
+  # without a private one (unless some are still pending from before).
+  defp sub_tabs(assigns) do
+    [
+      {"my_groups", gettext("Groups") <> " (#{assigns.groups_count})"},
+      assigns.groups_browse? && {"browse", gettext("Find groups")},
+      {"invitations", gettext("Invitations") <> " (#{length(assigns.group_invitations)})"},
+      (assigns.group_requests? or assigns.group_pending_requests != []) &&
+        {"requests", gettext("My requests") <> " (#{length(assigns.group_pending_requests)})"},
+      {"sent_invitations",
+       gettext("Sent invitations") <> " (#{length(assigns.group_sent_invitations)})"}
+    ]
+    |> Enum.filter(& &1)
+  end
 
   defp group_role_label("admin"), do: gettext("Admin")
   defp group_role_label("member"), do: gettext("Member")
@@ -1333,8 +1520,14 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
         {key, value} -> [{key, value}]
       end)
 
-    push_patch(socket, to: ~p"/users/settings?#{[tab: "groups"] ++ query}", replace: true)
+    push_patch(socket, to: groups_href(socket.assigns.groups_path, query), replace: true)
   end
+
+  # The tab's own URL: the settings page's, or the page it is on its own
+  # (`GamendWeb.UserLive.Groups`, Forge's and Gamend Cloud's Groups).
+  defp groups_href(nil, query), do: ~p"/users/settings?#{[tab: "groups"] ++ query}"
+  defp groups_href(path, []), do: path
+  defp groups_href(path, query), do: path <> "?" <> URI.encode_query(query)
 
   defp close_group_detail(socket) do
     socket
@@ -1376,6 +1569,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
         |> assign(:group_members_page, 1)
         |> assign(:invite_friends, friends_not_in_group)
         |> assign(:group_join_requests, join_requests)
+        |> assign_invite_link(role)
         |> reload_group_members()
 
       _ ->
@@ -1393,6 +1587,19 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   end
 
   defp load_join_requests(_role, _user_id, _group_id), do: []
+
+  # The group's invite link, for its admins to copy: the link itself, and
+  # its full URL on this host (`GroupLinks.join_url/2`).
+  defp assign_invite_link(socket, "admin") do
+    link = socket.assigns.group_links? && Groups.get_invite_link(socket.assigns.group_detail.id)
+
+    socket
+    |> assign(:group_invite_link, link || nil)
+    |> assign(:group_invite_link_url, link && GroupLinks.join_url(socket, link.token))
+  end
+
+  defp assign_invite_link(socket, _role),
+    do: assign(socket, group_invite_link: nil, group_invite_link_url: nil)
 
   defp reload_group_members(socket) do
     group = socket.assigns.group_detail

@@ -7,7 +7,7 @@ generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
 # Settings
 
 Every setting the server has, with the environment variable that sets it.
-334 settings across 30 groups.
+337 settings across 31 groups.
 
 A setting is declared in the module that owns it, so this page and
 `.env.example` are generated from the same source the server reads. The
@@ -192,6 +192,15 @@ Live values, and where each one came from, are on the
 | `GAMEND_GITHUB_APP_SLUG` | string | - | The App's URL name, `github.com/apps/<slug>`. Where a customer is sent to install it. Warns if unset once `GAMEND_GITHUB_APP_ID` or `GAMEND_GITHUB_PRIVATE_KEY` is set. |
 | `GAMEND_GITHUB_PRIVATE_KEY` | string | - | The App's private key, PEM. Signs the JWT that mints installation tokens. Warns if unset once `GAMEND_GITHUB_APP_ID` or `GAMEND_GITHUB_APP_SLUG` is set. Secret - never log or commit it. |
 | `GAMEND_GITHUB_WEBHOOK_SECRET` | string | - | The secret the App signs its webhook deliveries with. Unset refuses every delivery, which is the safe default for an endpoint anyone can POST to. Secret - never log or commit it. |
+
+
+## Groups
+
+| Variable | Type | Default | Notes |
+|---|---|---|---|
+| `GAMEND_GROUPS_INVITES` | atom | `:friends` | Whom a group's admin may invite: `friends` (someone who accepted their friend request) or `anyone` (any account, found by name or exact email). For a host whose groups are teams of colleagues; the invite is still the recipient's to accept. |
+| `GAMEND_GROUPS_LINK_DAYS` | integer | `7` | How many days a group's invite link lasts: anyone signed in who opens it joins the group as a member. 0 turns invite links off. |
+| `GAMEND_GROUPS_TYPES` | list | `public,private,hidden` | The types a group may be created as or changed to, the first one the default: public, private, hidden. `hidden` alone makes every group invite-only and unlisted. |
 
 
 ## Hooks

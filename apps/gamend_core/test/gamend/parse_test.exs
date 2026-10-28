@@ -31,6 +31,22 @@ defmodule Gamend.ParseTest do
     assert Parse.integer(0, 1) == 0
   end
 
+  describe "uuid/1" do
+    test "takes the hyphenated form, in either case" do
+      id = Ecto.UUID.generate()
+      assert Parse.uuid(id) == id
+      assert Parse.uuid(String.upcase(id)) == id
+    end
+
+    # Ecto.UUID.cast/1 reads any 16 bytes as a raw UUID.
+    test "refuses a 16-character string and anything else" do
+      assert Parse.uuid("weekend-gauntlet") == nil
+      assert Parse.uuid("not-a-uuid") == nil
+      assert Parse.uuid(nil) == nil
+      assert Parse.uuid(42) == nil
+    end
+  end
+
   describe "string_keys/1" do
     test "stringifies atom keys at the top level only" do
       assert Parse.string_keys(%{"b" => 2, a: 1, c: %{d: 3}}) == %{

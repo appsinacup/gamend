@@ -75,15 +75,15 @@ defmodule Gamend.Query do
   def filter_user(query, value) when value in [nil, ""], do: query
 
   def filter_user(query, value) when is_binary(value) do
-    case Ecto.UUID.cast(value) do
-      {:ok, uuid} ->
-        where(query, [q], q.user_id == ^uuid)
-
-      :error ->
+    case Gamend.Parse.uuid(value) do
+      nil ->
         case Repo.search_pattern(value) do
           nil -> query
           pattern -> filter_user_named(query, :user_id, pattern)
         end
+
+      uuid ->
+        where(query, [q], q.user_id == ^uuid)
     end
   end
 

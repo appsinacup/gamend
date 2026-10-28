@@ -200,39 +200,6 @@ defmodule Gamend.Quests do
   end
 
   @doc ~S"""
-    Every quest in `quest_key`'s prerequisite chain, in tier order, each with the
-    user's current-period progress.
-    
-    The quest list hides a tier until its prerequisite is done; this is the one
-    read that shows a whole chain — earlier tiers and the ones still ahead. Each
-    entry carries `:tier` (1-based), `:locked` (prerequisite not yet done for
-    this user) and the usual `:progress`/`:claimable`. With a `nil` user every
-    tier after the first is locked and progress is `nil`.
-    
-    Returns `[]` for an unknown or inactive key. A quest with no chain links
-    returns just its own entry.
-    
-  """
-  @spec chain(user_id() | nil, String.t()) :: [
-          %{
-            quest: Gamend.Quests.Quest.t(),
-            progress: Gamend.Quests.QuestProgress.t() | nil,
-            claimable: boolean(),
-            locked: boolean(),
-            tier: pos_integer()
-          }
-        ]
-  def chain(_user_id, _quest_key) do
-    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
-      :placeholder ->
-        nil
-
-      _ ->
-        raise "Gamend.Quests.chain/2 is a stub - only available at runtime on Gamend"
-    end
-  end
-
-  @doc ~S"""
     Returns a changeset for tracking quest changes (used by forms).
   """
   @spec change_quest(Gamend.Quests.Quest.t(), map()) :: Ecto.Changeset.t()
@@ -587,8 +554,8 @@ defmodule Gamend.Quests do
     Every member of a group, with the viewer's progress — what a UI shows when the
     player opens the one entry the group collapsed into.
     
-    Ordered by `sort_order` like any list; a group has no tiers, so unlike
-    `chain/2` there is nothing locked and nothing to number. Members the quest
+    Ordered by `sort_order` like any list; a group has no tiers, so there is
+    nothing locked and nothing to number. Members the quest
     list would not show this viewer (out of window, prerequisite unmet) are left
     out too, so the count on the collapsed entry matches what opening it reveals.
     

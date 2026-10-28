@@ -10,6 +10,11 @@ defmodule Gamend.Groups do
   - **private** – anyone can request to join; an admin must approve
   - **hidden** – only invited users can join (via notifications / invite API)
 
+  A host picks which of them players may use (`types`), whom an admin may
+  invite (`invites`) and how long an invite link lasts (`link_days`). Forge
+  and Gamend Cloud, whose groups are teams of colleagues, allow `hidden` and
+  `private` and invite `anyone`.
+
   ## Usage
 
       # Create a group (creator becomes admin)
@@ -393,6 +398,24 @@ defmodule Gamend.Groups do
   end
 
   @doc ~S"""
+    Make a group's link, replacing the one it had: a new token, lasting
+    `link_days` from now. Admins only.
+    
+  """
+  @spec create_invite_link(Ecto.UUID.t(), Ecto.UUID.t()) ::
+          {:ok, Gamend.Groups.GroupInviteLink.t()}
+          | {:error, :links_off | :not_found | :not_admin | term()}
+  def create_invite_link(_admin_id, _group_id) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok, nil}
+
+      _ ->
+        raise "Gamend.Groups.create_invite_link/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Decline a pending group invite by **invite_id**.
     Only the recipient can decline. The invite is marked as `"declined"`
     (not deleted) so the sender can see the outcome.
@@ -423,6 +446,21 @@ defmodule Gamend.Groups do
 
       _ ->
         raise "Gamend.Groups.delete_group/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Turn a group's link off. Admins only.
+  """
+  @spec delete_invite_link(Ecto.UUID.t(), Ecto.UUID.t()) ::
+          :ok | {:error, :links_off | :not_found | :not_admin}
+  def delete_invite_link(_admin_id, _group_id) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :ok
+
+      _ ->
+        raise "Gamend.Groups.delete_invite_link/2 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -546,6 +584,39 @@ defmodule Gamend.Groups do
   end
 
   @doc ~S"""
+    A group's link, while it works: not expired, links on, its maker still an
+    admin. Nil otherwise. For the group's admins to show and copy.
+    
+  """
+  @spec get_invite_link(Ecto.UUID.t()) :: Gamend.Groups.GroupInviteLink.t() | nil
+  def get_invite_link(_group_id) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Groups.get_invite_link/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    The working link a token opens, its group preloaded, or nil: an unknown
+    token, an expired or replaced link, and one whose maker is no longer an
+    admin all read the same to whoever holds it.
+    
+  """
+  @spec get_invite_link_by_token(String.t()) :: Gamend.Groups.GroupInviteLink.t() | nil
+  def get_invite_link_by_token(_token) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Groups.get_invite_link_by_token/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Get a specific membership.
   """
   @spec get_membership(Ecto.UUID.t(), Ecto.UUID.t()) :: Gamend.Groups.GroupMember.t() | nil
@@ -618,6 +689,48 @@ defmodule Gamend.Groups do
   end
 
   @doc ~S"""
+    Whether an admin may invite any account, not only a friend (`invites`).
+  """
+  @spec invite_anyone?() :: boolean()
+  def invite_anyone?() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :erlang.phash2(make_ref(), 2) == 0
+
+      _ ->
+        raise "Gamend.Groups.invite_anyone?/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    How many days a new link lasts (`link_days`); 0 when links are off.
+  """
+  @spec invite_link_days() :: non_neg_integer()
+  def invite_link_days() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.Groups.invite_link_days/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Whether groups may have invite links (`link_days` above 0).
+  """
+  @spec invite_links?() :: boolean()
+  def invite_links?() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :erlang.phash2(make_ref(), 2) == 0
+
+      _ ->
+        raise "Gamend.Groups.invite_links?/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Invite a user to a group. Creates a `GroupInvite` record and sends
     an informational notification. The invite record is independent of the
     notification — deleting notifications does not affect pending invites.
@@ -632,7 +745,8 @@ defmodule Gamend.Groups do
     party invite, where `Parties.check_leader_connected_to_target/2` has always
     required a connection. On a service children can reach, being addable to a
     stranger's group is the contact path that matters, so the two now agree.
-    Returns `{:error, :not_connected}`.
+    Returns `{:error, :not_connected}`. A host that sets `Gamend.Groups`'
+    `invites` to `anyone` (teams of colleagues) lets an admin invite any account.
     
   """
   @spec invite_to_group(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
@@ -644,6 +758,25 @@ defmodule Gamend.Groups do
 
       _ ->
         raise "Gamend.Groups.invite_to_group/3 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Join the group a link opens, as a member. `{:error, :not_found}` for a
+    link that does not work (see `get_invite_link_by_token/1`),
+    `{:error, :already_member}` for someone already in it, and the room
+    checks' `:full` and `:too_many_groups`.
+    
+  """
+  @spec join_by_invite_link(Ecto.UUID.t(), String.t()) ::
+          {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+  def join_by_invite_link(_user_id, _token) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok, nil}
+
+      _ ->
+        raise "Gamend.Groups.join_by_invite_link/2 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -1000,6 +1133,23 @@ defmodule Gamend.Groups do
 
       _ ->
         raise "Gamend.Groups.subscribe_groups/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    The types a group may be created as or changed to, the default first: the
+    `types` setting, less any name that is not a type. All three when that
+    leaves none, so a typo cannot close group creation.
+    
+  """
+  @spec types() :: [String.t()]
+  def types() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        []
+
+      _ ->
+        raise "Gamend.Groups.types/0 is a stub - only available at runtime on Gamend"
     end
   end
 

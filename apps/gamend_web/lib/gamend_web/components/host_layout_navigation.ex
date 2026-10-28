@@ -122,6 +122,16 @@ defmodule GamendWeb.HostLayoutNavigation do
             to press. A guest account gets the same two and no avatar: an
             avatar beside Log in said both "you are in" and "sign in", and
             Register keeps what is on the account. --%>
+      <%!-- Says so, as the phone's menu does (2026-10-27, user): with only
+            the two buttons a guest looked signed out. A word, not an avatar,
+            and only at the stages with the reader's name (`navbar_fit.js`). --%>
+      <li
+        :if={@guest?}
+        class="flex items-center gap-1 text-sm text-muted [html:not([data-nav~=name])_&]:sr-only"
+      >
+        <.icon name="hero-user-solid" class="w-4 h-4" />
+        {GamendWeb.HostLayouts.translate("Guest")}
+      </li>
       <.auth_buttons :if={is_nil(@current_scope) or @guest?} current_path={@current_path} />
       <li :if={@current_scope && !@guest?}>
         <.user_menu
@@ -176,10 +186,13 @@ defmodule GamendWeb.HostLayoutNavigation do
               else, so it is not a surprise to see it here. --%>
         <li class="menu-title px-2 py-1">
           <span class="flex flex-col leading-tight text-base-content">
-            <.player_name
-              name={display_name(Scope.user(@current_scope))}
-              class="max-w-full font-semibold"
-            />
+            <span class="flex min-w-0 items-center gap-1">
+              <.player_name
+                name={display_name(Scope.user(@current_scope))}
+                class="max-w-full font-semibold"
+              />
+              <.user_badge user={Scope.user(@current_scope)} />
+            </span>
             <.user_title user={Scope.user(@current_scope)} />
             <span :if={@anonymous?} class="text-xs font-normal text-muted">
               {GamendWeb.HostLayouts.translate("Guest")}

@@ -50,7 +50,8 @@ defmodule Gamend.Groups.Group do
     |> validate_length(:title, min: 1, max: Gamend.Limits.get(:max_group_title))
     |> validate_length(:description, max: Gamend.Limits.get(:max_group_description))
     |> validate_length(:icon_url, max: Gamend.Limits.get(:max_profile_url))
-    |> validate_inclusion(:type, ["public", "private", "hidden"])
+    |> put_default_type()
+    |> validate_inclusion(:type, Gamend.Groups.types())
     |> validate_number(:max_members,
       greater_than: 0,
       less_than_or_equal_to: Gamend.Limits.get(:max_group_members)
@@ -59,6 +60,26 @@ defmodule Gamend.Groups.Group do
     |> unique_constraint(:title)
     |> Gamend.Limits.validate_metadata_size(:metadata)
   end
+
+  # A new group given no type is the host's default (`Gamend.Groups.types/0`),
+  # which is the schema's "public" unless the host does not allow it. One
+  # given "public" is checked here: it equals the schema's default, so `cast`
+  # records no change and `validate_inclusion/3` would never see it.
+  defp put_default_type(%{data: %{__meta__: %{state: :built}}} = changeset) do
+    types = Gamend.Groups.types()
+
+    case changeset.params do
+      %{"type" => type} when is_binary(type) and type != "" ->
+        if type in types,
+          do: changeset,
+          else: add_error(changeset, :type, "is invalid", validation: :inclusion, enum: types)
+
+      _none ->
+        put_change(changeset, :type, hd(types))
+    end
+  end
+
+  defp put_default_type(changeset), do: changeset
 end
 
 # Hand-written rather than @derive so optional strings encode as "" instead of

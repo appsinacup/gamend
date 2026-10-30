@@ -35,7 +35,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
              group_decline_invite group_cancel_request group_cancel_invite
              group_approve_request group_reject_request browse_groups_filter
              browse_groups_clear browse_groups_prev browse_groups_next
-             group_view_detail group_close_detail group_toggle_edit
+             group_close_detail group_toggle_edit
              group_validate_edit group_save_edit group_kick group_promote
              group_demote group_members_prev group_members_next group_invite_search
              group_invite_user group_link_create group_link_delete)
@@ -1303,13 +1303,6 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
   def handle_event("browse_groups_next", _params, socket),
     do: {:noreply, socket |> LiveHelpers.next_page(:browse_groups_page) |> reload_browse_groups()}
-
-  def handle_event("group_view_detail", %{"group_id" => gid}, socket) do
-    case Groups.get_group(to_string(gid)) do
-      nil -> {:noreply, put_flash(socket, :error, gettext("Not found"))}
-      group -> {:noreply, patch_groups(socket, group: Groups.full_slug(group), edit: false)}
-    end
-  end
 
   def handle_event("group_close_detail", _params, socket) do
     {:noreply, patch_groups(socket, group: nil, edit: false)}

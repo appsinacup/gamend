@@ -242,9 +242,7 @@ defmodule GamendWeb.UserLive.SettingsGroupsTest do
   } do
     mine = group(other)
     {:ok, _} = Groups.join_group(user.id, mine.id)
-    view = page(conn, other)
-
-    render_click(view, "group_view_detail", %{"group_id" => mine.id})
+    view = page(conn, other, "&group=#{mine.id}")
     assert assigns(view).group_detail.id == mine.id
     assert assigns(view).group_detail_role == "admin"
 

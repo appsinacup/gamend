@@ -62,10 +62,9 @@ defmodule Gamend.Icons do
 
   @doc "An icon at random, nil when there are none."
   @spec random() :: String.t() | nil
-  def random do
-    case @names do
-      [] -> nil
-      names -> Enum.random(names)
-    end
+  if @names == [] do
+    def random, do: nil
+  else
+    def random, do: Enum.random(@names)
   end
 end

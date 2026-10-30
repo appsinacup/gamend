@@ -33,6 +33,7 @@ defmodule GamendWeb.UserLive.Settings do
 
   @account_events ~w(validate_email update_email validate_display_name update_display_name
                      validate_username update_username validate_avatar save_avatar cancel_avatar
+                     pick_avatar_icon
                      validate_password update_password unlink_provider delete_user
                      delete_conflicting_account)
   @friends_events ~w(search_users send_friend block_friend accept_friend reject_friend

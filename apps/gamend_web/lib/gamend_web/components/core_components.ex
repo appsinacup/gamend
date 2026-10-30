@@ -1128,7 +1128,7 @@ defmodule GamendWeb.CoreComponents do
 
   attr :type, :atom,
     required: true,
-    values: [:group, :tournament, :leaderboard, :quest, :notification]
+    values: [:group, :tournament, :leaderboard, :quest, :notification, :user]
 
   attr :description, :string, default: nil
   attr :navigate, :string, default: nil
@@ -1228,7 +1228,7 @@ defmodule GamendWeb.CoreComponents do
 
   attr :type, :atom,
     required: true,
-    values: [:group, :tournament, :leaderboard, :quest, :notification]
+    values: [:group, :tournament, :leaderboard, :quest, :notification, :user]
 
   # `:any` so callers can pass the usual Phoenix class list; both branches
   # below normalise it the same way.
@@ -1275,6 +1275,69 @@ defmodule GamendWeb.CoreComponents do
     |> List.wrap()
     |> Enum.reject(&(&1 in [nil, false, ""]))
     |> Enum.join(" ")
+  end
+
+  @doc """
+  A pick of one icon by name, a radio each, drawn inline as `entity_icon/1`
+  draws them: a group's, an account's (`Gamend.Icons`). A name that is not a
+  heroicon is left out, and with none left nothing renders. `none` adds a
+  first choice of no icon (value `""`), named so and drawn as `none_icon`.
+
+      <.icon_picker field={@form[:icon]} icons={Gamend.Icons.choices()} label={gettext("Icon")} />
+  """
+  attr :field, Phoenix.HTML.FormField, required: true
+  attr :icons, :list, required: true, doc: "heroicon names, `rocket-launch`"
+  attr :label, :string, default: nil
+  attr :none, :string, default: nil, doc: "the name of a choice of no icon, nil for none"
+  attr :none_icon, :atom, default: :x_mark, doc: "how the choice of no icon is drawn"
+
+  def icon_picker(assigns) do
+    named =
+      for name <- assigns.icons,
+          {:ok, icon} <- [GamendWeb.Icons.from_path("/icons/" <> name <> ".svg")],
+          do: {name, icon, String.replace(name, "-", " ")}
+
+    choices =
+      if named != [] and assigns.none,
+        do: [{"", assigns.none_icon, assigns.none} | named],
+        else: named
+
+    field = assigns.field
+    errors = if Component.used_input?(field), do: field.errors, else: []
+
+    assigns =
+      assign(assigns,
+        choices: choices,
+        value: to_string(field.value),
+        errors: Enum.map(errors, &translate_error/1)
+      )
+
+    ~H"""
+    <fieldset :if={@choices != []} id={@field.id} class="fieldset mb-2">
+      <legend :if={@label} class="label mb-1">{@label}</legend>
+      <div class="flex flex-wrap gap-1.5">
+        <label :for={{name, icon, title} <- @choices} class="cursor-pointer" title={title}>
+          <input
+            type="radio"
+            name={@field.name}
+            value={name}
+            checked={@value == name}
+            aria-label={title}
+            class="peer sr-only"
+          />
+          <span class={[
+            "flex size-9 items-center justify-center rounded-field border border-base-300",
+            "text-base-content/70 transition-colors hover:bg-base-300",
+            "peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-content",
+            "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
+          ]}>
+            <.entity_icon icon={icon} type={:group} class="size-5" />
+          </span>
+        </label>
+      </div>
+      <.error :for={msg <- @errors}>{msg}</.error>
+    </fieldset>
+    """
   end
 
   @doc """
@@ -1664,7 +1727,8 @@ defmodule GamendWeb.CoreComponents do
 
   @doc """
   A user's avatar as a round image when they have one we host
-  (`User.public_avatar_url/1`), falling back to the generic person icon. A
+  (`User.public_avatar_url/1`), or the icon they picked in its place, drawn
+  inline on a round tile, falling back to the generic person icon. A
   provider's URL is never drawn: it would send the viewer's IP to that provider,
   so an avatar not yet mirrored shows the icon. Pass `class` for sizing, e.g.
   `"w-5 h-5"`. If the image fails to load (an object gone from storage),
@@ -1686,13 +1750,30 @@ defmodule GamendWeb.CoreComponents do
   attr :class, :string, default: "w-6 h-6"
 
   def user_avatar(assigns) do
-    assigns = assign(assigns, :avatar_url, User.public_avatar_url(assigns.user))
+    url = User.public_avatar_url(assigns.user)
+
+    assigns =
+      assign(assigns,
+        avatar_url: url,
+        avatar_icon?: match?({:ok, _}, GamendWeb.Icons.from_path(url || ""))
+      )
 
     ~H"""
+    <%!-- An icon picked in place of a picture (`Gamend.Icons`): drawn inline,
+          so it follows the theme, on a round tile the size of a picture. --%>
+    <span
+      :if={@avatar_icon?}
+      class={[
+        "inline-flex shrink-0 items-center justify-center rounded-full bg-base-300 text-base-content/70",
+        @class
+      ]}
+    >
+      <.entity_icon icon_url={@avatar_url} type={:user} class="w-3/5 h-3/5" />
+    </span>
     <%!-- no-referrer: a storage CDN on another origin has no need to learn
           which page showed the avatar. --%>
     <img
-      :if={@avatar_url}
+      :if={@avatar_url && !@avatar_icon?}
       src={@avatar_url}
       alt=""
       crossorigin="anonymous"
@@ -1700,7 +1781,11 @@ defmodule GamendWeb.CoreComponents do
       data-avatar-fallback
       class={["rounded-full object-cover bg-base-300", @class]}
     />
-    <.icon :if={@avatar_url} name="hero-user-circle-solid" class={"hidden " <> @class} />
+    <.icon
+      :if={@avatar_url && !@avatar_icon?}
+      name="hero-user-circle-solid"
+      class={"hidden " <> @class}
+    />
     <.icon :if={!@avatar_url} name="hero-user-circle-solid" class={@class} />
     """
   end

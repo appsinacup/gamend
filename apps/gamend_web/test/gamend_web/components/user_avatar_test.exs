@@ -48,6 +48,16 @@ defmodule GamendWeb.Components.UserAvatarTest do
     end
   end
 
+  test "an icon picked in place of a picture is drawn inline, not fetched" do
+    user = %User{id: @id, profile_url: @hosted, avatar_icon: "rocket-launch"}
+
+    html = render_component(&CoreComponents.user_avatar/1, user: user)
+
+    refute html =~ "<img"
+    assert html =~ "<svg"
+    assert html =~ "rounded-full"
+  end
+
   test "a broken image carries the CSP-safe fallback marker" do
     user = %User{id: @id, profile_url: @hosted}
 

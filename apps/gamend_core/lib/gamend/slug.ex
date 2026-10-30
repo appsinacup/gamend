@@ -13,9 +13,30 @@ defmodule Gamend.Slug do
 
   @format ~r/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/
 
+  # `random/0`'s words.
+  @adjectives ~w(
+    brave bright calm clever cosmic crimson daring dusty eager electric fierce
+    frosty gentle golden happy hidden icy jolly lucky lunar mighty misty nimble
+    noble quick quiet rapid rusty silent silver sly snowy solar spicy stormy
+    sunny swift tiny wild windy witty
+  )
+  @nouns ~w(
+    badger bard comet dragon falcon fox gecko golem griffin hawk knight lion
+    lynx mage moose otter owl panda phoenix pirate raven rogue shark sparrow
+    sprite tiger titan toad troll viking walrus wizard wolf yeti
+  )
+
   @doc "The format a slug has to have."
   @spec format() :: Regex.t()
   def format, do: @format
+
+  @doc """
+  Two random words, `swift-otter`: a name to start from, for a form that
+  offers one before anything is typed (a new group's, and in a host a new
+  server's). Checked against nothing: about 1,500 of them.
+  """
+  @spec random() :: String.t()
+  def random, do: "#{Enum.random(@adjectives)}-#{Enum.random(@nouns)}"
 
   @doc """
   The nearest slug to `text`: lowercased, every run of anything else turned

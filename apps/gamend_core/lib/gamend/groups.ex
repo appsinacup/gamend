@@ -22,6 +22,11 @@ defmodule Gamend.Groups do
   `get_group_by_full_slug/1`). One is made from the title when none is
   given.
 
+  A group's icon is one of the host's (`Gamend.Icons`) picked by name, or an
+  uploaded image (`set_icon_url/3`); a new group given neither gets one of
+  the host's at random. Forms start a new group from a random title
+  (`random_title/0`) and icon (`change_new_group/0`).
+
   ## Usage
 
       # Create a group (creator becomes admin)
@@ -145,6 +150,21 @@ defmodule Gamend.Groups do
   @doc "Whether a group's title must be unique (`unique_titles`)."
   @spec unique_titles?() :: boolean()
   def unique_titles?, do: Gamend.Settings.get(__MODULE__, :unique_titles) != false
+
+  @doc """
+  A title for a new group to start from, `Swift Otter` (`Gamend.Slug.random/0`),
+  one no group has when titles are unique (`unique_titles`), most draws.
+  """
+  @spec random_title() :: String.t()
+  def random_title do
+    titles =
+      for _ <- 1..5,
+          do: Gamend.Slug.random() |> String.split("-") |> Enum.map_join(" ", &String.capitalize/1)
+
+    Enum.find(titles, hd(titles), &(not unique_titles?() or not title_taken?(&1)))
+  end
+
+  defp title_taken?(title), do: Repo.exists?(from(g in Group, where: g.title == ^title))
 
   # ---------------------------------------------------------------------------
   # PubSub
@@ -601,7 +621,10 @@ defmodule Gamend.Groups do
         else
           case Gamend.Hooks.internal_call(:before_group_create, [user, attrs]) do
             {:ok, attrs} ->
-              do_create_group(user_id, attrs |> put_fixed_max() |> put_free_slug(user_id))
+              do_create_group(
+                user_id,
+                attrs |> put_fixed_max() |> put_random_icon() |> put_free_slug(user_id)
+              )
 
             {:error, reason} ->
               {:error, {:hook_rejected, reason}}
@@ -662,7 +685,8 @@ defmodule Gamend.Groups do
       # ticket has been confirmed. Leaving it castable here let a group admin
       # point the icon at any external URL, and did so even when the
       # `user_image_uploads` feature gate — whose whole purpose is to close that
-      # surface — was switched off.
+      # surface — was switched off. An icon by name (`icon`) stays: it can
+      # only be one of the site's own (`Gamend.Icons`).
       attrs = attrs |> normalize_params() |> Map.drop(["icon_url", :icon_url]) |> drop_fixed_max()
 
       new_max = Map.get(attrs, "max_members") || Map.get(attrs, :max_members)
@@ -739,11 +763,23 @@ defmodule Gamend.Groups do
   # Commands – delete
   # ---------------------------------------------------------------------------
 
-  @doc "Return a changeset for tracking group changes (admin edit forms)."
+  @doc """
+  Return a changeset for tracking group changes (admin edit forms). Its
+  `icon` is the group's when its `icon_url` is one of `Gamend.Icons`, so a
+  form's icon picker starts on it.
+  """
   @spec change_group(Group.t(), map()) :: Ecto.Changeset.t()
   def change_group(%Group{} = group, attrs \\ %{}) do
-    Group.changeset(group, attrs)
+    Group.changeset(%{group | icon: group.icon || Gamend.Icons.name(group.icon_url)}, attrs)
   end
+
+  @doc """
+  A new group's form to start from: a random title (`random_title/0`), the
+  slug made from it, and a random icon (`Gamend.Icons.random/0`).
+  """
+  @spec change_new_group() :: Ecto.Changeset.t()
+  def change_new_group,
+    do: change_group(%Group{}, %{"title" => random_title(), "icon" => Gamend.Icons.random()})
 
   @doc "Admin-level update, bypasses membership checks."
   @spec admin_update_group(Group.t(), map()) :: {:ok, Group.t()} | {:error, Ecto.Changeset.t()}
@@ -1506,6 +1542,17 @@ defmodule Gamend.Groups do
 
   defp drop_fixed_max(attrs) do
     if fixed_max_members(), do: Map.drop(attrs, ["max_members", :max_members]), else: attrs
+  end
+
+  # A new group given no icon, by name or URL, gets one of the host's.
+  defp put_random_icon(attrs) do
+    case {param(attrs, :icon), param(attrs, :icon_url), Gamend.Icons.random()} do
+      {blank, blank_url, name} when blank in [nil, ""] and blank_url in [nil, ""] and is_binary(name) ->
+        attrs |> Map.drop(["icon", :icon]) |> put_param(:icon, name)
+
+      _given ->
+        attrs
+    end
   end
 
   # A new group asked no slug gets its title's nearest free one; one asked a

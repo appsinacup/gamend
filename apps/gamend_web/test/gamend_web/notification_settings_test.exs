@@ -218,5 +218,14 @@ defmodule GamendWeb.NotificationSettingsTest do
       {:ok, _lv, html} = live(conn, ~p"/notifications")
       assert html =~ ~s(href="/tests")
     end
+
+    test "links to the settings that choose them", %{conn: conn} do
+      {:ok, lv, _html} = live(conn, ~p"/notifications")
+
+      assert has_element?(
+               lv,
+               ~s(#notification-settings[href="/users/settings?tab=notifications"])
+             )
+    end
   end
 end

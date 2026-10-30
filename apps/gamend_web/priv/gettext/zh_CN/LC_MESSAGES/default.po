@@ -29,6 +29,19 @@ msgstr "操作"
 msgid "Email"
 msgstr "邮箱"
 
+#: lib/gamend_web/live/new_group_component.ex:143
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:102
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:204
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:252
+#, elixir-autogen, elixir-format
+msgid "Icon"
+msgstr "图标"
+
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:103
+#, elixir-autogen, elixir-format
+msgid "No icon"
+msgstr "无图标"
+
 #: lib/gamend_web/live/leaderboards_live.ex:27
 #: lib/gamend_web/live/leaderboards_live.ex:105
 #, elixir-autogen, elixir-format

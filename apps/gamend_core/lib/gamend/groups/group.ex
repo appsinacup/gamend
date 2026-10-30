@@ -14,6 +14,8 @@ defmodule Gamend.Groups.Group do
     (`Gamend.Groups.full_slug/1`), made from the title when none is given
   - `description` – optional longer description
   - `icon_url` – optional icon; `nil` means clients show their default group icon
+  - `icon` – virtual: one of the host's icons by name (`Gamend.Icons`),
+    which sets `icon_url` to its `/icons/<name>.svg`
   - `type` – visibility: `"public"`, `"private"`, or `"hidden"`
   - `max_members` – maximum number of members (default 100, or the host's
     fixed `max_members`)
@@ -33,6 +35,7 @@ defmodule Gamend.Groups.Group do
     field :slug, :string
     field :description, :string, default: ""
     field :icon_url, :string
+    field :icon, :string, virtual: true
     field :type, :string, default: "public"
     field :max_members, :integer, default: 100
     field :metadata, :map, default: %{}
@@ -45,7 +48,7 @@ defmodule Gamend.Groups.Group do
   end
 
   @required_fields ~w(title)a
-  @optional_fields ~w(slug description icon_url type max_members metadata slowdown)a
+  @optional_fields ~w(slug description icon_url icon type max_members metadata slowdown)a
 
   @max_slug 80
 
@@ -60,6 +63,7 @@ defmodule Gamend.Groups.Group do
     |> validate_required([:slug])
     |> Gamend.Slug.validate(:slug, max: @max_slug, index: :groups_creator_id_slug_index)
     |> validate_length(:description, max: Gamend.Limits.get(:max_group_description))
+    |> put_icon()
     |> validate_length(:icon_url, max: Gamend.Limits.get(:max_profile_url))
     |> put_default_type()
     |> validate_inclusion(:type, Gamend.Groups.types())
@@ -88,6 +92,21 @@ defmodule Gamend.Groups.Group do
   end
 
   defp put_default_slug(changeset), do: changeset
+
+  # An icon by name is the group's `icon_url`. Its update path takes no
+  # `icon_url` (`Gamend.Groups.update_group/3`), but a name from the host's
+  # list points at nothing but the site's own icons.
+  defp put_icon(changeset) do
+    case get_change(changeset, :icon) do
+      nil ->
+        changeset
+
+      name ->
+        if name in Gamend.Icons.choices(),
+          do: put_change(changeset, :icon_url, Gamend.Icons.path(name)),
+          else: add_error(changeset, :icon, "is invalid")
+    end
+  end
 
   # No unique index holds the title (a host may allow the same one twice),
   # so with `unique_titles` on it is checked here.

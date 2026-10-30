@@ -54,7 +54,8 @@ defmodule GamendWeb.Icons do
     tournament: :bolt,
     leaderboard: :chart_bar,
     quest: :trophy,
-    notification: :bell
+    notification: :bell,
+    user: :user_circle
   }
 
   for {_type, icon} <- @defaults, not is_map_key(@svgs, icon) do

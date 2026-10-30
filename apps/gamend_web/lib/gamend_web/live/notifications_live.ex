@@ -25,6 +25,14 @@ defmodule GamendWeb.NotificationsLive do
             </p>
           </div>
           <div class="flex gap-2">
+            <.link
+              id="notification-settings"
+              navigate={~p"/users/settings?tab=notifications"}
+              class="btn btn-sm btn-surface"
+            >
+              <.icon name="hero-cog-6-tooth-solid" class="size-4" />
+              {gettext("Settings")}
+            </.link>
             <%= if @notif_count > 0 do %>
               <button
                 type="button"

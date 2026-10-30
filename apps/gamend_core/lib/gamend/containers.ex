@@ -410,7 +410,9 @@ defmodule Gamend.Containers do
       too, with no image and no working container left. No limit by
       default.
     * `on_output:` — a function given each piece of output as it comes,
-      for a host showing the build live.
+      for a host showing the build live. Of arity 2, it is given the end
+      of the output so far too (the `log` the answer would have now), for
+      a host keeping it as it goes, so a page opened mid-build has it.
 
   No hardening floor, unlike `create/1`: a Dockerfile's `RUN` expects the
   root a build normally has (apt drops to its own user with `setgroups`,
@@ -537,8 +539,9 @@ defmodule Gamend.Containers do
   defp collect(port, deadline, grace_ms, on_output, log) do
     receive do
       {^port, {:data, chunk}} ->
-        if on_output, do: on_output.(chunk)
-        collect(port, deadline, grace_ms, on_output, keep_end(log <> chunk))
+        log = keep_end(log <> chunk)
+        give_output(on_output, chunk, log)
+        collect(port, deadline, grace_ms, on_output, log)
 
       {^port, {:exit_status, status}} ->
         {:exited, status, log}
@@ -548,6 +551,10 @@ defmodule Gamend.Containers do
         {:timeout, log}
     end
   end
+
+  defp give_output(nil, _chunk, _log), do: :ok
+  defp give_output(on_output, chunk, _log) when is_function(on_output, 1), do: on_output.(chunk)
+  defp give_output(on_output, chunk, log) when is_function(on_output, 2), do: on_output.(chunk, log)
 
   defp remaining(:infinity), do: :infinity
   defp remaining(deadline), do: max(deadline - System.monotonic_time(:millisecond), 0)

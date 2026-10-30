@@ -9,7 +9,9 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   types it allows are offered (`Gamend.Groups.types/0`), a host with no
   listed type has no Find or request tabs, and an admin shares the group's
   invite link (`Gamend.Groups.InviteLinks`). A host that fixes every group's
-  member cap (`Gamend.Groups.fixed_max_members/0`) is not asked it.
+  member cap (`Gamend.Groups.fixed_max_members/0`) is not asked it. A new
+  group starts from a random title and icon (`Gamend.Groups.change_new_group/0`),
+  and its admins pick its icon from the host's (`Gamend.Icons`).
 
   A group opens by its row, and its URL names it by its slug
   (`?group=<owner>/<slug>`, `Gamend.Groups.full_slug/1`); its page is where
@@ -69,6 +71,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     socket
     |> assign(:groups_path, nil)
     |> assign(:group_types, types)
+    |> assign(:group_icons, Gamend.Icons.choices())
     |> assign(:group_fixed_max, Groups.fixed_max_members())
     |> assign(:group_owner, owner_name(socket))
     |> assign(:create_slug_auto, "")
@@ -194,6 +197,13 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   type="number"
                   label={gettext("Max members")}
                 />
+                <div class="md:col-span-2">
+                  <.icon_picker
+                    field={@create_group_form[:icon]}
+                    icons={@group_icons}
+                    label={gettext("Icon")}
+                  />
+                </div>
               </div>
               <div class="mt-3">
                 <button type="submit" class="btn btn-sm btn-primary">
@@ -236,6 +246,11 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   label={gettext("Max members")}
                   type="number"
                 />
+                <.icon_picker
+                  field={@group_edit_form[:icon]}
+                  icons={@group_icons}
+                  label={gettext("Icon")}
+                />
                 <div class="flex gap-2">
                   <button type="submit" class="btn btn-sm btn-primary">{gettext("Save")}</button>
                   <button
@@ -250,7 +265,15 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
             <% else %>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="space-y-2 text-sm">
-                  <div><strong>{gettext("Name")}:</strong> {@group_detail.title}</div>
+                  <div class="flex items-center gap-2">
+                    <strong>{gettext("Name")}:</strong>
+                    <.entity_icon
+                      icon_url={@group_detail.icon_url}
+                      type={:group}
+                      class="size-5 shrink-0 text-base-content/70"
+                    />
+                    {@group_detail.title}
+                  </div>
                   <div>
                     <strong>{gettext("Slug")}:</strong>
                     <span class="font-mono">{@group_detail_ref}</span>
@@ -716,14 +739,23 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       class={clickable_row()}
                     >
                       <td class="text-sm">
-                        <.row_link
-                          patch={group_href(@groups_path, group)}
-                          class="link link-primary font-medium"
-                        >
-                          {group.title}
-                        </.row_link>
-                        <div class="text-xs text-muted font-mono">
-                          {Groups.full_slug(group)}
+                        <div class="flex items-center gap-3">
+                          <.entity_icon
+                            icon_url={group.icon_url}
+                            type={:group}
+                            class="size-6 shrink-0 text-base-content/70"
+                          />
+                          <div class="min-w-0">
+                            <.row_link
+                              patch={group_href(@groups_path, group)}
+                              class="link link-primary font-medium"
+                            >
+                              {group.title}
+                            </.row_link>
+                            <div class="text-xs text-muted font-mono">
+                              {Groups.full_slug(group)}
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td :if={length(@group_types) > 1}>
@@ -819,13 +851,20 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     class={member_of?(@my_groups, group.id) && clickable_row()}
                   >
                     <td class="text-sm font-medium">
-                      <.row_link
-                        :if={member_of?(@my_groups, group.id)}
-                        patch={group_href(@groups_path, group)}
-                      >
-                        {group.title}
-                      </.row_link>
-                      <span :if={!member_of?(@my_groups, group.id)}>{group.title}</span>
+                      <div class="flex items-center gap-3">
+                        <.entity_icon
+                          icon_url={group.icon_url}
+                          type={:group}
+                          class="size-5 shrink-0 text-base-content/70"
+                        />
+                        <.row_link
+                          :if={member_of?(@my_groups, group.id)}
+                          patch={group_href(@groups_path, group)}
+                        >
+                          {group.title}
+                        </.row_link>
+                        <span :if={!member_of?(@my_groups, group.id)}>{group.title}</span>
+                      </div>
                     </td>
                     <td>
                       <span class={[
@@ -1608,10 +1647,12 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   defp apply_create_param(%{assigns: %{groups_show_create: show}} = socket, show), do: socket
 
   defp apply_create_param(socket, true) do
+    changeset = Groups.change_new_group()
+
     assign(socket,
       groups_show_create: true,
-      create_slug_auto: "",
-      create_group_form: to_form(Groups.change_group(%Group{}), as: :group)
+      create_slug_auto: Ecto.Changeset.get_field(changeset, :slug),
+      create_group_form: to_form(changeset, as: :group)
     )
   end
 

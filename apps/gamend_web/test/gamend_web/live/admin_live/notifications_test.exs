@@ -6,6 +6,7 @@ defmodule GamendWeb.AdminLive.NotificationsTest do
   alias Gamend.Accounts.User
   alias Gamend.AccountsFixtures
   alias Gamend.Notifications
+  alias Gamend.Notifications.Preferences
   alias Gamend.Repo
 
   defp admin_fixture do
@@ -65,5 +66,22 @@ defmodule GamendWeb.AdminLive.NotificationsTest do
 
     assert html =~ "Sender ID and Recipient ID are required"
     assert Notifications.count_notifications(recipient.id) == 0
+  end
+
+  # The admins' queues are the admin's work, chosen here and not on their
+  # account settings.
+  test "the admins' notification groups are chosen here, not in settings", %{conn: conn} do
+    admin = admin_fixture()
+    conn = log_in_user(conn, admin)
+
+    {:ok, view, _html} = live(conn, ~p"/admin/notifications")
+    assert has_element?(view, "#admin-notify-settings #notify-group-moderation")
+
+    view |> element("#notify-moderation-email") |> render_click()
+    refute Preferences.enabled?(Repo.get!(User, admin.id), "moderation", "email")
+
+    {:ok, settings, _html} = live(conn, ~p"/users/settings?tab=notifications")
+    assert has_element?(settings, "#notify-group-social")
+    refute has_element?(settings, "#notify-group-moderation")
   end
 end

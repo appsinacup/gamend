@@ -46,6 +46,9 @@ defmodule Gamend.Accounts.User do
     field :authenticated_at, :utc_datetime, virtual: true
     field :discord_id, :string
     field :profile_url, :string
+    # An icon picked in place of a picture, by name (`Gamend.Icons`): shown
+    # over `profile_url` while set, cleared by an upload.
+    field :avatar_icon, :string
     field :username, :string
     field :display_name, :string
     field :device_id, :string
@@ -567,11 +570,27 @@ defmodule Gamend.Accounts.User do
     )
   end
 
-  @doc "Changeset for setting the avatar URL (`profile_url`) from an upload."
+  @doc """
+  Changeset for setting the avatar URL (`profile_url`) from an upload. A
+  picture uploaded is what the user wants shown: it clears a picked icon.
+  """
   def avatar_changeset(user, attrs) do
     user
     |> cast(attrs, [:profile_url])
     |> validate_length(:profile_url, max: Gamend.Limits.get(:max_profile_url))
+    |> put_change(:avatar_icon, nil)
+  end
+
+  @doc """
+  Changeset for picking an icon for the avatar, one of `Gamend.Icons`'s by
+  name; nil or empty goes back to the picture, or the default icon.
+  """
+  def avatar_icon_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:avatar_icon], empty_values: [nil, ""])
+    |> validate_change(:avatar_icon, fn :avatar_icon, name ->
+      if Gamend.Icons.choice?(name), do: [], else: [avatar_icon: "is invalid"]
+    end)
   end
 
   @doc """
@@ -599,9 +618,10 @@ defmodule Gamend.Accounts.User do
     do: last_seen_at
 
   @doc """
-  The avatar URL anyone outside the server may see: `profile_url` when it is
-  one we host (key `avatars/<id>/…`, an upload or an `AvatarMirror` copy),
-  else nil.
+  The avatar URL anyone outside the server may see: the icon the user picked
+  (`avatar_icon`, its `/icons/<name>.svg`, `Gamend.Icons.path/1`), else
+  `profile_url` when it is one we host (key `avatars/<id>/…`, an upload or
+  an `AvatarMirror` copy), else nil.
 
   A sign-in stores the provider's URL (Discord, Google, GitHub, Facebook,
   Steam) until `Gamend.Accounts.AvatarMirror` replaces it with our copy, and
@@ -611,6 +631,9 @@ defmodule Gamend.Accounts.User do
   mirrored is no avatar.
   """
   @spec public_avatar_url(t() | map() | nil) :: String.t() | nil
+  def public_avatar_url(%{avatar_icon: icon}) when is_binary(icon) and icon != "",
+    do: Gamend.Icons.path(icon)
+
   def public_avatar_url(%{id: id, profile_url: url}) do
     if hosted_avatar_url?(id, url), do: url
   end

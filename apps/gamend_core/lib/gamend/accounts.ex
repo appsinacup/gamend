@@ -229,6 +229,9 @@ defmodule Gamend.Accounts do
   @doc delegate_to: {Profile, :update_user_avatar, 2}
   defdelegate update_user_avatar(user, url), to: Profile
 
+  @doc delegate_to: {Profile, :update_user_avatar_icon, 2}
+  defdelegate update_user_avatar_icon(user, name), to: Profile
+
   @doc delegate_to: {Profile, :delete_user_storage, 1}
   defdelegate delete_user_storage(user_id), to: Profile
 

@@ -1,7 +1,8 @@
 defmodule GamendWeb.NewGroupComponent do
   @moduledoc """
-  A group made without leaving the page: a dialog asking its name, its slug
-  (made from the name until it is typed into), and its type when the host
+  A group made without leaving the page: a dialog asking its name (a random
+  one to start), its slug (made from the name until it is typed into), its
+  icon (`Gamend.Icons`, a random one picked), and its type when the host
   allows more than one (`Gamend.Groups.types/0`, the first picked), and the
   group made from it (`Gamend.Groups.create_group/2`), its maker its admin. The page then hears
   `{GamendWeb.NewGroupComponent, {:created, group}}` and puts the group
@@ -23,22 +24,27 @@ defmodule GamendWeb.NewGroupComponent do
   alias GamendWeb.GroupLabels
   alias GamendWeb.LiveHelpers
 
-  @fields ["title", "slug", "type"]
+  @fields ["title", "slug", "type", "icon"]
 
   @impl true
   def mount(socket) do
     {:ok,
      socket
-     |> assign(open?: false, error: nil, types: Groups.types(), slug_auto: "")
+     |> assign(open?: false, error: nil, types: Groups.types(), icons: [], slug_auto: "")
      |> assign_form(Groups.change_group(%Group{}))}
   end
 
+  # A random name, its slug and a random icon to start from
+  # (`Gamend.Groups.change_new_group/0`).
   @impl true
   def handle_event("open", _params, socket) do
+    changeset = Groups.change_new_group()
+
     {:noreply,
      socket
-     |> assign(open?: true, error: nil, types: Groups.types(), slug_auto: "")
-     |> assign_form(Groups.change_group(%Group{}))}
+     |> assign(open?: true, error: nil, types: Groups.types(), icons: Gamend.Icons.choices())
+     |> assign(:slug_auto, Ecto.Changeset.get_field(changeset, :slug))
+     |> assign_form(changeset)}
   end
 
   def handle_event("close", _params, socket), do: {:noreply, assign(socket, :open?, false)}
@@ -134,6 +140,7 @@ defmodule GamendWeb.NewGroupComponent do
                 {owner(@user)}/{@form[:slug].value}
               </p>
             </div>
+            <.icon_picker field={@form[:icon]} icons={@icons} label={gettext("Icon")} />
             <div :if={length(@types) > 1}>
               <.input
                 field={@form[:type]}

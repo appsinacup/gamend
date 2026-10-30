@@ -61,6 +61,22 @@ defmodule GamendWeb.UserLive.SettingsGroupsTest do
     refute assigns(view).groups_show_create
   end
 
+  test "the form starts from a random name, its slug and an icon, which is picked", %{
+    conn: conn,
+    user: user
+  } do
+    view = page(conn, user, "&create=1")
+    form = assigns(view).create_group_form
+    assert form[:slug].value == Gamend.Slug.slugify(form[:title].value, "")
+    assert form[:icon].value in Gamend.Icons.choices()
+    assert has_element?(view, ~s(#create-group-form input[name="group[icon]"][value="trophy"]))
+
+    params = %{"title" => form[:title].value, "type" => "public", "icon" => "trophy"}
+    render_submit(view, "group_create", %{"group" => params})
+    assert [{%{icon_url: "/icons/trophy.svg"} = group, "admin"}] = assigns(view).my_groups
+    assert render(view) =~ group.title
+  end
+
   test "groups are browsed, filtered by title and type, and the filter cleared", %{
     conn: conn,
     user: user,
@@ -248,6 +264,11 @@ defmodule GamendWeb.UserLive.SettingsGroupsTest do
     render_submit(view, "group_save_edit", %{"group" => %{"title" => "Renamed crew"}})
     assert Groups.get_group(mine.id).title == "Renamed crew"
     refute assigns(view).group_editing
+
+    render_click(view, "group_toggle_edit", %{})
+    assert assigns(view).group_edit_form[:icon].value == Gamend.Icons.name(mine.icon_url)
+    render_submit(view, "group_save_edit", %{"group" => %{"icon" => "moon"}})
+    assert Groups.get_group(mine.id).icon_url == "/icons/moon.svg"
 
     render_click(view, "group_close_detail", %{})
     assert assigns(view).group_detail == nil

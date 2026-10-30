@@ -3,11 +3,18 @@ defmodule GamendWeb.AdminLive.Notifications do
 
   alias Gamend.Notifications
   alias GamendWeb.LiveHelpers
+  alias GamendWeb.UserLive.Settings.NotificationsTab
 
   @impl true
   def mount(_params, _session, socket) do
+    user = Gamend.Accounts.Scope.user(socket.assigns.current_scope)
+
     socket =
       socket
+      # The admins' notification groups ("Reports to review"): the admin's
+      # own choices, kept off their account settings (`NotificationsTab`).
+      |> assign(:user, user)
+      |> assign(:admin_notify_groups, NotificationsTab.admin_groups(user))
       |> assign(:page, 1)
       |> assign(:page_size, 25)
       |> assign(:filters, %{})
@@ -38,6 +45,18 @@ defmodule GamendWeb.AdminLive.Notifications do
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
         <.link navigate={~p"/admin"} class="btn btn-surface mb-4">← Back to Admin</.link>
+
+        <div :if={@admin_notify_groups != []} id="admin-notify-settings" class="card bg-base-200">
+          <div class="card-body space-y-2">
+            <div>
+              <h2 class="card-title">Your admin notifications</h2>
+              <p class="text-sm text-muted">
+                What you are told about the queues admins work through, and where.
+              </p>
+            </div>
+            <NotificationsTab.group_rows user={@user} groups={@admin_notify_groups} />
+          </div>
+        </div>
 
         <%!-- Create notification form --%>
         <div class="card bg-base-200">
@@ -227,6 +246,9 @@ defmodule GamendWeb.AdminLive.Notifications do
   end
 
   @impl true
+  def handle_event("notify_toggle", params, socket),
+    do: NotificationsTab.handle_event("notify_toggle", params, socket)
+
   def handle_event("filter", params, socket) do
     {:noreply,
      socket

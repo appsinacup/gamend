@@ -72,4 +72,30 @@ defmodule GamendWeb.UserLive.SettingsAvatarTest do
     refute first_url == second_url
     assert second_url =~ "avatars/#{user.id}"
   end
+
+  test "an icon picked in place of a picture shows over it, and an upload clears it", %{
+    conn: conn
+  } do
+    user = user_fixture()
+    {:ok, lv, _html} = conn |> log_in_user(user) |> live(~p"/users/settings")
+
+    lv |> form("#avatar_icon_form", avatar: %{avatar_icon: "rocket-launch"}) |> render_change()
+    assert Accounts.get_user(user.id).avatar_icon == "rocket-launch"
+    assert has_element?(lv, ~s(#avatar_icon_form input[value="rocket-launch"][checked]))
+
+    lv
+    |> file_input("#avatar_form", :avatar, [%{name: "me.png", content: @png, type: "image/png"}])
+    |> render_upload("me.png")
+
+    lv |> element("#avatar_form") |> render_submit()
+    updated = Accounts.get_user(user.id)
+    assert updated.avatar_icon == nil
+    assert Gamend.Accounts.User.public_avatar_url(updated) =~ "avatars/#{user.id}"
+
+    lv |> form("#avatar_icon_form", avatar: %{avatar_icon: "moon"}) |> render_change()
+    lv |> form("#avatar_icon_form", avatar: %{avatar_icon: ""}) |> render_change()
+    assert Accounts.get_user(user.id).avatar_icon == nil
+
+    assert {:error, _} = Accounts.update_user_avatar_icon(updated, "not-ours")
+  end
 end

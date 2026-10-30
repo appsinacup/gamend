@@ -122,6 +122,11 @@ defmodule GamendWeb.Api.V1.GroupController do
           },
           description: %Schema{type: :string, description: "Optional description"},
           icon_url: %Schema{type: :string, description: "Optional icon URL"},
+          icon: %Schema{
+            type: :string,
+            description:
+              "One of the host's group icons by name (`rocket-launch`): `icon_url` becomes its `/icons/<name>.svg`. Given neither, one of them at random"
+          },
           type: %Schema{
             type: :string,
             enum: ["public", "private", "hidden"],
@@ -174,6 +179,11 @@ defmodule GamendWeb.Api.V1.GroupController do
           },
           description: %Schema{type: :string},
           icon_url: %Schema{type: :string},
+          icon: %Schema{
+            type: :string,
+            description:
+              "One of the host's group icons by name (`rocket-launch`): `icon_url` becomes its `/icons/<name>.svg`"
+          },
           type: %Schema{type: :string, enum: ["public", "private", "hidden"]},
           max_members: %Schema{
             type: :integer,

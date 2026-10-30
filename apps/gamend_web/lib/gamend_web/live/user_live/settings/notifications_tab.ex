@@ -7,6 +7,10 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
 
   A box the group does not let users change is shown, ticked or not, and
   disabled: "Account and security" email is how the account works.
+
+  An admins' group (`admin: true`, "Reports to review") is not here: it is
+  the admin's work, not their account's, so its row is on
+  `/admin/notifications` (`admin_groups/1`, `group_rows/1`).
   """
 
   use GamendWeb, :html
@@ -21,8 +25,13 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
   # A group whose every notification is about a feature the site has switched
   # off (`GamendWeb.Features`) has nothing to choose on the website: its row
   # goes. The game still sends that traffic, and the stored choice is kept.
-  # An admins' group (`admin: true`) is an admin's only.
-  defp shown_groups(user), do: Enum.filter(Preferences.groups_for(user), &shown?/1)
+  # An admins' group (`admin: true`) is on the admin's page.
+  defp shown_groups(user),
+    do: Enum.filter(Preferences.groups_for(user), &(not &1.admin and shown?(&1)))
+
+  @doc "The admins' groups `user` gets (none for anyone else), for `/admin/notifications`."
+  @spec admin_groups(Gamend.Accounts.User.t()) :: [map()]
+  def admin_groups(user), do: Enum.filter(Preferences.groups_for(user), & &1.admin)
 
   defp shown?(%{key: "social"}),
     do: GamendWeb.Features.enabled?(:web_friends) or GamendWeb.Features.enabled?(:web_groups)
@@ -46,38 +55,7 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
           </div>
         </div>
 
-        <%!-- A grid, not a table: on a phone each group's boxes wrap under
-              its name instead of scrolling sideways. --%>
-        <div class="divide-y divide-base-300 rounded-lg border border-base-300 bg-base-100">
-          <div
-            :for={group <- @notify_groups}
-            id={"notify-group-#{group.key}"}
-            class="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <span class="font-medium">{NotificationEmail.group_label(group)}</span>
-            <div class="flex flex-wrap gap-x-5 gap-y-2">
-              <label
-                :for={channel <- Preferences.channels()}
-                class={[
-                  "flex items-center gap-2 text-sm",
-                  channel not in group.configurable && "opacity-60"
-                ]}
-              >
-                <input
-                  type="checkbox"
-                  class="checkbox checkbox-sm"
-                  id={"notify-#{group.key}-#{channel}"}
-                  checked={Preferences.enabled?(@user, group.key, channel)}
-                  disabled={channel not in group.configurable}
-                  phx-click="notify_toggle"
-                  phx-value-group={group.key}
-                  phx-value-channel={channel}
-                />
-                {NotificationEmail.channel_label(channel)}
-              </label>
-            </div>
-          </div>
-        </div>
+        <.group_rows user={@user} groups={@notify_groups} />
 
         <div class="flex flex-wrap gap-2">
           <.switch_button
@@ -127,6 +105,50 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
             {gettext("Your day and your reminders follow it.")}
           </p>
         </form>
+      </div>
+    </div>
+    """
+  end
+
+  attr :user, :map, required: true
+  attr :groups, :list, required: true
+
+  @doc """
+  One row per group and a box per channel, each box sending `notify_toggle`
+  (`handle_event/3`, which wants the page's `user`).
+  """
+  def group_rows(assigns) do
+    ~H"""
+    <%!-- A grid, not a table: on a phone each group's boxes wrap under
+          its name instead of scrolling sideways. --%>
+    <div class="divide-y divide-base-300 rounded-lg border border-base-300 bg-base-100">
+      <div
+        :for={group <- @groups}
+        id={"notify-group-#{group.key}"}
+        class="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <span class="font-medium">{NotificationEmail.group_label(group)}</span>
+        <div class="flex flex-wrap gap-x-5 gap-y-2">
+          <label
+            :for={channel <- Preferences.channels()}
+            class={[
+              "flex items-center gap-2 text-sm",
+              channel not in group.configurable && "opacity-60"
+            ]}
+          >
+            <input
+              type="checkbox"
+              class="checkbox checkbox-sm"
+              id={"notify-#{group.key}-#{channel}"}
+              checked={Preferences.enabled?(@user, group.key, channel)}
+              disabled={channel not in group.configurable}
+              phx-click="notify_toggle"
+              phx-value-group={group.key}
+              phx-value-channel={channel}
+            />
+            {NotificationEmail.channel_label(channel)}
+          </label>
+        </div>
       </div>
     </div>
     """

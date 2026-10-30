@@ -1,4 +1,4 @@
-# gamend_core v1.1.1368 - Table of Contents
+# gamend_core v1.1.1369 - Table of Contents
 
 > Core functionality for Gamend, including user management, authentication, friends, matchmaking, and more.
 
@@ -82,6 +82,10 @@ person filling in a form.
 - [Gamend.HTTP](Gamend.HTTP.md): `Req` with the declared timeout and retries, for the calls core makes to other
 services while a player waits: payment receipt checks (Apple, Google Play,
 Steam), OAuth code exchanges, Google ID-token checks and avatar mirroring.
+- [Gamend.Icons](Gamend.Icons.md): The icons people pick for what is theirs: a group's (`Gamend.Groups`), and
+an account's in place of a picture (`Gamend.Accounts.User`'s
+`avatar_icon`). Heroicon names (`rocket-launch`, heroicons.com's solid
+set), one list for every picker (`choices`).
 - [Gamend.Ledger](Gamend.Ledger.md): The mechanics both ledgered balances share: `Gamend.Economy` (currency in a
 wallet) and `Gamend.Inventory` (quantity of an item).
 - [Gamend.Mail](Gamend.Mail.md): Outbound email transport.

@@ -156,7 +156,9 @@ it `tag:`. Answers the image's id and the end of the build's output:
     too, with no image and no working container left. No limit by
     default.
   * `on_output:` — a function given each piece of output as it comes,
-    for a host showing the build live.
+    for a host showing the build live. Of arity 2, it is given the end
+    of the output so far too (the `log` the answer would have now), for
+    a host keeping it as it goes, so a page opened mid-build has it.
 
 No hardening floor, unlike `create/1`: a Dockerfile's `RUN` expects the
 root a build normally has (apt drops to its own user with `setgroups`,

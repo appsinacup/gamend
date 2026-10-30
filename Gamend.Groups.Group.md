@@ -15,6 +15,8 @@ join-request workflows, and invitation flows.
   (`Gamend.Groups.full_slug/1`), made from the title when none is given
 - `description` – optional longer description
 - `icon_url` – optional icon; `nil` means clients show their default group icon
+- `icon` – virtual: one of the host's icons by name (`Gamend.Icons`),
+  which sets `icon_url` to its `/icons/<name>.svg`
 - `type` – visibility: `"public"`, `"private"`, or `"hidden"`
 - `max_members` – maximum number of members (default 100, or the host's
   fixed `max_members`)
@@ -29,6 +31,7 @@ join-request workflows, and invitation flows.
   creator: term(),
   creator_id: term(),
   description: term(),
+  icon: term(),
   icon_url: term(),
   id: term(),
   inserted_at: term(),

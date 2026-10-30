@@ -23,6 +23,11 @@ A group's slug is its name in a URL, unique per creator, and reads
 `get_group_by_full_slug/1`). One is made from the title when none is
 given.
 
+A group's icon is one of the host's (`Gamend.Icons`) picked by name, or an
+uploaded image (`set_icon_url/3`); a new group given neither gets one of
+the host's at random. Forms start a new group from a random title
+(`random_title/0`) and icon (`change_new_group/0`).
+
 ## Usage
 
     # Create a group (creator becomes admin)
@@ -150,7 +155,18 @@ Cancel (delete) a pending join request. Only the requesting user can cancel.
 @spec change_group(Gamend.Groups.Group.t(), map()) :: Ecto.Changeset.t()
 ```
 
-Return a changeset for tracking group changes (admin edit forms).
+Return a changeset for tracking group changes (admin edit forms). Its
+`icon` is the group's when its `icon_url` is one of `Gamend.Icons`, so a
+form's icon picker starts on it.
+
+# `change_new_group`
+
+```elixir
+@spec change_new_group() :: Ecto.Changeset.t()
+```
+
+A new group's form to start from: a random title (`random_title/0`), the
+slug made from it, and a random icon (`Gamend.Icons.random/0`).
 
 # `count_all_groups`
 
@@ -656,6 +672,15 @@ Returns `{:ok, count}` with the number of notifications sent.
 ```
 
 Promote a member to admin. Only admins can promote.
+
+# `random_title`
+
+```elixir
+@spec random_title() :: String.t()
+```
+
+A title for a new group to start from, `Swift Otter` (`Gamend.Slug.random/0`),
+one no group has when titles are unique (`unique_titles`), most draws.
 
 # `reject_join_request`
 

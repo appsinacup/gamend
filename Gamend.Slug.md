@@ -25,6 +25,16 @@ The format a slug has to have.
 
 `base`, or `base-2`, `base-3`… : the first one `taken?` says is free.
 
+# `random`
+
+```elixir
+@spec random() :: String.t()
+```
+
+Two random words, `swift-otter`: a name to start from, for a form that
+offers one before anything is typed (a new group's, and in a host a new
+server's). Checked against nothing: about 1,500 of them.
+
 # `slugify`
 
 ```elixir

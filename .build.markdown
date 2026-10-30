@@ -112,6 +112,7 @@ Gamend.Hooks.PluginBuilder.md
 Gamend.Hooks.PluginManager.Plugin.md
 Gamend.Hooks.PluginManager.md
 Gamend.Hooks.md
+Gamend.Icons.md
 Gamend.Inventory.Item.md
 Gamend.Inventory.LedgerEntry.md
 Gamend.Inventory.md

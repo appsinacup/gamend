@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1369">
+    <meta name="project" content="gamend_core v1.1.1370">
 
 
-    <title>Gamend.Accounts.Profile — gamend_core v1.1.1369</title>
+    <title>Gamend.Accounts.Profile — gamend_core v1.1.1370</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-8433557A.js"></script>
+    <script defer src="dist/sidebar_items-0A96D9C1.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1369
+          v1.1.1370
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Profile</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1369)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1370)</small>
 
     </h1>
 
@@ -215,17 +215,6 @@ by <a href="Gamend.Storage.html"><code class="inline">Gamend.Storage</code></a>.
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#update_user_avatar_icon/2" data-no-tooltip="" translate="no">update_user_avatar_icon(user, name)</a>
-
-      </div>
-
-        <div class="summary-synopsis"><p>Pick an icon for the user's avatar (<a href="Gamend.Icons.html"><code class="inline">Gamend.Icons</code></a>, by name), shown over
-any picture; nil goes back to the picture, or the default icon.</p></div>
-
-    </div>
-
-    <div class="summary-row">
-      <div class="summary-signature">
         <a href="#update_user_display_name/2" data-no-tooltip="" translate="no">update_user_display_name(user, attrs)</a>
 
       </div>
@@ -328,7 +317,7 @@ any picture; nil goes back to the picture, or the default icon.</p></div>
       <h1 class="signature" translate="no">delete_user_storage(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L80" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -357,7 +346,7 @@ not block an account deletion that has already happened at the database level.</
       <h1 class="signature" translate="no">merge_metadata(user, patch)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L126" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L114" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -390,7 +379,7 @@ concurrent merges cannot lose each other.</p>
       <h1 class="signature" translate="no">prune_user_avatars(user_id, keep_key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L103" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L91" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -421,7 +410,7 @@ update that already succeeded.</p>
       <h1 class="signature" translate="no">refresh_account_class(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L286" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L274" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -453,7 +442,7 @@ sweep or on login.</p>
       <h1 class="signature" translate="no">set_user_age(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L215" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L203" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -511,36 +500,6 @@ applies, which is the safe reading but not always the right one.</p>
 by <a href="Gamend.Storage.html"><code class="inline">Gamend.Storage</code></a>. Same cache/broadcast/hook path as other profile edits.</p>
   </section>
 </section>
-<section class="detail" id="update_user_avatar_icon/2">
-
-  <div class="detail-header">
-    <a href="#update_user_avatar_icon/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <div class="heading-with-actions">
-      <h1 class="signature" translate="no">update_user_avatar_icon(user, name)</h1>
-
-
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L51" class="icon-action" rel="help nofollow" aria-label="View Source">
-          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-        </a>
-
-    </div>
-  </div>
-
-  <section class="docstring">
-
-      <div class="specs">
-
-          <pre translate="no"><span class="attribute">@spec</span> update_user_avatar_icon(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) ::
-  {:ok, <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
-
-      </div>
-
-<p>Pick an icon for the user's avatar (<a href="Gamend.Icons.html"><code class="inline">Gamend.Icons</code></a>, by name), shown over
-any picture; nil goes back to the picture, or the default icon.</p>
-  </section>
-</section>
 <section class="detail" id="update_user_display_name/2">
 
   <div class="detail-header">
@@ -551,7 +510,7 @@ any picture; nil goes back to the picture, or the default icon.</p>
       <h1 class="signature" translate="no">update_user_display_name(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L164" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L152" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -580,7 +539,7 @@ any picture; nil goes back to the picture, or the default icon.</p>
       <h1 class="signature" translate="no">update_username(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L317" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/profile.ex#L305" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -611,9 +570,9 @@ can forbid changes entirely or reject names (profanity, reserved words).</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1369">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1370">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1369">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1370">Hex Preview</a>
 
             </span>
 

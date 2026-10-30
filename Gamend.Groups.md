@@ -23,10 +23,11 @@ A group's slug is its name in a URL, unique per creator, and reads
 `get_group_by_full_slug/1`). One is made from the title when none is
 given.
 
-A group's icon is one of the host's (`Gamend.Icons`) picked by name, or an
-uploaded image (`set_icon_url/3`); a new group given neither gets one of
-the host's at random. Forms start a new group from a random title
-(`random_title/0`) and icon (`change_new_group/0`).
+A group's icon is its `icon_url`: an uploaded image (`set_icon_url/3`), or
+one of the site's own icons, `/icons/<name>.svg` (`Gamend.Icons`), which
+create and update take as any other value. A new group given none gets one
+of them at random, and forms start a new group from a random title and icon
+(`change_new_group/0`).
 
 ## Usage
 
@@ -155,9 +156,7 @@ Cancel (delete) a pending join request. Only the requesting user can cancel.
 @spec change_group(Gamend.Groups.Group.t(), map()) :: Ecto.Changeset.t()
 ```
 
-Return a changeset for tracking group changes (admin edit forms). Its
-`icon` is the group's when its `icon_url` is one of `Gamend.Icons`, so a
-form's icon picker starts on it.
+Return a changeset for tracking group changes (admin edit forms).
 
 # `change_new_group`
 
@@ -166,7 +165,7 @@ form's icon picker starts on it.
 ```
 
 A new group's form to start from: a random title (`random_title/0`), the
-slug made from it, and a random icon (`Gamend.Icons.random/0`).
+slug made from it, and a random icon of the site's (`Gamend.Icons.random/0`).
 
 # `count_all_groups`
 
@@ -710,11 +709,12 @@ Request to join a private group. Creates a pending join request.
 
 Set a group's icon to an object we have just accepted an upload for.
 
-Separate from `update_group/3` because that one deliberately drops `icon_url`
-from caller-supplied attributes. The URL here does not come from the caller:
-it is produced by `GamendWeb.Uploads.confirm/5` after the stored object has
-been re-read, size-checked and content-sniffed, so this path is the only way
-an icon is ever set. Admin rights are still required.
+Separate from `update_group/3` because that one deliberately drops an
+`icon_url` from caller-supplied attributes unless it is one of the site's own
+icons. The URL here does not come from the caller: it is produced by
+`GamendWeb.Uploads.confirm/5` after the stored object has been re-read,
+size-checked and content-sniffed, so this path is the only way an uploaded
+icon is ever set. Admin rights are still required.
 
 # `shared_group_member?`
 

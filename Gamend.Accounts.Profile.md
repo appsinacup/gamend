@@ -108,16 +108,6 @@ applies, which is the safe reading but not always the right one.
 Set the user's avatar URL (`profile_url`), typically after an upload confirmed
 by `Gamend.Storage`. Same cache/broadcast/hook path as other profile edits.
 
-# `update_user_avatar_icon`
-
-```elixir
-@spec update_user_avatar_icon(Gamend.Accounts.User.t(), String.t() | nil) ::
-  {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t()}
-```
-
-Pick an icon for the user's avatar (`Gamend.Icons`, by name), shown over
-any picture; nil goes back to the picture, or the default icon.
-
 # `update_user_display_name`
 
 ```elixir

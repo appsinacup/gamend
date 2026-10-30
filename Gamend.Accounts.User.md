@@ -18,7 +18,6 @@ validations so other domains can reuse them safely.
   age_method: String.t() | nil,
   apple_id: term(),
   authenticated_at: term(),
-  avatar_icon: term(),
   birth_month: integer() | nil,
   birth_year: integer() | nil,
   confirmed_at: DateTime.t() | nil,
@@ -97,13 +96,8 @@ constraint.
 
 # `avatar_changeset`
 
-Changeset for setting the avatar URL (`profile_url`) from an upload. A
-picture uploaded is what the user wants shown: it clears a picked icon.
-
-# `avatar_icon_changeset`
-
-Changeset for picking an icon for the avatar, one of `Gamend.Icons`'s by
-name; nil or empty goes back to the picture, or the default icon.
+Changeset for setting the avatar URL (`profile_url`): an upload's, or one of
+the site's own icons (`Gamend.Icons.path/1`).
 
 # `confirm_changeset`
 
@@ -205,10 +199,9 @@ be very expensive to hash for certain algorithms.
 @spec public_avatar_url(t() | map() | nil) :: String.t() | nil
 ```
 
-The avatar URL anyone outside the server may see: the icon the user picked
-(`avatar_icon`, its `/icons/<name>.svg`, `Gamend.Icons.path/1`), else
-`profile_url` when it is one we host (key `avatars/<id>/…`, an upload or
-an `AvatarMirror` copy), else nil.
+The avatar URL anyone outside the server may see: `profile_url` when it is
+one we host (key `avatars/<id>/…`, an upload or an `AvatarMirror` copy) or
+one of the site's own icons (`/icons/<name>.svg`, `Gamend.Icons`), else nil.
 
 A sign-in stores the provider's URL (Discord, Google, GitHub, Facebook,
 Steam) until `Gamend.Accounts.AvatarMirror` replaces it with our copy, and

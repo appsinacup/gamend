@@ -579,8 +579,6 @@ See `t:Gamend.Types.user_update_attrs/0` for available fields.
 
 # `update_user_avatar`
 
-# `update_user_avatar_icon`
-
 # `update_user_display_name`
 
 # `update_user_email`

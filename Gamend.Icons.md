@@ -1,32 +1,17 @@
 # `Gamend.Icons`
 [🔗](https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L1)
 
-The icons people pick for what is theirs: a group's (`Gamend.Groups`), and
-an account's in place of a picture (`Gamend.Accounts.User`'s
-`avatar_icon`). Heroicon names (`rocket-launch`, heroicons.com's solid
-set), one list for every picker (`choices`).
+The site's own icons, which people may pick instead of uploading an image:
+a group's icon, an account's avatar. Every heroicon, by name
+(`rocket-launch`): heroicons.com's 24px solid set, read from the host's
+`heroicons` dependency when this compiles, the same set the website draws
+(`GamendWeb.Icons`).
 
-A picked icon is stored or answered as its URL, `path/1`
-(`/icons/<name>.svg`): the website serves it and draws it inline
-(`GamendWeb.Icons`, which also draws a leaderboard's, a tournament's or a
-quest's `icon_url` of that form), and a client fetches it against the
-server's address like an uploaded image.
-
-# `choice?`
-
-```elixir
-@spec choice?(term()) :: boolean()
-```
-
-Whether `name` is one of `choices/0`.
-
-# `choices`
-
-```elixir
-@spec choices() :: [String.t()]
-```
-
-The icons to pick from (`choices`), heroicon names.
+An icon is nothing but a URL, `path/1` (`/icons/<name>.svg`), stored where
+an uploaded image's URL would be (a group's `icon_url`, a user's
+`profile_url`, a leaderboard's or a quest's `icon_url`). The website serves
+it and draws it inline; a client fetches it against the server's address
+like an uploaded image.
 
 # `name`
 
@@ -34,7 +19,23 @@ The icons to pick from (`choices`), heroicon names.
 @spec name(String.t() | nil) :: String.t() | nil
 ```
 
-The name of one of `choices/0` a URL is (`path/1`), or nil (none, an upload).
+The name of the icon a URL is (`path/1`), or nil (none, an upload).
+
+# `name?`
+
+```elixir
+@spec name?(term()) :: boolean()
+```
+
+Whether `name` is an icon's.
+
+# `names`
+
+```elixir
+@spec names() :: [String.t()]
+```
+
+Every icon's name, sorted: `academic-cap`, …
 
 # `path`
 
@@ -50,7 +51,7 @@ The URL of an icon by name: `/icons/<name>.svg`.
 @spec random() :: String.t() | nil
 ```
 
-One of `choices/0` at random, nil when there are none.
+An icon at random, nil when there are none.
 
 ---
 

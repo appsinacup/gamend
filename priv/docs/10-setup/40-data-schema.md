@@ -38,8 +38,7 @@ These hold everywhere, so the tables below list only what is specific to them:
 | `hashed_password` | string | Argon2id (old bcrypt hashes still verify); null for OAuth-only accounts |
 | `username` | string | Unique lowercase handle, generated at registration |
 | `display_name` | string | Human-friendly, not unique |
-| `profile_url` | string | Avatar URL. May hold a provider's URL until it is mirrored; only one under `avatars/<id>/` is ever sent (`User.public_avatar_url/1`) |
-| `avatar_icon` | string | An icon picked in place of a picture, by name (`Gamend.Icons`); while set it is the avatar sent, as `/icons/<name>.svg`. An upload clears it |
+| `profile_url` | string | Avatar URL. May hold a provider's URL until it is mirrored; only one under `avatars/<id>/`, or one of the site's icons (`/icons/<name>.svg`), is ever sent (`User.public_avatar_url/1`) |
 | `discord_id` `google_id` `facebook_id` `github_id` `steam_id` `apple_id` `device_id` | string | Linked identities, all nullable |
 | `is_admin` | boolean | Grants `/admin` and the admin API |
 | `is_activated` | boolean | `false` blocks login without deleting the account |
@@ -121,7 +120,7 @@ chat and friend requests.
 |---|---|---|
 | `title` | string | Display name; unique unless `GAMEND_GROUPS_UNIQUE_TITLES=false` (checked in the changeset, plain index) |
 | `slug` | string | Its name in a URL, unique per creator (`creator_id, slug`): `<owner>/<slug>` |
-| `icon_url` | string | Its icon: one of `Gamend.Icons` picked by name (`/icons/<name>.svg`, a random one when none is given) or an uploaded image |
+| `icon_url` | string | Its icon: an uploaded image, or one of the site's icons, `/icons/<name>.svg` (`Gamend.Icons`; a random one when none is given) |
 | `type` | string | `public` / `private` / `hidden`, default `public` |
 | `max_members` | integer | Default 100 |
 | `creator_id` | FK users | Owner |

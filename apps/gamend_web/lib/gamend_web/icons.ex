@@ -20,21 +20,16 @@ defmodule GamendWeb.Icons do
   """
 
   # heroicons is declared by the HOST app, not by gamend_web (it is a
-  # GitHub-only dep, unpublishable from a Hex package), so it never appears in
-  # this project's deps_paths. Look next to this app's own deps first (the
-  # host's shared deps dir when compiled as a dependency), then two levels up
-  # (the enclosing host when this app runs standalone, e.g. its test suite).
-  @icons_dir [
-               :phoenix |> then(&Mix.Project.deps_paths()[&1]) |> Path.dirname(),
-               Path.expand("../../../../deps", __DIR__)
-             ]
-             |> Enum.map(&Path.join(&1, "heroicons/optimized/24/solid"))
-             |> Enum.find(&File.dir?/1)
+  # GitHub-only dep, unpublishable from a Hex package). Core finds it, and
+  # names what people pick from it (`Gamend.Icons`); the SVGs are embedded
+  # here, from the same directory.
+  @icons_dir Gamend.Icons.dir()
 
   unless @icons_dir do
     raise """
     heroicons not found in any deps directory.
-    The host app must declare it (see apps/gamend_web/mix.exs) and run mix deps.get.
+    The host app must declare it (see apps/gamend_web/mix.exs), run mix deps.get,
+    then mix deps.compile gamend_core --force.
     """
   end
 
@@ -48,6 +43,32 @@ defmodule GamendWeb.Icons do
   end
 
   if map_size(@svgs) == 0, do: raise("no heroicons found under #{@icons_dir}")
+
+  # Every icon as a `<symbol>` of one file, for a page that draws many at
+  # once (`<.icon_picker>`): each is then a `<use>` of a few bytes, and the
+  # file is fetched once and cached for good, its version in its URL.
+  @sprite [
+            ~s(<svg xmlns="http://www.w3.org/2000/svg">),
+            for {icon, svg} <- Enum.sort(@svgs) do
+              [_open, body] = String.split(svg, ">", parts: 2)
+              inner = body |> String.trim() |> String.replace_suffix("</svg>", "")
+
+              [
+                ~s(<symbol id="),
+                icon |> Atom.to_string() |> String.replace("_", "-"),
+                ~s(" viewBox="0 0 24 24">),
+                inner,
+                "</symbol>"
+              ]
+            end,
+            "</svg>"
+          ]
+          |> IO.iodata_to_binary()
+
+  @sprite_path "/icons/sprite.svg?v=" <>
+                 (:crypto.hash(:sha256, @sprite)
+                  |> Base.url_encode64(padding: false)
+                  |> binary_part(0, 12))
 
   @defaults %{
     group: :user_group,
@@ -70,6 +91,17 @@ defmodule GamendWeb.Icons do
   def get(icon) when is_map_key(@svgs, icon) do
     "hero-" <> String.replace(Atom.to_string(icon), "_", "-") <> "-solid"
   end
+
+  @doc "Every icon as a `<symbol>` with its name for id (`rocket-launch`), in one SVG."
+  @spec sprite() :: String.t()
+  def sprite, do: @sprite
+
+  @doc """
+  The sprite's URL, versioned by its content so it is cached forever:
+  `<svg><use href={sprite_path() <> "#rocket-launch"} /></svg>`.
+  """
+  @spec sprite_path() :: String.t()
+  def sprite_path, do: @sprite_path
 
   @doc "The icon's raw inline SVG (24px solid, `currentColor` fill)."
   @spec svg(icon()) :: String.t()

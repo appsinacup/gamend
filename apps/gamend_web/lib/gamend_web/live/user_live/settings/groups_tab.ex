@@ -11,7 +11,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   invite link (`Gamend.Groups.InviteLinks`). A host that fixes every group's
   member cap (`Gamend.Groups.fixed_max_members/0`) is not asked it. A new
   group starts from a random title and icon (`Gamend.Groups.change_new_group/0`),
-  and its admins pick its icon from the host's (`Gamend.Icons`).
+  and its admins pick one of the site's icons as its `icon_url` (`Gamend.Icons`).
 
   A group opens by its row, and its URL names it by its slug
   (`?group=<owner>/<slug>`, `Gamend.Groups.full_slug/1`); its page is where
@@ -71,7 +71,6 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     socket
     |> assign(:groups_path, nil)
     |> assign(:group_types, types)
-    |> assign(:group_icons, Gamend.Icons.choices())
     |> assign(:group_fixed_max, Groups.fixed_max_members())
     |> assign(:group_owner, owner_name(socket))
     |> assign(:create_slug_auto, "")
@@ -198,11 +197,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   label={gettext("Max members")}
                 />
                 <div class="md:col-span-2">
-                  <.icon_picker
-                    field={@create_group_form[:icon]}
-                    icons={@group_icons}
-                    label={gettext("Icon")}
-                  />
+                  <.icon_picker field={@create_group_form[:icon_url]} label={gettext("Icon")} />
                 </div>
               </div>
               <div class="mt-3">
@@ -246,11 +241,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   label={gettext("Max members")}
                   type="number"
                 />
-                <.icon_picker
-                  field={@group_edit_form[:icon]}
-                  icons={@group_icons}
-                  label={gettext("Icon")}
-                />
+                <.icon_picker field={@group_edit_form[:icon_url]} label={gettext("Icon")} />
                 <div class="flex gap-2">
                   <button type="submit" class="btn btn-sm btn-primary">{gettext("Save")}</button>
                   <button
@@ -270,7 +261,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     <.entity_icon
                       icon_url={@group_detail.icon_url}
                       type={:group}
-                      class="size-5 shrink-0 text-base-content/70"
+                      class="size-5 shrink-0 text-muted"
                     />
                     {@group_detail.title}
                   </div>
@@ -743,7 +734,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           <.entity_icon
                             icon_url={group.icon_url}
                             type={:group}
-                            class="size-6 shrink-0 text-base-content/70"
+                            class="size-6 shrink-0 text-muted"
                           />
                           <div class="min-w-0">
                             <.row_link
@@ -855,7 +846,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                         <.entity_icon
                           icon_url={group.icon_url}
                           type={:group}
-                          class="size-5 shrink-0 text-base-content/70"
+                          class="size-5 shrink-0 text-muted"
                         />
                         <.row_link
                           :if={member_of?(@my_groups, group.id)}

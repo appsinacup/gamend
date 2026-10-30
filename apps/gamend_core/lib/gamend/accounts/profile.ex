@@ -39,20 +39,8 @@ defmodule Gamend.Accounts.Profile do
   """
   @spec update_user_avatar(User.t(), String.t()) ::
           {:ok, User.t()} | {:error, Ecto.Changeset.t()}
-  def update_user_avatar(%User{} = user, url) when is_binary(url),
-    do: update_profile(user, User.avatar_changeset(user, %{"profile_url" => url}))
-
-  @doc """
-  Pick an icon for the user's avatar (`Gamend.Icons`, by name), shown over
-  any picture; nil goes back to the picture, or the default icon.
-  """
-  @spec update_user_avatar_icon(User.t(), String.t() | nil) ::
-          {:ok, User.t()} | {:error, Ecto.Changeset.t()}
-  def update_user_avatar_icon(%User{} = user, name),
-    do: update_profile(user, User.avatar_icon_changeset(user, %{"avatar_icon" => name}))
-
-  defp update_profile(user, changeset) do
-    case Repo.update(changeset) do
+  def update_user_avatar(%User{} = user, url) when is_binary(url) do
+    case User.avatar_changeset(user, %{"profile_url" => url}) |> Repo.update() do
       {:ok, updated} = ok ->
         Accounts.invalidate_user_cache(user)
         Accounts.invalidate_user_cache(updated)

@@ -1,71 +1,71 @@
 defmodule Gamend.Icons do
   @moduledoc """
-  The icons people pick for what is theirs: a group's (`Gamend.Groups`), and
-  an account's in place of a picture (`Gamend.Accounts.User`'s
-  `avatar_icon`). Heroicon names (`rocket-launch`, heroicons.com's solid
-  set), one list for every picker (`choices`).
+  The site's own icons, which people may pick instead of uploading an image:
+  a group's icon, an account's avatar. Every heroicon, by name
+  (`rocket-launch`): heroicons.com's 24px solid set, read from the host's
+  `heroicons` dependency when this compiles, the same set the website draws
+  (`GamendWeb.Icons`).
 
-  A picked icon is stored or answered as its URL, `path/1`
-  (`/icons/<name>.svg`): the website serves it and draws it inline
-  (`GamendWeb.Icons`, which also draws a leaderboard's, a tournament's or a
-  quest's `icon_url` of that form), and a client fetches it against the
-  server's address like an uploaded image.
+  An icon is nothing but a URL, `path/1` (`/icons/<name>.svg`), stored where
+  an uploaded image's URL would be (a group's `icon_url`, a user's
+  `profile_url`, a leaderboard's or a quest's `icon_url`). The website serves
+  it and draws it inline; a client fetches it against the server's address
+  like an uploaded image.
   """
 
-  use Gamend.Settings.Provider,
-    app: :gamend_core,
-    group: :icons,
-    label: "Icons"
+  # heroicons is the host's dependency, not this app's (a GitHub-only dep,
+  # unpublishable from a Hex package): next to this app's own deps (the
+  # host's shared deps dir when compiled as a dependency), else the umbrella's
+  # when this app runs standalone, its test suite.
+  @dir [
+         :ecto |> then(&Mix.Project.deps_paths()[&1]) |> Path.dirname(),
+         Path.expand("../../../../deps", __DIR__)
+       ]
+       |> Enum.map(&Path.join(&1, "heroicons/optimized/24/solid"))
+       |> Enum.find(&File.dir?/1)
 
-  # The `choices` setting's: heroicons that read as a team, a game, a hobby
-  # or a person.
-  @default_choices ~w(
-    rocket-launch trophy fire bolt star heart puzzle-piece sparkles beaker cube
-    globe-alt moon sun shield-check musical-note camera paint-brush light-bulb
-    flag map cake gift bug-ant cpu-chip command-line code-bracket academic-cap
-    briefcase home user-group face-smile film book-open chat-bubble-left-right
-    server-stack wrench-screwdriver key cloud megaphone paper-airplane
-  )
+  @files if @dir, do: Path.wildcard(Path.join(@dir, "*.svg")), else: []
 
-  @name ~r/\A[a-z0-9]+(-[a-z0-9]+)*\z/
-
-  setting(:choices, :list,
-    default: @default_choices,
-    doc:
-      "The icons people pick from, for a group and for an account with no picture: heroicon names (`rocket-launch`, from heroicons.com's solid set). A new group not given one gets one of them at random. Empty: no icons to pick."
-  )
-
-  @doc "The icons to pick from (`choices`), heroicon names."
-  @spec choices() :: [String.t()]
-  def choices do
-    Gamend.Settings.get(__MODULE__, :choices)
-    |> List.wrap()
-    |> Enum.filter(&(is_binary(&1) and Regex.match?(@name, &1)))
+  for path <- @files do
+    @external_resource path
   end
 
-  @doc "Whether `name` is one of `choices/0`."
-  @spec choice?(term()) :: boolean()
-  def choice?(name), do: is_binary(name) and name in choices()
+  @names @files |> Enum.map(&Path.basename(&1, ".svg")) |> Enum.sort()
+  @name_set MapSet.new(@names)
+
+  @doc false
+  # Where the set was read from, nil when the host has no heroicons; the
+  # website embeds its SVGs from there.
+  @spec dir() :: Path.t() | nil
+  def dir, do: @dir
+
+  @doc "Every icon's name, sorted: `academic-cap`, …"
+  @spec names() :: [String.t()]
+  def names, do: @names
+
+  @doc "Whether `name` is an icon's."
+  @spec name?(term()) :: boolean()
+  def name?(name), do: is_binary(name) and MapSet.member?(@name_set, name)
 
   @doc "The URL of an icon by name: `/icons/<name>.svg`."
   @spec path(String.t()) :: String.t()
   def path(name) when is_binary(name), do: "/icons/" <> name <> ".svg"
 
-  @doc "The name of one of `choices/0` a URL is (`path/1`), or nil (none, an upload)."
+  @doc "The name of the icon a URL is (`path/1`), or nil (none, an upload)."
   @spec name(String.t() | nil) :: String.t() | nil
   def name("/icons/" <> file) do
     name = String.replace_suffix(file, ".svg", "")
-    if choice?(name), do: name
+    if name?(name), do: name
   end
 
   def name(_url), do: nil
 
-  @doc "One of `choices/0` at random, nil when there are none."
+  @doc "An icon at random, nil when there are none."
   @spec random() :: String.t() | nil
   def random do
-    case choices() do
+    case @names do
       [] -> nil
-      choices -> Enum.random(choices)
+      names -> Enum.random(names)
     end
   end
 end

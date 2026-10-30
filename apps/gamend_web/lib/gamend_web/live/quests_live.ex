@@ -757,6 +757,29 @@ defmodule GamendWeb.QuestsLive do
     """
   end
 
+  # A quest under way takes the primary colour as it nears its target (user,
+  # 2026-10-30): its fill up to a third primary, its edge up to most of it,
+  # by the share of its objectives done. Nothing for a quest not started,
+  # done, waiting for its claim (the success colour), locked or hidden, or
+  # for a visitor, who has no progress.
+  defp progress_tint(%{
+         logged_in: true,
+         claimable: false,
+         done?: false,
+         lock_label: nil,
+         objective_rows: [_ | _] = rows
+       }) do
+    target = rows |> Enum.map(& &1.target) |> Enum.sum()
+    share = if target > 0, do: (rows |> Enum.map(& &1.count) |> Enum.sum()) / target, else: 0
+
+    if share > 0 do
+      "background-color: color-mix(in oklch, var(--color-primary) #{round(share * 30)}%, var(--color-base-200)); " <>
+        "border-color: color-mix(in oklch, var(--color-primary) #{round(share * 80)}%, transparent)"
+    end
+  end
+
+  defp progress_tint(_assigns), do: nil
+
   defp quest_card(assigns) do
     quest = assigns.entry.quest
     progress = assigns.entry.progress
@@ -812,6 +835,7 @@ defmodule GamendWeb.QuestsLive do
       |> assign(:action, Map.get(assigns.entry, :action))
       |> assign(:objective_rows, if(secret?, do: [], else: objective_rows(quest, progress)))
       |> assign(:grouped?, grouped?)
+      |> then(&assign(&1, :tint, progress_tint(&1)))
       |> assign(
         :localized_title,
         cond do
@@ -842,9 +866,11 @@ defmodule GamendWeb.QuestsLive do
         cond do
           @claimable -> "border border-success"
           @done? -> "border border-success/30"
+          @tint -> "border"
           true -> ""
         end
       }
+      style={@tint}
       phx-click={@click in [:claim, :show_group] && Atom.to_string(@click)}
       phx-value-group={@click == :show_group && @quest.group_key}
       phx-value-key={@click == :claim && @quest.key}

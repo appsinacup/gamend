@@ -28,10 +28,12 @@ defmodule Gamend.Accounts.PublicAvatarUrlTest do
     assert User.public_avatar_url(%User{id: @id, profile_url: cdn}) == cdn
   end
 
-  test "an icon picked is public, over a picture" do
-    user = %User{id: @id, profile_url: @hosted, avatar_icon: "rocket-launch"}
+  test "one of the site's icons is public" do
+    user = %User{id: @id, profile_url: "/icons/rocket-launch.svg"}
     assert User.public_avatar_url(user) == "/icons/rocket-launch.svg"
     assert User.serialize_brief(user).profile_url == "/icons/rocket-launch.svg"
+
+    assert User.public_avatar_url(%User{id: @id, profile_url: "/icons/not-ours.svg"}) == nil
   end
 
   test "a provider's URL is not" do

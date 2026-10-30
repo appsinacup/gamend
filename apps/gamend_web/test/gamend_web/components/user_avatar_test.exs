@@ -48,8 +48,8 @@ defmodule GamendWeb.Components.UserAvatarTest do
     end
   end
 
-  test "an icon picked in place of a picture is drawn inline, not fetched" do
-    user = %User{id: @id, profile_url: @hosted, avatar_icon: "rocket-launch"}
+  test "one of the site's icons is drawn inline, not fetched" do
+    user = %User{id: @id, profile_url: "/icons/rocket-launch.svg"}
 
     html = render_component(&CoreComponents.user_avatar/1, user: user)
 

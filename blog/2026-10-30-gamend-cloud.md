@@ -22,6 +22,8 @@ Gamend stays open source (MIT), and self-hosting is still supported and document
 
 ## Sizes
 
+![](cloud/new-server.png)
+
 | Size | Memory | CPU | Players | Traffic | SQLite | Postgres |
 |-|-|-|-|-|-|-|
 | **Small** | 1 GB | 0.5 | 1,000 | 250 GB | $5 | $10 |

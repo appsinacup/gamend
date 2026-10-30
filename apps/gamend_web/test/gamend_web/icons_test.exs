@@ -99,5 +99,17 @@ defmodule GamendWeb.IconsTest do
       assert response(get(conn, "/icons/nope.svg"), 404)
       assert response(get(conn, "/icons/trophy.png"), 404)
     end
+
+    # The icon picker draws every icon as a `<use>` of this one cached file.
+    test "serves every icon as a symbol in one sprite, cached for good", %{conn: conn} do
+      conn = get(conn, GamendWeb.Icons.sprite_path())
+      sprite = response(conn, 200)
+
+      assert get_resp_header(conn, "cache-control") == ["public, max-age=31536000, immutable"]
+      assert sprite =~ ~s(<symbol id="rocket-launch" viewBox="0 0 24 24"><path)
+
+      assert length(Regex.scan(~r/<symbol /, sprite)) == length(Gamend.Icons.names())
+      refute sprite =~ "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox"
+    end
   end
 end

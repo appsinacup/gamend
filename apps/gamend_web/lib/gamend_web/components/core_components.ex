@@ -1278,60 +1278,61 @@ defmodule GamendWeb.CoreComponents do
   end
 
   @doc """
-  A pick of one icon by name, a radio each, drawn inline as `entity_icon/1`
-  draws them: a group's, an account's (`Gamend.Icons`). A name that is not a
-  heroicon is left out, and with none left nothing renders. `none` adds a
-  first choice of no icon (value `""`), named so and drawn as `none_icon`.
+  A pick of one of the site's icons (`Gamend.Icons.names/0`, every heroicon)
+  for a URL field: a group's `icon_url`, an account's `profile_url`. A radio
+  each, whose value is the icon's URL (`/icons/<name>.svg`), so a pick is
+  stored as any other icon URL is. They scroll in a box, and the one picked
+  shows beside the label. Each is a `<use>` of the icon sprite
+  (`GamendWeb.Icons.sprite_path/0`), which the browser fetches once and keeps,
+  so the page carries a few bytes an icon, not its SVG.
 
-      <.icon_picker field={@form[:icon]} icons={Gamend.Icons.choices()} label={gettext("Icon")} />
+      <.icon_picker field={@form[:icon_url]} label={gettext("Icon")} />
   """
   attr :field, Phoenix.HTML.FormField, required: true
-  attr :icons, :list, required: true, doc: "heroicon names, `rocket-launch`"
   attr :label, :string, default: nil
-  attr :none, :string, default: nil, doc: "the name of a choice of no icon, nil for none"
-  attr :none_icon, :atom, default: :x_mark, doc: "how the choice of no icon is drawn"
 
   def icon_picker(assigns) do
-    named =
-      for name <- assigns.icons,
-          {:ok, icon} <- [GamendWeb.Icons.from_path("/icons/" <> name <> ".svg")],
-          do: {name, icon, String.replace(name, "-", " ")}
-
-    choices =
-      if named != [] and assigns.none,
-        do: [{"", assigns.none_icon, assigns.none} | named],
-        else: named
-
     field = assigns.field
+    value = to_string(field.value)
     errors = if Component.used_input?(field), do: field.errors, else: []
 
     assigns =
       assign(assigns,
-        choices: choices,
-        value: to_string(field.value),
+        names: Gamend.Icons.names(),
+        value: value,
+        picked: Gamend.Icons.name(value),
+        sprite: GamendWeb.Icons.sprite_path(),
         errors: Enum.map(errors, &translate_error/1)
       )
 
+    # Keyed, so a pick re-sends the two tiles that changed, not all of them.
     ~H"""
-    <fieldset :if={@choices != []} id={@field.id} class="fieldset mb-2">
-      <legend :if={@label} class="label mb-1">{@label}</legend>
-      <div class="flex flex-wrap gap-1.5">
-        <label :for={{name, icon, title} <- @choices} class="cursor-pointer" title={title}>
+    <fieldset :if={@names != []} id={@field.id} class="fieldset mb-2">
+      <legend :if={@label} class="label mb-1 flex items-center gap-2">
+        {@label}
+        <svg :if={@picked} class="size-5 text-base-content" fill="currentColor" aria-hidden="true">
+          <use href={@sprite <> "#" <> @picked} />
+        </svg>
+      </legend>
+      <div class="flex max-h-48 flex-wrap gap-1.5 overflow-y-auto rounded-box border border-base-300 p-2">
+        <label :for={name <- @names} :key={name} class="cursor-pointer" title={name}>
           <input
             type="radio"
             name={@field.name}
-            value={name}
-            checked={@value == name}
-            aria-label={title}
+            value={Gamend.Icons.path(name)}
+            checked={@picked == name}
+            aria-label={String.replace(name, "-", " ")}
             class="peer sr-only"
           />
           <span class={[
             "flex size-9 items-center justify-center rounded-field border border-base-300",
-            "text-base-content/70 transition-colors hover:bg-base-300",
+            "text-muted transition-colors hover:bg-base-300",
             "peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-content",
             "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
           ]}>
-            <.entity_icon icon={icon} type={:group} class="size-5" />
+            <svg class="size-5" fill="currentColor" aria-hidden="true">
+              <use href={@sprite <> "#" <> name} />
+            </svg>
           </span>
         </label>
       </div>
@@ -1759,12 +1760,13 @@ defmodule GamendWeb.CoreComponents do
       )
 
     ~H"""
-    <%!-- An icon picked in place of a picture (`Gamend.Icons`): drawn inline,
-          so it follows the theme, on a round tile the size of a picture. --%>
+    <%!-- One of the site's icons as the avatar (`Gamend.Icons`): drawn
+          inline, so it follows the theme, on a round tile the size of a
+          picture. --%>
     <span
       :if={@avatar_icon?}
       class={[
-        "inline-flex shrink-0 items-center justify-center rounded-full bg-base-300 text-base-content/70",
+        "inline-flex shrink-0 items-center justify-center rounded-full bg-base-300 text-muted",
         @class
       ]}
     >

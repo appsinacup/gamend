@@ -22,6 +22,12 @@ defmodule Gamend.Groups do
   `get_group_by_full_slug/1`). One is made from the title when none is
   given.
 
+  A group's icon is its `icon_url`: an uploaded image (`set_icon_url/3`), or
+  one of the site's own icons, `/icons/<name>.svg` (`Gamend.Icons`), which
+  create and update take as any other value. A new group given none gets one
+  of them at random, and forms start a new group from a random title and icon
+  (`change_new_group/0`).
+
   ## Usage
 
       # Create a group (creator becomes admin)
@@ -217,6 +223,22 @@ defmodule Gamend.Groups do
 
       _ ->
         raise "Gamend.Groups.change_group/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    A new group's form to start from: a random title (`random_title/0`), the
+    slug made from it, and a random icon of the site's (`Gamend.Icons.random/0`).
+    
+  """
+  @spec change_new_group() :: Ecto.Changeset.t()
+  def change_new_group() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Groups.change_new_group/0 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -1162,6 +1184,22 @@ defmodule Gamend.Groups do
   end
 
   @doc ~S"""
+    A title for a new group to start from, `Swift Otter` (`Gamend.Slug.random/0`),
+    one no group has when titles are unique (`unique_titles`), most draws.
+    
+  """
+  @spec random_title() :: String.t()
+  def random_title() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        ""
+
+      _ ->
+        raise "Gamend.Groups.random_title/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Reject a pending join request. Admin only.
   """
   @spec reject_join_request(Ecto.UUID.t(), Ecto.UUID.t()) ::
@@ -1195,11 +1233,12 @@ defmodule Gamend.Groups do
   @doc ~S"""
     Set a group's icon to an object we have just accepted an upload for.
     
-    Separate from `update_group/3` because that one deliberately drops `icon_url`
-    from caller-supplied attributes. The URL here does not come from the caller:
-    it is produced by `GamendWeb.Uploads.confirm/5` after the stored object has
-    been re-read, size-checked and content-sniffed, so this path is the only way
-    an icon is ever set. Admin rights are still required.
+    Separate from `update_group/3` because that one deliberately drops an
+    `icon_url` from caller-supplied attributes unless it is one of the site's own
+    icons. The URL here does not come from the caller: it is produced by
+    `GamendWeb.Uploads.confirm/5` after the stored object has been re-read,
+    size-checked and content-sniffed, so this path is the only way an uploaded
+    icon is ever set. Admin rights are still required.
     
   """
   @spec set_icon_url(String.t(), String.t(), String.t()) ::

@@ -1,8 +1,8 @@
 defmodule GamendWeb.UserLive.Settings.AccountTab do
   @moduledoc """
   Account tab of the user settings page: template, events, and helpers for
-  email/password/display-name management, the avatar (a picture, or an icon
-  picked in its place, `Gamend.Icons`), provider linking, and account
+  email/password/display-name management, the avatar (an uploaded picture,
+  or one of the site's icons, `Gamend.Icons`), provider linking, and account
   deletion.
   """
 
@@ -88,21 +88,15 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
             </form>
           </div>
 
-          <%!-- An icon in place of a picture: picked, it shows at once; an
-                upload clears it. --%>
+          <%!-- Or one of the site's icons for the avatar: its URL is the
+                avatar, as an upload's is, and shows at once. --%>
           <.form
             for={avatar_icon_form(@user)}
             id="avatar_icon_form"
             phx-change="pick_avatar_icon"
             class="mt-3"
           >
-            <.icon_picker
-              field={avatar_icon_form(@user)[:avatar_icon]}
-              icons={Gamend.Icons.choices()}
-              label={gettext("Icon")}
-              none={gettext("No icon")}
-              none_icon={:user_circle}
-            />
+            <.icon_picker field={avatar_icon_form(@user)[:profile_url]} label={gettext("Icon")} />
           </.form>
 
           <div class="text-sm mt-2 space-y-1 text-muted">
@@ -408,10 +402,17 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
       else: {:noreply, put_flash(socket, :error, gettext("Avatar uploads are not available."))}
   end
 
-  def handle_event("pick_avatar_icon", %{"avatar" => %{"avatar_icon" => name}}, socket) do
-    case Accounts.update_user_avatar_icon(Shared.current_user(socket), name) do
-      {:ok, updated} -> {:noreply, assign(socket, :user, updated)}
-      {:error, _changeset} -> {:noreply, put_flash(socket, :error, gettext("Failed"))}
+  # One of the site's icons as the avatar: its URL in `profile_url`, as an
+  # upload's is, and the uploaded picture it replaces gone from storage.
+  def handle_event("pick_avatar_icon", %{"avatar" => %{"profile_url" => url}}, socket) do
+    user = Shared.current_user(socket)
+
+    with name when is_binary(name) <- Gamend.Icons.name(url),
+         {:ok, updated} <- Accounts.update_user_avatar(user, url) do
+      _ = Accounts.prune_user_avatars(user.id, "")
+      {:noreply, assign(socket, :user, updated)}
+    else
+      _ -> {:noreply, put_flash(socket, :error, gettext("Failed"))}
     end
   end
 
@@ -548,7 +549,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
   end
 
   defp avatar_icon_form(user),
-    do: to_form(%{"avatar_icon" => user.avatar_icon || ""}, as: :avatar)
+    do: to_form(%{"profile_url" => user.profile_url || ""}, as: :avatar)
 
   @doc """
   The pending OAuth link conflict for this session, as `{conflict_user, provider}`.

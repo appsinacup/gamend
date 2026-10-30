@@ -142,27 +142,26 @@ defmodule Gamend.GroupsTest do
       assert %{id: ^id} = Groups.get_group_by_full_slug(owner.username <> "/renamed")
     end
 
-    test "gives a group none was given one of the host's icons at random", %{owner: owner} do
+    test "gives a group none was given one of the site's icons at random", %{owner: owner} do
       {:ok, group} = Groups.create_group(owner.id, %{"title" => "Iconless"})
-      assert Gamend.Icons.name(group.icon_url) in Gamend.Icons.choices()
+      assert Gamend.Icons.name(group.icon_url) in Gamend.Icons.names()
       assert group.icon_url == Gamend.Icons.path(Gamend.Icons.name(group.icon_url))
     end
 
-    test "takes an icon by name, and an admin changes it so", %{owner: owner} do
-      {:ok, group} = Groups.create_group(owner.id, %{title: "Rockets", icon: "rocket-launch"})
+    test "an admin changes the icon to one of the site's, and to nothing else", %{owner: owner} do
+      {:ok, group} =
+        Groups.create_group(owner.id, %{title: "Rockets", icon_url: "/icons/rocket-launch.svg"})
+
       assert group.icon_url == "/icons/rocket-launch.svg"
 
       assert {:ok, %{icon_url: "/icons/trophy.svg"}} =
-               Groups.update_group(owner.id, group.id, %{"icon" => "trophy"})
+               Groups.update_group(owner.id, group.id, %{"icon_url" => "/icons/trophy.svg"})
 
-      assert {:error, changeset} =
-               Groups.update_group(owner.id, group.id, %{"icon" => "not-ours"})
-
-      assert %{icon: ["is invalid"]} = errors_on(changeset)
-
-      # A URL still is not the update's to set.
-      assert {:ok, %{icon_url: "/icons/trophy.svg"}} =
-               Groups.update_group(owner.id, group.id, %{"icon_url" => "https://x.test/a.png"})
+      # Any other URL is not the update's to set (an upload is `set_icon_url/3`).
+      for url <- ["https://x.test/a.png", "/icons/not-ours.svg"] do
+        assert {:ok, %{icon_url: "/icons/trophy.svg"}} =
+                 Groups.update_group(owner.id, group.id, %{"icon_url" => url})
+      end
     end
 
     test "starts a new group's form from a random title, its slug and an icon" do
@@ -171,7 +170,9 @@ defmodule Gamend.GroupsTest do
 
       assert title =~ ~r/\A[A-Z][a-z]+ [A-Z][a-z]+\z/
       assert Ecto.Changeset.get_field(changeset, :slug) == Gamend.Slug.slugify(title, "")
-      assert Ecto.Changeset.get_field(changeset, :icon) in Gamend.Icons.choices()
+
+      assert Gamend.Icons.name(Ecto.Changeset.get_field(changeset, :icon_url)) in Gamend.Icons.names()
+
       assert Gamend.Slug.random() =~ Gamend.Slug.format()
     end
 

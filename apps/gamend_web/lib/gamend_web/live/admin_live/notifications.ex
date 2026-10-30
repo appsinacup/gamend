@@ -1,13 +1,14 @@
 defmodule GamendWeb.AdminLive.Notifications do
   use GamendWeb, :live_view
 
+  alias Gamend.Accounts.Scope
   alias Gamend.Notifications
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.NotificationsTab
 
   @impl true
   def mount(_params, _session, socket) do
-    user = Gamend.Accounts.Scope.user(socket.assigns.current_scope)
+    user = Scope.user(socket.assigns.current_scope)
 
     socket =
       socket

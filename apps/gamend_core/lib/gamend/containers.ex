@@ -554,7 +554,9 @@ defmodule Gamend.Containers do
 
   defp give_output(nil, _chunk, _log), do: :ok
   defp give_output(on_output, chunk, _log) when is_function(on_output, 1), do: on_output.(chunk)
-  defp give_output(on_output, chunk, log) when is_function(on_output, 2), do: on_output.(chunk, log)
+
+  defp give_output(on_output, chunk, log) when is_function(on_output, 2),
+    do: on_output.(chunk, log)
 
   defp remaining(:infinity), do: :infinity
   defp remaining(deadline), do: max(deadline - System.monotonic_time(:millisecond), 0)

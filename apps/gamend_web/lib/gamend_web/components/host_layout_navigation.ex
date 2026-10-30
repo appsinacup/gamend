@@ -39,17 +39,15 @@ defmodule GamendWeb.HostLayoutNavigation do
         do: update(assigns, :primary_links, &Enum.reject(&1, fn entry -> side_link?(entry) end)),
         else: assigns
 
-    # The theme toggle is set apart from the links before it, when any are
-    # drawn: the bar's settings and account end (`desktop_account/1`) follow.
-    # With `"layout": "auto"` a sidebar link leaves the bar while the sidebar
-    # shows, so a divider after nothing else goes with them.
-    others = if(assigns.current_scope, do: assigns.authenticated_links, else: assigns.guest_links)
-    stays? = others != [] or Enum.any?(assigns.primary_links, &(not side_link?(&1)))
-
+    # The theme toggle is the bar's for a reader with no menu of their own (a
+    # visitor, a guest); a signed-in reader finds it in their menu
+    # (`user_menu/1`, 2026-10-30, user). No dividers between the link groups
+    # (2026-10-30, user): the bar's spacing sets them apart.
     assigns =
-      assign(assigns,
-        links?: assigns.primary_links != [] or others != [],
-        divider_class: assigns.auto? and not stays? and "[[data-nav~=side]_&]:hidden"
+      assign(
+        assigns,
+        :toggle?,
+        is_nil(assigns.current_scope) or Scope.anonymous?(assigns.current_scope)
       )
 
     ~H"""
@@ -61,33 +59,18 @@ defmodule GamendWeb.HostLayoutNavigation do
         side={@auto?}
       />
 
-      <%= if @current_scope do %>
-        <%= if @authenticated_links != [] do %>
-          <.nav_divider />
-          <.main_nav_links
-            links={@authenticated_links}
-            current_path={@current_path}
-            inactive_class="btn-surface"
-          />
-        <% end %>
-      <% else %>
-        <%= if @guest_links != [] do %>
-          <.nav_divider />
-          <.main_nav_links
-            links={@guest_links}
-            current_path={@current_path}
-            inactive_class="btn-surface"
-          />
-        <% end %>
-      <% end %>
+      <.main_nav_links
+        links={if(@current_scope, do: @authenticated_links, else: @guest_links)}
+        current_path={@current_path}
+        inactive_class="btn-surface"
+      />
 
       <%!-- The language picker is NOT here: the shell renders it once, outside
             both layouts. A copy per layout puts the ~30 locale entries into the
             page twice — 26 KB of a 77 KB document — and a test asserts each
             locale link appears exactly once. It therefore sits to the right of
             this toggle rather than left of it, as it used to. --%>
-      <.nav_divider :if={@links?} class={@divider_class} />
-      <li>
+      <li :if={@toggle?}>
         <GamendWeb.HostLayouts.theme_toggle />
       </li>
     </ul>
@@ -232,6 +215,13 @@ defmodule GamendWeb.HostLayoutNavigation do
             <.icon name="hero-chat-bubble-left-right-solid" class="w-4 h-4" />
             {GamendWeb.HostLayouts.translate("Chat")}
           </.link>
+        </li>
+        <%!-- The theme toggle, the bar's for a visitor (`desktop_nav/1`), as
+              the phone's menu has it: its two buttons say what they do. --%>
+        <li class="mt-1">
+          <div class="flex justify-start">
+            <GamendWeb.HostLayouts.theme_toggle />
+          </div>
         </li>
         <%!-- A guest account has no way back in once its session is gone, so
               it is never offered Log out. `desktop_nav/1` draws a guest no
@@ -1963,15 +1953,5 @@ defmodule GamendWeb.HostLayoutNavigation do
       {~p"/users/log_in", "hero-arrow-right-on-rectangle-solid", "Log in"},
       {~p"/users/register", "hero-user-plus-solid", "Register"}
     ]
-  end
-
-  attr :class, :any, default: nil
-
-  defp nav_divider(assigns) do
-    ~H"""
-    <li class={["flex items-center px-0", @class]}>
-      <div class="w-px h-6 bg-base-content/20"></div>
-    </li>
-    """
   end
 end

@@ -132,12 +132,11 @@ defmodule Gamend.Notifications.Preferences do
 
   @doc "The groups `user` may get: every one but the admins' (`admin: true`) for anyone else."
   @spec groups_for(User.t() | nil) :: [map()]
-  def groups_for(user), do: Enum.filter(groups(), &for_user?(&1, user))
+  def groups_for(user), do: Enum.filter(groups(), &can_receive_group?(user, &1))
 
-  defp for_user?(%{admin: true}, user), do: admin?(user)
-  defp for_user?(_group, _user), do: true
-
-  defp admin?(user), do: match?(%User{is_admin: true}, user)
+  # An admins' group (`admin: true`) is an admin's only.
+  defp can_receive_group?(user, %{admin: true}), do: match?(%User{is_admin: true}, user)
+  defp can_receive_group?(_user, _group), do: true
 
   @doc "The groups whose email the registration form offers (`signup: true`)."
   @spec signup_groups() :: [map()]
@@ -212,7 +211,7 @@ defmodule Gamend.Notifications.Preferences do
         prefs = stored(user)
 
         cond do
-          group.admin and not admin?(user) ->
+          not can_receive_group?(user, group) ->
             false
 
           channel not in group.configurable ->

@@ -2,7 +2,7 @@ defmodule GamendWeb.NewGroupComponent do
   @moduledoc """
   A group made without leaving the page: a dialog asking its name (a random
   one to start), its slug (made from the name until it is typed into), its
-  icon (`Gamend.Icons`, a random one picked), and its type when the host
+  icon (one of the site's, `Gamend.Icons`, a random one picked), and its type when the host
   allows more than one (`Gamend.Groups.types/0`, the first picked), and the
   group made from it (`Gamend.Groups.create_group/2`), its maker its admin. The page then hears
   `{GamendWeb.NewGroupComponent, {:created, group}}` and puts the group
@@ -24,13 +24,13 @@ defmodule GamendWeb.NewGroupComponent do
   alias GamendWeb.GroupLabels
   alias GamendWeb.LiveHelpers
 
-  @fields ["title", "slug", "type", "icon"]
+  @fields ["title", "slug", "type", "icon_url"]
 
   @impl true
   def mount(socket) do
     {:ok,
      socket
-     |> assign(open?: false, error: nil, types: Groups.types(), icons: [], slug_auto: "")
+     |> assign(open?: false, error: nil, types: Groups.types(), slug_auto: "")
      |> assign_form(Groups.change_group(%Group{}))}
   end
 
@@ -42,7 +42,7 @@ defmodule GamendWeb.NewGroupComponent do
 
     {:noreply,
      socket
-     |> assign(open?: true, error: nil, types: Groups.types(), icons: Gamend.Icons.choices())
+     |> assign(open?: true, error: nil, types: Groups.types())
      |> assign(:slug_auto, Ecto.Changeset.get_field(changeset, :slug))
      |> assign_form(changeset)}
   end
@@ -140,7 +140,7 @@ defmodule GamendWeb.NewGroupComponent do
                 {owner(@user)}/{@form[:slug].value}
               </p>
             </div>
-            <.icon_picker field={@form[:icon]} icons={@icons} label={gettext("Icon")} />
+            <.icon_picker field={@form[:icon_url]} label={gettext("Icon")} />
             <div :if={length(@types) > 1}>
               <.input
                 field={@form[:type]}

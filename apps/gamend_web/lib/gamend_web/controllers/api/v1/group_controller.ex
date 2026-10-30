@@ -121,11 +121,10 @@ defmodule GamendWeb.Api.V1.GroupController do
               "Its name in a URL, unique among the creator's groups; made from the title when omitted"
           },
           description: %Schema{type: :string, description: "Optional description"},
-          icon_url: %Schema{type: :string, description: "Optional icon URL"},
-          icon: %Schema{
+          icon_url: %Schema{
             type: :string,
             description:
-              "One of the host's group icons by name (`rocket-launch`): `icon_url` becomes its `/icons/<name>.svg`. Given neither, one of them at random"
+              "Optional icon URL; one of the server's own icons is `/icons/<name>.svg` (a heroicon name). Omitted, one of them at random"
           },
           type: %Schema{
             type: :string,
@@ -178,11 +177,10 @@ defmodule GamendWeb.Api.V1.GroupController do
             description: "Its name in a URL, unique among the creator's groups"
           },
           description: %Schema{type: :string},
-          icon_url: %Schema{type: :string},
-          icon: %Schema{
+          icon_url: %Schema{
             type: :string,
             description:
-              "One of the host's group icons by name (`rocket-launch`): `icon_url` becomes its `/icons/<name>.svg`"
+              "One of the server's own icons, `/icons/<name>.svg` (a heroicon name); anything else is ignored. An image is uploaded through `/groups/{id}/icon`"
           },
           type: %Schema{type: :string, enum: ["public", "private", "hidden"]},
           max_members: %Schema{

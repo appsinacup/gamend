@@ -30,17 +30,12 @@ msgid "Email"
 msgstr "E-mail"
 
 #: lib/gamend_web/live/new_group_component.ex:143
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:102
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:204
-#: lib/gamend_web/live/user_live/settings/groups_tab.ex:252
+#: lib/gamend_web/live/user_live/settings/account_tab.ex:99
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:200
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:244
 #, elixir-autogen, elixir-format
 msgid "Icon"
 msgstr "Icona"
-
-#: lib/gamend_web/live/user_live/settings/account_tab.ex:103
-#, elixir-autogen, elixir-format
-msgid "No icon"
-msgstr "Nessuna icona"
 
 #: lib/gamend_web/live/leaderboards_live.ex:27
 #: lib/gamend_web/live/leaderboards_live.ex:105

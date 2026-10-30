@@ -22,10 +22,11 @@ defmodule Gamend.Groups do
   `get_group_by_full_slug/1`). One is made from the title when none is
   given.
 
-  A group's icon is one of the host's (`Gamend.Icons`) picked by name, or an
-  uploaded image (`set_icon_url/3`); a new group given neither gets one of
-  the host's at random. Forms start a new group from a random title
-  (`random_title/0`) and icon (`change_new_group/0`).
+  A group's icon is its `icon_url`: an uploaded image (`set_icon_url/3`), or
+  one of the site's own icons, `/icons/<name>.svg` (`Gamend.Icons`), which
+  create and update take as any other value. A new group given none gets one
+  of them at random, and forms start a new group from a random title and icon
+  (`change_new_group/0`).
 
   ## Usage
 
@@ -159,7 +160,8 @@ defmodule Gamend.Groups do
   def random_title do
     titles =
       for _ <- 1..5,
-          do: Gamend.Slug.random() |> String.split("-") |> Enum.map_join(" ", &String.capitalize/1)
+          do:
+            Gamend.Slug.random() |> String.split("-") |> Enum.map_join(" ", &String.capitalize/1)
 
     Enum.find(titles, hd(titles), &(not unique_titles?() or not title_taken?(&1)))
   end
@@ -685,9 +687,9 @@ defmodule Gamend.Groups do
       # ticket has been confirmed. Leaving it castable here let a group admin
       # point the icon at any external URL, and did so even when the
       # `user_image_uploads` feature gate — whose whole purpose is to close that
-      # surface — was switched off. An icon by name (`icon`) stays: it can
-      # only be one of the site's own (`Gamend.Icons`).
-      attrs = attrs |> normalize_params() |> Map.drop(["icon_url", :icon_url]) |> drop_fixed_max()
+      # surface — was switched off. One of the site's own icons
+      # (`/icons/<name>.svg`, `Gamend.Icons`) stays: it points nowhere else.
+      attrs = attrs |> normalize_params() |> drop_foreign_icon() |> drop_fixed_max()
 
       new_max = Map.get(attrs, "max_members") || Map.get(attrs, :max_members)
 
@@ -709,11 +711,12 @@ defmodule Gamend.Groups do
   @doc """
   Set a group's icon to an object we have just accepted an upload for.
 
-  Separate from `update_group/3` because that one deliberately drops `icon_url`
-  from caller-supplied attributes. The URL here does not come from the caller:
-  it is produced by `GamendWeb.Uploads.confirm/5` after the stored object has
-  been re-read, size-checked and content-sniffed, so this path is the only way
-  an icon is ever set. Admin rights are still required.
+  Separate from `update_group/3` because that one deliberately drops an
+  `icon_url` from caller-supplied attributes unless it is one of the site's own
+  icons. The URL here does not come from the caller: it is produced by
+  `GamendWeb.Uploads.confirm/5` after the stored object has been re-read,
+  size-checked and content-sniffed, so this path is the only way an uploaded
+  icon is ever set. Admin rights are still required.
   """
   @spec set_icon_url(String.t(), String.t(), String.t()) ::
           {:ok, Group.t()} | {:error, :not_admin | Ecto.Changeset.t() | term()}
@@ -763,23 +766,19 @@ defmodule Gamend.Groups do
   # Commands – delete
   # ---------------------------------------------------------------------------
 
-  @doc """
-  Return a changeset for tracking group changes (admin edit forms). Its
-  `icon` is the group's when its `icon_url` is one of `Gamend.Icons`, so a
-  form's icon picker starts on it.
-  """
+  @doc "Return a changeset for tracking group changes (admin edit forms)."
   @spec change_group(Group.t(), map()) :: Ecto.Changeset.t()
   def change_group(%Group{} = group, attrs \\ %{}) do
-    Group.changeset(%{group | icon: group.icon || Gamend.Icons.name(group.icon_url)}, attrs)
+    Group.changeset(group, attrs)
   end
 
   @doc """
   A new group's form to start from: a random title (`random_title/0`), the
-  slug made from it, and a random icon (`Gamend.Icons.random/0`).
+  slug made from it, and a random icon of the site's (`Gamend.Icons.random/0`).
   """
   @spec change_new_group() :: Ecto.Changeset.t()
   def change_new_group,
-    do: change_group(%Group{}, %{"title" => random_title(), "icon" => Gamend.Icons.random()})
+    do: change_group(%Group{}, %{"title" => random_title(), "icon_url" => random_icon_url()})
 
   @doc "Admin-level update, bypasses membership checks."
   @spec admin_update_group(Group.t(), map()) :: {:ok, Group.t()} | {:error, Ecto.Changeset.t()}
@@ -1544,15 +1543,25 @@ defmodule Gamend.Groups do
     if fixed_max_members(), do: Map.drop(attrs, ["max_members", :max_members]), else: attrs
   end
 
-  # A new group given no icon, by name or URL, gets one of the host's.
+  # A new group given no icon gets one of the site's at random.
   defp put_random_icon(attrs) do
-    case {param(attrs, :icon), param(attrs, :icon_url), Gamend.Icons.random()} do
-      {blank, blank_url, name} when blank in [nil, ""] and blank_url in [nil, ""] and is_binary(name) ->
-        attrs |> Map.drop(["icon", :icon]) |> put_param(:icon, name)
+    case param(attrs, :icon_url) do
+      blank when blank in [nil, ""] ->
+        attrs |> Map.drop(["icon_url", :icon_url]) |> put_param(:icon_url, random_icon_url())
 
       _given ->
         attrs
     end
+  end
+
+  defp random_icon_url do
+    if name = Gamend.Icons.random(), do: Gamend.Icons.path(name)
+  end
+
+  defp drop_foreign_icon(attrs) do
+    if Gamend.Icons.name(param(attrs, :icon_url)),
+      do: attrs,
+      else: Map.drop(attrs, ["icon_url", :icon_url])
   end
 
   # A new group asked no slug gets its title's nearest free one; one asked a

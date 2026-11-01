@@ -904,7 +904,7 @@ jobs:
             The Gamend client SDKs, built from the latest `main` (version ${{ env.APP_VERSION }}):
 
             - **Godot**: `godot_addons.zip`. Copy `addons/gamend` into your project, or install it from the [Godot Asset Library](https://godotengine.org/asset-library/asset/4510). [Guide](https://gamend.org/docs/godot-sdk)
-            - **Rune (Balaur)**: `balaur_addons.zip`, Rune scripts for the Balaur engine. Copy `addons/gamend` into your Balaur project; its `README.md` lists every module.
+            - **Balaur**: `balaur_addons.zip`, Balaur Script modules for the Balaur engine. Copy `addons/gamend` into your Balaur project; its `README.md` lists every module.
             - **C++**: `gamend-cpp-sdk.tar.gz`. Fetch it with CMake's `FetchContent`, or build it and `cmake --install` it for `find_package(gamend)`. [Guide](https://gamend.org/docs/cpp-sdk)
 
             The JavaScript SDK is on npm: [`@ughuuu/gamend`](https://www.npmjs.com/package/@ughuuu/gamend).

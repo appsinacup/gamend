@@ -10,6 +10,7 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
   alias Gamend.Payments.Providers.Stripe
   alias Gamend.Payments.Purchase
   alias Gamend.Payments.Settings
+  alias Gamend.Theme.JSONConfig
 
   defmodule StripeClient do
     def list_invoice_payments(params, opts) do
@@ -454,6 +455,53 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
     assert opts[:api_version] == "2025-11-17.clover"
   end
 
+  test "Stripe Checkout takes the site's look from its theme" do
+    Application.put_env(:gamend_core, :stripe_client, StripeClient)
+    put_setting(:environment, :sandbox)
+    put_setting(:stripe_sandbox_secret_key, "sk_test_sdk_123")
+
+    product = %Product{id: 10, sku: "pro_yearly", title: "Pro", kind: "subscription"}
+    provider_product = %ProviderProduct{external_id: "price_1", product: product}
+    purchase = %Purchase{id: 42, user_id: 7, order_id: "order_42", quantity: 1}
+    urls = %{"success_url" => "https://shop.test/ok", "cancel_url" => "https://shop.test/no"}
+
+    branding = fn theme, urls ->
+      use_theme(theme)
+      assert {:ok, _} = Stripe.create_checkout_session(purchase, provider_product, urls)
+      assert_received {:stripe_create_checkout_session, params, _opts}
+      params[:branding_settings]
+    end
+
+    # The title, the colour and the logo, its path made absolute on the
+    # checkout's host.
+    assert branding.(
+             %{"title" => " My Game ", "brand_color" => "#7C3AED", "logo" => "/images/logo.png"},
+             urls
+           ) == %{
+             display_name: "My Game",
+             button_color: "#7C3AED",
+             logo: %{type: "url", url: "https://shop.test/images/logo.png"}
+           }
+
+    # A logo Stripe could not fetch or draw stays out: plain http, an svg.
+    plain = %{urls | "success_url" => "http://localhost:4000/ok"}
+
+    assert branding.(%{"title" => "My Game", "logo" => "/logo.png"}, plain) == %{
+             display_name: "My Game"
+           }
+
+    assert branding.(%{"logo" => "https://cdn.test/logo.svg"}, urls) == nil
+
+    # An absolute https logo goes as it is; a colour that is not #rrggbb does not.
+    assert branding.(
+             %{"logo" => "https://cdn.test/logo.JPG?v=2", "brand_color" => "violet"},
+             plain
+           ) == %{logo: %{type: "url", url: "https://cdn.test/logo.JPG?v=2"}}
+
+    # A theme with none of them leaves the account's branding alone.
+    assert branding.(%{"title" => "  "}, urls) == nil
+  end
+
   test "Stripe creates a billing portal session through the SDK client" do
     Application.put_env(:gamend_core, :stripe_client, StripeClient)
     put_setting(:environment, :sandbox)
@@ -853,6 +901,31 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
 
   defp put_setting(key, value) do
     Application.put_env(:gamend_core, Settings, Keyword.put(settings(), key, value))
+  end
+
+  # The site's theme is `theme` for the rest of the test.
+  defp use_theme(theme) do
+    path = Path.join(System.tmp_dir!(), "stripe_theme_#{System.unique_integer([:positive])}.json")
+    File.write!(path, Jason.encode!(theme))
+    previous = Gamend.SettingsHelpers.get(:gamend_core, Gamend.ContentSettings, :theme_config)
+    Gamend.SettingsHelpers.put(:gamend_core, Gamend.ContentSettings, :theme_config, path)
+    JSONConfig.reload()
+
+    on_exit(fn ->
+      File.rm(path)
+
+      if previous,
+        do:
+          Gamend.SettingsHelpers.put(
+            :gamend_core,
+            Gamend.ContentSettings,
+            :theme_config,
+            previous
+          ),
+        else: Gamend.SettingsHelpers.delete(:gamend_core, Gamend.ContentSettings, :theme_config)
+
+      JSONConfig.reload()
+    end)
   end
 
   defp delete_setting(key) do

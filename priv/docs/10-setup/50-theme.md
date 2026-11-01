@@ -149,6 +149,14 @@ The theme_color field tints the browser chrome (address bar, tab bar) in Safari 
 "theme_color": { "light": "#ffffff", "dark": "#1a1a2e" }
 ```
 
+## Stripe Checkout's look
+
+Stripe's checkout page takes the site's look from the theme: `title` is the name at its top, `logo` its logo, and `brand_color` (`#rrggbb`, your light theme's primary) the colour of its buttons. The logo goes only as an https png, jpg or gif, a path made absolute on the site's host, since Stripe shows nothing for one it cannot fetch or draw; an svg logo leaves the account's. What the theme lacks keeps the account's Branding settings in the Stripe Dashboard, which also brand the customer portal, receipts and invoices for every site on the account. Under Stripe Managed Payments the page is Link's: the logo shows, the colours do not.
+
+```json
+"brand_color": "#B84A00"
+```
+
 ## Contact email
 
 The contact_email field is the address the Privacy Policy, Data Deletion and Terms pages give for privacy and deletion requests, as a mailto link. App stores and data-protection rules expect a real address there. Without it, those pages only say to use "support channels".

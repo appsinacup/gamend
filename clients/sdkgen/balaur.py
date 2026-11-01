@@ -200,7 +200,7 @@ def write_events(model: Model) -> dict[str, str]:
         "            break;\n"
         "        }\n"
         "    }\n"
-        '    map().with("kind", named).with("topic", topic).with("event", event).with("payload", payload)\n'
+        '    { "kind": named, "topic": topic, "event": event, "payload": payload }\n'
         "}\n"
     )
     return out
@@ -221,7 +221,7 @@ def write_readme(model: Model) -> str:
         "use addons::gamend::events::lobby;",
         "",
         'gamend::configure("https://gamend.org");',
-        'let reply = await task::wait(lobbies::quick_join(self.node, map().with("title", "duel").with("max_users", 2)));',
+        'let reply = await task::wait(lobbies::quick_join(self.node, { "title": "duel", "max_users": 2 }));',
         'if e.get("kind").as_str() == lobby::MEMBER_JOINED { }',
         "```",
         "",

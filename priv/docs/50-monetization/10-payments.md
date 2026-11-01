@@ -109,6 +109,8 @@ Checkout answers `{"data": {"purchase": ..., "checkout_url": ..., "provider_sess
 
 Apple, Google, Steam, and Stripe products that unlock the same thing must point to the same internal product, or their internal products must share the same grant_config.entitlement_key. Ownership checks use that entitlement key across providers.
 
+Each checkout carries the site's name, logo and `brand_color` from its theme (see Theme, *Stripe Checkout's look*), so several sites sharing one Stripe account each sell under their own look; the portal, receipts and invoices keep the account's Branding settings.
+
 Currency display is handled by Stripe Checkout. Enable Stripe Adaptive Pricing in Stripe Dashboard, or configure multi-currency Prices with currency options. The provider SKU still stores the Stripe Price ID.
 
 ```json

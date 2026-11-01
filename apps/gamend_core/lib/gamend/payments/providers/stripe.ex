@@ -4,6 +4,7 @@ defmodule Gamend.Payments.Providers.Stripe do
   """
 
   alias Gamend.Payments.ProviderConfig
+  alias Gamend.Theme.JSONConfig
 
   @webhook_tolerance_seconds 300
 
@@ -27,6 +28,7 @@ defmodule Gamend.Payments.Providers.Stripe do
         |> put_checkout_customer(mode, attrs["stripe_customer_id"])
         |> put_trial_end(mode, attrs["trial_end"])
         |> put_managed_payments(ProviderConfig.stripe_managed_payments?())
+        |> put_branding(JSONConfig.get_theme(), success_url)
 
       case create_checkout_session_with_sdk(params, stripe_request_opts(secret_key, purchase)) do
         {:ok, session} ->
@@ -384,6 +386,61 @@ defmodule Gamend.Payments.Providers.Stripe do
     do: Map.put(params, :managed_payments, %{enabled: true})
 
   defp put_managed_payments(params, _enabled), do: params
+
+  # The site's own look on Stripe's page, from its theme: `title` for the name
+  # at the top, `logo`, and `brand_color` (`#rrggbb`) for the buttons. What the
+  # theme lacks keeps the account's Branding settings in the Dashboard, which
+  # also brand the portal, receipts and invoices. Under Managed Payments the
+  # page is Link's: the logo shows, the colours do not. Stripe takes a logo URL
+  # without fetching it and shows nothing for one it cannot draw, so only an
+  # https png, jpg or gif goes; a path is made absolute on the checkout's host.
+  @logo_types ~w(.png .jpg .jpeg .gif)
+
+  defp put_branding(params, theme, success_url) do
+    branding =
+      Enum.reject(
+        [
+          display_name: brand_name(theme["title"]),
+          button_color: brand_color(theme["brand_color"]),
+          logo: brand_logo(theme["logo"], success_url)
+        ],
+        fn {_key, value} -> is_nil(value) end
+      )
+
+    if branding == [],
+      do: params,
+      else: Map.put(params, :branding_settings, Map.new(branding))
+  end
+
+  defp brand_name(title) when is_binary(title) do
+    case String.trim(title) do
+      "" -> nil
+      name -> name
+    end
+  end
+
+  defp brand_name(_title), do: nil
+
+  defp brand_color(color) when is_binary(color) do
+    if Regex.match?(~r/\A#[0-9a-fA-F]{6}\z/, color), do: color
+  end
+
+  defp brand_color(_color), do: nil
+
+  defp brand_logo(logo, success_url) when is_binary(logo) do
+    with %URI{scheme: scheme, host: host} = base
+         when scheme in ["http", "https"] and is_binary(host) <-
+           URI.parse(success_url),
+         %URI{scheme: "https", path: path} = url when is_binary(path) <-
+           URI.merge(base, String.trim(logo)),
+         true <- String.downcase(Path.extname(path)) in @logo_types do
+      %{type: "url", url: URI.to_string(url)}
+    else
+      _ -> nil
+    end
+  end
+
+  defp brand_logo(_logo, _success_url), do: nil
 
   defp put_checkout_payment_metadata(params, "subscription", metadata) do
     Map.put(params, :subscription_data, %{metadata: metadata})

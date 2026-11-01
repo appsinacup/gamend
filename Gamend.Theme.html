@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1371">
+    <meta name="project" content="gamend_core v1.1.1372">
 
 
-    <title>Gamend.Theme — gamend_core v1.1.1371</title>
+    <title>Gamend.Theme — gamend_core v1.1.1372</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1371
+          v1.1.1372
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Theme</span> <small>behaviour</small>
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1371)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1372)</small>
 
     </h1>
 
@@ -117,7 +117,8 @@ gamend_core
 <p>Behaviour for pluggable site theming providers.</p><p>Implementations should provide a map-like theme object that the UI
 and templates can render from. We ship a small JSON-backed default
 implementation that reads a JSON file (see Gamend.Theme.JSONConfig).</p><p>Recommended keys in the theme map:</p><ul><li>&quot;title&quot; (string)</li><li>&quot;tagline&quot; (string)</li><li>&quot;description&quot; (string)</li><li>&quot;contact_email&quot; (string) — shown with a mailto link on /privacy,
-/data_deletion and /terms; without it they say &quot;support channels&quot;</li><li>&quot;theme_color&quot; (string or map with light/dark keys)</li><li>&quot;navigation&quot; (map of nav link arrays)</li><li>&quot;useful_links&quot; (list)</li><li>&quot;features&quot; (list)</li><li>&quot;metadata&quot; (map)</li></ul>
+/data_deletion and /terms; without it they say &quot;support channels&quot;</li><li>&quot;theme_color&quot; (string or map with light/dark keys)</li><li>&quot;brand_color&quot; (<code class="inline">#rrggbb</code>) — the buttons on Stripe's checkout page,
+which also takes &quot;title&quot; and an https png/jpg/gif &quot;logo&quot;</li><li>&quot;navigation&quot; (map of nav link arrays)</li><li>&quot;useful_links&quot; (list)</li><li>&quot;features&quot; (list)</li><li>&quot;metadata&quot; (map)</li></ul>
     </section>
 
 </div>
@@ -182,7 +183,7 @@ implementation that reads a JSON file (see Gamend.Theme.JSONConfig).</p><p>Recom
       <h1 class="signature" translate="no">get_setting(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme.ex#L23" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme.ex#L25" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -210,7 +211,7 @@ implementation that reads a JSON file (see Gamend.Theme.JSONConfig).</p><p>Recom
       <h1 class="signature" translate="no">get_theme()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme.ex#L22" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme.ex#L24" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -238,7 +239,7 @@ implementation that reads a JSON file (see Gamend.Theme.JSONConfig).</p><p>Recom
       <h1 class="signature" translate="no">reload()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme.ex#L24" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/theme.ex#L26" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -265,9 +266,9 @@ implementation that reads a JSON file (see Gamend.Theme.JSONConfig).</p><p>Recom
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1371">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1372">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1371">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1372">Hex Preview</a>
 
             </span>
 

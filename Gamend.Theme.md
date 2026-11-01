@@ -14,6 +14,8 @@ Recommended keys in the theme map:
   - "contact_email" (string) — shown with a mailto link on /privacy,
     /data_deletion and /terms; without it they say "support channels"
   - "theme_color" (string or map with light/dark keys)
+  - "brand_color" (`#rrggbb`) — the buttons on Stripe's checkout page,
+    which also takes "title" and an https png/jpg/gif "logo"
   - "navigation" (map of nav link arrays)
   - "useful_links" (list)
   - "features" (list)

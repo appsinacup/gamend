@@ -58,7 +58,7 @@ Elixir 1.20 / OTP 29 (`.tool-versions`), Phoenix 1.8, LiveView 1.2, Ecto 3.14, B
 
 - SQLite by default, Postgres in production. The adapter is chosen at **compile** time: `GAMEND_DB_ADAPTER=postgres` at build. Dev/test switch to Postgres when `GAMEND_DB_URL` or `GAMEND_DB_POSTGRES_HOST` + `GAMEND_DB_POSTGRES_USER` are set; after changing them run `mix deps.clean gamend_core gamend_web --build`.
 - Every migration and query must work on both adapters. Rules: [CONTRIBUTING.md](CONTRIBUTING.md#data-model-if-the-feature-stores-data).
-- Schemas `use Gamend.Schema` (UUIDv7 ids).
+- Schemas `use Gamend.Schema` (UUIDv7 ids). A field holding an id is `Ecto.UUID`, and a row written by `Repo.insert_all/3` sets `id: Gamend.UUIDv7.generate()` itself: `insert_all` runs no autogenerate.
 
 ### Phoenix v1.8 guidelines
 

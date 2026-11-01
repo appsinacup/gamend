@@ -17,13 +17,13 @@ defmodule Gamend.Repo.Migrations.MoveChatMutesToBans do
     schema "bans" do
       field(:kind, :string)
       field(:subject, :string)
-      field(:user_id, Gamend.UUIDv7)
+      field(:user_id, Ecto.UUID)
       field(:scope, :string)
-      field(:scope_ref_id, Gamend.UUIDv7)
+      field(:scope_ref_id, Ecto.UUID)
       field(:expires_at, :utc_datetime)
       field(:reason, :string)
       field(:source, :string)
-      field(:banned_by, Gamend.UUIDv7)
+      field(:banned_by, Ecto.UUID)
       field(:lifted_at, :utc_datetime)
       timestamps(type: :utc_datetime)
     end
@@ -34,12 +34,12 @@ defmodule Gamend.Repo.Migrations.MoveChatMutesToBans do
     use Gamend.Schema
 
     schema "chat_mutes" do
-      field(:user_id, Gamend.UUIDv7)
+      field(:user_id, Ecto.UUID)
       field(:scope, :string)
-      field(:scope_ref_id, Gamend.UUIDv7)
+      field(:scope_ref_id, Ecto.UUID)
       field(:expires_at, :utc_datetime)
       field(:reason, :string)
-      field(:muted_by, Gamend.UUIDv7)
+      field(:muted_by, Ecto.UUID)
       timestamps(type: :utc_datetime)
     end
   end

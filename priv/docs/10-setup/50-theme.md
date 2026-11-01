@@ -277,7 +277,7 @@ Two settings on the navigation object itself change its shape:
 | `auth` | string | Visibility level: `"any"` — visible to everyone (default) `"unauthenticated"` — visible only to signed-out visitors `"authenticated"` — visible only to logged-in users `"admin"` — visible only to admin users |
 | `admin_only` | boolean | Shortcut for auth="admin" on links or dropdown groups. |
 | `count` | string | A `{Module.fun}` token: `fun/1` gets the reader's scope and returns how many things wait for them there (quests to claim). Drawn as a red number after the label, like unread notifications; nothing at 0. A dropdown group shows its items' total. |
-| `tone` | string | A name your stylesheet colours: give `[data-tone="<name>"]` a `--nav-tone` (one per theme). The link's icon takes it, and the page's own link a tint of it instead of the primary fill. Core sets no colours. |
+| `tone` | string | A name your stylesheet colours: give `[data-tone="<name>"]` a `--nav-tone` (one per theme). The link's icon takes it, and the page's own link a tint of it instead of the primary fill. A page's button with no `style` takes the same `tone` for its icon. Core sets no colours. |
 | `mobile` | string | `"pinned"`: in a phone's bar beside the menu, not inside it. `"hidden"`: left out of the phone's tab bar (`"layout": "sidebar"`); a link that also claims its pages (`"active"`) lights there instead, and on a tie the link with fewer `"active"` prefixes wins. |
 
 Example: grouped public links plus admin-only account entry:

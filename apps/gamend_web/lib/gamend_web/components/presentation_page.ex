@@ -511,8 +511,10 @@ defmodule GamendWeb.PresentationPage do
 
   Per button: `label`, `href`, optional `icon`, `style` and `external`, plus
   `badge` (a short tag after the label, translated like the label: "Pro",
-  "Coming soon") and `disabled` (drawn as the button but not a link, for
-  something announced and not yet there; `href` may then be left out).
+  "Coming soon"), `disabled` (drawn as the button but not a link, for
+  something announced and not yet there; `href` may then be left out) and
+  `tone` (its icon in a section's colour, as a navbar link's `"tone"`; for a
+  button with no `style`, whose fill is the page's own).
   """
   def buttons(assigns) do
     buttons = if is_list(assigns.buttons), do: assigns.buttons, else: []
@@ -548,12 +550,15 @@ defmodule GamendWeb.PresentationPage do
   attr :button, :map, required: true
 
   defp button_content(assigns) do
+    assigns = assign(assigns, :tone, non_empty_string(assigns.button["tone"]))
+
     ~H"""
-    <.dynamic_icon
-      :if={@button["icon"]}
-      name={@button["icon"]}
-      class="size-5 shrink-0 text-current"
-    />
+    <span :if={@button["icon"]} data-tone={@tone} class="contents">
+      <.dynamic_icon
+        name={@button["icon"]}
+        class={"size-5 shrink-0 #{if @tone, do: "text-(--nav-tone)", else: "text-current"}"}
+      />
+    </span>
     <span class="truncate">{Map.get(@button, "label", "")}</span>
     <span
       :if={non_empty_string(@button["badge"])}

@@ -14,9 +14,7 @@ defmodule Gamend.Repo.Migrations.CreateSecrets do
   """
 
   def change do
-    create table(:secrets, primary_key: false) do
-      add :id, :binary_id, primary_key: true
-
+    create table(:secrets) do
       # What owns this, without core having to know what that is. A host says
       # `"forge_project"` and its own id; core never resolves either.
       add :scope, :string, null: false

@@ -29,7 +29,7 @@ defmodule Gamend.Chat.ReadCursor do
 
   schema "chat_read_cursors" do
     field :chat_type, :string
-    field :chat_ref_id, Gamend.UUIDv7
+    field :chat_ref_id, Ecto.UUID
 
     belongs_to :user, User
     belongs_to :last_read_message, Message

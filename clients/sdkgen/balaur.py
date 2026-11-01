@@ -220,9 +220,8 @@ def write_readme(model: Model) -> str:
         "use addons::gamend::lobbies;",
         "use addons::gamend::events::lobby;",
         "",
-        'gamend::configure("https://gamend.org");',
         'let reply = await task::wait(lobbies::quick_join(self.node, { "title": "duel", "max_users": 2 }));',
-        'if e.get("kind").as_str() == lobby::MEMBER_JOINED { }',
+        'if e["kind"].as_str() == lobby::MEMBER_JOINED { }',
         "```",
         "",
         f"{len(model.ops)} operations in {len(files)} modules, and "

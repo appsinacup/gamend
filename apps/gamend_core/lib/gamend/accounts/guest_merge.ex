@@ -141,9 +141,8 @@ defmodule Gamend.Accounts.GuestMerge do
         from(d in Gamend.Analytics.ActivityDay, where: d.user_id == ^guest_id, select: d.day)
       )
 
-    # `insert_all` runs no schema autogeneration: a `Gamend.UUIDv7` key is
-    # not an `:id`/`:binary_id` one, so the id is ours to give (Postgres
-    # refuses a null one; SQLite took it).
+    # `insert_all` runs no schema autogeneration: an `Ecto.UUID` key is not
+    # an `:id`/`:binary_id` one, so the id is ours to give.
     now = DateTime.utc_now(:second)
 
     rows =

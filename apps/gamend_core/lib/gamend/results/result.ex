@@ -21,7 +21,7 @@ defmodule Gamend.Results.Result do
   @max_kind 64
 
   schema "results" do
-    field :lobby_id, Gamend.UUIDv7
+    field :lobby_id, Ecto.UUID
     field :kind, :string
     field :visibility, :string, default: "owner_only"
     field :status, :string, default: "open"

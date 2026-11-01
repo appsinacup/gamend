@@ -38,7 +38,7 @@ defmodule Gamend.Chat.Message do
     field :content, :string
     field :metadata, :map, default: %{}
     field :chat_type, :string
-    field :chat_ref_id, Gamend.UUIDv7
+    field :chat_ref_id, Ecto.UUID
 
     belongs_to :sender, User
 

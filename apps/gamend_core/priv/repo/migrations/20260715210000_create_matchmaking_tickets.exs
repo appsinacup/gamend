@@ -2,8 +2,7 @@ defmodule Gamend.Repo.Migrations.CreateMatchmakingTickets do
   use Ecto.Migration
 
   def change do
-    create table(:matchmaking_tickets, primary_key: false) do
-      add :id, :binary_id, primary_key: true
+    create table(:matchmaking_tickets) do
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
       add :status, :string, null: false, default: "queued"
       add :match_params, :map, null: false, default: "{}"

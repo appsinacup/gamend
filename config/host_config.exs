@@ -64,7 +64,7 @@ default_adapter =
 config :gamend_core, Gamend.Repo,
   adapter: default_adapter,
   # All tables use UUID (v7) primary/foreign keys — see Gamend.UUIDv7.
-  migration_primary_key: [name: :id, type: :binary_id],
+  migration_primary_key: [name: :id, type: :binary_id, null: false],
   migration_foreign_key: [type: :binary_id]
 
 # Durable background jobs (Gamend.Jobs / Gamend.Schedule). The `:engine`

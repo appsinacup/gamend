@@ -10,8 +10,8 @@ defmodule Gamend.Schema do
     quote do
       use Ecto.Schema
 
-      @primary_key {:id, Gamend.UUIDv7, autogenerate: true}
-      @foreign_key_type Gamend.UUIDv7
+      @primary_key {:id, Ecto.UUID, autogenerate: {Gamend.UUIDv7, :generate, []}}
+      @foreign_key_type Ecto.UUID
     end
   end
 end

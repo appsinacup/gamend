@@ -28,7 +28,7 @@ defmodule Gamend.Secrets.Secret do
     field :byte_size, :integer
     field :expires_at, :utc_datetime_usec
     field :last_used_at, :utc_datetime_usec
-    field :created_by_id, Gamend.UUIDv7
+    field :created_by_id, Ecto.UUID
 
     timestamps(type: :utc_datetime_usec)
   end

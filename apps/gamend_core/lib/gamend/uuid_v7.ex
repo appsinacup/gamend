@@ -1,83 +1,27 @@
 defmodule Gamend.UUIDv7 do
   @moduledoc """
-  UUIDv7 Ecto type used for all primary and foreign keys.
+  The id of every row: a UUIDv7 (RFC 9562), made by `Ecto.UUID`.
 
-  UUIDv7 embeds a 48-bit unix-millisecond timestamp in the most significant
+  A UUIDv7 holds a 48-bit unix-millisecond timestamp in its most significant
   bits, so freshly inserted rows sort (and index) in insertion order like the
   old integer ids did, while remaining unguessable — random ids prevent
   enumeration of API resources.
 
-  Cast/dump/load are delegated to `Ecto.UUID`, so storage behavior matches
-  `:binary_id` on both SQLite and Postgres; only generation differs (v7
-  instead of v4).
+  `Gamend.Schema` makes a schema's id with `generate/0`, and a field holding
+  an id is an `Ecto.UUID`. `Repo.insert_all/3` runs no autogenerate for such a
+  key, so a row written that way sets `id: Gamend.UUIDv7.generate()` itself.
   """
-
-  use Ecto.Type
-  import Bitwise
-
-  @impl true
-  def type, do: Ecto.UUID.type()
-
-  @impl true
-  defdelegate cast(value), to: Ecto.UUID
-
-  @impl true
-  defdelegate load(value), to: Ecto.UUID
-
-  @impl true
-  defdelegate dump(value), to: Ecto.UUID
-
-  @impl true
-  def autogenerate, do: generate()
-
-  @impl true
-  def embed_as(format), do: Ecto.UUID.embed_as(format)
-
-  @impl true
-  def equal?(a, b), do: Ecto.UUID.equal?(a, b)
 
   @doc """
-  Generates a UUIDv7 string (time-ordered, RFC 9562).
+  Generates an id. `:monotonic` keeps the time below a millisecond in the 12
+  `rand_a` bits (RFC 9562 §6.2 method 3), so ids made on one node sort in the
+  order they were made: code that orders by id (chat cursors, pagination,
+  `Gamend.Results`) keeps working under bursts.
 
-  Uses the 12 `rand_a` bits as a per-millisecond sequence counter (RFC 9562
-  §6.2 method 1) so ids generated on the same node within one millisecond
-  still sort in generation order — code that orders by id (chat cursors,
-  pagination) keeps working under bursts.
+  Raises while the `:ecto` application is not started.
   """
   @spec generate() :: Ecto.UUID.t()
-  def generate do
-    <<_::10, rand_b::62>> = :crypto.strong_rand_bytes(9)
-    {ms, seq} = next_ms_and_seq()
-    raw = <<ms::48, 7::4, seq::12, 2::2, rand_b::62>>
-    Ecto.UUID.load!(raw)
-  end
-
-  # Packs {ms, 12-bit seq} into one atomic integer (ms <<< 12 ||| seq) and
-  # advances it with a CAS loop: same-ms calls increment seq; a seq overflow
-  # borrows the next millisecond, preserving strict monotonicity per node.
-  defp next_ms_and_seq do
-    ref = seq_atomic()
-    now = System.system_time(:millisecond)
-    prev = :atomics.get(ref, 1)
-    candidate = max(now <<< 12, prev + 1)
-
-    case :atomics.compare_exchange(ref, 1, prev, candidate) do
-      :ok -> {candidate >>> 12, candidate &&& 0xFFF}
-      _actual -> next_ms_and_seq()
-    end
-  end
-
-  defp seq_atomic do
-    case :persistent_term.get({__MODULE__, :seq}, nil) do
-      nil ->
-        ref = :atomics.new(1, signed: false)
-        :persistent_term.put({__MODULE__, :seq}, ref)
-        :persistent_term.get({__MODULE__, :seq})
-
-      ref ->
-        ref
-    end
-  end
+  def generate, do: Ecto.UUID.generate(version: 7, precision: :monotonic)
 
   @doc """
   Casts a value to a UUID string, returning `nil` when invalid.

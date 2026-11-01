@@ -27,6 +27,18 @@ defmodule GamendWeb.Components.PresentationPageButtonsTest do
     assert html =~ ~r/Classes.*badge.*Pro/s
   end
 
+  test "a tone colours the icon, as a navbar link's does" do
+    button = %{"label" => "Play", "href" => "/play", "icon" => "hero-play-solid"}
+
+    html = render_buttons([Map.put(button, "tone", "play")])
+    assert html =~ ~s(data-tone="play")
+    assert html =~ "text-(--nav-tone)"
+
+    html = render_buttons([button])
+    refute html =~ "data-tone"
+    assert html =~ "text-current"
+  end
+
   test "a disabled button is not a link, even with an href" do
     html =
       render_buttons([

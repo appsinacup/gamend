@@ -36,7 +36,7 @@ defmodule Gamend.Bans.Ban do
     field :kind, Ecto.Enum, values: @kinds
     field :subject, :string
     field :scope, :string
-    field :scope_ref_id, Gamend.UUIDv7
+    field :scope_ref_id, Ecto.UUID
     field :expires_at, :utc_datetime
     field :reason, :string
     field :source, Ecto.Enum, values: @sources, default: :admin

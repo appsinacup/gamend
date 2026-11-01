@@ -16,7 +16,7 @@ defmodule Gamend.GitHub.Installation do
 
   schema "github_installations" do
     field :installation_id, :integer
-    field :user_id, Gamend.UUIDv7
+    field :user_id, Ecto.UUID
     field :account_login, :string
     field :account_id, :integer
     field :account_type, :string

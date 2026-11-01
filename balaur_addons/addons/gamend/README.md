@@ -9,9 +9,8 @@ with `use addons::gamend::<module>;`, beside the engine's own
 use addons::gamend::lobbies;
 use addons::gamend::events::lobby;
 
-gamend::configure("https://gamend.org");
 let reply = await task::wait(lobbies::quick_join(self.node, { "title": "duel", "max_users": 2 }));
-if e.get("kind").as_str() == lobby::MEMBER_JOINED { }
+if e["kind"].as_str() == lobby::MEMBER_JOINED { }
 ```
 
 279 operations in 44 modules, and 98 realtime events.

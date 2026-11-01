@@ -23,12 +23,14 @@ defmodule Gamend.Repo do
 
   # All tables use UUID (v7) primary/foreign keys — see Gamend.UUIDv7.
   # Set here (not only in config files) so host repos that configure the Repo
-  # themselves still get binary_id migrations.
+  # themselves still get binary_id migrations. `null: false` because SQLite
+  # stores a null text primary key and Postgres refuses it: a row written
+  # with no id passed dev and the tests, then failed in production.
   @impl true
   def init(_type, config) do
     {:ok,
      config
-     |> Keyword.put_new(:migration_primary_key, name: :id, type: :binary_id)
+     |> Keyword.put_new(:migration_primary_key, name: :id, type: :binary_id, null: false)
      |> Keyword.put_new(:migration_foreign_key, type: :binary_id)}
   end
 

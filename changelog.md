@@ -1,3 +1,9 @@
+# November 2026
+
+- [breaking] **Ids are made by `Ecto.UUID`.** `Gamend.Schema`'s keys are `Ecto.UUID`, with its v7 ids in place of core's own generator. `Gamend.UUIDv7` keeps `generate/0` and `cast_or_nil/1` and is no longer an Ecto type, so a host's `field :x, Gamend.UUIDv7` or `@foreign_key_type Gamend.UUIDv7` becomes `Ecto.UUID`. Stored ids do not change.
+- [changed] **A new table refuses a null id on SQLite too.** `migration_primary_key` carries `null: false`: SQLite stored a null text key that Postgres refuses, so a row written with no id passed dev and the tests and failed in production.
+- [added] **A page's button can wear a section's colour.** A button in the theme's `pages` takes `tone`, as a navbar link does: its icon is drawn from the host's `--nav-tone` instead of the text colour (`PresentationPage.buttons/1`). For a button with no `style`; a filled one keeps its content colour.
+
 # October 2026
 
 - [added] **Stripe Checkout in the site's look.** Every Checkout Session carries `branding_settings` from the theme: `title` for the name at the top, `logo` (an https png, jpg or gif; a path is made absolute on the checkout's host) and a new optional `brand_color` key, `#rrggbb`, for the buttons. What the theme lacks keeps the account's Branding settings, so several sites on one Stripe account each sell under their own look; the portal, receipts and invoices stay the account's. Under Managed Payments the page is Link's: the logo shows, the colours do not. **Hosts:** set `brand_color` to your light theme's primary.

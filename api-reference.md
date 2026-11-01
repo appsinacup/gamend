@@ -1,4 +1,4 @@
-# gamend_core v1.1.1373 - API Reference
+# gamend_core v1.1.1374 - API Reference
 
 ## Modules
 
@@ -460,7 +460,7 @@ encode as `""` when nil and map fields as `%{}` — game clients (Godot in
 particular) choke on `null` where they expect a string. Datetimes, numbers
 and booleans keep `null`, where absence is semantic.
   - [Gamend.Types](Gamend.Types.md): Shared types used across Gamend contexts.
-  - [Gamend.UUIDv7](Gamend.UUIDv7.md): UUIDv7 Ecto type used for all primary and foreign keys.
+  - [Gamend.UUIDv7](Gamend.UUIDv7.md): The id of every row: a UUIDv7 (RFC 9562), made by `Ecto.UUID`.
 
 ## Mix Tasks
 

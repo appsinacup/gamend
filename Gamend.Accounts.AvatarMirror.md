@@ -18,6 +18,22 @@ provider URL stays in `profile_url`, but nothing shows it: every page and
 payload reads `User.public_avatar_url/1`, which answers nil for it, so the
 player has the default icon instead of a hotlink to the provider.
 
+A copy is a player's picture in public storage, unscreened, so a host that
+closes `user_image_uploads` gets none (`enabled?/0`): nothing is enqueued, a
+job already queued is cancelled, and the player has the default icon. Cancelled
+rather than done, since a completed job would keep the same URL from being
+mirrored once the gate opens again.
+
+# `enabled?`
+
+```elixir
+@spec enabled?() :: boolean()
+```
+
+Whether a provider's picture may be copied: not while `GamendWeb.Features` has
+`user_image_uploads` off. A flag of the web app, so it is on where that app is
+not loaded.
+
 ---
 
 *Consult [api-reference.md](api-reference.md) for complete listing*

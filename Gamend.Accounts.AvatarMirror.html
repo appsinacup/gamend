@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1375">
+    <meta name="project" content="gamend_core v1.1.1376">
 
 
-    <title>Gamend.Accounts.AvatarMirror — gamend_core v1.1.1375</title>
+    <title>Gamend.Accounts.AvatarMirror — gamend_core v1.1.1376</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-BA3F6DD0.js"></script>
+    <script defer src="dist/sidebar_items-2395D603.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1375
+          v1.1.1376
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />AvatarMirror</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1375)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1376)</small>
 
     </h1>
 
@@ -125,20 +125,95 @@ backoff, and a run that exhausts its attempts does not poison the user
 forever — the next sign-in enqueues a fresh job. Until one succeeds the
 provider URL stays in <code class="inline">profile_url</code>, but nothing shows it: every page and
 payload reads <code class="inline">User.public_avatar_url/1</code>, which answers nil for it, so the
-player has the default icon instead of a hotlink to the provider.</p>
+player has the default icon instead of a hotlink to the provider.</p><p>A copy is a player's picture in public storage, unscreened, so a host that
+closes <code class="inline">user_image_uploads</code> gets none (<a href="#enabled?/0"><code class="inline">enabled?/0</code></a>): nothing is enqueued, a
+job already queued is cancelled, and the player has the default icon. Cancelled
+rather than done, since a completed job would keep the same URL from being
+mirrored once the gate opens again.</p>
     </section>
 
 </div>
 
+  <section id="summary" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h2>
+<div class="summary-functions summary">
+  <h3>
+    <a href="#functions">Functions</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#enabled?/0" data-no-tooltip="" translate="no">enabled?()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether a provider's picture may be copied: not while <code class="inline">GamendWeb.Features</code> has
+<code class="inline">user_image_uploads</code> off. A flag of the web app, so it is on where that app is
+not loaded.</p></div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="functions" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h2>
+
+    <div class="functions-list">
+<section class="detail" id="enabled?/0">
+
+  <div class="detail-header">
+    <a href="#enabled?/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">enabled?()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/avatar_mirror.ex#L39" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> enabled?() :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether a provider's picture may be copied: not while <code class="inline">GamendWeb.Features</code> has
+<code class="inline">user_image_uploads</code> off. A flag of the web app, so it is on where that app is
+not loaded.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
 
     <footer class="footer">
 
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1375">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1376">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1375">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1376">Hex Preview</a>
 
             </span>
 

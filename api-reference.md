@@ -1,4 +1,4 @@
-# gamend_core v1.1.1375 - API Reference
+# gamend_core v1.1.1376 - API Reference
 
 ## Modules
 
@@ -75,11 +75,9 @@ person filling in a form.
 - [Gamend.HTTP](Gamend.HTTP.md): `Req` with the declared timeout and retries, for the calls core makes to other
 services while a player waits: payment receipt checks (Apple, Google Play,
 Steam), OAuth code exchanges, Google ID-token checks and avatar mirroring.
-- [Gamend.Icons](Gamend.Icons.md): The site's own icons, which people may pick instead of uploading an image:
-a group's icon, an account's avatar. Every heroicon, by name
-(`rocket-launch`): heroicons.com's 24px solid set, read from the host's
-`heroicons` dependency when this compiles, the same set the website draws
-(`GamendWeb.Icons`).
+- [Gamend.Icons](Gamend.Icons.md): The site's own icons, by name (`rocket-launch`): heroicons.com's 24px solid
+set, read from the host's `heroicons` dependency when this compiles, the same
+set the website draws (`GamendWeb.Icons`).
 - [Gamend.Ledger](Gamend.Ledger.md): The mechanics both ledgered balances share: `Gamend.Economy` (currency in a
 wallet) and `Gamend.Inventory` (quantity of an item).
 - [Gamend.Mail](Gamend.Mail.md): Outbound email transport.

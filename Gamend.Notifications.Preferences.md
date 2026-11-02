@@ -13,16 +13,15 @@ Core declares its own; a host adds its own in config:
     config :gamend_core, :notification_groups, [
       %{key: "streak", label: "Streak about to end",
         defaults: %{"in_app" => true, "email" => false, "push" => false},
-        types: ["streak_ending"], signup: true}
+        types: ["streak_ending"]}
     ]
 
 A group's `defaults` apply until the user chooses. `configurable` is the
 channels the user may change (default: all three); a channel they may not
 change always uses its default. `types` are the notification types
-(`Gamend.Notifications.Types`) that belong to the group. `signup: true`
-offers its email on the registration form, unticked: an email nobody asked
-for is spam, so the user opts in. The "account" group — sign-in links, email
-changes — is email that cannot be turned off: it is how the account works.
+(`Gamend.Notifications.Types`) that belong to the group. The "account" group
+— sign-in links, email changes — is email that cannot be turned off: it is
+how the account works.
 `admin: true` is a group for the site's admins only (a queue to work
 through): nobody else sees its row (`groups_for/1`) or gets it
 (`enabled?/3`).
@@ -88,7 +87,7 @@ nil for a type in no group (a moderator's notice), which is always sent.
 ```
 
 Every group, core's first then the host's: `%{key, label, defaults,
-configurable, types, signup, admin}`, `configurable` a list of channels.
+configurable, types, admin}`, `configurable` a list of channels.
 
 # `groups_for`
 
@@ -114,14 +113,6 @@ Whether a switch is on: `"off_all"`, `"off_email"`, `"off_push"`.
 ```
 
 Set one group's channel. A channel the group does not let users change is refused.
-
-# `signup_groups`
-
-```elixir
-@spec signup_groups() :: [map()]
-```
-
-The groups whose email the registration form offers (`signup: true`).
 
 # `stored`
 

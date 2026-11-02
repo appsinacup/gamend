@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1375">
+    <meta name="project" content="gamend_core v1.1.1376">
 
 
-    <title>Gamend.Icons — gamend_core v1.1.1375</title>
+    <title>Gamend.Icons — gamend_core v1.1.1376</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-BA3F6DD0.js"></script>
+    <script defer src="dist/sidebar_items-2395D603.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1375
+          v1.1.1376
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Icons</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1375)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1376)</small>
 
     </h1>
 
@@ -114,11 +114,11 @@ gamend_core
 
 
     <section id="moduledoc">
-<p>The site's own icons, which people may pick instead of uploading an image:
-a group's icon, an account's avatar. Every heroicon, by name
-(<code class="inline">rocket-launch</code>): heroicons.com's 24px solid set, read from the host's
-<code class="inline">heroicons</code> dependency when this compiles, the same set the website draws
-(<code class="inline">GamendWeb.Icons</code>).</p><p>An icon is nothing but a URL, <a href="#path/1"><code class="inline">path/1</code></a> (<code class="inline">/icons/&lt;name&gt;.svg</code>), stored where
+<p>The site's own icons, by name (<code class="inline">rocket-launch</code>): heroicons.com's 24px solid
+set, read from the host's <code class="inline">heroicons</code> dependency when this compiles, the same
+set the website draws (<code class="inline">GamendWeb.Icons</code>).</p><p>People pick from a few of them instead of uploading an image, for a group's
+icon or an account's avatar: <a href="#picks/0"><code class="inline">picks/0</code></a>. Any other still works where it is
+stored, by an API client or from before there was a list.</p><p>An icon is nothing but a URL, <a href="#path/1"><code class="inline">path/1</code></a> (<code class="inline">/icons/&lt;name&gt;.svg</code>), stored where
 an uploaded image's URL would be (a group's <code class="inline">icon_url</code>, a user's
 <code class="inline">profile_url</code>, a leaderboard's or a quest's <code class="inline">icon_url</code>). The website serves
 it and draws it inline; a client fetches it against the server's address
@@ -181,11 +181,21 @@ like an uploaded image.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#picks/0" data-no-tooltip="" translate="no">picks()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The icons people pick from, <code class="inline">academic-cap</code>, …: the same order everywhere.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#random/0" data-no-tooltip="" translate="no">random()</a>
 
       </div>
 
-        <div class="summary-synopsis"><p>An icon at random, nil when there are none.</p></div>
+        <div class="summary-synopsis"><p>One of <a href="#picks/0"><code class="inline">picks/0</code></a> at random, nil when there are none.</p></div>
 
     </div>
 
@@ -213,7 +223,7 @@ like an uploaded image.</p>
       <h1 class="signature" translate="no">name(arg1)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L56" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -241,7 +251,7 @@ like an uploaded image.</p>
       <h1 class="signature" translate="no">name?(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L48" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L73" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -269,7 +279,7 @@ like an uploaded image.</p>
       <h1 class="signature" translate="no">names()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L44" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L65" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -297,7 +307,7 @@ like an uploaded image.</p>
       <h1 class="signature" translate="no">path(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L52" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -315,6 +325,34 @@ like an uploaded image.</p>
 <p>The URL of an icon by name: <code class="inline">/icons/&lt;name&gt;.svg</code>.</p>
   </section>
 </section>
+<section class="detail" id="picks/0">
+
+  <div class="detail-header">
+    <a href="#picks/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">picks()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L69" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> picks() :: [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]</pre>
+
+      </div>
+
+<p>The icons people pick from, <code class="inline">academic-cap</code>, …: the same order everywhere.</p>
+  </section>
+</section>
 <section class="detail" id="random/0">
 
   <div class="detail-header">
@@ -325,7 +363,7 @@ like an uploaded image.</p>
       <h1 class="signature" translate="no">random()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L66" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L91" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -340,7 +378,7 @@ like an uploaded image.</p>
 
       </div>
 
-<p>An icon at random, nil when there are none.</p>
+<p>One of <a href="#picks/0"><code class="inline">picks/0</code></a> at random, nil when there are none.</p>
   </section>
 </section>
 
@@ -352,9 +390,9 @@ like an uploaded image.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1375">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1376">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1375">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1376">Hex Preview</a>
 
             </span>
 

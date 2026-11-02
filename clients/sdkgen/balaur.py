@@ -79,7 +79,7 @@ def emit_function(model: Model, op: dict, file: str, name: str) -> str:
     """One operation as a function over `gamend::rest`. Path parameters are
     `any`, so an id passes as a number or a string; the body and the query
     are maps."""
-    args = ["node: Node"] + [f"{safe(p)}: any" for p in op["path_params"]]
+    args = [f"{safe(p)}: any" for p in op["path_params"]]
     required_body: list[str] = []
     if op["body"]:
         args.append("params: any")
@@ -103,7 +103,7 @@ def emit_function(model: Model, op: dict, file: str, name: str) -> str:
         out.append(f"    let query = core::query(options, [{allowed}]);")
     path = path_expression(op, bool(op["query"]))
     body = "params" if op["body"] else "nil()"
-    out.append(f'    gamend::rest(node, "{op["method"]}", {path}, {body})')
+    out.append(f'    gamend::rest("{op["method"]}", {path}, {body})')
     out.append("}")
     return "\n".join(out)
 
@@ -133,10 +133,10 @@ def write_tags(model: Model) -> dict[str, str]:
             f"// {tag}: one function per operation, `{file}::<name>` once a\n"
             f"// script says `use addons::gamend::{file};`.\n"
             "//\n"
-            "// A call takes the node its result should reach, then the path's own\n"
-            "// parameters, then `params` for the request body and `options` for the\n"
-            "// query where the operation has them. It answers the id `gamend::rest`\n"
-            "// answers, to await with `task::wait`, or nil when it refused to send.\n"
+            "// A call takes the path's own parameters, then `params` for the request\n"
+            "// body and `options` for the query where the operation has them. It\n"
+            "// answers the id `gamend::rest` answers, to await with `task::wait`, or\n"
+            "// nil when it refused to send.\n"
             "\nuse core;",
         ]
         chunks += [emit_function(model, op, file, name) for name, op in ops]
@@ -220,7 +220,7 @@ def write_readme(model: Model) -> str:
         "use addons::gamend::lobbies;",
         "use addons::gamend::events::lobby;",
         "",
-        'let reply = await task::wait(lobbies::quick_join(self.node, { "title": "duel", "max_users": 2 }));',
+        'let reply = await task::wait(lobbies::quick_join({ "title": "duel", "max_users": 2 }));',
         'if e["kind"].as_str() == lobby::MEMBER_JOINED { }',
         "```",
         "",
@@ -251,7 +251,7 @@ def write_readme(model: Model) -> str:
             "| --- | --- | --- |",
         ]
         for name, op in ops:
-            args = ["node"] + [p for p in op["path_params"]]
+            args = list(op["path_params"])
             if op["body"]:
                 args.append("params")
             if op["query"]:

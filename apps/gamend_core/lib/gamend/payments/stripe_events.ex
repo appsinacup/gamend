@@ -520,10 +520,23 @@ defmodule Gamend.Payments.StripeEvents do
     end
   end
 
+  # An expired session took no money, so with no purchase there is nothing to
+  # cancel: another server on this Stripe account opened it, with the same
+  # metadata (`ours?/1` cannot tell). A paid session with no purchase stays an
+  # error above. Answering 404 here had Stripe retry for three days.
   defp process_checkout_session("expired", object) do
-    with {:ok, purchase} <- Payments.purchase_from_provider_object(object) do
-      _ = mark_stripe_checkout_expired(purchase, object)
-      {:ok, :processed}
+    case Payments.purchase_from_provider_object(object) do
+      {:ok, purchase} ->
+        _ = mark_stripe_checkout_expired(purchase, object)
+        {:ok, :processed}
+
+      {:error, :purchase_not_found} ->
+        Logger.info(
+          "Stripe checkout expired with no purchase here session=#{object["id"]} " <>
+            "metadata=#{inspect(object["metadata"])}"
+        )
+
+        {:ok, :ignored}
     end
   end
 

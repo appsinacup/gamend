@@ -534,6 +534,25 @@ defmodule GamendWeb.AdminLive.Logs do
 
   # ── Lifecycle ───────────────────────────────────────────────────────────────
 
+  use GamendWeb.UrlState,
+    reload: :reload_view,
+    drop: ~w(lobby_id),
+    keys: [
+      tab: [in: ~w(server client)],
+      level_filter: [param: "level"],
+      module_filter: [param: "module"],
+      search_query: [param: "q"],
+      session_filter: [param: "session"],
+      user_filter: [param: "user"],
+      source_filter: [param: "source"],
+      auto_scroll: [],
+      session_page: [param: "page"],
+      open_session: [param: "open"],
+      session_filters: [
+        keys: [:query, :user_id, :lobby_id, :platform, :app_version, :since, :until, :errors_only]
+      ]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     if connected?(socket) do
@@ -555,6 +574,7 @@ defmodule GamendWeb.AdminLive.Logs do
        source_filter: "server",
        auto_scroll: true,
        selected: nil,
+       open_session: nil,
        selected_entries: [],
        selected_lobbies: [],
        session_page: 1,
@@ -686,11 +706,12 @@ defmodule GamendWeb.AdminLive.Logs do
     do: {:noreply, socket |> LiveHelpers.prev_page(:session_page) |> load_sessions()}
 
   def handle_event("select_session", %{"id" => id}, socket) do
-    {:noreply, select_session(socket, id)}
+    {:noreply, socket |> assign(:open_session, id) |> select_session(id)}
   end
 
   def handle_event("close_session", _params, socket) do
-    {:noreply, assign(socket, selected: nil, selected_entries: [], selected_lobbies: [])}
+    {:noreply,
+     assign(socket, open_session: nil, selected: nil, selected_entries: [], selected_lobbies: [])}
   end
 
   def handle_event("toggle_flag", _params, %{assigns: %{selected: nil}} = socket),
@@ -794,10 +815,25 @@ defmodule GamendWeb.AdminLive.Logs do
     )
   end
 
+  # From the URL: the tab's list, and the session it has open.
+  defp reload_view(socket) do
+    socket = socket |> refresh_logs() |> load_sessions()
+
+    case socket.assigns.open_session do
+      nil -> assign(socket, selected: nil, selected_entries: [], selected_lobbies: [])
+      id -> select_session(socket, id)
+    end
+  end
+
   defp select_session(socket, id) do
     case ClientLogs.get_session(id) do
       nil ->
-        assign(socket, selected: nil, selected_entries: [], selected_lobbies: [])
+        assign(socket,
+          open_session: nil,
+          selected: nil,
+          selected_entries: [],
+          selected_lobbies: []
+        )
 
       session ->
         assign(socket,

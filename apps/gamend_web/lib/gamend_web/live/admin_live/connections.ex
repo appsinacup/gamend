@@ -326,6 +326,10 @@ defmodule GamendWeb.AdminLive.Connections do
 
   @per_page 25
 
+  use GamendWeb.UrlState,
+    reload: :assign_all,
+    keys: [conn_page: [param: "page"], conn_filter: [param: "filter"]]
+
   @impl true
   def mount(_params, _session, socket) do
     if connected?(socket), do: schedule_refresh()

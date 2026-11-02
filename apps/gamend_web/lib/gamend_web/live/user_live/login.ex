@@ -188,8 +188,10 @@ defmodule GamendWeb.UserLive.Login do
         %User{} = user ->
           deliver_magic_link(user)
 
+        # Nothing to send, and the message below says the same, so only the log
+        # can tell. No address in the line: it may be a typo, or anyone's.
         nil ->
-          :ok
+          Logger.warning("magic link not sent: no account with that email")
       end
 
       info =

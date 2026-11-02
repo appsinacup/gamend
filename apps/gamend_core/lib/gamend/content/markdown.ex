@@ -77,8 +77,28 @@ defmodule Gamend.Content.Markdown do
   @language_aliases %{
     "gdscript" => "javascript",
     "gd" => "javascript",
-    "godot" => "javascript"
+    "godot" => "javascript",
+    "rune" => "rust",
+    "wesl" => "wgsl",
+    "jsonc" => "json"
   }
+
+  # Balaur Script has no grammar either. Rust's reads it closely, except for
+  # the words Rust does not reserve, which come out as variables: `class`,
+  # `nil`, `await`. They are reserved in Balaur Script, so a word here is
+  # always that word, wherever Rust's grammar lost track of it.
+  @balaur_script ~w(bs balaur)
+  @balaur_script_words Map.merge(
+                         Map.from_keys(
+                           ~w(as async await break class const continue else enum extern fn for if impl in internal let loop match mut pub return struct use while),
+                           "l-keyword"
+                         ),
+                         Map.merge(
+                           Map.from_keys(~w(any bool float int str Node), "l-type"),
+                           Map.from_keys(~w(false nil self true), "l-constant")
+                         )
+                       )
+  @balaur_script_word ~r/<span class="l-(?:variable|module|label|type|function)[a-z-]*">([A-Za-z]+)<\/span>/
 
   @doc "Render a file, or `nil` when it cannot be read or parsed."
   @spec render_file(Path.t(), [opt()]) :: String.t() | nil
@@ -123,6 +143,7 @@ defmodule Gamend.Content.Markdown do
 
   defp transform(document, opts) do
     document
+    |> lift_balaur_script()
     |> alias_code_languages()
     |> lift_mermaid(Keyword.get(opts, :id, "md"))
     |> unify_admonitions()
@@ -372,6 +393,34 @@ defmodule Gamend.Content.Markdown do
         :error -> block
       end
     end)
+  end
+
+  defp lift_balaur_script(document) do
+    MDEx.traverse_and_update(document, fn
+      %MDEx.CodeBlock{info: info, literal: source} when info in @balaur_script ->
+        %MDEx.Raw{literal: balaur_script(source) <> "\n"}
+
+      node ->
+        node
+    end)
+  end
+
+  defp balaur_script(source) do
+    html =
+      source
+      |> String.trim_trailing()
+      |> Lumis.highlight!(formatter: {:html_linked, language: "rust"})
+
+    @balaur_script_word
+    |> Regex.replace(html, fn whole, word ->
+      case @balaur_script_words do
+        %{^word => class} -> ~s(<span class="#{class}">#{word}</span>)
+        _other -> whole
+      end
+    end)
+    # A struct field's default is no Rust: a bool or a string there has no span.
+    |> String.replace(~r/(?<=> )(true|false)(?=<)/, ~s(<span class="l-constant">\\1</span>))
+    |> String.replace(~r/(?<=> )(&quot;[^<]*?&quot;)(?=<)/, ~s(<span class="l-string">\\1</span>))
   end
 
   # A mermaid fence is a diagram, not code: the highlighter would wrap every

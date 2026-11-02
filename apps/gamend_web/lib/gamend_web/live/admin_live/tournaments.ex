@@ -5,6 +5,17 @@ defmodule GamendWeb.AdminLive.Tournaments do
   alias Gamend.Tournaments.Tournament
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload_view,
+    keys: [
+      :page,
+      :page_size,
+      state_filter: [param: "state"],
+      detail_id: [param: "open"],
+      detail_page: [],
+      detail_bracket: [param: "bracket", type: :integer]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     socket =
@@ -15,6 +26,9 @@ defmodule GamendWeb.AdminLive.Tournaments do
       |> assign(:form, nil)
       |> assign(:selected, nil)
       |> assign(:detail, nil)
+      |> assign(:detail_id, nil)
+      |> assign(:detail_page, 1)
+      |> assign(:detail_bracket, nil)
       |> reload()
 
     {:ok, socket}
@@ -428,7 +442,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
   end
 
   def handle_event("close_detail", _params, socket) do
-    {:noreply, assign(socket, :detail, nil)}
+    {:noreply, assign(socket, detail: nil, detail_id: nil, detail_page: 1, detail_bracket: nil)}
   end
 
   def handle_event("force_registration", _params, socket) do
@@ -522,6 +536,17 @@ defmodule GamendWeb.AdminLive.Tournaments do
 
   @detail_page_size 25
 
+  # From the URL: the list, and the tournament it has open.
+  defp reload_view(socket) do
+    %{detail_id: id, detail_page: page} = socket.assigns
+    socket = reload(socket)
+
+    case Gamend.Parse.uuid(id) do
+      nil -> assign(socket, detail: nil, detail_id: nil, detail_page: 1, detail_bracket: nil)
+      id -> load_detail(socket, id, page)
+    end
+  end
+
   defp load_detail(socket, id, page \\ 1) do
     case Tournaments.get_tournament(id) do
       nil ->
@@ -538,7 +563,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
         # Matches are shown per bracket so a large field stays readable; the
         # bracket tree itself lives on the public page.
         selected_bracket =
-          socket.assigns[:detail][:selected_bracket] ||
+          socket.assigns[:detail][:selected_bracket] || socket.assigns[:detail_bracket] ||
             (List.first(brackets) && List.first(brackets).index)
 
         matches =

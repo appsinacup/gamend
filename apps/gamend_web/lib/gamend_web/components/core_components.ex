@@ -1278,11 +1278,12 @@ defmodule GamendWeb.CoreComponents do
   end
 
   @doc """
-  A pick of one of the site's icons (`Gamend.Icons.names/0`, every heroicon)
-  for a URL field: a group's `icon_url`, an account's `profile_url`. A radio
-  each, whose value is the icon's URL (`/icons/<name>.svg`), so a pick is
-  stored as any other icon URL is. They scroll in a box, and the one picked
-  shows beside the label. Each is a `<use>` of the icon sprite
+  A pick of one of the site's icons (`Gamend.Icons.picks/0`) for a URL field:
+  a group's `icon_url`, an account's `profile_url`. A radio each, whose value
+  is the icon's URL (`/icons/<name>.svg`), so a pick is stored as any other
+  icon URL is. A grid of whole rows, its columns by the room it has. An icon
+  stored from outside the list stays as it is, with no tile lit, until another
+  is picked. Each is a `<use>` of the icon sprite
   (`GamendWeb.Icons.sprite_path/0`), which the browser fetches once and keeps,
   so the page carries a few bytes an icon, not its SVG.
 
@@ -1298,7 +1299,7 @@ defmodule GamendWeb.CoreComponents do
 
     assigns =
       assign(assigns,
-        names: Gamend.Icons.names(),
+        names: Gamend.Icons.picks(),
         value: value,
         picked: Gamend.Icons.name(value),
         sprite: GamendWeb.Icons.sprite_path(),
@@ -1308,33 +1309,30 @@ defmodule GamendWeb.CoreComponents do
     # Keyed, so a pick re-sends the two tiles that changed, not all of them.
     ~H"""
     <fieldset :if={@names != []} id={@field.id} class="fieldset mb-2">
-      <legend :if={@label} class="label mb-1 flex items-center gap-2">
-        {@label}
-        <svg :if={@picked} class="size-5 text-base-content" fill="currentColor" aria-hidden="true">
-          <use href={@sprite <> "#" <> @picked} />
-        </svg>
-      </legend>
-      <div class="flex max-h-48 flex-wrap gap-1.5 overflow-y-auto rounded-box border border-base-300 p-2">
-        <label :for={name <- @names} :key={name} class="cursor-pointer" title={name}>
-          <input
-            type="radio"
-            name={@field.name}
-            value={Gamend.Icons.path(name)}
-            checked={@picked == name}
-            aria-label={String.replace(name, "-", " ")}
-            class="peer sr-only"
-          />
-          <span class={[
-            "flex size-9 items-center justify-center rounded-field border border-base-300",
-            "text-muted transition-colors hover:bg-base-300",
-            "peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-content",
-            "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
-          ]}>
-            <svg class="size-5" fill="currentColor" aria-hidden="true">
-              <use href={@sprite <> "#" <> name} />
-            </svg>
-          </span>
-        </label>
+      <legend :if={@label} class="label mb-1">{@label}</legend>
+      <div class="@container">
+        <div class="grid grid-cols-5 gap-1.5 @sm:grid-cols-6 @lg:grid-cols-10 @3xl:grid-cols-15">
+          <label :for={name <- @names} :key={name} class="cursor-pointer" title={name}>
+            <input
+              type="radio"
+              name={@field.name}
+              value={Gamend.Icons.path(name)}
+              checked={@picked == name}
+              aria-label={String.replace(name, "-", " ")}
+              class="peer sr-only"
+            />
+            <span class={[
+              "flex aspect-square items-center justify-center rounded-field border border-base-300",
+              "text-muted transition-colors hover:bg-base-300",
+              "peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-content",
+              "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
+            ]}>
+              <svg class="aspect-square w-1/2" fill="currentColor" aria-hidden="true">
+                <use href={@sprite <> "#" <> name} />
+              </svg>
+            </span>
+          </label>
+        </div>
       </div>
       <.error :for={msg <- @errors}>{msg}</.error>
     </fieldset>

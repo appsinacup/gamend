@@ -4,6 +4,10 @@ defmodule GamendWeb.AdminLive.Push do
   alias Gamend.Push
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload_tokens,
+    keys: [:page, :page_size, filters: [keys: ~w(platform provider status user_id)]]
+
   @impl true
   def mount(_params, _session, socket) do
     socket =

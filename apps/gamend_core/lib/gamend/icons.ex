@@ -1,10 +1,12 @@
 defmodule Gamend.Icons do
   @moduledoc """
-  The site's own icons, which people may pick instead of uploading an image:
-  a group's icon, an account's avatar. Every heroicon, by name
-  (`rocket-launch`): heroicons.com's 24px solid set, read from the host's
-  `heroicons` dependency when this compiles, the same set the website draws
-  (`GamendWeb.Icons`).
+  The site's own icons, by name (`rocket-launch`): heroicons.com's 24px solid
+  set, read from the host's `heroicons` dependency when this compiles, the same
+  set the website draws (`GamendWeb.Icons`).
+
+  People pick from a few of them instead of uploading an image, for a group's
+  icon or an account's avatar: `picks/0`. Any other still works where it is
+  stored, by an API client or from before there was a list.
 
   An icon is nothing but a URL, `path/1` (`/icons/<name>.svg`), stored where
   an uploaded image's URL would be (a group's `icon_url`, a user's
@@ -33,6 +35,25 @@ defmodule Gamend.Icons do
   @names @files |> Enum.map(&Path.basename(&1, ".svg")) |> Enum.sort()
   @name_set MapSet.new(@names)
 
+  # What looks good on a round avatar, one of a kind: no arrows, controls or
+  # documents, nothing that reads as a badge (`shield-check` as "verified"), a
+  # button (`bell`) or a site's own sections (`home`, `map`). 30 fills every row
+  # at 5, 6, 10 and 15 columns, the widths `<.icon_picker>` draws.
+  @picks if @names == [],
+           do: [],
+           else: ~w(
+             academic-cap beaker bolt book-open bug-ant
+             cake cloud cpu-chip cube face-smile
+             film fire gift globe-alt heart
+             key lifebuoy light-bulb megaphone moon
+             musical-note paint-brush paper-airplane puzzle-piece rocket-launch
+             star sun ticket trophy wrench
+           )
+
+  for name <- @picks, name not in @names do
+    raise "icon pick #{inspect(name)} is not in the heroicons set"
+  end
+
   @doc false
   # Where the set was read from, nil when the host has no heroicons; the
   # website embeds its SVGs from there.
@@ -42,6 +63,10 @@ defmodule Gamend.Icons do
   @doc "Every icon's name, sorted: `academic-cap`, …"
   @spec names() :: [String.t()]
   def names, do: @names
+
+  @doc "The icons people pick from, `academic-cap`, …: the same order everywhere."
+  @spec picks() :: [String.t()]
+  def picks, do: @picks
 
   @doc "Whether `name` is an icon's."
   @spec name?(term()) :: boolean()
@@ -60,11 +85,11 @@ defmodule Gamend.Icons do
 
   def name(_url), do: nil
 
-  @doc "An icon at random, nil when there are none."
+  @doc "One of `picks/0` at random, nil when there are none."
   @spec random() :: String.t() | nil
-  if @names == [] do
+  if @picks == [] do
     def random, do: nil
   else
-    def random, do: Enum.random(@names)
+    def random, do: Enum.random(@picks)
   end
 end

@@ -7,6 +7,10 @@ defmodule GamendWeb.LobbyLive.Index do
   alias Gamend.Lobbies
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :refresh_lobbies,
+    keys: [lobbies_page: [param: "page"]]
+
   @impl true
   def mount(_params, _session, socket) do
     # Get current user from scope if available

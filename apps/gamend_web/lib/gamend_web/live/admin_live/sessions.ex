@@ -128,6 +128,10 @@ defmodule GamendWeb.AdminLive.Sessions do
     """
   end
 
+  use GamendWeb.UrlState,
+    reload: :reload_sessions,
+    keys: [sessions_page: [param: "page"], sessions_page_size: [param: "page-size"]]
+
   @impl true
   def mount(_params, _session, socket) do
     page = 1

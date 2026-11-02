@@ -9,6 +9,10 @@ defmodule GamendWeb.AdminLive.Blacklist do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload,
+    keys: [:page, :page_size, user_filter: [param: "user"]]
+
   @impl true
   def mount(_params, _session, socket) do
     socket =

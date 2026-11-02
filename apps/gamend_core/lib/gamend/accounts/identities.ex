@@ -365,7 +365,7 @@ defmodule Gamend.Accounts.Identities do
     do: Ecto.Changeset.put_change(changeset, :device_id, nil)
 
   defp maybe_mirror_avatar(%User{profile_url: url} = user) when is_binary(url) and url != "" do
-    unless our_stored_avatar?(user) do
+    if AvatarMirror.enabled?() and not our_stored_avatar?(user) do
       _ =
         Oban.insert(
           AvatarMirror.new(

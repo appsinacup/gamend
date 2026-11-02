@@ -44,18 +44,20 @@ defmodule GamendWeb.Icons do
 
   if map_size(@svgs) == 0, do: raise("no heroicons found under #{@icons_dir}")
 
-  # Every icon as a `<symbol>` of one file, for a page that draws many at
-  # once (`<.icon_picker>`): each is then a `<use>` of a few bytes, and the
-  # file is fetched once and cached for good, its version in its URL.
+  # The icons people pick from (`Gamend.Icons.picks/0`) as `<symbol>`s of one
+  # file, for the page that draws them all at once (`<.icon_picker>`): each is
+  # then a `<use>` of a few bytes, and the file is fetched once and cached for
+  # good, its version in its URL.
   @sprite [
             ~s(<svg xmlns="http://www.w3.org/2000/svg">),
-            for {icon, svg} <- Enum.sort(@svgs) do
+            for name <- Gamend.Icons.picks() do
+              svg = Map.fetch!(@svgs, name |> String.replace("-", "_") |> String.to_atom())
               [_open, body] = String.split(svg, ">", parts: 2)
               inner = body |> String.trim() |> String.replace_suffix("</svg>", "")
 
               [
                 ~s(<symbol id="),
-                icon |> Atom.to_string() |> String.replace("_", "-"),
+                name,
                 ~s(" viewBox="0 0 24 24">),
                 inner,
                 "</symbol>"
@@ -92,7 +94,7 @@ defmodule GamendWeb.Icons do
     "hero-" <> String.replace(Atom.to_string(icon), "_", "-") <> "-solid"
   end
 
-  @doc "Every icon as a `<symbol>` with its name for id (`rocket-launch`), in one SVG."
+  @doc "Each of `Gamend.Icons.picks/0` as a `<symbol>` with its name for id (`rocket-launch`), in one SVG."
   @spec sprite() :: String.t()
   def sprite, do: @sprite
 

@@ -3412,11 +3412,6 @@ msgstr "Готово. Більше жодних листів про: %{group}."
 msgid "Done. We will not email you anything but account messages."
 msgstr "Готово. Поштою ми надсилатимемо лише повідомлення про обліковий запис."
 
-#: lib/gamend_web/live/user_live/registration.ex:47
-#, elixir-autogen, elixir-format
-msgid "Email me: %{group}"
-msgstr "Надсилати листи: %{group}"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:25
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:40
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:10

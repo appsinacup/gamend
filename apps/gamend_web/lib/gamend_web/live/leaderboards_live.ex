@@ -31,6 +31,11 @@ defmodule GamendWeb.LeaderboardsLive do
   alias GamendWeb.OnMount.SeoTitle
   alias GamendWeb.Plugs.FeatureGate
 
+  # A board's own page reads its records in `handle_params/3`.
+  use GamendWeb.UrlState,
+    reload: :reload_groups,
+    keys: [:page, :page_size, :records_page, :records_search]
+
   @impl true
   def mount(_params, _session, socket) do
     unless FeatureGate.enabled?(:list_leaderboards) do
@@ -508,18 +513,15 @@ defmodule GamendWeb.LeaderboardsLive do
 
   def handle_event("view_filter", _params, socket), do: {:noreply, socket}
 
+  # The URL changes, and `handle_params/3` reads the records.
   def handle_event("records_prev", _, socket),
-    do: {:noreply, socket |> LiveHelpers.prev_page(:records_page) |> reload_records()}
+    do: {:noreply, LiveHelpers.prev_page(socket, :records_page)}
 
   def handle_event("records_next", _, socket),
-    do: {:noreply, socket |> LiveHelpers.next_page(:records_page) |> reload_records()}
+    do: {:noreply, LiveHelpers.next_page(socket, :records_page)}
 
   def handle_event("search", %{"search" => term}, socket) do
-    {:noreply,
-     socket
-     |> assign(:records_search, term)
-     |> assign(:records_page, 1)
-     |> reload_records()}
+    {:noreply, assign(socket, records_search: term, records_page: 1)}
   end
 
   # ---------------------------------------------------------------------------
@@ -634,8 +636,6 @@ defmodule GamendWeb.LeaderboardsLive do
          Scope.user_id(socket.assigns[:current_scope])
        )
      )
-     |> assign(:records_page, 1)
-     |> assign(:records_search, "")
      |> reload_records()}
   end
 

@@ -312,6 +312,15 @@ defmodule GamendWeb.AdminLive.Geo do
     """
   end
 
+  use GamendWeb.UrlState,
+    reload: :load_snapshot,
+    keys: [
+      :search,
+      window: [in: Enum.map(@windows, &elem(&1, 1))],
+      traffic: [in: Enum.map(@traffic, &elem(&1, 1))],
+      sort: [in: [:count, :alpha]]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     if connected?(socket), do: schedule_refresh()

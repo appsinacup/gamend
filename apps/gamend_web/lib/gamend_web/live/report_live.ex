@@ -34,6 +34,9 @@ defmodule GamendWeb.ReportLive do
 
   @upload_accept ~w(.png .jpg .jpeg .webp)
 
+  # A kind and a topic are what a link names; `handle_params/3` checks the topic.
+  use GamendWeb.UrlState, keys: [topic: [type: :nilable]]
+
   @impl true
   def mount(_params, session, socket) do
     kinds = Enum.filter(Reports.kinds(), &Reports.ui/1)
@@ -86,7 +89,7 @@ defmodule GamendWeb.ReportLive do
         |> reset_form()
         |> assign(:topic, prefill_topic(kind, params))
       else
-        socket
+        assign(socket, :topic, valid_topic(kind, socket.assigns.topic))
       end
 
     {:noreply, socket}
@@ -400,6 +403,7 @@ defmodule GamendWeb.ReportLive do
             module={KindUI.subject_component(@ui)}
             id={"report-subject-#{@kind.key()}-#{@form_key}"}
             query={@query}
+            path={@path}
             topic={@topic}
             locale={@locale}
             current_scope={@current_scope}

@@ -252,6 +252,18 @@ defmodule GamendWeb.AdminLive.KV do
     """
   end
 
+  use GamendWeb.UrlState,
+    reload: :reload_from_url,
+    drop: ~w(user_id),
+    keys: [
+      :page,
+      :page_size,
+      filter_key: [param: "key"],
+      filter_user_id: [param: "user"],
+      filter_lobby_id: [param: "lobby"],
+      filter_global_only: [param: "global"]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     page = 1
@@ -529,6 +541,27 @@ defmodule GamendWeb.AdminLive.KV do
                "Update failed: #{changeset_error_summary(changeset)}"
              )}
         end
+    end
+  end
+
+  # From the URL: the form says what the list shows, and an id that cannot be
+  # one is let go, as the form lets it go.
+  defp reload_from_url(socket) do
+    params = %{
+      "key" => socket.assigns.filter_key || "",
+      "user_id" => socket.assigns.filter_user_id || "",
+      "lobby_id" => socket.assigns.filter_lobby_id || "",
+      "global_only" => to_string(socket.assigns.filter_global_only)
+    }
+
+    socket = assign(socket, :filter_form, to_form(params, as: :filters))
+
+    case filters_from_params(params) do
+      {:ok, filters} ->
+        socket |> assign(filters) |> reload_entries()
+
+      {:error, _message} ->
+        socket |> assign(filter_user_id: nil, filter_lobby_id: nil) |> reload_entries()
     end
   end
 

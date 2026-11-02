@@ -20,6 +20,17 @@ defmodule GamendWeb.AdminLive.ChatFilter do
     "lang" => ""
   }
 
+  use GamendWeb.UrlState,
+    reload: :reload,
+    drop: ~w(word),
+    keys: [
+      :page,
+      :page_size,
+      word_filter: [param: "q"],
+      severity_filter: [param: "severity"],
+      lang_filter: [param: "lang"]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     languages = Moderation.bundled_languages()

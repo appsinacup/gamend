@@ -3316,11 +3316,6 @@ msgstr "완료되었습니다. 더 이상 이메일을 보내지 않습니다: %
 msgid "Done. We will not email you anything but account messages."
 msgstr "완료되었습니다. 이제 계정 관련 메시지만 이메일로 보냅니다."
 
-#: lib/gamend_web/live/user_live/registration.ex:47
-#, elixir-autogen, elixir-format
-msgid "Email me: %{group}"
-msgstr "이메일로 알려 주기: %{group}"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:25
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:40
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:10

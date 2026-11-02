@@ -8,6 +8,16 @@ defmodule GamendWeb.AdminLive.Lobbies do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload_view,
+    keys: [
+      lobbies_page: [param: "page"],
+      lobbies_page_size: [param: "page-size"],
+      sort_by: [param: "sort"],
+      filters: [keys: ~w(title state is_hidden is_locked has_password min_users max_users)],
+      members_of: [param: "members"]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     Lobbies.subscribe_lobbies()
@@ -22,6 +32,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
       |> assign(:form, nil)
       |> assign(:selected_ids, MapSet.new())
       |> assign(:members, [])
+      |> assign(:members_of, nil)
       |> assign(:ready_check, nil)
       |> assign(:show_members, false)
       |> assign(:show_create, false)
@@ -583,6 +594,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
       {:noreply,
        socket
        |> assign(:selected_lobby, lobby)
+       |> assign(:members_of, lobby.id)
        |> assign(:members, lobby_members(lobby.id))
        |> assign(:ready_check, ReadyChecks.pending_for_lobby(lobby.id))
        |> assign(:show_members, true)
@@ -610,6 +622,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
     {:noreply,
      socket
      |> assign(:selected_lobby, nil)
+     |> assign(:members_of, nil)
      |> assign(:members, [])
      |> assign(:ready_check, nil)
      |> assign(:show_members, false)}
@@ -901,6 +914,24 @@ defmodule GamendWeb.AdminLive.Lobbies do
   def handle_info({event, _payload}, socket)
       when event in [:lobby_created, :lobby_updated, :lobby_deleted, :lobby_membership_changed] do
     {:noreply, reload_lobbies(socket)}
+  end
+
+  # From the URL: the list, and the members panel it names.
+  defp reload_view(socket) do
+    socket = reload_lobbies(socket)
+
+    case socket.assigns.members_of && Lobbies.get_lobby(socket.assigns.members_of) do
+      nil ->
+        assign(socket, members_of: nil, members: [], ready_check: nil, show_members: false)
+
+      lobby ->
+        assign(socket,
+          selected_lobby: lobby,
+          members: lobby_members(lobby.id),
+          ready_check: ReadyChecks.pending_for_lobby(lobby.id),
+          show_members: true
+        )
+    end
   end
 
   defp reload_lobbies(socket) do

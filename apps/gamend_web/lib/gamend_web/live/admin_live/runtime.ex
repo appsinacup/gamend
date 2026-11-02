@@ -36,6 +36,9 @@ defmodule GamendWeb.AdminLive.Runtime do
 
   @tab_keys Enum.map(@tabs, &elem(&1, 0))
 
+  use GamendWeb.UrlState,
+    keys: [:search, :facet, :page, :page_size, :expanded, :show_diagram]
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
@@ -53,15 +56,13 @@ defmodule GamendWeb.AdminLive.Runtime do
   @impl true
   def handle_params(params, _uri, socket) do
     tab = if params["tab"] in @tab_keys, do: params["tab"], else: "hooks"
+    moved? = socket.assigns[:tab] != tab
+    socket = assign(socket, :tab, tab)
 
     {:noreply,
      socket
-     |> assign(:tab, tab)
-     |> assign(:search, "")
-     |> assign(:facet, "all")
-     |> assign(:page, 1)
-     |> assign(:expanded, MapSet.new())
-     |> load_rows()
+     |> then(&if(moved?, do: load_rows(&1), else: &1))
+     |> ensure_diagram()
      |> paginate()}
   end
 
@@ -95,18 +96,18 @@ defmodule GamendWeb.AdminLive.Runtime do
   end
 
   def handle_event("toggle_diagram", _params, socket) do
-    socket = assign(socket, :show_diagram, not socket.assigns.show_diagram)
-
-    # Built once, on first reveal: the schema cannot change while the page is
-    # open, so there is nothing to invalidate.
-    if socket.assigns.show_diagram and socket.assigns.diagram == nil do
-      {:noreply, assign(socket, :diagram, Introspection.mermaid_domain_flowchart())}
-    else
-      {:noreply, socket}
-    end
+    {:noreply,
+     socket |> assign(:show_diagram, not socket.assigns.show_diagram) |> ensure_diagram()}
   end
 
   # ── data ──────────────────────────────────────────────────────────────────
+
+  # Built once, on first reveal: the schema cannot change while the page is
+  # open, so there is nothing to invalidate.
+  defp ensure_diagram(%{assigns: %{show_diagram: true, diagram: nil}} = socket),
+    do: assign(socket, :diagram, Introspection.mermaid_domain_flowchart())
+
+  defp ensure_diagram(socket), do: socket
 
   defp load_rows(socket) do
     {_key, _label, provider, _facet} = current_tab(socket.assigns)

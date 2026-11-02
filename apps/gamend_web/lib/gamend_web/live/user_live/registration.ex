@@ -3,7 +3,6 @@ defmodule GamendWeb.UserLive.Registration do
 
   alias Gamend.Accounts
   alias Gamend.Accounts.{Scope, User, UserToken}
-  alias Gamend.Notifications.Preferences
   alias Gamend.Repo
 
   @impl true
@@ -32,24 +31,6 @@ defmodule GamendWeb.UserLive.Registration do
             required
             phx-mounted={JS.focus()}
           />
-
-          <%!-- Opt-in, never pre-ticked: `Preferences.signup_groups/0`. --%>
-          <fieldset :if={@signup_groups != []} class="my-3 space-y-2">
-            <label
-              :for={group <- @signup_groups}
-              class="flex items-center gap-2 text-sm"
-            >
-              <input
-                type="checkbox"
-                name={"notify[#{group.key}]"}
-                value="true"
-                id={"registration-notify-#{group.key}"}
-                checked={@notify[group.key] == "true"}
-                class="checkbox checkbox-sm"
-              />
-              {gettext("Email me: %{group}", group: GamendWeb.NotificationEmail.group_label(group))}
-            </label>
-          </fieldset>
 
           <.captcha id="registration_captcha" />
 
@@ -93,8 +74,6 @@ defmodule GamendWeb.UserLive.Registration do
      socket
      |> assign(:page_title, gettext("Register"))
      |> assign(:client_ip, client_ip)
-     |> assign(:signup_groups, Preferences.signup_groups())
-     |> assign(:notify, %{})
      # Where a guest goes once registered (`after_registration/1`).
      |> assign(:return_to, session["user_return_to"])
      |> assign_form(changeset), temporary_assigns: [form: nil]}
@@ -104,7 +83,7 @@ defmodule GamendWeb.UserLive.Registration do
   def handle_event("save", %{"user" => user_params} = params, socket) do
     with :ok <- GamendWeb.LiveHelpers.check_rate_limit(socket.assigns.client_ip, :auth),
          :ok <- GamendWeb.LiveHelpers.check_captcha(socket, params) do
-      do_save(user_params, Map.get(params, "notify", %{}), socket)
+      do_save(user_params, socket)
     else
       {:error, %Phoenix.LiveView.Socket{} = socket} ->
         {:noreply, socket}
@@ -115,7 +94,7 @@ defmodule GamendWeb.UserLive.Registration do
     end
   end
 
-  def handle_event("validate", %{"user" => user_params} = params, socket) do
+  def handle_event("validate", %{"user" => user_params}, socket) do
     # The keystroke path skips the uniqueness query — see
     # `Accounts.change_user_registration_for_validation/2` for why. `save`
     # below uses the checking form.
@@ -124,12 +103,7 @@ defmodule GamendWeb.UserLive.Registration do
       |> Accounts.change_user_registration_for_validation(user_params)
       |> Map.put(:action, :validate)
 
-    # The boxes are not in the changeset, so a re-render would untick them:
-    # keep what the reader ticked.
-    {:noreply,
-     socket
-     |> assign(:notify, notify_params(params))
-     |> assign_form(changeset)}
+    {:noreply, assign_form(socket, changeset)}
   end
 
   # A guest's account is the one they just registered, with everything they
@@ -145,9 +119,6 @@ defmodule GamendWeb.UserLive.Registration do
 
   defp after_registration(socket), do: push_navigate(socket, to: ~p"/users/log_in")
 
-  defp notify_params(%{"notify" => %{} = notify}), do: notify
-  defp notify_params(_params), do: %{}
-
   # A guest's email goes on the account they already have, which keeps what
   # they did; anyone else gets a new account.
   defp register(socket, user_params, notifier) do
@@ -162,14 +133,12 @@ defmodule GamendWeb.UserLive.Registration do
     end
   end
 
-  defp do_save(user_params, notify, socket) do
+  defp do_save(user_params, socket) do
     notifier =
       Application.get_env(:gamend_web, :user_notifier, Gamend.Accounts.UserNotifier)
 
     case register(socket, user_params, notifier) do
       {:ok, user} ->
-        opt_in(user, notify, socket.assigns.signup_groups)
-
         # Check if this is the first user (admin users are auto-created as first user)
         is_first_user = user.is_admin
 
@@ -220,14 +189,6 @@ defmodule GamendWeb.UserLive.Registration do
          |> assign_form(Map.put(changeset, :action, :insert))}
     end
   end
-
-  defp opt_in(user, notify, groups) when is_map(notify) do
-    for %{key: key} <- groups, notify[key] == "true" do
-      Preferences.put(user, key, "email", true)
-    end
-  end
-
-  defp opt_in(_user, _notify, _groups), do: []
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     form = to_form(changeset, as: "user")

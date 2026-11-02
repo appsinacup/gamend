@@ -152,11 +152,10 @@ defmodule GamendWeb.UserLive.SettingsTest do
     end
 
     test "redirects if user is not logged in", %{conn: conn} do
-      assert {:error, redirect} = live(conn, ~p"/users/settings")
+      assert {:error, {:redirect, redirect}} = live(conn, ~p"/users/settings")
 
-      assert {:redirect, %{to: path, flash: flash}} = redirect
-      assert path == "/users/log_in?return_to=%2Fusers%2Fsettings"
-      assert %{"error" => "Failed"} = flash
+      assert redirect.to == "/users/log_in?return_to=%2Fusers%2Fsettings"
+      assert Map.get(redirect, :flash, %{}) == %{}
     end
   end
 
@@ -574,15 +573,13 @@ defmodule GamendWeb.UserLive.SettingsTest do
 
     test "redirects if user is not logged in", %{token: token} do
       conn = build_conn()
-      {:error, redirect} = live(conn, ~p"/users/settings/confirm_email/#{token}")
-      assert {:redirect, %{to: path, flash: flash}} = redirect
+      {:error, {:redirect, redirect}} = live(conn, ~p"/users/settings/confirm_email/#{token}")
 
-      assert path ==
+      assert redirect.to ==
                "/users/log_in?" <>
                  URI.encode_query(%{"return_to" => "/users/settings/confirm_email/#{token}"})
 
-      assert %{"error" => message} = flash
-      assert message == "Failed"
+      assert Map.get(redirect, :flash, %{}) == %{}
     end
   end
 

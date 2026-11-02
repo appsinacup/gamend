@@ -6,6 +6,10 @@ defmodule GamendWeb.AdminLive.Notifications do
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.NotificationsTab
 
+  use GamendWeb.UrlState,
+    reload: :reload_notifications,
+    keys: [:page, :page_size, filters: [keys: ~w(sender_id title user_id)]]
+
   @impl true
   def mount(_params, _session, socket) do
     user = Scope.user(socket.assigns.current_scope)

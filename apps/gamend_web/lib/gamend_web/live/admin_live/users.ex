@@ -750,22 +750,26 @@ defmodule GamendWeb.AdminLive.Users do
     """
   end
 
+  use GamendWeb.UrlState,
+    reload: :reload_users,
+    keys: [
+      users_page: [param: "page"],
+      users_page_size: [param: "page-size"],
+      search_query: [param: "q"],
+      filters: [param: "filter"],
+      sort_field: [param: "sort"],
+      sort_dir: [param: "dir", in: ~w(asc desc)]
+    ]
+
   @impl true
-  def mount(params, _session, socket) do
+  def mount(_params, _session, socket) do
     # paginated admin users view (admins can see all users)
     page = 1
     page_size = 25
     sort_field = "inserted_at"
     sort_dir = "desc"
-
-    # Support ?filter=unactivated (dashboard link) and ?filter=unverified
-    initial_filters =
-      case params["filter"] do
-        "unactivated" -> ["unactivated"]
-        "unverified" -> ["unverified"]
-        "banned" -> ["banned"]
-        _ -> []
-      end
+    # `?filter=unactivated` (the dashboard's link) is read from the URL.
+    initial_filters = []
 
     {users, total_count, total_pages} =
       load_users(
@@ -1325,6 +1329,21 @@ defmodule GamendWeb.AdminLive.Users do
   # else that needs an admin user listing. The sort is passed on every call:
   # a default here re-sorted by Created while the button still showed the
   # admin's chosen column and arrow.
+  # From the URL: the list as it says.
+  defp reload_users(socket) do
+    %{users_page: page, users_page_size: page_size, search_query: q, filters: filters} =
+      socket.assigns
+
+    {users, total_count, total_pages} =
+      load_users(page, page_size, q, filters, socket.assigns.sort_field, socket.assigns.sort_dir)
+
+    socket
+    |> assign(:recent_users, users)
+    |> assign(:users_count, total_count)
+    |> assign(:users_total_pages, total_pages)
+    |> sync_selected_ids(user_ids(users))
+  end
+
   defp load_users(page, page_size, search, filters, sort_field, sort_dir) do
     query_filters = %{search: search || "", facets: filters}
     opts = [page: page, page_size: page_size, sort_field: sort_field, sort_dir: sort_dir]

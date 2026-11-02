@@ -7,6 +7,10 @@ defmodule GamendWeb.AdminLive.Leaderboards do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload_view,
+    keys: [:page, :page_size, :filter, :records_page, records_of: [param: "records"]]
+
   @impl true
   def mount(_params, _session, socket) do
     socket =
@@ -16,6 +20,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
       |> assign(:filter, "all")
       |> assign(:selected_leaderboard, nil)
       |> assign(:viewing_records, false)
+      |> assign(:records_of, nil)
       |> assign(:records_page, 1)
       |> assign(:form, nil)
       |> assign(:record_form, nil)
@@ -634,6 +639,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
        socket
        |> assign(:selected_leaderboard, leaderboard)
        |> assign(:viewing_records, true)
+       |> assign(:records_of, leaderboard.id)
        |> assign(:records_page, 1)
        |> reload_records()}
     end)
@@ -644,6 +650,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
      socket
      |> assign(:selected_leaderboard, nil)
      |> assign(:viewing_records, false)
+     |> assign(:records_of, nil)
      |> assign(:records, [])}
   end
 
@@ -789,6 +796,21 @@ defmodule GamendWeb.AdminLive.Leaderboards do
       # changesets — a crash, not a message.
       {:error, reason} ->
         {:noreply, put_flash(socket, :error, "Could not save record: #{reason}")}
+    end
+  end
+
+  # From the URL: the list, and the board whose records it names.
+  defp reload_view(socket) do
+    socket = reload_leaderboards(socket)
+
+    case socket.assigns.records_of && Leaderboards.get_leaderboard(socket.assigns.records_of) do
+      nil ->
+        assign(socket, records_of: nil, viewing_records: false, records: [])
+
+      leaderboard ->
+        socket
+        |> assign(selected_leaderboard: leaderboard, viewing_records: true)
+        |> reload_records()
     end
   end
 

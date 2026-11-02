@@ -9,6 +9,10 @@ defmodule GamendWeb.AdminLive.Storage do
   alias Gamend.Storage
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload,
+    keys: [:page, :page_size, :prefix]
+
   @impl true
   def mount(_params, _session, socket) do
     socket =

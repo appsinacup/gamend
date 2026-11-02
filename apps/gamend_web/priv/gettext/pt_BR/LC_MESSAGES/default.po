@@ -3364,11 +3364,6 @@ msgstr "Pronto. Você não recebe mais e-mails sobre: %{group}."
 msgid "Done. We will not email you anything but account messages."
 msgstr "Pronto. Só enviaremos por e-mail as mensagens da sua conta."
 
-#: lib/gamend_web/live/user_live/registration.ex:47
-#, elixir-autogen, elixir-format
-msgid "Email me: %{group}"
-msgstr "Me envie um e-mail: %{group}"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:25
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:40
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:10

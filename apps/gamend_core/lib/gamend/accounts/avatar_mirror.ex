@@ -16,6 +16,12 @@ defmodule Gamend.Accounts.AvatarMirror do
   provider URL stays in `profile_url`, but nothing shows it: every page and
   payload reads `User.public_avatar_url/1`, which answers nil for it, so the
   player has the default icon instead of a hotlink to the provider.
+
+  A copy is a player's picture in public storage, unscreened, so a host that
+  closes `user_image_uploads` gets none (`enabled?/0`): nothing is enqueued, a
+  job already queued is cancelled, and the player has the default icon. Cancelled
+  rather than done, since a completed job would keep the same URL from being
+  mirrored once the gate opens again.
   """
   use Oban.Worker, queue: :storage, max_attempts: 5
 
@@ -24,14 +30,28 @@ defmodule Gamend.Accounts.AvatarMirror do
   alias Gamend.Accounts
   alias Gamend.Storage
 
+  @doc """
+  Whether a provider's picture may be copied: not while `GamendWeb.Features` has
+  `user_image_uploads` off. A flag of the web app, so it is on where that app is
+  not loaded.
+  """
+  @spec enabled?() :: boolean()
+  def enabled? do
+    not Code.ensure_loaded?(GamendWeb.Features) or
+      Gamend.Settings.get(GamendWeb.Features, :user_image_uploads) != false
+  end
+
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"user_id" => user_id, "source_url" => source_url}}) do
     case Accounts.get_user(user_id) do
       # Mirror only while the stored avatar is still exactly the provider URL we
       # were asked to mirror. If the user has since uploaded or changed it, or is
       # gone, there is nothing to do and nothing to retry.
-      %{profile_url: ^source_url} = user -> mirror(user, source_url)
-      _ -> :ok
+      %{profile_url: ^source_url} = user ->
+        if enabled?(), do: mirror(user, source_url), else: {:cancel, :image_uploads_closed}
+
+      _ ->
+        :ok
     end
   rescue
     e ->

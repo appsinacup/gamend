@@ -9,6 +9,17 @@ defmodule GamendWeb.AdminLive.Quests do
   @resets Quest.resets()
   @statuses ~w(active completed claimed)
 
+  use GamendWeb.UrlState,
+    reload: :reload_view,
+    keys: [
+      :page,
+      :page_size,
+      :progress_page,
+      :progress_page_size,
+      category_filter: [param: "category"],
+      progress_filters: [keys: ~w(user_id quest_key status)]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     Quests.subscribe_quests()
@@ -664,6 +675,8 @@ defmodule GamendWeb.AdminLive.Quests do
   # ---------------------------------------------------------------------------
   # Helpers
   # ---------------------------------------------------------------------------
+
+  defp reload_view(socket), do: socket |> reload_quests() |> reload_progress()
 
   defp reload_quests(socket) do
     page = socket.assigns[:page] || 1

@@ -3364,11 +3364,6 @@ msgstr "Færdig. Ikke flere e-mails om: %{group}."
 msgid "Done. We will not email you anything but account messages."
 msgstr "Færdig. Vi sender dig kun beskeder om din konto på e-mail."
 
-#: lib/gamend_web/live/user_live/registration.ex:47
-#, elixir-autogen, elixir-format
-msgid "Email me: %{group}"
-msgstr "Send mig en e-mail: %{group}"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:25
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:40
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:10

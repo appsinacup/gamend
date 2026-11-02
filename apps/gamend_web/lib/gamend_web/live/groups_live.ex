@@ -15,6 +15,26 @@ defmodule GamendWeb.GroupsLive do
 
   @impl true
   def mount(_params, _session, socket) do
+    if socket.assigns.live_action == :index and Groups.types() == ["hidden"] and
+         FeatureGate.enabled?(:web_groups) do
+      mount_intro(socket)
+    else
+      mount_directory(socket)
+    end
+  end
+
+  # A host whose groups are all hidden (Forge, Gamend Cloud) has nothing to
+  # list, so no `list_groups` either: a visitor pressing its Groups link reads
+  # what a group is, and a signed-in reader goes to theirs, `/users/groups`,
+  # which such a host mounts (`gamend_authenticated_live_routes/2`).
+  defp mount_intro(socket) do
+    case Scope.user(socket.assigns[:current_scope]) do
+      nil -> {:ok, assign(socket, intro?: true, page_title: gettext("Groups"))}
+      _user -> {:ok, redirect(socket, to: ~p"/users/groups")}
+    end
+  end
+
+  defp mount_directory(socket) do
     unless FeatureGate.enabled?(:list_groups) and FeatureGate.enabled?(:web_groups) do
       raise GamendWeb.NotFoundError
     end
@@ -68,6 +88,8 @@ defmodule GamendWeb.GroupsLive do
   end
 
   @impl true
+  def handle_params(_params, _uri, %{assigns: %{intro?: true}} = socket), do: {:noreply, socket}
+
   def handle_params(params, _uri, socket) do
     case socket.assigns.live_action do
       :show ->
@@ -391,6 +413,49 @@ defmodule GamendWeb.GroupsLive do
   # ── Render ──────────────────────────────────────────────────────────────────
 
   @impl true
+  def render(%{intro?: true} = assigns) do
+    ~H"""
+    <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
+      <div class="space-y-6">
+        <div class="flex items-center gap-3">
+          <.back_link href={home_path()} />
+          <.page_title
+            icon={GamendWeb.HostLayouts.nav_icon("/groups", "hero-user-group-solid")}
+            tone={GamendWeb.HostLayouts.nav_tone("/groups")}
+          >
+            {gettext("Groups")}
+          </.page_title>
+        </div>
+
+        <div id="groups-intro" class="card bg-base-200">
+          <div class="card-body gap-4">
+            <p>{gettext("A group is a team. Only people it invites can see it.")}</p>
+            <p>{gettext("Register or log in to create groups.")}</p>
+            <div class="flex flex-wrap gap-2">
+              <.link
+                id="groups-register"
+                href={~p"/users/register?#{[return_to: "/users/groups"]}"}
+                class="btn btn-primary btn-sm"
+              >
+                <.icon name="hero-user-plus-solid" class="size-4" />
+                {gettext("Register")}
+              </.link>
+              <.link
+                id="groups-log-in"
+                href={~p"/users/log_in?#{[return_to: "/users/groups"]}"}
+                class="btn btn-surface btn-sm"
+              >
+                <.icon name="hero-arrow-right-on-rectangle-solid" class="size-4" />
+                {gettext("Log in")}
+              </.link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layouts.app>
+    """
+  end
+
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>

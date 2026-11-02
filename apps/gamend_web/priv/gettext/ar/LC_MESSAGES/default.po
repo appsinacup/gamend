@@ -3556,11 +3556,6 @@ msgstr "تم. لا مزيد من الرسائل عن: %{group}."
 msgid "Done. We will not email you anything but account messages."
 msgstr "تم. لن نرسل إليك بالبريد سوى رسائل الحساب."
 
-#: lib/gamend_web/live/user_live/registration.ex:47
-#, elixir-autogen, elixir-format
-msgid "Email me: %{group}"
-msgstr "راسلني بالبريد: %{group}"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:25
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:40
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:10

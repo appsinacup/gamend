@@ -7,6 +7,10 @@ defmodule GamendWeb.NotificationsLive do
 
   @page_size 25
 
+  use GamendWeb.UrlState,
+    reload: :reload_notifications,
+    keys: [notif_page: [param: "page"], notif_page_size: [param: "page-size"]]
+
   @impl true
   def render(assigns) do
     ~H"""

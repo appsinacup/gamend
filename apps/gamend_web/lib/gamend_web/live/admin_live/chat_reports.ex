@@ -19,6 +19,15 @@ defmodule GamendWeb.AdminLive.ChatReports do
   @form_keys ~w(duration scope scope_ref_id reason message notify_user notify_reporter
                 reporter_message)
 
+  use GamendWeb.UrlState,
+    reload: :reload,
+    keys: [
+      :page,
+      :page_size,
+      status_filter: [param: "status"],
+      user_filter: [param: "reported_user_id"]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     socket =
@@ -33,20 +42,6 @@ defmodule GamendWeb.AdminLive.ChatReports do
 
     {:ok, socket}
   end
-
-  # Deep-link from the /admin card ("open reports") and from the user admin page.
-  @impl true
-  def handle_params(params, _uri, socket)
-      when is_map_key(params, "status") or is_map_key(params, "reported_user_id") do
-    {:noreply,
-     socket
-     |> assign(:status_filter, param(params, "status", socket.assigns.status_filter))
-     |> assign(:user_filter, param(params, "reported_user_id", socket.assigns.user_filter))
-     |> assign(:page, 1)
-     |> reload()}
-  end
-
-  def handle_params(_params, _uri, socket), do: {:noreply, socket}
 
   @impl true
   def handle_event("filter", params, socket) do

@@ -5,6 +5,16 @@ defmodule GamendWeb.AdminLive.Parties do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload_view,
+    keys: [
+      parties_page: [param: "page"],
+      parties_page_size: [param: "page-size"],
+      sort_by: [param: "sort"],
+      filters: [keys: ~w(leader_id min_size max_size)],
+      members_of: [param: "members"]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     Parties.subscribe_parties()
@@ -18,6 +28,7 @@ defmodule GamendWeb.AdminLive.Parties do
       |> assign(:selected_party, nil)
       |> assign(:form, nil)
       |> assign(:members, [])
+      |> assign(:members_of, nil)
       |> assign(:show_members, false)
       |> assign(:selected_ids, MapSet.new())
       |> assign(:show_create, false)
@@ -618,6 +629,7 @@ defmodule GamendWeb.AdminLive.Parties do
       {:noreply,
        socket
        |> assign(:selected_party, party)
+       |> assign(:members_of, party.id)
        |> assign(:members, Parties.get_party_members(party.id))
        |> assign(:show_members, true)
        |> assign(:form, nil)
@@ -630,6 +642,7 @@ defmodule GamendWeb.AdminLive.Parties do
     {:noreply,
      socket
      |> assign(:selected_party, nil)
+     |> assign(:members_of, nil)
      |> assign(:members, [])
      |> assign(:show_members, false)
      |> assign(:add_member_id, "")}
@@ -739,6 +752,23 @@ defmodule GamendWeb.AdminLive.Parties do
   # ---------------------------------------------------------------------------
   # Private
   # ---------------------------------------------------------------------------
+
+  # From the URL: the list, and the members panel it names.
+  defp reload_view(socket) do
+    socket = reload_parties(socket)
+
+    case socket.assigns.members_of && Parties.get_party(socket.assigns.members_of) do
+      nil ->
+        assign(socket, members_of: nil, members: [], show_members: false)
+
+      party ->
+        assign(socket,
+          selected_party: party,
+          members: Parties.get_party_members(party.id),
+          show_members: true
+        )
+    end
+  end
 
   defp reload_parties(socket) do
     page = socket.assigns[:parties_page] || 1

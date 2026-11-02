@@ -20,8 +20,7 @@ defmodule GamendWeb.NotificationSettingsTest do
   @streak %{
     key: "streak",
     label: "Streak about to end",
-    defaults: %{"in_app" => true, "email" => false, "push" => false},
-    signup: true
+    defaults: %{"in_app" => true, "email" => false, "push" => false}
   }
 
   setup do
@@ -88,31 +87,6 @@ defmodule GamendWeb.NotificationSettingsTest do
 
       lv |> element("#notify-off_all") |> render_click()
       refute Preferences.off?(reload(user), "off_all")
-    end
-  end
-
-  describe "sign-up" do
-    test "the email is offered unticked, and a tick opts in", %{conn: conn} do
-      _existing = user_fixture()
-      {:ok, lv, html} = live(conn, ~p"/users/register")
-      assert html =~ "Email me: Streak about to end"
-      refute has_element?(lv, "#registration-notify-streak[checked]")
-
-      email = unique_user_email()
-
-      # Typing re-renders the form; a ticked box must stay ticked.
-      lv
-      |> form("#registration_form", user: %{email: email})
-      |> render_change(%{"notify" => %{"streak" => "true"}})
-
-      assert has_element?(lv, "#registration-notify-streak[checked]")
-
-      lv
-      |> form("#registration_form", user: valid_user_attributes(email: email))
-      |> render_submit(%{"notify" => %{"streak" => "true"}})
-
-      user = Gamend.Repo.get_by!(Accounts.User, email: email)
-      assert Preferences.enabled?(user, "streak", "email")
     end
   end
 

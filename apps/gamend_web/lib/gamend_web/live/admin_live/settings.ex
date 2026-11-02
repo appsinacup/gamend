@@ -18,6 +18,10 @@ defmodule GamendWeb.AdminLive.Settings do
 
   alias Gamend.Settings
 
+  use GamendWeb.UrlState,
+    reload: :assign_rows,
+    keys: [:filter, group_filter: [param: "group", type: :atom]]
+
   @impl true
   def mount(_params, _session, socket) do
     {failures, warnings} = Settings.validate(environment())

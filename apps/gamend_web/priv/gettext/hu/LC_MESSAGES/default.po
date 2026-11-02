@@ -3365,11 +3365,6 @@ msgstr "Kész. Nem kapsz több e-mailt erről: %{group}."
 msgid "Done. We will not email you anything but account messages."
 msgstr "Kész. E-mailben már csak a fiókodról szóló üzeneteket küldjük."
 
-#: lib/gamend_web/live/user_live/registration.ex:47
-#, elixir-autogen, elixir-format
-msgid "Email me: %{group}"
-msgstr "Küldj e-mailt: %{group}"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:25
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:40
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:10

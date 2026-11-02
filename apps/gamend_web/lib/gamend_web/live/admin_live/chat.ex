@@ -4,6 +4,10 @@ defmodule GamendWeb.AdminLive.Chat do
   alias Gamend.Chat
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload_messages,
+    keys: [:page, :page_size, filters: [keys: ~w(chat_ref_id chat_type content sender_id)]]
+
   @impl true
   def mount(_params, _session, socket) do
     socket =

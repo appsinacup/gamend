@@ -18,8 +18,7 @@ defmodule Gamend.Notifications.PreferencesTest do
     key: "streak",
     label: "Streak about to end",
     defaults: %{"in_app" => true, "email" => false, "push" => false},
-    types: ["streak_ending"],
-    signup: true
+    types: ["streak_ending"]
   }
 
   setup do
@@ -82,10 +81,6 @@ defmodule Gamend.Notifications.PreferencesTest do
       assert Preferences.group_for_type("chat_warning") == "reports"
       assert Preferences.group_for_type("report") == "moderation"
       assert Preferences.group_for_type(nil) == nil
-    end
-
-    test "only opted-in host groups are offered at sign-up" do
-      assert Enum.map(Preferences.signup_groups(), & &1.key) == ["streak"]
     end
 
     test "the choices stay private: not in metadata", %{user: user} do

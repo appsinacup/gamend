@@ -3316,11 +3316,6 @@ msgstr "完了しました。次のメールは届きません: %{group}。"
 msgid "Done. We will not email you anything but account messages."
 msgstr "完了しました。今後メールで届くのはアカウントに関するお知らせだけです。"
 
-#: lib/gamend_web/live/user_live/registration.ex:47
-#, elixir-autogen, elixir-format
-msgid "Email me: %{group}"
-msgstr "メールで知らせる: %{group}"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:25
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:40
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:10

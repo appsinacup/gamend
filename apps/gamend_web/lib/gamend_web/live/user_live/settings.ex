@@ -24,6 +24,10 @@ defmodule GamendWeb.UserLive.Settings do
   alias GamendWeb.UserLive.Settings.Shared
   alias GamendWeb.UserLive.Settings.WalletTab
 
+  # Each tab's place: `handle_params/3` loads the open tab after these are read.
+  use GamendWeb.UrlState,
+    keys: [:ledger_page, :items_page, :devices_page, :api_tokens_page, :kv_page, :kv_key_filter]
+
   @valid_tabs ~w(account notifications friends groups wallet items payments data devices
                  api_tokens)
 
@@ -32,7 +36,7 @@ defmodule GamendWeb.UserLive.Settings do
   @feature_tabs %{"groups" => :web_groups, "friends" => :web_friends}
 
   @account_events ~w(validate_email update_email validate_display_name update_display_name
-                     validate_username update_username validate_avatar save_avatar cancel_avatar
+                     validate_username update_username validate_avatar cancel_avatar
                      pick_avatar_icon
                      validate_password update_password unlink_provider delete_user
                      delete_conflicting_account)
@@ -53,7 +57,12 @@ defmodule GamendWeb.UserLive.Settings do
   @impl true
   def render(assigns) do
     ~H"""
-    <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
+    <Layouts.app
+      flash={@flash}
+      current_scope={@current_scope}
+      current_path={assigns[:current_path]}
+      nav_key={@user.profile_url}
+    >
       <div data-heading-fit class="flex items-center gap-3">
         <.back_link href={home_path()} />
         <.page_title icon="hero-user-circle-solid">{gettext("Account")}</.page_title>

@@ -90,6 +90,11 @@ def emit_function(model: Model, op: dict, file: str, name: str) -> str:
     out = wrap(op["summary"], 76, "///")
     out.append(f"/// `{op['method']} {op['path']}`")
     out.append(f"pub fn {name}({', '.join(args)}) -> any {{")
+    # A left-out id is nil, and a path built on it asks for something else.
+    for param in op["path_params"]:
+        out.append(f"    if {safe(param)} == nil {{")
+        out.append(f"        return core::missing({called}, {json.dumps(param)});")
+        out.append("    }")
     for field in required_body:
         out.append(f"    if !core::given(params, {json.dumps(field)}) {{")
         out.append(f"        return core::missing({called}, {json.dumps(field)});")
@@ -102,8 +107,9 @@ def emit_function(model: Model, op: dict, file: str, name: str) -> str:
         allowed = ", ".join(json.dumps(q) for q, _ in op["query"])
         out.append(f"    let query = core::query(options, [{allowed}]);")
     path = path_expression(op, bool(op["query"]))
-    body = "params" if op["body"] else "nil()"
-    out.append(f'    gamend::rest("{op["method"]}", {path}, {body})')
+    # A left-out body is nil, so a call with none writes none.
+    body = ", params" if op["body"] else ""
+    out.append(f'    gamend::rest("{op["method"]}", {path}{body})')
     out.append("}")
     return "\n".join(out)
 
@@ -134,9 +140,11 @@ def write_tags(model: Model) -> dict[str, str]:
             f"// script says `use addons::gamend::{file};`.\n"
             "//\n"
             "// A call takes the path's own parameters, then `params` for the request\n"
-            "// body and `options` for the query where the operation has them. It\n"
-            "// answers the id `gamend::rest` answers, to await with `task::wait`, or\n"
-            "// nil when it refused to send.\n"
+            "// body and `options` for the query where the operation has them; either\n"
+            "// may be left out when the call has nothing to put in it. It answers the\n"
+            "// id `gamend::rest` answers, to await with `task::wait`. With a path\n"
+            "// parameter or a required field left out it sends nothing, logs which,\n"
+            "// and answers nil.\n"
             "\nuse core;",
         ]
         chunks += [emit_function(model, op, file, name) for name, op in ops]

@@ -3412,11 +3412,6 @@ msgstr "Gata. Nu mai primești emailuri despre: %{group}."
 msgid "Done. We will not email you anything but account messages."
 msgstr "Gata. Nu îți mai trimitem nimic prin email, în afară de mesajele contului."
 
-#: lib/gamend_web/live/user_live/registration.ex:47
-#, elixir-autogen, elixir-format
-msgid "Email me: %{group}"
-msgstr "Trimite-mi email: %{group}"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:25
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:40
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:10

@@ -16,6 +16,17 @@ defmodule GamendWeb.AdminLive.Bans do
   alias GamendWeb.AdminLive.BanForm
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload,
+    drop: ~w(user_id),
+    keys: [
+      :page,
+      :page_size,
+      kind_filter: [param: "kind", in: ["", "ip", "account", "chat"]],
+      target_filter: [param: "target"],
+      active_only: [param: "active"]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
@@ -42,11 +53,6 @@ defmodule GamendWeb.AdminLive.Bans do
      socket
      |> assign(form: form, target_filter: user_id, active_only: false, page: 1)
      |> reload()}
-  end
-
-  # `?kind=` (the dashboard's mutes link): that kind only.
-  def handle_params(%{"kind" => kind}, _uri, socket) when kind in ~w(ip account chat) do
-    {:noreply, socket |> assign(kind_filter: kind, page: 1) |> reload()}
   end
 
   def handle_params(_params, _uri, socket), do: {:noreply, socket}

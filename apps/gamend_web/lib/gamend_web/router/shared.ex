@@ -43,7 +43,7 @@ defmodule GamendWeb.Router.Shared do
   without its neighbours.
   """
 
-  @browser_csp "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' wss:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'"
+  @browser_csp "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' wss:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'"
   @swagger_csp "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' wss:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'"
   # Oban Web serves its own JS/CSS from 'self' but its root layout emits a
   # nonce'd inline <script>, which the strict browser CSP would block. This
@@ -1013,7 +1013,9 @@ defmodule GamendWeb.Router.Shared do
   `:groups` is a path for the reader's groups as a page of their own
   (`GamendWeb.UserLive.Groups`, the settings page's Groups tab), for a host
   whose navigation links to them: Forge and Gamend Cloud pass
-  `"/users/groups"`. Without it there is no such page; the tab is. A
+  `"/users/groups"`. Without it there is no such page; the tab is. With every
+  group hidden they link `/groups` (`GamendWeb.GroupsLive`), a visitor's account
+  of what a group is, which sends a signed-in reader here. A
   group's invite link opens `<groups>/join/:token`
   (`GamendWeb.UserLive.GroupJoin`), and `/users/groups/join/:token` without
   one.

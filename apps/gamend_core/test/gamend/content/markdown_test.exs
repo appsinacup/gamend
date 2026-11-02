@@ -148,6 +148,7 @@ defmodule Gamend.Content.MarkdownTest do
 
       assert html =~ ~s(class="language-toml")
       assert html =~ "l-line"
+      assert html =~ ~s(<span class="l-string">)
     end
   end
 
@@ -287,6 +288,50 @@ defmodule Gamend.Content.MarkdownTest do
 
   test "gdscript fences borrow the javascript grammar" do
     assert render!("```gdscript\nvar x = 1\n```\n") =~ ~s(class="language-javascript")
+  end
+
+  # A language with no `lumis_wasm_*` package renders as plain text, with no
+  # error anywhere, so each one a guide fences is held here.
+  for language <-
+        ~w(bash c cmake cpp dockerfile elixir gleam javascript json lua protobuf rust toml wgsl yaml) do
+    test "a #{language} fence has its grammar" do
+      assert :ok = Lumis.Languages.load(unquote(language))
+    end
+  end
+
+  test "a code line's line break sits between its spans, one for each" do
+    html = render!("```toml\na = 1\n\nb = 2\n```\n")
+
+    assert length(String.split(html, ~s(</span>\n<span class="l-line"))) == 3
+  end
+
+  test "balaur script fences borrow the rust grammar, and its own words stay words" do
+    html =
+      render!(
+        "```bs\npub class Spinner { internal speed: float }\nfn f() -> int? { nil }\n```\n"
+      )
+
+    assert html =~ ~s(class="language-rust")
+    assert html =~ ~s(<span class="l-keyword">class</span>)
+    assert html =~ ~s(<span class="l-keyword">internal</span>)
+    assert html =~ ~s(<span class="l-constant">nil</span>)
+    assert html =~ ~s(<span class="l-type">float</span>)
+    assert html =~ ~s(<span class="l-type">Spinner</span>)
+  end
+
+  test "a balaur script field's default bool is coloured, and a string's text is not" do
+    source = ~s(pub struct S {\n    pub on: bool = true,\n    pub s: str = "true",\n})
+    html = render!("```bs\n#{source}\n```\n")
+
+    assert html =~ ~s(<span class="l-constant">true</span>)
+    assert html =~ ~s(<span class="l-string">"true"</span>)
+  end
+
+  test "a balaur script fence inside a list is highlighted too" do
+    html = render!("- one\n\n  ```bs\n  let x = 1;\n  ```\n")
+
+    assert html =~ ~s(<li>)
+    assert html =~ ~s(l-keyword)
   end
 
   test "footnotes render" do

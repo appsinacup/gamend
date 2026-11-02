@@ -19,6 +19,10 @@ defmodule GamendWeb.AdminLive.Reports do
 
   @closing ~w(fixed wontfix duplicate)
 
+  use GamendWeb.UrlState,
+    reload: :reload,
+    keys: [:page, :page_size, filters: [keys: ~w(status kind topic q subject_ref)]]
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
@@ -30,19 +34,6 @@ defmodule GamendWeb.AdminLive.Reports do
      |> assign(:kinds, Reports.kinds())
      |> close_form()
      |> reload()}
-  end
-
-  @impl true
-  def handle_params(params, _uri, socket) do
-    filters =
-      Enum.reduce(~w(status kind topic q subject_ref), socket.assigns.filters, fn key, acc ->
-        case params[key] do
-          value when is_binary(value) -> Map.put(acc, key, String.trim(value))
-          _ -> acc
-        end
-      end)
-
-    {:noreply, socket |> assign(:filters, filters) |> assign(:page, 1) |> reload()}
   end
 
   @impl true

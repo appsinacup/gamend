@@ -38,6 +38,17 @@ defmodule GamendWeb.QuestsLive do
 
   @status_filters [nil, "in_progress", "claimable", "done"]
 
+  use GamendWeb.UrlState,
+    reload: :load_quests,
+    keys: [
+      :page,
+      :category,
+      page_size: [min: 24],
+      status: [in: @status_filters],
+      group_key: [param: "group", type: :nilable],
+      shown_group: [param: "open"]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     unless FeatureGate.enabled?(:list_quests) do
@@ -58,7 +69,7 @@ defmodule GamendWeb.QuestsLive do
       |> assign(:page, 1)
       |> assign(:page_size, @page_size)
       |> assign(:category, nil)
-      |> assign(:group, nil)
+      |> assign(:shown_group, nil)
       |> assign(:status, nil)
       |> assign(:group_key, default_group(user))
       |> load_quests()
@@ -128,15 +139,11 @@ defmodule GamendWeb.QuestsLive do
   end
 
   def handle_event("show_group", %{"group" => group_key}, socket) do
-    user = get_user(socket)
-
-    case Quests.group(user && user.id, group_key) do
-      [] -> {:noreply, socket}
-      members -> {:noreply, assign(socket, :group, ContentText.translate(members))}
-    end
+    {:noreply, socket |> assign(:shown_group, group_key) |> load_group()}
   end
 
-  def handle_event("close_group", _params, socket), do: {:noreply, assign(socket, :group, nil)}
+  def handle_event("close_group", _params, socket),
+    do: {:noreply, socket |> assign(:shown_group, nil) |> load_group()}
 
   def handle_event("modal_noop", _params, socket), do: {:noreply, socket}
 
@@ -220,6 +227,19 @@ defmodule GamendWeb.QuestsLive do
     |> assign(:claimable_count, claimable - locked_claimable(entries))
     |> assign(:must_register, user != nil and not AccountRequired.allowed?(user, :quest_claims))
     |> assign(:now, DateTime.utc_now(:second))
+    |> load_group()
+  end
+
+  # The group's modal: its members, if `:shown_group` still names one.
+  defp load_group(%{assigns: %{shown_group: nil}} = socket), do: assign(socket, :group, nil)
+
+  defp load_group(socket) do
+    user = get_user(socket)
+
+    case Quests.group(user && user.id, socket.assigns.shown_group) do
+      [] -> assign(socket, shown_group: nil, group: nil)
+      members -> assign(socket, :group, ContentText.translate(members))
+    end
   end
 
   # The groups the selector covers: the host's pick of them, or all of them

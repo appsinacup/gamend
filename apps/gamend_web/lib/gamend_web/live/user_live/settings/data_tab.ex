@@ -146,6 +146,12 @@ defmodule GamendWeb.UserLive.Settings.DataTab do
     key = socket.assigns[:kv_key_filter]
     user = socket.assigns.user
 
+    # A filter read from the URL: the box says it. Never over what is typed.
+    socket =
+      if key && socket.assigns.kv_filter_form.params["key"] in [nil, ""],
+        do: assign(socket, :kv_filter_form, to_form(%{"key" => key}, as: :filters)),
+        else: socket
+
     entries = KV.list_entries(page: page, page_size: page_size, key: key, user_id: user.id)
     count = KV.count_entries(key: key, user_id: user.id)
     total_pages = LiveHelpers.total_pages(count, page_size)

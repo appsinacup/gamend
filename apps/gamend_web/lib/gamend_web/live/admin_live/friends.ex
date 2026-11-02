@@ -10,6 +10,10 @@ defmodule GamendWeb.AdminLive.Friends do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload,
+    keys: [:page, :page_size, status_filter: [param: "status"], user_filter: [param: "user"]]
+
   @impl true
   def mount(_params, _session, socket) do
     socket =

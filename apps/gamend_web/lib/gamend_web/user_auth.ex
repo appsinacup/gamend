@@ -465,19 +465,12 @@ defmodule GamendWeb.UserAuth do
     if Scope.user(socket.assigns.current_scope) do
       refuse_banned(socket)
     else
-      socket =
-        socket
-        |> Phoenix.LiveView.put_flash(
-          :error,
-          gettext("Failed")
-        )
-        # This on_mount runs under the :require_authenticated_user live_session,
-        # while the log-in LiveView lives under the :current_user live_session.
-        # Forcing an external redirect avoids the client-side "unauthorized live_redirect"
-        # warning and performs a clean full page navigation.
-        |> Phoenix.LiveView.redirect(external: ~p"/users/log_in")
-
-      {:halt, socket}
+      # No flash: the sign-in page is the message (`require_authenticated_user/2`).
+      # This on_mount runs under the :require_authenticated_user live_session,
+      # while the log-in LiveView lives under the :current_user live_session.
+      # Forcing an external redirect avoids the client-side "unauthorized live_redirect"
+      # warning and performs a clean full page navigation.
+      {:halt, Phoenix.LiveView.redirect(socket, external: ~p"/users/log_in")}
     end
   end
 
@@ -671,13 +664,15 @@ defmodule GamendWeb.UserAuth do
 
   @doc """
   Plug for routes that require the user to be authenticated.
+
+  A signed-out visitor goes to the sign-in page and back, with no flash:
+  nothing failed.
   """
   def require_authenticated_user(conn, _opts) do
     if Scope.user(conn.assigns.current_scope) do
       conn
     else
       conn
-      |> put_flash(:error, gettext("Failed"))
       |> redirect(to: sign_in_redirect(conn, ~p"/users/log_in"))
       |> halt()
     end

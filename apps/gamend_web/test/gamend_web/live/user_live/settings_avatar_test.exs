@@ -36,11 +36,13 @@ defmodule GamendWeb.UserLive.SettingsAvatarTest do
 
     # The native file input clears its label on re-render, so the picked file
     # must be surfaced by us — otherwise it looks like nothing was selected.
-    assert render_upload(avatar, "me.png") =~ "me.png"
+    midway = render_upload(avatar, "me.png", 50)
+    assert midway =~ "me.png"
+    assert midway =~ "50%"
 
-    # This is the event that previously crashed with a KeyError — assert it
-    # completes and repoints the avatar into our storage.
-    lv |> element("#avatar_form") |> render_submit()
+    # The upload needs nothing more than the file: its last chunk repoints the
+    # avatar into our storage.
+    render_upload(avatar, "me.png", 50)
 
     updated = Accounts.get_user(user.id)
     assert updated.profile_url =~ "avatars/#{user.id}"
@@ -54,8 +56,6 @@ defmodule GamendWeb.UserLive.SettingsAvatarTest do
       lv
       |> file_input("#avatar_form", :avatar, [%{name: name, content: @png, type: "image/png"}])
       |> render_upload(name)
-
-      lv |> element("#avatar_form") |> render_submit()
     end
 
     submit_avatar.("first.png")
@@ -83,7 +83,6 @@ defmodule GamendWeb.UserLive.SettingsAvatarTest do
     |> file_input("#avatar_form", :avatar, [%{name: "me.png", content: @png, type: "image/png"}])
     |> render_upload("me.png")
 
-    lv |> element("#avatar_form") |> render_submit()
     assert Accounts.get_user(user.id).profile_url =~ "avatars/#{user.id}"
 
     lv

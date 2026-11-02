@@ -357,6 +357,7 @@ defmodule GamendWeb.UserAuthTest do
 
       {:halt, updated_socket} = UserAuth.on_mount(:require_authenticated, %{}, session, socket)
       assert updated_socket.assigns.current_scope == nil
+      assert updated_socket.assigns.flash == %{}
     end
   end
 
@@ -402,9 +403,7 @@ defmodule GamendWeb.UserAuthTest do
       assert conn.halted
 
       assert redirected_to(conn) == "/users/log_in?return_to=%2F"
-
-      assert Phoenix.Flash.get(conn.assigns.flash, :error) ==
-               "Failed"
+      assert conn.assigns.flash == %{}
     end
 
     test "sends a GET to log in with the page to come back to", %{conn: conn} do

@@ -15,6 +15,9 @@ defmodule GamendWeb.AdminLive.Results do
   @filters ~w(kind status user_id lobby_id)
   @events_page 500
 
+  use GamendWeb.UrlState,
+    keys: [:page, :page_size, filters: [keys: @filters]]
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
@@ -35,32 +38,22 @@ defmodule GamendWeb.AdminLive.Results do
     end
   end
 
-  def handle_params(params, _uri, socket) do
-    filters =
-      Enum.reduce(@filters, socket.assigns.filters, fn key, acc ->
-        case params[key] do
-          value when is_binary(value) -> Map.put(acc, key, String.trim(value))
-          _ -> acc
-        end
-      end)
-
-    {:noreply, socket |> assign(:filters, filters) |> assign(:page, 1) |> load_list()}
-  end
+  def handle_params(_params, _uri, socket), do: {:noreply, load_list(socket)}
 
   @impl true
   def handle_event("filter", params, socket) do
     filters = Map.merge(socket.assigns.filters, Map.take(params, @filters))
-    {:noreply, push_patch(socket, to: ~p"/admin/results?#{query(filters)}")}
+    {:noreply, assign(socket, filters: filters, page: 1)}
   end
 
   def handle_event("prev_page", _params, socket),
-    do: {:noreply, socket |> LiveHelpers.prev_page() |> load_list()}
+    do: {:noreply, LiveHelpers.prev_page(socket)}
 
   def handle_event("next_page", _params, socket),
-    do: {:noreply, socket |> LiveHelpers.next_page() |> load_list()}
+    do: {:noreply, LiveHelpers.next_page(socket)}
 
   def handle_event("page_size", %{"size" => size}, socket),
-    do: {:noreply, socket |> LiveHelpers.put_page_size(size) |> load_list()}
+    do: {:noreply, LiveHelpers.put_page_size(socket, size)}
 
   def handle_event("refresh", _params, %{assigns: %{result: %Result{} = result}} = socket),
     do: {:noreply, load_result(socket, Results.get(result.id) || result)}
@@ -126,8 +119,6 @@ defmodule GamendWeb.AdminLive.Results do
 
   defp active(filters),
     do: filters |> Enum.reject(fn {_key, value} -> value in [nil, ""] end) |> Map.new()
-
-  defp query(filters), do: filters |> active() |> Enum.sort()
 
   defp players(results) do
     results

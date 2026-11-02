@@ -3316,11 +3316,6 @@ msgstr "Xong. Không còn email về: %{group}."
 msgid "Done. We will not email you anything but account messages."
 msgstr "Xong. Chúng tôi chỉ gửi email về tài khoản của bạn."
 
-#: lib/gamend_web/live/user_live/registration.ex:47
-#, elixir-autogen, elixir-format
-msgid "Email me: %{group}"
-msgstr "Gửi email cho tôi: %{group}"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:25
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:40
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:10

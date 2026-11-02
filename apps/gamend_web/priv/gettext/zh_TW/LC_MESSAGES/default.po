@@ -3316,11 +3316,6 @@ msgstr "已完成。不再寄送關於以下內容的郵件：%{group}。"
 msgid "Done. We will not email you anything but account messages."
 msgstr "已完成。我們只會透過郵件寄送帳戶相關訊息。"
 
-#: lib/gamend_web/live/user_live/registration.ex:47
-#, elixir-autogen, elixir-format
-msgid "Email me: %{group}"
-msgstr "寄郵件給我：%{group}"
-
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:25
 #: lib/gamend_web/controllers/notification_unsubscribe_controller.ex:40
 #: lib/gamend_web/controllers/notification_unsubscribe_html.ex:10

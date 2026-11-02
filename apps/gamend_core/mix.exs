@@ -117,7 +117,25 @@ defmodule GamendCore.MixProject do
       {:mdex, "~> 0.13"},
       # Syntax highlighting engine MDEx delegates to; without it fenced code
       # renders as undifferentiated text.
-      {:lumis, "~> 0.1"},
+      {:lumis, "~> 0.10"},
+      # A grammar is its own dependency. One no package supplies renders its
+      # fence as plain text, silently, so each language the guides fence is
+      # here; `~> 0.26.0` is the tree-sitter series Lumis 0.10 loads.
+      {:lumis_wasm_bundle_web, "~> 0.1"},
+      {:lumis_wasm_bash, "~> 0.26.0"},
+      {:lumis_wasm_c, "~> 0.26.0"},
+      {:lumis_wasm_cmake, "~> 0.26.0"},
+      {:lumis_wasm_comment, "~> 0.26.0"},
+      {:lumis_wasm_cpp, "~> 0.26.0"},
+      {:lumis_wasm_dockerfile, "~> 0.26.0"},
+      {:lumis_wasm_elixir, "~> 0.26.0"},
+      {:lumis_wasm_gleam, "~> 0.26.0"},
+      {:lumis_wasm_lua, "~> 0.26.0"},
+      {:lumis_wasm_protobuf, "~> 0.26.0"},
+      {:lumis_wasm_rust, "~> 0.26.0"},
+      {:lumis_wasm_toml, "~> 0.26.0"},
+      {:lumis_wasm_wgsl, "~> 0.26.0"},
+      {:lumis_wasm_yaml, "~> 0.26.0"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false},
       # The GDScript transpiler, for the in-process plugin build tests. At runtime

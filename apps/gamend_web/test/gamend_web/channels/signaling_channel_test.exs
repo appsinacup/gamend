@@ -18,6 +18,10 @@ defmodule GamendWeb.SignalingChannelTest do
 
   @endpoint GamendWeb.Endpoint
 
+  # A presence diff crosses the tracker, a task and the channel, so how long it
+  # takes depends on how busy the machine is. Waited for, never slept through.
+  @push_timeout 5_000
+
   setup tags do
     Gamend.DataCase.setup_sandbox(tags)
 
@@ -38,6 +42,16 @@ defmodule GamendWeb.SignalingChannelTest do
     subscribe_and_join(socket, "signaling:#{lobby_id}", %{})
   end
 
+  # Tracking runs after the join returns. A second peer joining before the first
+  # is tracked would see no one to be seeded with.
+  defp await_tracked(lobby_id, user_id, attempts \\ 500) do
+    cond do
+      Signaling.peer_role(lobby_id, user_id) -> :ok
+      attempts == 0 -> flunk("#{user_id} was never tracked")
+      true -> Process.sleep(10) && await_tracked(lobby_id, user_id, attempts - 1)
+    end
+  end
+
   # Every socket in this test shares the test process mailbox, so the pushes are
   # counted rather than matched in order.
   defp pushed_ids(event) do
@@ -53,35 +67,38 @@ defmodule GamendWeb.SignalingChannelTest do
     peer: peer
   } do
     {:ok, _reply, _socket} = join_signaling(host, lobby.id)
-    Process.sleep(200)
+    await_tracked(lobby.id, host.id)
     assert pushed_ids("user_joined") == []
 
     {:ok, _reply, _socket} = join_signaling(peer, lobby.id)
-    Process.sleep(300)
 
-    ids = pushed_ids("user_joined")
+    # The presence diff the host sees, and the seed the newcomer gets for whoever
+    # was already there.
+    assert_push "user_joined", %{user_id: user_id}, @push_timeout
+    assert_push "user_joined", %{user_id: other_id}, @push_timeout
+    assert Enum.sort([user_id, other_id]) == Enum.sort([host.id, peer.id])
 
-    # The presence diff the host sees. Two would mean the channel is subscribed
-    # to its own topic twice.
-    assert Enum.count(ids, &(&1 == peer.id)) == 1
-    # The seed the newcomer gets for whoever was already there.
-    assert Enum.count(ids, &(&1 == host.id)) == 1
+    # A second of either would mean the channel is subscribed to its own topic
+    # twice.
+    refute_push "user_joined", %{}, 300
   end
 
   test "a leave is announced exactly once", %{lobby: lobby, host: host, peer: peer} do
+    peer_id = peer.id
+
     {:ok, _reply, _socket} = join_signaling(host, lobby.id)
-    Process.sleep(200)
+    await_tracked(lobby.id, host.id)
 
     {:ok, _reply, peer_socket} = join_signaling(peer, lobby.id)
-    Process.sleep(300)
+    assert_push "user_joined", %{user_id: ^peer_id}, @push_timeout
 
     # subscribe_and_join links the channel to the test process, and leaving
     # stops it with {:shutdown, :left}.
     Process.unlink(peer_socket.channel_pid)
     leave(peer_socket)
-    Process.sleep(300)
 
-    assert pushed_ids("user_left") == [peer.id]
+    assert_push "user_left", %{user_id: ^peer_id}, @push_timeout
+    refute_push "user_left", %{}, 300
   end
 
   test "ICE relayed over signaling is limited by its own settings", %{lobby: lobby, host: host} do

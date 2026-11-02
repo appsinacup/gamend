@@ -5,6 +5,18 @@ defmodule GamendWeb.AdminLive.Groups do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload_view,
+    keys: [
+      groups_page: [param: "page"],
+      groups_page_size: [param: "page-size"],
+      sort_by: [param: "sort"],
+      filters: [keys: ~w(title type min_members max_members)],
+      members_of: [param: "members"],
+      members_page: [],
+      members_page_size: [min: 25]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     Groups.subscribe_groups()
@@ -18,6 +30,7 @@ defmodule GamendWeb.AdminLive.Groups do
       |> assign(:selected_group, nil)
       |> assign(:form, nil)
       |> assign(:members, [])
+      |> assign(:members_of, nil)
       |> assign(:members_page, 1)
       |> assign(:members_page_size, 50)
       |> assign(:members_count, 0)
@@ -556,6 +569,7 @@ defmodule GamendWeb.AdminLive.Groups do
       {:noreply,
        socket
        |> assign(:selected_group, group)
+       |> assign(:members_of, group.id)
        |> assign(:members_page, 1)
        |> load_members()
        |> assign(:form, nil)}
@@ -584,6 +598,7 @@ defmodule GamendWeb.AdminLive.Groups do
     {:noreply,
      socket
      |> assign(:selected_group, nil)
+     |> assign(:members_of, nil)
      |> assign(:members, [])}
   end
 
@@ -668,6 +683,16 @@ defmodule GamendWeb.AdminLive.Groups do
       members_count: count,
       members_total_pages: LiveHelpers.total_pages(count, page_size)
     )
+  end
+
+  # From the URL: the list, and the members panel it names.
+  defp reload_view(socket) do
+    socket = reload_groups(socket)
+
+    case socket.assigns.members_of && Groups.get_group(socket.assigns.members_of) do
+      nil -> assign(socket, members_of: nil, members: [])
+      group -> socket |> assign(:selected_group, group) |> load_members()
+    end
   end
 
   defp reload_groups(socket) do

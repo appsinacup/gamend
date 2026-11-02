@@ -29,7 +29,7 @@ defmodule GamendWeb.Features do
   setting(:user_image_uploads, :boolean,
     default: true,
     doc:
-      "Player-supplied images: avatars (POST /api/v1/me/avatar*) and group icons (POST /api/v1/groups/:id/icon*). Objects land in public storage and are served without authentication, so on a service children can reach this is an unscreened image surface — turn it off unless the game actually uses it and you have a way to screen what arrives."
+      "Player-supplied images: avatars (POST /api/v1/me/avatar*, the upload form on the account tab, and the copy of a sign-in provider's picture made by `Gamend.Accounts.AvatarMirror`) and group icons (POST /api/v1/groups/:id/icon*). The site's icons, to pick instead (`Gamend.Icons`), stay. Objects land in public storage and are served without authentication, so on a service children can reach this is an unscreened image surface — turn it off unless the game actually uses it and you have a way to screen what arrives."
   )
 
   setting(:public_user_metadata_keys, :list,

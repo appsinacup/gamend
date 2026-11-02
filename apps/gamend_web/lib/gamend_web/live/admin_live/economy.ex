@@ -10,6 +10,11 @@ defmodule GamendWeb.AdminLive.Economy do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload,
+    drop: ~w(user_id),
+    keys: [:page, :page_size, user_filter: [param: "user"], currency_filter: [param: "currency"]]
+
   @impl true
   def mount(_params, _session, socket) do
     socket =

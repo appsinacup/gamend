@@ -9,6 +9,10 @@ defmodule GamendWeb.AdminLive.Payments do
   @sections ~w(products provider_products purchases entitlements provider_events reconciliation_cursors)a
   @default_page_size 25
 
+  use GamendWeb.UrlState,
+    reload: :reload_all,
+    keys: [pages: [keys: @sections, min: 1]]
+
   @impl true
   def mount(_params, _session, socket) do
     pages = Map.new(@sections, &{&1, 1})

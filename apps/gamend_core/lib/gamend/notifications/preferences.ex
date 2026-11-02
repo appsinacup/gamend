@@ -12,16 +12,15 @@ defmodule Gamend.Notifications.Preferences do
       config :gamend_core, :notification_groups, [
         %{key: "streak", label: "Streak about to end",
           defaults: %{"in_app" => true, "email" => false, "push" => false},
-          types: ["streak_ending"], signup: true}
+          types: ["streak_ending"]}
       ]
 
   A group's `defaults` apply until the user chooses. `configurable` is the
   channels the user may change (default: all three); a channel they may not
   change always uses its default. `types` are the notification types
-  (`Gamend.Notifications.Types`) that belong to the group. `signup: true`
-  offers its email on the registration form, unticked: an email nobody asked
-  for is spam, so the user opts in. The "account" group — sign-in links, email
-  changes — is email that cannot be turned off: it is how the account works.
+  (`Gamend.Notifications.Types`) that belong to the group. The "account" group
+  — sign-in links, email changes — is email that cannot be turned off: it is
+  how the account works.
   `admin: true` is a group for the site's admins only (a queue to work
   through): nobody else sees its row (`groups_for/1`) or gets it
   (`enabled?/3`).
@@ -56,7 +55,6 @@ defmodule Gamend.Notifications.Preferences do
       defaults: %{"in_app" => false, "email" => true, "push" => false},
       configurable: [],
       types: [],
-      signup: false,
       admin: false
     },
     # The answer to a report the user filed (`Gamend.Reports`, chat's), and
@@ -68,7 +66,6 @@ defmodule Gamend.Notifications.Preferences do
       defaults: %{"in_app" => true, "email" => true, "push" => true},
       configurable: ~w(email push),
       types: ~w(report_resolved chat_report_resolved chat_warning chat_mute),
-      signup: false,
       admin: false
     },
     # The admins' queues: a report, a chat report waiting for review.
@@ -78,7 +75,6 @@ defmodule Gamend.Notifications.Preferences do
       defaults: %{"in_app" => true, "email" => true, "push" => true},
       configurable: ~w(email push),
       types: ~w(report chat_report),
-      signup: false,
       admin: true
     },
     %{
@@ -87,7 +83,6 @@ defmodule Gamend.Notifications.Preferences do
       defaults: %{"in_app" => true, "email" => false, "push" => true},
       configurable: ~w(email push),
       types: [],
-      signup: false,
       admin: false
     },
     %{
@@ -96,7 +91,6 @@ defmodule Gamend.Notifications.Preferences do
       defaults: %{"in_app" => true, "email" => false, "push" => true},
       configurable: ~w(push),
       types: [],
-      signup: false,
       admin: false
     },
     # On the site: a quest finishes while the user is playing, and an email
@@ -107,7 +101,6 @@ defmodule Gamend.Notifications.Preferences do
       defaults: %{"in_app" => true, "email" => false, "push" => false},
       configurable: ~w(push),
       types: [],
-      signup: false,
       admin: false
     }
   ]
@@ -118,7 +111,7 @@ defmodule Gamend.Notifications.Preferences do
 
   @doc """
   Every group, core's first then the host's: `%{key, label, defaults,
-  configurable, types, signup, admin}`, `configurable` a list of channels.
+  configurable, types, admin}`, `configurable` a list of channels.
   """
   @spec groups() :: [map()]
   def groups do
@@ -137,10 +130,6 @@ defmodule Gamend.Notifications.Preferences do
   # An admins' group (`admin: true`) is an admin's only.
   defp can_receive_group?(user, %{admin: true}), do: match?(%User{is_admin: true}, user)
   defp can_receive_group?(_user, _group), do: true
-
-  @doc "The groups whose email the registration form offers (`signup: true`)."
-  @spec signup_groups() :: [map()]
-  def signup_groups, do: Enum.filter(groups(), &(&1.signup and not &1.admin))
 
   @doc "One group, or nil."
   @spec group(String.t()) :: map() | nil
@@ -174,7 +163,6 @@ defmodule Gamend.Notifications.Preferences do
       defaults: Map.new(group[:defaults] || %{}, fn {k, v} -> {to_string(k), v == true} end),
       configurable: Enum.map(group[:configurable] || @channels, &to_string/1),
       types: Enum.map(group[:types] || [], &to_string/1),
-      signup: group[:signup] == true and "email" in (group[:configurable] || @channels),
       admin: group[:admin] == true
     }
   end
@@ -185,7 +173,6 @@ defmodule Gamend.Notifications.Preferences do
   defp to_atom_key("defaults"), do: :defaults
   defp to_atom_key("configurable"), do: :configurable
   defp to_atom_key("types"), do: :types
-  defp to_atom_key("signup"), do: :signup
   defp to_atom_key("admin"), do: :admin
   defp to_atom_key(other), do: other
 

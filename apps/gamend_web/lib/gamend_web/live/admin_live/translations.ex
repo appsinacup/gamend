@@ -4,6 +4,17 @@ defmodule GamendWeb.AdminLive.Translations do
   alias GamendWeb.Gettext.Stats, as: TranslationStats
   alias GamendWeb.LiveHelpers
 
+  use GamendWeb.UrlState,
+    reload: :reload_strings,
+    keys: [
+      :page,
+      :page_size,
+      :search,
+      selected_locale: [param: "locale"],
+      selected_domain: [param: "domain"],
+      selected_status: [param: "status"]
+    ]
+
   @impl true
   def mount(_params, _session, socket) do
     locales = TranslationStats.locales()
@@ -267,4 +278,22 @@ defmodule GamendWeb.AdminLive.Translations do
   @impl true
   def handle_event("translations_page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size)}
+
+  # From the URL, whose locale may be none this host has.
+  defp reload_strings(socket) do
+    %{locales: locales, selected_locale: locale} = socket.assigns
+    locale = if locale in locales, do: locale, else: List.first(locales, "en")
+
+    socket
+    |> assign(:selected_locale, locale)
+    |> assign(:domains, TranslationStats.domains(locale))
+    |> assign(
+      :strings,
+      TranslationStats.list_strings(locale,
+        domain: socket.assigns.selected_domain,
+        search: socket.assigns.search,
+        status: socket.assigns.selected_status
+      )
+    )
+  end
 end

@@ -54,6 +54,27 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
 
   defp assigns(view), do: :sys.get_state(view.pid).socket.assigns
 
+  test "/groups: a visitor reads what a group is, a signed-in reader goes to theirs", %{
+    conn: conn,
+    user: user
+  } do
+    {:ok, group} = Groups.create_group(user.id, %{"title" => "Night shift"})
+
+    {:ok, view, html} = live(conn, "/groups")
+    assert html =~ "Only people it invites can see it."
+    refute html =~ group.title
+
+    assert has_element?(
+             view,
+             "#groups-register[href='/users/register?return_to=%2Fusers%2Fgroups']"
+           )
+
+    assert has_element?(view, "#groups-log-in[href='/users/log_in?return_to=%2Fusers%2Fgroups']")
+
+    assert {:error, {:redirect, %{to: "/users/groups"}}} =
+             conn |> log_in_user(user) |> live("/groups")
+  end
+
   test "the page is the groups: no type, no listing, no requests", %{conn: conn, user: user} do
     {:ok, view, html} = conn |> log_in_user(user) |> live("/users/groups?create=1")
 

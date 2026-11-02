@@ -15,9 +15,19 @@ defmodule Gamend.Storage.Local do
   def put(key, data, _opts) do
     path = path_for(key)
 
-    with :ok <- File.mkdir_p(Path.dirname(path)),
-         :ok <- File.write(path, data) do
-      {:ok, key}
+    # Twice: `delete_prefix/1` can prune the directory between making it and
+    # writing into it.
+    written =
+      with {:error, :enoent} <- write(path, data) do
+        write(path, data)
+      end
+
+    with :ok <- written, do: {:ok, key}
+  end
+
+  defp write(path, data) do
+    with :ok <- File.mkdir_p(Path.dirname(path)) do
+      File.write(path, data)
     end
   end
 
@@ -86,12 +96,23 @@ defmodule Gamend.Storage.Local do
     # Enumerated rather than `rm_rf` on the directory: a prefix is not required
     # to land on a directory boundary, and this keeps the meaning identical to
     # `list/1` and `usage/1`.
-    deleted =
-      prefix
-      |> all_objects()
-      |> Enum.count(fn %{key: key} -> delete(key) == :ok end)
+    objects = all_objects(prefix)
+    deleted = Enum.count(objects, fn %{key: key} -> delete(key) == :ok end)
+
+    # A directory left behind costs every later walk under it, and a store
+    # that deletes per owner or per version leaves thousands.
+    Enum.each(objects, fn %{key: key} -> prune(Path.dirname(key)) end)
 
     {:ok, deleted}
+  end
+
+  # Up from a directory while each is empty, which `File.rmdir/1` is what
+  # checks. Keys are relative to the root, so `"."` stops below it: the root may
+  # be a mounted volume.
+  defp prune("."), do: :ok
+
+  defp prune(dir) do
+    with :ok <- File.rmdir(path_for(dir)), do: prune(Path.dirname(dir))
   end
 
   defp all_objects(prefix) do

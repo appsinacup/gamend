@@ -35,11 +35,6 @@ defmodule Gamend.Accounts.Username do
   `default_rules/1` wholesale. Only the floor stays: length, uniqueness, and
   no invisible characters (Unicode's `C` categories: controls, zero-width
   joiners, direction overrides).
-
-  `GAMEND_LIMITS_USERNAME_ASCII_ONLY=true` keeps handles to `a-z`, `0-9` and
-  the separators, the GitHub and Discord model, after the same normalization
-  (`ＷＡＮＧ` is still `wang`); the generator then transliterates or picks a
-  word.
   """
 
   @max_marks 3
@@ -62,8 +57,6 @@ defmodule Gamend.Accounts.Username do
   # UTS #39 5.4, on the decomposed form (NFC hides the second acute of `é́`):
   # the same nonspacing mark twice in a row, or more than four in a row.
   @mark_run ~r/([\p{Mn}\p{Me}])\1|[\p{Mn}\p{Me}]{5,}/u
-
-  @ascii ~r/^[a-z0-9._-]+$/
 
   @invisible ~r/\p{C}/u
 
@@ -106,9 +99,6 @@ defmodule Gamend.Accounts.Username do
         {:error,
          "only letters, digits and non-consecutive . _ - separators; " <>
            "must start and end with a letter or digit"}
-
-      Gamend.Limits.get(:username_ascii_only) and not String.match?(username, @ascii) ->
-        {:error, "only a-z, 0-9 and . _ - separators"}
 
       not allowed_mix?(username) ->
         {:error, "can only mix Latin letters with Chinese, Japanese or Korean"}

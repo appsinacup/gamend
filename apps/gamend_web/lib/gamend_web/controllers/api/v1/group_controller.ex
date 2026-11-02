@@ -113,7 +113,7 @@ defmodule GamendWeb.Api.V1.GroupController do
         properties: %{
           title: %Schema{
             type: :string,
-            description: "Display title (unique unless the host lets titles repeat)"
+            description: "Display title; two groups may share one"
           },
           slug: %Schema{
             type: :string,
@@ -146,7 +146,7 @@ defmodule GamendWeb.Api.V1.GroupController do
     },
     responses: [
       created: {"Group created", "application/json", GroupResponse},
-      conflict: Schemas.error("Title or slug taken, or validation error"),
+      conflict: Schemas.error("Slug taken, or validation error"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )

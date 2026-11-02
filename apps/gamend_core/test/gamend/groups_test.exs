@@ -93,11 +93,6 @@ defmodule Gamend.GroupsTest do
       assert group.title == "My Group"
     end
 
-    test "rejects duplicate titles", %{owner: owner} do
-      {:ok, _} = Groups.create_group(owner.id, %{"title" => "Unique"})
-      assert {:error, _changeset} = Groups.create_group(owner.id, %{"title" => "Unique"})
-    end
-
     test "makes the slug from the title, and the creator's second of it gets -2", %{
       owner: owner
     } do
@@ -109,6 +104,33 @@ defmodule Gamend.GroupsTest do
 
       assert Groups.free_slug(AccountsFixtures.user_fixture().id, "My Cool Group") ==
                "my-cool-group"
+    end
+
+    test "a slug is in any script, and one spelling of it", %{owner: owner} do
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "红色 军团"})
+      assert group.slug == "红色-军团"
+      assert %{id: id} = Groups.get_group_by_full_slug(Groups.full_slug(group))
+      assert id == group.id
+
+      {:ok, wide} = Groups.create_group(owner.id, %{"title" => "One", "slug" => "ＷＩＤＥ_１"})
+      assert wide.slug == "wide_1"
+      assert %{id: ^id} = Groups.get_group_by_full_slug(owner.username <> "/红色-军团")
+
+      assert {:error, changeset} =
+               Groups.create_group(owner.id, %{"title" => "Two", "slug" => "红色--军团"})
+
+      assert %{slug: [_]} = errors_on(changeset)
+    end
+
+    test "a title that is all marks or symbols still makes a slug that passes" do
+      assert Gamend.Slug.slugify("\u0301\u0301", "group") == "group"
+      assert Gamend.Slug.slugify("!!!", "group") == "group"
+
+      for title <- ["a\u0301\u0302\u0303\u0304\u0305b", "- \u0301x", "Crème Brûlée", "हिन्दी"] do
+        assert Gamend.Slug.slugify(title, "group") =~ Gamend.Slug.format()
+      end
+
+      refute "Team" =~ Gamend.Slug.format()
     end
 
     test "takes a slug given, refuses a malformed or taken one", %{owner: owner} do

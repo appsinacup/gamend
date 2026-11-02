@@ -307,9 +307,7 @@ defmodule Gamend.Content.MarkdownTest do
 
   test "balaur script fences borrow the rust grammar, and its own words stay words" do
     html =
-      render!(
-        "```bs\npub class Spinner { internal speed: float }\nfn f() -> int? { nil }\n```\n"
-      )
+      render!("```bs\npub class Spinner { internal speed: float }\nfn f() -> int? { nil }\n```\n")
 
     assert html =~ ~s(class="language-rust")
     assert html =~ ~s(<span class="l-keyword">class</span>)

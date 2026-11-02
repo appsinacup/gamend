@@ -4,14 +4,25 @@ defmodule Gamend.Slug do
   (`Gamend.Groups`, `<owner>/<slug>`), and in a host a project's or a store
   account's (Forge's `/projects/<owner>/<name>`).
 
-  Lowercase letters and digits, joined by single `-` or `_`, as a GitHub
-  repository name reads once it is lowercased. Unique per account, by a
-  unique index the changeset names.
+  Lowercase letters and digits of any script (`crimson-order`, `红色军团`),
+  joined by single `-` or `_`. A letter carries at most three combining marks,
+  as a username's does, and is spelled as a username is
+  (`Gamend.Accounts.Username.normalize/1`). Unique per account, by a unique
+  index the changeset names.
+
+  A leaderboard's and a tournament's slug is looser (`validate_loose/2`), since
+  seasons and editions share one and `__` and a leading `_` were always allowed:
+  the same letters, with `-` and `_` anywhere but a leading `-`.
   """
 
   import Ecto.Changeset
 
-  @format ~r/\A[a-z0-9]+(?:[-_][a-z0-9]+)*\z/
+  # Every letter category but the two with a lowercase form to prefer.
+  @char "[\\p{Ll}\\p{Lm}\\p{Lo}\\p{Nd}]\\p{M}{0,3}"
+  @format Regex.compile!("\\A#{@char}(?:[-_]?#{@char})*\\z", "u")
+  @loose_format Regex.compile!("\\A(?:#{@char}|_)(?:#{@char}|[-_])*\\z", "u")
+
+  @message "lowercase letters and digits, joined by - or _"
 
   # `random/0`'s words.
   @adjectives ~w(
@@ -30,6 +41,10 @@ defmodule Gamend.Slug do
   @spec format() :: Regex.t()
   def format, do: @format
 
+  @doc "The format `validate_loose/2` checks."
+  @spec loose_format() :: Regex.t()
+  def loose_format, do: @loose_format
+
   @doc """
   Two random words, `swift-otter`: a name to start from, for a form that
   offers one before anything is typed (a new group's, and in a host a new
@@ -38,21 +53,27 @@ defmodule Gamend.Slug do
   @spec random() :: String.t()
   def random, do: "#{Enum.random(@adjectives)}-#{Enum.random(@nouns)}"
 
+  @doc "The spelling a slug is stored and looked up under."
+  @spec normalize(String.t()) :: String.t()
+  defdelegate normalize(slug), to: Gamend.Accounts.Username
+
   @doc """
-  The nearest slug to `text`: lowercased, every run of anything else turned
+  The nearest slug to `text`: normalized, every run of anything else turned
   into one `-`, trimmed, at most 64 long, and `fallback` when nothing is
-  left. `"My_Game.v2"` is `my_game-v2`.
+  left. `"My_Game.v2"` is `my_game-v2`, `"红色 军团"` is `红色-军团`.
   """
   @spec slugify(String.t() | nil, String.t()) :: String.t()
   def slugify(text, fallback)
 
   def slugify(text, fallback) when is_binary(text) do
     text
-    |> String.downcase()
-    |> String.replace(~r/[^a-z0-9_-]+/, "-")
+    |> normalize()
+    |> String.replace(~r/[^\p{Ll}\p{Lm}\p{Lo}\p{Nd}\p{M}_-]+/u, "-")
+    |> String.replace(~r/([-_])\p{M}+/u, "\\1")
+    |> String.replace(~r/(\p{M}{3})\p{M}+/u, "\\1")
     |> String.replace(~r/[-_]{2,}/, "-")
     |> String.slice(0, 64)
-    |> String.replace(~r/\A[-_]+|[-_]+\z/, "")
+    |> String.replace(~r/\A[-_\p{M}]+|[-_]+\z/u, "")
     |> case do
       "" -> fallback
       slug -> slug
@@ -82,7 +103,18 @@ defmodule Gamend.Slug do
   def validate(changeset, field, opts) do
     changeset
     |> validate_length(field, max: Keyword.fetch!(opts, :max))
-    |> validate_format(field, @format, message: "lowercase letters and digits, joined by - or _")
+    |> validate_format(field, @format, message: @message)
     |> unique_constraint(field, name: Keyword.fetch!(opts, :index), message: "is taken")
+  end
+
+  @doc "Normalize `field` and check it has `loose_format/0`."
+  @spec validate_loose(Ecto.Changeset.t(), atom()) :: Ecto.Changeset.t()
+  def validate_loose(changeset, field) do
+    changeset
+    |> update_change(field, fn
+      slug when is_binary(slug) -> normalize(slug)
+      other -> other
+    end)
+    |> validate_format(field, @loose_format, message: @message)
   end
 end

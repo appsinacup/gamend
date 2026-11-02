@@ -40,7 +40,10 @@ defmodule GamendWeb.Schemas.Tournament do
     type: :object,
     properties: %{
       id: %Schema{type: :string, format: :uuid},
-      slug: %Schema{type: :string, description: "Shared by every recurring occurrence"},
+      slug: %Schema{
+        type: :string,
+        description: "In any script, shared by every recurring occurrence"
+      },
       title: %Schema{type: :string},
       description: %Schema{type: :string},
       icon_url: %Schema{

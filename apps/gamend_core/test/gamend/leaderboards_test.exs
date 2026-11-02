@@ -43,7 +43,19 @@ defmodule Gamend.LeaderboardsTest do
     test "create_leaderboard/1 validates slug format" do
       attrs = %{slug: "Invalid-Slug!", title: "Test"}
       assert {:error, changeset} = Leaderboards.create_leaderboard(attrs)
-      assert "must be lowercase alphanumeric with underscores" in errors_on(changeset).slug
+      assert [_] = errors_on(changeset).slug
+    end
+
+    test "a slug is in any script, and one spelling of it" do
+      {:ok, lb} = Leaderboards.create_leaderboard(%{slug: "周榜_击杀", title: "周榜"})
+      assert lb.slug == "周榜_击杀"
+      assert Leaderboards.get_active_leaderboard_by_slug("周榜_击杀").id == lb.id
+
+      {:ok, wide} = Leaderboards.create_leaderboard(%{slug: "ＷＩＤＥ__１", title: "Wide"})
+      assert wide.slug == "wide__1"
+      assert Leaderboards.get_active_leaderboard_by_slug("WIDE__1").id == wide.id
+
+      assert {:error, _} = Leaderboards.create_leaderboard(%{slug: "周榜 击杀", title: "x"})
     end
 
     test "get_leaderboard/1 with integer id returns the leaderboard" do

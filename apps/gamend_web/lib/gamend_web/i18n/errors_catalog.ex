@@ -19,7 +19,7 @@ defmodule GamendWeb.I18n.ErrorsCatalog do
       dgettext("errors", "did not change"),
       dgettext("errors", "does not exist"),
       dgettext("errors", "has already been taken"),
-      dgettext("errors", "must be lowercase alphanumeric with underscores"),
+      dgettext("errors", "lowercase letters and digits, joined by - or _"),
       dgettext("errors", "must have the @ sign and no spaces"),
       dgettext("errors", "does not match password")
     ]

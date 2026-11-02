@@ -65,12 +65,10 @@ defmodule Gamend.Leaderboards.Leaderboard do
   def changeset(leaderboard, attrs) do
     leaderboard
     |> cast(attrs, @required_fields ++ @optional_fields)
+    |> Gamend.Slug.validate_loose(:slug)
     |> validate_required(@required_fields)
     |> validate_length(:slug, min: 1, max: Gamend.Limits.get(:max_leaderboard_slug))
     |> validate_length(:icon_url, max: Gamend.Limits.get(:max_profile_url))
-    |> validate_format(:slug, ~r/^[a-z0-9_]+$/,
-      message: "must be lowercase alphanumeric with underscores"
-    )
     |> validate_length(:title, min: 1, max: Gamend.Limits.get(:max_leaderboard_title))
     |> validate_inclusion(:sort_order, @sort_orders)
     |> validate_inclusion(:operator, @operators)

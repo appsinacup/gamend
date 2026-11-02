@@ -5,9 +5,8 @@ defmodule Gamend.Repo.Migrations.AddSlugToGroups do
   Every group gets the nearest slug to its title (`Gamend.Slug.slugify/2`),
   oldest first, and a second of the same gets `-2`.
 
-  The title stops being unique in the database: the `unique_titles` setting
-  checks it in the changeset instead, so a host whose groups are hidden can
-  turn it off and a taken title tells no one that a hidden group exists.
+  The title stops being unique: the slug names a group, and a taken title
+  would tell of a hidden group.
   """
 
   use Ecto.Migration

@@ -258,42 +258,6 @@ defmodule Gamend.Accounts.UsernameTest do
     end
   end
 
-  describe "with username_ascii_only" do
-    setup do
-      previous = Application.get_env(:gamend_core, Gamend.Limits, [])
-
-      Application.put_env(
-        :gamend_core,
-        Gamend.Limits,
-        Keyword.put(previous, :username_ascii_only, true)
-      )
-
-      on_exit(fn -> Application.put_env(:gamend_core, Gamend.Limits, previous) end)
-      :ok
-    end
-
-    test "refuses a non-ASCII handle and still normalizes fullwidth input" do
-      user = AccountsFixtures.user_fixture()
-      n = System.unique_integer([:positive])
-
-      assert {:error, changeset} = Accounts.update_username(user, %{"username" => "山田太郎#{n}"})
-      assert {"only a-z" <> _, _} = changeset.errors[:username]
-
-      assert {:ok, updated} = Accounts.update_username(user, %{"username" => "ＤＲＡＧＯＳ#{n}"})
-      assert updated.username == "dragos#{n}"
-    end
-
-    test "the generator transliterates or falls back to a word" do
-      assert UsernameGenerator.slug("Drágoș") == "dragos"
-      assert UsernameGenerator.slug("山田太郎") == nil
-
-      {:ok, user} =
-        Accounts.find_or_create_from_device(unique_device_id(), %{display_name: "山田太郎"})
-
-      assert user.username =~ ~r/^[a-z]+-\d{4}$/
-    end
-  end
-
   test "get_user_by_username/1 is case-insensitive" do
     user = AccountsFixtures.user_fixture()
 

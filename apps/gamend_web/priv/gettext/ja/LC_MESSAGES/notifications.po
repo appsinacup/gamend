@@ -11,28 +11,28 @@ msgstr ""
 "Language: ja\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: lib/gamend_web/live/notifications_live.ex:292
+#: lib/gamend_web/live/notifications_live.ex:324
 #, elixir-autogen, elixir-format
 msgid "New message in party"
 msgstr "パーティーに新着メッセージ"
 
-#: lib/gamend_web/live/notifications_live.ex:306
-#: lib/gamend_web/live/notifications_live.ex:311
+#: lib/gamend_web/live/notifications_live.ex:338
+#: lib/gamend_web/live/notifications_live.ex:343
 #, elixir-autogen, elixir-format
 msgid "New messages from %{name}"
 msgstr "%{name}から新着メッセージ"
 
-#: lib/gamend_web/live/notifications_live.ex:290
+#: lib/gamend_web/live/notifications_live.ex:322
 #, elixir-autogen, elixir-format
 msgid "New messages from friends"
 msgstr "フレンドから新着メッセージ"
 
-#: lib/gamend_web/live/notifications_live.ex:300
+#: lib/gamend_web/live/notifications_live.ex:332
 #, elixir-autogen, elixir-format
 msgid "Quest completed: %{name}"
 msgstr "クエスト完了：%{name}"
 
-#: lib/gamend_web/live/notifications_live.ex:298
+#: lib/gamend_web/live/notifications_live.ex:330
 #, elixir-autogen, elixir-format
 msgid "Achievement unlocked: %{name}"
 msgstr "実績解除：%{name}"

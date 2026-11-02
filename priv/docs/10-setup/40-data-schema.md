@@ -118,7 +118,7 @@ chat and friend requests.
 
 | Column | Type | Notes |
 |---|---|---|
-| `title` | string | Display name; unique unless `GAMEND_GROUPS_UNIQUE_TITLES=false` (checked in the changeset, plain index) |
+| `title` | string | Display name; two groups may share one (plain index). The slug is what names a group |
 | `slug` | string | Its name in a URL, unique per creator (`creator_id, slug`): `<owner>/<slug>` |
 | `icon_url` | string | Its icon: an uploaded image, or one of the site's icons, `/icons/<name>.svg` (`Gamend.Icons`; a random one when none is given) |
 | `type` | string | `public` / `private` / `hidden`, default `public` |

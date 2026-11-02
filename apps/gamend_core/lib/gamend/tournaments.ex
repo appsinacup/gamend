@@ -130,6 +130,8 @@ defmodule Gamend.Tournaments do
   """
   @spec get_tournament_by_slug(String.t()) :: Tournament.t() | nil
   def get_tournament_by_slug(slug) when is_binary(slug) do
+    slug = Gamend.Slug.normalize(slug)
+
     from(t in Tournament,
       where: t.slug == ^slug,
       order_by: [

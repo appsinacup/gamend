@@ -11,11 +11,13 @@ defmodule Gamend.Groups do
   - **hidden** – only invited users can join (via notifications / invite API)
 
   A host picks which of them players may use (`types`), whom an admin may
-  invite (`invites`), how long an invite link lasts (`link_days`), whether
-  every group holds the same number of members (`max_members`) and whether
-  two groups may share a title (`unique_titles`). Forge and Gamend Cloud,
-  whose groups are teams of colleagues, allow `hidden` alone, invite
-  `anyone`, hold 100 and let titles repeat.
+  invite (`invites`), how long an invite link lasts (`link_days`) and whether
+  every group holds the same number of members (`max_members`). Forge and
+  Gamend Cloud, whose groups are teams of colleagues, allow `hidden` alone,
+  invite `anyone` and hold 100.
+
+  A title is a display name and two groups may share one; the slug names a
+  group.
 
   A group's slug is its name in a URL, unique per creator, and reads
   `<owner>/<slug>` with the creator's username (`full_slug/1`,
@@ -112,12 +114,6 @@ defmodule Gamend.Groups do
       "Every new group's member cap, the same for all: a group's admins are not asked it and the API ignores it (an operator still may change one group's on the admin page). 0 lets each group's admin pick, up to the `max_group_members` limit."
   )
 
-  setting(:unique_titles, :boolean,
-    default: true,
-    doc:
-      "Whether a group's title must be unique. Off for a host whose groups are hidden, so a taken title tells no one that a hidden group exists; the slug (`<owner>/<slug>`) stays unique."
-  )
-
   # ---------------------------------------------------------------------------
   # Settings
   # ---------------------------------------------------------------------------
@@ -148,25 +144,11 @@ defmodule Gamend.Groups do
     end
   end
 
-  @doc "Whether a group's title must be unique (`unique_titles`)."
-  @spec unique_titles?() :: boolean()
-  def unique_titles?, do: Gamend.Settings.get(__MODULE__, :unique_titles) != false
-
-  @doc """
-  A title for a new group to start from, `Swift Otter` (`Gamend.Slug.random/0`),
-  one no group has when titles are unique (`unique_titles`), most draws.
-  """
+  @doc "A title for a new group to start from, `Swift Otter` (`Gamend.Slug.random/0`)."
   @spec random_title() :: String.t()
   def random_title do
-    titles =
-      for _ <- 1..5,
-          do:
-            Gamend.Slug.random() |> String.split("-") |> Enum.map_join(" ", &String.capitalize/1)
-
-    Enum.find(titles, hd(titles), &(not unique_titles?() or not title_taken?(&1)))
+    Gamend.Slug.random() |> String.split("-") |> Enum.map_join(" ", &String.capitalize/1)
   end
-
-  defp title_taken?(title), do: Repo.exists?(from(g in Group, where: g.title == ^title))
 
   # ---------------------------------------------------------------------------
   # PubSub
@@ -250,10 +232,7 @@ defmodule Gamend.Groups do
             )
   def get_group!(id), do: Repo.get_uuid!(Group, id)
 
-  @doc """
-  Get a group by its title: the oldest of that title when the host lets
-  titles repeat (`unique_titles`).
-  """
+  @doc "Get a group by its title: the oldest of that title, since titles may repeat."
   @spec get_group_by_title(String.t()) :: Group.t() | nil
   def get_group_by_title(title) when is_binary(title) do
     Repo.one(
@@ -291,7 +270,7 @@ defmodule Gamend.Groups do
     case String.split(ref, "/") do
       [owner, slug] ->
         with %User{id: creator_id} <- Gamend.Accounts.get_user_by_username(owner) do
-          Repo.get_by(Group, creator_id: creator_id, slug: String.downcase(slug))
+          Repo.get_by(Group, creator_id: creator_id, slug: Gamend.Slug.normalize(slug))
         end
 
       [id] ->

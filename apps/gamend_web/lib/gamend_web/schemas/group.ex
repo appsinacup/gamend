@@ -18,7 +18,7 @@ defmodule GamendWeb.Schemas.Group do
       slug: %Schema{
         type: :string,
         description:
-          "Its name in a URL, unique per creator: lowercase letters and digits joined by - or _"
+          "Its name in a URL, unique per creator: lowercase letters and digits of any script joined by - or _"
       },
       description: %Schema{type: :string, description: "Empty when unset"},
       icon_url: %Schema{type: :string, description: "Empty when unset"},

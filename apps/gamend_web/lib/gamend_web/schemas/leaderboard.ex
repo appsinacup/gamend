@@ -11,7 +11,7 @@ defmodule GamendWeb.Schemas.Leaderboard do
       id: %Schema{type: :string, format: :uuid},
       slug: %Schema{
         type: :string,
-        description: "Human-readable identifier, shared by every season"
+        description: "Human-readable identifier in any script, shared by every season"
       },
       title: %Schema{type: :string},
       description: %Schema{type: :string},

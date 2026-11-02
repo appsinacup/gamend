@@ -239,13 +239,8 @@ any ASCII handle holds, so `tom一号` is fine.
 A refused handle answers `422 validation_failed` with the rule it broke in
 `errors.username`. Display names have none of these rules.
 
-For the GitHub and Discord model, ASCII handles and Unicode display names,
-set `GAMEND_LIMITS_USERNAME_ASCII_ONLY=true`: a handle is then `a-z`, `0-9`
-and the separators, input is still normalized first (`ＷＡＮＧ` is `wang`),
-and a generated handle transliterates the name (`Drágoș` is `dragos`) or
-picks a random word.
-
-A plugin replaces these rules with the `validate_username/1` hook: it
+A plugin replaces these rules with the `validate_username/1` hook, to keep
+handles to ASCII say, as GitHub and Discord do: it
 receives the normalized handle and answers `:ok`, `{:error, message}` (shown
 to the player) or `:default` for core's rules. Core keeps only length,
 uniqueness and the absence of invisible characters. For a policy on top of

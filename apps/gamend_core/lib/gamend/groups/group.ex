@@ -8,8 +8,7 @@ defmodule Gamend.Groups.Group do
 
   ## Fields
 
-  - `title` – human-readable display title, unique unless the host turns
-    `unique_titles` off (`Gamend.Groups`)
+  - `title` – human-readable display title, which two groups may share
   - `slug` – its name in a URL, unique per creator: `<owner>/<slug>`
     (`Gamend.Groups.full_slug/1`), made from the title when none is given
   - `description` – optional longer description
@@ -70,11 +69,12 @@ defmodule Gamend.Groups.Group do
       less_than_or_equal_to: Gamend.Limits.get(:max_group_members)
     )
     |> validate_number(:slowdown, greater_than_or_equal_to: 0, less_than_or_equal_to: 3600)
-    |> validate_unique_title()
     |> Gamend.Limits.validate_metadata_size(:metadata)
   end
 
-  defp normalize_slug(slug) when is_binary(slug), do: slug |> String.trim() |> String.downcase()
+  defp normalize_slug(slug) when is_binary(slug),
+    do: slug |> String.trim() |> Gamend.Slug.normalize()
+
   defp normalize_slug(slug), do: slug
 
   # A new group given no slug gets its title's (`Gamend.Groups.create_group/2`
@@ -90,14 +90,6 @@ defmodule Gamend.Groups.Group do
   end
 
   defp put_default_slug(changeset), do: changeset
-
-  # No unique index holds the title (a host may allow the same one twice),
-  # so with `unique_titles` on it is checked here.
-  defp validate_unique_title(changeset) do
-    if Gamend.Groups.unique_titles?(),
-      do: unsafe_validate_unique(changeset, :title, Gamend.Repo),
-      else: changeset
-  end
 
   # A new group given no type is the host's default (`Gamend.Groups.types/0`),
   # which is the schema's "public" unless the host does not allow it. One

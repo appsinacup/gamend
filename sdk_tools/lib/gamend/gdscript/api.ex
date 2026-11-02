@@ -392,7 +392,6 @@ defmodule Gamend.GDScript.API do
       "subscribe_group" => [1],
       "subscribe_groups" => [0],
       "types" => [0],
-      "unique_titles?" => [0],
       "unsubscribe_group" => [1],
       "update_group" => [3],
       "user_group_ids" => [1]

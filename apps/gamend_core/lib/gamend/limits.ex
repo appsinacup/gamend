@@ -63,13 +63,6 @@ defmodule Gamend.Limits do
   setting(:min_username, :integer, default: 3)
   setting(:max_username, :integer, default: 32)
 
-  setting(:username_ascii_only, :boolean,
-    default: false,
-    doc:
-      "Keep username handles to a-z, 0-9 and . _ - (the GitHub and Discord model). " <>
-        "Input is still normalized first, so WANG in fullwidth becomes wang; display names stay Unicode."
-  )
-
   setting(:max_sockets_per_user, :integer,
     default: 20,
     doc: "Concurrent sockets per user. 0 disables; counted per app instance."

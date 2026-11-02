@@ -11,28 +11,28 @@ msgstr ""
 "Language: ar\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
 
-#: lib/gamend_web/live/notifications_live.ex:292
+#: lib/gamend_web/live/notifications_live.ex:324
 #, elixir-autogen, elixir-format
 msgid "New message in party"
 msgstr "رسالة جديدة في المجموعة"
 
-#: lib/gamend_web/live/notifications_live.ex:306
-#: lib/gamend_web/live/notifications_live.ex:311
+#: lib/gamend_web/live/notifications_live.ex:338
+#: lib/gamend_web/live/notifications_live.ex:343
 #, elixir-autogen, elixir-format
 msgid "New messages from %{name}"
 msgstr "رسائل جديدة من %{name}"
 
-#: lib/gamend_web/live/notifications_live.ex:290
+#: lib/gamend_web/live/notifications_live.ex:322
 #, elixir-autogen, elixir-format
 msgid "New messages from friends"
 msgstr "رسائل جديدة من الأصدقاء"
 
-#: lib/gamend_web/live/notifications_live.ex:300
+#: lib/gamend_web/live/notifications_live.ex:332
 #, elixir-autogen, elixir-format
 msgid "Quest completed: %{name}"
 msgstr "اكتملت المهمة: %{name}"
 
-#: lib/gamend_web/live/notifications_live.ex:298
+#: lib/gamend_web/live/notifications_live.ex:330
 #, elixir-autogen, elixir-format
 msgid "Achievement unlocked: %{name}"
 msgstr "تم فتح إنجاز: %{name}"

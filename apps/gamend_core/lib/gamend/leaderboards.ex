@@ -303,7 +303,7 @@ defmodule Gamend.Leaderboards do
   """
   @spec get_active_leaderboard_by_slug(String.t()) :: Leaderboard.t() | nil
   def get_active_leaderboard_by_slug(slug) when is_binary(slug) do
-    get_active_leaderboard_by_slug_cached(slug)
+    get_active_leaderboard_by_slug_cached(Gamend.Slug.normalize(slug))
   end
 
   # Short TTL: this depends on DateTime.utc_now/0 (leaderboard can become active/inactive over time)

@@ -52,10 +52,8 @@ defmodule Gamend.Tournaments.Tournament do
   def changeset(tournament, attrs) do
     tournament
     |> cast(attrs, @required ++ @optional)
+    |> Gamend.Slug.validate_loose(:slug)
     |> validate_required(@required)
-    |> validate_format(:slug, ~r/^[a-z0-9][a-z0-9_-]*$/,
-      message: "only lowercase letters, digits, _ and -"
-    )
     |> validate_length(:slug, min: 1, max: Gamend.Limits.get(:max_tournament_slug))
     |> validate_length(:title, min: 1, max: Gamend.Limits.get(:max_tournament_title))
     |> validate_length(:description, max: Gamend.Limits.get(:max_tournament_description))

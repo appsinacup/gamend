@@ -1,10 +1,9 @@
 defmodule Gamend.GroupsSettingsTest do
   # The host's groups settings (`Gamend.Groups`): the types a group may be
-  # (`types`, the first the default), whom an admin may invite (`invites`),
-  # every group's member cap (`max_members`) and whether a title is unique
-  # (`unique_titles`). Forge and Gamend Cloud allow `hidden` alone, invite
-  # `anyone`, hold 100 and let titles repeat: teams of colleagues, never
-  # public, and a taken title would tell of a hidden group.
+  # (`types`, the first the default), whom an admin may invite (`invites`) and
+  # every group's member cap (`max_members`). Forge and Gamend Cloud allow
+  # `hidden` alone, invite `anyone` and hold 100: teams of colleagues, never
+  # public.
   use Gamend.DataCase, async: false
 
   alias Gamend.AccountsFixtures
@@ -88,17 +87,8 @@ defmodule Gamend.GroupsSettingsTest do
              Groups.update_group(owner.id, group.id, %{max_members: 3, description: "x"})
   end
 
-  test "with unique titles off two groups share a title; their slugs differ", %{
-    owner: owner,
-    other: other
-  } do
-    {:ok, _} = Groups.create_group(owner.id, %{"title" => "Team"})
-    assert {:error, changeset} = Groups.create_group(other.id, %{"title" => "Team"})
-    assert %{title: ["has already been taken"]} = errors_on(changeset)
-
-    put_settings(unique_titles: false)
-    refute Groups.unique_titles?()
-
+  test "two groups share a title; their slugs differ", %{owner: owner, other: other} do
+    assert {:ok, %{slug: "team"}} = Groups.create_group(owner.id, %{"title" => "Team"})
     assert {:ok, %{slug: "team"} = theirs} = Groups.create_group(other.id, %{"title" => "Team"})
     assert {:ok, %{slug: "team-2"}} = Groups.create_group(owner.id, %{"title" => "Team"})
 

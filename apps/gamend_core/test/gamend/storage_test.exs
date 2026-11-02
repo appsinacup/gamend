@@ -2,6 +2,7 @@ defmodule Gamend.StorageTest do
   use ExUnit.Case, async: false
 
   alias Gamend.Storage
+  alias Gamend.Storage.Local
 
   setup do
     dir = Path.join(System.tmp_dir!(), "gs_storage_test_#{System.unique_integer([:positive])}")
@@ -86,6 +87,44 @@ defmodule Gamend.StorageTest do
     refute Storage.exists?("avatars/user-a/1.png")
     refute Storage.exists?("avatars/user-a/2.png")
     assert Storage.exists?("avatars/user-b/1.png")
+  end
+
+  test "delete_prefix takes the directories it empties and no others" do
+    {:ok, _} = Storage.put("sites/a/v1/js/boot.js", "x")
+    {:ok, _} = Storage.put("sites/a/v1/index.html", "y")
+    {:ok, _} = Storage.put("sites/b/index.html", "z")
+
+    assert {:ok, 2} = Storage.delete_prefix("sites/a/")
+
+    refute File.exists?(Local.path_for("sites/a"))
+    assert Storage.exists?("sites/b/index.html")
+  end
+
+  test "delete_prefix off a directory boundary prunes only what it matched" do
+    {:ok, _} = Storage.put("pdf/es/1.pdf", "x")
+    {:ok, _} = Storage.put("pdf/esp/1.pdf", "y")
+    {:ok, _} = Storage.put("pdf/fr/1.pdf", "z")
+
+    assert {:ok, 2} = Storage.delete_prefix("pdf/es")
+
+    assert File.ls(Local.path_for("pdf")) == {:ok, ["fr"]}
+  end
+
+  test "delete_prefix empties the store down to its root, and the root stays" do
+    {:ok, _} = Storage.put("sites/a/index.html", "x")
+    {:ok, _} = Storage.put("top.txt", "y")
+
+    assert {:ok, 2} = Storage.delete_prefix("")
+
+    assert File.ls(Local.root_dir()) == {:ok, []}
+  end
+
+  test "a put after delete_prefix makes the directories again" do
+    {:ok, _} = Storage.put("sites/a/index.html", "x")
+    assert {:ok, 1} = Storage.delete_prefix("sites/a/")
+
+    assert {:ok, "sites/a/index.html"} = Storage.put("sites/a/index.html", "y")
+    assert {:ok, "y"} = Storage.get("sites/a/index.html")
   end
 
   test "listing a prefix returns its objects and nothing outside it" do

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1376">
+    <meta name="project" content="gamend_core v1.1.1377">
 
 
-    <title>Gamend.Slug — gamend_core v1.1.1376</title>
+    <title>Gamend.Slug — gamend_core v1.1.1377</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-2395D603.js"></script>
+    <script defer src="dist/sidebar_items-EEF77512.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1376
+          v1.1.1377
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Slug</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1376)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1377)</small>
 
     </h1>
 
@@ -116,9 +116,13 @@ gamend_core
     <section id="moduledoc">
 <p>A name that is also its URL, unique per account: a group's
 (<a href="Gamend.Groups.html"><code class="inline">Gamend.Groups</code></a>, <code class="inline">&lt;owner&gt;/&lt;slug&gt;</code>), and in a host a project's or a store
-account's (Forge's <code class="inline">/projects/&lt;owner&gt;/&lt;name&gt;</code>).</p><p>Lowercase letters and digits, joined by single <code class="inline">-</code> or <code class="inline">_</code>, as a GitHub
-repository name reads once it is lowercased. Unique per account, by a
-unique index the changeset names.</p>
+account's (Forge's <code class="inline">/projects/&lt;owner&gt;/&lt;name&gt;</code>).</p><p>Lowercase letters and digits of any script (<code class="inline">crimson-order</code>, <code class="inline">红色军团</code>),
+joined by single <code class="inline">-</code> or <code class="inline">_</code>. A letter carries at most three combining marks,
+as a username's does, and is spelled as a username is
+(<a href="Gamend.Accounts.Username.html#normalize/1"><code class="inline">Gamend.Accounts.Username.normalize/1</code></a>). Unique per account, by a unique
+index the changeset names.</p><p>A leaderboard's and a tournament's slug is looser (<a href="#validate_loose/2"><code class="inline">validate_loose/2</code></a>), since
+seasons and editions share one and <code class="inline">__</code> and a leading <code class="inline">_</code> were always allowed:
+the same letters, with <code class="inline">-</code> and <code class="inline">_</code> anywhere but a leading <code class="inline">-</code>.</p>
     </section>
 
 </div>
@@ -157,6 +161,26 @@ unique index the changeset names.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#loose_format/0" data-no-tooltip="" translate="no">loose_format()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The format <a href="#validate_loose/2"><code class="inline">validate_loose/2</code></a> checks.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#normalize/1" data-no-tooltip="" translate="no">normalize(slug)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The spelling a slug is stored and looked up under.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#random/0" data-no-tooltip="" translate="no">random()</a>
 
       </div>
@@ -173,9 +197,9 @@ server's). Checked against nothing: about 1,500 of them.</p></div>
 
       </div>
 
-        <div class="summary-synopsis"><p>The nearest slug to <code class="inline">text</code>: lowercased, every run of anything else turned
+        <div class="summary-synopsis"><p>The nearest slug to <code class="inline">text</code>: normalized, every run of anything else turned
 into one <code class="inline">-</code>, trimmed, at most 64 long, and <code class="inline">fallback</code> when nothing is
-left. <code class="inline">&quot;My_Game.v2&quot;</code> is <code class="inline">my_game-v2</code>.</p></div>
+left. <code class="inline">&quot;My_Game.v2&quot;</code> is <code class="inline">my_game-v2</code>, <code class="inline">&quot;红色 军团&quot;</code> is <code class="inline">红色-军团</code>.</p></div>
 
     </div>
 
@@ -187,6 +211,16 @@ left. <code class="inline">&quot;My_Game.v2&quot;</code> is <code class="inline"
 
         <div class="summary-synopsis"><p>Check <code class="inline">field</code> is a slug, at most <code class="inline">:max</code> long, and unique per account by
 the unique index <code class="inline">:index</code>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#validate_loose/2" data-no-tooltip="" translate="no">validate_loose(changeset, field)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Normalize <code class="inline">field</code> and check it has <a href="#loose_format/0"><code class="inline">loose_format/0</code></a>.</p></div>
 
     </div>
 
@@ -214,7 +248,7 @@ the unique index <code class="inline">:index</code>.</p></div>
       <h1 class="signature" translate="no">format()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L31" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L42" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -242,7 +276,7 @@ the unique index <code class="inline">:index</code>.</p></div>
       <h1 class="signature" translate="no">free(base, taken?)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L89" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -260,6 +294,62 @@ the unique index <code class="inline">:index</code>.</p></div>
 <p><code class="inline">base</code>, or <code class="inline">base-2</code>, <code class="inline">base-3</code>… : the first one <code class="inline">taken?</code> says is free.</p>
   </section>
 </section>
+<section class="detail" id="loose_format/0">
+
+  <div class="detail-header">
+    <a href="#loose_format/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">loose_format()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L46" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> loose_format() :: <a href="https://elixir.hexdocs.pm/Regex.html#t:t/0">Regex.t</a>()</pre>
+
+      </div>
+
+<p>The format <a href="#validate_loose/2"><code class="inline">validate_loose/2</code></a> checks.</p>
+  </section>
+</section>
+<section class="detail" id="normalize/1">
+
+  <div class="detail-header">
+    <a href="#normalize/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">normalize(slug)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L58" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> normalize(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+
+      </div>
+
+<p>The spelling a slug is stored and looked up under.</p>
+  </section>
+</section>
 <section class="detail" id="random/0">
 
   <div class="detail-header">
@@ -270,7 +360,7 @@ the unique index <code class="inline">:index</code>.</p></div>
       <h1 class="signature" translate="no">random()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L39" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L54" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -300,7 +390,7 @@ server's). Checked against nothing: about 1,500 of them.</p>
       <h1 class="signature" translate="no">slugify(text, fallback)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L47" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L66" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -315,9 +405,9 @@ server's). Checked against nothing: about 1,500 of them.</p>
 
       </div>
 
-<p>The nearest slug to <code class="inline">text</code>: lowercased, every run of anything else turned
+<p>The nearest slug to <code class="inline">text</code>: normalized, every run of anything else turned
 into one <code class="inline">-</code>, trimmed, at most 64 long, and <code class="inline">fallback</code> when nothing is
-left. <code class="inline">&quot;My_Game.v2&quot;</code> is <code class="inline">my_game-v2</code>.</p>
+left. <code class="inline">&quot;My_Game.v2&quot;</code> is <code class="inline">my_game-v2</code>, <code class="inline">&quot;红色 军团&quot;</code> is <code class="inline">红色-军团</code>.</p>
   </section>
 </section>
 <section class="detail" id="validate/3">
@@ -330,7 +420,7 @@ left. <code class="inline">&quot;My_Game.v2&quot;</code> is <code class="inline"
       <h1 class="signature" translate="no">validate(changeset, field, opts)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L82" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L103" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -349,6 +439,34 @@ left. <code class="inline">&quot;My_Game.v2&quot;</code> is <code class="inline"
 the unique index <code class="inline">:index</code>.</p>
   </section>
 </section>
+<section class="detail" id="validate_loose/2">
+
+  <div class="detail-header">
+    <a href="#validate_loose/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">validate_loose(changeset, field)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/slug.ex#L112" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> validate_loose(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()) :: <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()</pre>
+
+      </div>
+
+<p>Normalize <code class="inline">field</code> and check it has <a href="#loose_format/0"><code class="inline">loose_format/0</code></a>.</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -358,9 +476,9 @@ the unique index <code class="inline">:index</code>.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1376">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1377">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1376">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1377">Hex Preview</a>
 
             </span>
 

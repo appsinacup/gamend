@@ -37,11 +37,6 @@ A host with other ideas implements the `validate_username/1` hook
 no invisible characters (Unicode's `C` categories: controls, zero-width
 joiners, direction overrides).
 
-`GAMEND_LIMITS_USERNAME_ASCII_ONLY=true` keeps handles to `a-z`, `0-9` and
-the separators, the GitHub and Discord model, after the same normalization
-(`ＷＡＮＧ` is still `wang`); the generator then transliterates or picks a
-word.
-
 # `default_rules`
 
 ```elixir

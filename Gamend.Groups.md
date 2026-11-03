@@ -12,11 +12,13 @@ three visibility types:
 - **hidden** – only invited users can join (via notifications / invite API)
 
 A host picks which of them players may use (`types`), whom an admin may
-invite (`invites`), how long an invite link lasts (`link_days`), whether
-every group holds the same number of members (`max_members`) and whether
-two groups may share a title (`unique_titles`). Forge and Gamend Cloud,
-whose groups are teams of colleagues, allow `hidden` alone, invite
-`anyone`, hold 100 and let titles repeat.
+invite (`invites`), how long an invite link lasts (`link_days`) and whether
+every group holds the same number of members (`max_members`). Forge and
+Gamend Cloud, whose groups are teams of colleagues, allow `hidden` alone,
+invite `anyone` and hold 100.
+
+A title is a display name and two groups may share one; the slug names a
+group.
 
 A group's slug is its name in a URL, unique per creator, and reads
 `<owner>/<slug>` with the creator's username (`full_slug/1`,
@@ -373,8 +375,7 @@ for neither.
 @spec get_group_by_title(String.t()) :: Gamend.Groups.Group.t() | nil
 ```
 
-Get a group by its title: the oldest of that title when the host lets
-titles repeat (`unique_titles`).
+Get a group by its title: the oldest of that title, since titles may repeat.
 
 # `get_group_members`
 
@@ -678,8 +679,7 @@ Promote a member to admin. Only admins can promote.
 @spec random_title() :: String.t()
 ```
 
-A title for a new group to start from, `Swift Otter` (`Gamend.Slug.random/0`),
-one no group has when titles are unique (`unique_titles`), most draws.
+A title for a new group to start from, `Swift Otter` (`Gamend.Slug.random/0`).
 
 # `reject_join_request`
 
@@ -749,14 +749,6 @@ Subscribe to global group events.
 The types a group may be created as or changed to, the default first: the
 `types` setting, less any name that is not a type. All three when that
 leaves none, so a typo cannot close group creation.
-
-# `unique_titles?`
-
-```elixir
-@spec unique_titles?() :: boolean()
-```
-
-Whether a group's title must be unique (`unique_titles`).
 
 # `unsubscribe_group`
 

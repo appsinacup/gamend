@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1376">
+    <meta name="project" content="gamend_core v1.1.1377">
 
 
-    <title>Gamend.Accounts.Username — gamend_core v1.1.1376</title>
+    <title>Gamend.Accounts.Username — gamend_core v1.1.1377</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-2395D603.js"></script>
+    <script defer src="dist/sidebar_items-EEF77512.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1376
+          v1.1.1377
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Username</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1376)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1377)</small>
 
     </h1>
 
@@ -137,10 +137,7 @@ holds.</p><p>A host with other ideas implements the <code class="inline">validat
 (<a href="Gamend.Hooks.html"><code class="inline">Gamend.Hooks</code></a>), which answers for the normalized handle and replaces
 <a href="#default_rules/1"><code class="inline">default_rules/1</code></a> wholesale. Only the floor stays: length, uniqueness, and
 no invisible characters (Unicode's <code class="inline">C</code> categories: controls, zero-width
-joiners, direction overrides).</p><p><code class="inline">GAMEND_LIMITS_USERNAME_ASCII_ONLY=true</code> keeps handles to <code class="inline">a-z</code>, <code class="inline">0-9</code> and
-the separators, the GitHub and Discord model, after the same normalization
-(<code class="inline">ＷＡＮＧ</code> is still <code class="inline">wang</code>); the generator then transliterates or picks a
-word.</p>
+joiners, direction overrides).</p>
     </section>
 
 </div>
@@ -233,7 +230,7 @@ changeset. Invisible characters are refused first; then the
       <h1 class="signature" translate="no">default_rules(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L103" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L96" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -261,7 +258,7 @@ changeset. Invisible characters are refused first; then the
       <h1 class="signature" translate="no">format()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L74" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -289,7 +286,7 @@ changeset. Invisible characters are refused first; then the
       <h1 class="signature" translate="no">normalize(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L72" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L65" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -317,7 +314,7 @@ changeset. Invisible characters are refused first; then the
       <h1 class="signature" translate="no">valid?(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L126" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L116" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -345,7 +342,7 @@ changeset. Invisible characters are refused first; then the
       <h1 class="signature" translate="no">validate(username)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L89" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/username.ex#L82" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -374,9 +371,9 @@ changeset. Invisible characters are refused first; then the
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1376">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1377">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1376">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1377">Hex Preview</a>
 
             </span>
 

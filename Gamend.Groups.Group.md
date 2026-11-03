@@ -9,8 +9,7 @@ join-request workflows, and invitation flows.
 
 ## Fields
 
-- `title` – human-readable display title, unique unless the host turns
-  `unique_titles` off (`Gamend.Groups`)
+- `title` – human-readable display title, which two groups may share
 - `slug` – its name in a URL, unique per creator: `<owner>/<slug>`
   (`Gamend.Groups.full_slug/1`), made from the title when none is given
 - `description` – optional longer description

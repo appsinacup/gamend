@@ -240,7 +240,8 @@ devices, an email. A channel they turned off is skipped.
 `attrs`: `"title"` (required), `"content"`, `"type"` (a declared code,
 `Gamend.Notifications.Types`), `"url"` (a path on this site the
 notification leads to), and for the email `"subject"` and `"text"`
-(default: the title and the content).
+(default: the title and the content). `"email_now" => true` sends the email
+at once in a group that sends digests (`Gamend.Notifications.Digest`).
 
 The in-app row is the user's own (sender = recipient), so repeating a title
 refreshes the one row rather than stacking. Returns the channels it went

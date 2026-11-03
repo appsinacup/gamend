@@ -26,6 +26,12 @@ how the account works.
 through): nobody else sees its row (`groups_for/1`) or gets it
 (`enabled?/3`).
 
+`email_every` (`:day`, `:week`, `:month`) sends the group's email as a digest
+(`Gamend.Notifications.Digest`) rather than one per notice, for a group whose
+notices come in runs. The site's row and the push stay instant. `email_now`
+lists the types that keep their own email, for a notice that cannot wait
+(a moderator's warning); a `notify/3` call says so with `"email_now"`.
+
 Which channel a group defaults to follows one rule (2026-10-28):
 
   * **email on**: what the person asked for and waits on, a queue an admin
@@ -49,6 +55,24 @@ under `"notifications"`:
 ```
 
 The channels, in the order the settings page shows them.
+
+# `digest?`
+
+```elixir
+@spec digest?(String.t(), String.t() | nil) :: boolean()
+```
+
+Whether a notice of `type` in `group` waits for the group's digest
+(`Gamend.Notifications.Digest`): its group has `email_every`, and the type is
+not in its `email_now`.
+
+# `email_every_days`
+
+```elixir
+@spec email_every_days(String.t()) :: non_neg_integer()
+```
+
+The days between a group's digests: 0 for a group with none, or none any more.
 
 # `enabled?`
 
@@ -87,7 +111,8 @@ nil for a type in no group (a moderator's notice), which is always sent.
 ```
 
 Every group, core's first then the host's: `%{key, label, defaults,
-configurable, types, admin}`, `configurable` a list of channels.
+configurable, types, admin}`, `configurable` a list of channels, plus
+`email_every` and `email_now` on those that have them.
 
 # `groups_for`
 

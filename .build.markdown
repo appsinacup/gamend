@@ -139,6 +139,9 @@ Gamend.Matchmaking.Matcher.md
 Gamend.Matchmaking.Ticket.md
 Gamend.Matchmaking.Worker.md
 Gamend.Matchmaking.md
+Gamend.Notifications.Digest.md
+Gamend.Notifications.DigestItem.md
+Gamend.Notifications.DigestSweeper.md
 Gamend.Notifications.Notification.md
 Gamend.Notifications.Preferences.md
 Gamend.Notifications.Types.md

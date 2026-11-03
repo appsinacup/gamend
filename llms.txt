@@ -1,4 +1,4 @@
-# gamend_core v1.1.1377 - Table of Contents
+# gamend_core v1.1.1378 - Table of Contents
 
 > Core functionality for Gamend, including user management, authentication, friends, matchmaking, and more.
 
@@ -351,6 +351,15 @@ translates its text through gettext at read time.
 - Delivery
   - [Gamend.Notifications](Gamend.Notifications.md): Notifications context – create, list, and delete persisted user-to-user
 notifications.
+  - [Gamend.Notifications.Digest](Gamend.Notifications.Digest.md): Emails that wait and go out together: a group with `email_every`
+(`Gamend.Notifications.Preferences`) keeps its notices here, and one email
+lists them.
+  - [Gamend.Notifications.DigestItem](Gamend.Notifications.DigestItem.md): One notice waiting for a digest email (`Gamend.Notifications.Digest`).
+  - [Gamend.Notifications.DigestSweeper](Gamend.Notifications.DigestSweeper.md): Hourly, queues the digest emails that are due
+(`Gamend.Notifications.Digest.sweep/1`). `enabled: false` in the app config
+keeps it supervised but idle, for test suites. Safe on several nodes at
+once: the job is unique per user and group.
+
   - [Gamend.Notifications.Notification](Gamend.Notifications.Notification.md): Ecto schema representing a notification sent from one user to another.
   - [Gamend.Notifications.Preferences](Gamend.Notifications.Preferences.md): Which notifications a user wants, and how: per GROUP (a row on the
 settings page: "Friends and groups", a host's "Streak about to end") and

@@ -282,7 +282,7 @@ defmodule GamendWeb.AdminLive.Storage do
                     <button
                       phx-click="delete"
                       phx-value-key={obj.key}
-                      data-confirm={"Delete #{obj.key}?"}
+                      data-confirm
                       class="btn btn-outline btn-error btn-xs"
                     >
                       Delete

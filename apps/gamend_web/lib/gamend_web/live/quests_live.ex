@@ -673,11 +673,16 @@ defmodule GamendWeb.QuestsLive do
 
           <ul class="space-y-1">
             <li :for={entry <- @group} class="flex items-center gap-3 rounded-lg p-2">
-              <.entity_icon
-                icon_url={if entry_secret?(entry), do: nil, else: entry.quest.icon_url}
-                type={:quest}
-                class="w-6 h-6 flex-shrink-0"
-              />
+              <span data-tone={GamendWeb.HostLayouts.nav_tone("/quests")} class="contents">
+                <.entity_icon
+                  icon_url={if entry_secret?(entry), do: nil, else: entry.quest.icon_url}
+                  type={:quest}
+                  class={[
+                    "w-6 h-6 flex-shrink-0",
+                    GamendWeb.HostLayouts.nav_tone("/quests") && "text-(--nav-tone)"
+                  ]}
+                />
+              </span>
               <div class="min-w-0 flex-1">
                 <div class="font-medium text-sm truncate">{entry_title(entry)}</div>
                 <div class="text-xs text-muted">{entry_status_label(entry)}</div>
@@ -874,6 +879,7 @@ defmodule GamendWeb.QuestsLive do
       title={@localized_title}
       icon_url={@quest.icon_url}
       type={:quest}
+      tone={GamendWeb.HostLayouts.nav_tone("/quests")}
       description={@localized_desc}
       href={
         case @click do
@@ -930,18 +936,18 @@ defmodule GamendWeb.QuestsLive do
 
       <%!-- Rewards --%>
       <%= if @quest.rewards != [] && not @secret? do %>
-        <div class="flex flex-wrap gap-1">
-          <span :for={reward <- @quest.rewards} class="badge badge-sm badge-ghost gap-1">
-            <.icon
-              name={
-                if reward.type == "currency",
-                  do: "hero-currency-dollar",
-                  else: "hero-cube"
-              }
-              class="w-3 h-3"
+        <div class="flex flex-wrap items-center gap-1">
+          <%= for reward <- @quest.rewards do %>
+            <.currency_amount
+              :if={reward.type == "currency"}
+              code={reward.code}
+              amount={reward.amount}
             />
-            {reward_text(reward, @quest.metadata || %{})}
-          </span>
+            <span :if={reward.type != "currency"} class="badge badge-sm badge-ghost gap-1">
+              <.icon name="hero-cube" class="w-3 h-3" />
+              {reward_text(reward, @quest.metadata || %{})}
+            </span>
+          <% end %>
         </div>
       <% end %>
 

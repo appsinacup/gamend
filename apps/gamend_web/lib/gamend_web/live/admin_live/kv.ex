@@ -29,13 +29,7 @@ defmodule GamendWeb.AdminLive.KV do
                 <button
                   type="button"
                   phx-click="bulk_delete"
-                  data-confirm={
-                    ngettext(
-                      "Delete %{count} selected KV entry?",
-                      "Delete %{count} selected KV entries?",
-                      MapSet.size(@selected_ids)
-                    )
-                  }
+                  data-confirm
                   class="btn btn-sm btn-outline btn-error"
                   disabled={MapSet.size(@selected_ids) == 0}
                 >
@@ -164,7 +158,7 @@ defmodule GamendWeb.AdminLive.KV do
                         type="button"
                         phx-click="delete_entry"
                         phx-value-id={e.id}
-                        data-confirm="Delete this KV entry?"
+                        data-confirm
                         class="btn btn-xs btn-outline btn-error"
                       >
                         Delete

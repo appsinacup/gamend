@@ -30,7 +30,7 @@ defmodule GamendWeb.Workers.NotificationEmail do
     with %User{email: email} = user when is_binary(email) <- Accounts.get_user(user_id),
          true <- Preferences.enabled?(user, group, "email") do
       body =
-        in_locale(AccountPreferences.locale(user), fn ->
+        NotificationEmail.in_locale(AccountPreferences.locale(user), fn ->
           NotificationEmail.body(user.id, group, args["text"] || "", args["url"])
         end)
 
@@ -49,9 +49,4 @@ defmodule GamendWeb.Workers.NotificationEmail do
       _gone_or_off -> :ok
     end
   end
-
-  defp in_locale(locale, fun) when is_binary(locale),
-    do: Gettext.with_locale(GamendWeb.GettextSync.host_backend(), locale, fun)
-
-  defp in_locale(_locale, fun), do: fun.()
 end

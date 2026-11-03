@@ -460,7 +460,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                         phx-click="open_action"
                         phx-value-action="delete_message"
                         phx-value-id={report.id}
-                        data-confirm={is_nil(report.reporter_id) && gettext("Delete this message?")}
+                        data-confirm={is_nil(report.reporter_id)}
                         class="btn btn-outline btn-error btn-xs"
                       >
                         {gettext("Delete message")}

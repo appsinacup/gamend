@@ -72,7 +72,7 @@ defmodule GamendWeb.UserLive.Settings.DevicesTab do
                     type="button"
                     phx-click="device_remove"
                     phx-value-id={device.id}
-                    data-confirm={gettext("Delete?")}
+                    data-confirm
                     class="btn btn-sm btn-outline btn-error"
                   >
                     {gettext("Remove")}

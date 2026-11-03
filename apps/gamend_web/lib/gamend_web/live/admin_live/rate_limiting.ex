@@ -470,15 +470,13 @@ defmodule GamendWeb.AdminLive.RateLimiting do
 
     :ets.tab2list(table)
     |> Enum.reduce(
-      %{limited: 0, usage: []},
+      %{usage: []},
       fn
         {{key, _window}, count, _expiry}, acc when is_binary(key) ->
           case String.split(key, ":", parts: 2) do
             [type, ip] ->
               limit = Map.get(limits, type, limits["general"])
-              limited_inc = if count >= limit, do: 1, else: 0
-              usage = [{type, ip, count, limit} | acc.usage]
-              %{acc | limited: acc.limited + limited_inc, usage: usage}
+              %{acc | usage: [{type, ip, count, limit} | acc.usage]}
 
             _ ->
               acc
@@ -514,7 +512,11 @@ defmodule GamendWeb.AdminLive.RateLimiting do
           {type, %{count: unique_count, total_hits: total_hits, limited: limited}}
         end)
 
-      Map.put(stats, :by_type, by_type)
+      # Counted after grouping, so an IP over the limit in several windows is
+      # one, as in the table's Blocked rows and the bucket cards.
+      limited = stats.usage |> Enum.count(fn {_, _, c, l} -> c >= l end)
+
+      stats |> Map.put(:by_type, by_type) |> Map.put(:limited, limited)
     end)
   rescue
     _ -> @empty_stats

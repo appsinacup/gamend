@@ -66,12 +66,10 @@ const saveTheme = (theme) => {
   }).catch(() => {});
 };
 
-window.addEventListener("phx:set-theme", (e) => {
-  // Find the button with data-phx-theme attribute (could be the target or its parent)
-  const button = e.target.closest("[data-phx-theme]");
-  if (button) {
-    setTheme(button.dataset.phxTheme);
-    saveTheme(button.dataset.phxTheme);
-  }
+window.addEventListener("phx:toggle-theme", () => {
+  const current = document.documentElement.getAttribute("data-theme");
+  const theme = current === "dark" ? "light" : "dark";
+  setTheme(theme);
+  saveTheme(theme);
 });
 

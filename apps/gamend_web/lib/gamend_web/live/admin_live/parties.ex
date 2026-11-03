@@ -63,13 +63,7 @@ defmodule GamendWeb.AdminLive.Parties do
                 <button
                   type="button"
                   phx-click="bulk_delete"
-                  data-confirm={
-                    ngettext(
-                      "Delete %{count} selected party?",
-                      "Delete %{count} selected parties?",
-                      MapSet.size(@selected_ids)
-                    )
-                  }
+                  data-confirm
                   class="btn btn-sm btn-outline btn-error"
                   disabled={MapSet.size(@selected_ids) == 0}
                 >
@@ -225,7 +219,7 @@ defmodule GamendWeb.AdminLive.Parties do
                             type="button"
                             phx-click="delete_party"
                             phx-value-id={p.id}
-                            data-confirm="Are you sure? This will disband the party."
+                            data-confirm
                             class="btn btn-xs btn-outline btn-error"
                           >
                             Delete
@@ -354,7 +348,7 @@ defmodule GamendWeb.AdminLive.Parties do
                         phx-click="kick_member"
                         phx-value-party-id={@selected_party.id}
                         phx-value-user-id={m.id}
-                        data-confirm={"Kick user #{m.id} from party?"}
+                        data-confirm
                         class="btn btn-xs btn-outline btn-error"
                       >
                         Kick

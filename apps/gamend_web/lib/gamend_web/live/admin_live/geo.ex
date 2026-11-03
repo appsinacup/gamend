@@ -40,7 +40,7 @@ defmodule GamendWeb.AdminLive.Geo do
             </span>
             <button
               phx-click="reset_stats"
-              data-confirm="Reset all geo traffic counters to zero?"
+              data-confirm
               class="btn btn-outline btn-error btn-xs"
             >
               Reset

@@ -216,6 +216,7 @@ defmodule GamendWeb.HostSupervision do
         # Hourly: Stripe checkouts still open past their session's life are
         # reconciled, for a webhook that never arrived
         Gamend.Payments.StripeSweeper,
+        Gamend.Notifications.DigestSweeper,
         # Tournament lifecycle: transitions, draws, match deadlines, recurrence
         Gamend.Tournaments.Ticker,
         # Push delivery processes (Goth + Pigeon dispatchers); supervises

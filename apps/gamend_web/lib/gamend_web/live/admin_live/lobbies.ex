@@ -72,13 +72,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
                 <button
                   type="button"
                   phx-click="bulk_delete"
-                  data-confirm={
-                    ngettext(
-                      "Delete %{count} selected lobby?",
-                      "Delete %{count} selected lobbies?",
-                      MapSet.size(@selected_ids)
-                    )
-                  }
+                  data-confirm
                   class="btn btn-sm btn-outline btn-error"
                   disabled={MapSet.size(@selected_ids) == 0}
                 >
@@ -294,7 +288,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
                             type="button"
                             phx-click="delete_lobby"
                             phx-value-id={l.id}
-                            data-confirm="Are you sure?"
+                            data-confirm
                             class="btn btn-xs btn-outline btn-error"
                           >
                             Delete
@@ -472,7 +466,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
                       phx-click="kick_member"
                       phx-value-lobby-id={@selected_lobby.id}
                       phx-value-user-id={m.id}
-                      data-confirm={"Remove user #{m.id} from lobby?"}
+                      data-confirm
                       class="btn btn-xs btn-outline btn-error"
                     >
                       Remove

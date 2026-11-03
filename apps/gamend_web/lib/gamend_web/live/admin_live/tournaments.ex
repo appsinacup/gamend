@@ -109,7 +109,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                       <button
                         phx-click="delete_tournament"
                         phx-value-id={t.id}
-                        data-confirm="Delete this tournament and all its entries/matches?"
+                        data-confirm
                         class="btn btn-xs btn-error btn-outline"
                       >
                         Delete
@@ -202,7 +202,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                 <button
                   :if={@detail.tournament.state == "registration"}
                   phx-click="force_draw"
-                  data-confirm="Draw the bracket now?"
+                  data-confirm
                   class="btn btn-surface btn-sm"
                 >
                   Draw now
@@ -210,7 +210,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                 <button
                   :if={@detail.tournament.state == "running"}
                   phx-click="force_finish"
-                  data-confirm="Finish this tournament now?"
+                  data-confirm
                   class="btn btn-surface btn-sm"
                 >
                   Finish
@@ -218,7 +218,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                 <button
                   :if={@detail.tournament.state in ["scheduled", "registration", "running"]}
                   phx-click="force_cancel"
-                  data-confirm="Cancel this tournament?"
+                  data-confirm
                   class="btn btn-sm btn-error btn-outline"
                 >
                   Cancel tournament

@@ -25,6 +25,12 @@ defmodule Gamend.Notifications.Preferences do
   through): nobody else sees its row (`groups_for/1`) or gets it
   (`enabled?/3`).
 
+  `email_every` (`:day`, `:week`, `:month`) sends the group's email as a digest
+  (`Gamend.Notifications.Digest`) rather than one per notice, for a group whose
+  notices come in runs. The site's row and the push stay instant. `email_now`
+  lists the types that keep their own email, for a notice that cannot wait
+  (a moderator's warning); a `notify/3` call says so with `"email_now"`.
+
   Which channel a group defaults to follows one rule (2026-10-28):
 
     * **email on**: what the person asked for and waits on, a queue an admin
@@ -46,6 +52,7 @@ defmodule Gamend.Notifications.Preferences do
   alias Gamend.Accounts.User
 
   @channels ~w(in_app email push)
+  @digest_every [:day, :week, :month]
   @key "notifications"
 
   @core_groups [
@@ -66,7 +73,9 @@ defmodule Gamend.Notifications.Preferences do
       defaults: %{"in_app" => true, "email" => true, "push" => true},
       configurable: ~w(email push),
       types: ~w(report_resolved chat_report_resolved chat_warning chat_mute),
-      admin: false
+      admin: false,
+      email_every: :week,
+      email_now: ~w(chat_warning chat_mute)
     },
     # The admins' queues: a report, a chat report waiting for review.
     %{
@@ -111,7 +120,8 @@ defmodule Gamend.Notifications.Preferences do
 
   @doc """
   Every group, core's first then the host's: `%{key, label, defaults,
-  configurable, types, admin}`, `configurable` a list of channels.
+  configurable, types, admin}`, `configurable` a list of channels, plus
+  `email_every` and `email_now` on those that have them.
   """
   @spec groups() :: [map()]
   def groups do
@@ -163,7 +173,9 @@ defmodule Gamend.Notifications.Preferences do
       defaults: Map.new(group[:defaults] || %{}, fn {k, v} -> {to_string(k), v == true} end),
       configurable: Enum.map(group[:configurable] || @channels, &to_string/1),
       types: Enum.map(group[:types] || [], &to_string/1),
-      admin: group[:admin] == true
+      admin: group[:admin] == true,
+      email_every: email_every(group[:email_every]),
+      email_now: Enum.map(group[:email_now] || [], &to_string/1)
     }
   end
 
@@ -174,7 +186,43 @@ defmodule Gamend.Notifications.Preferences do
   defp to_atom_key("configurable"), do: :configurable
   defp to_atom_key("types"), do: :types
   defp to_atom_key("admin"), do: :admin
+  defp to_atom_key("email_every"), do: :email_every
+  defp to_atom_key("email_now"), do: :email_now
   defp to_atom_key(other), do: other
+
+  defp email_every(every) when every in @digest_every, do: every
+
+  defp email_every(every) when every in ["day", "week", "month"],
+    do: String.to_existing_atom(every)
+
+  defp email_every(_every), do: nil
+
+  @doc """
+  Whether a notice of `type` in `group` waits for the group's digest
+  (`Gamend.Notifications.Digest`): its group has `email_every`, and the type is
+  not in its `email_now`.
+  """
+  @spec digest?(String.t(), String.t() | nil) :: boolean()
+  def digest?(group_key, type) do
+    case group(group_key) do
+      %{email_every: every} = group when not is_nil(every) ->
+        type not in Map.get(group, :email_now, [])
+
+      _no_digest ->
+        false
+    end
+  end
+
+  @doc "The days between a group's digests: 0 for a group with none, or none any more."
+  @spec email_every_days(String.t()) :: non_neg_integer()
+  def email_every_days(group_key) do
+    case group(group_key) do
+      %{email_every: :day} -> 1
+      %{email_every: :week} -> 7
+      %{email_every: :month} -> 30
+      _none -> 0
+    end
+  end
 
   @doc "A user's stored choices (see the moduledoc's shape)."
   @spec stored(User.t() | nil) :: map()

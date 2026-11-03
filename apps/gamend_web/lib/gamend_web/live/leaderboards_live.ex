@@ -133,6 +133,7 @@ defmodule GamendWeb.LeaderboardsLive do
         <div data-heading-fit class="flex items-center gap-3">
           <.back_link
             :if={@selected_leaderboard}
+            always
             navigate={
               GamendWeb.HostLayouts.localized_href(
                 "/leaderboards",
@@ -142,11 +143,14 @@ defmodule GamendWeb.LeaderboardsLive do
           />
           <.back_link :if={!@selected_leaderboard} href={home_path()} />
           <.page_title :if={@selected_leaderboard} class="flex min-w-0 items-center gap-3">
-            <.entity_icon
-              icon_url={@selected_leaderboard.icon_url}
-              type={:leaderboard}
-              class="size-8 shrink-0 text-muted sm:size-9 fit-icon:hidden"
-            />
+            <%!-- The section's colour, as the list's own title wears it. --%>
+            <span data-tone={GamendWeb.HostLayouts.nav_tone("/leaderboards")} class="contents">
+              <.entity_icon
+                icon_url={@selected_leaderboard.icon_url}
+                type={:leaderboard}
+                class="size-8 shrink-0 text-(--nav-tone) sm:size-9 fit-icon:hidden"
+              />
+            </span>
             <span class="min-w-0 break-words fit-cut:truncate">{@selected_leaderboard.title}</span>
           </.page_title>
           <.page_title
@@ -775,39 +779,11 @@ defmodule GamendWeb.LeaderboardsLive do
     |> URI.encode_query()
   end
 
-  # The line under a row's name (`player_card/1`): the row's badge and its
-  # value for every filter, `·`-joined ("Crew ghost · Spanish"); a picked
-  # filter's value is the view's, since a filtered key's records need not
-  # carry it. A board with no views, or a row with none of these, shows the
+  # The line under a row's name (`player_card/1`): the row's badge, else the
   # player's title (`user_title_text/1`).
   defp row_subtitle(view, leaderboard, record) do
-    badge = view && LeaderboardViews.row_badge(leaderboard, record)
-
-    case List.wrap(badge) ++ row_values(view, leaderboard, record) do
-      [] -> :title
-      parts -> Enum.join(parts, " · ")
-    end
+    (view && LeaderboardViews.row_badge(leaderboard, record)) || :title
   end
-
-  # A row's value for each filter: the picked one's, else its record's
-  # metadata (a filter left on All), named.
-  defp row_values(%{views: views, picked: picked}, leaderboard, record) do
-    views.filters
-    |> Enum.flat_map(fn field ->
-      case List.keyfind(picked, field, 0) || record.metadata do
-        {^field, value} ->
-          [LeaderboardViews.value_label(leaderboard, field, value)]
-
-        %{^field => value} when is_binary(value) and value != "" ->
-          [LeaderboardViews.value_label(leaderboard, field, value)]
-
-        _ ->
-          []
-      end
-    end)
-  end
-
-  defp row_values(_view, _leaderboard, _record), do: []
 
   attr :view, :map, required: true
   attr :leaderboard, :any, required: true

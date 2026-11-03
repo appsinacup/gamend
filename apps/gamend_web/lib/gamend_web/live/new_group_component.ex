@@ -49,6 +49,12 @@ defmodule GamendWeb.NewGroupComponent do
 
   def handle_event("close", _params, socket), do: {:noreply, assign(socket, :open?, false)}
 
+  # A new random name, what else was typed so far staying.
+  def handle_event("random_name", _params, socket) do
+    params = Map.put(socket.assigns.form.params, "title", Groups.random_title())
+    handle_event("validate", %{"group" => params}, socket)
+  end
+
   # The slug follows the name until it is typed into.
   def handle_event("validate", %{"group" => params}, socket) do
     auto = Gamend.Slug.slugify(params["title"], "")
@@ -121,14 +127,28 @@ defmodule GamendWeb.NewGroupComponent do
             phx-target={@myself}
             class="mt-4 space-y-3"
           >
-            <.input
-              field={@form[:title]}
-              type="text"
-              label={gettext("Name")}
-              autocomplete="off"
-              phx-debounce="300"
-              phx-mounted={JS.focus()}
-            />
+            <div>
+              <.input
+                field={@form[:title]}
+                type="text"
+                label={gettext("Name")}
+                autocomplete="off"
+                phx-debounce="300"
+                phx-mounted={JS.focus()}
+              />
+              <div class="mt-1 flex justify-end">
+                <button
+                  id={"#{@id}-random-name"}
+                  type="button"
+                  class="btn btn-ghost btn-xs"
+                  phx-click="random_name"
+                  phx-target={@myself}
+                >
+                  <.icon name="hero-sparkles-solid" class="size-3.5" />
+                  {gettext("Another name")}
+                </button>
+              </div>
+            </div>
             <div>
               <.input
                 field={@form[:slug]}

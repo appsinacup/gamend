@@ -396,7 +396,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
             <button
               type="button"
               phx-click="remove_list"
-              data-confirm={gettext("Remove every word tagged with this language?")}
+              data-confirm
               class="btn btn-outline btn-error btn-sm"
             >
               {gettext("Remove this list")}
@@ -631,7 +631,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
                     <button
                       phx-click="delete_word"
                       phx-value-id={word.id}
-                      data-confirm={gettext("Remove this word?")}
+                      data-confirm
                       class="btn btn-outline btn-error btn-xs"
                     >
                       {gettext("Delete")}

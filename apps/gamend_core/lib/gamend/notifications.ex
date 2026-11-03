@@ -39,6 +39,7 @@ defmodule Gamend.Notifications do
   use Nebulex.Caching, cache: Gamend.Cache
 
   alias Gamend.Friends
+  alias Gamend.Notifications.Digest
   alias Gamend.Notifications.Notification
   alias Gamend.Notifications.Preferences
   alias Gamend.Repo
@@ -369,7 +370,8 @@ defmodule Gamend.Notifications do
   `attrs`: `"title"` (required), `"content"`, `"type"` (a declared code,
   `Gamend.Notifications.Types`), `"url"` (a path on this site the
   notification leads to), and for the email `"subject"` and `"text"`
-  (default: the title and the content).
+  (default: the title and the content). `"email_now" => true` sends the email
+  at once in a group that sends digests (`Gamend.Notifications.Digest`).
 
   The in-app row is the user's own (sender = recipient), so repeating a title
   refreshes the one row rather than stacking. Returns the channels it went
@@ -416,11 +418,20 @@ defmodule Gamend.Notifications do
   # by name carries none of the worker's own options, so the uniqueness is
   # here: one email per user, group and subject an hour. A queue's standing
   # alert ("3 reports are waiting") changes its text with every item, and
-  # would otherwise mail once per item; the site's row keeps the count.
+  # would otherwise mail once per item; the site's row keeps the count. A
+  # group with `email_every` waits for its digest instead (`Digest`).
   @email_worker "GamendWeb.Workers.NotificationEmail"
   @email_unique [period: 3600, fields: [:worker, :args], keys: [:user_id, :group, :subject]]
 
   defp enqueue_email(%{email: email} = user, group, attrs) when is_binary(email) do
+    if attrs["email_now"] != true and Preferences.digest?(group, attrs["type"]),
+      do: match?({:ok, _}, Digest.add(user.id, group, attrs)),
+      else: enqueue_email_now(user, group, attrs)
+  end
+
+  defp enqueue_email(_user, _group, _attrs), do: false
+
+  defp enqueue_email_now(user, group, attrs) do
     args =
       Map.reject(
         %{
@@ -443,8 +454,6 @@ defmodule Gamend.Notifications do
 
     match?({:ok, _}, Oban.insert(job))
   end
-
-  defp enqueue_email(_user, _group, _attrs), do: false
 
   @doc "Admin: delete a single notification by ID (no ownership check)."
   @spec admin_delete_notification(Ecto.UUID.t()) :: {:ok, Notification.t()} | {:error, term()}
@@ -620,6 +629,7 @@ defmodule Gamend.Notifications do
           enqueue_email(user, group, %{
             "title" => notification.title,
             "content" => notification.content,
+            "type" => metadata["type"],
             "url" => metadata["url"]
           })
     end

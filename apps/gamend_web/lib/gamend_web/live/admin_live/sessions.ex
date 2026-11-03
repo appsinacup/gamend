@@ -25,13 +25,7 @@ defmodule GamendWeb.AdminLive.Sessions do
               <button
                 type="button"
                 phx-click="bulk_delete"
-                data-confirm={
-                  ngettext(
-                    "Delete %{count} selected session?",
-                    "Delete %{count} selected sessions?",
-                    MapSet.size(@selected_ids)
-                  )
-                }
+                data-confirm
                 class="btn btn-sm btn-outline btn-error"
                 disabled={MapSet.size(@selected_ids) == 0}
               >
@@ -99,7 +93,7 @@ defmodule GamendWeb.AdminLive.Sessions do
                       <button
                         phx-click="delete_session"
                         phx-value-id={session.id}
-                        data-confirm="Are you sure you want to delete this session?"
+                        data-confirm
                         class="btn btn-xs btn-outline btn-error"
                       >
                         Delete

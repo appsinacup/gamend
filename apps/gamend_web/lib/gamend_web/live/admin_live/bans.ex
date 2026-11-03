@@ -304,7 +304,7 @@ defmodule GamendWeb.AdminLive.Bans do
                       :if={Bans.active?(ban)}
                       phx-click="lift"
                       phx-value-id={ban.id}
-                      data-confirm="Lift this ban?"
+                      data-confirm
                       class="btn btn-outline btn-success btn-xs"
                     >
                       Lift

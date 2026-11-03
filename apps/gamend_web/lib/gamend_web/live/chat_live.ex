@@ -281,7 +281,7 @@ defmodule GamendWeb.ChatLive do
                       <button
                         phx-click="chat_delete"
                         phx-value-id={msg.id}
-                        data-confirm={gettext("Delete?")}
+                        data-confirm
                         class="btn btn-xs btn-ghost min-h-[2rem] min-w-[2rem] px-2 lg:px-1 text-error"
                         title={gettext("Delete")}
                       >

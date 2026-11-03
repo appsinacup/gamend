@@ -55,13 +55,7 @@ defmodule GamendWeb.AdminLive.Groups do
               <button
                 type="button"
                 phx-click="bulk_delete"
-                data-confirm={
-                  ngettext(
-                    "Delete %{count} selected group?",
-                    "Delete %{count} selected groups?",
-                    MapSet.size(@selected_ids)
-                  )
-                }
+                data-confirm
                 class="btn btn-sm btn-outline btn-error"
                 disabled={MapSet.size(@selected_ids) == 0}
               >
@@ -236,7 +230,7 @@ defmodule GamendWeb.AdminLive.Groups do
                             type="button"
                             phx-click="delete_group"
                             phx-value-id={g.id}
-                            data-confirm="Are you sure?"
+                            data-confirm
                             class="btn btn-xs btn-outline btn-error"
                           >
                             Delete
@@ -380,7 +374,7 @@ defmodule GamendWeb.AdminLive.Groups do
                         phx-click="kick_member"
                         phx-value-group-id={m.group_id}
                         phx-value-user-id={m.user_id}
-                        data-confirm={"Kick #{user_display(m.user)} from the group?"}
+                        data-confirm
                         class="btn btn-xs btn-outline btn-error"
                       >
                         Kick

@@ -19,6 +19,11 @@ msgstr ""
 msgid "Actions"
 msgstr "Hành động"
 
+#: lib/gamend_web/components/host_layouts/root.html.heex:257
+#, elixir-autogen, elixir-format
+msgid "Are you sure?"
+msgstr "Bạn chắc chứ?"
+
 #: lib/gamend_web/live/user_live/login.ex:55
 #: lib/gamend_web/live/user_live/login.ex:87
 #: lib/gamend_web/live/user_live/registration.ex:29
@@ -3238,6 +3243,11 @@ msgstr "Ngừng nhận mọi email"
 msgid "Stop these emails"
 msgstr "Ngừng nhận các email này"
 
+#: lib/gamend_web/notification_email.ex:80
+#, elixir-autogen, elixir-format
+msgid "%{group}: what is new"
+msgstr "%{group}: có gì mới"
+
 #: lib/gamend_web/notification_email.ex:81
 #, elixir-autogen, elixir-format
 msgid "Stop these emails: %{url}"
@@ -4077,3 +4087,9 @@ msgstr "Bạn đã báo cáo điều này rồi. Chúng tôi đã nhận đượ
 #, elixir-autogen, elixir-format
 msgid "You have sent a lot of reports. Try again in an hour."
 msgstr "Bạn đã gửi nhiều báo cáo. Hãy thử lại sau một giờ."
+
+#: lib/gamend_web/live/new_group_component.ex:148
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:185
+#, elixir-autogen, elixir-format
+msgid "Another name"
+msgstr "Tên khác"

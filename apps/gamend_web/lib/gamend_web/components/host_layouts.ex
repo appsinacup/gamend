@@ -1020,30 +1020,34 @@ defmodule GamendWeb.HostLayouts do
 
   @doc """
   Provides dark vs light theme toggle based on themes defined in app.css.
+
+  One button, so a click anywhere on it switches: the thumb that marks the
+  current theme is drawn over the side it sits on and two buttons lost clicks
+  there. The label that is in the accessibility tree is the one it will do.
   """
   def theme_toggle(assigns) do
     ~H"""
-    <div class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full">
-      <div class="absolute w-1/2 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 start-0 [[data-theme=dark]_&]:start-1/2 transition-[inset-inline-start]" />
+    <button
+      type="button"
+      class="card relative flex flex-row items-center border-2 border-base-300 bg-base-300 rounded-full cursor-pointer group"
+      phx-click={JS.dispatch("phx:toggle-theme")}
+      data-theme-toggle
+    >
+      <span class="absolute w-1/2 h-full rounded-full border-1 border-base-200 bg-base-100 brightness-200 start-0 [[data-theme=dark]_&]:start-1/2 transition-[inset-inline-start]" />
 
-      <button
-        class="flex p-2 cursor-pointer w-1/2"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="light"
-        aria-label={translate("Switch to light theme")}
-      >
-        <.icon name="hero-sun-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
+      <span class="relative flex p-2 w-1/2">
+        <.icon name="hero-sun-micro" class="size-4 opacity-75 group-hover:opacity-100" />
+      </span>
 
-      <button
-        class="flex p-2 cursor-pointer w-1/2"
-        phx-click={JS.dispatch("phx:set-theme")}
-        data-phx-theme="dark"
-        aria-label={translate("Switch to dark theme")}
-      >
-        <.icon name="hero-moon-micro" class="size-4 opacity-75 hover:opacity-100" />
-      </button>
-    </div>
+      <span class="relative flex p-2 w-1/2">
+        <.icon name="hero-moon-micro" class="size-4 opacity-75 group-hover:opacity-100" />
+      </span>
+
+      <span class="sr-only [[data-theme=dark]_&]:hidden">{translate("Switch to dark theme")}</span>
+      <span class="sr-only hidden [[data-theme=dark]_&]:inline">
+        {translate("Switch to light theme")}
+      </span>
+    </button>
     """
   end
 end

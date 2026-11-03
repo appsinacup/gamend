@@ -76,10 +76,10 @@ def short_name(op: dict, file: str) -> str:
 
 
 def emit_function(model: Model, op: dict, file: str, name: str) -> str:
-    """One operation as a function over `gamend::rest`. Path parameters are
-    `any`, so an id passes as a number or a string; the body and the query
-    are maps."""
-    args = [f"{safe(p)}: any" for p in op["path_params"]]
+    """One operation as a function over `gamend::rest`, answering its id.
+    Path parameters are `str`, as they are in a path; the body and the query
+    are JSON maps, so `any`."""
+    args = [f"{safe(p)}: str" for p in op["path_params"]]
     required_body: list[str] = []
     if op["body"]:
         args.append("params: any")
@@ -89,10 +89,11 @@ def emit_function(model: Model, op: dict, file: str, name: str) -> str:
     called = json.dumps(f"gamend::{file}::{name}")
     out = wrap(op["summary"], 76, "///")
     out.append(f"/// `{op['method']} {op['path']}`")
-    out.append(f"pub fn {name}({', '.join(args)}) -> any {{")
-    # A left-out id is nil, and a path built on it asks for something else.
+    out.append(f"pub fn {name}({', '.join(args)}) -> int {{")
+    # An empty id is `.as_str()` of a number, and a path built on it asks for
+    # something else.
     for param in op["path_params"]:
-        out.append(f"    if {safe(param)} == nil {{")
+        out.append(f'    if {safe(param)} == "" {{')
         out.append(f"        return core::missing({called}, {json.dumps(param)});")
         out.append("    }")
     for field in required_body:
@@ -139,12 +140,13 @@ def write_tags(model: Model) -> dict[str, str]:
             f"// {tag}: one function per operation, `{file}::<name>` once a\n"
             f"// script says `use addons::gamend::{file};`.\n"
             "//\n"
-            "// A call takes the path's own parameters, then `params` for the request\n"
-            "// body and `options` for the query where the operation has them; either\n"
-            "// may be left out when the call has nothing to put in it. It answers the\n"
-            "// id `gamend::rest` answers, to await with `task::wait`. With a path\n"
-            "// parameter or a required field left out it sends nothing, logs which,\n"
-            "// and answers nil.\n"
+            "// A call takes the path's own parameters as text (`reply[\"id\"].text()`\n"
+            "// for an id a reply holds), then `params` for the request body and\n"
+            "// `options` for the query where the operation has them; either may be\n"
+            "// left out when the call has nothing to put in it. It answers the id\n"
+            "// `gamend::rest` answers, to await with `task::wait`. With a path\n"
+            "// parameter empty or a required field left out it sends nothing and\n"
+            "// logs which, and the id answers an `error` naming it.\n"
             "\nuse core;",
         ]
         chunks += [emit_function(model, op, file, name) for name, op in ops]

@@ -124,7 +124,7 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
                     type="button"
                     phx-click="api_token_revoke"
                     phx-value-id={token.id}
-                    data-confirm={gettext("Revoke this token? Anything using it stops working.")}
+                    data-confirm
                     class="btn btn-sm btn-outline btn-error"
                   >
                     {gettext("Revoke")}

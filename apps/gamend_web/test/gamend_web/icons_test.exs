@@ -111,5 +111,16 @@ defmodule GamendWeb.IconsTest do
       assert length(Regex.scan(~r/<symbol /, sprite)) == length(Gamend.Icons.picks())
       refute sprite =~ "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox"
     end
+
+    # What Safari sends for a `<use>`'s file.
+    test "answers a client that accepts only SVG, and sets no cookie", %{conn: conn} do
+      conn =
+        conn
+        |> put_req_header("accept", "image/svg+xml")
+        |> get(GamendWeb.Icons.sprite_path())
+
+      assert response(conn, 200) =~ "<symbol "
+      assert get_resp_header(conn, "set-cookie") == []
+    end
   end
 end

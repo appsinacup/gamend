@@ -145,6 +145,7 @@ A user chooses per **group** and per **channel** (`in_app`, `email`, `push`) on 
 | `social` | `friend_*`, `group_*`, `party_*`, `lobby_kicked` | in-app + push | email, push |
 | `chat` | `chat_friend`, `chat_group`, `chat_lobby`, `chat_party` | in-app + push | push |
 | `quests` | `quest_completed` | in-app | email, push |
+| `reports` | `report_resolved`, `chat_report_resolved`, `chat_warning`, `chat_mute` | in-app + email + push, email weekly but for a warning or mute | email, push |
 
 A type in no group (a moderator's notice) is always pushed. A host adds its own groups in config:
 
@@ -159,6 +160,8 @@ config :gamend_core, :notification_groups, [
 `signup: true` offers the group's email on the registration form, unticked. `configurable` (default: all three channels) limits what the user may change.
 
 To send one, the server calls `Gamend.Notifications.notify(user_id, group, attrs)` with `"title"`, `"content"`, an optional `"url"` (a path on the site, shown as the notification's Open button) and optional `"subject"`/`"text"` for the email. Each channel the user left on gets it: the in-app row (sender = recipient, so a repeated title refreshes one row), a push, and an email job (`GamendWeb.Workers.NotificationEmail`, on the `mailers` queue). The email ends with a one-click unsubscribe link and carries `List-Unsubscribe` + `List-Unsubscribe-Post` headers, so a mail client's own Unsubscribe button works.
+
+A group whose notices come in runs batches its email: `email_every: :day`, `:week` or `:month` keeps each notice (`Gamend.Notifications.Digest`, table `notification_digest_items`) until that long after the oldest one, and one email lists them (`GamendWeb.Workers.NotificationDigest`, queued by an hourly sweep). A lone notice keeps its own subject. The in-app row and the push stay instant. `email_now: ["chat_warning"]` lists the types that keep their own email; a `notify/3` call says the same with `"email_now" => true`.
 
 A user's time zone (taken from the browser) and last site language are saved alongside: `Gamend.Accounts.TimeZone` gives "their day" and "their evening" for a reminder, `Gamend.Accounts.Preferences.locale/1` the language to write it in.
 

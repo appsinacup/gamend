@@ -41,7 +41,7 @@ defmodule GamendWeb.NotificationsLive do
               <button
                 type="button"
                 phx-click="delete_all"
-                data-confirm={gettext("Delete all notifications?")}
+                data-confirm
                 class="btn btn-sm btn-outline btn-error"
               >
                 {gettext("Delete all")}

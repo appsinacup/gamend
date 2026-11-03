@@ -46,13 +46,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                 <button
                   type="button"
                   phx-click="bulk_delete"
-                  data-confirm={
-                    ngettext(
-                      "Delete %{count} selected leaderboard and all its records?",
-                      "Delete %{count} selected leaderboards and all their records?",
-                      MapSet.size(@selected_ids)
-                    )
-                  }
+                  data-confirm
                   class="btn btn-sm btn-outline btn-error"
                   disabled={MapSet.size(@selected_ids) == 0}
                 >
@@ -175,7 +169,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                           <button
                             phx-click="end_leaderboard"
                             phx-value-id={lb.id}
-                            data-confirm="End this leaderboard? No more scores can be submitted."
+                            data-confirm
                             class="btn btn-xs btn-outline btn-warning"
                           >
                             End
@@ -184,7 +178,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                         <button
                           phx-click="delete_leaderboard"
                           phx-value-id={lb.id}
-                          data-confirm="Delete this leaderboard and all its records?"
+                          data-confirm
                           class="btn btn-xs btn-outline btn-error"
                         >
                           Delete
@@ -381,7 +375,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                       <button
                         phx-click="delete_record"
                         phx-value-id={record.id}
-                        data-confirm="Delete this record?"
+                        data-confirm
                         class="btn btn-xs btn-outline btn-error"
                       >
                         Delete

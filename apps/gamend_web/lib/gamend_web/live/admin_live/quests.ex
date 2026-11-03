@@ -144,7 +144,7 @@ defmodule GamendWeb.AdminLive.Quests do
                         <button
                           phx-click="delete_quest"
                           phx-value-id={q.id}
-                          data-confirm="Delete this quest and all user progress?"
+                          data-confirm
                           class="btn btn-xs btn-outline btn-error"
                         >
                           Delete
@@ -253,7 +253,7 @@ defmodule GamendWeb.AdminLive.Quests do
                           phx-click="reset_progress"
                           phx-value-user={p.user_id}
                           phx-value-key={p.quest_key}
-                          data-confirm="Reset this user's current-period progress?"
+                          data-confirm
                           class="btn btn-xs btn-outline btn-error"
                         >
                           Reset

@@ -85,15 +85,7 @@ defmodule GamendWeb.AdminLive.Friends do
   defp status_class("rejected"), do: "badge-ghost"
   defp status_class(_status), do: "badge-ghost"
 
-  # `Friends.delete_friendship/1` also deletes an accepted pair's direct
-  # messages, which nothing can bring back.
-  defp remove_confirm("accepted"),
-    do: "Remove this friendship? Their direct-message history is deleted too."
-
-  defp remove_confirm("pending"), do: "Cancel this friend request?"
-  defp remove_confirm(_status), do: "Remove this rejected request?"
-
-  # ── render ────────────────────────────────────────────────────────────────
+  # ── render ───────────────────────────
 
   @impl true
   def render(assigns) do
@@ -175,7 +167,7 @@ defmodule GamendWeb.AdminLive.Friends do
                     <button
                       phx-click="remove"
                       phx-value-id={friendship.id}
-                      data-confirm={remove_confirm(friendship.status)}
+                      data-confirm
                       class="btn btn-outline btn-error btn-xs"
                     >
                       Remove

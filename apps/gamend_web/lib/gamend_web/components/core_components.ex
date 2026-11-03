@@ -883,6 +883,7 @@ defmodule GamendWeb.CoreComponents do
   attr :navigate, :string, default: nil, doc: "a live route"
   attr :label, :string, default: nil, doc: ~s(overrides the "Back" wording)
   attr :class, :any, default: "btn btn-ghost btn-sm max-sm:btn-circle sm:btn-surface"
+  attr :always, :boolean, default: false, doc: "drawn even where the host turns Back off"
 
   @doc """
   The Back button. Every page under home has one at the start of its title
@@ -903,10 +904,16 @@ defmodule GamendWeb.CoreComponents do
 
   A host whose navigation is always on screen (a sidebar, a tab bar) turns
   every Back off with `config :gamend_web, :back_link, false`: the button
-  then draws nothing, on core's pages and the host's alike.
+  then draws nothing, on core's pages and the host's alike, but for one the
+  page marks `always`.
   """
   def back_link(assigns) do
-    assigns = assign(assigns, :shown?, Application.get_env(:gamend_web, :back_link, true))
+    assigns =
+      assign(
+        assigns,
+        :shown?,
+        assigns.always or Application.get_env(:gamend_web, :back_link, true)
+      )
 
     ~H"""
     <.link
@@ -1130,6 +1137,11 @@ defmodule GamendWeb.CoreComponents do
     required: true,
     values: [:group, :tournament, :leaderboard, :quest, :notification, :user]
 
+  attr :tone, :string,
+    default: nil,
+    doc:
+      "its section's navbar `\"tone\"`: the colour the host gives its icon, else the muted text"
+
   attr :description, :string, default: nil
   attr :navigate, :string, default: nil
   attr :href, :string, default: nil
@@ -1178,12 +1190,14 @@ defmodule GamendWeb.CoreComponents do
               (leaderboards, quests, groups), and an `h3` there skips a
               level (axe `heading-order`). The look is the classes'. --%>
         <h2 class="card-title text-lg">
-          <.entity_icon
-            icon_url={@icon_url}
-            icon={@icon}
-            type={@type}
-            class="w-6 h-6 shrink-0 text-muted"
-          />
+          <span data-tone={@tone} class="contents">
+            <.entity_icon
+              icon_url={@icon_url}
+              icon={@icon}
+              type={@type}
+              class={"w-6 h-6 shrink-0 #{if @tone, do: "text-(--nav-tone)", else: "text-muted"}"}
+            />
+          </span>
           <.link
             :if={@href}
             href={@href}
@@ -1207,6 +1221,35 @@ defmodule GamendWeb.CoreComponents do
       {render_slot(@inner_block)}
     </div>
     """
+  end
+
+  attr :code, :string, required: true, doc: "the currency's code (`coins`)"
+  attr :amount, :integer, required: true
+
+  @doc """
+  An amount of a currency on one of core's pages (a quest's reward). A host
+  that draws its money its own way names that component, and core's pages
+  draw the same thing as its own:
+
+      config :gamend_web, :currency_component, {MyHost.UI, :core_currency}
+
+  It is called with `%{code: code, amount: amount}`. With none, a plain badge.
+  """
+  def currency_amount(assigns) do
+    case Application.get_env(:gamend_web, :currency_component) do
+      {module, function} ->
+        apply(module, function, [
+          %{__changed__: nil, code: assigns.code, amount: assigns.amount}
+        ])
+
+      nil ->
+        ~H"""
+        <span class="badge badge-sm badge-ghost gap-1">
+          <.icon name="hero-currency-dollar" class="w-3 h-3" />
+          {@amount} {@code}
+        </span>
+        """
+    end
   end
 
   @doc """

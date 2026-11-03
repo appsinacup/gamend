@@ -19,6 +19,11 @@ msgstr ""
 msgid "Actions"
 msgstr "Acties"
 
+#: lib/gamend_web/components/host_layouts/root.html.heex:257
+#, elixir-autogen, elixir-format
+msgid "Are you sure?"
+msgstr "Weet je het zeker?"
+
 #: lib/gamend_web/live/user_live/login.ex:55
 #: lib/gamend_web/live/user_live/login.ex:87
 #: lib/gamend_web/live/user_live/registration.ex:29
@@ -3282,6 +3287,11 @@ msgstr "Stop alle e-mails"
 msgid "Stop these emails"
 msgstr "Stop deze e-mails"
 
+#: lib/gamend_web/notification_email.ex:80
+#, elixir-autogen, elixir-format
+msgid "%{group}: what is new"
+msgstr "%{group}: wat is er nieuw"
+
 #: lib/gamend_web/notification_email.ex:81
 #, elixir-autogen, elixir-format
 msgid "Stop these emails: %{url}"
@@ -4127,3 +4137,9 @@ msgstr "Dit heb je al gemeld. We hebben het."
 #, elixir-autogen, elixir-format
 msgid "You have sent a lot of reports. Try again in an hour."
 msgstr "Je hebt veel meldingen verstuurd. Probeer het over een uur opnieuw."
+
+#: lib/gamend_web/live/new_group_component.ex:148
+#: lib/gamend_web/live/user_live/settings/groups_tab.ex:185
+#, elixir-autogen, elixir-format
+msgid "Another name"
+msgstr "Andere naam"

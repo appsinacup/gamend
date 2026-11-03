@@ -180,7 +180,7 @@ defmodule GamendWeb.AdminLive.Results do
               <button
                 phx-click="delete"
                 phx-value-id={@result.id}
-                data-confirm={gettext("Delete this result and its events?")}
+                data-confirm
                 class="btn btn-outline btn-error btn-sm"
               >
                 {gettext("Delete")}

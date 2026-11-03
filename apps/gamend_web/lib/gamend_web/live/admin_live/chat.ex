@@ -35,13 +35,7 @@ defmodule GamendWeb.AdminLive.Chat do
               <button
                 type="button"
                 phx-click="bulk_delete"
-                data-confirm={
-                  ngettext(
-                    "Delete %{count} selected message?",
-                    "Delete %{count} selected messages?",
-                    MapSet.size(@selected_ids)
-                  )
-                }
+                data-confirm
                 class="btn btn-sm btn-outline btn-error"
                 disabled={MapSet.size(@selected_ids) == 0}
               >
@@ -176,7 +170,7 @@ defmodule GamendWeb.AdminLive.Chat do
                           type="button"
                           phx-click="delete_message"
                           phx-value-id={m.id}
-                          data-confirm="Are you sure?"
+                          data-confirm
                           class="btn btn-xs btn-outline btn-error"
                         >
                           Delete

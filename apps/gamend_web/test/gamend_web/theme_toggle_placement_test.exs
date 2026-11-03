@@ -8,8 +8,8 @@ defmodule GamendWeb.ThemeTogglePlacementTest do
 
   # The desktop bar's links (`desktop_nav/1`), and the account's menu
   # (`user_menu/1`).
-  @bar "ul.px-1.space-x-4 [data-phx-theme='dark']"
-  @user_menu "details[data-navbar-dropdown] ul.w-56 [data-phx-theme='dark']"
+  @bar "ul.px-1.space-x-4 [data-theme-toggle]"
+  @user_menu "details[data-navbar-dropdown] ul.w-56 [data-theme-toggle]"
 
   defp toggles(conn, selector) do
     conn

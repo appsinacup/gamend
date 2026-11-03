@@ -89,6 +89,35 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     assert_patch(view, "/users/groups")
   end
 
+  test "Another name draws a new title and its slug; what else was typed stays", %{
+    conn: conn,
+    user: user
+  } do
+    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups?create=1")
+
+    render_change(view, "group_validate_create", %{
+      "group" => %{"title" => "Studio", "description" => "Ours", "icon_url" => "/icons/star.svg"}
+    })
+
+    view |> element("#create-group-random-name") |> render_click()
+
+    refute has_element?(view, "#create-group-form input[name='group[title]'][value='Studio']")
+    refute has_element?(view, "#create-group-form input[name='group[slug]'][value='studio']")
+    assert has_element?(view, "#create-group-form input[name='group[description]'][value='Ours']")
+
+    assert has_element?(
+             view,
+             "#create-group-form input[name='group[icon_url]'][value='/icons/star.svg'][checked]"
+           )
+
+    render_change(view, "group_validate_create", %{
+      "group" => %{"title" => "Studio", "slug" => "mine"}
+    })
+
+    view |> element("#create-group-random-name") |> render_click()
+    assert has_element?(view, "#create-group-form input[name='group[slug]'][value='mine']")
+  end
+
   test "a fixed cap is not asked; the slug follows the title until typed into", %{
     conn: conn,
     user: user
@@ -285,6 +314,10 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
 
     view |> element("#open-new-team") |> render_click()
     assert has_element?(view, "#new-team-form")
+
+    view |> form("#new-team-form", group: %{title: "Studio"}) |> render_change()
+    view |> element("#new-team-random-name") |> render_click()
+    refute has_element?(view, "#new-team-form input[name='group[title]'][value='Studio']")
     assert render(view) =~ "New group"
 
     view |> form("#new-team-form", group: %{title: ""}) |> render_submit()

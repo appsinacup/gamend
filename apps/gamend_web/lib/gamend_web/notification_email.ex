@@ -12,6 +12,7 @@ defmodule GamendWeb.NotificationEmail do
   # :html for the host's catalogue (as every page) and verified routes.
   use GamendWeb, :html
 
+  alias Gamend.Notifications.DigestItem
   alias Gamend.Notifications.Preferences
 
   @salt "notification unsubscribe"
@@ -67,13 +68,50 @@ defmodule GamendWeb.NotificationEmail do
   """
   @spec body(String.t(), String.t(), String.t(), String.t() | nil) :: String.t()
   def body(user_id, group, text, path) do
-    link =
-      if is_binary(path) and String.starts_with?(path, "/"),
-        do: String.trim_trailing(url(~p"/"), "/") <> path
+    join([text, site_url(path) | footer(user_id, group)])
+  end
 
+  @doc "A digest's subject: a lone notice's own, else the group's."
+  @spec digest_subject(String.t(), [DigestItem.t()]) :: String.t()
+  def digest_subject(_group, [%DigestItem{subject: subject}]), do: subject
+
+  def digest_subject(group, _items),
+    do: gettext("%{group}: what is new", group: group_label(group))
+
+  @doc "A digest's body: its notices under their subjects, oldest first, then the footer."
+  @spec digest_body(String.t(), String.t(), [DigestItem.t()]) :: String.t()
+  def digest_body(user_id, group, [%DigestItem{text: text, url: url}]),
+    do: body(user_id, group, text, url)
+
+  def digest_body(user_id, group, items) do
+    notices =
+      items
+      |> Enum.chunk_by(& &1.subject)
+      |> Enum.map(fn [%DigestItem{subject: subject} | _] = run ->
+        join([subject | Enum.map(run, &notice/1)])
+      end)
+
+    join(notices ++ footer(user_id, group))
+  end
+
+  defp notice(%DigestItem{text: text, url: url}) do
+    [text, site_url(url)] |> Enum.reject(&(&1 in [nil, ""])) |> Enum.join("\n")
+  end
+
+  @doc "Run `fun` in the reader's language: an email goes out from a job, with no page's."
+  @spec in_locale(String.t() | nil, (-> result)) :: result when result: var
+  def in_locale(locale, fun) when is_binary(locale),
+    do: Gettext.with_locale(GamendWeb.GettextSync.host_backend(), locale, fun)
+
+  def in_locale(_locale, fun), do: fun.()
+
+  defp site_url(path) do
+    if is_binary(path) and String.starts_with?(path, "/"),
+      do: String.trim_trailing(url(~p"/"), "/") <> path
+  end
+
+  defp footer(user_id, group) do
     [
-      text,
-      link,
       "--",
       gettext("You get this email because you turned on emails for: %{group}.",
         group: group_label(group)
@@ -81,7 +119,7 @@ defmodule GamendWeb.NotificationEmail do
       gettext("Stop these emails: %{url}", url: unsubscribe_url(user_id, group)),
       gettext("Choose what we send you: %{url}", url: url(~p"/users/settings?tab=notifications"))
     ]
-    |> Enum.reject(&(&1 in [nil, ""]))
-    |> Enum.join("\n\n")
   end
+
+  defp join(parts), do: parts |> Enum.reject(&(&1 in [nil, ""])) |> Enum.join("\n\n")
 end

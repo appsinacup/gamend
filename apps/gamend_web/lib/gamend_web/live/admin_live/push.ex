@@ -182,7 +182,7 @@ defmodule GamendWeb.AdminLive.Push do
                           type="button"
                           phx-click="delete_token"
                           phx-value-id={t.id}
-                          data-confirm="Delete this device token?"
+                          data-confirm
                           class="btn btn-xs btn-outline btn-error"
                         >
                           Delete

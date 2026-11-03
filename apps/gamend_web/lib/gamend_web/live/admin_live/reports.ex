@@ -421,7 +421,7 @@ defmodule GamendWeb.AdminLive.Reports do
                 <button
                   phx-click="delete"
                   phx-value-id={report.id}
-                  data-confirm={gettext("Delete this report and its images?")}
+                  data-confirm
                   class="btn btn-outline btn-error btn-xs"
                 >
                   {gettext("Delete")}

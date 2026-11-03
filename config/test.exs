@@ -94,6 +94,9 @@ config :gamend_core, Gamend.Retention, enabled: false
 # minutes after boot. Tests call `Gamend.Payments.StripeSweeper.sweep/1`.
 config :gamend_core, Gamend.Payments.StripeSweeper, enabled: false
 
+# The digest sweep too. Tests call `Gamend.Notifications.Digest.sweep/1`.
+config :gamend_core, Gamend.Notifications.DigestSweeper, enabled: false
+
 # Same for the matchmaking sweep: no sandbox connection, and on SQLite it
 # collides with the test's open write transaction ("database is locked").
 # Tests drive Gamend.Matchmaking.Worker.sweep/0 directly.

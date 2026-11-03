@@ -305,7 +305,7 @@ defmodule GamendWeb.AdminLive.Payments do
                         type="button"
                         phx-click="refund_stripe_purchase"
                         phx-value-id={p.id}
-                        data-confirm="Refund this purchase in full? A subscription is cancelled now. The webhook revokes what it bought."
+                        data-confirm
                         class="btn btn-xs btn-outline btn-warning"
                       >
                         Refund

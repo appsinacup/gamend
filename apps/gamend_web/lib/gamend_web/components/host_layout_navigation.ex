@@ -217,7 +217,7 @@ defmodule GamendWeb.HostLayoutNavigation do
           </.link>
         </li>
         <%!-- The theme toggle, the bar's for a visitor (`desktop_nav/1`), as
-              the phone's menu has it: its two buttons say what they do. --%>
+              the phone's menu has it. --%>
         <li class="mt-1">
           <div class="flex justify-start">
             <GamendWeb.HostLayouts.theme_toggle />

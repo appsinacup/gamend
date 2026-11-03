@@ -30,7 +30,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.Shared
 
-  @events ~w(groups_tab groups_toggle_create group_validate_create group_create
+  @events ~w(groups_tab groups_toggle_create group_random_name group_validate_create group_create
              group_leave group_join group_request_join group_accept_invite
              group_decline_invite group_cancel_request group_cancel_invite
              group_approve_request group_reject_request browse_groups_filter
@@ -166,13 +166,26 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
               phx-submit="group_create"
             >
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <.input
-                  field={@create_group_form[:title]}
-                  type="text"
-                  label={gettext("Title")}
-                  phx-debounce="300"
-                  required
-                />
+                <div>
+                  <.input
+                    field={@create_group_form[:title]}
+                    type="text"
+                    label={gettext("Title")}
+                    phx-debounce="300"
+                    required
+                  />
+                  <div class="mt-1 flex justify-end">
+                    <button
+                      id="create-group-random-name"
+                      type="button"
+                      phx-click="group_random_name"
+                      class="btn btn-ghost btn-xs"
+                    >
+                      <.icon name="hero-sparkles-solid" class="size-3.5" />
+                      {gettext("Another name")}
+                    </button>
+                  </div>
+                </div>
                 <.slug_input field={@create_group_form[:slug]} owner={@group_owner} />
                 <.input
                   field={@create_group_form[:description]}
@@ -315,7 +328,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       phx-click="group_leave"
                       phx-value-group_id={@group_detail.id}
                       class="btn btn-sm btn-outline btn-error"
-                      data-confirm={gettext("Leave?")}
+                      data-confirm
                     >
                       {gettext("Leave")}
                     </button>
@@ -397,7 +410,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                               phx-value-group_id={@group_detail.id}
                               phx-value-user_id={m.user_id}
                               class="btn btn-xs btn-outline btn-error"
-                              data-confirm={gettext("Kick?")}
+                              data-confirm
                             >
                               {gettext("Kick")}
                             </button>
@@ -505,7 +518,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       type="button"
                       id="group-invite-link-new"
                       phx-click="group_link_create"
-                      data-confirm={gettext("The current link stops working.")}
+                      data-confirm
                       class="btn btn-ghost btn-xs"
                     >
                       {gettext("New link")}
@@ -1000,7 +1013,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           phx-click="group_cancel_request"
                           phx-value-request_id={req.id}
                           class="btn btn-xs btn-outline btn-error"
-                          data-confirm={gettext("Cancel?")}
+                          data-confirm
                         >
                           {gettext("Cancel")}
                         </button>
@@ -1049,7 +1062,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           phx-click="group_cancel_invite"
                           phx-value-invite_id={inv.id}
                           class={["btn btn-xs btn-outline btn-error", row_control()]}
-                          data-confirm={gettext("Cancel?")}
+                          data-confirm
                         >
                           {gettext("Cancel")}
                         </button>
@@ -1078,6 +1091,12 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
   def handle_event("groups_toggle_create", _params, socket) do
     {:noreply, patch_groups(socket, create: !socket.assigns.groups_show_create)}
+  end
+
+  # A new random title, what else was typed so far staying.
+  def handle_event("group_random_name", _params, socket) do
+    params = Map.put(socket.assigns.create_group_form.params, "title", Groups.random_title())
+    handle_event("group_validate_create", %{"group" => params}, socket)
   end
 
   # The slug follows the title until it is typed into.

@@ -34,6 +34,7 @@ import {startConnectionState} from "./connection_state"
 import {startSearchPalette} from "./search_palette"
 import {startNavbarFit} from "./navbar_fit"
 import {startSideNav} from "./side_nav"
+import {startConfirmDialog} from "./confirm_dialog"
 import {guestNoticeParams, startAnonymousSession} from "./anonymous_session"
 import {startLiveNav} from "./live_nav"
 import {startBackLink} from "./back_link"
@@ -523,6 +524,8 @@ startLastPage()
 startNavbarFit(document.getElementById("main-navbar"))
 // The sidebar's Collapse / Expand, on every page.
 startSideNav()
+// `data-confirm` in the page's popup, on every page.
+startConfirmDialog()
 
 // Smooth scrolling for in-page anchors — armed on the reader's first input,
 // not in the markup. `scroll-behavior: smooth` on <html> also governs scrolls

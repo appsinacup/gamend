@@ -245,5 +245,27 @@ reload — the page painted at the top and glided down to where it had been. --%
         a deck, a test) scrolled by the bars' height into nothing. --%>
   <body class="min-h-dvh bg-base-100 text-base-content antialiased">
     {@inner_content}
+    <%!-- What a `data-confirm` asks (`confirm_dialog.js`). Here, outside the
+          LiveView, so no diff redraws it while it is open. --%>
+    <dialog
+      id="gamend-confirm"
+      role="alertdialog"
+      aria-labelledby="gamend-confirm-message"
+      class="motion-dialog m-auto w-[min(24rem,calc(100vw-2rem))] rounded-box border border-base-300 bg-base-100 p-0 text-base-content shadow-xl backdrop:bg-black/30"
+    >
+      <form method="dialog" class="space-y-4 p-4">
+        <p id="gamend-confirm-message" data-confirm-message class="text-lg font-bold">
+          {GamendWeb.HostLayouts.translate("Are you sure?")}
+        </p>
+        <div class="flex justify-end gap-2">
+          <button type="submit" value="cancel" class="btn btn-surface">
+            {GamendWeb.HostLayouts.translate("Cancel")}
+          </button>
+          <button type="submit" value="confirm" class="btn btn-primary">
+            {GamendWeb.HostLayouts.translate("Confirm")}
+          </button>
+        </div>
+      </form>
+    </dialog>
   </body>
 </html>

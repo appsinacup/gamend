@@ -29,13 +29,7 @@ defmodule GamendWeb.AdminLive.Users do
                 <button
                   type="button"
                   phx-click="bulk_delete"
-                  data-confirm={
-                    ngettext(
-                      "Delete %{count} selected user?",
-                      "Delete %{count} selected users?",
-                      MapSet.size(@selected_ids)
-                    )
-                  }
+                  data-confirm
                   class="btn btn-sm btn-outline btn-error"
                   disabled={MapSet.size(@selected_ids) == 0}
                 >
@@ -444,7 +438,7 @@ defmodule GamendWeb.AdminLive.Users do
                       <button
                         phx-click="delete_user"
                         phx-value-id={user.id}
-                        data-confirm="Are you sure?"
+                        data-confirm
                         class="btn btn-xs btn-outline btn-error"
                       >
                         Delete
@@ -631,7 +625,7 @@ defmodule GamendWeb.AdminLive.Users do
                       type="button"
                       id="admin-lift-ban"
                       phx-click="lift_user_ban"
-                      data-confirm="Lift this ban?"
+                      data-confirm
                       class="btn btn-sm"
                     >
                       Lift ban
@@ -676,13 +670,7 @@ defmodule GamendWeb.AdminLive.Users do
                   type="button"
                   phx-click="revoke_all_sessions"
                   phx-value-user-id={@selected_user.id}
-                  data-confirm={
-                    ngettext(
-                      "Revoke this user's %{count} session?",
-                      "Revoke all %{count} of this user's sessions?",
-                      session_count(@user_tokens)
-                    )
-                  }
+                  data-confirm
                   class="btn btn-xs btn-outline btn-error"
                 >
                   Revoke all sessions
@@ -732,7 +720,7 @@ defmodule GamendWeb.AdminLive.Users do
                           type="button"
                           phx-click="revoke_token"
                           phx-value-id={token.id}
-                          data-confirm="Revoke this token?"
+                          data-confirm
                           class="btn btn-xs btn-ghost text-error"
                         >
                           Revoke

@@ -282,11 +282,16 @@ defmodule GamendWeb.HostLayoutShell do
       <% else %>
         <%!-- A one-screen page (`screen`) has no padding under its content:
               where the content nearly fit, the page scrolled into the
-              padding, past the last thing on it. --%>
+              padding, past the last thing on it.
+
+              `z-[2]` makes this a stacking context, so a `.modal` in a page
+              could not rise above the navbar's `z-50`, and the navbar lay
+              over it. While one is open (a phone's sheet is a `.modal-toggle`
+              checkbox) the whole of `main` goes above. --%>
         <main
           id="main-content"
           class={[
-            "relative z-[2] px-4 sm:px-6 lg:px-8 flex-1",
+            "relative z-[2] has-[.modal-open,.modal-toggle:checked]:z-[60] px-4 sm:px-6 lg:px-8 flex-1",
             if(@screen, do: "pt-4", else: "py-4")
           ]}
         >

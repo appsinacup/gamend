@@ -1,5 +1,6 @@
 # November 2026
 
+- [added] **`mix gamend.latest` raises a host's Gamend floor.** It sets `@gamend_min` in `mix.exs` to Hex's newest release, so the commit moves the Docker layers keyed on `mix.exs` and the build takes that release, which a cached `mix deps.get` layer otherwise never would. **Hosts:** add it to `precommit`, and declare the floor as `@gamend_min`. Offline it warns and changes nothing.
 - [added] **Email digests.** A notification group with `email_every: :day`, `:week` or `:month` batches its email: one email lists what waited, a period after the oldest notice (`Gamend.Notifications.Digest`, a new table). `email_now` on the group or `"email_now" => true` on `notify/3` keeps a notice's own email. **Hosts:** run the migration.
 - [changed] **"Your reports" emails weekly.** A report's answer waits for the digest; a moderator's warning or mute still goes at once. The site's row and the push are unchanged.
 - [added] **A host draws its money on core's pages.** `config :gamend_web, :currency_component, {Module, :function}` names a function component, called with `%{code: _, amount: _}`; `<.currency_amount>` draws it, or a plain badge with none. A quest's reward goes through it.

@@ -1,4 +1,4 @@
-# gamend_core v1.1.1378 - Table of Contents
+# gamend_core v1.1.1379 - Table of Contents
 
 > Core functionality for Gamend, including user management, authentication, friends, matchmaking, and more.
 
@@ -487,6 +487,7 @@ leaderboards and tournaments, and the names a quest gives its item rewards
 - [mix gamend.content.migrate_metadata](Mix.Tasks.Gamend.Content.MigrateMetadata.md): One-shot migration for instances that stored translations in the database.
 - [mix gamend.gen.dockerfile](Mix.Tasks.Gamend.Gen.Dockerfile.md): Writes `Dockerfile` from Gamend's one template, filled in from the app's
 own `mix.exs`, so Gamend, the starter and every host build the same way.
+- [mix gamend.latest](Mix.Tasks.Gamend.Latest.md): Sets `@gamend_min` in the app's `mix.exs` to Gamend's newest release on Hex.
 - [mix gamend.settings.env_example](Mix.Tasks.Gamend.Settings.EnvExample.md): Writes `.env.example` from `Gamend.Settings.all/0`, grouped and
 commented from each setting's declaration.
 - [mix gamend.settings.guide](Mix.Tasks.Gamend.Settings.Guide.md): Writes the public Settings guide from `Gamend.Settings.all/0`.

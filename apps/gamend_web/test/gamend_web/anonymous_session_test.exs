@@ -380,11 +380,12 @@ defmodule GamendWeb.AnonymousSessionTest do
     # account they already have, so its email fields take one. A real account
     # coming back to confirm itself keeps its own, fixed.
     test "the login page lets a guest type an email", %{conn: conn} do
-      {:ok, view, html} = conn |> log_in_user(guest()) |> live(~p"/users/log_in")
+      {:ok, view, _html} = conn |> log_in_user(guest()) |> live(~p"/users/log_in")
 
       refute has_element?(view, "#login_form_magic input[type=email][readonly]")
       refute has_element?(view, "#login_form_password input[type=email][readonly]")
-      refute html =~ "Confirm"
+      # The page's own words: the root layout's `#gamend-confirm` says it too.
+      refute render(view) =~ "Confirm"
 
       real = Gamend.AccountsFixtures.user_fixture()
       {:ok, view, _html} = conn |> recycle() |> log_in_user(real) |> live(~p"/users/log_in")

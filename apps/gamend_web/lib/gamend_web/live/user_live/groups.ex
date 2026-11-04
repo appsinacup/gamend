@@ -76,7 +76,9 @@ defmodule GamendWeb.UserLive.Groups do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div data-heading-fit class="flex items-center gap-3">
-        <.back_link href={home_path()} />
+        <%!-- Back: from a group to the list, from the list home. --%>
+        <.back_link :if={@group_detail} always patch={@groups_path} />
+        <.back_link :if={!@group_detail} href={home_path()} />
         <.page_title
           icon={HostLayouts.nav_icon(@groups_path, "hero-user-group-solid")}
           tone={HostLayouts.nav_tone(@groups_path)}

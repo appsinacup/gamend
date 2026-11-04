@@ -158,7 +158,7 @@ defmodule GamendWeb.PublicPagesRenderTest do
       # Tier 3 is hidden until tier 2 completes, and nothing numbers the
       # tiers or opens the ones ahead (user, 2026-10-27).
       refute html =~ "Final step"
-      refute html =~ "/3"
+      refute html =~ ~r{\b\d+/3\b}
       refute has_element?(view, ~s([phx-click="show_chain"]))
     end
   end

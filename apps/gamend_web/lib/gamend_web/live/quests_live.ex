@@ -401,16 +401,6 @@ defmodule GamendWeb.QuestsLive do
   defp card_status_class(%{done?: true}), do: "badge-success"
   defp card_status_class(_assigns), do: "badge-neutral"
 
-  # A reward as its chip says it: an item by the name the quest gives its code
-  # (`metadata["reward_names"]`, translated with the quest by
-  # `ContentText.translate/1`), alone for one; else the amount and the code.
-  defp reward_text(%{type: "item", code: code, amount: amount}, %{"reward_names" => names})
-       when is_map_key(names, code) do
-    if amount == 1, do: names[code], else: "#{amount} #{names[code]}"
-  end
-
-  defp reward_text(reward, _metadata), do: "#{reward.amount} #{reward.code}"
-
   defp card_status_label(%{claimable: true}), do: gettext("Ready to claim")
   defp card_status_label(%{claimed?: true}), do: gettext("Claimed")
   defp card_status_label(%{done?: true}), do: gettext("Completed")
@@ -937,17 +927,13 @@ defmodule GamendWeb.QuestsLive do
       <%!-- Rewards --%>
       <%= if @quest.rewards != [] && not @secret? do %>
         <div class="flex flex-wrap items-center gap-1">
-          <%= for reward <- @quest.rewards do %>
-            <.currency_amount
-              :if={reward.type == "currency"}
-              code={reward.code}
-              amount={reward.amount}
-            />
-            <span :if={reward.type != "currency"} class="badge badge-sm badge-ghost gap-1">
-              <.icon name="hero-cube" class="w-3 h-3" />
-              {reward_text(reward, @quest.metadata || %{})}
-            </span>
-          <% end %>
+          <.reward_chip
+            :for={reward <- @quest.rewards}
+            type={reward.type}
+            code={reward.code}
+            amount={reward.amount}
+            name={(@quest.metadata || %{})["reward_names"][reward.code]}
+          />
         </div>
       <% end %>
 

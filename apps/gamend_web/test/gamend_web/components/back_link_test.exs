@@ -28,6 +28,16 @@ defmodule GamendWeb.Components.BackLinkTest do
     assert render_component(&CoreComponents.back_link/1, href: "/y") =~ "data-back"
   end
 
+  # The walk skips entries of the current path, so a parent on the same path
+  # is followed as a link.
+  test "a patch is not marked for back_link.js" do
+    html = render_component(&CoreComponents.back_link/1, patch: "/x")
+
+    assert html =~ ~s(href="/x")
+    assert html =~ ~s(data-phx-link="patch")
+    refute html =~ "data-back"
+  end
+
   test "the header's Back takes a plain page too" do
     html =
       render_component(&CoreComponents.header/1,

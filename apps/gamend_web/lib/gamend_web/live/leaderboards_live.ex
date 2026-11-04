@@ -214,6 +214,7 @@ defmodule GamendWeb.LeaderboardsLive do
         title={group.title}
         icon_url={group.icon_url}
         type={:leaderboard}
+        tone={GamendWeb.HostLayouts.nav_tone("/leaderboards")}
         description={group.description}
       >
         <:badges>

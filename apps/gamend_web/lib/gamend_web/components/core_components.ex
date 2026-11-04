@@ -881,6 +881,7 @@ defmodule GamendWeb.CoreComponents do
 
   attr :href, :string, default: nil, doc: "a plain page"
   attr :navigate, :string, default: nil, doc: "a live route"
+  attr :patch, :string, default: nil, doc: "this page's own parent state: always followed"
   attr :label, :string, default: nil, doc: ~s(overrides the "Back" wording)
   attr :class, :any, default: "btn btn-ghost btn-sm max-sm:btn-circle sm:btn-surface"
   attr :always, :boolean, default: false, doc: "drawn even where the host turns Back off"
@@ -902,6 +903,10 @@ defmodule GamendWeb.CoreComponents do
   Pass `navigate` for a live route and `href` for a plain page; a LiveView
   that sends `navigate` at a dead route breaks on the way out.
 
+  Pass `patch` where the parent is the same page under another query (a group
+  opened from the list): `back_link.js` walks past entries of the current
+  path, so it is not marked `data-back` and the link is followed.
+
   A host whose navigation is always on screen (a sidebar, a tab bar) turns
   every Back off with `config :gamend_web, :back_link, false`: the button
   then draws nothing, on core's pages and the host's alike, but for one the
@@ -919,10 +924,11 @@ defmodule GamendWeb.CoreComponents do
     <.link
       :if={@shown?}
       navigate={@navigate}
+      patch={@patch}
       href={@href}
       class={@class}
       title={@label || gettext("Back")}
-      data-back
+      data-back={is_nil(@patch)}
     >
       <.icon name="hero-arrow-left-solid" class="size-4 rtl:-scale-x-100" />
       <span class="sr-only sm:not-sr-only">{@label || gettext("Back")}</span>
@@ -1223,34 +1229,50 @@ defmodule GamendWeb.CoreComponents do
     """
   end
 
-  attr :code, :string, required: true, doc: "the currency's code (`coins`)"
+  attr :type, :string, required: true, doc: "`currency` or `item`"
+  attr :code, :string, required: true
   attr :amount, :integer, required: true
+  attr :name, :string, default: nil, doc: "an item's name, when its code is not one"
 
   @doc """
-  An amount of a currency on one of core's pages (a quest's reward). A host
-  that draws its money its own way names that component, and core's pages
-  draw the same thing as its own:
+  What a quest pays, one reward. A host that draws its rewards its own way
+  names that component, so a coin or a title on core's pages is the one on
+  its own:
 
-      config :gamend_web, :currency_component, {MyHost.UI, :core_currency}
+      config :gamend_web, :reward_component, {MyHost.UI, :core_reward}
 
-  It is called with `%{code: code, amount: amount}`. With none, a plain badge.
+  It is called with `%{type: _, code: _, amount: _, name: _}`. With none, a
+  plain badge.
   """
-  def currency_amount(assigns) do
-    case Application.get_env(:gamend_web, :currency_component) do
+  def reward_chip(assigns) do
+    case Application.get_env(:gamend_web, :reward_component) do
       {module, function} ->
         apply(module, function, [
-          %{__changed__: nil, code: assigns.code, amount: assigns.amount}
+          %{
+            __changed__: nil,
+            type: assigns.type,
+            code: assigns.code,
+            amount: assigns.amount,
+            name: assigns.name
+          }
         ])
 
       nil ->
         ~H"""
         <span class="badge badge-sm badge-ghost gap-1">
-          <.icon name="hero-currency-dollar" class="w-3 h-3" />
-          {@amount} {@code}
+          <.icon
+            name={if @type == "currency", do: "hero-currency-dollar", else: "hero-cube"}
+            class="w-3 h-3"
+          />
+          {reward_text(@amount, @name || @code, @name)}
         </span>
         """
     end
   end
+
+  # An item with a name is that name alone for one; else the amount and it.
+  defp reward_text(1, label, name) when is_binary(name), do: label
+  defp reward_text(amount, label, _name), do: "#{amount} #{label}"
 
   @doc """
   An entity's icon: the uploaded `icon_url` when set, otherwise the typed

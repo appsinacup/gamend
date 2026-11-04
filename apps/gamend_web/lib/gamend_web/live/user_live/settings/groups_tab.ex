@@ -134,7 +134,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
             <div class="font-semibold text-lg">{gettext("Groups")}</div>
           </div>
           <div class="ms-auto flex gap-2">
-            <%= if @group_detail do %>
+            <%!-- On a page of its own the title row has Back. --%>
+            <%= if @group_detail && is_nil(@groups_path) do %>
               <button phx-click="group_close_detail" class="btn btn-sm btn-ghost">
                 {gettext("Back")}
               </button>

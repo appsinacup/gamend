@@ -171,6 +171,23 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     assert has_element?(view, "button[phx-click='group_leave']")
   end
 
+  test "Back from a group opens the list, Back from the list goes home", %{
+    conn: conn,
+    user: user
+  } do
+    {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
+    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups?group=#{team.id}")
+
+    refute has_element?(view, "a[data-back]")
+    refute has_element?(view, "button[phx-click='group_close_detail']")
+
+    view |> element("a[title='Back']") |> render_click()
+
+    assert_patch(view, "/users/groups")
+    assert assigns(view).group_detail == nil
+    assert has_element?(view, "a[data-back][href='/']")
+  end
+
   test "a team opens from its URL and a colleague is invited by email", %{
     conn: conn,
     user: user,

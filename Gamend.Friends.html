@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1379">
+    <meta name="project" content="gamend_core v1.1.1380">
 
 
-    <title>Gamend.Friends — gamend_core v1.1.1379</title>
+    <title>Gamend.Friends — gamend_core v1.1.1380</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1379
+          v1.1.1380
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Friends</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1379)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
 
     </h1>
 
@@ -565,7 +565,7 @@ direction. One query, regardless of how many others are checked.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@type</span> user_id() :: <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()</pre>
+          <pre translate="no"><span class="attribute">@type</span> user_id() :: <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()</pre>
 
       </div>
 
@@ -606,7 +606,7 @@ direction. One query, regardless of how many others are checked.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> accept_friend_request(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> accept_friend_request(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
   {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
@@ -664,7 +664,7 @@ direction. One query, regardless of how many others are checked.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> block_friend_request(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> block_friend_request(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
   {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
@@ -785,7 +785,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> cancel_request(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> cancel_request(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
   {:ok, :cancelled} | {:error, :not_found | :not_authorized | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
@@ -1051,7 +1051,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> delete_block(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: {:ok, :unblocked} | {:error, :not_found}</pre>
+          <pre translate="no"><span class="attribute">@spec</span> delete_block(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: {:ok, :unblocked} | {:error, :not_found}</pre>
 
       </div>
 
@@ -1080,7 +1080,7 @@ blocker lift their own block.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> delete_friendship(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: {:ok, :removed} | {:error, :not_found}</pre>
+          <pre translate="no"><span class="attribute">@spec</span> delete_friendship(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: {:ok, :removed} | {:error, :not_found}</pre>
 
       </div>
 
@@ -1195,7 +1195,7 @@ and does <em>not</em> paginate – it returns all friend IDs.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> get_friendship(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>() | nil</pre>
+          <pre translate="no"><span class="attribute">@spec</span> get_friendship(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>() | nil</pre>
 
       </div>
 
@@ -1223,7 +1223,7 @@ and does <em>not</em> paginate – it returns all friend IDs.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> get_friendship!(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> get_friendship!(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()</pre>
 
       </div>
 
@@ -1379,7 +1379,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> list_friends_for_user(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Types.html#t:pagination_opts/0">Gamend.Types.pagination_opts</a>()) :: [
+          <pre translate="no"><span class="attribute">@spec</span> list_friends_for_user(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Types.html#t:pagination_opts/0">Gamend.Types.pagination_opts</a>()) :: [
   <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()
 ]</pre>
 
@@ -1411,8 +1411,8 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> list_friends_with_friendship(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Types.html#t:pagination_opts/0">Gamend.Types.pagination_opts</a>()) :: [
-  %{friendship_id: <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), user: <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()}
+          <pre translate="no"><span class="attribute">@spec</span> list_friends_with_friendship(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Types.html#t:pagination_opts/0">Gamend.Types.pagination_opts</a>()) :: [
+  %{friendship_id: <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), user: <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()}
 ]</pre>
 
       </div>
@@ -1443,7 +1443,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> list_incoming_requests(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Types.html#t:pagination_opts/0">Gamend.Types.pagination_opts</a>()) :: [
+          <pre translate="no"><span class="attribute">@spec</span> list_incoming_requests(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Types.html#t:pagination_opts/0">Gamend.Types.pagination_opts</a>()) :: [
   <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()
 ]</pre>
 
@@ -1475,7 +1475,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> list_outgoing_requests(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Types.html#t:pagination_opts/0">Gamend.Types.pagination_opts</a>()) :: [
+          <pre translate="no"><span class="attribute">@spec</span> list_outgoing_requests(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Types.html#t:pagination_opts/0">Gamend.Types.pagination_opts</a>()) :: [
   <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()
 ]</pre>
 
@@ -1533,7 +1533,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> reject_friend_request(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> reject_friend_request(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
   {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
@@ -1562,7 +1562,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> remove_friend(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> remove_friend(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
@@ -1619,7 +1619,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> unblock_friendship(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> unblock_friendship(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
   {:ok, :unblocked} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
@@ -1693,9 +1693,9 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1379">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1379">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
 
             </span>
 

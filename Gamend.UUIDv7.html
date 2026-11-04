@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1379">
+    <meta name="project" content="gamend_core v1.1.1380">
 
 
-    <title>Gamend.UUIDv7 — gamend_core v1.1.1379</title>
+    <title>Gamend.UUIDv7 — gamend_core v1.1.1380</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1379
+          v1.1.1380
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />UUIDv7</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1379)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
 
     </h1>
 
@@ -114,11 +114,11 @@ gamend_core
 
 
     <section id="moduledoc">
-<p>The id of every row: a UUIDv7 (RFC 9562), made by <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html"><code class="inline">Ecto.UUID</code></a>.</p><p>A UUIDv7 holds a 48-bit unix-millisecond timestamp in its most significant
+<p>The id of every row: a UUIDv7 (RFC 9562), made by <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html"><code class="inline">Ecto.UUID</code></a>.</p><p>A UUIDv7 holds a 48-bit unix-millisecond timestamp in its most significant
 bits, so freshly inserted rows sort (and index) in insertion order like the
 old integer ids did, while remaining unguessable — random ids prevent
 enumeration of API resources.</p><p><a href="Gamend.Schema.html"><code class="inline">Gamend.Schema</code></a> makes a schema's id with <a href="#generate/0"><code class="inline">generate/0</code></a>, and a field holding
-an id is an <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html"><code class="inline">Ecto.UUID</code></a>. <code class="inline">Repo.insert_all/3</code> runs no autogenerate for such a
+an id is an <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html"><code class="inline">Ecto.UUID</code></a>. <code class="inline">Repo.insert_all/3</code> runs no autogenerate for such a
 key, so a row written that way sets <code class="inline">id: Gamend.UUIDv7.generate()</code> itself.</p>
     </section>
 
@@ -194,7 +194,7 @@ order they were made: code that orders by id (chat cursors, pagination,
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> cast_or_nil(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) :: <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil</pre>
+          <pre translate="no"><span class="attribute">@spec</span> cast_or_nil(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) :: <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil</pre>
 
       </div>
 
@@ -223,7 +223,7 @@ used <a href="https://elixir.hexdocs.pm/Integer.html#parse/1"><code class="inlin
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> generate() :: <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> generate() :: <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()</pre>
 
       </div>
 
@@ -242,9 +242,9 @@ order they were made: code that orders by id (chat cursors, pagination,
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1379">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1379">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
 
             </span>
 

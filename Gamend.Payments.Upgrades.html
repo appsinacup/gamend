@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1379">
+    <meta name="project" content="gamend_core v1.1.1380">
 
 
-    <title>Gamend.Payments.Upgrades — gamend_core v1.1.1379</title>
+    <title>Gamend.Payments.Upgrades — gamend_core v1.1.1380</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1379
+          v1.1.1380
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Payments.<wbr />Upgrades</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1379)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
 
     </h1>
 
@@ -365,7 +365,7 @@ rounded down to the minor unit. 0 when nothing is left or nothing is known.</p><
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> first_charge_at(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil, <a href="Gamend.Payments.Product.html#t:t/0">Gamend.Payments.Product.t</a>(), <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> first_charge_at(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil, <a href="Gamend.Payments.Product.html#t:t/0">Gamend.Payments.Product.t</a>(), <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>()) ::
   <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>() | nil</pre>
 
       </div>
@@ -398,7 +398,7 @@ refunded pro rata instead).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> holding_purchase(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> holding_purchase(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil, <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
   <a href="Gamend.Payments.Purchase.html#t:t/0">Gamend.Payments.Purchase.t</a>() | nil</pre>
 
       </div>
@@ -489,7 +489,7 @@ end), else now.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> replaced_purchase(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil, <a href="Gamend.Payments.Product.html#t:t/0">Gamend.Payments.Product.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> replaced_purchase(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil, <a href="Gamend.Payments.Product.html#t:t/0">Gamend.Payments.Product.t</a>()) ::
   <a href="Gamend.Payments.Purchase.html#t:t/0">Gamend.Payments.Purchase.t</a>() | nil</pre>
 
       </div>
@@ -521,7 +521,7 @@ when it is a running Stripe subscription and <code class="inline">product</code>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> supersede(<a href="Gamend.Payments.Purchase.html#t:t/0">Gamend.Payments.Purchase.t</a>()) ::
-  {:ok, [{<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="#t:mode/0">mode</a>() | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}}]}</pre>
+  {:ok, [{<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="#t:mode/0">mode</a>() | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}}]}</pre>
 
       </div>
 
@@ -584,7 +584,7 @@ run. Answers how many subscriptions ended each way.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> trial_end(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil, <a href="Gamend.Payments.Product.html#t:t/0">Gamend.Payments.Product.t</a>(), <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>() | nil) ::
+          <pre translate="no"><span class="attribute">@spec</span> trial_end(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil, <a href="Gamend.Payments.Product.html#t:t/0">Gamend.Payments.Product.t</a>(), <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>() | nil) ::
   <a href="https://elixir.hexdocs.pm/DateTime.html#t:t/0">DateTime.t</a>() | nil</pre>
 
       </div>
@@ -644,7 +644,7 @@ rounded down to the minor unit. 0 when nothing is left or nothing is known.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> upgrade?(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil, <a href="Gamend.Payments.Product.html#t:t/0">Gamend.Payments.Product.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> upgrade?(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil, <a href="Gamend.Payments.Product.html#t:t/0">Gamend.Payments.Product.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
 
       </div>
 
@@ -660,9 +660,9 @@ rounded down to the minor unit. 0 when nothing is left or nothing is known.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1379">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1379">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
 
             </span>
 

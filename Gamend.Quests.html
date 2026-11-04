@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1379">
+    <meta name="project" content="gamend_core v1.1.1380">
 
 
-    <title>Gamend.Quests — gamend_core v1.1.1379</title>
+    <title>Gamend.Quests — gamend_core v1.1.1380</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1379
+          v1.1.1380
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Quests</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1379)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
 
     </h1>
 
@@ -690,7 +690,7 @@ separately read the same rows three times.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@type</span> user_id() :: <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()</pre>
+          <pre translate="no"><span class="attribute">@type</span> user_id() :: <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()</pre>
 
       </div>
 
@@ -885,7 +885,7 @@ its target and the normal completion side effects fire (hooks, auto-claim).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> change_quest(<a href="Gamend.Quests.Quest.html#t:t/0">Gamend.Quests.Quest.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) :: <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> change_quest(<a href="Gamend.Quests.Quest.html#t:t/0">Gamend.Quests.Quest.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) :: <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()</pre>
 
       </div>
 
@@ -1187,7 +1187,7 @@ which pairs no row: the run a visitor would start.</p>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> delete_quest(<a href="Gamend.Quests.Quest.html#t:t/0">Gamend.Quests.Quest.t</a>()) ::
-  {:ok, <a href="Gamend.Quests.Quest.html#t:t/0">Gamend.Quests.Quest.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
+  {:ok, <a href="Gamend.Quests.Quest.html#t:t/0">Gamend.Quests.Quest.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
@@ -1271,7 +1271,7 @@ which pairs no row: the run a visitor would start.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> get_quest(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Quests.Quest.html#t:t/0">Gamend.Quests.Quest.t</a>() | nil</pre>
+          <pre translate="no"><span class="attribute">@spec</span> get_quest(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Quests.Quest.html#t:t/0">Gamend.Quests.Quest.t</a>() | nil</pre>
 
       </div>
 
@@ -1645,7 +1645,7 @@ a page with a selector over some groups does with the ones not picked</li><li><c
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> merge_user_progress(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> merge_user_progress(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
 
       </div>
 
@@ -2005,7 +2005,7 @@ completed rows, and the group-by reads the same rows the listing already does.</
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> update_quest(<a href="Gamend.Quests.Quest.html#t:t/0">Gamend.Quests.Quest.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
-  {:ok, <a href="Gamend.Quests.Quest.html#t:t/0">Gamend.Quests.Quest.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
+  {:ok, <a href="Gamend.Quests.Quest.html#t:t/0">Gamend.Quests.Quest.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
@@ -2098,9 +2098,9 @@ the signed-out catalog.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1379">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1379">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
 
             </span>
 

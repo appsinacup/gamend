@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1379">
+    <meta name="project" content="gamend_core v1.1.1380">
 
 
-    <title>Gamend.Groups — gamend_core v1.1.1379</title>
+    <title>Gamend.Groups — gamend_core v1.1.1380</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1379
+          v1.1.1380
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Groups</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1379)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
 
     </h1>
 
@@ -951,7 +951,7 @@ Cannot lower max_members below current member count.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> accept_invite(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> accept_invite(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -980,7 +980,7 @@ Cannot lower max_members below current member count.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> admin_delete_group(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> admin_delete_group(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
@@ -1010,7 +1010,7 @@ Cannot lower max_members below current member count.</p></div>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> admin_update_group(<a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
-  {:ok, <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
+  {:ok, <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
@@ -1038,7 +1038,7 @@ Cannot lower max_members below current member count.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> approve_join_request(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> approve_join_request(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -1067,8 +1067,8 @@ Cannot lower max_members below current member count.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> batch_member_counts([<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()]) :: %{
-  required(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()
+          <pre translate="no"><span class="attribute">@spec</span> batch_member_counts([<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()]) :: %{
+  required(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()
 }</pre>
 
       </div>
@@ -1097,7 +1097,7 @@ Cannot lower max_members below current member count.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> broadcast_member_presence(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">tuple</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+          <pre translate="no"><span class="attribute">@spec</span> broadcast_member_presence(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">tuple</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
 
@@ -1126,8 +1126,8 @@ Cannot lower max_members below current member count.</p></div>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> can_manage_group?(
-  <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>() | <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil,
-  <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>() | <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil
+  <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>() | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil,
+  <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>() | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>() | nil
 ) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
 
       </div>
@@ -1157,7 +1157,7 @@ Cannot lower max_members below current member count.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> cancel_invite(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
+          <pre translate="no"><span class="attribute">@spec</span> cancel_invite(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
 
@@ -1185,7 +1185,7 @@ Cannot lower max_members below current member count.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> cancel_join_request(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> cancel_join_request(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupJoinRequest.html#t:t/0">Gamend.Groups.GroupJoinRequest.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -1216,7 +1216,7 @@ Cannot lower max_members below current member count.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> change_group(<a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) :: <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> change_group(<a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) :: <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()</pre>
 
       </div>
 
@@ -1244,7 +1244,7 @@ Cannot lower max_members below current member count.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> change_new_group() :: <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> change_new_group() :: <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()</pre>
 
       </div>
 
@@ -1331,7 +1331,7 @@ slug made from it, and a random icon of the site's (<a href="Gamend.Icons.html#r
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> count_group_invites(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> count_group_invites(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
 
       </div>
 
@@ -1361,7 +1361,7 @@ slug made from it, and a random icon of the site's (<a href="Gamend.Icons.html#r
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> count_group_members(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> count_group_members(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
 
       </div>
 
@@ -1417,7 +1417,7 @@ slug made from it, and a random icon of the site's (<a href="Gamend.Icons.html#r
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> count_groups_created_by(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> count_groups_created_by(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
 
       </div>
 
@@ -1445,7 +1445,7 @@ slug made from it, and a random icon of the site's (<a href="Gamend.Icons.html#r
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> count_invitations(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> count_invitations(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
 
       </div>
 
@@ -1473,7 +1473,7 @@ slug made from it, and a random icon of the site's (<a href="Gamend.Icons.html#r
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> count_join_requests(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> count_join_requests(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
 
       </div>
 
@@ -1531,7 +1531,7 @@ slug made from it, and a random icon of the site's (<a href="Gamend.Icons.html#r
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> count_sent_invitations(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> count_sent_invitations(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
 
       </div>
 
@@ -1559,7 +1559,7 @@ slug made from it, and a random icon of the site's (<a href="Gamend.Icons.html#r
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> count_user_group_memberships(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> count_user_group_memberships(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
 
       </div>
 
@@ -1587,7 +1587,7 @@ slug made from it, and a random icon of the site's (<a href="Gamend.Icons.html#r
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> count_user_groups(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> count_user_groups(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
 
       </div>
 
@@ -1615,8 +1615,8 @@ slug made from it, and a random icon of the site's (<a href="Gamend.Icons.html#r
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> create_group(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
-  {:ok, <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+          <pre translate="no"><span class="attribute">@spec</span> create_group(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
+  {:ok, <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
 
@@ -1644,7 +1644,7 @@ slug made from it, and a random icon of the site's (<a href="Gamend.Icons.html#r
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> create_invite_link(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> create_invite_link(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupInviteLink.html#t:t/0">Gamend.Groups.GroupInviteLink.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
@@ -1673,7 +1673,7 @@ slug made from it, and a random icon of the site's (<a href="Gamend.Icons.html#r
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> decline_invite(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
+          <pre translate="no"><span class="attribute">@spec</span> decline_invite(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
 
@@ -1701,7 +1701,7 @@ slug made from it, and a random icon of the site's (<a href="Gamend.Icons.html#r
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> delete_group(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> delete_group(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
@@ -1731,7 +1731,7 @@ removed with it and told, as a kick tells one member.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> delete_invite_link(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
+          <pre translate="no"><span class="attribute">@spec</span> delete_invite_link(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
 
@@ -1759,7 +1759,7 @@ removed with it and told, as a kick tells one member.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> demote_member(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> demote_member(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -1816,7 +1816,7 @@ removed with it and told, as a kick tells one member.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> free_slug(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> free_slug(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
 
       </div>
 
@@ -1874,7 +1874,7 @@ A username changed moves it, as on GitHub.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> get_group(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>() | nil</pre>
+          <pre translate="no"><span class="attribute">@spec</span> get_group(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>() | nil</pre>
 
       </div>
 
@@ -1902,7 +1902,7 @@ A username changed moves it, as on GitHub.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> get_group!(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> get_group!(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()</pre>
 
       </div>
 
@@ -1987,7 +1987,7 @@ for neither.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> get_group_members(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: [<a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>()]</pre>
+          <pre translate="no"><span class="attribute">@spec</span> get_group_members(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: [<a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>()]</pre>
 
       </div>
 
@@ -2017,7 +2017,7 @@ for neither.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> get_group_members_paginated(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [
+          <pre translate="no"><span class="attribute">@spec</span> get_group_members_paginated(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [
   <a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>()
 ]</pre>
 
@@ -2047,7 +2047,7 @@ for neither.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> get_invite_link(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Groups.GroupInviteLink.html#t:t/0">Gamend.Groups.GroupInviteLink.t</a>() | nil</pre>
+          <pre translate="no"><span class="attribute">@spec</span> get_invite_link(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Groups.GroupInviteLink.html#t:t/0">Gamend.Groups.GroupInviteLink.t</a>() | nil</pre>
 
       </div>
 
@@ -2103,7 +2103,7 @@ for neither.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> get_membership(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> get_membership(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   <a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>() | nil</pre>
 
       </div>
@@ -2132,7 +2132,7 @@ for neither.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> group_member_ids(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: [<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()]</pre>
+          <pre translate="no"><span class="attribute">@spec</span> group_member_ids(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: [<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()]</pre>
 
       </div>
 
@@ -2162,7 +2162,7 @@ user row only to read <code class="inline">user_id</code> from it.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> handle_user_deletion(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok</pre>
+          <pre translate="no"><span class="attribute">@spec</span> handle_user_deletion(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok</pre>
 
       </div>
 
@@ -2193,7 +2193,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> invalidate_group_cache_public(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok</pre>
+          <pre translate="no"><span class="attribute">@spec</span> invalidate_group_cache_public(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok</pre>
 
       </div>
 
@@ -2305,7 +2305,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> invite_to_group(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> invite_to_group(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupInvite.html#t:t/0">Gamend.Groups.GroupInvite.t</a>()}
   | {:ok, :request_approved}
   | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
@@ -2336,7 +2336,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> join_by_invite_link(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> join_by_invite_link(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -2365,7 +2365,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> join_group(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> join_group(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -2394,7 +2394,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> kick_member(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> kick_member(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -2423,7 +2423,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> leave_group(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> leave_group(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -2486,7 +2486,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> list_group_invites(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> list_group_invites(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) ::
   {:ok, [<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()]} | {:error, :not_admin}</pre>
 
       </div>
@@ -2549,7 +2549,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> list_invitations(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()]</pre>
+          <pre translate="no"><span class="attribute">@spec</span> list_invitations(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()]</pre>
 
       </div>
 
@@ -2579,7 +2579,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> list_join_requests(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> list_join_requests(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) ::
   {:ok, [<a href="Gamend.Groups.GroupJoinRequest.html#t:t/0">Gamend.Groups.GroupJoinRequest.t</a>()]} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -2610,7 +2610,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> list_sent_invitations(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()]</pre>
+          <pre translate="no"><span class="attribute">@spec</span> list_sent_invitations(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()]</pre>
 
       </div>
 
@@ -2640,7 +2640,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> list_user_groups(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()]</pre>
+          <pre translate="no"><span class="attribute">@spec</span> list_user_groups(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()]</pre>
 
       </div>
 
@@ -2668,7 +2668,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> list_user_groups_with_role(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: [
+          <pre translate="no"><span class="attribute">@spec</span> list_user_groups_with_role(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: [
   {<a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()}
 ]</pre>
 
@@ -2698,7 +2698,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> list_user_pending_requests(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: [
+          <pre translate="no"><span class="attribute">@spec</span> list_user_pending_requests(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: [
   <a href="Gamend.Groups.GroupJoinRequest.html#t:t/0">Gamend.Groups.GroupJoinRequest.t</a>()
 ]</pre>
 
@@ -2728,7 +2728,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> member?(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> member?(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
 
       </div>
 
@@ -2758,7 +2758,7 @@ without running the admin-transfer / empty-group logic).</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> notify_group(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> notify_group(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
   {:ok, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -2800,7 +2800,7 @@ message.</p><p>Returns <code class="inline">{:ok, count}</code> with the number 
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> promote_member(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> promote_member(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupMember.html#t:t/0">Gamend.Groups.GroupMember.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -2857,7 +2857,7 @@ message.</p><p>Returns <code class="inline">{:ok, count}</code> with the number 
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> reject_join_request(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> reject_join_request(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupJoinRequest.html#t:t/0">Gamend.Groups.GroupJoinRequest.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -2886,7 +2886,7 @@ message.</p><p>Returns <code class="inline">{:ok, count}</code> with the number 
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> request_join(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> request_join(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Groups.GroupJoinRequest.html#t:t/0">Gamend.Groups.GroupJoinRequest.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
@@ -2917,7 +2917,7 @@ message.</p><p>Returns <code class="inline">{:ok, count}</code> with the number 
 
           <pre translate="no"><span class="attribute">@spec</span> set_icon_url(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) ::
   {:ok, <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()}
-  | {:error, :not_admin | <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  | {:error, :not_admin | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
 
@@ -2950,7 +2950,7 @@ icon is ever set. Admin rights are still required.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> shared_group_member?(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> shared_group_member?(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
 
       </div>
 
@@ -2978,7 +2978,7 @@ icon is ever set. Admin rights are still required.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> subscribe_group(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+          <pre translate="no"><span class="attribute">@spec</span> subscribe_group(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
 
@@ -3064,7 +3064,7 @@ leaves none, so a typo cannot close group creation.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> unsubscribe_group(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok</pre>
+          <pre translate="no"><span class="attribute">@spec</span> unsubscribe_group(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: :ok</pre>
 
       </div>
 
@@ -3092,8 +3092,8 @@ leaves none, so a typo cannot close group creation.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> update_group(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
-  {:ok, <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>() | <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
+          <pre translate="no"><span class="attribute">@spec</span> update_group(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
+  {:ok, <a href="Gamend.Groups.Group.html#t:t/0">Gamend.Groups.Group.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>() | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
@@ -3122,7 +3122,7 @@ Cannot lower max_members below current member count.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> user_group_ids(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: [<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()]</pre>
+          <pre translate="no"><span class="attribute">@spec</span> user_group_ids(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: [<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()]</pre>
 
       </div>
 
@@ -3138,9 +3138,9 @@ Cannot lower max_members below current member count.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1379">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1379">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
 
             </span>
 

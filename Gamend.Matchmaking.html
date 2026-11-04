@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1379">
+    <meta name="project" content="gamend_core v1.1.1380">
 
 
-    <title>Gamend.Matchmaking — gamend_core v1.1.1379</title>
+    <title>Gamend.Matchmaking — gamend_core v1.1.1380</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1379
+          v1.1.1380
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Matchmaking</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1379)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
 
     </h1>
 
@@ -320,7 +320,7 @@ counts by status, plus the depth of each distinct queued <code class="inline">ma
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> assign_lobby([<a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>()], <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> assign_lobby([<a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>()], <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   :ok | {:error, :not_found}</pre>
 
       </div>
@@ -349,7 +349,7 @@ counts by status, plus the depth of each distinct queued <code class="inline">ma
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> cancel(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> cancel(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
 
       </div>
 
@@ -379,7 +379,7 @@ but nobody should be stuck in a queue they cannot leave.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> cancel_ticket(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+          <pre translate="no"><span class="attribute">@spec</span> cancel_ticket(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
   {:ok, <a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>()} | {:error, :not_found}</pre>
 
       </div>
@@ -472,7 +472,7 @@ claimed and <code class="inline">:conflict</code> is returned.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> current_ticket(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>() | nil</pre>
+          <pre translate="no"><span class="attribute">@spec</span> current_ticket(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>() | nil</pre>
 
       </div>
 
@@ -530,7 +530,7 @@ join a lobby (banned, already in one) would fail again on every tick.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> get_ticket(<a href="https://ecto.hexdocs.pm/3.14.2/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>() | nil</pre>
+          <pre translate="no"><span class="attribute">@spec</span> get_ticket(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>() | nil</pre>
 
       </div>
 
@@ -563,7 +563,7 @@ join a lobby (banned, already in one) would fail again on every tick.</p>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> join(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>() | nil, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>() | nil) ::
-  {:ok, <a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.2/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
+  {:ok, <a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>()} | {:error, <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
 
       </div>
 
@@ -741,9 +741,9 @@ counts by status, plus the depth of each distinct queued <code class="inline">ma
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1379">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1379">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
 
             </span>
 

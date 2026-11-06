@@ -10,7 +10,8 @@ Public API is re-exported by `Gamend.Groups`.
 
 ```elixir
 @spec accept_invite(Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+  {:ok, Gamend.Groups.GroupMember.t()}
+  | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Accept a pending group invite by **invite_id**.
@@ -67,7 +68,7 @@ Only the recipient can decline. The invite is marked as `"declined"`
 @spec invite_to_group(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
   {:ok, Gamend.Groups.GroupInvite.t()}
   | {:ok, :request_approved}
-  | {:error, atom()}
+  | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Invite a user to a group. Creates a `GroupInvite` record and sends

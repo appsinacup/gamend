@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Matchmaking.Matcher — gamend_core v1.1.1380</title>
+    <title>Gamend.Matchmaking.Matcher — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Matchmaking.<wbr />Matcher</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -119,7 +119,9 @@ gamend_core
 <code class="inline">party_id</code> are indivisible, and a solo queuer is a group of one. A match is
 built by packing whole groups, so a party is either seated together or stays
 queued — it is never split across lobbies.</p><p>A match is formed when:</p><ul><li>the packed groups total at least <code class="inline">min_players</code>, and</li><li>the packed groups total exactly <code class="inline">max_players</code>, or</li><li>the oldest group has waited at least <code class="inline">timeout_ms</code>.</li></ul><p>Groups are consumed in FIFO order by their oldest ticket. A single bucket can
-produce multiple matches in one sweep.</p><p>Players who have blocked each other are never placed in the same match. The
+produce multiple matches in one sweep.</p><p>A backfill ticket (<code class="inline">lobby_id</code>) counts as its lobby's members (<code class="inline">size</code>), a
+match holds at most one lobby with other players in it, and it fits in that
+lobby's seats (<a href="Gamend.Matchmaking.html#seatable?/1"><code class="inline">Gamend.Matchmaking.seatable?/1</code></a>).</p><p>Players who have blocked each other are never placed in the same match. The
 blocked set is passed in rather than queried here, so this module stays pure
 and the caller resolves every pair in a single query (see
 <a href="Gamend.Friends.html#blocked_pairs/1"><code class="inline">Gamend.Friends.blocked_pairs/1</code></a>).</p>
@@ -175,7 +177,7 @@ and the caller resolves every pair in a single query (see
       <h1 class="signature" translate="no">form_matches(tickets, blocked \\ MapSet.new())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/matcher.ex#L42" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/matcher.ex#L46" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -206,9 +208,9 @@ and <code class="inline">remaining</code> are the tickets that could not be matc
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

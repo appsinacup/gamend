@@ -10,6 +10,7 @@ Gamend.Accounts.Identities.md
 Gamend.Accounts.InactivityNotifier.md
 Gamend.Accounts.LoginLockout.md
 Gamend.Accounts.LoginLockouts.md
+Gamend.Accounts.Online.md
 Gamend.Accounts.PasswordHash.md
 Gamend.Accounts.Preferences.md
 Gamend.Accounts.Presence.md
@@ -201,6 +202,7 @@ Gamend.Quests.Quest.md
 Gamend.Quests.QuestProgress.md
 Gamend.Quests.Reward.md
 Gamend.Quests.md
+Gamend.RaceLint.md
 Gamend.ReadyChecks.Check.md
 Gamend.ReadyChecks.Participant.md
 Gamend.ReadyChecks.md
@@ -233,6 +235,7 @@ Gamend.Storage.Adapter.md
 Gamend.Storage.Local.md
 Gamend.Storage.S3.md
 Gamend.Storage.md
+Gamend.TestSupport.Race.md
 Gamend.Theme.JSONConfig.md
 Gamend.Theme.Translatable.md
 Gamend.Theme.md
@@ -251,6 +254,7 @@ Mix.Tasks.Gamend.Content.Extract.md
 Mix.Tasks.Gamend.Content.MigrateMetadata.md
 Mix.Tasks.Gamend.Gen.Dockerfile.md
 Mix.Tasks.Gamend.Latest.md
+Mix.Tasks.Gamend.Race.Lint.md
 Mix.Tasks.Gamend.Settings.EnvExample.md
 Mix.Tasks.Gamend.Settings.Guide.md
 Mix.Tasks.Gamend.Stripe.Setup.md

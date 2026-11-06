@@ -1,4 +1,4 @@
-# gamend_core v1.1.1380 - API Reference
+# gamend_core v1.1.1387 - API Reference
 
 ## Modules
 
@@ -87,6 +87,9 @@ params, hook arguments, JSON.
 everywhere.
 - [Gamend.Presence](Gamend.Presence.md): Cluster-wide tracking of who is connected where.
 - [Gamend.Query](Gamend.Query.md): Query-building pieces shared by the contexts. Right now: paging.
+- [Gamend.RaceLint](Gamend.RaceLint.md): Source checks for the shapes that race: a rule ("one per player", "pays
+once", "at most N", "only while pending") checked by a read and kept by a
+write that does not look again. `mix gamend.race.lint` runs them.
 - [Gamend.Release](Gamend.Release.md): Release-time equivalents of the `host.*` mix tasks.
 - [Gamend.Results](Gamend.Results.md): What happened in a play (priv/docs/40-gameplay/45-results.md).
 - [Gamend.Results.Event](Gamend.Results.Event.md): Ecto schema for `result_events`: one thing that happened in a play
@@ -101,6 +104,8 @@ waits for it.
 - [Gamend.Slug](Gamend.Slug.md): A name that is also its URL, unique per account: a group's
 (`Gamend.Groups`, `<owner>/<slug>`), and in a host a project's or a store
 account's (Forge's `/projects/<owner>/<name>`).
+- [Gamend.TestSupport.Race](Gamend.TestSupport.Race.md): Releases racers at the same instant, each on its own database connection,
+so a test can show whether a rule holds when requests land together.
 - [Gamend.Time](Gamend.Time.md): The server's wall clock, in milliseconds since the epoch, for sending to
 clients.
 
@@ -122,6 +127,11 @@ removing them from one.
   - [Gamend.Accounts.InactivityNotifier](Gamend.Accounts.InactivityNotifier.md): Warns a user their account is about to be deleted for inactivity.
   - [Gamend.Accounts.LoginLockout](Gamend.Accounts.LoginLockout.md): Failed password sign-ins for one email address, and the lock they set.
   - [Gamend.Accounts.LoginLockouts](Gamend.Accounts.LoginLockouts.md): Per-account lockout after repeated failed password sign-ins.
+  - [Gamend.Accounts.Online](Gamend.Accounts.Online.md): A player online, one way for every client. The SDK's game socket
+(`GamendWeb.UserChannel`) and a host's own page (a LiveView the player
+plays in) call the same functions, so `users.is_online`, friends' online
+dots, lobby, party and group presence, matchmaking's offline prune and the
+abandoned-lobby reaper see them alike.
   - [Gamend.Accounts.PasswordHash](Gamend.Accounts.PasswordHash.md): Password hashing: Argon2id for new hashes, bcrypt still accepted for old ones.
   - [Gamend.Accounts.Preferences](Gamend.Accounts.Preferences.md): A user's private settings (`users.preferences`): what only they see and
 change — notification choices (`Gamend.Notifications.Preferences`), their
@@ -481,6 +491,10 @@ leaderboards and tournaments, and the names a quest gives its item rewards
 - [mix gamend.gen.dockerfile](Mix.Tasks.Gamend.Gen.Dockerfile.md): Writes `Dockerfile` from Gamend's one template, filled in from the app's
 own `mix.exs`, so Gamend, the starter and every host build the same way.
 - [mix gamend.latest](Mix.Tasks.Gamend.Latest.md): Sets `@gamend_min` in the app's `mix.exs` to Gamend's newest release on Hex.
+- [mix gamend.race.lint](Mix.Tasks.Gamend.Race.Lint.md): Flags functions that keep a rule with a write only an earlier read made
+safe: a state column written on a struct, a count then an insert, a cached
+read deciding a write. See `Gamend.RaceLint` for each check and for the
+`# race-safe: <reason>` marker that accepts one.
 - [mix gamend.settings.env_example](Mix.Tasks.Gamend.Settings.EnvExample.md): Writes `.env.example` from `Gamend.Settings.all/0`, grouped and
 commented from each setting's declaration.
 - [mix gamend.settings.guide](Mix.Tasks.Gamend.Settings.Guide.md): Writes the public Settings guide from `Gamend.Settings.all/0`.

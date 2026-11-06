@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Friends — gamend_core v1.1.1380</title>
+    <title>Gamend.Friends — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Friends</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -148,6 +148,18 @@ direction.</li></ul><h2 id="module-usage" class="section-heading"><a href="#modu
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#t:accept_error/0" data-no-tooltip="" translate="no">accept_error()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Why <a href="#accept_friend_request/2"><code class="inline">accept_friend_request/2</code></a> did not accept: no such request (or it was
+cancelled), not the caller's to answer, answered another way, accepted
+already, or a friend list at its cap.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#t:user_id/0" data-no-tooltip="" translate="no">user_id()</a>
 
       </div>
@@ -166,7 +178,8 @@ direction.</li></ul><h2 id="module-usage" class="section-heading"><a href="#modu
 
       </div>
 
-        <div class="summary-synopsis"><p>Accept a friend request (only the target may accept). Returns {:ok, friendship}.</p></div>
+        <div class="summary-synopsis"><p>Accept a friend request (only the target may accept). Returns
+<code class="inline">{:ok, friendship}</code>.</p></div>
 
     </div>
 
@@ -183,11 +196,25 @@ direction. One query, regardless of how many others are checked.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#any_blocked_between?/2" data-no-tooltip="" translate="no">any_blocked_between?(ids, other_ids)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Returns true if anyone in <code class="inline">ids</code> is on a block with anyone in <code class="inline">other_ids</code>, in
+either direction: a party and the players already seated in a lobby. One
+query.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#block_friend_request/2" data-no-tooltip="" translate="no">block_friend_request(friendship_id, user)</a>
 
       </div>
 
-        <div class="summary-synopsis"><p>Block an incoming request (only the target may block). Returns {:ok, friendship} with status &quot;blocked&quot;.</p></div>
+        <div class="summary-synopsis"><p>Block an incoming request (only the target may block). Returns
+<code class="inline">{:ok, friendship}</code> with status &quot;blocked&quot;, or <code class="inline">{:error, :not_pending}</code> when
+it was accepted (or blocked) first.</p></div>
 
     </div>
 
@@ -228,7 +255,8 @@ direction. One query, regardless of how many others are checked.</p></div>
 
       </div>
 
-        <div class="summary-synopsis"><p>Cancel an outgoing friend request (only the requester may cancel).</p></div>
+        <div class="summary-synopsis"><p>Cancel an outgoing friend request (only the requester may cancel).
+<code class="inline">{:error, :not_pending}</code> once it has been answered.</p></div>
 
     </div>
 
@@ -309,8 +337,11 @@ direction. One query, regardless of how many others are checked.</p></div>
       </div>
 
         <div class="summary-synopsis"><p>Create a friend request from requester -&gt; target.
-  If a reverse pending request exists (target -&gt; requester) it will be accepted instead.
-  Returns {:ok, friendship} on success or {:error, reason}.</p></div>
+  If a reverse pending request exists (target -&gt; requester) it will be accepted instead,
+  and fails as <a href="#accept_friend_request/2"><code class="inline">accept_friend_request/2</code></a> does.
+  A request or a friendship that already stands is returned as <code class="inline">{:ok, friendship}</code>.
+  Fails with <code class="inline">:cannot_friend_self</code>, <code class="inline">:blocked</code>, <code class="inline">:too_many_pending_requests</code> or the
+  changeset.</p></div>
 
     </div>
 
@@ -480,7 +511,8 @@ direction. One query, regardless of how many others are checked.</p></div>
 
       </div>
 
-        <div class="summary-synopsis"><p>Reject a friend request (only the target may reject). Returns {:ok, friendship}.</p></div>
+        <div class="summary-synopsis"><p>Reject a friend request (only the target may reject). Returns
+<code class="inline">{:ok, friendship}</code>, or <code class="inline">{:error, :not_pending}</code> when it was answered first.</p></div>
 
     </div>
 
@@ -490,7 +522,9 @@ direction. One query, regardless of how many others are checked.</p></div>
 
       </div>
 
-        <div class="summary-synopsis"><p>Remove a friendship (either direction) - only participating users may call this.</p></div>
+        <div class="summary-synopsis"><p>Remove a friendship (either direction) - only participating users may call
+this. Only an accepted friendship: <code class="inline">{:error, :not_found}</code> when there is none,
+a block placed since included.</p></div>
 
     </div>
 
@@ -544,6 +578,41 @@ direction. One query, regardless of how many others are checked.</p></div>
     </h2>
 
     <div class="types-list">
+<section class="detail" id="t:accept_error/0">
+
+  <div class="detail-header">
+    <a href="#t:accept_error/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">accept_error()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L49" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> accept_error() ::
+  :not_found
+  | :not_authorized
+  | :not_pending
+  | :already_friends
+  | :too_many_friends</pre>
+
+      </div>
+
+<p>Why <a href="#accept_friend_request/2"><code class="inline">accept_friend_request/2</code></a> did not accept: no such request (or it was
+cancelled), not the caller's to answer, answered another way, accepted
+already, or a friend list at its cap.</p>
+  </section>
+</section>
 <section class="detail" id="t:user_id/0">
 
   <div class="detail-header">
@@ -554,7 +623,7 @@ direction. One query, regardless of how many others are checked.</p></div>
       <h1 class="signature" translate="no">user_id()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L41" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L42" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -595,7 +664,7 @@ direction. One query, regardless of how many others are checked.</p></div>
       <h1 class="signature" translate="no">accept_friend_request(friendship_id, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L357" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L437" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -607,11 +676,15 @@ direction. One query, regardless of how many others are checked.</p></div>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> accept_friend_request(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
-  {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()} | {:error, <a href="#t:accept_error/0">accept_error</a>()}</pre>
 
       </div>
 
-<p>Accept a friend request (only the target may accept). Returns {:ok, friendship}.</p>
+<p>Accept a friend request (only the target may accept). Returns
+<code class="inline">{:ok, friendship}</code>.</p><p><code class="inline">{:error, :already_friends}</code> when it was accepted already,
+<code class="inline">{:error, :not_pending}</code> when it was rejected or blocked first,
+<code class="inline">{:error, :not_found}</code> when it was cancelled, and
+<code class="inline">{:error, :too_many_friends}</code> when either side is at the cap.</p>
   </section>
 </section>
 <section class="detail" id="any_blocked?/2">
@@ -624,7 +697,7 @@ direction. One query, regardless of how many others are checked.</p></div>
       <h1 class="signature" translate="no">any_blocked?(user_id, other_ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L810" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L909" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -643,6 +716,36 @@ direction. One query, regardless of how many others are checked.</p></div>
 direction. One query, regardless of how many others are checked.</p>
   </section>
 </section>
+<section class="detail" id="any_blocked_between?/2">
+
+  <div class="detail-header">
+    <a href="#any_blocked_between?/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">any_blocked_between?(ids, other_ids)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L928" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> any_blocked_between?([<a href="#t:user_id/0">user_id</a>()], [<a href="#t:user_id/0">user_id</a>()]) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Returns true if anyone in <code class="inline">ids</code> is on a block with anyone in <code class="inline">other_ids</code>, in
+either direction: a party and the players already seated in a lobby. One
+query.</p>
+  </section>
+</section>
 <section class="detail" id="block_friend_request/2">
 
   <div class="detail-header">
@@ -653,7 +756,7 @@ direction. One query, regardless of how many others are checked.</p>
       <h1 class="signature" translate="no">block_friend_request(friendship_id, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L479" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L571" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -665,11 +768,14 @@ direction. One query, regardless of how many others are checked.</p>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> block_friend_request(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
-  {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()}
+  | {:error, :not_found | :not_authorized | :not_pending}</pre>
 
       </div>
 
-<p>Block an incoming request (only the target may block). Returns {:ok, friendship} with status &quot;blocked&quot;.</p>
+<p>Block an incoming request (only the target may block). Returns
+<code class="inline">{:ok, friendship}</code> with status &quot;blocked&quot;, or <code class="inline">{:error, :not_pending}</code> when
+it was accepted (or blocked) first.</p>
   </section>
 </section>
 <section class="detail" id="block_user/2">
@@ -682,7 +788,7 @@ direction. One query, regardless of how many others are checked.</p>
       <h1 class="signature" translate="no">block_user(user, blocked_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L510" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L601" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -694,7 +800,8 @@ direction. One query, regardless of how many others are checked.</p>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> block_user(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="#t:user_id/0">user_id</a>()) ::
-  {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()}
+  | {:error, :cannot_block_self | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
@@ -714,7 +821,7 @@ replaced, so blocking supersedes a pending request or an active friendship.</p><
       <h1 class="signature" translate="no">blocked?(requester_id, target_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L315" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L397" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -743,7 +850,7 @@ direction between the two user IDs.</p>
       <h1 class="signature" translate="no">blocked_pairs(user_ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L593" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L693" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -774,7 +881,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">cancel_request(friendship_id, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L420" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L505" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -786,11 +893,12 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> cancel_request(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
-  {:ok, :cancelled} | {:error, :not_found | :not_authorized | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, :cancelled} | {:error, :not_found | :not_authorized | :not_pending}</pre>
 
       </div>
 
-<p>Cancel an outgoing friend request (only the requester may cancel).</p>
+<p>Cancel an outgoing friend request (only the requester may cancel).
+<code class="inline">{:error, :not_pending}</code> once it has been answered.</p>
   </section>
 </section>
 <section class="detail" id="count_all_blocks/1">
@@ -805,7 +913,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_all_blocks(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L658" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L758" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -835,7 +943,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_all_friendships(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L731" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L828" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -863,7 +971,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_blocked_for_user(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L855" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L974" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -891,7 +999,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_blocked_users(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L634" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L734" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -919,7 +1027,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_friends_for_user(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L979" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1099" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -947,7 +1055,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_incoming_requests(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1032" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1152" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -975,7 +1083,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">count_outgoing_requests(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1077" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1197" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1003,7 +1111,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">create_request(requester_id, target_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L206" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L222" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1019,15 +1127,18 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
   | {:error,
      :cannot_friend_self
      | :blocked
-     | :already_friends
-     | :already_requested
-     | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+     | :too_many_pending_requests
+     | <a href="#t:accept_error/0">accept_error</a>()
+     | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
 <p>Create a friend request from requester -&gt; target.
-  If a reverse pending request exists (target -&gt; requester) it will be accepted instead.
-  Returns {:ok, friendship} on success or {:error, reason}.</p>
+  If a reverse pending request exists (target -&gt; requester) it will be accepted instead,
+  and fails as <a href="#accept_friend_request/2"><code class="inline">accept_friend_request/2</code></a> does.
+  A request or a friendship that already stands is returned as <code class="inline">{:ok, friendship}</code>.
+  Fails with <code class="inline">:cannot_friend_self</code>, <code class="inline">:blocked</code>, <code class="inline">:too_many_pending_requests</code> or the
+  changeset.</p>
   </section>
 </section>
 <section class="detail" id="delete_block/1">
@@ -1040,7 +1151,7 @@ which is what makes per-pair filtering cheap in matchmaking.</p>
       <h1 class="signature" translate="no">delete_block(friendship_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L688" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L788" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1069,7 +1180,7 @@ blocker lift their own block.</p>
       <h1 class="signature" translate="no">delete_friendship(friendship_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L774" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L871" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1099,7 +1210,7 @@ with <a href="#delete_block/1"><code class="inline">delete_block/1</code></a>.</
       <h1 class="signature" translate="no">friend_ids(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1119" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1239" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1128,7 +1239,7 @@ and does <em>not</em> paginate – it returns all friend IDs.</p>
       <h1 class="signature" translate="no">friends?(user_a_id, user_b_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L327" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L409" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1156,7 +1267,7 @@ and does <em>not</em> paginate – it returns all friend IDs.</p>
       <h1 class="signature" translate="no">get_by_pair(requester_id, target_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1108" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1228" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1242,7 +1353,7 @@ and does <em>not</em> paginate – it returns all friend IDs.</p>
       <h1 class="signature" translate="no">list_all_blocks(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L647" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L747" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1272,7 +1383,7 @@ and does <em>not</em> paginate – it returns all friend IDs.</p>
       <h1 class="signature" translate="no">list_all_friendships(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L720" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L817" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1303,7 +1414,7 @@ and are listed with <a href="#list_all_blocks/1"><code class="inline">list_all_b
       <h1 class="signature" translate="no">list_blocked_for_user(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L831" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L950" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1335,7 +1446,7 @@ and are listed with <a href="#list_all_blocks/1"><code class="inline">list_all_b
       <h1 class="signature" translate="no">list_blocked_users(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L616" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L716" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1368,7 +1479,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">list_friends_for_user(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L899" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1019" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1400,7 +1511,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">list_friends_with_friendship(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L947" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1067" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1432,7 +1543,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">list_incoming_requests(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1008" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1128" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1464,7 +1575,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">list_outgoing_requests(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1053" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L1173" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1494,7 +1605,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">pair_key(a, b)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L825" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L944" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1522,7 +1633,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">reject_friend_request(friendship_id, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L395" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L480" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1534,11 +1645,13 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> reject_friend_request(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
-  {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()}
+  | {:error, :not_found | :not_authorized | :not_pending}</pre>
 
       </div>
 
-<p>Reject a friend request (only the target may reject). Returns {:ok, friendship}.</p>
+<p>Reject a friend request (only the target may reject). Returns
+<code class="inline">{:ok, friendship}</code>, or <code class="inline">{:error, :not_pending}</code> when it was answered first.</p>
   </section>
 </section>
 <section class="detail" id="remove_friend/2">
@@ -1551,7 +1664,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">remove_friend(user_id, friend_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L443" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L529" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1563,11 +1676,13 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> remove_friend(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
-  {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Friends.Friendship.html#t:t/0">Gamend.Friends.Friendship.t</a>()} | {:error, :not_found | :not_pending}</pre>
 
       </div>
 
-<p>Remove a friendship (either direction) - only participating users may call this.</p>
+<p>Remove a friendship (either direction) - only participating users may call
+this. Only an accepted friendship: <code class="inline">{:error, :not_found}</code> when there is none,
+a block placed since included.</p>
   </section>
 </section>
 <section class="detail" id="subscribe_user/1">
@@ -1580,7 +1695,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">subscribe_user(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L83" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L92" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1608,7 +1723,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">unblock_friendship(friendship_id, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L869" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L989" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1620,7 +1735,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> unblock_friendship(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
-  {:ok, :unblocked} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, :unblocked} | {:error, :not_found | :not_authorized}</pre>
 
       </div>
 
@@ -1637,7 +1752,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">unblock_user(user, blocked_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L565" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L657" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1649,7 +1764,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> unblock_user(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="#t:user_id/0">user_id</a>()) ::
-  {:ok, :unblocked} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, :unblocked} | {:error, :not_found}</pre>
 
       </div>
 
@@ -1666,7 +1781,7 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
       <h1 class="signature" translate="no">unsubscribe_user(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L88" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/friends.ex#L97" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1693,9 +1808,9 @@ underlying friendship rows.</p><p>See <a href="Gamend.Types.html#t:pagination_op
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

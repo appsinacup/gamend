@@ -153,21 +153,43 @@ cancelled, falling back to the most recent row.
 
 ```elixir
 @spec join_tournament(Gamend.Accounts.User.t(), Gamend.Tournaments.Tournament.t()) ::
-  {:ok, Gamend.Tournaments.Entry.t()} | {:error, term()}
+  {:ok, Gamend.Tournaments.Entry.t()}
+  | {:error,
+     :registration_closed
+     | :already_registered
+     | :tournament_full
+     | :not_found
+     | Ecto.Changeset.t()
+     | {:hook_rejected, term()}}
 ```
 
-Registers `user` as an entry leader. Runs the `before_tournament_register`
-pipeline (games gate/charge entry there) and fires
-`after_tournament_register` on success.
+Registers `user` as an entry leader.
+
+The seat is taken first, under the tournament's join lock with the
+capacity and duplicate checks, and only then does the
+`before_tournament_register` pipeline run (games gate or charge entry
+there), outside any lock, with the seat held: a full tournament, closed
+registration or a repeated request is refused before it and never reaches
+it. When the hook refuses (or raises, or times out) the seat is given back
+and its refusal answered; in a tournament drawn while the hook ran, the
+refused entry forfeits its match instead. `after_tournament_register` fires
+only once the hook allowed it.
+
+Refuses with `:registration_closed`, `:already_registered`,
+`:tournament_full`, `:not_found` (deleted meanwhile), a changeset, or
+`{:hook_rejected, reason}` with the hook's own reason.
 
 # `leave_tournament`
 
 ```elixir
 @spec leave_tournament(Gamend.Accounts.User.t(), Gamend.Tournaments.Tournament.t()) ::
-  {:ok, Gamend.Tournaments.Tournament.t()} | {:error, term()}
+  {:ok, Gamend.Tournaments.Tournament.t()}
+  | {:error,
+     :not_registered | :already_drawn | :not_found | {:hook_rejected, term()}}
 ```
 
-Withdraws `user`'s entry. Only before the draw; `before_tournament_leave` can veto.
+Withdraws `user`'s entry. Only before the draw; `before_tournament_leave` can
+veto, answered as `{:hook_rejected, reason}`.
 
 # `list_brackets`
 
@@ -271,14 +293,17 @@ throw away the draw. Any due transition is applied immediately afterwards.
 
 ```elixir
 @spec resolve_match(Ecto.UUID.t(), Ecto.UUID.t() | :no_winner) ::
-  {:ok, Gamend.Tournaments.Match.t()} | {:error, term()}
+  {:ok, Gamend.Tournaments.Match.t()}
+  | {:error,
+     :not_found | :already_resolved | :invalid_winner | {:hook_rejected, term()}}
 ```
 
 Records the verdict for a match: the winning entry's id, or `:no_winner`
 (double forfeit — the next round's seat stays empty and cascades as a bye).
 
 First write wins; anything later returns `{:error, :already_resolved}`. The
-`before_tournament_result` pipeline can veto, leaving the match open.
+`before_tournament_result` pipeline can veto, leaving the match open: its
+reason comes back as `{:hook_rejected, reason}`.
 
 # `round_deadline`
 

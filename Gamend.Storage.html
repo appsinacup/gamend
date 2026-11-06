@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Storage — gamend_core v1.1.1380</title>
+    <title>Gamend.Storage — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Storage</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -226,6 +226,9 @@ and set as S3 object metadata at upload.</p></div>
         <a href="#get/1" data-no-tooltip="" translate="no">get(key)</a>
 
       </div>
+
+        <div class="summary-synopsis"><p>The object's bytes: <code class="inline">{:error, :not_found}</code> when there is none, any other
+error when the backend failed (a disk error, S3 down).</p></div>
 
     </div>
 
@@ -393,7 +396,7 @@ ending in <code class="inline">/</code> so <code class="inline">pdf</code> canno
       <h1 class="signature" translate="no">build_key(namespace, owner_id, filename)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L240" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L244" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -452,7 +455,7 @@ and set as S3 object metadata at upload.</p>
       <h1 class="signature" translate="no">delete(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L160" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L164" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -480,7 +483,7 @@ and set as S3 object metadata at upload.</p>
       <h1 class="signature" translate="no">delete_prefix(prefix)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L231" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L235" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -508,7 +511,7 @@ and set as S3 object metadata at upload.</p>
       <h1 class="signature" translate="no">exists?(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L163" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L167" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -536,7 +539,7 @@ and set as S3 object metadata at upload.</p>
       <h1 class="signature" translate="no">extension_for(arg1)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L248" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L252" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -564,7 +567,7 @@ and set as S3 object metadata at upload.</p>
       <h1 class="signature" translate="no">get(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L157" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L161" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -575,11 +578,13 @@ and set as S3 object metadata at upload.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> get(<a href="Gamend.Storage.Adapter.html#t:key/0">Gamend.Storage.Adapter.key</a>()) :: {:ok, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">binary</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+          <pre translate="no"><span class="attribute">@spec</span> get(<a href="Gamend.Storage.Adapter.html#t:key/0">Gamend.Storage.Adapter.key</a>()) ::
+  {:ok, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">binary</a>()} | {:error, :not_found | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
 
-
+<p>The object's bytes: <code class="inline">{:error, :not_found}</code> when there is none, any other
+error when the backend failed (a disk error, S3 down).</p>
   </section>
 </section>
 <section class="detail" id="list_objects/1">
@@ -594,7 +599,7 @@ and set as S3 object metadata at upload.</p>
       <h1 class="signature" translate="no">list_objects(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L207" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L211" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -626,7 +631,7 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
       <h1 class="signature" translate="no">presigned_upload(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L199" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L203" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -655,7 +660,7 @@ or the adapter's own <code class="inline">:offset</code> and <code class="inline
       <h1 class="signature" translate="no">public_prefixes()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L180" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L184" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -715,7 +720,7 @@ ending in <code class="inline">/</code> so <code class="inline">pdf</code> canno
       <h1 class="signature" translate="no">signed_url_seconds()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L193" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L197" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -743,7 +748,7 @@ ending in <code class="inline">/</code> so <code class="inline">pdf</code> canno
       <h1 class="signature" translate="no">sniff_content_type(data)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L261" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L265" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -772,7 +777,7 @@ ending in <code class="inline">/</code> so <code class="inline">pdf</code> canno
       <h1 class="signature" translate="no">stat(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L227" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L231" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -801,7 +806,7 @@ ending in <code class="inline">/</code> so <code class="inline">pdf</code> canno
       <h1 class="signature" translate="no">upload_ttl_seconds()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L189" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L193" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -831,7 +836,7 @@ ending in <code class="inline">/</code> so <code class="inline">pdf</code> canno
       <h1 class="signature" translate="no">url(key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L173" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L177" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -863,7 +868,7 @@ itself, which lasts <code class="inline">signed_url_seconds</code> and must not 
       <h1 class="signature" translate="no">usage(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L223" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L227" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -893,7 +898,7 @@ itself, which lasts <code class="inline">signed_url_seconds</code> and must not 
       <h1 class="signature" translate="no">validate_upload(content_type, size, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L276" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/storage.ex#L280" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -922,9 +927,9 @@ itself, which lasts <code class="inline">signed_url_seconds</code> and must not 
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

@@ -71,13 +71,17 @@ never inside the transaction.
 
 Adds a member to the lobby's open check, if there is one.
 
+Call it inside the transaction that seats them, under the lobby's lock, as
+`Gamend.Lobbies` and `Gamend.Parties` do: the check then either takes the
+seat before it counts the next answer, or passed before the seat existed.
+
 # `add_party_member`
 
 ```elixir
 @spec add_party_member(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok
 ```
 
-Adds a member to the party's open check, if there is one.
+Adds a member to the party's open check, if there is one. As `add_member/2`.
 
 # `answer_for`
 
@@ -96,7 +100,8 @@ over RPC and mark someone else ready.
 
 ```elixir
 @spec cancel(Gamend.ReadyChecks.Check.t(), String.t()) ::
-  {:ok, Gamend.ReadyChecks.Check.t()} | {:error, term()}
+  {:ok, Gamend.ReadyChecks.Check.t()}
+  | {:error, :already_resolved | :no_open_check}
 ```
 
 Cancels a pending check — the host called it off, or the subject went away.
@@ -104,18 +109,24 @@ Cancels a pending check — the host called it off, or the subject went away.
 # `cancel_for_lobby`
 
 ```elixir
-@spec cancel_for_lobby(Ecto.UUID.t()) :: :ok
+@spec cancel_for_lobby(Ecto.UUID.t()) ::
+  :ok | {:error, :already_resolved | :no_open_check}
 ```
 
 Cancels the lobby's pending check, if it has one.
 
+`{:error, :already_resolved}` when it passed or failed before the cancel
+took its lock (or `:no_open_check` when it went with its lobby): it was
+read pending, and the cancel did not happen.
+
 # `cancel_for_party`
 
 ```elixir
-@spec cancel_for_party(Ecto.UUID.t()) :: :ok
+@spec cancel_for_party(Ecto.UUID.t()) ::
+  :ok | {:error, :already_resolved | :no_open_check}
 ```
 
-Cancels the party's pending check, if it has one.
+Cancels the party's pending check, if it has one. As `cancel_for_lobby/1`.
 
 # `count_checks`
 
@@ -189,14 +200,18 @@ The participants who did not answer ready — the host's kick list, and what
 # `open`
 
 ```elixir
-@spec open(subject(), [Ecto.UUID.t()], keyword()) ::
+@spec open(subject(), [Ecto.UUID.t()] | :members, keyword()) ::
   {:ok, Gamend.ReadyChecks.Check.t()} | {:error, term()}
 ```
 
 Opens a check over `user_ids` and notifies them.
 
 `subject` is a `%Lobby{}` or `%Party{}` (kind `"ready"`) or `:matchmaking`
-(kind `"accept"`). Options:
+(kind `"accept"`). For a lobby or a party, `user_ids` may be `:members`:
+every member, read again under the subject's lock as the check is written,
+so a member who joins or leaves while it opens is on the board exactly when
+they are in the lobby or party. `before_ready_check_open` sees the members
+as read before that lock. Options:
 
   * `:kind` — override the kind implied by the subject
   * `:timeout_ms` — answering window; `nil` leaves a `"ready"` check open
@@ -262,7 +277,7 @@ Drops a member from the party's open check and re-evaluates it.
 # `reset`
 
 ```elixir
-@spec reset(subject(), [Ecto.UUID.t()], keyword()) ::
+@spec reset(subject(), [Ecto.UUID.t()] | :members, keyword()) ::
   {:ok, Gamend.ReadyChecks.Check.t()} | {:error, term()}
 ```
 

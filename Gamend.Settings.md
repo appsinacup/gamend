@@ -127,6 +127,26 @@ nothing else mentions — `GAMEND_PAYMENTS_ENVIRONMENT=sandbox` was rejected
 that way and silently became `:production`. Declare `:values` on every
 `:atom` setting; the fallback exists for plugins compiled before it did.
 
+# `declared`
+
+```elixir
+@spec declared() :: [map()]
+```
+
+Every declared setting, then every variable a loaded plugin declares that
+is not one (`Gamend.Hooks.Declarations.env_vars/0`), as plain data a JSON
+encoder takes: what a host that runs this server from outside, and cannot
+load its code, reads to offer them. Gamend Cloud's Settings tab asks a
+server's release for it with `bin/<release> rpc`. It is never a client's:
+no route or hook RPC answers it.
+
+Each is `%{env:, app:, group:, label:, type:, default:, doc:, secret:,
+values:, plugin:}`. `app`, `group` and `type` are strings; `default` is a
+string, a number, a boolean or nil, a list joined with commas as its
+variable is written, any other term `inspect/1`ed; `values` is the strings
+an `:atom` takes. A plugin's variable has `app` and `group` nil and
+`plugin` its plugin's name; a setting has `plugin` nil.
+
 # `describe`
 
 ```elixir

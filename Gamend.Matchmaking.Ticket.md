@@ -10,13 +10,25 @@ A ticket queued on behalf of a party carries that party's `party_id`. Tickets
 sharing a `party_id` form an indivisible unit: the matcher seats them in the
 same lobby or leaves them all queued.
 
+A ticket queued by a lobby's host carries that lobby's `lobby_id`
+(backfill): a match seats the other players there instead of in a new
+lobby. `size` and `capacity` are what the sweep read for it, the lobby's
+members and seats (1 and nil for any other ticket).
+
+`accept_timeout_ms` set, a formed match asks everyone to accept first
+(a ready check of kind `accept`, `Gamend.ReadyChecks`).
+
 # `t`
 
 ```elixir
 @type t() :: %Gamend.Matchmaking.Ticket{
   __meta__: term(),
+  accept_timeout_ms: term(),
+  capacity: term(),
   id: term(),
   inserted_at: term(),
+  lobby: term(),
+  lobby_id: term(),
   match_id: term(),
   match_params: term(),
   matched_at: term(),
@@ -25,6 +37,7 @@ same lobby or leaves them all queued.
   party: term(),
   party_id: term(),
   queued_at: term(),
+  size: term(),
   status: term(),
   timeout_ms: term(),
   updated_at: term(),

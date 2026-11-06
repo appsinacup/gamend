@@ -35,11 +35,18 @@ host configures them the ordinary Elixir way and never needs an env var:
 
 - `:app` (required) — the OTP app the values live under.
 - `:group` (required) — the middle segment of the env name, and the grouping
-  the admin viewer renders. One word.
+  the admin viewer renders. A lowercase snake_case atom (`:ugc`,
+  `:client_logs`); a space, hyphen or capital is a compile error, since the
+  env name it would derive could not be set from a shell. Put the display
+  name in `:label`.
 - `:root` — first segment of the env name. Defaults to `"GAMEND"`; a plugin
-  passes its own (`root: "MY_GAME"`). Each definition carries it back, so
-  tooling can check the naming convention without knowing which hosts exist.
-- `:label` — display name for the group. Defaults to a capitalised `:group`.
+  passes its own (`root: "MY_GAME"`). Letters, digits and underscores only.
+  Each definition carries it back, so tooling can check the naming
+  convention without knowing which hosts exist.
+- `:label` — display name for the group, free text (`"User-generated
+  content"`). Defaults to a capitalised `:group`.
+
+Setting keys follow the same rule as `:group`.
 
 ## Options for `setting/3`
 

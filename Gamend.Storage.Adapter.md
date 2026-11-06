@@ -73,8 +73,11 @@ Deletes every object under `prefix`. Returns how many were removed.
 # `get`
 
 ```elixir
-@callback get(key()) :: {:ok, binary()} | {:error, term()}
+@callback get(key()) :: {:ok, binary()} | {:error, :not_found | term()}
 ```
+
+The object's bytes. An object that is not there is `{:error, :not_found}`
+on every backend; any other error is the backend failing.
 
 # `list`
 

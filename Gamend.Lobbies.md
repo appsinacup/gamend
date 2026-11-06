@@ -162,7 +162,7 @@ See `t:Gamend.Types.lobby_create_attrs/0` for available fields.
 ```elixir
 @spec create_membership(%{lobby_id: Ecto.UUID.t(), user_id: Ecto.UUID.t()}) ::
   {:ok, Gamend.Accounts.User.t()}
-  | {:error, :not_found | Ecto.Changeset.t() | term()}
+  | {:error, :not_found | :already_in_lobby | Ecto.Changeset.t() | term()}
 ```
 
 # `delete_lobby`
@@ -177,7 +177,7 @@ See `t:Gamend.Types.lobby_create_attrs/0` for available fields.
 
 ```elixir
 @spec delete_membership(Gamend.Accounts.User.t()) ::
-  {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t()}
+  {:ok, Gamend.Accounts.User.t()} | {:error, :not_in_lobby}
 ```
 
 # `get_lobby`
@@ -416,7 +416,12 @@ Subscribe to a specific lobby's events (membership changes, updates).
 ```elixir
 @spec transition_state(Gamend.Lobbies.Lobby.t(), String.t(), keyword()) ::
   {:ok, Gamend.Lobbies.Lobby.t()}
-  | {:error, :invalid_state | {:hook_rejected, term()} | term()}
+  | {:error,
+     :invalid_state
+     | :state_changed
+     | :not_found
+     | {:hook_rejected, term()}
+     | term()}
 ```
 
 Move a lobby to `state` (see `Gamend.Lobbies.States`).
@@ -430,8 +435,10 @@ whatever words and ordering the game cares about. A same-state call is
 a no-op (so at-least-once hook/job retries are safe) and does not re-fire
 hooks. `after_lobby_state_changed` observes post-commit.
 
-Returns `{:ok, lobby}`, `{:error, :invalid_state}` or
-`{:error, {:hook_rejected, reason}}`.
+Returns `{:ok, lobby}`, `{:error, :invalid_state}`,
+`{:error, {:hook_rejected, reason}}`, `{:error, :state_changed}` when
+another transition moved the lobby first (the hook approved a move out of a
+state it has left), or `{:error, :not_found}` when it was deleted.
 
 # `transition_state_by_host`
 

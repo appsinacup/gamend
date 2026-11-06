@@ -213,7 +213,8 @@ closed, images included. Answers how many were deleted.
 
 ```elixir
 @spec resolve(Gamend.Reports.Report.t(), String.t(), map()) ::
-  {:ok, Gamend.Reports.Report.t()} | {:error, term()}
+  {:ok, Gamend.Reports.Report.t()}
+  | {:error, Ecto.Changeset.t() | :status_changed}
 ```
 
 Close a report (`"fixed"`, `"wontfix"`, `"duplicate"`) or reopen it
@@ -224,6 +225,11 @@ shown to the reporter), `:message` (sent to the reporter as a notification
 when they had an account; nothing is sent when blank).
 
 Closing an open report fires `after_report_resolved/1`.
+
+The change is made from the status `report` holds, and only while the
+report still has it: when another moderator closed or reopened it first,
+nothing is written, nothing is sent and the answer is
+`{:error, :status_changed}`.
 
 # `resolved_config`
 

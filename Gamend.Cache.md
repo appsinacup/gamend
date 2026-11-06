@@ -42,8 +42,11 @@ that queries a row, then loses the CPU to a write that commits and evicts
 TTL: a revoked user, a spent balance. `invalidate/1` moves the key's
 generation (`generation/1`); the fill compares it before and after its put.
 
-Inside a transaction nothing is cached: the read may see a write a rollback
-undoes.
+Inside a transaction the cache is not used at all: `fun` runs, and its
+result is neither cached (the read may see a write a rollback undoes) nor
+taken from the cache. A read in a transaction is usually deciding a write,
+and a cached copy is up to a TTL old: `Accounts.get_user/1` gating a seat
+read a `lobby_id` that another request had already set.
 
 ## Options
 

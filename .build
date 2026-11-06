@@ -11,6 +11,7 @@ Gamend.Accounts.Identities.html
 Gamend.Accounts.InactivityNotifier.html
 Gamend.Accounts.LoginLockout.html
 Gamend.Accounts.LoginLockouts.html
+Gamend.Accounts.Online.html
 Gamend.Accounts.PasswordHash.html
 Gamend.Accounts.Preferences.html
 Gamend.Accounts.Presence.html
@@ -202,6 +203,7 @@ Gamend.Quests.Quest.html
 Gamend.Quests.QuestProgress.html
 Gamend.Quests.Reward.html
 Gamend.Quests.html
+Gamend.RaceLint.html
 Gamend.ReadyChecks.Check.html
 Gamend.ReadyChecks.Participant.html
 Gamend.ReadyChecks.html
@@ -234,6 +236,7 @@ Gamend.Storage.Adapter.html
 Gamend.Storage.Local.html
 Gamend.Storage.S3.html
 Gamend.Storage.html
+Gamend.TestSupport.Race.html
 Gamend.Theme.JSONConfig.html
 Gamend.Theme.Translatable.html
 Gamend.Theme.html
@@ -252,6 +255,7 @@ Mix.Tasks.Gamend.Content.Extract.html
 Mix.Tasks.Gamend.Content.MigrateMetadata.html
 Mix.Tasks.Gamend.Gen.Dockerfile.html
 Mix.Tasks.Gamend.Latest.html
+Mix.Tasks.Gamend.Race.Lint.html
 Mix.Tasks.Gamend.Settings.EnvExample.html
 Mix.Tasks.Gamend.Settings.Guide.html
 Mix.Tasks.Gamend.Stripe.Setup.html
@@ -269,8 +273,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-5B585553.js
-dist/sidebar_items-57F2FE52.js
+dist/search_data-8DB1FC1F.js
+dist/sidebar_items-B3EB7FE7.js
 index.html
 readme.html
 search.html

@@ -120,8 +120,12 @@ File extension for a declared image content type ("" when unknown).
 # `get`
 
 ```elixir
-@spec get(Gamend.Storage.Adapter.key()) :: {:ok, binary()} | {:error, term()}
+@spec get(Gamend.Storage.Adapter.key()) ::
+  {:ok, binary()} | {:error, :not_found | term()}
 ```
+
+The object's bytes: `{:error, :not_found}` when there is none, any other
+error when the backend failed (a disk error, S3 down).
 
 # `list_objects`
 

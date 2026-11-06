@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Settings.Provider — gamend_core v1.1.1380</title>
+    <title>Gamend.Settings.Provider — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Settings.<wbr />Provider</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -133,9 +133,13 @@ here — renaming our declaration would not rename what that software reads.
 Report those separately; <a href="Gamend.Cluster.html#environment/0"><code class="inline">Gamend.Cluster.environment/0</code></a> is the example.</p><p>Values are read back with <a href="Gamend.Settings.html#get/2"><code class="inline">Gamend.Settings.get/2</code></a>, which checks
 <code class="inline">Application.get_env(app, module)</code> and falls back to the compiled default. A
 host configures them the ordinary Elixir way and never needs an env var:</p><pre><code class="makeup elixir" translate="no"><span class="n">config</span><span class="w"> </span><span class="ss">:gamend_core</span><span class="p">,</span><span class="w"> </span><span class="nc">Gamend.Retention</span><span class="p">,</span><span class="w"> </span><span class="ss">chat_messages_days</span><span class="p">:</span><span class="w"> </span><span class="mi">90</span></code></pre><h2 id="module-options-for-use" class="section-heading"><a href="#module-options-for-use" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Options for <code class="inline">use</code></span></h2><ul><li><code class="inline">:app</code> (required) — the OTP app the values live under.</li><li><code class="inline">:group</code> (required) — the middle segment of the env name, and the grouping
-the admin viewer renders. One word.</li><li><code class="inline">:root</code> — first segment of the env name. Defaults to <code class="inline">&quot;GAMEND&quot;</code>; a plugin
-passes its own (<code class="inline">root: &quot;MY_GAME&quot;</code>). Each definition carries it back, so
-tooling can check the naming convention without knowing which hosts exist.</li><li><code class="inline">:label</code> — display name for the group. Defaults to a capitalised <code class="inline">:group</code>.</li></ul><h2 id="module-options-for-setting-3" class="section-heading"><a href="#module-options-for-setting-3" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Options for <a href="#setting/3"><code class="inline">setting/3</code></a></span></h2><ul><li><code class="inline">:default</code> — the compiled default. Defaults to <code class="inline">nil</code>.</li><li><code class="inline">:doc</code> — one-line description, shown in the admin viewer and generated docs.</li><li><code class="inline">:secret</code> — mask the value everywhere it is displayed.</li><li><code class="inline">:required</code> — <code class="inline">:prod</code> (boot fails in prod, warns in dev) or <code class="inline">:warn</code> (logs in
+the admin viewer renders. A lowercase snake_case atom (<code class="inline">:ugc</code>,
+<code class="inline">:client_logs</code>); a space, hyphen or capital is a compile error, since the
+env name it would derive could not be set from a shell. Put the display
+name in <code class="inline">:label</code>.</li><li><code class="inline">:root</code> — first segment of the env name. Defaults to <code class="inline">&quot;GAMEND&quot;</code>; a plugin
+passes its own (<code class="inline">root: &quot;MY_GAME&quot;</code>). Letters, digits and underscores only.
+Each definition carries it back, so tooling can check the naming
+convention without knowing which hosts exist.</li><li><code class="inline">:label</code> — display name for the group, free text (<code class="inline">&quot;User-generated content&quot;</code>). Defaults to a capitalised <code class="inline">:group</code>.</li></ul><p>Setting keys follow the same rule as <code class="inline">:group</code>.</p><h2 id="module-options-for-setting-3" class="section-heading"><a href="#module-options-for-setting-3" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Options for <a href="#setting/3"><code class="inline">setting/3</code></a></span></h2><ul><li><code class="inline">:default</code> — the compiled default. Defaults to <code class="inline">nil</code>.</li><li><code class="inline">:doc</code> — one-line description, shown in the admin viewer and generated docs.</li><li><code class="inline">:secret</code> — mask the value everywhere it is displayed.</li><li><code class="inline">:required</code> — <code class="inline">:prod</code> (boot fails in prod, warns in dev) or <code class="inline">:warn</code> (logs in
 prod). Omit for optional. Never enforced in test.</li><li><code class="inline">:when</code> — <code class="inline">{path, value}</code> gating the requirement on another setting, e.g.
 <code class="inline">when: {[:storage, :adapter], :s3}</code>. A list of such tuples requires all of
 them to hold.</li><li><code class="inline">:with</code> — sibling keys forming a complete-or-empty group. All unset is
@@ -206,7 +210,7 @@ directly, so the declaration is the only thing that decides what is legal.</li><
       <h1 class="signature" translate="no">derive_env(root, group, key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings/provider.ex#L201" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings/provider.ex#L240" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -238,7 +242,7 @@ directly, so the declaration is the only thing that decides what is legal.</li><
         <span class="note">(macro)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings/provider.ex#L92" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings/provider.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -259,9 +263,9 @@ directly, so the declaration is the only thing that decides what is legal.</li><
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

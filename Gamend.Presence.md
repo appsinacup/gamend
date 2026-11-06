@@ -28,6 +28,16 @@ tracker removes them.
 
 # `child_spec`
 
+# `entries`
+
+```elixir
+@spec entries(String.t()) :: [{String.t(), map()}]
+```
+
+The entries tracked on `topic`, `{key, meta}`, one per tracked process (two
+tabs of one player are two). `keys/1` with the meta, read the same way
+(*Reads*). Cluster-wide.
+
 # `fetch`
 
 # `fetchers_pids`
@@ -54,6 +64,16 @@ Whether the calling process holds this user's only tracked socket.
 Cluster-wide, unlike the per-node registry count it replaces.
 
 # `list`
+
+# `other_socket?`
+
+```elixir
+@spec other_socket?(Ecto.UUID.t(), pid()) :: boolean()
+```
+
+Whether `user_id` has a socket tracked other than `pid`'s. Exact whether or
+not `pid`'s own entry is still there, so a process watching a socket that
+has already gone can ask it too (`Gamend.Accounts.Online`).
 
 # `track`
 

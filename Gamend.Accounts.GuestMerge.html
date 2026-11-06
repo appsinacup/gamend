@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Accounts.GuestMerge — gamend_core v1.1.1380</title>
+    <title>Gamend.Accounts.GuestMerge — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />GuestMerge</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -121,17 +121,23 @@ it is deleted now, its progress is merged into the account
 (<code class="inline">GamendWeb.UserAuth.log_in_user/3</code> calls <a href="#merge/2"><code class="inline">merge/2</code></a>).</p><p>One rule throughout: <strong>the account's own data is never overwritten or
 deleted.</strong> The guest's is added where it fits, and what cannot be combined
 stays with the guest account, which nobody can reach once the session has
-moved, and goes with it.</p><p>In order, each step logged and skipped on failure so a sign-in never fails
+moved, and goes with it.</p><p>First the guest's credentials are revoked (<code class="inline">Accounts.revoke_all_tokens/1</code>):
+its access and refresh tokens and sessions stop working, so a game client
+still signed in as the guest cannot spend what is being moved. Then, in
+order, each step logged and skipped on failure so a sign-in never fails
 because of a merge:</p><ol><li>The host (<code class="inline">merge_user_data/2</code> hook) merges what it understands: its own
 KV keys with its own rules (counts added, histories joined). A key it
 is done with it deletes from the guest, so step 2 leaves it alone.</li><li>KV: every guest key the account lacks moves over (<a href="Gamend.KV.html"><code class="inline">Gamend.KV</code></a>, so caches
-and subscribers follow). A key both have stays the account's.</li><li>Wallets: each balance is added to the account's (<a href="Gamend.Economy.html#grant/4"><code class="inline">Gamend.Economy.grant/4</code></a>).
-A host that grants starting coins spends the guest's own grant first in
-step 1, so it is not counted twice.</li><li>Inventory: quantities added (<a href="Gamend.Inventory.html#grant_item/4"><code class="inline">Gamend.Inventory.grant_item/4</code></a>).</li><li>Leaderboards: <a href="Gamend.Leaderboards.html#merge_user_records/2"><code class="inline">Gamend.Leaderboards.merge_user_records/2</code></a> (best kept,
+and subscribers follow). A key both have stays the account's.</li><li>Wallets: each balance is moved, taken off the guest
+(<a href="Gamend.Economy.html#spend/4"><code class="inline">Gamend.Economy.spend/4</code></a>) and added to the account's
+(<a href="Gamend.Economy.html#grant/4"><code class="inline">Gamend.Economy.grant/4</code></a>) in one transaction. A host that grants
+starting coins spends the guest's own grant first in step 1, so it is
+not counted twice.</li><li>Inventory: quantities moved the same way (<a href="Gamend.Inventory.html#consume_item/4"><code class="inline">Gamend.Inventory.consume_item/4</code></a>,
+<a href="Gamend.Inventory.html#grant_item/4"><code class="inline">Gamend.Inventory.grant_item/4</code></a>).</li><li>Leaderboards: <a href="Gamend.Leaderboards.html#merge_user_records/2"><code class="inline">Gamend.Leaderboards.merge_user_records/2</code></a> (best kept,
 counters added, the account's never lowered).</li><li>Quests: <a href="Gamend.Quests.html#merge_user_progress/2"><code class="inline">Gamend.Quests.merge_user_progress/2</code></a> (periods the account has
 not played).</li><li>Activity days the account lacks; the guest's analytics events,
 content reports and notifications become the account's.</li><li><code class="inline">users.metadata</code> and <code class="inline">users.preferences</code> keys the account lacks.</li></ol><p>Sessions, push tokens, bans, lobby and party seats are not moved. Wallet
-and inventory grants carry idempotency keys and every other step only moves
+and inventory moves carry idempotency keys and every other step only moves
 what the account lacks, so running it twice adds nothing twice.</p>
     </section>
 
@@ -184,7 +190,7 @@ unless <code class="inline">guest</code> is a guest and the two differ. Answers 
       <h1 class="signature" translate="no">merge(guest, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/guest_merge.ex#L58" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/guest_merge.ex#L71" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -212,9 +218,9 @@ unless <code class="inline">guest</code> is a guest and the two differ. Answers 
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

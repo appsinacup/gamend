@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Repo — gamend_core v1.1.1380</title>
+    <title>Gamend.Repo — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Repo</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -192,6 +192,17 @@ gamend_core
         <a href="#child_spec/1" data-no-tooltip="" translate="no">child_spec(opts)</a>
 
       </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#compare_and_set/2" data-no-tooltip="" translate="no">compare_and_set(query, updates)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Updates the one row <code class="inline">query</code> matches, only while it still matches, and
+answers that row as the database now holds it.</p></div>
 
     </div>
 
@@ -885,6 +896,48 @@ adapter in the given repository.</p></div>
 
   </section>
 </section>
+<section class="detail" id="compare_and_set/2">
+
+  <div class="detail-header">
+    <a href="#compare_and_set/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">compare_and_set(query, updates)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo.ex#L198" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> compare_and_set(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Queryable.html#t:t/0">Ecto.Queryable.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) ::
+  {:ok, <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Schema.html#t:t/0">Ecto.Schema.t</a>()} | {:error, :precondition_failed}</pre>
+
+      </div>
+
+<p>Updates the one row <code class="inline">query</code> matches, only while it still matches, and
+answers that row as the database now holds it.</p><p>The way to keep a rule that a read made earlier cannot: put the
+precondition in <code class="inline">query</code>, and the statement either finds the row still in
+that state and changes it, or finds nothing and answers
+<code class="inline">{:error, :precondition_failed}</code>. Check and write are one statement, so two
+callers racing cannot both pass, on either adapter or across nodes, and no
+lock is taken beyond the row the <code class="inline">UPDATE</code> writes.</p><p>The row comes back through <code class="inline">RETURNING</code>, so it is never a copy read before
+the write. On Postgres a writer that waited for another's commit re-checks
+the condition against the committed row and answers that newer version: a
+side the other transaction filled in is there.</p><pre><code class="makeup elixir" translate="no"><span class="n">from</span><span class="p" data-group-id="group-1">(</span><span class="n">p</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="nc">QuestProgress</span><span class="p">,</span><span class="w">
+  </span><span class="ss">where</span><span class="p">:</span><span class="w"> </span><span class="n">p</span><span class="o">.</span><span class="n">id</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="o">^</span><span class="n">id</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">p</span><span class="o">.</span><span class="n">status</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;completed&quot;</span><span class="w"> </span><span class="ow">and</span><span class="w"> </span><span class="n">p</span><span class="o">.</span><span class="n">claim_count</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="o">^</span><span class="n">seen</span><span class="w">
+</span><span class="p" data-group-id="group-1">)</span><span class="w">
+</span><span class="o">|&gt;</span><span class="w"> </span><span class="nc">Repo</span><span class="o">.</span><span class="n">compare_and_set</span><span class="p" data-group-id="group-2">(</span><span class="ss">set</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="group-3">[</span><span class="ss">status</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;claimed&quot;</span><span class="p" data-group-id="group-3">]</span><span class="p">,</span><span class="w"> </span><span class="ss">inc</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="group-4">[</span><span class="ss">lock_version</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p" data-group-id="group-4">]</span><span class="p" data-group-id="group-2">)</span></code></pre><p><code class="inline">query</code> must pin one row: its primary key or a unique index, plus the
+precondition. Matching several is a bug, and raises.</p>
+  </section>
+</section>
 <section class="detail" id="config/0">
 
   <div class="detail-header">
@@ -1089,7 +1142,7 @@ connection-wide pragma with no per-transaction override.</p>
       <h1 class="signature" translate="no">escape_like(str)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo.ex#L170" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo.ex#L226" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1327,7 +1380,7 @@ consult their documentation for more details.</p><p>For version compatibility, p
       <h1 class="signature" translate="no">get_uuid(queryable, id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo.ex#L201" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo.ex#L257" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1359,7 +1412,7 @@ input (URL params, channel payloads, hook args).</p>
       <h1 class="signature" translate="no">get_uuid!(queryable, id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo.ex#L214" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo.ex#L270" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1553,7 +1606,7 @@ external input surface as 404s rather than 400s.</p>
       <h1 class="signature" translate="no">lock_rows(query, atom)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo.ex#L152" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo.ex#L160" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1564,13 +1617,19 @@ external input surface as 404s rather than 400s.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> lock_rows(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Queryable.html#t:t/0">Ecto.Queryable.t</a>(), :update | :share) :: <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Queryable.html#t:t/0">Ecto.Queryable.t</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> lock_rows(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Queryable.html#t:t/0">Ecto.Queryable.t</a>(), :update | :no_key_update | :share) ::
+  <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Queryable.html#t:t/0">Ecto.Queryable.t</a>()</pre>
 
       </div>
 
 <p>Locks the rows <code class="inline">query</code> reads until the transaction ends: <code class="inline">:update</code> against
 every other locker and writer, <code class="inline">:share</code> against writers only, so holders of
-<code class="inline">:share</code> run side by side.</p><p>Postgres only. SQLite has no row locks (<code class="inline">FOR UPDATE</code> raises there), and its
+<code class="inline">:share</code> run side by side.</p><p><code class="inline">:no_key_update</code> is the lock an <code class="inline">UPDATE</code> of non-key columns takes: it
+excludes other writers and lockers, but not the <code class="inline">FOR KEY SHARE</code> a foreign
+key check takes on the row it points at. Use it to read a row you are
+about to update in a transaction that may also insert a row referencing
+it. <code class="inline">:update</code> there deadlocks: two such transactions each hold the other's
+key share and wait for it.</p><p>Postgres only. SQLite has no row locks (<code class="inline">FOR UPDATE</code> raises there), and its
 single writer under <code class="inline">default_transaction_mode: :immediate</code> already runs every
 write transaction alone, so there the query comes back unchanged.</p>
   </section>
@@ -2025,7 +2084,7 @@ the same error, so there is one form to handle.</p>
       <h1 class="signature" translate="no">search_pattern(term)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo.ex#L186" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/repo.ex#L242" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2285,9 +2344,9 @@ return a different result:</p><pre><code class="makeup elixir" translate="no"><s
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

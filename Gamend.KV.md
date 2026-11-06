@@ -95,11 +95,15 @@ Accepts the same options as `list_entries/1` (see `t:list_opts/0`). Returns a no
 
 ```elixir
 @spec create_entry(attrs()) ::
-  {:ok, Gamend.KV.Entry.t()} | {:error, Ecto.Changeset.t()}
+  {:ok, Gamend.KV.Entry.t()} | {:error, Ecto.Changeset.t() | :too_many_entries}
 ```
 
 Create a new `Entry` from `attrs` (expecting `key`, optional `user_id`/`lobby_id`,
 `value`, `metadata`).
+
+An entry for a user who already holds `max_kv_entries_per_user` is refused
+with `{:error, :too_many_entries}`. `put/4` does not check that cap.
+
 Returns `{:ok, entry}` or `{:error, changeset}`.
 
 # `delete`

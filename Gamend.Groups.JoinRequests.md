@@ -10,7 +10,8 @@ Public API is re-exported by `Gamend.Groups`.
 
 ```elixir
 @spec approve_join_request(Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+  {:ok, Gamend.Groups.GroupMember.t()}
+  | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Approve a pending join request. Admin only.
@@ -62,7 +63,8 @@ Reject a pending join request. Admin only.
 
 ```elixir
 @spec request_join(Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Groups.GroupJoinRequest.t()} | {:error, atom()}
+  {:ok, Gamend.Groups.GroupJoinRequest.t()}
+  | {:error, atom() | Ecto.Changeset.t()}
 ```
 
 Request to join a private group. Creates a pending join request.

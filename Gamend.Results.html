@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Results — gamend_core v1.1.1380</title>
+    <title>Gamend.Results — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Results</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -122,8 +122,9 @@ result is the record it leaves. The same rows are the replay (the events by
 id), the play at a glance (<a href="#stats/1"><code class="inline">stats/1</code></a>: each key's count and sum) and the
 player's history (<a href="#list/2"><code class="inline">list/2</code></a>).</p><p><strong>Writes are the server's.</strong> A plugin, the host app or a hook handling a
 move calls <a href="#start/3"><code class="inline">start/3</code></a>, <a href="#record/4"><code class="inline">record/4</code></a> and <a href="#finish/1"><code class="inline">finish/1</code></a>; no client writes a result.
-An event is one insert, and <a href="#finish/1"><code class="inline">finish/1</code></a> one update that only matches an
-open row, so a play ends once.</p><p><strong>Reads follow the result's visibility</strong>, KV's words (<a href="#readable?/2"><code class="inline">readable?/2</code></a>), and
+An event is one insert and <a href="#finish/1"><code class="inline">finish/1</code></a> one update that only matches an open
+row, so a play ends once; the two take turns under the result's lock, so
+no event lands after the end and the event cap holds.</p><p><strong>Reads follow the result's visibility</strong>, KV's words (<a href="#readable?/2"><code class="inline">readable?/2</code></a>), and
 every write is pushed as it happens (<code class="inline">result_started</code>, <code class="inline">result_event</code>,
 <code class="inline">result_ended</code>) to the owner's <code class="inline">user:&lt;id&gt;</code> topic and, when its lobby's
 members may read it, the lobby's <code class="inline">lobby:&lt;id&gt;</code>.</p>
@@ -169,7 +170,8 @@ members may read it, the lobby's <code class="inline">lobby:&lt;id&gt;</code>.</
 
       </div>
 
-        <div class="summary-synopsis"><p>A result and its events, deleted.</p></div>
+        <div class="summary-synopsis"><p>A result and its events, deleted. <code class="inline">{:error, :not_found}</code> when another
+delete took it first.</p></div>
 
     </div>
 
@@ -350,7 +352,7 @@ to 0.</p></div>
       <h1 class="signature" translate="no">count(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L188" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L209" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -378,7 +380,7 @@ to 0.</p></div>
       <h1 class="signature" translate="no">count_events(result_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L275" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L296" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -406,7 +408,7 @@ to 0.</p></div>
       <h1 class="signature" translate="no">delete(result)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L155" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L176" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -418,11 +420,12 @@ to 0.</p></div>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> delete(<a href="Gamend.Results.Result.html#t:t/0">Gamend.Results.Result.t</a>()) ::
-  {:ok, <a href="Gamend.Results.Result.html#t:t/0">Gamend.Results.Result.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Results.Result.html#t:t/0">Gamend.Results.Result.t</a>()} | {:error, :not_found | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
-<p>A result and its events, deleted.</p>
+<p>A result and its events, deleted. <code class="inline">{:error, :not_found}</code> when another
+delete took it first.</p>
   </section>
 </section>
 <section class="detail" id="events/2">
@@ -437,7 +440,7 @@ to 0.</p></div>
       <h1 class="signature" translate="no">events(result_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L226" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L247" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -466,7 +469,7 @@ written after it: a reconnect's catch-up), <code class="inline">:limit</code> (5
       <h1 class="signature" translate="no">events_by_key(result_ids, keys)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L248" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L269" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -498,7 +501,7 @@ history list).</p>
       <h1 class="signature" translate="no">finish(result_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L131" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L152" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -528,7 +531,7 @@ open row, so a second finish answers <code class="inline">{:error, :already_ende
       <h1 class="signature" translate="no">get(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L170" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L191" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -556,7 +559,7 @@ open row, so a second finish answers <code class="inline">{:error, :already_ende
       <h1 class="signature" translate="no">kinds()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L192" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L213" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -588,7 +591,7 @@ open row, so a second finish answers <code class="inline">{:error, :already_ende
       <h1 class="signature" translate="no">list(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L178" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L199" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -618,7 +621,7 @@ open row, so a second finish answers <code class="inline">{:error, :already_ende
       <h1 class="signature" translate="no">move_user(from_user_id, to_user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L264" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L285" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -647,7 +650,7 @@ plays join the account's history instead of going with the guest.</p>
       <h1 class="signature" translate="no">prune_before(cutoff, batch)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L338" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L359" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -676,7 +679,7 @@ time; answers how many results went.</p>
       <h1 class="signature" translate="no">readable?(r, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L309" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L330" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -712,7 +715,7 @@ an admin. <code class="inline">server_only</code> no client.</p>
       <h1 class="signature" translate="no">record(result, key, value \\ nil, metadata \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L76" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -753,7 +756,7 @@ the number it carries (or nil), <code class="inline">metadata</code> anything el
       <h1 class="signature" translate="no">record_lobby(lobby_id, key, value \\ nil, metadata \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L120" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L141" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -785,7 +788,7 @@ wrote.</p>
       <h1 class="signature" translate="no">start(user_id, kind, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L48" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L49" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -816,7 +819,7 @@ read it (KV's words, atom or string; <code class="inline">owner_only</code> by d
       <h1 class="signature" translate="no">stats(ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L286" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/results.ex#L307" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -846,9 +849,9 @@ to 0.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

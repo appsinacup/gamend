@@ -162,6 +162,10 @@ product's own, or `"<key>:<subject>"` for a per-subject product.
   Gamend.Payments.Purchase.t() | nil
 ```
 
+The latest purchase of the original transaction: a subscription's
+renewals each validated by the client are a purchase each, all with the
+one original id, so there may be several.
+
 # `get_purchase_by_provider_transaction`
 
 ```elixir

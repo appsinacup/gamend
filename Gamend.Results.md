@@ -13,8 +13,9 @@ player's history (`list/2`).
 
 **Writes are the server's.** A plugin, the host app or a hook handling a
 move calls `start/3`, `record/4` and `finish/1`; no client writes a result.
-An event is one insert, and `finish/1` one update that only matches an
-open row, so a play ends once.
+An event is one insert and `finish/1` one update that only matches an open
+row, so a play ends once; the two take turns under the result's lock, so
+no event lands after the end and the event cap holds.
 
 **Reads follow the result's visibility**, KV's words (`readable?/2`), and
 every write is pushed as it happens (`result_started`, `result_event`,
@@ -41,10 +42,11 @@ How many events a result holds.
 
 ```elixir
 @spec delete(Gamend.Results.Result.t()) ::
-  {:ok, Gamend.Results.Result.t()} | {:error, term()}
+  {:ok, Gamend.Results.Result.t()} | {:error, :not_found | Ecto.Changeset.t()}
 ```
 
-A result and its events, deleted.
+A result and its events, deleted. `{:error, :not_found}` when another
+delete took it first.
 
 # `events`
 

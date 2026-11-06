@@ -22,11 +22,43 @@ Context for chat messaging across lobbies, groups, and friend DMs.
   * `before_chat_message/2` — pipeline hook `(user, attrs)` → `{:ok, attrs}` | `{:error, reason}`
   * `after_chat_message/1` — fire-and-forget after a message is persisted
 
+# `access_error`
+
+```elixir
+@type access_error() ::
+  :invalid_chat_ref
+  | :invalid_chat_type
+  | :not_in_lobby
+  | :not_in_group
+  | :not_in_party
+  | :not_friends
+  | :blocked
+```
+
+Why `authorize_access/3` refuses a player a conversation.
+
+# `send_error`
+
+```elixir
+@type send_error() ::
+  access_error()
+  | :slowdown
+  | :muted
+  | :blocked_content
+  | :user_not_found
+  | {:hook_rejected, term()}
+  | Ecto.Changeset.t()
+```
+
+Why `send_message/2` refuses a message: the conversation's refusal, slow
+mode, a mute, a blocked word, the `before_chat_message` hook's veto (its
+reason wrapped), or the changeset.
+
 # `admin_delete_message`
 
 ```elixir
 @spec admin_delete_message(Ecto.UUID.t()) ::
-  {:ok, Gamend.Chat.Message.t()} | {:error, term()}
+  {:ok, Gamend.Chat.Message.t()} | {:error, :not_found | Ecto.Changeset.t()}
 ```
 
 Admin: delete a single message by id.
@@ -35,7 +67,7 @@ Admin: delete a single message by id.
 
 ```elixir
 @spec authorize_access(Ecto.UUID.t(), String.t(), Ecto.UUID.t()) ::
-  :ok | {:error, atom()}
+  :ok | {:error, access_error()}
 ```
 
 Returns `:ok` when user can access the chat conversation.
@@ -173,7 +205,8 @@ Delete all messages for a given chat conversation.
 
 ```elixir
 @spec delete_own_message(Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Chat.Message.t()} | {:error, term()}
+  {:ok, Gamend.Chat.Message.t()}
+  | {:error, :not_found | :forbidden | Ecto.Changeset.t()}
 ```
 
 Delete a chat message owned by the given user.
@@ -277,12 +310,21 @@ List reports. Filters: `:status`, `:reported_user_id`, `:reporter_id`.
 
 ```elixir
 @spec mark_read(Ecto.UUID.t(), String.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Chat.ReadCursor.t()} | {:error, term()}
+  {:ok, Gamend.Chat.ReadCursor.t()}
+  | {:error,
+     access_error()
+     | :invalid_message
+     | :message_not_found
+     | :message_not_in_chat
+     | Ecto.Changeset.t()}
 ```
 
 Mark a chat conversation as read up to a given message id.
 
-Uses an upsert to create or update the read cursor.
+Uses an upsert to create or update the read cursor. Fails with the
+conversation's refusal (`t:access_error/0`), `:invalid_message` for a
+missing id, `:message_not_found`, or `:message_not_in_chat` for a message of
+another conversation.
 
 # `mute_user`
 
@@ -320,7 +362,7 @@ File a report about a message on behalf of `reporter_id`.
 
 ```elixir
 @spec resolve_report(Gamend.Chat.Report.t() | Ecto.UUID.t(), String.t(), map()) ::
-  {:ok, Gamend.Chat.Report.t()} | {:error, term()}
+  {:ok, Gamend.Chat.Report.t()} | {:error, :not_found | Ecto.Changeset.t()}
 ```
 
 Resolve a report: set its status, with an optional note and resolver.
@@ -337,7 +379,8 @@ Claim a report for review, moving it from open to reviewing.
 # `send_message`
 
 ```elixir
-@spec send_message(map(), map()) :: {:ok, Gamend.Chat.Message.t()} | {:error, term()}
+@spec send_message(map(), map()) ::
+  {:ok, Gamend.Chat.Message.t()} | {:error, send_error()}
 ```
 
 Send a chat message.
@@ -350,13 +393,14 @@ Send a chat message.
 ## Returns
 
   * `{:ok, %Message{}}` on success
-  * `{:error, reason}` on failure
+  * `{:error, reason}` on failure, `t:send_error/0`
 
 Moderation runs before the `before_chat_message` hook: a muted sender is
 rejected with `{:error, :muted}` and a blocked word with
 `{:error, :blocked_content}`, so a plugin never sees a message core already
-refused. The hook can then modify attrs or reject the message itself. The
-`after_chat_message` hook fires asynchronously after the message is persisted.
+refused. The hook can then modify attrs or reject the message itself, which
+answers `{:error, {:hook_rejected, reason}}`. The `after_chat_message` hook
+fires asynchronously after the message is persisted.
 
 # `subscribe_friend_chat`
 
@@ -436,7 +480,8 @@ Unsubscribe from party chat events.
 
 ```elixir
 @spec update_message(Ecto.UUID.t(), Ecto.UUID.t(), map()) ::
-  {:ok, Gamend.Chat.Message.t()} | {:error, term()}
+  {:ok, Gamend.Chat.Message.t()}
+  | {:error, :not_found | :forbidden | Ecto.Changeset.t()}
 ```
 
 Update a chat message owned by the given user.

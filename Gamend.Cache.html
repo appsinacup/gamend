@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Cache — gamend_core v1.1.1380</title>
+    <title>Gamend.Cache — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Cache</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -1306,7 +1306,7 @@ entity cache uses it; the few entries with a deliberate lifetime of their own
       <h1 class="signature" translate="no">bump_version(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/cache.ex#L150" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/cache.ex#L153" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1341,7 +1341,7 @@ while a bump is monotonic per node.</p>
       <h1 class="signature" translate="no">cached(key, opts \\ [], fun)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/cache.ex#L48" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/cache.ex#L51" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1361,8 +1361,11 @@ caches the result of <code class="inline">fun</code>.</p><p>Cached <code class="
 that queries a row, then loses the CPU to a write that commits and evicts
 <code class="inline">key</code>, would otherwise cache the row as it was before the write, until the
 TTL: a revoked user, a spent balance. <a href="#invalidate/1"><code class="inline">invalidate/1</code></a> moves the key's
-generation (<a href="#generation/1"><code class="inline">generation/1</code></a>); the fill compares it before and after its put.</p><p>Inside a transaction nothing is cached: the read may see a write a rollback
-undoes.</p><h2 id="cached/3-options" class="section-heading"><a href="#cached/3-options" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Options</span></h2><ul><li><code class="inline">:ttl</code> — time-to-live in milliseconds</li><li><code class="inline">:match</code> — <code class="inline">(result -&gt; boolean)</code>, whether to cache a result (default: all)</li></ul>
+generation (<a href="#generation/1"><code class="inline">generation/1</code></a>); the fill compares it before and after its put.</p><p>Inside a transaction the cache is not used at all: <code class="inline">fun</code> runs, and its
+result is neither cached (the read may see a write a rollback undoes) nor
+taken from the cache. A read in a transaction is usually deciding a write,
+and a cached copy is up to a TTL old: <code class="inline">Accounts.get_user/1</code> gating a seat
+read a <code class="inline">lobby_id</code> that another request had already set.</p><h2 id="cached/3-options" class="section-heading"><a href="#cached/3-options" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Options</span></h2><ul><li><code class="inline">:ttl</code> — time-to-live in milliseconds</li><li><code class="inline">:match</code> — <code class="inline">(result -&gt; boolean)</code>, whether to cache a result (default: all)</li></ul>
   </section>
 </section>
 <section class="detail" id="count_all/2">
@@ -2033,7 +2036,7 @@ undoes.</p><h2 id="cached/3-options" class="section-heading"><a href="#cached/3-
       <h1 class="signature" translate="no">fill(key, generation, value, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/cache.ex#L79" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/cache.ex#L82" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2063,7 +2066,7 @@ two still removes the value.</p>
       <h1 class="signature" translate="no">generation(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/cache.ex#L71" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/cache.ex#L74" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2776,7 +2779,7 @@ it before the query whose result <a href="#fill/4"><code class="inline">fill/4</
       <h1 class="signature" translate="no">invalidate(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/cache.ex#L112" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/cache.ex#L115" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2808,7 +2811,7 @@ authentication (<code class="inline">token_version</code>) or account state (<co
       <h1 class="signature" translate="no">invalidation_topic()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/cache.ex#L168" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/cache.ex#L171" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4019,9 +4022,9 @@ entity cache uses it; the few entries with a deliberate lifetime of their own
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

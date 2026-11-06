@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Presence — gamend_core v1.1.1380</title>
+    <title>Gamend.Presence — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Presence</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -154,6 +154,18 @@ tracker removes them.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#entries/1" data-no-tooltip="" translate="no">entries(topic)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The entries tracked on <code class="inline">topic</code>, <code class="inline">{key, meta}</code>, one per tracked process (two
+tabs of one player are two). <a href="#keys/1"><code class="inline">keys/1</code></a> with the meta, read the same way
+(<em>Reads</em>). Cluster-wide.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#fetch/2" data-no-tooltip="" translate="no">fetch(topic, presences)</a>
 
       </div>
@@ -208,6 +220,18 @@ tracker removes them.</p>
       </div>
 
         <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:list/1"><code class="inline">Phoenix.Presence.list/1</code></a>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#other_socket?/2" data-no-tooltip="" translate="no">other_socket?(user_id, pid)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether <code class="inline">user_id</code> has a socket tracked other than <code class="inline">pid</code>'s. Exact whether or
+not <code class="inline">pid</code>'s own entry is still there, so a process watching a socket that
+has already gone can ask it too (<a href="Gamend.Accounts.Online.html"><code class="inline">Gamend.Accounts.Online</code></a>).</p></div>
 
     </div>
 
@@ -327,6 +351,36 @@ tracker removes them.</p>
 
   </section>
 </section>
+<section class="detail" id="entries/1">
+
+  <div class="detail-header">
+    <a href="#entries/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">entries(topic)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/presence.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> entries(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: [{<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()}]</pre>
+
+      </div>
+
+<p>The entries tracked on <code class="inline">topic</code>, <code class="inline">{key, meta}</code>, one per tracked process (two
+tabs of one player are two). <a href="#keys/1"><code class="inline">keys/1</code></a> with the meta, read the same way
+(<em>Reads</em>). Cluster-wide.</p>
+  </section>
+</section>
 <section class="detail" id="fetch/2">
 
   <div class="detail-header">
@@ -432,7 +486,7 @@ tracker removes them.</p>
       <h1 class="signature" translate="no">last_socket?(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/presence.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/presence.ex#L105" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -470,6 +524,36 @@ tracker removes them.</p>
   <section class="docstring">
 
 <p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:list/1"><code class="inline">Phoenix.Presence.list/1</code></a>.</p>
+  </section>
+</section>
+<section class="detail" id="other_socket?/2">
+
+  <div class="detail-header">
+    <a href="#other_socket?/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">other_socket?(user_id, pid)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/presence.ex#L90" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> other_socket?(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pid</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether <code class="inline">user_id</code> has a socket tracked other than <code class="inline">pid</code>'s. Exact whether or
+not <code class="inline">pid</code>'s own entry is still there, so a process watching a socket that
+has already gone can ask it too (<a href="Gamend.Accounts.Online.html"><code class="inline">Gamend.Accounts.Online</code></a>).</p>
   </section>
 </section>
 <section class="detail" id="track/3">
@@ -669,9 +753,9 @@ tracker removes them.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

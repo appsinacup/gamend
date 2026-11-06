@@ -44,8 +44,7 @@ This module broadcasts to the `"notifications:user:<user_id>"` topic:
 
 ```elixir
 @spec admin_create_notification(user_id(), user_id(), map()) ::
-  {:ok, Gamend.Notifications.Notification.t()}
-  | {:error, Ecto.Changeset.t() | atom()}
+  {:ok, Gamend.Notifications.Notification.t()} | {:error, Ecto.Changeset.t()}
 ```
 
 Admin: create a notification from any sender to any recipient (no friendship check).
@@ -54,7 +53,8 @@ Admin: create a notification from any sender to any recipient (no friendship che
 
 ```elixir
 @spec admin_delete_notification(Ecto.UUID.t()) ::
-  {:ok, Gamend.Notifications.Notification.t()} | {:error, term()}
+  {:ok, Gamend.Notifications.Notification.t()}
+  | {:error, :not_found | Ecto.Changeset.t()}
 ```
 
 Admin: delete a single notification by ID (no ownership check).
@@ -252,7 +252,12 @@ out on.
 ```elixir
 @spec send_notification(user_id(), map()) ::
   {:ok, Gamend.Notifications.Notification.t()}
-  | {:error, Ecto.Changeset.t() | atom()}
+  | {:error,
+     :missing_recipient
+     | :cannot_notify_self
+     | :not_friends
+     | :too_many_notifications
+     | Ecto.Changeset.t()}
 ```
 
 Send a notification to a friend.
@@ -263,7 +268,10 @@ Send a notification to a friend.
 - `"content"` – optional
 - `"metadata"` – optional map
 
-Returns `{:error, :not_friends}` when the target is not an accepted friend.
+Returns `{:error, :not_friends}` when the target is not an accepted friend,
+`:missing_recipient` without a target, `:cannot_notify_self` for the sender
+themselves, `:too_many_notifications` when the recipient's inbox is at
+`max_notifications_per_user`, or the changeset.
 
 # `subscribe`
 

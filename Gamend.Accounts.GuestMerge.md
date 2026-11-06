@@ -14,7 +14,10 @@ deleted.** The guest's is added where it fits, and what cannot be combined
 stays with the guest account, which nobody can reach once the session has
 moved, and goes with it.
 
-In order, each step logged and skipped on failure so a sign-in never fails
+First the guest's credentials are revoked (`Accounts.revoke_all_tokens/1`):
+its access and refresh tokens and sessions stop working, so a game client
+still signed in as the guest cannot spend what is being moved. Then, in
+order, each step logged and skipped on failure so a sign-in never fails
 because of a merge:
 
   1. The host (`merge_user_data/2` hook) merges what it understands: its own
@@ -22,10 +25,13 @@ because of a merge:
      is done with it deletes from the guest, so step 2 leaves it alone.
   2. KV: every guest key the account lacks moves over (`Gamend.KV`, so caches
      and subscribers follow). A key both have stays the account's.
-  3. Wallets: each balance is added to the account's (`Gamend.Economy.grant/4`).
-     A host that grants starting coins spends the guest's own grant first in
-     step 1, so it is not counted twice.
-  4. Inventory: quantities added (`Gamend.Inventory.grant_item/4`).
+  3. Wallets: each balance is moved, taken off the guest
+     (`Gamend.Economy.spend/4`) and added to the account's
+     (`Gamend.Economy.grant/4`) in one transaction. A host that grants
+     starting coins spends the guest's own grant first in step 1, so it is
+     not counted twice.
+  4. Inventory: quantities moved the same way (`Gamend.Inventory.consume_item/4`,
+     `Gamend.Inventory.grant_item/4`).
   5. Leaderboards: `Gamend.Leaderboards.merge_user_records/2` (best kept,
      counters added, the account's never lowered).
   6. Quests: `Gamend.Quests.merge_user_progress/2` (periods the account has
@@ -35,7 +41,7 @@ because of a merge:
   8. `users.metadata` and `users.preferences` keys the account lacks.
 
 Sessions, push tokens, bans, lobby and party seats are not moved. Wallet
-and inventory grants carry idempotency keys and every other step only moves
+and inventory moves carry idempotency keys and every other step only moves
 what the account lacks, so running it twice adds nothing twice.
 
 # `merge`

@@ -107,7 +107,7 @@ so it survives a restart and is shared by every instance. Either can reject.
 
 ```elixir
 @spec resolve_report(Gamend.Chat.Report.t() | Ecto.UUID.t(), String.t(), map()) ::
-  {:ok, Gamend.Chat.Report.t()} | {:error, term()}
+  {:ok, Gamend.Chat.Report.t()} | {:error, :not_found | Ecto.Changeset.t()}
 ```
 
 Resolve a report: set its status, note who resolved it and when.

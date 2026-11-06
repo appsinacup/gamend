@@ -62,13 +62,15 @@ admin all read the same to whoever holds it.
 
 ```elixir
 @spec join_by_invite_link(Ecto.UUID.t(), String.t()) ::
-  {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+  {:ok, Gamend.Groups.GroupMember.t()}
+  | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Join the group a link opens, as a member. `{:error, :not_found}` for a
 link that does not work (see `get_invite_link_by_token/1`),
-`{:error, :already_member}` for someone already in it, and the room
-checks' `:full` and `:too_many_groups`.
+`{:error, :already_member}` for someone already in it, the room
+checks' `:full` and `:too_many_groups`, and the `before_group_join`
+hook's veto as `{:hook_rejected, reason}`.
 
 # `link_days`
 

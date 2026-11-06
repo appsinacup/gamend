@@ -45,7 +45,8 @@ The merged registry: `%{notification_types:, realtime_events:, env_vars:}`.
 @spec env_vars() :: [map()]
 ```
 
-Env vars declared by plugins, each `%{name:, default:, type:, description:, plugin:}`.
+Env vars declared by plugins, each `%{name:, default:, type:, description:,
+secret:, plugin:}`. `secret` is the plugin's `secret: true`, false otherwise.
 
 # `notification_types`
 

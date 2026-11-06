@@ -43,7 +43,8 @@ This module broadcasts the following events:
 
 ```elixir
 @spec accept_party_invite(Gamend.Accounts.User.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Parties.Party.t()} | {:error, atom()}
+  {:ok, Gamend.Parties.Party.t()}
+  | {:error, atom() | Ecto.Changeset.t() | {:hook_rejected, term()}}
 ```
 
 Accept a party invite. Joins the party and marks the invite as accepted.
@@ -51,7 +52,20 @@ Accept a party invite. Joins the party and marks the invite as accepted.
 If the user is already in another party, they automatically leave it first
 (disbanding if they are the leader).
 
-Returns `{:error, :no_invite}` if no pending invite exists for that party.
+Returns `{:error, :no_invite}` if no pending invite exists for that party,
+and `{:error, {:hook_rejected, reason}}` when `before_party_join` refuses.
+
+# `admin_add_member`
+
+```elixir
+@spec admin_add_member(Gamend.Parties.Party.t(), Ecto.UUID.t()) ::
+  {:ok, Gamend.Accounts.User.t()}
+  | {:error, :not_found | :party_full | :already_in_party | term()}
+```
+
+Admin: seats `user_id` in `party` the way an accepted invite does. The
+party's capacity and one party per player hold (`:party_full`,
+`:already_in_party`); no hook is consulted.
 
 # `admin_delete_party`
 
@@ -197,6 +211,20 @@ For callers acting on the party rather than on behalf of a member — the
 retention sweep for parties everyone has abandoned. Members leaving is
 `leave_party/1`.
 
+# `disband`
+
+```elixir
+@spec disband(Gamend.Parties.Party.t(), Gamend.Accounts.User.t()) ::
+  {:ok, :disbanded} | {:error, :not_leader | term()}
+```
+
+Disband `party` as its leader: the end of the party a leader asks for, as
+opposed to leaving it, which hands it over.
+
+`{:error, :not_leader}` unless `leader` still leads it once its lock is
+taken: a leader who handed the party over while this was on its way no
+longer ends it for the new leader.
+
 # `get_party`
 
 ```elixir
@@ -260,16 +288,24 @@ If a pending invite already exists, returns `{:ok, existing_invite}` (no-op).
 The party leader joins an existing lobby, and all party members join it
 atomically. The party is kept intact.
 
-The lobby must have enough free slots for the entire party.
+The lobby must have enough free slots for the entire party, and the party
+gets in only where each member could alone: a hidden lobby answers
+`{:error, :not_found}` (unless a server-side caller passes
+`bypass_hidden: true`, as for `Lobbies.join_lobby/3`), a block between
+any member and anyone already seated answers `{:error, :blocked}`, and the
+game's `before_lobby_join` is asked for every member (`"party_id"` in its
+opts), the first refusal answering `{:error, {:hook_rejected, reason}}`.
 
 # `kick_member`
 
 ```elixir
 @spec kick_member(Gamend.Accounts.User.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Accounts.User.t()} | {:error, term()}
+  {:ok, Gamend.Accounts.User.t()} | {:error, atom() | {:hook_rejected, term()}}
 ```
 
 Kick a member from the party. Only the leader can kick.
+
+`{:error, {:hook_rejected, reason}}` when `before_party_kick` refuses.
 
 # `leave_party`
 
@@ -371,10 +407,13 @@ Unsubscribe from a party's events.
 
 ```elixir
 @spec update_party(Gamend.Accounts.User.t(), map()) ::
-  {:ok, Gamend.Parties.Party.t()} | {:error, term()}
+  {:ok, Gamend.Parties.Party.t()}
+  | {:error, atom() | Ecto.Changeset.t() | {:hook_rejected, term()}}
 ```
 
 Update party settings. Only the leader can update.
+
+`{:error, {:hook_rejected, reason}}` when `before_party_update` refuses.
 
 ---
 

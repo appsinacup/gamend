@@ -112,16 +112,20 @@ by `Gamend.Storage`. Same cache/broadcast/hook path as other profile edits.
 
 ```elixir
 @spec update_user_display_name(Gamend.Accounts.User.t(), map()) ::
-  {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t()}
+  {:ok, Gamend.Accounts.User.t()}
+  | {:error, Ecto.Changeset.t() | {:hook_rejected, term()}}
 ```
 
-Updates the user's display name and broadcasts the change.
+Updates the user's display name and broadcasts the change. A
+`before_user_update` hook's refusal comes back as
+`{:error, {:hook_rejected, reason}}`.
 
 # `update_username`
 
 ```elixir
 @spec update_username(Gamend.Accounts.User.t(), map()) ::
-  {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t() | term()}
+  {:ok, Gamend.Accounts.User.t()}
+  | {:error, Ecto.Changeset.t() | {:hook_rejected, term()}}
 ```
 
 Updates the user's unique username handle and broadcasts the change.
@@ -129,7 +133,8 @@ Updates the user's unique username handle and broadcasts the change.
 Strict, unlike registration: an invalid or taken username returns
 `{:error, changeset}` with no generated fallback, so the player can pick
 again. Routed through the `before_user_update` hook pipeline, where games
-can forbid changes entirely or reject names (profanity, reserved words).
+can forbid changes entirely or reject names (profanity, reserved words):
+its refusal comes back as `{:error, {:hook_rejected, reason}}`.
 
 ---
 

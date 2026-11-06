@@ -467,7 +467,7 @@ Accepts a user ID and clears both the primary and all index caches.
   {:ok, :deleted}
   | {:ok,
      {:scheduled, Gamend.Accounts.User.t(), [Gamend.Accounts.UserToken.t()]}}
-  | {:error, Ecto.Changeset.t()}
+  | {:error, :not_found | Ecto.Changeset.t()}
 ```
 
 A player deleting their own account.
@@ -478,7 +478,8 @@ everywhere (every session, access, refresh and personal API token), and
 `Gamend.Retention` deletes it on the day unless its owner signs in on the
 website first (`cancel_deletion/1`). An account already scheduled keeps its
 date. The expired session tokens come back so the caller can disconnect
-their LiveViews.
+their LiveViews. `{:error, :not_found}` when another delete took the
+account first.
 
 Admin deletions and the retention sweeps call `delete_user/1` and never wait.
 
@@ -556,7 +557,7 @@ How recently a user must have signed in to open a sudo page (`auth.sudo_mode_min
 
 ```elixir
 @spec update_user(Gamend.Accounts.User.t(), Gamend.Types.user_update_attrs()) ::
-  {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t()}
+  {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t() | term()}
 ```
 
 Updates a user with the given attributes.
@@ -576,6 +577,13 @@ See `t:Gamend.Types.user_update_attrs/0` for available fields.
 
     iex> update_user(user, %{metadata: %{level: 5}})
     {:ok, %User{}}
+
+`metadata` is the whole map the caller wants, built from `user.metadata`.
+What it changes from that map (keys set, changed or removed) is applied to
+the map as stored now, under the lock `update_user_metadata/2` writes
+under, so a key another writer (core's payments, a plugin) set since the
+caller read `user` stays. Answers `{:error, :not_found}` when the user is
+gone, or the `before_user_update` hook's refusal.
 
 # `update_user_avatar`
 

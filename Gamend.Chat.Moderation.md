@@ -65,7 +65,8 @@ Count mutes matching `filters`.
 
 ```elixir
 @spec create_filter_word(map()) ::
-  {:ok, Gamend.Chat.FilterWord.t()} | {:error, term()}
+  {:ok, Gamend.Chat.FilterWord.t()}
+  | {:error, :too_many_filter_words | Ecto.Changeset.t()}
 ```
 
 Add a word to the blocklist.
@@ -77,7 +78,7 @@ Rejected with `{:error, :too_many_filter_words}` once
 
 ```elixir
 @spec delete_filter_word(Gamend.Chat.FilterWord.t()) ::
-  {:ok, Gamend.Chat.FilterWord.t()} | {:error, term()}
+  {:ok, Gamend.Chat.FilterWord.t()} | {:error, Ecto.Changeset.t()}
 ```
 
 Remove a blocklist entry.
@@ -121,14 +122,16 @@ runtime path would do.
 
 ```elixir
 @spec import_bundled_list(String.t(), String.t()) ::
-  {:ok, non_neg_integer()} | {:error, term()}
+  {:ok, non_neg_integer()}
+  | {:error, :unknown_language | :too_many_filter_words | File.posix()}
 ```
 
 Import the bundled list for `lang`.
 
 Every word goes through the normal changeset, so `max_chat_filter_word_len`
 applies and duplicates are skipped. Returns `{:ok, imported_count}` or
-`{:error, :unknown_language | :too_many_filter_words}`.
+`{:error, :unknown_language | :too_many_filter_words}`, or the file error
+when the list cannot be read.
 
 # `list_filter_words`
 
@@ -186,7 +189,7 @@ Lift a mute. Returns `{:ok, count}` — 0 when the user was not muted.
 
 ```elixir
 @spec update_filter_word(Gamend.Chat.FilterWord.t(), map()) ::
-  {:ok, Gamend.Chat.FilterWord.t()} | {:error, term()}
+  {:ok, Gamend.Chat.FilterWord.t()} | {:error, Ecto.Changeset.t()}
 ```
 
 Update a blocklist entry.

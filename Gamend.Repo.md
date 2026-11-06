@@ -15,6 +15,36 @@
 
 # `child_spec`
 
+# `compare_and_set`
+
+```elixir
+@spec compare_and_set(Ecto.Queryable.t(), keyword()) ::
+  {:ok, Ecto.Schema.t()} | {:error, :precondition_failed}
+```
+
+Updates the one row `query` matches, only while it still matches, and
+answers that row as the database now holds it.
+
+The way to keep a rule that a read made earlier cannot: put the
+precondition in `query`, and the statement either finds the row still in
+that state and changes it, or finds nothing and answers
+`{:error, :precondition_failed}`. Check and write are one statement, so two
+callers racing cannot both pass, on either adapter or across nodes, and no
+lock is taken beyond the row the `UPDATE` writes.
+
+The row comes back through `RETURNING`, so it is never a copy read before
+the write. On Postgres a writer that waited for another's commit re-checks
+the condition against the committed row and answers that newer version: a
+side the other transaction filled in is there.
+
+    from(p in QuestProgress,
+      where: p.id == ^id and p.status == "completed" and p.claim_count == ^seen
+    )
+    |> Repo.compare_and_set(set: [status: "claimed"], inc: [lock_version: 1])
+
+`query` must pin one row: its primary key or a unique index, plus the
+precondition. Matching several is a bug, and raises.
+
 # `config`
 
 # `default_options`
@@ -218,12 +248,20 @@ external input surface as 404s rather than 400s.
 # `lock_rows`
 
 ```elixir
-@spec lock_rows(Ecto.Queryable.t(), :update | :share) :: Ecto.Queryable.t()
+@spec lock_rows(Ecto.Queryable.t(), :update | :no_key_update | :share) ::
+  Ecto.Queryable.t()
 ```
 
 Locks the rows `query` reads until the transaction ends: `:update` against
 every other locker and writer, `:share` against writers only, so holders of
 `:share` run side by side.
+
+`:no_key_update` is the lock an `UPDATE` of non-key columns takes: it
+excludes other writers and lockers, but not the `FOR KEY SHARE` a foreign
+key check takes on the row it points at. Use it to read a row you are
+about to update in a transaction that may also insert a row referencing
+it. `:update` there deadlocks: two such transactions each hold the other's
+key share and wait for it.
 
 Postgres only. SQLite has no row locks (`FOR UPDATE` raises there), and its
 single writer under `default_transaction_mode: :immediate` already runs every

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Chat — gamend_core v1.1.1380</title>
+    <title>Gamend.Chat — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Chat</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -128,6 +128,34 @@ symmetrically).</li></ul><h2 id="module-pubsub-topics" class="section-heading"><
       </a>
       <span class="text">Summary</span>
     </h2>
+<div class="summary-types summary">
+  <h3>
+    <a href="#types">Types</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:access_error/0" data-no-tooltip="" translate="no">access_error()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Why <a href="#authorize_access/3"><code class="inline">authorize_access/3</code></a> refuses a player a conversation.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:send_error/0" data-no-tooltip="" translate="no">send_error()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Why <a href="#send_message/2"><code class="inline">send_message/2</code></a> refuses a message: the conversation's refusal, slow
+mode, a mute, a blocked word, the <code class="inline">before_chat_message</code> hook's veto (its
+reason wrapped), or the changeset.</p></div>
+
+    </div>
+
+</div>
 <div class="summary-functions summary">
   <h3>
     <a href="#functions">Functions</a>
@@ -569,6 +597,91 @@ was not muted.</p></div>
   </section>
 
 
+  <section id="types" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#types">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Types</span>
+    </h2>
+
+    <div class="types-list">
+<section class="detail" id="t:access_error/0">
+
+  <div class="detail-header">
+    <a href="#t:access_error/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">access_error()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L40" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> access_error() ::
+  :invalid_chat_ref
+  | :invalid_chat_type
+  | :not_in_lobby
+  | :not_in_group
+  | :not_in_party
+  | :not_friends
+  | :blocked</pre>
+
+      </div>
+
+<p>Why <a href="#authorize_access/3"><code class="inline">authorize_access/3</code></a> refuses a player a conversation.</p>
+  </section>
+</section>
+<section class="detail" id="t:send_error/0">
+
+  <div class="detail-header">
+    <a href="#t:send_error/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">send_error()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L54" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> send_error() ::
+  <a href="#t:access_error/0">access_error</a>()
+  | :slowdown
+  | :muted
+  | :blocked_content
+  | :user_not_found
+  | {:hook_rejected, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}
+  | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()</pre>
+
+      </div>
+
+<p>Why <a href="#send_message/2"><code class="inline">send_message/2</code></a> refuses a message: the conversation's refusal, slow
+mode, a mute, a blocked word, the <code class="inline">before_chat_message</code> hook's veto (its
+reason wrapped), or the changeset.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
   <section id="functions" class="details-list">
     <h2 class="section-heading">
       <a class="hover-link" href="#functions">
@@ -588,7 +701,7 @@ was not muted.</p></div>
       <h1 class="signature" translate="no">admin_delete_message(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L997" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1039" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -600,7 +713,7 @@ was not muted.</p></div>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> admin_delete_message(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
-  {:ok, <a href="Gamend.Chat.Message.html#t:t/0">Gamend.Chat.Message.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Chat.Message.html#t:t/0">Gamend.Chat.Message.t</a>()} | {:error, :not_found | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
@@ -617,7 +730,7 @@ was not muted.</p></div>
       <h1 class="signature" translate="no">authorize_access(user_id, chat_type, chat_ref_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L390" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L422" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -629,7 +742,7 @@ was not muted.</p></div>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> authorize_access(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
-  :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
+  :ok | {:error, <a href="#t:access_error/0">access_error</a>()}</pre>
 
       </div>
 
@@ -646,7 +759,7 @@ was not muted.</p></div>
       <h1 class="signature" translate="no">cleanup_chat(chat_type, chat_ref_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L827" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L868" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -674,7 +787,7 @@ was not muted.</p></div>
       <h1 class="signature" translate="no">cleanup_friend_chat(user_a_id, user_b_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L840" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L881" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -705,7 +818,7 @@ the other's id as chat_ref_id), so both directions must be cleaned up.</p>
       <h1 class="signature" translate="no">count_all_messages(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L972" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1013" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -733,7 +846,7 @@ the other's id as chat_ref_id), so both directions must be cleaned up.</p>
       <h1 class="signature" translate="no">count_friend_messages(user_a_id, user_b_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L584" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L616" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -761,7 +874,7 @@ the other's id as chat_ref_id), so both directions must be cleaned up.</p>
       <h1 class="signature" translate="no">count_messages(chat_type, chat_ref_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L577" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L609" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -789,7 +902,7 @@ the other's id as chat_ref_id), so both directions must be cleaned up.</p>
       <h1 class="signature" translate="no">count_messages_by_type()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L989" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1030" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -819,7 +932,7 @@ the other's id as chat_ref_id), so both directions must be cleaned up.</p>
       <h1 class="signature" translate="no">count_mutes(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1100" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1142" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -849,7 +962,7 @@ the other's id as chat_ref_id), so both directions must be cleaned up.</p>
       <h1 class="signature" translate="no">count_reports(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1113" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1155" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -877,7 +990,7 @@ the other's id as chat_ref_id), so both directions must be cleaned up.</p>
       <h1 class="signature" translate="no">count_unique_senders()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L978" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1019" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -905,7 +1018,7 @@ the other's id as chat_ref_id), so both directions must be cleaned up.</p>
       <h1 class="signature" translate="no">count_unread(user_id, chat_type, chat_ref_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L702" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L743" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -934,7 +1047,7 @@ in which case <a href="#count_messages/2"><code class="inline">count_messages/2<
       <h1 class="signature" translate="no">count_unread_friend(user_id, friend_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L725" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L766" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -962,7 +1075,7 @@ in which case <a href="#count_messages/2"><code class="inline">count_messages/2<
       <h1 class="signature" translate="no">count_unread_friends_batch(user_id, friend_ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L755" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L796" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -993,7 +1106,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">count_unread_groups_batch(user_id, group_ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L782" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L823" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1023,7 +1136,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">delete_messages(chat_type, chat_ref_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L805" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L846" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1051,7 +1164,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">delete_own_message(user_id, message_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L926" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L967" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1063,7 +1176,8 @@ at least one unread message.</p>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> delete_own_message(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
-  {:ok, <a href="Gamend.Chat.Message.html#t:t/0">Gamend.Chat.Message.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Chat.Message.html#t:t/0">Gamend.Chat.Message.t</a>()}
+  | {:error, :not_found | :forbidden | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
@@ -1081,7 +1195,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">delete_read_cursors(chat_type, chat_ref_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L818" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L859" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1109,7 +1223,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">filter_hits(content)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1129" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1171" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1165,7 +1279,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">get_read_cursor(user_id, chat_type, chat_ref_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L688" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L729" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1198,7 +1312,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">list_all_messages(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L960" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1001" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1228,7 +1342,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">list_friend_messages(user_a_id, user_b_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L554" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L586" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1260,7 +1374,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">list_messages(chat_type, chat_ref_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L518" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L550" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1293,7 +1407,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">list_mutes(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1096" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1138" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1325,7 +1439,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">list_reports(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1109" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1151" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1353,7 +1467,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">mark_read(user_id, chat_type, chat_ref_id, message_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L615" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L656" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1365,11 +1479,20 @@ at least one unread message.</p>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> mark_read(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
-  {:ok, <a href="Gamend.Chat.ReadCursor.html#t:t/0">Gamend.Chat.ReadCursor.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Chat.ReadCursor.html#t:t/0">Gamend.Chat.ReadCursor.t</a>()}
+  | {:error,
+     <a href="#t:access_error/0">access_error</a>()
+     | :invalid_message
+     | :message_not_found
+     | :message_not_in_chat
+     | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
-<p>Mark a chat conversation as read up to a given message id.</p><p>Uses an upsert to create or update the read cursor.</p>
+<p>Mark a chat conversation as read up to a given message id.</p><p>Uses an upsert to create or update the read cursor. Fails with the
+conversation's refusal (<a href="#t:access_error/0"><code class="inline">access_error/0</code></a>), <code class="inline">:invalid_message</code> for a
+missing id, <code class="inline">:message_not_found</code>, or <code class="inline">:message_not_in_chat</code> for a message of
+another conversation.</p>
   </section>
 </section>
 <section class="detail" id="mute_user/4">
@@ -1384,7 +1507,7 @@ at least one unread message.</p>
       <h1 class="signature" translate="no">mute_user(user_id, scope, scope_ref_id, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1080" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1122" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1417,7 +1540,7 @@ it is kept as history when it ends, and fires <code class="inline">after_ban_cre
       <h1 class="signature" translate="no">muted?(user_id, chat_type, chat_ref_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1092" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1134" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1447,7 +1570,7 @@ it is kept as history when it ends, and fires <code class="inline">after_ban_cre
       <h1 class="signature" translate="no">report_message(reporter_id, message_id, reason \\ nil)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1105" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1147" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1478,7 +1601,7 @@ it is kept as history when it ends, and fires <code class="inline">after_ban_cre
       <h1 class="signature" translate="no">resolve_report(report, status, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1123" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1165" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1490,7 +1613,7 @@ it is kept as history when it ends, and fires <code class="inline">after_ban_cre
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> resolve_report(<a href="Gamend.Chat.Report.html#t:t/0">Gamend.Chat.Report.t</a>() | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
-  {:ok, <a href="Gamend.Chat.Report.html#t:t/0">Gamend.Chat.Report.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Chat.Report.html#t:t/0">Gamend.Chat.Report.t</a>()} | {:error, :not_found | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
@@ -1507,7 +1630,7 @@ it is kept as history when it ends, and fires <code class="inline">after_ban_cre
       <h1 class="signature" translate="no">review_report(report)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1118" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1160" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1536,7 +1659,7 @@ it is kept as history when it ends, and fires <code class="inline">after_ban_cre
       <h1 class="signature" translate="no">send_message(map, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L157" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L181" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1547,15 +1670,17 @@ it is kept as history when it ends, and fires <code class="inline">after_ban_cre
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> send_message(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) :: {:ok, <a href="Gamend.Chat.Message.html#t:t/0">Gamend.Chat.Message.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+          <pre translate="no"><span class="attribute">@spec</span> send_message(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
+  {:ok, <a href="Gamend.Chat.Message.html#t:t/0">Gamend.Chat.Message.t</a>()} | {:error, <a href="#t:send_error/0">send_error</a>()}</pre>
 
       </div>
 
-<p>Send a chat message.</p><h2 id="send_message/2-parameters" class="section-heading"><a href="#send_message/2-parameters" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Parameters</span></h2><ul><li><code class="inline">scope</code> — <code class="inline">%{user: %User{}}</code> (current_scope)</li><li><code class="inline">attrs</code> — map with <code class="inline">&quot;chat_type&quot;</code>, <code class="inline">&quot;chat_ref_id&quot;</code>, <code class="inline">&quot;content&quot;</code>, optional <code class="inline">&quot;metadata&quot;</code></li></ul><h2 id="send_message/2-returns" class="section-heading"><a href="#send_message/2-returns" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Returns</span></h2><ul><li><code class="inline">{:ok, %Message{}}</code> on success</li><li><code class="inline">{:error, reason}</code> on failure</li></ul><p>Moderation runs before the <code class="inline">before_chat_message</code> hook: a muted sender is
+<p>Send a chat message.</p><h2 id="send_message/2-parameters" class="section-heading"><a href="#send_message/2-parameters" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Parameters</span></h2><ul><li><code class="inline">scope</code> — <code class="inline">%{user: %User{}}</code> (current_scope)</li><li><code class="inline">attrs</code> — map with <code class="inline">&quot;chat_type&quot;</code>, <code class="inline">&quot;chat_ref_id&quot;</code>, <code class="inline">&quot;content&quot;</code>, optional <code class="inline">&quot;metadata&quot;</code></li></ul><h2 id="send_message/2-returns" class="section-heading"><a href="#send_message/2-returns" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Returns</span></h2><ul><li><code class="inline">{:ok, %Message{}}</code> on success</li><li><code class="inline">{:error, reason}</code> on failure, <a href="#t:send_error/0"><code class="inline">send_error/0</code></a></li></ul><p>Moderation runs before the <code class="inline">before_chat_message</code> hook: a muted sender is
 rejected with <code class="inline">{:error, :muted}</code> and a blocked word with
 <code class="inline">{:error, :blocked_content}</code>, so a plugin never sees a message core already
-refused. The hook can then modify attrs or reject the message itself. The
-<code class="inline">after_chat_message</code> hook fires asynchronously after the message is persisted.</p>
+refused. The hook can then modify attrs or reject the message itself, which
+answers <code class="inline">{:error, {:hook_rejected, reason}}</code>. The <code class="inline">after_chat_message</code> hook
+fires asynchronously after the message is persisted.</p>
   </section>
 </section>
 <section class="detail" id="subscribe_friend_chat/2">
@@ -1568,7 +1693,7 @@ refused. The hook can then modify attrs or reject the message itself. The
       <h1 class="signature" translate="no">subscribe_friend_chat(user_a_id, user_b_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L87" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L111" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1596,7 +1721,7 @@ refused. The hook can then modify attrs or reject the message itself. The
       <h1 class="signature" translate="no">subscribe_group_chat(group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1624,7 +1749,7 @@ refused. The hook can then modify attrs or reject the message itself. The
       <h1 class="signature" translate="no">subscribe_lobby_chat(lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L67" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L91" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1652,7 +1777,7 @@ refused. The hook can then modify attrs or reject the message itself. The
       <h1 class="signature" translate="no">subscribe_party_chat(party_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1684,7 +1809,7 @@ refused. The hook can then modify attrs or reject the message itself. The
       <h1 class="signature" translate="no">unmute_user(user_id, scope, scope_ref_id \\ nil, by \\ nil)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1088" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L1130" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1714,7 +1839,7 @@ was not muted.</p>
       <h1 class="signature" translate="no">unsubscribe_friend_chat(user_a_id, user_b_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L94" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L118" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1742,7 +1867,7 @@ was not muted.</p>
       <h1 class="signature" translate="no">unsubscribe_group_chat(group_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L82" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L106" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1770,7 +1895,7 @@ was not muted.</p>
       <h1 class="signature" translate="no">unsubscribe_lobby_chat(lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L72" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L96" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1798,7 +1923,7 @@ was not muted.</p>
       <h1 class="signature" translate="no">unsubscribe_party_chat(party_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L106" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L130" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1826,7 +1951,7 @@ was not muted.</p>
       <h1 class="signature" translate="no">update_message(user_id, message_id, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L886" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat.ex#L927" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1838,7 +1963,8 @@ was not muted.</p>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> update_message(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
-  {:ok, <a href="Gamend.Chat.Message.html#t:t/0">Gamend.Chat.Message.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Chat.Message.html#t:t/0">Gamend.Chat.Message.t</a>()}
+  | {:error, :not_found | :forbidden | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()}</pre>
 
       </div>
 
@@ -1856,9 +1982,9 @@ was not muted.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

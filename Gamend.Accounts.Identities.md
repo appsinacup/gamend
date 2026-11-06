@@ -168,7 +168,7 @@ This prevents users losing all login methods unexpectedly.
   :discord | :apple | :google | :facebook | :github | :steam
 ) ::
   {:ok, Gamend.Accounts.User.t()}
-  | {:error, :last_provider | Ecto.Changeset.t() | term()}
+  | {:error, :last_provider | Ecto.Changeset.t()}
 ```
 
 Unlink an OAuth provider from a user's account.

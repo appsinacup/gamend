@@ -28,6 +28,21 @@ Basic semantics:
     # Remove a friendship (either direction)
     {:ok, _} = Gamend.Friends.remove_friend(user_id, friend_id)
 
+# `accept_error`
+
+```elixir
+@type accept_error() ::
+  :not_found
+  | :not_authorized
+  | :not_pending
+  | :already_friends
+  | :too_many_friends
+```
+
+Why `accept_friend_request/2` did not accept: no such request (or it was
+cancelled), not the caller's to answer, answered another way, accepted
+already, or a friend list at its cap.
+
 # `user_id`
 
 ```elixir
@@ -38,10 +53,16 @@ Basic semantics:
 
 ```elixir
 @spec accept_friend_request(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
-  {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
+  {:ok, Gamend.Friends.Friendship.t()} | {:error, accept_error()}
 ```
 
-Accept a friend request (only the target may accept). Returns {:ok, friendship}.
+Accept a friend request (only the target may accept). Returns
+`{:ok, friendship}`.
+
+`{:error, :already_friends}` when it was accepted already,
+`{:error, :not_pending}` when it was rejected or blocked first,
+`{:error, :not_found}` when it was cancelled, and
+`{:error, :too_many_friends}` when either side is at the cap.
 
 # `any_blocked?`
 
@@ -52,20 +73,34 @@ Accept a friend request (only the target may accept). Returns {:ok, friendship}.
 Returns true if `user_id` is on a block with any of `other_ids`, in either
 direction. One query, regardless of how many others are checked.
 
+# `any_blocked_between?`
+
+```elixir
+@spec any_blocked_between?([user_id()], [user_id()]) :: boolean()
+```
+
+Returns true if anyone in `ids` is on a block with anyone in `other_ids`, in
+either direction: a party and the players already seated in a lobby. One
+query.
+
 # `block_friend_request`
 
 ```elixir
 @spec block_friend_request(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
-  {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
+  {:ok, Gamend.Friends.Friendship.t()}
+  | {:error, :not_found | :not_authorized | :not_pending}
 ```
 
-Block an incoming request (only the target may block). Returns {:ok, friendship} with status "blocked".
+Block an incoming request (only the target may block). Returns
+`{:ok, friendship}` with status "blocked", or `{:error, :not_pending}` when
+it was accepted (or blocked) first.
 
 # `block_user`
 
 ```elixir
 @spec block_user(Gamend.Accounts.User.t(), user_id()) ::
-  {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
+  {:ok, Gamend.Friends.Friendship.t()}
+  | {:error, :cannot_block_self | Ecto.Changeset.t()}
 ```
 
 Block an arbitrary user, with or without any prior friendship between them.
@@ -105,10 +140,11 @@ which is what makes per-pair filtering cheap in matchmaking.
 
 ```elixir
 @spec cancel_request(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
-  {:ok, :cancelled} | {:error, :not_found | :not_authorized | term()}
+  {:ok, :cancelled} | {:error, :not_found | :not_authorized | :not_pending}
 ```
 
 Cancel an outgoing friend request (only the requester may cancel).
+`{:error, :not_pending}` once it has been answered.
 
 # `count_all_blocks`
 
@@ -174,14 +210,17 @@ Count outgoing pending friend requests for a user.
   | {:error,
      :cannot_friend_self
      | :blocked
-     | :already_friends
-     | :already_requested
-     | term()}
+     | :too_many_pending_requests
+     | accept_error()
+     | Ecto.Changeset.t()}
 ```
 
 Create a friend request from requester -> target.
-  If a reverse pending request exists (target -> requester) it will be accepted instead.
-  Returns {:ok, friendship} on success or {:error, reason}.
+  If a reverse pending request exists (target -> requester) it will be accepted instead,
+  and fails as `accept_friend_request/2` does.
+  A request or a friendship that already stands is returned as `{:ok, friendship}`.
+  Fails with `:cannot_friend_self`, `:blocked`, `:too_many_pending_requests` or the
+  changeset.
   
 
 # `delete_block`
@@ -371,19 +410,23 @@ Normalizes a user pair into the order-independent key used by `blocked_pairs/1`.
 
 ```elixir
 @spec reject_friend_request(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
-  {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
+  {:ok, Gamend.Friends.Friendship.t()}
+  | {:error, :not_found | :not_authorized | :not_pending}
 ```
 
-Reject a friend request (only the target may reject). Returns {:ok, friendship}.
+Reject a friend request (only the target may reject). Returns
+`{:ok, friendship}`, or `{:error, :not_pending}` when it was answered first.
 
 # `remove_friend`
 
 ```elixir
 @spec remove_friend(Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
+  {:ok, Gamend.Friends.Friendship.t()} | {:error, :not_found | :not_pending}
 ```
 
-Remove a friendship (either direction) - only participating users may call this.
+Remove a friendship (either direction) - only participating users may call
+this. Only an accepted friendship: `{:error, :not_found}` when there is none,
+a block placed since included.
 
 # `subscribe_user`
 
@@ -395,7 +438,7 @@ Remove a friendship (either direction) - only participating users may call this.
 
 ```elixir
 @spec unblock_friendship(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
-  {:ok, :unblocked} | {:error, term()}
+  {:ok, :unblocked} | {:error, :not_found | :not_authorized}
 ```
 
 Unblock a previously-blocked friendship (only the user who blocked may unblock). Returns {:ok, :unblocked} on success.
@@ -404,7 +447,7 @@ Unblock a previously-blocked friendship (only the user who blocked may unblock).
 
 ```elixir
 @spec unblock_user(Gamend.Accounts.User.t(), user_id()) ::
-  {:ok, :unblocked} | {:error, term()}
+  {:ok, :unblocked} | {:error, :not_found}
 ```
 
 Unblock a user previously blocked via `block_user/2`.

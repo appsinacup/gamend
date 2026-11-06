@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Reports — gamend_core v1.1.1380</title>
+    <title>Gamend.Reports — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Reports</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -547,7 +547,7 @@ changeset.</p>
       <h1 class="signature" translate="no">delete(report)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L557" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L582" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -632,7 +632,7 @@ changeset.</p>
       <h1 class="signature" translate="no">forget_user(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L571" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L596" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -869,7 +869,7 @@ key). Opts: <code class="inline">:page</code> and <code class="inline">:page_siz
       <h1 class="signature" translate="no">prune()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L580" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L605" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -900,7 +900,7 @@ closed, images included. Answers how many were deleted.</p>
       <h1 class="signature" translate="no">resolve(report, status, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L511" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/reports.ex#L517" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -912,14 +912,18 @@ closed, images included. Answers how many were deleted.</p>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> resolve(<a href="Gamend.Reports.Report.html#t:t/0">Gamend.Reports.Report.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
-  {:ok, <a href="Gamend.Reports.Report.html#t:t/0">Gamend.Reports.Report.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Reports.Report.html#t:t/0">Gamend.Reports.Report.t</a>()}
+  | {:error, <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | :status_changed}</pre>
 
       </div>
 
 <p>Close a report (<code class="inline">&quot;fixed&quot;</code>, <code class="inline">&quot;wontfix&quot;</code>, <code class="inline">&quot;duplicate&quot;</code>) or reopen it
 (<code class="inline">&quot;open&quot;</code>).</p><p><code class="inline">attrs</code>: <code class="inline">:resolved_by</code> (admin user id), <code class="inline">:note</code> (kept on the report, never
 shown to the reporter), <code class="inline">:message</code> (sent to the reporter as a notification
-when they had an account; nothing is sent when blank).</p><p>Closing an open report fires <code class="inline">after_report_resolved/1</code>.</p>
+when they had an account; nothing is sent when blank).</p><p>Closing an open report fires <code class="inline">after_report_resolved/1</code>.</p><p>The change is made from the status <code class="inline">report</code> holds, and only while the
+report still has it: when another moderator closed or reopened it first,
+nothing is written, nothing is sent and the answer is
+<code class="inline">{:error, :status_changed}</code>.</p>
   </section>
 </section>
 <section class="detail" id="resolved_config/1">
@@ -1019,9 +1023,9 @@ come from <code class="inline">config :gamend_core, :report_reward, {module, fun
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

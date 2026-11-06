@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Parties — gamend_core v1.1.1380</title>
+    <title>Gamend.Parties — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Parties</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -158,6 +158,18 @@ creating or joining a lobby together.</p><h2 id="module-usage" class="section-he
       </div>
 
         <div class="summary-synopsis"><p>Accept a party invite. Joins the party and marks the invite as accepted.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#admin_add_member/2" data-no-tooltip="" translate="no">admin_add_member(party, user_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Admin: seats <code class="inline">user_id</code> in <code class="inline">party</code> the way an accepted invite does. The
+party's capacity and one party per player hold (<code class="inline">:party_full</code>,
+<code class="inline">:already_in_party</code>); no hook is consulted.</p></div>
 
     </div>
 
@@ -310,6 +322,17 @@ atomically. The party is kept intact.</p></div>
 
         <div class="summary-synopsis"><p>Disband a party outright: clears every member's <code class="inline">party_id</code>, cancels pending
 invites, deletes the row, and broadcasts as a leader-initiated disband would.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#disband/2" data-no-tooltip="" translate="no">disband(party, user)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Disband <code class="inline">party</code> as its leader: the end of the party a leader asks for, as
+opposed to leaving it, which hands it over.</p></div>
 
     </div>
 
@@ -508,7 +531,7 @@ atomically. The party is kept intact.</p></div>
       <h1 class="signature" translate="no">accept_party_invite(user, party_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L503" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L527" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -520,12 +543,46 @@ atomically. The party is kept intact.</p></div>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> accept_party_invite(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
-  {:ok, <a href="Gamend.Parties.Party.html#t:t/0">Gamend.Parties.Party.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()}</pre>
+  {:ok, <a href="Gamend.Parties.Party.html#t:t/0">Gamend.Parties.Party.t</a>()}
+  | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>() | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | {:hook_rejected, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}}</pre>
 
       </div>
 
 <p>Accept a party invite. Joins the party and marks the invite as accepted.</p><p>If the user is already in another party, they automatically leave it first
-(disbanding if they are the leader).</p><p>Returns <code class="inline">{:error, :no_invite}</code> if no pending invite exists for that party.</p>
+(disbanding if they are the leader).</p><p>Returns <code class="inline">{:error, :no_invite}</code> if no pending invite exists for that party,
+and <code class="inline">{:error, {:hook_rejected, reason}}</code> when <code class="inline">before_party_join</code> refuses.</p>
+  </section>
+</section>
+<section class="detail" id="admin_add_member/2">
+
+  <div class="detail-header">
+    <a href="#admin_add_member/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">admin_add_member(party, user_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2000" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> admin_add_member(<a href="Gamend.Parties.Party.html#t:t/0">Gamend.Parties.Party.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
+  {:ok, <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()}
+  | {:error, :not_found | :party_full | :already_in_party | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Admin: seats <code class="inline">user_id</code> in <code class="inline">party</code> the way an accepted invite does. The
+party's capacity and one party per player hold (<code class="inline">:party_full</code>,
+<code class="inline">:already_in_party</code>); no hook is consulted.</p>
   </section>
 </section>
 <section class="detail" id="admin_delete_party/1">
@@ -538,7 +595,7 @@ atomically. The party is kept intact.</p></div>
       <h1 class="signature" translate="no">admin_delete_party(party_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1859" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2029" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -567,7 +624,7 @@ atomically. The party is kept intact.</p></div>
       <h1 class="signature" translate="no">admin_update_party(party, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1839" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2009" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -658,7 +715,7 @@ own <code class="inline">party_id</code> is the common case.</p>
       <h1 class="signature" translate="no">cancel_party_invite(leader, target_user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L454" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L474" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -687,7 +744,7 @@ own <code class="inline">party_id</code> is the common case.</p>
       <h1 class="signature" translate="no">change_party(party)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1833" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1989" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -717,7 +774,7 @@ own <code class="inline">party_id</code> is the common case.</p>
       <h1 class="signature" translate="no">count_all_parties(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1825" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1981" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -773,7 +830,7 @@ own <code class="inline">party_id</code> is the common case.</p>
       <h1 class="signature" translate="no">count_party_invitations(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L768" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L815" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -829,7 +886,7 @@ own <code class="inline">party_id</code> is the common case.</p>
       <h1 class="signature" translate="no">count_sent_party_invitations(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L810" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L857" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -859,7 +916,7 @@ own <code class="inline">party_id</code> is the common case.</p>
       <h1 class="signature" translate="no">create_lobby_with_party(user, lobby_attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1370" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1470" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -920,7 +977,7 @@ atomically. The party is kept intact.</p><p>The lobby's <code class="inline">max
       <h1 class="signature" translate="no">decline_party_invite(user, party_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L696" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L743" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -949,7 +1006,7 @@ atomically. The party is kept intact.</p><p>The lobby's <code class="inline">max
       <h1 class="signature" translate="no">disband(party)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1032" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1091" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -968,6 +1025,38 @@ atomically. The party is kept intact.</p><p>The lobby's <code class="inline">max
 invites, deletes the row, and broadcasts as a leader-initiated disband would.</p><p>For callers acting on the party rather than on behalf of a member — the
 retention sweep for parties everyone has abandoned. Members leaving is
 <a href="#leave_party/1"><code class="inline">leave_party/1</code></a>.</p>
+  </section>
+</section>
+<section class="detail" id="disband/2">
+
+  <div class="detail-header">
+    <a href="#disband/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">disband(party, user)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1102" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> disband(<a href="Gamend.Parties.Party.html#t:t/0">Gamend.Parties.Party.t</a>(), <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()) ::
+  {:ok, :disbanded} | {:error, :not_leader | <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Disband <code class="inline">party</code> as its leader: the end of the party a leader asks for, as
+opposed to leaving it, which hands it over.</p><p><code class="inline">{:error, :not_leader}</code> unless <code class="inline">leader</code> still leads it once its lock is
+taken: a leader who handed the party over while this was on its way no
+longer ends it for the new leader.</p>
   </section>
 </section>
 <section class="detail" id="get_party/1">
@@ -1094,7 +1183,7 @@ retention sweep for parties everyone has abandoned. Members leaving is
       <h1 class="signature" translate="no">invite_to_party(leader, target_user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L377" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L376" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1131,7 +1220,7 @@ If a pending invite already exists, returns <code class="inline">{:ok, existing_
       <h1 class="signature" translate="no">join_lobby_with_party(user, lobby_id, opts \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1486" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1592" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1148,7 +1237,13 @@ If a pending invite already exists, returns <code class="inline">{:ok, existing_
       </div>
 
 <p>The party leader joins an existing lobby, and all party members join it
-atomically. The party is kept intact.</p><p>The lobby must have enough free slots for the entire party.</p>
+atomically. The party is kept intact.</p><p>The lobby must have enough free slots for the entire party, and the party
+gets in only where each member could alone: a hidden lobby answers
+<code class="inline">{:error, :not_found}</code> (unless a server-side caller passes
+<code class="inline">bypass_hidden: true</code>, as for <code class="inline">Lobbies.join_lobby/3</code>), a block between
+any member and anyone already seated answers <code class="inline">{:error, :blocked}</code>, and the
+game's <code class="inline">before_lobby_join</code> is asked for every member (<code class="inline">&quot;party_id&quot;</code> in its
+opts), the first refusal answering <code class="inline">{:error, {:hook_rejected, reason}}</code>.</p>
   </section>
 </section>
 <section class="detail" id="kick_member/2">
@@ -1161,7 +1256,7 @@ atomically. The party is kept intact.</p><p>The lobby must have enough free slot
       <h1 class="signature" translate="no">kick_member(leader, target_user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1038" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1111" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1173,11 +1268,11 @@ atomically. The party is kept intact.</p><p>The lobby must have enough free slot
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> kick_member(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) ::
-  {:ok, <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>() | {:hook_rejected, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}}</pre>
 
       </div>
 
-<p>Kick a member from the party. Only the leader can kick.</p>
+<p>Kick a member from the party. Only the leader can kick.</p><p><code class="inline">{:error, {:hook_rejected, reason}}</code> when <code class="inline">before_party_kick</code> refuses.</p>
   </section>
 </section>
 <section class="detail" id="leave_party/1">
@@ -1190,7 +1285,7 @@ atomically. The party is kept intact.</p><p>The lobby must have enough free slot
       <h1 class="signature" translate="no">leave_party(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1005" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1065" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1226,7 +1321,7 @@ the party with them, since there is nobody to hand it to.</p><p>To end a party o
       <h1 class="signature" translate="no">list_all_parties(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1812" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1968" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1256,7 +1351,7 @@ the party with them, since there is nobody to hand it to.</p><p>To end a party o
       <h1 class="signature" translate="no">list_party_invitations(user, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L762" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L809" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1286,7 +1381,7 @@ the party with them, since there is nobody to hand it to.</p><p>To end a party o
       <h1 class="signature" translate="no">list_sent_party_invitations(leader, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L800" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L847" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1316,7 +1411,7 @@ the party with them, since there is nobody to hand it to.</p><p>To end a party o
       <h1 class="signature" translate="no">quick_join_with_party(user, params \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1242" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1348" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1380,7 +1475,7 @@ derived counts rather than a maintained size.</p>
       <h1 class="signature" translate="no">subscribe_parties()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1802" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1958" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1464,7 +1559,7 @@ derived counts rather than a maintained size.</p>
       <h1 class="signature" translate="no">update_party(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1166" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1249" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1476,11 +1571,12 @@ derived counts rather than a maintained size.</p>
       <div class="specs">
 
           <pre translate="no"><span class="attribute">@spec</span> update_party(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
-  {:ok, <a href="Gamend.Parties.Party.html#t:t/0">Gamend.Parties.Party.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+  {:ok, <a href="Gamend.Parties.Party.html#t:t/0">Gamend.Parties.Party.t</a>()}
+  | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>() | <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>() | {:hook_rejected, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}}</pre>
 
       </div>
 
-<p>Update party settings. Only the leader can update.</p>
+<p>Update party settings. Only the leader can update.</p><p><code class="inline">{:error, {:hook_rejected, reason}}</code> when <code class="inline">before_party_update</code> refuses.</p>
   </section>
 </section>
 
@@ -1492,9 +1588,9 @@ derived counts rather than a maintained size.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

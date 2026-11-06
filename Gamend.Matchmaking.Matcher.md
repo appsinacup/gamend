@@ -17,6 +17,10 @@ A match is formed when:
 Groups are consumed in FIFO order by their oldest ticket. A single bucket can
 produce multiple matches in one sweep.
 
+A backfill ticket (`lobby_id`) counts as its lobby's members (`size`), a
+match holds at most one lobby with other players in it, and it fits in that
+lobby's seats (`Gamend.Matchmaking.seatable?/1`).
+
 Players who have blocked each other are never placed in the same match. The
 blocked set is passed in rather than queried here, so this module stays pure
 and the caller resolves every pair in a single query (see

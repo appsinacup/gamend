@@ -23,6 +23,25 @@ into a lobby. Two things keep the queue honest:
     considers online — the safety net for tickets created over HTTP by a
     client that never opened a socket.
 
+## Backfill
+
+A lobby's host who queues fills that lobby: the ticket carries its
+`lobby_id`, and a match seats the other players there rather than in a new
+lobby. A match holds at most one lobby with other players in it, and fits
+in its seats; a player queued from a lobby of their own alone leaves it for
+the match's. With no lobby among them, a match gets a new hidden lobby, as
+before.
+
+## Accept
+
+`accept_timeout_ms` (a `join/5` option, or the `before_matchmaking_join`
+hook's attrs) makes a formed match ask first: a ready check of kind
+`accept` over its players (`Gamend.ReadyChecks`, subject `:matchmaking`).
+Nobody is seated until everyone accepts. A decline or the deadline fails
+it: whoever accepted goes back in the queue, keeping their place, and the
+others' tickets are cancelled. Cancelling a ticket (`cancel/1`, a socket
+closing) declines the accept its holder was asked for.
+
 # `assign_lobby`
 
 ```elixir
@@ -30,7 +49,9 @@ into a lobby. Two things keep the queue honest:
   :ok | {:error, :not_found}
 ```
 
-Associates already-claimed tickets with their created lobby.
+Associates claimed tickets with their created lobby: all of them, or none
+(`{:error, :not_found}`) when the lobby is gone or a ticket is no longer
+held by the claim that matched it.
 
 # `cancel`
 
@@ -43,6 +64,9 @@ Cancels the user's queued tickets. Returns how many were cancelled.
 A party queues as a unit, so it leaves as one: cancelling any member's ticket
 cancels the whole party's. Any member may do this — only the leader can queue,
 but nobody should be stuck in a queue they cannot leave.
+
+A match waiting for its accept is declined for the user (see *Accept*), so
+the others go back in the queue at once rather than at its deadline.
 
 # `cancel_ticket`
 
@@ -58,7 +82,8 @@ already-resolved id.
 # `claim`
 
 ```elixir
-@spec claim([Gamend.Matchmaking.Ticket.t()]) :: :ok | :conflict
+@spec claim([Gamend.Matchmaking.Ticket.t()]) ::
+  {:ok, [Gamend.Matchmaking.Ticket.t()]} | :conflict
 ```
 
 Atomically claims a formed match: flips its tickets from queued to matched.
@@ -66,8 +91,12 @@ Atomically claims a formed match: flips its tickets from queued to matched.
 Runs inside the sweep's cluster lock, before any lobby exists (the lobby is
 created outside the lock because `Lobbies` fires hooks and broadcasts, which
 must not run inside a transaction). The `status == queued` guard makes the
-claim atomic: if any ticket was cancelled since it was read, nothing is
-claimed and `:conflict` is returned.
+claim atomic: if any ticket was cancelled or claimed since it was read,
+nothing is claimed and `:conflict` is returned.
+
+Answers the tickets as claimed. Their `matched_at` is this claim's mark:
+`requeue/1`, `discard/1` and `assign_lobby/2` write only tickets that still
+carry it, so a claim only ever undoes or names what it holds itself.
 
 # `count_tickets`
 
@@ -106,7 +135,13 @@ Fetches a ticket by id, or nil when the id is unknown or malformed.
 # `join`
 
 ```elixir
-@spec join(Gamend.Accounts.User.t(), map(), pos_integer() | nil, pos_integer() | nil) ::
+@spec join(
+  Gamend.Accounts.User.t(),
+  map(),
+  pos_integer() | nil,
+  pos_integer() | nil,
+  keyword()
+) ::
   {:ok, Gamend.Matchmaking.Ticket.t()} | {:error, Ecto.Changeset.t() | atom()}
 ```
 
@@ -117,6 +152,10 @@ Adds a user — or their whole party — to the matchmaking queue.
 same parameters are matched together.
 
 `min_players` and `max_players` can be passed to override the defaults.
+`opts`: `accept_timeout_ms`, the time a formed match gives its players to
+accept (see *Accept*); none seats them at once.
+
+A lobby's host queues to fill that lobby (see *Backfill*).
 
 ## Parties
 
@@ -181,6 +220,23 @@ cancelled.
 
 Returns claimed tickets to the queue (lobby creation failed).
 
+# `seatable?`
+
+```elixir
+@spec seatable?([Gamend.Matchmaking.Ticket.t()]) :: boolean()
+```
+
+Whether `tickets` can be one match: at most one lobby with other players in
+it, and no more players than the lobby it would be seated in has seats.
+
+# `size`
+
+```elixir
+@spec size(Gamend.Matchmaking.Ticket.t() | map()) :: pos_integer()
+```
+
+The players a ticket brings: its lobby's members for a backfill ticket, else 1.
+
 # `stats`
 
 ```elixir
@@ -194,6 +250,27 @@ Returns claimed tickets to the queue (lobby creation failed).
 
 Queue statistics for the admin dashboard and the public stats endpoint:
 counts by status, plus the depth of each distinct queued `match_params`.
+
+# `target_ticket`
+
+```elixir
+@spec target_ticket([Gamend.Matchmaking.Ticket.t()]) ::
+  Gamend.Matchmaking.Ticket.t() | nil
+```
+
+The lobby a match is seated in: the one of its lobbies with other players
+in it, else its oldest ticket's. nil when no ticket fills a lobby (a new
+lobby is made). Reads `size` as `with_lobbies/1` set it.
+
+# `with_lobbies`
+
+```elixir
+@spec with_lobbies([Gamend.Matchmaking.Ticket.t()]) :: [Gamend.Matchmaking.Ticket.t()]
+```
+
+`tickets` with each backfill ticket's lobby read: `size` its members,
+`capacity` its seats. A ticket whose holder no longer hosts the lobby it
+named fills nothing (`lobby_id` nil): it is seated as any other.
 
 ---
 

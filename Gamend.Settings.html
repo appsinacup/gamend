@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1380">
+    <meta name="project" content="gamend_core v1.1.1387">
 
 
-    <title>Gamend.Settings — gamend_core v1.1.1380</title>
+    <title>Gamend.Settings — gamend_core v1.1.1387</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-57F2FE52.js"></script>
+    <script defer src="dist/sidebar_items-B3EB7FE7.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1380
+          v1.1.1387
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Settings</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1380)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1387)</small>
 
     </h1>
 
@@ -217,6 +217,21 @@ parse, so the caller decides whether that is fatal.</p></div>
 
         <div class="summary-synopsis"><p>Casts a raw string against a declared type and, for <code class="inline">:atom</code>, its allowed
 <code class="inline">values</code>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#declared/0" data-no-tooltip="" translate="no">declared()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Every declared setting, then every variable a loaded plugin declares that
+is not one (<a href="Gamend.Hooks.Declarations.html#env_vars/0"><code class="inline">Gamend.Hooks.Declarations.env_vars/0</code></a>), as plain data a JSON
+encoder takes: what a host that runs this server from outside, and cannot
+load its code, reads to offer them. Gamend Cloud's Settings tab asks a
+server's release for it with <code class="inline">bin/&lt;release&gt; rpc</code>. It is never a client's:
+no route or hook RPC answers it.</p></div>
 
     </div>
 
@@ -369,7 +384,7 @@ when it is set, the compiled default otherwise.</p></div>
       <h1 class="signature" translate="no">definition()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L37" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L38" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -425,7 +440,7 @@ when it is set, the compiled default otherwise.</p></div>
       <h1 class="signature" translate="no">add_app(app)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L440" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L509" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -454,7 +469,7 @@ after boot. Clears the cache so the next read picks them up.</p>
       <h1 class="signature" translate="no">add_provider(module)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L447" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L516" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -483,7 +498,7 @@ app's module list — a plugin compiled at runtime, or a test.</p>
       <h1 class="signature" translate="no">all()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L75" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L76" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -511,7 +526,7 @@ app's module list — a plugin compiled at runtime, or a test.</p>
       <h1 class="signature" translate="no">apps()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L428" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L497" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -550,7 +565,7 @@ unconfigured deployment sees no change.</p>
       <h1 class="signature" translate="no">cast(raw, type)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L208" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L277" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -580,7 +595,7 @@ you have it — see <a href="#cast/3"><code class="inline">cast/3</code></a>.</p
       <h1 class="signature" translate="no">cast(raw, atom, values)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L223" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L292" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -605,6 +620,43 @@ that way and silently became <code class="inline">:production</code>. Declare <c
 <code class="inline">:atom</code> setting; the fallback exists for plugins compiled before it did.</p>
   </section>
 </section>
+<section class="detail" id="declared/0">
+
+  <div class="detail-header">
+    <a href="#declared/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">declared()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L111" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> declared() :: [<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()]</pre>
+
+      </div>
+
+<p>Every declared setting, then every variable a loaded plugin declares that
+is not one (<a href="Gamend.Hooks.Declarations.html#env_vars/0"><code class="inline">Gamend.Hooks.Declarations.env_vars/0</code></a>), as plain data a JSON
+encoder takes: what a host that runs this server from outside, and cannot
+load its code, reads to offer them. Gamend Cloud's Settings tab asks a
+server's release for it with <code class="inline">bin/&lt;release&gt; rpc</code>. It is never a client's:
+no route or hook RPC answers it.</p><p>Each is <code class="inline">%{env:, app:, group:, label:, type:, default:, doc:, secret:, values:, plugin:}</code>. <code class="inline">app</code>, <code class="inline">group</code> and <code class="inline">type</code> are strings; <code class="inline">default</code> is a
+string, a number, a boolean or nil, a list joined with commas as its
+variable is written, any other term <a href="https://elixir.hexdocs.pm/Kernel.html#inspect/1"><code class="inline">inspect/1</code></a>ed; <code class="inline">values</code> is the strings
+an <code class="inline">:atom</code> takes. A plugin's variable has <code class="inline">app</code> and <code class="inline">group</code> nil and
+<code class="inline">plugin</code> its plugin's name; a setting has <code class="inline">plugin</code> nil.</p>
+  </section>
+</section>
 <section class="detail" id="describe/1">
 
   <div class="detail-header">
@@ -615,7 +667,7 @@ that way and silently became <code class="inline">:production</code>. Declare <c
       <h1 class="signature" translate="no">describe(definition)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L102" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L171" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -645,7 +697,7 @@ vars are resolved into <a href="https://elixir.hexdocs.pm/Application.html"><cod
       <h1 class="signature" translate="no">env_name(root, group, key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L554" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L623" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -674,7 +726,7 @@ vars are resolved into <a href="https://elixir.hexdocs.pm/Application.html"><cod
       <h1 class="signature" translate="no">from_env()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L129" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L198" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -705,7 +757,7 @@ skipped with a warning rather than taking the boot down.</p>
       <h1 class="signature" translate="no">get(module, key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L64" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L65" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -735,7 +787,7 @@ not a runtime condition.</p>
       <h1 class="signature" translate="no">group(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L83" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L84" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -763,7 +815,7 @@ not a runtime condition.</p>
       <h1 class="signature" translate="no">groups()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L87" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L88" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -791,7 +843,7 @@ not a runtime condition.</p>
       <h1 class="signature" translate="no">providers()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L484" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L553" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -819,7 +871,7 @@ not a runtime condition.</p>
       <h1 class="signature" translate="no">reload()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L477" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L546" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -847,7 +899,7 @@ not a runtime condition.</p>
       <h1 class="signature" translate="no">remove_provider(module)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L451" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L520" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -875,7 +927,7 @@ not a runtime condition.</p>
       <h1 class="signature" translate="no">resolve()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L157" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L226" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -906,7 +958,7 @@ configuration. <code class="inline">config/2</code> only applies after the whole
       <h1 class="signature" translate="no">validate(env)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L307" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L376" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -938,7 +990,7 @@ Test is silent because the suite boots hundreds of times.</p>
       <h1 class="signature" translate="no">validate!(env)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L326" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings.ex#L395" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -965,9 +1017,9 @@ Test is silent because the suite boots hundreds of times.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1380">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1387">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1380">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1387">Hex Preview</a>
 
             </span>
 

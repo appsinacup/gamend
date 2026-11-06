@@ -71,7 +71,8 @@ of them at random, and forms start a new group from a random title and icon
 
 ```elixir
 @spec accept_invite(Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+  {:ok, Gamend.Groups.GroupMember.t()}
+  | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Accept a pending group invite by invite id (recipient only).
@@ -80,7 +81,8 @@ Accept a pending group invite by invite id (recipient only).
 
 ```elixir
 @spec admin_delete_group(Ecto.UUID.t()) ::
-  {:ok, Gamend.Groups.Group.t()} | {:error, term()}
+  {:ok, Gamend.Groups.Group.t()}
+  | {:error, :not_found | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Admin-level delete (no membership check, for server admins).
@@ -89,7 +91,8 @@ Admin-level delete (no membership check, for server admins).
 
 ```elixir
 @spec admin_update_group(Gamend.Groups.Group.t(), map()) ::
-  {:ok, Gamend.Groups.Group.t()} | {:error, Ecto.Changeset.t()}
+  {:ok, Gamend.Groups.Group.t()}
+  | {:error, :not_found | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Admin-level update, bypasses membership checks.
@@ -98,7 +101,8 @@ Admin-level update, bypasses membership checks.
 
 ```elixir
 @spec approve_join_request(Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+  {:ok, Gamend.Groups.GroupMember.t()}
+  | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Approve a pending join request. Admin only.
@@ -269,7 +273,12 @@ Count groups the user belongs to.
 
 ```elixir
 @spec create_group(Ecto.UUID.t(), map()) ::
-  {:ok, Gamend.Groups.Group.t()} | {:error, Ecto.Changeset.t() | term()}
+  {:ok, Gamend.Groups.Group.t()}
+  | {:error,
+     :user_not_found
+     | :too_many_groups_created
+     | {:hook_rejected, term()}
+     | Ecto.Changeset.t()}
 ```
 
 Create a new group. The creating user becomes an admin member automatically.
@@ -295,7 +304,9 @@ Decline a pending group invite by invite id (recipient only).
 
 ```elixir
 @spec delete_group(Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Groups.Group.t()} | {:error, term()}
+  {:ok, Gamend.Groups.Group.t()}
+  | {:error,
+     :not_found | :not_admin | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Delete a group. Any of its admins can, members or not: everyone in it is
@@ -490,7 +501,7 @@ Whether groups may have invite links (`link_days` above 0).
 @spec invite_to_group(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
   {:ok, Gamend.Groups.GroupInvite.t()}
   | {:ok, :request_approved}
-  | {:error, atom()}
+  | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Invite a user to a group (see `Gamend.Groups.Invites.invite_to_group/3`).
@@ -499,7 +510,8 @@ Invite a user to a group (see `Gamend.Groups.Invites.invite_to_group/3`).
 
 ```elixir
 @spec join_by_invite_link(Ecto.UUID.t(), String.t()) ::
-  {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+  {:ok, Gamend.Groups.GroupMember.t()}
+  | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Join the group an invite link opens, as a member.
@@ -508,7 +520,8 @@ Join the group an invite link opens, as a member.
 
 ```elixir
 @spec join_group(Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+  {:ok, Gamend.Groups.GroupMember.t()}
+  | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Join a public group directly. Returns error for private/hidden groups.
@@ -517,7 +530,14 @@ Join a public group directly. Returns error for private/hidden groups.
 
 ```elixir
 @spec kick_member(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+  {:ok, Gamend.Groups.GroupMember.t()}
+  | {:error,
+     :not_admin
+     | :cannot_kick_self
+     | :last_admin
+     | :not_member
+     | {:hook_rejected, term()}
+     | Ecto.Changeset.t()}
 ```
 
 Kick a member from the group. Only admins can kick.
@@ -526,7 +546,8 @@ Kick a member from the group. Only admins can kick.
 
 ```elixir
 @spec leave_group(Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+  {:ok, Gamend.Groups.GroupMember.t()}
+  | {:error, :not_member | Ecto.Changeset.t()}
 ```
 
 Leave a group.
@@ -694,7 +715,8 @@ Reject a pending join request. Admin only.
 
 ```elixir
 @spec request_join(Ecto.UUID.t(), Ecto.UUID.t()) ::
-  {:ok, Gamend.Groups.GroupJoinRequest.t()} | {:error, atom()}
+  {:ok, Gamend.Groups.GroupJoinRequest.t()}
+  | {:error, atom() | Ecto.Changeset.t()}
 ```
 
 Request to join a private group. Creates a pending join request.
@@ -704,7 +726,8 @@ Request to join a private group. Creates a pending join request.
 ```elixir
 @spec set_icon_url(String.t(), String.t(), String.t()) ::
   {:ok, Gamend.Groups.Group.t()}
-  | {:error, :not_admin | Ecto.Changeset.t() | term()}
+  | {:error,
+     :not_admin | :not_found | {:hook_rejected, term()} | Ecto.Changeset.t()}
 ```
 
 Set a group's icon to an object we have just accepted an upload for.
@@ -762,7 +785,13 @@ Unsubscribe from a specific group's events.
 
 ```elixir
 @spec update_group(Ecto.UUID.t(), Ecto.UUID.t(), map()) ::
-  {:ok, Gamend.Groups.Group.t()} | {:error, atom() | Ecto.Changeset.t()}
+  {:ok, Gamend.Groups.Group.t()}
+  | {:error,
+     :not_admin
+     | :not_found
+     | :max_members_too_low
+     | {:hook_rejected, term()}
+     | Ecto.Changeset.t()}
 ```
 
 Update group settings. Only admins can update.

@@ -34,11 +34,18 @@ defmodule Gamend.Settings.Provider do
 
   - `:app` (required) — the OTP app the values live under.
   - `:group` (required) — the middle segment of the env name, and the grouping
-    the admin viewer renders. One word.
+    the admin viewer renders. A lowercase snake_case atom (`:ugc`,
+    `:client_logs`); a space, hyphen or capital is a compile error, since the
+    env name it would derive could not be set from a shell. Put the display
+    name in `:label`.
   - `:root` — first segment of the env name. Defaults to `"GAMEND"`; a plugin
-    passes its own (`root: "MY_GAME"`). Each definition carries it back, so
-    tooling can check the naming convention without knowing which hosts exist.
-  - `:label` — display name for the group. Defaults to a capitalised `:group`.
+    passes its own (`root: "MY_GAME"`). Letters, digits and underscores only.
+    Each definition carries it back, so tooling can check the naming
+    convention without knowing which hosts exist.
+  - `:label` — display name for the group, free text (`"User-generated
+    content"`). Defaults to a capitalised `:group`.
+
+  Setting keys follow the same rule as `:group`.
 
   ## Options for `setting/3`
 
@@ -70,6 +77,8 @@ defmodule Gamend.Settings.Provider do
     app = Keyword.fetch!(opts, :app)
     group = Keyword.fetch!(opts, :group)
     root = Keyword.get(opts, :root, "GAMEND")
+    validate_group!(group, __CALLER__.module)
+    validate_root!(root, __CALLER__.module)
     label = Keyword.get(opts, :label) || group |> to_string() |> String.capitalize()
 
     quote do
@@ -123,6 +132,12 @@ defmodule Gamend.Settings.Provider do
   defp build({key, type, opts}, context) do
     %{module: module, app: app, group: group, root: root, label: label} = context
 
+    unless segment?(key) do
+      raise ArgumentError,
+            "#{inspect(module)}: setting #{inspect(key)} is not a lowercase snake_case atom; " <>
+              "its env var #{inspect(derive_env(root, group, key))} could not be set from a shell"
+    end
+
     unless type in @types do
       raise ArgumentError,
             "#{inspect(module)}: setting #{inspect(key)} has unknown type #{inspect(type)}; " <>
@@ -163,6 +178,30 @@ option(s) #{inspect(unknown)}; expected one of #{inspect(@setting_opts)}"
       with: Keyword.get(opts, :with, []),
       values: values
     }
+  end
+
+  # Each segment of a derived env name must be one a shell can set. A group of
+  # `:"user-generated content"` derived `GAMEND_USER-GENERATED CONTENT_KEY`:
+  # the admin page listed it, and nothing could ever set it.
+  defp segment?(name) when is_atom(name) and not is_nil(name) and not is_boolean(name),
+    do: Regex.match?(~r/\A[a-z][a-z0-9_]*\z/, Atom.to_string(name))
+
+  defp segment?(_name), do: false
+
+  defp validate_group!(group, module) do
+    unless segment?(group) do
+      raise ArgumentError,
+            "#{inspect(module)}: group #{inspect(group)} is not a lowercase snake_case atom " <>
+              "(e.g. :ugc); put the display name in :label"
+    end
+  end
+
+  defp validate_root!(root, module) do
+    unless is_binary(root) and Regex.match?(~r/\A[A-Za-z][A-Za-z0-9_]*\z/, root) do
+      raise ArgumentError,
+            "#{inspect(module)}: root #{inspect(root)} must be letters, digits and " <>
+              "underscores, starting with a letter (e.g. \"MY_GAME\")"
+    end
   end
 
   # `:values` only means something for `:atom`: every other type has a total

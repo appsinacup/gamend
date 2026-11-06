@@ -40,6 +40,40 @@ end
 Live values, and where each one came from, are on the
 [admin settings page](/admin/settings).
 
+## Your own settings
+
+A game built on Gamend declares its own groups the same way core does. They
+are not on Gamend's own docs site: they appear on your admin settings page,
+in boot validation, in your `.env.example` (`mix gamend.settings.env_example`)
+and in this guide when you generate it in your repo
+(`mix gamend.settings.guide`).
+
+```elixir
+defmodule MyGame.UGC do
+  use Gamend.Settings.Provider,
+    app: :my_game,
+    group: :ugc,
+    label: "User-generated content"
+
+  setting :max_uploads, :integer, default: 10, doc: "Uploads a player may keep."
+end
+```
+
+That declares `GAMEND_UGC_MAX_UPLOADS`, read with
+`Gamend.Settings.get(MyGame.UGC, :max_uploads)`.
+
+- `group:` and each key are lowercase snake_case atoms, since they become
+  the variable name. The display name, spaces and all, goes in `label:`.
+- A variable nothing declares does nothing. Writing `GAMEND_UGC_*` lines in
+  `.env` does not make a group.
+- Gamend reads providers from `:gamend_core`, `:gamend_web`, your host app
+  (`config :gamend_web, host_static_app: :my_game`) and any app listed in
+  `config :gamend_core, Gamend.Settings, apps: [...]`. A provider in any
+  other app is never found: no admin row, no validation, and its variables
+  are ignored.
+- A plugin declares its settings on its hook module, usually with its own
+  `root: "MY_PLUGIN"`, and they register when the plugin loads.
+
 
 ## Authentication
 

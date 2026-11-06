@@ -328,6 +328,58 @@ defmodule Gamend.SettingsTest do
       end
     end
 
+    test "a group that is not a snake_case atom is a compile error" do
+      assert_raise ArgumentError, ~r/group :"user-generated content" is not a lowercase/, fn ->
+        defmodule BadGroup do
+          use Gamend.Settings.Provider,
+            app: :gamend_core,
+            group: :"user-generated content",
+            label: "User-generated content"
+
+          setting(:thing, :string)
+        end
+      end
+
+      assert_raise ArgumentError, ~r/group "ugc" is not a lowercase/, fn ->
+        defmodule StringGroup do
+          use Gamend.Settings.Provider, app: :gamend_core, group: "ugc"
+          setting(:thing, :string)
+        end
+      end
+    end
+
+    test "a key that is not a snake_case atom is a compile error" do
+      assert_raise ArgumentError, ~r/setting :MaxUploads is not a lowercase/, fn ->
+        defmodule BadKey do
+          use Gamend.Settings.Provider, app: :gamend_core, group: :bad
+          setting(:MaxUploads, :integer)
+        end
+      end
+    end
+
+    test "a root a shell cannot set is a compile error" do
+      assert_raise ArgumentError, ~r/root "MY-GAME" must be letters/, fn ->
+        defmodule BadRoot do
+          use Gamend.Settings.Provider, app: :gamend_core, group: :bad, root: "MY-GAME"
+          setting(:thing, :string)
+        end
+      end
+    end
+
+    test "a free-text label is fine" do
+      defmodule LabelledGroup do
+        use Gamend.Settings.Provider,
+          app: :gamend_core,
+          group: :ugc,
+          label: "User-generated content"
+
+        setting(:max_uploads, :integer, default: 10)
+      end
+
+      assert [%{env: "GAMEND_UGC_MAX_UPLOADS", label: "User-generated content"}] =
+               LabelledGroup.__settings__()
+    end
+
     test "a duplicate key is a compile error" do
       assert_raise ArgumentError, ~r/duplicate setting\(s\) \[:thing\]/, fn ->
         defmodule BadDupe do

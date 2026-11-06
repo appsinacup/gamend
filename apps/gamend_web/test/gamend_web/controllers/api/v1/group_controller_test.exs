@@ -2,6 +2,13 @@ defmodule GamendWeb.Api.V1.GroupControllerTest.HooksDenyGroupJoin do
   def before_group_join(_user, _group, _opts), do: {:error, :level_too_low}
 end
 
+defmodule GamendWeb.Api.V1.GroupControllerTest.HooksRefuseGroupChanges do
+  def before_group_create(_user, _attrs), do: {:error, "No new guilds this season"}
+  def before_group_update(_group, _attrs), do: {:error, :update_blocked}
+  def before_group_delete(_group), do: {:error, "The hall is closed"}
+  def before_group_kick(_admin_id, _target_id, _group_id), do: {:error, :kick_blocked}
+end
+
 defmodule GamendWeb.Api.V1.GroupControllerTest do
   use GamendWeb.ConnCase
 
@@ -21,6 +28,23 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
 
   defp create_user do
     AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+  end
+
+  # Every `before_group_*` hook a test reaches after this refuses.
+  defp refuse_group_changes do
+    original = Application.get_env(:gamend_core, :hooks_module)
+
+    on_exit(fn ->
+      if original,
+        do: Application.put_env(:gamend_core, :hooks_module, original),
+        else: Application.delete_env(:gamend_core, :hooks_module)
+    end)
+
+    Application.put_env(
+      :gamend_core,
+      :hooks_module,
+      GamendWeb.Api.V1.GroupControllerTest.HooksRefuseGroupChanges
+    )
   end
 
   # ---------------------------------------------------------------------------
@@ -317,7 +341,7 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
         |> auth_conn(joiner)
         |> post("/api/v1/groups/#{group.id}/join")
 
-      assert %{"error" => "level_too_low"} = json_response(conn, 403)
+      assert %{"error" => "rejected", "message" => ":level_too_low"} = json_response(conn, 403)
       refute Groups.member?(group.id, joiner.id)
     end
   end
@@ -371,7 +395,7 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
       refute Groups.member?(group.id, member.id)
     end
 
-    test "returns 400 when not a member", %{conn: conn} do
+    test "returns 404 when not a member", %{conn: conn} do
       owner = create_user()
       other = create_user()
       {:ok, group} = Groups.create_group(owner.id, %{"title" => "CantLeave", "type" => "public"})
@@ -381,7 +405,7 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
         |> auth_conn(other)
         |> post("/api/v1/groups/#{group.id}/leave")
 
-      assert %{"error" => "not_member"} = json_response(conn, 400)
+      assert %{"error" => "not_member"} = json_response(conn, 404)
     end
   end
 
@@ -529,6 +553,16 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
         |> post("/api/v1/groups/#{group.id}/join")
 
       assert json_response(conn, 201)
+    end
+
+    # It was 403: every refusal of a request to join answered alike.
+    test "a member asking to join answers 409 already_member", %{conn: conn} do
+      owner = create_user()
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "InAlready", "type" => "private"})
+
+      conn = conn |> auth_conn(owner) |> post("/api/v1/groups/#{group.id}/join")
+
+      assert %{"error" => "already_member"} = json_response(conn, 409)
     end
   end
 
@@ -971,6 +1005,81 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
     end
   end
 
+  describe "refusals answered by their reason" do
+    # It was 409, the status of the slug clash beside it.
+    test "creating past the cap on groups created answers 403", %{conn: conn} do
+      previous = Application.get_env(:gamend_core, Gamend.Limits, [])
+      on_exit(fn -> Application.put_env(:gamend_core, Gamend.Limits, previous) end)
+
+      Application.put_env(
+        :gamend_core,
+        Gamend.Limits,
+        Keyword.merge(previous, max_groups_created_per_user: 1)
+      )
+
+      user = create_user()
+      {:ok, _} = Groups.create_group(user.id, %{"title" => "Only One"})
+
+      conn = conn |> auth_conn(user) |> post("/api/v1/groups", %{title: "One Too Many"})
+
+      assert %{"error" => "too_many_groups_created"} = json_response(conn, 403)
+    end
+
+    # It crashed: only an atom reason had a clause.
+    test "a create a hook refuses answers 403 rejected, in the hook's words", %{conn: conn} do
+      user = create_user()
+      refuse_group_changes()
+
+      conn = conn |> auth_conn(user) |> post("/api/v1/groups", %{title: "Refused"})
+
+      assert %{"error" => "rejected", "message" => "No new guilds this season"} =
+               json_response(conn, 403)
+    end
+
+    # It was 422, with the hook's reason as the code.
+    test "an update a hook refuses answers 403 rejected", %{conn: conn} do
+      owner = create_user()
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "Kept"})
+      refuse_group_changes()
+
+      conn = conn |> auth_conn(owner) |> patch("/api/v1/groups/#{group.id}", %{title: "Changed"})
+
+      assert %{"error" => "rejected", "message" => ":update_blocked"} = json_response(conn, 403)
+      assert Groups.get_group(group.id).title == "Kept"
+    end
+
+    # It was 403 `rejected` with the hook's words dropped.
+    test "a delete a hook refuses answers 403 rejected, in the hook's words", %{conn: conn} do
+      owner = create_user()
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "Standing"})
+      refuse_group_changes()
+
+      conn = conn |> auth_conn(owner) |> delete("/api/v1/groups/#{group.id}")
+
+      assert %{"error" => "rejected", "message" => "The hall is closed"} =
+               json_response(conn, 403)
+
+      assert Groups.get_group(group.id)
+    end
+
+    # It was 403 with the hook's reason as the code.
+    test "a kick a hook refuses answers 403 rejected", %{conn: conn} do
+      owner = create_user()
+      member = create_user()
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "NoKicks", "type" => "public"})
+      {:ok, _} = Groups.join_group(member.id, group.id)
+      refuse_group_changes()
+
+      conn =
+        conn
+        |> auth_conn(owner)
+        |> post("/api/v1/groups/#{group.id}/kick", %{target_user_id: member.id})
+
+      assert %{"error" => "rejected", "message" => ":kick_blocked"} = json_response(conn, 403)
+      assert Groups.member?(group.id, member.id)
+    end
+  end
+
   describe "group icons" do
     setup do
       dir = Path.join(System.tmp_dir!(), "gs_icon_test_#{System.unique_integer([:positive])}")
@@ -1047,6 +1156,18 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
         |> post("/api/v1/groups/#{group.id}/icon", %{"key" => key})
 
       assert json_response(conn, 403)["error"] == "forbidden"
+    end
+
+    # It was 422 `invalid_data`, whatever the reason.
+    test "an icon a hook refuses answers 403 rejected", %{conn: conn, owner: owner, group: group} do
+      key = "icons/groups/#{group.id}/icon.png"
+      {:ok, _} = Gamend.Storage.put(key, png(), content_type: "image/png")
+      refuse_group_changes()
+
+      conn = conn |> auth_conn(owner) |> post("/api/v1/groups/#{group.id}/icon", %{"key" => key})
+
+      assert %{"error" => "rejected", "message" => ":update_blocked"} = json_response(conn, 403)
+      assert Groups.get_group(group.id).icon_url == group.icon_url
     end
 
     test "rejects a key that was never uploaded", %{conn: conn, owner: owner, group: group} do

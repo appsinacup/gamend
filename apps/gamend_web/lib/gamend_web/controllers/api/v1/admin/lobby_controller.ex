@@ -92,10 +92,9 @@ defmodule GamendWeb.Api.V1.Admin.LobbyController do
     responses: [
       ok: {"Lobby", "application/json", LobbyResponse},
       unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Admin required"),
+      forbidden: Schemas.error("Admin required, or a game hook refused it (rejected)"),
       not_found: Schemas.error("Not found"),
-      unprocessable_entity: Schemas.error("Validation failed"),
-      bad_request: Schemas.error("Bad request")
+      unprocessable_entity: Schemas.error("Validation failed")
     ]
   )
 
@@ -114,11 +113,10 @@ defmodule GamendWeb.Api.V1.Admin.LobbyController do
           {:error, %Ecto.Changeset{} = cs} ->
             unprocessable(conn, cs)
 
-          {:error, {:hook_rejected, reason}} ->
-            reply_rejected(conn, reason)
-
+          # A game hook's veto is 403 `rejected`; a lobby deleted since it was
+          # read is 404 `not_found`.
           {:error, reason} ->
-            failure(conn, reason)
+            reply_reason(conn, reason)
         end
     end
   end
@@ -157,9 +155,6 @@ defmodule GamendWeb.Api.V1.Admin.LobbyController do
         end
     end
   end
-
-  defp failure(conn, reason) when is_atom(reason), do: reply_error(conn, :bad_request, reason)
-  defp failure(conn, _reason), do: reply_error(conn, :bad_request, "failed")
 
   defp serialize_lobby(lobby) do
     Serializers.serialize_lobby(lobby,

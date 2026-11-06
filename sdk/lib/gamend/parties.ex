@@ -49,15 +49,17 @@ defmodule Gamend.Parties do
     If the user is already in another party, they automatically leave it first
     (disbanding if they are the leader).
     
-    Returns `{:error, :no_invite}` if no pending invite exists for that party.
+    Returns `{:error, :no_invite}` if no pending invite exists for that party,
+    and `{:error, {:hook_rejected, reason}}` when `before_party_join` refuses.
     
   """
   @spec accept_party_invite(Gamend.Accounts.User.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Parties.Party.t()} | {:error, atom()}
+          {:ok, Gamend.Parties.Party.t()}
+          | {:error, atom() | Ecto.Changeset.t() | {:hook_rejected, term()}}
   def accept_party_invite(_user, _party_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        nil
 
       _ ->
         raise "Gamend.Parties.accept_party_invite/2 is a stub - only available at runtime on Gamend"
@@ -445,9 +447,11 @@ defmodule Gamend.Parties do
   @doc ~S"""
     Kick a member from the party. Only the leader can kick.
     
+    `{:error, {:hook_rejected, reason}}` when `before_party_kick` refuses.
+    
   """
   @spec kick_member(Gamend.Accounts.User.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Accounts.User.t()} | {:error, term()}
+          {:ok, Gamend.Accounts.User.t()} | {:error, atom() | {:hook_rejected, term()}}
   def kick_member(_leader, _target_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -642,9 +646,12 @@ defmodule Gamend.Parties do
   @doc ~S"""
     Update party settings. Only the leader can update.
     
+    `{:error, {:hook_rejected, reason}}` when `before_party_update` refuses.
+    
   """
   @spec update_party(Gamend.Accounts.User.t(), map()) ::
-          {:ok, Gamend.Parties.Party.t()} | {:error, term()}
+          {:ok, Gamend.Parties.Party.t()}
+          | {:error, atom() | Ecto.Changeset.t() | {:hook_rejected, term()}}
   def update_party(_user, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->

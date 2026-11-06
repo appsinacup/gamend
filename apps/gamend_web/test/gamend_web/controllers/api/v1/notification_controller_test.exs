@@ -74,7 +74,7 @@ defmodule GamendWeb.Api.V1.NotificationControllerTest do
       conn
       |> auth_conn(a)
       |> post("/api/v1/notifications", %{user_id: b.id, title: "Hi"})
-      |> json_response(400)
+      |> json_response(403)
 
     assert resp["error"] == "not_friends"
   end
@@ -121,6 +121,28 @@ defmodule GamendWeb.Api.V1.NotificationControllerTest do
     assert second["title"] == "Invited to play"
     assert second["id"] == first["id"]
     assert second["content"] == "v2"
+  end
+
+  test "POST /api/v1/notifications to a full inbox answers 403 too_many_notifications", %{
+    conn: conn
+  } do
+    {a, b} = make_friends()
+    previous = Application.get_env(:gamend_core, Gamend.Limits, [])
+    on_exit(fn -> Application.put_env(:gamend_core, Gamend.Limits, previous) end)
+
+    Application.put_env(
+      :gamend_core,
+      Gamend.Limits,
+      Keyword.put(previous, :max_notifications_per_user, 0)
+    )
+
+    resp =
+      conn
+      |> auth_conn(a)
+      |> post("/api/v1/notifications", %{user_id: b.id, title: "One more"})
+      |> json_response(403)
+
+    assert resp["error"] == "too_many_notifications"
   end
 
   test "POST /api/v1/notifications fails when sending to self", %{conn: conn} do

@@ -51,9 +51,9 @@ defmodule Gamend.TestSupport.Race do
   """
   @spec race([(-> term())]) :: [term()]
   def race(funs) when is_list(funs) do
-    if Gamend.Repo.__adapter__() == Ecto.Adapters.SQLite3,
-      do: Enum.map(funs, &(&1 |> racer() |> Task.async() |> Task.await(@race_timeout))),
-      else: release_together(funs)
+    if Gamend.Repo.AdvisoryLock.postgres?(),
+      do: release_together(funs),
+      else: Enum.map(funs, &(&1 |> racer() |> Task.async() |> Task.await(@race_timeout)))
   end
 
   defp release_together(funs) do

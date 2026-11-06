@@ -58,12 +58,14 @@ defmodule GamendWeb.Api.V1.StorageController do
       {:error, :unsupported_content_type} ->
         reply_error(conn, :unsupported_media_type, "unsupported_content_type")
 
-      _ ->
-        reply_error(conn, :bad_request, "upload_failed")
+      # Every check before it is answered above: this is the write failing.
+      {:error, reason} ->
+        Uploads.storage_unavailable(conn, reason)
     end
   end
 
-  def upload(conn, _), do: reply_error(conn, :bad_request, "missing_param", "token is required")
+  def upload(conn, _params),
+    do: reply_error(conn, :bad_request, "missing_param", "token is required")
 
   @doc """
   GET /storage/*key — serve a stored object. The local backend serves the
@@ -123,8 +125,11 @@ defmodule GamendWeb.Api.V1.StorageController do
           |> send_resp(200, data)
         end
 
-      {:error, _} ->
+      {:error, :not_found} ->
         reply_error(conn, :not_found, "not_found")
+
+      {:error, reason} ->
+        Uploads.storage_unavailable(conn, reason)
     end
   end
 

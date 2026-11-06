@@ -277,6 +277,19 @@ defmodule GamendWeb.Api.V1.Admin.NotificationControllerTest do
     assert resp["error"] == "not_found"
   end
 
+  test "DELETE /api/v1/admin/notifications/:id answers 400 for an id that is not one", %{
+    conn: conn,
+    admin: admin
+  } do
+    resp =
+      conn
+      |> bearer_conn(admin)
+      |> delete("/api/v1/admin/notifications/not-an-id")
+      |> json_response(400)
+
+    assert resp["error"] == "invalid_id"
+  end
+
   # ── Auth ───────────────────────────────────────────────────────────────────
 
   test "non-admin user cannot access admin notifications", %{conn: conn} do

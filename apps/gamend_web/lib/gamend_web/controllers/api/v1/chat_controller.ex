@@ -22,6 +22,12 @@ defmodule GamendWeb.Api.V1.ChatController do
 
   tags(["Chat"])
 
+  # What `Gamend.Chat.authorize_access/3` refuses, for the endpoints that read
+  # a conversation.
+  @bad_conversation Schemas.error("Bad chat type or id (invalid_chat_type, invalid_chat_ref)")
+  @conversation_refused Schemas.error("Not in the group (not_in_group), not friends, or blocked")
+  @conversation_not_found Schemas.error("Not in that lobby or party (not_in_lobby, not_in_party)")
+
   # ---------------------------------------------------------------------------
   # Send message
   # ---------------------------------------------------------------------------
@@ -54,9 +60,17 @@ defmodule GamendWeb.Api.V1.ChatController do
        }},
     responses: [
       created: {"Message sent", "application/json", ChatMessageResponse},
-      bad_request: Schemas.error("Invalid input"),
-      forbidden: Schemas.error("Not allowed"),
-      unprocessable_entity: Schemas.error("Validation or hook error")
+      bad_request: @bad_conversation,
+      forbidden:
+        Schemas.error(
+          "Not in the group (not_in_group), not friends (not_friends), blocked, muted, " <>
+            "or a game hook refused the message (rejected, its words in message)"
+        ),
+      not_found: Schemas.error("Not in that lobby or party (not_in_lobby, not_in_party)"),
+      unprocessable_entity:
+        Schemas.error("Validation failed, or the word filter blocked it (blocked_content)"),
+      too_many_requests:
+        Schemas.error("Slow mode (slowdown) or the daily message cap (chat_daily_limit)")
     ]
   )
 
@@ -74,38 +88,14 @@ defmodule GamendWeb.Api.V1.ChatController do
          {:ok, message} <- Chat.send_message(%{user: Scope.user(scope)}, attrs) do
       reply_data(conn, :created, serialize_message(message))
     else
-      {:error, :chat_daily_limit} ->
-        reply_error(conn, :too_many_requests, "chat_daily_limit")
-
-      {:error, :not_in_lobby} ->
-        reply_error(conn, :forbidden, "not_in_lobby")
-
-      {:error, :not_in_group} ->
-        reply_error(conn, :forbidden, "not_in_group")
-
-      {:error, :not_friends} ->
-        reply_error(conn, :forbidden, "not_friends")
-
-      {:error, :not_in_party} ->
-        reply_error(conn, :forbidden, "not_in_party")
-
-      {:error, :blocked} ->
-        reply_error(conn, :forbidden, "blocked")
-
       {:error, :slowdown} ->
         reply_error(conn, :too_many_requests, "slowdown", "You are sending messages too quickly")
-
-      {:error, :invalid_chat_type} ->
-        reply_error(conn, :bad_request, "invalid_chat_type")
-
-      {:error, {:hook_rejected, reason}} ->
-        reply_error(conn, :unprocessable_entity, "hook_rejected", to_string(reason))
 
       {:error, %Ecto.Changeset{} = cs} ->
         unprocessable(conn, cs)
 
       {:error, reason} ->
-        reply_error(conn, :unprocessable_entity, reason)
+        reply_reason(conn, reason)
     end
   end
 
@@ -213,7 +203,10 @@ defmodule GamendWeb.Api.V1.ChatController do
       ]
     ],
     responses: [
-      ok: {"Chat messages", "application/json", ChatMessagePage}
+      ok: {"Chat messages", "application/json", ChatMessagePage},
+      bad_request: @bad_conversation,
+      forbidden: @conversation_refused,
+      not_found: @conversation_not_found
     ]
   )
 
@@ -268,7 +261,17 @@ defmodule GamendWeb.Api.V1.ChatController do
        }},
     responses: [
       ok: {"Read cursor updated", "application/json", ChatReadCursorResponse},
-      unprocessable_entity: Schemas.error("Error")
+      bad_request:
+        Schemas.error(
+          "Bad chat type or id (invalid_chat_type, invalid_chat_ref) or message id (invalid_message)"
+        ),
+      forbidden: @conversation_refused,
+      not_found:
+        Schemas.error(
+          "No such message (message_not_found), or not in that lobby or party " <>
+            "(not_in_lobby, not_in_party)"
+        ),
+      unprocessable_entity: Schemas.error("The message is in another chat (message_not_in_chat)")
     ]
   )
 
@@ -287,21 +290,11 @@ defmodule GamendWeb.Api.V1.ChatController do
           updated_at: cursor.updated_at
         })
 
-      {:error, reason} when reason in [:invalid_chat_ref, :invalid_chat_type, :invalid_message] ->
-        reply_error(conn, :bad_request, reason)
-
-      {:error, reason}
-      when reason in [:not_in_lobby, :not_in_group, :not_friends, :not_in_party, :blocked] ->
-        reply_error(conn, :forbidden, reason)
-
-      {:error, :message_not_found} ->
-        reply_error(conn, :not_found, "message_not_found")
-
-      {:error, :message_not_in_chat} ->
-        reply_error(conn, :unprocessable_entity, "message_not_in_chat")
+      {:error, :invalid_message} ->
+        reply_error(conn, :bad_request, "invalid_message")
 
       {:error, reason} ->
-        reply_error(conn, :unprocessable_entity, reason)
+        reply_reason(conn, reason)
     end
   end
 
@@ -327,7 +320,10 @@ defmodule GamendWeb.Api.V1.ChatController do
       ]
     ],
     responses: [
-      ok: {"Unread count", "application/json", ChatUnreadResponse}
+      ok: {"Unread count", "application/json", ChatUnreadResponse},
+      bad_request: @bad_conversation,
+      forbidden: @conversation_refused,
+      not_found: @conversation_not_found
     ]
   )
 
@@ -400,17 +396,8 @@ defmodule GamendWeb.Api.V1.ChatController do
       {:ok, message} ->
         reply_data(conn, serialize_message(message))
 
-      {:error, :not_found} ->
-        reply_error(conn, :not_found, "not_found")
-
-      {:error, :forbidden} ->
-        reply_error(conn, :forbidden, "forbidden")
-
-      {:error, %Ecto.Changeset{} = cs} ->
-        unprocessable(conn, cs)
-
       {:error, reason} ->
-        reply_error(conn, :unprocessable_entity, reason)
+        reply_reason(conn, reason)
     end
   end
 
@@ -447,14 +434,8 @@ defmodule GamendWeb.Api.V1.ChatController do
       {:ok, _message} ->
         reply_ok(conn)
 
-      {:error, :not_found} ->
-        reply_error(conn, :not_found, "not_found")
-
-      {:error, :forbidden} ->
-        reply_error(conn, :forbidden, "forbidden")
-
       {:error, reason} ->
-        reply_error(conn, :unprocessable_entity, reason)
+        reply_reason(conn, reason)
     end
   end
 
@@ -543,14 +524,8 @@ defmodule GamendWeb.Api.V1.ChatController do
 
   defp authorize_conversation(conn, user_id, chat_type, chat_ref_id) do
     case Chat.authorize_access(user_id, chat_type, chat_ref_id) do
-      :ok ->
-        :ok
-
-      {:error, reason} when reason in [:invalid_chat_ref, :invalid_chat_type] ->
-        {:error, reply_error(conn, :bad_request, reason)}
-
-      {:error, reason} ->
-        {:error, reply_error(conn, :forbidden, reason)}
+      :ok -> :ok
+      {:error, reason} -> {:error, reply_reason(conn, reason)}
     end
   end
 end

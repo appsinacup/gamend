@@ -79,6 +79,8 @@ defmodule GamendWeb.Api.V1.Admin.GroupController do
     responses: [
       ok: {"Updated", "application/json", GroupResponse},
       not_found: Schemas.error("Not found"),
+      forbidden: Schemas.error("Vetoed by a hook (rejected)"),
+      conflict: Schemas.error("The slug is taken among the creator's groups (validation_failed)"),
       unprocessable_entity: Schemas.error("Validation error")
     ]
   )
@@ -144,8 +146,8 @@ defmodule GamendWeb.Api.V1.Admin.GroupController do
             {:ok, updated} ->
               reply_data(conn, serialize_group(updated))
 
-            {:error, changeset} ->
-              unprocessable(conn, changeset)
+            {:error, reason} ->
+              reply_reason(conn, reason)
           end
         end
     end
@@ -161,14 +163,12 @@ defmodule GamendWeb.Api.V1.Admin.GroupController do
     end
   end
 
-  # The only refusal left once the group exists is the `before_group_delete`
-  # hook's veto; it used to be reported as not_found.
+  # Once the group exists, a refusal is the `before_group_delete` hook's veto:
+  # 403 `rejected`. It used to be reported as not_found.
   defp do_delete(conn, group_id) do
     case Groups.admin_delete_group(group_id) do
       {:ok, _} -> reply_ok(conn)
-      {:error, :not_found} -> not_found(conn)
-      {:error, %Ecto.Changeset{} = changeset} -> unprocessable(conn, changeset)
-      {:error, reason} -> reply_rejected(conn, reason)
+      {:error, reason} -> reply_reason(conn, reason)
     end
   end
 

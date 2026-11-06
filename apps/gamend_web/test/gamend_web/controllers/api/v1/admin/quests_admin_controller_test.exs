@@ -64,6 +64,36 @@ defmodule GamendWeb.Api.V1.Admin.QuestsAdminControllerTest do
              %{"ok" => true}
   end
 
+  # Was 422: a cap reached is a refusal, as `too_many_entries` is.
+  test "a create past max_quests is 403 quest_limit_reached", ctx do
+    previous = Application.get_env(:gamend_core, Gamend.Limits, [])
+    Application.put_env(:gamend_core, Gamend.Limits, Keyword.put(previous, :max_quests, 0))
+    on_exit(fn -> Application.put_env(:gamend_core, Gamend.Limits, previous) end)
+
+    resp =
+      ctx.admin_conn
+      |> post("/api/v1/admin/quests", %{
+        key: ctx.key,
+        title: "Win one",
+        objectives: [%{event: "won", target: 1}]
+      })
+      |> json_response(403)
+
+    assert resp == %{"error" => "quest_limit_reached"}
+  end
+
+  test "a quest that is not there, or not completed, is refused by name", ctx do
+    missing = %{user_id: ctx.player.id, key: "no_such_quest"}
+    assert ctx.admin_conn |> post("/api/v1/admin/quests/grant", missing) |> json_response(404)
+    assert ctx.admin_conn |> post("/api/v1/admin/quests/claim", missing) |> json_response(404)
+
+    create_quest(ctx)
+
+    assert ctx.admin_conn
+           |> post("/api/v1/admin/quests/claim", %{user_id: ctx.player.id, key: ctx.key})
+           |> json_response(403) == %{"error" => "not_completed"}
+  end
+
   test "grant, claim, list progress, funnel and reset for a player", ctx do
     create_quest(ctx)
     body_params = %{user_id: ctx.player.id, key: ctx.key}

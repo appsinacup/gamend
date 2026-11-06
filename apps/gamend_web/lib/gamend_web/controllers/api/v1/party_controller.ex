@@ -59,7 +59,9 @@ defmodule GamendWeb.Api.V1.PartyController do
     responses: [
       created: {"Party created", "application/json", PartyResponse},
       conflict: Schemas.error("Already in a party"),
-      unauthorized: Schemas.error("Not authenticated")
+      forbidden: Schemas.error("A game hook refused it (rejected)"),
+      unauthorized: Schemas.error("Not authenticated"),
+      unprocessable_entity: Schemas.error("Validation failed (validation_failed)")
     ]
   )
 
@@ -71,7 +73,6 @@ defmodule GamendWeb.Api.V1.PartyController do
     security: [%{"authorization" => []}],
     responses: [
       ok: {"Success", "application/json", OkResponse},
-      bad_request: Schemas.error("Not in a party"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -85,7 +86,7 @@ defmodule GamendWeb.Api.V1.PartyController do
     security: [%{"authorization" => []}],
     responses: [
       ok: {"Success", "application/json", OkResponse},
-      bad_request: Schemas.error("Not in a party"),
+      not_found: Schemas.error("Not in a party (not_in_party)"),
       forbidden: Schemas.error("Not the party leader"),
       unauthorized: Schemas.error("Not authenticated")
     ]
@@ -117,8 +118,14 @@ defmodule GamendWeb.Api.V1.PartyController do
     },
     responses: [
       ok: {"Invite sent", "application/json", OkResponse},
-      forbidden: Schemas.error("Not the leader or target not connected"),
-      conflict: Schemas.error("Target already in a party or already invited"),
+      bad_request: Schemas.error("Malformed id (invalid_id)"),
+      forbidden:
+        Schemas.error(
+          "Not the leader (not_leader), the target is not connected (not_connected), " <>
+            "a block stands between the target and a member (blocked), or the target " <>
+            "holds too many pending invites (too_many_pending_invites)"
+        ),
+      not_found: Schemas.error("Not in a party (not_in_party), or no such user (user_not_found)"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -146,7 +153,9 @@ defmodule GamendWeb.Api.V1.PartyController do
     },
     responses: [
       ok: {"Invite cancelled", "application/json", OkResponse},
+      bad_request: Schemas.error("Malformed id (invalid_id)"),
       forbidden: Schemas.error("Not the leader"),
+      not_found: Schemas.error("Not in a party (not_in_party)"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -174,7 +183,11 @@ defmodule GamendWeb.Api.V1.PartyController do
       ok: {"Joined party", "application/json", PartyResponse},
       not_found: Schemas.error("No invite found or party not found"),
       conflict: Schemas.error("Already in a party"),
-      forbidden: Schemas.error("Party full"),
+      forbidden:
+        Schemas.error(
+          "Party full (party_full), a block stands between the player and a member " <>
+            "(blocked), or a game hook refused it (rejected)"
+        ),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -260,7 +273,17 @@ defmodule GamendWeb.Api.V1.PartyController do
     },
     responses: [
       ok: {"User kicked", "application/json", OkResponse},
-      forbidden: Schemas.error("Not the leader"),
+      bad_request: Schemas.error("Malformed id (invalid_id)"),
+      forbidden:
+        Schemas.error(
+          "Not the leader (not_leader), the leader themselves (cannot_kick_self), " <>
+            "or a game hook refused it (rejected)"
+        ),
+      not_found:
+        Schemas.error(
+          "Not in a party, or the target is not in it (not_in_party), or no such user " <>
+            "(user_not_found)"
+        ),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -285,8 +308,11 @@ defmodule GamendWeb.Api.V1.PartyController do
     },
     responses: [
       ok: {"Party updated", "application/json", PartyResponse},
-      forbidden: Schemas.error("Not the leader"),
-      unauthorized: Schemas.error("Not authenticated")
+      forbidden: Schemas.error("Not the leader, or a game hook refused it (rejected)"),
+      not_found: Schemas.error("Not in a party (not_in_party)"),
+      unauthorized: Schemas.error("Not authenticated"),
+      unprocessable_entity:
+        Schemas.error("Smaller than its members (too_small), or validation failed")
     ]
   )
 
@@ -314,8 +340,15 @@ defmodule GamendWeb.Api.V1.PartyController do
     },
     responses: [
       created: {"Lobby created with all party members", "application/json", LobbyResponse},
-      forbidden: Schemas.error("Not the leader or lobby too small"),
-      unauthorized: Schemas.error("Not authenticated")
+      conflict: Schemas.error("A member is already in a lobby (member_in_lobby)"),
+      forbidden:
+        Schemas.error(
+          "Not the leader, the lobby is too small for the party, a member is offline " <>
+            "(members_offline), or a game hook refused it (rejected)"
+        ),
+      not_found: Schemas.error("Not in a party (not_in_party)"),
+      unauthorized: Schemas.error("Not authenticated"),
+      unprocessable_entity: Schemas.error("Validation failed (validation_failed)")
     ]
   )
 
@@ -346,7 +379,12 @@ defmodule GamendWeb.Api.V1.PartyController do
     },
     responses: [
       ok: {"Lobby joined with all party members", "application/json", LobbyResponse},
-      forbidden: Schemas.error("Cannot join (not enough space, locked, wrong password, etc)"),
+      conflict: Schemas.error("A member is already in a lobby (member_in_lobby)"),
+      forbidden:
+        Schemas.error(
+          "Cannot join (not enough space, locked, wrong password, a member offline, etc)"
+        ),
+      not_found: Schemas.error("Not in a party (not_in_party), or no such lobby (not_found)"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -394,14 +432,13 @@ defmodule GamendWeb.Api.V1.PartyController do
           {:ok, party} ->
             reply_data(conn, :created, serialize_party(party))
 
-          {:error, :already_in_party} ->
-            reply_error(conn, :conflict, "already_in_party")
-
+          # The unique index on `leader_id` is the seat race, which
+          # `already_in_party` answers: a changeset is the input's fault.
           {:error, %Ecto.Changeset{} = changeset} ->
             unprocessable(conn, changeset)
 
-          _other ->
-            reply_error(conn, :unprocessable_entity, "unexpected_error")
+          {:error, reason} ->
+            reply_reason(conn, reason)
         end
 
       _ ->
@@ -419,8 +456,8 @@ defmodule GamendWeb.Api.V1.PartyController do
           {:error, :not_in_party} ->
             reply_ok(conn)
 
-          _other ->
-            reply_error(conn, :unprocessable_entity, "unexpected_error")
+          {:error, reason} ->
+            reply_reason(conn, reason)
         end
 
       _ ->
@@ -434,7 +471,7 @@ defmodule GamendWeb.Api.V1.PartyController do
         do_disband(conn, user, Parties.get_party(party_id))
 
       %User{} ->
-        reply_error(conn, :bad_request, "not_in_party")
+        reply_error(conn, :not_found, "not_in_party")
 
       _ ->
         reply_error(conn, :unauthorized, "not_authenticated")
@@ -451,15 +488,16 @@ defmodule GamendWeb.Api.V1.PartyController do
       case Parties.disband(party, user) do
         {:ok, _} -> reply_ok(conn)
         {:error, :not_leader} -> reply_error(conn, :forbidden, "not_party_leader")
-        _ -> reply_error(conn, :unprocessable_entity, "unexpected_error")
+        {:error, reason} -> reply_reason(conn, reason)
       end
     else
       reply_error(conn, :forbidden, "not_party_leader")
     end
   end
 
-  defp do_disband(conn, _user, _party),
-    do: reply_error(conn, :bad_request, "not_in_party")
+  # The signed-in user can be a cached copy, still naming a party since gone.
+  defp do_disband(conn, _user, nil),
+    do: reply_error(conn, :not_found, "not_in_party")
 
   def invite(conn, %{"target_user_id" => target_user_id}) do
     case Scope.user(conn.assigns[:current_scope]) do
@@ -470,26 +508,8 @@ defmodule GamendWeb.Api.V1.PartyController do
 
           target_id ->
             case Parties.invite_to_party(user, target_id) do
-              {:ok, _invite} ->
-                reply_ok(conn)
-
-              {:error, :not_in_party} ->
-                reply_error(conn, :bad_request, "not_in_party")
-
-              {:error, :not_leader} ->
-                reply_error(conn, :forbidden, "not_leader")
-
-              {:error, :user_not_found} ->
-                reply_error(conn, :not_found, "user_not_found")
-
-              {:error, :already_in_party} ->
-                reply_error(conn, :conflict, "already_in_party")
-
-              {:error, :not_connected} ->
-                reply_error(conn, :forbidden, "not_connected")
-
-              _other ->
-                reply_error(conn, :unprocessable_entity, "unexpected_error")
+              {:ok, _invite} -> reply_ok(conn)
+              {:error, reason} -> reply_reason(conn, reason)
             end
         end
 
@@ -507,17 +527,8 @@ defmodule GamendWeb.Api.V1.PartyController do
 
           target_id ->
             case Parties.cancel_party_invite(user, target_id) do
-              :ok ->
-                reply_ok(conn)
-
-              {:error, :not_in_party} ->
-                reply_error(conn, :bad_request, "not_in_party")
-
-              {:error, :not_leader} ->
-                reply_error(conn, :forbidden, "not_leader")
-
-              _other ->
-                reply_error(conn, :unprocessable_entity, "unexpected_error")
+              :ok -> reply_ok(conn)
+              {:error, reason} -> reply_reason(conn, reason)
             end
         end
 
@@ -535,23 +546,8 @@ defmodule GamendWeb.Api.V1.PartyController do
 
           pid ->
             case Parties.accept_party_invite(user, pid) do
-              {:ok, party} ->
-                reply_data(conn, serialize_party(party))
-
-              {:error, :no_invite} ->
-                reply_error(conn, :not_found, "no_invite")
-
-              {:error, :party_not_found} ->
-                reply_error(conn, :not_found, "party_not_found")
-
-              {:error, :already_in_party} ->
-                reply_error(conn, :conflict, "already_in_party")
-
-              {:error, :party_full} ->
-                reply_error(conn, :forbidden, "party_full")
-
-              _other ->
-                reply_error(conn, :unprocessable_entity, "unexpected_error")
+              {:ok, party} -> reply_data(conn, serialize_party(party))
+              {:error, reason} -> reply_reason(conn, reason)
             end
         end
 
@@ -614,20 +610,11 @@ defmodule GamendWeb.Api.V1.PartyController do
                 reply_ok(conn)
 
               # The party was disbanded while the kick was on its way.
-              {:error, reason} when reason in [:not_in_party, :not_found] ->
-                reply_error(conn, :bad_request, "not_in_party")
+              {:error, :not_found} ->
+                reply_error(conn, :not_found, "not_in_party")
 
-              {:error, :not_leader} ->
-                reply_error(conn, :forbidden, "not_leader")
-
-              {:error, :cannot_kick_self} ->
-                reply_error(conn, :forbidden, "cannot_kick_self")
-
-              {:error, :user_not_found} ->
-                reply_error(conn, :not_found, "user_not_found")
-
-              _other ->
-                reply_error(conn, :unprocessable_entity, "unexpected_error")
+              {:error, reason} ->
+                reply_reason(conn, reason)
             end
         end
 
@@ -643,20 +630,11 @@ defmodule GamendWeb.Api.V1.PartyController do
           {:ok, party} ->
             reply_data(conn, serialize_party(party))
 
-          {:error, :not_in_party} ->
-            reply_error(conn, :bad_request, "not_in_party")
-
-          {:error, :not_leader} ->
-            reply_error(conn, :forbidden, "not_leader")
-
-          {:error, :too_small} ->
-            reply_error(conn, :unprocessable_entity, "too_small")
-
           {:error, %Ecto.Changeset{} = changeset} ->
             unprocessable(conn, changeset)
 
-          _other ->
-            reply_error(conn, :unprocessable_entity, "unexpected_error")
+          {:error, reason} ->
+            reply_reason(conn, reason)
         end
 
       _ ->
@@ -671,26 +649,13 @@ defmodule GamendWeb.Api.V1.PartyController do
           {:ok, lobby} ->
             reply_data(conn, :created, serialize_lobby(lobby))
 
-          {:error, :not_in_party} ->
-            reply_error(conn, :bad_request, "not_in_party")
-
-          {:error, :not_leader} ->
-            reply_error(conn, :forbidden, "not_leader")
-
-          {:error, :lobby_too_small_for_party} ->
-            reply_error(conn, :forbidden, "lobby_too_small_for_party")
-
-          {:error, :member_in_lobby} ->
-            reply_error(conn, :conflict, "member_in_lobby")
-
-          {:error, :members_offline} ->
-            reply_error(conn, :conflict, "members_offline")
-
+          # A lobby's title is a display name, never unique: a failed
+          # changeset is always the input's fault.
           {:error, %Ecto.Changeset{} = changeset} ->
             unprocessable(conn, changeset)
 
-          _other ->
-            reply_error(conn, :unprocessable_entity, "unexpected_error")
+          {:error, reason} ->
+            reply_reason(conn, reason)
         end
 
       _ ->
@@ -709,35 +674,11 @@ defmodule GamendWeb.Api.V1.PartyController do
               {:ok, lobby} ->
                 reply_data(conn, serialize_lobby(lobby))
 
-              {:error, :not_in_party} ->
-                reply_error(conn, :bad_request, "not_in_party")
-
-              {:error, :not_leader} ->
-                reply_error(conn, :forbidden, "not_leader")
-
-              {:error, :member_in_lobby} ->
-                reply_error(conn, :conflict, "member_in_lobby")
-
-              {:error, :members_offline} ->
-                reply_error(conn, :conflict, "members_offline")
-
               {:error, :invalid_lobby} ->
                 reply_error(conn, :not_found, "not_found")
 
-              {:error, :locked} ->
-                reply_error(conn, :forbidden, "locked")
-
-              {:error, :not_enough_space} ->
-                reply_error(conn, :forbidden, "not_enough_space")
-
-              {:error, :password_required} ->
-                reply_error(conn, :forbidden, "password_required")
-
-              {:error, :invalid_password} ->
-                reply_error(conn, :forbidden, "invalid_password")
-
-              _other ->
-                reply_error(conn, :unprocessable_entity, "unexpected_error")
+              {:error, reason} ->
+                reply_reason(conn, reason)
             end
 
           _ ->

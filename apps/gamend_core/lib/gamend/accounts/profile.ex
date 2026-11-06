@@ -145,10 +145,12 @@ defmodule Gamend.Accounts.Profile do
   end
 
   @doc """
-  Updates the user's display name and broadcasts the change.
+  Updates the user's display name and broadcasts the change. A
+  `before_user_update` hook's refusal comes back as
+  `{:error, {:hook_rejected, reason}}`.
   """
   @spec update_user_display_name(User.t(), map()) ::
-          {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+          {:ok, User.t()} | {:error, Ecto.Changeset.t() | {:hook_rejected, term()}}
   def update_user_display_name(%User{} = user, attrs) do
     case Gamend.Hooks.internal_call(:before_user_update, [user, attrs]) do
       {:ok, returned} ->
@@ -177,7 +179,7 @@ defmodule Gamend.Accounts.Profile do
         end
 
       {:error, reason} ->
-        {:error, reason}
+        {:error, {:hook_rejected, reason}}
     end
   end
 
@@ -298,10 +300,11 @@ defmodule Gamend.Accounts.Profile do
   Strict, unlike registration: an invalid or taken username returns
   `{:error, changeset}` with no generated fallback, so the player can pick
   again. Routed through the `before_user_update` hook pipeline, where games
-  can forbid changes entirely or reject names (profanity, reserved words).
+  can forbid changes entirely or reject names (profanity, reserved words):
+  its refusal comes back as `{:error, {:hook_rejected, reason}}`.
   """
   @spec update_username(User.t(), map()) ::
-          {:ok, User.t()} | {:error, Ecto.Changeset.t() | term()}
+          {:ok, User.t()} | {:error, Ecto.Changeset.t() | {:hook_rejected, term()}}
   def update_username(%User{} = user, attrs) do
     case Gamend.Hooks.internal_call(:before_user_update, [user, attrs]) do
       {:ok, returned} ->
@@ -330,7 +333,7 @@ defmodule Gamend.Accounts.Profile do
         end
 
       {:error, reason} ->
-        {:error, reason}
+        {:error, {:hook_rejected, reason}}
     end
   end
 end

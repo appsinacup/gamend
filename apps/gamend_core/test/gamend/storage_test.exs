@@ -41,8 +41,16 @@ defmodule Gamend.StorageTest do
     assert {:ok, "BYTES"} = Storage.get(key)
     assert :ok = Storage.delete(key)
     refute Storage.exists?(key)
+    assert {:error, :not_found} = Storage.get(key)
     # deleting a missing key is a no-op
     assert :ok = Storage.delete(key)
+  end
+
+  test "a local key naming a directory, or below a file, is not found" do
+    {:ok, _} = Storage.put("dirs/a/b.png", "x")
+
+    assert {:error, :not_found} = Storage.get("dirs/a")
+    assert {:error, :not_found} = Storage.get("dirs/a/b.png/c.png")
   end
 
   test "url and presigned_upload point at the local endpoints" do

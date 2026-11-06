@@ -165,11 +165,13 @@ defmodule Gamend.Groups.Shared do
             "group_metadata" => group.metadata || %{}
           })
 
+        # The hook's veto is tagged, so a caller can tell the game's "no"
+        # from the join's own reasons (`:full`, `:not_found`).
         case Gamend.Hooks.internal_call(:before_group_join, [user, group, hook_opts],
                caller: actor_user_id
              ) do
           {:ok, _} -> :ok
-          {:error, reason} -> {:error, reason}
+          {:error, reason} -> {:error, {:hook_rejected, reason}}
         end
     end
   end

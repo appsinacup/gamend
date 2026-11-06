@@ -265,7 +265,8 @@ defmodule GamendWeb.Api.V1.ProviderController do
     responses: [
       ok: {"Unlinked", "application/json", CurrentUserResponse},
       bad_request: Schemas.error("Bad request"),
-      unauthorized: Schemas.error("Unauthorized")
+      unauthorized: Schemas.error("Unauthorized"),
+      unprocessable_entity: Schemas.error("Validation failed")
     ]
   )
 
@@ -284,8 +285,8 @@ defmodule GamendWeb.Api.V1.ProviderController do
           "Cannot unlink the last way to sign in"
         )
 
-      {:error, _} ->
-        reply_error(conn, :bad_request, "unlink_failed")
+      {:error, %Ecto.Changeset{} = changeset} ->
+        unprocessable(conn, changeset)
     end
   end
 
@@ -298,7 +299,8 @@ defmodule GamendWeb.Api.V1.ProviderController do
     responses: [
       ok: {"Unlinked", "application/json", CurrentUserResponse},
       bad_request: Schemas.error("Bad request"),
-      unauthorized: Schemas.error("Unauthorized")
+      unauthorized: Schemas.error("Unauthorized"),
+      unprocessable_entity: Schemas.error("Validation failed")
     ]
   )
 
@@ -322,8 +324,8 @@ defmodule GamendWeb.Api.V1.ProviderController do
               "Cannot unlink the last way to sign in"
             )
 
-          {:error, _} ->
-            reply_error(conn, :bad_request, "unlink_failed")
+          {:error, %Ecto.Changeset{} = changeset} ->
+            unprocessable(conn, changeset)
         end
     end
   end

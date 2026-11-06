@@ -1111,7 +1111,7 @@ defmodule Gamend.PartiesTest do
         Gamend.PartiesTest.HooksDenyPartyUpdate
       )
 
-      assert {:error, :party_update_blocked} =
+      assert {:error, {:hook_rejected, :party_update_blocked}} =
                Parties.update_party(leader, %{"max_size" => 6})
     end
 

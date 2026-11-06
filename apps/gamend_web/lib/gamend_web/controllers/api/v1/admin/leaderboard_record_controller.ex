@@ -40,10 +40,12 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardRecordController do
     },
     responses: [
       ok: {"Record", "application/json", AdminLeaderboardRecordResponse},
+      bad_request: Schemas.error("Score is not an integer (invalid_score)"),
       unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Admin required"),
+      forbidden: Schemas.error("Admin required, or the board has ended (leaderboard_ended)"),
       unprocessable_entity: Schemas.error("Validation failed"),
-      not_found: Schemas.error("Not found")
+      not_found: Schemas.error("No such board or user (leaderboard_not_found, user_not_found)"),
+      conflict: Schemas.error("The record was deleted as it was written (state_changed)")
     ]
   )
 
@@ -79,19 +81,18 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardRecordController do
 
   defp metadata(params), do: Map.get(params, "metadata") || %{}
 
-  # `submit_score/4` reports a missing board as `:leaderboard_not_found`, which
-  # the old clauses did not match — so it fell through to the catch-all and
-  # answered 400 instead of 404.
+  # The rest of `submit_score/4`'s reasons take their status from
+  # `GamendWeb.ErrorStatus`: `leaderboard_not_found` and `user_not_found` 404,
+  # `leaderboard_ended` 403.
   defp respond({:ok, %Record{} = record}, conn), do: reply_data(conn, serialize(record))
-
-  defp respond({:error, reason}, conn)
-       when reason in [:not_found, :leaderboard_not_found, :user_not_found],
-       do: reply_error(conn, :not_found, reason)
-
   defp respond({:error, %Ecto.Changeset{} = cs}, conn), do: unprocessable(conn, cs)
 
-  defp respond({:error, reason}, conn) when is_atom(reason),
-    do: reply_error(conn, :bad_request, reason)
+  # The score was written, but its row was gone when read back: deleted in
+  # between, with its board or its player.
+  defp respond({:error, :insert_failed}, conn),
+    do: reply_error(conn, :conflict, "state_changed", "The record was deleted as it was written")
+
+  defp respond({:error, reason}, conn), do: reply_reason(conn, reason)
 
   operation(:update,
     operation_id: "admin_update_leaderboard_record",

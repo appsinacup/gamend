@@ -414,25 +414,24 @@ defmodule Gamend.Tournaments do
     refused entry forfeits its match instead. `after_tournament_register` fires
     only once the hook allowed it.
     
+    Refuses with `:registration_closed`, `:already_registered`,
+    `:tournament_full`, `:not_found` (deleted meanwhile), a changeset, or
+    `{:hook_rejected, reason}` with the hook's own reason.
+    
   """
   @spec join_tournament(Gamend.Accounts.User.t(), Gamend.Tournaments.Tournament.t()) ::
-          {:ok, Gamend.Tournaments.Entry.t()} | {:error, term()}
+          {:ok, Gamend.Tournaments.Entry.t()}
+          | {:error,
+             :registration_closed
+             | :already_registered
+             | :tournament_full
+             | :not_found
+             | Ecto.Changeset.t()
+             | {:hook_rejected, term()}}
   def join_tournament(_user, _tournament) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Tournaments.Entry{
-           id: "",
-           tournament_id: "",
-           leader_id: "",
-           seed: nil,
-           bracket_index: nil,
-           wins: 0,
-           state: "registered",
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        nil
 
       _ ->
         raise "Gamend.Tournaments.join_tournament/2 is a stub - only available at runtime on Gamend"
@@ -440,33 +439,17 @@ defmodule Gamend.Tournaments do
   end
 
   @doc ~S"""
-    Withdraws `user`'s entry. Only before the draw; `before_tournament_leave` can veto.
+    Withdraws `user`'s entry. Only before the draw; `before_tournament_leave` can
+    veto, answered as `{:hook_rejected, reason}`.
+    
   """
   @spec leave_tournament(Gamend.Accounts.User.t(), Gamend.Tournaments.Tournament.t()) ::
-          {:ok, Gamend.Tournaments.Tournament.t()} | {:error, term()}
+          {:ok, Gamend.Tournaments.Tournament.t()}
+          | {:error, :not_registered | :already_drawn | :not_found | {:hook_rejected, term()}}
   def leave_tournament(_user, _tournament) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Tournaments.Tournament{
-           id: "",
-           slug: "",
-           title: "",
-           description: "",
-           state: "scheduled",
-           registration_opens_at: nil,
-           starts_at: nil,
-           ends_at: nil,
-           recur: nil,
-           max_entries: nil,
-           team_size: 1,
-           bracket_size: 8,
-           round_window_sec: 3600,
-           deadline_policy: "forfeit_both",
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        nil
 
       _ ->
         raise "Gamend.Tournaments.leave_tournament/2 is a stub - only available at runtime on Gamend"
@@ -687,32 +670,17 @@ defmodule Gamend.Tournaments do
     (double forfeit — the next round's seat stays empty and cascades as a bye).
     
     First write wins; anything later returns `{:error, :already_resolved}`. The
-    `before_tournament_result` pipeline can veto, leaving the match open.
+    `before_tournament_result` pipeline can veto, leaving the match open: its
+    reason comes back as `{:hook_rejected, reason}`.
     
   """
   @spec resolve_match(Ecto.UUID.t(), Ecto.UUID.t() | :no_winner) ::
-          {:ok, Gamend.Tournaments.Match.t()} | {:error, term()}
+          {:ok, Gamend.Tournaments.Match.t()}
+          | {:error, :not_found | :already_resolved | :invalid_winner | {:hook_rejected, term()}}
   def resolve_match(_match_id, _winner) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Tournaments.Match{
-           id: "",
-           tournament_id: "",
-           bracket_index: 0,
-           round: 1,
-           slot: 0,
-           a_entry_id: nil,
-           b_entry_id: nil,
-           winner_entry_id: nil,
-           ready_at: nil,
-           expired_at: nil,
-           resolved_at: nil,
-           deadline_at: ~U[1970-01-01 00:00:00Z],
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        nil
 
       _ ->
         raise "Gamend.Tournaments.resolve_match/2 is a stub - only available at runtime on Gamend"

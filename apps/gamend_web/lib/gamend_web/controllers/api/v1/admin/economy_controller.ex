@@ -130,10 +130,12 @@ defmodule GamendWeb.Api.V1.Admin.EconomyController do
     security: [%{"authorization" => []}],
     request_body: @mutate_body,
     responses: [
-      ok: {"Granted: the balance after", "application/json", WalletBalanceResponse},
+      ok:
+        {"Granted: the balance after, also for an idempotency_key already applied",
+         "application/json", WalletBalanceResponse},
       bad_request: Schemas.error("Missing or invalid fields"),
       not_found: Schemas.error("No such user (user_not_found)"),
-      conflict: Schemas.error("That idempotency_key already applied (idempotent_replay)"),
+      unprocessable_entity: Schemas.error("The ledger row is invalid, e.g. a long reason"),
       unauthorized: Schemas.error("Not authenticated"),
       forbidden: Schemas.error("Admin required")
     ]
@@ -147,13 +149,14 @@ defmodule GamendWeb.Api.V1.Admin.EconomyController do
     security: [%{"authorization" => []}],
     request_body: @mutate_body,
     responses: [
-      ok: {"Spent: the balance after", "application/json", WalletBalanceResponse},
+      ok:
+        {"Spent: the balance after, also for an idempotency_key already applied",
+         "application/json", WalletBalanceResponse},
       bad_request: Schemas.error("Missing or invalid fields"),
       forbidden: Schemas.error("Admin required, or insufficient funds (insufficient_funds)"),
       not_found: Schemas.error("No such user (user_not_found)"),
-      conflict: Schemas.error("That idempotency_key already applied (idempotent_replay)"),
-      unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Admin required")
+      unprocessable_entity: Schemas.error("The ledger row is invalid, e.g. a long reason"),
+      unauthorized: Schemas.error("Not authenticated")
     ]
   )
 
@@ -168,18 +171,15 @@ defmodule GamendWeb.Api.V1.Admin.EconomyController do
       idempotency_key: params["idempotency_key"]
     ]
 
-    with amount when is_integer(amount) and amount > 0 <- amount,
+    with {:ok, amount} <- positive(amount),
          {:ok, balance} <- apply(Economy, op, [uid, currency, amount, opts]) do
       reply_data(conn, %{user_id: uid, currency: currency, balance: balance})
     else
-      {:error, :user_not_found} ->
-        reply_error(conn, :not_found, "user_not_found")
+      :invalid_amount ->
+        reply_error(conn, :bad_request, "invalid_amount", "amount must be a positive integer")
 
       {:error, reason} ->
         refusal(conn, reason)
-
-      _ ->
-        reply_error(conn, :bad_request, "invalid_amount", "amount must be a positive integer")
     end
   end
 
@@ -250,6 +250,7 @@ defmodule GamendWeb.Api.V1.Admin.EconomyController do
       ok: {"Granted: the quantity after", "application/json", ItemQuantityResponse},
       bad_request: Schemas.error("Missing or invalid fields"),
       not_found: Schemas.error("No such user (user_not_found)"),
+      unprocessable_entity: Schemas.error("The item or ledger row is invalid"),
       unauthorized: Schemas.error("Not authenticated"),
       forbidden: Schemas.error("Admin required")
     ]
@@ -266,8 +267,8 @@ defmodule GamendWeb.Api.V1.Admin.EconomyController do
       bad_request: Schemas.error("Missing or invalid fields"),
       forbidden: Schemas.error("Admin required, or insufficient items (insufficient_items)"),
       not_found: Schemas.error("No such user (user_not_found)"),
-      unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Admin required")
+      unprocessable_entity: Schemas.error("The ledger row is invalid"),
+      unauthorized: Schemas.error("Not authenticated")
     ]
   )
 
@@ -277,18 +278,15 @@ defmodule GamendWeb.Api.V1.Admin.EconomyController do
        when is_binary(uid) and is_binary(item) do
     qty = parse_amount(params["quantity"] || params["amount"])
 
-    with qty when is_integer(qty) and qty > 0 <- qty,
+    with {:ok, qty} <- positive(qty),
          {:ok, quantity} <- apply(Inventory, op, [uid, item, qty, []]) do
       reply_data(conn, %{user_id: uid, item: item, quantity: quantity})
     else
-      {:error, :user_not_found} ->
-        reply_error(conn, :not_found, "user_not_found")
+      :invalid_amount ->
+        reply_error(conn, :bad_request, "invalid_amount", "quantity must be a positive integer")
 
       {:error, reason} ->
         refusal(conn, reason)
-
-      _ ->
-        reply_error(conn, :bad_request, "invalid_amount", "quantity must be a positive integer")
     end
   end
 
@@ -296,13 +294,21 @@ defmodule GamendWeb.Api.V1.Admin.EconomyController do
     do:
       reply_error(conn, :bad_request, "missing_param", "user_id, item and quantity are required")
 
-  # A refusal from `Gamend.Economy` / `Gamend.Inventory`; the status follows
-  # the rule in docs/specs/api-conventions.md.
-  defp refusal(conn, reason) when reason in [:insufficient_funds, :insufficient_items],
-    do: reply_error(conn, :forbidden, reason)
+  # A refusal from `Gamend.Economy` / `Gamend.Inventory`, answered with the
+  # status `GamendWeb.ErrorStatus` gives it: `invalid_currency` and
+  # `invalid_item` 400, `insufficient_funds` and `insufficient_items` 403,
+  # `user_not_found` 404. A replayed `idempotency_key` is no error: both
+  # contexts answer it with the balance it left. A ledger or balance row the
+  # database refused is a changeset under a tag, a ledger `reason` longer than
+  # its 64 characters among them.
+  defp refusal(conn, {tag, %Ecto.Changeset{} = changeset})
+       when tag in [:ledger_error, :wallet_error, :item_error],
+       do: unprocessable(conn, changeset)
 
-  defp refusal(conn, :idempotent_replay), do: reply_error(conn, :conflict, "idempotent_replay")
-  defp refusal(conn, reason) when is_atom(reason), do: reply_error(conn, :bad_request, reason)
+  defp refusal(conn, reason), do: reply_reason(conn, reason)
+
+  defp positive(amount) when is_integer(amount) and amount > 0, do: {:ok, amount}
+  defp positive(_amount), do: :invalid_amount
 
   defp parse_amount(n) when is_integer(n), do: n
 

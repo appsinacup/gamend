@@ -28,6 +28,8 @@ defmodule GamendWeb.Uploads do
   import Phoenix.Controller, only: [json: 2]
   import Plug.Conn, only: [put_status: 2]
 
+  require Logger
+
   alias Gamend.Storage
 
   @doc """
@@ -175,16 +177,42 @@ defmodule GamendWeb.Uploads do
   Reads one byte past the cap so an oversized body is detected without
   buffering the whole thing. Image bodies pass the endpoint parser unparsed
   (`pass: */*`).
+
+  A body the connection could not deliver raises, as `Plug.Parsers` does
+  for every other body: `Plug.TimeoutError` (408) for a client too slow to
+  send it, `Plug.BadRequestError` (400) otherwise. Bandit raises before
+  answering an error at all; the clauses are for an adapter that answers one.
+  `:too_large` is then the only reason an upload's read gives, so the
+  endpoints' `with` can tell it from the backend's.
   """
   @spec read_full_body(Plug.Conn.t(), pos_integer()) ::
-          {:ok, binary(), Plug.Conn.t()} | {:error, term()}
+          {:ok, binary(), Plug.Conn.t()} | {:error, :too_large}
   def read_full_body(conn, max) do
     case Plug.Conn.read_body(conn, length: max + 1) do
       {:ok, body, conn} when byte_size(body) <= max -> {:ok, body, conn}
       {:ok, _body, _conn} -> {:error, :too_large}
       {:more, _partial, _conn} -> {:error, :too_large}
-      {:error, _} = error -> error
+      {:error, :timeout} -> raise Plug.TimeoutError
+      {:error, _reason} -> raise Plug.BadRequestError
     end
+  end
+
+  @doc """
+  503 `storage_unavailable`: the storage backend failed to read, write or
+  delete an object (a disk error, S3 unreachable or refusing). The server's
+  fault, not the request's, so it is logged with the backend's reason and the
+  client is told only to try again later.
+  """
+  @spec storage_unavailable(Plug.Conn.t(), term()) :: Plug.Conn.t()
+  def storage_unavailable(conn, reason) do
+    Logger.error("storage backend failed: #{inspect(reason)}")
+
+    GamendWeb.Reply.reply_error(
+      conn,
+      :service_unavailable,
+      "storage_unavailable",
+      "Storage is unavailable; try again later"
+    )
   end
 
   defp error(conn, status, message) do

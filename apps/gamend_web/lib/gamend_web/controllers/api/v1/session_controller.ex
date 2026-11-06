@@ -411,22 +411,14 @@ defmodule GamendWeb.Api.V1.SessionController do
   )
 
   def refresh(conn, %{"refresh_token" => refresh_token}) do
-    # Verify the refresh token and check it's actually a refresh token type
-    case Guardian.decode_and_verify(refresh_token, %{"typ" => "refresh"}) do
-      {:ok, claims} ->
-        case Guardian.resource_from_claims(claims) do
-          {:ok, user} ->
-            # Issue a new access token
-            {:ok, new_access_token, _claims} =
-              Guardian.encode_and_sign(user, %{}, token_type: "access")
+    case refresh_user(refresh_token) do
+      {:ok, user} ->
+        {:ok, new_access_token, _claims} =
+          Guardian.encode_and_sign(user, %{}, token_type: "access")
 
-            reply_data(conn, Tokens.session(user, new_access_token, refresh_token))
+        reply_data(conn, Tokens.session(user, new_access_token, refresh_token))
 
-          {:error, _reason} ->
-            reply_error(conn, :unauthorized, "invalid_refresh_token")
-        end
-
-      {:error, _reason} ->
+      {:error, :invalid_refresh_token} ->
         reply_error(
           conn,
           :unauthorized,
@@ -438,6 +430,21 @@ defmodule GamendWeb.Api.V1.SessionController do
 
   def refresh(conn, _params) do
     reply_error(conn, :bad_request, "missing_param", "refresh_token is required")
+  end
+
+  # The user a refresh token is good for. Whatever is wrong with it means the
+  # same thing to the client, which has to sign in again: a JWT that does not
+  # verify or has expired, an access token sent as a refresh token (the
+  # `typ` claim), and the reasons `Guardian.resource_from_claims/1` gives
+  # (`token_revoked`, `account_deactivated`, `user_not_found`, `invalid_id`,
+  # `no_subject`). Which one is not the client's to know.
+  defp refresh_user(refresh_token) do
+    with {:ok, claims} <- Guardian.decode_and_verify(refresh_token, %{"typ" => "refresh"}),
+         {:ok, user} <- Guardian.resource_from_claims(claims) do
+      {:ok, user}
+    else
+      {:error, _not_a_session} -> {:error, :invalid_refresh_token}
+    end
   end
 
   # Best-effort device attachment when device_id is provided during email login

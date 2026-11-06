@@ -55,9 +55,12 @@ defmodule Gamend.Results do
   end
 
   @doc ~S"""
-    A result and its events, deleted.
+    A result and its events, deleted. `{:error, :not_found}` when another
+    delete took it first.
+    
   """
-  @spec delete(Gamend.Results.Result.t()) :: {:ok, Gamend.Results.Result.t()} | {:error, term()}
+  @spec delete(Gamend.Results.Result.t()) ::
+          {:ok, Gamend.Results.Result.t()} | {:error, :not_found | Ecto.Changeset.t()}
   def delete(_result) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->

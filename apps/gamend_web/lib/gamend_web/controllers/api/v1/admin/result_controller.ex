@@ -105,7 +105,9 @@ defmodule GamendWeb.Api.V1.Admin.ResultController do
          {:ok, _deleted} <- Results.delete(result) do
       reply_ok(conn)
     else
-      _ -> reply_error(conn, :not_found, "not_found")
+      nil -> reply_error(conn, :not_found, "not_found")
+      # `not_found` when a delete racing this one took it first.
+      {:error, reason} -> reply_reason(conn, reason)
     end
   end
 

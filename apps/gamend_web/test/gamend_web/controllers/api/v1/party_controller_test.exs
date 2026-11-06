@@ -1,3 +1,13 @@
+defmodule GamendWeb.PartyControllerTest.VetoAll do
+  use Gamend.TestSupport.NoopHooks
+
+  @impl true
+  def before_party_update(_party, _attrs), do: {:error, "Settings are locked"}
+
+  @impl true
+  def before_party_join(_user, _party), do: {:error, :crew_only}
+end
+
 defmodule GamendWeb.Api.V1.PartyControllerTest do
   use GamendWeb.ConnCase
 
@@ -172,7 +182,7 @@ defmodule GamendWeb.Api.V1.PartyControllerTest do
       assert Parties.get_party(party.id)
     end
 
-    test "returns 400 when not in a party", %{conn: conn} do
+    test "returns 404 when not in a party", %{conn: conn} do
       user = AccountsFixtures.user_fixture()
 
       conn =
@@ -180,7 +190,7 @@ defmodule GamendWeb.Api.V1.PartyControllerTest do
         |> auth_conn(user)
         |> post("/api/v1/parties/disband")
 
-      assert json_response(conn, 400)["error"] == "not_in_party"
+      assert json_response(conn, 404)["error"] == "not_in_party"
     end
   end
 
@@ -381,6 +391,89 @@ defmodule GamendWeb.Api.V1.PartyControllerTest do
         |> post("/api/v1/parties/join_lobby/#{lobby.id}")
 
       assert json_response(conn, 403)["error"] == "not_enough_space"
+    end
+  end
+
+  # Each reason answers with the status `GamendWeb.ErrorStatus` gives it, the
+  # same from every endpoint: a catch-all clause used to pick one per site.
+  describe "the status follows the reason" do
+    setup do
+      previous = Application.get_env(:gamend_core, :hooks_module)
+      on_exit(fn -> Application.put_env(:gamend_core, :hooks_module, previous) end)
+      :ok
+    end
+
+    defp befriended(leader) do
+      target = AccountsFixtures.user_fixture()
+      {:ok, request} = Gamend.Friends.create_request(leader, target.id)
+      {:ok, _} = Gamend.Friends.accept_friend_request(request.id, target)
+      target
+    end
+
+    test "updating while in no party is 404 not_in_party, not 400", %{conn: conn} do
+      conn =
+        conn
+        |> auth_conn(AccountsFixtures.user_fixture())
+        |> patch("/api/v1/parties", %{max_size: 6})
+
+      assert json_response(conn, 404)["error"] == "not_in_party"
+    end
+
+    test "a party lobby with a member offline is 403 members_offline, not 409", %{conn: conn} do
+      leader = AccountsFixtures.user_fixture()
+      {:ok, party} = Parties.create_party(leader, %{})
+      add_member_to_party(AccountsFixtures.user_fixture(), party)
+      set_all_online([leader])
+
+      conn =
+        conn
+        |> auth_conn(leader)
+        |> post("/api/v1/parties/create_lobby", %{title: "party-lobby"})
+
+      assert json_response(conn, 403)["error"] == "members_offline"
+    end
+
+    test "inviting a player who blocked a member is 403 blocked, not 422", %{conn: conn} do
+      leader = AccountsFixtures.user_fixture()
+      member = AccountsFixtures.user_fixture()
+      {:ok, party} = Parties.create_party(leader, %{})
+      add_member_to_party(member, party)
+      target = befriended(leader)
+      {:ok, _} = Gamend.Friends.block_user(target, member.id)
+
+      conn =
+        conn
+        |> auth_conn(leader)
+        |> post("/api/v1/parties/invite", %{target_user_id: target.id})
+
+      assert json_response(conn, 403)["error"] == "blocked"
+    end
+
+    test "a hook vetoing an update is 403 rejected, not 422 unexpected_error", %{conn: conn} do
+      leader = AccountsFixtures.user_fixture()
+      {:ok, _party} = Parties.create_party(leader, %{max_size: 4})
+      Application.put_env(:gamend_core, :hooks_module, GamendWeb.PartyControllerTest.VetoAll)
+
+      conn = conn |> auth_conn(leader) |> patch("/api/v1/parties", %{max_size: 6})
+
+      assert %{"error" => "rejected", "message" => "Settings are locked"} =
+               json_response(conn, 403)
+    end
+
+    test "a hook vetoing a join is 403 rejected, not 422 unexpected_error", %{conn: conn} do
+      leader = AccountsFixtures.user_fixture()
+      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
+      target = befriended(leader)
+      {:ok, _invite} = Parties.invite_to_party(leader, target.id)
+      Application.put_env(:gamend_core, :hooks_module, GamendWeb.PartyControllerTest.VetoAll)
+
+      conn =
+        conn
+        |> auth_conn(target)
+        |> post("/api/v1/parties/invite/accept", %{party_id: party.id})
+
+      assert %{"error" => "rejected", "message" => ":crew_only"} = json_response(conn, 403)
+      refute Accounts.get_user(target.id).party_id
     end
   end
 end

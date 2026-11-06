@@ -45,7 +45,7 @@ defmodule Gamend.Notifications do
     
   """
   @spec admin_create_notification(user_id(), user_id(), map()) ::
-          {:ok, Gamend.Notifications.Notification.t()} | {:error, Ecto.Changeset.t() | atom()}
+          {:ok, Gamend.Notifications.Notification.t()} | {:error, Ecto.Changeset.t()}
   def admin_create_notification(_sender_id, _recipient_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -60,7 +60,7 @@ defmodule Gamend.Notifications do
     Admin: delete a single notification by ID (no ownership check).
   """
   @spec admin_delete_notification(Ecto.UUID.t()) ::
-          {:ok, Gamend.Notifications.Notification.t()} | {:error, term()}
+          {:ok, Gamend.Notifications.Notification.t()} | {:error, :not_found | Ecto.Changeset.t()}
   def admin_delete_notification(_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -373,15 +373,24 @@ defmodule Gamend.Notifications do
     - `"content"` – optional
     - `"metadata"` – optional map
     
-    Returns `{:error, :not_friends}` when the target is not an accepted friend.
+    Returns `{:error, :not_friends}` when the target is not an accepted friend,
+    `:missing_recipient` without a target, `:cannot_notify_self` for the sender
+    themselves, `:too_many_notifications` when the recipient's inbox is at
+    `max_notifications_per_user`, or the changeset.
     
   """
   @spec send_notification(user_id(), map()) ::
-          {:ok, Gamend.Notifications.Notification.t()} | {:error, Ecto.Changeset.t() | atom()}
+          {:ok, Gamend.Notifications.Notification.t()}
+          | {:error,
+             :missing_recipient
+             | :cannot_notify_self
+             | :not_friends
+             | :too_many_notifications
+             | Ecto.Changeset.t()}
   def send_notification(_sender_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        nil
 
       _ ->
         raise "Gamend.Notifications.send_notification/2 is a stub - only available at runtime on Gamend"

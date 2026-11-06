@@ -355,7 +355,7 @@ defmodule Gamend.Notifications do
   Admin: create a notification from any sender to any recipient (no friendship check).
   """
   @spec admin_create_notification(user_id(), user_id(), map()) ::
-          {:ok, Notification.t()} | {:error, Ecto.Changeset.t() | atom()}
+          {:ok, Notification.t()} | {:error, Ecto.Changeset.t()}
   def admin_create_notification(sender_id, recipient_id, attrs)
       when is_binary(sender_id) and is_binary(recipient_id) do
     upsert_notification(sender_id, recipient_id, attrs)
@@ -456,7 +456,8 @@ defmodule Gamend.Notifications do
   end
 
   @doc "Admin: delete a single notification by ID (no ownership check)."
-  @spec admin_delete_notification(Ecto.UUID.t()) :: {:ok, Notification.t()} | {:error, term()}
+  @spec admin_delete_notification(Ecto.UUID.t()) ::
+          {:ok, Notification.t()} | {:error, :not_found | Ecto.Changeset.t()}
   def admin_delete_notification(id) when is_binary(id) do
     case get_notification(id) do
       nil ->
@@ -487,10 +488,19 @@ defmodule Gamend.Notifications do
   - `"content"` – optional
   - `"metadata"` – optional map
 
-  Returns `{:error, :not_friends}` when the target is not an accepted friend.
+  Returns `{:error, :not_friends}` when the target is not an accepted friend,
+  `:missing_recipient` without a target, `:cannot_notify_self` for the sender
+  themselves, `:too_many_notifications` when the recipient's inbox is at
+  `max_notifications_per_user`, or the changeset.
   """
   @spec send_notification(user_id(), map()) ::
-          {:ok, Notification.t()} | {:error, Ecto.Changeset.t() | atom()}
+          {:ok, Notification.t()}
+          | {:error,
+             :missing_recipient
+             | :cannot_notify_self
+             | :not_friends
+             | :too_many_notifications
+             | Ecto.Changeset.t()}
   def send_notification(sender_id, attrs) when is_binary(sender_id) and is_map(attrs) do
     recipient_id = get_recipient_id(attrs)
 

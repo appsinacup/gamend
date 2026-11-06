@@ -110,8 +110,7 @@ defmodule GamendWeb.Api.V1.Admin.ChatController do
       message_id ->
         case Chat.admin_delete_message(message_id) do
           {:ok, _} -> reply_ok(conn)
-          {:error, :not_found} -> reply_error(conn, :not_found, "not_found")
-          {:error, _} -> reply_error(conn, :not_found, "not_found")
+          {:error, reason} -> reply_reason(conn, reason)
         end
     end
   end

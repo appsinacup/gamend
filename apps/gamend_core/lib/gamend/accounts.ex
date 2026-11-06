@@ -1051,14 +1051,15 @@ defmodule Gamend.Accounts do
   `Gamend.Retention` deletes it on the day unless its owner signs in on the
   website first (`cancel_deletion/1`). An account already scheduled keeps its
   date. The expired session tokens come back so the caller can disconnect
-  their LiveViews.
+  their LiveViews. `{:error, :not_found}` when another delete took the
+  account first.
 
   Admin deletions and the retention sweeps call `delete_user/1` and never wait.
   """
   @spec request_deletion(User.t()) ::
           {:ok, :deleted}
           | {:ok, {:scheduled, User.t(), [UserToken.t()]}}
-          | {:error, Ecto.Changeset.t()}
+          | {:error, :not_found | Ecto.Changeset.t()}
   def request_deletion(%User{} = user) do
     case deletion_grace_days() do
       0 ->

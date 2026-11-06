@@ -509,6 +509,10 @@ defmodule GamendWeb.AdminLive.Tournaments do
       {:ok, _} ->
         {:noreply, refresh_detail(put_flash(socket, :info, "Resolved"))}
 
+      {:error, {:hook_rejected, _} = veto} ->
+        {:noreply,
+         put_flash(socket, :error, "Resolve refused: " <> LiveHelpers.error_message(veto))}
+
       {:error, reason} ->
         {:noreply, put_flash(socket, :error, "Resolve failed: #{inspect(reason)}")}
     end

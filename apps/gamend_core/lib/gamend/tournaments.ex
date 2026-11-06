@@ -240,9 +240,20 @@ defmodule Gamend.Tournaments do
   and its refusal answered; in a tournament drawn while the hook ran, the
   refused entry forfeits its match instead. `after_tournament_register` fires
   only once the hook allowed it.
+
+  Refuses with `:registration_closed`, `:already_registered`,
+  `:tournament_full`, `:not_found` (deleted meanwhile), a changeset, or
+  `{:hook_rejected, reason}` with the hook's own reason.
   """
   @spec join_tournament(User.t(), Tournament.t()) ::
-          {:ok, Entry.t()} | {:error, term()}
+          {:ok, Entry.t()}
+          | {:error,
+             :registration_closed
+             | :already_registered
+             | :tournament_full
+             | :not_found
+             | Ecto.Changeset.t()
+             | {:hook_rejected, term()}}
   def join_tournament(%User{} = user, %Tournament{} = tournament) do
     tournament = advance_lifecycle(tournament)
 
@@ -285,9 +296,9 @@ defmodule Gamend.Tournaments do
       {:ok, _} ->
         :ok
 
-      {:error, _reason} = refused ->
+      {:error, reason} ->
         :ok = release_entry_seat(tournament, entry)
-        refused
+        {:error, {:hook_rejected, reason}}
     end
   end
 
@@ -428,8 +439,13 @@ defmodule Gamend.Tournaments do
     end
   end
 
-  @doc "Withdraws `user`'s entry. Only before the draw; `before_tournament_leave` can veto."
-  @spec leave_tournament(User.t(), Tournament.t()) :: {:ok, Tournament.t()} | {:error, term()}
+  @doc """
+  Withdraws `user`'s entry. Only before the draw; `before_tournament_leave` can
+  veto, answered as `{:hook_rejected, reason}`.
+  """
+  @spec leave_tournament(User.t(), Tournament.t()) ::
+          {:ok, Tournament.t()}
+          | {:error, :not_registered | :already_drawn | :not_found | {:hook_rejected, term()}}
   def leave_tournament(%User{} = user, %Tournament{} = tournament) do
     tournament = advance_lifecycle(tournament)
     entry = get_entry(tournament.id, user.id)
@@ -442,12 +458,18 @@ defmodule Gamend.Tournaments do
         {:error, :already_drawn}
 
       true ->
-        with {:ok, _} <-
-               Gamend.Hooks.internal_call(:before_tournament_leave, [user, tournament]),
+        with :ok <- run_leave_hook(tournament, user),
              {:ok, :left} <- withdraw_entry(tournament.id, entry) do
           broadcast_tournament(tournament, "tournament_updated")
           {:ok, tournament}
         end
+    end
+  end
+
+  defp run_leave_hook(tournament, user) do
+    case Gamend.Hooks.internal_call(:before_tournament_leave, [user, tournament]) do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, {:hook_rejected, reason}}
     end
   end
 
@@ -853,23 +875,31 @@ defmodule Gamend.Tournaments do
   (double forfeit — the next round's seat stays empty and cascades as a bye).
 
   First write wins; anything later returns `{:error, :already_resolved}`. The
-  `before_tournament_result` pipeline can veto, leaving the match open.
+  `before_tournament_result` pipeline can veto, leaving the match open: its
+  reason comes back as `{:hook_rejected, reason}`.
   """
   @spec resolve_match(Ecto.UUID.t(), Ecto.UUID.t() | :no_winner) ::
-          {:ok, Match.t()} | {:error, term()}
+          {:ok, Match.t()}
+          | {:error, :not_found | :already_resolved | :invalid_winner | {:hook_rejected, term()}}
   def resolve_match(match_id, winner) when is_binary(match_id) do
     with %Match{} = match <- Repo.get(Match, match_id) || {:error, :not_found},
          %Tournament{} = tournament <- Repo.get(Tournament, match.tournament_id),
          :ok <- validate_resolution(match, winner),
-         {:ok, _} <-
-           Gamend.Hooks.internal_call(:before_tournament_result, [
-             match_payload(tournament, match),
-             winner
-           ]) do
+         :ok <- run_result_hook(tournament, match, winner) do
       internal_resolve(tournament, match, winner, %{})
     else
       {:error, _} = err -> err
       nil -> {:error, :not_found}
+    end
+  end
+
+  defp run_result_hook(tournament, match, winner) do
+    case Gamend.Hooks.internal_call(:before_tournament_result, [
+           match_payload(tournament, match),
+           winner
+         ]) do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, {:hook_rejected, reason}}
     end
   end
 

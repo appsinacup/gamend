@@ -146,6 +146,10 @@ defmodule GamendWeb.Api.V1.GroupController do
     },
     responses: [
       created: {"Group created", "application/json", GroupResponse},
+      forbidden:
+        Schemas.error(
+          "At the cap on groups created (too_many_groups_created), or a hook refused (rejected)"
+        ),
       conflict: Schemas.error("Slug already taken among the creator's groups"),
       unprocessable_entity: Schemas.error("Validation failed (validation_failed)"),
       unauthorized: Schemas.error("Not authenticated")
@@ -198,9 +202,13 @@ defmodule GamendWeb.Api.V1.GroupController do
     },
     responses: [
       ok: {"Group updated", "application/json", GroupResponse},
-      forbidden: Schemas.error("Not an admin"),
+      forbidden: Schemas.error("Not an admin, or a hook refused (rejected)"),
+      not_found: Schemas.error("Group not found"),
       conflict: Schemas.error("Slug already taken among the creator's groups"),
-      unprocessable_entity: Schemas.error("Validation error"),
+      unprocessable_entity:
+        Schemas.error(
+          "Validation error, or max_members below the members there are (max_members_too_low)"
+        ),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -248,7 +256,12 @@ defmodule GamendWeb.Api.V1.GroupController do
       ok: {"Joined successfully (public group)", "application/json", GroupMemberResponse},
       created:
         {"Join request created (private group)", "application/json", GroupJoinRequestResponse},
-      forbidden: Schemas.error("Cannot join (full, hidden, already member, already requested)"),
+      forbidden:
+        Schemas.error(
+          "Cannot join: full, at the cap on groups (too_many_groups), hidden (not_joinable), " <>
+            "or a hook refused (rejected)"
+        ),
+      conflict: Schemas.error("Already a member of the private group (already_member)"),
       not_found: Schemas.error("Group not found"),
       unauthorized: Schemas.error("Not authenticated")
     ]
@@ -269,7 +282,7 @@ defmodule GamendWeb.Api.V1.GroupController do
     ],
     responses: [
       ok: {"Left successfully", "application/json", OkResponse},
-      bad_request: Schemas.error("Not a member"),
+      not_found: Schemas.error("Not a member (not_member), or no such group"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -301,7 +314,11 @@ defmodule GamendWeb.Api.V1.GroupController do
     },
     responses: [
       ok: {"User kicked", "application/json", OkResponse},
-      forbidden: Schemas.error("Not admin or cannot kick"),
+      forbidden:
+        Schemas.error(
+          "Not admin, cannot kick (cannot_kick_self, last_admin), or a hook refused (rejected)"
+        ),
+      not_found: Schemas.error("The target is not a member (not_member)"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -441,7 +458,7 @@ defmodule GamendWeb.Api.V1.GroupController do
       forbidden:
         Schemas.error(
           "Not admin, group full, the player at their cap on groups (too_many_groups), " <>
-            "or the request answered first (not_pending)"
+            "the request answered first (not_pending), or a hook refused (rejected)"
         ),
       not_found: Schemas.error("Request not found"),
       conflict: Schemas.error("Already a member"),
@@ -536,7 +553,12 @@ defmodule GamendWeb.Api.V1.GroupController do
       ok:
         {"`invited` when an invite was created, `request_approved` when a pending join request was approved instead",
          "application/json", GroupInviteOutcomeResponse},
-      forbidden: Schemas.error("Not admin, or blocked"),
+      forbidden:
+        Schemas.error(
+          "Not admin, blocked, not connected (not_connected), the target at their cap on " <>
+            "pending invites (too_many_pending_invites), or, approving the target's pending " <>
+            "request instead, a join refusal (full, too_many_groups, rejected)"
+        ),
       conflict: Schemas.error("Target is already a member"),
       not_found: Schemas.error("Group not found"),
       unauthorized: Schemas.error("Not authenticated")
@@ -559,9 +581,12 @@ defmodule GamendWeb.Api.V1.GroupController do
     ],
     responses: [
       ok: {"Joined successfully", "application/json", GroupMemberResponse},
-      forbidden: Schemas.error("Cannot join (full, no invite)"),
+      forbidden:
+        Schemas.error(
+          "Cannot join: full, at the cap on groups (too_many_groups), or a hook refused (rejected)"
+        ),
       conflict: Schemas.error("Already a member"),
-      not_found: Schemas.error("Invite not found"),
+      not_found: Schemas.error("Invite not found, or no longer pending"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -807,7 +832,11 @@ defmodule GamendWeb.Api.V1.GroupController do
     responses: [
       ok: {"Joined", "application/json", GroupMemberResponse},
       conflict: Schemas.error("Already a member"),
-      forbidden: Schemas.error("Cannot join (full, too many groups, blocked)"),
+      forbidden:
+        Schemas.error(
+          "Cannot join: full, at the cap on groups (too_many_groups), blocked, " <>
+            "or a hook refused (rejected)"
+        ),
       not_found: Schemas.error("No working link with this token"),
       unauthorized: Schemas.error("Not authenticated")
     ]
@@ -886,14 +915,8 @@ defmodule GamendWeb.Api.V1.GroupController do
   def create(conn, params) do
     with_auth(conn, fn user ->
       case Groups.create_group(user.id, params) do
-        {:ok, group} ->
-          reply_data(conn, :created, serialize_group(group))
-
-        {:error, %Ecto.Changeset{} = changeset} ->
-          unprocessable_or_conflict(conn, changeset)
-
-        {:error, reason} when is_atom(reason) ->
-          reply_error(conn, :conflict, reason)
+        {:ok, group} -> reply_data(conn, :created, serialize_group(group))
+        {:error, reason} -> reply_reason(conn, reason)
       end
     end)
   end
@@ -906,23 +929,8 @@ defmodule GamendWeb.Api.V1.GroupController do
 
         group_id ->
           case Groups.update_group(user.id, group_id, params) do
-            {:ok, group} ->
-              reply_data(conn, serialize_group(group))
-
-            {:error, :not_admin} ->
-              reply_error(conn, :forbidden, "not_admin")
-
-            {:error, :not_found} ->
-              reply_error(conn, :not_found, "not_found")
-
-            {:error, :max_members_too_low} ->
-              reply_error(conn, :unprocessable_entity, "max_members_too_low")
-
-            {:error, %Ecto.Changeset{} = changeset} ->
-              unprocessable_or_conflict(conn, changeset)
-
-            {:error, reason} when is_atom(reason) ->
-              reply_error(conn, :unprocessable_entity, reason)
+            {:ok, group} -> reply_data(conn, serialize_group(group))
+            {:error, reason} -> reply_reason(conn, reason)
           end
       end
     end)
@@ -937,9 +945,7 @@ defmodule GamendWeb.Api.V1.GroupController do
         group_id ->
           case Groups.delete_group(user.id, group_id) do
             {:ok, _} -> reply_ok(conn)
-            {:error, :not_found} -> reply_error(conn, :not_found, "not_found")
-            {:error, :not_admin} -> reply_error(conn, :forbidden, "not_admin")
-            {:error, _hook_refused} -> reply_error(conn, :forbidden, "rejected")
+            {:error, reason} -> reply_reason(conn, reason)
           end
       end
     end)
@@ -1008,7 +1014,8 @@ defmodule GamendWeb.Api.V1.GroupController do
     responses: [
       ok: {"Group with the new icon", "application/json", GroupResponse},
       bad_request: Schemas.error("Object not found"),
-      forbidden: Schemas.error("Not a group admin or key not owned"),
+      forbidden: Schemas.error("Not a group admin, key not owned, or a hook refused (rejected)"),
+      unprocessable_entity: Schemas.error("Validation failed (validation_failed)"),
       unauthorized: Schemas.error("Not authenticated"),
       not_found: Schemas.error("Group not found")
     ]
@@ -1029,12 +1036,10 @@ defmodule GamendWeb.Api.V1.GroupController do
       {:ok, group} ->
         reply_data(conn, serialize_group(group))
 
-      # Deleted since `with_group_admin/4` read it.
-      {:error, :not_found} ->
-        reply_error(conn, :not_found, "not_found")
-
-      {:error, _reason} ->
-        reply_error(conn, :unprocessable_entity, "invalid_data")
+      # `:not_found` and `:not_admin` when the group went, or the caller's
+      # rights did, since `with_group_admin/4` read them.
+      {:error, reason} ->
+        reply_reason(conn, reason)
     end
   end
 
@@ -1076,27 +1081,15 @@ defmodule GamendWeb.Api.V1.GroupController do
 
   defp do_join(conn, user, %{type: "public"} = _group, group_id) do
     case Groups.join_group(user.id, group_id) do
-      {:ok, member} ->
-        reply_data(conn, serialize_member(member))
-
-      {:error, :not_found} ->
-        reply_error(conn, :not_found, "not_found")
-
-      {:error, reason} ->
-        reply_error(conn, :forbidden, reason)
+      {:ok, member} -> reply_data(conn, serialize_member(member))
+      {:error, reason} -> reply_reason(conn, reason)
     end
   end
 
   defp do_join(conn, user, %{type: "private"} = _group, group_id) do
     case Groups.request_join(user.id, group_id) do
-      {:ok, request} ->
-        reply_data(conn, :created, serialize_join_request(request))
-
-      {:error, :not_found} ->
-        reply_error(conn, :not_found, "not_found")
-
-      {:error, reason} ->
-        reply_error(conn, :forbidden, reason)
+      {:ok, request} -> reply_data(conn, :created, serialize_join_request(request))
+      {:error, reason} -> reply_reason(conn, reason)
     end
   end
 
@@ -1113,14 +1106,8 @@ defmodule GamendWeb.Api.V1.GroupController do
 
         group_id ->
           case Groups.leave_group(user.id, group_id) do
-            {:ok, _} ->
-              reply_ok(conn)
-
-            {:error, :not_member} ->
-              reply_error(conn, :bad_request, "not_member")
-
-            {:error, reason} ->
-              reply_error(conn, :unprocessable_entity, reason)
+            {:ok, _} -> reply_ok(conn)
+            {:error, reason} -> reply_reason(conn, reason)
           end
       end
     end)
@@ -1139,20 +1126,8 @@ defmodule GamendWeb.Api.V1.GroupController do
 
         {group_id, tid} ->
           case Groups.kick_member(user.id, group_id, tid) do
-            {:ok, _} ->
-              reply_ok(conn)
-
-            {:error, :not_admin} ->
-              reply_error(conn, :forbidden, "not_admin")
-
-            {:error, :cannot_kick_self} ->
-              reply_error(conn, :forbidden, "cannot_kick_self")
-
-            {:error, :not_member} ->
-              reply_error(conn, :not_found, "not_member")
-
-            {:error, reason} ->
-              reply_error(conn, :forbidden, reason)
+            {:ok, _} -> reply_ok(conn)
+            {:error, reason} -> reply_reason(conn, reason)
           end
       end
     end)
@@ -1196,23 +1171,8 @@ defmodule GamendWeb.Api.V1.GroupController do
 
         {group_id, tid} ->
           case Groups.promote_member(user.id, group_id, tid) do
-            {:ok, member} ->
-              reply_data(conn, serialize_member(member))
-
-            {:error, :not_admin} ->
-              reply_error(conn, :forbidden, "not_admin")
-
-            {:error, :cannot_promote_self} ->
-              reply_error(conn, :forbidden, "cannot_promote_self")
-
-            {:error, :not_member} ->
-              reply_error(conn, :not_found, "not_member")
-
-            {:error, :already_admin} ->
-              reply_error(conn, :conflict, "already_admin")
-
-            {:error, reason} ->
-              reply_error(conn, :forbidden, reason)
+            {:ok, member} -> reply_data(conn, serialize_member(member))
+            {:error, reason} -> reply_reason(conn, reason)
           end
       end
     end)
@@ -1231,23 +1191,8 @@ defmodule GamendWeb.Api.V1.GroupController do
 
         {group_id, tid} ->
           case Groups.demote_member(user.id, group_id, tid) do
-            {:ok, member} ->
-              reply_data(conn, serialize_member(member))
-
-            {:error, :not_admin} ->
-              reply_error(conn, :forbidden, "not_admin")
-
-            {:error, :cannot_demote_self} ->
-              reply_error(conn, :forbidden, "cannot_demote_self")
-
-            {:error, :not_member} ->
-              reply_error(conn, :not_found, "not_member")
-
-            {:error, :already_member} ->
-              reply_error(conn, :conflict, "already_member")
-
-            {:error, reason} ->
-              reply_error(conn, :forbidden, reason)
+            {:ok, member} -> reply_data(conn, serialize_member(member))
+            {:error, reason} -> reply_reason(conn, reason)
           end
       end
     end)
@@ -1269,8 +1214,8 @@ defmodule GamendWeb.Api.V1.GroupController do
 
               reply_page(conn, serialized, page, page_size, total_count)
 
-            {:error, :not_admin} ->
-              reply_error(conn, :forbidden, "not_admin")
+            {:error, reason} ->
+              reply_reason(conn, reason)
           end
       end
     end)
@@ -1284,26 +1229,8 @@ defmodule GamendWeb.Api.V1.GroupController do
 
         rid ->
           case Groups.approve_join_request(user.id, rid) do
-            {:ok, member} ->
-              reply_data(conn, serialize_member(member))
-
-            {:error, :not_found} ->
-              reply_error(conn, :not_found, "not_found")
-
-            {:error, :not_pending} ->
-              reply_error(conn, :forbidden, "not_pending")
-
-            {:error, :not_admin} ->
-              reply_error(conn, :forbidden, "not_admin")
-
-            {:error, :full} ->
-              reply_error(conn, :forbidden, "full")
-
-            {:error, :already_member} ->
-              reply_error(conn, :conflict, "already_member")
-
-            {:error, reason} ->
-              reply_error(conn, :forbidden, reason)
+            {:ok, member} -> reply_data(conn, serialize_member(member))
+            {:error, reason} -> reply_reason(conn, reason)
           end
       end
     end)
@@ -1317,20 +1244,8 @@ defmodule GamendWeb.Api.V1.GroupController do
 
         rid ->
           case Groups.reject_join_request(user.id, rid) do
-            {:ok, request} ->
-              reply_data(conn, serialize_join_request(request))
-
-            {:error, :not_found} ->
-              reply_error(conn, :not_found, "not_found")
-
-            {:error, :not_pending} ->
-              reply_error(conn, :forbidden, "not_pending")
-
-            {:error, :not_admin} ->
-              reply_error(conn, :forbidden, "not_admin")
-
-            {:error, reason} ->
-              reply_error(conn, :unprocessable_entity, reason)
+            {:ok, request} -> reply_data(conn, serialize_join_request(request))
+            {:error, reason} -> reply_reason(conn, reason)
           end
       end
     end)
@@ -1344,20 +1259,8 @@ defmodule GamendWeb.Api.V1.GroupController do
 
         rid ->
           case Groups.cancel_join_request(user.id, rid) do
-            {:ok, request} ->
-              reply_data(conn, serialize_join_request(request))
-
-            {:error, :not_found} ->
-              reply_error(conn, :not_found, "not_found")
-
-            {:error, :not_pending} ->
-              reply_error(conn, :forbidden, "not_pending")
-
-            {:error, :not_owner} ->
-              reply_error(conn, :forbidden, "not_owner")
-
-            {:error, reason} ->
-              reply_error(conn, :unprocessable_entity, reason)
+            {:ok, request} -> reply_data(conn, serialize_join_request(request))
+            {:error, reason} -> reply_reason(conn, reason)
           end
       end
     end)
@@ -1382,20 +1285,8 @@ defmodule GamendWeb.Api.V1.GroupController do
             {:ok, _invite} ->
               reply_data(conn, %{status: "invited"})
 
-            {:error, :not_found} ->
-              reply_error(conn, :not_found, "not_found")
-
-            {:error, :not_admin} ->
-              reply_error(conn, :forbidden, "not_admin")
-
-            {:error, :already_member} ->
-              reply_error(conn, :conflict, "already_member")
-
-            {:error, :blocked} ->
-              reply_error(conn, :forbidden, "blocked")
-
             {:error, reason} ->
-              reply_error(conn, :forbidden, reason)
+              reply_reason(conn, reason)
           end
       end
     end)
@@ -1412,20 +1303,13 @@ defmodule GamendWeb.Api.V1.GroupController do
             {:ok, member} ->
               reply_data(conn, serialize_member(member))
 
-            {:error, :not_found} ->
-              reply_error(conn, :not_found, "not_found")
-
-            {:error, :already_member} ->
-              reply_error(conn, :conflict, "already_member")
-
+            # Answered, cancelled or claimed by another accept: to its
+            # recipient, as gone as one that never was.
             {:error, :no_invite} ->
               reply_error(conn, :not_found, "not_found")
 
-            {:error, :full} ->
-              reply_error(conn, :forbidden, "full")
-
             {:error, reason} ->
-              reply_error(conn, :forbidden, reason)
+              reply_reason(conn, reason)
           end
       end
     end)
@@ -1489,14 +1373,8 @@ defmodule GamendWeb.Api.V1.GroupController do
 
         iid ->
           case Groups.cancel_invite(user.id, iid) do
-            :ok ->
-              reply_ok(conn)
-
-            {:error, :not_found} ->
-              reply_error(conn, :not_found, "not_found")
-
-            {:error, :not_owner} ->
-              reply_error(conn, :forbidden, "not_owner")
+            :ok -> reply_ok(conn)
+            {:error, reason} -> reply_reason(conn, reason)
           end
       end
     end)
@@ -1510,8 +1388,9 @@ defmodule GamendWeb.Api.V1.GroupController do
            %{} = link <- Groups.get_invite_link(group_id) do
         reply_data(conn, serialize_invite_link(conn, link))
       else
+        # A malformed id, no such group, or no working link.
+        nil -> reply_error(conn, :not_found, "not_found")
         :not_admin -> reply_error(conn, :forbidden, "not_admin")
-        _none -> reply_error(conn, :not_found, "not_found")
       end
     end)
   end
@@ -1522,11 +1401,8 @@ defmodule GamendWeb.Api.V1.GroupController do
            {:ok, link} <- Groups.create_invite_link(user.id, group_id) do
         reply_data(conn, serialize_invite_link(conn, link))
       else
-        {:error, reason} when reason in [:not_admin, :links_off] ->
-          reply_error(conn, :forbidden, reason)
-
-        _not_found ->
-          reply_error(conn, :not_found, "not_found")
+        nil -> reply_error(conn, :not_found, "not_found")
+        {:error, reason} -> reply_reason(conn, reason)
       end
     end)
   end
@@ -1537,11 +1413,8 @@ defmodule GamendWeb.Api.V1.GroupController do
            :ok <- Groups.delete_invite_link(user.id, group_id) do
         reply_ok(conn)
       else
-        {:error, reason} when reason in [:not_admin, :links_off] ->
-          reply_error(conn, :forbidden, reason)
-
-        _not_found ->
-          reply_error(conn, :not_found, "not_found")
+        nil -> reply_error(conn, :not_found, "not_found")
+        {:error, reason} -> reply_reason(conn, reason)
       end
     end)
   end
@@ -1556,8 +1429,9 @@ defmodule GamendWeb.Api.V1.GroupController do
              Groups.list_group_invites(user.id, group_id, page: page, page_size: page_size) do
         reply_page(conn, invites, page, page_size, Groups.count_group_invites(group_id))
       else
-        {:error, :not_admin} -> reply_error(conn, :forbidden, "not_admin")
-        _not_found -> reply_error(conn, :not_found, "not_found")
+        # A malformed id, or no such group.
+        nil -> reply_error(conn, :not_found, "not_found")
+        {:error, reason} -> reply_reason(conn, reason)
       end
     end)
   end
@@ -1586,9 +1460,7 @@ defmodule GamendWeb.Api.V1.GroupController do
     with_auth(conn, fn user ->
       case Groups.join_by_invite_link(user.id, token) do
         {:ok, member} -> reply_data(conn, serialize_member(member))
-        {:error, :not_found} -> reply_error(conn, :not_found, "not_found")
-        {:error, :already_member} -> reply_error(conn, :conflict, "already_member")
-        {:error, reason} -> reply_error(conn, :forbidden, reason)
+        {:error, reason} -> reply_reason(conn, reason)
       end
     end)
   end

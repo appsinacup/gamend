@@ -1,3 +1,10 @@
+defmodule GamendWeb.Api.V1.ChatControllerTest.VetoMessage do
+  use Gamend.TestSupport.NoopHooks
+
+  @impl true
+  def before_chat_message(_user, _attrs), do: {:error, "No chat during the match"}
+end
+
 defmodule GamendWeb.Api.V1.ChatControllerTest do
   use GamendWeb.ConnCase
 
@@ -5,6 +12,7 @@ defmodule GamendWeb.Api.V1.ChatControllerTest do
   alias Gamend.Chat.Message
   alias Gamend.Groups
   alias Gamend.Repo
+  alias Gamend.UUIDv7
   alias GamendWeb.Auth.Guardian
 
   defp auth_conn(conn, user) do
@@ -152,6 +160,106 @@ defmodule GamendWeb.Api.V1.ChatControllerTest do
         |> get("/api/v1/chat/unread", %{chat_type: "group", chat_ref_id: group.id})
 
       assert %{"error" => "not_in_group"} = json_response(conn, 403)
+    end
+  end
+
+  describe "the status follows the reason" do
+    setup %{conn: conn} do
+      owner = create_user()
+
+      {:ok, group} =
+        Groups.create_group(owner.id, %{"title" => "status-chat", "type" => "public"})
+
+      %{owner: owner, group: group, owner_conn: auth_conn(conn, owner)}
+    end
+
+    test "a lobby or party the caller is not in answers 404", %{owner_conn: owner_conn} do
+      elsewhere = UUIDv7.generate()
+
+      assert %{"error" => "not_in_lobby"} =
+               owner_conn
+               |> post("/api/v1/chat/messages", %{
+                 chat_type: "lobby",
+                 chat_ref_id: elsewhere,
+                 content: "hi"
+               })
+               |> json_response(404)
+
+      assert %{"error" => "not_in_party"} =
+               owner_conn
+               |> post("/api/v1/chat/messages", %{
+                 chat_type: "party",
+                 chat_ref_id: elsewhere,
+                 content: "hi"
+               })
+               |> json_response(404)
+
+      assert %{"error" => "not_in_lobby"} =
+               owner_conn
+               |> get("/api/v1/chat/messages", %{chat_type: "lobby", chat_ref_id: elsewhere})
+               |> json_response(404)
+
+      assert %{"error" => "not_in_party"} =
+               owner_conn
+               |> get("/api/v1/chat/unread", %{chat_type: "party", chat_ref_id: elsewhere})
+               |> json_response(404)
+    end
+
+    test "a game hook's veto answers 403 rejected with its words", ctx do
+      previous = Application.get_env(:gamend_core, :hooks_module)
+
+      Application.put_env(
+        :gamend_core,
+        :hooks_module,
+        GamendWeb.Api.V1.ChatControllerTest.VetoMessage
+      )
+
+      on_exit(fn -> Application.put_env(:gamend_core, :hooks_module, previous) end)
+
+      assert %{"error" => "rejected", "message" => "No chat during the match"} =
+               ctx.owner_conn
+               |> post("/api/v1/chat/messages", %{
+                 chat_type: "group",
+                 chat_ref_id: ctx.group.id,
+                 content: "gg"
+               })
+               |> json_response(403)
+    end
+
+    test "a malformed chat id answers 400, not a crash", ctx do
+      assert %{"error" => "invalid_chat_ref"} =
+               ctx.owner_conn
+               |> post("/api/v1/chat/messages", %{
+                 chat_type: "group",
+                 chat_ref_id: "not-an-id",
+                 content: "hi"
+               })
+               |> json_response(400)
+
+      assert %{"error" => "invalid_message"} =
+               ctx.owner_conn
+               |> post("/api/v1/chat/read", %{
+                 chat_type: "group",
+                 chat_ref_id: ctx.group.id,
+                 message_id: "not-an-id"
+               })
+               |> json_response(400)
+    end
+
+    test "editing or deleting another player's message answers 403 forbidden", ctx do
+      other = create_user()
+      {:ok, _} = Groups.join_group(other.id, ctx.group.id)
+      message = insert_message(other, "group", ctx.group.id, "theirs")
+
+      assert %{"error" => "forbidden"} =
+               ctx.owner_conn
+               |> patch("/api/v1/chat/messages/#{message.id}", %{content: "mine now"})
+               |> json_response(403)
+
+      assert %{"error" => "forbidden"} =
+               ctx.owner_conn
+               |> delete("/api/v1/chat/messages/#{message.id}")
+               |> json_response(403)
     end
   end
 end

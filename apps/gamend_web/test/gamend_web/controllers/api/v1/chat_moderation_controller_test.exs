@@ -6,6 +6,7 @@ defmodule GamendWeb.Api.V1.ChatModerationControllerTest do
   alias Gamend.AccountsFixtures
   alias Gamend.Chat
   alias Gamend.Chat.Message
+  alias Gamend.Chat.Moderation
   alias Gamend.Chat.Moderation.Cache
   alias Gamend.Groups
   alias Gamend.Lobbies
@@ -461,6 +462,42 @@ defmodule GamendWeb.Api.V1.ChatModerationControllerTest do
                json_response(conn, 422)
 
       refute Chat.muted?(member.id, "lobby", lobby.id)
+    end
+  end
+
+  describe "POST /api/v1/chat/messages refused by moderation" do
+    test "a muted sender answers 403 muted", %{conn: conn} do
+      %{member: member, lobby: lobby} = hostless_lobby("muted-send")
+      {:ok, _} = Chat.mute_user(member.id, "lobby", lobby.id)
+
+      conn =
+        conn
+        |> auth_conn(member)
+        |> post("/api/v1/chat/messages", %{
+          chat_type: "lobby",
+          chat_ref_id: lobby.id,
+          content: "let me talk"
+        })
+
+      assert json_response(conn, 403)["error"] == "muted"
+    end
+
+    test "a blocked word answers 422 blocked_content", %{conn: conn} do
+      %{member: member, lobby: lobby} = hostless_lobby("filtered-send")
+
+      {:ok, _} =
+        Moderation.create_filter_word(%{"word" => "grief", "severity" => "block"})
+
+      conn =
+        conn
+        |> auth_conn(member)
+        |> post("/api/v1/chat/messages", %{
+          chat_type: "lobby",
+          chat_ref_id: lobby.id,
+          content: "good grief"
+        })
+
+      assert json_response(conn, 422)["error"] == "blocked_content"
     end
   end
 end

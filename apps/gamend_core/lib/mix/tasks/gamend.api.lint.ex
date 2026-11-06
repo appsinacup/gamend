@@ -33,7 +33,9 @@ defmodule Mix.Tasks.Gamend.Api.Lint do
     {"R15-response-shape",
      "An API controller answers outside GamendWeb.Reply, or documents an inline response schema"},
     {"R17-boundary-raise",
-     "A controller, channel, LiveView event or job looks a row up with a raising `!`"}
+     "A controller, channel, LiveView event or job looks a row up with a raising `!`"},
+    {"R18-open-error",
+     "An API controller answers an error reason no clause names with a status of its own"}
   ]
 
   @impl true

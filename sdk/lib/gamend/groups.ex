@@ -78,11 +78,12 @@ defmodule Gamend.Groups do
     
   """
   @spec accept_invite(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+          {:ok, Gamend.Groups.GroupMember.t()}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def accept_invite(_user_id, _invite_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        nil
 
       _ ->
         raise "Gamend.Groups.accept_invite/2 is a stub - only available at runtime on Gamend"
@@ -92,11 +93,13 @@ defmodule Gamend.Groups do
   @doc ~S"""
     Admin-level delete (no membership check, for server admins).
   """
-  @spec admin_delete_group(Ecto.UUID.t()) :: {:ok, Gamend.Groups.Group.t()} | {:error, term()}
+  @spec admin_delete_group(Ecto.UUID.t()) ::
+          {:ok, Gamend.Groups.Group.t()}
+          | {:error, :not_found | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def admin_delete_group(_group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        nil
 
       _ ->
         raise "Gamend.Groups.admin_delete_group/1 is a stub - only available at runtime on Gamend"
@@ -107,11 +110,12 @@ defmodule Gamend.Groups do
     Admin-level update, bypasses membership checks.
   """
   @spec admin_update_group(Gamend.Groups.Group.t(), map()) ::
-          {:ok, Gamend.Groups.Group.t()} | {:error, Ecto.Changeset.t()}
+          {:ok, Gamend.Groups.Group.t()}
+          | {:error, :not_found | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def admin_update_group(_group, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        nil
 
       _ ->
         raise "Gamend.Groups.admin_update_group/2 is a stub - only available at runtime on Gamend"
@@ -122,11 +126,12 @@ defmodule Gamend.Groups do
     Approve a pending join request. Admin only.
   """
   @spec approve_join_request(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+          {:ok, Gamend.Groups.GroupMember.t()}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def approve_join_request(_admin_id, _request_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        nil
 
       _ ->
         raise "Gamend.Groups.approve_join_request/2 is a stub - only available at runtime on Gamend"
@@ -432,7 +437,12 @@ defmodule Gamend.Groups do
     
   """
   @spec create_group(Ecto.UUID.t(), map()) ::
-          {:ok, Gamend.Groups.Group.t()} | {:error, Ecto.Changeset.t() | term()}
+          {:ok, Gamend.Groups.Group.t()}
+          | {:error,
+             :user_not_found
+             | :too_many_groups_created
+             | {:hook_rejected, term()}
+             | Ecto.Changeset.t()}
   def create_group(_user_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -484,7 +494,8 @@ defmodule Gamend.Groups do
     
   """
   @spec delete_group(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Groups.Group.t()} | {:error, term()}
+          {:ok, Gamend.Groups.Group.t()}
+          | {:error, :not_found | :not_admin | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def delete_group(_user_id, _group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -874,11 +885,13 @@ defmodule Gamend.Groups do
     
   """
   @spec invite_to_group(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Groups.GroupInvite.t()} | {:ok, :request_approved} | {:error, atom()}
+          {:ok, Gamend.Groups.GroupInvite.t()}
+          | {:ok, :request_approved}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def invite_to_group(_admin_id, _group_id, _target_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        nil
 
       _ ->
         raise "Gamend.Groups.invite_to_group/3 is a stub - only available at runtime on Gamend"
@@ -888,16 +901,18 @@ defmodule Gamend.Groups do
   @doc ~S"""
     Join the group a link opens, as a member. `{:error, :not_found}` for a
     link that does not work (see `get_invite_link_by_token/1`),
-    `{:error, :already_member}` for someone already in it, and the room
-    checks' `:full` and `:too_many_groups`.
+    `{:error, :already_member}` for someone already in it, the room
+    checks' `:full` and `:too_many_groups`, and the `before_group_join`
+    hook's veto as `{:hook_rejected, reason}`.
     
   """
   @spec join_by_invite_link(Ecto.UUID.t(), String.t()) ::
-          {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+          {:ok, Gamend.Groups.GroupMember.t()}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def join_by_invite_link(_user_id, _token) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        nil
 
       _ ->
         raise "Gamend.Groups.join_by_invite_link/2 is a stub - only available at runtime on Gamend"
@@ -909,11 +924,12 @@ defmodule Gamend.Groups do
     
   """
   @spec join_group(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+          {:ok, Gamend.Groups.GroupMember.t()}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def join_group(_user_id, _group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        nil
 
       _ ->
         raise "Gamend.Groups.join_group/2 is a stub - only available at runtime on Gamend"
@@ -924,11 +940,18 @@ defmodule Gamend.Groups do
     Kick a member from the group. Only admins can kick.
   """
   @spec kick_member(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+          {:ok, Gamend.Groups.GroupMember.t()}
+          | {:error,
+             :not_admin
+             | :cannot_kick_self
+             | :last_admin
+             | :not_member
+             | {:hook_rejected, term()}
+             | Ecto.Changeset.t()}
   def kick_member(_admin_id, _group_id, _target_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        nil
 
       _ ->
         raise "Gamend.Groups.kick_member/3 is a stub - only available at runtime on Gamend"
@@ -939,7 +962,7 @@ defmodule Gamend.Groups do
     Leave a group.
   """
   @spec leave_group(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Groups.GroupMember.t()} | {:error, atom()}
+          {:ok, Gamend.Groups.GroupMember.t()} | {:error, :not_member | Ecto.Changeset.t()}
   def leave_group(_user_id, _group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -1217,7 +1240,7 @@ defmodule Gamend.Groups do
     
   """
   @spec request_join(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Groups.GroupJoinRequest.t()} | {:error, atom()}
+          {:ok, Gamend.Groups.GroupJoinRequest.t()} | {:error, atom() | Ecto.Changeset.t()}
   def request_join(_user_id, _group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -1240,11 +1263,12 @@ defmodule Gamend.Groups do
     
   """
   @spec set_icon_url(String.t(), String.t(), String.t()) ::
-          {:ok, Gamend.Groups.Group.t()} | {:error, :not_admin | Ecto.Changeset.t() | term()}
+          {:ok, Gamend.Groups.Group.t()}
+          | {:error, :not_admin | :not_found | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def set_icon_url(_user_id, _group_id, _url) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        nil
 
       _ ->
         raise "Gamend.Groups.set_icon_url/3 is a stub - only available at runtime on Gamend"
@@ -1330,7 +1354,13 @@ defmodule Gamend.Groups do
     
   """
   @spec update_group(Ecto.UUID.t(), Ecto.UUID.t(), map()) ::
-          {:ok, Gamend.Groups.Group.t()} | {:error, atom() | Ecto.Changeset.t()}
+          {:ok, Gamend.Groups.Group.t()}
+          | {:error,
+             :not_admin
+             | :not_found
+             | :max_members_too_low
+             | {:hook_rejected, term()}
+             | Ecto.Changeset.t()}
   def update_group(_user_id, _group_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->

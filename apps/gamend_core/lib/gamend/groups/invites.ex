@@ -87,7 +87,9 @@ defmodule Gamend.Groups.Invites do
   `invites` to `anyone` (teams of colleagues) lets an admin invite any account.
   """
   @spec invite_to_group(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, GroupInvite.t()} | {:ok, :request_approved} | {:error, atom()}
+          {:ok, GroupInvite.t()}
+          | {:ok, :request_approved}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def invite_to_group(admin_id, group_id, target_user_id)
       when is_binary(admin_id) and is_binary(group_id) and is_binary(target_user_id) do
     group = Groups.get_group(group_id)
@@ -206,7 +208,8 @@ defmodule Gamend.Groups.Invites do
   Works for all group types (public, private, hidden).
   """
   @spec accept_invite(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, GroupMember.t()} | {:error, atom()}
+          {:ok, GroupMember.t()}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def accept_invite(user_id, invite_id)
       when is_binary(user_id) and is_binary(invite_id) do
     case Repo.get(GroupInvite, invite_id) do

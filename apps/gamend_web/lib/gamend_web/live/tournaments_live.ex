@@ -169,6 +169,7 @@ defmodule GamendWeb.TournamentsLive do
   # already player-facing; an atom is humanized ("not_enough_coins" → "Not
   # enough coins") so game-specific reasons read cleanly without core needing
   # to know them. Anything else falls back to the inspected reason.
+  defp entry_error_message({:hook_rejected, reason}), do: entry_error_message(reason)
   defp entry_error_message(reason) when is_binary(reason), do: reason
 
   defp entry_error_message(reason) when is_atom(reason) do

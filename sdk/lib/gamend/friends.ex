@@ -33,6 +33,8 @@ defmodule Gamend.Friends do
   The actual implementation runs on the Gamend.
   """
 
+  @type accept_error() ::
+          :not_found | :not_authorized | :not_pending | :already_friends | :too_many_friends
   @type user_id() :: Ecto.UUID.t()
 
   @doc ~S"""
@@ -46,7 +48,7 @@ defmodule Gamend.Friends do
     
   """
   @spec accept_friend_request(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
-          {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
+          {:ok, Gamend.Friends.Friendship.t()} | {:error, accept_error()}
   def accept_friend_request(_friendship_id, _user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -90,7 +92,8 @@ defmodule Gamend.Friends do
     
   """
   @spec block_friend_request(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
-          {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
+          {:ok, Gamend.Friends.Friendship.t()}
+          | {:error, :not_found | :not_authorized | :not_pending}
   def block_friend_request(_friendship_id, _user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -123,7 +126,7 @@ defmodule Gamend.Friends do
     
   """
   @spec block_user(Gamend.Accounts.User.t(), user_id()) ::
-          {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
+          {:ok, Gamend.Friends.Friendship.t()} | {:error, :cannot_block_self | Ecto.Changeset.t()}
   def block_user(_user, _blocked_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -188,7 +191,7 @@ defmodule Gamend.Friends do
     
   """
   @spec cancel_request(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
-          {:ok, :cancelled} | {:error, :not_found | :not_authorized | term()}
+          {:ok, :cancelled} | {:error, :not_found | :not_authorized | :not_pending}
   def cancel_request(_friendship_id, _user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -299,14 +302,21 @@ defmodule Gamend.Friends do
 
   @doc ~S"""
     Create a friend request from requester -> target.
-      If a reverse pending request exists (target -> requester) it will be accepted instead.
-      Returns {:ok, friendship} on success or {:error, reason}.
+      If a reverse pending request exists (target -> requester) it will be accepted instead,
+      and fails as `accept_friend_request/2` does.
+      A request or a friendship that already stands is returned as `{:ok, friendship}`.
+      Fails with `:cannot_friend_self`, `:blocked`, `:too_many_pending_requests` or the
+      changeset.
       
   """
   @spec create_request(Gamend.Accounts.User.t() | user_id(), user_id()) ::
           {:ok, Gamend.Friends.Friendship.t()}
           | {:error,
-             :cannot_friend_self | :blocked | :already_friends | :already_requested | term()}
+             :cannot_friend_self
+             | :blocked
+             | :too_many_pending_requests
+             | accept_error()
+             | Ecto.Changeset.t()}
   def create_request(_requester_id, _target_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -754,7 +764,8 @@ defmodule Gamend.Friends do
     
   """
   @spec reject_friend_request(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
-          {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
+          {:ok, Gamend.Friends.Friendship.t()}
+          | {:error, :not_found | :not_authorized | :not_pending}
   def reject_friend_request(_friendship_id, _user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -782,7 +793,7 @@ defmodule Gamend.Friends do
     
   """
   @spec remove_friend(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
+          {:ok, Gamend.Friends.Friendship.t()} | {:error, :not_found | :not_pending}
   def remove_friend(_user_id, _friend_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -819,7 +830,7 @@ defmodule Gamend.Friends do
     Unblock a previously-blocked friendship (only the user who blocked may unblock). Returns {:ok, :unblocked} on success.
   """
   @spec unblock_friendship(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
-          {:ok, :unblocked} | {:error, term()}
+          {:ok, :unblocked} | {:error, :not_found | :not_authorized}
   def unblock_friendship(_friendship_id, _user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->

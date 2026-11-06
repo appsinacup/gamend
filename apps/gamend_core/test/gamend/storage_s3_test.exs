@@ -172,7 +172,8 @@ defmodule Gamend.StorageS3Test do
 
     assert S3.delete("avatars/u1/a.png") == :ok
     refute S3.exists?("avatars/u1/a.png")
-    assert {:error, _} = S3.get("avatars/u1/a.png")
+    # A miss is `:not_found` on every backend, so a caller tells it from a failure.
+    assert S3.get("avatars/u1/a.png") == {:error, :not_found}
     assert {:error, _} = S3.stat("avatars/u1/a.png")
   end
 
@@ -221,7 +222,7 @@ defmodule Gamend.StorageS3Test do
   test "a bucket that answers errors is answered as errors" do
     FakeBucket.fail!()
     assert {:error, _} = S3.put("k", "v", [])
-    assert {:error, _} = S3.get("k")
+    assert {:error, {:http_error, 500, _}} = S3.get("k")
     assert {:error, _} = S3.delete("k")
     refute S3.exists?("k")
   end

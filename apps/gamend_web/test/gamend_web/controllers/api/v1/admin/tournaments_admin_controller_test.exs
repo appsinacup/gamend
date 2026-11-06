@@ -72,6 +72,46 @@ defmodule GamendWeb.Api.V1.Admin.TournamentsAdminControllerTest do
     assert Tournaments.get_tournament(id).state == "finished"
   end
 
+  defmodule VetoingHook do
+    def before_tournament_result(_match, _winner), do: {:error, :invalid_report}
+  end
+
+  # Was 403 with the hook's atom as the code (`invalid_report`): a veto is
+  # `rejected`, its reason the message, as on every other endpoint.
+  test "a before_tournament_result veto is 403 rejected", %{admin_conn: admin_conn} do
+    resp = admin_conn |> post("/api/v1/admin/tournaments", create_attrs()) |> json_response(201)
+    id = resp["data"]["id"]
+    tournament = Tournaments.get_tournament(id)
+
+    for _ <- 1..2 do
+      {:ok, _} =
+        Tournaments.join_tournament(
+          Gamend.AccountsFixtures.user_fixture(),
+          Tournaments.advance_lifecycle(tournament)
+        )
+    end
+
+    _ = admin_conn |> post("/api/v1/admin/tournaments/#{id}/draw") |> json_response(200)
+    [match] = Tournaments.list_matches(id)
+
+    original = Application.get_env(:gamend_core, :hooks_module)
+    Application.put_env(:gamend_core, :hooks_module, VetoingHook)
+
+    on_exit(fn ->
+      if original,
+        do: Application.put_env(:gamend_core, :hooks_module, original),
+        else: Application.delete_env(:gamend_core, :hooks_module)
+    end)
+
+    assert admin_conn
+           |> post("/api/v1/admin/tournaments/#{id}/matches/#{match.id}/resolve", %{
+             "winner_entry_id" => match.a_entry_id
+           })
+           |> json_response(403) == %{"error" => "rejected", "message" => ":invalid_report"}
+
+    assert Tournaments.get_match(match.id).resolved_at == nil
+  end
+
   test "resolve without a winner records a double forfeit", %{admin_conn: admin_conn} do
     resp = admin_conn |> post("/api/v1/admin/tournaments", create_attrs()) |> json_response(201)
     id = resp["data"]["id"]

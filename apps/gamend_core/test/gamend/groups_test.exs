@@ -18,6 +18,11 @@ defmodule Gamend.GroupsTest.HooksDenyGroupUpdate do
   def before_group_update(_group, _attrs), do: {:error, :update_blocked}
 end
 
+defmodule Gamend.GroupsTest.HooksDenyDeleteAndKick do
+  def before_group_delete(_group), do: {:error, "the hall is closed"}
+  def before_group_kick(_admin_id, _target_id, _group_id), do: {:error, :kick_blocked}
+end
+
 defmodule Gamend.GroupsTest.HooksModifyGroupUpdate do
   def before_group_update(_group, attrs) do
     {:ok, Map.put(attrs, "description", "hook-injected")}
@@ -827,7 +832,7 @@ defmodule Gamend.GroupsTest do
       {:ok, group} =
         Groups.create_group(owner.id, %{"title" => "JoinHookPub", "type" => "public"})
 
-      assert {:error, :level_too_low} = Groups.join_group(other.id, group.id)
+      assert {:error, {:hook_rejected, :level_too_low}} = Groups.join_group(other.id, group.id)
       refute Groups.member?(group.id, other.id)
     end
 
@@ -843,7 +848,9 @@ defmodule Gamend.GroupsTest do
 
       {:ok, request} = Groups.request_join(other.id, group.id)
 
-      assert {:error, :level_too_low} = Groups.approve_join_request(owner.id, request.id)
+      assert {:error, {:hook_rejected, :level_too_low}} =
+               Groups.approve_join_request(owner.id, request.id)
+
       refute Groups.member?(group.id, other.id)
     end
 
@@ -859,7 +866,9 @@ defmodule Gamend.GroupsTest do
 
       {:ok, invite} = Groups.invite_to_group(owner.id, group.id, other.id)
 
-      assert {:error, :level_too_low} = Groups.accept_invite(other.id, invite.id)
+      assert {:error, {:hook_rejected, :level_too_low}} =
+               Groups.accept_invite(other.id, invite.id)
+
       refute Groups.member?(group.id, other.id)
     end
 
@@ -877,7 +886,7 @@ defmodule Gamend.GroupsTest do
           "metadata" => %{"min_level" => 10}
         })
 
-      assert {:error, {:captured, opts}} = Groups.join_group(other.id, group.id)
+      assert {:error, {:hook_rejected, {:captured, opts}}} = Groups.join_group(other.id, group.id)
       assert opts["source"] == "public_join"
       assert opts["joining_user_id"] == other.id
       assert opts["actor_user_id"] == other.id
@@ -1373,7 +1382,7 @@ defmodule Gamend.GroupsTest do
       {:ok, group} =
         Groups.create_group(owner.id, %{"title" => "HookDenyUp", "type" => "public"})
 
-      assert {:error, :update_blocked} =
+      assert {:error, {:hook_rejected, :update_blocked}} =
                Groups.update_group(owner.id, group.id, %{"description" => "nope"})
 
       # Verify the group wasn't updated
@@ -1407,8 +1416,44 @@ defmodule Gamend.GroupsTest do
       {:ok, group} =
         Groups.create_group(owner.id, %{"title" => "HookAdminUp", "type" => "public"})
 
-      assert {:error, :update_blocked} =
+      assert {:error, {:hook_rejected, :update_blocked}} =
                Groups.admin_update_group(group, %{"description" => "admin nope"})
+    end
+  end
+
+  describe "before_group_delete and before_group_kick vetoes" do
+    setup do
+      original = Application.get_env(:gamend_core, :hooks_module)
+
+      on_exit(fn ->
+        if original do
+          Application.put_env(:gamend_core, :hooks_module, original)
+        else
+          Application.delete_env(:gamend_core, :hooks_module)
+        end
+      end)
+
+      Application.put_env(:gamend_core, :hooks_module, Gamend.GroupsTest.HooksDenyDeleteAndKick)
+      :ok
+    end
+
+    test "a refused delete comes back tagged, and the group stays", %{owner: owner} do
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "HookNoDelete"})
+
+      assert {:error, {:hook_rejected, "the hall is closed"}} =
+               Groups.delete_group(owner.id, group.id)
+
+      assert Groups.get_group(group.id)
+    end
+
+    test "a refused kick comes back tagged, and the member stays", %{owner: owner, other: other} do
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "HookNoKick", "type" => "public"})
+      {:ok, _} = Groups.join_group(other.id, group.id)
+
+      assert {:error, {:hook_rejected, :kick_blocked}} =
+               Groups.kick_member(owner.id, group.id, other.id)
+
+      assert Groups.member?(group.id, other.id)
     end
   end
 

@@ -275,9 +275,9 @@ defmodule GamendWeb.Api.V1.FriendControllerTest do
     f2 = Repo.get!(Gamend.Friends.Friendship, f.id)
     assert f2.status == "blocked"
 
-    # a should not be able to create again (blocked)
+    # a should not be able to create again (blocked): a refusal, 403
     resp2 = post(conn_a, "/api/v1/friends", %{target_user_id: b.id})
-    assert resp2.status == 400
+    assert json_response(resp2, 403)["error"] == "blocked"
   end
 
   test "blocked list and unblock endpoint works", %{conn: conn} do
@@ -448,6 +448,55 @@ defmodule GamendWeb.Api.V1.FriendControllerTest do
 
     test "GET /me/blacklist requires auth" do
       assert build_conn() |> get("/api/v1/me/blacklist") |> Map.get(:status) == 401
+    end
+  end
+
+  defp bearer(conn, user) do
+    {:ok, token, _} = Guardian.encode_and_sign(user)
+    put_req_header(conn, "authorization", "Bearer " <> token)
+  end
+
+  describe "a cap reached is a refusal" do
+    setup do
+      previous = Application.get_env(:gamend_core, Gamend.Limits, [])
+      on_exit(fn -> Application.put_env(:gamend_core, Gamend.Limits, previous) end)
+      %{previous: previous}
+    end
+
+    test "too many requests out answers 403 too_many_pending_requests", %{
+      conn: conn,
+      previous: previous
+    } do
+      a = AccountsFixtures.user_fixture()
+      b = AccountsFixtures.user_fixture()
+
+      Application.put_env(
+        :gamend_core,
+        Gamend.Limits,
+        Keyword.put(previous, :max_pending_friend_requests, 0)
+      )
+
+      resp = conn |> bearer(a) |> post("/api/v1/friends", %{target_user_id: b.id})
+      assert json_response(resp, 403)["error"] == "too_many_pending_requests"
+    end
+
+    test "accepting past the friend cap answers 403 too_many_friends", %{
+      conn: conn,
+      previous: previous
+    } do
+      a = AccountsFixtures.user_fixture()
+      b = AccountsFixtures.user_fixture()
+      {:ok, f} = Friends.create_request(a.id, b.id)
+
+      Application.put_env(
+        :gamend_core,
+        Gamend.Limits,
+        Keyword.put(previous, :max_friends_per_user, 0)
+      )
+
+      resp = conn |> bearer(b) |> post("/api/v1/friends/#{f.id}/accept")
+      assert json_response(resp, 403)["error"] == "too_many_friends"
+      assert Repo.get!(Friends.Friendship, f.id).status == "pending"
     end
   end
 end

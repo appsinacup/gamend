@@ -103,6 +103,40 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardsAdminControllerTest do
       assert resp["error"] == "invalid_score"
     end
 
+    # Was 400: an ended board refuses scores, like a closed registration.
+    test "a score on an ended board is 403 leaderboard_ended", %{
+      admin_conn: admin_conn,
+      lb_id: lb_id
+    } do
+      player = Gamend.AccountsFixtures.user_fixture()
+      admin_conn |> post("/api/v1/admin/leaderboards/#{lb_id}/end") |> json_response(200)
+
+      for body <- [%{user_id: player.id, score: 1}, %{label: "Team A", score: 1}] do
+        assert admin_conn
+               |> post("/api/v1/admin/leaderboards/#{lb_id}/records", body)
+               |> json_response(403) == %{"error" => "leaderboard_ended"}
+      end
+    end
+
+    test "a score for a board or player that is not there is 404", %{
+      admin_conn: admin_conn,
+      lb_id: lb_id
+    } do
+      assert admin_conn
+             |> post("/api/v1/admin/leaderboards/#{lb_id}/records", %{
+               user_id: Ecto.UUID.generate(),
+               score: 1
+             })
+             |> json_response(404) == %{"error" => "user_not_found"}
+
+      assert admin_conn
+             |> post("/api/v1/admin/leaderboards/#{Ecto.UUID.generate()}/records", %{
+               label: "Team A",
+               score: 1
+             })
+             |> json_response(404) == %{"error" => "leaderboard_not_found"}
+    end
+
     test "updating or deleting a record that is not there is not_found", %{
       admin_conn: admin_conn,
       lb_id: lb_id

@@ -60,7 +60,8 @@ defmodule Gamend.ApiConventions do
        role_named_predicates() ++
        inline_ownership_checks() ++
        unnamed_responses() ++
-       raising_lookups_at_boundaries())
+       raising_lookups_at_boundaries() ++
+       open_error_answers())
     |> Enum.sort_by(&{&1.rule, &1.file, &1.line})
   end
 
@@ -691,6 +692,175 @@ defmodule Gamend.ApiConventions do
   defp raising_lookup?(_module, fun) do
     name = Atom.to_string(fun)
     String.starts_with?(name, "get_") and String.ends_with?(name, "!")
+  end
+
+  # ── R18: a reason no clause names goes to reply_reason/2 ───────────────────
+  #
+  # A catch-all error clause gave every reason it caught one status, chosen
+  # for the first reason the author had in mind: a party that lost its leader
+  # answered 400 from one endpoint and 403 from the next, a hook's veto came
+  # back as `invalid_data`, and a reason added to a context later was
+  # answered as whatever the catch-all said. The reasons a controller does
+  # not answer its own way go to `reply_reason(conn, reason)`, which takes the
+  # status from `GamendWeb.ErrorStatus` and raises on a reason it has none
+  # for. Flagged wherever a web module answers JSON (API controllers and the
+  # helpers they share, such as `GamendWeb.ControllerScope`; not LiveViews):
+  #
+  # - `reply_error(conn, :status, reason)`: a chosen status, a code from a
+  #   variable (a status looked up with the code, `{status, code} = ...`, is
+  #   fine);
+  # - `{:error, _} -> reply_error(...)`: the reason thrown away, and the
+  #   same for a function clause taking `_reason`/`_error`/`_other`;
+  # - `_ -> reply_error(...)` in a `with`'s `else`, or in a `case` that also
+  #   matches `{:error, ...}`: every failure answered alike;
+  # - `reply_error(conn, :status, "code")` where `code` is a reason the table
+  #   gives another status: the status follows the reason.
+  #
+  # A reason set that is open by design (a plugin's own codes, over the hook
+  # RPC) says so with `# open-error: <why>` on the line above.
+
+  @ignored_reasons ~w(_ _reason _error _other _err)a
+
+  defp open_error_answers do
+    for path <- ex_files(source_dirs()),
+        String.contains?(path, "_web/") or String.contains?(path, "/controllers/"),
+        not live_view?(path),
+        text = File.read!(path),
+        {:ok, ast} <- [Code.string_to_quoted(text)],
+        lines = List.to_tuple(String.split(text, "\n")),
+        {line, message} <- ast |> open_errors() |> Enum.uniq_by(&elem(&1, 0)),
+        not open_marked?(lines, line) do
+      %{rule: "R18-open-error", file: path, line: line, message: message}
+    end
+  end
+
+  defp open_marked?(lines, line) do
+    Enum.any?([line - 1, line], fn n ->
+      n >= 1 and n <= tuple_size(lines) and
+        String.contains?(elem(lines, n - 1), "# open-error:")
+    end)
+  end
+
+  defp open_errors(ast) do
+    {_ast, found} =
+      Macro.prewalk(ast, [], fn node, acc ->
+        node = unpipe(node)
+        {node, open_errors_at(node) ++ acc}
+      end)
+
+    Enum.sort(found)
+  end
+
+  # `conn |> reply_error(:forbidden, reason)` reads as the call it is.
+  defp unpipe({:|>, _, _} = pipe) do
+    [{head, _} | rest] = Macro.unpipe(pipe)
+    Enum.reduce(rest, head, fn {call, position}, acc -> Macro.pipe(acc, call, position) end)
+  end
+
+  defp unpipe(node), do: node
+
+  defp open_errors_at({:reply_error, meta, [_conn, status, code | _]}) when is_atom(status) do
+    cond do
+      not literal_code?(code) ->
+        [
+          {meta[:line],
+           "answers a reason no clause names with #{status}; match it, or " <>
+             "reply_reason(conn, reason) (GamendWeb.ErrorStatus)"}
+        ]
+
+      (expected = reason_status(code)) not in [nil, status] ->
+        [
+          {meta[:line],
+           "`#{code}` is #{expected} in GamendWeb.ErrorStatus, not #{status}: " <>
+             "the status follows the reason"}
+        ]
+
+      true ->
+        []
+    end
+  end
+
+  defp open_errors_at({:->, meta, [[{:error, reason}], body]}) do
+    if ignored_reason?(reason) and replies_error?(body),
+      do: [
+        {meta[:line],
+         "throws the error reason away; match the ones it answers and " <>
+           "reply_reason(conn, reason) the rest"}
+      ],
+      else: []
+  end
+
+  defp open_errors_at({:with, _, args}) when is_list(args) do
+    case List.last(args) do
+      [{:do, _} | _] = blocks -> catch_alls(Keyword.get(blocks, :else, []), "a with's else")
+      _ -> []
+    end
+  end
+
+  defp open_errors_at({:case, _, [_subject, [do: clauses]]}) when is_list(clauses) do
+    if Enum.any?(clauses, &error_clause?/1),
+      do: catch_alls(clauses, "a case on a result"),
+      else: []
+  end
+
+  defp open_errors_at({kind, meta, [head, body]}) when kind in [:def, :defp] do
+    if Enum.any?(head_args(head), &ignored_reason?/1) and replies_error?(body),
+      do: [
+        {meta[:line],
+         "a clause for any reason answers them all alike; match the ones " <>
+           "it answers and reply_reason(conn, reason) the rest"}
+      ],
+      else: []
+  end
+
+  defp open_errors_at(_node), do: []
+
+  defp catch_alls(clauses, where) do
+    for {:->, meta, [[pattern], body]} <- List.wrap(clauses),
+        bare_var?(pattern),
+        replies_error?(body) do
+      {meta[:line],
+       "#{where} catches every failure and answers them alike; name each, " <>
+         "and reply_reason(conn, reason) an {:error, reason}"}
+    end
+  end
+
+  defp error_clause?({:->, _, [[{:error, _}], _]}), do: true
+  defp error_clause?(_clause), do: false
+
+  defp head_args({:when, _, [head | _]}), do: head_args(head)
+  defp head_args({_name, _, args}) when is_list(args), do: Enum.drop(args, 1)
+  defp head_args(_head), do: []
+
+  defp ignored_reason?({name, _, context}) when is_atom(context), do: name in @ignored_reasons
+  defp ignored_reason?(_pattern), do: false
+
+  defp bare_var?({name, _, context}) when is_atom(name) and is_atom(context),
+    do: name not in [:__MODULE__, :__ENV__]
+
+  defp bare_var?(_pattern), do: false
+
+  defp literal_code?(code), do: is_binary(code) or is_atom(code)
+
+  defp replies_error?(body) do
+    {_ast, found?} =
+      Macro.prewalk(body, false, fn
+        {:reply_error, _, args} = node, _acc when is_list(args) -> {node, true}
+        node, acc -> {node, acc}
+      end)
+
+    found?
+  end
+
+  # The status `GamendWeb.ErrorStatus` gives a code, read at lint time: core
+  # does not depend on web, and in a host repo both are deps. Tests point
+  # `:api_lint_error_status` at a stand-in.
+  defp reason_status(code) do
+    module = Application.get_env(:gamend_core, :api_lint_error_status, GamendWeb.ErrorStatus)
+
+    if Code.ensure_loaded?(module) and function_exported?(module, :status, 1),
+      do: module.status(String.to_atom(to_string(code))),
+      else: nil
   end
 
   defp decision_site?(file),

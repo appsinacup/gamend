@@ -47,9 +47,9 @@ defmodule GamendWeb.Api.V1.ReadyCheckControllerTest do
       assert json_response(conn, 403)["error"] == "not_host"
     end
 
-    test "a caller in no lobby gets 400", _ctx do
+    test "a caller in no lobby gets 404", _ctx do
       conn = post(authed(AccountsFixtures.user_fixture()), "/api/v1/lobbies/ready_check", %{})
-      assert json_response(conn, 400)["error"] == "not_in_lobby"
+      assert json_response(conn, 404)["error"] == "not_in_lobby"
     end
 
     # A hostless lobby has no owner until the game pins one. Once it does, that
@@ -82,7 +82,7 @@ defmodule GamendWeb.Api.V1.ReadyCheckControllerTest do
       assert Lobbies.can_manage_lobby?(server, lobby)
 
       conn = post(authed(server), "/api/v1/lobbies/ready_check", %{})
-      assert json_response(conn, 400)["error"] == "not_in_lobby"
+      assert json_response(conn, 404)["error"] == "not_in_lobby"
     end
 
     test "a second open resets the board instead of refusing", ctx do
@@ -291,9 +291,9 @@ defmodule GamendWeb.Api.V1.ReadyCheckControllerTest do
       assert json_response(conn, 403)["error"] == "not_leader"
     end
 
-    test "a caller in no party gets 400", _ctx do
+    test "a caller in no party gets 404", _ctx do
       conn = post(authed(AccountsFixtures.user_fixture()), "/api/v1/parties/ready_check", %{})
-      assert json_response(conn, 400)["error"] == "not_in_party"
+      assert json_response(conn, 404)["error"] == "not_in_party"
     end
 
     test "a second open resets the board", ctx do

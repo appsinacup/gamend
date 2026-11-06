@@ -519,9 +519,11 @@ defmodule Gamend.Parties do
   If the user is already in another party, they automatically leave it first
   (disbanding if they are the leader).
 
-  Returns `{:error, :no_invite}` if no pending invite exists for that party.
+  Returns `{:error, :no_invite}` if no pending invite exists for that party,
+  and `{:error, {:hook_rejected, reason}}` when `before_party_join` refuses.
   """
-  @spec accept_party_invite(User.t(), Ecto.UUID.t()) :: {:ok, Party.t()} | {:error, atom()}
+  @spec accept_party_invite(User.t(), Ecto.UUID.t()) ::
+          {:ok, Party.t()} | {:error, atom() | Ecto.Changeset.t() | {:hook_rejected, term()}}
   def accept_party_invite(%User{} = user, party_id) when is_binary(party_id) do
     user = Accounts.get_user(user.id)
 
@@ -540,7 +542,7 @@ defmodule Gamend.Parties do
       with {:ok, user} <- ensure_left_current_party(user),
            {:ok, party} <- fetch_party(party_id),
            :ok <- check_not_blocked_by_party(party_id, user.id),
-           {:ok, _} <- Gamend.Hooks.internal_call(:before_party_join, [user, party]),
+           :ok <- run_before_party_join(user, party),
            # Claim the invite before joining, not after.
            #
            # The invite was read at the top, then several steps ran — including
@@ -579,6 +581,13 @@ defmodule Gamend.Parties do
         other ->
           other
       end
+    end
+  end
+
+  defp run_before_party_join(user, party) do
+    case Gamend.Hooks.internal_call(:before_party_join, [user, party]) do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, {:hook_rejected, reason}}
     end
   end
 
@@ -648,7 +657,7 @@ defmodule Gamend.Parties do
       # A kick or a disband took the player out after `user` was read: they
       # are out of a party already, which is all the join needed.
       {:error, :not_in_party} -> {:ok, Repo.get(User, user.id)}
-      {:error, reason} -> {:error, {:leave_failed, reason}}
+      {:error, _reason} = error -> error
     end
   end
 
@@ -1094,8 +1103,11 @@ defmodule Gamend.Parties do
 
   @doc """
   Kick a member from the party. Only the leader can kick.
+
+  `{:error, {:hook_rejected, reason}}` when `before_party_kick` refuses.
   """
-  @spec kick_member(User.t(), Ecto.UUID.t()) :: {:ok, User.t()} | {:error, term()}
+  @spec kick_member(User.t(), Ecto.UUID.t()) ::
+          {:ok, User.t()} | {:error, atom() | {:hook_rejected, term()}}
   def kick_member(%User{} = leader, target_user_id) when is_binary(target_user_id) do
     leader = Accounts.get_user(leader.id)
 
@@ -1104,7 +1116,7 @@ defmodule Gamend.Parties do
          :ok <- check_is_leader(party, leader),
          :ok <- check_not_self_kick(leader, target_user_id),
          {:ok, target} <- fetch_kick_target(target_user_id, party),
-         {:ok, _} <- Gamend.Hooks.internal_call(:before_party_kick, [target, leader, party]) do
+         :ok <- run_before_party_kick(target, leader, party) do
       case do_kick_member(leader, target, party) do
         {:ok, _updated} = result ->
           Gamend.Async.run(fn ->
@@ -1116,6 +1128,13 @@ defmodule Gamend.Parties do
         error ->
           error
       end
+    end
+  end
+
+  defp run_before_party_kick(target, leader, party) do
+    case Gamend.Hooks.internal_call(:before_party_kick, [target, leader, party]) do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, {:hook_rejected, reason}}
     end
   end
 
@@ -1222,8 +1241,11 @@ defmodule Gamend.Parties do
 
   @doc """
   Update party settings. Only the leader can update.
+
+  `{:error, {:hook_rejected, reason}}` when `before_party_update` refuses.
   """
-  @spec update_party(User.t(), map()) :: {:ok, Party.t()} | {:error, term()}
+  @spec update_party(User.t(), map()) ::
+          {:ok, Party.t()} | {:error, atom() | Ecto.Changeset.t() | {:hook_rejected, term()}}
   def update_party(%User{} = user, attrs) do
     user = Accounts.get_user(user.id)
 
@@ -1275,7 +1297,7 @@ defmodule Gamend.Parties do
         end
 
       {:error, reason} ->
-        {:error, reason}
+        {:error, {:hook_rejected, reason}}
     end
   end
 
@@ -1625,8 +1647,8 @@ defmodule Gamend.Parties do
       {:error, :already_in_lobby} ->
         Repo.rollback(:member_in_lobby)
 
-      {:error, reason} ->
-        Repo.rollback({:member_join_failed, member_id, reason})
+      {:error, %Ecto.Changeset{} = changeset} ->
+        Repo.rollback(changeset)
     end
   end
 

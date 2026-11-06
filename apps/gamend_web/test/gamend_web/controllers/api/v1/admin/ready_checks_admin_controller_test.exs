@@ -53,9 +53,9 @@ defmodule GamendWeb.Api.V1.Admin.ReadyChecksAdminControllerTest do
     conn = delete(ctx.admin_conn, "/api/v1/admin/ready_checks/#{check.id}")
     assert %{"data" => %{"status" => "cancelled"}} = json_response(conn, 200)
 
-    # And is not repeatable.
+    # And is not repeatable: the check is resolved now.
     conn = delete(ctx.admin_conn, "/api/v1/admin/ready_checks/#{check.id}")
-    assert json_response(conn, 404)
+    assert json_response(conn, 409)["error"] == "already_resolved"
   end
 
   test "DELETE /ready_checks/:id 404s on an unknown id", ctx do

@@ -3,6 +3,7 @@ defmodule GamendWeb.Api.V1.Admin.ReadyCheckController do
   use OpenApiSpex.ControllerSpecs
 
   alias Gamend.ReadyChecks
+  alias Gamend.ReadyChecks.Check
   alias GamendWeb.Schemas
 
   alias GamendWeb.Schemas.{
@@ -68,18 +69,23 @@ defmodule GamendWeb.Api.V1.Admin.ReadyCheckController do
     ],
     responses: [
       ok: {"Cancelled", "application/json", AdminReadyCheckResponse},
-      not_found: Schemas.error("Unknown or already resolved"),
+      not_found: Schemas.error("Unknown id"),
+      conflict: Schemas.error("Passed, failed or cancelled already (already_resolved)"),
       unauthorized: Schemas.error("Not authenticated"),
       forbidden: Schemas.error("Admin required")
     ]
   )
 
+  # `cancel/1` decides under the check's lock whether it is still pending: a
+  # check that passed, failed or was cancelled is `already_resolved` (409), one
+  # deleted with its subject `no_open_check` (404).
   def delete(conn, %{"id" => id}) do
-    with %{status: "pending"} = check <- ReadyChecks.get_check(id),
+    with %Check{} = check <- ReadyChecks.get_check(id),
          {:ok, cancelled} <- ReadyChecks.cancel(check) do
       reply_data(conn, serialize(cancelled))
     else
-      _ -> reply_error(conn, :not_found, "not_found")
+      nil -> reply_error(conn, :not_found, "not_found")
+      {:error, reason} -> reply_reason(conn, reason)
     end
   end
 

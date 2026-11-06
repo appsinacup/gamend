@@ -207,7 +207,9 @@ defmodule Gamend.TournamentsTest do
       user = AccountsFixtures.user_fixture()
       Application.put_env(:gamend, :tournament_reject_register, true)
 
-      assert {:error, :not_enough_coins} = Tournaments.join_tournament(user, tournament)
+      assert {:error, {:hook_rejected, :not_enough_coins}} =
+               Tournaments.join_tournament(user, tournament)
+
       assert Tournaments.count_entries(tournament.id) == 0
     end
 
@@ -234,7 +236,9 @@ defmodule Gamend.TournamentsTest do
       {:ok, _} = Tournaments.join_tournament(user, tournament)
 
       Application.put_env(:gamend, :tournament_reject_leave, true)
-      assert {:error, :entry_is_final} = Tournaments.leave_tournament(user, tournament)
+
+      assert {:error, {:hook_rejected, :entry_is_final}} =
+               Tournaments.leave_tournament(user, tournament)
 
       Application.put_env(:gamend, :tournament_reject_leave, false)
       assert {:ok, _} = Tournaments.leave_tournament(user, tournament)
@@ -363,7 +367,10 @@ defmodule Gamend.TournamentsTest do
 
     test "before_tournament_result veto leaves the match open", %{round1: [m1, _]} do
       Application.put_env(:gamend, :tournament_reject_result, true)
-      assert {:error, :invalid_report} = Tournaments.resolve_match(m1.id, m1.a_entry_id)
+
+      assert {:error, {:hook_rejected, :invalid_report}} =
+               Tournaments.resolve_match(m1.id, m1.a_entry_id)
+
       assert Tournaments.get_match(m1.id).resolved_at == nil
     end
 

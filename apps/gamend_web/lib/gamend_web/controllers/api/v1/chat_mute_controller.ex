@@ -62,7 +62,8 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
     request_body: {"Mute", "application/json", @mute_request},
     responses: [
       ok: {"Muted", "application/json", ChatMuteRecordResponse},
-      bad_request: Schemas.error("Not in a lobby or invalid id"),
+      bad_request: Schemas.error("Invalid id"),
+      not_found: Schemas.error("Not in a lobby (not_in_lobby)"),
       forbidden: Schemas.error("Not the lobby host")
     ]
   )
@@ -72,7 +73,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
       if Lobbies.can_manage_lobby?(user, lobby) do
         do_mute(conn, params, "lobby", lobby.id, user)
       else
-        forbidden(conn, "not_host")
+        reply_error(conn, :forbidden, "not_host")
       end
     end)
   end
@@ -84,7 +85,8 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
     request_body: {"Unmute", "application/json", @unmute_request},
     responses: [
       ok: {"Unmuted", "application/json", DeletedCountResponse},
-      bad_request: Schemas.error("Not in a lobby or invalid id"),
+      bad_request: Schemas.error("Invalid id"),
+      not_found: Schemas.error("Not in a lobby (not_in_lobby)"),
       forbidden: Schemas.error("Not the lobby host")
     ]
   )
@@ -94,7 +96,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
       if Lobbies.can_manage_lobby?(user, lobby) do
         do_unmute(conn, params, "lobby", lobby.id, user)
       else
-        forbidden(conn, "not_host")
+        reply_error(conn, :forbidden, "not_host")
       end
     end)
   end
@@ -113,6 +115,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
     ],
     responses: [
       ok: {"Mutes", "application/json", ChatMuteRecordPage},
+      not_found: Schemas.error("Not in a lobby (not_in_lobby)"),
       forbidden: Schemas.error("Not the lobby host")
     ]
   )
@@ -122,7 +125,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
       if Lobbies.can_manage_lobby?(user, lobby) do
         list_scoped(conn, params, "lobby", lobby.id)
       else
-        forbidden(conn, "not_host")
+        reply_error(conn, :forbidden, "not_host")
       end
     end)
   end
@@ -222,7 +225,8 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
     request_body: {"Mute", "application/json", @mute_request},
     responses: [
       ok: {"Muted", "application/json", ChatMuteRecordResponse},
-      bad_request: Schemas.error("Not in a party or invalid id"),
+      bad_request: Schemas.error("Invalid id"),
+      not_found: Schemas.error("Not in a party (not_in_party)"),
       forbidden: Schemas.error("Not the party leader")
     ]
   )
@@ -232,7 +236,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
       if Parties.can_manage_party?(user, party) do
         do_mute(conn, params, "party", party.id, user)
       else
-        forbidden(conn, "not_leader")
+        reply_error(conn, :forbidden, "not_leader")
       end
     end)
   end
@@ -244,7 +248,8 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
     request_body: {"Unmute", "application/json", @unmute_request},
     responses: [
       ok: {"Unmuted", "application/json", DeletedCountResponse},
-      bad_request: Schemas.error("Not in a party or invalid id"),
+      bad_request: Schemas.error("Invalid id"),
+      not_found: Schemas.error("Not in a party (not_in_party)"),
       forbidden: Schemas.error("Not the party leader")
     ]
   )
@@ -254,7 +259,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
       if Parties.can_manage_party?(user, party) do
         do_unmute(conn, params, "party", party.id, user)
       else
-        forbidden(conn, "not_leader")
+        reply_error(conn, :forbidden, "not_leader")
       end
     end)
   end
@@ -273,6 +278,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
     ],
     responses: [
       ok: {"Mutes", "application/json", ChatMuteRecordPage},
+      not_found: Schemas.error("Not in a party (not_in_party)"),
       forbidden: Schemas.error("Not the party leader")
     ]
   )
@@ -282,7 +288,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
       if Parties.can_manage_party?(user, party) do
         list_scoped(conn, params, "party", party.id)
       else
-        forbidden(conn, "not_leader")
+        reply_error(conn, :forbidden, "not_leader")
       end
     end)
   end
@@ -366,11 +372,9 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
           if Groups.can_manage_group?(user.id, group_id) do
             fun.(user, group_id)
           else
-            forbidden(conn, "not_group_admin")
+            reply_error(conn, :forbidden, "not_group_admin")
           end
       end
     end)
   end
-
-  defp forbidden(conn, reason), do: reply_error(conn, :forbidden, reason)
 end

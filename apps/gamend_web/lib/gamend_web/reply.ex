@@ -84,4 +84,34 @@ defmodule GamendWeb.Reply do
     message = if is_binary(reason), do: reason, else: inspect(reason)
     reply_error(conn, :forbidden, "rejected", message)
   end
+
+  @doc """
+  The answer to an error reason no clause of the controller names: what is
+  left after the reasons it answers its own way.
+
+      {:error, :invalid} -> reply_error(conn, :forbidden, "captcha_invalid")
+      {:error, reason} -> reply_reason(conn, reason)
+
+  An atom answers with its name as the code and the status
+  `GamendWeb.ErrorStatus` gives it; a failed changeset as
+  `GamendWeb.ChangesetErrors.unprocessable_or_conflict/2` does; a game hook's
+  veto (`{:hook_rejected, reason}`) as `reply_rejected/2`. Anything else
+  raises `GamendWeb.UnmappedReason`: a reason the server has no answer for is
+  a bug, and a 500 that names it beats a 400 that hides it.
+  """
+  @spec reply_reason(Plug.Conn.t(), atom() | Ecto.Changeset.t() | {:hook_rejected, term()}) ::
+          Plug.Conn.t()
+  def reply_reason(conn, %Ecto.Changeset{} = changeset),
+    do: GamendWeb.ChangesetErrors.unprocessable_or_conflict(conn, changeset)
+
+  def reply_reason(conn, {:hook_rejected, reason}), do: reply_rejected(conn, reason)
+
+  def reply_reason(conn, reason) when is_atom(reason) and not is_nil(reason) do
+    case GamendWeb.ErrorStatus.status(reason) do
+      nil -> raise GamendWeb.UnmappedReason, reason: reason
+      status -> reply_error(conn, status, reason)
+    end
+  end
+
+  def reply_reason(_conn, reason), do: raise(GamendWeb.UnmappedReason, reason: reason)
 end

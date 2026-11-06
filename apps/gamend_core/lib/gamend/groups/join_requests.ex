@@ -31,7 +31,7 @@ defmodule Gamend.Groups.JoinRequests do
   Request to join a private group. Creates a pending join request.
   """
   @spec request_join(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, GroupJoinRequest.t()} | {:error, atom()}
+          {:ok, GroupJoinRequest.t()} | {:error, atom() | Ecto.Changeset.t()}
   def request_join(user_id, group_id)
       when is_binary(user_id) and is_binary(group_id) do
     group = Groups.get_group(group_id)
@@ -149,7 +149,8 @@ defmodule Gamend.Groups.JoinRequests do
 
   @doc "Approve a pending join request. Admin only."
   @spec approve_join_request(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, GroupMember.t()} | {:error, atom()}
+          {:ok, GroupMember.t()}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def approve_join_request(admin_id, request_id)
       when is_binary(admin_id) and is_binary(request_id) do
     case Repo.get(GroupJoinRequest, request_id) do

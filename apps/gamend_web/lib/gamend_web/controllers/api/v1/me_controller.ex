@@ -111,6 +111,7 @@ defmodule GamendWeb.Api.V1.MeController do
     security: [%{"authorization" => []}],
     responses: [
       ok: {"Display name updated", "application/json", CurrentUserResponse},
+      forbidden: Schemas.error("A game hook refused the change (rejected)"),
       unprocessable_entity: Schemas.error("Validation failed"),
       unauthorized: Schemas.error("Not authenticated")
     ]
@@ -123,8 +124,12 @@ defmodule GamendWeb.Api.V1.MeController do
       {:ok, user} ->
         reply_data(conn, current_user(user))
 
-      {:error, changeset} ->
+      {:error, %Ecto.Changeset{} = changeset} ->
         unprocessable(conn, changeset)
+
+      # A `before_user_update` hook's veto: 403 `rejected`.
+      {:error, reason} ->
+        reply_reason(conn, reason)
     end
   end
 
@@ -151,6 +156,7 @@ defmodule GamendWeb.Api.V1.MeController do
     security: [%{"authorization" => []}],
     responses: [
       ok: {"Username updated", "application/json", CurrentUserResponse},
+      forbidden: Schemas.error("A game hook refused the change (rejected)"),
       unprocessable_entity: Schemas.error("Validation failed"),
       unauthorized: Schemas.error("Not authenticated")
     ]
@@ -166,14 +172,17 @@ defmodule GamendWeb.Api.V1.MeController do
       {:error, %Ecto.Changeset{} = changeset} ->
         unprocessable(conn, changeset)
 
-      {:error, reason} when is_atom(reason) or is_binary(reason) ->
+      # A `before_user_update` hook refusing the name (a reserved word,
+      # profanity) said why in words or a code: the username's error, so the
+      # player picks again. A veto of any other shape is 403 `rejected`.
+      {:error, {:hook_rejected, reason}} when is_atom(reason) or is_binary(reason) ->
         user
         |> Ecto.Changeset.change()
         |> Ecto.Changeset.add_error(:username, to_string(reason))
         |> then(&unprocessable(conn, &1))
 
-      {:error, _reason} ->
-        reply_error(conn, :unprocessable_entity, "invalid_username")
+      {:error, reason} ->
+        reply_reason(conn, reason)
     end
   end
 
@@ -284,8 +293,9 @@ defmodule GamendWeb.Api.V1.MeController do
     },
     responses: [
       ok: {"Account deleted", "application/json", OkResponse},
-      bad_request: Schemas.error("Failed to delete account"),
-      unauthorized: Schemas.error("Not authenticated, or wrong current password")
+      unauthorized: Schemas.error("Not authenticated, or wrong current password"),
+      not_found: Schemas.error("Deleted meanwhile by another request (not_found)"),
+      unprocessable_entity: Schemas.error("Validation failed")
     ]
   )
 
@@ -308,8 +318,10 @@ defmodule GamendWeb.Api.V1.MeController do
           GamendWeb.UserAuth.disconnect_sessions(expired_tokens)
           reply_ok(conn)
 
-        {:error, _} ->
-          reply_error(conn, :bad_request, "delete_failed")
+        # `not_found` (404) when another delete, an admin's or retention's,
+        # took the account first; a changeset when the row refused the write.
+        {:error, reason} ->
+          reply_reason(conn, reason)
       end
     else
       reply_error(conn, :unauthorized, "invalid_current_password")

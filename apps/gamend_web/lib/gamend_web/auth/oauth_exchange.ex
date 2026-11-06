@@ -280,6 +280,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
   def reply_refused(conn, :missing_user_info),
     do: reply_error(conn, :bad_request, "exchange_failed", "missing id/email")
 
+  # open-error: a provider refuses a code or a token in many words, all of them exchange_failed
   def reply_refused(conn, _reason),
     do: reply_error(conn, :bad_request, "exchange_failed", "authentication_failed")
 

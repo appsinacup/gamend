@@ -36,6 +36,30 @@ defmodule Gamend.Chat do
 
   require Logger
 
+  @typedoc "Why `authorize_access/3` refuses a player a conversation."
+  @type access_error ::
+          :invalid_chat_ref
+          | :invalid_chat_type
+          | :not_in_lobby
+          | :not_in_group
+          | :not_in_party
+          | :not_friends
+          | :blocked
+
+  @typedoc """
+  Why `send_message/2` refuses a message: the conversation's refusal, slow
+  mode, a mute, a blocked word, the `before_chat_message` hook's veto (its
+  reason wrapped), or the changeset.
+  """
+  @type send_error ::
+          access_error()
+          | :slowdown
+          | :muted
+          | :blocked_content
+          | :user_not_found
+          | {:hook_rejected, term()}
+          | Ecto.Changeset.t()
+
   # ---------------------------------------------------------------------------
   # Cache helpers
   # ---------------------------------------------------------------------------
@@ -144,24 +168,31 @@ defmodule Gamend.Chat do
   ## Returns
 
     * `{:ok, %Message{}}` on success
-    * `{:error, reason}` on failure
+    * `{:error, reason}` on failure, `t:send_error/0`
 
   Moderation runs before the `before_chat_message` hook: a muted sender is
   rejected with `{:error, :muted}` and a blocked word with
   `{:error, :blocked_content}`, so a plugin never sees a message core already
-  refused. The hook can then modify attrs or reject the message itself. The
-  `after_chat_message` hook fires asynchronously after the message is persisted.
+  refused. The hook can then modify attrs or reject the message itself, which
+  answers `{:error, {:hook_rejected, reason}}`. The `after_chat_message` hook
+  fires asynchronously after the message is persisted.
   """
-  @spec send_message(map(), map()) ::
-          {:ok, Message.t()} | {:error, term()}
+  @spec send_message(map(), map()) :: {:ok, Message.t()} | {:error, send_error()}
   def send_message(%{user: %User{id: sender_id}}, attrs) when is_map(attrs) do
-    with :ok <- validate_chat_access(sender_id, attrs),
+    with :ok <- validate_chat_ref(attrs),
+         :ok <- validate_chat_access(sender_id, attrs),
          :ok <- check_slowdown(sender_id, attrs),
          :ok <- check_mute(sender_id, attrs),
          {:ok, attrs, flagged} <- apply_word_filter(attrs),
          {:ok, attrs} <- run_before_hook(sender_id, attrs) do
       do_send_message(sender_id, attrs, flagged)
     end
+  end
+
+  # A missing or malformed id would reach the membership queries as nil, which
+  # Ecto refuses to compare.
+  defp validate_chat_ref(attrs) do
+    if is_binary(attr(attrs, "chat_ref_id")), do: :ok, else: {:error, :invalid_chat_ref}
   end
 
   # ---------------------------------------------------------------------------
@@ -386,7 +417,8 @@ defmodule Gamend.Chat do
   # ---------------------------------------------------------------------------
 
   @doc "Returns `:ok` when user can access the chat conversation."
-  @spec authorize_access(Ecto.UUID.t(), String.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
+  @spec authorize_access(Ecto.UUID.t(), String.t(), Ecto.UUID.t()) ::
+          :ok | {:error, access_error()}
   def authorize_access(user_id, chat_type, chat_ref_id)
       when is_binary(user_id) and is_binary(chat_type) and is_binary(chat_ref_id) do
     validate_chat_access(user_id, %{chat_type: chat_type, chat_ref_id: chat_ref_id})
@@ -608,10 +640,19 @@ defmodule Gamend.Chat do
   @doc """
   Mark a chat conversation as read up to a given message id.
 
-  Uses an upsert to create or update the read cursor.
+  Uses an upsert to create or update the read cursor. Fails with the
+  conversation's refusal (`t:access_error/0`), `:invalid_message` for a
+  missing id, `:message_not_found`, or `:message_not_in_chat` for a message of
+  another conversation.
   """
   @spec mark_read(Ecto.UUID.t(), String.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, ReadCursor.t()} | {:error, term()}
+          {:ok, ReadCursor.t()}
+          | {:error,
+             access_error()
+             | :invalid_message
+             | :message_not_found
+             | :message_not_in_chat
+             | Ecto.Changeset.t()}
   def mark_read(user_id, chat_type, chat_ref_id, message_id) do
     with :ok <- authorize_access(user_id, chat_type, chat_ref_id),
          :ok <- validate_read_message(user_id, chat_type, chat_ref_id, message_id) do
@@ -882,7 +923,7 @@ defmodule Gamend.Chat do
   `{:error, :forbidden}` if the caller is not the sender.
   """
   @spec update_message(Ecto.UUID.t(), Ecto.UUID.t(), map()) ::
-          {:ok, Message.t()} | {:error, term()}
+          {:ok, Message.t()} | {:error, :not_found | :forbidden | Ecto.Changeset.t()}
   def update_message(user_id, message_id, attrs) do
     case Repo.get(Message, message_id) do
       nil ->
@@ -922,7 +963,7 @@ defmodule Gamend.Chat do
   `{:error, :forbidden}` if the caller is not the sender.
   """
   @spec delete_own_message(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Message.t()} | {:error, term()}
+          {:ok, Message.t()} | {:error, :not_found | :forbidden | Ecto.Changeset.t()}
   def delete_own_message(user_id, message_id) do
     case Repo.get(Message, message_id) do
       nil ->
@@ -993,7 +1034,8 @@ defmodule Gamend.Chat do
   end
 
   @doc "Admin: delete a single message by id."
-  @spec admin_delete_message(Ecto.UUID.t()) :: {:ok, Message.t()} | {:error, term()}
+  @spec admin_delete_message(Ecto.UUID.t()) ::
+          {:ok, Message.t()} | {:error, :not_found | Ecto.Changeset.t()}
   def admin_delete_message(id) do
     case Repo.get(Message, id) do
       nil ->
@@ -1119,7 +1161,7 @@ defmodule Gamend.Chat do
 
   @doc "Resolve a report: set its status, with an optional note and resolver."
   @spec resolve_report(Gamend.Chat.Report.t() | Ecto.UUID.t(), String.t(), map()) ::
-          {:ok, Gamend.Chat.Report.t()} | {:error, term()}
+          {:ok, Gamend.Chat.Report.t()} | {:error, :not_found | Ecto.Changeset.t()}
   defdelegate resolve_report(report, status, attrs \\ %{}), to: Reports
 
   @doc """

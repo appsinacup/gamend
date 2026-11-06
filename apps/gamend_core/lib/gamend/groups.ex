@@ -586,7 +586,12 @@ defmodule Gamend.Groups do
   Create a new group. The creating user becomes an admin member automatically.
   """
   @spec create_group(Ecto.UUID.t(), map()) ::
-          {:ok, Group.t()} | {:error, Ecto.Changeset.t() | term()}
+          {:ok, Group.t()}
+          | {:error,
+             :user_not_found
+             | :too_many_groups_created
+             | {:hook_rejected, term()}
+             | Ecto.Changeset.t()}
   def create_group(user_id, attrs) when is_binary(user_id) and is_map(attrs) do
     attrs = normalize_params(attrs)
 
@@ -661,7 +666,13 @@ defmodule Gamend.Groups do
   Cannot lower max_members below current member count.
   """
   @spec update_group(Ecto.UUID.t(), Ecto.UUID.t(), map()) ::
-          {:ok, Group.t()} | {:error, atom() | Ecto.Changeset.t()}
+          {:ok, Group.t()}
+          | {:error,
+             :not_admin
+             | :not_found
+             | :max_members_too_low
+             | {:hook_rejected, term()}
+             | Ecto.Changeset.t()}
   def update_group(user_id, group_id, attrs)
       when is_binary(user_id) and is_binary(group_id) and is_map(attrs) do
     with true <- can_manage_group?(user_id, group_id) || {:error, :not_admin},
@@ -704,7 +715,8 @@ defmodule Gamend.Groups do
   icon is ever set. Admin rights are still required.
   """
   @spec set_icon_url(String.t(), String.t(), String.t()) ::
-          {:ok, Group.t()} | {:error, :not_admin | Ecto.Changeset.t() | term()}
+          {:ok, Group.t()}
+          | {:error, :not_admin | :not_found | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def set_icon_url(user_id, group_id, url)
       when is_binary(user_id) and is_binary(group_id) and is_binary(url) do
     with true <- can_manage_group?(user_id, group_id) || {:error, :not_admin},
@@ -741,7 +753,7 @@ defmodule Gamend.Groups do
         end
 
       {:error, reason} ->
-        {:error, reason}
+        {:error, {:hook_rejected, reason}}
     end
   end
 
@@ -796,7 +808,8 @@ defmodule Gamend.Groups do
     do: change_group(%Group{}, %{"title" => random_title(), "icon_url" => random_icon_url()})
 
   @doc "Admin-level update, bypasses membership checks."
-  @spec admin_update_group(Group.t(), map()) :: {:ok, Group.t()} | {:error, Ecto.Changeset.t()}
+  @spec admin_update_group(Group.t(), map()) ::
+          {:ok, Group.t()} | {:error, :not_found | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def admin_update_group(%Group{} = group, attrs) do
     do_update_group(group, attrs, false)
   end
@@ -805,13 +818,22 @@ defmodule Gamend.Groups do
   Delete a group. Any of its admins can, members or not: everyone in it is
   removed with it and told, as a kick tells one member.
   """
-  @spec delete_group(Ecto.UUID.t(), Ecto.UUID.t()) :: {:ok, Group.t()} | {:error, term()}
+  @spec delete_group(Ecto.UUID.t(), Ecto.UUID.t()) ::
+          {:ok, Group.t()}
+          | {:error, :not_found | :not_admin | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def delete_group(user_id, group_id)
       when is_binary(user_id) and is_binary(group_id) do
     with %Group{} = group <- get_group(group_id) || {:error, :not_found},
          true <- can_manage_group?(user_id, group_id) || {:error, :not_admin},
-         {:ok, _} <- Gamend.Hooks.internal_call(:before_group_delete, [group]) do
+         :ok <- run_before_group_delete(group) do
       do_delete_group(group, user_id)
+    end
+  end
+
+  defp run_before_group_delete(group) do
+    case Gamend.Hooks.internal_call(:before_group_delete, [group]) do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, {:hook_rejected, reason}}
     end
   end
 
@@ -869,10 +891,11 @@ defmodule Gamend.Groups do
   end
 
   @doc "Admin-level delete (no membership check, for server admins)."
-  @spec admin_delete_group(Ecto.UUID.t()) :: {:ok, Group.t()} | {:error, term()}
+  @spec admin_delete_group(Ecto.UUID.t()) ::
+          {:ok, Group.t()} | {:error, :not_found | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def admin_delete_group(group_id) when is_binary(group_id) do
     with %Group{} = group <- get_group(group_id) || {:error, :not_found},
-         {:ok, _} <- Gamend.Hooks.internal_call(:before_group_delete, [group]) do
+         :ok <- run_before_group_delete(group) do
       do_delete_group(group, nil)
     end
   end
@@ -919,7 +942,8 @@ defmodule Gamend.Groups do
   Join a public group directly. Returns error for private/hidden groups.
   """
   @spec join_group(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, GroupMember.t()} | {:error, atom()}
+          {:ok, GroupMember.t()}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   def join_group(user_id, group_id)
       when is_binary(user_id) and is_binary(group_id) do
     group = get_group(group_id)
@@ -954,7 +978,8 @@ defmodule Gamend.Groups do
   end
 
   @doc "Leave a group."
-  @spec leave_group(Ecto.UUID.t(), Ecto.UUID.t()) :: {:ok, GroupMember.t()} | {:error, atom()}
+  @spec leave_group(Ecto.UUID.t(), Ecto.UUID.t()) ::
+          {:ok, GroupMember.t()} | {:error, :not_member | Ecto.Changeset.t()}
   def leave_group(user_id, group_id)
       when is_binary(user_id) and is_binary(group_id) do
     # `do_leave/3`'s `member_left`, `maybe_delete_empty_group/1`'s
@@ -1132,7 +1157,14 @@ defmodule Gamend.Groups do
 
   @doc "Kick a member from the group. Only admins can kick."
   @spec kick_member(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, GroupMember.t()} | {:error, atom()}
+          {:ok, GroupMember.t()}
+          | {:error,
+             :not_admin
+             | :cannot_kick_self
+             | :last_admin
+             | :not_member
+             | {:hook_rejected, term()}
+             | Ecto.Changeset.t()}
   def kick_member(admin_id, group_id, target_id)
       when is_binary(admin_id) and is_binary(group_id) and is_binary(target_id) do
     cond do
@@ -1149,11 +1181,17 @@ defmodule Gamend.Groups do
         {:error, :not_member}
 
       true ->
-        with {:ok, _} <-
-               Gamend.Hooks.internal_call(:before_group_kick, [admin_id, target_id, group_id]),
+        with :ok <- run_before_group_kick(admin_id, target_id, group_id),
              {:ok, deleted} <- change_member(admin_id, group_id, target_id, &remove_member/1) do
           after_kick(deleted, admin_id, target_id, group_id)
         end
+    end
+  end
+
+  defp run_before_group_kick(admin_id, target_id, group_id) do
+    case Gamend.Hooks.internal_call(:before_group_kick, [admin_id, target_id, group_id]) do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, {:hook_rejected, reason}}
     end
   end
 
@@ -1622,7 +1660,7 @@ defmodule Gamend.Groups do
 
   @doc "Request to join a private group. Creates a pending join request."
   @spec request_join(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, GroupJoinRequest.t()} | {:error, atom()}
+          {:ok, GroupJoinRequest.t()} | {:error, atom() | Ecto.Changeset.t()}
   defdelegate request_join(user_id, group_id), to: JoinRequests
 
   @doc "List pending join requests for a group (admin only)."
@@ -1636,7 +1674,8 @@ defmodule Gamend.Groups do
 
   @doc "Approve a pending join request. Admin only."
   @spec approve_join_request(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, GroupMember.t()} | {:error, atom()}
+          {:ok, GroupMember.t()}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   defdelegate approve_join_request(admin_id, request_id), to: JoinRequests
 
   @doc "Reject a pending join request. Admin only."
@@ -1659,11 +1698,15 @@ defmodule Gamend.Groups do
 
   @doc "Invite a user to a group (see `Gamend.Groups.Invites.invite_to_group/3`)."
   @spec invite_to_group(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Groups.GroupInvite.t()} | {:ok, :request_approved} | {:error, atom()}
+          {:ok, Gamend.Groups.GroupInvite.t()}
+          | {:ok, :request_approved}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   defdelegate invite_to_group(admin_id, group_id, target_user_id), to: Invites
 
   @doc "Accept a pending group invite by invite id (recipient only)."
-  @spec accept_invite(Ecto.UUID.t(), Ecto.UUID.t()) :: {:ok, GroupMember.t()} | {:error, atom()}
+  @spec accept_invite(Ecto.UUID.t(), Ecto.UUID.t()) ::
+          {:ok, GroupMember.t()}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   defdelegate accept_invite(user_id, invite_id), to: Invites
 
   @doc "Decline a pending group invite by invite id (recipient only)."
@@ -1730,7 +1773,8 @@ defmodule Gamend.Groups do
 
   @doc "Join the group an invite link opens, as a member."
   @spec join_by_invite_link(Ecto.UUID.t(), String.t()) ::
-          {:ok, GroupMember.t()} | {:error, atom()}
+          {:ok, GroupMember.t()}
+          | {:error, atom() | {:hook_rejected, term()} | Ecto.Changeset.t()}
   defdelegate join_by_invite_link(user_id, token), to: InviteLinks
 
   # `String.to_integer/1` raises on anything non-numeric, and these values come

@@ -86,4 +86,52 @@ defmodule GamendWeb.Api.V1.Admin.StorageControllerTest do
   test "download of a missing key is 404", %{conn: conn} do
     assert json_response(get(conn, "/api/v1/admin/storage/object?key=nope/x.txt"), 404)
   end
+
+  test "a key below an object is not there, not a backend failure", %{conn: conn} do
+    Storage.put("custom/a.txt", "x")
+
+    assert %{"error" => "not_found"} =
+             json_response(get(conn, "/api/v1/admin/storage/object?key=custom/a.txt/b.txt"), 404)
+  end
+
+  # Each was a 400 (`delete_failed`, `upload_failed`): the request was fine,
+  # and the disk refused it.
+  describe "a backend that fails" do
+    test "a delete answers 503 storage_unavailable", %{conn: conn} do
+      # A directory where the object would be: the disk refuses to unlink it.
+      Storage.put("custom/dir/inner.txt", "x")
+
+      assert %{"error" => "storage_unavailable"} =
+               json_response(delete(conn, "/api/v1/admin/storage?key=custom/dir"), 503)
+
+      assert Storage.exists?("custom/dir/inner.txt")
+    end
+
+    test "an upload answers 503 storage_unavailable", %{conn: conn} do
+      # A file where a directory of the key should be.
+      Storage.put("custom/a.txt", "x")
+
+      conn =
+        conn
+        |> put_req_header("content-type", "text/plain")
+        |> put("/api/v1/admin/storage/object?key=custom/a.txt/b.txt", "BYTES")
+
+      assert %{"error" => "storage_unavailable"} = json_response(conn, 503)
+    end
+  end
+
+  test "each action without a key answers 400 missing_param", %{conn: conn} do
+    assert %{"error" => "missing_param"} =
+             json_response(delete(conn, "/api/v1/admin/storage"), 400)
+
+    assert %{"error" => "missing_param"} =
+             json_response(get(conn, "/api/v1/admin/storage/object"), 400)
+
+    up =
+      conn
+      |> put_req_header("content-type", "text/plain")
+      |> put("/api/v1/admin/storage/object", "BYTES")
+
+    assert %{"error" => "missing_param"} = json_response(up, 400)
+  end
 end

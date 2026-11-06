@@ -41,6 +41,14 @@ defmodule Gamend.Friends do
 
   @type user_id :: Ecto.UUID.t()
 
+  @typedoc """
+  Why `accept_friend_request/2` did not accept: no such request (or it was
+  cancelled), not the caller's to answer, answered another way, accepted
+  already, or a friend list at its cap.
+  """
+  @type accept_error ::
+          :not_found | :not_authorized | :not_pending | :already_friends | :too_many_friends
+
   defp friends_cache_version(user_id) when is_binary(user_id) do
     Gamend.Cache.get!({:friends, :version, user_id}) || 1
   end
@@ -197,13 +205,20 @@ defmodule Gamend.Friends do
   defp user_display_name(user_id), do: Gamend.Accounts.display_label(user_id)
 
   @doc "Create a friend request from requester -> target.
-  If a reverse pending request exists (target -> requester) it will be accepted instead.
-  Returns {:ok, friendship} on success or {:error, reason}.
+  If a reverse pending request exists (target -> requester) it will be accepted instead,
+  and fails as `accept_friend_request/2` does.
+  A request or a friendship that already stands is returned as `{:ok, friendship}`.
+  Fails with `:cannot_friend_self`, `:blocked`, `:too_many_pending_requests` or the
+  changeset.
   "
   @spec create_request(User.t() | user_id(), user_id()) ::
           {:ok, Friendship.t()}
           | {:error,
-             :cannot_friend_self | :blocked | :already_friends | :already_requested | term()}
+             :cannot_friend_self
+             | :blocked
+             | :too_many_pending_requests
+             | accept_error()
+             | Ecto.Changeset.t()}
   def create_request(%User{id: requester_id}, target_id),
     do: create_request(requester_id, target_id)
 
@@ -417,7 +432,8 @@ defmodule Gamend.Friends do
   `{:error, :not_found}` when it was cancelled, and
   `{:error, :too_many_friends}` when either side is at the cap.
   """
-  @spec accept_friend_request(Ecto.UUID.t(), User.t()) :: {:ok, Friendship.t()} | {:error, term()}
+  @spec accept_friend_request(Ecto.UUID.t(), User.t()) ::
+          {:ok, Friendship.t()} | {:error, accept_error()}
   def accept_friend_request(friendship_id, %User{id: user_id}) when is_binary(friendship_id) do
     with {:ok, f} <- fetch_request(friendship_id, :target_id, user_id),
          {:ok, accepted} <-
@@ -459,7 +475,8 @@ defmodule Gamend.Friends do
   Reject a friend request (only the target may reject). Returns
   `{:ok, friendship}`, or `{:error, :not_pending}` when it was answered first.
   """
-  @spec reject_friend_request(Ecto.UUID.t(), User.t()) :: {:ok, Friendship.t()} | {:error, term()}
+  @spec reject_friend_request(Ecto.UUID.t(), User.t()) ::
+          {:ok, Friendship.t()} | {:error, :not_found | :not_authorized | :not_pending}
   def reject_friend_request(friendship_id, %User{id: user_id}) when is_binary(friendship_id) do
     with {:ok, f} <- fetch_request(friendship_id, :target_id, user_id),
          {:ok, rejected} <-
@@ -484,7 +501,7 @@ defmodule Gamend.Friends do
   `{:error, :not_pending}` once it has been answered.
   """
   @spec cancel_request(Ecto.UUID.t(), User.t()) ::
-          {:ok, :cancelled} | {:error, :not_found | :not_authorized | term()}
+          {:ok, :cancelled} | {:error, :not_found | :not_authorized | :not_pending}
   def cancel_request(friendship_id, %User{id: user_id}) when is_binary(friendship_id) do
     with {:ok, f} <- fetch_request(friendship_id, :requester_id, user_id),
          {:ok, :deleted} <-
@@ -507,7 +524,8 @@ defmodule Gamend.Friends do
   this. Only an accepted friendship: `{:error, :not_found}` when there is none,
   a block placed since included.
   """
-  @spec remove_friend(Ecto.UUID.t(), Ecto.UUID.t()) :: {:ok, Friendship.t()} | {:error, term()}
+  @spec remove_friend(Ecto.UUID.t(), Ecto.UUID.t()) ::
+          {:ok, Friendship.t()} | {:error, :not_found | :not_pending}
   def remove_friend(user_id, friend_id) when is_binary(user_id) and is_binary(friend_id) do
     with_pair_lock(user_id, friend_id, fn ->
       # A block the other player placed since this one listed their friends is
@@ -548,7 +566,8 @@ defmodule Gamend.Friends do
   `{:ok, friendship}` with status "blocked", or `{:error, :not_pending}` when
   it was accepted (or blocked) first.
   """
-  @spec block_friend_request(Ecto.UUID.t(), User.t()) :: {:ok, Friendship.t()} | {:error, term()}
+  @spec block_friend_request(Ecto.UUID.t(), User.t()) ::
+          {:ok, Friendship.t()} | {:error, :not_found | :not_authorized | :not_pending}
   def block_friend_request(friendship_id, %User{id: user_id}) when is_binary(friendship_id) do
     with {:ok, f} <- fetch_request(friendship_id, :target_id, user_id),
          {:ok, blocked} <-
@@ -577,7 +596,8 @@ defmodule Gamend.Friends do
 
   Returns `{:ok, friendship}`, or `{:error, :cannot_block_self}`.
   """
-  @spec block_user(User.t(), user_id()) :: {:ok, Friendship.t()} | {:error, term()}
+  @spec block_user(User.t(), user_id()) ::
+          {:ok, Friendship.t()} | {:error, :cannot_block_self | Ecto.Changeset.t()}
   def block_user(%User{id: blocker_id}, blocked_id) when is_binary(blocked_id) do
     if blocker_id == blocked_id do
       {:error, :cannot_block_self}
@@ -944,7 +964,8 @@ defmodule Gamend.Friends do
   end
 
   @doc "Unblock a previously-blocked friendship (only the user who blocked may unblock). Returns {:ok, :unblocked} on success."
-  @spec unblock_friendship(Ecto.UUID.t(), User.t()) :: {:ok, :unblocked} | {:error, term()}
+  @spec unblock_friendship(Ecto.UUID.t(), User.t()) ::
+          {:ok, :unblocked} | {:error, :not_found | :not_authorized}
   def unblock_friendship(friendship_id, %User{id: user_id}) when is_binary(friendship_id) do
     with %Friendship{} = f <- get_friendship(friendship_id),
          true <- f.target_id == user_id,

@@ -80,7 +80,12 @@ defmodule GamendWeb.Api.V1.NotificationController do
     },
     responses: [
       created: {"Notification created", "application/json", NotificationResponse},
-      bad_request: Schemas.error("Bad request"),
+      bad_request:
+        Schemas.error("No recipient (missing_recipient), or yourself (cannot_notify_self)"),
+      forbidden:
+        Schemas.error(
+          "Not friends (not_friends), or the recipient's inbox is full (too_many_notifications)"
+        ),
       unprocessable_entity: Schemas.error("Validation failed"),
       unauthorized: Schemas.error("Not authenticated")
     ]
@@ -148,20 +153,11 @@ defmodule GamendWeb.Api.V1.NotificationController do
           {:ok, notification} ->
             reply_data(conn, :created, Serializers.serialize_notification(notification))
 
-          {:error, :missing_recipient} ->
-            reply_error(conn, :bad_request, "missing_recipient")
-
-          {:error, :cannot_notify_self} ->
-            reply_error(conn, :bad_request, "cannot_notify_self")
-
-          {:error, :not_friends} ->
-            reply_error(conn, :bad_request, "not_friends")
-
           {:error, %Ecto.Changeset{} = cs} ->
             unprocessable(conn, cs)
 
           {:error, reason} ->
-            reply_error(conn, :bad_request, reason)
+            reply_reason(conn, reason)
         end
 
       _ ->

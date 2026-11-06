@@ -144,6 +144,53 @@ defmodule GamendWeb.Api.V1.TournamentControllerTest do
     end
   end
 
+  describe "a game hook that refuses" do
+    defmodule RefusingHook do
+      def before_tournament_register(_user, _tournament), do: {:error, "Not enough coins"}
+      def before_tournament_leave(_user, _tournament), do: {:error, :entry_is_final}
+    end
+
+    setup do
+      original = Application.get_env(:gamend_core, :hooks_module)
+      Application.put_env(:gamend_core, :hooks_module, RefusingHook)
+
+      on_exit(fn ->
+        if original,
+          do: Application.put_env(:gamend_core, :hooks_module, original),
+          else: Application.delete_env(:gamend_core, :hooks_module)
+      end)
+    end
+
+    test "join and leave answer 403 rejected with the hook's words", %{
+      auth_conn: auth_conn,
+      user: user,
+      tournament: tournament
+    } do
+      assert auth_conn |> post("/api/v1/tournaments/#{tournament.id}/join") |> json_response(403) ==
+               %{"error" => "rejected", "message" => "Not enough coins"}
+
+      assert Tournaments.count_entries(tournament.id) == 0
+
+      # Seated past the hook, so the leave hook is the one asked.
+      Application.delete_env(:gamend_core, :hooks_module)
+      {:ok, _} = Tournaments.join_tournament(user, Tournaments.advance_lifecycle(tournament))
+      Application.put_env(:gamend_core, :hooks_module, RefusingHook)
+
+      assert auth_conn
+             |> delete("/api/v1/tournaments/#{tournament.id}/join")
+             |> json_response(403) == %{"error" => "rejected", "message" => ":entry_is_final"}
+    end
+  end
+
+  test "a bracket index with more after the number is 400 invalid_index", %{
+    conn: conn,
+    tournament: tournament
+  } do
+    assert conn
+           |> get("/api/v1/tournaments/#{tournament.id}/bracket?index=2x")
+           |> json_response(400) == %{"error" => "invalid_index"}
+  end
+
   test "join requires authentication", %{conn: conn, tournament: tournament} do
     assert conn |> post("/api/v1/tournaments/#{tournament.id}/join") |> response(401)
   end

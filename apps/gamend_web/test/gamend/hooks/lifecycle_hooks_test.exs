@@ -41,7 +41,9 @@ defmodule Gamend.Hooks.LifecycleHooksTest do
 
     Application.put_env(:gamend_core, :hooks_module, VetoPartyJoinHooks)
 
-    assert {:error, :party_join_vetoed} = Parties.accept_party_invite(target, party.id)
+    assert {:error, {:hook_rejected, :party_join_vetoed}} =
+             Parties.accept_party_invite(target, party.id)
+
     refute Gamend.Accounts.get_user!(target.id).party_id
   end
 

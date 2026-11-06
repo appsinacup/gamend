@@ -26,10 +26,28 @@ defmodule Gamend.Chat do
   The actual implementation runs on the Gamend.
   """
 
+  @type send_error() ::
+          access_error()
+          | :slowdown
+          | :muted
+          | :blocked_content
+          | :user_not_found
+          | {:hook_rejected, term()}
+          | Ecto.Changeset.t()
+  @type access_error() ::
+          :invalid_chat_ref
+          | :invalid_chat_type
+          | :not_in_lobby
+          | :not_in_group
+          | :not_in_party
+          | :not_friends
+          | :blocked
+
   @doc ~S"""
     Admin: delete a single message by id.
   """
-  @spec admin_delete_message(Ecto.UUID.t()) :: {:ok, Gamend.Chat.Message.t()} | {:error, term()}
+  @spec admin_delete_message(Ecto.UUID.t()) ::
+          {:ok, Gamend.Chat.Message.t()} | {:error, :not_found | Ecto.Changeset.t()}
   def admin_delete_message(_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -43,7 +61,8 @@ defmodule Gamend.Chat do
   @doc ~S"""
     Returns `:ok` when user can access the chat conversation.
   """
-  @spec authorize_access(Ecto.UUID.t(), String.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
+  @spec authorize_access(Ecto.UUID.t(), String.t(), Ecto.UUID.t()) ::
+          :ok | {:error, access_error()}
   def authorize_access(_user_id, _chat_type, _chat_ref_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -281,7 +300,7 @@ defmodule Gamend.Chat do
     
   """
   @spec delete_own_message(Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Chat.Message.t()} | {:error, term()}
+          {:ok, Gamend.Chat.Message.t()} | {:error, :not_found | :forbidden | Ecto.Changeset.t()}
   def delete_own_message(_user_id, _message_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -459,15 +478,24 @@ defmodule Gamend.Chat do
   @doc ~S"""
     Mark a chat conversation as read up to a given message id.
     
-    Uses an upsert to create or update the read cursor.
+    Uses an upsert to create or update the read cursor. Fails with the
+    conversation's refusal (`t:access_error/0`), `:invalid_message` for a
+    missing id, `:message_not_found`, or `:message_not_in_chat` for a message of
+    another conversation.
     
   """
   @spec mark_read(Ecto.UUID.t(), String.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
-          {:ok, Gamend.Chat.ReadCursor.t()} | {:error, term()}
+          {:ok, Gamend.Chat.ReadCursor.t()}
+          | {:error,
+             access_error()
+             | :invalid_message
+             | :message_not_found
+             | :message_not_in_chat
+             | Ecto.Changeset.t()}
   def mark_read(_user_id, _chat_type, _chat_ref_id, _message_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        nil
 
       _ ->
         raise "Gamend.Chat.mark_read/4 is a stub - only available at runtime on Gamend"
@@ -577,7 +605,7 @@ defmodule Gamend.Chat do
     
   """
   @spec resolve_report(Gamend.Chat.Report.t() | Ecto.UUID.t(), String.t(), map()) ::
-          {:ok, Gamend.Chat.Report.t()} | {:error, term()}
+          {:ok, Gamend.Chat.Report.t()} | {:error, :not_found | Ecto.Changeset.t()}
   def resolve_report(_report, _status, _attrs \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -647,16 +675,17 @@ defmodule Gamend.Chat do
     ## Returns
     
       * `{:ok, %Message{}}` on success
-      * `{:error, reason}` on failure
+      * `{:error, reason}` on failure, `t:send_error/0`
     
     Moderation runs before the `before_chat_message` hook: a muted sender is
     rejected with `{:error, :muted}` and a blocked word with
     `{:error, :blocked_content}`, so a plugin never sees a message core already
-    refused. The hook can then modify attrs or reject the message itself. The
-    `after_chat_message` hook fires asynchronously after the message is persisted.
+    refused. The hook can then modify attrs or reject the message itself, which
+    answers `{:error, {:hook_rejected, reason}}`. The `after_chat_message` hook
+    fires asynchronously after the message is persisted.
     
   """
-  @spec send_message(map(), map()) :: {:ok, Gamend.Chat.Message.t()} | {:error, term()}
+  @spec send_message(map(), map()) :: {:ok, Gamend.Chat.Message.t()} | {:error, send_error()}
   def send_message(_map, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -803,7 +832,7 @@ defmodule Gamend.Chat do
     
   """
   @spec update_message(Ecto.UUID.t(), Ecto.UUID.t(), map()) ::
-          {:ok, Gamend.Chat.Message.t()} | {:error, term()}
+          {:ok, Gamend.Chat.Message.t()} | {:error, :not_found | :forbidden | Ecto.Changeset.t()}
   def update_message(_user_id, _message_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->

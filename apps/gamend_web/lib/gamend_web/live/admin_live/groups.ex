@@ -552,8 +552,9 @@ defmodule GamendWeb.AdminLive.Groups do
          |> put_flash(:info, "Group deleted")
          |> reload_groups()}
 
-      {:error, _} ->
-        {:noreply, put_flash(socket, :error, "Failed to delete group")}
+      {:error, reason} ->
+        {:noreply,
+         put_flash(socket, :error, LiveHelpers.failure_message("Failed to delete group", reason))}
     end
   end
 
@@ -757,6 +758,10 @@ defmodule GamendWeb.AdminLive.Groups do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset, as: "group"))}
+
+      {:error, reason} ->
+        {:noreply,
+         put_flash(socket, :error, LiveHelpers.failure_message("Failed to update group", reason))}
     end
   end
 
@@ -804,6 +809,8 @@ defmodule GamendWeb.AdminLive.Groups do
   defp member_error(:not_member), do: "the user is not a member of this group"
   defp member_error(:already_admin), do: "the user is already an admin"
   defp member_error(:already_member), do: "the user is already a member"
+  defp member_error({:hook_rejected, reason}), do: "a hook refused: #{member_error(reason)}"
+  defp member_error(reason) when is_binary(reason), do: reason
   defp member_error(reason) when is_atom(reason), do: Atom.to_string(reason)
   defp member_error(reason), do: inspect(reason)
 end

@@ -69,20 +69,24 @@ defmodule GamendWeb.Api.V1.Admin.StorageController do
     ],
     responses: [
       ok: {"Deleted", "application/json", OkResponse},
-      bad_request: Schemas.error("Missing key / delete failed"),
+      bad_request: Schemas.error("No key (missing_param)"),
       unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Admin required")
+      forbidden: Schemas.error("Admin required"),
+      service_unavailable: Schemas.error("The storage backend failed (storage_unavailable)")
     ]
   )
 
+  # An object that is not there deletes as nothing to do (`:ok`), so an error
+  # is the backend failing.
   def delete(conn, %{"key" => key}) when is_binary(key) and key != "" do
     case Storage.delete(key) do
       :ok -> reply_ok(conn)
-      {:error, _} -> reply_error(conn, :bad_request, "delete_failed")
+      {:error, reason} -> Uploads.storage_unavailable(conn, reason)
     end
   end
 
-  def delete(conn, _), do: reply_error(conn, :bad_request, "missing_param", "key is required")
+  def delete(conn, _params),
+    do: reply_error(conn, :bad_request, "missing_param", "key is required")
 
   operation(:upload,
     operation_id: "admin_upload_storage_object",
@@ -93,10 +97,11 @@ defmodule GamendWeb.Api.V1.Admin.StorageController do
       {"Raw file bytes", "application/octet-stream", %Schema{type: :string, format: :binary}},
     responses: [
       created: {"Uploaded", "application/json", StorageObjectResponse},
-      bad_request: Schemas.error("Missing key / upload failed"),
+      bad_request: Schemas.error("No key (missing_param)"),
       request_entity_too_large: Schemas.error("Too large"),
       unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Admin required")
+      forbidden: Schemas.error("Admin required"),
+      service_unavailable: Schemas.error("The storage backend failed (storage_unavailable)")
     ]
   )
 
@@ -114,12 +119,14 @@ defmodule GamendWeb.Api.V1.Admin.StorageController do
       {:error, :too_large} ->
         reply_error(conn, :request_entity_too_large, "too_large")
 
-      _ ->
-        reply_error(conn, :bad_request, "upload_failed")
+      # The body was read, so only the write is left to fail: the backend's.
+      {:error, reason} ->
+        Uploads.storage_unavailable(conn, reason)
     end
   end
 
-  def upload(conn, _), do: reply_error(conn, :bad_request, "missing_param", "key is required")
+  def upload(conn, _params),
+    do: reply_error(conn, :bad_request, "missing_param", "key is required")
 
   operation(:download,
     operation_id: "admin_download_storage_object",
@@ -128,9 +135,11 @@ defmodule GamendWeb.Api.V1.Admin.StorageController do
     parameters: [key: [in: :query, schema: %Schema{type: :string}, required: true]],
     responses: [
       ok: {"Object bytes", "application/octet-stream", %Schema{type: :string, format: :binary}},
+      bad_request: Schemas.error("No key (missing_param)"),
       not_found: Schemas.error("Not found"),
       unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Admin required")
+      forbidden: Schemas.error("Admin required"),
+      service_unavailable: Schemas.error("The storage backend failed (storage_unavailable)")
     ]
   )
 
@@ -142,12 +151,16 @@ defmodule GamendWeb.Api.V1.Admin.StorageController do
         |> put_resp_content_type(MIME.from_path(key))
         |> send_resp(200, data)
 
-      {:error, _} ->
+      {:error, :not_found} ->
         reply_error(conn, :not_found, "not_found")
+
+      {:error, reason} ->
+        Uploads.storage_unavailable(conn, reason)
     end
   end
 
-  def download(conn, _), do: reply_error(conn, :bad_request, "missing_param", "key is required")
+  def download(conn, _params),
+    do: reply_error(conn, :bad_request, "missing_param", "key is required")
 
   defp serialize(obj) do
     %{

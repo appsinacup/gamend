@@ -36,11 +36,9 @@ export default function () {
 
   // Already-in-a-lobby is a real outcome, not an error: the player is still in
   // the lobby from a previous iteration that failed to leave, and counting it
-  // as a failure would make a leave bug look like a create bug. It surfaces as
-  // 422 rather than 409 because `create_lobby_solo` funnels every non-changeset
-  // error into one `unexpected_error` — worth narrowing server-side, but the
-  // harness has to tolerate what the API actually returns.
-  if (!okOr(created, 'lobby create', [409, 422])) return;
+  // as a failure would make a leave bug look like a create bug. It answers
+  // 409 `already_in_lobby`.
+  if (!okOr(created, 'lobby create', [409])) return;
   if (created.status !== 201) {
     leaveLobby(session.token);
     return;

@@ -105,6 +105,7 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
     ],
     responses: [
       ok: {"Deleted", "application/json", OkResponse},
+      bad_request: Schemas.error("Not a notification id (invalid_id)"),
       not_found: Schemas.error("Not found")
     ]
   )
@@ -154,25 +155,17 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
 
           {:error, %Ecto.Changeset{} = cs} ->
             unprocessable(conn, cs)
-
-          {:error, reason} when is_atom(reason) ->
-            reply_error(conn, :bad_request, reason)
         end
     end
   end
 
   def delete(conn, %{"id" => id}) do
-    notification_id = parse_id(id)
-
-    case Notifications.admin_delete_notification(notification_id) do
-      {:ok, _} ->
-        reply_ok(conn)
-
-      {:error, :not_found} ->
-        reply_error(conn, :not_found, "not_found")
-
-      {:error, _} ->
-        reply_error(conn, :bad_request, "delete_failed")
+    with notification_id when is_binary(notification_id) <- parse_id(id),
+         {:ok, _} <- Notifications.admin_delete_notification(notification_id) do
+      reply_ok(conn)
+    else
+      nil -> reply_error(conn, :bad_request, "invalid_id")
+      {:error, reason} -> reply_reason(conn, reason)
     end
   end
 

@@ -181,7 +181,7 @@ defmodule Gamend.Chat.Reports do
   `status` is one of `Gamend.Chat.Report.statuses/0` other than `"open"`.
   """
   @spec resolve_report(Report.t() | Ecto.UUID.t(), String.t(), map()) ::
-          {:ok, Report.t()} | {:error, term()}
+          {:ok, Report.t()} | {:error, :not_found | Ecto.Changeset.t()}
   def resolve_report(report, status, attrs \\ %{})
 
   def resolve_report(%Report{} = report, status, attrs) do

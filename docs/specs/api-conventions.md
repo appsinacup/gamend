@@ -154,6 +154,35 @@ the table.
   `invalid_index`); 503 when the server, not the request, lacks something
   (`stripe_not_configured`, every `*_not_configured`).
 
+**[R18]** The status is the reason's, not the endpoint's. `GamendWeb.ErrorStatus`
+gives each reason its status, once for every controller, and names the table
+need not list follow the rules above: `*_not_found` 404, `already_*` and
+`*_already_*` 409, `*_not_configured` 503. A controller matches the reasons it
+answers its own way (another code, a header) and hands the rest to
+`reply_reason(conn, reason)`:
+
+```elixir
+case Parties.leave_party(user) do
+  {:ok, _party} -> reply_ok(conn)
+  {:error, reason} -> reply_reason(conn, reason)
+end
+```
+
+`reply_reason/2` answers an atom with its name and the table's status, a
+failed changeset as `unprocessable_or_conflict/2`, and a hook's veto
+(`{:hook_rejected, reason}`) as 403 `rejected`. A reason the table does not
+know raises `GamendWeb.UnmappedReason`: a 500 whose log names the reason,
+where a catch-all clause used to answer 400 or 403 for anything. Words that
+mean different things in different places (`invalid`, `missing`, `disabled`)
+have no status on purpose; a controller says which code each is.
+`mix gamend.api.lint` flags, in an API controller, a status chosen for a
+variable code (`reply_error(conn, :forbidden, reason)`), a reason thrown away
+(`{:error, _} -> reply_error(...)`), a `with`'s `_ ->` that answers every
+failure alike, and an explicit `reply_error(conn, status, "code")` whose
+status the table disagrees with. A reason set open by design (a plugin's own
+codes over `POST /api/v1/hooks/call`) says so with `# open-error: <why>` on
+the line above.
+
 **[R12]** A failed changeset adds the per-field detail under `errors`, keyed by
 field, each value a list of already-interpolated, already-translated messages.
 `errors` appears with `"error": "validation_failed"` and nowhere else, and

@@ -250,7 +250,9 @@ defmodule GamendWeb.Api.V1.TournamentController do
       reply_page(conn, serialize_brackets(tournament, [bracket]), 1, 1, 1)
     else
       nil -> not_found(conn)
-      _ -> reply_error(conn, :bad_request, "invalid_index")
+      # Not a number, or a number with more after it ("2x").
+      :error -> reply_error(conn, :bad_request, "invalid_index")
+      {_index, _rest} -> reply_error(conn, :bad_request, "invalid_index")
     end
   end
 
@@ -384,20 +386,16 @@ defmodule GamendWeb.Api.V1.TournamentController do
 
   defp not_found(conn), do: reply_error(conn, :not_found, "not_found")
 
-  # A refusal from `Gamend.Tournaments` is a code; anything else came from a
-  # game hook, whose own words are the message.
+  # A refusal from `Gamend.Tournaments` is a code. The ones
+  # `GamendWeb.ErrorStatus` has no status for are answered here; the rest
+  # (`already_registered` and `already_drawn` 409, `not_found` 404, and a game
+  # hook's `{:hook_rejected, reason}`, 403 `rejected` with the hook's words as
+  # the message) by `reply_reason/2`.
   defp error(conn, :registration_closed), do: reply_error(conn, :forbidden, "registration_closed")
   defp error(conn, :tournament_full), do: reply_error(conn, :forbidden, "tournament_full")
-  defp error(conn, :already_registered), do: reply_error(conn, :conflict, "already_registered")
   defp error(conn, :not_registered), do: reply_error(conn, :not_found, "not_registered")
-  defp error(conn, :already_drawn), do: reply_error(conn, :conflict, "already_drawn")
-  defp error(conn, :not_found), do: not_found(conn)
   defp error(conn, %Ecto.Changeset{} = changeset), do: unprocessable(conn, changeset)
-
-  defp error(conn, reason) do
-    message = if is_binary(reason), do: reason, else: inspect(reason)
-    reply_error(conn, :forbidden, "rejected", message)
-  end
+  defp error(conn, reason), do: reply_reason(conn, reason)
 
   defp maybe_put(opts, _key, nil), do: opts
   defp maybe_put(opts, _key, ""), do: opts

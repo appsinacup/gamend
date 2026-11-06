@@ -34,7 +34,11 @@ defmodule Gamend.Storage.Adapter do
   @type stat :: %{size: non_neg_integer(), content_type: String.t() | nil}
 
   @callback put(key(), iodata(), keyword()) :: {:ok, key()} | {:error, term()}
-  @callback get(key()) :: {:ok, binary()} | {:error, term()}
+  @doc """
+  The object's bytes. An object that is not there is `{:error, :not_found}`
+  on every backend; any other error is the backend failing.
+  """
+  @callback get(key()) :: {:ok, binary()} | {:error, :not_found | term()}
   @callback delete(key()) :: :ok | {:error, term()}
   @callback exists?(key()) :: boolean()
   @callback url(key(), keyword()) :: String.t()

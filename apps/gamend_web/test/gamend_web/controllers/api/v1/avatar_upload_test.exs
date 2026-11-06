@@ -1,6 +1,7 @@
 defmodule GamendWeb.Api.V1.AvatarUploadTest do
   use GamendWeb.ConnCase, async: false
 
+  alias Gamend.Storage.Local
   alias GamendWeb.Auth.Guardian
 
   # Smallest thing that passes a PNG magic-byte check.
@@ -164,6 +165,22 @@ defmodule GamendWeb.Api.V1.AvatarUploadTest do
 
       assert json_response(up, 507)["error"] == "quota_exceeded"
       refute Gamend.Storage.exists?(key)
+    end
+
+    # Was 400 `upload_failed`: the request was fine, and the disk refused it.
+    test "a write the backend refuses answers 503 storage_unavailable", %{conn: conn} do
+      %{"key" => key, "token" => token} = ticket(conn, "image/png")
+      # A directory where the object would go.
+      File.mkdir_p!(Local.path_for(key))
+
+      up =
+        conn
+        |> put_req_header("content-type", "image/png")
+        |> put(upload_path(key, token), @png)
+
+      assert json_response(up, 503)["error"] == "storage_unavailable"
+      # Serving that key is a miss, not a backend failure.
+      assert json_response(get(build_conn(), "/storage/#{key}"), 404)["error"] == "not_found"
     end
 
     # Objects written before keys were signed, or by any future server-side

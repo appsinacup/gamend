@@ -245,6 +245,7 @@ defmodule GamendWeb.Api.V1.HookController do
         log_rejected(hook, inspect(reason))
 
         {code, message} = HookErrors.describe(reason)
+        # open-error: the plugin's own reasons, whose codes the game defines
         reply_error(conn, :bad_request, code, message)
     end
   end

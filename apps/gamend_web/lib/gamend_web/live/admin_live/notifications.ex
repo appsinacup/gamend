@@ -473,9 +473,6 @@ defmodule GamendWeb.AdminLive.Notifications do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply,
          put_flash(socket, :error, "Validation failed: #{changeset_error_summary(changeset)}")}
-
-      {:error, reason} ->
-        {:noreply, put_flash(socket, :error, "Failed: #{inspect(reason)}")}
     end
   end
 

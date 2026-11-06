@@ -30,6 +30,16 @@ defmodule Gamend.ResultsTest do
     assert Results.count_events(result.id) == 0
   end
 
+  test "a delete that another delete beat answers not_found", %{result: result} do
+    assert {:ok, _} = Results.record(result, "goal", 1)
+    assert {:ok, _deleted} = Results.delete(result)
+    assert Results.get(result.id) == nil
+    assert Results.count_events(result.id) == 0
+
+    # The struct still names the row; it used to raise `Ecto.StaleEntryError`.
+    assert {:error, :not_found} = Results.delete(result)
+  end
+
   test "stops at max_result_events", %{result: result} do
     SettingsHelpers.put(:gamend_core, Gamend.Limits, :max_result_events, 2)
     on_exit(fn -> SettingsHelpers.delete(:gamend_core, Gamend.Limits, :max_result_events) end)

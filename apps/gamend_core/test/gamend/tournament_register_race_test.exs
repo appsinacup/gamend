@@ -164,7 +164,9 @@ defmodule Gamend.TournamentRegisterRaceTest do
         {:error, :not_enough_coins}
       end)
 
-      assert Tournaments.join_tournament(user, tournament) == {:error, :not_enough_coins}
+      assert Tournaments.join_tournament(user, tournament) ==
+               {:error, {:hook_rejected, :not_enough_coins}}
+
       assert Tournaments.count_entries(tournament.id) == 1
 
       # The seat is free again for someone the game lets in.
@@ -190,7 +192,8 @@ defmodule Gamend.TournamentRegisterRaceTest do
         {:error, :not_enough_coins}
       end)
 
-      assert Tournaments.join_tournament(refused, tournament) == {:error, :not_enough_coins}
+      assert Tournaments.join_tournament(refused, tournament) ==
+               {:error, {:hook_rejected, :not_enough_coins}}
 
       entry = Tournaments.get_entry(tournament.id, refused.id)
       assert entry.state == "eliminated"

@@ -30,6 +30,7 @@ defmodule Gamend.Storage.S3 do
   def get(key) do
     case bucket() |> S3.get_object(key) |> request() do
       {:ok, %{body: body}} -> {:ok, body}
+      {:error, {:http_error, 404, _response}} -> {:error, :not_found}
       {:error, reason} -> {:error, reason}
     end
   end

@@ -31,8 +31,15 @@ defmodule Gamend.Storage.Local do
     end
   end
 
+  # No file at the key, a directory there, or a file where a directory of
+  # the key should be: each is an object that is not there.
   @impl true
-  def get(key), do: File.read(path_for(key))
+  def get(key) do
+    case File.read(path_for(key)) do
+      {:error, reason} when reason in [:enoent, :eisdir, :enotdir] -> {:error, :not_found}
+      result -> result
+    end
+  end
 
   @impl true
   def delete(key) do

@@ -168,13 +168,16 @@ defmodule Gamend.Results do
     end)
   end
 
-  @doc "A result and its events, deleted."
-  @spec delete(Result.t()) :: {:ok, Result.t()} | {:error, term()}
+  @doc """
+  A result and its events, deleted. `{:error, :not_found}` when another
+  delete took it first.
+  """
+  @spec delete(Result.t()) :: {:ok, Result.t()} | {:error, :not_found | Ecto.Changeset.t()}
   def delete(%Result{} = result) do
     Gamend.AfterCommit.transaction(fn ->
       from(e in Event, where: e.result_id == ^result.id) |> Repo.delete_all()
 
-      case Repo.delete(result) do
+      case Repo.rescue_stale(:not_found, fn -> Repo.delete(result) end) do
         {:ok, deleted} -> deleted
         {:error, reason} -> Repo.rollback(reason)
       end

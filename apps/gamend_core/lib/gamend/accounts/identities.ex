@@ -628,7 +628,7 @@ defmodule Gamend.Accounts.Identities do
           User.t(),
           :discord | :apple | :google | :facebook | :github | :steam
         ) ::
-          {:ok, User.t()} | {:error, :last_provider | Ecto.Changeset.t() | term()}
+          {:ok, User.t()} | {:error, :last_provider | Ecto.Changeset.t()}
   def unlink_provider(%User{} = user, provider)
       when provider in [:discord, :apple, :google, :facebook, :github, :steam] do
     provider_field = provider_field(provider)

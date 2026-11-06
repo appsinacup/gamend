@@ -221,6 +221,112 @@ defmodule Gamend.ApiConventionsTest do
     assert Enum.count(rules(root), &(&1 == "R17-boundary-raise")) == 2
   end
 
+  defmodule Statuses do
+    def status(:not_in_party), do: :not_found
+    def status(:full), do: :forbidden
+    def status(_reason), do: nil
+  end
+
+  test "R18: a reason no clause names answered with a status of its own", %{root: root} do
+    Application.put_env(:gamend_core, :api_lint_error_status, Statuses)
+    on_exit(fn -> Application.delete_env(:gamend_core, :api_lint_error_status) end)
+
+    write(root, "lib/demo_web/controllers/api/v1/thing_controller.ex", """
+    defmodule DemoWeb.Api.V1.ThingController do
+      def join(conn, %{"id" => id}) do
+        case Things.join(id) do
+          {:ok, thing} -> reply_data(conn, thing)
+          {:error, :full} -> reply_error(conn, :forbidden, "full")
+          {:error, :not_in_party} -> reply_error(conn, :bad_request, "not_in_party")
+          {:error, reason} -> reply_error(conn, :forbidden, reason)
+        end
+      end
+
+      def leave(conn, %{"id" => id}) do
+        with {:ok, thing} <- Things.fetch(id),
+             :ok <- Things.leave(thing) do
+          reply_ok(conn)
+        else
+          _ -> reply_error(conn, :not_found, "not_found")
+        end
+      end
+
+      def kick(conn, %{"id" => id}) do
+        case Things.kick(id) do
+          :ok -> reply_ok(conn)
+          {:error, _} -> conn |> reply_error(:bad_request, "kick_failed")
+        end
+      end
+
+      def close(conn, %{"id" => id}) do
+        case Things.close(id) do
+          {:ok, thing} -> reply_data(conn, thing)
+          {:error, :full} -> reply_error(conn, :forbidden, "full")
+          _ -> reply_error(conn, :bad_request, "close_failed")
+        end
+      end
+
+      defp failure(conn, _reason), do: reply_error(conn, :unprocessable_entity, "failed")
+    end
+    """)
+
+    write(root, "lib/demo_web/controllers/api/v1/fine_controller.ex", """
+    defmodule DemoWeb.Api.V1.FineController do
+      def join(conn, %{"id" => id}) do
+        case Things.join(id) do
+          {:ok, thing} -> reply_data(conn, thing)
+          {:error, :full} -> reply_error(conn, :forbidden, "full")
+          {:error, :not_in_party} -> reply_error(conn, :not_found, "not_in_party")
+          {:error, reason} -> reply_reason(conn, reason)
+        end
+      end
+
+      def page(conn, params) do
+        case Integer.parse(params["page"] || "1") do
+          {page, ""} -> reply_data(conn, page)
+          _ -> reply_error(conn, :bad_request, "invalid_page")
+        end
+      end
+
+      def call(conn, params) do
+        case Hooks.call(params) do
+          {:ok, result} ->
+            reply_data(conn, result)
+
+          {:error, reason} ->
+            {status, code} = Refusals.describe(reason)
+            reply_error(conn, status, code)
+        end
+      end
+
+      def rpc(conn, params) do
+        case Hooks.rpc(params) do
+          {:ok, result} ->
+            reply_data(conn, result)
+
+          {:error, code} ->
+            # open-error: the plugin's own codes, documented as 400
+            reply_error(conn, :bad_request, code)
+        end
+      end
+    end
+    """)
+
+    found =
+      File.cd!(root, fn -> ApiConventions.violations() end)
+      |> Enum.filter(&(&1.rule == "R18-open-error"))
+      |> Enum.map(&{Path.basename(&1.file), &1.line})
+
+    assert found == [
+             {"thing_controller.ex", 6},
+             {"thing_controller.ex", 7},
+             {"thing_controller.ex", 16},
+             {"thing_controller.ex", 23},
+             {"thing_controller.ex", 31},
+             {"thing_controller.ex", 35}
+           ]
+  end
+
   test "R9: a guide naming a route the router does not have; a spec may opt out", %{root: root} do
     write(root, "priv/docs/10-api.md", "Call `/api/v1/definitely_not_a_route/{id}` to begin.\n")
 

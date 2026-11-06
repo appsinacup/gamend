@@ -107,7 +107,7 @@ defmodule GamendWeb.Api.V1.Admin.PushController do
   )
 
   def send(conn, %{"user_id" => user_id} = params) do
-    with true <- Gamend.UUIDv7.cast_or_nil(user_id) != nil,
+    with user_id when is_binary(user_id) <- Gamend.UUIDv7.cast_or_nil(user_id),
          %Gamend.Accounts.User{} <- Gamend.Repo.get(Gamend.Accounts.User, user_id) do
       message =
         Map.take(params, ["title", "body", "data", "image", "sound", "badge", "collapse_key"])
@@ -120,7 +120,8 @@ defmodule GamendWeb.Api.V1.Admin.PushController do
           unprocessable(conn, errors)
       end
     else
-      _ -> reply_error(conn, :not_found, "user_not_found")
+      # Not an id, or no user has it.
+      nil -> reply_error(conn, :not_found, "user_not_found")
     end
   end
 

@@ -231,7 +231,8 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
        }},
     responses: [
       created: {"Created", "application/json", ChatFilterWordResponse},
-      unprocessable_entity: Schemas.error("Invalid word or cap reached")
+      forbidden: Schemas.error("The word cap was reached (too_many_filter_words)"),
+      unprocessable_entity: Schemas.error("Invalid word")
     ]
   )
 
@@ -335,7 +336,7 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
       ok: {"Imported", "application/json", ImportedCountResponse},
       bad_request: Schemas.error("No lang (missing_param)"),
       not_found: Schemas.error("No bundled list for that language (unknown_language)"),
-      unprocessable_entity: Schemas.error("The word cap was reached")
+      forbidden: Schemas.error("The word cap was reached (too_many_filter_words)")
     ]
   )
 
@@ -527,6 +528,5 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
 
   defp write_error(conn, %Ecto.Changeset{} = changeset), do: unprocessable(conn, changeset)
 
-  defp write_error(conn, reason) when is_atom(reason),
-    do: reply_error(conn, :unprocessable_entity, reason)
+  defp write_error(conn, reason) when is_atom(reason), do: reply_reason(conn, reason)
 end

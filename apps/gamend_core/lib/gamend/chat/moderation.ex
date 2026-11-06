@@ -171,7 +171,8 @@ defmodule Gamend.Chat.Moderation do
   Rejected with `{:error, :too_many_filter_words}` once
   `max_chat_filter_words` is reached.
   """
-  @spec create_filter_word(map()) :: {:ok, FilterWord.t()} | {:error, term()}
+  @spec create_filter_word(map()) ::
+          {:ok, FilterWord.t()} | {:error, :too_many_filter_words | Ecto.Changeset.t()}
   def create_filter_word(attrs) do
     with :ok <- check_word_capacity(1) do
       %FilterWord{}
@@ -182,7 +183,8 @@ defmodule Gamend.Chat.Moderation do
   end
 
   @doc "Update a blocklist entry."
-  @spec update_filter_word(FilterWord.t(), map()) :: {:ok, FilterWord.t()} | {:error, term()}
+  @spec update_filter_word(FilterWord.t(), map()) ::
+          {:ok, FilterWord.t()} | {:error, Ecto.Changeset.t()}
   def update_filter_word(%FilterWord{} = word, attrs) do
     previous = word.word
 
@@ -196,7 +198,7 @@ defmodule Gamend.Chat.Moderation do
   end
 
   @doc "Remove a blocklist entry."
-  @spec delete_filter_word(FilterWord.t()) :: {:ok, FilterWord.t()} | {:error, term()}
+  @spec delete_filter_word(FilterWord.t()) :: {:ok, FilterWord.t()} | {:error, Ecto.Changeset.t()}
   def delete_filter_word(%FilterWord{} = word) do
     word
     |> Repo.delete()
@@ -273,10 +275,12 @@ defmodule Gamend.Chat.Moderation do
 
   Every word goes through the normal changeset, so `max_chat_filter_word_len`
   applies and duplicates are skipped. Returns `{:ok, imported_count}` or
-  `{:error, :unknown_language | :too_many_filter_words}`.
+  `{:error, :unknown_language | :too_many_filter_words}`, or the file error
+  when the list cannot be read.
   """
   @spec import_bundled_list(String.t(), String.t()) ::
-          {:ok, non_neg_integer()} | {:error, term()}
+          {:ok, non_neg_integer()}
+          | {:error, :unknown_language | :too_many_filter_words | File.posix()}
   def import_bundled_list(lang, severity \\ "block") do
     path = Path.join(bundled_dir(), "#{lang}.txt")
 

@@ -48,6 +48,86 @@ defmodule GamendWeb.Api.V1.Admin.EconomyControllerTest do
     assert json_response(conn, 403)["error"] == "insufficient_funds"
   end
 
+  describe "refusals" do
+    test "a reason past the ledger's 64 characters is 422 validation_failed", %{
+      conn: conn,
+      target: target
+    } do
+      # Was a 500: the ledger's changeset matched no clause.
+      conn =
+        post(conn, "/api/v1/admin/economy/grant", %{
+          user_id: target.id,
+          currency: "gold",
+          amount: 5,
+          reason: String.duplicate("r", 65)
+        })
+
+      assert %{"error" => "validation_failed", "errors" => %{"reason" => [_ | _]}} =
+               json_response(conn, 422)
+
+      assert Economy.balance(target.id, "gold") == 0
+    end
+
+    test "a replayed idempotency_key answers the balance it left", %{conn: conn, target: target} do
+      body = %{user_id: target.id, currency: "gold", amount: 5, idempotency_key: "grant-once"}
+
+      assert json_response(post(conn, "/api/v1/admin/economy/grant", body), 200)["data"][
+               "balance"
+             ] == 5
+
+      assert json_response(post(conn, "/api/v1/admin/economy/grant", body), 200)["data"][
+               "balance"
+             ] == 5
+    end
+
+    test "a currency or item name out of bounds is 400", %{conn: conn, target: target} do
+      long = String.duplicate("c", 65)
+
+      grant =
+        post(conn, "/api/v1/admin/economy/grant", %{user_id: target.id, currency: long, amount: 1})
+
+      assert json_response(grant, 400)["error"] == "invalid_currency"
+
+      item =
+        post(conn, "/api/v1/admin/economy/grant_item", %{
+          user_id: target.id,
+          item: long,
+          quantity: 1
+        })
+
+      assert json_response(item, 400)["error"] == "invalid_item"
+    end
+
+    test "an unknown user is 404, a bad amount 400", %{conn: conn, target: target} do
+      missing =
+        post(conn, "/api/v1/admin/economy/grant", %{
+          user_id: Ecto.UUID.generate(),
+          currency: "gold",
+          amount: 1
+        })
+
+      assert json_response(missing, 404)["error"] == "user_not_found"
+
+      zero =
+        post(conn, "/api/v1/admin/economy/spend", %{
+          user_id: target.id,
+          currency: "gold",
+          amount: 0
+        })
+
+      assert json_response(zero, 400)["error"] == "invalid_amount"
+
+      none =
+        post(conn, "/api/v1/admin/economy/consume_item", %{
+          user_id: target.id,
+          item: "potion",
+          quantity: 1
+        })
+
+      assert json_response(none, 403)["error"] == "insufficient_items"
+    end
+  end
+
   test "admin lists wallets and ledger", %{conn: conn, target: target} do
     Economy.grant(target.id, "gold", 100)
 

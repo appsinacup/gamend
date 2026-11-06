@@ -44,8 +44,14 @@ defmodule GamendWeb.Api.V1.FriendController do
     },
     responses: [
       created: {"Request created", "application/json", FriendRequestResponse},
-      bad_request: Schemas.error("Bad request"),
-      conflict: Schemas.error("Already friends or requested"),
+      bad_request: Schemas.error("A request to yourself (cannot_friend_self)"),
+      forbidden:
+        Schemas.error(
+          "Blocked (blocked), too many requests out (too_many_pending_requests), or, " <>
+            "when this accepts their request to you, a full friend list (too_many_friends)"
+        ),
+      not_found: Schemas.error("Their request to you was cancelled meanwhile (not_found)"),
+      conflict: Schemas.error("Already friends (already_friends)"),
       unprocessable_entity: Schemas.error("Validation failed"),
       unauthorized: Schemas.error("Not authenticated")
     ]
@@ -112,9 +118,13 @@ defmodule GamendWeb.Api.V1.FriendController do
     ],
     responses: [
       ok: {"Accepted", "application/json", OkResponse},
-      bad_request: Schemas.error("Invalid id, or a friend list is full"),
+      bad_request: Schemas.error("Invalid id (invalid_id)"),
       unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Not authorized, or already rejected or blocked (not_pending)"),
+      forbidden:
+        Schemas.error(
+          "Not authorized (forbidden), already rejected or blocked (not_pending), " <>
+            "or a friend list is full (too_many_friends)"
+        ),
       not_found: Schemas.error("No such request, or it was cancelled"),
       conflict: Schemas.error("Already accepted (already_friends)")
     ]
@@ -300,14 +310,11 @@ defmodule GamendWeb.Api.V1.FriendController do
           {:ok, friendship} ->
             reply_data(conn, :created, serialize_request(friendship))
 
-          {:error, :cannot_friend_self} ->
-            reply_error(conn, :bad_request, "cannot_friend_self")
-
           {:error, %Ecto.Changeset{} = cs} ->
             unprocessable(conn, cs)
 
           {:error, reason} ->
-            reply_error(conn, :bad_request, reason)
+            reply_reason(conn, reason)
         end
 
       _ ->
@@ -371,11 +378,8 @@ defmodule GamendWeb.Api.V1.FriendController do
               {:ok, _f} ->
                 reply_ok(conn)
 
-              {:error, :cannot_block_self} ->
-                reply_error(conn, :bad_request, "cannot_block_self")
-
-              {:error, _reason} ->
-                reply_error(conn, :bad_request, "invalid")
+              {:error, reason} ->
+                reply_reason(conn, reason)
             end
         end
 
@@ -454,14 +458,11 @@ defmodule GamendWeb.Api.V1.FriendController do
               {:ok, :unblocked} ->
                 reply_ok(conn)
 
-              {:error, :not_found} ->
-                reply_error(conn, :not_found, "not_found")
-
               {:error, :not_authorized} ->
                 reply_error(conn, :forbidden, "forbidden")
 
               {:error, reason} ->
-                reply_error(conn, :bad_request, reason)
+                reply_reason(conn, reason)
             end
         end
 
@@ -510,20 +511,11 @@ defmodule GamendWeb.Api.V1.FriendController do
               {:ok, _f} ->
                 reply_ok(conn)
 
-              {:error, :not_found} ->
-                reply_error(conn, :not_found, "not_found")
-
               {:error, :not_authorized} ->
                 reply_error(conn, :forbidden, "forbidden")
 
-              {:error, :not_pending} ->
-                reply_error(conn, :forbidden, "not_pending")
-
-              {:error, :already_friends} ->
-                reply_error(conn, :conflict, "already_friends")
-
               {:error, reason} ->
-                reply_error(conn, :bad_request, reason)
+                reply_reason(conn, reason)
             end
         end
 
@@ -544,17 +536,11 @@ defmodule GamendWeb.Api.V1.FriendController do
               {:ok, _f} ->
                 reply_ok(conn)
 
-              {:error, :not_found} ->
-                reply_error(conn, :not_found, "not_found")
-
               {:error, :not_authorized} ->
                 reply_error(conn, :forbidden, "forbidden")
 
-              {:error, :not_pending} ->
-                reply_error(conn, :forbidden, "not_pending")
-
               {:error, reason} ->
-                reply_error(conn, :bad_request, reason)
+                reply_reason(conn, reason)
             end
         end
 
@@ -590,9 +576,7 @@ defmodule GamendWeb.Api.V1.FriendController do
       f.status == "pending" and f.requester_id == user.id ->
         case Friends.cancel_request(f.id, user) do
           {:ok, :cancelled} -> reply_ok(conn)
-          {:error, :not_found} -> reply_error(conn, :not_found, "not_found")
-          {:error, :not_pending} -> reply_error(conn, :forbidden, "not_pending")
-          {:error, _reason} -> reply_error(conn, :bad_request, "remove_failed")
+          {:error, reason} -> reply_reason(conn, reason)
         end
 
       f.status == "accepted" and (f.requester_id == user.id or f.target_id == user.id) ->
@@ -601,8 +585,7 @@ defmodule GamendWeb.Api.V1.FriendController do
                if(f.requester_id == user.id, do: f.target_id, else: f.requester_id)
              ) do
           {:ok, _} -> reply_ok(conn)
-          {:error, :not_found} -> reply_error(conn, :not_found, "not_found")
-          {:error, _reason} -> reply_error(conn, :bad_request, "remove_failed")
+          {:error, reason} -> reply_reason(conn, reason)
         end
 
       true ->

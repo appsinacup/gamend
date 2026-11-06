@@ -85,6 +85,50 @@ defmodule GamendWeb.Api.V1.MeControllerTest do
     end
   end
 
+  describe "a before_user_update hook that refuses" do
+    defmodule RefusingUserHook do
+      def before_user_update(_user, %{"username" => "reserved"}), do: {:error, :reserved_name}
+      def before_user_update(_user, %{"username" => "odd.one"}), do: {:error, {:odd, 1}}
+      def before_user_update(_user, %{"display_name" => "Banned"}), do: {:error, "Not that name"}
+      def before_user_update(_user, attrs), do: {:ok, attrs}
+    end
+
+    setup %{conn: conn} do
+      original = Application.get_env(:gamend_core, :hooks_module)
+      Application.put_env(:gamend_core, :hooks_module, RefusingUserHook)
+
+      on_exit(fn ->
+        if original,
+          do: Application.put_env(:gamend_core, :hooks_module, original),
+          else: Application.delete_env(:gamend_core, :hooks_module)
+      end)
+
+      {:ok, token, _} = Guardian.encode_and_sign(Gamend.AccountsFixtures.user_fixture())
+      %{conn: put_req_header(conn, "authorization", "Bearer " <> token)}
+    end
+
+    test "a username refused with a code is that username's error", %{conn: conn} do
+      conn = patch(conn, "/api/v1/me/username", %{username: "reserved"})
+
+      assert %{"error" => "validation_failed", "errors" => %{"username" => ["reserved_name"]}} =
+               json_response(conn, 422)
+    end
+
+    # Was 422 `invalid_username`: the name was fine, the game said no.
+    test "a username refused another way is 403 rejected", %{conn: conn} do
+      conn = patch(conn, "/api/v1/me/username", %{username: "odd.one"})
+
+      assert json_response(conn, 403) == %{"error" => "rejected", "message" => "{:odd, 1}"}
+    end
+
+    # Was a 500: the veto was handed to `unprocessable/2` as if a changeset.
+    test "a refused display name is 403 rejected", %{conn: conn} do
+      conn = patch(conn, "/api/v1/me/display_name", %{display_name: "Banned"})
+
+      assert json_response(conn, 403) == %{"error" => "rejected", "message" => "Not that name"}
+    end
+  end
+
   describe "PATCH /api/v1/me/password" do
     test "updates password for authenticated user", %{conn: conn} do
       user = Gamend.AccountsFixtures.user_fixture()

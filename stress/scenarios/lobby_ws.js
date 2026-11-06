@@ -36,11 +36,10 @@ export default function () {
 
   const created = createLobby(s.token, { title: `${RUN_TAG}-${__VU}-${__ITER}`, max_users: 8 });
 
-  // The player is still in a lobby from an iteration that failed to leave.
-  // That arrives as 409 or as 422 `unexpected_error` — `create_lobby_solo`
-  // funnels every non-changeset error into the same 422 — so both are a leave
-  // and a retry next iteration, not a failure of this scenario.
-  if (!okOr(created, 'lobby create', [409, 422])) return;
+  // The player is still in a lobby from an iteration that failed to leave:
+  // 409 `already_in_lobby`, a leave and a retry next iteration, not a failure
+  // of this scenario.
+  if (!okOr(created, 'lobby create', [409])) return;
   if (created.status !== 201) {
     leaveLobby(s.token);
     return;

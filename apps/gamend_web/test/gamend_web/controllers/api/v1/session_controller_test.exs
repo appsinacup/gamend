@@ -196,6 +196,22 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       assert %{"error" => "missing_param"} = json_response(conn, 400)
     end
 
+    # A token that verifies but names no session any more is answered as one
+    # that does not verify: the client signs in again either way.
+    test "a refresh token whose user is gone answers like a bad token", %{user: user} do
+      {:ok, refresh_token, _} = Guardian.encode_and_sign(user, %{}, token_type: "refresh")
+      {:ok, _} = Gamend.Accounts.delete_user(user)
+
+      for token <- [refresh_token, "invalid.token.here"] do
+        assert build_conn()
+               |> post("/api/v1/refresh", %{refresh_token: token})
+               |> json_response(401) == %{
+                 "error" => "invalid_refresh_token",
+                 "message" => "Invalid or expired refresh token"
+               }
+      end
+    end
+
     test "returns 401 after a password change revokes the refresh token", %{
       conn: conn,
       user: user

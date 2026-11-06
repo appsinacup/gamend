@@ -6,9 +6,11 @@ defmodule GamendWeb.Api.V1.Admin.ChatAdminControllerTest do
   alias Gamend.Accounts
   alias Gamend.AccountsFixtures
   alias Gamend.Chat
+  alias Gamend.Chat.FilterWord
   alias Gamend.Chat.Moderation
   alias Gamend.Chat.Reports
   alias Gamend.Groups
+  alias Gamend.Repo
   alias GamendWeb.Auth.Guardian
 
   setup %{conn: conn} do
@@ -207,6 +209,36 @@ defmodule GamendWeb.Api.V1.Admin.ChatAdminControllerTest do
 
       resp = ctx.admin_conn |> delete("/api/v1/admin/chat/filter_words") |> json_response(400)
       assert resp["error"] == "missing_param"
+    end
+
+    test "the word cap answers 403 too_many_filter_words", ctx do
+      previous = Application.get_env(:gamend_core, Gamend.Limits, [])
+      on_exit(fn -> Application.put_env(:gamend_core, Gamend.Limits, previous) end)
+
+      Application.put_env(
+        :gamend_core,
+        Gamend.Limits,
+        Keyword.put(previous, :max_chat_filter_words, 1)
+      )
+
+      # Straight to the table, so no word reaches the node's matcher.
+      %FilterWord{}
+      |> FilterWord.changeset(%{"word" => "zorbl#{System.unique_integer([:positive])}"})
+      |> Repo.insert!()
+
+      resp =
+        ctx.admin_conn
+        |> post("/api/v1/admin/chat/filter_words", %{word: "one-too-many"})
+        |> json_response(403)
+
+      assert resp["error"] == "too_many_filter_words"
+
+      resp =
+        ctx.admin_conn
+        |> post("/api/v1/admin/chat/filter_words/import", %{lang: "en"})
+        |> json_response(403)
+
+      assert resp["error"] == "too_many_filter_words"
     end
   end
 end

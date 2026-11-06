@@ -64,6 +64,21 @@ defmodule Gamend.ChatTest do
     end
   end
 
+  describe "send_message/2" do
+    test "a missing or malformed chat id is invalid_chat_ref, for every chat type" do
+      user = create_user()
+
+      for chat_type <- ["lobby", "group", "party", "friend"], ref <- [nil, 42] do
+        assert {:error, :invalid_chat_ref} =
+                 Chat.send_message(%{user: user}, %{
+                   "chat_type" => chat_type,
+                   "chat_ref_id" => ref,
+                   "content" => "hi"
+                 })
+      end
+    end
+  end
+
   describe "mark_read/4" do
     test "rejects a message from another group conversation" do
       owner = create_user()

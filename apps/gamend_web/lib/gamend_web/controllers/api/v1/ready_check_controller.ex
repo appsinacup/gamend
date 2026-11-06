@@ -86,7 +86,6 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
       bad_request: Schemas.error("Missing or invalid ready flag or scope"),
       not_found: Schemas.error("No open check in that lane"),
       conflict: Schemas.error("The answer is final, or the check already resolved"),
-      unprocessable_entity: Schemas.error("Unexpected error"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -104,21 +103,11 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
     do: reply_error(conn, :bad_request, "invalid_ready")
 
   defp do_respond(conn, user, ready, scope) do
+    # `no_open_check` and `not_a_participant` (taken off the board by a leave
+    # on the way) are 404; `not_revocable` and `already_resolved` 409.
     case ReadyChecks.respond(user, ready, scope) do
-      {:ok, check} ->
-        reply_data(conn, serialize(check, user))
-
-      {:error, :no_open_check} ->
-        reply_error(conn, :not_found, "no_open_check")
-
-      {:error, :not_revocable} ->
-        reply_error(conn, :conflict, "not_revocable")
-
-      {:error, :already_resolved} ->
-        reply_error(conn, :conflict, "already_resolved")
-
-      _other ->
-        reply_error(conn, :unprocessable_entity, "unexpected_error")
+      {:ok, check} -> reply_data(conn, serialize(check, user))
+      {:error, reason} -> reply_reason(conn, reason)
     end
   end
 
@@ -149,7 +138,7 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
     },
     responses: [
       created: {"The open check", "application/json", ReadyCheckStateResponse},
-      bad_request: Schemas.error("Not in a lobby"),
+      not_found: Schemas.error("Not in a lobby (not_in_lobby), or it went away (not_found)"),
       forbidden: Schemas.error("Not the host, the lobby is hostless, or a hook refused"),
       conflict: Schemas.error("A member is locked in another check"),
       unprocessable_entity: Schemas.error("No participants, or too many"),
@@ -192,7 +181,7 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
     },
     responses: [
       created: {"The open check", "application/json", ReadyCheckStateResponse},
-      bad_request: Schemas.error("Not in a party"),
+      not_found: Schemas.error("Not in a party (not_in_party), or it went away (not_found)"),
       forbidden: Schemas.error("Not the party leader, or a hook refused"),
       conflict: Schemas.error("A member is locked in another check"),
       unprocessable_entity: Schemas.error("No participants, or too many"),
@@ -225,22 +214,12 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
       [opened_by: user.id, metadata: Map.get(params, "metadata", %{})]
       |> maybe_timeout(Map.get(params, "timeout_ms"), default_timeout_ms)
 
+    # `already_pending` is 409, `no_participants` and `too_many_participants`
+    # 422, a game hook's veto 403 `rejected`, and a subject deleted since it
+    # was read 404 `not_found`.
     case ReadyChecks.reset(subject, :members, opts) do
-      {:ok, check} ->
-        reply_data(conn, :created, serialize(check, user))
-
-      {:error, :already_pending} ->
-        reply_error(conn, :conflict, "already_pending")
-
-      {:error, {:hook_rejected, reason}} ->
-        message = if is_binary(reason), do: reason, else: inspect(reason)
-        reply_error(conn, :forbidden, "rejected", message)
-
-      {:error, reason} when is_atom(reason) ->
-        reply_error(conn, :unprocessable_entity, reason)
-
-      _other ->
-        reply_error(conn, :unprocessable_entity, "unexpected_error")
+      {:ok, check} -> reply_data(conn, :created, serialize(check, user))
+      {:error, reason} -> reply_reason(conn, reason)
     end
   end
 
@@ -250,9 +229,8 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
     security: [%{"authorization" => []}],
     responses: [
       ok: {"Cancelled", "application/json", OkResponse},
-      bad_request: Schemas.error("Not in a lobby"),
       forbidden: Schemas.error("Not the host, or the lobby is hostless"),
-      not_found: Schemas.error("No open check"),
+      not_found: Schemas.error("Not in a lobby (not_in_lobby), or no open check (no_open_check)"),
       conflict: Schemas.error("The check passed or failed before the cancel (already_resolved)"),
       unauthorized: Schemas.error("Not authenticated")
     ]
@@ -287,9 +265,8 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
     security: [%{"authorization" => []}],
     responses: [
       ok: {"Cancelled", "application/json", OkResponse},
-      bad_request: Schemas.error("Not in a party"),
       forbidden: Schemas.error("Not the party leader"),
-      not_found: Schemas.error("No open check"),
+      not_found: Schemas.error("Not in a party (not_in_party), or no open check (no_open_check)"),
       conflict: Schemas.error("The check passed or failed before the cancel (already_resolved)"),
       unauthorized: Schemas.error("Not authenticated")
     ]

@@ -79,6 +79,12 @@ defmodule GamendWeb.Api.V1.Admin.PushControllerTest do
                404
              )
 
+    assert %{"error" => "user_not_found"} =
+             json_response(
+               post(conn, "/api/v1/admin/push/send", %{user_id: "not-a-uuid", title: "Hello"}),
+               404
+             )
+
     assert %{"error" => "validation_failed", "errors" => %{"title" => [_]}} =
              json_response(
                post(conn, "/api/v1/admin/push/send", %{user_id: target.id}),

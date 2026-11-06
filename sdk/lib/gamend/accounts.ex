@@ -2070,7 +2070,8 @@ defmodule Gamend.Accounts do
     `Gamend.Retention` deletes it on the day unless its owner signs in on the
     website first (`cancel_deletion/1`). An account already scheduled keeps its
     date. The expired session tokens come back so the caller can disconnect
-    their LiveViews.
+    their LiveViews. `{:error, :not_found}` when another delete took the
+    account first.
     
     Admin deletions and the retention sweeps call `delete_user/1` and never wait.
     
@@ -2078,7 +2079,7 @@ defmodule Gamend.Accounts do
   @spec request_deletion(Gamend.Accounts.User.t()) ::
           {:ok, :deleted}
           | {:ok, {:scheduled, Gamend.Accounts.User.t(), [Gamend.Accounts.UserToken.t()]}}
-          | {:error, Ecto.Changeset.t()}
+          | {:error, :not_found | Ecto.Changeset.t()}
   def request_deletion(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -2446,8 +2447,7 @@ defmodule Gamend.Accounts do
   @spec unlink_provider(
           Gamend.Accounts.User.t(),
           :discord | :apple | :google | :facebook | :github | :steam
-        ) ::
-          {:ok, Gamend.Accounts.User.t()} | {:error, :last_provider | Ecto.Changeset.t() | term()}
+        ) :: {:ok, Gamend.Accounts.User.t()} | {:error, :last_provider | Ecto.Changeset.t()}
   def unlink_provider(_user, _provider) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -2542,11 +2542,14 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
-    Updates the user's display name and broadcasts the change.
+    Updates the user's display name and broadcasts the change. A
+    `before_user_update` hook's refusal comes back as
+    `{:error, {:hook_rejected, reason}}`.
     
   """
   @spec update_user_display_name(Gamend.Accounts.User.t(), map()) ::
-          {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t()}
+          {:ok, Gamend.Accounts.User.t()}
+          | {:error, Ecto.Changeset.t() | {:hook_rejected, term()}}
   def update_user_display_name(_user, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -2669,11 +2672,13 @@ defmodule Gamend.Accounts do
     Strict, unlike registration: an invalid or taken username returns
     `{:error, changeset}` with no generated fallback, so the player can pick
     again. Routed through the `before_user_update` hook pipeline, where games
-    can forbid changes entirely or reject names (profanity, reserved words).
+    can forbid changes entirely or reject names (profanity, reserved words):
+    its refusal comes back as `{:error, {:hook_rejected, reason}}`.
     
   """
   @spec update_username(Gamend.Accounts.User.t(), map()) ::
-          {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t() | term()}
+          {:ok, Gamend.Accounts.User.t()}
+          | {:error, Ecto.Changeset.t() | {:hook_rejected, term()}}
   def update_username(_user, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->

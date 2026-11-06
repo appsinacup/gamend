@@ -291,6 +291,7 @@ defmodule GamendWeb.Api.V1.Admin.TournamentController do
     responses: [
       ok: {"The resolved match", "application/json", TournamentMatchResponse},
       bad_request: Schemas.error("Not an entry of this match (invalid_winner)"),
+      forbidden: Schemas.error("A before_tournament_result hook refused it (rejected)"),
       conflict: Schemas.error("Already resolved (already_resolved)"),
       not_found: Schemas.error("Not found")
     ]
@@ -389,12 +390,11 @@ defmodule GamendWeb.Api.V1.Admin.TournamentController do
 
   defp finish_window(_tournament), do: %{ends_at: DateTime.utc_now(:second)}
 
-  # `Gamend.Tournaments` refuses with an atom; its status follows the rule in
-  # docs/specs/api-conventions.md.
-  defp refusal(conn, :already_resolved), do: reply_error(conn, :conflict, "already_resolved")
+  # `Gamend.Tournaments` refuses with an atom, whose status
+  # `GamendWeb.ErrorStatus` gives (`already_resolved` and `state_changed` 409,
+  # `not_cancelled` 403, `not_found` 404), or with a
+  # `before_tournament_result` veto (403 `rejected`).
   defp refusal(conn, :invalid_winner), do: reply_error(conn, :bad_request, "invalid_winner")
-  defp refusal(conn, :not_found), do: reply_error(conn, :not_found, "not_found")
-  defp refusal(conn, :state_changed), do: reply_error(conn, :conflict, "state_changed")
   defp refusal(conn, %Ecto.Changeset{} = changeset), do: unprocessable(conn, changeset)
-  defp refusal(conn, reason) when is_atom(reason), do: reply_error(conn, :forbidden, reason)
+  defp refusal(conn, reason), do: reply_reason(conn, reason)
 end

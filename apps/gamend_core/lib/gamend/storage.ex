@@ -153,7 +153,11 @@ defmodule Gamend.Storage do
     adapter().put(key, data, opts)
   end
 
-  @spec get(Adapter.key()) :: {:ok, binary()} | {:error, term()}
+  @doc """
+  The object's bytes: `{:error, :not_found}` when there is none, any other
+  error when the backend failed (a disk error, S3 down).
+  """
+  @spec get(Adapter.key()) :: {:ok, binary()} | {:error, :not_found | term()}
   def get(key), do: adapter().get(key)
 
   @spec delete(Adapter.key()) :: :ok | {:error, term()}

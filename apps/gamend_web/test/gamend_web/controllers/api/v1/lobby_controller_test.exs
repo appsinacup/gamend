@@ -12,6 +12,16 @@ defmodule GamendWeb.LobbyControllerTest.VetoCreate do
   def before_lobby_create(_attrs), do: {:error, "Rooms are closed tonight"}
 end
 
+defmodule GamendWeb.LobbyControllerTest.VetoStateAndUpdate do
+  use Gamend.TestSupport.NoopHooks
+
+  @impl true
+  def before_lobby_state_change(_lobby, _from, _to), do: {:error, "Not between rounds"}
+
+  @impl true
+  def before_lobby_update(_lobby, _attrs), do: {:error, :frozen}
+end
+
 defmodule GamendWeb.Api.V1.LobbyControllerTest do
   use GamendWeb.ConnCase
 
@@ -189,7 +199,7 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
 
     test "omitting lobby_id while seated nowhere is still not_in_lobby", %{conn: conn} do
       resp = post(conn, "/api/v1/lobbies/state", %{"state" => "playing"})
-      assert json_response(resp, 400)["error"] == "not_in_lobby"
+      assert json_response(resp, 404)["error"] == "not_in_lobby"
     end
   end
 
@@ -589,10 +599,9 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
       |> put_req_header("authorization", "Bearer " <> token_other)
       |> patch("/api/v1/lobbies", %{title: "bad"})
 
-    # After switching to using the authenticated user's lobby, a non-host
-    # who isn't in the lobby will get 400 (not_in_lobby) - if the user
-    # is in the lobby but not host they'd get 403. Accept either.
-    assert conn1.status in [400, 403, 422]
+    # The update targets the caller's own lobby: a non-host seated nowhere
+    # has none (404 not_in_lobby); one seated but not hosting gets 403.
+    assert json_response(conn1, 404)["error"] == "not_in_lobby"
 
     conn2 =
       conn
@@ -789,7 +798,7 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
           post(conn, "/api/v1/lobbies/kick", %{target_user_id: other.id})
         end)
 
-      assert json_response(conn, 400)["error"] == "not_in_lobby"
+      assert json_response(conn, 404)["error"] == "not_in_lobby"
     end
 
     test "a hook vetoing a disband is rejected", %{conn: conn, lobby: lobby} do
@@ -1048,6 +1057,78 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
 
     assert json_response(resp, 403)["error"] == "blocked"
     assert Gamend.Accounts.get_user(joiner.id).lobby_id == nil
+  end
+
+  # Each reason answers with the status `GamendWeb.ErrorStatus` gives it, the
+  # same from every endpoint: a catch-all clause used to pick one per site.
+  describe "the status follows the reason" do
+    setup %{conn: conn} do
+      host = AccountsFixtures.user_fixture()
+      {:ok, lobby} = Lobbies.create_lobby(%{title: "reason-room", host_id: host.id})
+      %{conn: conn, host: host, lobby: lobby}
+    end
+
+    defp as(conn, user) do
+      {:ok, token, _} = Guardian.encode_and_sign(user)
+      put_req_header(conn, "authorization", "Bearer " <> token)
+    end
+
+    defp veto_state_and_update do
+      previous = Application.get_env(:gamend_core, :hooks_module)
+
+      Application.put_env(
+        :gamend_core,
+        :hooks_module,
+        GamendWeb.LobbyControllerTest.VetoStateAndUpdate
+      )
+
+      on_exit(fn -> Application.put_env(:gamend_core, :hooks_module, previous) end)
+    end
+
+    test "a hook vetoing a state change is 403 rejected, not 422", %{conn: conn, host: host} do
+      veto_state_and_update()
+
+      resp = conn |> as(host) |> post("/api/v1/lobbies/state", %{"state" => "playing"})
+
+      assert %{"error" => "rejected", "message" => "Not between rounds"} =
+               json_response(resp, 403)
+    end
+
+    test "a hook vetoing an update is 403 rejected, not 422 unexpected_error", %{
+      conn: conn,
+      host: host
+    } do
+      veto_state_and_update()
+
+      resp = conn |> as(host) |> patch("/api/v1/lobbies", %{title: "renamed"})
+      assert %{"error" => "rejected", "message" => ":frozen"} = json_response(resp, 403)
+    end
+
+    test "joining a hidden lobby is 404 not_found, not 403 cannot_join", %{conn: conn} do
+      host = AccountsFixtures.user_fixture()
+
+      {:ok, hidden} =
+        Lobbies.create_lobby(%{title: "secret-room", host_id: host.id, is_hidden: true})
+
+      resp =
+        conn |> as(AccountsFixtures.user_fixture()) |> post("/api/v1/lobbies/#{hidden.id}/join")
+
+      assert json_response(resp, 404)["error"] == "not_found"
+    end
+
+    test "disbanding while seated nowhere is 404 not_in_lobby", %{conn: conn} do
+      resp = conn |> as(AccountsFixtures.user_fixture()) |> post("/api/v1/lobbies/disband")
+      assert json_response(resp, 404)["error"] == "not_in_lobby"
+    end
+
+    test "a party quick join with a member offline is 403 members_offline", %{conn: conn} do
+      leader = AccountsFixtures.user_fixture()
+      party_of(leader, AccountsFixtures.user_fixture())
+      Gamend.Accounts.set_user_online(leader.id)
+
+      resp = conn |> as(leader) |> post("/api/v1/lobbies/quick_join", %{})
+      assert json_response(resp, 403)["error"] == "members_offline"
+    end
   end
 
   # Deletes `lobby` right after the `nth` read of the users table in this

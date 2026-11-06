@@ -126,6 +126,7 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
     request_body: {"Quest", "application/json", @quest_body_schema},
     responses: [
       created: {"Created", "application/json", AdminQuestResponse},
+      forbidden: Schemas.error("At the max_quests limit (quest_limit_reached)"),
       unprocessable_entity: Schemas.error("Validation failed")
     ]
   )
@@ -232,7 +233,7 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
     responses: [
       ok: {"Deleted", "application/json", OkResponse},
       not_found: Schemas.error("Not found"),
-      unprocessable_entity: Schemas.error("Could not delete (delete_failed)")
+      unprocessable_entity: Schemas.error("Could not delete (validation_failed)")
     ]
   )
 
@@ -246,8 +247,8 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
           {:ok, _} ->
             reply_ok(conn)
 
-          {:error, _} ->
-            reply_error(conn, :unprocessable_entity, "delete_failed")
+          {:error, %Ecto.Changeset{} = changeset} ->
+            changeset_error(conn, changeset)
         end
     end
   end
@@ -312,7 +313,11 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
       ok: {"Granted", "application/json", AdminQuestProgressResponse},
       bad_request: Schemas.error("user_id and key are required (missing_param)"),
       not_found: Schemas.error("No quest with that key"),
-      conflict: Schemas.error("Already completed (already_completed)")
+      conflict:
+        Schemas.error(
+          "Already completed (already_completed), or every retry lost to the player's own " <>
+            "progress (contended)"
+        )
     ]
   )
 
@@ -374,7 +379,11 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
     responses: [
       ok: {"Claimed", "application/json", AdminQuestClaimResponse},
       bad_request: Schemas.error("user_id and key are required (missing_param)"),
-      forbidden: Schemas.error("Not completed (not_completed)"),
+      forbidden:
+        Schemas.error(
+          "Not completed (not_completed), or a guest where claims need an account " <>
+            "(account_required)"
+        ),
       not_found: Schemas.error("No quest with that key"),
       conflict: Schemas.error("Already claimed (already_claimed)")
     ]
@@ -437,15 +446,12 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
     unprocessable(conn, changeset)
   end
 
-  # A changeset is a validation failure; an atom from `Gamend.Quests` is the
-  # code; anything else is logged-worthy and shown as `failed`.
+  # A changeset is a validation failure. `Gamend.Quests`' other reasons take
+  # their status from `GamendWeb.ErrorStatus`: `quest_limit_reached` and
+  # `account_required` 403, `contended` 409 (a grant that lost every retry
+  # to the player's own progress).
   defp failure(conn, %Ecto.Changeset{} = changeset), do: unprocessable(conn, changeset)
-
-  defp failure(conn, reason) when is_atom(reason),
-    do: reply_error(conn, :unprocessable_entity, reason)
-
-  defp failure(conn, reason),
-    do: reply_error(conn, :unprocessable_entity, "failed", inspect(reason))
+  defp failure(conn, reason), do: reply_reason(conn, reason)
 
   defp serialize_quest(%Quest{} = quest) do
     %{

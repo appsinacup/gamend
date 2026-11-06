@@ -838,6 +838,84 @@ defmodule Gamend.LobbiesTest do
     end
   end
 
+  # A seat is the player's own row, so the seat write is the guard, made against
+  # the database. A check made earlier, or a lobby's lock, let one player into two
+  # lobbies at once (appsinacup/gamend#60, #61, #62).
+  describe "one lobby seat per player" do
+    # Two creates for one host both passed a read of the host, both inserted,
+    # and the lobby that lost the seat was left with nobody in it. Here the
+    # host is seated between this create's insert and its seat. That seat lands
+    # inside this transaction and rolls back with it; what counts is the answer
+    # and that no lobby is left behind.
+    test "create refuses a host seated after its lobby was inserted" do
+      host = AccountsFixtures.user_fixture()
+      {:ok, elsewhere} = Lobbies.create_lobby(%{title: "elsewhere", hostless: true})
+
+      result =
+        after_first_read("lobbies", fn -> seat_directly(host, elsewhere) end, fn ->
+          Lobbies.create_lobby(%{title: "second", host_id: host.id})
+        end)
+
+      assert result == {:error, :already_in_lobby}
+      assert [elsewhere.id] == Enum.map(Gamend.Repo.all(Lobbies.Lobby), & &1.id)
+    end
+
+    # A join reads the player before it waits on the lobby's lock, and a join to
+    # another lobby takes another lock.
+    test "join refuses a player seated elsewhere after it read them" do
+      host = AccountsFixtures.user_fixture()
+      player = AccountsFixtures.user_fixture()
+      {:ok, elsewhere} = Lobbies.create_lobby(%{title: "elsewhere", hostless: true})
+      {:ok, lobby} = Lobbies.create_lobby(%{title: "target", host_id: host.id})
+
+      result =
+        after_first_read("users", fn -> seat_directly(player, elsewhere) end, fn ->
+          Lobbies.join_lobby(player, lobby)
+        end)
+
+      assert result == {:error, :already_in_lobby}
+      assert seated(player).lobby_id == elsewhere.id
+      assert Enum.map(Lobbies.get_lobby_members(lobby), & &1.id) == [host.id]
+    end
+
+    # The second of two joins to the same lobby rewrote the same seat and still
+    # broadcast `user_joined`, ran `after_lobby_join` and counted the
+    # "lobby_joined" quest event again.
+    test "a second join to the same lobby is refused, not counted twice" do
+      host = AccountsFixtures.user_fixture()
+      player = AccountsFixtures.user_fixture()
+      {:ok, lobby} = Lobbies.create_lobby(%{title: "twice", host_id: host.id})
+
+      result =
+        after_first_read("users", fn -> {:ok, _} = Lobbies.join_lobby(player, lobby) end, fn ->
+          Lobbies.join_lobby(player, lobby)
+        end)
+
+      assert result == {:error, :already_in_lobby}
+
+      assert Enum.sort(Enum.map(Lobbies.get_lobby_members(lobby), & &1.id)) ==
+               Enum.sort([host.id, player.id])
+    end
+
+    test "claim_seat/2 answers why it did not seat" do
+      player = AccountsFixtures.user_fixture()
+      {:ok, a} = Lobbies.create_lobby(%{title: "a", hostless: true})
+      {:ok, b} = Lobbies.create_lobby(%{title: "b", hostless: true})
+
+      assert {:ok, %{lobby_id: a_id}} = Lobbies.claim_seat(player.id, a.id)
+      assert a_id == a.id
+      assert {:error, :already_in_lobby} = Lobbies.claim_seat(player.id, b.id)
+      assert {:error, :not_found} = Lobbies.claim_seat(Ecto.UUID.generate(), b.id)
+      assert seated(player).lobby_id == a.id
+    end
+  end
+
+  defp seated(user), do: Gamend.Repo.get!(Accounts.User, user.id)
+
+  defp seat_directly(user, lobby) do
+    user |> seated() |> Ecto.Changeset.change(lobby_id: lobby.id) |> Gamend.Repo.update!()
+  end
+
   # Runs `act` the first time this process reads `source`, between the read and
   # whatever `call` does with it; fails unless it ran.
   defp after_first_read(source, act, call) do

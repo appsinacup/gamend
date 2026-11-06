@@ -645,23 +645,18 @@ defmodule Gamend.Lobbies do
     with :ok <- check_seat(lobby, user_id),
          :ok <- run_before_join(user, lobby, opts),
          :ok <- check_password(lobby, opt(opts, :password)) do
+      # The lock covers the lobby's seats; `create_membership/1` guards the
+      # player's own row, which a join to another lobby does not wait on.
       Lock.serialize(:lobby, lobby.id, fn ->
         with :ok <- check_seat(lobby, user_id),
-             {:ok, updated_user} <- seat(lobby.id, user_id) do
+             {:ok, updated_user} <-
+               create_membership(%{lobby_id: lobby.id, user_id: user_id}) do
           updated_user
         else
           {:error, reason} -> Repo.rollback(reason)
         end
       end)
     end
-  end
-
-  # The lobby was read before the lock, and a delete in between leaves the
-  # membership pointing at nothing (`Repo.rescue_foreign_key/2`).
-  defp seat(lobby_id, user_id) do
-    Repo.rescue_foreign_key(:not_found, fn ->
-      create_membership(%{lobby_id: lobby_id, user_id: user_id})
-    end)
   end
 
   defp check_seat(lobby, user_id) do
@@ -758,8 +753,6 @@ defmodule Gamend.Lobbies do
   end
 
   defp do_create_lobby(attrs) do
-    # if host_id is provided, prevent a user who is already a member of a lobby
-    # from creating an additional lobby
     # ensure title is present and always ensure it is unique in the DB.
     # If the caller provided a title, use it as the base and derive a unique
     # candidate; otherwise fall back to the default base "lobby".
@@ -794,12 +787,12 @@ defmodule Gamend.Lobbies do
       {:ok, attrs} ->
         attrs = normalize_changeset_params(attrs)
 
+        # A host already seated elsewhere is refused by the seat itself, which
+        # rolls the insert back: a check before the insert was a read, and two
+        # creates for one player both passed it and left a lobby behind.
         Multi.new()
-        |> Multi.run(:check_host, fn _repo, _changes ->
-          validate_host_not_in_lobby(attrs)
-        end)
         |> Multi.insert(:lobby, new_lobby_changeset(attrs))
-        |> maybe_add_host_membership(attrs)
+        |> maybe_seat_host(Map.get(attrs, "host_id") || Map.get(attrs, :host_id))
         |> Gamend.AfterCommit.transaction()
 
       {:error, reason} ->
@@ -855,63 +848,18 @@ defmodule Gamend.Lobbies do
 
   defp normalize_hostless_lobby(%Lobby{} = lobby), do: lobby
 
-  @spec validate_host_not_in_lobby(map()) :: {:ok, :ok} | {:error, :already_in_lobby}
-  defp validate_host_not_in_lobby(attrs) do
-    host_id = Map.get(attrs, "host_id") || Map.get(attrs, :host_id)
+  @spec maybe_seat_host(Ecto.Multi.t(), Ecto.UUID.t() | nil) :: Ecto.Multi.t()
+  defp maybe_seat_host(multi, nil), do: multi
 
-    if host_id do
-      host_user = Accounts.get_user(host_id)
-
-      if host_user && host_user.lobby_id do
-        {:error, :already_in_lobby}
-      else
-        {:ok, :ok}
-      end
-    else
-      {:ok, :ok}
-    end
-  end
-
-  @spec maybe_add_host_membership(Ecto.Multi.t(), map()) :: Ecto.Multi.t()
-  defp maybe_add_host_membership(multi, %{"host_id" => host_id}) when host_id != nil do
-    multi
-    |> Multi.run(:membership, fn repo, %{lobby: lobby} ->
-      user = repo.get(Gamend.Accounts.User, host_id)
-      changeset = Ecto.Changeset.change(user, %{lobby_id: lobby.id})
-
-      repo.update(changeset)
-      |> case do
-        {:ok, updated} = ok ->
-          _ = invalidate_accounts_user_cache(updated.id)
-          _ = Accounts.broadcast_user_update(updated)
-          ok
-
-        other ->
-          other
+  defp maybe_seat_host(multi, host_id) do
+    Multi.run(multi, :membership, fn _repo, %{lobby: lobby} ->
+      with {:ok, updated} <- claim_seat(host_id, lobby.id) do
+        _ = invalidate_accounts_user_cache(updated.id)
+        _ = Accounts.broadcast_user_update(updated)
+        {:ok, updated}
       end
     end)
   end
-
-  defp maybe_add_host_membership(multi, %{host_id: host_id}) when host_id != nil do
-    multi
-    |> Multi.run(:membership, fn repo, %{lobby: lobby} ->
-      user = repo.get(Gamend.Accounts.User, host_id)
-      changeset = Ecto.Changeset.change(user, %{lobby_id: lobby.id})
-
-      repo.update(changeset)
-      |> case do
-        {:ok, updated} = ok ->
-          _ = invalidate_accounts_user_cache(updated.id)
-          _ = Accounts.broadcast_user_update(updated)
-          ok
-
-        other ->
-          other
-      end
-    end)
-  end
-
-  defp maybe_add_host_membership(multi, _), do: multi
 
   defp unique_title_candidate(base) when is_binary(base) do
     suffix = :erlang.unique_integer([:positive]) |> Integer.to_string()
@@ -1236,48 +1184,67 @@ defmodule Gamend.Lobbies do
 
   ## Membership helpers (minimal for now)
 
-  @spec create_membership(%{lobby_id: Ecto.UUID.t(), user_id: Ecto.UUID.t()}) ::
-          {:ok, User.t()} | {:error, :not_found | Ecto.Changeset.t() | term()}
-  def create_membership(%{lobby_id: lobby_id, user_id: user_id} = _attrs) do
-    # Use Repo.get directly — this function may be called inside a
-    # Repo.transaction (e.g. from do_join_with_lock). Using the cached
-    # Accounts.get_user/1 would seed the cache with lobby_id=nil
-    # before the transaction commits, enabling a concurrent process's
-    # @decorate cacheable put to re-poison the cache after our delete.
-    case Repo.get(User, user_id) do
-      nil ->
-        {:error, :not_found}
+  # Seats `user_id` in `lobby_id`, only if the user is in no lobby: the one
+  # write of a seat, shared by create, join and `Gamend.Parties`. Call it inside
+  # the transaction that should roll back when it fails. It writes no
+  # broadcast and runs no hook, so it is not an API for plugins.
+  #
+  # This is the guard, not a check made earlier: it reads the user's row from
+  # the database (never the cache), locked, so two seats for one user cannot
+  # both pass. The membership is the user's row, and a lobby's lock does not
+  # cover it: two lobbies' locks let the same player into both, last write
+  # winning. A lobby deleted since its caller read it answers `:not_found`
+  # (`Repo.rescue_foreign_key/2`).
+  #
+  # The lock is `FOR NO KEY UPDATE`, not `FOR UPDATE`: create inserts the
+  # lobby first, and its `host_id` foreign key takes `FOR KEY SHARE` on this
+  # row. Two creates for one host each held that and waited on the other's
+  # under `FOR UPDATE`, and Postgres aborted one with a deadlock.
+  @doc false
+  @spec claim_seat(Ecto.UUID.t(), Ecto.UUID.t()) ::
+          {:ok, User.t()} | {:error, :not_found | :already_in_lobby | Ecto.Changeset.t()}
+  def claim_seat(user_id, lobby_id) do
+    row = from(u in User, where: u.id == ^user_id)
 
-      user ->
-        result =
+    Repo.rescue_foreign_key(:not_found, fn ->
+      case Repo.one(Repo.lock_rows(row, :no_key_update)) do
+        nil ->
+          {:error, :not_found}
+
+        %User{lobby_id: nil} = user ->
           user
           |> Ecto.Changeset.change(%{lobby_id: lobby_id})
           |> Repo.update()
 
-        case result do
-          {:ok, updated_user} ->
-            _ = invalidate_accounts_user_cache(updated_user.id)
-            _ = Accounts.broadcast_user_update(updated_user)
-            _ = Accounts.broadcast_member_update(updated_user)
-            broadcast_lobby(lobby_id, {:user_joined, lobby_id, user_id})
-            broadcast_lobbies({:lobby_membership_changed, lobby_id})
+        %User{} ->
+          {:error, :already_in_lobby}
+      end
+    end)
+  end
 
-            # Fetch the lobby before starting the background task so the task
-            # does not need to check out a DB connection from the sandbox.
-            # Using Repo.get/2 avoids raising if the lobby disappears (tests
-            # shouldn't crash because of a background DB lookup).
-            lobby = get_lobby(lobby_id)
+  @spec create_membership(%{lobby_id: Ecto.UUID.t(), user_id: Ecto.UUID.t()}) ::
+          {:ok, User.t()}
+          | {:error, :not_found | :already_in_lobby | Ecto.Changeset.t() | term()}
+  def create_membership(%{lobby_id: lobby_id, user_id: user_id} = _attrs) do
+    with {:ok, updated_user} <- claim_seat(user_id, lobby_id) do
+      _ = invalidate_accounts_user_cache(updated_user.id)
+      _ = Accounts.broadcast_user_update(updated_user)
+      _ = Accounts.broadcast_member_update(updated_user)
+      broadcast_lobby(lobby_id, {:user_joined, lobby_id, user_id})
+      broadcast_lobbies({:lobby_membership_changed, lobby_id})
 
-            Gamend.Async.run(fn ->
-              Gamend.Hooks.internal_call(:after_lobby_join, [updated_user, lobby])
-              report_join_quest_event(updated_user.id, lobby)
-            end)
+      # Fetch the lobby before starting the background task so the task
+      # does not need to check out a DB connection from the sandbox.
+      # Using Repo.get/2 avoids raising if the lobby disappears (tests
+      # shouldn't crash because of a background DB lookup).
+      lobby = get_lobby(lobby_id)
 
-            {:ok, updated_user}
+      Gamend.Async.run(fn ->
+        Gamend.Hooks.internal_call(:after_lobby_join, [updated_user, lobby])
+        report_join_quest_event(updated_user.id, lobby)
+      end)
 
-          _ ->
-            result
-        end
+      {:ok, updated_user}
     end
   end
 

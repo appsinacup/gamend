@@ -144,13 +144,25 @@ defmodule Gamend.Repo do
   every other locker and writer, `:share` against writers only, so holders of
   `:share` run side by side.
 
+  `:no_key_update` is the lock an `UPDATE` of non-key columns takes: it
+  excludes other writers and lockers, but not the `FOR KEY SHARE` a foreign
+  key check takes on the row it points at. Use it to read a row you are
+  about to update in a transaction that may also insert a row referencing
+  it. `:update` there deadlocks: two such transactions each hold the other's
+  key share and wait for it.
+
   Postgres only. SQLite has no row locks (`FOR UPDATE` raises there), and its
   single writer under `default_transaction_mode: :immediate` already runs every
   write transaction alone, so there the query comes back unchanged.
   """
-  @spec lock_rows(Ecto.Queryable.t(), :update | :share) :: Ecto.Queryable.t()
+  @spec lock_rows(Ecto.Queryable.t(), :update | :no_key_update | :share) ::
+          Ecto.Queryable.t()
   def lock_rows(query, :update) do
     if postgres?(), do: Ecto.Query.lock(query, "FOR UPDATE"), else: query
+  end
+
+  def lock_rows(query, :no_key_update) do
+    if postgres?(), do: Ecto.Query.lock(query, "FOR NO KEY UPDATE"), else: query
   end
 
   def lock_rows(query, :share) do

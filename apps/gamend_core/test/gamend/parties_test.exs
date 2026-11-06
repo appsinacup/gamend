@@ -544,6 +544,47 @@ defmodule Gamend.PartiesTest do
       assert {:error, :member_in_lobby} =
                Parties.create_lobby_with_party(leader, %{title: "party-lobby", max_users: 8})
     end
+
+    # Seats a member elsewhere from inside `create_lobby/1`: after the party's
+    # members were checked, before they are seated.
+    defmodule SeatElsewhereOnCreateHook do
+      use Gamend.TestSupport.NoopHooks
+
+      @impl true
+      def before_lobby_create(attrs) do
+        {user_id, lobby_id} = Application.fetch_env!(:gamend, :seat_on_lobby_create)
+
+        Gamend.Repo.get!(Gamend.Accounts.User, user_id)
+        |> Ecto.Changeset.change(lobby_id: lobby_id)
+        |> Gamend.Repo.update!()
+
+        {:ok, attrs}
+      end
+    end
+
+    test "a member seated elsewhere after the check keeps that seat and the party stays out",
+         %{leader: leader, member1: member1} do
+      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
+      add_member_to_party(member1, party)
+      set_all_online([leader, member1])
+      {:ok, elsewhere} = Lobbies.create_lobby(%{title: "elsewhere", hostless: true})
+
+      original = Application.get_env(:gamend_core, :hooks_module)
+      Application.put_env(:gamend, :seat_on_lobby_create, {member1.id, elsewhere.id})
+      Application.put_env(:gamend_core, :hooks_module, SeatElsewhereOnCreateHook)
+
+      on_exit(fn ->
+        Application.delete_env(:gamend, :seat_on_lobby_create)
+        Application.put_env(:gamend_core, :hooks_module, original)
+      end)
+
+      assert {:error, :member_in_lobby} =
+               Parties.create_lobby_with_party(leader, %{title: "party-lobby", max_users: 8})
+
+      assert Gamend.Repo.get!(Accounts.User, member1.id).lobby_id == elsewhere.id
+      assert Gamend.Repo.get!(Accounts.User, leader.id).lobby_id == nil
+      refute Gamend.Repo.get_by(Lobby, title: "party-lobby")
+    end
   end
 
   describe "join_lobby_with_party/3" do

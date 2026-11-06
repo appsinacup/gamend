@@ -205,7 +205,10 @@ defmodule Gamend.Notifications.Preferences do
   @spec digest?(String.t(), String.t() | nil) :: boolean()
   def digest?(group_key, type) do
     case group(group_key) do
-      %{email_every: every} = group when not is_nil(every) ->
+      %{email_every: nil} ->
+        false
+
+      %{email_every: _every} = group ->
         type not in Map.get(group, :email_now, [])
 
       _no_digest ->

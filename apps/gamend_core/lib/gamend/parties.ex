@@ -1419,9 +1419,7 @@ defmodule Gamend.Parties do
     # Use a transaction with advisory lock so either ALL members join or NONE do
     Lock.serialize(:lobby, lobby.id, fn ->
       Enum.map(non_leader_members, fn member ->
-        # Use Repo.get directly — Accounts.get_user would seed the cache
-        # with lobby_id=nil inside the un-committed transaction.
-        seat_member(Repo.get(User, member.id), lobby.id)
+        seat_member(member.id, lobby.id)
       end)
     end)
     |> case do
@@ -1527,17 +1525,14 @@ defmodule Gamend.Parties do
 
   # One member's seat, inside the lobby's lock. The lobby was read before the
   # lock, and one deleted since is refused by the foreign key: the whole party
-  # stays out, as if it had been read gone.
-  defp seat_member(nil, _lobby_id), do: Repo.rollback(:not_found)
-
-  defp seat_member(%User{} = member, lobby_id) do
-    Repo.rescue_foreign_key(:not_found, fn ->
-      member |> Ecto.Changeset.change(%{lobby_id: lobby_id}) |> Repo.update()
-    end)
-    |> case do
+  # stays out, as if it had been read gone. So does a party with a member who
+  # took a seat elsewhere since `check_no_members_in_lobby/1` read them.
+  defp seat_member(member_id, lobby_id) do
+    case Lobbies.claim_seat(member_id, lobby_id) do
       {:ok, updated} -> updated
       {:error, :not_found} -> Repo.rollback(:not_found)
-      {:error, reason} -> Repo.rollback({:member_join_failed, member.id, reason})
+      {:error, :already_in_lobby} -> Repo.rollback(:member_in_lobby)
+      {:error, reason} -> Repo.rollback({:member_join_failed, member_id, reason})
     end
   end
 
@@ -1561,9 +1556,7 @@ defmodule Gamend.Parties do
       end
 
       Enum.map(members, fn member ->
-        # Use Repo.get directly — Accounts.get_user would seed the cache
-        # with lobby_id=nil inside the un-committed transaction.
-        seat_member(Repo.get(User, member.id), lobby.id)
+        seat_member(member.id, lobby.id)
       end)
     end)
     |> case do

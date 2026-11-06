@@ -130,9 +130,7 @@ defmodule GamendWeb.UrlState do
   a `handle_info/2` changed.
   """
   @spec write(LiveView.Socket.t()) :: LiveView.Socket.t()
-  def write(%{redirected: redirected} = socket) when not is_nil(redirected), do: socket
-
-  def write(socket) do
+  def write(%{redirected: nil} = socket) do
     case socket.private[@private] do
       nil ->
         socket
@@ -147,6 +145,9 @@ defmodule GamendWeb.UrlState do
         end
     end
   end
+
+  # A socket already redirecting has left the page; its URL is not ours to patch.
+  def write(socket), do: socket
 
   # The first read is after `mount/3`, so what the keys hold then is their
   # default. A reload runs only when the URL says something else: an event's own

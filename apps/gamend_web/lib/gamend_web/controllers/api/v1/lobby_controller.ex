@@ -512,6 +512,10 @@ defmodule GamendWeb.Api.V1.LobbyController do
       {:error, :member_in_lobby} ->
         reply_error(conn, :conflict, "member_in_lobby")
 
+      # The leader took a seat elsewhere between the party's check and the create.
+      {:error, :already_in_lobby} ->
+        reply_error(conn, :conflict, "already_in_lobby")
+
       {:error, :not_enough_space} ->
         reply_error(conn, :forbidden, "not_enough_space")
 

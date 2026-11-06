@@ -319,20 +319,12 @@ defmodule Gamend.Lobbies do
 
   @doc false
   @spec create_membership(%{lobby_id: Ecto.UUID.t(), user_id: Ecto.UUID.t()}) ::
-          {:ok, Gamend.Accounts.User.t()} | {:error, :not_found | Ecto.Changeset.t() | term()}
+          {:ok, Gamend.Accounts.User.t()}
+          | {:error, :not_found | :already_in_lobby | Ecto.Changeset.t() | term()}
   def create_membership(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        {:ok, nil}
 
       _ ->
         raise "Gamend.Lobbies.create_membership/1 is a stub - only available at runtime on Gamend"

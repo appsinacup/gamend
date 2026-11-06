@@ -118,10 +118,16 @@ defmodule GamendWeb.Api.V1.LobbyController do
     },
     responses: [
       created: {"Lobby created", "application/json", LobbyResponse},
-      conflict: Schemas.error("User already in a lobby, or validation failed"),
-      forbidden: Schemas.error("In a party without leading it, or the party cannot follow"),
+      conflict:
+        Schemas.error(
+          "Already in a lobby (already_in_lobby), or a party member is (member_in_lobby)"
+        ),
+      forbidden:
+        Schemas.error(
+          "In a party without leading it, the party cannot follow, or a game hook refused it (rejected)"
+        ),
       unauthorized: Schemas.error("Not authenticated"),
-      unprocessable_entity: Schemas.error("Unexpected error")
+      unprocessable_entity: Schemas.error("Validation failed (validation_failed)")
     ]
   )
 
@@ -519,14 +525,22 @@ defmodule GamendWeb.Api.V1.LobbyController do
       {:error, :not_enough_space} ->
         reply_error(conn, :forbidden, "not_enough_space")
 
-      {:error, :member_offline} ->
-        reply_error(conn, :forbidden, "member_offline")
+      {:error, :lobby_too_small_for_party} ->
+        reply_error(conn, :forbidden, "lobby_too_small_for_party")
+
+      {:error, :members_offline} ->
+        reply_error(conn, :forbidden, "members_offline")
 
       {:error, :blocked} ->
         reply_error(conn, :forbidden, "blocked")
 
+      {:error, {:hook_rejected, reason}} ->
+        reply_error(conn, :forbidden, "rejected", rejection_message(reason))
+
+      # A lobby's title is a display name, never unique: a failed changeset is
+      # always the input's fault.
       {:error, %Ecto.Changeset{} = changeset} ->
-        uniqueness_conflict(conn, changeset)
+        unprocessable(conn, changeset)
 
       _other ->
         reply_error(conn, :unprocessable_entity, "unexpected_error")
@@ -540,8 +554,14 @@ defmodule GamendWeb.Api.V1.LobbyController do
       {:ok, lobby} ->
         reply_data(conn, :created, serialize_lobby(lobby))
 
+      {:error, :already_in_lobby} ->
+        reply_error(conn, :conflict, "already_in_lobby")
+
+      {:error, {:hook_rejected, reason}} ->
+        reply_error(conn, :forbidden, "rejected", rejection_message(reason))
+
       {:error, %Ecto.Changeset{} = changeset} ->
-        uniqueness_conflict(conn, changeset)
+        unprocessable(conn, changeset)
 
       _other ->
         reply_error(conn, :unprocessable_entity, "unexpected_error")
@@ -605,8 +625,8 @@ defmodule GamendWeb.Api.V1.LobbyController do
       {:error, :not_enough_space} ->
         reply_error(conn, :forbidden, "not_enough_space")
 
-      {:error, :member_offline} ->
-        reply_error(conn, :forbidden, "member_offline")
+      {:error, :members_offline} ->
+        reply_error(conn, :forbidden, "members_offline")
 
       {:error, :blocked} ->
         reply_error(conn, :forbidden, "blocked")

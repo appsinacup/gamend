@@ -130,7 +130,7 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
       assert conn.status == 401
     end
 
-    test "returns error with missing title", %{conn: conn} do
+    test "a missing title answers 422 validation_failed", %{conn: conn} do
       user = create_user()
 
       conn =
@@ -138,7 +138,32 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
         |> auth_conn(user)
         |> post("/api/v1/groups", %{type: "public"})
 
-      assert conn.status == 409
+      assert %{"error" => "validation_failed", "errors" => %{"title" => [_]}} =
+               json_response(conn, 422)
+    end
+
+    test "a slug the creator already has answers 409", %{conn: conn} do
+      user = create_user()
+      {:ok, _} = Groups.create_group(user.id, %{"title" => "Guild", "slug" => "guild"})
+
+      conn =
+        conn
+        |> auth_conn(user)
+        |> post("/api/v1/groups", %{title: "Other", slug: "guild"})
+
+      assert %{"error" => "validation_failed", "errors" => %{"slug" => [_]}} =
+               json_response(conn, 409)
+    end
+
+    test "a title another group has is fine", %{conn: conn} do
+      {:ok, _} = Groups.create_group(create_user().id, %{"title" => "Same Name"})
+
+      conn =
+        conn
+        |> auth_conn(create_user())
+        |> post("/api/v1/groups", %{title: "Same Name"})
+
+      assert %{"title" => "Same Name"} = json_response(conn, 201)["data"]
     end
   end
 
@@ -154,6 +179,32 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
         |> patch("/api/v1/groups/#{group.id}", %{title: "New"})
 
       assert %{"title" => "New"} = json_response(conn, 200)["data"]
+    end
+
+    test "a slug the creator already has answers 409", %{conn: conn} do
+      user = create_user()
+      {:ok, _} = Groups.create_group(user.id, %{"title" => "First", "slug" => "first"})
+      {:ok, group} = Groups.create_group(user.id, %{"title" => "Second", "slug" => "second"})
+
+      conn =
+        conn
+        |> auth_conn(user)
+        |> patch("/api/v1/groups/#{group.id}", %{slug: "first"})
+
+      assert %{"error" => "validation_failed", "errors" => %{"slug" => [_]}} =
+               json_response(conn, 409)
+    end
+
+    test "invalid input answers 422", %{conn: conn} do
+      user = create_user()
+      {:ok, group} = Groups.create_group(user.id, %{"title" => "Valid"})
+
+      conn =
+        conn
+        |> auth_conn(user)
+        |> patch("/api/v1/groups/#{group.id}", %{slowdown: -1})
+
+      assert json_response(conn, 422)["error"] == "validation_failed"
     end
 
     test "non-admin cannot update", %{conn: conn} do

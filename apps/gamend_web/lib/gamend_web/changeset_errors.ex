@@ -69,15 +69,33 @@ defmodule GamendWeb.ChangesetErrors do
   end
 
   @doc """
-  Replies 409 with the standard validation payload: a changeset that failed on
-  a uniqueness constraint (a lobby title already taken), where the conflict is
-  the point rather than the input.
+  Replies to a changeset whose table has a unique index: 409 with the standard
+  validation payload when that index is what failed (a group slug already
+  taken), where the conflict is the point rather than the input; 422 otherwise,
+  as `unprocessable/2` does.
+
+      {:error, %Ecto.Changeset{} = changeset} -> unprocessable_or_conflict(conn, changeset)
+
+  A changeset with no `unique_constraint/3` or `unsafe_validate_unique/4`
+  never answers 409, so it uses `unprocessable/2`.
   """
-  @spec uniqueness_conflict(Plug.Conn.t(), Changeset.t()) :: Plug.Conn.t()
-  def uniqueness_conflict(conn, %Changeset{} = changeset) do
-    conn
-    |> put_status(:conflict)
-    |> Phoenix.Controller.json(%{error: "validation_failed", errors: errors(changeset)})
+  @spec unprocessable_or_conflict(Plug.Conn.t(), Changeset.t()) :: Plug.Conn.t()
+  def unprocessable_or_conflict(conn, %Changeset{} = changeset) do
+    if taken?(changeset) do
+      conn
+      |> put_status(:conflict)
+      |> Phoenix.Controller.json(%{error: "validation_failed", errors: errors(changeset)})
+    else
+      unprocessable(conn, changeset)
+    end
+  end
+
+  # `unique_constraint/3` tags its error `constraint: :unique`,
+  # `unsafe_validate_unique/4` tags its `validation: :unsafe_unique`.
+  defp taken?(%Changeset{errors: errors}) do
+    Enum.any?(errors, fn {_field, {_message, opts}} ->
+      opts[:constraint] == :unique or opts[:validation] == :unsafe_unique
+    end)
   end
 
   @doc """

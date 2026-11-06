@@ -158,15 +158,18 @@ the table.
 field, each value a list of already-interpolated, already-translated messages.
 `errors` appears with `"error": "validation_failed"` and nowhere else, and
 that answer is 422 — or 409 when what failed is a uniqueness constraint (a
-lobby title already taken):
+group slug, an email or a username already taken):
 
 ```json
 {"error": "validation_failed",
  "errors": {"max_players": ["must be greater than or equal to min_players"]}}
 ```
 
-`unprocessable(conn, changeset)` is the only way to write it;
-`GamendWeb.ChangesetErrors.errors/1` gives the map alone for the 409 case.
+`unprocessable(conn, changeset)` is the only way to write it, and
+`unprocessable_or_conflict(conn, changeset)` where the schema has a unique
+index: it answers 409 when that index failed and 422 otherwise. A display
+title (a lobby's, a group's) is never unique, so it never answers 409.
+`GamendWeb.ChangesetErrors.errors/1` gives the map alone.
 `mix gamend.api.lint` rejects a hand-rolled `traverse_errors` in a controller.
 
 **[R16]** A person is named `<role>_name` (`host_name`, `sender_name`,

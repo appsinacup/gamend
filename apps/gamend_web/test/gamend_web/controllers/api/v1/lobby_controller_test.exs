@@ -5,6 +5,13 @@ defmodule GamendWeb.LobbyControllerTest.VetoDisband do
   def before_lobby_delete(_lobby), do: {:error, :tournament_running}
 end
 
+defmodule GamendWeb.LobbyControllerTest.VetoCreate do
+  use Gamend.TestSupport.NoopHooks
+
+  @impl true
+  def before_lobby_create(_attrs), do: {:error, "Rooms are closed tonight"}
+end
+
 defmodule GamendWeb.Api.V1.LobbyControllerTest do
   use GamendWeb.ConnCase
 
@@ -359,6 +366,75 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
   } do
     conn = post(conn, "/api/v1/lobbies", %{title: "service-room", hostless: true})
     assert conn.status == 401
+  end
+
+  defp create_as(conn, user, params) do
+    {:ok, token, _} = Guardian.encode_and_sign(user)
+
+    conn
+    |> put_req_header("authorization", "Bearer " <> token)
+    |> post("/api/v1/lobbies", params)
+  end
+
+  defp party_of(leader, member) do
+    {:ok, party} = Gamend.Parties.create_party(leader, %{max_size: 4})
+    member |> Ecto.Changeset.change(%{party_id: party.id}) |> Gamend.Repo.update!()
+    party
+  end
+
+  describe "POST /api/v1/lobbies failures" do
+    test "a title another lobby has is fine: titles are not unique", %{conn: conn} do
+      {:ok, _} = Lobbies.create_lobby(%{title: "Ranked 1v1", hostless: true})
+
+      resp = conn |> create_as(AccountsFixtures.user_fixture(), %{title: "Ranked 1v1"})
+      assert %{"title" => "Ranked 1v1"} = json_response(resp, 201)["data"]
+    end
+
+    test "invalid input answers 422 validation_failed, not 409", %{conn: conn} do
+      resp = conn |> create_as(AccountsFixtures.user_fixture(), %{title: "room", max_users: 0})
+
+      assert %{"error" => "validation_failed", "errors" => %{"max_users" => [_]}} =
+               json_response(resp, 422)
+    end
+
+    test "a host already in a lobby answers 409 already_in_lobby", %{conn: conn} do
+      host = AccountsFixtures.user_fixture()
+      {:ok, _own} = Lobbies.create_lobby(%{title: "own-room", host_id: host.id})
+
+      resp = conn |> create_as(host, %{title: "second-room"})
+      assert json_response(resp, 409)["error"] == "already_in_lobby"
+    end
+
+    test "a game hook's refusal answers 403 rejected with its words", %{conn: conn} do
+      previous = Application.get_env(:gamend_core, :hooks_module)
+      Application.put_env(:gamend_core, :hooks_module, GamendWeb.LobbyControllerTest.VetoCreate)
+      on_exit(fn -> Application.put_env(:gamend_core, :hooks_module, previous) end)
+
+      resp = conn |> create_as(AccountsFixtures.user_fixture(), %{title: "room"})
+
+      assert %{"error" => "rejected", "message" => "Rooms are closed tonight"} =
+               json_response(resp, 403)
+    end
+
+    test "a party leader with a member offline answers 403 members_offline", %{conn: conn} do
+      leader = AccountsFixtures.user_fixture()
+      member = AccountsFixtures.user_fixture()
+      party_of(leader, member)
+      Gamend.Accounts.set_user_online(leader.id)
+
+      resp = conn |> create_as(leader, %{title: "party-room"})
+      assert json_response(resp, 403)["error"] == "members_offline"
+    end
+
+    test "a lobby smaller than the leader's party answers 403", %{conn: conn} do
+      leader = AccountsFixtures.user_fixture()
+      member = AccountsFixtures.user_fixture()
+      party_of(leader, member)
+      Enum.each([leader, member], &Gamend.Accounts.set_user_online(&1.id))
+
+      resp = conn |> create_as(leader, %{title: "party-room", max_users: 1})
+      assert json_response(resp, 403)["error"] == "lobby_too_small_for_party"
+    end
   end
 
   test "POST /api/v1/lobbies/:id/join answers 409 when already in a lobby", %{conn: conn} do

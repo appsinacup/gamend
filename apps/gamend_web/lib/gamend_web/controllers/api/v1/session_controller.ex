@@ -293,24 +293,15 @@ defmodule GamendWeb.Api.V1.SessionController do
     })
   end
 
-  defp registered({:error, %Ecto.Changeset{} = changeset}, conn) do
-    if taken?(changeset),
-      do: uniqueness_conflict(conn, changeset),
-      else: unprocessable(conn, changeset)
-  end
+  # An email or a username someone already has: 409, the input was fine.
+  defp registered({:error, %Ecto.Changeset{} = changeset}, conn),
+    do: unprocessable_or_conflict(conn, changeset)
 
   # A `before_user_register` plugin refused the sign-up. The email is queued,
   # never sent here, so it cannot fail this request.
   defp registered({:error, reason}, conn) do
     message = if is_binary(reason), do: reason, else: "The registration was refused"
     reply_error(conn, :forbidden, "registration_refused", message)
-  end
-
-  # An email or a username someone already has: 409, the input was fine.
-  defp taken?(%Ecto.Changeset{errors: errors}) do
-    Enum.any?(errors, fn {_field, {_message, opts}} ->
-      opts[:constraint] == :unique or opts[:validation] == :unsafe_unique
-    end)
   end
 
   operation(:create_device,

@@ -753,11 +753,9 @@ defmodule Gamend.Lobbies do
   end
 
   defp do_create_lobby(attrs) do
-    # ensure title is present and always ensure it is unique in the DB.
-    # If the caller provided a title, use it as the base and derive a unique
-    # candidate; otherwise fall back to the default base "lobby".
-    # Treat keys that are present but blank/nil as "not provided" so we
-    # generate a title in those cases.
+    # A title is a display name and never unique: two lobbies may share one,
+    # and a caller's title is kept as given. With none (a key that is absent,
+    # nil or blank), the lobby gets a generated `lobby-<n>`.
     title_val = Map.get(attrs, "title") || Map.get(attrs, :title)
 
     has_title =

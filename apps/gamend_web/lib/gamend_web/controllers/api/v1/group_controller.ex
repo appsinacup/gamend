@@ -146,7 +146,8 @@ defmodule GamendWeb.Api.V1.GroupController do
     },
     responses: [
       created: {"Group created", "application/json", GroupResponse},
-      conflict: Schemas.error("Slug taken, or validation error"),
+      conflict: Schemas.error("Slug already taken among the creator's groups"),
+      unprocessable_entity: Schemas.error("Validation failed (validation_failed)"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -198,6 +199,7 @@ defmodule GamendWeb.Api.V1.GroupController do
     responses: [
       ok: {"Group updated", "application/json", GroupResponse},
       forbidden: Schemas.error("Not an admin"),
+      conflict: Schemas.error("Slug already taken among the creator's groups"),
       unprocessable_entity: Schemas.error("Validation error"),
       unauthorized: Schemas.error("Not authenticated")
     ]
@@ -883,7 +885,7 @@ defmodule GamendWeb.Api.V1.GroupController do
           reply_data(conn, :created, serialize_group(group))
 
         {:error, %Ecto.Changeset{} = changeset} ->
-          uniqueness_conflict(conn, changeset)
+          unprocessable_or_conflict(conn, changeset)
 
         {:error, reason} when is_atom(reason) ->
           reply_error(conn, :conflict, reason)
@@ -912,7 +914,7 @@ defmodule GamendWeb.Api.V1.GroupController do
               reply_error(conn, :unprocessable_entity, "max_members_too_low")
 
             {:error, %Ecto.Changeset{} = changeset} ->
-              unprocessable(conn, changeset)
+              unprocessable_or_conflict(conn, changeset)
 
             {:error, reason} when is_atom(reason) ->
               reply_error(conn, :unprocessable_entity, reason)

@@ -8,6 +8,14 @@ defmodule Gamend.Matchmaking.Ticket do
   A ticket queued on behalf of a party carries that party's `party_id`. Tickets
   sharing a `party_id` form an indivisible unit: the matcher seats them in the
   same lobby or leaves them all queued.
+
+  A ticket queued by a lobby's host carries that lobby's `lobby_id`
+  (backfill): a match seats the other players there instead of in a new
+  lobby. `size` and `capacity` are what the sweep read for it, the lobby's
+  members and seats (1 and nil for any other ticket).
+
+  `accept_timeout_ms` set, a formed match asks everyone to accept first
+  (a ready check of kind `accept`, `Gamend.ReadyChecks`).
   """
 
   use Gamend.Schema
@@ -34,9 +42,13 @@ defmodule Gamend.Matchmaking.Ticket do
     field :queued_at, :utc_datetime_usec
     field :matched_at, :utc_datetime_usec
     field :match_id, :binary_id
+    field :accept_timeout_ms, :integer
+    field :size, :integer, virtual: true, default: 1
+    field :capacity, :integer, virtual: true
 
     belongs_to :user, User
     belongs_to :party, Gamend.Parties.Party
+    belongs_to :lobby, Gamend.Lobbies.Lobby
 
     timestamps(type: :utc_datetime_usec)
   end
@@ -64,7 +76,9 @@ defmodule Gamend.Matchmaking.Ticket do
       :timeout_ms,
       :queued_at,
       :matched_at,
-      :match_id
+      :match_id,
+      :lobby_id,
+      :accept_timeout_ms
     ])
     |> validate_required(@required)
     |> validate_inclusion(:status, @statuses)
@@ -74,10 +88,12 @@ defmodule Gamend.Matchmaking.Ticket do
       less_than_or_equal_to: Gamend.Limits.get(:max_matchmaking_players)
     )
     |> validate_number(:timeout_ms, greater_than: 0)
+    |> validate_number(:accept_timeout_ms, greater_than: 0)
     |> validate_max_gte_min()
     |> Gamend.Limits.validate_metadata_size(:match_params, :max_matchmaking_params_size)
     |> foreign_key_constraint(:user_id)
     |> foreign_key_constraint(:party_id)
+    |> foreign_key_constraint(:lobby_id)
     # Backs `Matchmaking.ensure_none_queued/1`, whose check-then-insert has the
     # `before_matchmaking_join` hook in the middle of it.
     |> unique_constraint(:user_id,

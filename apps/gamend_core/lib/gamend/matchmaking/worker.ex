@@ -150,8 +150,10 @@ defmodule Gamend.Matchmaking.Worker do
         {:error, _} -> []
       end
 
+    # A match that asks its players to accept first seats nobody yet: it
+    # counts once the accept passes (`Match.accept_resolved/1`).
     claimed
-    |> Enum.map(&Match.create/1)
+    |> Enum.map(&Match.start/1)
     |> Enum.count(&match?({:ok, _}, &1))
   end
 
@@ -221,6 +223,15 @@ defmodule Gamend.Matchmaking.Worker do
 
       blocked_within?(group, blocked) ->
         Logger.warning("matchmaking: custom matcher paired blocked players; dropped")
+        false
+
+      # Read from the bucket's own tickets: their lobby sizes are the sweep's,
+      # never a matcher's.
+      not (tickets |> Enum.filter(&(&1.id in group_ids)) |> Matchmaking.seatable?()) ->
+        Logger.warning(
+          "matchmaking: custom matcher returned a match its lobby cannot seat; dropped"
+        )
+
         false
 
       true ->

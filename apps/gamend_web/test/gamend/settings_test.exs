@@ -1,6 +1,7 @@
 defmodule Gamend.SettingsTest do
   use ExUnit.Case, async: false
 
+  alias Gamend.Hooks.Declarations
   alias Gamend.Settings
 
   defmodule Sample do
@@ -297,6 +298,65 @@ defmodule Gamend.SettingsTest do
 
     test "returns :ok when nothing is fatal" do
       assert Settings.validate!(:prod) == :ok
+    end
+  end
+
+  describe "declared/0" do
+    defmodule VarsPlugin do
+      def env_vars do
+        [
+          %{name: "MYGAME_MAX_BOTS", default: 8, description: "Bots per match"},
+          %{name: "MYGAME_API_KEY", default: "", secret: true},
+          %{name: "GAMEND_SAMPLE_CHAT_DAYS", default: 3}
+        ]
+      end
+    end
+
+    setup do
+      Declarations.refresh([
+        %{name: "my_game", status: :ok, hooks_module: VarsPlugin, modules: []}
+      ])
+
+      on_exit(fn -> Declarations.refresh([]) end)
+    end
+
+    test "is every setting, then each plugin variable that is not one, as plain data" do
+      declared = Settings.declared()
+      find = fn env -> Enum.filter(declared, &(&1.env == env)) end
+
+      assert [
+               %{
+                 app: "gamend_core",
+                 group: "sample",
+                 label: "Sample",
+                 type: "atom",
+                 default: "local",
+                 secret: false,
+                 plugin: nil
+               }
+             ] = find.("GAMEND_SAMPLE_ADAPTER")
+
+      assert [%{secret: true}] = find.("GAMEND_SAMPLE_API_TOKEN")
+
+      assert [
+               %{
+                 app: nil,
+                 group: nil,
+                 label: "my_game",
+                 plugin: "my_game",
+                 type: "integer",
+                 default: 8,
+                 doc: "Bots per match",
+                 secret: false
+               }
+             ] = find.("MYGAME_MAX_BOTS")
+
+      assert [%{secret: true, type: "string"}] = find.("MYGAME_API_KEY")
+
+      # The setting's own declaration, not the plugin's second word on it.
+      assert [%{app: "gamend_core", plugin: nil}] = find.("GAMEND_SAMPLE_CHAT_DAYS")
+
+      assert {:ok, _json} = Jason.encode(declared)
     end
   end
 

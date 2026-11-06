@@ -48,7 +48,10 @@ defmodule Gamend.Hooks.Declarations do
   @spec realtime_events() :: %{String.t() => String.t()}
   def realtime_events, do: all().realtime_events
 
-  @doc "Env vars declared by plugins, each `%{name:, default:, type:, description:, plugin:}`."
+  @doc """
+  Env vars declared by plugins, each `%{name:, default:, type:, description:,
+  secret:, plugin:}`. `secret` is the plugin's `secret: true`, false otherwise.
+  """
   @spec env_vars() :: [map()]
   def env_vars, do: all().env_vars
 
@@ -100,6 +103,7 @@ defmodule Gamend.Hooks.Declarations do
           default: default,
           type: Map.get(var, :type) || Gamend.Config.infer_type(default),
           description: Map.get(var, :description, ""),
+          secret: Map.get(var, :secret) == true,
           plugin: plugin.name
         }
       end)

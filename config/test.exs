@@ -154,6 +154,10 @@ config :gamend_web, :slow_request_threshold_ms, 60_000.0
 # keep logging after the test task itself is done.
 config :gamend_core, Gamend.Accounts.StalePresenceSweeper, enabled: false
 
+# Same for the watcher a page online gets (`Gamend.Accounts.Online.watch/2`):
+# it outlives the test's sandbox, and its disconnect writes fail after it.
+config :gamend_core, Gamend.Accounts.Online, watch: false
+
 # Write is_online through synchronously instead of coalescing it, so a test can
 # assert on the flag immediately after set_user_online/1 and so a buffered write
 # can never outlive the sandbox owner.

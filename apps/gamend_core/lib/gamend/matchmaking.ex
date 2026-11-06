@@ -21,6 +21,25 @@ defmodule Gamend.Matchmaking do
     * `prune_offline/0` sweeps tickets whose owner the database no longer
       considers online — the safety net for tickets created over HTTP by a
       client that never opened a socket.
+
+  ## Backfill
+
+  A lobby's host who queues fills that lobby: the ticket carries its
+  `lobby_id`, and a match seats the other players there rather than in a new
+  lobby. A match holds at most one lobby with other players in it, and fits
+  in its seats; a player queued from a lobby of their own alone leaves it for
+  the match's. With no lobby among them, a match gets a new hidden lobby, as
+  before.
+
+  ## Accept
+
+  `accept_timeout_ms` (a `join/5` option, or the `before_matchmaking_join`
+  hook's attrs) makes a formed match ask first: a ready check of kind
+  `accept` over its players (`Gamend.ReadyChecks`, subject `:matchmaking`).
+  Nobody is seated until everyone accepts. A decline or the deadline fails
+  it: whoever accepted goes back in the queue, keeping their place, and the
+  others' tickets are cancelled. Cancelling a ticket (`cancel/1`, a socket
+  closing) declines the accept its holder was asked for.
   """
 
   import Ecto.Query
@@ -40,6 +59,10 @@ defmodule Gamend.Matchmaking do
   same parameters are matched together.
 
   `min_players` and `max_players` can be passed to override the defaults.
+  `opts`: `accept_timeout_ms`, the time a formed match gives its players to
+  accept (see *Accept*); none seats them at once.
+
+  A lobby's host queues to fill that lobby (see *Backfill*).
 
   ## Parties
 
@@ -56,13 +79,14 @@ defmodule Gamend.Matchmaking do
     * `{:error, :party_has_blocked_pair}` — two members have blocked each other
     * `{:error, :already_queued}` — the caller or a party member is queued
   """
-  @spec join(User.t(), map(), pos_integer() | nil, pos_integer() | nil) ::
+  @spec join(User.t(), map(), pos_integer() | nil, pos_integer() | nil, keyword()) ::
           {:ok, Ticket.t()} | {:error, Ecto.Changeset.t() | atom()}
-  def join(%User{} = user, match_params, min_players \\ nil, max_players \\ nil) do
+  def join(%User{} = user, match_params, min_players \\ nil, max_players \\ nil, opts \\ []) do
     proposed = %{
       "match_params" => normalize_params(match_params),
       "min_players" => min_players || default_min_players(),
-      "max_players" => max_players || default_max_players()
+      "max_players" => max_players || default_max_players(),
+      "accept_timeout_ms" => Keyword.get(opts, :accept_timeout_ms)
     }
 
     # The client proposes; the game decides. A hook may rewrite the params
@@ -136,11 +160,20 @@ defmodule Gamend.Matchmaking do
 
   # One queued ticket per user. Without this a double join matches a user with
   # themselves: the lobby is created, the second seat fails, and the whole match
-  # is discarded.
+  # is discarded. A ticket matched and waiting for its accept counts too: its
+  # match may still seat them.
   defp ensure_none_queued(members) do
     ids = Enum.map(members, & &1.id)
 
-    if Repo.exists?(where(queued(), [t], t.user_id in ^ids)) do
+    waiting =
+      from(t in Ticket,
+        where: t.user_id in ^ids,
+        where:
+          t.status == ^Constants.status_queued() or
+            (t.status == ^Constants.status_matched() and is_nil(t.match_id))
+      )
+
+    if Repo.exists?(waiting) do
       {:error, :already_queued}
     else
       :ok
@@ -156,8 +189,10 @@ defmodule Gamend.Matchmaking do
       min_players: Map.get(attrs, "min_players") || default_min_players(),
       max_players: Map.get(attrs, "max_players") || default_max_players(),
       timeout_ms: Limits.get(:matchmaking_timeout_ms),
+      accept_timeout_ms: Map.get(attrs, "accept_timeout_ms"),
       queued_at: now,
-      party_id: caller.party_id
+      party_id: caller.party_id,
+      lobby_id: backfill_lobby_id(caller, members)
     }
 
     # The caller's party was read before this; disbanded since, a ticket would
@@ -184,6 +219,21 @@ defmodule Gamend.Matchmaking do
     end
   end
 
+  # The lobby a ticket fills: the caller's, when they queue alone as its host.
+  # Read fresh, not from the cached user the request carried: a seat taken or
+  # left a moment ago decides it.
+  defp backfill_lobby_id(%User{id: user_id}, [_alone]) do
+    with %User{lobby_id: lobby_id, party_id: nil} when is_binary(lobby_id) <-
+           Repo.get(User, user_id),
+         %Gamend.Lobbies.Lobby{host_id: ^user_id} <- Gamend.Lobbies.get_lobby(lobby_id) do
+      lobby_id
+    else
+      _ -> nil
+    end
+  end
+
+  defp backfill_lobby_id(_caller, _party), do: nil
+
   defp insert_member_tickets(members, base) do
     Enum.reduce_while(members, [], fn member, acc ->
       %Ticket{}
@@ -202,9 +252,14 @@ defmodule Gamend.Matchmaking do
   A party queues as a unit, so it leaves as one: cancelling any member's ticket
   cancels the whole party's. Any member may do this — only the leader can queue,
   but nobody should be stuck in a queue they cannot leave.
+
+  A match waiting for its accept is declined for the user (see *Accept*), so
+  the others go back in the queue at once rather than at its deadline.
   """
   @spec cancel(Ecto.UUID.t()) :: non_neg_integer()
   def cancel(user_id) when is_binary(user_id) do
+    _ = decline_accept(user_id)
+
     {count, _} =
       queued()
       |> where([t], t.user_id == ^user_id or t.party_id in subquery(party_ids_of(user_id)))
@@ -217,6 +272,16 @@ defmodule Gamend.Matchmaking do
     end
 
     count
+  end
+
+  defp decline_accept(user_id) do
+    case Gamend.ReadyChecks.for_user(user_id, :match) do
+      %Gamend.ReadyChecks.Check{kind: "accept", lobby_id: nil, party_id: nil} ->
+        Gamend.ReadyChecks.respond(user_id, false)
+
+      _ ->
+        :ok
+    end
   end
 
   @doc """
@@ -290,8 +355,85 @@ defmodule Gamend.Matchmaking do
     |> order_by([t], asc: t.queued_at)
     |> preload(:user)
     |> Repo.all()
+    |> with_lobbies()
     |> Enum.group_by(& &1.match_params)
   end
+
+  @doc """
+  `tickets` with each backfill ticket's lobby read: `size` its members,
+  `capacity` its seats. A ticket whose holder no longer hosts the lobby it
+  named fills nothing (`lobby_id` nil): it is seated as any other.
+  """
+  @spec with_lobbies([Ticket.t()]) :: [Ticket.t()]
+  def with_lobbies(tickets) do
+    lobby_ids = tickets |> Enum.map(& &1.lobby_id) |> Enum.reject(&is_nil/1) |> Enum.uniq()
+    lobbies = lobby_rows(lobby_ids)
+
+    Enum.map(tickets, fn ticket ->
+      case Map.get(lobbies, ticket.lobby_id) do
+        %{host_id: host_id, members: members, max_users: max_users}
+        when host_id == ticket.user_id and members > 0 ->
+          %{ticket | size: members, capacity: max_users}
+
+        _ ->
+          %{ticket | lobby_id: nil, size: 1, capacity: nil}
+      end
+    end)
+  end
+
+  defp lobby_rows([]), do: %{}
+
+  defp lobby_rows(lobby_ids) do
+    members =
+      from(u in User,
+        where: u.lobby_id in ^lobby_ids,
+        group_by: u.lobby_id,
+        select: {u.lobby_id, count(u.id)}
+      )
+      |> Repo.all()
+      |> Map.new()
+
+    from(l in Gamend.Lobbies.Lobby,
+      where: l.id in ^lobby_ids,
+      select: {l.id, l.host_id, l.max_users}
+    )
+    |> Repo.all()
+    |> Map.new(fn {id, host_id, max_users} ->
+      {id, %{host_id: host_id, max_users: max_users, members: Map.get(members, id, 0)}}
+    end)
+  end
+
+  @doc """
+  The lobby a match is seated in: the one of its lobbies with other players
+  in it, else its oldest ticket's. nil when no ticket fills a lobby (a new
+  lobby is made). Reads `size` as `with_lobbies/1` set it.
+  """
+  @spec target_ticket([Ticket.t()]) :: Ticket.t() | nil
+  def target_ticket(tickets) do
+    backfill =
+      tickets
+      |> Enum.filter(&Map.get(&1, :lobby_id))
+      |> Enum.sort_by(& &1.queued_at, DateTime)
+
+    Enum.find(backfill, &(size(&1) > 1)) || List.first(backfill)
+  end
+
+  @doc """
+  Whether `tickets` can be one match: at most one lobby with other players in
+  it, and no more players than the lobby it would be seated in has seats.
+  """
+  @spec seatable?([Ticket.t()]) :: boolean()
+  def seatable?(tickets) do
+    players = Enum.reduce(tickets, 0, &(size(&1) + &2))
+    capacity = tickets |> target_ticket() |> then(&(&1 && Map.get(&1, :capacity)))
+
+    Enum.count(tickets, &(Map.get(&1, :lobby_id) && size(&1) > 1)) <= 1 and
+      (is_nil(capacity) or players <= capacity)
+  end
+
+  @doc "The players a ticket brings: its lobby's members for a backfill ticket, else 1."
+  @spec size(Ticket.t() | map()) :: pos_integer()
+  def size(ticket), do: Map.get(ticket, :size) || 1
 
   @doc """
   Atomically claims a formed match: flips its tickets from queued to matched.

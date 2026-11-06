@@ -20,7 +20,9 @@ POST /matchmaking/tickets ──► ticket (queued)
                              GAMEND_LIMITS_MATCHMAKING_TIMEOUT_MS: match now
                          ──► otherwise: keep waiting
                                   │
-        hidden lobby created, players seated, lobby locked
+        accept_timeout_ms set?  ──► everyone accepts first (Accept)
+                                  │
+        seated: in the backfill lobby, else a new hidden lobby, locked
                                   │
         "match_found" pushed on each player's user channel
 ```
@@ -30,6 +32,28 @@ A ticket may set its own min_players and max_players; one that leaves them out g
 Parameters match exactly: a ticket queued with map=dust2 never joins one with map=inferno. Skill bands, regions or modes are therefore encoded by the game client (or a server hook) as parameter values, and each distinct combination forms its own queue.
 
 Blacklists are applied while the group is being formed, not after: two players who have blocked each other are never put in the same match, and each is matched with someone else instead. A player blocked with everyone ahead of them in the queue is skipped over rather than allowed to stall the players behind them. See the Friends & Blacklist guide.
+
+## Backfill: filling a lobby you host
+
+A lobby's host who queues fills that lobby: the ticket carries its
+`lobby_id`, and the match seats the other players there instead of in a new
+lobby. It counts as the lobby's members toward `max_players`, and a match
+never holds more players than the lobby has seats. A match holds at most one
+lobby with other players in it; a player queued from a lobby of their own
+alone leaves it (an empty lobby is deleted) and joins the match's. Of two
+such solo lobbies, the oldest ticket's is kept. A lobby member who is not
+its host, or a party, queues as before.
+
+## Accept: everyone says yes first
+
+Pass `accept_timeout_ms` to `Gamend.Matchmaking.join/5` (or set it in the
+attrs `before_matchmaking_join/2` returns) and a formed match asks before it
+seats anyone: a ready check of kind `accept` over its players, with the
+four `ready_check_*` events on each player's user channel. Answer it with
+`POST /me/ready_check`. Everyone accepts: the match is seated. Someone
+declines or the deadline passes: whoever accepted, or had not answered yet,
+goes back in the queue in their old place, and the others' tickets are
+cancelled. Leaving the queue (or disconnecting) while asked declines.
 
 ## Client flow
 
@@ -63,7 +87,7 @@ Five hooks cover the queue. Four are the usual gate-and-notify pattern; matchmak
 | `after_matchmaking_join/2` | After the ticket is written, async | Ignored |
 | `after_matchmaking_cancel/2` | After a user's tickets are cancelled, async; not fired when none were queued | Ignored |
 | `matchmaking_form_matches/2` | Once per bucket per sweep | A list of ticket groups, or :default to use the built-in matcher |
-| `after_matchmaking_matched/2` | After the lobby exists and players are seated, async | Ignored |
+| `after_matchmaking_matched/2` | After the lobby exists and players are seated, async. A ticket's `lobby_id` is the lobby it filled; the match's lobby is the second argument | Ignored |
 
 ## Server-authoritative queue parameters
 
@@ -108,7 +132,7 @@ end
 def matchmaking_form_matches(_params, _tickets), do: :default
 ```
 
-The server re-checks whatever you return: groups containing a ticket from outside the bucket, a duplicate ticket, or a pair where one player has blocked the other are dropped with a warning rather than seated. A bug in your matcher costs you a match, not a broken lobby.
+The server re-checks whatever you return: groups containing a ticket from outside the bucket, a duplicate ticket, a pair where one player has blocked the other, or two lobbies with players in them (or more players than the backfill lobby seats) are dropped with a warning rather than seated. A backfill ticket's `size` is its lobby's members, `capacity` its seats. A bug in your matcher costs you a match, not a broken lobby.
 
 A worked example combining both (a string mode validated on join and an integer rating used in the matcher) ships in modules/plugins_examples/example_hook.
 

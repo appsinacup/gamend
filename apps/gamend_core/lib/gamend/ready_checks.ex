@@ -50,6 +50,7 @@ defmodule Gamend.ReadyChecks do
   alias Gamend.Accounts.User
   alias Gamend.Limits
   alias Gamend.Lobbies.Lobby
+  alias Gamend.Matchmaking.Match
   alias Gamend.Parties.Party
   alias Gamend.ReadyChecks.Check
   alias Gamend.ReadyChecks.ExpiryWorker
@@ -482,10 +483,12 @@ defmodule Gamend.ReadyChecks do
 
       :passed ->
         broadcast(check, "ready_check_passed")
+        settle_match(check)
         defer(fn -> Gamend.Hooks.internal_call(:after_ready_check_passed, [check]) end)
 
       :failed ->
         broadcast(check, "ready_check_failed")
+        settle_match(check)
 
         defer(fn ->
           Gamend.Hooks.internal_call(:after_ready_check_failed, [
@@ -500,6 +503,14 @@ defmodule Gamend.ReadyChecks do
   end
 
   defp defer(fun), do: Gamend.Async.run(fun)
+
+  # A matchmaking accept that resolved seats its match, or puts back whoever
+  # accepted (`Gamend.Matchmaking.Match.accept_resolved/1`); a no-op for a
+  # check with no tickets on it.
+  defp settle_match(%Check{lobby_id: nil, party_id: nil, kind: "accept"} = check),
+    do: defer(fn -> Match.accept_resolved(check) end)
+
+  defp settle_match(_check), do: :ok
 
   # ── Membership changes ────────────────────────────────────────────────────
 

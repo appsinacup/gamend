@@ -98,7 +98,9 @@ end
 def env_vars do
   [%{name: "MYGAME_DIFFICULTY", default: "normal", description: "Global difficulty"},
    %{name: "MYGAME_MAX_BOTS", default: 8, description: "Bots per match"},
-   %{name: "MYGAME_TUTORIAL", default: true, description: "Show the tutorial"}]
+   %{name: "MYGAME_TUTORIAL", default: true, description: "Show the tutorial"},
+   # Masked wherever its value is shown, and kept encrypted by a host that stores it.
+   %{name: "MYGAME_ANALYTICS_KEY", default: "", description: "Analytics API key", secret: true}]
 end
 
 # The type comes from the default, so reads are already coerced —

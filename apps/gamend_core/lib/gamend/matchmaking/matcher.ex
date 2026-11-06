@@ -16,6 +16,10 @@ defmodule Gamend.Matchmaking.Matcher do
   Groups are consumed in FIFO order by their oldest ticket. A single bucket can
   produce multiple matches in one sweep.
 
+  A backfill ticket (`lobby_id`) counts as its lobby's members (`size`), a
+  match holds at most one lobby with other players in it, and it fits in that
+  lobby's seats (`Gamend.Matchmaking.seatable?/1`).
+
   Players who have blocked each other are never placed in the same match. The
   blocked set is passed in rather than queried here, so this module stays pure
   and the caller resolves every pair in a single query (see
@@ -114,7 +118,8 @@ defmodule Gamend.Matchmaking.Matcher do
   defp pack(groups, blocked, max) do
     {taken, skipped} =
       Enum.reduce(groups, {[], []}, fn group, {taken, skipped} ->
-        if count(taken) + length(group) <= max and compatible?(group, taken, blocked) do
+        if count(taken) + count([group]) <= max and compatible?(group, taken, blocked) and
+             Gamend.Matchmaking.seatable?(List.flatten([group | taken])) do
           {[group | taken], skipped}
         else
           {taken, [group | skipped]}
@@ -124,7 +129,11 @@ defmodule Gamend.Matchmaking.Matcher do
     {Enum.reverse(taken), Enum.reverse(skipped)}
   end
 
-  defp count(groups), do: Enum.reduce(groups, 0, fn group, acc -> acc + length(group) end)
+  defp count(groups) do
+    Enum.reduce(groups, 0, fn group, acc ->
+      acc + Enum.reduce(group, 0, &(Gamend.Matchmaking.size(&1) + &2))
+    end)
+  end
 
   defp compatible?(_group, [], _blocked), do: true
 

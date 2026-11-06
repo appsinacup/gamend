@@ -69,6 +69,34 @@ defmodule Gamend.Presence do
   end
 
   @doc """
+  The entries tracked on `topic`, `{key, meta}`, one per tracked process (two
+  tabs of one player are two). `keys/1` with the meta, read the same way
+  (*Reads*). Cluster-wide.
+  """
+  @spec entries(String.t()) :: [{String.t(), map()}]
+  def entries(topic) when is_binary(topic) do
+    topic
+    |> shard()
+    |> State.tracked_values(topic, [])
+    |> Enum.map(fn {key, meta} -> {to_string(key), meta} end)
+  end
+
+  @doc """
+  Whether `user_id` has a socket tracked other than `pid`'s. Exact whether or
+  not `pid`'s own entry is still there, so a process watching a socket that
+  has already gone can ask it too (`Gamend.Accounts.Online`).
+  """
+  @spec other_socket?(Ecto.UUID.t(), pid()) :: boolean()
+  def other_socket?(user_id, pid) when is_pid(pid) do
+    topic = users_topic(user_id)
+
+    topic
+    |> shard()
+    |> State.tracked_key(topic, user_id, [])
+    |> Enum.any?(fn {other, _meta} -> other != pid end)
+  end
+
+  @doc """
   Whether the calling process holds this user's only tracked socket.
 
   Cluster-wide, unlike the per-node registry count it replaces.

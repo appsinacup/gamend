@@ -45,17 +45,14 @@ defmodule GamendWeb.UserChannel do
   intercept ["updated", "friend_updated"]
 
   alias Gamend.Accounts
+  alias Gamend.Accounts.Online
   alias Gamend.Accounts.Scope
-  alias Gamend.Accounts.StalePresenceSweeper
   alias Gamend.Accounts.User
   alias Gamend.Friends
-  alias Gamend.Groups
   alias Gamend.Hooks
   alias Gamend.Hooks.HookSchemas
   alias Gamend.KV
-  alias Gamend.Lobbies
   alias Gamend.Notifications
-  alias Gamend.Parties
   alias GamendWeb.ChannelEvents
   alias GamendWeb.ChannelUpdates
   alias GamendWeb.HookErrors
@@ -70,7 +67,7 @@ defmodule GamendWeb.UserChannel do
 
   # Periodic presence refresh keeps StalePresenceSweeper from marking actively
   # connected users as offline; its interval follows the sweeper's threshold
-  # (`Gamend.Accounts.StalePresenceSweeper.heartbeat_ms/0`).
+  # (`Gamend.Accounts.Online.heartbeat_ms/0`).
 
   @impl true
   def join("user:" <> user_id_str, _payload, socket) do
@@ -315,21 +312,14 @@ defmodule GamendWeb.UserChannel do
 
   @impl true
   def handle_info({:after_join, %User{} = user}, socket) do
-    # Presence is the source of truth for "connected"; `users.is_online` is a
-    # projection it writes (see Gamend.Presence). Tracking here rather than
-    # setting the flag directly is what makes a second socket on another node
-    # count.
-    {:ok, _ref} =
-      Gamend.Presence.track(self(), Gamend.Presence.users_topic(user.id), user.id, %{
-        online_at: System.system_time(:second)
-      })
-
+    # Online the one way every client is (`Gamend.Accounts.Online`): tracked
+    # on the user's presence topic, `users.is_online` set, lobby, party and
+    # groups told.
     socket =
-      case Accounts.set_user_online(user.id) do
+      case Online.connected(self(), user.id) do
         {:ok, updated_user} ->
           payload = Accounts.serialize_user_payload(updated_user)
           push_event(socket, "updated", payload)
-          broadcast_member_presence(updated_user.id, true)
           ChannelUpdates.remember(socket, "updated", :user, payload)
 
         _ ->
@@ -356,7 +346,7 @@ defmodule GamendWeb.UserChannel do
 
     # Start periodic presence refresh so the StalePresenceSweeper doesn't
     # mark this user offline while the WebSocket is still open.
-    Process.send_after(self(), :refresh_presence, StalePresenceSweeper.heartbeat_ms())
+    Process.send_after(self(), :refresh_presence, Online.heartbeat_ms())
 
     {:noreply, socket}
   end
@@ -421,9 +411,9 @@ defmodule GamendWeb.UserChannel do
 
   @impl true
   def handle_info(:refresh_presence, socket) do
-    Accounts.touch_last_seen_by_id(socket.assigns.current_scope.user_id)
+    Online.heartbeat(socket.assigns.current_scope.user_id)
 
-    Process.send_after(self(), :refresh_presence, StalePresenceSweeper.heartbeat_ms())
+    Process.send_after(self(), :refresh_presence, Online.heartbeat_ms())
     {:noreply, socket}
   end
 
@@ -623,56 +613,12 @@ defmodule GamendWeb.UserChannel do
       Phoenix.PubSub.unsubscribe(Gamend.PubSub, "tournaments:user:#{user_id}")
       Phoenix.PubSub.unsubscribe(Gamend.PubSub, "matchmaking:user:#{user_id}")
 
-      # Cancel matchmaking tickets
-      Gamend.Matchmaking.cancel(user_id)
-
-      # Presence untracks on exit and its diff clears `is_online` once this was
-      # the user's last socket anywhere in the cluster — the old per-node
-      # registry count could not see a socket on another node.
-      # Cluster-wide, unlike the per-node registry count this replaces: that one
-      # could not see a second socket on another node, and marked the user
-      # offline while they were still connected.
-      if Gamend.Presence.last_socket?(user_id) do
-        case Accounts.set_user_offline(user_id) do
-          {:ok, _} -> broadcast_member_presence(user_id, false)
-          _ -> :ok
-        end
-
-        # Re-check shortly afterwards, and undo the projection if a socket is
-        # in fact present.
-        #
-        # `Phoenix.Tracker` replicates between nodes asynchronously, so when a
-        # socket closes on node 1 just after another opened on node 2, node 1
-        # has not seen the new one yet: the count reads 1, this branch runs, and
-        # the user is marked offline while they are connected. Nothing repaired
-        # it — `set_user_online/1` runs only in `after_join`, and the stale
-        # sweeper only marks people offline — so they showed offline to every
-        # friend, lobby and group for the rest of the session.
-        schedule_presence_recheck(user_id)
-      end
+      # Tickets cancelled and, past the last socket, offline: the one way
+      # every client goes (`Gamend.Accounts.Online`).
+      Online.disconnected(user_id, self())
     end
 
     :ok
-  end
-
-  # Long enough for a cross-node tracker diff to land, short enough that a
-  # genuinely-offline user is not shown online meanwhile. Runs in a detached
-  # task because the channel process is terminating.
-  @presence_recheck_ms 2_000
-
-  defp schedule_presence_recheck(user_id) do
-    Gamend.Async.run(fn ->
-      Process.sleep(@presence_recheck_ms)
-
-      if Gamend.Presence.last_socket?(user_id) do
-        :ok
-      else
-        case Accounts.set_user_online(user_id) do
-          {:ok, _} -> broadcast_member_presence(user_id, true)
-          _ -> :ok
-        end
-      end
-    end)
   end
 
   # ---------------------------------------------------------------------------
@@ -853,25 +799,6 @@ defmodule GamendWeb.UserChannel do
   defp parse_optional_id(value), do: Gamend.UUIDv7.cast_or_nil(value)
 
   # Broadcast member_online/member_offline to the user's current lobby, party, and group channels.
-  defp broadcast_member_presence(user_id, online?) do
-    user = Accounts.get_user(user_id)
-    event = if online?, do: :member_online, else: :member_offline
-
-    if user do
-      if user.lobby_id do
-        Lobbies.broadcast_member_presence(user.lobby_id, {event, user_id})
-      end
-
-      if user.party_id do
-        Parties.broadcast_member_presence(user.party_id, {event, user_id})
-      end
-
-      for group_id <- Groups.user_group_ids(user_id) do
-        Groups.broadcast_member_presence(group_id, {event, user_id})
-      end
-    end
-  end
-
   # ── WebSocket rate limiting ────────────────────────────────────────────────
 
   # A banned account keeps its user channel for the ban's own events; it calls

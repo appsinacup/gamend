@@ -26,6 +26,7 @@ defmodule Gamend.Settings do
   `Gamend.Hooks.PluginManager` registers theirs on load via `add_app/1`.
   """
 
+  alias Gamend.Hooks.Declarations
   alias Gamend.Settings.Provider
 
   require Logger
@@ -90,6 +91,74 @@ defmodule Gamend.Settings do
     |> Enum.uniq()
     |> Enum.sort_by(&elem(&1, 1))
   end
+
+  @doc """
+  Every declared setting, then every variable a loaded plugin declares that
+  is not one (`Gamend.Hooks.Declarations.env_vars/0`), as plain data a JSON
+  encoder takes: what a host that runs this server from outside, and cannot
+  load its code, reads to offer them. Gamend Cloud's Settings tab asks a
+  server's release for it with `bin/<release> rpc`. It is never a client's:
+  no route or hook RPC answers it.
+
+  Each is `%{env:, app:, group:, label:, type:, default:, doc:, secret:,
+  values:, plugin:}`. `app`, `group` and `type` are strings; `default` is a
+  string, a number, a boolean or nil, a list joined with commas as its
+  variable is written, any other term `inspect/1`ed; `values` is the strings
+  an `:atom` takes. A plugin's variable has `app` and `group` nil and
+  `plugin` its plugin's name; a setting has `plugin` nil.
+  """
+  @spec declared() :: [map()]
+  def declared do
+    settings = all()
+    known = MapSet.new(settings, & &1.env)
+
+    Enum.map(settings, &declared_setting/1) ++
+      for var <- Declarations.env_vars(),
+          not MapSet.member?(known, var.name),
+          do: declared_variable(var)
+  end
+
+  defp declared_setting(definition) do
+    %{
+      env: definition.env,
+      app: Atom.to_string(definition.app),
+      group: Atom.to_string(definition.group),
+      label: definition.label,
+      type: Atom.to_string(definition.type),
+      default: plain(definition.default),
+      doc: definition.doc,
+      secret: definition.secret,
+      values: Enum.map(Map.get(definition, :values) || [], &plain_item/1),
+      plugin: nil
+    }
+  end
+
+  defp declared_variable(var) do
+    %{
+      env: var.name,
+      app: nil,
+      group: nil,
+      label: to_string(var.plugin),
+      type: to_string(var.type),
+      default: plain(var.default),
+      doc: var.description,
+      secret: Map.get(var, :secret, false),
+      values: [],
+      plugin: to_string(var.plugin)
+    }
+  end
+
+  defp plain(value)
+       when is_nil(value) or is_binary(value) or is_number(value) or is_boolean(value),
+       do: value
+
+  defp plain(value) when is_atom(value), do: Atom.to_string(value)
+  defp plain(value) when is_list(value), do: Enum.map_join(value, ",", &plain_item/1)
+  defp plain(value), do: inspect(value)
+
+  defp plain_item(item) when is_binary(item), do: item
+  defp plain_item(item) when is_atom(item) or is_number(item), do: to_string(item)
+  defp plain_item(item), do: inspect(item)
 
   @doc """
   A setting's declaration, with its effective value and where that came from:

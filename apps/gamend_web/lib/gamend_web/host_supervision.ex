@@ -205,6 +205,9 @@ defmodule GamendWeb.HostSupervision do
         # Coalesces is_online transitions into one write per window, so a
         # connect storm of distinct players is not one transaction each.
         Gamend.Accounts.PresenceWriter,
+        # One watcher per page a player is online in, for a socket with no
+        # terminate/2 to rely on (`Gamend.Accounts.Online.watch/2`)
+        {Task.Supervisor, name: Gamend.Accounts.Online.Watchers},
         # Gathers analytics counters and events and lands them in batches
         # (`Gamend.Analytics.track/3`), so a page view is never a database
         # write on the request's connection.

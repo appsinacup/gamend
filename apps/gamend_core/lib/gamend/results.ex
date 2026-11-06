@@ -12,8 +12,9 @@ defmodule Gamend.Results do
 
   **Writes are the server's.** A plugin, the host app or a hook handling a
   move calls `start/3`, `record/4` and `finish/1`; no client writes a result.
-  An event is one insert, and `finish/1` one update that only matches an
-  open row, so a play ends once.
+  An event is one insert and `finish/1` one update that only matches an open
+  row, so a play ends once; the two take turns under the result's lock, so
+  no event lands after the end and the event cap holds.
 
   **Reads follow the result's visibility**, KV's words (`readable?/2`), and
   every write is pushed as it happens (`result_started`, `result_event`,
@@ -84,14 +85,31 @@ defmodule Gamend.Results do
 
   def record(%Result{status: "ended"}, _key, _value, _metadata), do: {:error, :ended}
 
+  # The struct's status is an early refusal only: it was read before, maybe
+  # long before (`record_lobby/4`'s list, a caller's own copy). The result is
+  # read again under its lock, where `finish/1` writes too, so an event lands
+  # before the end or is refused, and the cap counts what is really there.
+  # Checked against the struct and counted with no lock, two events at the
+  # cap both passed it, and an event recorded beside `finish/1` landed after
+  # the play had ended.
   def record(%Result{} = result, key, value, metadata) when is_binary(key) do
-    if count_events(result.id) >= Gamend.Limits.get(:max_result_events) do
-      {:error, :too_many_events}
-    else
-      insert_event(result, key, value, metadata)
-    end
+    with_result_lock(result.id, fn ->
+      case Repo.get(Result, result.id) do
+        nil ->
+          Repo.rollback(:not_found)
+
+        %Result{status: "ended"} ->
+          Repo.rollback(:ended)
+
+        %Result{} = current ->
+          if count_events(current.id) >= Gamend.Limits.get(:max_result_events),
+            do: Repo.rollback(:too_many_events),
+            else: insert_event(current, key, value, metadata)
+      end
+    end)
   end
 
+  # Pushes wait for the commit (`Gamend.Broadcast`).
   defp insert_event(result, key, value, metadata) do
     attrs = %{
       result_id: result.id,
@@ -104,12 +122,15 @@ defmodule Gamend.Results do
     case %Event{} |> Event.changeset(attrs) |> Repo.insert() do
       {:ok, event} ->
         push(result, {:result_event, %{result_id: result.id, event: event}})
-        {:ok, event}
+        event
 
-      {:error, _changeset} = error ->
-        error
+      {:error, changeset} ->
+        Repo.rollback(changeset)
     end
   end
+
+  # One result's events and its end take turns.
+  defp with_result_lock(result_id, fun), do: Gamend.Lock.serialize("result", result_id, fun)
 
   @doc """
   `record/4` on every open result of `lobby_id`, for code that knows the
@@ -131,23 +152,20 @@ defmodule Gamend.Results do
   def finish(%Result{id: id}), do: finish(id)
 
   def finish(result_id) when is_binary(result_id) do
-    now = DateTime.utc_now()
-
-    {count, _} =
+    # Under the lock `record/4` takes, so no event is being written beside it,
+    # and timed inside it, so every event recorded first is before the end.
+    with_result_lock(result_id, fn ->
       from(r in Result, where: r.id == ^result_id and r.status == "open")
-      |> Repo.update_all(set: [status: "ended", ended_at: now])
+      |> Repo.compare_and_set(set: [status: "ended", ended_at: DateTime.utc_now()])
+      |> case do
+        {:ok, result} ->
+          push(result, {:result_ended, result})
+          result
 
-    case {count, get(result_id)} do
-      {1, %Result{} = result} ->
-        push(result, {:result_ended, result})
-        {:ok, result}
-
-      {0, %Result{}} ->
-        {:error, :already_ended}
-
-      {_, nil} ->
-        {:error, :not_found}
-    end
+        {:error, :precondition_failed} ->
+          if get(result_id), do: Repo.rollback(:already_ended), else: Repo.rollback(:not_found)
+      end
+    end)
   end
 
   @doc "A result and its events, deleted."

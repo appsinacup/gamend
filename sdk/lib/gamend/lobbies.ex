@@ -358,7 +358,7 @@ defmodule Gamend.Lobbies do
 
   @doc false
   @spec delete_membership(Gamend.Accounts.User.t()) ::
-          {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t()}
+          {:ok, Gamend.Accounts.User.t()} | {:error, :not_in_lobby}
   def delete_membership(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -1060,29 +1060,20 @@ defmodule Gamend.Lobbies do
     a no-op (so at-least-once hook/job retries are safe) and does not re-fire
     hooks. `after_lobby_state_changed` observes post-commit.
     
-    Returns `{:ok, lobby}`, `{:error, :invalid_state}` or
-    `{:error, {:hook_rejected, reason}}`.
+    Returns `{:ok, lobby}`, `{:error, :invalid_state}`,
+    `{:error, {:hook_rejected, reason}}`, `{:error, :state_changed}` when
+    another transition moved the lobby first (the hook approved a move out of a
+    state it has left), or `{:error, :not_found}` when it was deleted.
     
   """
   @spec transition_state(Gamend.Lobbies.Lobby.t(), String.t(), keyword()) ::
           {:ok, Gamend.Lobbies.Lobby.t()}
-          | {:error, :invalid_state | {:hook_rejected, term()} | term()}
+          | {:error,
+             :invalid_state | :state_changed | :not_found | {:hook_rejected, term()} | term()}
   def transition_state(_lobby, _state, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        nil
 
       _ ->
         raise "Gamend.Lobbies.transition_state/3 is a stub - only available at runtime on Gamend"

@@ -402,9 +402,17 @@ defmodule Gamend.Tournaments do
   end
 
   @doc ~S"""
-    Registers `user` as an entry leader. Runs the `before_tournament_register`
-    pipeline (games gate/charge entry there) and fires
-    `after_tournament_register` on success.
+    Registers `user` as an entry leader.
+    
+    The seat is taken first, under the tournament's join lock with the
+    capacity and duplicate checks, and only then does the
+    `before_tournament_register` pipeline run (games gate or charge entry
+    there), outside any lock, with the seat held: a full tournament, closed
+    registration or a repeated request is refused before it and never reaches
+    it. When the hook refuses (or raises, or times out) the seat is given back
+    and its refusal answered; in a tournament drawn while the hook ran, the
+    refused entry forfeits its match instead. `after_tournament_register` fires
+    only once the hook allowed it.
     
   """
   @spec join_tournament(Gamend.Accounts.User.t(), Gamend.Tournaments.Tournament.t()) ::

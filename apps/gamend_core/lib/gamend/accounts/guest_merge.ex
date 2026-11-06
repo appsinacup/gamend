@@ -13,7 +13,10 @@ defmodule Gamend.Accounts.GuestMerge do
   stays with the guest account, which nobody can reach once the session has
   moved, and goes with it.
 
-  In order, each step logged and skipped on failure so a sign-in never fails
+  First the guest's credentials are revoked (`Accounts.revoke_all_tokens/1`):
+  its access and refresh tokens and sessions stop working, so a game client
+  still signed in as the guest cannot spend what is being moved. Then, in
+  order, each step logged and skipped on failure so a sign-in never fails
   because of a merge:
 
     1. The host (`merge_user_data/2` hook) merges what it understands: its own
@@ -21,10 +24,13 @@ defmodule Gamend.Accounts.GuestMerge do
        is done with it deletes from the guest, so step 2 leaves it alone.
     2. KV: every guest key the account lacks moves over (`Gamend.KV`, so caches
        and subscribers follow). A key both have stays the account's.
-    3. Wallets: each balance is added to the account's (`Gamend.Economy.grant/4`).
-       A host that grants starting coins spends the guest's own grant first in
-       step 1, so it is not counted twice.
-    4. Inventory: quantities added (`Gamend.Inventory.grant_item/4`).
+    3. Wallets: each balance is moved, taken off the guest
+       (`Gamend.Economy.spend/4`) and added to the account's
+       (`Gamend.Economy.grant/4`) in one transaction. A host that grants
+       starting coins spends the guest's own grant first in step 1, so it is
+       not counted twice.
+    4. Inventory: quantities moved the same way (`Gamend.Inventory.consume_item/4`,
+       `Gamend.Inventory.grant_item/4`).
     5. Leaderboards: `Gamend.Leaderboards.merge_user_records/2` (best kept,
        counters added, the account's never lowered).
     6. Quests: `Gamend.Quests.merge_user_progress/2` (periods the account has
@@ -34,7 +40,7 @@ defmodule Gamend.Accounts.GuestMerge do
     8. `users.metadata` and `users.preferences` keys the account lacks.
 
   Sessions, push tokens, bans, lobby and party seats are not moved. Wallet
-  and inventory grants carry idempotency keys and every other step only moves
+  and inventory moves carry idempotency keys and every other step only moves
   what the account lacks, so running it twice adds nothing twice.
   """
 
@@ -45,10 +51,17 @@ defmodule Gamend.Accounts.GuestMerge do
   alias Gamend.Accounts
   alias Gamend.Accounts.User
   alias Gamend.Analytics.Buffer
+  alias Gamend.Economy
+  alias Gamend.Inventory
   alias Gamend.Lock.Local
   alias Gamend.Repo
 
   @hook_timeout_ms 30_000
+
+  # Reads of a balance a move gets before it gives up on it: each retry
+  # follows a spend that landed between its read and its debit, and the
+  # guest's credentials are revoked before the first.
+  @move_attempts 3
 
   @doc """
   Merges `guest`'s progress into `user`, as the moduledoc describes. A no-op
@@ -58,6 +71,8 @@ defmodule Gamend.Accounts.GuestMerge do
   def merge(%User{id: guest_id} = guest, %User{id: user_id} = user) when guest_id != user_id do
     if User.anonymous?(guest) do
       Local.trans({__MODULE__, guest_id}, fn ->
+        step(:credentials, fn -> revoke_credentials(guest_id) end)
+
         step(:host, fn ->
           Gamend.Hooks.internal_call(:merge_user_data, [guest, user],
             timeout_ms: @hook_timeout_ms
@@ -115,24 +130,126 @@ defmodule Gamend.Accounts.GuestMerge do
     )
   end
 
+  # Read from the row, not from the struct the caller held: a stale
+  # `token_version` bumped by one is the version the guest's tokens carry now.
+  defp revoke_credentials(guest_id) do
+    case Repo.get(User, guest_id) do
+      %User{} = guest -> {:ok, _} = Accounts.revoke_all_tokens(guest)
+      nil -> :ok
+    end
+  end
+
+  # Moved, not copied. The balances were read (through the cache) and granted
+  # to the account while the guest kept them until its deletion, which runs
+  # after the sign-in and asynchronously; the guest's still-valid token or
+  # another socket could spend them meanwhile, so the coins existed twice.
+  # Each balance now leaves the guest by the conditional debit and reaches the
+  # account in the same transaction: whatever the guest spends first is not
+  # moved, and what is moved can no longer be spent by the guest.
   defp merge_wallets(guest_id, user_id) do
-    for {currency, balance} <- Gamend.Economy.balances(guest_id), balance > 0 do
-      {:ok, _} =
-        Gamend.Economy.grant(user_id, currency, balance,
-          reason: "guest_merge",
-          idempotency_key: "guest_merge:#{guest_id}:#{currency}"
+    for currency <- held(Gamend.Economy.Wallet, :currency, :balance, guest_id) do
+      {:ok, _} = move_currency(guest_id, user_id, currency, @move_attempts)
+    end
+  end
+
+  defp move_currency(guest_id, user_id, currency, attempts) do
+    case amount_held(Gamend.Economy.Wallet, :currency, currency, :balance, guest_id) do
+      0 ->
+        {:ok, :nothing_held}
+
+      amount ->
+        key = "guest_merge:#{guest_id}:#{currency}"
+
+        transfer(
+          fn ->
+            Economy.spend(guest_id, currency, amount,
+              reason: "guest_merge",
+              idempotency_key: key <> ":out"
+            )
+          end,
+          fn ->
+            Economy.grant(user_id, currency, amount, reason: "guest_merge", idempotency_key: key)
+          end
         )
+        |> case do
+          {:error, :insufficient_funds} when attempts > 1 ->
+            move_currency(guest_id, user_id, currency, attempts - 1)
+
+          other ->
+            other
+        end
     end
   end
 
   defp merge_inventory(guest_id, user_id) do
-    for {item, quantity} <- Gamend.Inventory.inventory(guest_id), quantity > 0 do
-      {:ok, _} =
-        Gamend.Inventory.grant_item(user_id, item, quantity,
-          reason: "guest_merge",
-          idempotency_key: "guest_merge:#{guest_id}:#{item}"
-        )
+    for item <- held(Gamend.Inventory.Item, :item, :quantity, guest_id) do
+      {:ok, _} = move_item(guest_id, user_id, item, @move_attempts)
     end
+  end
+
+  defp move_item(guest_id, user_id, item, attempts) do
+    case amount_held(Gamend.Inventory.Item, :item, item, :quantity, guest_id) do
+      0 ->
+        {:ok, :nothing_held}
+
+      quantity ->
+        key = "guest_merge:#{guest_id}:#{item}"
+
+        transfer(
+          fn ->
+            Inventory.consume_item(guest_id, item, quantity,
+              reason: "guest_merge",
+              idempotency_key: key <> ":out"
+            )
+          end,
+          fn ->
+            Inventory.grant_item(user_id, item, quantity,
+              reason: "guest_merge",
+              idempotency_key: key
+            )
+          end
+        )
+        |> case do
+          {:error, :insufficient_items} when attempts > 1 ->
+            move_item(guest_id, user_id, item, attempts - 1)
+
+          other ->
+            other
+        end
+    end
+  end
+
+  # The guest's currencies (or items) with something in them, from the
+  # table, not the cache.
+  defp held(schema, name, amount, guest_id) do
+    Repo.all(
+      from(r in schema,
+        where: r.user_id == ^guest_id and field(r, ^amount) > 0,
+        select: field(r, ^name)
+      )
+    )
+  end
+
+  defp amount_held(schema, name, value, amount, guest_id) do
+    Repo.one(
+      from(r in schema,
+        where: r.user_id == ^guest_id and field(r, ^name) == ^value,
+        select: field(r, ^amount)
+      )
+    ) || 0
+  end
+
+  # Both sides of a move or neither: a debit whose credit failed rolls back.
+  # Each side's effects (cache eviction, broadcast, hook) wait for the commit.
+  defp transfer(take, give) do
+    Gamend.AfterCommit.transaction(fn ->
+      with {:ok, _} <- take.(),
+           {:ok, _} <- give.() do
+        :moved
+      else
+        {:error, reason} -> Repo.rollback(reason)
+      end
+    end)
   end
 
   defp merge_activity(guest_id, user_id) do

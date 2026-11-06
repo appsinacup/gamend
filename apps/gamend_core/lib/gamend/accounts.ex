@@ -1354,13 +1354,68 @@ defmodule Gamend.Accounts do
       iex> update_user(user, %{metadata: %{level: 5}})
       {:ok, %User{}}
 
+  `metadata` is the whole map the caller wants, built from `user.metadata`.
+  What it changes from that map (keys set, changed or removed) is applied to
+  the map as stored now, under the lock `update_user_metadata/2` writes
+  under, so a key another writer (core's payments, a plugin) set since the
+  caller read `user` stays. Answers `{:error, :not_found}` when the user is
+  gone, or the `before_user_update` hook's refusal.
   """
   @spec update_user(User.t(), Types.user_update_attrs()) ::
-          {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+          {:ok, User.t()} | {:error, Ecto.Changeset.t() | term()}
   def update_user(%User{} = user, attrs) when is_map(attrs) do
     with {:ok, attrs_to_use} <- run_before_user_update(user, attrs) do
-      apply_user_update(user, attrs_to_use)
+      case metadata_key(attrs_to_use) do
+        nil -> apply_user_update(user, attrs_to_use)
+        key -> update_user_with_metadata(user, attrs_to_use, key)
+      end
     end
+  end
+
+  defp metadata_key(attrs) do
+    cond do
+      is_map(Map.get(attrs, :metadata)) -> :metadata
+      is_map(Map.get(attrs, "metadata")) -> "metadata"
+      true -> nil
+    end
+  end
+
+  # The admin's write of the whole map wrote it with no lock, from the user
+  # the form was opened with: a purchase mirrored into `metadata["payments"]`
+  # while the form was open was wiped by the save, and a metadata write under
+  # the lock in between was lost the same way. It now writes what the caller
+  # changed onto the stored map, under the same lock.
+  defp update_user_with_metadata(%User{} = user, attrs, key) do
+    "user_metadata"
+    |> Gamend.Lock.serialize(user.id, fn ->
+      case Repo.get(User, user.id) do
+        %User{} = current ->
+          wanted = Map.fetch!(attrs, key)
+          merged = rebase_metadata(current.metadata || %{}, user.metadata || %{}, wanted)
+          apply_user_update(current, Map.put(attrs, key, merged))
+
+        nil ->
+          Repo.rollback(:not_found)
+      end
+    end)
+    |> case do
+      {:ok, result} -> result
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  # What `wanted` changes from `base` (the map it was built from), applied to
+  # `stored`, top-level keys at a time: set and changed keys take `wanted`'s
+  # value, removed ones go, and every other key keeps the stored value. When
+  # `stored` is still `base` this is `wanted`.
+  defp rebase_metadata(stored, base, wanted) do
+    wanted = Map.new(wanted, fn {k, v} -> {to_string(k), v} end)
+    base = Map.new(base, fn {k, v} -> {to_string(k), v} end)
+
+    changed = Map.reject(wanted, fn {k, v} -> Map.has_key?(base, k) and base[k] == v end)
+    removed = Map.keys(base) -- Map.keys(wanted)
+
+    stored |> Map.drop(removed) |> Map.merge(changed)
   end
 
   # `update_user/2` in two halves, for a read-modify-write that must not hold

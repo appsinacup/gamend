@@ -1302,6 +1302,9 @@ defmodule GamendWeb.AdminLive.Users do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset, as: "user"))}
+
+      {:error, :not_found} ->
+        {:noreply, put_flash(socket, :error, "That user no longer exists")}
     end
   end
 

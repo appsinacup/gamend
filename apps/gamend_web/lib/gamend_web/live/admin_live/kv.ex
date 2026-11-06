@@ -505,6 +505,10 @@ defmodule GamendWeb.AdminLive.KV do
              |> assign(:show_form_modal, false)
              |> reload_entries()}
 
+          {:error, :too_many_entries} ->
+            {:noreply,
+             put_flash(socket, :error, "Create failed: the user holds the most entries allowed")}
+
           {:error, %Ecto.Changeset{} = changeset} ->
             {:noreply,
              socket

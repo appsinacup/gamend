@@ -16,6 +16,7 @@ defmodule Gamend.Chat.Reports do
   alias Gamend.Chat.Message
   alias Gamend.Chat.Moderation.Notices
   alias Gamend.Chat.Report
+  alias Gamend.Lock
   alias Gamend.Repo
 
   @doc """
@@ -42,16 +43,28 @@ defmodule Gamend.Chat.Reports do
         {:error, :own_message}
 
       %Message{} = message ->
-        if over_daily_cap?(reporter_id) do
-          {:error, :report_daily_limit}
-        else
-          insert_report(%{
-            "reporter_id" => reporter_id,
-            "message_id" => message.id,
-            "reported_user_id" => message.sender_id,
-            "content_snapshot" => message.content,
-            "reason" => reason
-          })
+        attrs = %{
+          "reporter_id" => reporter_id,
+          "message_id" => message.id,
+          "reported_user_id" => message.sender_id,
+          "content_snapshot" => message.content,
+          "reason" => reason
+        }
+
+        # The cap is the reporter's, so the count and the insert run under the
+        # reporter's lock: reports sent at once each counted the others as not
+        # there yet, and all of them landed past the cap.
+        Lock.serialize("chat_reports_reporter", reporter_id, fn ->
+          if over_daily_cap?(reporter_id), do: Repo.rollback(:report_daily_limit)
+
+          case insert_report_row(attrs) do
+            {:ok, report} -> report
+            {:error, reason} -> Repo.rollback(reason)
+          end
+        end)
+        |> case do
+          {:ok, report} -> reported(report)
+          {:error, reason} -> {:error, reason}
         end
     end
   end
@@ -83,8 +96,18 @@ defmodule Gamend.Chat.Reports do
     })
   end
 
-  # The message was read before this, and may have been deleted since.
   defp insert_report(attrs) do
+    with {:ok, report} <- insert_report_row(attrs), do: reported(report)
+  end
+
+  defp reported(report) do
+    dispatch(:after_chat_message_reported, [report])
+    alert_admins()
+    {:ok, report}
+  end
+
+  # The message was read before this, and may have been deleted since.
+  defp insert_report_row(attrs) do
     Repo.rescue_foreign_key(:not_found, fn ->
       %Report{}
       |> Report.changeset(attrs)
@@ -92,8 +115,6 @@ defmodule Gamend.Chat.Reports do
     end)
     |> case do
       {:ok, report} ->
-        dispatch(:after_chat_message_reported, [report])
-        alert_admins()
         {:ok, report}
 
       {:error, %Ecto.Changeset{errors: errors} = changeset} ->

@@ -82,6 +82,36 @@ defmodule Gamend.ReadyChecksTest do
       assert ReadyChecks.open(ctx.lobby, ctx.members) == {:error, :not_found}
       refute Repo.exists?(from c in Check, where: c.lobby_id == ^ctx.lobby.id)
     end
+
+    test ":members is every member as the board is written", ctx do
+      {:ok, _} = Lobbies.leave_lobby(ctx.bob)
+
+      {:ok, check} = ReadyChecks.reset(ctx.lobby, :members, opened_by: ctx.host.id)
+
+      assert check.participants |> Enum.map(& &1.user_id) |> Enum.sort() ==
+               Enum.sort([ctx.host.id, ctx.alice.id])
+    end
+
+    test "a member who joins while the board is open goes on it, pending", ctx do
+      {:ok, check} = ReadyChecks.open(ctx.lobby, [ctx.host.id, ctx.alice.id], timeout_ms: nil)
+      carol = AccountsFixtures.user_fixture()
+
+      {:ok, _} = Lobbies.join_lobby(carol, ctx.lobby.id)
+
+      assert state_of(check, carol.id) == "pending"
+    end
+
+    test "a member who joins after the board passed is not put on it", ctx do
+      {:ok, check} =
+        ReadyChecks.open(ctx.lobby, [ctx.host.id, ctx.alice.id], opened_by: ctx.host.id)
+
+      {:ok, %Check{status: "passed"}} = ReadyChecks.respond(ctx.alice, true)
+      carol = AccountsFixtures.user_fixture()
+
+      {:ok, _} = Lobbies.join_lobby(carol, ctx.lobby.id)
+
+      assert length(ReadyChecks.get_check(check.id).participants) == 2
+    end
   end
 
   describe "respond/2 — kind ready" do

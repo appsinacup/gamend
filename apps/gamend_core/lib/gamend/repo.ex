@@ -169,6 +169,50 @@ defmodule Gamend.Repo do
     if postgres?(), do: Ecto.Query.lock(query, "FOR SHARE"), else: query
   end
 
+  @doc """
+  Updates the one row `query` matches, only while it still matches, and
+  answers that row as the database now holds it.
+
+  The way to keep a rule that a read made earlier cannot: put the
+  precondition in `query`, and the statement either finds the row still in
+  that state and changes it, or finds nothing and answers
+  `{:error, :precondition_failed}`. Check and write are one statement, so two
+  callers racing cannot both pass, on either adapter or across nodes, and no
+  lock is taken beyond the row the `UPDATE` writes.
+
+  The row comes back through `RETURNING`, so it is never a copy read before
+  the write. On Postgres a writer that waited for another's commit re-checks
+  the condition against the committed row and answers that newer version: a
+  side the other transaction filled in is there.
+
+      from(p in QuestProgress,
+        where: p.id == ^id and p.status == "completed" and p.claim_count == ^seen
+      )
+      |> Repo.compare_and_set(set: [status: "claimed"], inc: [lock_version: 1])
+
+  `query` must pin one row: its primary key or a unique index, plus the
+  precondition. Matching several is a bug, and raises.
+  """
+  @spec compare_and_set(Ecto.Queryable.t(), keyword()) ::
+          {:ok, Ecto.Schema.t()} | {:error, :precondition_failed}
+  def compare_and_set(query, updates) when is_list(updates) do
+    query
+    |> Ecto.Query.exclude(:select)
+    |> Ecto.Query.select([row], row)
+    |> update_all(updates)
+    |> case do
+      {1, [row]} ->
+        {:ok, row}
+
+      {0, _} ->
+        {:error, :precondition_failed}
+
+      {count, _} ->
+        raise ArgumentError,
+              "compare_and_set/2 updated #{count} rows; its query must pin one row"
+    end
+  end
+
   @doc ~S"""
   Escapes `LIKE` wildcards (`%`, `_`) and the escape character (`\`) in
   user-supplied search input so it matches literally.

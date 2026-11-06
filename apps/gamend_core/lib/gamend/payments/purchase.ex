@@ -53,7 +53,14 @@ defmodule Gamend.Payments.Purchase do
     |> foreign_key_constraint(:product_id)
     |> foreign_key_constraint(:provider_product_id)
     |> unique_constraint(:order_id)
+    # Both names on purpose: Postgres reports the partial index by its real
+    # name, while ecto_sqlite3 reports the default `<table>_<columns>_index`.
+    # With the first alone, the loser of two validations of one receipt raised
+    # `Ecto.ConstraintError` on SQLite (a 500) instead of answering a changeset.
     |> unique_constraint(:provider_transaction_id, name: :purchases_unique_provider_transaction)
+    |> unique_constraint(:provider_transaction_id,
+      name: :purchases_provider_provider_transaction_id_index
+    )
   end
 
   def statuses, do: @statuses

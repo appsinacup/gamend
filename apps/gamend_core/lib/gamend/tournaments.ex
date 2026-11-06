@@ -80,7 +80,7 @@ defmodule Gamend.Tournaments do
   @doc "Cancels a tournament (terminal, no hooks fired, no recurrence spawn)."
   @spec cancel_tournament(Tournament.t()) :: {:ok, Tournament.t()} | {:error, term()}
   def cancel_tournament(%Tournament{} = tournament) do
-    with {:ok, cancelled} <- update_state(tournament, "cancelled") do
+    with {:ok, cancelled} <- update_state(tournament, "cancelled", any_state: true) do
       broadcast_tournament(cancelled, "tournament_updated")
       {:ok, cancelled}
     end
@@ -229,9 +229,17 @@ defmodule Gamend.Tournaments do
   # ── Registration ──────────────────────────────────────────────────────────
 
   @doc """
-  Registers `user` as an entry leader. Runs the `before_tournament_register`
-  pipeline (games gate/charge entry there) and fires
-  `after_tournament_register` on success.
+  Registers `user` as an entry leader.
+
+  The seat is taken first, under the tournament's join lock with the
+  capacity and duplicate checks, and only then does the
+  `before_tournament_register` pipeline run (games gate or charge entry
+  there), outside any lock, with the seat held: a full tournament, closed
+  registration or a repeated request is refused before it and never reaches
+  it. When the hook refuses (or raises, or times out) the seat is given back
+  and its refusal answered; in a tournament drawn while the hook ran, the
+  refused entry forfeits its match instead. `after_tournament_register` fires
+  only once the hook allowed it.
   """
   @spec join_tournament(User.t(), Tournament.t()) ::
           {:ok, Entry.t()} | {:error, term()}
@@ -249,19 +257,16 @@ defmodule Gamend.Tournaments do
         {:error, :tournament_full}
 
       true ->
-        # The hook runs first, then the seat is taken under a lock that
-        # re-counts.
-        #
-        # The count above is only a cheap early rejection. It used to be the
-        # *only* check, with the fee-charging `before_tournament_register` hook
-        # sitting between it and the insert — so two players joining a nearly
-        # full tournament both read a passing count, both were charged, and both
-        # were inserted. `unique_index(:tournament_entries, [:tournament_id,
-        # :leader_id])` stops the same user entering twice; nothing enforced the
-        # global cap.
-        with {:ok, _} <-
-               Gamend.Hooks.internal_call(:before_tournament_register, [user, tournament]),
-             {:ok, entry} <- claim_entry_seat(tournament, user) do
+        # The checks above are only cheap early refusals; the seat is the
+        # rule. It is taken before the hook, which games charge the entry fee
+        # in. The hook used to run first: a double tap passed the checks
+        # twice and was charged twice (one seat then failed
+        # `:already_registered`), and a tournament that filled between the
+        # hook and the seat charged the player and answered
+        # `:tournament_full`. Now the second tap meets the first one's seat,
+        # and a refusal comes before any charge.
+        with {:ok, entry} <- claim_entry_seat(tournament, user),
+             :ok <- run_register_hook(tournament, user, entry) do
           Gamend.Async.run(fn ->
             Gamend.Hooks.internal_call(:after_tournament_register, [user, tournament])
           end)
@@ -269,6 +274,109 @@ defmodule Gamend.Tournaments do
           broadcast_tournament(tournament, "tournament_updated")
           {:ok, entry}
         end
+    end
+  end
+
+  # Outside any lock or transaction, with the seat held: the hook can take as
+  # long as its timeout without holding the tournament (or, on SQLite, the
+  # database's only writer).
+  defp run_register_hook(tournament, user, entry) do
+    case Gamend.Hooks.internal_call(:before_tournament_register, [user, tournament]) do
+      {:ok, _} ->
+        :ok
+
+      {:error, _reason} = refused ->
+        :ok = release_entry_seat(tournament, entry)
+        refused
+    end
+  end
+
+  # Gives back the seat the hook refused: this call's entry only (by its id;
+  # a withdrawal may already have taken it), and only while the tournament
+  # is still taking registrations, read again row-locked as a withdrawal
+  # does.
+  #
+  # The draw does not wait for a hook, so the tournament may have been drawn
+  # while it ran, with the entry in a bracket. Deleting it then would leave a
+  # match pointing at nothing, and keeping it would seat a player the game
+  # refused; it forfeits instead (`forfeit_entry/2`), its opponent advancing
+  # as against a withdrawal. A field of one that the draw finished keeps its
+  # winner: there is nothing left to forfeit.
+  defp release_entry_seat(tournament, %Entry{id: entry_id}) do
+    Gamend.AfterCommit.transaction(fn ->
+      case current_tournament(tournament.id, :share) do
+        %Tournament{state: state} when state in ["scheduled", "registration"] ->
+          Repo.delete_all(from(e in Entry, where: e.id == ^entry_id))
+          :released
+
+        %Tournament{} = drawn ->
+          {:drawn, drawn}
+
+        nil ->
+          :gone
+      end
+    end)
+    |> case do
+      {:ok, {:drawn, drawn}} -> forfeit_entry(drawn, entry_id)
+      {:ok, _released_or_gone} -> :ok
+    end
+  end
+
+  # The entry's open match goes to its opponent, marked `"withdrawn"`. With
+  # no opponent yet (a later round waiting on its other feeder), the entry's
+  # side is emptied instead, by the same conditional write a winner's
+  # advance uses, and the bracket settles that side as a bye: now, if the
+  # other side is settled already, or when its feeder resolves.
+  defp forfeit_entry(%Tournament{state: "running"} = tournament, entry_id) do
+    open_match =
+      from(m in Match,
+        where:
+          m.tournament_id == ^tournament.id and is_nil(m.resolved_at) and
+            (m.a_entry_id == ^entry_id or m.b_entry_id == ^entry_id),
+        order_by: [desc: m.round],
+        limit: 1
+      )
+      |> Repo.one()
+
+    case open_match do
+      nil -> :ok
+      %Match{} = match -> forfeit_match(tournament, match, entry_id)
+    end
+  end
+
+  defp forfeit_entry(_finished_or_cancelled, _entry_id), do: :ok
+
+  defp forfeit_match(tournament, match, entry_id) do
+    {side, opponent} =
+      if match.a_entry_id == entry_id,
+        do: {:a_entry_id, match.b_entry_id},
+        else: {:b_entry_id, match.a_entry_id}
+
+    if opponent do
+      case internal_resolve(tournament, match, opponent, %{"withdrawn" => true}) do
+        {:ok, _resolved} -> :ok
+        # Resolved meanwhile: if the entry won it, its next match is the one.
+        {:error, :already_resolved} -> forfeit_entry(tournament, entry_id)
+        {:error, _gone} -> :ok
+      end
+    else
+      from(m in Match,
+        where: m.id == ^match.id and field(m, ^side) == ^entry_id and is_nil(m.resolved_at)
+      )
+      |> Repo.compare_and_set(set: [{side, nil}, {:updated_at, DateTime.utc_now(:second)}])
+      |> case do
+        {:ok, unseated} ->
+          {:ok, _} =
+            from(e in Entry, where: e.id == ^entry_id)
+            |> Repo.one()
+            |> update_entry(%{state: "eliminated"})
+
+          maybe_bye_resolve(tournament, unseated)
+
+        # Resolved, or the opponent arrived, since it was read: try again.
+        {:error, :precondition_failed} ->
+          forfeit_entry(tournament, entry_id)
+      end
     end
   end
 
@@ -492,7 +600,18 @@ defmodule Gamend.Tournaments do
         defer(fn -> broadcast_tournament(opened, "tournament_updated") end)
         do_advance_lifecycle(opened, now)
 
-      _error ->
+      # Moved since `tournament` was read: another caller opened it first, or
+      # an admin cancelled it. Go on from the row as it is.
+      {:error, :state_changed} ->
+        case Repo.get(Tournament, tournament.id) do
+          %Tournament{state: state} = current when state != tournament.state ->
+            do_advance_lifecycle(current, now)
+
+          _gone_or_same ->
+            tournament
+        end
+
+      {:error, :not_found} ->
         tournament
     end
   end
@@ -501,10 +620,25 @@ defmodule Gamend.Tournaments do
   defp past?(nil, _now), do: true
   defp past?(%DateTime{} = at, now), do: DateTime.compare(at, now) != :gt
 
-  defp update_state(tournament, state) do
-    Repo.rescue_stale(:not_found, fn ->
-      tournament |> Ecto.Changeset.change(state: state) |> Repo.update()
+  # A transition moves from the state it read: the tick opening registration
+  # on a tournament an admin had just cancelled wrote over the cancel and
+  # brought it back. Moved since, it answers `:state_changed`. A cancel moves
+  # from any state (`any_state: true`).
+  defp update_state(%Tournament{id: id} = tournament, state, opts \\ []) do
+    current = from(t in Tournament, where: t.id == ^id)
+
+    current
+    |> then(fn query ->
+      if opts[:any_state], do: query, else: where(query, [t], t.state == ^tournament.state)
     end)
+    |> Repo.compare_and_set(set: [state: state, updated_at: DateTime.utc_now(:second)])
+    |> case do
+      {:ok, updated} ->
+        {:ok, updated}
+
+      {:error, :precondition_failed} ->
+        if Repo.exists?(current), do: {:error, :state_changed}, else: {:error, :not_found}
+    end
     |> tap_bump_tournament()
   end
 
@@ -829,23 +963,30 @@ defmodule Gamend.Tournaments do
     end
   end
 
+  # The two feeders of a match resolve under their own locks, so both can
+  # write their side of it at once. The bye check below must see the other
+  # side as committed, never as this transaction first read it: deciding from
+  # a struct read before the other feeder's commit saw its side empty and its
+  # feeder resolved, and handed this side a bye over a winner already seated.
+  # The seat is written by one conditional UPDATE, and the row it answers is
+  # the one the database holds after any write it waited for.
   defp advance_winner(tournament, match) do
     unless final_round?(tournament, match) do
-      next_slot = div(match.slot, 2)
+      side = if rem(match.slot, 2) == 0, do: :a_entry_id, else: :b_entry_id
 
-      next =
-        Repo.get_by(Match,
-          tournament_id: match.tournament_id,
-          bracket_index: match.bracket_index,
-          round: match.round + 1,
-          slot: next_slot
-        )
-
-      if next && next.resolved_at == nil do
-        side = if rem(match.slot, 2) == 0, do: :a_entry_id, else: :b_entry_id
-        {:ok, next} = next |> Match.changeset(%{side => match.winner_entry_id}) |> Repo.update()
-
-        maybe_bye_resolve(tournament, next)
+      from(m in Match,
+        where:
+          m.tournament_id == ^match.tournament_id and m.bracket_index == ^match.bracket_index and
+            m.round == ^(match.round + 1) and m.slot == ^div(match.slot, 2) and
+            is_nil(m.resolved_at)
+      )
+      |> Repo.compare_and_set(
+        set: [{side, match.winner_entry_id}, {:updated_at, DateTime.utc_now(:second)}]
+      )
+      |> case do
+        {:ok, next} -> maybe_bye_resolve(tournament, next)
+        # No next match, or it was settled already.
+        {:error, :precondition_failed} -> :ok
       end
     end
 

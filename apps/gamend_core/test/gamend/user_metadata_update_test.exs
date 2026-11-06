@@ -61,6 +61,38 @@ defmodule Gamend.UserMetadataUpdateTest do
     assert {:error, :not_found} = Accounts.update_user_metadata(Ecto.UUID.generate(), & &1)
   end
 
+  describe "the admin's update_user/2 with metadata" do
+    test "a key written since the form was opened stays", %{user: user} do
+      opened = Accounts.get_user(user.id)
+
+      # A purchase mirrored into metadata while the admin edits the form.
+      {:ok, _} =
+        Accounts.update_user_metadata(user.id, &Map.put(&1, "payments", %{"vip" => true}))
+
+      assert {:ok, saved} =
+               Accounts.update_user(opened, %{
+                 "is_admin" => false,
+                 "metadata" => Map.put(opened.metadata || %{}, "note", "checked")
+               })
+
+      # The save wrote the form's whole map: `payments` was gone.
+      assert saved.metadata == %{"payments" => %{"vip" => true}, "note" => "checked"}
+    end
+
+    test "what the admin removes or changes is removed or changed", %{user: user} do
+      {:ok, _} =
+        Accounts.update_user_metadata(user.id, &Map.merge(&1, %{"a" => 1, "b" => 2, "c" => 3}))
+
+      opened = Accounts.get_user(user.id)
+      {:ok, _} = Accounts.update_user_metadata(user.id, &Map.put(&1, "d", 4))
+
+      assert {:ok, saved} =
+               Accounts.update_user(opened, %{metadata: %{"a" => 10, "c" => 3, x: true}})
+
+      assert saved.metadata == %{"a" => 10, "c" => 3, "d" => 4, "x" => true}
+    end
+  end
+
   # Runs `fun` in its own process and returns once it has read the user row.
   defp paused(fun) do
     test = self()

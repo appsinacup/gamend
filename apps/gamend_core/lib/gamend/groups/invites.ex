@@ -16,6 +16,7 @@ defmodule Gamend.Groups.Invites do
   alias Gamend.Groups.GroupMember
   alias Gamend.Groups.JoinRequests
   alias Gamend.Groups.Shared
+  alias Gamend.Lock
   alias Gamend.Repo
 
   @doc "Count pending invitations for a user."
@@ -131,30 +132,57 @@ defmodule Gamend.Groups.Invites do
   end
 
   defp do_create_invite(admin_id, group_id, target_user_id, group) do
-    import Ecto.Query
+    case insert_invite(admin_id, group_id, target_user_id) do
+      {:ok, invite} ->
+        sender = Gamend.Accounts.get_user(admin_id)
+        target = Gamend.Accounts.get_user(target_user_id)
 
-    max_invites = Gamend.Limits.get(:max_group_pending_invites)
+        # Send an informational notification (independent of the invite record)
+        Gamend.Notifications.admin_create_notification(admin_id, target_user_id, %{
+          "title" => "Invited to #{group.title}",
+          "content" => "",
+          "metadata" => %{
+            "type" => "group_invite",
+            "group_id" => group_id,
+            "group_title" => group.title,
+            "sender_name" => Gamend.Accounts.display_name(sender),
+            "recipient_name" => Gamend.Accounts.display_name(target)
+          }
+        })
 
-    pending_count =
-      Repo.one(
-        from(i in GroupInvite,
-          where: i.recipient_id == ^target_user_id and i.status == "pending",
-          select: count(i.id)
-        )
-      ) || 0
+        Shared.invalidate_invite_cache(admin_id)
+        Shared.invalidate_invite_cache(target_user_id)
 
-    if pending_count >= max_invites do
-      {:error, :too_many_pending_invites}
-    else
+        {:ok, invite}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # The pending-invite cap is the recipient's, so the count and the insert
+  # run under the recipient's lock: admins of two groups inviting one player
+  # at once each counted the other's invite as not there yet.
+  defp insert_invite(admin_id, group_id, target_user_id) do
+    Lock.serialize("group_invites_recipient", target_user_id, fn ->
+      pending_count =
+        Repo.one(
+          from(i in GroupInvite,
+            where: i.recipient_id == ^target_user_id and i.status == "pending",
+            select: count(i.id)
+          )
+        ) || 0
+
+      if pending_count >= Gamend.Limits.get(:max_group_pending_invites) do
+        Repo.rollback(:too_many_pending_invites)
+      end
+
       # Delete any existing invite for this recipient + group (regardless of status)
       # to avoid unique constraint violations on re-invites after accept/decline
       from(i in GroupInvite,
         where: i.recipient_id == ^target_user_id and i.group_id == ^group_id
       )
       |> Repo.delete_all()
-
-      sender = Gamend.Accounts.get_user(admin_id)
-      target = Gamend.Accounts.get_user(target_user_id)
 
       # The group or the recipient may have been deleted since they were read.
       case Repo.rescue_foreign_key(:not_found, fn ->
@@ -166,29 +194,10 @@ defmodule Gamend.Groups.Invites do
              })
              |> Repo.insert()
            end) do
-        {:ok, invite} ->
-          # Send an informational notification (independent of the invite record)
-          Gamend.Notifications.admin_create_notification(admin_id, target_user_id, %{
-            "title" => "Invited to #{group.title}",
-            "content" => "",
-            "metadata" => %{
-              "type" => "group_invite",
-              "group_id" => group_id,
-              "group_title" => group.title,
-              "sender_name" => Gamend.Accounts.display_name(sender),
-              "recipient_name" => Gamend.Accounts.display_name(target)
-            }
-          })
-
-          Shared.invalidate_invite_cache(admin_id)
-          Shared.invalidate_invite_cache(target_user_id)
-
-          {:ok, invite}
-
-        {:error, changeset} ->
-          {:error, changeset}
+        {:ok, invite} -> invite
+        {:error, reason} -> Repo.rollback(reason)
       end
-    end
+    end)
   end
 
   @doc """
@@ -226,7 +235,17 @@ defmodule Gamend.Groups.Invites do
       true ->
         group_id = group.id
 
-        case Shared.do_add_group_member(user_id, group_id, group, "invite_accept") do
+        # The invite is claimed inside the join, not read once at the top: a
+        # cancel or a decline during the `before_group_join` hook still let the
+        # player into a private or hidden group, and told the sender they had
+        # joined.
+        case Shared.do_add_group_member(
+               user_id,
+               group_id,
+               group,
+               %{"source" => "invite_accept"},
+               fn -> claim_invite(invite) end
+             ) do
           {:ok, member} ->
             finalize_invite_accept(user_id, group_id, group, invite)
             {:ok, member}
@@ -243,18 +262,42 @@ defmodule Gamend.Groups.Invites do
     end
   end
 
+  # Pending → accepted, or nothing, inside the join's transaction: the
+  # transition is what authorises the seat. `:no_invite` when a cancel, a
+  # decline or another accept moved it first.
+  defp claim_invite(%GroupInvite{id: id}) do
+    from(i in GroupInvite, where: i.id == ^id and i.status == "pending")
+    |> Repo.compare_and_set(set: [status: "accepted", updated_at: DateTime.utc_now(:second)])
+    |> case do
+      {:ok, _claimed} -> :ok
+      {:error, :precondition_failed} -> {:error, :no_invite}
+    end
+  end
+
   defp handle_invite_capacity_failure(user_id, invite, group) do
+    # Mark the invite as declined so the sender sees it didn't go through,
+    # unless it was cancelled or declined meanwhile: then that told them.
+    case decline_pending(invite) do
+      :ok -> tell_sender_group_full(user_id, invite, group)
+      {:error, :not_found} -> :ok
+    end
+  end
+
+  # Pending → declined, or nothing: a decline, a full group and a cancel
+  # landing together answer the sender once.
+  defp decline_pending(%GroupInvite{id: id}) do
+    from(i in GroupInvite, where: i.id == ^id and i.status == "pending")
+    |> Repo.update_all(set: [status: "declined", updated_at: DateTime.utc_now(:second)])
+    |> case do
+      {1, _} -> :ok
+      {0, _} -> {:error, :not_found}
+    end
+  end
+
+  defp tell_sender_group_full(user_id, invite, group) do
     user = Gamend.Accounts.get_user(user_id)
     user_name = Gamend.Accounts.display_name(user)
     group_id = group.id
-
-    # Mark the invite as declined so the sender sees it didn't go through
-    from(i in GroupInvite,
-      where:
-        i.recipient_id == ^user_id and i.group_id == ^group_id and
-          i.status == "pending"
-    )
-    |> Repo.update_all(set: [status: "declined", updated_at: DateTime.utc_now()])
 
     Shared.invalidate_invite_cache_sync(user_id)
     Shared.invalidate_invite_cache_sync(invite.sender_id)
@@ -291,15 +334,9 @@ defmodule Gamend.Groups.Invites do
     )
   end
 
+  # The invite was claimed by the join's transaction (`claim_invite/1`); a
+  # recipient has one invite per group.
   defp finalize_invite_accept(user_id, group_id, group, invite) do
-    # Mark all pending invites for this user + group as accepted
-    from(i in GroupInvite,
-      where:
-        i.recipient_id == ^user_id and i.group_id == ^group_id and
-          i.status == "pending"
-    )
-    |> Repo.update_all(set: [status: "accepted", updated_at: DateTime.utc_now()])
-
     Shared.invalidate_invite_cache_sync(user_id)
     Shared.invalidate_invite_cache_sync(invite.sender_id)
 
@@ -475,8 +512,18 @@ defmodule Gamend.Groups.Invites do
     end
   end
 
+  # Deleted only while still pending: an accept that claimed it first has
+  # seated the player, and a second cancel finds nothing to retract.
   defp do_cancel_invite(invite) do
-    Repo.delete(invite)
+    case Repo.delete_all(
+           from(i in GroupInvite, where: i.id == ^invite.id and i.status == "pending")
+         ) do
+      {1, _} -> retract_cancelled_invite(invite)
+      {0, _} -> {:error, :not_found}
+    end
+  end
+
+  defp retract_cancelled_invite(invite) do
     Shared.invalidate_invite_cache(invite.sender_id)
     Shared.invalidate_invite_cache(invite.recipient_id)
 
@@ -501,59 +548,58 @@ defmodule Gamend.Groups.Invites do
   @spec decline_invite(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
   def decline_invite(user_id, invite_id)
       when is_binary(user_id) and is_binary(invite_id) do
-    case Repo.get(GroupInvite, invite_id) do
-      %GroupInvite{recipient_id: ^user_id, status: "pending"} = invite ->
-        from(i in GroupInvite,
-          where:
-            i.recipient_id == ^user_id and i.group_id == ^invite.group_id and
-              i.status == "pending"
-        )
-        |> Repo.update_all(set: [status: "declined", updated_at: DateTime.utc_now()])
-
-        Shared.invalidate_invite_cache(user_id)
-        Shared.invalidate_invite_cache(invite.sender_id)
-
-        # Retract the invite notification for the recipient
-        group = Groups.get_group(invite.group_id)
-        group_title = (group && group.title) || ""
-
-        Gamend.Notifications.delete_notification_by(
-          invite.sender_id,
-          user_id,
-          "Invited to #{group_title}"
-        )
-
-        # Notify the sender that the invite was declined
-        user = Gamend.Accounts.get_user(user_id)
-        user_name = Gamend.Accounts.display_name(user)
-
-        Gamend.Notifications.admin_create_notification(
-          user_id,
-          invite.sender_id,
-          %{
-            "title" => "#{user_name} declined #{group_title} invite",
-            "content" => "",
-            "metadata" => %{
-              "type" => "group_invite_declined",
-              "group_id" => invite.group_id,
-              "group_title" => group_title,
-              "user_id" => user_id,
-              "user_name" => user_name
-            }
-          }
-        )
-
-        # Notify the sender via PubSub
-        Gamend.Broadcast.publish(
-          "user:#{invite.sender_id}",
-          {:group_invite_declined, %{group_id: invite.group_id, user_id: user_id}}
-        )
-
-        :ok
-
-      _other ->
-        {:error, :not_found}
+    with %GroupInvite{recipient_id: ^user_id, status: "pending"} = invite <-
+           Repo.get(GroupInvite, invite_id),
+         # Only the decline that moves it tells the sender: an accept that
+         # claimed it first has seated the player.
+         :ok <- decline_pending(invite) do
+      tell_sender_declined(user_id, invite)
+    else
+      _other -> {:error, :not_found}
     end
+  end
+
+  defp tell_sender_declined(user_id, invite) do
+    Shared.invalidate_invite_cache(user_id)
+    Shared.invalidate_invite_cache(invite.sender_id)
+
+    # Retract the invite notification for the recipient
+    group = Groups.get_group(invite.group_id)
+    group_title = (group && group.title) || ""
+
+    Gamend.Notifications.delete_notification_by(
+      invite.sender_id,
+      user_id,
+      "Invited to #{group_title}"
+    )
+
+    # Notify the sender that the invite was declined
+    user = Gamend.Accounts.get_user(user_id)
+    user_name = Gamend.Accounts.display_name(user)
+
+    Gamend.Notifications.admin_create_notification(
+      user_id,
+      invite.sender_id,
+      %{
+        "title" => "#{user_name} declined #{group_title} invite",
+        "content" => "",
+        "metadata" => %{
+          "type" => "group_invite_declined",
+          "group_id" => invite.group_id,
+          "group_title" => group_title,
+          "user_id" => user_id,
+          "user_name" => user_name
+        }
+      }
+    )
+
+    # Notify the sender via PubSub
+    Gamend.Broadcast.publish(
+      "user:#{invite.sender_id}",
+      {:group_invite_declined, %{group_id: invite.group_id, user_id: user_id}}
+    )
+
+    :ok
   end
 
   defp serialize_group_invite(invite) do

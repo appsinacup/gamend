@@ -472,7 +472,12 @@ defmodule Gamend.Payments do
     end
   end
 
-  @doc false
+  @doc ~S"""
+    The latest purchase of the original transaction: a subscription's
+    renewals each validated by the client are a purchase each, all with the
+    one original id, so there may be several.
+    
+  """
   @spec get_purchase_by_provider_original_transaction(String.t(), String.t()) ::
           Gamend.Payments.Purchase.t() | nil
   def get_purchase_by_provider_original_transaction(_provider, _transaction_id) do

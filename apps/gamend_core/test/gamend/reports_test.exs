@@ -291,6 +291,24 @@ defmodule Gamend.ReportsTest do
       refute_receive {:resolved, _, "open"}, 100
     end
 
+    test "a close made from a copy read before another moderator's closes nothing" do
+      user = AccountsFixtures.user_fixture()
+      {:ok, report} = Reports.create(word("7"), %{user_id: user.id})
+
+      {:ok, _} = Reports.resolve(report, "fixed", %{message: "Fixed."})
+      assert_receive {:resolved, _, "fixed"}, 1_000
+
+      # Still open in the second moderator's copy.
+      assert Reports.resolve(report, "wontfix", %{message: "Won't fix."}) ==
+               {:error, :status_changed}
+
+      refute_receive {:resolved, _, _}, 100
+      assert Reports.get(report.id).status == "fixed"
+
+      assert [%{content: "Fixed."}] =
+               Notifications.list_notifications_by_title(user.id, Notices.reporter_title())
+    end
+
     test "a blank message sends the reporter nothing" do
       user = AccountsFixtures.user_fixture()
       {:ok, report} = Reports.create(word("6"), %{user_id: user.id})

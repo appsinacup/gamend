@@ -81,7 +81,10 @@ defmodule GamendWeb.Api.V1.Admin.KvEntryController do
     responses: [
       created: {"Created", "application/json", AdminKvEntryResponse},
       unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Admin required"),
+      forbidden:
+        Schemas.error(
+          "Admin required, or the user already holds max_kv_entries_per_user entries (too_many_entries)"
+        ),
       unprocessable_entity: Schemas.error("Validation failed")
     ]
   )
@@ -92,6 +95,9 @@ defmodule GamendWeb.Api.V1.Admin.KvEntryController do
     case KV.create_entry(attrs) do
       {:ok, entry} ->
         reply_data(conn, :created, Serializers.serialize_kv_entry(entry))
+
+      {:error, :too_many_entries} ->
+        reply_error(conn, :forbidden, "too_many_entries")
 
       {:error, %Ecto.Changeset{} = cs} ->
         unprocessable(conn, cs)

@@ -19,7 +19,7 @@ runnable host app at the repository root.
 
 ## Project guidelines
 
-- Run `mix precommit` when done and fix what it reports. It compiles with `--warnings-as-errors`, formats, regenerates the SDK, the settings docs and the `Dockerfile`, extracts theme strings, runs `test`, regenerates the Balaur SDK from a fresh OpenAPI document (CI fails a stale one), runs `credo --strict` and `gamend.api.lint`, and repeats the compile/format/credo steps in `apps/gamend_core` and `apps/gamend_web` (plus `format` in plugins, `sdk` and `sdk_tools`). CI also runs dialyzer and `deps.audit`.
+- Run `mix precommit` when done and fix what it reports. It compiles with `--warnings-as-errors`, formats, regenerates the SDK, the settings docs and the `Dockerfile`, extracts theme strings, runs `test`, regenerates the Balaur SDK from a fresh OpenAPI document (CI fails a stale one), runs `credo --strict`, `gamend.api.lint` and `gamend.race.lint`, and repeats the compile/format/credo steps in `apps/gamend_core` and `apps/gamend_web` (plus `format` in plugins, `sdk` and `sdk_tools`). CI also runs dialyzer and `deps.audit`.
 - `Dockerfile` is generated (`mix gamend.gen.dockerfile`, from the project and `gamend_dockerfile:` in `mix.exs`), the same file every app built on Gamend uses ([docker/README.md](docker/README.md)). Never edit it by hand.
 - Use `:req` (`Req`) for HTTP. **Avoid** `:httpoison`, `:tesla` and `:httpc`.
 - Declare settings with `Gamend.Settings.Provider`; never read `System.get_env/1`. The env var name derives from the declaration: `GAMEND_<GROUP>_<NAME>` (`GAMEND_DB_URL`, `GAMEND_LIMITS_MAX_PAGE_SIZE`, `GAMEND_FEATURES_LIST_QUESTS`). `.env.example` and the Settings guide are generated (`mix gamend.settings.env_example`, `mix gamend.settings.guide`).
@@ -261,10 +261,15 @@ Web-side features with no context: the site search palette (`GamendWeb.SearchInd
 
 ### Locks
 
+- **A rule holds at the write, never at a read before it.** "One lobby per player", "pays once", "at most N" are checked by the statement that writes, in this order of preference: a unique (or partial unique) index with `unique_constraint`, answered as `{:error, changeset}`; a conditional write, `Gamend.Repo.compare_and_set/2` (`UPDATE … WHERE <precondition> RETURNING`), whose precondition names everything the write depends on (the quest claim pins `claim_count`, because its payout key is built from it); a lock, only when the decision reads many rows (a capacity count), keyed on the entity the rule belongs to (a per-player rule locks the player's row, not the lobby). A cached read (`Accounts.get_user/1`) or a read outside the transaction is a fast early refusal, never the gate. A struct read before the write is stale after it: decide from the row the write answers.
+- One write function per rule, which every path calls (`Lobbies.claim_seat/2` is the only write of `users.lobby_id`).
+- A row read to be updated in a transaction that also inserts a row referencing it is locked `Repo.lock_rows(_, :no_key_update)`: `:update` deadlocks against the foreign key's `FOR KEY SHARE` on Postgres.
+- A race is tested in `Gamend.RaceCase` (each racer on its own connection, outside the sandbox). `Gamend.DataCase` runs a test on one connection and cannot show one; SQLite runs writes one at a time and passes either way, so CI's `test-postgres` job is where these tests bite.
+- `mix gamend.race.lint` (`Gamend.RaceLint`) flags the shapes that break these rules: a state column written by `Repo.update` on a struct read earlier, a count and an insert with no lock around both, a cached user deciding a write. A function that only runs inside its caller's lock says so with `# race-safe: <why>` inside it; a call to a lock helper of the same file already counts. A read inside a transaction never comes from the cache (`Gamend.Cache.cached/3` queries there).
 - Any read-modify-write (capacity check before insert, merging a map) runs under `Gamend.Lock.serialize/3`. It uses `pg_advisory_xact_lock` on Postgres (behind a node-local mutex, so waiters hold no connection) and a keyed mutex (`Gamend.Lock.Local`) on SQLite, so it holds on both. Waiters queue in arrival order (`Gamend.Lock.Queue`); a bare `:global.trans` retries on a random sleep up to 8 s and leaves a busy lock idle, so code needing an in-memory lock uses `Gamend.Lock.Local.trans/2`.
 - `serialize/3` holds a transaction for its whole function, which on SQLite is the only write lock: keep the function to database work. Hooks, hashing and HTTP calls go before it; broadcasts and tasks inside wait for the commit on their own. A job that must run once cluster-wide but writes in pieces takes `Gamend.Lock.exclusive/3` instead.
 - Atom namespaces are registered in `@namespaces` in `Gamend.Repo.AdvisoryLock` (`:lobby` 1, `:group` 2, `:party` 3, `:friendship` 4, and so on through 12). Register a new one there; a string namespace needs no registration.
-- Prefer an atomic write where one exists (`Economy.spend/4`).
+- Prefer an atomic write where one exists (`Economy.spend/4`, `Repo.compare_and_set/2`).
 
 ### API shape & pagination
 

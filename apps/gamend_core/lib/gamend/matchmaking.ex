@@ -226,11 +226,13 @@ defmodule Gamend.Matchmaking do
   """
   @spec cancel_ticket(Ecto.UUID.t()) :: {:ok, Ticket.t()} | {:error, :not_found}
   def cancel_ticket(ticket_id) do
-    with %Ticket{status: status} = ticket <- Repo.get_uuid(Ticket, ticket_id),
-         true <- status == Constants.status_queued() do
-      ticket
-      |> Ecto.Changeset.change(status: Constants.status_cancelled())
-      |> Repo.update()
+    # Cancelled only while still queued, checked by the write: a ticket read
+    # queued could be matched by the sweep before the cancel landed, and the
+    # cancel then took a seated player's ticket out of their match.
+    with %Ticket{id: id} <- Repo.get_uuid(Ticket, ticket_id),
+         {:ok, ticket} <-
+           queued() |> where([t], t.id == ^id) |> Repo.compare_and_set(set: cancelled_fields()) do
+      {:ok, ticket}
     else
       _ -> {:error, :not_found}
     end
@@ -297,26 +299,36 @@ defmodule Gamend.Matchmaking do
   Runs inside the sweep's cluster lock, before any lobby exists (the lobby is
   created outside the lock because `Lobbies` fires hooks and broadcasts, which
   must not run inside a transaction). The `status == queued` guard makes the
-  claim atomic: if any ticket was cancelled since it was read, nothing is
-  claimed and `:conflict` is returned.
+  claim atomic: if any ticket was cancelled or claimed since it was read,
+  nothing is claimed and `:conflict` is returned.
+
+  Answers the tickets as claimed. Their `matched_at` is this claim's mark:
+  `requeue/1`, `discard/1` and `assign_lobby/2` write only tickets that still
+  carry it, so a claim only ever undoes or names what it holds itself.
   """
-  @spec claim([Ticket.t()]) :: :ok | :conflict
+  @spec claim([Ticket.t()]) :: {:ok, [Ticket.t()]} | :conflict
   def claim(tickets) do
     ids = Enum.map(tickets, & &1.id)
     now = DateTime.utc_now()
 
-    {count, _} =
+    {count, flipped} =
       queued()
       |> where([t], t.id in ^ids)
+      |> select([t], t.id)
       |> Repo.update_all(
         set: [status: Constants.status_matched(), matched_at: now, updated_at: now]
       )
 
+    claimed = Enum.map(tickets, &%{&1 | status: Constants.status_matched(), matched_at: now})
+
     if count == length(ids) do
-      :ok
+      {:ok, claimed}
     else
-      # Partial claim: revert whatever we flipped and let the next tick retry.
-      _ = requeue(tickets)
+      # Partial claim: put back only what this claim flipped, and let the next
+      # tick retry. The others were claimed by someone else. Requeueing the
+      # whole group flipped them back to queued while their sweep was seating
+      # them, and the next sweep claimed them a second time.
+      _ = requeue(Enum.filter(claimed, &(&1.id in flipped)))
       :conflict
     end
   end
@@ -324,11 +336,8 @@ defmodule Gamend.Matchmaking do
   @doc "Returns claimed tickets to the queue (lobby creation failed)."
   @spec requeue([Ticket.t()]) :: :ok
   def requeue(tickets) do
-    ids = Enum.map(tickets, & &1.id)
-
-    Ticket
-    |> where([t], t.id in ^ids and t.status == ^Constants.status_matched())
-    |> where([t], is_nil(t.match_id))
+    tickets
+    |> held_by_claim()
     |> Repo.update_all(
       set: [
         status: Constants.status_queued(),
@@ -347,31 +356,55 @@ defmodule Gamend.Matchmaking do
   """
   @spec discard([Ticket.t()]) :: :ok
   def discard(tickets) do
-    ids = Enum.map(tickets, & &1.id)
-
-    Ticket
-    |> where([t], t.id in ^ids and t.status == ^Constants.status_matched())
-    |> where([t], is_nil(t.match_id))
+    tickets
+    |> held_by_claim()
     |> Repo.update_all(set: cancelled_fields())
 
     :ok
   end
 
-  @doc "Associates already-claimed tickets with their created lobby."
+  @doc """
+  Associates claimed tickets with their created lobby: all of them, or none
+  (`{:error, :not_found}`) when the lobby is gone or a ticket is no longer
+  held by the claim that matched it.
+  """
   @spec assign_lobby([Ticket.t()], Ecto.UUID.t()) :: :ok | {:error, :not_found}
   def assign_lobby(tickets, lobby_id) do
-    ids = Enum.map(tickets, & &1.id)
-
     # Only while the lobby is there, decided in the same statement: one deleted
     # since would break the foreign key, and the raise stopped every other match
-    # in the sweep.
-    {assigned, _} =
-      Ticket
-      |> where([t], t.id in ^ids)
-      |> where(exists(from(l in Gamend.Lobbies.Lobby, where: l.id == ^lobby_id, select: 1)))
-      |> Repo.update_all(set: [match_id: lobby_id, updated_at: DateTime.utc_now()])
+    # in the sweep. And only tickets this match's claim still holds: a ticket
+    # requeued from under it is someone else's now, and naming this lobby on it
+    # sent its player to a match they were never seated in.
+    Gamend.AfterCommit.transaction(fn ->
+      {assigned, _} =
+        tickets
+        |> held_by_claim()
+        |> where(exists(from(l in Gamend.Lobbies.Lobby, where: l.id == ^lobby_id, select: 1)))
+        |> Repo.update_all(set: [match_id: lobby_id, updated_at: DateTime.utc_now()])
 
-    if assigned == 0 and ids != [], do: {:error, :not_found}, else: :ok
+      if assigned != length(tickets), do: Repo.rollback(:not_found)
+    end)
+    |> case do
+      {:ok, _} -> :ok
+      {:error, :not_found} = gone -> gone
+    end
+  end
+
+  # The tickets still held by the claim that answered them: matched at its
+  # mark, with no lobby named yet. A ticket never claimed (no mark) is no one's.
+  defp held_by_claim(tickets) do
+    held =
+      tickets
+      |> Enum.reject(&is_nil(&1.matched_at))
+      |> Enum.group_by(& &1.matched_at, & &1.id)
+      |> Enum.reduce(dynamic([t], false), fn {at, ids}, held ->
+        dynamic([t], ^held or (t.id in ^ids and t.matched_at == ^at))
+      end)
+
+    from(t in Ticket,
+      where: ^held,
+      where: t.status == ^Constants.status_matched() and is_nil(t.match_id)
+    )
   end
 
   @doc """

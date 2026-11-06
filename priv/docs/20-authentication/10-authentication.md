@@ -133,13 +133,13 @@ A guest (an account with no email and no provider, made for a visitor's first sa
 |---|---|
 | The host's own data | The `merge_user_data/2` hook runs first and merges what the host understands, by its own rules |
 | Other KV keys | Moved where the account has none; a key both have stays the account's |
-| Wallets, inventory | Added |
+| Wallets, inventory | Moved: taken off the guest and added to the account's in one transaction, so a coin the guest spends meanwhile is not also moved |
 | Leaderboard records | `best` boards keep the better score, `incr` boards add, `set` and `decr` only where the account has none |
 | Quest progress | Moved for quest periods the account has not played |
 | Activity days, analytics events, content reports, notifications | Moved |
 | `users.metadata`, `users.preferences` | Keys the account lacks |
 
-Sessions, push tokens, bans and lobby or party seats are not moved.
+Sessions, push tokens, bans and lobby or party seats are not moved. Before anything moves, the guest's credentials are revoked (its sessions deleted and `token_version` bumped, so its access and refresh tokens stop working) and its game sockets are disconnected: a client still signed in as the guest cannot keep spending what is being moved.
 
 ### Coming back after signing in
 

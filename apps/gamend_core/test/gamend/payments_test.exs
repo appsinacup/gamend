@@ -357,6 +357,110 @@ defmodule Gamend.PaymentsTest do
                  "environment" => "test"
                })
     end
+
+    test "a second purchase of one store transaction is a changeset, on SQLite too" do
+      user = AccountsFixtures.user_fixture()
+      {_product, provider_product} = create_consumable_provider_product("apple", "coins_dup")
+      attrs = %{"provider_transaction_id" => "apple_tx_dup"}
+
+      assert {:ok, _purchase} = Payments.create_purchase(user, provider_product, attrs)
+
+      # ecto_sqlite3 names the index after its columns, not its real name, so
+      # with only the Postgres name declared this raised Ecto.ConstraintError.
+      assert {:error, %Ecto.Changeset{} = changeset} =
+               Payments.create_purchase(user, provider_product, attrs)
+
+      assert errors_on(changeset).provider_transaction_id != []
+    end
+
+    test "a subscription's owner validates every renewal; another account none of them" do
+      user = AccountsFixtures.user_fixture()
+      other_user = AccountsFixtures.user_fixture()
+      {_product, provider_product} = create_consumable_provider_product("apple", "renewals")
+
+      renewal = fn n ->
+        %{
+          "product_id" => provider_product.external_id,
+          "transaction_id" => "apple_renewal_#{n}",
+          "original_transaction_id" => "apple_original_renewals",
+          "environment" => "test"
+        }
+      end
+
+      # The third used to raise Ecto.MultipleResultsError: the original
+      # transaction was looked up with `get_by`, and two purchases share it.
+      for n <- 1..3 do
+        assert {:ok, %{seen_before: false}} =
+                 Payments.validate_store_purchase(user, "apple", renewal.(n))
+      end
+
+      assert %Purchase{provider_transaction_id: "apple_renewal_3"} =
+               Payments.get_purchase_by_provider_original_transaction(
+                 "apple",
+                 "apple_original_renewals"
+               )
+
+      assert {:error, :receipt_already_used} =
+               Payments.validate_store_purchase(other_user, "apple", renewal.(4))
+    end
+
+    test "revalidating a receipt whose purchase was left pending fulfils it" do
+      user = AccountsFixtures.user_fixture()
+      {_product, provider_product} = create_entitlement_provider_product("apple", "stuck_pass")
+
+      # What a fulfilment rolled back leaves: the purchase, still pending.
+      {:ok, pending} =
+        Payments.create_purchase(user, provider_product, %{
+          "provider_transaction_id" => "apple_tx_stuck",
+          "status" => "pending"
+        })
+
+      assert {:ok, %{purchase: purchase, seen_before: true}} =
+               Payments.validate_store_purchase(user, "apple", %{
+                 "product_id" => provider_product.external_id,
+                 "transaction_id" => "apple_tx_stuck",
+                 "environment" => "test"
+               })
+
+      assert purchase.id == pending.id
+      assert purchase.status == "completed"
+      assert Payments.has_entitlement?(user.id, "battle_pass")
+    end
+  end
+
+  describe "revoke_purchase/2" do
+    test "ends a purchase once: a second event for the same end changes nothing" do
+      capture_payment_hooks()
+
+      user = AccountsFixtures.user_fixture()
+      {_product, provider_product} = create_entitlement_provider_product("stripe", "refunded")
+
+      {:ok, purchase} =
+        Payments.create_purchase(user, provider_product, %{
+          "provider_transaction_id" => "cs_refunded_twice"
+        })
+
+      {:ok, purchase} = Payments.fulfill_purchase(purchase)
+      purchase_id = purchase.id
+      assert_receive {:payment_purchase_fulfilled, ^purchase_id, _}
+
+      # `charge.refunded` and then `refund.updated` for the one refund.
+      assert {:ok, %Purchase{status: "refunded"}} =
+               Payments.revoke_purchase(purchase, %{"status" => "refunded", "reason" => "a"})
+
+      assert_receive {:payment_purchase_revoked, ^purchase_id, _}
+
+      assert {:ok, %Purchase{status: "refunded"} = again} =
+               Payments.revoke_purchase(purchase, %{
+                 "status" => "refunded",
+                 "reason" => "b",
+                 "payload" => %{"second_event" => true}
+               })
+
+      refute_receive {:payment_purchase_revoked, ^purchase_id, _}, 200
+      assert again.metadata["revocation_reason"] == "a"
+      assert again.raw_provider_payload["second_event"] == true
+    end
   end
 
   defp create_consumable_provider_product(provider, external_id) do

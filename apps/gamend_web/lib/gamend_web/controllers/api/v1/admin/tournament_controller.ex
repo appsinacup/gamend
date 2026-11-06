@@ -198,7 +198,8 @@ defmodule GamendWeb.Api.V1.Admin.TournamentController do
     responses: [
       ok: {"Tournament", "application/json", AdminTournamentResponse},
       forbidden: Schemas.error("Not cancelled (not_cancelled)"),
-      not_found: Schemas.error("Not found")
+      not_found: Schemas.error("Not found"),
+      conflict: Schemas.error("Another change moved its state first (state_changed)")
     ]
   )
 
@@ -393,6 +394,7 @@ defmodule GamendWeb.Api.V1.Admin.TournamentController do
   defp refusal(conn, :already_resolved), do: reply_error(conn, :conflict, "already_resolved")
   defp refusal(conn, :invalid_winner), do: reply_error(conn, :bad_request, "invalid_winner")
   defp refusal(conn, :not_found), do: reply_error(conn, :not_found, "not_found")
+  defp refusal(conn, :state_changed), do: reply_error(conn, :conflict, "state_changed")
   defp refusal(conn, %Ecto.Changeset{} = changeset), do: unprocessable(conn, changeset)
   defp refusal(conn, reason) when is_atom(reason), do: reply_error(conn, :forbidden, reason)
 end

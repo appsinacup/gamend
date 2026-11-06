@@ -160,8 +160,7 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
   def open(conn, params) do
     with_lobby(conn, fn user, lobby ->
       if Lobbies.can_manage_lobby?(user, lobby) do
-        member_ids = lobby |> Lobbies.get_lobby_members() |> Enum.map(& &1.id)
-        do_reset(conn, user, lobby, member_ids, params)
+        do_reset(conn, user, lobby, params)
       else
         reply_error(conn, :forbidden, "not_host")
       end
@@ -204,7 +203,6 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
   def open_party(conn, params) do
     with_party(conn, fn user, party ->
       if Parties.can_manage_party?(user, party) do
-        member_ids = party.id |> Parties.get_party_members() |> Enum.map(& &1.id)
         # A party board STANDS: it is the crew's answer to "are you coming",
         # asked once and left up, not a countdown gating a match start the way a
         # lobby board is. Without this it inherited the lobby default (20s), and
@@ -213,19 +211,21 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
         # went to a disabled "Waiting for the captain" and the leader's to a
         # disabled "Waiting for crew", with nothing left to reopen it. A caller
         # that genuinely wants a fuse still gets one by sending timeout_ms.
-        do_reset(conn, user, party, member_ids, params, nil)
+        do_reset(conn, user, party, params, nil)
       else
         reply_error(conn, :forbidden, "not_leader")
       end
     end)
   end
 
-  defp do_reset(conn, user, subject, member_ids, params, default_timeout_ms \\ :subject_default) do
+  # Every member, read again under the subject's lock as the board is written
+  # (`:members`): read here, a member who left before the write stayed on it.
+  defp do_reset(conn, user, subject, params, default_timeout_ms \\ :subject_default) do
     opts =
       [opened_by: user.id, metadata: Map.get(params, "metadata", %{})]
       |> maybe_timeout(Map.get(params, "timeout_ms"), default_timeout_ms)
 
-    case ReadyChecks.reset(subject, member_ids, opts) do
+    case ReadyChecks.reset(subject, :members, opts) do
       {:ok, check} ->
         reply_data(conn, :created, serialize(check, user))
 
@@ -253,24 +253,32 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
       bad_request: Schemas.error("Not in a lobby"),
       forbidden: Schemas.error("Not the host, or the lobby is hostless"),
       not_found: Schemas.error("No open check"),
+      conflict: Schemas.error("The check passed or failed before the cancel (already_resolved)"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
 
   def cancel(conn, _params) do
     with_lobby(conn, fn user, lobby ->
-      cond do
-        not Lobbies.can_manage_lobby?(user, lobby) ->
-          reply_error(conn, :forbidden, "not_host")
-
-        is_nil(ReadyChecks.pending_for_lobby(lobby.id)) ->
-          reply_error(conn, :not_found, "no_open_check")
-
-        true ->
-          :ok = ReadyChecks.cancel_for_lobby(lobby.id)
-          reply_ok(conn)
+      if Lobbies.can_manage_lobby?(user, lobby) do
+        do_cancel(conn, ReadyChecks.pending_for_lobby(lobby.id))
+      else
+        reply_error(conn, :forbidden, "not_host")
       end
     end)
+  end
+
+  # One read of the open check, then the cancel answers from its own lock: the
+  # last answer can pass the check in between, and then nothing was cancelled.
+  # That answered 500 (`:ok =` on the error).
+  defp do_cancel(conn, nil), do: reply_error(conn, :not_found, "no_open_check")
+
+  defp do_cancel(conn, check) do
+    case ReadyChecks.cancel(check) do
+      {:ok, _check} -> reply_ok(conn)
+      {:error, :already_resolved} -> reply_error(conn, :conflict, "already_resolved")
+      {:error, :no_open_check} -> reply_error(conn, :not_found, "no_open_check")
+    end
   end
 
   operation(:cancel_party,
@@ -282,22 +290,17 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
       bad_request: Schemas.error("Not in a party"),
       forbidden: Schemas.error("Not the party leader"),
       not_found: Schemas.error("No open check"),
+      conflict: Schemas.error("The check passed or failed before the cancel (already_resolved)"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
 
   def cancel_party(conn, _params) do
     with_party(conn, fn user, party ->
-      cond do
-        party.leader_id != user.id ->
-          reply_error(conn, :forbidden, "not_leader")
-
-        is_nil(ReadyChecks.pending_for_party(party.id)) ->
-          reply_error(conn, :not_found, "no_open_check")
-
-        true ->
-          :ok = ReadyChecks.cancel_for_party(party.id)
-          reply_ok(conn)
+      if Parties.can_manage_party?(user, party) do
+        do_cancel(conn, ReadyChecks.pending_for_party(party.id))
+      else
+        reply_error(conn, :forbidden, "not_leader")
       end
     end)
   end

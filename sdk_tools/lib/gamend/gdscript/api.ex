@@ -552,6 +552,7 @@ defmodule Gamend.GDScript.API do
     },
     "Parties" => %{
       "accept_party_invite" => [2],
+      "admin_add_member" => [2],
       "admin_delete_party" => [1],
       "admin_update_party" => [2],
       "broadcast_member_presence" => [2],
@@ -566,7 +567,7 @@ defmodule Gamend.GDScript.API do
       "create_lobby_with_party" => [1, 2],
       "create_party" => [1, 2],
       "decline_party_invite" => [2],
-      "disband" => [1],
+      "disband" => [1, 2],
       "get_party" => [1],
       "get_party!" => [1],
       "get_party_members" => [1],

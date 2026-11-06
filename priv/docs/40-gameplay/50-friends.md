@@ -17,6 +17,17 @@ POST /friends ──► pending ──► accept ──► accepted
 POST /users/:user_id/block ──► blocked   (no prior relationship needed)
 ```
 
+A pending request is answered once. Of an accept, a reject, a block and a
+cancel landing together, the first to move it out of pending stands and is the
+only one anybody hears about; the others answer what it became: 409
+`already_friends` for an accept of an accepted request, 403 `not_pending` for a
+request already answered another way, and 404 `not_found` for one cancelled
+first. `DELETE /friends/:id` cancels only a request still pending and removes
+only an accepted friendship, so a block placed meanwhile is never deleted by
+it. GAMEND_LIMITS_MAX_FRIENDS_PER_USER and
+GAMEND_LIMITS_MAX_PENDING_FRIEND_REQUESTS are each player's, and hold however
+many requests they accept or send at once.
+
 ## Blacklist
 
 A player can block any user, whether or not a friendship exists between them. The block is symmetric in effect: it does not matter who blocked whom, the two are simply kept apart everywhere. Only the player who created a block can lift it.

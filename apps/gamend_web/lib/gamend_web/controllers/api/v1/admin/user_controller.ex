@@ -77,6 +77,10 @@ defmodule GamendWeb.Api.V1.Admin.UserController do
 
       {:error, %Ecto.Changeset{} = cs} ->
         unprocessable(conn, cs)
+
+      # Deleted between the lookup above and the write.
+      {:error, :not_found} ->
+        reply_error(conn, :not_found, "not_found")
     end
   end
 

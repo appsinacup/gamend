@@ -112,8 +112,11 @@ defmodule GamendWeb.Api.V1.FriendController do
     ],
     responses: [
       ok: {"Accepted", "application/json", OkResponse},
+      bad_request: Schemas.error("Invalid id, or a friend list is full"),
       unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Not authorized")
+      forbidden: Schemas.error("Not authorized, or already rejected or blocked (not_pending)"),
+      not_found: Schemas.error("No such request, or it was cancelled"),
+      conflict: Schemas.error("Already accepted (already_friends)")
     ]
   )
 
@@ -133,7 +136,8 @@ defmodule GamendWeb.Api.V1.FriendController do
     responses: [
       ok: {"Rejected", "application/json", OkResponse},
       unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Not authorized")
+      forbidden: Schemas.error("Not authorized, or already answered (not_pending)"),
+      not_found: Schemas.error("No such request, or it was cancelled")
     ]
   )
 
@@ -153,7 +157,8 @@ defmodule GamendWeb.Api.V1.FriendController do
     responses: [
       ok: {"Blocked", "application/json", OkResponse},
       unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Not authorized")
+      forbidden: Schemas.error("Not authorized, or already accepted or blocked (not_pending)"),
+      not_found: Schemas.error("No such request, or it was cancelled")
     ]
   )
 
@@ -278,7 +283,8 @@ defmodule GamendWeb.Api.V1.FriendController do
     responses: [
       ok: {"Success", "application/json", OkResponse},
       unauthorized: Schemas.error("Not authenticated"),
-      forbidden: Schemas.error("Not authorized")
+      forbidden: Schemas.error("Not authorized, or the request was answered (not_pending)"),
+      not_found: Schemas.error("No such friendship or request")
     ]
   )
 
@@ -326,6 +332,9 @@ defmodule GamendWeb.Api.V1.FriendController do
 
               {:error, :not_authorized} ->
                 reply_error(conn, :forbidden, "forbidden")
+
+              {:error, :not_pending} ->
+                reply_error(conn, :forbidden, "not_pending")
             end
         end
 
@@ -389,9 +398,6 @@ defmodule GamendWeb.Api.V1.FriendController do
 
               {:error, :not_found} ->
                 reply_error(conn, :not_found, "not_found")
-
-              {:error, reason} ->
-                reply_error(conn, :bad_request, reason)
             end
         end
 
@@ -510,6 +516,12 @@ defmodule GamendWeb.Api.V1.FriendController do
               {:error, :not_authorized} ->
                 reply_error(conn, :forbidden, "forbidden")
 
+              {:error, :not_pending} ->
+                reply_error(conn, :forbidden, "not_pending")
+
+              {:error, :already_friends} ->
+                reply_error(conn, :conflict, "already_friends")
+
               {:error, reason} ->
                 reply_error(conn, :bad_request, reason)
             end
@@ -537,6 +549,9 @@ defmodule GamendWeb.Api.V1.FriendController do
 
               {:error, :not_authorized} ->
                 reply_error(conn, :forbidden, "forbidden")
+
+              {:error, :not_pending} ->
+                reply_error(conn, :forbidden, "not_pending")
 
               {:error, reason} ->
                 reply_error(conn, :bad_request, reason)
@@ -576,6 +591,7 @@ defmodule GamendWeb.Api.V1.FriendController do
         case Friends.cancel_request(f.id, user) do
           {:ok, :cancelled} -> reply_ok(conn)
           {:error, :not_found} -> reply_error(conn, :not_found, "not_found")
+          {:error, :not_pending} -> reply_error(conn, :forbidden, "not_pending")
           {:error, _reason} -> reply_error(conn, :bad_request, "remove_failed")
         end
 
@@ -585,6 +601,7 @@ defmodule GamendWeb.Api.V1.FriendController do
                if(f.requester_id == user.id, do: f.target_id, else: f.requester_id)
              ) do
           {:ok, _} -> reply_ok(conn)
+          {:error, :not_found} -> reply_error(conn, :not_found, "not_found")
           {:error, _reason} -> reply_error(conn, :bad_request, "remove_failed")
         end
 

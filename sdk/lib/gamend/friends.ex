@@ -36,7 +36,14 @@ defmodule Gamend.Friends do
   @type user_id() :: Ecto.UUID.t()
 
   @doc ~S"""
-    Accept a friend request (only the target may accept). Returns {:ok, friendship}.
+    Accept a friend request (only the target may accept). Returns
+    `{:ok, friendship}`.
+    
+    `{:error, :already_friends}` when it was accepted already,
+    `{:error, :not_pending}` when it was rejected or blocked first,
+    `{:error, :not_found}` when it was cancelled, and
+    `{:error, :too_many_friends}` when either side is at the cap.
+    
   """
   @spec accept_friend_request(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
           {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
@@ -77,7 +84,10 @@ defmodule Gamend.Friends do
   end
 
   @doc ~S"""
-    Block an incoming request (only the target may block). Returns {:ok, friendship} with status "blocked".
+    Block an incoming request (only the target may block). Returns
+    `{:ok, friendship}` with status "blocked", or `{:error, :not_pending}` when
+    it was accepted (or blocked) first.
+    
   """
   @spec block_friend_request(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
           {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
@@ -174,6 +184,8 @@ defmodule Gamend.Friends do
 
   @doc ~S"""
     Cancel an outgoing friend request (only the requester may cancel).
+    `{:error, :not_pending}` once it has been answered.
+    
   """
   @spec cancel_request(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
           {:ok, :cancelled} | {:error, :not_found | :not_authorized | term()}
@@ -737,7 +749,9 @@ defmodule Gamend.Friends do
   end
 
   @doc ~S"""
-    Reject a friend request (only the target may reject). Returns {:ok, friendship}.
+    Reject a friend request (only the target may reject). Returns
+    `{:ok, friendship}`, or `{:error, :not_pending}` when it was answered first.
+    
   """
   @spec reject_friend_request(Ecto.UUID.t(), Gamend.Accounts.User.t()) ::
           {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
@@ -762,7 +776,10 @@ defmodule Gamend.Friends do
   end
 
   @doc ~S"""
-    Remove a friendship (either direction) - only participating users may call this.
+    Remove a friendship (either direction) - only participating users may call
+    this. Only an accepted friendship: `{:error, :not_found}` when there is none,
+    a block placed since included.
+    
   """
   @spec remove_friend(Ecto.UUID.t(), Ecto.UUID.t()) ::
           {:ok, Gamend.Friends.Friendship.t()} | {:error, term()}
@@ -819,7 +836,8 @@ defmodule Gamend.Friends do
     Returns `{:ok, :unblocked}`, or `{:error, :not_found}` when no block exists.
     
   """
-  @spec unblock_user(Gamend.Accounts.User.t(), user_id()) :: {:ok, :unblocked} | {:error, term()}
+  @spec unblock_user(Gamend.Accounts.User.t(), user_id()) ::
+          {:ok, :unblocked} | {:error, :not_found}
   def unblock_user(_user, _blocked_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->

@@ -135,7 +135,11 @@ defmodule Gamend.Matchmaking.Worker do
     # Reading queued tickets without the lock means the proposed groups may be
     # stale by the time the claim runs. That is already handled:
     # `Matchmaking.claim/1` is a conditional update and seats a group only if
-    # every ticket in it is still queued.
+    # every ticket in it is still queued. Sweeps overlap (one per node, and the
+    # admin's "Run sweep now" beside the timer), so a refused claim puts back
+    # only what it flipped itself: requeueing its whole group used to undo the
+    # claim of the sweep that was seating those tickets, and the next sweep
+    # matched them again into a second lobby.
     proposed =
       Matchmaking.list_queued_by_params()
       |> Enum.flat_map(&form_bucket/1)
@@ -159,16 +163,16 @@ defmodule Gamend.Matchmaking.Worker do
       Enum.reduce(proposed, {[], MapSet.new()}, fn group, {acc, seen} ->
         ids = Enum.map(group, & &1.id)
 
-        cond do
-          Enum.any?(ids, &MapSet.member?(seen, &1)) ->
-            Logger.warning("matchmaking: ticket proposed in two groups this sweep; dropped")
-            {acc, seen}
-
-          Matchmaking.claim(group) == :ok ->
-            {[group | acc], MapSet.union(seen, MapSet.new(ids))}
-
-          true ->
-            {acc, seen}
+        if Enum.any?(ids, &MapSet.member?(seen, &1)) do
+          Logger.warning("matchmaking: ticket proposed in two groups this sweep; dropped")
+          {acc, seen}
+        else
+          # The tickets as claimed carry the claim's mark, which is what lets
+          # `Match.create/1` requeue or name only tickets this claim holds.
+          case Matchmaking.claim(group) do
+            {:ok, claimed} -> {[claimed | acc], MapSet.union(seen, MapSet.new(ids))}
+            :conflict -> {acc, seen}
+          end
         end
       end)
 

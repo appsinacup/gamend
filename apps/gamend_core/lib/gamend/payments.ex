@@ -250,12 +250,24 @@ defmodule Gamend.Payments do
     |> preload_purchase()
   end
 
+  @doc """
+  The latest purchase of the original transaction: a subscription's
+  renewals each validated by the client are a purchase each, all with the
+  one original id, so there may be several.
+  """
   @spec get_purchase_by_provider_original_transaction(String.t(), String.t()) ::
           Purchase.t() | nil
   def get_purchase_by_provider_original_transaction(provider, transaction_id)
       when is_binary(provider) and is_binary(transaction_id) do
-    Purchase
-    |> Repo.get_by(provider: provider, provider_original_transaction_id: transaction_id)
+    # `Repo.get_by/2` raised `Ecto.MultipleResultsError` once a second renewal
+    # was validated: a 500 for the player's next validation, and for every
+    # store notification about the subscription after it.
+    from(p in Purchase,
+      where: p.provider == ^provider and p.provider_original_transaction_id == ^transaction_id,
+      order_by: [desc: p.inserted_at, desc: p.id],
+      limit: 1
+    )
+    |> Repo.one()
     |> preload_purchase()
   end
 
@@ -334,32 +346,54 @@ defmodule Gamend.Payments do
         |> Repo.preload(:product)
 
       status = revoked_status(purchase.status, attrs["status"] || "revoked")
-      reason = revocation_reason(purchase, status, attrs["reason"] || "purchase_revoked")
+      payload = Params.merge_payload(purchase.raw_provider_payload, attrs["payload"] || %{})
 
-      {:ok, updated} =
-        purchase
-        |> Purchase.changeset(%{
-          status: status,
-          revoked_at: purchase.revoked_at || now,
-          # Why it ended, on the purchase itself: a dispute that is later won
-          # hands back only what a dispute took (`restore_purchase/2`).
-          metadata: Map.put(purchase.metadata || %{}, "revocation_reason", reason),
-          raw_provider_payload:
-            Params.merge_payload(purchase.raw_provider_payload, attrs["payload"] || %{})
-        })
-        |> Repo.update()
-        |> tap_bump({:payments, :purchase_version})
+      if status == purchase.status do
+        # Already ended this way. One refund reaches us as several events
+        # (`charge.refunded`, `refund.created`, `refund.updated`), a dispute
+        # as two, a store's as a notification and the client's revalidation,
+        # and each revoked again: `after_purchase_revoked` ran once per event,
+        # so a host taking the bought coins back on it took them two or three
+        # times, and every entitlement the purchase still sourced (one a
+        # grant had renewed since) was revoked again. The event is kept as
+        # evidence; nothing else changes. Decided on the row read under the
+        # lock above, so of two events at once only the first ends it.
+        {:ok, updated} =
+          purchase
+          |> Purchase.changeset(%{raw_provider_payload: payload})
+          |> Repo.update()
+          |> tap_bump({:payments, :purchase_version})
 
-      entitlements = revoke_entitlements_for_purchase(updated, now, reason)
-      {updated, entitlements}
+        {:unchanged, updated}
+      else
+        reason = revocation_reason(purchase, status, attrs["reason"] || "purchase_revoked")
+
+        {:ok, updated} =
+          purchase
+          |> Purchase.changeset(%{
+            status: status,
+            revoked_at: purchase.revoked_at || now,
+            # Why it ended, on the purchase itself: a dispute that is later won
+            # hands back only what a dispute took (`restore_purchase/2`).
+            metadata: Map.put(purchase.metadata || %{}, "revocation_reason", reason),
+            raw_provider_payload: payload
+          })
+          |> Repo.update()
+          |> tap_bump({:payments, :purchase_version})
+
+        {:revoked, updated, revoke_entitlements_for_purchase(updated, now, reason)}
+      end
     end)
     |> case do
-      {:ok, {purchase, entitlements}} ->
+      {:ok, {:revoked, purchase, entitlements}} ->
         # Entitlements first: the cache is evicted before the purchase hook
         # runs, so a hook asking "does this player still hold it?" gets the
         # answer after the revocation, not the cached one before it.
         Enum.each(entitlements, &after_entitlement_changed/1)
         after_purchase_revoked(purchase)
+        {:ok, purchase}
+
+      {:ok, {:unchanged, purchase}} ->
         {:ok, purchase}
 
       {:error, reason} ->
@@ -479,30 +513,70 @@ defmodule Gamend.Payments do
          {:ok, external_id} <- Params.required_value(validation, "product_id"),
          {:ok, transaction_id} <- Params.required_value(validation, "transaction_id"),
          %ProviderProduct{} = provider_product <- get_provider_product(provider, external_id) do
-      case get_purchase_by_provider_transaction(provider, transaction_id) do
-        %Purchase{user_id: existing_user_id} = purchase when existing_user_id == user.id ->
-          {:ok, %{purchase: purchase, seen_before: true}}
+      # An early refusal only, before the `before_purchase` hook: the check
+      # that decides is repeated under the receipt's lock, with the insert.
+      case receipt_claim(user, provider, transaction_id, validation) do
+        {:seen, purchase} ->
+          seen_receipt(purchase, validation)
 
-        %Purchase{} ->
-          {:error, :receipt_already_used}
+        {:error, reason} ->
+          {:error, reason}
 
-        nil ->
-          # Also check the *original* transaction id before creating anything.
-          #
-          # Deduping on `transaction_id` alone is enough for a one-time
-          # purchase, but a subscription mints a fresh transaction id at every
-          # renewal — so user B could take user A's receipt, wait for the next
-          # renewal, and validate it as a brand-new purchase. The original id is
-          # stable across the whole subscription and is already stored and
-          # indexed; it just was not consulted.
-          with :ok <- ensure_original_transaction_unclaimed(user, provider, validation),
-               :ok <- ensure_checkout_allowed(user, provider_product, validation) do
-            create_validated_store_purchase(user, provider_product, validation)
+        :unclaimed ->
+          with :ok <- ensure_checkout_allowed(user, provider_product, validation) do
+            create_validated_store_purchase(user, provider_product, transaction_id, validation)
           end
       end
     else
       nil -> {:error, :provider_product_not_found}
       {:error, reason} -> {:error, reason}
+    end
+  end
+
+  # Who holds a receipt already: this user (`{:seen, purchase}`), another
+  # (`:receipt_already_used`), or nobody.
+  #
+  # The *original* transaction id is checked too. Deduping on
+  # `transaction_id` alone is enough for a one-time purchase, but a
+  # subscription mints a fresh transaction id at every renewal — so user B
+  # could take user A's receipt, wait for the next renewal, and validate it
+  # as a brand-new purchase. The original id is stable across the whole
+  # subscription. A user's own renewals share it, so only another user's
+  # purchase of it refuses.
+  defp receipt_claim(%User{id: user_id}, provider, transaction_id, validation) do
+    case get_purchase_by_provider_transaction(provider, transaction_id) do
+      %Purchase{user_id: ^user_id} = purchase ->
+        {:seen, purchase}
+
+      %Purchase{} ->
+        {:error, :receipt_already_used}
+
+      nil ->
+        if original_held_by_another?(user_id, provider, validation["original_transaction_id"]),
+          do: {:error, :receipt_already_used},
+          else: :unclaimed
+    end
+  end
+
+  defp original_held_by_another?(user_id, provider, original)
+       when is_binary(original) and original != "" do
+    Repo.exists?(
+      from p in Purchase,
+        where:
+          p.provider == ^provider and p.provider_original_transaction_id == ^original and
+            p.user_id != ^user_id
+    )
+  end
+
+  defp original_held_by_another?(_user_id, _provider, _original), do: false
+
+  # The lock a receipt's claim is decided under: its subscription's original
+  # transaction when it has one (every renewal of it, whoever sends it), else
+  # the transaction itself.
+  defp receipt_lock_key(provider, transaction_id, validation) do
+    case validation["original_transaction_id"] do
+      original when is_binary(original) and original != "" -> "#{provider}:#{original}"
+      _none -> "#{provider}:#{transaction_id}"
     end
   end
 
@@ -749,31 +823,47 @@ defmodule Gamend.Payments do
     now = DateTime.utc_now(:second)
     requested = Keyword.get(opts, :expires_at)
     extra = Keyword.get(opts, :metadata, %{})
-    existing = Repo.get_by(Entitlement, user_id: user_id, key: key)
 
-    expires_at = granted_expiry(existing, requested, now)
+    # Read and written under the row's lock (`with_entitlement_lock/3`). The
+    # row was read with no lock at all: two grants at once both saw the end
+    # it had, and the one that wrote last set its own, so a 30-day trial
+    # landing beside a year's reward could shorten the year; with no row yet,
+    # the second insert failed on the unique index.
+    with_entitlement_lock(user_id, key, fn ->
+      existing = Repo.get_by(Entitlement, user_id: user_id, key: key)
 
-    attrs = %{
-      user_id: user_id,
-      key: key,
-      status: "active",
-      starts_at: (existing && existing_active?(existing, now) && existing.starts_at) || now,
-      expires_at: expires_at,
-      revoked_at: nil,
-      metadata: Map.merge((existing && existing.metadata) || %{}, extra)
-    }
+      attrs = %{
+        user_id: user_id,
+        key: key,
+        status: "active",
+        starts_at: (existing && existing_active?(existing, now) && existing.starts_at) || now,
+        expires_at: granted_expiry(existing, requested, now),
+        revoked_at: nil,
+        metadata: Map.merge((existing && existing.metadata) || %{}, extra)
+      }
 
-    case (existing || %Entitlement{})
-         |> Entitlement.changeset(attrs)
-         |> Repo.insert_or_update() do
+      case (existing || %Entitlement{})
+           |> Entitlement.changeset(attrs)
+           |> Repo.insert_or_update() do
+        {:ok, entitlement} -> entitlement
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+    |> case do
       {:ok, entitlement} ->
         after_entitlement_changed(entitlement)
         {:ok, entitlement}
 
-      {:error, changeset} ->
-        {:error, changeset}
+      {:error, reason} ->
+        {:error, reason}
     end
   end
+
+  # The one `(user, key)` row's read-modify-write: a grant, and a purchase
+  # taking the row over at fulfilment, which runs it inside the fulfilment's
+  # own transaction (the lock is then held until that commits).
+  defp with_entitlement_lock(user_id, key, fun),
+    do: Lock.serialize("entitlement", "#{user_id}:#{key}", fun)
 
   # The later of what the user holds (while it is still active) and what is
   # granted; no end beats any end.
@@ -960,25 +1050,35 @@ defmodule Gamend.Payments do
   # again — webhook handlers are idempotent (`fulfill_purchase/2` locks the row
   # and returns `:already_fulfilled`), so re-running one is safe and losing one
   # is not.
+  #
+  # Deliveries of one event take turns, so a retry that lands while the first
+  # is still running waits and then finds it processed. Re-running a finished
+  # event is safe; running one twice at once only stays safe while every
+  # handler is, which each gate (`fulfill_purchase/2`, `revoke_purchase/2`)
+  # keeps on its own as well. `Lock.Local`, not a database lock: a handler
+  # calls the provider over HTTP and fires hooks, and only this event's other
+  # deliveries wait for it.
   @doc false
   def claim_provider_event(provider, event_id, event_type, event, fun) do
-    case record_provider_event(provider, event_id, event_type, event) do
-      {:ok, %ProviderEvent{processed_at: %DateTime{}}, false} ->
-        {:ok, :duplicate}
+    Lock.Local.trans({__MODULE__, :provider_event, provider, event_id}, fn ->
+      case record_provider_event(provider, event_id, event_type, event) do
+        {:ok, %ProviderEvent{processed_at: %DateTime{}}, false} ->
+          {:ok, :duplicate}
 
-      {:ok, %ProviderEvent{} = record, _new_or_unprocessed} ->
-        case fun.() do
-          {:error, _reason} = error ->
-            error
+        {:ok, %ProviderEvent{} = record, _new_or_unprocessed} ->
+          case fun.() do
+            {:error, _reason} = error ->
+              error
 
-          result ->
-            _ = mark_event_processed(record)
-            result
-        end
+            result ->
+              _ = mark_event_processed(record)
+              result
+          end
 
-      {:error, reason} ->
-        {:error, reason}
-    end
+        {:error, reason} ->
+          {:error, reason}
+      end
+    end)
   end
 
   # ---------------------------------------------------------------------------
@@ -1279,30 +1379,42 @@ defmodule Gamend.Payments do
     expires_at = purchase.expires_at || entitlement_expiry(product)
     now = DateTime.utc_now(:second)
 
-    entitlement = Repo.get_by(Entitlement, user_id: purchase.user_id, key: key) || %Entitlement{}
+    # The fulfilment locks its purchase, not this row. Two purchases of one
+    # key fulfilled at once (a renewal's and the original's, two stores) both
+    # read no row and both inserted; the second failed the unique index and
+    # rolled its fulfilment back, leaving a paid purchase pending. Under the
+    # row's lock the second reads the first's row and takes it over.
+    with_entitlement_lock(purchase.user_id, key, fn ->
+      entitlement =
+        Repo.get_by(Entitlement, user_id: purchase.user_id, key: key) || %Entitlement{}
 
-    attrs = %{
-      user_id: purchase.user_id,
-      product_id: product.id,
-      source_purchase_id: purchase.id,
-      key: key,
-      status: "active",
-      starts_at: now,
-      expires_at: expires_at,
-      revoked_at: nil,
-      metadata:
-        entitlement.metadata
-        |> carried_metadata()
-        |> Map.merge(%{"product_sku" => product.sku, "provider" => purchase.provider})
-    }
+      attrs = %{
+        user_id: purchase.user_id,
+        product_id: product.id,
+        source_purchase_id: purchase.id,
+        key: key,
+        status: "active",
+        starts_at: now,
+        expires_at: expires_at,
+        revoked_at: nil,
+        metadata:
+          entitlement.metadata
+          |> carried_metadata()
+          |> Map.merge(%{"product_sku" => product.sku, "provider" => purchase.provider})
+      }
 
-    case entitlement |> Entitlement.changeset(attrs) |> Repo.insert_or_update() do
+      case entitlement |> Entitlement.changeset(attrs) |> Repo.insert_or_update() do
+        {:ok, entitlement} -> entitlement
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+    |> case do
       {:ok, entitlement} ->
         after_entitlement_changed(entitlement)
         :ok
 
-      {:error, changeset} ->
-        {:error, changeset}
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -1319,21 +1431,13 @@ defmodule Gamend.Payments do
 
   defp carried_metadata(_metadata), do: %{}
 
-  defp create_validated_store_purchase(%User{} = user, provider_product, validation) do
-    validated_status =
-      if test_purchase?(validation) do
-        # Recorded, never fulfilled.
-        #
-        # A sandbox or TestFlight transaction is signed by Apple exactly like a
-        # real one, and a Google test purchase verifies exactly like a real one,
-        # so every other check passes. The environment was decoded and stored
-        # but never compared against the server's own — which meant anyone with
-        # a TestFlight build or a sandbox tester account got every in-app
-        # purchase for free on the production server.
-        "failed"
-      else
-        validation["status"] || "completed"
-      end
+  defp create_validated_store_purchase(
+         %User{} = user,
+         %ProviderProduct{provider: provider} = provider_product,
+         transaction_id,
+         validation
+       ) do
+    validated_status = validated_status(validation)
 
     attrs = %{
       "status" => status_before_fulfillment(validated_status),
@@ -1347,22 +1451,76 @@ defmodule Gamend.Payments do
       "raw_provider_payload" => validation["raw_payload"] || validation
     }
 
-    with {:ok, purchase} <- create_purchase(user, provider_product, attrs),
-         {:ok, fulfilled_purchase} <- maybe_fulfill_validated_purchase(purchase, validated_status) do
-      {:ok, %{purchase: fulfilled_purchase, seen_before: false}}
+    # The claim and the insert under one lock, keyed on the receipt's
+    # subscription. Checked before and inserted after with nothing between
+    # them, user A validating one renewal while user B validated another of
+    # the same subscription both found it unclaimed, and both were fulfilled:
+    # one subscription, an entitlement on two accounts. The same receipt sent
+    # twice at once (a retry) now finds the first's purchase here and answers
+    # it as seen. Fulfilment runs after, outside the lock: it fires hooks.
+    "store_receipt"
+    |> Lock.serialize(receipt_lock_key(provider, transaction_id, validation), fn ->
+      case receipt_claim(user, provider, transaction_id, validation) do
+        :unclaimed ->
+          case create_purchase(user, provider_product, attrs) do
+            {:ok, purchase} -> {:created, purchase}
+            {:error, changeset} -> Repo.rollback(changeset)
+          end
+
+        {:seen, purchase} ->
+          {:seen, purchase}
+
+        {:error, reason} ->
+          Repo.rollback(reason)
+      end
+    end)
+    |> case do
+      {:ok, {:created, purchase}} ->
+        with {:ok, fulfilled} <- maybe_fulfill_validated_purchase(purchase, validated_status) do
+          {:ok, %{purchase: fulfilled, seen_before: false}}
+        end
+
+      {:ok, {:seen, purchase}} ->
+        seen_receipt(purchase, validation)
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
-  defp ensure_original_transaction_unclaimed(user, provider, validation) do
-    case validation["original_transaction_id"] do
-      original when is_binary(original) and original != "" ->
-        case get_purchase_by_provider_original_transaction(provider, original) do
-          %Purchase{user_id: owner_id} when owner_id != user.id -> {:error, :receipt_already_used}
-          _ -> :ok
-        end
+  # A receipt this user validated before. A purchase still pending although
+  # the receipt now says it is paid is fulfilled here: its fulfilment failed
+  # after the insert (or the store reported it pending then), and answering it
+  # as seen and nothing more left no way for a revalidation to finish it.
+  # `fulfill_purchase/2` locks the row, so a webhook fulfilling it at the same
+  # time does not fulfil it twice.
+  defp seen_receipt(%Purchase{status: "pending"} = purchase, validation) do
+    if validated_status(validation) == "completed" do
+      with {:ok, fulfilled} <- fulfill_purchase(purchase, purchase.raw_provider_payload || %{}) do
+        {:ok, %{purchase: fulfilled, seen_before: true}}
+      end
+    else
+      {:ok, %{purchase: purchase, seen_before: true}}
+    end
+  end
 
-      _no_original ->
-        :ok
+  defp seen_receipt(%Purchase{} = purchase, _validation),
+    do: {:ok, %{purchase: purchase, seen_before: true}}
+
+  # What the receipt says the purchase is, as far as fulfilment goes.
+  defp validated_status(validation) do
+    if test_purchase?(validation) do
+      # Recorded, never fulfilled.
+      #
+      # A sandbox or TestFlight transaction is signed by Apple exactly like a
+      # real one, and a Google test purchase verifies exactly like a real one,
+      # so every other check passes. The environment was decoded and stored
+      # but never compared against the server's own — which meant anyone with
+      # a TestFlight build or a sandbox tester account got every in-app
+      # purchase for free on the production server.
+      "failed"
+    else
+      validation["status"] || "completed"
     end
   end
 

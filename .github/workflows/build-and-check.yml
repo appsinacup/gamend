@@ -327,6 +327,9 @@ jobs:
       - name: API conventions (docs/specs/api-conventions.md)
         run: MIX_ENV=dev mix gamend.api.lint
 
+      - name: Race shapes (AGENTS.md, Locks)
+        run: MIX_ENV=dev mix gamend.race.lint
+
       - name: Credo (strict, web app)
         working-directory: apps/gamend_web
         run: MIX_ENV=dev mix credo --strict

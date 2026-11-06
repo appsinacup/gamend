@@ -65,6 +65,25 @@ defmodule Gamend.Parties do
   end
 
   @doc ~S"""
+    Admin: seats `user_id` in `party` the way an accepted invite does. The
+    party's capacity and one party per player hold (`:party_full`,
+    `:already_in_party`); no hook is consulted.
+    
+  """
+  @spec admin_add_member(Gamend.Parties.Party.t(), Ecto.UUID.t()) ::
+          {:ok, Gamend.Accounts.User.t()}
+          | {:error, :not_found | :party_full | :already_in_party | term()}
+  def admin_add_member(_party, _user_id) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Parties.admin_add_member/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Admin delete of a party. Clears all members' party_id and deletes the party.
   """
   @spec admin_delete_party(Ecto.UUID.t()) :: {:ok, Gamend.Parties.Party.t()} | {:error, term()}
@@ -298,6 +317,27 @@ defmodule Gamend.Parties do
 
       _ ->
         raise "Gamend.Parties.disband/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Disband `party` as its leader: the end of the party a leader asks for, as
+    opposed to leaving it, which hands it over.
+    
+    `{:error, :not_leader}` unless `leader` still leads it once its lock is
+    taken: a leader who handed the party over while this was on its way no
+    longer ends it for the new leader.
+    
+  """
+  @spec disband(Gamend.Parties.Party.t(), Gamend.Accounts.User.t()) ::
+          {:ok, :disbanded} | {:error, :not_leader | term()}
+  def disband(_party, _user) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok, nil}
+
+      _ ->
+        raise "Gamend.Parties.disband/2 is a stub - only available at runtime on Gamend"
     end
   end
 

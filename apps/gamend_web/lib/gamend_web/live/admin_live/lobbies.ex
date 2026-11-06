@@ -672,9 +672,9 @@ defmodule GamendWeb.AdminLive.Lobbies do
         {:noreply, put_flash(socket, :error, "User not found")}
 
       user ->
-        user
-        |> Ecto.Changeset.change(%{lobby_id: nil})
-        |> Gamend.Repo.update()
+        # Clears this lobby's seat only: the cached user may have moved on to
+        # another lobby, which a raw write would have unseated them from.
+        _ = Lobbies.delete_membership(%{user | lobby_id: lobby.id})
 
         members = lobby_members(lobby.id)
 

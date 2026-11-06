@@ -624,9 +624,6 @@ defmodule Gamend.Lobbies do
             # Post-commit: write the correct value to cache so stale
             # concurrent @decorate cacheable puts are overwritten.
             Accounts.cache_user(updated_user)
-            # Also post-commit: adding a late arrival to an open ready check
-            # broadcasts, which must never happen inside the join transaction.
-            _ = Gamend.ReadyChecks.add_member(lobby.id, user_id)
             {:ok, updated_user}
 
           error ->
@@ -651,6 +648,10 @@ defmodule Gamend.Lobbies do
         with :ok <- check_seat(lobby, user_id),
              {:ok, updated_user} <-
                create_membership(%{lobby_id: lobby.id, user_id: user_id}) do
+          # In the seat's transaction, so the lobby's open ready check cannot
+          # pass between the seat and the joiner's place on the board. Its
+          # broadcast waits for the commit.
+          _ = Gamend.ReadyChecks.add_member(lobby.id, user_id)
           updated_user
         else
           {:error, reason} -> Repo.rollback(reason)
@@ -1052,11 +1053,15 @@ defmodule Gamend.Lobbies do
   a no-op (so at-least-once hook/job retries are safe) and does not re-fire
   hooks. `after_lobby_state_changed` observes post-commit.
 
-  Returns `{:ok, lobby}`, `{:error, :invalid_state}` or
-  `{:error, {:hook_rejected, reason}}`.
+  Returns `{:ok, lobby}`, `{:error, :invalid_state}`,
+  `{:error, {:hook_rejected, reason}}`, `{:error, :state_changed}` when
+  another transition moved the lobby first (the hook approved a move out of a
+  state it has left), or `{:error, :not_found}` when it was deleted.
   """
   @spec transition_state(Lobby.t(), String.t(), keyword()) ::
-          {:ok, Lobby.t()} | {:error, :invalid_state | {:hook_rejected, term()} | term()}
+          {:ok, Lobby.t()}
+          | {:error,
+             :invalid_state | :state_changed | :not_found | {:hook_rejected, term()} | term()}
   def transition_state(%Lobby{} = lobby, state, opts \\ []) when is_binary(state) do
     cond do
       state == "" or byte_size(state) > @max_state_length ->
@@ -1072,7 +1077,7 @@ defmodule Gamend.Lobbies do
 
   defp do_transition_state(lobby, from, to, opts) do
     with :ok <- run_before_state_change(lobby, from, to, opts),
-         {:ok, updated} <- write_state(lobby, to) do
+         {:ok, updated} <- write_state(lobby, from, to) do
       Gamend.Async.run(fn ->
         Gamend.Hooks.internal_call(:after_lobby_state_changed, [updated, from, to])
       end)
@@ -1104,13 +1109,25 @@ defmodule Gamend.Lobbies do
     end
   end
 
-  defp write_state(lobby, to) do
-    Repo.rescue_stale(:not_found, fn ->
-      lobby
-      |> Ecto.Changeset.change(%{state: to, state_changed_at: DateTime.utc_now(:second)})
-      |> Repo.update()
-    end)
+  # The hook approved `from -> to`, so the write holds only while the lobby is
+  # still in `from`: two transitions that both read the old state (a host's
+  # Start and a server-side close) would otherwise both pass, the last write
+  # winning and both broadcasting a move out of a state already left.
+  defp write_state(lobby, from, to) do
+    from(l in Lobby, where: l.id == ^lobby.id)
+    |> where_state(from)
+    |> Repo.compare_and_set(set: [state: to, state_changed_at: DateTime.utc_now(:second)])
+    |> case do
+      {:ok, _updated} = ok ->
+        ok
+
+      {:error, :precondition_failed} ->
+        if Repo.get(Lobby, lobby.id), do: {:error, :state_changed}, else: {:error, :not_found}
+    end
   end
+
+  defp where_state(query, nil), do: where(query, [l], is_nil(l.state))
+  defp where_state(query, state), do: where(query, [l], l.state == ^state)
 
   @spec delete_lobby(Lobby.t()) ::
           {:ok, Lobby.t()} | {:error, :not_found | {:hook_rejected, term()}}
@@ -1252,23 +1269,26 @@ defmodule Gamend.Lobbies do
     Gamend.Quests.report_event(user_id, "lobby_joined", 1, %{"lobby_id" => lobby.id})
   end
 
-  @spec delete_membership(User.t()) :: {:ok, User.t()} | {:error, Ecto.Changeset.t()}
+  # Clears the seat the caller read, and only that one: `user` is often a
+  # cached copy, and a player who took a seat elsewhere since must keep it.
+  @spec delete_membership(User.t()) :: {:ok, User.t()} | {:error, :not_in_lobby}
+  def delete_membership(%Gamend.Accounts.User{lobby_id: nil}), do: {:error, :not_in_lobby}
+
   def delete_membership(%Gamend.Accounts.User{} = user) do
     previous_lobby_id = user.lobby_id
 
-    user
-    |> Ecto.Changeset.change(%{lobby_id: nil})
-    |> Repo.update()
+    from(u in User, where: u.id == ^user.id and u.lobby_id == ^previous_lobby_id)
+    |> Repo.compare_and_set(set: [lobby_id: nil, updated_at: DateTime.utc_now(:second)])
     |> case do
+      {:error, :precondition_failed} ->
+        {:error, :not_in_lobby}
+
       {:ok, updated} = ok ->
         _ = invalidate_accounts_user_cache(updated.id)
         _ = clear_lobby_scoped_kv(updated.id, previous_lobby_id)
         _ = Accounts.broadcast_user_update(updated)
         _ = Accounts.broadcast_member_update(updated)
         ok
-
-      other ->
-        other
     end
   end
 

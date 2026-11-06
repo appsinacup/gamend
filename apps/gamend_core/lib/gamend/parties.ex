@@ -321,18 +321,17 @@ defmodule Gamend.Parties do
       # of stale data to land after our post-commit cache invalidation.
       fresh_user = Repo.get(User, user.id)
 
+      # An early refusal only: a join to another party locks that party, not
+      # this player, so the seat below is what decides.
       if fresh_user.party_id != nil do
         Repo.rollback(:already_in_party)
       end
 
       case %Party{} |> Party.changeset(attrs) |> Repo.insert() |> tap_bump_party() do
         {:ok, party} ->
-          case fresh_user |> Ecto.Changeset.change(%{party_id: party.id}) |> Repo.update() do
-            {:ok, updated_user} ->
-              {party, updated_user}
-
-            {:error, reason} ->
-              Repo.rollback(reason)
+          case claim_party_seat(user.id, party.id) do
+            {:ok, updated_user} -> {party, updated_user}
+            {:error, reason} -> Repo.rollback(reason)
           end
 
         {:error, changeset} ->
@@ -375,27 +374,19 @@ defmodule Gamend.Parties do
   """
   @spec invite_to_party(User.t(), Ecto.UUID.t()) :: {:ok, PartyInvite.t()} | {:error, atom()}
   def invite_to_party(%User{} = leader, target_user_id) when is_binary(target_user_id) do
-    leader = Accounts.get_user(leader.id)
+    # race-safe: an authority read, not a seat. From the database, not the
+    # cache (a TTL-old copy let a leader who handed over minutes ago keep
+    # inviting); a handover landing during this call still lets one invite
+    # through, which the new leader sees and can cancel.
+    leader = Repo.get(User, leader.id) || leader
 
     with :ok <- check_in_party(leader),
          {:ok, party} <- fetch_party(leader.party_id),
          :ok <- check_is_leader(party, leader),
          {:ok, target} <- fetch_invite_target(target_user_id),
          :ok <- check_not_blocked_by_party(party.id, target_user_id),
-         :ok <- check_leader_connected_to_target(leader.id, target_user_id),
-         :ok <- check_no_pending_invite(leader.id, target_user_id),
-         :ok <- check_max_pending_invites(target_user_id),
-         :ok <- delete_stale_invites(leader.id, target_user_id) do
-      # The party or the recipient may have been deleted since they were read.
-      case Repo.rescue_foreign_key(:not_found, fn ->
-             %PartyInvite{}
-             |> PartyInvite.changeset(%{
-               party_id: party.id,
-               sender_id: leader.id,
-               recipient_id: target_user_id
-             })
-             |> Repo.insert()
-           end) do
+         :ok <- check_leader_connected_to_target(leader.id, target_user_id) do
+      case insert_party_invite(party.id, leader.id, target_user_id) do
         {:ok, invite} ->
           # Send an informational notification (independent of the invite record)
           Gamend.Notifications.admin_create_notification(leader.id, target_user_id, %{
@@ -414,26 +405,55 @@ defmodule Gamend.Parties do
 
           {:ok, invite}
 
+        # No-op: return the existing pending invite instead of erroring
+        {:error, {:already_invited, existing}} ->
+          {:ok, existing}
+
         {:error, reason} ->
           {:error, reason}
       end
-    else
-      {:error, :already_invited} ->
-        # No-op: return the existing pending invite instead of erroring
-        existing =
-          Repo.one(
-            from(i in PartyInvite,
-              where:
-                i.sender_id == ^leader.id and i.recipient_id == ^target_user_id and
-                  i.status == "pending"
-            )
-          )
-
-        {:ok, existing}
-
-      other ->
-        other
     end
+  end
+
+  # The pending-invite cap is the recipient's, so the count and the insert run
+  # under the recipient's lock: two leaders inviting one player at once each
+  # counted the other's invite as not there yet. The same lock makes one
+  # leader's two invites at once one invite.
+  defp insert_party_invite(party_id, leader_id, target_user_id) do
+    Lock.serialize("party_invites_recipient", target_user_id, fn ->
+      with :ok <- check_no_pending_invite(leader_id, target_user_id),
+           :ok <- check_max_pending_invites(target_user_id),
+           :ok <- delete_stale_invites(leader_id, target_user_id),
+           # The party or the recipient may have been deleted since they were read.
+           {:ok, invite} <-
+             Repo.rescue_foreign_key(:not_found, fn ->
+               %PartyInvite{}
+               |> PartyInvite.changeset(%{
+                 party_id: party_id,
+                 sender_id: leader_id,
+                 recipient_id: target_user_id
+               })
+               |> Repo.insert()
+             end) do
+        invite
+      else
+        {:error, :already_invited} ->
+          Repo.rollback({:already_invited, pending_invite(leader_id, target_user_id)})
+
+        {:error, reason} ->
+          Repo.rollback(reason)
+      end
+    end)
+  end
+
+  defp pending_invite(sender_id, recipient_id) do
+    Repo.one(
+      from(i in PartyInvite,
+        where:
+          i.sender_id == ^sender_id and i.recipient_id == ^recipient_id and
+            i.status == "pending"
+      )
+    )
   end
 
   defp delete_stale_invites(sender_id, recipient_id) do
@@ -452,7 +472,9 @@ defmodule Gamend.Parties do
   """
   @spec cancel_party_invite(User.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
   def cancel_party_invite(%User{} = leader, target_user_id) when is_binary(target_user_id) do
-    leader = Accounts.get_user(leader.id)
+    # race-safe: an authority read, as in invite_to_party/2; the delete is by
+    # sender, so an ex-leader only ever cancels their own invite.
+    leader = Repo.get(User, leader.id) || leader
 
     with :ok <- check_in_party(leader),
          {:ok, party} <- fetch_party(leader.party_id),
@@ -547,6 +569,13 @@ defmodule Gamend.Parties do
           handle_accept_capacity_failure(user, invite, party_id, "party_full")
           error
 
+        {:error, :already_in_party} = error ->
+          # Seated elsewhere since the checks above (a create or another
+          # accept landing first): the invite was claimed for a join that did
+          # not happen, so it stands again.
+          release_party_invite(user.id, party_id)
+          error
+
         other ->
           other
       end
@@ -638,6 +667,15 @@ defmodule Gamend.Parties do
       |> Repo.update_all(set: [status: "accepted", updated_at: DateTime.utc_now()])
 
     if count > 0, do: :ok, else: {:error, :no_invite}
+  end
+
+  defp release_party_invite(user_id, party_id) do
+    from(i in PartyInvite,
+      where: i.recipient_id == ^user_id and i.party_id == ^party_id and i.status == "accepted"
+    )
+    |> Repo.update_all(set: [status: "pending", updated_at: DateTime.utc_now()])
+
+    invalidate_party_invite_cache(user_id)
   end
 
   defp finalize_accept_invite(user, invite, party_id, party) do
@@ -920,35 +958,37 @@ defmodule Gamend.Parties do
     # party_id still nil), causing "not_a_member" errors on subsequent
     # channel joins or API calls.
     Lock.serialize(:party, party_id, fn ->
-      # Re-check space inside the lock
+      # Re-check space inside the lock, against the party as it is now: the
+      # cached read lagged a `max_size` lowered under the same lock.
       count = count_party_members(party_id)
-      party = get_party(party_id)
-
-      # Re-read the joiner too, and refuse if they are already in a party.
-      #
-      # `do_create_party/2` locks `(:party, user.id)` while this locks
-      # `(:party, party_id)` — disjoint critical sections, so a client firing
-      # `POST /parties` and an invite accept together could have both commit:
-      # the create wrote `users.party_id = new_party`, then this overwrote it
-      # with the other party, leaving a zero-member party whose `leader_id`
-      # still pointed at them. Because that column is uniquely indexed, they
-      # then could not create a party again until retention swept the orphan.
-      fresh_user = Repo.get(User, user.id)
+      party = Repo.get(Party, party_id)
 
       cond do
-        is_nil(fresh_user) or is_nil(party) ->
+        is_nil(party) ->
           Repo.rollback(:not_found)
-
-        is_binary(fresh_user.party_id) and fresh_user.party_id != party_id ->
-          Repo.rollback(:already_in_party)
 
         count >= party.max_size ->
           Repo.rollback(:party_full)
 
         true ->
-          case seat_in_party(fresh_user, party_id) do
-            {:ok, updated_user} -> updated_user
-            {:error, reason} -> Repo.rollback(reason)
+          # `do_create_party/2` locks `(:party, user.id)` while this locks
+          # `(:party, party_id)` — disjoint critical sections, as are two
+          # joins to two parties. A re-read of the joiner here passed in both
+          # and the last write won: a create left a zero-member party whose
+          # `leader_id` still pointed at them, and two accepts seated them in
+          # one party while the other broadcast them joined. The seat is the
+          # guard.
+          case claim_party_seat(user.id, party_id) do
+            {:ok, updated_user} ->
+              # The party's open ready board, if any, must cover the new
+              # member: in the seat's transaction, so it cannot pass between
+              # the seat and their place on it. Its broadcast waits for the
+              # commit.
+              _ = Gamend.ReadyChecks.add_party_member(party_id, updated_user.id)
+              updated_user
+
+            {:error, reason} ->
+              Repo.rollback(reason)
           end
       end
     end)
@@ -969,9 +1009,6 @@ defmodule Gamend.Parties do
         _ = Accounts.broadcast_member_update(updated_user)
         broadcast_party(party_id, {:party_member_joined, party_id, updated_user.id})
 
-        # The party's open ready board, if any, must cover the new member.
-        _ = Gamend.ReadyChecks.add_party_member(party_id, updated_user.id)
-
         {:ok, updated_user}
 
       {:error, _reason} = error ->
@@ -979,11 +1016,25 @@ defmodule Gamend.Parties do
     end
   end
 
-  # The party read above is cached; one disbanded since is refused by the
-  # foreign key, and answers as if it had been read gone.
-  defp seat_in_party(user, party_id) do
+  # The one write of a party seat, inside the transaction that should roll
+  # back when it fails. The player's row is read from the database (never the
+  # cache) under `:no_key_update` and written only while they are in no party,
+  # or already in this one, so two seats for one player cannot both pass.
+  # `:no_key_update`, not `:update`: create inserts the party first, and its
+  # `leader_id` foreign key holds `FOR KEY SHARE` on this row. A party gone
+  # since its caller read it is refused by the foreign key.
+  defp claim_party_seat(user_id, party_id) do
     Repo.rescue_foreign_key(:not_found, fn ->
-      user |> Ecto.Changeset.change(%{party_id: party_id}) |> Repo.update()
+      case Repo.one(Repo.lock_rows(from(u in User, where: u.id == ^user_id), :no_key_update)) do
+        nil ->
+          {:error, :not_found}
+
+        %User{party_id: current} = user when is_nil(current) or current == party_id ->
+          user |> Ecto.Changeset.change(%{party_id: party_id}) |> Repo.update()
+
+        %User{} ->
+          {:error, :already_in_party}
+      end
     end)
   end
 
@@ -1012,8 +1063,7 @@ defmodule Gamend.Parties do
 
       if is_nil(party) do
         # Stale reference, just clear it
-        clear_party_id(user)
-        {:ok, :left}
+        with {:ok, _user} <- clear_party_id(user), do: {:ok, :left}
       else
         do_leave_party(user, party)
       end
@@ -1030,6 +1080,17 @@ defmodule Gamend.Parties do
   """
   @spec disband(Party.t()) :: {:ok, term()} | {:error, term()}
   def disband(%Party{} = party), do: disband_party(party)
+
+  @doc """
+  Disband `party` as its leader: the end of the party a leader asks for, as
+  opposed to leaving it, which hands it over.
+
+  `{:error, :not_leader}` unless `leader` still leads it once its lock is
+  taken: a leader who handed the party over while this was on its way no
+  longer ends it for the new leader.
+  """
+  @spec disband(Party.t(), User.t()) :: {:ok, :disbanded} | {:error, :not_leader | term()}
+  def disband(%Party{} = party, %User{id: leader_id}), do: disband_party(party, leader_id)
 
   @doc """
   Kick a member from the party. Only the leader can kick.
@@ -1170,28 +1231,23 @@ defmodule Gamend.Parties do
          {:ok, party} <- fetch_party(user.party_id),
          :ok <- check_is_leader(party, user) do
       attrs = attrs |> normalize_params() |> Map.take(@client_party_fields)
-      validate_and_update_party(party, attrs)
+      validate_and_update_party(party, user, attrs)
     end
   end
 
-  defp validate_and_update_party(party, attrs) do
+  defp validate_and_update_party(party, user, attrs) do
     new_max = Map.get(attrs, "max_size")
 
-    if new_max do
-      count = count_party_members(party.id)
-      new_max_int = to_int_or_nil(new_max) || 0
-
-      if new_max_int < count do
-        {:error, :too_small}
-      else
-        do_update_party(party, attrs)
-      end
+    # An early refusal only: the count that decides is taken again under the
+    # party's lock, after the hook (`update_party_locked/3`).
+    if new_max && (to_int_or_nil(new_max) || 0) < count_party_members(party.id) do
+      {:error, :too_small}
     else
-      do_update_party(party, attrs)
+      do_update_party(party, user, attrs)
     end
   end
 
-  defp do_update_party(party, attrs) do
+  defp do_update_party(party, user, attrs) do
     case Gamend.Hooks.internal_call(:before_party_update, [party, attrs]) do
       {:ok, returned} ->
         attrs_to_use =
@@ -1201,9 +1257,8 @@ defmodule Gamend.Parties do
             attrs
           end
 
-        party
-        |> Party.changeset(attrs_to_use)
-        |> Repo.update()
+        party.id
+        |> update_party_locked(user, attrs_to_use)
         |> tap_bump_party()
         |> case do
           {:ok, updated} ->
@@ -1221,6 +1276,35 @@ defmodule Gamend.Parties do
 
       {:error, reason} ->
         {:error, reason}
+    end
+  end
+
+  # Under the party's lock, which a join takes for its room check, and on the
+  # party as it is now. The member count read outside it let an accept land
+  # between the count and the write, leaving more members than `max_size`;
+  # and the caller must still lead it, since a leader who handed the party
+  # over meanwhile no longer may change it.
+  defp update_party_locked(party_id, %User{id: user_id}, attrs) do
+    Lock.serialize(:party, party_id, fn ->
+      with %Party{} = current <- Repo.get(Party, party_id) || {:error, :party_not_found},
+           true <- current.leader_id == user_id || {:error, :not_leader},
+           changeset = Party.changeset(current, attrs),
+           :ok <- check_max_size(changeset),
+           {:ok, updated} <- Repo.update(changeset) do
+        updated
+      else
+        {:error, reason} -> Repo.rollback(reason)
+      end
+    end)
+  end
+
+  defp check_max_size(changeset) do
+    case Ecto.Changeset.get_change(changeset, :max_size) do
+      nil ->
+        :ok
+
+      new_max ->
+        if new_max < count_party_members(changeset.data.id), do: {:error, :too_small}, else: :ok
     end
   end
 
@@ -1442,12 +1526,10 @@ defmodule Gamend.Parties do
         end)
 
         # Party seats bypass `Lobbies.join_lobby/2`, so run its side seams here
-        # too: games observe every member arriving, and an open ready check
-        # gains the seated members. The leader created the lobby, so only the
+        # too: games observe every member arriving (the ready check was joined
+        # with the seats). The leader created the lobby, so only the
         # non-leader members "join".
         Enum.each(non_leader_members, fn member ->
-          _ = Gamend.ReadyChecks.add_member(lobby.id, member.id)
-
           Gamend.Async.run(fn ->
             Gamend.Hooks.internal_call(:after_lobby_join, [
               Accounts.get_user(member.id),
@@ -1527,12 +1609,24 @@ defmodule Gamend.Parties do
   # lock, and one deleted since is refused by the foreign key: the whole party
   # stays out, as if it had been read gone. So does a party with a member who
   # took a seat elsewhere since `check_no_members_in_lobby/1` read them.
+  #
+  # Party seats bypass `Lobbies.join_lobby/2`, so they put each member on the
+  # lobby's open ready check here, in the seats' transaction, as a join does:
+  # the check cannot pass between a seat and that member's place on it.
   defp seat_member(member_id, lobby_id) do
     case Lobbies.claim_seat(member_id, lobby_id) do
-      {:ok, updated} -> updated
-      {:error, :not_found} -> Repo.rollback(:not_found)
-      {:error, :already_in_lobby} -> Repo.rollback(:member_in_lobby)
-      {:error, reason} -> Repo.rollback({:member_join_failed, member_id, reason})
+      {:ok, updated} ->
+        _ = Gamend.ReadyChecks.add_member(lobby_id, member_id)
+        updated
+
+      {:error, :not_found} ->
+        Repo.rollback(:not_found)
+
+      {:error, :already_in_lobby} ->
+        Repo.rollback(:member_in_lobby)
+
+      {:error, reason} ->
+        Repo.rollback({:member_join_failed, member_id, reason})
     end
   end
 
@@ -1578,11 +1672,8 @@ defmodule Gamend.Parties do
         end)
 
         # Party seats bypass `Lobbies.join_lobby/2`, so run its side seams
-        # here too — in particular, the lobby's open ready check must gain
-        # every seated member or the match could start without them.
+        # here too (the ready check was joined with the seats).
         Enum.each(members, fn member ->
-          _ = Gamend.ReadyChecks.add_member(lobby.id, member.id)
-
           Gamend.Async.run(fn ->
             Gamend.Hooks.internal_call(:after_lobby_join, [
               Accounts.get_user(member.id),
@@ -1603,11 +1694,15 @@ defmodule Gamend.Parties do
   # Internal helpers
   # ---------------------------------------------------------------------------
 
-  defp disband_party(%Party{} = party) do
+  # `leader_id` is the player asking, checked against the party as it is under
+  # the lock; nil for the server, which ends a party whoever leads it.
+  defp disband_party(%Party{} = party, leader_id \\ nil) do
     # The party's lock, as join takes, with the members read inside it: one who
     # joined between a read outside and the delete was cleared with the rest
     # but never told.
     Lock.serialize(:party, party.id, fn ->
+      if not still_leads?(party.id, leader_id), do: Repo.rollback(:not_leader)
+
       members = get_party_members(party.id)
 
       # Bulk-clear party_id for all members in a single query
@@ -1652,6 +1747,17 @@ defmodule Gamend.Parties do
     Ecto.StaleEntryError ->
       # Race condition: party was concurrently disbanded by another operation
       {:ok, :disbanded}
+  end
+
+  # Read under the party's lock. A party already gone is what a disband asks
+  # for, whoever led it; the delete then finds no row.
+  defp still_leads?(_party_id, nil), do: true
+
+  defp still_leads?(party_id, leader_id) do
+    case Repo.get(Party, party_id) do
+      nil -> true
+      %Party{leader_id: current} -> current == leader_id
+    end
   end
 
   # The leader leaving hands the party to whoever else is in it, the way a lobby
@@ -1754,19 +1860,20 @@ defmodule Gamend.Parties do
     {:ok, :left}
   end
 
+  # Clears the seat the caller read, and only that one: `user` is a cached
+  # copy whose party is gone, and a player seated elsewhere since keeps it.
   defp clear_party_id(%User{} = user) do
-    user
-    |> Ecto.Changeset.change(%{party_id: nil})
-    |> Repo.update()
+    from(u in User, where: u.id == ^user.id and u.party_id == ^user.party_id)
+    |> Repo.compare_and_set(set: [party_id: nil, updated_at: DateTime.utc_now(:second)])
     |> case do
+      {:error, :precondition_failed} ->
+        {:error, :not_in_party}
+
       {:ok, updated} ->
         invalidate_user_cache(updated.id)
         _ = Accounts.broadcast_user_update(updated)
         _ = Accounts.broadcast_member_update(updated)
         {:ok, updated}
-
-      error ->
-        error
     end
   end
 
@@ -1825,6 +1932,20 @@ defmodule Gamend.Parties do
   @spec change_party(Party.t()) :: Ecto.Changeset.t()
   def change_party(%Party{} = party) do
     Party.changeset(party, %{})
+  end
+
+  @doc """
+  Admin: seats `user_id` in `party` the way an accepted invite does. The
+  party's capacity and one party per player hold (`:party_full`,
+  `:already_in_party`); no hook is consulted.
+  """
+  @spec admin_add_member(Party.t(), Ecto.UUID.t()) ::
+          {:ok, User.t()} | {:error, :not_found | :party_full | :already_in_party | term()}
+  def admin_add_member(%Party{id: party_id}, user_id) when is_binary(user_id) do
+    case Repo.get(User, user_id) do
+      nil -> {:error, :not_found}
+      %User{} = user -> do_join_party(user, party_id)
+    end
   end
 
   @doc "Admin update of a party (max_size, metadata)."

@@ -106,7 +106,7 @@ Every read runs through the app cache with a 60-second TTL: writes re-warm the e
 
 - `GAMEND_LIMITS_MAX_KV_KEY` (512): maximum key length.
 - `GAMEND_LIMITS_MAX_KV_VALUE_SIZE` (65536): maximum serialized value size, in bytes.
-- `GAMEND_LIMITS_MAX_KV_ENTRIES_PER_USER` (1000): entries one user may hold; checked when an entry is created through the entries API (`create_entry/1`), not on `put/4` upserts.
+- `GAMEND_LIMITS_MAX_KV_ENTRIES_PER_USER` (1000): entries one user may hold; checked when an entry is created through the entries API (`create_entry/1`, `POST /api/v1/admin/kv/entries`, which answers 403 `too_many_entries` past it), not on `put/4` upserts. The count is taken under a lock on the user, so creates landing together cannot pass it.
 
 ## Operations
 

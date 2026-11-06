@@ -40,6 +40,16 @@ A bracket side is an entry, and an entry is a leader (one user). For team tourna
 
 Registration answers `registration_closed` or `tournament_full` (403) and `already_registered` (409); a hook that rejects answers `rejected` (403) with its reason in `message`. Leaving after the draw answers `already_drawn` (409).
 
+### Registration and the entry fee
+
+A join takes the seat first and asks the game second. The seat is taken under the tournament's lock, with the capacity and duplicate checks; only then does `before_tournament_register` run, outside any lock, with the seat held. So charge the entry fee there: a full tournament, closed registration or a repeated request (a double tap) is refused before the hook and never reaches it, and a player the hook lets in has their seat.
+
+- While the hook runs, the caller's entry already exists: `Tournaments.get_entry/2` finds it and `count_entries/1` counts it. Do not refuse a player for being registered.
+- `{:error, reason}`, a raise or a timeout refuses: the seat is given back (only that entry, and only while the tournament is still in registration) and the client gets `rejected`. Charge last, after every other check in the hook, so a refusal never follows a charge.
+- The draw does not wait for a hook. If the tournament is drawn while a hook that then refuses was running, the entry is already in a bracket: it forfeits instead, its open match resolved for the opponent with `"withdrawn": true` in the match metadata (`after_tournament_match_resolved` fires for it) and the entry eliminated. A field of one that the draw finished keeps its winner.
+- `after_tournament_register` fires only for a join the hook allowed.
+- A cancel or a delete inside the hook comes after the seat, as one a moment later would: the join still answers the entry.
+
 Match resolution has no public endpoint: verdicts are server-side (hooks); expose your own call_hook RPC if your flow needs a client trigger. Entry leaders receive tournament_updated, tournament_match_ready, tournament_match_resolved and tournament_finished on their user channel (see WebSocket Channels).
 
 ## Match resolution contract (hooks)
@@ -67,8 +77,8 @@ end
 
 | Hook | Purpose |
 |---|---|
-| before_tournament_register/2 | Gate or charge entry (fees are game economy); {:error, reason} rejects |
-| after_tournament_register/2 | Side effects after a join |
+| before_tournament_register/2 | Gate or charge entry (fees are game economy); runs with the seat held, and {:error, reason} rejects and gives the seat back (see *Registration and the entry fee*) |
+| after_tournament_register/2 | Side effects after a join the hook allowed |
 | before_tournament_leave/2 | Veto leaving (e.g. paid entry is final) |
 | tournament_match_ready/1 | Start the match: lobby creation, challenge setup |
 | tournament_match_expired/1 | Adjudicate an unresolved match at its deadline |

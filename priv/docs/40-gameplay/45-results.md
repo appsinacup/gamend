@@ -57,7 +57,7 @@ Gamend.Results.record(result, "hint", 10)
 {:ok, result} = Gamend.Results.finish(result)
 ```
 
-An event is one insert: no read of the row first, no lock. `finish/1` is one update that only matches an open row, so a play ends once however many places try to end it; the second answers `{:error, :already_ended}`. An event for an ended play answers `{:error, :ended}`.
+An event is one insert, and `finish/1` one update that only matches an open row, so a play ends once however many places try to end it; the second answers `{:error, :already_ended}`. The two take turns under the result's lock: an event is written before the end or answers `{:error, :ended}`, even through a result struct read while it was still open, and the event cap holds however many writes arrive together.
 
 `record_lobby/4` writes the same event to every open result of a lobby, for code that knows the lobby and not its players (a timer, a disconnect).
 

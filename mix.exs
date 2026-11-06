@@ -207,7 +207,8 @@ defmodule GamendHost.MixProject do
           "openapi.spec.json --spec GamendWeb.ApiSpec --filename clients/godot/openapi.json --pretty=true",
           "cmd python3 clients/sdkgen balaur",
           "credo --strict",
-          "gamend.api.lint"
+          "gamend.api.lint",
+          "gamend.race.lint"
         ] ++
           local_web_commands([
             # No `xref unreachable`: Elixir folded that check into the compiler,

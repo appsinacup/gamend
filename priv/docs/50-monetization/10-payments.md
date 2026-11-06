@@ -193,6 +193,16 @@ declining to fulfil takes payment and gives nothing back.
 
 Google, Apple, and Steam adapters are built in. They store normalized validation results in the same purchases, entitlements, and provider event tables.
 
+`POST /api/v1/payments/validate/<provider>` answers what the receipt is to this account:
+
+| The receipt | Answer |
+|---|---|
+| New | `200`, `seen_before: false`: a purchase, fulfilled when the store says it is paid |
+| Already validated by this account (a retry, two sends at once) | `200`, `seen_before: true`: the same purchase. One left `pending` although the store now says it is paid is fulfilled then |
+| Held by another account: the same transaction, or any transaction of the same subscription (its original transaction id) | `409 receipt_already_used` |
+
+A subscription belongs to the first account that validated it, even when two accounts send two of its renewals at the same moment: the check and the insert run under one lock per original transaction, so only one of them gets it. Every renewal its owner validates is a purchase of its own.
+
 ### Google Play
 
 ```bash
@@ -264,6 +274,8 @@ after_purchase_fulfilled(purchase)
 after_purchase_revoked(purchase)
 after_entitlement_changed(entitlement)
 ```
+
+`after_purchase_revoked` runs once per purchase ending. One refund reaches the server as several events (`charge.refunded`, `refund.created`, `refund.updated`; a store notification and the client's revalidation), and only the one that ends the purchase runs it; the others are recorded in the purchase's `raw_provider_payload` and change nothing. A later event that ends it differently (a dispute's `revoked` becoming `refunded`) runs it again, with the new status. Deliveries of one webhook event take turns, so a retry arriving while the first is still running waits for it and is then answered as a duplicate.
 
 Default payment hooks mirror payment state into user metadata under payments. Purchase IDs are tracked in payments.purchase_ids, entitlement keys in payments.entitlements, and entitlement IDs in payments.entitlement_ids. Subscription products use the same entitlement metadata and include expires_at in payments.entitlement_details.
 

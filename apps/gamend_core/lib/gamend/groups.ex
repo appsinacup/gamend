@@ -595,9 +595,8 @@ defmodule Gamend.Groups do
         {:error, :user_not_found}
 
       user ->
-        max_created = Gamend.Limits.get(:max_groups_created_per_user)
-
-        if count_groups_created_by(user_id) >= max_created do
+        # An early refusal, before the hook: `do_create_group/2` counts again.
+        if count_groups_created_by(user_id) >= Gamend.Limits.get(:max_groups_created_per_user) do
           {:error, :too_many_groups_created}
         else
           case Gamend.Hooks.internal_call(:before_group_create, [user, attrs]) do
@@ -614,23 +613,31 @@ defmodule Gamend.Groups do
     end
   end
 
+  # The cap on groups created is the creator's, so it is counted and the group
+  # inserted under the creator's lock (the one a join takes on the player):
+  # two creates at once each counted the other's group as not there yet.
   defp do_create_group(user_id, attrs) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:group, fn _changes ->
-      %Group{}
-      |> Group.changeset(attrs)
-      |> Ecto.Changeset.put_change(:creator_id, user_id)
+    Lock.serialize("group_player", user_id, fn ->
+      if count_groups_created_by(user_id) >= Gamend.Limits.get(:max_groups_created_per_user) do
+        Repo.rollback(:too_many_groups_created)
+      end
+
+      with {:ok, group} <-
+             %Group{}
+             |> Group.changeset(attrs)
+             |> Ecto.Changeset.put_change(:creator_id, user_id)
+             |> Repo.insert(),
+           {:ok, _membership} <-
+             %GroupMember{}
+             |> GroupMember.changeset(%{group_id: group.id, user_id: user_id, role: "admin"})
+             |> Repo.insert() do
+        group
+      else
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
     end)
-    |> Ecto.Multi.insert(:membership, fn %{group: group} ->
-      GroupMember.changeset(%GroupMember{}, %{
-        group_id: group.id,
-        user_id: user_id,
-        role: "admin"
-      })
-    end)
-    |> Gamend.AfterCommit.transaction()
     |> case do
-      {:ok, %{group: group}} ->
+      {:ok, group} ->
         _ = invalidate_group_cache(group.id)
 
         Gamend.Async.run(fn ->
@@ -640,11 +647,8 @@ defmodule Gamend.Groups do
         broadcast_groups({:group_created, group})
         {:ok, group}
 
-      {:error, :group, changeset, _} ->
-        {:error, changeset}
-
-      {:error, _op, changeset, _} ->
-        {:error, changeset}
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -678,6 +682,8 @@ defmodule Gamend.Groups do
         new_max_int = to_int_or_nil(new_max) || 0
         current_count = count_group_members(group_id)
 
+        # An early refusal only: the count that decides is taken again under
+        # the group's lock, after the hook (`update_locked/3`).
         if new_max_int < current_count do
           {:error, :max_members_too_low}
         else
@@ -707,7 +713,7 @@ defmodule Gamend.Groups do
     end
   end
 
-  defp do_update_group(%Group{} = group, attrs) do
+  defp do_update_group(%Group{} = group, attrs, floor_at_members? \\ true) do
     case Gamend.Hooks.internal_call(:before_group_update, [group, attrs]) do
       {:ok, returned} ->
         attrs_to_use =
@@ -717,10 +723,8 @@ defmodule Gamend.Groups do
             attrs
           end
 
-        # The group may come from the cache and be deleted since.
-        Repo.rescue_stale(:not_found, fn ->
-          group |> Group.changeset(attrs_to_use) |> Repo.update()
-        end)
+        group.id
+        |> update_locked(attrs_to_use, floor_at_members?)
         |> case do
           {:ok, updated} ->
             Gamend.Async.run(fn ->
@@ -738,6 +742,38 @@ defmodule Gamend.Groups do
 
       {:error, reason} ->
         {:error, reason}
+    end
+  end
+
+  # Under the group's lock, which a join takes for its room check, and on the
+  # group as it is now, not the copy read before the hook (which may also be
+  # gone since). The member count read outside the lock let a join land
+  # between the count and the write, leaving more members than `max_members`.
+  defp update_locked(group_id, attrs, floor_at_members?) do
+    Lock.serialize(:group, group_id, fn ->
+      with %Group{} = current <- Repo.get(Group, group_id) || {:error, :not_found},
+           changeset = Group.changeset(current, attrs),
+           :ok <- check_max_members(changeset, floor_at_members?),
+           {:ok, updated} <- Repo.update(changeset) do
+        updated
+      else
+        {:error, reason} -> Repo.rollback(reason)
+      end
+    end)
+  end
+
+  # `max_members` may not go below the members there are; an admin's edit may.
+  defp check_max_members(_changeset, false = _floor_at_members?), do: :ok
+
+  defp check_max_members(changeset, true = _floor_at_members?) do
+    case Ecto.Changeset.get_change(changeset, :max_members) do
+      nil ->
+        :ok
+
+      new_max ->
+        if new_max < count_group_members(changeset.data.id),
+          do: {:error, :max_members_too_low},
+          else: :ok
     end
   end
 
@@ -762,7 +798,7 @@ defmodule Gamend.Groups do
   @doc "Admin-level update, bypasses membership checks."
   @spec admin_update_group(Group.t(), map()) :: {:ok, Group.t()} | {:error, Ecto.Changeset.t()}
   def admin_update_group(%Group{} = group, attrs) do
-    do_update_group(group, attrs)
+    do_update_group(group, attrs, false)
   end
 
   @doc """
@@ -900,7 +936,7 @@ defmodule Gamend.Groups do
         {:ok, get_membership(group_id, user_id)}
 
       true ->
-        case Shared.do_add_group_member(user_id, group_id, group, "public_join") do
+        case Shared.do_add_group_member(user_id, group_id, group, %{"source" => "public_join"}) do
           {:ok, member} ->
             # Clean up any pending invites for this user + group
             Shared.mark_pending_invites_accepted(user_id, group_id)

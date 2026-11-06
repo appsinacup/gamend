@@ -696,26 +696,49 @@ defmodule Gamend.TournamentsTest do
     end
   end
 
+  describe "a state change from a stale read" do
+    test "the tick opening registration does not bring back a cancelled tournament" do
+      # Read by the tick as scheduled, with registration due.
+      read = create_tournament()
+      assert read.state == "scheduled"
+
+      {:ok, _cancelled} = Tournaments.cancel_tournament(read)
+
+      Tournaments.advance_lifecycle(read)
+      assert Repo.get!(Tournament, read.id).state == "cancelled"
+    end
+
+    test "a reopen from a stale cancelled copy answers state_changed" do
+      tournament = create_tournament()
+      {:ok, cancelled} = Tournaments.cancel_tournament(tournament)
+      {:ok, _reopened} = Tournaments.reopen_tournament(cancelled)
+
+      assert {:error, :state_changed} = Tournaments.reopen_tournament(cancelled)
+    end
+  end
+
   describe "a tournament that changes between its read and the write" do
     setup do
       Application.put_env(:gamend_core, :hooks_module, ChangingTournamentHook)
       :ok
     end
 
-    test "joining a tournament cancelled as it is read answers registration_closed" do
+    # The hook runs with the seat already taken, so a cancel or a delete
+    # inside it comes after the registration, as one a moment later would.
+    test "a tournament cancelled while the register hook runs keeps the seat taken before it" do
       tournament = create_tournament(%{title: "cancelled-as-joined"})
       [user] = users(1)
 
-      assert Tournaments.join_tournament(user, tournament) == {:error, :registration_closed}
+      assert {:ok, %Tournaments.Entry{}} = Tournaments.join_tournament(user, tournament)
       assert Repo.get!(Tournament, tournament.id).state == "cancelled"
-      assert Tournaments.count_entries(tournament.id) == 0
+      assert Tournaments.count_entries(tournament.id) == 1
     end
 
-    test "joining a tournament deleted as it is read answers not_found and writes no entry" do
+    test "a tournament deleted while the register hook runs takes the seat with it" do
       tournament = create_tournament(%{title: "deleted-as-joined"})
       [user] = users(1)
 
-      assert Tournaments.join_tournament(user, tournament) == {:error, :not_found}
+      assert {:ok, %Tournaments.Entry{}} = Tournaments.join_tournament(user, tournament)
       assert Repo.get(Tournament, tournament.id) == nil
       assert Repo.all(from e in Tournaments.Entry, where: e.leader_id == ^user.id) == []
     end

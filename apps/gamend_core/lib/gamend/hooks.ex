@@ -198,6 +198,8 @@ defmodule Gamend.Hooks do
   # the match (create a lobby, set up a challenge, ...) and
   # `tournament_match_expired` is where it adjudicates an unresolved match at
   # its deadline_at via `Gamend.Tournaments.resolve_match/2`.
+  # `before_tournament_register` runs with the caller's seat already taken
+  # (their entry exists while it runs); a veto gives the seat back.
   @callback before_tournament_register(User.t(), Gamend.Tournaments.Tournament.t()) ::
               hook_result(term())
   @callback after_tournament_register(User.t(), Gamend.Tournaments.Tournament.t()) :: any()

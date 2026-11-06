@@ -1282,57 +1282,120 @@ defmodule Gamend.Leaderboards do
 
   # A season row rose: the all-time row rises with it, by the same `:best`
   # upsert (the all-time board has no seasons, so it keeps nothing further).
+  #
+  # From the season row as it is now, under the owner's row lock: an edit
+  # that lowered the season row after this submit read it, and read the
+  # all-time row again, was otherwise raised over by the score it replaced.
   defp keep_all_time(%Leaderboard{} = season, %Record{} = record) do
     with true <- all_time?(season),
          %Leaderboard{} = board <- all_time_board(season) do
       result =
-        if is_binary(record.user_id),
-          do: do_submit_score(board, record.user_id, record.score, record.metadata, record.key),
-          else:
-            do_submit_label_score(board, record.label, record.score, record.metadata, record.key)
+        with_all_time_row_lock(board, record, fn ->
+          case Repo.get(Record, record.id) do
+            # Deleted since: the delete reads the all-time row again.
+            nil -> {:ok, :gone}
+            current -> raise_all_time_row(board, current)
+          end
+        end)
 
-      with {:error, reason} <- result do
-        Logger.warning("all-time row for #{season.slug} not kept: #{inspect(reason)}")
+      _ = invalidate_records_cache(board.id)
+
+      case result do
+        {:ok, {:ok, _kept}} ->
+          :ok
+
+        {:ok, {:error, reason}} ->
+          Logger.warning("all-time row for #{season.slug} not kept: #{inspect(reason)}")
+
+        {:error, reason} ->
+          Logger.warning("all-time row for #{season.slug} not kept: #{inspect(reason)}")
       end
     end
 
     :ok
   end
 
+  defp raise_all_time_row(board, %Record{user_id: user_id} = row) when is_binary(user_id),
+    do: do_submit_score(board, user_id, row.score, row.metadata, row.key)
+
+  defp raise_all_time_row(board, %Record{} = row),
+    do: do_submit_label_score(board, row.label, row.score, row.metadata, row.key)
+
+  # One owner's all-time row of one key is written under this lock, by a
+  # submit raising it and by an edit reading it again, so neither writes from
+  # a season row the other has changed since it read it. Per owner, so
+  # submits by different players never wait on each other.
+  defp with_all_time_row_lock(board, %Record{} = record, fun) do
+    owner = if is_binary(record.user_id), do: "u:" <> record.user_id, else: "l:" <> record.label
+    Gamend.Lock.serialize("leaderboard_all_time_row", "#{board.id}|#{record.key}|#{owner}", fun)
+  end
+
   # A season row was edited or deleted: its owner's all-time row is read
   # again from what the seasons hold now, or goes when they hold nothing.
+  #
+  # It was a read, a delete and an insert with nothing around them. Two
+  # refreshes for one owner both deleted and both inserted, and the second
+  # raised on the unique index; a submit that raised the all-time row
+  # (`keep_all_time/2`) between the read and the write was deleted, and the
+  # older best put back. Now it runs in one transaction under the slug's
+  # all-time lock, the one `rebuild_all_time/1` takes, and the owner's row
+  # lock, the one a submit takes.
   defp refresh_all_time(%Leaderboard{} = season, %Record{} = record) do
     with true <- all_time?(season),
-         %Leaderboard{id: board_id} <- all_time_board(season) do
-      owner =
-        if is_binary(record.user_id),
-          do: dynamic([r], r.user_id == ^record.user_id),
-          else: dynamic([r], r.label == ^record.label)
+         %Leaderboard{} = board <- all_time_board(season) do
+      {:ok, {:ok, _}} =
+        with_all_time_lock(season.slug, fn ->
+          with_all_time_row_lock(board, record, fn ->
+            rewrite_all_time_row(season, board, record)
+          end)
+        end)
 
-      rows = from(r in in_seasons(season, record.key), where: ^owner)
-      best = from(r in rows, order_by: ^record_order(season.sort_order), limit: 1) |> Repo.one()
-      Repo.delete_all(from(r in in_key(board_id, record.key), where: ^owner))
+      _ = invalidate_records_cache(board.id)
+    end
 
-      if best do
-        first_at = Repo.one(from(r in rows, select: min(r.inserted_at)))
+    :ok
+  end
 
+  defp rewrite_all_time_row(season, board, record) do
+    owner =
+      if is_binary(record.user_id),
+        do: dynamic([r], r.user_id == ^record.user_id),
+        else: dynamic([r], r.label == ^record.label)
+
+    held = from(r in in_key(board.id, record.key), where: ^owner) |> Repo.one()
+    rows = from(r in in_seasons(season, record.key), where: ^owner)
+    best = from(r in rows, order_by: ^record_order(season.sort_order), limit: 1) |> Repo.one()
+
+    case {held, best} do
+      {nil, nil} ->
+        :ok
+
+      {%Record{id: id}, nil} ->
+        Repo.delete_all(from(r in Record, where: r.id == ^id))
+
+      {%Record{id: id}, %Record{} = best} ->
+        Repo.update_all(from(r in Record, where: r.id == ^id),
+          set: [
+            score: best.score,
+            metadata: best.metadata,
+            inserted_at: Repo.one(from(r in rows, select: min(r.inserted_at))),
+            updated_at: DateTime.utc_now(:second)
+          ]
+        )
+
+      {nil, %Record{} = best} ->
         %Record{}
         |> Ecto.Changeset.change(
-          leaderboard_id: board_id,
+          leaderboard_id: board.id,
           user_id: best.user_id,
           label: best.label,
           key: best.key,
           score: best.score,
           metadata: best.metadata,
-          inserted_at: first_at
+          inserted_at: Repo.one(from(r in rows, select: min(r.inserted_at)))
         )
         |> Repo.insert!()
-      end
-
-      _ = invalidate_records_cache(board_id)
     end
-
-    :ok
   end
 
   defp refresh_all_time_of(%Record{leaderboard_id: leaderboard_id} = record) do

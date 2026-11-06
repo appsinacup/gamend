@@ -29,6 +29,7 @@ zone is only known in their browser. So:
 - Every list function takes `:page` / `:page_size` and has a matching `count_*`. Pagination is not optional — assume 10k rows.
 - Advisory lock namespaces go in `Gamend.Repo.AdvisoryLock` `@namespaces` before `Gamend.Lock.serialize/3` can use them.
 - Any read-modify-write (merging a map, checking capacity before insert) must hold a lock. Plain "set field X" writes do not.
+- A rule ("one per player", "pays once", "at most N") is enforced by the write itself, not by a read before it: a unique index, else `Gamend.Repo.compare_and_set/2` with the precondition in its `where`, else a lock keyed on the entity the rule belongs to. A check through the cache or outside the transaction only refuses early. Decide what comes next from the row the write answers, not from a struct read before it. Details in AGENTS.md, Locks.
 - Background work (sweeps, schedulers) as a supervised GenServer — add it to `GamendWeb.HostSupervision.children/1`, which every host (this repo and the starter) starts. A host-only process goes in that function's `:extra` option instead.
 
 ## Errors
@@ -83,6 +84,7 @@ Adding one callback touches six places — miss one and plugins break in confusi
 
 - Context tests in `apps/gamend_core/test/` — they run without the web app, so a test that needs a conn, a channel or a `GamendWeb` module belongs in `apps/gamend_web/test/` instead. Controller, admin API, channel and LiveView tests in `apps/gamend_web/test/`. Both share `apps/gamend_core/test/support` (`Gamend.DataCase`, fixtures, `Gamend.TestSupport.NoopHooks`); root `mix test` runs both suites.
 - Run against both adapters: `mix test`, and again with `GAMEND_DB_POSTGRES_HOST` and `GAMEND_DB_POSTGRES_USER` (or `GAMEND_DB_URL`) set, after `mix deps.clean gamend_core gamend_web --build`. SQLite and Postgres differ in ways tests hide: `config/test.exs` sets `busy_timeout`, so concurrent-write failures that bite in dev never surface in CI.
+- **Race the rule.** A flow with a "one per", "exactly once" or capacity rule gets a `Gamend.RaceCase` test: two or more requests released together, each on its own connection, asserting the rule held and nothing raised. A `Gamend.DataCase` test runs on one connection and cannot overlap anything. When a hook sits between the read and the write, a hook that holds one caller until the other has passed is deterministic on both adapters (`quest_claim_race_test.exs`). `mix gamend.race.lint` (in `precommit`) asks for a guard or a `# race-safe: <why>` on every function shaped like a check-then-write; the marker is the reasoning, not a silencer.
 - **Run the feature, don't only test it.** Boot the app (`mix run` a script, or the dev server) and exercise the real path — several classes of bug (hooks inside transactions, stale caches, missing supervision children) only appear at runtime.
 - Add a set to `mix demo.seed` so the feature can be viewed at volume (pagination, large brackets, long lists).
 

@@ -36,8 +36,11 @@ defmodule Gamend.Cache do
   TTL: a revoked user, a spent balance. `invalidate/1` moves the key's
   generation (`generation/1`); the fill compares it before and after its put.
 
-  Inside a transaction nothing is cached: the read may see a write a rollback
-  undoes.
+  Inside a transaction the cache is not used at all: `fun` runs, and its
+  result is neither cached (the read may see a write a rollback undoes) nor
+  taken from the cache. A read in a transaction is usually deciding a write,
+  and a cached copy is up to a TTL old: `Accounts.get_user/1` gating a seat
+  read a `lobby_id` that another request had already set.
 
   ## Options
 
@@ -46,6 +49,10 @@ defmodule Gamend.Cache do
   """
   @spec cached(term(), keyword(), (-> term())) :: term()
   def cached(key, opts \\ [], fun) when is_function(fun, 0) do
+    if Gamend.Repo.in_transaction?(), do: fun.(), else: read_through(key, opts, fun)
+  end
+
+  defp read_through(key, opts, fun) do
     case fetch(key) do
       {:ok, value} ->
         value
@@ -54,11 +61,7 @@ defmodule Gamend.Cache do
         {match, opts} = Keyword.pop(opts, :match, fn _ -> true end)
         generation = generation(key)
         result = fun.()
-
-        if match.(result) and not Gamend.Repo.in_transaction?() do
-          fill(key, generation, result, opts)
-        end
-
+        if match.(result), do: fill(key, generation, result, opts)
         result
     end
   end

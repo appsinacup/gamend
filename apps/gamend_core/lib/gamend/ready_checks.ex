@@ -66,7 +66,11 @@ defmodule Gamend.ReadyChecks do
   Opens a check over `user_ids` and notifies them.
 
   `subject` is a `%Lobby{}` or `%Party{}` (kind `"ready"`) or `:matchmaking`
-  (kind `"accept"`). Options:
+  (kind `"accept"`). For a lobby or a party, `user_ids` may be `:members`:
+  every member, read again under the subject's lock as the check is written,
+  so a member who joins or leaves while it opens is on the board exactly when
+  they are in the lobby or party. `before_ready_check_open` sees the members
+  as read before that lock. Options:
 
     * `:kind` — override the kind implied by the subject
     * `:timeout_ms` — answering window; `nil` leaves a `"ready"` check open
@@ -81,15 +85,15 @@ defmodule Gamend.ReadyChecks do
   check or any player is in one in the same lane, `{:error, :no_participants}`,
   and `{:error, :too_many_participants}` past `max_ready_check_participants`.
   """
-  @spec open(subject(), [Ecto.UUID.t()], keyword()) ::
+  @spec open(subject(), [Ecto.UUID.t()] | :members, keyword()) ::
           {:ok, Check.t()} | {:error, term()}
   def open(subject, user_ids, opts \\ []) do
-    user_ids = user_ids |> Enum.filter(&is_binary/1) |> Enum.uniq()
+    roster = roster(subject, user_ids)
 
-    with :ok <- validate_participants(user_ids),
-         :ok <- ensure_none_pending(subject, user_ids),
-         {:ok, attrs} <- run_open_hook(subject, user_ids, opts),
-         {:ok, check} <- insert_check(subject, user_ids, attrs, opts) do
+    with :ok <- validate_participants(roster),
+         :ok <- ensure_none_pending(subject, roster),
+         {:ok, attrs} <- run_open_hook(subject, roster, opts),
+         {:ok, check} <- insert_check(subject, user_ids, roster, attrs, opts) do
       check = Repo.preload(check, :participants)
       broadcast(check, "ready_check_started")
       schedule_expiry(check)
@@ -107,7 +111,7 @@ defmodule Gamend.ReadyChecks do
   party whose board had already resolved, or the host wants everyone to
   re-confirm on a deadline_at ("force ready"). Same options as `open/3`.
   """
-  @spec reset(subject(), [Ecto.UUID.t()], keyword()) ::
+  @spec reset(subject(), [Ecto.UUID.t()] | :members, keyword()) ::
           {:ok, Check.t()} | {:error, term()}
   def reset(subject, user_ids, opts \\ []) do
     case pending_for_subject(subject) do
@@ -174,7 +178,21 @@ defmodule Gamend.ReadyChecks do
     end
   end
 
-  defp insert_check(subject, user_ids, _attrs, opts) do
+  # The ids given, or for `:members` the subject's members as they are now:
+  # what the early refusals and the hook see. `insert_check/5` reads the
+  # members again under the subject's lock.
+  defp roster(subject, :members), do: member_ids(subject)
+
+  defp roster(_subject, user_ids) when is_list(user_ids),
+    do: user_ids |> Enum.filter(&is_binary/1) |> Enum.uniq()
+
+  defp member_ids(%Lobby{id: id}),
+    do: Repo.all(from(u in User, where: u.lobby_id == ^id, order_by: u.inserted_at, select: u.id))
+
+  defp member_ids(%Party{id: id}),
+    do: Repo.all(from(u in User, where: u.party_id == ^id, order_by: u.inserted_at, select: u.id))
+
+  defp insert_check(subject, requested, roster, _attrs, opts) do
     kind = Keyword.get(opts, :kind, default_kind(subject))
     opened_by = Keyword.get(opts, :opened_by)
     tickets = Keyword.get(opts, :tickets, %{})
@@ -195,15 +213,35 @@ defmodule Gamend.ReadyChecks do
     # The lobby or party was read before this; deleted since, the check would
     # point at nothing, and the database refuses it.
     Repo.rescue_foreign_key(:not_found, fn ->
-      Gamend.AfterCommit.transaction(fn ->
-        with {:ok, check} <- %Check{} |> Check.changeset(check_attrs) |> Repo.insert(),
-             :ok <- insert_participants(check, user_ids, pre_ready, tickets) do
+      within_subject(subject, fn ->
+        roster = if requested == :members, do: member_ids(subject), else: roster
+
+        with :ok <- validate_participants(roster),
+             :ok <- ensure_subject_free(subject),
+             :ok <- ensure_none_pending(subject, roster),
+             {:ok, check} <- %Check{} |> Check.changeset(check_attrs) |> Repo.insert(),
+             :ok <- insert_participants(check, roster, pre_ready, tickets) do
           check
         else
           {:error, reason} -> Repo.rollback(reason)
         end
       end)
     end)
+  end
+
+  # A lobby's or party's check is written under the subject's own lock, the
+  # one every seat and every leave takes. A join then lands either before the
+  # open, which reads the joiner among the members, or after it, when the
+  # join's `add_member/2` finds the check. The members used to be read before
+  # any lock: one who left in between stayed on the board, which then could
+  # never pass, and one who joined was left off it. Two opens for one subject
+  # queue here too, and the second answers `:already_pending`.
+  defp within_subject(%Lobby{id: id}, fun), do: Gamend.Lock.serialize(:lobby, id, fun)
+  defp within_subject(%Party{id: id}, fun), do: Gamend.Lock.serialize(:party, id, fun)
+  defp within_subject(:matchmaking, fun), do: Gamend.AfterCommit.transaction(fun)
+
+  defp ensure_subject_free(subject) do
+    if pending_for_subject(subject), do: {:error, :already_pending}, else: :ok
   end
 
   defp insert_participants(check, user_ids, pre_ready, tickets) do
@@ -515,13 +553,19 @@ defmodule Gamend.ReadyChecks do
     :ok
   end
 
-  @doc "Adds a member to the lobby's open check, if there is one."
+  @doc """
+  Adds a member to the lobby's open check, if there is one.
+
+  Call it inside the transaction that seats them, under the lobby's lock, as
+  `Gamend.Lobbies` and `Gamend.Parties` do: the check then either takes the
+  seat before it counts the next answer, or passed before the seat existed.
+  """
   @spec add_member(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok
   def add_member(lobby_id, user_id) when is_binary(lobby_id) and is_binary(user_id) do
     do_add_member(pending_for_lobby(lobby_id), user_id)
   end
 
-  @doc "Adds a member to the party's open check, if there is one."
+  @doc "Adds a member to the party's open check, if there is one. As `add_member/2`."
   @spec add_party_member(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok
   def add_party_member(party_id, user_id) when is_binary(party_id) and is_binary(user_id) do
     do_add_member(pending_for_party(party_id), user_id)
@@ -529,21 +573,34 @@ defmodule Gamend.ReadyChecks do
 
   defp do_add_member(nil, _user_id), do: :ok
 
-  # Runs after the join committed, so the check may have gone with its lobby
-  # or party since it was read: nobody is left to answer it, and the join
-  # stands.
+  # Under the check's lock, re-read, as an answer is. This ran after the join
+  # had committed and wrote unconditionally: a last answer in between passed
+  # the check without the member who had just joined, and the insert then put
+  # them, pending, into a check already passed, and announced it.
+  #
+  # Nothing in here rolls back. It runs inside the seat's transaction, and a
+  # rollback there would undo the seat with it; a check that resolved first
+  # just takes no one.
   defp do_add_member(check, user_id) do
-    Repo.rescue_foreign_key(:gone, fn ->
-      %Participant{}
-      |> Participant.changeset(%{ready_check_id: check.id, user_id: user_id, state: "pending"})
-      |> Repo.insert()
+    Gamend.Lock.serialize(:ready_check, check.id, fn ->
+      with {:ok, check} <- reload_pending(check),
+           {:error, :not_a_participant} <- fetch_participant(check, user_id),
+           {:ok, _participant} <-
+             %Participant{}
+             |> Participant.changeset(%{
+               ready_check_id: check.id,
+               user_id: user_id,
+               state: "pending"
+             })
+             |> Repo.insert() do
+        {check, [:updated]}
+      else
+        _resolved_or_present -> :unchanged
+      end
     end)
     |> case do
-      {:ok, _participant} ->
-        broadcast(Repo.preload(check, :participants, force: true), "ready_check_updated")
-
-      {:error, _changeset} ->
-        :ok
+      {:ok, {check, effects}} -> _ = run_effects(check, effects)
+      _unchanged -> :ok
     end
 
     :ok
@@ -556,7 +613,8 @@ defmodule Gamend.ReadyChecks do
   # ── Cancelling and expiry ─────────────────────────────────────────────────
 
   @doc "Cancels a pending check — the host called it off, or the subject went away."
-  @spec cancel(Check.t(), String.t()) :: {:ok, Check.t()} | {:error, term()}
+  @spec cancel(Check.t(), String.t()) ::
+          {:ok, Check.t()} | {:error, :already_resolved | :no_open_check}
   def cancel(%Check{} = check, reason \\ "cancelled") do
     result =
       Gamend.Lock.serialize(:ready_check, check.id, fn ->
@@ -572,8 +630,14 @@ defmodule Gamend.ReadyChecks do
     end
   end
 
-  @doc "Cancels the lobby's pending check, if it has one."
-  @spec cancel_for_lobby(Ecto.UUID.t()) :: :ok
+  @doc """
+  Cancels the lobby's pending check, if it has one.
+
+  `{:error, :already_resolved}` when it passed or failed before the cancel
+  took its lock (or `:no_open_check` when it went with its lobby): it was
+  read pending, and the cancel did not happen.
+  """
+  @spec cancel_for_lobby(Ecto.UUID.t()) :: :ok | {:error, :already_resolved | :no_open_check}
   def cancel_for_lobby(lobby_id) when is_binary(lobby_id) do
     case pending_for_lobby(lobby_id) do
       nil -> :ok
@@ -581,8 +645,8 @@ defmodule Gamend.ReadyChecks do
     end
   end
 
-  @doc "Cancels the party's pending check, if it has one."
-  @spec cancel_for_party(Ecto.UUID.t()) :: :ok
+  @doc "Cancels the party's pending check, if it has one. As `cancel_for_lobby/1`."
+  @spec cancel_for_party(Ecto.UUID.t()) :: :ok | {:error, :already_resolved | :no_open_check}
   def cancel_for_party(party_id) when is_binary(party_id) do
     case pending_for_party(party_id) do
       nil -> :ok

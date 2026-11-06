@@ -165,6 +165,7 @@ defmodule GamendWeb.Api.V1.LobbyController do
       401 => Schemas.error("Not authenticated"),
       403 => Schemas.error("No authority over the lobby"),
       404 => Schemas.error("Not found"),
+      409 => Schemas.error("Another change moved the lobby's state first (state_changed)"),
       422 => Schemas.error("Unknown state or hook rejection")
     }
   )
@@ -181,15 +182,15 @@ defmodule GamendWeb.Api.V1.LobbyController do
         {:error, :invalid_state} ->
           reply_error(conn, :unprocessable_entity, "invalid_state")
 
+        {:error, :state_changed} ->
+          reply_error(conn, :conflict, "state_changed")
+
         # Deleted after it was read: answers as a read after the delete would.
         {:error, :not_found} ->
           reply_error(conn, :not_found, "not_found")
 
         {:error, {:hook_rejected, reason}} ->
           reply_error(conn, :unprocessable_entity, "rejected", rejection_message(reason))
-
-        _other ->
-          reply_error(conn, :unprocessable_entity, "unexpected_error")
       end
     end)
   end

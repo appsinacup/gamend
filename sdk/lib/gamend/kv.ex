@@ -73,10 +73,15 @@ defmodule Gamend.KV do
   @doc ~S"""
     Create a new `Entry` from `attrs` (expecting `key`, optional `user_id`/`lobby_id`,
     `value`, `metadata`).
+    
+    An entry for a user who already holds `max_kv_entries_per_user` is refused
+    with `{:error, :too_many_entries}`. `put/4` does not check that cap.
+    
     Returns `{:ok, entry}` or `{:error, changeset}`.
     
   """
-  @spec create_entry(attrs()) :: {:ok, Gamend.KV.Entry.t()} | {:error, Ecto.Changeset.t()}
+  @spec create_entry(attrs()) ::
+          {:ok, Gamend.KV.Entry.t()} | {:error, Ecto.Changeset.t() | :too_many_entries}
   def create_entry(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->

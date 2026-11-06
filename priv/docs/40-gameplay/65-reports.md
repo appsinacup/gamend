@@ -134,6 +134,10 @@ never a public storage prefix: only an admin reads them, at
 | `after_report_created(report)` | Fire-and-forget |
 | `after_report_resolved(report)` | Fire-and-forget, each time an open report is closed |
 
+Two moderators closing the same open report at once close it once: the
+second finds it closed and writes nothing (`Reports.resolve/3` answers
+`{:error, :status_changed}`), so the hook runs and the reporter is told once.
+
 A report reopened and closed again calls `after_report_resolved` again, so a
 reward paid from it needs an idempotency key on the report id:
 

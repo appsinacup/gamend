@@ -11,6 +11,7 @@ defmodule Gamend.Groups.Shared do
   alias Gamend.Groups.GroupMember
   alias Gamend.Lock
   alias Gamend.Repo
+  alias Gamend.Repo.AdvisoryLock
 
   @doc false
   def broadcast_group(group_id, event) do
@@ -180,17 +181,51 @@ defmodule Gamend.Groups.Shared do
   # SQLite, the only database connection. The capacity checks run first too,
   # so a full group is refused without calling it, and again under the lock,
   # where a concurrent join could have taken the last place.
+  #
+  # `claim` is what authorises the seat, when something does (an invite, a
+  # join request): see `seat_member/3`.
   @doc false
-  def do_add_group_member(user_id, group_id, group, source) do
+  def do_add_group_member(user_id, group_id, group, hook_opts, claim \\ fn -> :ok end)
+      when is_map(hook_opts) do
     with :ok <- check_room(user_id, group_id, group),
-         :ok <- run_before_group_join_hook(user_id, group, %{"source" => source}) do
-      Lock.serialize(:group, group_id, fn ->
-        case check_room(user_id, group_id, group) do
-          :ok -> insert_group_member(group_id, user_id)
-          {:error, reason} -> Repo.rollback(reason)
-        end
-      end)
+         :ok <- run_before_group_join_hook(user_id, group, hook_opts) do
+      seat_member(user_id, group_id, claim)
     end
+  end
+
+  # The one write of a group seat, under the group's lock (a leave, a delete
+  # and a `max_members` change take it too), with the group read as it is now
+  # rather than the copy read before the hook, so a lowered cap holds. The cap
+  # on groups per player belongs to the player, and two joins to two groups
+  # hold two different group locks, so the player is locked as well, always
+  # after the group.
+  #
+  # `claim` runs last before the insert, in the same transaction: the invite
+  # or request that authorises the seat moves out of pending there. A cancel,
+  # a decline or a reject that landed first stops the join, and a join refused
+  # after the claim takes it back by rolling back.
+  defp seat_member(user_id, group_id, claim) do
+    Lock.serialize(:group, group_id, fn ->
+      AdvisoryLock.lock("group_player", user_id)
+
+      with %Group{} = group <- Repo.get(Group, group_id) || {:error, :not_found},
+           :ok <- check_not_member(group_id, user_id),
+           :ok <- check_room(user_id, group_id, group),
+           :ok <- claim.() do
+        insert_group_member(group_id, user_id)
+      else
+        {:error, reason} -> Repo.rollback(reason)
+      end
+    end)
+  end
+
+  defp check_not_member(group_id, user_id) do
+    member? =
+      Repo.exists?(
+        from(m in GroupMember, where: m.group_id == ^group_id and m.user_id == ^user_id)
+      )
+
+    if member?, do: {:error, :already_member}, else: :ok
   end
 
   defp check_room(user_id, group_id, group) do

@@ -152,7 +152,7 @@ defmodule Gamend.Groups.InviteLinks do
         {:error, :blocked}
 
       true ->
-        case Shared.do_add_group_member(user_id, group.id, group, "invite_link") do
+        case Shared.do_add_group_member(user_id, group.id, group, %{"source" => "invite_link"}) do
           {:ok, member} ->
             GroupInviteLink |> where([l], l.id == ^link.id) |> Repo.update_all(inc: [uses: 1])
             Shared.mark_pending_invites_accepted(user_id, group.id)

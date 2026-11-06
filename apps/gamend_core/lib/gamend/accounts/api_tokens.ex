@@ -63,12 +63,10 @@ defmodule Gamend.Accounts.ApiTokens do
   @spec create(User.t(), map()) ::
           {:ok, String.t(), ApiToken.t()} | {:error, Ecto.Changeset.t() | :limit_reached}
   def create(%User{} = user, attrs) do
-    if count(user.id) >= Gamend.Limits.get(:max_api_tokens_per_user) do
-      {:error, :limit_reached}
-    else
-      secret = 32 |> :crypto.strong_rand_bytes() |> Base.url_encode64(padding: false)
-      token = @prefix <> secret
+    secret = 32 |> :crypto.strong_rand_bytes() |> Base.url_encode64(padding: false)
+    token = @prefix <> secret
 
+    changeset =
       %ApiToken{
         user_id: user.id,
         token_hash: hash(token),
@@ -76,11 +74,23 @@ defmodule Gamend.Accounts.ApiTokens do
         token_version: user.token_version || 0
       }
       |> ApiToken.changeset(attrs)
-      |> Repo.insert()
-      |> case do
-        {:ok, row} -> {:ok, token, row}
-        {:error, changeset} -> {:error, changeset}
+
+    # Counted and inserted under the user's lock. Counted first with no lock,
+    # several creates at once (a double submit, a script) all saw room for
+    # one more and all inserted, past `max_api_tokens_per_user`.
+    Gamend.Lock.serialize("api_tokens", user.id, fn ->
+      if count(user.id) >= Gamend.Limits.get(:max_api_tokens_per_user) do
+        Repo.rollback(:limit_reached)
+      else
+        case Repo.insert(changeset) do
+          {:ok, row} -> row
+          {:error, changeset} -> Repo.rollback(changeset)
+        end
       end
+    end)
+    |> case do
+      {:ok, row} -> {:ok, token, row}
+      {:error, reason} -> {:error, reason}
     end
   end
 

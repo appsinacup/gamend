@@ -439,23 +439,25 @@ defmodule Gamend.Quests do
       |> Repo.all()
       |> MapSet.new()
 
-    ids =
-      from(p in QuestProgress,
-        where: p.user_id == ^from_user_id,
-        select: {p.id, p.quest_key, p.period_key}
-      )
-      |> Repo.all()
-      |> Enum.reject(fn {_id, quest_key, period_key} ->
-        MapSet.member?(taken, {quest_key, period_key})
-      end)
-      |> Enum.map(&elem(&1, 0))
+    now = DateTime.utc_now(:second)
 
-    {count, _} =
-      Repo.update_all(from(p in QuestProgress, where: p.id in ^ids),
-        set: [user_id: to_user_id, updated_at: DateTime.utc_now(:second)]
-      )
+    # One row at a time, each its own write, and the unique index decides.
+    # `taken` was read before the moves, so the account can play one of these
+    # periods in between: one `update_all` over every row then failed on that
+    # row's unique index, raised, and moved none of them. Now that row stays
+    # the guest's (the account's own play wins) and the others still move.
+    from(p in QuestProgress, where: p.user_id == ^from_user_id)
+    |> Repo.all()
+    |> Enum.reject(&MapSet.member?(taken, {&1.quest_key, &1.period_key}))
+    |> Enum.count(fn progress ->
+      moved =
+        progress
+        |> Ecto.Changeset.change(user_id: to_user_id, updated_at: now)
+        |> Ecto.Changeset.unique_constraint([:user_id, :quest_key, :period_key])
+        |> Repo.update()
 
-    count
+      match?({:ok, _}, moved)
+    end)
   end
 
   # Once a period's row is completed/claimed it can never advance again, so
@@ -564,11 +566,7 @@ defmodule Gamend.Quests do
     outcome =
       case progress do
         nil ->
-          if under_user_cap?(user_id, now) do
-            insert_progress(user_id, quest, event, amount, meta, now, period_key)
-          else
-            :noop
-          end
+          insert_under_cap(user_id, quest, event, amount, meta, now, period_key)
 
         %QuestProgress{status: "active"} = progress ->
           update_progress(progress, quest, event, amount, meta, now)
@@ -644,6 +642,38 @@ defmodule Gamend.Quests do
     end
   end
 
+  # A new row is the one write that adds to `max_active_quests_per_user`'s
+  # count, so the count and the insert run under the user's lock. Counted
+  # with no lock, events for several quests arriving together (a match's end
+  # reporting each objective) all counted one under the cap and all inserted,
+  # past it, and nothing said so. Only a player's first event of a quest in a
+  # period takes the lock; every later one updates its row lock-free.
+  defp insert_under_cap(user_id, quest, event, amount, meta, now, period_key) do
+    Gamend.Lock.serialize("quest_rows", user_id, fn ->
+      cond do
+        # Inserted since our read, by an event that held the lock first:
+        # re-read and merge into it.
+        Repo.exists?(
+          from p in QuestProgress,
+            where:
+              p.user_id == ^user_id and p.quest_key == ^quest.key and
+                  p.period_key == ^period_key
+        ) ->
+          :stale
+
+        under_user_cap?(user_id, now) ->
+          insert_progress(user_id, quest, event, amount, meta, now, period_key)
+
+        true ->
+          :noop
+      end
+    end)
+    |> case do
+      {:ok, outcome} -> outcome
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
   defp insert_progress(user_id, quest, event, amount, meta, now, period_key) do
     objective_progress = merge_objectives(%{}, quest, event, amount, meta)
     completed? = all_objectives_met?(objective_progress, quest)
@@ -660,7 +690,11 @@ defmodule Gamend.Quests do
         status: if(completed?, do: "completed", else: "active"),
         completed_at: if(completed?, do: now)
       })
-      |> Repo.insert()
+      # Under the lock's transaction, a constraint the insert hits (a row an
+      # admin completion or a guest merge wrote meanwhile, the quest deleted)
+      # must not abort it on Postgres: a savepoint answers it as a changeset
+      # and the transaction goes on.
+      |> Repo.insert(mode: :savepoint)
     end)
     |> case do
       {:ok, progress} ->
@@ -797,7 +831,8 @@ defmodule Gamend.Quests do
   end
 
   # Caps how many in-flight progress rows a user can hold in the *current*
-  # periods; excess events are ignored rather than erroring.
+  # periods; excess events are ignored rather than erroring. Only meaningful
+  # under `insert_under_cap/7`'s lock.
   defp under_user_cap?(user_id, now) do
     max = Gamend.Limits.get(:max_active_quests_per_user)
 
@@ -1202,17 +1237,26 @@ defmodule Gamend.Quests do
 
   # The single conditional UPDATE is the exactly-once gate: only one caller
   # ever sees the completed → claimed transition succeed.
+  #
+  # It claims the run this caller read, not whichever run the row holds now:
+  # the payout's idempotency key comes from `claim_count`. Matching on status
+  # alone let a second, concurrent claim of a repeat quest pass after the first
+  # had paid and re-armed onto a banked run — it then paid with the first
+  # run's key, the ledger dropped it as a replay, and the banked run was spent
+  # unpaid. The row answered is the one written, so the key is the claimed one.
   defp transition_to_claimed(progress, now) do
-    {count, _} =
-      from(p in QuestProgress, where: p.id == ^progress.id and p.status == "completed")
-      |> Repo.update_all(
-        set: [status: "claimed", claimed_at: now, updated_at: now],
-        inc: [lock_version: 1]
-      )
-
-    case count do
-      1 -> {:ok, %{progress | status: "claimed", claimed_at: now}}
-      0 -> {:error, :already_claimed}
+    from(p in QuestProgress,
+      where:
+        p.id == ^progress.id and p.status == "completed" and
+          p.claim_count == ^progress.claim_count
+    )
+    |> Repo.compare_and_set(
+      set: [status: "claimed", claimed_at: now, updated_at: now],
+      inc: [lock_version: 1]
+    )
+    |> case do
+      {:ok, claimed} -> {:ok, claimed}
+      {:error, :precondition_failed} -> {:error, :already_claimed}
     end
   end
 

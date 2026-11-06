@@ -27,6 +27,11 @@ defmodule Gamend.MatchmakingTest do
     |> Repo.update!()
   end
 
+  defp match_lobby do
+    {:ok, lobby} = Lobbies.create_lobby(%{max_users: 2, is_hidden: true, hostless: true})
+    lobby
+  end
+
   defp ticket!(user, params \\ %{"mode" => "duel"}, min \\ 2, max \\ 2) do
     {:ok, ticket} = Matchmaking.join(user, params, min, max)
     ticket
@@ -251,7 +256,7 @@ defmodule Gamend.MatchmakingTest do
       alice = ticket!(user())
       bob = ticket!(user())
 
-      assert Matchmaking.claim([alice, bob]) == :ok
+      assert {:ok, [_, _]} = Matchmaking.claim([alice, bob])
       assert Repo.get!(Ticket, alice.id).status == "matched"
 
       # Cancelling one member makes a subsequent claim conflict and roll back.
@@ -264,9 +269,33 @@ defmodule Gamend.MatchmakingTest do
       assert Repo.get!(Ticket, dave.id).status == "cancelled"
     end
 
+    test "a refused claim puts back only what it flipped, never another claim's tickets" do
+      alice = ticket!(user())
+      bob = ticket!(user())
+      carol = ticket!(user())
+
+      # One sweep claims alice and bob; another proposed bob and carol from an
+      # older read of the queue.
+      {:ok, held} = Matchmaking.claim([alice, bob])
+      assert Matchmaking.claim([bob, carol]) == :conflict
+
+      assert Repo.get!(Ticket, bob.id).status == "matched", "the first claim was undone"
+      assert Repo.get!(Ticket, carol.id).status == "queued"
+
+      # Nor can a stale copy of a ticket, or a requeue for another claim,
+      # take back what the first claim holds.
+      :ok = Matchmaking.requeue([alice, bob])
+      :ok = Matchmaking.requeue([%{bob | matched_at: DateTime.utc_now()}])
+      assert Repo.get!(Ticket, bob.id).status == "matched"
+
+      lobby = match_lobby()
+      assert Matchmaking.assign_lobby(held, lobby.id) == :ok
+      assert Repo.get!(Ticket, alice.id).match_id == lobby.id
+    end
+
     test "requeue returns claimed tickets without a lobby to the queue" do
       ticket = ticket!(user())
-      :ok = Matchmaking.claim([ticket])
+      {:ok, [ticket]} = Matchmaking.claim([ticket])
       :ok = Matchmaking.requeue([ticket])
 
       reloaded = Repo.get!(Ticket, ticket.id)
@@ -276,7 +305,7 @@ defmodule Gamend.MatchmakingTest do
 
     test "discard cancels claimed tickets instead of requeueing" do
       ticket = ticket!(user())
-      :ok = Matchmaking.claim([ticket])
+      {:ok, [ticket]} = Matchmaking.claim([ticket])
       :ok = Matchmaking.discard([ticket])
 
       assert Repo.get!(Ticket, ticket.id).status == "cancelled"
@@ -438,14 +467,8 @@ defmodule Gamend.MatchmakingTest do
     end
 
     defp claimed_pair do
-      tickets = [ticket!(user()), ticket!(user())]
-      :ok = Matchmaking.claim(tickets)
+      {:ok, tickets} = Matchmaking.claim([ticket!(user()), ticket!(user())])
       tickets
-    end
-
-    defp match_lobby do
-      {:ok, lobby} = Lobbies.create_lobby(%{max_users: 2, is_hidden: true, hostless: true})
-      lobby
     end
 
     test "assigning tickets to a lobby that no longer exists answers not_found and names none" do

@@ -113,8 +113,16 @@ defmodule GamendWeb.AdminLive.Reports do
              "message" => message,
              "resolved_by" => Scope.user_id(socket.assigns.current_scope)
            }) do
-        {:ok, _report} -> socket |> close_form() |> put_flash(:info, gettext("Report closed"))
-        {:error, _reason} -> put_flash(socket, :error, gettext("Could not close the report"))
+        {:ok, _report} ->
+          socket |> close_form() |> put_flash(:info, gettext("Report closed"))
+
+        {:error, :status_changed} ->
+          socket
+          |> close_form()
+          |> put_flash(:error, gettext("Someone else changed this report first"))
+
+        {:error, _reason} ->
+          put_flash(socket, :error, gettext("Could not close the report"))
       end
 
     {:noreply, reload(socket)}

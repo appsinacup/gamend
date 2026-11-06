@@ -14,7 +14,6 @@ defmodule Gamend.Groups.JoinRequests do
   alias Gamend.Groups.GroupMember
   alias Gamend.Groups.Shared
   alias Gamend.Repo
-  alias Gamend.Repo.AdvisoryLock
 
   @doc "List pending join requests sent by a user."
   @spec list_user_pending_requests(Ecto.UUID.t()) :: [GroupJoinRequest.t()]
@@ -168,92 +167,83 @@ defmodule Gamend.Groups.JoinRequests do
     end
   end
 
+  # The seat is the join's (`Shared.do_add_group_member/5`): the group's room
+  # and the player's cap on groups checked under the locks a join takes, and
+  # the request moved from pending to accepted inside that transaction. The
+  # approve used to write "accepted" over whatever the request was by then, so
+  # with a reject landing too the player ended a member with a rejected
+  # request and both answers in their notifications.
   defp approve_join_request_with_hook(request, group, admin_id, request_id) do
     group_id = request.group_id
     user_id = request.user_id
 
-    case Shared.run_before_group_join_hook(user_id, group, %{
-           "source" => "join_request_approval",
-           "request_id" => request_id,
-           "actor_user_id" => admin_id,
-           "admin_id" => admin_id
-         }) do
-      :ok ->
-        Ecto.Multi.new()
-        |> Ecto.Multi.run(:lock_and_check, fn _repo, _changes ->
-          AdvisoryLock.lock(:group, group_id)
+    hook_opts = %{
+      "source" => "join_request_approval",
+      "request_id" => request_id,
+      "actor_user_id" => admin_id,
+      "admin_id" => admin_id
+    }
 
-          if Groups.count_group_members(group_id) >= group.max_members do
-            {:error, :full}
-          else
-            {:ok, :space_available}
-          end
+    claim = fn ->
+      with {:ok, _accepted} <- answer_request(request, "accepted"), do: :ok
+    end
+
+    case Shared.do_add_group_member(user_id, group_id, group, hook_opts, claim) do
+      {:ok, member} ->
+        Shared.mark_pending_invites_accepted(user_id, group_id)
+        Shared.broadcast_group(group_id, {:join_request_approved, group_id, user_id})
+
+        # Notify the user that their join request was approved
+        admin = Gamend.Accounts.get_user(admin_id)
+        admin_name = Gamend.Accounts.display_name(admin)
+
+        Gamend.Notifications.admin_create_notification(
+          admin_id,
+          user_id,
+          %{
+            "title" => "Approved to join #{group.title}",
+            "content" => "",
+            "metadata" => %{
+              "type" => "group_join_request_approved",
+              "group_id" => group_id,
+              "group_title" => group.title,
+              "admin_id" => admin_id,
+              "admin_name" => admin_name
+            }
+          }
+        )
+
+        Gamend.Broadcast.publish(
+          "user:#{user_id}",
+          {:group_join_request_approved, %{group_id: group_id}}
+        )
+
+        Gamend.Async.run(fn ->
+          Gamend.Hooks.internal_call(:after_group_join, [user_id, group])
         end)
-        |> Ecto.Multi.update(:request, Ecto.Changeset.change(request, %{status: "accepted"}))
-        |> Ecto.Multi.insert(:membership, fn _changes ->
-          GroupMember.changeset(%GroupMember{}, %{
-            group_id: group_id,
-            user_id: user_id,
-            role: "member"
-          })
-        end)
-        |> approve_in_transaction()
-        |> case do
-          {:ok, %{membership: member}} ->
-            _ = Shared.invalidate_group_cache(group_id)
-            Shared.mark_pending_invites_accepted(user_id, group_id)
-            Shared.broadcast_group(group_id, {:join_request_approved, group_id, user_id})
-            Shared.broadcast_group(group_id, {:member_joined, group_id, user_id})
 
-            # Notify the user that their join request was approved
-            admin = Gamend.Accounts.get_user(admin_id)
-            admin_name = Gamend.Accounts.display_name(admin)
-
-            Gamend.Notifications.admin_create_notification(
-              admin_id,
-              user_id,
-              %{
-                "title" => "Approved to join #{group.title}",
-                "content" => "",
-                "metadata" => %{
-                  "type" => "group_join_request_approved",
-                  "group_id" => group_id,
-                  "group_title" => group.title,
-                  "admin_id" => admin_id,
-                  "admin_name" => admin_name
-                }
-              }
-            )
-
-            Gamend.Broadcast.publish(
-              "user:#{user_id}",
-              {:group_join_request_approved, %{group_id: group_id}}
-            )
-
-            Gamend.Async.run(fn ->
-              Gamend.Hooks.internal_call(:after_group_join, [user_id, group])
-            end)
-
-            {:ok, member}
-
-          {:error, _op, changeset, _} ->
-            {:error, changeset}
-
-          {:error, :not_found} = gone ->
-            gone
-        end
+        {:ok, member}
 
       {:error, reason} ->
         {:error, reason}
     end
   end
 
-  # The group read before this may have been deleted since, and the request
-  # with it: the update finds no row, and the membership no group.
-  defp approve_in_transaction(multi) do
-    Repo.rescue_stale(:not_found, fn ->
-      Repo.rescue_foreign_key(:not_found, fn -> Gamend.AfterCommit.transaction(multi) end)
-    end)
+  # Pending to `status`, or nothing: of an approve, a reject and a cancel
+  # landing together exactly one moves the request, and only that one tells
+  # anyone. The losers answer `:not_pending`, or `:not_found` for a request
+  # cancelled (or its group deleted) first.
+  defp answer_request(%GroupJoinRequest{id: id}, status) do
+    from(r in GroupJoinRequest, where: r.id == ^id and r.status == "pending")
+    |> Repo.compare_and_set(set: [status: status, updated_at: DateTime.utc_now(:second)])
+    |> case do
+      {:ok, answered} -> {:ok, answered}
+      {:error, :precondition_failed} -> {:error, answered_or_gone(id)}
+    end
+  end
+
+  defp answered_or_gone(id) do
+    if Repo.get(GroupJoinRequest, id), do: :not_pending, else: :not_found
   end
 
   @doc "Reject a pending join request. Admin only."
@@ -271,8 +261,7 @@ defmodule Gamend.Groups.JoinRequests do
       %GroupJoinRequest{group_id: group_id} = request ->
         if Groups.can_manage_group?(admin_id, group_id) do
           request
-          |> Ecto.Changeset.change(%{status: "rejected"})
-          |> Repo.update()
+          |> answer_request("rejected")
           |> case do
             {:ok, updated} ->
               Shared.broadcast_group(
@@ -324,17 +313,21 @@ defmodule Gamend.Groups.JoinRequests do
         {:error, :not_found}
 
       %GroupJoinRequest{user_id: ^user_id, status: "pending"} = request ->
-        case Repo.delete(request) do
-          {:ok, deleted} ->
+        # Deleted only while still pending: an approve that claimed it first
+        # has seated the player.
+        case Repo.delete_all(
+               from(r in GroupJoinRequest, where: r.id == ^request.id and r.status == "pending")
+             ) do
+          {1, _} ->
             Shared.broadcast_group(
               request.group_id,
               {:join_request_cancelled, request.group_id, user_id}
             )
 
-            {:ok, deleted}
+            {:ok, request}
 
-          error ->
-            error
+          {0, _} ->
+            {:error, answered_or_gone(request.id)}
         end
 
       %GroupJoinRequest{status: status} when status != "pending" ->

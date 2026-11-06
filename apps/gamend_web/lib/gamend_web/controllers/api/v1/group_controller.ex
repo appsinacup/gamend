@@ -438,8 +438,13 @@ defmodule GamendWeb.Api.V1.GroupController do
     ],
     responses: [
       ok: {"Request approved", "application/json", GroupMemberResponse},
-      forbidden: Schemas.error("Not admin or group full"),
+      forbidden:
+        Schemas.error(
+          "Not admin, group full, the player at their cap on groups (too_many_groups), " <>
+            "or the request answered first (not_pending)"
+        ),
       not_found: Schemas.error("Request not found"),
+      conflict: Schemas.error("Already a member"),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -465,7 +470,7 @@ defmodule GamendWeb.Api.V1.GroupController do
     ],
     responses: [
       ok: {"Request rejected", "application/json", GroupJoinRequestResponse},
-      forbidden: Schemas.error("Not admin"),
+      forbidden: Schemas.error("Not admin, or the request answered first (not_pending)"),
       not_found: Schemas.error("Request not found"),
       unauthorized: Schemas.error("Not authenticated")
     ]
@@ -1293,6 +1298,9 @@ defmodule GamendWeb.Api.V1.GroupController do
 
             {:error, :full} ->
               reply_error(conn, :forbidden, "full")
+
+            {:error, :already_member} ->
+              reply_error(conn, :conflict, "already_member")
 
             {:error, reason} ->
               reply_error(conn, :forbidden, reason)

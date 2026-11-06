@@ -55,6 +55,11 @@ defmodule Gamend.ReadyChecks do
 
   @doc ~S"""
     Adds a member to the lobby's open check, if there is one.
+    
+    Call it inside the transaction that seats them, under the lobby's lock, as
+    `Gamend.Lobbies` and `Gamend.Parties` do: the check then either takes the
+    seat before it counts the next answer, or passed before the seat existed.
+    
   """
   @spec add_member(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok
   def add_member(_lobby_id, _user_id) do
@@ -68,7 +73,7 @@ defmodule Gamend.ReadyChecks do
   end
 
   @doc ~S"""
-    Adds a member to the party's open check, if there is one.
+    Adds a member to the party's open check, if there is one. As `add_member/2`.
   """
   @spec add_party_member(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok
   def add_party_member(_party_id, _user_id) do
@@ -119,7 +124,7 @@ defmodule Gamend.ReadyChecks do
     Cancels a pending check — the host called it off, or the subject went away.
   """
   @spec cancel(Gamend.ReadyChecks.Check.t(), String.t()) ::
-          {:ok, Gamend.ReadyChecks.Check.t()} | {:error, term()}
+          {:ok, Gamend.ReadyChecks.Check.t()} | {:error, :already_resolved | :no_open_check}
   def cancel(_check, _reason \\ "cancelled") do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -146,8 +151,13 @@ defmodule Gamend.ReadyChecks do
 
   @doc ~S"""
     Cancels the lobby's pending check, if it has one.
+    
+    `{:error, :already_resolved}` when it passed or failed before the cancel
+    took its lock (or `:no_open_check` when it went with its lobby): it was
+    read pending, and the cancel did not happen.
+    
   """
-  @spec cancel_for_lobby(Ecto.UUID.t()) :: :ok
+  @spec cancel_for_lobby(Ecto.UUID.t()) :: :ok | {:error, :already_resolved | :no_open_check}
   def cancel_for_lobby(_lobby_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -159,9 +169,9 @@ defmodule Gamend.ReadyChecks do
   end
 
   @doc ~S"""
-    Cancels the party's pending check, if it has one.
+    Cancels the party's pending check, if it has one. As `cancel_for_lobby/1`.
   """
-  @spec cancel_for_party(Ecto.UUID.t()) :: :ok
+  @spec cancel_for_party(Ecto.UUID.t()) :: :ok | {:error, :already_resolved | :no_open_check}
   def cancel_for_party(_party_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -321,7 +331,11 @@ defmodule Gamend.ReadyChecks do
     Opens a check over `user_ids` and notifies them.
     
     `subject` is a `%Lobby{}` or `%Party{}` (kind `"ready"`) or `:matchmaking`
-    (kind `"accept"`). Options:
+    (kind `"accept"`). For a lobby or a party, `user_ids` may be `:members`:
+    every member, read again under the subject's lock as the check is written,
+    so a member who joins or leaves while it opens is on the board exactly when
+    they are in the lobby or party. `before_ready_check_open` sees the members
+    as read before that lock. Options:
     
       * `:kind` — override the kind implied by the subject
       * `:timeout_ms` — answering window; `nil` leaves a `"ready"` check open
@@ -337,7 +351,7 @@ defmodule Gamend.ReadyChecks do
     and `{:error, :too_many_participants}` past `max_ready_check_participants`.
     
   """
-  @spec open(subject(), [Ecto.UUID.t()], keyword()) ::
+  @spec open(subject(), [Ecto.UUID.t()] | :members, keyword()) ::
           {:ok, Gamend.ReadyChecks.Check.t()} | {:error, term()}
   def open(_subject, _user_ids, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
@@ -483,7 +497,7 @@ defmodule Gamend.ReadyChecks do
     re-confirm on a deadline_at ("force ready"). Same options as `open/3`.
     
   """
-  @spec reset(subject(), [Ecto.UUID.t()], keyword()) ::
+  @spec reset(subject(), [Ecto.UUID.t()] | :members, keyword()) ::
           {:ok, Gamend.ReadyChecks.Check.t()} | {:error, term()}
   def reset(_subject, _user_ids, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do

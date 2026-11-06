@@ -278,9 +278,13 @@ defmodule Gamend.KV do
     user_id = Keyword.get(opts, :user_id)
     lobby_id = Keyword.get(opts, :lobby_id)
 
-    _ = Gamend.Cache.invalidate(cache_key(key, user_id, lobby_id))
-
+    # Evicted after the row is gone, never before: a read landing between an
+    # eviction and the delete found the row still there and cached it back,
+    # and it was served (and rebuilt from, by a locked read-modify-write) until
+    # the TTL. After the delete, a read in flight either put before this
+    # eviction, which removes it, or sees the generation move and drops it.
     _ = Repo.delete_all(entry_query(key, user_id, lobby_id))
+    _ = evict(key, user_id, lobby_id)
     _ = invalidate_entries_cache(user_id, lobby_id)
     _ = broadcast_kv_deleted(key, user_id, lobby_id)
     :ok
@@ -463,62 +467,67 @@ defmodule Gamend.KV do
   @doc """
   Create a new `Entry` from `attrs` (expecting `key`, optional `user_id`/`lobby_id`,
   `value`, `metadata`).
+
+  An entry for a user who already holds `max_kv_entries_per_user` is refused
+  with `{:error, :too_many_entries}`. `put/4` does not check that cap.
+
   Returns `{:ok, entry}` or `{:error, changeset}`.
   """
-  @spec create_entry(attrs()) :: {:ok, Entry.t()} | {:error, Ecto.Changeset.t()}
+  @spec create_entry(attrs()) ::
+          {:ok, Entry.t()} | {:error, Ecto.Changeset.t() | :too_many_entries}
   def create_entry(attrs) when is_map(attrs) do
     user_id = attrs[:user_id] || attrs["user_id"]
-
-    with :ok <- check_kv_entries_limit(user_id) do
-      do_create_entry(attrs)
-    end
-  end
-
-  defp check_kv_entries_limit(nil), do: :ok
-
-  defp check_kv_entries_limit(user_id) do
-    max = Gamend.Limits.get(:max_kv_entries_per_user)
-    current = count_entries(user_id: user_id)
-
-    if current >= max do
-      {:error, :too_many_entries}
-    else
-      :ok
-    end
-  end
-
-  defp do_create_entry(attrs) do
     changeset = Entry.changeset(%Entry{}, attrs)
 
-    try do
-      case Repo.insert(changeset) do
-        {:ok, entry} ->
-          _ = invalidate_entries_cache(entry.user_id, entry.lobby_id)
-          _ = evict(entry.key, entry.user_id, entry.lobby_id)
-          _ = broadcast_kv_updated(entry)
-          {:ok, entry}
-
-        {:error, %Ecto.Changeset{} = changeset} ->
-          {:error, changeset}
-      end
-    rescue
-      e in Ecto.ConstraintError ->
-        case Map.get(e, :type) do
-          :foreign_key ->
-            changeset =
-              changeset
-              |> maybe_add_fk_error(:user_id)
-              |> maybe_add_fk_error(:lobby_id)
-
-            {:error, changeset}
-
-          :unique ->
-            {:error, Ecto.Changeset.add_error(changeset, :key, "has already been taken")}
-
-          _ ->
-            reraise(e, __STACKTRACE__)
-        end
+    with {:ok, entry} <- insert_within_cap(changeset, user_id) do
+      _ = invalidate_entries_cache(entry.user_id, entry.lobby_id)
+      _ = evict(entry.key, entry.user_id, entry.lobby_id)
+      _ = broadcast_kv_updated(entry)
+      {:ok, entry}
     end
+  end
+
+  # The cap is a count and then an insert, so it holds only if nothing inserts
+  # for the same user in between: counted under a lock keyed on the user, from
+  # the database. The count used to be read through the cache (up to its TTL
+  # behind) and outside any lock, so creates landing together all passed at
+  # one under the cap.
+  defp insert_within_cap(changeset, user_id) when is_binary(user_id) and user_id != "" do
+    max = Gamend.Limits.get(:max_kv_entries_per_user)
+
+    Gamend.Lock.serialize("kv_user_entries", user_id, fn ->
+      held = Entry |> Gamend.Query.filter_id(:user_id, user_id) |> Repo.aggregate(:count)
+
+      if held >= max, do: Repo.rollback(:too_many_entries)
+
+      case insert_entry(changeset) do
+        {:ok, entry} -> entry
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  defp insert_within_cap(changeset, _user_id), do: insert_entry(changeset)
+
+  defp insert_entry(changeset) do
+    Repo.insert(changeset)
+  rescue
+    e in Ecto.ConstraintError ->
+      case Map.get(e, :type) do
+        :foreign_key ->
+          changeset =
+            changeset
+            |> maybe_add_fk_error(:user_id)
+            |> maybe_add_fk_error(:lobby_id)
+
+          {:error, changeset}
+
+        :unique ->
+          {:error, Ecto.Changeset.add_error(changeset, :key, "has already been taken")}
+
+        _ ->
+          reraise(e, __STACKTRACE__)
+      end
   end
 
   @doc """
@@ -591,9 +600,9 @@ defmodule Gamend.KV do
         :ok
 
       %Entry{} = entry ->
-        _ = Gamend.Cache.invalidate(cache_key(entry.key, entry.user_id, entry.lobby_id))
-
+        # After the delete, as `delete/2` does.
         _ = Repo.delete(entry)
+        _ = evict(entry.key, entry.user_id, entry.lobby_id)
         _ = invalidate_entries_cache(entry.user_id, entry.lobby_id)
         _ = broadcast_kv_deleted(entry.key, entry.user_id, entry.lobby_id)
         :ok

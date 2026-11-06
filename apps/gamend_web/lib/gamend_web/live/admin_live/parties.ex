@@ -657,30 +657,25 @@ defmodule GamendWeb.AdminLive.Parties do
         {:noreply, put_flash(socket, :error, "Invalid user ID")}
 
       user_id ->
-        user = Gamend.Accounts.get_user(user_id)
+        # Through the party's own seat: a raw write here skipped the party's
+        # capacity, moved a player out of another party without leaving it,
+        # and never evicted the cached user.
+        case Parties.admin_add_member(party, user_id) do
+          {:ok, _user} ->
+            members = Parties.get_party_members(party.id)
 
-        if user do
-          result =
-            user
-            |> Ecto.Changeset.change(%{party_id: party.id})
-            |> Gamend.Repo.update()
+            {:noreply,
+             socket
+             |> assign(:members, members)
+             |> assign(:add_member_id, "")
+             |> put_flash(:info, "User added to party")
+             |> reload_parties()}
 
-          case result do
-            {:ok, _user} ->
-              members = Parties.get_party_members(party.id)
+          {:error, :not_found} ->
+            {:noreply, put_flash(socket, :error, "User not found")}
 
-              {:noreply,
-               socket
-               |> assign(:members, members)
-               |> assign(:add_member_id, "")
-               |> put_flash(:info, "User added to party")
-               |> reload_parties()}
-
-            {:error, reason} ->
-              {:noreply, put_flash(socket, :error, "Add failed: #{inspect(reason)}")}
-          end
-        else
-          {:noreply, put_flash(socket, :error, "User not found")}
+          {:error, reason} ->
+            {:noreply, put_flash(socket, :error, "Add failed: #{inspect(reason)}")}
         end
     end
   end

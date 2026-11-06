@@ -506,8 +506,14 @@ defmodule Gamend.Reports do
   when they had an account; nothing is sent when blank).
 
   Closing an open report fires `after_report_resolved/1`.
+
+  The change is made from the status `report` holds, and only while the
+  report still has it: when another moderator closed or reopened it first,
+  nothing is written, nothing is sent and the answer is
+  `{:error, :status_changed}`.
   """
-  @spec resolve(Report.t(), String.t(), map()) :: {:ok, Report.t()} | {:error, term()}
+  @spec resolve(Report.t(), String.t(), map()) ::
+          {:ok, Report.t()} | {:error, Ecto.Changeset.t() | :status_changed}
   def resolve(%Report{} = report, status, attrs \\ %{}) do
     attrs = Gamend.Parse.string_keys(attrs)
 
@@ -528,18 +534,37 @@ defmodule Gamend.Reports do
         }
       end
 
-    case report |> Report.resolve_changeset(changes) |> Repo.update() do
-      {:ok, updated} ->
-        if report.status == "open" and status != "open" do
-          dispatch(:after_report_resolved, [updated])
-        end
+    changeset = Report.resolve_changeset(report, changes)
 
-        maybe_notify_reporter(updated, attrs["message"])
-        alert_admins()
-        {:ok, updated}
+    with {:ok, _valid} <- Ecto.Changeset.apply_action(changeset, :update),
+         {:ok, updated} <- transition(report, changeset) do
+      if report.status == "open" and status != "open" do
+        dispatch(:after_report_resolved, [updated])
+      end
 
-      error ->
-        error
+      maybe_notify_reporter(updated, attrs["message"])
+      alert_admins()
+      {:ok, updated}
+    end
+  end
+
+  # Written only while the report still has the status the caller read. The
+  # hook and the reporter's message follow from that status, and deciding it
+  # from the caller's struct let two moderators closing one open report both
+  # see it open: both writes landed, and the hook fired and the reporter was
+  # told twice. Now the second finds the report closed and writes nothing.
+  defp transition(%Report{id: id, status: seen}, changeset) do
+    set =
+      Enum.map(
+        [:status, :resolution_note, :resolved_by, :resolved_at],
+        &{&1, Ecto.Changeset.get_field(changeset, &1)}
+      )
+
+    from(r in Report, where: r.id == ^id and r.status == ^seen)
+    |> Repo.compare_and_set(set: [{:updated_at, DateTime.utc_now(:second)} | set])
+    |> case do
+      {:ok, updated} -> {:ok, updated}
+      {:error, :precondition_failed} -> {:error, :status_changed}
     end
   end
 

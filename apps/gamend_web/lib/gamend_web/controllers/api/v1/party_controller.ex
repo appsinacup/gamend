@@ -446,8 +446,11 @@ defmodule GamendWeb.Api.V1.PartyController do
   # anything more than one id.
   defp do_disband(conn, user, %{} = party) do
     if Parties.can_manage_party?(user, party) do
-      case Parties.disband(party) do
+      # The check above is an early refusal: `disband/2` asks again under the
+      # party's lock, where a hand-over that landed first is seen.
+      case Parties.disband(party, user) do
         {:ok, _} -> reply_ok(conn)
+        {:error, :not_leader} -> reply_error(conn, :forbidden, "not_party_leader")
         _ -> reply_error(conn, :unprocessable_entity, "unexpected_error")
       end
     else

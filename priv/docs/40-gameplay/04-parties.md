@@ -33,7 +33,7 @@ Kicking is the leader's too, never of themselves; the target gets a `party_kicke
 
 A party never trickles into a lobby one member at a time. The lobby endpoints themselves are party-aware: the leader calling POST /lobbies, POST /lobbies/:id/join or POST /lobbies/quick_join takes the whole party, seated in a single transaction - everyone or no one (`not_enough_space`). A non-leader member calling them gets 403 in_party. The explicit forms POST /parties/create_lobby and POST /parties/join_lobby/:id run the same flows.
 
-Two preconditions guard every variant: no member may already be in a lobby (`member_in_lobby`), and every member must be recently active (`members_offline`) - a party should not reserve seats for people who are not there. The party itself survives: when the lobby ends, the party is still standing.
+Two preconditions guard every variant: no member may already be in a lobby (`member_in_lobby`), and every member must be recently active (`members_offline`) - a party should not reserve seats for people who are not there. A party enters only a lobby each member could enter alone: a hidden one is 404, as it is for a player, and a block between any member and anyone already seated is 403 `blocked`. Quick join passes over such a lobby and tries the next. The party itself survives: when the lobby ends, the party is still standing.
 
 In matchmaking a party queues as one unit and is never split - the leader queues for everybody and the whole party is seated together or not at all. The leader can also open a ready board over the party with POST /parties/ready_check (DELETE cancels); members answer through the same `/me/ready_check` surface as lobby checks, passing `"scope": "party"`, and the `ready_check_*` events arrive on the party channel. Both are covered in [/docs/matchmaking](/docs/matchmaking).
 
@@ -61,7 +61,7 @@ Members listen on `party:{party_id}`: `updated`, `member_joined`, `member_left`,
 {:ok, :disbanded} = Gamend.Parties.disband(party)
 ```
 
-Hooks fire around create, join, update, kick, leave and disband (`before_party_create`, `after_party_join`, `after_party_disband`, ...), and party-seated lobby joins still fire `after_lobby_join` for every member.
+Hooks fire around create, join, update, kick, leave and disband (`before_party_create`, `after_party_join`, `after_party_disband`, ...), and a party entering a lobby asks `before_lobby_join` for every member who joins (all of them for an existing lobby, all but the leader for the one they create), with `"party_id"` in its opts; the first refusal keeps the whole party out (403 `rejected`, and quick join tries the next lobby). `after_lobby_join` fires for the same members.
 
 ## Operations
 

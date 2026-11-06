@@ -748,6 +748,162 @@ defmodule Gamend.PartiesTest do
 
       assert {:error, :member_in_lobby} = Parties.join_lobby_with_party(leader, target_lobby.id)
     end
+
+    # A party gets in only where each member could alone: a solo join of a
+    # hidden lobby is 404, and a party walked in by its id.
+    test "a hidden lobby is not found, unless the server bypasses it", %{
+      leader: leader,
+      member1: member1
+    } do
+      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
+      add_member_to_party(member1, party)
+      set_all_online([leader, member1])
+
+      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+
+      {:ok, lobby} =
+        Lobbies.create_lobby(%{title: "hidden-lobby", host_id: host.id, is_hidden: true})
+
+      assert {:error, :not_found} = Parties.join_lobby_with_party(leader, lobby.id)
+      assert Accounts.get_user(member1.id).lobby_id == nil
+
+      assert {:ok, _} = Parties.join_lobby_with_party(leader, lobby.id, %{bypass_hidden: true})
+      assert Accounts.get_user(member1.id).lobby_id == lobby.id
+    end
+
+    test "a block between any member and anyone seated keeps the party out", %{
+      leader: leader,
+      member1: member1
+    } do
+      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
+      add_member_to_party(member1, party)
+      set_all_online([leader, member1])
+
+      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      {:ok, lobby} = Lobbies.create_lobby(%{title: "with-a-block", host_id: host.id})
+      {:ok, _} = Friends.block_user(host, member1.id)
+
+      assert {:error, :blocked} = Parties.join_lobby_with_party(leader, lobby.id)
+      assert Accounts.get_user(leader.id).lobby_id == nil
+      assert Accounts.get_user(member1.id).lobby_id == nil
+    end
+  end
+
+  # Party seats bypassed `Lobbies.join_lobby/3`, and with it the game's
+  # `before_lobby_join`: a lobby a game kept a player out of took them as part
+  # of a party.
+  describe "the game's before_lobby_join, for a party seat" do
+    defmodule MidMatchHooks do
+      use Gamend.TestSupport.NoopHooks
+
+      @impl true
+      def before_lobby_join(user, lobby, opts) do
+        # Hook arguments arrive as plain data: the opts' keys are strings.
+        send(:persistent_term.get({__MODULE__, :pid}), {:asked, user.id, opts["party_id"]})
+        if lobby.title == "mid-match", do: {:error, :mid_match}, else: {:ok, {user, lobby, opts}}
+      end
+    end
+
+    setup %{leader: leader, member1: member1} do
+      original = Application.get_env(:gamend_core, :hooks_module)
+      :persistent_term.put({MidMatchHooks, :pid}, self())
+      Application.put_env(:gamend_core, :hooks_module, MidMatchHooks)
+
+      on_exit(fn ->
+        Application.put_env(:gamend_core, :hooks_module, original)
+        :persistent_term.erase({MidMatchHooks, :pid})
+      end)
+
+      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
+      add_member_to_party(member1, party)
+      set_all_online([leader, member1])
+      %{party: party}
+    end
+
+    test "is asked for every member, and a refusal keeps the party out", %{
+      leader: leader,
+      member1: member1,
+      party: party
+    } do
+      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      {:ok, lobby} = Lobbies.create_lobby(%{title: "mid-match", host_id: host.id})
+
+      assert {:error, {:hook_rejected, :mid_match}} =
+               Parties.join_lobby_with_party(leader, lobby.id)
+
+      assert_received {:asked, _first, party_id}
+      assert party_id == party.id
+      assert Accounts.get_user(leader.id).lobby_id == nil
+      assert Accounts.get_user(member1.id).lobby_id == nil
+
+      other_host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      {:ok, open} = Lobbies.create_lobby(%{title: "open", host_id: other_host.id, max_users: 8})
+      flush_asked()
+      assert {:ok, _} = Parties.join_lobby_with_party(leader, open.id)
+      assert Enum.sort(asked()) == Enum.sort([leader.id, member1.id])
+    end
+
+    test "is asked for each member who joins the party's new lobby, not its creator", %{
+      leader: leader,
+      member1: member1
+    } do
+      assert {:error, {:hook_rejected, :mid_match}} =
+               Parties.create_lobby_with_party(leader, %{"title" => "mid-match"})
+
+      assert asked() == [member1.id]
+      assert Accounts.get_user(leader.id).lobby_id == nil
+      refute Gamend.Repo.get_by(Lobby, title: "mid-match")
+    end
+
+    test "a quick join passes over a lobby the game refuses", %{leader: leader, member1: member1} do
+      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      {:ok, refused} = Lobbies.create_lobby(%{title: "mid-match", host_id: host.id, max_users: 6})
+
+      assert {:ok, lobby} = Parties.quick_join_with_party(leader, %{max_users: 6})
+      assert lobby.id != refused.id
+      assert Accounts.get_user(member1.id).lobby_id == lobby.id
+    end
+
+    defp asked(acc \\ []) do
+      receive do
+        {:asked, user_id, _party_id} -> asked([user_id | acc])
+      after
+        0 -> Enum.reverse(acc)
+      end
+    end
+
+    defp flush_asked, do: asked()
+  end
+
+  describe "a quick join past a lobby with a block" do
+    test "the party takes another lobby", %{leader: leader, member1: member1} do
+      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
+      add_member_to_party(member1, party)
+      set_all_online([leader, member1])
+
+      blocker = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+
+      {:ok, blocked_lobby} =
+        Lobbies.create_lobby(%{title: "qj-block", host_id: blocker.id, max_users: 6})
+
+      {:ok, _} = Friends.block_user(blocker, member1.id)
+
+      assert {:ok, lobby} = Parties.quick_join_with_party(leader, %{max_users: 6})
+      assert lobby.id != blocked_lobby.id
+      assert Accounts.get_user(member1.id).lobby_id == lobby.id
+    end
+
+    test "a player alone takes another lobby, not a 403", %{leader: player} do
+      blocker = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+
+      {:ok, blocked_lobby} =
+        Lobbies.create_lobby(%{title: "qj-solo-block", host_id: blocker.id, max_users: 7})
+
+      {:ok, _} = Friends.block_user(player, blocker.id)
+
+      assert {:ok, lobby} = Lobbies.quick_join(player, nil, 7, %{})
+      assert lobby.id != blocked_lobby.id
+    end
   end
 
   describe "atomicity of lobby operations" do

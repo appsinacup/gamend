@@ -6,6 +6,9 @@ defmodule GamendWeb.PartyControllerTest.VetoAll do
 
   @impl true
   def before_party_join(_user, _party), do: {:error, :crew_only}
+
+  @impl true
+  def before_lobby_join(_user, _lobby, _opts), do: {:error, "This match has started"}
 end
 
 defmodule GamendWeb.Api.V1.PartyControllerTest do
@@ -391,6 +394,62 @@ defmodule GamendWeb.Api.V1.PartyControllerTest do
         |> post("/api/v1/parties/join_lobby/#{lobby.id}")
 
       assert json_response(conn, 403)["error"] == "not_enough_space"
+    end
+
+    # The party gets in only where each member could alone.
+    test "a hidden lobby is 404, as for a player alone", %{conn: conn} do
+      {leader, _member} = online_party()
+      host = AccountsFixtures.user_fixture()
+      {:ok, lobby} = Lobbies.create_lobby(%{title: "hidden", host_id: host.id, is_hidden: true})
+
+      for path <- ["/api/v1/parties/join_lobby/#{lobby.id}", "/api/v1/lobbies/#{lobby.id}/join"] do
+        conn = conn |> auth_conn(leader) |> post(path)
+        assert json_response(conn, 404)["error"] == "not_found"
+      end
+
+      assert Accounts.get_user(leader.id).lobby_id == nil
+    end
+
+    test "a block between a member and someone seated is 403 blocked", %{conn: conn} do
+      {leader, member} = online_party()
+      host = AccountsFixtures.user_fixture()
+      {:ok, lobby} = Lobbies.create_lobby(%{title: "blocked", host_id: host.id})
+      {:ok, _} = Gamend.Friends.block_user(member, host.id)
+
+      for path <- ["/api/v1/parties/join_lobby/#{lobby.id}", "/api/v1/lobbies/#{lobby.id}/join"] do
+        conn = conn |> auth_conn(leader) |> post(path)
+        assert json_response(conn, 403)["error"] == "blocked"
+      end
+
+      assert Accounts.get_user(member.id).lobby_id == nil
+    end
+
+    test "the game's before_lobby_join refusing a member is 403 rejected", %{conn: conn} do
+      {leader, member} = online_party()
+      host = AccountsFixtures.user_fixture()
+      {:ok, lobby} = Lobbies.create_lobby(%{title: "started", host_id: host.id})
+
+      previous = Application.get_env(:gamend_core, :hooks_module)
+      on_exit(fn -> Application.put_env(:gamend_core, :hooks_module, previous) end)
+      Application.put_env(:gamend_core, :hooks_module, GamendWeb.PartyControllerTest.VetoAll)
+
+      for path <- ["/api/v1/parties/join_lobby/#{lobby.id}", "/api/v1/lobbies/#{lobby.id}/join"] do
+        conn = conn |> auth_conn(leader) |> post(path)
+
+        assert %{"error" => "rejected", "message" => "This match has started"} =
+                 json_response(conn, 403)
+      end
+
+      assert Accounts.get_user(member.id).lobby_id == nil
+    end
+
+    defp online_party do
+      leader = AccountsFixtures.user_fixture()
+      member = AccountsFixtures.user_fixture()
+      {:ok, party} = Parties.create_party(leader, %{})
+      add_member_to_party(member, party)
+      set_all_online([leader, member])
+      {leader, member}
     end
   end
 

@@ -264,7 +264,10 @@ defmodule GamendWeb.Api.V1.LobbyController do
     responses: [
       ok: {"Successfully joined", "application/json", LobbyResponse},
       forbidden:
-        Schemas.error("Cannot join (locked, full, wrong password, a game hook refused it, etc)"),
+        Schemas.error(
+          "Cannot join (locked, full, wrong password, a block with someone seated (blocked), " <>
+            "a game hook refused it, etc)"
+        ),
       not_found: Schemas.error("Lobby not found, or hidden"),
       conflict: Schemas.error("Already in a lobby, or a party member is"),
       unauthorized: Schemas.error("Not authenticated")

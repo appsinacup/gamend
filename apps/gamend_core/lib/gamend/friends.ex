@@ -919,6 +919,26 @@ defmodule Gamend.Friends do
       )
   end
 
+  @doc """
+  Returns true if anyone in `ids` is on a block with anyone in `other_ids`, in
+  either direction: a party and the players already seated in a lobby. One
+  query.
+  """
+  @spec any_blocked_between?([user_id()], [user_id()]) :: boolean()
+  def any_blocked_between?(ids, other_ids) when is_list(ids) and is_list(other_ids) do
+    ids = Enum.uniq(ids)
+    others = other_ids |> Enum.uniq() |> Enum.reject(&(&1 in ids))
+
+    ids != [] and others != [] and
+      Repo.exists?(
+        from f in Friendship,
+          where:
+            f.status == "blocked" and
+              ((f.requester_id in ^ids and f.target_id in ^others) or
+                 (f.target_id in ^ids and f.requester_id in ^others))
+      )
+  end
+
   @doc "Normalizes a user pair into the order-independent key used by `blocked_pairs/1`."
   @spec pair_key(user_id(), user_id()) :: {user_id(), user_id()}
   def pair_key(a, b) when a <= b, do: {a, b}

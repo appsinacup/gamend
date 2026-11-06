@@ -283,6 +283,7 @@ defmodule Gamend.GDScript.API do
     "Friends" => %{
       "accept_friend_request" => [2],
       "any_blocked?" => [2],
+      "any_blocked_between?" => [2],
       "block_friend_request" => [2],
       "block_user" => [2],
       "blocked?" => [2],

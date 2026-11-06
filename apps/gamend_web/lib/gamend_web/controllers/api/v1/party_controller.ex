@@ -382,9 +382,13 @@ defmodule GamendWeb.Api.V1.PartyController do
       conflict: Schemas.error("A member is already in a lobby (member_in_lobby)"),
       forbidden:
         Schemas.error(
-          "Cannot join (not enough space, locked, wrong password, a member offline, etc)"
+          "Cannot join (not enough space, locked, wrong password, a member offline, " <>
+            "a block between a member and someone seated (blocked), etc)"
         ),
-      not_found: Schemas.error("Not in a party (not_in_party), or no such lobby (not_found)"),
+      not_found:
+        Schemas.error(
+          "Not in a party (not_in_party), or no such lobby or a hidden one (not_found)"
+        ),
       unauthorized: Schemas.error("Not authenticated")
     ]
   )

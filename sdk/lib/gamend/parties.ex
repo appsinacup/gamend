@@ -429,7 +429,13 @@ defmodule Gamend.Parties do
     The party leader joins an existing lobby, and all party members join it
     atomically. The party is kept intact.
     
-    The lobby must have enough free slots for the entire party.
+    The lobby must have enough free slots for the entire party, and the party
+    gets in only where each member could alone: a hidden lobby answers
+    `{:error, :not_found}` (unless a server-side caller passes
+    `bypass_hidden: true`, as for `Lobbies.join_lobby/3`), a block between
+    any member and anyone already seated answers `{:error, :blocked}`, and the
+    game's `before_lobby_join` is asked for every member (`"party_id"` in its
+    opts), the first refusal answering `{:error, {:hook_rejected, reason}}`.
     
   """
   @spec join_lobby_with_party(Gamend.Accounts.User.t(), Ecto.UUID.t(), map()) ::

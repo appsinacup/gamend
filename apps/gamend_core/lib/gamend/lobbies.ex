@@ -1873,6 +1873,9 @@ defmodule Gamend.Lobbies do
     case do_join(user.id, lobby, %{}) do
       {:ok, _} -> {:halt, {:ok, lobby}}
       {:error, :full} -> {:cont, {:none, []}}
+      # A block with someone seated there: another lobby, and no 403 telling
+      # the player that someone in this one blocked them.
+      {:error, :blocked} -> {:cont, {:none, []}}
       # Disbanded after the candidates were read: try the next one.
       {:error, :not_found} -> {:cont, {:none, []}}
       {:error, {:hook_rejected, _reason}} -> {:cont, {:none, []}}

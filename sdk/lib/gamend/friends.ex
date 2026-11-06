@@ -86,6 +86,23 @@ defmodule Gamend.Friends do
   end
 
   @doc ~S"""
+    Returns true if anyone in `ids` is on a block with anyone in `other_ids`, in
+    either direction: a party and the players already seated in a lobby. One
+    query.
+    
+  """
+  @spec any_blocked_between?([user_id()], [user_id()]) :: boolean()
+  def any_blocked_between?(_ids, _other_ids) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :erlang.phash2(make_ref(), 2) == 0
+
+      _ ->
+        raise "Gamend.Friends.any_blocked_between?/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Block an incoming request (only the target may block). Returns
     `{:ok, friendship}` with status "blocked", or `{:error, :not_pending}` when
     it was accepted (or blocked) first.

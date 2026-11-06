@@ -1364,28 +1364,7 @@ defmodule Gamend.Parties do
     title = Map.get(params, "title") || Map.get(params, :title)
     max_users = Map.get(params, "max_users") || Map.get(params, :max_users)
 
-    metadata_raw = Map.get(params, "metadata") || Map.get(params, :metadata)
-
-    metadata =
-      case metadata_raw do
-        nil ->
-          %{}
-
-        "" ->
-          %{}
-
-        s when is_binary(s) ->
-          case Jason.decode(s) do
-            {:ok, m} when is_map(m) -> m
-            _ -> %{}
-          end
-
-        m when is_map(m) ->
-          m
-
-        _ ->
-          %{}
-      end
+    metadata = quick_join_metadata(Map.get(params, "metadata") || Map.get(params, :metadata))
 
     party_size = length(members)
 
@@ -1413,25 +1392,7 @@ defmodule Gamend.Parties do
         limit: 5
       )
 
-    candidates = Repo.all(q)
-
-    # Try candidates in order
-    tried =
-      Enum.reduce_while(candidates, :none, fn lobby, _acc ->
-        if Lobbies.lobby_matches_metadata?(lobby, metadata) do
-          case join_all_members_to_lobby(members, lobby, party) do
-            {:ok, _} -> {:halt, {:ok, lobby}}
-            {:error, :not_enough_space} -> {:cont, :none}
-            # Disbanded after the candidates were read: try the next one.
-            {:error, :not_found} -> {:cont, :none}
-            {:error, _} = err -> {:halt, err}
-          end
-        else
-          {:cont, :none}
-        end
-      end)
-
-    case tried do
+    case q |> Repo.all() |> try_party_candidates(members, party, metadata) do
       {:ok, lobby} when is_map(lobby) ->
         {:ok, lobby}
 
@@ -1460,6 +1421,39 @@ defmodule Gamend.Parties do
 
         do_create_lobby_with_party(user, party, members, lobby_attrs)
     end
+  end
+
+  defp quick_join_metadata(m) when is_map(m), do: m
+
+  defp quick_join_metadata(s) when is_binary(s) and s != "" do
+    case Jason.decode(s) do
+      {:ok, m} when is_map(m) -> m
+      _ -> %{}
+    end
+  end
+
+  defp quick_join_metadata(_metadata), do: %{}
+
+  # The candidates in order, the first that seats the whole party. One that
+  # will not take it is not a match, and the next is tried.
+  defp try_party_candidates(candidates, members, party, metadata) do
+    Enum.reduce_while(candidates, :none, fn lobby, _acc ->
+      if Lobbies.lobby_matches_metadata?(lobby, metadata) do
+        case seat_party(members, lobby, party, %{}) do
+          {:ok, _} -> {:halt, {:ok, lobby}}
+          {:error, :not_enough_space} -> {:cont, :none}
+          # Someone seated there and someone in the party keep apart.
+          {:error, :blocked} -> {:cont, :none}
+          # The game will not have a member there, e.g. the lobby is mid-match.
+          {:error, {:hook_rejected, _reason}} -> {:cont, :none}
+          # Disbanded after the candidates were read: try the next one.
+          {:error, :not_found} -> {:cont, :none}
+          {:error, _} = err -> {:halt, err}
+        end
+      else
+        {:cont, :none}
+      end
+    end)
   end
 
   # ---------------------------------------------------------------------------
@@ -1501,7 +1495,7 @@ defmodule Gamend.Parties do
     if lobby_max < member_count, do: {:error, :lobby_too_small_for_party}, else: :ok
   end
 
-  defp do_create_lobby_with_party(user, _party, members, lobby_attrs) do
+  defp do_create_lobby_with_party(user, party, members, lobby_attrs) do
     # Drop the server-owned fields before stamping the real host. This path took
     # client attributes straight through, so `hostless` from the request body
     # would have survived into the changeset and produced an unmanageable lobby.
@@ -1512,22 +1506,26 @@ defmodule Gamend.Parties do
 
     case Lobbies.create_lobby(lobby_attrs) do
       {:ok, lobby} ->
-        finalize_party_lobby_creation(user, members, lobby)
+        finalize_party_lobby_creation(user, party, members, lobby)
 
       {:error, reason} ->
         {:error, reason}
     end
   end
 
-  defp finalize_party_lobby_creation(user, members, lobby) do
+  defp finalize_party_lobby_creation(user, party, members, lobby) do
     non_leader_members = Enum.reject(members, &(&1.id == user.id))
 
-    # Use a transaction with advisory lock so either ALL members join or NONE do
-    Lock.serialize(:lobby, lobby.id, fn ->
-      Enum.map(non_leader_members, fn member ->
-        seat_member(member.id, lobby.id)
+    # The members join the lobby their leader made, so the game is asked about
+    # each of them as for any join; a refusal unmakes the lobby below. Then a
+    # transaction with advisory lock, so either ALL members join or NONE do.
+    with :ok <- run_party_join_hooks(non_leader_members, lobby, party, %{}) do
+      Lock.serialize(:lobby, lobby.id, fn ->
+        Enum.map(non_leader_members, fn member ->
+          seat_member(member.id, lobby.id)
+        end)
       end)
-    end)
+    end
     |> case do
       {:ok, updated_members} ->
         # Post-commit: invalidate and write correct values to cache.
@@ -1582,7 +1580,13 @@ defmodule Gamend.Parties do
   The party leader joins an existing lobby, and all party members join it
   atomically. The party is kept intact.
 
-  The lobby must have enough free slots for the entire party.
+  The lobby must have enough free slots for the entire party, and the party
+  gets in only where each member could alone: a hidden lobby answers
+  `{:error, :not_found}` (unless a server-side caller passes
+  `bypass_hidden: true`, as for `Lobbies.join_lobby/3`), a block between
+  any member and anyone already seated answers `{:error, :blocked}`, and the
+  game's `before_lobby_join` is asked for every member (`"party_id"` in its
+  opts), the first refusal answering `{:error, {:hook_rejected, reason}}`.
   """
   @spec join_lobby_with_party(User.t(), Ecto.UUID.t(), map()) :: {:ok, map()} | {:error, term()}
   def join_lobby_with_party(%User{} = user, lobby_id, opts \\ %{}) when is_binary(lobby_id) do
@@ -1591,25 +1595,67 @@ defmodule Gamend.Parties do
     with :ok <- check_in_party(user),
          {:ok, party} <- fetch_party(user.party_id),
          :ok <- check_is_leader(party, user),
-         {:ok, lobby} <- fetch_joinable_lobby(lobby_id) do
+         {:ok, lobby} <- fetch_joinable_lobby(lobby_id, opts) do
       members = get_party_members(party.id)
 
       with :ok <- check_no_members_in_lobby(members),
            :ok <- check_all_members_online(members) do
-        password = Map.get(opts, :password) || Map.get(opts, "password")
-
-        case validate_lobby_password(lobby, password) do
-          :ok -> join_all_members_to_lobby(members, lobby, party)
-          {:error, _} = err -> err
-        end
+        seat_party(members, lobby, party, opts)
       end
     end
   end
 
-  defp fetch_joinable_lobby(lobby_id) do
+  # The gates of a solo join (`Lobbies.join_lobby/3`), in its order: the seats
+  # unlocked, so a full lobby or a block is refused without asking the game;
+  # the game's `before_lobby_join` for each member; the password; then the
+  # seats again under the lobby's lock.
+  defp seat_party(members, lobby, party, opts) do
+    password = Map.get(opts, :password) || Map.get(opts, "password")
+
+    with :ok <- check_party_seats(lobby, Enum.map(members, & &1.id)),
+         :ok <- run_party_join_hooks(members, lobby, party, opts),
+         :ok <- validate_lobby_password(lobby, password) do
+      join_all_members_to_lobby(members, lobby, party)
+    end
+  end
+
+  defp check_party_seats(lobby, member_ids) do
+    seated_ids = Repo.all(from(u in User, where: u.lobby_id == ^lobby.id, select: u.id))
+
+    cond do
+      lobby.max_users - length(seated_ids) < length(member_ids) -> {:error, :not_enough_space}
+      # A block in either direction keeps the pair apart, as for a solo join.
+      Friends.any_blocked_between?(member_ids, seated_ids) -> {:error, :blocked}
+      true -> :ok
+    end
+  end
+
+  # Party seats bypass `Lobbies.join_lobby/3`, so they ask its hook here, for
+  # every member who joins (a lobby's creator does not), before any lock: the
+  # game decides "may this player join this lobby" whether they come alone or
+  # with a party. The first refusal keeps the whole party out. `:party_id` in
+  # the opts tells the hook it is a party seat.
+  defp run_party_join_hooks(members, lobby, party, opts) do
+    hook_opts = Map.put(opts, :party_id, party.id)
+
+    Enum.reduce_while(members, :ok, fn member, :ok ->
+      case Gamend.Hooks.internal_call(:before_lobby_join, [member, lobby, hook_opts]) do
+        {:ok, _} -> {:cont, :ok}
+        {:error, reason} -> {:halt, {:error, {:hook_rejected, reason}}}
+      end
+    end)
+  end
+
+  # The gates a solo join keeps before the seat (`Lobbies.join_lobby/3`). A
+  # hidden lobby is invite-only: its id reached a party leader the same way it
+  # reaches a player, and a party walked in where the player alone got 404.
+  defp fetch_joinable_lobby(lobby_id, opts) do
+    bypass_hidden? = Map.get(opts, :bypass_hidden, false) == true
+
     case Lobbies.get_lobby(lobby_id) do
       nil -> {:error, :invalid_lobby}
       %{is_locked: true} -> {:error, :locked}
+      %{is_hidden: true} when not bypass_hidden? -> {:error, :not_found}
       lobby -> {:ok, lobby}
     end
   end
@@ -1656,24 +1702,12 @@ defmodule Gamend.Parties do
     # Use a transaction with advisory lock so the space check + member joins
     # are atomic. This prevents TOCTOU race conditions on PostgreSQL.
     Lock.serialize(:lobby, lobby.id, fn ->
-      # Re-check space inside the lock
-      current_lobby_count =
-        Repo.one(
-          from(u in User,
-            where: u.lobby_id == ^lobby.id,
-            select: count(u.id)
-          )
-        ) || 0
-
-      available = lobby.max_users - current_lobby_count
-
-      if available < length(members) do
-        Repo.rollback(:not_enough_space)
+      # The seats again, under the lock: space, and the blocks a solo join
+      # checks there.
+      case check_party_seats(lobby, Enum.map(members, & &1.id)) do
+        :ok -> Enum.map(members, &seat_member(&1.id, lobby.id))
+        {:error, reason} -> Repo.rollback(reason)
       end
-
-      Enum.map(members, fn member ->
-        seat_member(member.id, lobby.id)
-      end)
     end)
     |> case do
       {:ok, updated_members} ->

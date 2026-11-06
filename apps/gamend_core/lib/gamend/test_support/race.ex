@@ -25,6 +25,7 @@ defmodule Gamend.TestSupport.Race do
   """
 
   alias Ecto.Adapters.SQL.Sandbox
+  alias Gamend.Repo.AdvisoryLock
 
   @race_timeout 30_000
 
@@ -51,7 +52,7 @@ defmodule Gamend.TestSupport.Race do
   """
   @spec race([(-> term())]) :: [term()]
   def race(funs) when is_list(funs) do
-    if Gamend.Repo.AdvisoryLock.postgres?(),
+    if AdvisoryLock.postgres?(),
       do: release_together(funs),
       else: Enum.map(funs, &(&1 |> racer() |> Task.async() |> Task.await(@race_timeout)))
   end

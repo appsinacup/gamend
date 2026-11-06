@@ -17,7 +17,7 @@ POST /lobbies creates a lobby with the caller as host and first member; POST /lo
 | `password` | Stored as an Argon2id hash, like account passwords (older bcrypt hashes still verify); join must carry the password. Quick join never considers passworded lobbies. |
 | `max_users` | Seat cap (default 8), enforced under the lobby's advisory lock. Shrinking it below the current member count is refused with `too_small`. |
 
-POST /lobbies/quick_join finds a room instead of asking the player to pick one: it tries the oldest visible, unlocked, passwordless candidates whose max_users and metadata match the request, skips any that are full or that the game's before_lobby_join hook rejects, and creates a fresh lobby with the caller as host when none will take them.
+POST /lobbies/quick_join finds a room instead of asking the player to pick one: it tries the oldest visible, unlocked, passwordless candidates whose max_users and metadata match the request, skips any that are full, that hold someone the player blocked or is blocked by, or that the game's before_lobby_join hook rejects, and creates a fresh lobby with the caller as host when none will take them.
 
 All three endpoints are party-aware: a party leader calling them brings the whole party in atomically, and a non-leader party member gets 403 in_party - see [/docs/parties](/docs/parties).
 

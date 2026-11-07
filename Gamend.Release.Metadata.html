@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1390">
+    <meta name="project" content="gamend_core v1.1.1391">
 
 
-    <title>Gamend.Release.Metadata — gamend_core v1.1.1390</title>
+    <title>Gamend.Release.Metadata — gamend_core v1.1.1391</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1390
+          v1.1.1391
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Release.<wbr />Metadata</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1390)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1391)</small>
 
     </h1>
 
@@ -118,8 +118,10 @@ gamend_core
 that runs the image from outside reads it without booting it. Gamend Cloud
 reads a server's after each build, where it asked the running server over
 <code class="inline">bin/&lt;release&gt; rpc</code>.</p><p>The file is <code class="inline">gamend-metadata.json</code> in the release's directory, which is the
-image's working directory. Gamend's generated Dockerfile writes it as the
-last step of its release build (<a href="Mix.Tasks.Gamend.Gen.Dockerfile.html"><code class="inline">mix gamend.gen.dockerfile</code></a>):</p><pre><code class="makeup elixir" translate="no"><span class="n">bin</span><span class="o">/</span><span class="n">gamend_host</span><span class="w"> </span><span class="n">eval</span><span class="w"> </span><span class="sc">&#39;Gamend.Release.Metadata.write()&#39;</span></code></pre><p>It is JSON:</p><ul><li><code class="inline">format</code>: 1, raised only by a change a reader of an older one would
+image's working directory. Gamend's builder image writes it as the last
+step of staging a release (<code class="inline">gamend-stage-release</code>, which the generated
+Dockerfile runs after <a href="https://mix.hexdocs.pm/Mix.Tasks.Release.html"><code class="inline">mix release</code></a>), from the staged directory:</p><pre><code class="makeup elixir" translate="no"><span class="n">bin</span><span class="o">/</span><span class="n">gamend_host</span><span class="w"> </span><span class="n">eval</span><span class="w"> </span><span class="sc">&#39;Gamend.Release.Metadata.write()&#39;</span></code></pre><p>An image built otherwise has none unless its build runs that line, and a
+host says so rather than guess (Gamend Cloud's Settings tab).</p><p>It is JSON:</p><ul><li><code class="inline">format</code>: 1, raised only by a change a reader of an older one would
 misread;</li><li><code class="inline">gamend_version</code>: core's version;</li><li><code class="inline">settings</code>: <a href="Gamend.Settings.html#declared/0"><code class="inline">Gamend.Settings.declared/0</code></a>, with every plugin in the
 plugins directory loaded and none started
 (<a href="Gamend.Hooks.PluginManager.html#load_declarations/0"><code class="inline">Gamend.Hooks.PluginManager.load_declarations/0</code></a>).</li></ul><p>A host reads it with <a href="#decode/1"><code class="inline">decode/1</code></a>. Nothing in it is secret: a setting's
@@ -209,7 +211,7 @@ describes them. <code class="inline">{:error, :invalid_metadata}</code> for anyt
       <h1 class="signature" translate="no">build()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L42" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L46" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -239,7 +241,7 @@ reads declarations: an <code class="inline">eval</code>, never a running server.
       <h1 class="signature" translate="no">decode(json)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L72" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -272,7 +274,7 @@ describes them. <code class="inline">{:error, :invalid_metadata}</code> for anyt
       <h1 class="signature" translate="no">file_name()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L34" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L38" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -302,7 +304,7 @@ describes them. <code class="inline">{:error, :invalid_metadata}</code> for anyt
       <h1 class="signature" translate="no">write(path \\ &quot;gamend-metadata.json&quot;)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L55" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L59" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -329,9 +331,9 @@ describes them. <code class="inline">{:error, :invalid_metadata}</code> for anyt
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1390">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1391">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1390">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1391">Hex Preview</a>
 
             </span>
 

@@ -395,6 +395,10 @@ defmodule Gamend.Containers do
       path}`: the CLI reads it from this machine, so it could be anything
       here.
     * `target:` — the stage to build; the last one when not given.
+    * `pull:` — when a `FROM` image is pulled: `"newer"` when the registry
+      has a newer one than this machine's, `"always"`, `"never"`; podman's
+      `"missing"` when not given, which keeps a base image this machine has
+      for good, its security fixes and its new tools never reaching a build.
     * `args:` — `%{"NAME" => "value"}` for the Dockerfile's `ARG`s. Never a
       secret: they are in the image's history and on the command line.
     * `labels:` — set on the image.
@@ -453,6 +457,7 @@ defmodule Gamend.Containers do
         else: []
       ),
       if(target = Keyword.get(opts, :target), do: ["--target", target], else: []),
+      if(pull = Keyword.get(opts, :pull), do: ["--pull=#{pull}"], else: []),
       Enum.flat_map(Keyword.get(opts, :args, %{}), fn {k, v} -> ["--build-arg", "#{k}=#{v}"] end),
       label_args(Keyword.get(opts, :labels, %{})),
       memory_args(Keyword.get(opts, :memory_mb)),

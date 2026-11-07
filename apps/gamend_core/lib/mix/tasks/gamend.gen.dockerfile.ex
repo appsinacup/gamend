@@ -193,14 +193,9 @@ defmodule Mix.Tasks.Gamend.Gen.Dockerfile do
     FROM builder AS release-build
     ARG RELEASE
     # The release, with what it reads from its working directory beside it
-    # (theme, content, docs, plugins): one directory for the runtime to take.
+    # (theme, content, docs, plugins) and what it declares
+    # (`gamend-metadata.json`): one directory for the runtime to take.
     RUN #{release_command(inputs)} && gamend-stage-release "${RELEASE}"
-    # What the release declares (its Gamend, its settings, its plugins'), in
-    # its directory, for a host to read from the image without booting it
-    # (`Gamend.Release.Metadata`). A Gamend before it writes none, and a host
-    # asks the running server instead.
-    RUN cd "_build/${MIX_ENV}/rel/${RELEASE}" && \\
-        "bin/${RELEASE}" eval 'if Code.ensure_loaded?(Gamend.Release.Metadata), do: Gamend.Release.Metadata.write()'
 
     FROM ${RUNNER_IMAGE} AS release
     ARG MIX_ENV

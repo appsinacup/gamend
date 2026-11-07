@@ -6,10 +6,14 @@ defmodule Gamend.Release.Metadata do
   `bin/<release> rpc`.
 
   The file is `gamend-metadata.json` in the release's directory, which is the
-  image's working directory. Gamend's generated Dockerfile writes it as the
-  last step of its release build (`mix gamend.gen.dockerfile`):
+  image's working directory. Gamend's builder image writes it as the last
+  step of staging a release (`gamend-stage-release`, which the generated
+  Dockerfile runs after `mix release`), from the staged directory:
 
       bin/gamend_host eval 'Gamend.Release.Metadata.write()'
+
+  An image built otherwise has none unless its build runs that line, and a
+  host says so rather than guess (Gamend Cloud's Settings tab).
 
   It is JSON:
 

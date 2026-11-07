@@ -96,9 +96,10 @@ defmodule Gamend.Settings do
   Every declared setting, then every variable a loaded plugin declares that
   is not one (`Gamend.Hooks.Declarations.env_vars/0`), as plain data a JSON
   encoder takes: what a host that runs this server from outside, and cannot
-  load its code, reads to offer them. Gamend Cloud's Settings tab asks a
-  server's release for it with `bin/<release> rpc`. It is never a client's:
-  no route or hook RPC answers it.
+  load its code, reads to offer them. Gamend's builder writes it beside a
+  release it stages (`Gamend.Release.Metadata`), where Gamend Cloud's
+  Settings tab reads it from the image. It is never a client's: no route or
+  hook RPC answers it.
 
   Each is `%{env:, app:, group:, label:, type:, default:, doc:, secret:,
   values:, plugin:}`. `app`, `group` and `type` are strings; `default` is a

@@ -80,7 +80,8 @@ CMD ["gamend-start"]
 FROM builder AS release-build
 ARG RELEASE
 # The release, with what it reads from its working directory beside it
-# (theme, content, docs, plugins): one directory for the runtime to take.
+# (theme, content, docs, plugins) and what it declares
+# (`gamend-metadata.json`): one directory for the runtime to take.
 RUN mix release "${RELEASE}" --overwrite && gamend-stage-release "${RELEASE}"
 
 FROM ${RUNNER_IMAGE} AS release

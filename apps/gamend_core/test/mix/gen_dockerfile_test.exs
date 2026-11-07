@@ -38,11 +38,6 @@ defmodule Mix.Tasks.Gamend.Gen.DockerfileTest do
     assert "builder AS full" in stages
   end
 
-  test "the release build writes what it declares beside it" do
-    assert render(%{}) =~
-             ~s|"bin/${RELEASE}" eval 'if Code.ensure_loaded?(Gamend.Release.Metadata), do: Gamend.Release.Metadata.write()'|
-  end
-
   test "path dependencies' mix.exs come before deps.get, the source after" do
     lines =
       lines(render(%{path_deps: ["apps/gamend_core", "modules/plugins/polyglot_hook"]}))

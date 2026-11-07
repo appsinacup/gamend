@@ -10,7 +10,9 @@
 # theme/, content/, blog/, priv/docs/, CHANGELOG.md, ROADMAP.md, modules/ (a
 # host's theme config is modules/<app>_config.json) and
 # $GAMEND_CONTENT_PLUGINS_DIR, less each plugin's own _build (a plugin loads
-# from its bundle: ebin/, priv/, deps/*/ebin).
+# from its bundle: ebin/, priv/, deps/*/ebin). Last, what the release
+# declares, gamend-metadata.json (Gamend.Release.Metadata), for a host to read
+# from the image without booting it; a Gamend before it writes none.
 set -e
 
 release=${1:?usage: gamend-stage-release <release name>}
@@ -45,3 +47,8 @@ elif [ -f VERSION ]; then
 else
   git rev-parse --short HEAD > "${dest}/VERSION" 2>/dev/null || echo unknown > "${dest}/VERSION"
 fi
+
+# From the staged directory, as the image starts in it: the plugins it loads
+# are the ones copied above.
+(cd "$dest" && "bin/${release}" eval \
+  'if Code.ensure_loaded?(Gamend.Release.Metadata), do: Gamend.Release.Metadata.write()')

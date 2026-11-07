@@ -42,7 +42,7 @@ In `gamend-builder` (`builder/bin/`):
 | --- | --- |
 | `gamend-build-plugins [flags]` | `mix deps.get`, `compile` and `plugin.bundle [flags]` in every plugin under `$GAMEND_CONTENT_PLUGINS_DIR`, skipping one the app already compiled as a path dependency. `--no-deps` first skips the fetch |
 | `gamend-copy-static <otp_app> [--require]` | copies the digested `priv/static` into `_build/$MIX_ENV/lib/<otp_app>/priv/static`, where Plug.Static and a release read it. Without `--require`, no digest (a dev build) is skipped |
-| `gamend-stage-release <release>` | after `mix release`, copies into the release what it reads from its working directory: `theme/`, `content/`, `blog/`, `priv/docs/`, `CHANGELOG.md`, `ROADMAP.md`, `modules/` (a host's theme config) and the plugins (without their `_build`), each when the app has it, and a `VERSION` file. The `release` stage then takes the one directory |
+| `gamend-stage-release <release>` | after `mix release`, copies into the release what it reads from its working directory: `theme/`, `content/`, `blog/`, `priv/docs/`, `CHANGELOG.md`, `ROADMAP.md`, `modules/` (a host's theme config) and the plugins (without their `_build`), each when the app has it, and a `VERSION` file; then has the release write `gamend-metadata.json` beside them (`Gamend.Release.Metadata`: its Gamend's version and what it declares, for a host to read without booting it). The `release` stage then takes the one directory |
 | `gamend-start` | the `full` image's command: raises the open-files limit, rebuilds the plugins when `GAMEND_START_PLUGINS=1`, creates the database when it can, then `mix do db.migrate + phx.server` in one VM. `GAMEND_ERLANG_NODE=name@host` (with `RELEASE_COOKIE`) starts a named node |
 
 In `gamend-runtime` (`runtime/bin/`):

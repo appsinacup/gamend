@@ -167,6 +167,7 @@ defmodule Gamend.ContainersTest do
             tag: "localhost/gc/1:abc",
             dockerfile: "docker/Dockerfile.release",
             target: "release",
+            pull: "newer",
             args: %{"GAMEND_DB_ADAPTER" => "postgres"},
             labels: %{"gamend.cloud.server" => "1"},
             memory_mb: 8192,
@@ -196,7 +197,8 @@ defmodule Gamend.ContainersTest do
             "--cpu-period=100000",
             "--cpu-quota=400000",
             "--runtime=runsc",
-            "--network=none"
+            "--network=none",
+            "--pull=newer"
           ],
           do: assert(flag in args)
 
@@ -208,6 +210,7 @@ defmodule Gamend.ContainersTest do
 
       refute "--file" in args
       refute "--target" in args
+      refute Enum.any?(args, &String.starts_with?(&1, "--pull"))
       refute Enum.any?(args, &String.starts_with?(&1, "--network"))
       refute Enum.any?(args, &String.starts_with?(&1, "--cpu"))
     end

@@ -38,9 +38,12 @@ before.
 hook's attrs) makes a formed match ask first: a ready check of kind
 `accept` over its players (`Gamend.ReadyChecks`, subject `:matchmaking`).
 Nobody is seated until everyone accepts. A decline or the deadline fails
-it: whoever accepted goes back in the queue, keeping their place, and the
-others' tickets are cancelled. Cancelling a ticket (`cancel/1`, a socket
-closing) declines the accept its holder was asked for.
+it: whoever accepted, or had not answered when another declined, goes
+back in the queue, keeping their place, and the others' tickets are
+cancelled. Cancelling a ticket (`cancel/1`, a socket closing) declines the
+accept its holder was asked for. A player who declined may queue again at
+once (a game's Skip that keeps looking): their declined ticket no longer
+counts as queued, though it is cancelled only once the check settles.
 
 # `assign_lobby`
 

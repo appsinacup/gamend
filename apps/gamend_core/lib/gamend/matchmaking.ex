@@ -37,9 +37,12 @@ defmodule Gamend.Matchmaking do
   hook's attrs) makes a formed match ask first: a ready check of kind
   `accept` over its players (`Gamend.ReadyChecks`, subject `:matchmaking`).
   Nobody is seated until everyone accepts. A decline or the deadline fails
-  it: whoever accepted goes back in the queue, keeping their place, and the
-  others' tickets are cancelled. Cancelling a ticket (`cancel/1`, a socket
-  closing) declines the accept its holder was asked for.
+  it: whoever accepted, or had not answered when another declined, goes
+  back in the queue, keeping their place, and the others' tickets are
+  cancelled. Cancelling a ticket (`cancel/1`, a socket closing) declines the
+  accept its holder was asked for. A player who declined may queue again at
+  once (a game's Skip that keeps looking): their declined ticket no longer
+  counts as queued, though it is cancelled only once the check settles.
   """
 
   import Ecto.Query
@@ -49,6 +52,7 @@ defmodule Gamend.Matchmaking do
   alias Gamend.Matchmaking.Constants
   alias Gamend.Matchmaking.Ticket
   alias Gamend.Matchmaking.Worker
+  alias Gamend.ReadyChecks.Participant
   alias Gamend.Repo
 
   @doc """
@@ -165,12 +169,22 @@ defmodule Gamend.Matchmaking do
   defp ensure_none_queued(members) do
     ids = Enum.map(members, & &1.id)
 
+    # A matched ticket not seated yet is still waiting (being seated, or in
+    # an accept), unless its holder declined that accept: their answer is
+    # final, and the ticket is cancelled as the check settles (*Accept*).
+    declined =
+      from(p in Participant,
+        where: p.ticket_id == parent_as(:ticket).id and p.state == "declined"
+      )
+
     waiting =
       from(t in Ticket,
+        as: :ticket,
         where: t.user_id in ^ids,
         where:
           t.status == ^Constants.status_queued() or
-            (t.status == ^Constants.status_matched() and is_nil(t.match_id))
+            (t.status == ^Constants.status_matched() and is_nil(t.match_id) and
+               not exists(declined))
       )
 
     if Repo.exists?(waiting) do

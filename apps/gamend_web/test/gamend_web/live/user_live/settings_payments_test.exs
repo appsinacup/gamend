@@ -96,6 +96,38 @@ defmodule GamendWeb.UserLive.SettingsPaymentsTest do
     refute rendered =~ "Game Wallet"
   end
 
+  test "a granted entitlement shows the title it was granted with", %{conn: conn} do
+    user = AccountsFixtures.user_fixture()
+    ends = DateTime.add(DateTime.utc_now(:second), 30 * 86_400)
+
+    {:ok, titled} =
+      Payments.grant_entitlement(user.id, "beta_trial",
+        expires_at: ends,
+        metadata: %{"source" => "trial", "title" => "Beta month"}
+      )
+
+    {:ok, untitled} = Payments.grant_entitlement(user.id, "contributor_reward")
+
+    {:ok, view, _html} =
+      conn
+      |> log_in_user(user)
+      |> live(~p"/users/settings")
+
+    view
+    |> element(~s(button[phx-click="settings_tab"][phx-value-tab="payments"]))
+    |> render_click()
+
+    card = view |> element("#payment-entitlement-#{titled.id}") |> render()
+    assert card =~ "Beta month"
+    assert card =~ "beta_trial"
+    assert card =~ "Granted"
+
+    # No title: its key stands in.
+    card = view |> element("#payment-entitlement-#{untitled.id}") |> render()
+    assert card =~ "contributor_reward"
+    assert card =~ "Granted"
+  end
+
   test "regular user can schedule Stripe subscription cancellation, then take it back", %{
     conn: conn
   } do

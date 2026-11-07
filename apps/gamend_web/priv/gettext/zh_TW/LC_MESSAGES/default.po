@@ -2980,6 +2980,11 @@ msgstr "排序方式："
 msgid "Subscription"
 msgstr "訂閱"
 
+#: lib/gamend_web/live_helpers.ex:334
+#, elixir-autogen, elixir-format
+msgid "Granted"
+msgstr "授予"
+
 #: lib/gamend_web/live_helpers.ex:289
 #, elixir-autogen, elixir-format
 msgid "That is fewer than the current number of members."

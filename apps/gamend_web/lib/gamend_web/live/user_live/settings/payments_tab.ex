@@ -325,9 +325,17 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
        when is_binary(title) and title != "",
        do: title
 
+  # A grant has no product: the title it was granted with
+  # (`Payments.grant_entitlement/3`'s `"title"`), else its key.
+  defp payment_entitlement_title(%{metadata: %{"title" => title}})
+       when is_binary(title) and title != "",
+       do: title
+
   defp payment_entitlement_title(%{key: key}), do: key
 
   defp payment_entitlement_kind(%{product: %{kind: kind}}) when is_binary(kind), do: kind
+  # Given without a purchase: a trial, a reward.
+  defp payment_entitlement_kind(%{product: nil, source_purchase_id: nil}), do: "granted"
   defp payment_entitlement_kind(_entitlement), do: "-"
 
   defp payment_entitlement_period_label(entitlement) do

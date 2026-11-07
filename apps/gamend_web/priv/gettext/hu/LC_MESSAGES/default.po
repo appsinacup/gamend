@@ -3025,6 +3025,11 @@ msgstr "Rendezés:"
 msgid "Subscription"
 msgstr "Előfizetés"
 
+#: lib/gamend_web/live_helpers.ex:334
+#, elixir-autogen, elixir-format
+msgid "Granted"
+msgstr "Megadott"
+
 #: lib/gamend_web/live_helpers.ex:289
 #, elixir-autogen, elixir-format
 msgid "That is fewer than the current number of members."

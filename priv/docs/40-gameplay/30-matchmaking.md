@@ -53,7 +53,8 @@ four `ready_check_*` events on each player's user channel. Answer it with
 `POST /me/ready_check`. Everyone accepts: the match is seated. Someone
 declines or the deadline passes: whoever accepted, or had not answered yet,
 goes back in the queue in their old place, and the others' tickets are
-cancelled. Leaving the queue (or disconnecting) while asked declines.
+cancelled. Leaving the queue (or disconnecting) while asked declines. A
+player who declined may queue again at once, for a Skip that keeps looking.
 
 ## Client flow
 

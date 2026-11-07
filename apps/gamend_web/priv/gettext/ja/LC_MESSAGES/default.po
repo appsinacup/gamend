@@ -2980,6 +2980,11 @@ msgstr "並べ替え："
 msgid "Subscription"
 msgstr "サブスクリプション"
 
+#: lib/gamend_web/live_helpers.ex:334
+#, elixir-autogen, elixir-format
+msgid "Granted"
+msgstr "付与"
+
 #: lib/gamend_web/live_helpers.ex:289
 #, elixir-autogen, elixir-format
 msgid "That is fewer than the current number of members."

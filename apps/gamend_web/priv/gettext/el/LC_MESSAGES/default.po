@@ -3024,6 +3024,11 @@ msgstr "Ταξινόμηση κατά:"
 msgid "Subscription"
 msgstr "Συνδρομή"
 
+#: lib/gamend_web/live_helpers.ex:334
+#, elixir-autogen, elixir-format
+msgid "Granted"
+msgstr "Παραχωρημένο"
+
 #: lib/gamend_web/live_helpers.ex:289
 #, elixir-autogen, elixir-format
 msgid "That is fewer than the current number of members."

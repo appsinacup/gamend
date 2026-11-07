@@ -3068,6 +3068,11 @@ msgstr "Сортировать:"
 msgid "Subscription"
 msgstr "Подписка"
 
+#: lib/gamend_web/live_helpers.ex:334
+#, elixir-autogen, elixir-format
+msgid "Granted"
+msgstr "Выдано"
+
 #: lib/gamend_web/live_helpers.ex:289
 #, elixir-autogen, elixir-format
 msgid "That is fewer than the current number of members."

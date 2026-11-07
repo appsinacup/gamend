@@ -324,10 +324,14 @@ defmodule GamendWeb.LiveHelpers do
   def payment_provider_label("steam"), do: "Steam"
   def payment_provider_label(provider), do: provider
 
-  @doc "A product kind (`Gamend.Payments.Product`) in words."
+  @doc """
+  A product kind (`Gamend.Payments.Product`) in words, or `"granted"`: an
+  entitlement given without a purchase.
+  """
   def payment_kind_label("entitlement"), do: gettext("One-time")
   def payment_kind_label("consumable"), do: gettext("Consumable")
   def payment_kind_label("subscription"), do: gettext("Subscription")
+  def payment_kind_label("granted"), do: gettext("Granted")
   def payment_kind_label(kind), do: kind
 
   @doc "A purchase or entitlement status in words."

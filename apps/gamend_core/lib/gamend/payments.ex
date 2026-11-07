@@ -815,6 +815,8 @@ defmodule Gamend.Payments do
 
   Options: `:expires_at` (a `DateTime`, `nil` for no end), `:metadata` (a map
   merged into the row's, e.g. `%{"source" => "trial", "granted_by" => id}`).
+  A `"title"` in it names the grant on the owner's Payments tab, which has
+  no product's title to show.
   """
   @spec grant_entitlement(Ecto.UUID.t(), String.t(), keyword()) ::
           {:ok, Entitlement.t()} | {:error, term()}

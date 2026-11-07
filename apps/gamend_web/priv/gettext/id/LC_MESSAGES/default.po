@@ -2980,6 +2980,11 @@ msgstr "Urutkan menurut:"
 msgid "Subscription"
 msgstr "Langganan"
 
+#: lib/gamend_web/live_helpers.ex:334
+#, elixir-autogen, elixir-format
+msgid "Granted"
+msgstr "Diberikan"
+
 #: lib/gamend_web/live_helpers.ex:289
 #, elixir-autogen, elixir-format
 msgid "That is fewer than the current number of members."

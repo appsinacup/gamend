@@ -2378,6 +2378,11 @@ class Group:
 		service.field = __icon_url
 		data[__icon_url.tag] = service
 		
+		__slug = PBField.new("slug", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 15, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __slug
+		data[__slug.tag] = service
+		
 	var data = {}
 	
 	var __id: PBField
@@ -2533,6 +2538,17 @@ class Group:
 		__icon_url.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_icon_url(value : String) -> void:
 		__icon_url.value = value
+	
+	var __slug: PBField
+	func has_slug() -> bool:
+		return data[15].state == PB_SERVICE_STATE.FILLED
+	func get_slug() -> String:
+		return __slug.value
+	func clear_slug() -> void:
+		data[15].state = PB_SERVICE_STATE.UNFILLED
+		__slug.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_slug(value : String) -> void:
+		__slug.value = value
 	
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
@@ -3915,6 +3931,237 @@ class MatchmakingFound:
 				return PB_ERR.PARSE_INCOMPLETE
 			return result
 		
+	func _to_string() -> String:
+		return PBPacker.message_to_string(data)
+		
+	func to_bytes() -> PackedByteArray:
+		return PBPacker.pack_message(data)
+		
+	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
+		var cur_limit = bytes.size()
+		if limit != -1:
+			cur_limit = limit
+		var result = PBPacker.unpack_message(data, bytes, offset, cur_limit)
+		if result == cur_limit:
+			if PBPacker.check_required(data):
+				if limit == -1:
+					return PB_ERR.NO_ERRORS
+			else:
+				return PB_ERR.REQUIRED_FIELDS
+		elif limit == -1 && result > 0:
+			return PB_ERR.PARSE_INCOMPLETE
+		return result
+	
+class MatchmakingTicketQueued:
+	extends RefCounted
+	func _init():
+		var service
+		
+		__ticket_id = PBField.new("ticket_id", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __ticket_id
+		data[__ticket_id.tag] = service
+		
+		var __match_params_default: Array = []
+		__match_params = PBField.new("match_params", PB_DATA_TYPE.MAP, PB_RULE.REPEATED, 2, true, __match_params_default)
+		service = PBServiceField.new()
+		service.field = __match_params
+		service.func_ref = Callable(self, "add_empty_match_params")
+		data[__match_params.tag] = service
+		
+		__queued_at_ms = PBField.new("queued_at_ms", PB_DATA_TYPE.INT64, PB_RULE.OPTIONAL, 3, true, DEFAULT_VALUES_3[PB_DATA_TYPE.INT64])
+		service = PBServiceField.new()
+		service.field = __queued_at_ms
+		data[__queued_at_ms.tag] = service
+		
+		__requeued = PBField.new("requeued", PB_DATA_TYPE.BOOL, PB_RULE.OPTIONAL, 4, true, DEFAULT_VALUES_3[PB_DATA_TYPE.BOOL])
+		service = PBServiceField.new()
+		service.field = __requeued
+		data[__requeued.tag] = service
+		
+	var data = {}
+	
+	var __ticket_id: PBField
+	func has_ticket_id() -> bool:
+		return data[1].state == PB_SERVICE_STATE.FILLED
+	func get_ticket_id() -> String:
+		return __ticket_id.value
+	func clear_ticket_id() -> void:
+		data[1].state = PB_SERVICE_STATE.UNFILLED
+		__ticket_id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_ticket_id(value : String) -> void:
+		__ticket_id.value = value
+	
+	var __match_params: PBField
+	func get_raw_match_params():
+		return __match_params.value
+	func get_match_params():
+		return PBPacker.construct_map(__match_params.value)
+	func clear_match_params():
+		data[2].state = PB_SERVICE_STATE.UNFILLED
+		__match_params.value = DEFAULT_VALUES_3[PB_DATA_TYPE.MAP]
+	func add_empty_match_params() -> MatchmakingTicketQueued.map_type_match_params:
+		var element = MatchmakingTicketQueued.map_type_match_params.new()
+		__match_params.value.append(element)
+		return element
+	func add_match_params(a_key, a_value) -> void:
+		var idx = -1
+		for i in range(__match_params.value.size()):
+			if __match_params.value[i].get_key() == a_key:
+				idx = i
+				break
+		var element = MatchmakingTicketQueued.map_type_match_params.new()
+		element.set_key(a_key)
+		element.set_value(a_value)
+		if idx != -1:
+			__match_params.value[idx] = element
+		else:
+			__match_params.value.append(element)
+	
+	var __queued_at_ms: PBField
+	func has_queued_at_ms() -> bool:
+		return data[3].state == PB_SERVICE_STATE.FILLED
+	func get_queued_at_ms() -> int:
+		return __queued_at_ms.value
+	func clear_queued_at_ms() -> void:
+		data[3].state = PB_SERVICE_STATE.UNFILLED
+		__queued_at_ms.value = DEFAULT_VALUES_3[PB_DATA_TYPE.INT64]
+	func set_queued_at_ms(value : int) -> void:
+		__queued_at_ms.value = value
+	
+	var __requeued: PBField
+	func has_requeued() -> bool:
+		return data[4].state == PB_SERVICE_STATE.FILLED
+	func get_requeued() -> bool:
+		return __requeued.value
+	func clear_requeued() -> void:
+		data[4].state = PB_SERVICE_STATE.UNFILLED
+		__requeued.value = DEFAULT_VALUES_3[PB_DATA_TYPE.BOOL]
+	func set_requeued(value : bool) -> void:
+		__requeued.value = value
+	
+	class map_type_match_params:
+		extends RefCounted
+		func _init():
+			var service
+			
+			__key = PBField.new("key", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+			__key.is_map_field = true
+			service = PBServiceField.new()
+			service.field = __key
+			data[__key.tag] = service
+			
+			__value = PBField.new("value", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+			__value.is_map_field = true
+			service = PBServiceField.new()
+			service.field = __value
+			data[__value.tag] = service
+			
+		var data = {}
+		
+		var __key: PBField
+		func has_key() -> bool:
+			return data[1].state == PB_SERVICE_STATE.FILLED
+		func get_key() -> String:
+			return __key.value
+		func clear_key() -> void:
+			data[1].state = PB_SERVICE_STATE.UNFILLED
+			__key.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+		func set_key(value : String) -> void:
+			__key.value = value
+		
+		var __value: PBField
+		func has_value() -> bool:
+			return data[2].state == PB_SERVICE_STATE.FILLED
+		func get_value() -> String:
+			return __value.value
+		func clear_value() -> void:
+			data[2].state = PB_SERVICE_STATE.UNFILLED
+			__value.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+		func set_value(value : String) -> void:
+			__value.value = value
+		
+		func _to_string() -> String:
+			return PBPacker.message_to_string(data)
+			
+		func to_bytes() -> PackedByteArray:
+			return PBPacker.pack_message(data)
+			
+		func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
+			var cur_limit = bytes.size()
+			if limit != -1:
+				cur_limit = limit
+			var result = PBPacker.unpack_message(data, bytes, offset, cur_limit)
+			if result == cur_limit:
+				if PBPacker.check_required(data):
+					if limit == -1:
+						return PB_ERR.NO_ERRORS
+				else:
+					return PB_ERR.REQUIRED_FIELDS
+			elif limit == -1 && result > 0:
+				return PB_ERR.PARSE_INCOMPLETE
+			return result
+		
+	func _to_string() -> String:
+		return PBPacker.message_to_string(data)
+		
+	func to_bytes() -> PackedByteArray:
+		return PBPacker.pack_message(data)
+		
+	func from_bytes(bytes : PackedByteArray, offset : int = 0, limit : int = -1) -> int:
+		var cur_limit = bytes.size()
+		if limit != -1:
+			cur_limit = limit
+		var result = PBPacker.unpack_message(data, bytes, offset, cur_limit)
+		if result == cur_limit:
+			if PBPacker.check_required(data):
+				if limit == -1:
+					return PB_ERR.NO_ERRORS
+			else:
+				return PB_ERR.REQUIRED_FIELDS
+		elif limit == -1 && result > 0:
+			return PB_ERR.PARSE_INCOMPLETE
+		return result
+	
+class MatchmakingTicketCancelled:
+	extends RefCounted
+	func _init():
+		var service
+		
+		__ticket_id = PBField.new("ticket_id", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 1, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __ticket_id
+		data[__ticket_id.tag] = service
+		
+		__reason = PBField.new("reason", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 2, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __reason
+		data[__reason.tag] = service
+		
+	var data = {}
+	
+	var __ticket_id: PBField
+	func has_ticket_id() -> bool:
+		return data[1].state == PB_SERVICE_STATE.FILLED
+	func get_ticket_id() -> String:
+		return __ticket_id.value
+	func clear_ticket_id() -> void:
+		data[1].state = PB_SERVICE_STATE.UNFILLED
+		__ticket_id.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_ticket_id(value : String) -> void:
+		__ticket_id.value = value
+	
+	var __reason: PBField
+	func has_reason() -> bool:
+		return data[2].state == PB_SERVICE_STATE.FILLED
+	func get_reason() -> String:
+		return __reason.value
+	func clear_reason() -> void:
+		data[2].state = PB_SERVICE_STATE.UNFILLED
+		__reason.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_reason(value : String) -> void:
+		__reason.value = value
+	
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)
 		

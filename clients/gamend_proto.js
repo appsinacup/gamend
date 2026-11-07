@@ -136,6 +136,25 @@ const decoders = {
       }),
     match_found: (bin) =>
       PB.MatchmakingFound.toObject(PB.MatchmakingFound.decode(bin), { defaults: true }),
+    ticket_queued: (bin) =>
+      PB.MatchmakingTicketQueued.toObject(PB.MatchmakingTicketQueued.decode(bin), {
+        defaults: true,
+        longs: Number,
+      }),
+    ticket_cancelled: (bin) =>
+      PB.MatchmakingTicketCancelled.toObject(PB.MatchmakingTicketCancelled.decode(bin), {
+        defaults: true,
+      }),
+    wallet_updated: (bin) =>
+      PB.WalletChange.toObject(PB.WalletChange.decode(bin), { defaults: true, longs: Number }),
+    inventory_updated: (bin) =>
+      PB.InventoryChange.toObject(PB.InventoryChange.decode(bin), {
+        defaults: true,
+        longs: Number,
+      }),
+    chat_muted: (bin) =>
+      PB.ChatMute.toObject(PB.ChatMute.decode(bin), { defaults: true, longs: Number }),
+    chat_unmuted: (bin) => PB.ChatUnmute.toObject(PB.ChatUnmute.decode(bin), { defaults: true }),
   },
   lobby: {
     updated: (bin) => decodeLobby(bin),
@@ -146,6 +165,11 @@ const decoders = {
     user_online: (bin) => decodeMember(bin),
     user_offline: (bin) => decodeMember(bin),
     user_updated: (bin) => decodeBrief(bin),
+    state_changed: (bin) =>
+      PB.LobbyStateChanged.toObject(PB.LobbyStateChanged.decode(bin), {
+        defaults: true,
+        longs: Number,
+      }),
   },
   lobbies: {
     lobby_created: (bin) => decodeLobby(bin),

@@ -110,6 +110,8 @@ Detailed payload shapes for every event pushed from the server to the client, gr
 | friend_updated | Friend presence/profile changes; full list on join | {friends: {"<user_id>": {user_id, friendship_id, id, username, display_name, profile_url, metadata, is_online, is_activated, last_seen_at}}} |
 | kv_updated / kv_deleted | Subscribed KV entry changed (see kv:subscribe) | {key, user_id, lobby_id, data, metadata} / {key, user_id, lobby_id} |
 | match_found | The user's matchmaking ticket matched into a lobby | {lobby_id, match_params} |
+| ticket_queued | The user's matchmaking ticket is in the queue: joined, or put back after a failed accept | {ticket_id, match_params, queued_at_ms, requeued} |
+| ticket_cancelled | The user's matchmaking ticket left the queue with no match | {ticket_id, reason} |
 | wallet_updated | A currency balance changed | {currency, balance, delta} |
 | inventory_updated | An item count changed | {item, quantity, delta} |
 | result_started | A play of the user's began ([results](/docs/results)) | the result |

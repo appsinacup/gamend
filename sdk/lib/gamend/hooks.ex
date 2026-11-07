@@ -674,6 +674,18 @@ defmodule Gamend.Hooks do
   end
 
   @doc """
+  The process the caller asked from, when their transport has one that lives
+  as long as they are connected: the user socket's channel process for a
+  `call_hook` over the socket. nil over HTTP. A hook that tracks presence for
+  the caller (`Gamend.Presence.track/4`) tracks it on this process, so it ends
+  with the socket.
+  """
+  @spec caller_pid() :: pid() | nil
+  def caller_pid do
+    Process.get(:gamend_hook_caller_pid)
+  end
+
+  @doc """
   Returns the caller's numeric id when available.
 
   If the caller is a `Gamend.Accounts.User` struct, returns its `id`.

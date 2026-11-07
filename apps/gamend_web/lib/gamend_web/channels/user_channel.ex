@@ -122,7 +122,12 @@ defmodule GamendWeb.UserChannel do
 
         # Typed hooks (registered <FnName>Request/<FnName>Reply schemas)
         # accept a single JSON object argument and reply with a JSON map.
-        case HookSchemas.call(plugin, fn_name, {:list, args}, :map, caller: user) do
+        # The channel's own process too: a hook that tracks presence for the
+        # caller tracks it here, so it ends with the socket.
+        case HookSchemas.call(plugin, fn_name, {:list, args}, :map,
+               caller: user,
+               caller_pid: self()
+             ) do
           {:ok, res} ->
             {:reply, {:ok, %{data: res}}, socket}
 

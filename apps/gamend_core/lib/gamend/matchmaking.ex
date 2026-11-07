@@ -2,7 +2,7 @@ defmodule Gamend.Matchmaking do
   @moduledoc """
   Public API for the built-in matchmaking system.
 
-  Matchmaking is ticket-based. Each call to `join/4` creates a ticket in the
+  Matchmaking is ticket-based. Each call to `join/5` creates a ticket in the
   database. The periodic `Gamend.Matchmaking.Worker` groups queued tickets
   that share the same `match_params` and creates a hidden lobby for each match.
 
@@ -16,11 +16,18 @@ defmodule Gamend.Matchmaking do
   A queued ticket only means something while its owner can still be pulled
   into a lobby. Two things keep the queue honest:
 
-    * `UserChannel.terminate/2` cancels the user's tickets when their socket
-      closes, and
+    * `Gamend.Accounts.Online.disconnected/2` cancels the user's tickets when
+      their last socket closes (a game's, or a website page's), and
     * `prune_offline/0` sweeps tickets whose owner the database no longer
       considers online — the safety net for tickets created over HTTP by a
       client that never opened a socket.
+
+  ## Events
+
+  A ticket's player hears it on their user channel (`matchmaking:user:<id>`):
+  `ticket_queued` (joined, or `requeued` after a failed accept),
+  `ticket_cancelled` (with why), and `match_found` once seated; an accept is
+  the `ready_check_*` events, kind `accept`.
 
   ## Backfill
 
@@ -49,6 +56,7 @@ defmodule Gamend.Matchmaking do
 
   alias Gamend.Accounts.User
   alias Gamend.Limits
+  alias Gamend.Matchmaking.Broadcast
   alias Gamend.Matchmaking.Constants
   alias Gamend.Matchmaking.Ticket
   alias Gamend.Matchmaking.Worker
@@ -235,6 +243,8 @@ defmodule Gamend.Matchmaking do
       end)
 
     with {:ok, inserted} <- result do
+      Broadcast.ticket_queued(Enum.map(inserted, &elem(&1, 1)), false)
+
       # Hooks fire outside the transaction — never dispatch inside one.
       Enum.each(inserted, fn {member, ticket} ->
         Gamend.Async.run(fn ->
@@ -292,10 +302,13 @@ defmodule Gamend.Matchmaking do
   def cancel(user_id) when is_binary(user_id) do
     _ = decline_accept(user_id)
 
-    {count, _} =
+    {count, cancelled} =
       queued()
       |> where([t], t.user_id == ^user_id or t.party_id in subquery(party_ids_of(user_id)))
+      |> select([t], map(t, [:id, :user_id]))
       |> Repo.update_all(set: cancelled_fields())
+
+    Broadcast.ticket_cancelled(cancelled, "left")
 
     if count > 0 do
       Gamend.Async.run(fn ->
@@ -329,6 +342,7 @@ defmodule Gamend.Matchmaking do
     with %Ticket{id: id} <- Repo.get_uuid(Ticket, ticket_id),
          {:ok, ticket} <-
            queued() |> where([t], t.id == ^id) |> Repo.compare_and_set(set: cancelled_fields()) do
+      Broadcast.ticket_cancelled([ticket], "admin")
       {:ok, ticket}
     else
       _ -> {:error, :not_found}
@@ -508,19 +522,24 @@ defmodule Gamend.Matchmaking do
   end
 
   @doc "Returns claimed tickets to the queue (lobby creation failed)."
-  @spec requeue([Ticket.t()]) :: :ok
-  def requeue(tickets) do
-    tickets
-    |> held_by_claim()
-    |> Repo.update_all(
-      set: [
-        status: Constants.status_queued(),
-        matched_at: nil,
-        updated_at: DateTime.utc_now()
-      ]
-    )
+  @spec requeue([Ticket.t()], boolean()) :: :ok
+  def requeue(tickets, notify? \\ false) do
+    {_count, requeued} =
+      tickets
+      |> held_by_claim()
+      |> select([t], map(t, [:id, :user_id, :match_params, :queued_at]))
+      |> Repo.update_all(
+        set: [
+          status: Constants.status_queued(),
+          matched_at: nil,
+          updated_at: DateTime.utc_now()
+        ]
+      )
 
-    :ok
+    # Told only when its player saw it leave (a failed accept): a claim
+    # refused within a sweep, or a lobby that could not be made, put it back
+    # before anyone knew.
+    if notify?, do: Broadcast.ticket_queued(requeued, true), else: :ok
   end
 
   @doc """
@@ -528,13 +547,15 @@ defmodule Gamend.Matchmaking do
   Unlike `requeue/1` these do not go back in the queue — a user who cannot
   join a lobby (banned, already in one) would fail again on every tick.
   """
-  @spec discard([Ticket.t()]) :: :ok
-  def discard(tickets) do
-    tickets
-    |> held_by_claim()
-    |> Repo.update_all(set: cancelled_fields())
+  @spec discard([Ticket.t()], String.t()) :: :ok
+  def discard(tickets, reason \\ "unseated") do
+    {_count, cancelled} =
+      tickets
+      |> held_by_claim()
+      |> select([t], map(t, [:id, :user_id]))
+      |> Repo.update_all(set: cancelled_fields())
 
-    :ok
+    Broadcast.ticket_cancelled(cancelled, reason)
   end
 
   @doc """
@@ -617,11 +638,13 @@ defmodule Gamend.Matchmaking do
       {ids, party_ids} = Enum.unzip(stale)
       party_ids = party_ids |> Enum.reject(&is_nil/1) |> Enum.uniq()
 
-      {count, _} =
+      {count, cancelled} =
         queued()
         |> where([t], t.id in ^ids or t.party_id in ^party_ids)
+        |> select([t], map(t, [:id, :user_id]))
         |> Repo.update_all(set: cancelled_fields())
 
+      Broadcast.ticket_cancelled(cancelled, "offline")
       count
     end
   end

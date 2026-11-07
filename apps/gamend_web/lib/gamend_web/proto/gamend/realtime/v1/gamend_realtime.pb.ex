@@ -448,6 +448,51 @@ defmodule Gamend.Realtime.V1.MatchmakingFound do
     map: true
 end
 
+defmodule Gamend.Realtime.V1.MatchmakingTicketQueued.MatchParamsEntry do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.MatchmakingTicketQueued.MatchParamsEntry",
+    map: true,
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :key, 1, type: :string
+  field :value, 2, type: :string
+end
+
+defmodule Gamend.Realtime.V1.MatchmakingTicketQueued do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.MatchmakingTicketQueued",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :ticket_id, 1, type: :string, json_name: "ticketId"
+
+  field :match_params, 2,
+    repeated: true,
+    type: Gamend.Realtime.V1.MatchmakingTicketQueued.MatchParamsEntry,
+    json_name: "matchParams",
+    map: true
+
+  field :queued_at_ms, 3, type: :int64, json_name: "queuedAtMs"
+  field :requeued, 4, type: :bool
+end
+
+defmodule Gamend.Realtime.V1.MatchmakingTicketCancelled do
+  @moduledoc false
+
+  use Protobuf,
+    full_name: "gamend.realtime.v1.MatchmakingTicketCancelled",
+    protoc_gen_elixir_version: "0.17.0",
+    syntax: :proto3
+
+  field :ticket_id, 1, type: :string, json_name: "ticketId"
+  field :reason, 2, type: :string
+end
+
 defmodule Gamend.Realtime.V1.ReadyCheckParticipant do
   @moduledoc false
 

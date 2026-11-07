@@ -787,7 +787,7 @@ export const gamend = $root.gamend = (() => {
                         case 10: {
                                 if (wireType !== 2)
                                     break;
-                                message.linked_providers = $root.gamend.realtime.v1.LinkedProviders.decode(reader, reader.uint32(), $undefined, _depth + 1, message.linked_providers);
+                                message.linked_providers = $root.gamend.realtime.v1.LinkedProviders.decode(reader, reader.size(), $undefined, _depth + 1, message.linked_providers);
                                 message._linked_providers = "linked_providers";
                                 continue;
                             }
@@ -1087,7 +1087,7 @@ export const gamend = $root.gamend = (() => {
                                     break;
                                 if (message.friends === $util.emptyObject)
                                     message.friends = {};
-                                let end2 = reader.uint32() + reader.pos;
+                                let end2 = reader.size() + reader.pos;
                                 if (end2 > reader.len)
                                     throw $RangeError("index out of range");
                                 reader.len = end2;
@@ -1105,7 +1105,7 @@ export const gamend = $root.gamend = (() => {
                                     case 2:
                                         if (wireType !== 2)
                                             break;
-                                        value = $root.gamend.realtime.v1.User.decode(reader, reader.uint32(), $undefined, _depth + 1, value);
+                                        value = $root.gamend.realtime.v1.User.decode(reader, reader.size(), $undefined, _depth + 1, value);
                                         continue;
                                     }
                                     reader.skipType(wireType, _depth, tag2);
@@ -2888,7 +2888,7 @@ export const gamend = $root.gamend = (() => {
                                     break;
                                 if (message.objective_progress === $util.emptyObject)
                                     message.objective_progress = {};
-                                let end2 = reader.uint32() + reader.pos;
+                                let end2 = reader.size() + reader.pos;
                                 if (end2 > reader.len)
                                     throw $RangeError("index out of range");
                                 reader.len = end2;
@@ -3684,7 +3684,7 @@ export const gamend = $root.gamend = (() => {
                                     break;
                                 if (!(message.members && message.members.length))
                                     message.members = [];
-                                message.members.push($root.gamend.realtime.v1.UserBrief.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                                message.members.push($root.gamend.realtime.v1.UserBrief.decode(reader, reader.size(), $undefined, _depth + 1));
                                 continue;
                             }
                         case 14: {
@@ -3919,6 +3919,7 @@ export const gamend = $root.gamend = (() => {
                  * @property {number|Long|null} [updated_at_ms] Group updated_at_ms
                  * @property {Uint8Array|null} [metadata_pb] Group metadata_pb
                  * @property {string|null} [icon_url] Group icon_url
+                 * @property {string|null} [slug] Group slug
                  * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
                  */
 
@@ -4062,6 +4063,14 @@ export const gamend = $root.gamend = (() => {
                  */
                 Group.prototype.icon_url = null;
 
+                /**
+                 * Group slug.
+                 * @member {string|null|undefined} slug
+                 * @memberof gamend.realtime.v1.Group
+                 * @instance
+                 */
+                Group.prototype.slug = null;
+
                 // OneOf field names bound to virtual getters and setters
                 let $oneOfFields;
 
@@ -4149,6 +4158,12 @@ export const gamend = $root.gamend = (() => {
                     set: $util.oneOfSetter($oneOfFields)
                 });
 
+                // Virtual OneOf for proto3 optional field
+                $Object.defineProperty(Group.prototype, "_slug", {
+                    get: $util.oneOfGetter($oneOfFields = ["slug"]),
+                    set: $util.oneOfSetter($oneOfFields)
+                });
+
                 /**
                  * Encodes the specified Group message. Does not implicitly {@link gamend.realtime.v1.Group.verify|verify} messages.
                  * @function encode
@@ -4193,6 +4208,8 @@ export const gamend = $root.gamend = (() => {
                         writer.uint32(/* id 13, wireType 2 =*/106).bytes(message.metadata_pb);
                     if (message.icon_url != null && $Object.hasOwnProperty.call(message, "icon_url"))
                         writer.uint32(/* id 14, wireType 2 =*/114).string(message.icon_url);
+                    if (message.slug != null && $Object.hasOwnProperty.call(message, "slug"))
+                        writer.uint32(/* id 15, wireType 2 =*/122).string(message.slug);
                     if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
                         for (let i = 0; i < message.$unknowns.length; ++i)
                             writer.raw(message.$unknowns[i]);
@@ -4335,6 +4352,13 @@ export const gamend = $root.gamend = (() => {
                                 message._icon_url = "icon_url";
                                 continue;
                             }
+                        case 15: {
+                                if (wireType !== 2)
+                                    break;
+                                message.slug = reader.stringVerify();
+                                message._slug = "slug";
+                                continue;
+                            }
                         }
                         reader.skipType(wireType, _depth, tag);
                         if (!reader.discardUnknown) {
@@ -4418,6 +4442,8 @@ export const gamend = $root.gamend = (() => {
                             message.metadata_pb = object.metadata_pb;
                     if (object.icon_url != null)
                         message.icon_url = $String(object.icon_url);
+                    if (object.slug != null)
+                        message.slug = $String(object.slug);
                     return message;
                 };
 
@@ -4476,6 +4502,8 @@ export const gamend = $root.gamend = (() => {
                         object.metadata_pb = options.bytes === $String ? $util.base64.encode(message.metadata_pb, 0, message.metadata_pb.length) : options.bytes === $Array ? $Array.prototype.slice.call(message.metadata_pb) : message.metadata_pb;
                     if (message.icon_url != null && $Object.hasOwnProperty.call(message, "icon_url"))
                         object.icon_url = message.icon_url;
+                    if (message.slug != null && $Object.hasOwnProperty.call(message, "slug"))
+                        object.slug = message.slug;
                     return object;
                 };
 
@@ -4812,7 +4840,7 @@ export const gamend = $root.gamend = (() => {
                                     break;
                                 if (!(message.members && message.members.length))
                                     message.members = [];
-                                message.members.push($root.gamend.realtime.v1.UserBrief.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                                message.members.push($root.gamend.realtime.v1.UserBrief.decode(reader, reader.size(), $undefined, _depth + 1));
                                 continue;
                             }
                         case 7: {
@@ -8806,7 +8834,7 @@ export const gamend = $root.gamend = (() => {
                                     break;
                                 if (message.match_params === $util.emptyObject)
                                     message.match_params = {};
-                                let end2 = reader.uint32() + reader.pos;
+                                let end2 = reader.size() + reader.pos;
                                 if (end2 > reader.len)
                                     throw $RangeError("index out of range");
                                 reader.len = end2;
@@ -8949,6 +8977,590 @@ export const gamend = $root.gamend = (() => {
                 };
 
                 return MatchmakingFound;
+            })();
+
+            v1.MatchmakingTicketQueued = (function() {
+
+                /**
+                 * Properties of a MatchmakingTicketQueued.
+                 * @typedef {Object} gamend.realtime.v1.MatchmakingTicketQueued.$Properties
+                 * @property {string|null} [ticket_id] MatchmakingTicketQueued ticket_id
+                 * @property {Object.<string,string>|null} [match_params] MatchmakingTicketQueued match_params
+                 * @property {number|Long|null} [queued_at_ms] MatchmakingTicketQueued queued_at_ms
+                 * @property {boolean|null} [requeued] MatchmakingTicketQueued requeued
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a MatchmakingTicketQueued.
+                 * @memberof gamend.realtime.v1
+                 * @interface IMatchmakingTicketQueued
+                 * @augments gamend.realtime.v1.MatchmakingTicketQueued.$Properties
+                 * @deprecated Use gamend.realtime.v1.MatchmakingTicketQueued.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a MatchmakingTicketQueued.
+                 * @typedef {gamend.realtime.v1.MatchmakingTicketQueued.$Properties} gamend.realtime.v1.MatchmakingTicketQueued.$Shape
+                 */
+
+                /**
+                 * Constructs a new MatchmakingTicketQueued.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a MatchmakingTicketQueued.
+                 * @constructor
+                 * @param {gamend.realtime.v1.MatchmakingTicketQueued.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const MatchmakingTicketQueued = function (properties) {
+                    this.match_params = {};
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * MatchmakingTicketQueued ticket_id.
+                 * @member {string} ticket_id
+                 * @memberof gamend.realtime.v1.MatchmakingTicketQueued
+                 * @instance
+                 */
+                MatchmakingTicketQueued.prototype.ticket_id = "";
+
+                /**
+                 * MatchmakingTicketQueued match_params.
+                 * @member {Object.<string,string>} match_params
+                 * @memberof gamend.realtime.v1.MatchmakingTicketQueued
+                 * @instance
+                 */
+                MatchmakingTicketQueued.prototype.match_params = $util.emptyObject;
+
+                /**
+                 * MatchmakingTicketQueued queued_at_ms.
+                 * @member {number|Long} queued_at_ms
+                 * @memberof gamend.realtime.v1.MatchmakingTicketQueued
+                 * @instance
+                 */
+                MatchmakingTicketQueued.prototype.queued_at_ms = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+                /**
+                 * MatchmakingTicketQueued requeued.
+                 * @member {boolean} requeued
+                 * @memberof gamend.realtime.v1.MatchmakingTicketQueued
+                 * @instance
+                 */
+                MatchmakingTicketQueued.prototype.requeued = false;
+
+                /**
+                 * Encodes the specified MatchmakingTicketQueued message. Does not implicitly {@link gamend.realtime.v1.MatchmakingTicketQueued.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.MatchmakingTicketQueued
+                 * @static
+                 * @param {gamend.realtime.v1.MatchmakingTicketQueued.$Properties} message MatchmakingTicketQueued message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                MatchmakingTicketQueued.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.ticket_id != null && $Object.hasOwnProperty.call(message, "ticket_id") && message.ticket_id !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.ticket_id);
+                    if (message.match_params != null && $Object.hasOwnProperty.call(message, "match_params"))
+                        for (let keys = $Object.keys(message.match_params), i = 0; i < keys.length; ++i)
+                            writer.uint32(/* id 2, wireType 2 =*/18).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 2 =*/18).string(message.match_params[keys[i]]).ldelim();
+                    if (message.queued_at_ms != null && $Object.hasOwnProperty.call(message, "queued_at_ms") && (typeof message.queued_at_ms === "object" ? message.queued_at_ms.low || message.queued_at_ms.high : message.queued_at_ms !== 0))
+                        writer.uint32(/* id 3, wireType 0 =*/24).int64(message.queued_at_ms);
+                    if (message.requeued != null && $Object.hasOwnProperty.call(message, "requeued") && message.requeued !== false)
+                        writer.uint32(/* id 4, wireType 0 =*/32).bool(message.requeued);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a MatchmakingTicketQueued message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.MatchmakingTicketQueued
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.MatchmakingTicketQueued & gamend.realtime.v1.MatchmakingTicketQueued.$Shape} MatchmakingTicketQueued
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                MatchmakingTicketQueued.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, key, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.MatchmakingTicketQueued();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.ticket_id = value;
+                                else
+                                    delete message.ticket_id;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                if (message.match_params === $util.emptyObject)
+                                    message.match_params = {};
+                                let end2 = reader.size() + reader.pos;
+                                if (end2 > reader.len)
+                                    throw $RangeError("index out of range");
+                                reader.len = end2;
+                                key = "";
+                                value = "";
+                                while (reader.pos < end2) {
+                                    let tag2 = reader.tag();
+                                    wireType = tag2 & 7;
+                                    switch (tag2 >>>= 3) {
+                                    case 1:
+                                        if (wireType !== 2)
+                                            break;
+                                        key = reader.stringVerify();
+                                        continue;
+                                    case 2:
+                                        if (wireType !== 2)
+                                            break;
+                                        value = reader.stringVerify();
+                                        continue;
+                                    }
+                                    reader.skipType(wireType, _depth, tag2);
+                                }
+                                if (reader.pos !== end2)
+                                    throw $RangeError("index out of range");
+                                reader.len = end;
+                                if (key === "__proto__")
+                                    $util.makeProp(message.match_params, key);
+                                message.match_params[key] = value;
+                                continue;
+                            }
+                        case 3: {
+                                if (wireType !== 0)
+                                    break;
+                                if (typeof (value = reader.int64()) === "object" ? value.low || value.high : value !== 0)
+                                    message.queued_at_ms = value;
+                                else
+                                    delete message.queued_at_ms;
+                                continue;
+                            }
+                        case 4: {
+                                if (wireType !== 0)
+                                    break;
+                                if (value = reader.bool())
+                                    message.requeued = value;
+                                else
+                                    delete message.requeued;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a MatchmakingTicketQueued message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.MatchmakingTicketQueued
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.MatchmakingTicketQueued} MatchmakingTicketQueued
+                 */
+                MatchmakingTicketQueued.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.MatchmakingTicketQueued)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.MatchmakingTicketQueued: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.MatchmakingTicketQueued();
+                    if (object.ticket_id != null)
+                        if (typeof object.ticket_id !== "string" || object.ticket_id.length)
+                            message.ticket_id = $String(object.ticket_id);
+                    if (object.match_params) {
+                        if (!$util.isObject(object.match_params))
+                            throw $TypeError(".gamend.realtime.v1.MatchmakingTicketQueued.match_params: object expected");
+                        message.match_params = {};
+                        for (let keys = $Object.keys(object.match_params), i = 0; i < keys.length; ++i) {
+                            if (keys[i] === "__proto__")
+                                $util.makeProp(message.match_params, keys[i]);
+                            message.match_params[keys[i]] = $String(object.match_params[keys[i]]);
+                        }
+                    }
+                    if (object.queued_at_ms != null)
+                        if (typeof object.queued_at_ms === "object" ? object.queued_at_ms.low || object.queued_at_ms.high : $Number(object.queued_at_ms) !== 0)
+                            if ($util.Long)
+                                message.queued_at_ms = $util.Long.fromValue(object.queued_at_ms, false);
+                            else if (typeof object.queued_at_ms === "string")
+                                message.queued_at_ms = $parseInt(object.queued_at_ms, 10);
+                            else if (typeof object.queued_at_ms === "number")
+                                message.queued_at_ms = object.queued_at_ms;
+                            else if (typeof object.queued_at_ms === "object")
+                                message.queued_at_ms = new $util.LongBits(object.queued_at_ms.low >>> 0, object.queued_at_ms.high >>> 0).toNumber();
+                    if (object.requeued != null)
+                        if (object.requeued)
+                            message.requeued = $Boolean(object.requeued);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a MatchmakingTicketQueued message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.MatchmakingTicketQueued
+                 * @static
+                 * @param {gamend.realtime.v1.MatchmakingTicketQueued} message MatchmakingTicketQueued
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                MatchmakingTicketQueued.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.objects || options.defaults)
+                        object.match_params = {};
+                    if (options.defaults) {
+                        object.ticket_id = "";
+                        if ($util.Long) {
+                            let long = new $util.Long(0, 0, false);
+                            object.queued_at_ms = options.longs === $String ? long.toString() : options.longs === $Number ? long.toNumber() : typeof $BigInt !== "undefined" && options.longs === $BigInt ? long.toBigInt() : long;
+                        } else
+                            object.queued_at_ms = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
+                        object.requeued = false;
+                    }
+                    if (message.ticket_id != null && $Object.hasOwnProperty.call(message, "ticket_id"))
+                        object.ticket_id = message.ticket_id;
+                    let keys2;
+                    if (message.match_params && (keys2 = $Object.keys(message.match_params)).length) {
+                        object.match_params = {};
+                        for (let j = 0; j < keys2.length; ++j) {
+                            if (keys2[j] === "__proto__")
+                                $util.makeProp(object.match_params, keys2[j]);
+                            object.match_params[keys2[j]] = message.match_params[keys2[j]];
+                        }
+                    }
+                    if (message.queued_at_ms != null && $Object.hasOwnProperty.call(message, "queued_at_ms"))
+                        if (typeof $BigInt !== "undefined" && options.longs === $BigInt)
+                            object.queued_at_ms = typeof message.queued_at_ms === "number" ? $BigInt(message.queued_at_ms) : $util.Long.fromBits(message.queued_at_ms.low >>> 0, message.queued_at_ms.high >>> 0, false).toBigInt();
+                        else if (typeof message.queued_at_ms === "number")
+                            object.queued_at_ms = options.longs === $String ? $String(message.queued_at_ms) : message.queued_at_ms;
+                        else
+                            object.queued_at_ms = options.longs === $String ? $util.Long.prototype.toString.call(message.queued_at_ms) : options.longs === $Number ? new $util.LongBits(message.queued_at_ms.low >>> 0, message.queued_at_ms.high >>> 0).toNumber() : message.queued_at_ms;
+                    if (message.requeued != null && $Object.hasOwnProperty.call(message, "requeued"))
+                        object.requeued = message.requeued;
+                    return object;
+                };
+
+                /**
+                 * Converts this MatchmakingTicketQueued to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.MatchmakingTicketQueued
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                MatchmakingTicketQueued.prototype.toJSON = function() {
+                    return MatchmakingTicketQueued.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for MatchmakingTicketQueued
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.MatchmakingTicketQueued
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                MatchmakingTicketQueued.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.MatchmakingTicketQueued";
+                };
+
+                return MatchmakingTicketQueued;
+            })();
+
+            v1.MatchmakingTicketCancelled = (function() {
+
+                /**
+                 * Properties of a MatchmakingTicketCancelled.
+                 * @typedef {Object} gamend.realtime.v1.MatchmakingTicketCancelled.$Properties
+                 * @property {string|null} [ticket_id] MatchmakingTicketCancelled ticket_id
+                 * @property {string|null} [reason] MatchmakingTicketCancelled reason
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+
+                /**
+                 * Properties of a MatchmakingTicketCancelled.
+                 * @memberof gamend.realtime.v1
+                 * @interface IMatchmakingTicketCancelled
+                 * @augments gamend.realtime.v1.MatchmakingTicketCancelled.$Properties
+                 * @deprecated Use gamend.realtime.v1.MatchmakingTicketCancelled.$Properties instead.
+                 */
+
+                /**
+                 * Shape of a MatchmakingTicketCancelled.
+                 * @typedef {gamend.realtime.v1.MatchmakingTicketCancelled.$Properties} gamend.realtime.v1.MatchmakingTicketCancelled.$Shape
+                 */
+
+                /**
+                 * Constructs a new MatchmakingTicketCancelled.
+                 * @memberof gamend.realtime.v1
+                 * @classdesc Represents a MatchmakingTicketCancelled.
+                 * @constructor
+                 * @param {gamend.realtime.v1.MatchmakingTicketCancelled.$Properties=} [properties] Properties to set
+                 * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
+                 */
+                const MatchmakingTicketCancelled = function (properties) {
+                    if (properties)
+                        for (let keys = $Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null && keys[i] !== "__proto__")
+                                this[keys[i]] = properties[keys[i]];
+                };
+
+                /**
+                 * MatchmakingTicketCancelled ticket_id.
+                 * @member {string} ticket_id
+                 * @memberof gamend.realtime.v1.MatchmakingTicketCancelled
+                 * @instance
+                 */
+                MatchmakingTicketCancelled.prototype.ticket_id = "";
+
+                /**
+                 * MatchmakingTicketCancelled reason.
+                 * @member {string} reason
+                 * @memberof gamend.realtime.v1.MatchmakingTicketCancelled
+                 * @instance
+                 */
+                MatchmakingTicketCancelled.prototype.reason = "";
+
+                /**
+                 * Encodes the specified MatchmakingTicketCancelled message. Does not implicitly {@link gamend.realtime.v1.MatchmakingTicketCancelled.verify|verify} messages.
+                 * @function encode
+                 * @memberof gamend.realtime.v1.MatchmakingTicketCancelled
+                 * @static
+                 * @param {gamend.realtime.v1.MatchmakingTicketCancelled.$Properties} message MatchmakingTicketCancelled message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                MatchmakingTicketCancelled.encode = function (message, writer, _depth) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    if (message.ticket_id != null && $Object.hasOwnProperty.call(message, "ticket_id") && message.ticket_id !== "")
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.ticket_id);
+                    if (message.reason != null && $Object.hasOwnProperty.call(message, "reason") && message.reason !== "")
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.reason);
+                    if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
+                        for (let i = 0; i < message.$unknowns.length; ++i)
+                            writer.raw(message.$unknowns[i]);
+                    return writer;
+                };
+
+                /**
+                 * Decodes a MatchmakingTicketCancelled message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof gamend.realtime.v1.MatchmakingTicketCancelled
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {gamend.realtime.v1.MatchmakingTicketCancelled & gamend.realtime.v1.MatchmakingTicketCancelled.$Shape} MatchmakingTicketCancelled
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                MatchmakingTicketCancelled.decode = function (reader, length, _end, _depth, _target) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $Reader.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let end, message, value;
+                    if (length === $undefined)
+                        end = reader.len;
+                    else {
+                        end = reader.pos + length;
+                        if (end > reader.len)
+                            throw $RangeError("index out of range");
+                        length = reader.len;
+                        reader.len = end;
+                    }
+                    message = _target || new $root.gamend.realtime.v1.MatchmakingTicketCancelled();
+                    while (reader.pos < end) {
+                        let start = reader.pos;
+                        let tag = reader.tag();
+                        if (tag === _end) {
+                            _end = $undefined;
+                            break;
+                        }
+                        let wireType = tag & 7;
+                        switch (tag >>>= 3) {
+                        case 1: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.ticket_id = value;
+                                else
+                                    delete message.ticket_id;
+                                continue;
+                            }
+                        case 2: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.reason = value;
+                                else
+                                    delete message.reason;
+                                continue;
+                            }
+                        }
+                        reader.skipType(wireType, _depth, tag);
+                        if (!reader.discardUnknown) {
+                            $util.makeProp(message, "$unknowns", false);
+                            (message.$unknowns || (message.$unknowns = [])).push(reader.raw(start, reader.pos));
+                        }
+                    }
+                    if (length !== $undefined) {
+                        if (reader.pos !== end)
+                            throw $RangeError("index out of range");
+                        reader.len = length;
+                    }
+                    if (_end !== $undefined)
+                        throw $Error("missing end group");
+                    return message;
+                };
+
+                /**
+                 * Creates a MatchmakingTicketCancelled message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof gamend.realtime.v1.MatchmakingTicketCancelled
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {gamend.realtime.v1.MatchmakingTicketCancelled} MatchmakingTicketCancelled
+                 */
+                MatchmakingTicketCancelled.fromObject = function (object, _depth) {
+                    if (object instanceof $root.gamend.realtime.v1.MatchmakingTicketCancelled)
+                        return object;
+                    if (!$util.isObject(object))
+                        throw $TypeError(".gamend.realtime.v1.MatchmakingTicketCancelled: object expected");
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let message = new $root.gamend.realtime.v1.MatchmakingTicketCancelled();
+                    if (object.ticket_id != null)
+                        if (typeof object.ticket_id !== "string" || object.ticket_id.length)
+                            message.ticket_id = $String(object.ticket_id);
+                    if (object.reason != null)
+                        if (typeof object.reason !== "string" || object.reason.length)
+                            message.reason = $String(object.reason);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a MatchmakingTicketCancelled message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof gamend.realtime.v1.MatchmakingTicketCancelled
+                 * @static
+                 * @param {gamend.realtime.v1.MatchmakingTicketCancelled} message MatchmakingTicketCancelled
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                MatchmakingTicketCancelled.toObject = function (message, options, _depth) {
+                    if (!options)
+                        options = {};
+                    if (_depth === $undefined)
+                        _depth = 0;
+                    if (_depth > $util.recursionLimit)
+                        throw $Error("max depth exceeded");
+                    let object = {};
+                    if (options.defaults) {
+                        object.ticket_id = "";
+                        object.reason = "";
+                    }
+                    if (message.ticket_id != null && $Object.hasOwnProperty.call(message, "ticket_id"))
+                        object.ticket_id = message.ticket_id;
+                    if (message.reason != null && $Object.hasOwnProperty.call(message, "reason"))
+                        object.reason = message.reason;
+                    return object;
+                };
+
+                /**
+                 * Converts this MatchmakingTicketCancelled to JSON.
+                 * @function toJSON
+                 * @memberof gamend.realtime.v1.MatchmakingTicketCancelled
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                MatchmakingTicketCancelled.prototype.toJSON = function() {
+                    return MatchmakingTicketCancelled.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                /**
+                 * Gets the type url for MatchmakingTicketCancelled
+                 * @function getTypeUrl
+                 * @memberof gamend.realtime.v1.MatchmakingTicketCancelled
+                 * @static
+                 * @param {string} [prefix] Custom type url prefix, defaults to `"type.googleapis.com"`
+                 * @returns {string} The type url
+                 */
+                MatchmakingTicketCancelled.getTypeUrl = function(prefix) {
+                    if (prefix === $undefined)
+                        prefix = "type.googleapis.com";
+                    return prefix + "/gamend.realtime.v1.MatchmakingTicketCancelled";
+                };
+
+                return MatchmakingTicketCancelled;
             })();
 
             v1.ReadyCheckParticipant = (function() {
@@ -9582,7 +10194,7 @@ export const gamend = $root.gamend = (() => {
                                     break;
                                 if (!(message.participants && message.participants.length))
                                     message.participants = [];
-                                message.participants.push($root.gamend.realtime.v1.ReadyCheckParticipant.decode(reader, reader.uint32(), $undefined, _depth + 1));
+                                message.participants.push($root.gamend.realtime.v1.ReadyCheckParticipant.decode(reader, reader.size(), $undefined, _depth + 1));
                                 continue;
                             }
                         case 11: {
@@ -11194,21 +11806,21 @@ export const gamend = $root.gamend = (() => {
                         case 1: {
                                 if (wireType !== 2)
                                     break;
-                                message.call_hook = $root.gamend.realtime.v1.RpcCall.decode(reader, reader.uint32(), $undefined, _depth + 1, message.call_hook);
+                                message.call_hook = $root.gamend.realtime.v1.RpcCall.decode(reader, reader.size(), $undefined, _depth + 1, message.call_hook);
                                 message.msg = "call_hook";
                                 continue;
                             }
                         case 2: {
                                 if (wireType !== 2)
                                     break;
-                                message.hook_reply = $root.gamend.realtime.v1.RpcReply.decode(reader, reader.uint32(), $undefined, _depth + 1, message.hook_reply);
+                                message.hook_reply = $root.gamend.realtime.v1.RpcReply.decode(reader, reader.size(), $undefined, _depth + 1, message.hook_reply);
                                 message.msg = "hook_reply";
                                 continue;
                             }
                         case 3: {
                                 if (wireType !== 2)
                                     break;
-                                message.hook_error = $root.gamend.realtime.v1.RpcError.decode(reader, reader.uint32(), $undefined, _depth + 1, message.hook_error);
+                                message.hook_error = $root.gamend.realtime.v1.RpcError.decode(reader, reader.size(), $undefined, _depth + 1, message.hook_error);
                                 message.msg = "hook_error";
                                 continue;
                             }

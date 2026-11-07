@@ -139,6 +139,15 @@ static func decode_event(topic: String, event: String, data: PackedByteArray) ->
 					})
 				"match_found":
 					return _decode(PB.MatchmakingFound.new(), data, func(m): return {"lobby_id": m.get_lobby_id(), "match_params": m.get_match_params()})
+				"ticket_queued":
+					return _decode(PB.MatchmakingTicketQueued.new(), data, func(m): return {
+						"ticket_id": m.get_ticket_id(),
+						"match_params": m.get_match_params(),
+						"queued_at_ms": m.get_queued_at_ms(),
+						"requeued": m.get_requeued(),
+					})
+				"ticket_cancelled":
+					return _decode(PB.MatchmakingTicketCancelled.new(), data, func(m): return {"ticket_id": m.get_ticket_id(), "reason": m.get_reason()})
 		"lobby":
 			match event:
 				"updated":

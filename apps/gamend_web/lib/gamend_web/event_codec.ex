@@ -37,6 +37,21 @@ defmodule GamendWeb.EventCodec do
       :json
   end
 
+  @doc """
+  The protobuf message `event` on `topic` is sent as (`"MatchmakingFound"`),
+  or nil for one sent as JSON. What the generated SDK table names
+  (`mix gamend.gen.events`, `clients/events.json`).
+  """
+  @spec message_name(String.t(), String.t()) :: String.t() | nil
+  def message_name(topic, event) do
+    case message_for(topic_kind(topic), event, %{}) do
+      %module{} -> module |> Module.split() |> List.last()
+      nil -> nil
+    end
+  rescue
+    _ -> nil
+  end
+
   defp topic_kind(topic) do
     case String.split(topic, ":", parts: 2) do
       [kind, _] -> kind
@@ -158,6 +173,20 @@ defmodule GamendWeb.EventCodec do
     do: %PB.MatchmakingFound{
       lobby_id: get(p, :lobby_id),
       match_params: stringify_map(get(p, :match_params) || %{})
+    }
+
+  defp message_for("user", "ticket_queued", p),
+    do: %PB.MatchmakingTicketQueued{
+      ticket_id: get(p, :ticket_id),
+      match_params: stringify_map(get(p, :match_params) || %{}),
+      queued_at_ms: get(p, :queued_at_ms) || 0,
+      requeued: get(p, :requeued) == true
+    }
+
+  defp message_for("user", "ticket_cancelled", p),
+    do: %PB.MatchmakingTicketCancelled{
+      ticket_id: get(p, :ticket_id),
+      reason: get(p, :reason) || ""
     }
 
   defp message_for(_kind, _event, _payload), do: nil

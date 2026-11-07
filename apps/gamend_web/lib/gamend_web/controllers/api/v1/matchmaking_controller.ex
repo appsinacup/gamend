@@ -23,8 +23,12 @@ defmodule GamendWeb.Api.V1.MatchmakingController do
     Creates a matchmaking ticket for the caller. Tickets with identical
     match_params are grouped; when enough are queued the server creates a
     hidden lobby and pushes a `match_found` event on the caller's user
-    channel. Keep a socket connected while queued — a player who stays offline
-    past the grace period is dropped from the queue by the sweep.
+    channel; `ticket_queued` and `ticket_cancelled` tell where the ticket
+    stands. With `accept_timeout_ms` a formed match asks everyone first (the
+    `ready_check_*` events, answered at `POST /me/ready_check`). A lobby's host
+    who queues fills that lobby (backfill: the ticket's `lobby_id`). Keep a
+    socket connected while queued — a player who stays offline past the grace
+    period is dropped from the queue by the sweep.
 
     A caller in a party queues the whole party: one ticket per member, matched
     as an indivisible unit. Refusals: `already_queued` (409) when the caller or
@@ -41,7 +45,12 @@ defmodule GamendWeb.Api.V1.MatchmakingController do
          properties: %{
            match_params: %Schema{type: :object},
            min_players: %Schema{type: :integer},
-           max_players: %Schema{type: :integer}
+           max_players: %Schema{type: :integer},
+           accept_timeout_ms: %Schema{
+             type: :integer,
+             description:
+               "Ask every player to accept a formed match first, within this many ms (a ready check of kind accept); none seats them at once. The game's join hook may set or change it."
+           }
          }
        }},
     responses: [
@@ -61,7 +70,8 @@ defmodule GamendWeb.Api.V1.MatchmakingController do
            user,
            Map.get(params, "match_params", %{}),
            parse_optional_int(params["min_players"]),
-           parse_optional_int(params["max_players"])
+           parse_optional_int(params["max_players"]),
+           accept_timeout_ms: parse_optional_int(params["accept_timeout_ms"])
          ) do
       {:ok, ticket} ->
         reply_data(conn, :created, serialize(ticket))
@@ -132,6 +142,8 @@ defmodule GamendWeb.Api.V1.MatchmakingController do
       min_players: ticket.min_players,
       max_players: ticket.max_players,
       timeout_ms: ticket.timeout_ms,
+      accept_timeout_ms: ticket.accept_timeout_ms || 0,
+      lobby_id: ticket.lobby_id || "",
       queued_at: ticket.queued_at,
       matched_at: ticket.matched_at,
       match_id: ticket.match_id || ""

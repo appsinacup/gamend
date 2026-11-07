@@ -205,6 +205,9 @@ defmodule GamendHost.MixProject do
           # change kept a stale SDK passing here while CI's `sdkgen balaur
           # --check` failed on it (the reports endpoints).
           "openapi.spec.json --spec GamendWeb.ApiSpec --filename clients/godot/openapi.json --pretty=true",
+          # The realtime table every SDK reads, from the event registry; then
+          # the Balaur SDK, which is generated from both.
+          "gamend.gen.events",
           "cmd python3 clients/sdkgen balaur",
           "credo --strict",
           "gamend.api.lint",

@@ -37,6 +37,11 @@ defmodule Mix.Tasks.Gen.Sdk do
     {Gamend.Lock, "lock.ex"},
     {Gamend.Tournaments, "tournaments.ex"},
     {Gamend.ReadyChecks, "ready_checks.ex"},
+    # A game's matchmaking hooks (`before_matchmaking_join`,
+    # `matchmaking_form_matches`, `after_matchmaking_matched`) work with its
+    # tickets: a plugin reads a player's ticket, cancels one, asks whether a
+    # group fits its lobby.
+    {Gamend.Matchmaking, "matchmaking.ex"},
     # The WebRTC lobby plugin drives rooms off lobby lifecycle hooks.
     {Gamend.Signaling, "signaling.ex"},
     # Without this a plugin cannot push a custom event and reaches for

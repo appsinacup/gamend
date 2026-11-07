@@ -14,7 +14,9 @@ defmodule GamendWeb.RealtimeEventsDriftTest do
   # constants module, or behind a dispatcher like
   # `SignalingChannel.relay_event_name/1`, rather than at the push site).
   @indirect ~w(
-    match_found
+    match_found ticket_queued ticket_cancelled
+    outgoing_request incoming_request request_cancelled friend_accepted friend_rejected
+    friend_removed friend_blocked friend_unblocked
     user_online user_offline
     tournament_updated tournament_finished tournament_match_ready tournament_match_resolved
     ready_check_started ready_check_updated ready_check_passed ready_check_failed

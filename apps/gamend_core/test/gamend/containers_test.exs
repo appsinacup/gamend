@@ -135,6 +135,36 @@ defmodule Gamend.ContainersTest do
     refute "--timeout" in Containers.output_args("img", ["true"], [], [])
   end
 
+  # Each container's calls to its own service: a host's own and its
+  # tenants', each under a user of its own.
+  test "on/2 sends this process's calls to another service, and puts the last back" do
+    tmp = Path.join(System.tmp_dir!(), "containers-on-#{System.unique_integer([:positive])}")
+    File.mkdir_p!(tmp)
+    podman = Path.join(tmp, "podman")
+    File.write!(podman, "#!/bin/sh\necho \"host=${CONTAINER_HOST:-default}\"\n")
+    File.chmod!(podman, 0o755)
+    path = System.get_env("PATH")
+    System.put_env("PATH", tmp <> ":" <> path)
+
+    try do
+      assert {:ok, "host=default\n"} = Containers.logs("x")
+
+      Containers.on("unix:///run/user/1100/podman/podman.sock", fn ->
+        assert Containers.connection() == "unix:///run/user/1100/podman/podman.sock"
+        assert {:ok, "host=unix:///run/user/1100/podman/podman.sock\n"} = Containers.logs("x")
+
+        Containers.on("", fn -> assert {:ok, "host=default\n"} = Containers.logs("x") end)
+        assert {:ok, "host=unix:///run/user/1100/podman/podman.sock\n"} = Containers.logs("x")
+      end)
+
+      assert Containers.connection() == nil
+      assert {:ok, "host=default\n"} = Containers.logs("x")
+    after
+      System.put_env("PATH", path)
+      File.rm_rf!(tmp)
+    end
+  end
+
   test "what a command prints is kept to its first bytes" do
     {out, 0} =
       System.cmd("sh", ["-c", "printf abcdef; printf ghij"], into: Containers.Bounded.new(5))

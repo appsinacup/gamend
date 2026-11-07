@@ -65,8 +65,13 @@ not the leader gets `not_party_leader` (403). `GET /tickets/me` answers the
 caller's ticket, or 404 `not_queued` when there is none.
 
 After joining, keep the user channel connected and wait for `match_found` on
-`user:{user_id}`, carrying `{lobby_id, match_params}`. Disconnecting cancels
-your tickets, and a periodic sweep also cancels tickets for users the server no
+`user:{user_id}`, carrying `{lobby_id, match_params}`. The ticket's own
+changes come there too: `ticket_queued` (`{ticket_id, match_params,
+queued_at_ms, requeued}`: joined, or put back in its old place after a failed
+accept) and `ticket_cancelled` (`{ticket_id, reason}`: `left`, `declined`,
+`timeout`, `offline`, `admin` or `unseated`), so every device a player has
+open knows where their ticket stands. Closing your last socket
+cancels your tickets (a reload or a second tab does not), and a periodic sweep also cancels tickets for users the server no
 longer sees, so a queued ticket always belongs to someone who can be seated.
 
 ## Ticket lifecycle

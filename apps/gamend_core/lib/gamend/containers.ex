@@ -12,6 +12,13 @@ defmodule Gamend.Containers do
   raises isolation without another driver: the same flags, a different OCI
   runtime.
 
+  ## Which podman
+
+  The one `CONTAINER_HOST` names, or podman's own, unless the calling
+  process is inside `on/2`: a host with two services, its own containers'
+  and its tenants', each under a user of its own, sends each container's
+  calls to its service that way.
+
   ## Errors
 
   Every call answers `{:error, reason}` on an expected failure:
@@ -58,6 +65,8 @@ defmodule Gamend.Containers do
   # What a container's command or log may hand this node: an image that
   # prints without end cannot fill its memory.
   @max_output_bytes 4 * 1024 * 1024
+
+  @connection_key {__MODULE__, :connection}
 
   @type port_map :: {host_ip :: String.t(), host_port :: pos_integer(), port :: pos_integer()}
   @type mount :: {source :: String.t(), target :: String.t(), :rw | :ro | :chown}
@@ -527,8 +536,13 @@ defmodule Gamend.Containers do
   def run_port(path, args, opts) do
     Logger.debug("#{Path.basename(path)} #{Enum.join(args, " ")}")
 
+    env = Enum.map(connection_env(), fn {key, value} -> {~c"#{key}", ~c"#{value}"} end)
+
     port =
-      Port.open({:spawn_executable, path}, [:binary, :exit_status, :stderr_to_stdout, args: args])
+      Port.open(
+        {:spawn_executable, path},
+        [:binary, :exit_status, :stderr_to_stdout, args: args, env: env]
+      )
 
     deadline =
       case Keyword.get(opts, :timeout_ms) do
@@ -704,6 +718,35 @@ defmodule Gamend.Containers do
     end
   end
 
+  @doc """
+  Copy `source`, a file on this machine, to `path` in a container, running
+  or stopped: into one of its volumes when its root is read-only. The client
+  reads the file and hands it over, so it need not be where the podman
+  service's user can read it.
+  """
+  @spec copy_to(Path.t(), String.t(), String.t()) :: :ok | {:error, term()}
+  def copy_to(source, name, path), do: run_verb(:copy_to, ["cp", source, "#{name}:#{path}"])
+
+  @doc """
+  Unpack the tar archive `archive`, a file on this machine, into the
+  directory `path` of a container, running or stopped (`podman cp -`): a
+  volume's files put back whole, however large, never held in memory.
+  """
+  @spec unpack_into(String.t(), String.t(), Path.t()) :: :ok | {:error, term()}
+  def unpack_into(name, path, archive) do
+    script = ~s|"$0" cp - "$1" < "$2"|
+
+    with {:ok, podman} <- executable() do
+      case System.cmd("sh", ["-c", script, podman, "#{name}:#{path}", archive],
+             stderr_to_stdout: true,
+             env: connection_env()
+           ) do
+        {_out, 0} -> :ok
+        {out, status} -> failed(:unpack_into, {:ok, {out, status}})
+      end
+    end
+  end
+
   @doc "Copy `path` out of a container, running or stopped, to `dest` on this machine."
   @spec copy_from(String.t(), String.t(), Path.t()) :: :ok | {:error, term()}
   def copy_from(name, path, dest), do: run_verb(:copy_from, ["cp", "#{name}:#{path}", dest])
@@ -725,7 +768,9 @@ defmodule Gamend.Containers do
 
     with {:ok, podman} <- executable() do
       try do
-        case System.cmd("sh", ["-c", script, podman, "#{name}:#{path}", dest, errors]) do
+        case System.cmd("sh", ["-c", script, podman, "#{name}:#{path}", dest, errors],
+               env: connection_env()
+             ) do
           {_out, 0} ->
             :ok
 
@@ -857,6 +902,41 @@ defmodule Gamend.Containers do
   end
 
   @doc """
+  Run `fun` with every podman call it makes in this process going to the
+  podman service at `url` (`unix:///run/user/1100/podman/podman.sock`,
+  `ssh://…`): `CONTAINER_HOST` for that call alone. Nil or `""` is the
+  default service. Calls from another process are not affected, and the
+  one before is back once `fun` returns or raises.
+  """
+  @spec on(String.t() | nil, (-> result)) :: result when result: term()
+  def on(url, fun) when is_function(fun, 0) do
+    previous = Process.get(@connection_key)
+
+    if url in [nil, ""],
+      do: Process.delete(@connection_key),
+      else: Process.put(@connection_key, url)
+
+    try do
+      fun.()
+    after
+      if previous,
+        do: Process.put(@connection_key, previous),
+        else: Process.delete(@connection_key)
+    end
+  end
+
+  @doc "The service `on/2` sends this process's calls to, or nil for the default."
+  @spec connection() :: String.t() | nil
+  def connection, do: Process.get(@connection_key)
+
+  defp connection_env do
+    case connection() do
+      nil -> []
+      url -> [{"CONTAINER_HOST", url}]
+    end
+  end
+
+  @doc """
   The `podman` executable, for a host that runs it itself: a job whose output
   it streams through a port as it comes.
   """
@@ -871,7 +951,7 @@ defmodule Gamend.Containers do
   defp podman(args, into \\ "") do
     with {:ok, podman} <- executable() do
       Logger.debug("podman #{Enum.join(args, " ")}")
-      {:ok, System.cmd(podman, args, stderr_to_stdout: true, into: into)}
+      {:ok, System.cmd(podman, args, stderr_to_stdout: true, into: into, env: connection_env())}
     end
   end
 

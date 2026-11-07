@@ -11,9 +11,9 @@ defmodule Gamend.Accounts.Online do
       user's lobby, party and groups told.
     * `heartbeat/1`: `last_seen_at` refreshed. A socket calls it every
       `heartbeat_ms/0`, so `StalePresenceSweeper` leaves a live player alone.
-    * `disconnected/2`: the user's matchmaking tickets cancelled (an accept
-      they were asked for declined), and when no other socket of theirs is
-      left, `users.is_online` cleared. Checked again a moment later for a
+    * `disconnected/2`: when no other socket of theirs is left, the user's
+      matchmaking tickets cancelled (an accept they were asked for declined)
+      and `users.is_online` cleared. Checked again a moment later for a
       socket another node had not replicated yet.
 
   `watch/2` does all three for a process with no `terminate/2` to rely on:
@@ -83,18 +83,23 @@ defmodule Gamend.Accounts.Online do
   def heartbeat_ms, do: StalePresenceSweeper.heartbeat_ms()
 
   @doc """
-  `pid`, a socket of `user_id`'s, closed (or is closing). The user's
-  matchmaking tickets are cancelled. With no other socket of theirs left,
+  `pid`, a socket of `user_id`'s, closed (or is closing). With no other
+  socket of theirs left, their matchmaking tickets are cancelled,
   `users.is_online` is cleared and their lobby, party and groups told, then
-  checked again after a moment and undone if a socket is there after all.
+  checked again after a moment and the flag put back if a socket is there
+  after all.
   """
   @spec disconnected(Ecto.UUID.t(), pid()) :: :ok
   def disconnected(user_id, pid) when is_binary(user_id) and is_pid(pid) do
-    _ = Gamend.Matchmaking.cancel(user_id)
-
     if Gamend.Presence.other_socket?(user_id, pid) do
       :ok
     else
+      # Their last socket: out of the queue, as a ticket must belong to
+      # someone who can be seated. Not before: a reload, a second tab or the
+      # game beside the website closes one socket of several, and the player
+      # is still there to answer a match.
+      _ = Gamend.Matchmaking.cancel(user_id)
+
       case Accounts.set_user_offline(user_id) do
         {:ok, _} -> broadcast_member_presence(user_id, false)
         _ -> :ok

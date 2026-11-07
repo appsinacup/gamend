@@ -304,6 +304,24 @@ message MatchmakingFound {
   map<string, string> match_params = 2;
 }
 
+// "ticket_queued" on user:<id> channels: the user's ticket is in the queue,
+// joined or (requeued) put back in its old place after a failed accept.
+message MatchmakingTicketQueued {
+  string ticket_id = 1;
+  map<string, string> match_params = 2;
+  // Unix ms: the ticket's place in the queue.
+  int64 queued_at_ms = 3;
+  bool requeued = 4;
+}
+
+// "ticket_cancelled" on user:<id> channels: the user's ticket left the queue
+// with no match. reason: "left", "declined", "timeout", "offline", "admin"
+// or "unseated".
+message MatchmakingTicketCancelled {
+  string ticket_id = 1;
+  string reason = 2;
+}
+
 // ── Ready checks ─────────────────────────────────────────────────────────
 
 // One participant's answer inside a ready check.

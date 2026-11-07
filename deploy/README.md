@@ -10,7 +10,14 @@ directory's) starts it:
 ./rebuild.sh            # pull, check, build, start, prune
 ./rebuild.sh --check    # pull, then the checks alone
 ./rebuild.sh --no-pull  # deploy what is checked out now
+./rebuild.sh --export DIR   # .env and the database into DIR, for Gamend Cloud
 ```
+
+`--export` writes what Gamend Cloud imports a server from
+(`GamendCloud.Imports`): `.env` as it is and `gamend.dump`, `pg_dump -Fc` of
+the running `DB_SERVICE` (`db` unless deploy.conf sets it), both mode 600, and
+whatever the app's `app_export DIR` hook adds (`files.tar`, its stored files).
+It stops nothing: for the last export before a move, stop the app first.
 
 `rebuild.sh` pulls the checkout first, so the checks and the deploy are the new
 code's, then fetches `gamend-deploy` from this repository at the version

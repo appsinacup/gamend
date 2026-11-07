@@ -101,6 +101,8 @@ defmodule GamendWeb.Api.V1.Admin.MatchmakingController do
       min_players: ticket.min_players,
       max_players: ticket.max_players,
       timeout_ms: ticket.timeout_ms,
+      accept_timeout_ms: ticket.accept_timeout_ms || 0,
+      lobby_id: ticket.lobby_id || "",
       queued_at: ticket.queued_at,
       matched_at: ticket.matched_at,
       match_id: ticket.match_id || ""

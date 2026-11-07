@@ -477,9 +477,7 @@ defmodule Gamend.Hooks do
         task =
           Task.async(fn ->
             # Make caller context available inside the task via process dictionary.
-            if caller = Keyword.get(opts, :caller) do
-              Process.put(:gamend_hook_caller, caller)
-            end
+            put_caller(opts)
 
             try do
               apply(mod, name, args)
@@ -1222,9 +1220,7 @@ defmodule Gamend.Hooks do
        when is_atom(mod) and is_atom(name) and is_list(args) and is_list(opts) do
     task =
       Task.async(fn ->
-        if caller = Keyword.get(opts, :caller) do
-          Process.put(:gamend_hook_caller, caller)
-        end
+        put_caller(opts)
 
         try do
           apply(mod, name, args)
@@ -1555,6 +1551,28 @@ defmodule Gamend.Hooks do
   @spec caller() :: any() | nil
   def caller do
     Process.get(:gamend_hook_caller)
+  end
+
+  @doc """
+  The process the caller asked from, when their transport has one that lives
+  as long as they are connected: the user socket's channel process for a
+  `call_hook` over the socket (`:caller_pid`). nil over HTTP. A hook that
+  tracks presence for the caller (`Gamend.Presence.track/4`) tracks it on
+  this process, so it ends when the socket does, as the socket's own does.
+  """
+  @spec caller_pid() :: pid() | nil
+  def caller_pid do
+    Process.get(:gamend_hook_caller_pid)
+  end
+
+  @doc false
+  # The caller context (`:caller`, `:caller_pid`) into the process a hook runs
+  # in: every task that runs one calls this first.
+  @spec put_caller(keyword()) :: :ok
+  def put_caller(opts) do
+    if caller = Keyword.get(opts, :caller), do: Process.put(:gamend_hook_caller, caller)
+    if pid = Keyword.get(opts, :caller_pid), do: Process.put(:gamend_hook_caller_pid, pid)
+    :ok
   end
 
   @spec caller_id() :: String.t() | nil

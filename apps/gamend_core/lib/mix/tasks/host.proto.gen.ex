@@ -26,7 +26,7 @@ defmodule Mix.Tasks.Host.Proto.Gen do
   that only ships an Elixir plugin needs nothing extra:
 
     * Elixir — `protoc` plus `protoc-gen-elixir` (`mix escript.install hex protobuf`)
-    * JavaScript — `npx` (fetches `protobufjs-cli` on demand)
+    * JavaScript — `npx` (fetches the pinned `protobufjs-cli` on demand)
     * Godot — `GODOT_BIN` and `GODOBUF_DIR` environment variables
 
   Discovery looks in `proto/`, `modules/plugins/*/proto/` and
@@ -46,6 +46,13 @@ defmodule Mix.Tasks.Host.Proto.Gen do
   ]
 
   @targets ~w(elixir js godot)
+
+  # One pbjs for every machine: an unpinned `npx -p protobufjs-cli` fetched
+  # whatever was newest, and two machines wrote two different files from one
+  # schema (2.7 decodes with `reader.size()`, which the 8.x runtime the JS
+  # client ships has; older ones with `reader.uint32()`). Keep it in step
+  # with `clients/package.json`'s `proto` script.
+  @pbjs "protobufjs-cli@2.7.1"
 
   @impl Mix.Task
   def run(args) do
@@ -172,8 +179,9 @@ defmodule Mix.Tasks.Host.Proto.Gen do
       File.mkdir_p!(Path.dirname(out))
 
       args =
-        ~w(-p protobufjs-cli pbjs -t static-module -w es6 --keep-case --no-create --no-verify
-           --no-delimited -o) ++ [out, proto]
+        ["-p", @pbjs] ++
+          ~w(pbjs -t static-module -w es6 --keep-case --no-create --no-verify --no-delimited -o) ++
+          [out, proto]
 
       cmd("npx", args, [], "js", out)
     else

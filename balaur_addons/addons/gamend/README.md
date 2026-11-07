@@ -13,7 +13,7 @@ let reply = await task::wait(lobbies::quick_join({ "title": "duel", "max_users":
 if e["kind"].as_str() == lobby::MEMBER_JOINED { }
 ```
 
-279 operations in 44 modules, and 98 realtime events.
+279 operations in 44 modules, and 100 realtime events.
 
 Beside the generated modules and `events.bs`, written by hand:
 

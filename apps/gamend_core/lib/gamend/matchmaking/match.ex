@@ -77,7 +77,7 @@ defmodule Gamend.Matchmaking.Match do
   matchmaking's.
   """
   @spec accept_resolved(Check.t()) :: {:ok, Ecto.UUID.t()} | :ok | {:error, term()}
-  def accept_resolved(%Check{id: check_id, status: status}) do
+  def accept_resolved(%Check{id: check_id, status: status} = check) do
     answers =
       from(p in Participant,
         where: p.ready_check_id == ^check_id and not is_nil(p.ticket_id),
@@ -103,8 +103,8 @@ defmodule Gamend.Matchmaking.Match do
 
       true ->
         {still_in, out} = Enum.split_with(held, &(answers[&1.id] in ["ready", "pending"]))
-        _ = Matchmaking.discard(out)
-        _ = Matchmaking.requeue(still_in)
+        _ = Matchmaking.discard(out, check.reason || "declined")
+        _ = Matchmaking.requeue(still_in, true)
         Matchmaking.Worker.nudge()
         :ok
     end

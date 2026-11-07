@@ -36,6 +36,29 @@ model class (`Lobby`, `SessionResponse`, …):
 node check_js.js http://127.0.0.1:4000
 ```
 
+## One source for the realtime events
+
+Every server→client event is declared once, in `GamendWeb.RealtimeEvents`
+(its channel, its SDK signal name, its payload). The channel code is held to
+it by `realtime_events_drift_test.exs`, the protobuf codec by
+`event_codec_coverage_test.exs`. From it:
+
+- `mix gamend.gen.events` writes `clients/events.json` (channel, event,
+  signal, protobuf message), which the Balaur and C++ SDKs are generated
+  from. `precommit` runs it; CI runs `--check`.
+- `sdk_events_drift_test.exs` holds the hand-written halves to it: Godot's
+  routing (`GamendApi.gd`, `GamendWebRTC.gd`, `GamendSignalingClient.gd`)
+  and the Godot and JavaScript protobuf decoders (`GamendProto.gd`,
+  `gamend_proto.js`). A new event fails there until each client has it.
+- The protobuf schema (`proto/gamend_realtime.proto`) gives the Elixir,
+  JavaScript and Godot bindings through `mix host.proto.gen` (pbjs pinned).
+
+A new event: add its row to the registry (and its message to the codec and
+the schema when it is protobuf), run `mix gamend.gen.events` and
+`mix host.proto.gen`, then let the drift test name what each client lacks.
+
+## Balaur and C++
+
 The Balaur and C++ SDKs come from our own generator, `sdkgen/`: one model of
 the document and the realtime table, one emitter per target. Each script
 refreshes the document first; `--check` fails when the output on disk is

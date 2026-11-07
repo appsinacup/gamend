@@ -9,6 +9,9 @@
 #   ./rebuild.sh            pull, check, build, start, prune
 #   ./rebuild.sh --check    pull, then the checks alone
 #   ./rebuild.sh --no-pull  deploy what is checked out now
+#   ./rebuild.sh --export DIR
+#                           the app's variables and database into DIR, what
+#                           Gamend Cloud imports a server from
 #
 # Most of it is the preflight, because what goes wrong on a deploy is mostly
 # quiet: a container that says "running" while its site is down, a stack that
@@ -17,13 +20,17 @@
 set -euo pipefail
 
 CHECK_ONLY=0
-for arg in "$@"; do
-  case "$arg" in
+EXPORT_DIR=""
+while [ $# -gt 0 ]; do
+  case "$1" in
     --check) CHECK_ONLY=1 ;;
     --no-pull) ;; # rebuild.sh's; the pull is done before this runs
-    -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-    *) echo "unknown option: $arg" >&2; exit 2 ;;
+    --export) EXPORT_DIR=${2:?--export needs a directory}; shift ;;
+    --export=*) EXPORT_DIR=${1#--export=} ;;
+    -h|--help) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
+  shift
 done
 
 # ── Helpers, also for deploy.conf's hooks ───────────────────────────────────
@@ -157,6 +164,52 @@ COMPOSE="docker compose"
 for file in $COMPOSE_FILES; do
   if [ -f "$file" ]; then COMPOSE="$COMPOSE -f $file"; else bad "compose file $file is missing"; fi
 done
+
+# ── Export ────────────────────────────────────────────────────────────────
+
+# What Gamend Cloud imports a server from (its `GamendCloud.Imports`): `.env`
+# as it is, and the database as `pg_dump -Fc` writes it, from the running
+# `DB_SERVICE`. An app's own files go in through its `app_export DIR` hook
+# (`files.tar`, unpacked into the server's /data/storage); files a trusted
+# server mounts from the host stay where they are. Nothing is stopped: for
+# the last export before a move, stop the app first (`$COMPOSE stop
+# $APP_SERVICE`), so no write lands after the dump.
+if [ -n "$EXPORT_DIR" ]; then
+  step "Exporting to $EXPORT_DIR"
+  # Players' data and the app's secrets: nobody else's to read.
+  umask 077
+  mkdir -p "$EXPORT_DIR"
+  chmod 700 "$EXPORT_DIR"
+  install -m 600 .env "$EXPORT_DIR/.env"
+  ok ".env (secrets: keep $EXPORT_DIR off shared disks, and delete it after the import)"
+
+  db_service=${DB_SERVICE:-db}
+  if $COMPOSE ps --services --status running 2>/dev/null | grep -qx "$db_service"; then
+    # The container's own POSTGRES_USER and POSTGRES_DB, as the image read them.
+    if $COMPOSE exec -T "$db_service" sh -c 'exec pg_dump -Fc -U "$POSTGRES_USER" "$POSTGRES_DB"' \
+      > "$EXPORT_DIR/gamend.dump.part"; then
+      mv "$EXPORT_DIR/gamend.dump.part" "$EXPORT_DIR/gamend.dump"
+      ok "gamend.dump ($(du -h "$EXPORT_DIR/gamend.dump" | cut -f1))"
+    else
+      rm -f "$EXPORT_DIR/gamend.dump.part"
+      bad "pg_dump failed in $db_service"
+    fi
+  else
+    warn "no running $db_service service: no database in the export"
+  fi
+
+  if declare -F app_export >/dev/null; then
+    app_export "$EXPORT_DIR"
+  fi
+
+  if [ "$FAILED" = "1" ]; then
+    printf '\n\033[31mExport failed.\033[0m\n'
+    exit 1
+  fi
+
+  printf '\nCopy %s to the Cloud machine as <imports dir>/<slug>/ (GAMEND_CLOUD_IMPORTS_DIR),\nthen Import a server on /admin/cloud_servers.\n' "$EXPORT_DIR"
+  exit 0
+fi
 
 [ -z "$REQUIRED_ENV" ] || need_env $REQUIRED_ENV
 [ -z "$RECOMMENDED_ENV" ] || want_env $RECOMMENDED_ENV

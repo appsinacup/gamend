@@ -866,6 +866,11 @@ jobs:
           cd clients
           ./generate_godot.sh
 
+      - name: Check the realtime table is current
+        # clients/events.json, which every SDK reads, is generated from the
+        # event registry (GamendWeb.RealtimeEvents).
+        run: mix gamend.gen.events --check
+
       - name: Check the Balaur SDK is current
         # generate_godot.sh just wrote the document it is generated from.
         run: python3 clients/sdkgen balaur --check

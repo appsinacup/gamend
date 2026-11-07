@@ -96,6 +96,32 @@ signal quest_progress(progress: Dictionary)   ## a quest objective advanced
 signal quest_completed(progress: Dictionary)  ## every objective met — claim or auto-claim next
 signal quest_claimed(progress: Dictionary)    ## the quest's rewards were granted
 
+## Matchmaking, on the user channel (`ready_check_*` too: a formed match's
+## accept has no lobby yet, so its check comes here, kind "accept")
+signal match_found(payload: Dictionary)       ## {lobby_id, match_params}: seated in the lobby
+signal ticket_queued(payload: Dictionary)     ## {ticket_id, match_params, queued_at_ms, requeued}
+signal ticket_cancelled(payload: Dictionary)  ## {ticket_id, reason}: out of the queue, no match
+
+## Tournaments the user entered
+signal tournament_updated(payload: Dictionary)         ## {tournament_id, slug, state}
+signal tournament_finished(payload: Dictionary)        ## {tournament_id, slug, state}
+signal tournament_match_ready(payload: Dictionary)     ## the user's match is ready to play
+signal tournament_match_resolved(payload: Dictionary)  ## the user's match was resolved
+
+## Plays (Gamend.Results): the user's own, and their lobby's
+signal result_started(result: Dictionary)
+signal result_event(payload: Dictionary)    ## {result_id, event}
+signal result_ended(result: Dictionary)
+signal lobby_result_started(result: Dictionary)
+signal lobby_result_event(payload: Dictionary)
+signal lobby_result_ended(result: Dictionary)
+
+## Moderation of the user
+signal chat_muted(payload: Dictionary)        ## {scope, scope_ref_id, expires_at_seconds, reason}
+signal chat_unmuted(payload: Dictionary)      ## {scope, scope_ref_id}
+signal account_banned(payload: Dictionary)    ## {expires_at, reason}: every other call now refuses
+signal account_unbanned(payload: Dictionary)
+
 ## Groups collection events (group browser)
 signal group_created(group: Dictionary)   ## new group created (excludes hidden)
 signal group_deleted(payload: Dictionary)  ## {id} group deleted
@@ -687,8 +713,6 @@ func _handle_user_event(event: String, payload: Dictionary):
 			user_updated.emit(payload)
 		"notification_created":
 			notification_emitted.emit(payload)
-		# Sent as JSON — neither has a protobuf mapping, so decode_event returns
-		# null for them and the raw payload arrives here unchanged.
 		"wallet_updated":
 			wallet_updated.emit(payload)
 		"inventory_updated":
@@ -711,11 +735,7 @@ func _handle_user_event(event: String, payload: Dictionary):
 				friend_added.emit(payload)
 			else:
 				friend_request_incoming.emit(payload)
-		"request_accepted":
-			friend_added.emit(payload)
 		"friend_accepted":
-			friend_added.emit(payload)
-		"friend_added":
 			friend_added.emit(payload)
 		"request_cancelled":
 			friend_request_cancelled.emit(payload)
@@ -753,6 +773,43 @@ func _handle_user_event(event: String, payload: Dictionary):
 			quest_completed.emit(payload)
 		"quest_claimed":
 			quest_claimed.emit(payload)
+		"match_found":
+			match_found.emit(payload)
+		"ticket_queued":
+			ticket_queued.emit(payload)
+		"ticket_cancelled":
+			ticket_cancelled.emit(payload)
+		# A matchmaking accept (kind "accept"): no lobby or party yet.
+		"ready_check_started":
+			ready_check_started.emit(payload)
+		"ready_check_updated":
+			ready_check_updated.emit(payload)
+		"ready_check_passed":
+			ready_check_passed.emit(payload)
+		"ready_check_failed":
+			ready_check_failed.emit(payload)
+		"tournament_updated":
+			tournament_updated.emit(payload)
+		"tournament_finished":
+			tournament_finished.emit(payload)
+		"tournament_match_ready":
+			tournament_match_ready.emit(payload)
+		"tournament_match_resolved":
+			tournament_match_resolved.emit(payload)
+		"result_started":
+			result_started.emit(payload)
+		"result_event":
+			result_event.emit(payload)
+		"result_ended":
+			result_ended.emit(payload)
+		"chat_muted":
+			chat_muted.emit(payload)
+		"chat_unmuted":
+			chat_unmuted.emit(payload)
+		"account_banned":
+			account_banned.emit(payload)
+		"account_unbanned":
+			account_unbanned.emit(payload)
 
 func _handle_lobby_event(event: String, payload: Dictionary):
 	match event:
@@ -788,6 +845,12 @@ func _handle_lobby_event(event: String, payload: Dictionary):
 			ready_check_passed.emit(payload)
 		"ready_check_failed":
 			ready_check_failed.emit(payload)
+		"result_started":
+			lobby_result_started.emit(payload)
+		"result_event":
+			lobby_result_event.emit(payload)
+		"result_ended":
+			lobby_result_ended.emit(payload)
 		_:
 			# Reached the end without a case: the server sent something this
 			# client has no handler for. Harmless, but it is exactly how a new

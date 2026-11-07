@@ -2,561 +2,673 @@
   {
     "channel": "user",
     "event": "updated",
-    "signal": "user_updated"
+    "signal": "user_updated",
+    "message": "User"
   },
   {
     "channel": "user",
     "event": "notification_created",
-    "signal": "notification_emitted"
-  },
-  {
-    "channel": "user",
-    "event": "wallet_updated",
-    "signal": "wallet_updated"
-  },
-  {
-    "channel": "user",
-    "event": "inventory_updated",
-    "signal": "inventory_updated"
-  },
-  {
-    "channel": "user",
-    "event": "result_started",
-    "signal": "result_started"
-  },
-  {
-    "channel": "user",
-    "event": "result_event",
-    "signal": "result_event"
-  },
-  {
-    "channel": "user",
-    "event": "result_ended",
-    "signal": "result_ended"
-  },
-  {
-    "channel": "user",
-    "event": "kv_updated",
-    "signal": "kv_updated"
-  },
-  {
-    "channel": "user",
-    "event": "kv_deleted",
-    "signal": "kv_deleted"
+    "signal": "notification_emitted",
+    "message": "Notification"
   },
   {
     "channel": "user",
     "event": "friend_updated",
-    "signal": "friend_updated"
+    "signal": "friend_updated",
+    "message": "FriendUpdate"
   },
   {
     "channel": "user",
-    "event": "outgoing_request",
-    "signal": "friend_added"
+    "event": "kv_updated",
+    "signal": "kv_updated",
+    "message": "KvEntry"
   },
   {
     "channel": "user",
-    "event": "incoming_request",
-    "signal": "friend_added"
+    "event": "kv_deleted",
+    "signal": "kv_deleted",
+    "message": "KvEntry"
   },
   {
     "channel": "user",
-    "event": "request_accepted",
-    "signal": "friend_added"
+    "event": "wallet_updated",
+    "signal": "wallet_updated",
+    "message": "WalletChange"
   },
   {
     "channel": "user",
-    "event": "friend_accepted",
-    "signal": "friend_added"
+    "event": "inventory_updated",
+    "signal": "inventory_updated",
+    "message": "InventoryChange"
   },
   {
     "channel": "user",
-    "event": "friend_added",
-    "signal": "friend_added"
-  },
-  {
-    "channel": "user",
-    "event": "request_cancelled",
-    "signal": "friend_request_cancelled"
-  },
-  {
-    "channel": "user",
-    "event": "friend_removed",
-    "signal": "friend_removed"
-  },
-  {
-    "channel": "user",
-    "event": "chat_message_created",
-    "signal": "friend_chat_message"
-  },
-  {
-    "channel": "user",
-    "event": "chat_message_updated",
-    "signal": "friend_chat_message_updated"
-  },
-  {
-    "channel": "user",
-    "event": "chat_message_deleted",
-    "signal": "friend_chat_message_deleted"
-  },
-  {
-    "channel": "user",
-    "event": "group_invite_accepted",
-    "signal": "group_invite_accepted"
-  },
-  {
-    "channel": "user",
-    "event": "group_invite_cancelled",
-    "signal": "group_invite_cancelled"
-  },
-  {
-    "channel": "user",
-    "event": "group_join_request_approved",
-    "signal": "group_join_request_approved"
-  },
-  {
-    "channel": "user",
-    "event": "group_join_request_rejected",
-    "signal": "group_join_request_rejected"
-  },
-  {
-    "channel": "user",
-    "event": "party_invite_accepted",
-    "signal": "party_invite_accepted"
-  },
-  {
-    "channel": "user",
-    "event": "party_invite_declined",
-    "signal": "party_invite_declined"
-  },
-  {
-    "channel": "user",
-    "event": "party_invite_cancelled",
-    "signal": "party_invite_cancelled"
-  },
-  {
-    "channel": "user",
-    "event": "friend_blocked",
-    "signal": "friend_blocked"
-  },
-  {
-    "channel": "user",
-    "event": "friend_unblocked",
-    "signal": "friend_unblocked"
-  },
-  {
-    "channel": "user",
-    "event": "friend_rejected",
-    "signal": "friend_rejected"
-  },
-  {
-    "channel": "user",
-    "event": "quest_progress",
-    "signal": "quest_progress"
-  },
-  {
-    "channel": "user",
-    "event": "quest_completed",
-    "signal": "quest_completed"
-  },
-  {
-    "channel": "user",
-    "event": "quest_claimed",
-    "signal": "quest_claimed"
-  },
-  {
-    "channel": "lobby",
-    "event": "updated",
-    "signal": "lobby_updated"
-  },
-  {
-    "channel": "lobby",
-    "event": "state_changed",
-    "signal": "lobby_state_changed"
-  },
-  {
-    "channel": "lobby",
-    "event": "user_joined",
-    "signal": "lobby_member_joined"
-  },
-  {
-    "channel": "lobby",
-    "event": "user_left",
-    "signal": "lobby_member_left"
-  },
-  {
-    "channel": "lobby",
-    "event": "user_kicked",
-    "signal": "lobby_member_kicked"
-  },
-  {
-    "channel": "lobby",
-    "event": "user_online",
-    "signal": "lobby_member_online"
-  },
-  {
-    "channel": "lobby",
-    "event": "user_offline",
-    "signal": "lobby_member_offline"
-  },
-  {
-    "channel": "lobby",
-    "event": "user_updated",
-    "signal": "lobby_member_updated"
-  },
-  {
-    "channel": "lobby",
-    "event": "host_changed",
-    "signal": "lobby_host_changed"
-  },
-  {
-    "channel": "lobby",
-    "event": "chat_message_created",
-    "signal": "lobby_chat_message"
-  },
-  {
-    "channel": "lobby",
-    "event": "chat_message_updated",
-    "signal": "lobby_chat_message_updated"
-  },
-  {
-    "channel": "lobby",
-    "event": "chat_message_deleted",
-    "signal": "lobby_chat_message_deleted"
-  },
-  {
-    "channel": "lobby",
-    "event": "ready_check_started",
-    "signal": "ready_check_started"
-  },
-  {
-    "channel": "lobby",
-    "event": "ready_check_updated",
-    "signal": "ready_check_updated"
-  },
-  {
-    "channel": "lobby",
-    "event": "ready_check_passed",
-    "signal": "ready_check_passed"
-  },
-  {
-    "channel": "lobby",
-    "event": "ready_check_failed",
-    "signal": "ready_check_failed"
-  },
-  {
-    "channel": "lobby",
     "event": "result_started",
-    "signal": "lobby_result_started"
-  },
-  {
-    "channel": "lobby",
-    "event": "result_event",
-    "signal": "lobby_result_event"
-  },
-  {
-    "channel": "lobby",
-    "event": "result_ended",
-    "signal": "lobby_result_ended"
-  },
-  {
-    "channel": "lobbies",
-    "event": "lobby_created",
-    "signal": "lobby_created"
-  },
-  {
-    "channel": "lobbies",
-    "event": "lobby_updated",
-    "signal": "lobby_list_updated"
-  },
-  {
-    "channel": "lobbies",
-    "event": "lobby_deleted",
-    "signal": "lobby_deleted"
-  },
-  {
-    "channel": "lobbies",
-    "event": "lobby_membership_changed",
-    "signal": "lobby_membership_changed"
-  },
-  {
-    "channel": "party",
-    "event": "updated",
-    "signal": "party_updated"
-  },
-  {
-    "channel": "party",
-    "event": "member_joined",
-    "signal": "party_member_joined"
-  },
-  {
-    "channel": "party",
-    "event": "member_left",
-    "signal": "party_member_left"
-  },
-  {
-    "channel": "party",
-    "event": "member_online",
-    "signal": "party_member_online"
-  },
-  {
-    "channel": "party",
-    "event": "member_offline",
-    "signal": "party_member_offline"
-  },
-  {
-    "channel": "party",
-    "event": "member_updated",
-    "signal": "party_member_updated"
-  },
-  {
-    "channel": "party",
-    "event": "disbanded",
-    "signal": "party_disbanded"
-  },
-  {
-    "channel": "party",
-    "event": "chat_message_created",
-    "signal": "party_chat_message"
-  },
-  {
-    "channel": "party",
-    "event": "chat_message_updated",
-    "signal": "party_chat_message_updated"
-  },
-  {
-    "channel": "party",
-    "event": "chat_message_deleted",
-    "signal": "party_chat_message_deleted"
-  },
-  {
-    "channel": "party",
-    "event": "ready_check_started",
-    "signal": "ready_check_started"
-  },
-  {
-    "channel": "party",
-    "event": "ready_check_updated",
-    "signal": "ready_check_updated"
-  },
-  {
-    "channel": "party",
-    "event": "ready_check_passed",
-    "signal": "ready_check_passed"
-  },
-  {
-    "channel": "party",
-    "event": "ready_check_failed",
-    "signal": "ready_check_failed"
-  },
-  {
-    "channel": "group",
-    "event": "updated",
-    "signal": "group_updated"
-  },
-  {
-    "channel": "group",
-    "event": "member_joined",
-    "signal": "group_member_joined"
-  },
-  {
-    "channel": "group",
-    "event": "member_left",
-    "signal": "group_member_left"
-  },
-  {
-    "channel": "group",
-    "event": "member_kicked",
-    "signal": "group_member_kicked"
-  },
-  {
-    "channel": "group",
-    "event": "member_promoted",
-    "signal": "group_member_promoted"
-  },
-  {
-    "channel": "group",
-    "event": "member_demoted",
-    "signal": "group_member_demoted"
-  },
-  {
-    "channel": "group",
-    "event": "member_online",
-    "signal": "group_member_online"
-  },
-  {
-    "channel": "group",
-    "event": "member_offline",
-    "signal": "group_member_offline"
-  },
-  {
-    "channel": "group",
-    "event": "member_updated",
-    "signal": "group_member_updated"
-  },
-  {
-    "channel": "group",
-    "event": "join_request_approved",
-    "signal": "group_join_request_approved"
-  },
-  {
-    "channel": "group",
-    "event": "join_request_rejected",
-    "signal": "group_join_request_rejected"
-  },
-  {
-    "channel": "group",
-    "event": "chat_message_created",
-    "signal": "group_chat_message"
-  },
-  {
-    "channel": "group",
-    "event": "chat_message_updated",
-    "signal": "group_chat_message_updated"
-  },
-  {
-    "channel": "group",
-    "event": "chat_message_deleted",
-    "signal": "group_chat_message_deleted"
-  },
-  {
-    "channel": "groups",
-    "event": "group_created",
-    "signal": "group_created"
-  },
-  {
-    "channel": "groups",
-    "event": "group_updated",
-    "signal": "group_list_updated"
-  },
-  {
-    "channel": "groups",
-    "event": "group_deleted",
-    "signal": "group_deleted"
+    "signal": "result_started",
+    "message": null
   },
   {
     "channel": "user",
-    "event": "match_found",
-    "signal": "match_found"
+    "event": "result_event",
+    "signal": "result_event",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "result_ended",
+    "signal": "result_ended",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "chat_message_created",
+    "signal": "friend_chat_message",
+    "message": "ChatMessage"
+  },
+  {
+    "channel": "user",
+    "event": "chat_message_updated",
+    "signal": "friend_chat_message_updated",
+    "message": "ChatMessage"
+  },
+  {
+    "channel": "user",
+    "event": "chat_message_deleted",
+    "signal": "friend_chat_message_deleted",
+    "message": "EntityId"
   },
   {
     "channel": "user",
     "event": "chat_muted",
-    "signal": "chat_muted"
+    "signal": "chat_muted",
+    "message": "ChatMute"
   },
   {
     "channel": "user",
     "event": "chat_unmuted",
-    "signal": "chat_unmuted"
+    "signal": "chat_unmuted",
+    "message": "ChatUnmute"
   },
   {
     "channel": "user",
     "event": "account_banned",
-    "signal": "account_banned"
+    "signal": "account_banned",
+    "message": null
   },
   {
     "channel": "user",
     "event": "account_unbanned",
-    "signal": "account_unbanned"
+    "signal": "account_unbanned",
+    "message": null
   },
   {
     "channel": "user",
-    "event": "tournament_updated",
-    "signal": "tournament_updated"
+    "event": "quest_progress",
+    "signal": "quest_progress",
+    "message": "QuestProgress"
   },
   {
     "channel": "user",
-    "event": "tournament_finished",
-    "signal": "tournament_finished"
+    "event": "quest_completed",
+    "signal": "quest_completed",
+    "message": "QuestProgress"
   },
   {
     "channel": "user",
-    "event": "tournament_match_ready",
-    "signal": "tournament_match_ready"
+    "event": "quest_claimed",
+    "signal": "quest_claimed",
+    "message": "QuestProgress"
   },
   {
     "channel": "user",
-    "event": "tournament_match_resolved",
-    "signal": "tournament_match_resolved"
+    "event": "group_invite_accepted",
+    "signal": "group_invite_accepted",
+    "message": "GroupInviteEvent"
   },
   {
     "channel": "user",
-    "event": "webrtc:answer",
-    "signal": "webrtc_answer"
+    "event": "group_invite_cancelled",
+    "signal": "group_invite_cancelled",
+    "message": "GroupInviteEvent"
   },
   {
     "channel": "user",
-    "event": "webrtc:ice",
-    "signal": "webrtc_ice"
+    "event": "group_join_request_approved",
+    "signal": "group_join_request_approved",
+    "message": "GroupInviteEvent"
   },
   {
     "channel": "user",
-    "event": "webrtc:channel_open",
-    "signal": "webrtc_channel_open"
+    "event": "group_join_request_rejected",
+    "signal": "group_join_request_rejected",
+    "message": "GroupInviteEvent"
   },
   {
     "channel": "user",
-    "event": "webrtc:channel_closed",
-    "signal": "webrtc_channel_closed"
+    "event": "party_invite_accepted",
+    "signal": "party_invite_accepted",
+    "message": "PartyInviteEvent"
   },
   {
     "channel": "user",
-    "event": "webrtc:state",
-    "signal": "webrtc_state"
+    "event": "party_invite_cancelled",
+    "signal": "party_invite_cancelled",
+    "message": "PartyInviteEvent"
+  },
+  {
+    "channel": "user",
+    "event": "party_invite_declined",
+    "signal": "party_invite_declined",
+    "message": "PartyInviteEvent"
+  },
+  {
+    "channel": "user",
+    "event": "match_found",
+    "signal": "match_found",
+    "message": "MatchmakingFound"
+  },
+  {
+    "channel": "user",
+    "event": "ticket_queued",
+    "signal": "ticket_queued",
+    "message": "MatchmakingTicketQueued"
+  },
+  {
+    "channel": "user",
+    "event": "ticket_cancelled",
+    "signal": "ticket_cancelled",
+    "message": "MatchmakingTicketCancelled"
   },
   {
     "channel": "user",
     "event": "ready_check_started",
-    "signal": "ready_check_started"
+    "signal": "ready_check_started",
+    "message": "ReadyCheckState"
   },
   {
     "channel": "user",
     "event": "ready_check_updated",
-    "signal": "ready_check_updated"
+    "signal": "ready_check_updated",
+    "message": "ReadyCheckState"
   },
   {
     "channel": "user",
     "event": "ready_check_passed",
-    "signal": "ready_check_passed"
+    "signal": "ready_check_passed",
+    "message": "ReadyCheckState"
   },
   {
     "channel": "user",
     "event": "ready_check_failed",
-    "signal": "ready_check_failed"
+    "signal": "ready_check_failed",
+    "message": "ReadyCheckState"
+  },
+  {
+    "channel": "user",
+    "event": "outgoing_request",
+    "signal": "friend_added",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "incoming_request",
+    "signal": "friend_added",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "request_cancelled",
+    "signal": "friend_request_cancelled",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "friend_accepted",
+    "signal": "friend_added",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "friend_rejected",
+    "signal": "friend_rejected",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "friend_removed",
+    "signal": "friend_removed",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "friend_blocked",
+    "signal": "friend_blocked",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "friend_unblocked",
+    "signal": "friend_unblocked",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "tournament_updated",
+    "signal": "tournament_updated",
+    "message": "TournamentEvent"
+  },
+  {
+    "channel": "user",
+    "event": "tournament_finished",
+    "signal": "tournament_finished",
+    "message": "TournamentEvent"
+  },
+  {
+    "channel": "user",
+    "event": "tournament_match_ready",
+    "signal": "tournament_match_ready",
+    "message": "TournamentMatchEvent"
+  },
+  {
+    "channel": "user",
+    "event": "tournament_match_resolved",
+    "signal": "tournament_match_resolved",
+    "message": "TournamentMatchEvent"
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:answer",
+    "signal": "webrtc_answer",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:ice",
+    "signal": "webrtc_ice",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:channel_open",
+    "signal": "webrtc_channel_open",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:channel_closed",
+    "signal": "webrtc_channel_closed",
+    "message": null
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:state",
+    "signal": "webrtc_state",
+    "message": null
+  },
+  {
+    "channel": "lobby",
+    "event": "updated",
+    "signal": "lobby_updated",
+    "message": "Lobby"
+  },
+  {
+    "channel": "lobby",
+    "event": "user_joined",
+    "signal": "lobby_member_joined",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "lobby",
+    "event": "user_left",
+    "signal": "lobby_member_left",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "lobby",
+    "event": "user_kicked",
+    "signal": "lobby_member_kicked",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "lobby",
+    "event": "user_online",
+    "signal": "lobby_member_online",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "lobby",
+    "event": "user_offline",
+    "signal": "lobby_member_offline",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "lobby",
+    "event": "user_updated",
+    "signal": "lobby_member_updated",
+    "message": "UserBrief"
+  },
+  {
+    "channel": "lobby",
+    "event": "host_changed",
+    "signal": "lobby_host_changed",
+    "message": "HostChanged"
+  },
+  {
+    "channel": "lobby",
+    "event": "state_changed",
+    "signal": "lobby_state_changed",
+    "message": "LobbyStateChanged"
+  },
+  {
+    "channel": "lobby",
+    "event": "ready_check_started",
+    "signal": "ready_check_started",
+    "message": "ReadyCheckState"
+  },
+  {
+    "channel": "lobby",
+    "event": "ready_check_updated",
+    "signal": "ready_check_updated",
+    "message": "ReadyCheckState"
+  },
+  {
+    "channel": "lobby",
+    "event": "ready_check_passed",
+    "signal": "ready_check_passed",
+    "message": "ReadyCheckState"
+  },
+  {
+    "channel": "lobby",
+    "event": "ready_check_failed",
+    "signal": "ready_check_failed",
+    "message": "ReadyCheckState"
+  },
+  {
+    "channel": "lobby",
+    "event": "chat_message_created",
+    "signal": "lobby_chat_message",
+    "message": "ChatMessage"
+  },
+  {
+    "channel": "lobby",
+    "event": "chat_message_updated",
+    "signal": "lobby_chat_message_updated",
+    "message": "ChatMessage"
+  },
+  {
+    "channel": "lobby",
+    "event": "chat_message_deleted",
+    "signal": "lobby_chat_message_deleted",
+    "message": "EntityId"
+  },
+  {
+    "channel": "lobby",
+    "event": "result_started",
+    "signal": "lobby_result_started",
+    "message": null
+  },
+  {
+    "channel": "lobby",
+    "event": "result_event",
+    "signal": "lobby_result_event",
+    "message": null
+  },
+  {
+    "channel": "lobby",
+    "event": "result_ended",
+    "signal": "lobby_result_ended",
+    "message": null
+  },
+  {
+    "channel": "lobbies",
+    "event": "lobby_created",
+    "signal": "lobby_created",
+    "message": "Lobby"
+  },
+  {
+    "channel": "lobbies",
+    "event": "lobby_updated",
+    "signal": "lobby_list_updated",
+    "message": "Lobby"
+  },
+  {
+    "channel": "lobbies",
+    "event": "lobby_deleted",
+    "signal": "lobby_deleted",
+    "message": "EntityId"
+  },
+  {
+    "channel": "lobbies",
+    "event": "lobby_membership_changed",
+    "signal": "lobby_membership_changed",
+    "message": "EntityId"
+  },
+  {
+    "channel": "group",
+    "event": "updated",
+    "signal": "group_updated",
+    "message": "Group"
+  },
+  {
+    "channel": "group",
+    "event": "member_joined",
+    "signal": "group_member_joined",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "group",
+    "event": "member_left",
+    "signal": "group_member_left",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "group",
+    "event": "member_kicked",
+    "signal": "group_member_kicked",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "group",
+    "event": "member_promoted",
+    "signal": "group_member_promoted",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "group",
+    "event": "member_demoted",
+    "signal": "group_member_demoted",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "group",
+    "event": "member_online",
+    "signal": "group_member_online",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "group",
+    "event": "member_offline",
+    "signal": "group_member_offline",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "group",
+    "event": "member_updated",
+    "signal": "group_member_updated",
+    "message": "UserBrief"
+  },
+  {
+    "channel": "group",
+    "event": "join_request_approved",
+    "signal": "group_join_request_approved",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "group",
+    "event": "join_request_rejected",
+    "signal": "group_join_request_rejected",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "group",
+    "event": "chat_message_created",
+    "signal": "group_chat_message",
+    "message": "ChatMessage"
+  },
+  {
+    "channel": "group",
+    "event": "chat_message_updated",
+    "signal": "group_chat_message_updated",
+    "message": "ChatMessage"
+  },
+  {
+    "channel": "group",
+    "event": "chat_message_deleted",
+    "signal": "group_chat_message_deleted",
+    "message": "EntityId"
+  },
+  {
+    "channel": "groups",
+    "event": "group_created",
+    "signal": "group_created",
+    "message": "Group"
+  },
+  {
+    "channel": "groups",
+    "event": "group_updated",
+    "signal": "group_list_updated",
+    "message": "Group"
+  },
+  {
+    "channel": "groups",
+    "event": "group_deleted",
+    "signal": "group_deleted",
+    "message": "EntityId"
+  },
+  {
+    "channel": "party",
+    "event": "updated",
+    "signal": "party_updated",
+    "message": "Party"
+  },
+  {
+    "channel": "party",
+    "event": "member_joined",
+    "signal": "party_member_joined",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "party",
+    "event": "member_left",
+    "signal": "party_member_left",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "party",
+    "event": "member_online",
+    "signal": "party_member_online",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "party",
+    "event": "member_offline",
+    "signal": "party_member_offline",
+    "message": "MemberEvent"
+  },
+  {
+    "channel": "party",
+    "event": "member_updated",
+    "signal": "party_member_updated",
+    "message": "UserBrief"
+  },
+  {
+    "channel": "party",
+    "event": "disbanded",
+    "signal": "party_disbanded",
+    "message": "PartyRef"
+  },
+  {
+    "channel": "party",
+    "event": "ready_check_started",
+    "signal": "ready_check_started",
+    "message": "ReadyCheckState"
+  },
+  {
+    "channel": "party",
+    "event": "ready_check_updated",
+    "signal": "ready_check_updated",
+    "message": "ReadyCheckState"
+  },
+  {
+    "channel": "party",
+    "event": "ready_check_passed",
+    "signal": "ready_check_passed",
+    "message": "ReadyCheckState"
+  },
+  {
+    "channel": "party",
+    "event": "ready_check_failed",
+    "signal": "ready_check_failed",
+    "message": "ReadyCheckState"
+  },
+  {
+    "channel": "party",
+    "event": "chat_message_created",
+    "signal": "party_chat_message",
+    "message": "ChatMessage"
+  },
+  {
+    "channel": "party",
+    "event": "chat_message_updated",
+    "signal": "party_chat_message_updated",
+    "message": "ChatMessage"
+  },
+  {
+    "channel": "party",
+    "event": "chat_message_deleted",
+    "signal": "party_chat_message_deleted",
+    "message": "EntityId"
   },
   {
     "channel": "signaling",
     "event": "user_joined",
-    "signal": "signaling_user_joined"
+    "signal": "signaling_user_joined",
+    "message": null
   },
   {
     "channel": "signaling",
     "event": "user_rejoined",
-    "signal": "signaling_user_rejoined"
+    "signal": "signaling_user_rejoined",
+    "message": null
   },
   {
     "channel": "signaling",
     "event": "user_left",
-    "signal": "signaling_user_left"
+    "signal": "signaling_user_left",
+    "message": null
   },
   {
     "channel": "signaling",
     "event": "offer",
-    "signal": "signaling_offer"
+    "signal": "signaling_offer",
+    "message": null
   },
   {
     "channel": "signaling",
     "event": "answer",
-    "signal": "signaling_answer"
+    "signal": "signaling_answer",
+    "message": null
   },
   {
     "channel": "signaling",
     "event": "ice",
-    "signal": "signaling_ice"
+    "signal": "signaling_ice",
+    "message": null
   },
   {
     "channel": "signaling",
     "event": "room_closed",
-    "signal": "signaling_room_closed"
+    "signal": "signaling_room_closed",
+    "message": null
   }
 ]

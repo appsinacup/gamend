@@ -833,9 +833,7 @@ defmodule Gamend.Hooks.PluginManager do
        when is_atom(mod) and is_atom(fun) and is_list(args) and is_list(opts) do
     task =
       Task.async(fn ->
-        if caller = Keyword.get(opts, :caller) do
-          Process.put(:gamend_hook_caller, caller)
-        end
+        Gamend.Hooks.put_caller(opts)
 
         try do
           apply(mod, fun, args)

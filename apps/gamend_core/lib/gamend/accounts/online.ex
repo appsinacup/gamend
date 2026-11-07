@@ -6,9 +6,10 @@ defmodule Gamend.Accounts.Online do
   dots, lobby, party and group presence, matchmaking's offline prune and the
   abandoned-lobby reaper see them alike.
 
-    * `connected/2`: the socket's process tracked on the user's presence
-      topic (`Gamend.Presence.users_topic/1`), `users.is_online` set, and the
-      user's lobby, party and groups told.
+    * `connected/3`: the socket's process tracked on the user's presence
+      topic (`Gamend.Presence.users_topic/1`) with its kind (`"socket"` or
+      `"page"`), `users.is_online` set, the user's lobby, party and groups
+      told, and the game's `after_socket_connected/3` called.
     * `heartbeat/1`: `last_seen_at` refreshed. A socket calls it every
       `heartbeat_ms/0`, so `StalePresenceSweeper` leaves a live player alone.
     * `disconnected/2`: when no other socket of theirs is left, the user's
@@ -16,7 +17,7 @@ defmodule Gamend.Accounts.Online do
       and `users.is_online` cleared. Checked again a moment later for a
       socket another node had not replicated yet.
 
-  `watch/2` does all three for a process with no `terminate/2` to rely on:
+  `watch/2` does all three (as a `"page"`) for a process with no `terminate/2` to rely on:
   a LiveView's is not called when the process is killed or crashes. It
   monitors the process, keeps its heartbeat and runs `disconnected/2` when
   it goes. A node going down takes its watchers with it, and
@@ -45,17 +46,22 @@ defmodule Gamend.Accounts.Online do
 
   @doc """
   `pid`, a socket of `user_id`'s, is open: tracked on the user's presence
-  topic, `users.is_online` set, the user's lobby, party and groups told.
-  Answers the user as written, or `{:error, reason}` when the account is gone.
+  topic (its meta `kind`: `"socket"`, a client's `UserChannel`, or `"page"`,
+  a host's page, `watch/2`), `users.is_online` set, the user's lobby, party
+  and groups told, and the game's `after_socket_connected/3` called with it,
+  every socket (`after_user_online/1` is once a session). Answers the user as
+  written, or `{:error, reason}` when the account is gone.
   """
-  @spec connected(pid(), Ecto.UUID.t()) :: {:ok, User.t()} | {:error, term()}
-  def connected(pid, user_id) when is_pid(pid) and is_binary(user_id) do
+  @spec connected(pid(), Ecto.UUID.t(), String.t()) :: {:ok, User.t()} | {:error, term()}
+  def connected(pid, user_id, kind \\ "socket")
+      when is_pid(pid) and is_binary(user_id) and kind in ["socket", "page"] do
     # Presence is the source of truth for "connected"; `users.is_online` is a
     # projection of it (`Gamend.Presence`). Tracking the socket rather than
     # setting the flag alone is what makes a second socket on another node
     # count.
     case Gamend.Presence.track(pid, Gamend.Presence.users_topic(user_id), user_id, %{
-           online_at: System.system_time(:second)
+           online_at: System.system_time(:second),
+           kind: kind
          }) do
       {:ok, _ref} -> :ok
       {:error, {:already_tracked, _pid, _topic, _key}} -> :ok
@@ -64,6 +70,14 @@ defmodule Gamend.Accounts.Online do
     case Accounts.set_user_online(user_id) do
       {:ok, user} ->
         broadcast_member_presence(user_id, true)
+
+        # The game hears each socket, so it can register it where it needs
+        # (a presence of its own on the socket's process): a client tells it
+        # nothing, the connection is the registration.
+        Gamend.Async.run(fn ->
+          Gamend.Hooks.internal_call(:after_socket_connected, [user, pid, kind])
+        end)
+
         {:ok, user}
 
       error ->
@@ -135,7 +149,7 @@ defmodule Gamend.Accounts.Online do
   """
   @spec watch(pid(), Ecto.UUID.t()) :: :ok | {:error, term()}
   def watch(pid, user_id) when is_pid(pid) and is_binary(user_id) do
-    with {:ok, _user} <- connected(pid, user_id) do
+    with {:ok, _user} <- connected(pid, user_id, "page") do
       if watching?(), do: start_watcher(pid, user_id), else: :ok
     end
   end

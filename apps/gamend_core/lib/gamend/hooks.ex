@@ -116,6 +116,15 @@ defmodule Gamend.Hooks do
   @callback validate_username(String.t()) :: :ok | {:error, String.t() | atom()} | :default
 
   @callback after_user_online(User.t()) :: any()
+
+  @doc """
+  A socket of the user's opened: `pid` its process, `kind` `"socket"` (a
+  client's user channel) or `"page"` (a host's page, `Gamend.Accounts.Online`).
+  Every socket, where `after_user_online/1` is once a session: a game
+  registers the socket where it needs (a presence on `pid`, which ends with
+  it) instead of the client calling to say it is there. Fire-and-forget.
+  """
+  @callback after_socket_connected(User.t(), pid(), String.t()) :: any()
   @callback after_user_offline(User.t()) :: any()
   @callback after_user_deleted(User.t()) :: any()
 
@@ -606,6 +615,7 @@ defmodule Gamend.Hooks do
                       after_user_logged_in: 1,
                       after_user_offline: 1,
                       after_user_online: 1,
+                      after_socket_connected: 3,
                       after_user_register: 1,
                       after_user_updated: 1,
                       before_chat_message: 2,
@@ -641,6 +651,7 @@ defmodule Gamend.Hooks do
       :after_user_logged_in,
       :after_user_updated,
       :after_user_online,
+      :after_socket_connected,
       :after_user_offline,
       :after_user_deleted,
       :after_wallet_changed,
@@ -1661,6 +1672,9 @@ defmodule Gamend.Hooks.Default do
 
   @impl true
   def after_user_online(_user), do: :ok
+
+  @impl true
+  def after_socket_connected(_user, _pid, _kind), do: :ok
 
   @impl true
   def after_user_offline(_user), do: :ok

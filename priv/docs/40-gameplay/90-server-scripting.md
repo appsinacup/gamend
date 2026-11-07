@@ -448,7 +448,7 @@ change is committed and its return value is ignored.
 | Domain | `before_*` (may veto) | `after_*` (observe) |
 |---|---|---|
 | Lifecycle | `before_stop` | `after_startup` |
-| Users | `before_user_register` `before_user_update` | `after_user_deleted` `after_user_logged_in` `after_user_offline` `after_user_online` `after_user_register` `after_user_updated` `merge_user_data` |
+| Users | `before_user_register` `before_user_update` | `after_socket_connected` `after_user_deleted` `after_user_logged_in` `after_user_offline` `after_user_online` `after_user_register` `after_user_updated` `merge_user_data` |
 | Lobbies | `before_lobby_create` `before_lobby_delete` `before_lobby_join` `before_lobby_kick` `before_lobby_leave` `before_lobby_state_change` `before_lobby_update` | `after_lobby_create` `after_lobby_deleted` `after_lobby_host_change` `after_lobby_join` `after_lobby_kick` `after_lobby_leave` `after_lobby_state_changed` `after_lobby_updated` |
 | Parties | `before_party_create` `before_party_join` `before_party_kick` `before_party_update` | `after_party_create` `after_party_disband` `after_party_join` `after_party_kick` `after_party_leave` `after_party_updated` |
 | Groups | `before_group_create` `before_group_delete` `before_group_join` `before_group_kick` `before_group_update` | `after_group_create` `after_group_deleted` `after_group_join` `after_group_kick` `after_group_leave` `after_group_updated` |

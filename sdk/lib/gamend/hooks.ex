@@ -153,6 +153,7 @@ defmodule Gamend.Hooks do
   - `after_user_updated/1` - Called after a user is updated (fire-and-forget)
   - `validate_username/1` - Replaces the username rules for one handle (`:default` keeps core's)
   - `after_user_online/1` - Called after a user comes online (fire-and-forget)
+  - `after_socket_connected/3` - Called for every socket of a user that opens, with its process and kind (`"socket"` or `"page"`) (fire-and-forget)
   - `after_user_offline/1` - Called after a user goes offline (fire-and-forget)
 
   ### Lobby Lifecycle Hooks
@@ -341,6 +342,7 @@ defmodule Gamend.Hooks do
   @callback after_user_logged_in(user()) :: any()
   @callback after_user_updated(user()) :: any()
   @callback after_user_online(user()) :: any()
+  @callback after_socket_connected(user(), pid(), String.t()) :: any()
   @callback after_user_offline(user()) :: any()
   @callback after_user_deleted(user()) :: any()
 

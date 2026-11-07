@@ -38,6 +38,9 @@ defmodule Gamend.Hooks.Defaults do
       def after_user_online(_user), do: :ok
 
       @impl true
+      def after_socket_connected(_user, _pid, _kind), do: :ok
+
+      @impl true
       def after_user_offline(_user), do: :ok
 
       @impl true
@@ -304,6 +307,7 @@ defmodule Gamend.Hooks.Defaults do
                      after_user_logged_in: 1,
                      after_user_updated: 1,
                      after_user_online: 1,
+                     after_socket_connected: 3,
                      after_user_offline: 1,
                      after_user_deleted: 1,
                      after_wallet_changed: 1,

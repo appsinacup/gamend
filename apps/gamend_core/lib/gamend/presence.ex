@@ -82,6 +82,19 @@ defmodule Gamend.Presence do
   end
 
   @doc """
+  The processes tracked under `key` on `topic`, each with its meta:
+  `[{pid, meta}]`, cluster-wide, read the same way (*Reads*). What a server
+  needs to move or untrack a player's entries itself (a socket's process
+  found on the user's topic, `users_topic/1`, its meta's `kind`).
+  """
+  @spec tracked(String.t(), String.t()) :: [{pid(), map()}]
+  def tracked(topic, key) when is_binary(topic) and is_binary(key) do
+    topic
+    |> shard()
+    |> State.tracked_key(topic, key, [])
+  end
+
+  @doc """
   Whether `user_id` has a socket tracked other than `pid`'s. Exact whether or
   not `pid`'s own entry is still there, so a process watching a socket that
   has already gone can ask it too (`Gamend.Accounts.Online`).

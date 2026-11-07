@@ -859,6 +859,56 @@ defmodule Gamend.Payments do
     end
   end
 
+  @doc """
+  End a granted entitlement now: a trial cut short, a reward taken back.
+  The one `(user, key)` row turns `revoked` at once, its `metadata` merged
+  with `:metadata` (e.g. `%{"revocation_reason" => "upgraded"}`); the row
+  stays, so `entitlement_ever?/2` still answers true. A grant afterwards
+  makes it active again.
+
+  A row a purchase made answers `{:error, :purchased}`: its purchase ends it
+  (`revoke_purchase/2`), or the provider's next sync would bring it back.
+  No row answers `{:error, :entitlement_not_found}`.
+  """
+  @spec revoke_entitlement(Ecto.UUID.t(), String.t(), keyword()) ::
+          {:ok, Entitlement.t()} | {:error, term()}
+  def revoke_entitlement(user_id, key, opts \\ [])
+      when is_binary(user_id) and is_binary(key) do
+    now = DateTime.utc_now(:second)
+    extra = Keyword.get(opts, :metadata, %{})
+
+    with_entitlement_lock(user_id, key, fn ->
+      case Repo.get_by(Entitlement, user_id: user_id, key: key) do
+        nil ->
+          Repo.rollback(:entitlement_not_found)
+
+        %Entitlement{source_purchase_id: nil} = existing ->
+          existing
+          |> Entitlement.changeset(%{
+            status: "revoked",
+            revoked_at: existing.revoked_at || now,
+            metadata: Map.merge(existing.metadata || %{}, extra)
+          })
+          |> Repo.update()
+          |> case do
+            {:ok, entitlement} -> entitlement
+            {:error, changeset} -> Repo.rollback(changeset)
+          end
+
+        %Entitlement{} ->
+          Repo.rollback(:purchased)
+      end
+    end)
+    |> case do
+      {:ok, entitlement} ->
+        after_entitlement_changed(entitlement)
+        {:ok, entitlement}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
   # The one `(user, key)` row's read-modify-write: a grant, and a purchase
   # taking the row over at fulfilment, which runs it inside the fulfilment's
   # own transaction (the lock is then held until that commits).

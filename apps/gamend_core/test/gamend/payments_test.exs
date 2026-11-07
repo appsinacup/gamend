@@ -614,6 +614,39 @@ defmodule Gamend.PaymentsTest do
     end
   end
 
+  describe "revoke_entitlement/3" do
+    test "ends a grant now, keeping the row and what it recorded" do
+      user = AccountsFixtures.user_fixture()
+      in_a_month = DateTime.add(DateTime.utc_now(:second), 30, :day)
+
+      {:ok, _} =
+        Payments.grant_entitlement(user.id, "trial_key",
+          expires_at: in_a_month,
+          metadata: %{"source" => "trial"}
+        )
+
+      assert {:ok, %Entitlement{status: "revoked", revoked_at: %DateTime{}} = e} =
+               Payments.revoke_entitlement(user.id, "trial_key",
+                 metadata: %{"revocation_reason" => "upgraded"}
+               )
+
+      assert e.metadata == %{"source" => "trial", "revocation_reason" => "upgraded"}
+      refute Payments.has_entitlement?(user.id, "trial_key")
+      assert Payments.entitlement_ever?(user.id, "trial_key")
+
+      # A grant after it makes it active again.
+      {:ok, _} = Payments.grant_entitlement(user.id, "trial_key", expires_at: in_a_month)
+      assert Payments.has_entitlement?(user.id, "trial_key")
+    end
+
+    test "answers what it cannot end" do
+      user = AccountsFixtures.user_fixture()
+
+      assert {:error, :entitlement_not_found} =
+               Payments.revoke_entitlement(user.id, "never_granted")
+    end
+  end
+
   defp unique_sku(prefix), do: "#{prefix}_#{System.unique_integer([:positive])}"
 
   defp restore_env(key, nil), do: Application.delete_env(:gamend_core, key)

@@ -3,7 +3,7 @@
 
 Public API for the built-in matchmaking system.
 
-Matchmaking is ticket-based. Each call to `join/4` creates a ticket in the
+Matchmaking is ticket-based. Each call to `join/5` creates a ticket in the
 database. The periodic `Gamend.Matchmaking.Worker` groups queued tickets
 that share the same `match_params` and creates a hidden lobby for each match.
 
@@ -17,11 +17,18 @@ time.
 A queued ticket only means something while its owner can still be pulled
 into a lobby. Two things keep the queue honest:
 
-  * `UserChannel.terminate/2` cancels the user's tickets when their socket
-    closes, and
+  * `Gamend.Accounts.Online.disconnected/2` cancels the user's tickets when
+    their last socket closes (a game's, or a website page's), and
   * `prune_offline/0` sweeps tickets whose owner the database no longer
     considers online — the safety net for tickets created over HTTP by a
     client that never opened a socket.
+
+## Events
+
+A ticket's player hears it on their user channel (`matchmaking:user:<id>`):
+`ticket_queued` (joined, or `requeued` after a failed accept),
+`ticket_cancelled` (with why), and `match_found` once seated; an accept is
+the `ready_check_*` events, kind `accept`.
 
 ## Backfill
 
@@ -120,7 +127,7 @@ The user's current queued ticket, or nil.
 # `discard`
 
 ```elixir
-@spec discard([Gamend.Matchmaking.Ticket.t()]) :: :ok
+@spec discard([Gamend.Matchmaking.Ticket.t()], String.t()) :: :ok
 ```
 
 Cancels claimed tickets whose owner could not be seated in the lobby.
@@ -218,7 +225,7 @@ cancelled.
 # `requeue`
 
 ```elixir
-@spec requeue([Gamend.Matchmaking.Ticket.t()]) :: :ok
+@spec requeue([Gamend.Matchmaking.Ticket.t()], boolean()) :: :ok
 ```
 
 Returns claimed tickets to the queue (lobby creation failed).

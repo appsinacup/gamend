@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1392">
+    <meta name="project" content="gamend_core v1.1.1393">
 
 
-    <title>Gamend.Matchmaking — gamend_core v1.1.1392</title>
+    <title>Gamend.Matchmaking — gamend_core v1.1.1393</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-4E55D812.js"></script>
+    <script defer src="dist/sidebar_items-1071D998.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1392
+          v1.1.1393
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Matchmaking</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1392)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1393)</small>
 
     </h1>
 
@@ -114,16 +114,19 @@ gamend_core
 
 
     <section id="moduledoc">
-<p>Public API for the built-in matchmaking system.</p><p>Matchmaking is ticket-based. Each call to <a href="#join/4"><code class="inline">join/4</code></a> creates a ticket in the
+<p>Public API for the built-in matchmaking system.</p><p>Matchmaking is ticket-based. Each call to <a href="#join/5"><code class="inline">join/5</code></a> creates a ticket in the
 database. The periodic <a href="Gamend.Matchmaking.Worker.html"><code class="inline">Gamend.Matchmaking.Worker</code></a> groups queued tickets
 that share the same <code class="inline">match_params</code> and creates a hidden lobby for each match.</p><p>Tickets are the source of truth; there is no cached queue. The sweep reads
 them directly through the <code class="inline">(status, queued_at)</code> index, and the worker
 serializes the sweep cluster-wide so only one instance forms matches at a
 time.</p><h2 id="module-liveness" class="section-heading"><a href="#module-liveness" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Liveness</span></h2><p>A queued ticket only means something while its owner can still be pulled
-into a lobby. Two things keep the queue honest:</p><ul><li><code class="inline">UserChannel.terminate/2</code> cancels the user's tickets when their socket
-closes, and</li><li><a href="#prune_offline/0"><code class="inline">prune_offline/0</code></a> sweeps tickets whose owner the database no longer
+into a lobby. Two things keep the queue honest:</p><ul><li><a href="Gamend.Accounts.Online.html#disconnected/2"><code class="inline">Gamend.Accounts.Online.disconnected/2</code></a> cancels the user's tickets when
+their last socket closes (a game's, or a website page's), and</li><li><a href="#prune_offline/0"><code class="inline">prune_offline/0</code></a> sweeps tickets whose owner the database no longer
 considers online — the safety net for tickets created over HTTP by a
-client that never opened a socket.</li></ul><h2 id="module-backfill" class="section-heading"><a href="#module-backfill" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Backfill</span></h2><p>A lobby's host who queues fills that lobby: the ticket carries its
+client that never opened a socket.</li></ul><h2 id="module-events" class="section-heading"><a href="#module-events" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Events</span></h2><p>A ticket's player hears it on their user channel (<code class="inline">matchmaking:user:&lt;id&gt;</code>):
+<code class="inline">ticket_queued</code> (joined, or <code class="inline">requeued</code> after a failed accept),
+<code class="inline">ticket_cancelled</code> (with why), and <code class="inline">match_found</code> once seated; an accept is
+the <code class="inline">ready_check_*</code> events, kind <code class="inline">accept</code>.</p><h2 id="module-backfill" class="section-heading"><a href="#module-backfill" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Backfill</span></h2><p>A lobby's host who queues fills that lobby: the ticket carries its
 <code class="inline">lobby_id</code>, and a match seats the other players there rather than in a new
 lobby. A match holds at most one lobby with other players in it, and fits
 in its seats; a player queued from a lobby of their own alone leaves it for
@@ -220,7 +223,7 @@ already-resolved id.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#discard/1" data-no-tooltip="" translate="no">discard(tickets)</a>
+        <a href="#discard/2" data-no-tooltip="" translate="no">discard(tickets, reason \\ &quot;unseated&quot;)</a>
 
       </div>
 
@@ -282,7 +285,7 @@ join a lobby (banned, already in one) would fail again on every tick.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#requeue/1" data-no-tooltip="" translate="no">requeue(tickets)</a>
+        <a href="#requeue/2" data-no-tooltip="" translate="no">requeue(tickets, notify? \\ false)</a>
 
       </div>
 
@@ -370,7 +373,7 @@ named fills nothing (<code class="inline">lobby_id</code> nil): it is seated as 
       <h1 class="signature" translate="no">assign_lobby(tickets, lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L546" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L567" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -401,7 +404,7 @@ held by the claim that matched it.</p>
       <h1 class="signature" translate="no">cancel(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L292" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L302" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -432,7 +435,7 @@ the others go back in the queue at once rather than at its deadline.</p>
       <h1 class="signature" translate="no">cancel_ticket(ticket_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L325" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L338" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -463,7 +466,7 @@ already-resolved id.</p>
       <h1 class="signature" translate="no">claim(tickets)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L484" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L498" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -500,7 +503,7 @@ carry it, so a claim only ever undoes or names what it holds itself.</p>
       <h1 class="signature" translate="no">count_tickets(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L374" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L388" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -528,7 +531,7 @@ carry it, so a claim only ever undoes or names what it holds itself.</p>
       <h1 class="signature" translate="no">current_ticket(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L340" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L354" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -546,17 +549,19 @@ carry it, so a claim only ever undoes or names what it holds itself.</p>
 <p>The user's current queued ticket, or nil.</p>
   </section>
 </section>
-<section class="detail" id="discard/1">
+<section class="detail" id="discard/2">
+
+    <span id="discard/1"></span>
 
   <div class="detail-header">
-    <a href="#discard/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+    <a href="#discard/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">discard(tickets)</h1>
+      <h1 class="signature" translate="no">discard(tickets, reason \\ &quot;unseated&quot;)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L532" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L551" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -567,7 +572,7 @@ carry it, so a claim only ever undoes or names what it holds itself.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> discard([<a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>()]) :: :ok</pre>
+          <pre translate="no"><span class="attribute">@spec</span> discard([<a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>()], <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: :ok</pre>
 
       </div>
 
@@ -586,7 +591,7 @@ join a lobby (banned, already in one) would fail again on every tick.</p>
       <h1 class="signature" translate="no">get_ticket(ticket_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L350" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L364" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -620,7 +625,7 @@ join a lobby (banned, already in one) would fail again on every tick.</p>
       <h1 class="signature" translate="no">join(user, match_params, min_players \\ nil, max_players \\ nil, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L93" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -663,7 +668,7 @@ to disagree about <code class="inline">min_players</code>/<code class="inline">m
       <h1 class="signature" translate="no">list_queued_by_params()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L385" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L399" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -694,7 +699,7 @@ sweep runs seconds apart, so caching here would only ever serve stale rows.</p>
       <h1 class="signature" translate="no">list_tickets(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L363" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L377" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -722,7 +727,7 @@ sweep runs seconds apart, so caching here would only ever serve stale rows.</p>
       <h1 class="signature" translate="no">prune_offline()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L599" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L620" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -747,17 +752,19 @@ out, the whole party leaves the queue. Returns how many tickets were
 cancelled.</p>
   </section>
 </section>
-<section class="detail" id="requeue/1">
+<section class="detail" id="requeue/2">
+
+    <span id="requeue/1"></span>
 
   <div class="detail-header">
-    <a href="#requeue/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+    <a href="#requeue/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">requeue(tickets)</h1>
+      <h1 class="signature" translate="no">requeue(tickets, notify? \\ false)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L512" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L526" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -768,7 +775,7 @@ cancelled.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> requeue([<a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>()]) :: :ok</pre>
+          <pre translate="no"><span class="attribute">@spec</span> requeue([<a href="Gamend.Matchmaking.Ticket.html#t:t/0">Gamend.Matchmaking.Ticket.t</a>()], <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()) :: :ok</pre>
 
       </div>
 
@@ -785,7 +792,7 @@ cancelled.</p>
       <h1 class="signature" translate="no">seatable?(tickets)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L458" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L472" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -814,7 +821,7 @@ it, and no more players than the lobby it would be seated in has seats.</p>
       <h1 class="signature" translate="no">size(ticket)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L468" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L482" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -842,7 +849,7 @@ it, and no more players than the lobby it would be seated in has seats.</p>
       <h1 class="signature" translate="no">stats()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L639" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L662" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -876,7 +883,7 @@ counts by status, plus the depth of each distinct queued <code class="inline">ma
       <h1 class="signature" translate="no">target_ticket(tickets)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L444" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L458" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -907,7 +914,7 @@ lobby is made). Reads <code class="inline">size</code> as <a href="#with_lobbies
       <h1 class="signature" translate="no">with_lobbies(tickets)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L400" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking.ex#L414" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -936,9 +943,9 @@ named fills nothing (<code class="inline">lobby_id</code> nil): it is seated as 
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1392">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1393">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1392">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1393">Hex Preview</a>
 
             </span>
 

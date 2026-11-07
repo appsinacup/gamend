@@ -1,4 +1,4 @@
-# gamend_core v1.1.1392 - API Reference
+# gamend_core v1.1.1393 - API Reference
 
 ## Modules
 
@@ -186,7 +186,8 @@ generator.
 
 - Matchmaking
   - [Gamend.Matchmaking](Gamend.Matchmaking.md): Public API for the built-in matchmaking system.
-  - [Gamend.Matchmaking.Broadcast](Gamend.Matchmaking.Broadcast.md): Broadcasts matchmaking events to users.
+  - [Gamend.Matchmaking.Broadcast](Gamend.Matchmaking.Broadcast.md): Broadcasts matchmaking events to users: a ticket queued, cancelled, or
+matched into a lobby.
   - [Gamend.Matchmaking.Constants](Gamend.Matchmaking.Constants.md): Constants for the matchmaking system.
 
   - [Gamend.Matchmaking.Match](Gamend.Matchmaking.Match.md): Creates the lobby for a claimed match and notifies the players.

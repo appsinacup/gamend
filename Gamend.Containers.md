@@ -13,6 +13,13 @@ talk to. `:runtime` in a spec (`"runsc"`, `"kata-runtime"`) is how a host
 raises isolation without another driver: the same flags, a different OCI
 runtime.
 
+## Which podman
+
+The one `CONTAINER_HOST` names, or podman's own, unless the calling
+process is inside `on/2`: a host with two services, its own containers'
+and its tenants', each under a user of its own, sends each container's
+calls to its service that way.
+
 ## Errors
 
 Every call answers `{:error, reason}` on an expected failure:
@@ -172,6 +179,14 @@ which a container without capabilities refuses). Rootless podman, and
 Errors besides the module's: `{:build_failed, status, log}`, the build's
 exit status and the end of its output, and `{:build_timeout, log}`.
 
+# `connection`
+
+```elixir
+@spec connection() :: String.t() | nil
+```
+
+The service `on/2` sends this process's calls to, or nil for the default.
+
 # `copy_from`
 
 ```elixir
@@ -191,6 +206,17 @@ the file `dest` on this machine (`podman cp … -`), written as podman
 produces it and never held in memory: a volume's files handed over whole,
 however large. `{:error, :not_found}` for a container or a path that is
 not there.
+
+# `copy_to`
+
+```elixir
+@spec copy_to(Path.t(), String.t(), String.t()) :: :ok | {:error, term()}
+```
+
+Copy `source`, a file on this machine, to `path` in a container, running
+or stopped: into one of its volumes when its root is read-only. The client
+reads the file and hands it over, so it need not be where the podman
+service's user can read it.
 
 # `create`
 
@@ -295,6 +321,18 @@ call for a whole machine, where `state/1` per container would be one each.
 ```
 
 A container's last `tail` lines of output, stdout and stderr together.
+
+# `on`
+
+```elixir
+@spec on(String.t() | nil, (-&gt; result)) :: result when result: term()
+```
+
+Run `fun` with every podman call it makes in this process going to the
+podman service at `url` (`unix:///run/user/1100/podman/podman.sock`,
+`ssh://…`): `CONTAINER_HOST` for that call alone. Nil or `""` is the
+default service. Calls from another process are not affected, and the
+one before is back once `fun` returns or raises.
 
 # `output`
 
@@ -420,6 +458,16 @@ Give the image `image` names a second name, `ref`.
 ```
 
 Every `repo:tag` name of `repo` in the image store.
+
+# `unpack_into`
+
+```elixir
+@spec unpack_into(String.t(), String.t(), Path.t()) :: :ok | {:error, term()}
+```
+
+Unpack the tar archive `archive`, a file on this machine, into the
+directory `path` of a container, running or stopped (`podman cp -`): a
+volume's files put back whole, however large, never held in memory.
 
 # `unpause`
 

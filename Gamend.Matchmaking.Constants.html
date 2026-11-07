@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1392">
+    <meta name="project" content="gamend_core v1.1.1393">
 
 
-    <title>Gamend.Matchmaking.Constants — gamend_core v1.1.1392</title>
+    <title>Gamend.Matchmaking.Constants — gamend_core v1.1.1393</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-4E55D812.js"></script>
+    <script defer src="dist/sidebar_items-1071D998.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1392
+          v1.1.1393
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Matchmaking.<wbr />Constants</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1392)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1393)</small>
 
     </h1>
 
@@ -133,11 +133,31 @@ gamend_core
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#event_cancelled/0" data-no-tooltip="" translate="no">event_cancelled()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Event broadcast when a ticket leaves the queue without a match.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#event_found/0" data-no-tooltip="" translate="no">event_found()</a>
 
       </div>
 
         <div class="summary-synopsis"><p>Event broadcast when a match is found.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#event_queued/0" data-no-tooltip="" translate="no">event_queued()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Event broadcast when a ticket goes in the queue: joined, or put back after a failed accept.</p></div>
 
     </div>
 
@@ -185,6 +205,28 @@ gamend_core
     </h2>
 
     <div class="functions-list">
+<section class="detail" id="event_cancelled/0">
+
+  <div class="detail-header">
+    <a href="#event_cancelled/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">event_cancelled()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/constants.ex#L30" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+<p>Event broadcast when a ticket leaves the queue without a match.</p>
+  </section>
+</section>
 <section class="detail" id="event_found/0">
 
   <div class="detail-header">
@@ -195,7 +237,7 @@ gamend_core
       <h1 class="signature" translate="no">event_found()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/constants.ex#L22" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/constants.ex#L24" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -205,6 +247,28 @@ gamend_core
   <section class="docstring">
 
 <p>Event broadcast when a match is found.</p>
+  </section>
+</section>
+<section class="detail" id="event_queued/0">
+
+  <div class="detail-header">
+    <a href="#event_queued/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">event_queued()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/constants.ex#L27" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+<p>Event broadcast when a ticket goes in the queue: joined, or put back after a failed accept.</p>
   </section>
 </section>
 <section class="detail" id="status_cancelled/0">
@@ -217,7 +281,7 @@ gamend_core
       <h1 class="signature" translate="no">status_cancelled()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/constants.ex#L19" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/constants.ex#L21" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -239,7 +303,7 @@ gamend_core
       <h1 class="signature" translate="no">status_matched()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/constants.ex#L16" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/constants.ex#L18" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -261,7 +325,7 @@ gamend_core
       <h1 class="signature" translate="no">status_queued()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/constants.ex#L13" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/constants.ex#L15" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -282,9 +346,9 @@ gamend_core
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1392">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1393">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1392">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1393">Hex Preview</a>
 
             </span>
 

@@ -27,7 +27,7 @@ Each target is skipped with a note when its toolchain is absent, so a project
 that only ships an Elixir plugin needs nothing extra:
 
   * Elixir — `protoc` plus `protoc-gen-elixir` (`mix escript.install hex protobuf`)
-  * JavaScript — `npx` (fetches `protobufjs-cli` on demand)
+  * JavaScript — `npx` (fetches the pinned `protobufjs-cli` on demand)
   * Godot — `GODOT_BIN` and `GODOBUF_DIR` environment variables
 
 Discovery looks in `proto/`, `modules/plugins/*/proto/` and

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1392">
+    <meta name="project" content="gamend_core v1.1.1393">
 
 
-    <title>Gamend.Hooks — gamend_core v1.1.1392</title>
+    <title>Gamend.Hooks — gamend_core v1.1.1393</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-4E55D812.js"></script>
+    <script defer src="dist/sidebar_items-1071D998.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1392
+          v1.1.1393
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Hooks</span> <small>behaviour</small>
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1392)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1393)</small>
 
     </h1>
 
@@ -1018,6 +1018,20 @@ when the value is a user struct or map containing <code class="inline">:id</code
         <a href="#caller_id/0" data-no-tooltip="" translate="no">caller_id()</a>
 
       </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#caller_pid/0" data-no-tooltip="" translate="no">caller_pid()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The process the caller asked from, when their transport has one that lives
+as long as they are connected: the user socket's channel process for a
+<code class="inline">call_hook</code> over the socket (<code class="inline">:caller_pid</code>). nil over HTTP. A hook that
+tracks presence for the caller (<a href="Gamend.Presence.html#track/4"><code class="inline">Gamend.Presence.track/4</code></a>) tracks it on
+this process, so it ends when the socket does, as the socket's own does.</p></div>
 
     </div>
 
@@ -4264,7 +4278,7 @@ timeout to avoid long-running user code.</p><p>Returns {:ok, result} | {:error, 
       <h1 class="signature" translate="no">caller()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1556" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1552" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4296,7 +4310,7 @@ when the value is a user struct or map containing <code class="inline">:id</code
       <h1 class="signature" translate="no">caller_id()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1561" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1579" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4314,6 +4328,38 @@ when the value is a user struct or map containing <code class="inline">:id</code
 
   </section>
 </section>
+<section class="detail" id="caller_pid/0">
+
+  <div class="detail-header">
+    <a href="#caller_pid/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">caller_pid()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1564" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> caller_pid() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pid</a>() | nil</pre>
+
+      </div>
+
+<p>The process the caller asked from, when their transport has one that lives
+as long as they are connected: the user socket's channel process for a
+<code class="inline">call_hook</code> over the socket (<code class="inline">:caller_pid</code>). nil over HTTP. A hook that
+tracks presence for the caller (<a href="Gamend.Presence.html#track/4"><code class="inline">Gamend.Presence.track/4</code></a>) tracks it on
+this process, so it ends when the socket does, as the socket's own does.</p>
+  </section>
+</section>
 <section class="detail" id="caller_user/0">
 
   <div class="detail-header">
@@ -4324,7 +4370,7 @@ when the value is a user struct or map containing <code class="inline">:id</code
       <h1 class="signature" translate="no">caller_user()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1575" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1593" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4357,7 +4403,7 @@ when the value is a user struct or map containing <code class="inline">:id</code
       <h1 class="signature" translate="no">exported_functions(mod \\ module())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1461" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1457" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4384,7 +4430,7 @@ This is useful for tooling and admin UI to display what RPCs are available.</p>
       <h1 class="signature" translate="no">internal_call(name, args \\ [], opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L509" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L507" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4408,7 +4454,7 @@ This is useful for tooling and admin UI to display what RPCs are available.</p>
       <h1 class="signature" translate="no">internal_hooks()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L637" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L635" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4439,7 +4485,7 @@ This is useful for tooling and admin UI to display what RPCs are available.</p>
       <h1 class="signature" translate="no">invoke(name, args \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L540" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L538" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4486,7 +4532,7 @@ function doesn't exist.</p>
       <h1 class="signature" translate="no">pipeline_hook?(name, arity)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L758" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L756" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4509,7 +4555,7 @@ than fanning out notifications. Exposed for the admin runtime page.</p>
       <h1 class="signature" translate="no">pipeline_hooks()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L803" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L801" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4537,7 +4583,7 @@ than fanning out notifications. Exposed for the admin runtime page.</p>
       <h1 class="signature" translate="no">register_pipeline_hook(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L781" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L779" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4572,7 +4618,7 @@ effects happen even after the first blocked the operation.</p><pre><code class="
       <h1 class="signature" translate="no">unregister_pipeline_hook(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L794" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L792" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4599,9 +4645,9 @@ effects happen even after the first blocked the operation.</p><pre><code class="
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1392">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1393">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1392">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1393">Hex Preview</a>
 
             </span>
 

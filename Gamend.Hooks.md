@@ -843,6 +843,18 @@ when the value is a user struct or map containing `:id`).
 @spec caller_id() :: String.t() | nil
 ```
 
+# `caller_pid`
+
+```elixir
+@spec caller_pid() :: pid() | nil
+```
+
+The process the caller asked from, when their transport has one that lives
+as long as they are connected: the user socket's channel process for a
+`call_hook` over the socket (`:caller_pid`). nil over HTTP. A hook that
+tracks presence for the caller (`Gamend.Presence.track/4`) tracks it on
+this process, so it ends when the socket does, as the socket's own does.
+
 # `caller_user`
 
 ```elixir

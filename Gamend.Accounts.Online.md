@@ -12,9 +12,9 @@ abandoned-lobby reaper see them alike.
     user's lobby, party and groups told.
   * `heartbeat/1`: `last_seen_at` refreshed. A socket calls it every
     `heartbeat_ms/0`, so `StalePresenceSweeper` leaves a live player alone.
-  * `disconnected/2`: the user's matchmaking tickets cancelled (an accept
-    they were asked for declined), and when no other socket of theirs is
-    left, `users.is_online` cleared. Checked again a moment later for a
+  * `disconnected/2`: when no other socket of theirs is left, the user's
+    matchmaking tickets cancelled (an accept they were asked for declined)
+    and `users.is_online` cleared. Checked again a moment later for a
     socket another node had not replicated yet.
 
 `watch/2` does all three for a process with no `terminate/2` to rely on:
@@ -45,10 +45,11 @@ Answers the user as written, or `{:error, reason}` when the account is gone.
 @spec disconnected(Ecto.UUID.t(), pid()) :: :ok
 ```
 
-`pid`, a socket of `user_id`'s, closed (or is closing). The user's
-matchmaking tickets are cancelled. With no other socket of theirs left,
+`pid`, a socket of `user_id`'s, closed (or is closing). With no other
+socket of theirs left, their matchmaking tickets are cancelled,
 `users.is_online` is cleared and their lobby, party and groups told, then
-checked again after a moment and undone if a socket is there after all.
+checked again after a moment and the flag put back if a socket is there
+after all.
 
 # `heartbeat`
 

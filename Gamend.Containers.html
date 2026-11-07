@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1392">
+    <meta name="project" content="gamend_core v1.1.1393">
 
 
-    <title>Gamend.Containers — gamend_core v1.1.1392</title>
+    <title>Gamend.Containers — gamend_core v1.1.1393</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-4E55D812.js"></script>
+    <script defer src="dist/sidebar_items-1071D998.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1392
+          v1.1.1393
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Containers</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1392)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1393)</small>
 
     </h1>
 
@@ -120,7 +120,10 @@ nothing about what runs in them, so a host decides the limits, the mounts
 and the network, and this module only spells them as flags.</p><p>Podman rather than Docker because it is rootless and has no root daemon to
 talk to. <code class="inline">:runtime</code> in a spec (<code class="inline">&quot;runsc&quot;</code>, <code class="inline">&quot;kata-runtime&quot;</code>) is how a host
 raises isolation without another driver: the same flags, a different OCI
-runtime.</p><h2 id="module-errors" class="section-heading"><a href="#module-errors" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Errors</span></h2><p>Every call answers <code class="inline">{:error, reason}</code> on an expected failure:</p><ul><li><code class="inline">:podman_not_found</code> — no <code class="inline">podman</code> on the PATH.</li><li><code class="inline">:not_found</code> — no such container, volume, network, image or build
+runtime.</p><h2 id="module-which-podman" class="section-heading"><a href="#module-which-podman" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Which podman</span></h2><p>The one <code class="inline">CONTAINER_HOST</code> names, or podman's own, unless the calling
+process is inside <a href="#on/2"><code class="inline">on/2</code></a>: a host with two services, its own containers'
+and its tenants', each under a user of its own, sends each container's
+calls to its service that way.</p><h2 id="module-errors" class="section-heading"><a href="#module-errors" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Errors</span></h2><p>Every call answers <code class="inline">{:error, reason}</code> on an expected failure:</p><ul><li><code class="inline">:podman_not_found</code> — no <code class="inline">podman</code> on the PATH.</li><li><code class="inline">:not_found</code> — no such container, volume, network, image or build
 context.</li><li><code class="inline">{:podman_failed, verb, status, line}</code> — the CLI exited non-zero; <code class="inline">line</code>
 is its last line of output, which is where podman puts the reason
 (before a usage error's <code class="inline">See 'podman … --help'</code>, which is skipped).</li></ul><p>A build answers its own, since its reason is a compiler's output, not
@@ -211,6 +214,16 @@ it <code class="inline">tag:</code>. Answers the image's id and the end of the b
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#connection/0" data-no-tooltip="" translate="no">connection()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The service <a href="#on/2"><code class="inline">on/2</code></a> sends this process's calls to, or nil for the default.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#copy_from/3" data-no-tooltip="" translate="no">copy_from(name, path, dest)</a>
 
       </div>
@@ -230,6 +243,19 @@ the file <code class="inline">dest</code> on this machine (<code class="inline">
 produces it and never held in memory: a volume's files handed over whole,
 however large. <code class="inline">{:error, :not_found}</code> for a container or a path that is
 not there.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#copy_to/3" data-no-tooltip="" translate="no">copy_to(source, name, path)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Copy <code class="inline">source</code>, a file on this machine, to <code class="inline">path</code> in a container, running
+or stopped: into one of its volumes when its root is read-only. The client
+reads the file and hands it over, so it need not be where the podman
+service's user can read it.</p></div>
 
     </div>
 
@@ -346,6 +372,20 @@ call for a whole machine, where <a href="#state/1"><code class="inline">state/1<
       </div>
 
         <div class="summary-synopsis"><p>A container's last <code class="inline">tail</code> lines of output, stdout and stderr together.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#on/2" data-no-tooltip="" translate="no">on(url, fun)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Run <code class="inline">fun</code> with every podman call it makes in this process going to the
+podman service at <code class="inline">url</code> (<code class="inline">unix:///run/user/1100/podman/podman.sock</code>,
+<code class="inline">ssh://…</code>): <code class="inline">CONTAINER_HOST</code> for that call alone. Nil or <code class="inline">&quot;&quot;</code> is the
+default service. Calls from another process are not affected, and the
+one before is back once <code class="inline">fun</code> returns or raises.</p></div>
 
     </div>
 
@@ -477,6 +517,18 @@ a container is still on is a <code class="inline">:podman_failed</code> error.</
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#unpack_into/3" data-no-tooltip="" translate="no">unpack_into(name, path, archive)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Unpack the tar archive <code class="inline">archive</code>, a file on this machine, into the
+directory <code class="inline">path</code> of a container, running or stopped (<code class="inline">podman cp -</code>): a
+volume's files put back whole, however large, never held in memory.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#unpause/1" data-no-tooltip="" translate="no">unpause(name)</a>
 
       </div>
@@ -541,7 +593,7 @@ holds it.</p></div>
       <h1 class="signature" translate="no">mount()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L63" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L72" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -569,7 +621,7 @@ holds it.</p></div>
       <h1 class="signature" translate="no">port_map()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L62" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L71" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -598,7 +650,7 @@ holds it.</p></div>
       <h1 class="signature" translate="no">spec()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L91" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L100" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -660,7 +712,7 @@ host's to choose, never an owner's (see Users above).</p>
       <h1 class="signature" translate="no">state()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L111" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L120" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -702,7 +754,7 @@ host's to choose, never an owner's (see Users above).</p>
       <h1 class="signature" translate="no">build(context, opts)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L430" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L439" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -743,6 +795,34 @@ which a container without capabilities refuses). Rootless podman, and
 exit status and the end of its output, and <code class="inline">{:build_timeout, log}</code>.</p>
   </section>
 </section>
+<section class="detail" id="connection/0">
+
+  <div class="detail-header">
+    <a href="#connection/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">connection()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L930" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> connection() :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil</pre>
+
+      </div>
+
+<p>The service <a href="#on/2"><code class="inline">on/2</code></a> sends this process's calls to, or nil for the default.</p>
+  </section>
+</section>
 <section class="detail" id="copy_from/3">
 
   <div class="detail-header">
@@ -753,7 +833,7 @@ exit status and the end of its output, and <code class="inline">{:build_timeout,
       <h1 class="signature" translate="no">copy_from(name, path, dest)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L709" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L752" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -781,7 +861,7 @@ exit status and the end of its output, and <code class="inline">{:build_timeout,
       <h1 class="signature" translate="no">copy_tar(name, path, dest)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L719" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L762" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -803,6 +883,37 @@ however large. <code class="inline">{:error, :not_found}</code> for a container 
 not there.</p>
   </section>
 </section>
+<section class="detail" id="copy_to/3">
+
+  <div class="detail-header">
+    <a href="#copy_to/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">copy_to(source, name, path)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L728" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> copy_to(<a href="https://elixir.hexdocs.pm/Path.html#t:t/0">Path.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Copy <code class="inline">source</code>, a file on this machine, to <code class="inline">path</code> in a container, running
+or stopped: into one of its volumes when its root is read-only. The client
+reads the file and hands it over, so it need not be where the podman
+service's user can read it.</p>
+  </section>
+</section>
 <section class="detail" id="create/1">
 
   <div class="detail-header">
@@ -813,7 +924,7 @@ not there.</p>
       <h1 class="signature" translate="no">create(spec)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L117" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L126" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -843,7 +954,7 @@ not there.</p>
       <h1 class="signature" translate="no">create_network(name, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L346" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L355" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -877,7 +988,7 @@ Containers on a network a host made reach each other by name.</p>
       <h1 class="signature" translate="no">create_volume(name, labels \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L306" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L315" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -908,7 +1019,7 @@ a <code class="inline">:chown</code> mount re-owns it.</p>
       <h1 class="signature" translate="no">exec(name, argv)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L269" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L278" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -938,7 +1049,7 @@ else's. A non-zero exit is <code class="inline">{:podman_failed, :exec, status, 
       <h1 class="signature" translate="no">executable()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L864" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L944" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -967,7 +1078,7 @@ it streams through a port as it comes.</p>
       <h1 class="signature" translate="no">image_exists?(image)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L618" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L632" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -995,7 +1106,7 @@ it streams through a port as it comes.</p>
       <h1 class="signature" translate="no">info()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L201" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L210" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1024,7 +1135,7 @@ it streams through a port as it comes.</p>
       <h1 class="signature" translate="no">inspect_image(image, format)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L750" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L795" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1053,7 +1164,7 @@ it streams through a port as it comes.</p>
       <h1 class="signature" translate="no">kill(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L166" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L175" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1082,7 +1193,7 @@ it, which is how a host stops a job past its time.</p>
       <h1 class="signature" translate="no">list(label)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L277" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L286" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1113,7 +1224,7 @@ call for a whole machine, where <a href="#state/1"><code class="inline">state/1<
       <h1 class="signature" translate="no">logs(name, tail \\ 200)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L260" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L269" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1131,6 +1242,38 @@ call for a whole machine, where <a href="#state/1"><code class="inline">state/1<
 <p>A container's last <code class="inline">tail</code> lines of output, stdout and stderr together.</p>
   </section>
 </section>
+<section class="detail" id="on/2">
+
+  <div class="detail-header">
+    <a href="#on/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">on(url, fun)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L912" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> on(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil, (-&gt; result)) :: result when result: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()</pre>
+
+      </div>
+
+<p>Run <code class="inline">fun</code> with every podman call it makes in this process going to the
+podman service at <code class="inline">url</code> (<code class="inline">unix:///run/user/1100/podman/podman.sock</code>,
+<code class="inline">ssh://…</code>): <code class="inline">CONTAINER_HOST</code> for that call alone. Nil or <code class="inline">&quot;&quot;</code> is the
+default service. Calls from another process are not affected, and the
+one before is back once <code class="inline">fun</code> returns or raises.</p>
+  </section>
+</section>
 <section class="detail" id="output/3">
 
     <span id="output/2"></span>
@@ -1143,7 +1286,7 @@ call for a whole machine, where <a href="#state/1"><code class="inline">state/1<
       <h1 class="signature" translate="no">output(image, argv, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L674" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L688" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1185,7 +1328,7 @@ end cannot fill this node's memory.</p>
       <h1 class="signature" translate="no">pause(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L146" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L155" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1214,7 +1357,7 @@ uses no CPU. <a href="#unpause/1"><code class="inline">unpause/1</code></a> thaw
       <h1 class="signature" translate="no">pull(image)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L623" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L637" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1242,7 +1385,7 @@ uses no CPU. <a href="#unpause/1"><code class="inline">unpause/1</code></a> thaw
       <h1 class="signature" translate="no">remove(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L154" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L163" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1270,7 +1413,7 @@ uses no CPU. <a href="#unpause/1"><code class="inline">unpause/1</code></a> thaw
       <h1 class="signature" translate="no">remove_network(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L355" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L364" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1299,7 +1442,7 @@ a container is still on is a <code class="inline">:podman_failed</code> error.</
       <h1 class="signature" translate="no">remove_volume(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L329" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L338" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1327,7 +1470,7 @@ a container is still on is a <code class="inline">:podman_failed</code> error.</
       <h1 class="signature" translate="no">start(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L134" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L143" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1355,7 +1498,7 @@ a container is still on is a <code class="inline">:podman_failed</code> error.</
       <h1 class="signature" translate="no">state(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L251" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L260" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1383,7 +1526,7 @@ a container is still on is a <code class="inline">:podman_failed</code> error.</
       <h1 class="signature" translate="no">stats()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L221" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L230" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1422,7 +1565,7 @@ a container is still on is a <code class="inline">:podman_failed</code> error.</
       <h1 class="signature" translate="no">stop(name, timeout_s \\ 10)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L138" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L147" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1450,7 +1593,7 @@ a container is still on is a <code class="inline">:podman_failed</code> error.</
       <h1 class="signature" translate="no">tag(image, ref)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L627" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L641" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1478,7 +1621,7 @@ a container is still on is a <code class="inline">:podman_failed</code> error.</
       <h1 class="signature" translate="no">tags(repo)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L639" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L653" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1496,6 +1639,36 @@ a container is still on is a <code class="inline">:podman_failed</code> error.</
 <p>Every <code class="inline">repo:tag</code> name of <code class="inline">repo</code> in the image store.</p>
   </section>
 </section>
+<section class="detail" id="unpack_into/3">
+
+  <div class="detail-header">
+    <a href="#unpack_into/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">unpack_into(name, path, archive)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L736" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> unpack_into(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/Path.html#t:t/0">Path.t</a>()) :: :ok | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Unpack the tar archive <code class="inline">archive</code>, a file on this machine, into the
+directory <code class="inline">path</code> of a container, running or stopped (<code class="inline">podman cp -</code>): a
+volume's files put back whole, however large, never held in memory.</p>
+  </section>
+</section>
 <section class="detail" id="unpause/1">
 
   <div class="detail-header">
@@ -1506,7 +1679,7 @@ a container is still on is a <code class="inline">:podman_failed</code> error.</
       <h1 class="signature" translate="no">unpause(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L150" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L159" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1534,7 +1707,7 @@ a container is still on is a <code class="inline">:podman_failed</code> error.</
       <h1 class="signature" translate="no">untag(ref)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L635" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L649" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1563,7 +1736,7 @@ holds it.</p>
       <h1 class="signature" translate="no">update(name, limits)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L180" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L189" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1595,7 +1768,7 @@ limit (<code class="inline">memory.max</code> read <code class="inline">max</cod
       <h1 class="signature" translate="no">write_env_file(path, env)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L946" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/containers.ex#L1026" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1628,9 +1801,9 @@ the file once podman has read it.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1392">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1393">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1392">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1393">Hex Preview</a>
 
             </span>
 

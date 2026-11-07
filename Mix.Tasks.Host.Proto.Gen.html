@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1392">
+    <meta name="project" content="gamend_core v1.1.1393">
 
 
-    <title>mix host.proto.gen — gamend_core v1.1.1392</title>
+    <title>mix host.proto.gen — gamend_core v1.1.1393</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-4E55D812.js"></script>
+    <script defer src="dist/sidebar_items-1071D998.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1392
+          v1.1.1393
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">mix host.<wbr />proto.<wbr />gen</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1392)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1393)</small>
 
     </h1>
 
@@ -123,7 +123,7 @@ ships with <code class="inline">gamend_core</code>, so any host application or p
 </span><span class="o">--</span><span class="n">elixir</span><span class="o">-</span><span class="n">out</span><span class="w"> </span><span class="nc">DIR</span><span class="w">         </span><span class="nc">Elixir</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="n">dir</span><span class="w">     </span><span class="p" data-group-id="group-2">(</span><span class="ss">default</span><span class="p">:</span><span class="w"> </span><span class="o">&lt;</span><span class="n">plugin</span><span class="o">&gt;</span><span class="o">/</span><span class="n">lib</span><span class="p" data-group-id="group-2">)</span><span class="w">
 </span><span class="o">--</span><span class="n">js</span><span class="o">-</span><span class="n">out</span><span class="w"> </span><span class="nc">FILE</span><span class="w">            </span><span class="nc">JavaScript</span><span class="w"> </span><span class="n">output</span><span class="w">     </span><span class="p" data-group-id="group-3">(</span><span class="ss">default</span><span class="p">:</span><span class="w"> </span><span class="o">&lt;</span><span class="n">plugin</span><span class="o">&gt;</span><span class="o">/</span><span class="n">clients</span><span class="o">/</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="o">.</span><span class="n">pb</span><span class="o">.</span><span class="n">js</span><span class="p" data-group-id="group-3">)</span><span class="w">
 </span><span class="o">--</span><span class="n">godot</span><span class="o">-</span><span class="n">out</span><span class="w"> </span><span class="nc">FILE</span><span class="w">         </span><span class="nc">Godot</span><span class="w"> </span><span class="n">output</span><span class="w">          </span><span class="p" data-group-id="group-4">(</span><span class="ss">default</span><span class="p">:</span><span class="w"> </span><span class="o">&lt;</span><span class="n">plugin</span><span class="o">&gt;</span><span class="o">/</span><span class="n">godot</span><span class="o">/</span><span class="o">&lt;</span><span class="n">name</span><span class="o">&gt;</span><span class="c">_pb</span><span class="o">.</span><span class="n">gd</span><span class="p" data-group-id="group-4">)</span></code></pre><h2 id="module-requirements" class="section-heading"><a href="#module-requirements" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Requirements</span></h2><p>Each target is skipped with a note when its toolchain is absent, so a project
-that only ships an Elixir plugin needs nothing extra:</p><ul><li>Elixir — <code class="inline">protoc</code> plus <code class="inline">protoc-gen-elixir</code> (<code class="inline">mix escript.install hex protobuf</code>)</li><li>JavaScript — <code class="inline">npx</code> (fetches <code class="inline">protobufjs-cli</code> on demand)</li><li>Godot — <code class="inline">GODOT_BIN</code> and <code class="inline">GODOBUF_DIR</code> environment variables</li></ul><p>Discovery looks in <code class="inline">proto/</code>, <code class="inline">modules/plugins/*/proto/</code> and
+that only ships an Elixir plugin needs nothing extra:</p><ul><li>Elixir — <code class="inline">protoc</code> plus <code class="inline">protoc-gen-elixir</code> (<code class="inline">mix escript.install hex protobuf</code>)</li><li>JavaScript — <code class="inline">npx</code> (fetches the pinned <code class="inline">protobufjs-cli</code> on demand)</li><li>Godot — <code class="inline">GODOT_BIN</code> and <code class="inline">GODOBUF_DIR</code> environment variables</li></ul><p>Discovery looks in <code class="inline">proto/</code>, <code class="inline">modules/plugins/*/proto/</code> and
 <code class="inline">modules/plugins_examples/*/proto/</code>, which covers the server itself and the
 plugin layout used by gamend games.</p>
     </section>
@@ -136,9 +136,9 @@ plugin layout used by gamend games.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1392">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1393">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1392">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1393">Hex Preview</a>
 
             </span>
 

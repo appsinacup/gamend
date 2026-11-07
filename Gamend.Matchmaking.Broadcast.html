@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1392">
+    <meta name="project" content="gamend_core v1.1.1393">
 
 
-    <title>Gamend.Matchmaking.Broadcast — gamend_core v1.1.1392</title>
+    <title>Gamend.Matchmaking.Broadcast — gamend_core v1.1.1393</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-4E55D812.js"></script>
+    <script defer src="dist/sidebar_items-1071D998.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1392
+          v1.1.1393
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Matchmaking.<wbr />Broadcast</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1392)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1393)</small>
 
     </h1>
 
@@ -114,7 +114,8 @@ gamend_core
 
 
     <section id="moduledoc">
-<p>Broadcasts matchmaking events to users.</p><p>Core publishes on the <code class="inline">matchmaking:user:&lt;id&gt;</code> PubSub topic; the user
+<p>Broadcasts matchmaking events to users: a ticket queued, cancelled, or
+matched into a lobby.</p><p>Core publishes on the <code class="inline">matchmaking:user:&lt;id&gt;</code> PubSub topic; the user
 channel subscribes on join and forwards to the client (same shape as the
 tournament events). Core never references the web endpoint directly.</p>
     </section>
@@ -143,6 +144,32 @@ tournament events). Core never references the web endpoint directly.</p>
 
     </div>
 
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#ticket_cancelled/2" data-no-tooltip="" translate="no">ticket_cancelled(tickets, reason)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Tells each ticket's user it left the queue with no match
+(<code class="inline">ticket_cancelled</code>), and why: <code class="inline">&quot;left&quot;</code> (they cancelled, or their socket
+closed), <code class="inline">&quot;declined&quot;</code> or <code class="inline">&quot;timeout&quot;</code> (an accept), <code class="inline">&quot;offline&quot;</code> (the sweep),
+<code class="inline">&quot;admin&quot;</code>, <code class="inline">&quot;unseated&quot;</code> (the lobby could not seat them). <code class="inline">tickets</code> carry
+<code class="inline">id</code> and <code class="inline">user_id</code>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#ticket_queued/2" data-no-tooltip="" translate="no">ticket_queued(tickets, requeued?)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Tells each ticket's user it is in the queue (<code class="inline">ticket_queued</code>): <code class="inline">requeued</code>
+when a failed accept put it back, in its old place. <code class="inline">tickets</code> carry <code class="inline">id</code>,
+<code class="inline">user_id</code>, <code class="inline">match_params</code> and <code class="inline">queued_at</code>; the event says <code class="inline">queued_at_ms</code>.</p></div>
+
+    </div>
+
 </div>
 
   </section>
@@ -167,7 +194,7 @@ tournament events). Core never references the web endpoint directly.</p>
       <h1 class="signature" translate="no">match_found(tickets, lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/broadcast.ex#L14" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/broadcast.ex#L53" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -185,6 +212,68 @@ tournament events). Core never references the web endpoint directly.</p>
 <p>Notifies every matched user that a lobby has been found.</p>
   </section>
 </section>
+<section class="detail" id="ticket_cancelled/2">
+
+  <div class="detail-header">
+    <a href="#ticket_cancelled/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">ticket_cancelled(tickets, reason)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/broadcast.ex#L42" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> ticket_cancelled([<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()], <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Tells each ticket's user it left the queue with no match
+(<code class="inline">ticket_cancelled</code>), and why: <code class="inline">&quot;left&quot;</code> (they cancelled, or their socket
+closed), <code class="inline">&quot;declined&quot;</code> or <code class="inline">&quot;timeout&quot;</code> (an accept), <code class="inline">&quot;offline&quot;</code> (the sweep),
+<code class="inline">&quot;admin&quot;</code>, <code class="inline">&quot;unseated&quot;</code> (the lobby could not seat them). <code class="inline">tickets</code> carry
+<code class="inline">id</code> and <code class="inline">user_id</code>.</p>
+  </section>
+</section>
+<section class="detail" id="ticket_queued/2">
+
+  <div class="detail-header">
+    <a href="#ticket_queued/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">ticket_queued(tickets, requeued?)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/broadcast.ex#L19" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> ticket_queued([<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()], <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Tells each ticket's user it is in the queue (<code class="inline">ticket_queued</code>): <code class="inline">requeued</code>
+when a failed accept put it back, in its old place. <code class="inline">tickets</code> carry <code class="inline">id</code>,
+<code class="inline">user_id</code>, <code class="inline">match_params</code> and <code class="inline">queued_at</code>; the event says <code class="inline">queued_at_ms</code>.</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -194,9 +283,9 @@ tournament events). Core never references the web endpoint directly.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1392">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1393">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1392">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1393">Hex Preview</a>
 
             </span>
 

@@ -3,9 +3,17 @@
 
 Constants for the matchmaking system.
 
+# `event_cancelled`
+
+Event broadcast when a ticket leaves the queue without a match.
+
 # `event_found`
 
 Event broadcast when a match is found.
+
+# `event_queued`
+
+Event broadcast when a ticket goes in the queue: joined, or put back after a failed accept.
 
 # `status_cancelled`
 

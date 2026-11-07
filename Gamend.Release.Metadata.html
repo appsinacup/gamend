@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.40.4">
+    <meta name="project" content="gamend_core v1.1.1390">
+
+
+    <title>Gamend.Release.Metadata — gamend_core v1.1.1390</title>
+
+    <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
+
+    <script defer src="dist/sidebar_items-4E55D812.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-MI33G4N7.js"></script>
+
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
+
+<div class="body-wrapper">
+
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<nav id="sidebar" class="sidebar">
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
+
+      <div>
+        <a href="readme.html" class="sidebar-projectName" translate="no">
+gamend_core
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v1.1.1390
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras="Pages"></ul>
+  </div>
+</nav>
+
+<output role="status" id="toast"></output>
+
+<main class="content page-module" id="main" data-type="modules">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of gamend_core</span>
+            <div class="search-input-wrapper">
+              <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+                <i class="ri-close-line ri-lg" title="Cancel search"></i>
+              </button>
+            </div>
+          </label>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <div class="engine-selector" data-multiple="false">
+          <button type="button" class="engine-button" aria-label="Select search engine" aria-haspopup="true" aria-expanded="false">
+            <i class="ri-search-2-line" aria-hidden="true"></i>
+            <span class="engine-name">Default</span>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </button>
+          <div class="engine-dropdown" hidden role="menu">
+
+              <button type="button"
+                      class="engine-option"
+                      data-engine-url="search.html?q="
+                      role="menuitemradio"
+                      aria-checked="true">
+                <span class="name">Default</span>
+                <span class="help">In-browser search</span>
+              </button>
+
+          </div>
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
+
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>
+      <span translate="no">Gamend.<wbr />Release.<wbr />Metadata</span> 
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1390)</small>
+
+    </h1>
+
+<a href="Gamend.Release.Metadata.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
+  <i class="ri-markdown-line" aria-hidden="true"></i>
+  <span class="sr-only">Copy Markdown</span>
+</a>
+
+
+
+      <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L1" title="View Source" class="icon-action" rel="help nofollow">
+        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        <span class="sr-only">View Source</span>
+      </a>
+
+  </div>
+
+
+    <section id="moduledoc">
+<p>What a release declares, written into its image as it is built, so a host
+that runs the image from outside reads it without booting it. Gamend Cloud
+reads a server's after each build, where it asked the running server over
+<code class="inline">bin/&lt;release&gt; rpc</code>.</p><p>The file is <code class="inline">gamend-metadata.json</code> in the release's directory, which is the
+image's working directory. Gamend's generated Dockerfile writes it as the
+last step of its release build (<a href="Mix.Tasks.Gamend.Gen.Dockerfile.html"><code class="inline">mix gamend.gen.dockerfile</code></a>):</p><pre><code class="makeup elixir" translate="no"><span class="n">bin</span><span class="o">/</span><span class="n">gamend_host</span><span class="w"> </span><span class="n">eval</span><span class="w"> </span><span class="sc">&#39;Gamend.Release.Metadata.write()&#39;</span></code></pre><p>It is JSON:</p><ul><li><code class="inline">format</code>: 1, raised only by a change a reader of an older one would
+misread;</li><li><code class="inline">gamend_version</code>: core's version;</li><li><code class="inline">settings</code>: <a href="Gamend.Settings.html#declared/0"><code class="inline">Gamend.Settings.declared/0</code></a>, with every plugin in the
+plugins directory loaded and none started
+(<a href="Gamend.Hooks.PluginManager.html#load_declarations/0"><code class="inline">Gamend.Hooks.PluginManager.load_declarations/0</code></a>).</li></ul><p>A host reads it with <a href="#decode/1"><code class="inline">decode/1</code></a>. Nothing in it is secret: a setting's
+declared default, never a value an environment sets.</p>
+    </section>
+
+</div>
+
+  <section id="summary" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h2>
+<div class="summary-functions summary">
+  <h3>
+    <a href="#functions">Functions</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#build/0" data-no-tooltip="" translate="no">build()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The metadata of the release this node runs, as a map with string keys.
+Loads the plugins' code (none started), so it is for a node that only
+reads declarations: an <code class="inline">eval</code>, never a running server.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#decode/1" data-no-tooltip="" translate="no">decode(json)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Read a metadata file's content: core's version (nil when blank) and the
+declared settings, each a map with string keys as <a href="Gamend.Settings.html#declared/0"><code class="inline">Gamend.Settings.declared/0</code></a>
+describes them. <code class="inline">{:error, :invalid_metadata}</code> for anything else, a newer
+<code class="inline">format</code> included.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#file_name/0" data-no-tooltip="" translate="no">file_name()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The file's name, in the release's directory.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#write/1" data-no-tooltip="" translate="no">write(path \\ &quot;gamend-metadata.json&quot;)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Write <a href="#build/0"><code class="inline">build/0</code></a> as JSON to <code class="inline">path</code>, the release's directory's <code class="inline">gamend-metadata.json</code> by default.</p></div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="functions" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h2>
+
+    <div class="functions-list">
+<section class="detail" id="build/0">
+
+  <div class="detail-header">
+    <a href="#build/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">build()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L42" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> build() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()</pre>
+
+      </div>
+
+<p>The metadata of the release this node runs, as a map with string keys.
+Loads the plugins' code (none started), so it is for a node that only
+reads declarations: an <code class="inline">eval</code>, never a running server.</p>
+  </section>
+</section>
+<section class="detail" id="decode/1">
+
+  <div class="detail-header">
+    <a href="#decode/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">decode(json)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> decode(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">binary</a>()) ::
+  {:ok, %{version: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil, settings: [<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()]}}
+  | {:error, :invalid_metadata}</pre>
+
+      </div>
+
+<p>Read a metadata file's content: core's version (nil when blank) and the
+declared settings, each a map with string keys as <a href="Gamend.Settings.html#declared/0"><code class="inline">Gamend.Settings.declared/0</code></a>
+describes them. <code class="inline">{:error, :invalid_metadata}</code> for anything else, a newer
+<code class="inline">format</code> included.</p>
+  </section>
+</section>
+<section class="detail" id="file_name/0">
+
+  <div class="detail-header">
+    <a href="#file_name/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">file_name()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L34" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> file_name() :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+
+      </div>
+
+<p>The file's name, in the release's directory.</p>
+  </section>
+</section>
+<section class="detail" id="write/1">
+
+    <span id="write/0"></span>
+
+  <div class="detail-header">
+    <a href="#write/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">write(path \\ &quot;gamend-metadata.json&quot;)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release/metadata.ex#L55" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> write(<a href="https://elixir.hexdocs.pm/Path.html#t:t/0">Path.t</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Write <a href="#build/0"><code class="inline">build/0</code></a> as JSON to <code class="inline">path</code>, the release's directory's <code class="inline">gamend-metadata.json</code> by default.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+    <footer class="footer">
+
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/gamend_core/1.1.1390">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1390">Hex Preview</a>
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Go to package docs">
+              Go to package docs
+            </button>
+
+              <a href="llms.txt" target="_blank">
+                View llms.txt
+              </a>
+
+
+              <a href="gamend_core.epub">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.4) for the
+
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
+
+        </p>
+
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
+</html>

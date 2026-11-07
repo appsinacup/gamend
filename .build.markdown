@@ -207,6 +207,7 @@ Gamend.ReadyChecks.Check.md
 Gamend.ReadyChecks.Participant.md
 Gamend.ReadyChecks.md
 Gamend.Realtime.md
+Gamend.Release.Metadata.md
 Gamend.Release.md
 Gamend.Repo.AdvisoryLock.md
 Gamend.Repo.MigrationPaths.md

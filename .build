@@ -208,6 +208,7 @@ Gamend.ReadyChecks.Check.html
 Gamend.ReadyChecks.Participant.html
 Gamend.ReadyChecks.html
 Gamend.Realtime.html
+Gamend.Release.Metadata.html
 Gamend.Release.html
 Gamend.Repo.AdvisoryLock.html
 Gamend.Repo.MigrationPaths.html
@@ -273,8 +274,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-6D60E99D.js
-dist/sidebar_items-297DDDF7.js
+dist/search_data-C269DB0C.js
+dist/sidebar_items-4E55D812.js
 index.html
 readme.html
 search.html

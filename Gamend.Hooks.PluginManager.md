@@ -80,6 +80,19 @@ JSON: there are no typed schemas for them.
 @spec list() :: [Gamend.Hooks.PluginManager.Plugin.t()]
 ```
 
+# `load_declarations`
+
+```elixir
+@spec load_declarations() :: [Gamend.Hooks.PluginManager.Plugin.t()]
+```
+
+Loads every plugin's code from the plugins directory without starting any,
+and registers what they declare (`Gamend.Hooks.Declarations`, their
+settings), with no manager running: for a node that reads what the plugins
+declare and runs none of them, `Gamend.Release.Metadata` at an image's
+build. A plugin that fails to load is listed with its error, as `list/0`
+does.
+
 # `lookup`
 
 ```elixir

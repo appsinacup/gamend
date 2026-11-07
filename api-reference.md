@@ -1,4 +1,4 @@
-# gamend_core v1.1.1389 - API Reference
+# gamend_core v1.1.1390 - API Reference
 
 ## Modules
 
@@ -91,6 +91,10 @@ everywhere.
 once", "at most N", "only while pending") checked by a read and kept by a
 write that does not look again. `mix gamend.race.lint` runs them.
 - [Gamend.Release](Gamend.Release.md): Release-time equivalents of the `host.*` mix tasks.
+- [Gamend.Release.Metadata](Gamend.Release.Metadata.md): What a release declares, written into its image as it is built, so a host
+that runs the image from outside reads it without booting it. Gamend Cloud
+reads a server's after each build, where it asked the running server over
+`bin/<release> rpc`.
 - [Gamend.Results](Gamend.Results.md): What happened in a play (priv/docs/40-gameplay/45-results.md).
 - [Gamend.Results.Event](Gamend.Results.Event.md): Ecto schema for `result_events`: one thing that happened in a play
 (`Gamend.Results.record/4`).

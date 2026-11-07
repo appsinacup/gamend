@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1389">
+    <meta name="project" content="gamend_core v1.1.1390">
 
 
-    <title>Gamend.Icons — gamend_core v1.1.1389</title>
+    <title>Gamend.Icons — gamend_core v1.1.1390</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-297DDDF7.js"></script>
+    <script defer src="dist/sidebar_items-4E55D812.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1389
+          v1.1.1390
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Icons</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1389)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1390)</small>
 
     </h1>
 
@@ -122,7 +122,14 @@ stored, by an API client or from before there was a list.</p><p>An icon is nothi
 an uploaded image's URL would be (a group's <code class="inline">icon_url</code>, a user's
 <code class="inline">profile_url</code>, a leaderboard's or a quest's <code class="inline">icon_url</code>). The website serves
 it and draws it inline; a client fetches it against the server's address
-like an uploaded image.</p>
+like an uploaded image.</p><p>A picked icon may carry one of the site's colours, <a href="#path/2"><code class="inline">path/2</code></a>
+(<code class="inline">/icons/&lt;name&gt;.svg?color=&lt;color&gt;</code>): <a href="#colors/0"><code class="inline">colors/0</code></a>, the theme's own by default
+(<code class="inline">primary info success warning error</code>), each a CSS colour the website draws
+the icon in (<a href="#color_css/1"><code class="inline">color_css/1</code></a>). A client reads the name from the URL's <code class="inline">color</code>
+and tints it its own way; the SVG served is the same. A host picks its own
+colours in Elixir:</p><pre><code class="makeup elixir" translate="no"><span class="n">config</span><span class="w"> </span><span class="ss">:gamend_core</span><span class="p">,</span><span class="w"> </span><span class="nc">Gamend.Icons</span><span class="p">,</span><span class="w">
+  </span><span class="ss">colors</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="group-1">[</span><span class="s">&quot;primary&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;success&quot;</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="group-2">{</span><span class="s">&quot;rose&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;#e11d48&quot;</span><span class="p" data-group-id="group-2">}</span><span class="p" data-group-id="group-1">]</span></code></pre><p>a bare name being the theme's (<code class="inline">var(--color-&lt;name&gt;)</code>), a pair any CSS colour.</p><p>Every user has an icon: one they never picked is theirs by their id, an
+icon and a colour (<a href="#for_id/1"><code class="inline">for_id/1</code></a>), the same everywhere they are shown.</p>
     </section>
 
 </div>
@@ -141,11 +148,68 @@ like an uploaded image.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#color/1" data-no-tooltip="" translate="no">color(arg1)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The colour of an icon's URL (<a href="#path/2"><code class="inline">path/2</code></a>), one of <a href="#colors/0"><code class="inline">colors/0</code></a>, or nil.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#color?/1" data-no-tooltip="" translate="no">color?(color)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether <code class="inline">color</code> is one of <a href="#colors/0"><code class="inline">colors/0</code></a>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#color_css/1" data-no-tooltip="" translate="no">color_css(color)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The CSS colour a colour is drawn in: a theme's own name its
+<code class="inline">var(--color-&lt;name&gt;)</code>, a pair's what it gives. Nil for none of <a href="#colors/0"><code class="inline">colors/0</code></a>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#colors/0" data-no-tooltip="" translate="no">colors()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The colours an icon is drawn in, by name, in order: the host's
+(<code class="inline">config :gamend_core, Gamend.Icons, colors: [...]</code>), else the theme's
+<code class="inline">primary info success warning error</code>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#for_id/1" data-no-tooltip="" translate="no">for_id(id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The icon a user who picked none has, by their <code class="inline">id</code>: one of <a href="#picks/0"><code class="inline">picks/0</code></a> in one
+of <a href="#colors/0"><code class="inline">colors/0</code></a>, the same for that id every time, so it is theirs wherever they
+are shown and in what every API answers. Nil when there are no icons.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#name/1" data-no-tooltip="" translate="no">name(arg1)</a>
 
       </div>
 
-        <div class="summary-synopsis"><p>The name of the icon a URL is (<a href="#path/1"><code class="inline">path/1</code></a>), or nil (none, an upload).</p></div>
+        <div class="summary-synopsis"><p>The name of the icon a URL is (<a href="#path/1"><code class="inline">path/1</code></a>), or nil (none, an upload). A colour
+on it (<code class="inline">?color=</code>) is no part of the name, and one the site no longer has
+keeps the icon (drawn in none).</p></div>
 
     </div>
 
@@ -171,11 +235,11 @@ like an uploaded image.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#path/1" data-no-tooltip="" translate="no">path(name)</a>
+        <a href="#path/2" data-no-tooltip="" translate="no">path(name, color \\ nil)</a>
 
       </div>
 
-        <div class="summary-synopsis"><p>The URL of an icon by name: <code class="inline">/icons/&lt;name&gt;.svg</code>.</p></div>
+        <div class="summary-synopsis"><p>The URL of an icon by name: <code class="inline">/icons/&lt;name&gt;.svg</code>, with <code class="inline">color</code> when one of <a href="#colors/0"><code class="inline">colors/0</code></a>.</p></div>
 
     </div>
 
@@ -191,11 +255,34 @@ like an uploaded image.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#put_color/2" data-no-tooltip="" translate="no">put_color(params, key)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p><code class="inline">params</code> with the colour picked beside an icon (<code class="inline">&quot;&lt;key&gt;_color&quot;</code>, what
+<code class="inline">&lt;.icon_picker&gt;</code> sends) put on the icon's URL at <code class="inline">key</code> (<a href="#path/2"><code class="inline">path/2</code></a>), the
+colour's own key gone. An upload's URL stays as it is: a colour is only an
+icon's.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#random/0" data-no-tooltip="" translate="no">random()</a>
 
       </div>
 
         <div class="summary-synopsis"><p>One of <a href="#picks/0"><code class="inline">picks/0</code></a> at random, nil when there are none.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#random_path/0" data-no-tooltip="" translate="no">random_path()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The URL of an icon at random in a colour at random (<a href="#path/2"><code class="inline">path/2</code></a>), nil when there are none.</p></div>
 
     </div>
 
@@ -213,6 +300,151 @@ like an uploaded image.</p>
     </h2>
 
     <div class="functions-list">
+<section class="detail" id="color/1">
+
+  <div class="detail-header">
+    <a href="#color/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">color(arg1)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L119" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> color(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil</pre>
+
+      </div>
+
+<p>The colour of an icon's URL (<a href="#path/2"><code class="inline">path/2</code></a>), one of <a href="#colors/0"><code class="inline">colors/0</code></a>, or nil.</p>
+  </section>
+</section>
+<section class="detail" id="color?/1">
+
+  <div class="detail-header">
+    <a href="#color?/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">color?(color)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L155" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> color?(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether <code class="inline">color</code> is one of <a href="#colors/0"><code class="inline">colors/0</code></a>.</p>
+  </section>
+</section>
+<section class="detail" id="color_css/1">
+
+  <div class="detail-header">
+    <a href="#color_css/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">color_css(color)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L163" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> color_css(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil</pre>
+
+      </div>
+
+<p>The CSS colour a colour is drawn in: a theme's own name its
+<code class="inline">var(--color-&lt;name&gt;)</code>, a pair's what it gives. Nil for none of <a href="#colors/0"><code class="inline">colors/0</code></a>.</p>
+  </section>
+</section>
+<section class="detail" id="colors/0">
+
+  <div class="detail-header">
+    <a href="#colors/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">colors()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L151" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> colors() :: [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]</pre>
+
+      </div>
+
+<p>The colours an icon is drawn in, by name, in order: the host's
+(<code class="inline">config :gamend_core, Gamend.Icons, colors: [...]</code>), else the theme's
+<code class="inline">primary info success warning error</code>.</p>
+  </section>
+</section>
+<section class="detail" id="for_id/1">
+
+  <div class="detail-header">
+    <a href="#for_id/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">for_id(id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L229" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> for_id(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil</pre>
+
+      </div>
+
+<p>The icon a user who picked none has, by their <code class="inline">id</code>: one of <a href="#picks/0"><code class="inline">picks/0</code></a> in one
+of <a href="#colors/0"><code class="inline">colors/0</code></a>, the same for that id every time, so it is theirs wherever they
+are shown and in what every API answers. Nil when there are no icons.</p>
+  </section>
+</section>
 <section class="detail" id="name/1">
 
   <div class="detail-header">
@@ -223,7 +455,7 @@ like an uploaded image.</p>
       <h1 class="signature" translate="no">name(arg1)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L104" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -238,7 +470,9 @@ like an uploaded image.</p>
 
       </div>
 
-<p>The name of the icon a URL is (<a href="#path/1"><code class="inline">path/1</code></a>), or nil (none, an upload).</p>
+<p>The name of the icon a URL is (<a href="#path/1"><code class="inline">path/1</code></a>), or nil (none, an upload). A colour
+on it (<code class="inline">?color=</code>) is no part of the name, and one the site no longer has
+keeps the icon (drawn in none).</p>
   </section>
 </section>
 <section class="detail" id="name?/1">
@@ -251,7 +485,7 @@ like an uploaded image.</p>
       <h1 class="signature" translate="no">name?(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L73" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L88" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -279,7 +513,7 @@ like an uploaded image.</p>
       <h1 class="signature" translate="no">names()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L65" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L80" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -297,17 +531,19 @@ like an uploaded image.</p>
 <p>Every icon's name, sorted: <code class="inline">academic-cap</code>, …</p>
   </section>
 </section>
-<section class="detail" id="path/1">
+<section class="detail" id="path/2">
+
+    <span id="path/1"></span>
 
   <div class="detail-header">
-    <a href="#path/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+    <a href="#path/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">path(name)</h1>
+      <h1 class="signature" translate="no">path(name, color \\ nil)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L92" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -318,11 +554,11 @@ like an uploaded image.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> path(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+          <pre translate="no"><span class="attribute">@spec</span> path(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
 
       </div>
 
-<p>The URL of an icon by name: <code class="inline">/icons/&lt;name&gt;.svg</code>.</p>
+<p>The URL of an icon by name: <code class="inline">/icons/&lt;name&gt;.svg</code>, with <code class="inline">color</code> when one of <a href="#colors/0"><code class="inline">colors/0</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="picks/0">
@@ -335,7 +571,7 @@ like an uploaded image.</p>
       <h1 class="signature" translate="no">picks()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L69" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L84" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -353,6 +589,37 @@ like an uploaded image.</p>
 <p>The icons people pick from, <code class="inline">academic-cap</code>, …: the same order everywhere.</p>
   </section>
 </section>
+<section class="detail" id="put_color/2">
+
+  <div class="detail-header">
+    <a href="#put_color/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">put_color(params, key)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L189" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> put_color(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()</pre>
+
+      </div>
+
+<p><code class="inline">params</code> with the colour picked beside an icon (<code class="inline">&quot;&lt;key&gt;_color&quot;</code>, what
+<code class="inline">&lt;.icon_picker&gt;</code> sends) put on the icon's URL at <code class="inline">key</code> (<a href="#path/2"><code class="inline">path/2</code></a>), the
+colour's own key gone. An upload's URL stays as it is: a colour is only an
+icon's.</p>
+  </section>
+</section>
 <section class="detail" id="random/0">
 
   <div class="detail-header">
@@ -363,7 +630,7 @@ like an uploaded image.</p>
       <h1 class="signature" translate="no">random()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L91" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L204" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -381,6 +648,34 @@ like an uploaded image.</p>
 <p>One of <a href="#picks/0"><code class="inline">picks/0</code></a> at random, nil when there are none.</p>
   </section>
 </section>
+<section class="detail" id="random_path/0">
+
+  <div class="detail-header">
+    <a href="#random_path/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">random_path()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/icons.ex#L211" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> random_path() :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil</pre>
+
+      </div>
+
+<p>The URL of an icon at random in a colour at random (<a href="#path/2"><code class="inline">path/2</code></a>), nil when there are none.</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -390,9 +685,9 @@ like an uploaded image.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1389">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1390">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1389">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1390">Hex Preview</a>
 
             </span>
 

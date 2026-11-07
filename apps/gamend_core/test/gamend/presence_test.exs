@@ -24,7 +24,9 @@ defmodule Gamend.PresenceTest do
         end
       end)
 
-    assert_receive {:tracked, ^pid}
+    # `track/4` is a call to the shard, which may still be removing the
+    # holders of an earlier test: 100 ms is too short under a loaded suite.
+    assert_receive {:tracked, ^pid}, 5_000
     pid
   end
 

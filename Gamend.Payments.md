@@ -341,6 +341,23 @@ other.
 
 # `resume_stripe_subscription`
 
+# `revoke_entitlement`
+
+```elixir
+@spec revoke_entitlement(Ecto.UUID.t(), String.t(), keyword()) ::
+  {:ok, Gamend.Payments.Entitlement.t()} | {:error, term()}
+```
+
+End a granted entitlement now: a trial cut short, a reward taken back.
+The one `(user, key)` row turns `revoked` at once, its `metadata` merged
+with `:metadata` (e.g. `%{"revocation_reason" => "upgraded"}`); the row
+stays, so `entitlement_ever?/2` still answers true. A grant afterwards
+makes it active again.
+
+A row a purchase made answers `{:error, :purchased}`: its purchase ends it
+(`revoke_purchase/2`), or the provider's next sync would bring it back.
+No row answers `{:error, :entitlement_not_found}`.
+
 # `revoke_purchase`
 
 ```elixir

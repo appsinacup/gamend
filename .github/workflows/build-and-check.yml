@@ -256,6 +256,17 @@ jobs:
             IO.puts("adapter #{inspect(compiled)}, #{length(paths)} migration paths")
           '
 
+          # gamend-stage-release writes it without failing the build, so a
+          # host can read the settings from the image; a missing one is caught
+          # here.
+          docker exec gamend-smoke bin/gamend_host eval '
+            {:ok, %{settings: settings}} =
+              Gamend.Release.Metadata.file_name() |> File.read!() |> Gamend.Release.Metadata.decode()
+
+            if settings == [], do: raise("gamend-metadata.json lists no settings")
+            IO.puts("gamend-metadata.json: #{length(settings)} settings")
+          '
+
       - name: Teardown
         if: always()
         run: |

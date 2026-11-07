@@ -53,6 +53,12 @@ defmodule Gamend.Containers do
 
   require Logger
 
+  alias Gamend.Containers.Bounded
+
+  # What a container's command or log may hand this node: an image that
+  # prints without end cannot fill its memory.
+  @max_output_bytes 4 * 1024 * 1024
+
   @type port_map :: {host_ip :: String.t(), host_port :: pos_integer(), port :: pos_integer()}
   @type mount :: {source :: String.t(), target :: String.t(), :rw | :ro | :chown}
 
@@ -251,24 +257,17 @@ defmodule Gamend.Containers do
 
   @doc "A container's last `tail` lines of output, stdout and stderr together."
   @spec logs(String.t(), pos_integer()) :: {:ok, String.t()} | {:error, term()}
-  def logs(name, tail \\ 200) do
-    case podman(["logs", "--tail", Integer.to_string(tail), name]) do
-      {:ok, {out, 0}} -> {:ok, out}
-      other -> failed(:logs, other)
-    end
-  end
+  def logs(name, tail \\ 200),
+    do: bounded(:logs, ["logs", "--tail", Integer.to_string(tail), name], @max_output_bytes)
 
   @doc """
   Run `argv` inside a running container and answer what it printed, stdout
-  and stderr together. A non-zero exit is `{:podman_failed, :exec, status, line}`.
+  and stderr together, its first 4 MiB: what runs there may be someone
+  else's. A non-zero exit is `{:podman_failed, :exec, status, line}`.
   """
   @spec exec(String.t(), [String.t()]) :: {:ok, String.t()} | {:error, term()}
-  def exec(name, argv) when is_list(argv) do
-    case podman(["exec", name | argv]) do
-      {:ok, {out, 0}} -> {:ok, out}
-      other -> failed(:exec, other)
-    end
-  end
+  def exec(name, argv) when is_list(argv),
+    do: bounded(:exec, ["exec", name | argv], @max_output_bytes)
 
   @doc """
   Every container carrying `label` (`key=value`), any state, by name: one
@@ -662,8 +661,14 @@ defmodule Gamend.Containers do
   `create/1` takes them both), `env:` (through
   a 0600 env file, as `create/1`), and `network: true` for a chore that must
   reach the network (a restore from a bucket). A chore running someone
-  else's code (a build of a tenant's plugin) takes the limits `create/1`
-  does: `memory_mb:`, `cpus:`, `pids:` and `runtime:` (`runsc`).
+  else's code (a build of a tenant's plugin, anything in a tenant's image)
+  takes the limits `create/1` does: `memory_mb:`, `cpus:`, `pids:` and
+  `runtime:` (`runsc`), and `timeout:`, the seconds podman lets it run
+  before killing it (`--timeout`).
+
+  What it prints is kept to its first `max_output_bytes:` (4 MiB unless
+  given) and the rest dropped as it comes, so an image that prints without
+  end cannot fill this node's memory.
   """
   @spec output(String.t(), [String.t()], keyword()) :: {:ok, String.t()} | {:error, term()}
   def output(image, argv, opts \\ []) when is_list(argv) do
@@ -685,9 +690,17 @@ defmodule Gamend.Containers do
   end
 
   defp run_output(image, argv, env_args, opts) do
-    case podman(output_args(image, argv, env_args, opts)) do
-      {:ok, {out, 0}} -> {:ok, out}
-      other -> failed(:output, other)
+    limit = Keyword.get(opts, :max_output_bytes, @max_output_bytes)
+    bounded(:output, output_args(image, argv, env_args, opts), limit)
+  end
+
+  # Output kept to its first `limit` bytes as it arrives (`Bounded`), for a
+  # command whose output is a container's.
+  defp bounded(verb, args, limit) do
+    case podman(args, Bounded.new(limit)) do
+      {:ok, {%Bounded{} = out, 0}} -> {:ok, Bounded.to_binary(out)}
+      {:ok, {%Bounded{} = out, status}} -> failed(verb, {:ok, {Bounded.to_binary(out), status}})
+      other -> failed(verb, other)
     end
   end
 
@@ -758,6 +771,7 @@ defmodule Gamend.Containers do
       memory_args(Keyword.get(opts, :memory_mb)),
       cpu_args(Keyword.get(opts, :cpus)),
       if(pids = Keyword.get(opts, :pids), do: ["--pids-limit=#{pids}"], else: []),
+      if(timeout = Keyword.get(opts, :timeout), do: ["--timeout", "#{timeout}"], else: []),
       env_args,
       volume_args(Keyword.get(opts, :volumes, [])),
       Enum.flat_map(Keyword.get(opts, :tmpfs, []), &["--tmpfs", &1]),
@@ -854,10 +868,10 @@ defmodule Gamend.Containers do
     end
   end
 
-  defp podman(args) do
+  defp podman(args, into \\ "") do
     with {:ok, podman} <- executable() do
       Logger.debug("podman #{Enum.join(args, " ")}")
-      {:ok, System.cmd(podman, args, stderr_to_stdout: true)}
+      {:ok, System.cmd(podman, args, stderr_to_stdout: true, into: into)}
     end
   end
 
@@ -951,4 +965,37 @@ defmodule Gamend.Containers do
 
   defp unsafe?(value) when is_binary(value), do: String.contains?(value, ["\n", "\r", "\0"])
   defp unsafe?(_value), do: true
+end
+
+defmodule Gamend.Containers.Bounded do
+  @moduledoc false
+  # What a command prints, kept to its first `limit` bytes, the rest dropped
+  # as it arrives: `System.cmd/3`'s `into:` for output we did not write.
+
+  defstruct parts: [], size: 0, limit: 0
+
+  def new(limit) when is_integer(limit) and limit >= 0, do: %__MODULE__{limit: limit}
+
+  def to_binary(%__MODULE__{parts: parts}), do: parts |> Enum.reverse() |> IO.iodata_to_binary()
+
+  defimpl Collectable do
+    def into(bounded) do
+      fun = fn
+        %{size: size, limit: limit} = acc, {:cont, _data} when size >= limit ->
+          acc
+
+        %{size: size, limit: limit, parts: parts} = acc, {:cont, data} ->
+          kept = binary_part(data, 0, min(byte_size(data), limit - size))
+          %{acc | parts: [kept | parts], size: size + byte_size(kept)}
+
+        acc, :done ->
+          acc
+
+        _acc, :halt ->
+          :ok
+      end
+
+      {bounded, fun}
+    end
+  end
 end

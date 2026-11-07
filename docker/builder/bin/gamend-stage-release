@@ -49,6 +49,18 @@ else
 fi
 
 # From the staged directory, as the image starts in it: the plugins it loads
-# are the ones copied above.
-(cd "$dest" && "bin/${release}" eval \
-  'if Code.ensure_loaded?(Gamend.Release.Metadata), do: Gamend.Release.Metadata.write()')
+# are the ones copied above. `eval` applies runtime.exs, which with no
+# database configured picks SQLite, and a Postgres build's Repo refuses to
+# boot on that (its adapter is compile time): an address for it, never
+# dialled, as eval starts nothing. A write that fails leaves the image
+# without the file, which a host reports, rather than failing the build: a
+# host app's runtime.exs may want what only its deploy sets.
+if [ "${GAMEND_DB_ADAPTER:-}" = postgres ] && [ -z "${GAMEND_DB_URL:-}" ]; then
+  export GAMEND_DB_URL=ecto://metadata@localhost/metadata
+fi
+
+if ! (cd "$dest" && "bin/${release}" eval \
+  'if Code.ensure_loaded?(Gamend.Release.Metadata), do: Gamend.Release.Metadata.write()'); then
+  rm -f "${dest}/gamend-metadata.json"
+  echo "warning: could not write gamend-metadata.json; the image lists no settings" >&2
+fi

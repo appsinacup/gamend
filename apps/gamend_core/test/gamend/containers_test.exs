@@ -116,6 +116,35 @@ defmodule Gamend.ContainersTest do
     assert Enum.take(args, -2) == ["img", "true"]
   end
 
+  # A tenant's image in a one-off run: its size's limits and a time it is
+  # killed at, as a container of its own would have.
+  test "a one-off run of someone else's image is limited and killed in time" do
+    args =
+      Containers.output_args("img", ["true"], [],
+        memory_mb: 512,
+        cpus: 0.5,
+        pids: 256,
+        runtime: "runsc",
+        timeout: 600
+      )
+
+    for flag <- ["--memory=512m", "--cpus=0.50", "--pids-limit=256", "--runtime=runsc"],
+        do: assert(flag in args)
+
+    assert ["--timeout", "600"] == pair(args, "--timeout")
+    refute "--timeout" in Containers.output_args("img", ["true"], [], [])
+  end
+
+  test "what a command prints is kept to its first bytes" do
+    {out, 0} =
+      System.cmd("sh", ["-c", "printf abcdef; printf ghij"], into: Containers.Bounded.new(5))
+
+    assert Containers.Bounded.to_binary(out) == "abcde"
+
+    {all, 0} = System.cmd("printf", ["xyz"], into: Containers.Bounded.new(100))
+    assert Containers.Bounded.to_binary(all) == "xyz"
+  end
+
   test "a volume is made once, owned by a user when asked" do
     assert Containers.create_volume_args("gc-1-data", %{}, []) ==
              ["volume", "create", "--ignore", "gc-1-data"]

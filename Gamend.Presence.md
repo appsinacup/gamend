@@ -79,6 +79,17 @@ has already gone can ask it too (`Gamend.Accounts.Online`).
 
 # `track`
 
+# `tracked`
+
+```elixir
+@spec tracked(String.t(), String.t()) :: [{pid(), map()}]
+```
+
+The processes tracked under `key` on `topic`, each with its meta:
+`[{pid, meta}]`, cluster-wide, read the same way (*Reads*). What a server
+needs to move or untrack a player's entries itself (a socket's process
+found on the user's topic, `users_topic/1`, its meta's `kind`).
+
 # `untrack`
 
 # `untrack`

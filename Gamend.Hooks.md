@@ -786,6 +786,19 @@ return never rewrites the args, so a bare `:ok` is the usual "allow".
 @callback after_report_resolved(Gamend.Reports.Report.t()) :: any()
 ```
 
+# `after_socket_connected`
+*optional* 
+
+```elixir
+@callback after_socket_connected(Gamend.Accounts.User.t(), pid(), String.t()) :: any()
+```
+
+A socket of the user's opened: `pid` its process, `kind` `"socket"` (a
+client's user channel) or `"page"` (a host's page, `Gamend.Accounts.Online`).
+Every socket, where `after_user_online/1` is once a session: a game
+registers the socket where it needs (a presence on `pid`, which ends with
+it) instead of the client calling to say it is there. Fire-and-forget.
+
 # `before_report_create`
 *optional* 
 

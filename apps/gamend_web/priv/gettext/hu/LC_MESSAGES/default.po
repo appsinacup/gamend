@@ -1737,13 +1737,6 @@ msgstr "Eltelt idő"
 msgid "Avatar uploads are not available."
 msgstr "A profilkép feltöltése nem érhető el."
 
-#: lib/gamend_web/live/admin_live/chat_reports.ex:344
-#: lib/gamend_web/live/admin_live/reports.ex:210
-#: lib/gamend_web/live/admin_live/results.ex:296
-#, elixir-autogen, elixir-format
-msgid "Back to Admin"
-msgstr "Vissza az adminhoz"
-
 #: lib/gamend_web/live/admin_live/chat_filter.ex:346
 #, elixir-autogen, elixir-format
 msgid "Blocked"
@@ -4149,3 +4142,23 @@ msgstr "Sok jelentést küldtél. Próbáld újra egy óra múlva."
 #, elixir-autogen, elixir-format
 msgid "Another name"
 msgstr "Másik név"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Owner"
+msgstr "Tulajdonos"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color"
+msgstr "Szín"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "No color"
+msgstr "Nincs szín"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color %{number}"
+msgstr "%{number}. szín"

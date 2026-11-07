@@ -10,6 +10,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
   import Phoenix.LiveView
 
   alias Gamend.Accounts
+  alias Gamend.Accounts.User
   alias Gamend.OAuth.Providers
   alias Gamend.Storage
   alias GamendWeb.Features
@@ -408,8 +409,9 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
 
   # One of the site's icons as the avatar: its URL in `profile_url`, as an
   # upload's is, and the uploaded picture it replaces gone from storage.
-  def handle_event("pick_avatar_icon", %{"avatar" => %{"profile_url" => url}}, socket) do
+  def handle_event("pick_avatar_icon", %{"avatar" => params}, socket) do
     user = Shared.current_user(socket)
+    url = Gamend.Icons.put_color(params, "profile_url")["profile_url"]
 
     with name when is_binary(name) <- Gamend.Icons.name(url),
          {:ok, updated} <- Accounts.update_user_avatar(user, url) do
@@ -566,8 +568,10 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     end
   end
 
+  # The avatar shown (`User.public_avatar_url/1`): an icon their id gave them
+  # is lit as if picked.
   defp avatar_icon_form(user),
-    do: to_form(%{"profile_url" => user.profile_url || ""}, as: :avatar)
+    do: to_form(%{"profile_url" => User.public_avatar_url(user) || ""}, as: :avatar)
 
   @doc """
   The pending OAuth link conflict for this session, as `{conflict_user, provider}`.

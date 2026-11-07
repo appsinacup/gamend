@@ -1736,13 +1736,6 @@ msgstr "距今"
 msgid "Avatar uploads are not available."
 msgstr "头像上传不可用。"
 
-#: lib/gamend_web/live/admin_live/chat_reports.ex:344
-#: lib/gamend_web/live/admin_live/reports.ex:210
-#: lib/gamend_web/live/admin_live/results.ex:296
-#, elixir-autogen, elixir-format
-msgid "Back to Admin"
-msgstr "返回管理页面"
-
 #: lib/gamend_web/live/admin_live/chat_filter.ex:346
 #, elixir-autogen, elixir-format
 msgid "Blocked"
@@ -4098,3 +4091,23 @@ msgstr "你发送的报告太多了。请一小时后再试。"
 #, elixir-autogen, elixir-format
 msgid "Another name"
 msgstr "换个名字"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Owner"
+msgstr "所有者"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color"
+msgstr "颜色"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "No color"
+msgstr "无颜色"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color %{number}"
+msgstr "颜色 %{number}"

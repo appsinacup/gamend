@@ -1027,10 +1027,13 @@ defmodule GamendWeb.Router.Shared do
   whose navigation links to them: Forge and Gamend Cloud pass
   `"/users/groups"`. Without it there is no such page; the tab is. With every
   group hidden they link `/groups` (`GamendWeb.GroupsLive`), a visitor's account
-  of what a group is, which sends a signed-in reader here. A
+  of what a group is, which sends a signed-in reader here. One group is
+  `<groups>/<owner>/<slug>` (`Gamend.Groups.full_slug/1`, or its id), a page
+  of its own, so Back from it returns to the list in the reader's history
+  (2026-11-07: as `?group=`, Back walked past the list, the same path). A
   group's invite link opens `<groups>/join/:token`
   (`GamendWeb.UserLive.GroupJoin`), and `/users/groups/join/:token` without
-  one.
+  one; it comes first, so an owner named `join` is the link's.
   """
   defmacro gamend_authenticated_live_routes(on_mount, opts \\ []) do
     host_routes = Keyword.get(opts, :do)
@@ -1041,6 +1044,11 @@ defmodule GamendWeb.Router.Shared do
     groups_route =
       if groups do
         quote(do: live(unquote(groups), UserLive.Groups, :index))
+      end
+
+    group_route =
+      if groups do
+        quote(do: live(unquote(groups <> "/*group"), UserLive.Groups, :show))
       end
 
     join_path = (groups || "/users/groups") <> "/join/:token"
@@ -1063,6 +1071,7 @@ defmodule GamendWeb.Router.Shared do
           live "/chat", unquote(chat), :index
           unquote(groups_route)
           live unquote(join_path), UserLive.GroupJoin, :show
+          unquote(group_route)
         end
 
         post "/users/update_password", UserSessionController, :update_password

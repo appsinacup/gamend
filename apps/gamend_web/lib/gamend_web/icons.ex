@@ -137,6 +137,9 @@ defmodule GamendWeb.Icons do
   """
   @spec from_path(String.t()) :: {:ok, icon()} | :error
   def from_path("/icons/" <> file) do
+    # A colour (`?color=`, `Gamend.Icons.path/2`) is no part of which icon.
+    file = file |> String.split("?", parts: 2) |> hd()
+
     with true <- String.ends_with?(file, ".svg"),
          name <- file |> String.replace_suffix(".svg", "") |> String.replace("-", "_"),
          # `to_existing_atom` keeps an arbitrary URL from creating atoms.

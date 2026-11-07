@@ -29,6 +29,8 @@ services:
   app:
     build:
       context: .
+      # The builder running `mix phx.server`; a bare build is the release.
+      target: full
       # The Repo adapter is fixed at compile time; without this the image is
       # SQLite while the environment below points it at Postgres.
       args:

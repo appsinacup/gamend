@@ -24,9 +24,7 @@ defmodule GamendWeb.AdminLive.Config do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">
-          ← Back to Admin
-        </.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <!-- Current Configuration Status -->
         <div class="card bg-base-100 shadow-sm" data-card-key="config_status">

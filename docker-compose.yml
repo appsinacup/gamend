@@ -1,6 +1,9 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      # The builder running `mix phx.server`; a bare build is the release.
+      target: full
     ports:
       - "4000:4000"
       # Uncomment to enable HTTPS directly in Phoenix (no reverse proxy needed).

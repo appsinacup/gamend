@@ -129,7 +129,7 @@ defmodule GamendWeb.LeaderboardsLive do
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
         <%!-- One title: a board's own (its icon and name), else the list's.
-              Back: from a board to the list, from the list home. --%>
+              Back: from a board to the list; the list has none. --%>
         <div data-heading-fit class="flex items-center gap-3">
           <.back_link
             :if={@selected_leaderboard}
@@ -141,7 +141,6 @@ defmodule GamendWeb.LeaderboardsLive do
               )
             }
           />
-          <.back_link :if={!@selected_leaderboard} href={home_path()} />
           <.page_title :if={@selected_leaderboard} class="flex min-w-0 items-center gap-3">
             <%!-- The section's colour, as the list's own title wears it. --%>
             <span data-tone={GamendWeb.HostLayouts.nav_tone("/leaderboards")} class="contents">

@@ -9,14 +9,17 @@ defmodule GamendWeb.UserLive.Groups do
 
       gamend_authenticated_live_routes(@on_mount, groups: "/users/groups")
 
-  `?group=<id>` opens one of the reader's groups and `?create=1` the form, as
-  on the tab, so a host's page links straight to a team's members. Closed
-  with the tab, by `web_groups`.
+  `/users/groups/<owner>/<slug>` (or `/users/groups/<id>`,
+  `GamendWeb.GroupLinks.group_path/2`) opens one of the reader's groups, a
+  page under the list, and `?create=1` the form, as on the tab, so a host's
+  page links straight to a team's members. Closed with the tab, by
+  `web_groups`.
   """
   use GamendWeb, :live_view
 
   alias Gamend.Accounts.Scope
   alias Gamend.Groups
+  alias GamendWeb.GroupLinks
   alias GamendWeb.HostLayouts
   alias GamendWeb.UserLive.Settings.GroupsTab
 
@@ -42,21 +45,31 @@ defmodule GamendWeb.UserLive.Groups do
      |> GroupsTab.assign_defaults()}
   end
 
-  # The tab patches back to this page's own path (`groups_path`), without
-  # the reader's locale prefix, as the routes are written.
+  # One group: its ref is the path under the list's (`*group`).
   @impl true
-  def handle_params(params, uri, socket) do
-    path =
-      uri
-      |> URI.parse()
-      |> Map.get(:path)
-      |> HostLayouts.strip_locale_prefix(GamendWeb.GettextSync.known_locales())
+  def handle_params(%{"group" => [_ | _] = segments} = params, _uri, socket),
+    do: {:noreply, apply_params(socket, %{params | "group" => Enum.join(segments, "/")})}
+
+  # `?group=<ref>`, the list's link before a group had a path of its own:
+  # the group's path, in place of the old entry.
+  def handle_params(%{"group" => ref} = params, _uri, socket)
+      when is_binary(ref) and ref != "" do
+    query = params |> Map.delete("group") |> URI.encode_query()
+    to = GroupLinks.group_path(socket, ref)
 
     {:noreply,
-     socket
-     |> assign(:groups_path, path)
-     |> GroupsTab.apply_params(params)
-     |> GroupsTab.reload_groups()}
+     push_patch(socket, to: if(query == "", do: to, else: to <> "?" <> query), replace: true)}
+  end
+
+  def handle_params(params, _uri, socket), do: {:noreply, apply_params(socket, params)}
+
+  # The tab patches back to the list's own path (`groups_path`), without the
+  # reader's locale prefix, as the routes are written.
+  defp apply_params(socket, params) do
+    socket
+    |> assign(:groups_path, GroupLinks.groups_path(socket))
+    |> GroupsTab.apply_params(params)
+    |> GroupsTab.reload_groups()
   end
 
   @impl true
@@ -76,9 +89,9 @@ defmodule GamendWeb.UserLive.Groups do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div data-heading-fit class="flex items-center gap-3">
-        <%!-- Back: from a group to the list, from the list home. --%>
-        <.back_link :if={@group_detail} always patch={@groups_path} />
-        <.back_link :if={!@group_detail} href={home_path()} />
+        <%!-- Back from a group to the list, where the reader came from. The
+              list is the navbar's, with no Back of its own. --%>
+        <.back_link :if={@group_detail} always navigate={@groups_path} />
         <.page_title
           icon={HostLayouts.nav_icon(@groups_path, "hero-user-group-solid")}
           tone={HostLayouts.nav_tone(@groups_path)}

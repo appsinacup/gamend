@@ -46,7 +46,7 @@ defmodule GamendWeb.AdminLive.Groups do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">&larr; Back to Admin</.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <div class="card bg-base-200">
           <div class="card-body">
@@ -335,7 +335,14 @@ defmodule GamendWeb.AdminLive.Groups do
               <tbody>
                 <tr :for={m <- @members} id={"member-" <> to_string(m.id)}>
                   <td class="font-mono text-sm">{m.user_id}</td>
-                  <td class="text-sm">{user_display(m.user)}</td>
+                  <td class="text-sm">
+                    <.player_card
+                      user={m.user}
+                      name={user_display(m.user)}
+                      subtitle={nil}
+                      size="sm"
+                    />
+                  </td>
                   <td class="text-sm">
                     <%= if m.role == "admin" do %>
                       <span class="badge badge-primary badge-sm">Admin</span>

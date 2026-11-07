@@ -93,7 +93,11 @@ defmodule GamendWeb.Schemas.GroupMember do
       role: %Schema{type: :string, enum: ["admin", "member"]},
       username: %Schema{type: :string},
       display_name: %Schema{type: :string},
-      profile_url: %Schema{type: :string, description: "Empty when unset or signed out"},
+      profile_url: %Schema{
+        type: :string,
+        description:
+          "The avatar: an image we host, or one of the server's icons (`/icons/<name>.svg?color=<color>`), one the user's id gives them when they set none. Empty when signed out"
+      },
       is_online: %Schema{type: :boolean},
       last_seen_at: %Schema{type: :string, format: :"date-time"},
       inserted_at: %Schema{type: :string, format: :"date-time", description: "When they joined"}
@@ -160,8 +164,17 @@ defmodule GamendWeb.Schemas.GroupInvite do
       group_title: %Schema{type: :string},
       sender_id: %Schema{type: :string, format: :uuid},
       sender_name: %Schema{type: :string},
+      sender_profile_url: %Schema{
+        type: :string,
+        description:
+          "The sender's avatar: an image we host, or one of the server's icons (`/icons/<name>.svg?color=<color>`)"
+      },
       recipient_id: %Schema{type: :string, format: :uuid},
       recipient_name: %Schema{type: :string},
+      recipient_profile_url: %Schema{
+        type: :string,
+        description: "The recipient's avatar, as `sender_profile_url`"
+      },
       status: %Schema{type: :string, description: "pending | accepted | declined | cancelled"},
       inserted_at: %Schema{type: :string, format: :"date-time"}
     },

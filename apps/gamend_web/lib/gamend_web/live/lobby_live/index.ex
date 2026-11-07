@@ -697,7 +697,7 @@ defmodule GamendWeb.LobbyLive.Index do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="p-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">← Back to Admin</.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin/lobbies"} /></div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
           <div class="card bg-base-200 p-4 rounded-lg">
@@ -900,7 +900,12 @@ defmodule GamendWeb.LobbyLive.Index do
                             id={"member-" <> to_string(m.id)}
                             class="flex items-center justify-between py-1"
                           >
-                            <div><.player_name name={LiveHelpers.public_user_name(m)} /></div>
+                            <.player_card
+                              user={m}
+                              name={LiveHelpers.public_user_name(m)}
+                              subtitle={nil}
+                              size="sm"
+                            />
                             <div class="flex items-center gap-2">
                               <%= if m.id == lobby.host_id do %>
                                 <span class="text-xs text-muted">
@@ -938,7 +943,12 @@ defmodule GamendWeb.LobbyLive.Index do
                             id={"member-" <> to_string(m.id)}
                             class="flex items-center justify-between py-1"
                           >
-                            <div><.player_name name={LiveHelpers.public_user_name(m)} /></div>
+                            <.player_card
+                              user={m}
+                              name={LiveHelpers.public_user_name(m)}
+                              subtitle={nil}
+                              size="sm"
+                            />
                             <div>
                               <%= if m.id == lobby.host_id do %>
                                 <span class="text-xs text-muted">

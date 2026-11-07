@@ -415,7 +415,7 @@ defmodule GamendWeb.TournamentsLive do
       <div class="space-y-6">
         <%!-- One title: a tournament's own (its icon and name, and the
               bracket on a bracket), else the list's. Back: from a bracket to
-              its tournament, from a tournament to the list, from the list home. --%>
+              its tournament, from a tournament to the list; the list has none. --%>
         <div class="flex items-center gap-3">
           <.back_link
             :if={@bracket}
@@ -435,7 +435,6 @@ defmodule GamendWeb.TournamentsLive do
               )
             }
           />
-          <.back_link :if={is_nil(@tournament)} href={home_path()} />
           <.page_title :if={@tournament} class="flex min-w-0 items-center gap-3">
             <.entity_icon
               icon_url={@tournament.icon_url}
@@ -819,6 +818,7 @@ defmodule GamendWeb.TournamentsLive do
         <div>
           <span class="text-sm text-muted">{gettext("Showing")}</span>
           <div class="text-xl font-bold flex items-center gap-2">
+            <.user_avatar user={@highlight.leader} class="size-8 shrink-0" />
             <.player_name name={leader_name(@highlight.leader)} />
             <span :if={@own?} class="badge badge-primary badge-sm">{gettext("You")}</span>
           </div>
@@ -905,11 +905,16 @@ defmodule GamendWeb.TournamentsLive do
       <span class="flex min-w-0 flex-col leading-tight">
         <%= cond do %>
           <% @entry_id -> %>
-            <span class="truncate">{slot_name(@entries, @entry_id)}</span>
-            <.user_title
-              user={slot_leader(@entries, @entry_id)}
-              class="text-xs font-normal text-muted"
-            />
+            <span class="flex min-w-0 items-center gap-2">
+              <.user_avatar user={slot_leader(@entries, @entry_id)} class="size-6 shrink-0" />
+              <span class="flex min-w-0 flex-col">
+                <span class="truncate">{slot_name(@entries, @entry_id)}</span>
+                <.user_title
+                  user={slot_leader(@entries, @entry_id)}
+                  class="text-xs font-normal text-muted"
+                />
+              </span>
+            </span>
           <% @round == 1 -> %>
             <span class="text-muted">{gettext("bye")}</span>
           <% true -> %>

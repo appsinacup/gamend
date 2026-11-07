@@ -339,7 +339,6 @@ defmodule GamendWeb.ReportLive do
       <div class="mx-auto max-w-narrow space-y-6">
         <div class="space-y-2">
           <div data-heading-fit class="flex items-center gap-3">
-            <.back_link href={home_path()} />
             <.page_title
               icon={GamendWeb.HostLayouts.nav_icon("/report", "hero-flag-solid")}
               tone={GamendWeb.HostLayouts.nav_tone("/report")}

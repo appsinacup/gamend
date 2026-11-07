@@ -353,8 +353,8 @@ defmodule GamendWeb.AdminLive.AnalyticsExplore do
               Clear filters
             </.link>
           </form>
-          <p :if={@user} class="mt-2 text-sm">
-            One account:
+          <p :if={@user} class="mt-2 flex flex-wrap items-center gap-1 text-sm">
+            One account: <.user_avatar user={@user} class="size-6 shrink-0" />
             <.link navigate={people_url(@user.id)} class="link">{account_name(@user)}</.link>
             ({if User.anonymous?(@user), do: "guest", else: "registered"})
           </p>

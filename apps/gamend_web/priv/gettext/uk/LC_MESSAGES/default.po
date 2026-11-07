@@ -1736,13 +1736,6 @@ msgstr "Давність"
 msgid "Avatar uploads are not available."
 msgstr "Завантаження аватарів недоступне."
 
-#: lib/gamend_web/live/admin_live/chat_reports.ex:344
-#: lib/gamend_web/live/admin_live/reports.ex:210
-#: lib/gamend_web/live/admin_live/results.ex:296
-#, elixir-autogen, elixir-format
-msgid "Back to Admin"
-msgstr "Назад до адмін-панелі"
-
 #: lib/gamend_web/live/admin_live/chat_filter.ex:346
 #, elixir-autogen, elixir-format
 msgid "Blocked"
@@ -4198,3 +4191,23 @@ msgstr "Надіслано багато звернень. Спробуй зно�
 #, elixir-autogen, elixir-format
 msgid "Another name"
 msgstr "Інше ім'я"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Owner"
+msgstr "Власник"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color"
+msgstr "Колір"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "No color"
+msgstr "Без кольору"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color %{number}"
+msgstr "Колір %{number}"

@@ -12,7 +12,6 @@ defmodule GamendWeb.UserLive.Login do
       <div class="mx-auto max-w-narrow space-y-4">
         <div class="text-center">
           <div data-heading-fit class="flex items-center justify-center gap-3">
-            <.back_link href={home_path()} />
             <.page_title icon="hero-arrow-right-on-rectangle-solid">{gettext("Log in")}</.page_title>
           </div>
           <p class="text-sm text-muted mt-2">

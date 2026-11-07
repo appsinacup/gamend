@@ -60,7 +60,6 @@ defmodule GamendWeb.StoreLive.Index do
         <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <div data-heading-fit class="flex items-center gap-3">
-              <.back_link href={home_path()} />
               <.page_title
                 icon={GamendWeb.HostLayouts.nav_icon("/store", "hero-shopping-bag-solid")}
                 tone={GamendWeb.HostLayouts.nav_tone("/store")}

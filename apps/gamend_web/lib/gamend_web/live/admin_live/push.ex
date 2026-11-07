@@ -28,7 +28,7 @@ defmodule GamendWeb.AdminLive.Push do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">← Back to Admin</.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <div class="stats shadow bg-base-200 w-full">
           <div class="stat">
@@ -159,7 +159,12 @@ defmodule GamendWeb.AdminLive.Push do
                   </thead>
                   <tbody>
                     <tr :for={t <- @tokens} id={"admin-push-token-" <> to_string(t.id)}>
-                      <td class="text-sm" title={t.user_id}>{user_display(t.user)}</td>
+                      <td class="text-sm" title={t.user_id}>
+                        <div class="flex items-center gap-2">
+                          <.user_avatar user={t.user} class="size-6 shrink-0" />
+                          {user_display(t.user)}
+                        </div>
+                      </td>
                       <td class="text-sm">{t.platform}</td>
                       <td class="text-sm">{t.provider}</td>
                       <td class="text-sm font-mono max-w-xs truncate" title={t.device_id}>

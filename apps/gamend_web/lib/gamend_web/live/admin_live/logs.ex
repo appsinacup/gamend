@@ -38,7 +38,7 @@ defmodule GamendWeb.AdminLive.Logs do
       <div class="space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div class="flex items-center gap-3">
-            <.link navigate={~p"/admin"} class="btn btn-surface btn-sm">&larr; Back to Admin</.link>
+            <.back_link navigate={~p"/admin"} />
             <h1 class="text-xl font-bold">Logs</h1>
           </div>
 
@@ -385,7 +385,10 @@ defmodule GamendWeb.AdminLive.Logs do
                 </span>
               </td>
               <td class="text-xs">
-                <span :if={session.user}>{session.user.username || short(session.user_id)}</span>
+                <span :if={session.user} class="flex items-center gap-2">
+                  <.user_avatar user={session.user} class="size-6 shrink-0" />
+                  {session.user.username || short(session.user_id)}
+                </span>
                 <span :if={is_nil(session.user_id)} class="opacity-60 italic">anonymous</span>
               </td>
               <td class="text-xs whitespace-nowrap">

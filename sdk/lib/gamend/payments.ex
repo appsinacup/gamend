@@ -529,6 +529,8 @@ defmodule Gamend.Payments do
     
     Options: `:expires_at` (a `DateTime`, `nil` for no end), `:metadata` (a map
     merged into the row's, e.g. `%{"source" => "trial", "granted_by" => id}`).
+    A `"title"` in it names the grant on the owner's Payments tab, which has
+    no product's title to show.
     
   """
   @spec grant_entitlement(Ecto.UUID.t(), String.t(), keyword()) ::
@@ -933,6 +935,30 @@ defmodule Gamend.Payments do
 
       _ ->
         raise "Gamend.Payments.resume_stripe_subscription/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    End a granted entitlement now: a trial cut short, a reward taken back.
+    The one `(user, key)` row turns `revoked` at once, its `metadata` merged
+    with `:metadata` (e.g. `%{"revocation_reason" => "upgraded"}`); the row
+    stays, so `entitlement_ever?/2` still answers true. A grant afterwards
+    makes it active again.
+    
+    A row a purchase made answers `{:error, :purchased}`: its purchase ends it
+    (`revoke_purchase/2`), or the provider's next sync would bring it back.
+    No row answers `{:error, :entitlement_not_found}`.
+    
+  """
+  @spec revoke_entitlement(Ecto.UUID.t(), String.t(), keyword()) ::
+          {:ok, Gamend.Payments.Entitlement.t()} | {:error, term()}
+  def revoke_entitlement(_user_id, _key, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok, nil}
+
+      _ ->
+        raise "Gamend.Payments.revoke_entitlement/3 is a stub - only available at runtime on Gamend"
     end
   end
 

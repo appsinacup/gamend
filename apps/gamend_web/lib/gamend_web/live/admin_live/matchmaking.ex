@@ -132,7 +132,7 @@ defmodule GamendWeb.AdminLive.Matchmaking do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <.link navigate={~p"/admin"} class="btn btn-surface mb-4">← Back to Admin</.link>
+      <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
       <div class="grid gap-4 sm:grid-cols-3 mb-6">
         <div class="card bg-base-200">
@@ -277,7 +277,14 @@ defmodule GamendWeb.AdminLive.Matchmaking do
               </thead>
               <tbody>
                 <tr :for={ticket <- @tickets} id={"ticket-#{ticket.id}"}>
-                  <td>{user_label(ticket)}</td>
+                  <td>
+                    <.player_card
+                      user={ticket.user}
+                      name={to_string(user_label(ticket))}
+                      subtitle={nil}
+                      size="sm"
+                    />
+                  </td>
                   <td>
                     <span class={["badge badge-sm", status_class(ticket.status)]}>
                       {ticket.status}

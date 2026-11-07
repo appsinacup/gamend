@@ -169,10 +169,31 @@ defmodule Gamend.GroupsTest do
       assert %{id: ^id} = Groups.get_group_by_full_slug(owner.username <> "/renamed")
     end
 
-    test "gives a group none was given one of the site's icons at random", %{owner: owner} do
+    test "gives a group none was given one of the site's icons, in one of its colours, at random",
+         %{owner: owner} do
       {:ok, group} = Groups.create_group(owner.id, %{"title" => "Iconless"})
-      assert Gamend.Icons.name(group.icon_url) in Gamend.Icons.names()
-      assert group.icon_url == Gamend.Icons.path(Gamend.Icons.name(group.icon_url))
+      name = Gamend.Icons.name(group.icon_url)
+      color = Gamend.Icons.color(group.icon_url)
+      assert name in Gamend.Icons.picks()
+      assert color in Gamend.Icons.colors()
+      assert group.icon_url == Gamend.Icons.path(name, color)
+    end
+
+    test "an icon's colour picked beside it lands on its URL", %{owner: owner} do
+      {:ok, group} =
+        Groups.create_group(owner.id, %{
+          "title" => "Painted",
+          "icon_url" => "/icons/rocket-launch.svg",
+          "icon_url_color" => "warning"
+        })
+
+      assert group.icon_url == "/icons/rocket-launch.svg?color=warning"
+
+      assert {:ok, %{icon_url: "/icons/trophy.svg"}} =
+               Groups.update_group(owner.id, group.id, %{
+                 "icon_url" => "/icons/trophy.svg",
+                 "icon_url_color" => ""
+               })
     end
 
     test "an admin changes the icon to one of the site's, and to nothing else", %{owner: owner} do

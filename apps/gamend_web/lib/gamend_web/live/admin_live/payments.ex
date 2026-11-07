@@ -36,7 +36,7 @@ defmodule GamendWeb.AdminLive.Payments do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">&larr; Back to Admin</.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -278,7 +278,12 @@ defmodule GamendWeb.AdminLive.Payments do
                   <tr :for={p <- @purchases} id={"admin-purchase-#{p.id}"}>
                     <td class="font-mono text-xs">{p.id}</td>
                     <td class="font-mono text-xs break-all">{p.order_id}</td>
-                    <td class="text-xs" title={p.user_id}>{user_display(p.user)}</td>
+                    <td class="text-xs" title={p.user_id}>
+                      <div class="flex items-center gap-2">
+                        <.user_avatar user={p.user} class="size-6 shrink-0" />
+                        {user_display(p.user)}
+                      </div>
+                    </td>
                     <td>
                       <span class={["badge", provider_badge_class(p.provider)]}>{p.provider}</span>
                     </td>
@@ -345,7 +350,12 @@ defmodule GamendWeb.AdminLive.Payments do
                 <tbody>
                   <tr :for={e <- @entitlements} id={"admin-entitlement-#{e.id}"}>
                     <td class="font-mono text-xs">{e.id}</td>
-                    <td class="text-xs" title={e.user_id}>{user_display(e.user)}</td>
+                    <td class="text-xs" title={e.user_id}>
+                      <div class="flex items-center gap-2">
+                        <.user_avatar user={e.user} class="size-6 shrink-0" />
+                        {user_display(e.user)}
+                      </div>
+                    </td>
                     <td class="font-mono text-xs break-all">{e.key}</td>
                     <td>
                       <span class={["badge", entitlement_badge_class(e.status)]}>{e.status}</span>

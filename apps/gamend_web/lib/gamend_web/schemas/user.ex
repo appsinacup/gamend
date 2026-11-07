@@ -56,7 +56,11 @@ defmodule GamendWeb.Schemas.CurrentUser do
     properties: %{
       id: %Schema{type: :string, format: :uuid},
       email: %Schema{type: :string, description: "Empty for accounts without one"},
-      profile_url: %Schema{type: :string, description: "Avatar URL, or empty"},
+      profile_url: %Schema{
+        type: :string,
+        description:
+          "The avatar: an image we host, or one of the server's icons (`/icons/<name>.svg?color=<color>`), one the user's id gives them when they set none"
+      },
       username: %Schema{type: :string, description: "Unique handle"},
       display_name: %Schema{type: :string, description: "Chosen name"},
       metadata: %Schema{type: :object},

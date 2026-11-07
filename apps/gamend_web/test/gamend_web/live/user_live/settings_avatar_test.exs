@@ -104,4 +104,31 @@ defmodule GamendWeb.UserLive.SettingsAvatarTest do
 
     assert Accounts.get_user(user.id).profile_url == "/icons/rocket-launch.svg"
   end
+
+  test "the icon picked in a colour is the avatar in it; with none picked, the id's is lit", %{
+    conn: conn
+  } do
+    user = user_fixture()
+    {:ok, lv, _html} = conn |> log_in_user(user) |> live(~p"/users/settings")
+
+    # Never picked: the icon their id gives them is the one lit.
+    own = Gamend.Icons.for_id(user.id)
+    own_name = Gamend.Icons.name(own)
+    assert has_element?(lv, ~s(#avatar_icon_form input[value="/icons/#{own_name}.svg"][checked]))
+
+    lv
+    |> form("#avatar_icon_form",
+      avatar: %{profile_url: "/icons/rocket-launch.svg", profile_url_color: "error"}
+    )
+    |> render_change()
+
+    assert Accounts.get_user(user.id).profile_url == "/icons/rocket-launch.svg?color=error"
+    assert has_element?(lv, ~s(#avatar_icon_form input[value="error"][checked]))
+
+    lv
+    |> form("#avatar_icon_form", avatar: %{profile_url_color: ""})
+    |> render_change()
+
+    assert Accounts.get_user(user.id).profile_url == "/icons/rocket-launch.svg"
+  end
 end

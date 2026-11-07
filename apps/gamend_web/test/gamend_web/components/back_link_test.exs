@@ -1,8 +1,9 @@
 defmodule GamendWeb.Components.BackLinkTest do
   @moduledoc """
-  Every page under home opens its title row with `<.back_link>` (2026-10-09):
-  one arrow, one RTL mirror, the word hidden on a phone but still the link's
-  name. The pages one step under home point it at `home_path/0`.
+  Every page under another page opens its title row with `<.back_link>`
+  (2026-10-09): one arrow, one RTL mirror, the word hidden on a phone but
+  still the link's name. A page one step under home has none: the navbar,
+  the footer or the account menu opened it and is on screen (2026-11-07).
   """
   use GamendWeb.ConnCase, async: true
 
@@ -49,17 +50,17 @@ defmodule GamendWeb.Components.BackLinkTest do
     assert html =~ "hero-arrow-left-solid"
   end
 
-  # The pages one step under home: Back goes home.
+  # The pages one step under home: no Back.
   for path <- ~w(/leaderboards /quests /roadmap /changelog /users/log_in /users/register) do
-    test "#{path} has Back to home", %{conn: conn} do
-      {:ok, _view, html} = live(conn, unquote(path))
-      assert html =~ ~r/<a[^>]*href="\/"[^>]*title="Back"/
+    test "#{path} has no Back", %{conn: conn} do
+      {:ok, view, _html} = live(conn, unquote(path))
+      refute has_element?(view, "a[title='Back']")
     end
   end
 
-  test "the legal pages have Back to home", %{conn: conn} do
+  test "the legal pages have no Back", %{conn: conn} do
     for path <- ~w(/privacy /terms /data_deletion) do
-      assert conn |> get(path) |> html_response(200) =~ ~r/<a[^>]*href="\/"[^>]*title="Back"/
+      refute conn |> get(path) |> html_response(200) =~ ~s(title="Back")
     end
   end
 end

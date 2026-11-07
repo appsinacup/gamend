@@ -37,7 +37,7 @@ defmodule GamendWeb.AdminLive.GitHub do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-4">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">&larr; Back to Admin</.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <div class="card bg-base-200 shadow">
           <div class="card-body">
@@ -82,7 +82,12 @@ defmodule GamendWeb.AdminLive.GitHub do
                       <span class="ml-1 text-xs text-muted">{row.installation.account_type}</span>
                     </td>
                     <td class="font-mono text-xs">{row.installation.installation_id}</td>
-                    <td class="text-xs">{connected_by(row.user)}</td>
+                    <td class="text-xs">
+                      <div class="flex items-center gap-2">
+                        <.user_avatar :if={row.user} user={row.user} class="size-6 shrink-0" />
+                        {connected_by(row.user)}
+                      </div>
+                    </td>
                     <td class="text-xs">{row.installation.repository_selection || "—"}</td>
                     <td :if={@counts_uses?}>
                       <span class={[

@@ -1736,13 +1736,6 @@ msgstr "Thời gian"
 msgid "Avatar uploads are not available."
 msgstr "Không thể tải lên ảnh đại diện."
 
-#: lib/gamend_web/live/admin_live/chat_reports.ex:344
-#: lib/gamend_web/live/admin_live/reports.ex:210
-#: lib/gamend_web/live/admin_live/results.ex:296
-#, elixir-autogen, elixir-format
-msgid "Back to Admin"
-msgstr "Quay lại Quản trị"
-
 #: lib/gamend_web/live/admin_live/chat_filter.ex:346
 #, elixir-autogen, elixir-format
 msgid "Blocked"
@@ -4098,3 +4091,23 @@ msgstr "Bạn đã gửi nhiều báo cáo. Hãy thử lại sau một giờ."
 #, elixir-autogen, elixir-format
 msgid "Another name"
 msgstr "Tên khác"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Owner"
+msgstr "Chủ sở hữu"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color"
+msgstr "Màu"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "No color"
+msgstr "Không màu"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color %{number}"
+msgstr "Màu %{number}"

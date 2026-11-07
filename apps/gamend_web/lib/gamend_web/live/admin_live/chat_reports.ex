@@ -340,9 +340,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <.link navigate={~p"/admin"} class="btn btn-surface mb-4">
-        ← {gettext("Back to Admin")}
-      </.link>
+      <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
       <div class="card bg-base-200">
         <div class="card-body">
@@ -399,18 +397,32 @@ defmodule GamendWeb.AdminLive.ChatReports do
               <tbody>
                 <tr :for={report <- @reports} id={"chat-report-#{report.id}"}>
                   <td>
-                    <button
-                      phx-click="filter_user"
-                      phx-value-id={report.reported_user_id}
-                      class="link link-hover"
-                    >
-                      {user_display(report.reported_user)}
-                    </button>
-                    <div class="font-mono text-xs text-muted">
-                      {report.reported_user_id}
+                    <div class="flex items-center gap-2">
+                      <.user_avatar user={report.reported_user} class="size-6 shrink-0" />
+                      <div>
+                        <button
+                          phx-click="filter_user"
+                          phx-value-id={report.reported_user_id}
+                          class="link link-hover"
+                        >
+                          {user_display(report.reported_user)}
+                        </button>
+                        <div class="font-mono text-xs text-muted">
+                          {report.reported_user_id}
+                        </div>
+                      </div>
                     </div>
                   </td>
-                  <td>{reporter_name(report)}</td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <.user_avatar
+                        :if={report.reporter_id}
+                        user={report.reporter}
+                        class="size-6 shrink-0"
+                      />
+                      {reporter_name(report)}
+                    </div>
+                  </td>
                   <td class="max-w-xs truncate" title={report.content_snapshot}>
                     {report.content_snapshot}
                   </td>
@@ -419,8 +431,13 @@ defmodule GamendWeb.AdminLive.ChatReports do
                     <span class={["badge badge-sm", status_class(report.status)]}>
                       {report.status}
                     </span>
-                    <div :if={report.resolved_by_user} class="text-xs text-muted">
-                      {gettext("by")} {user_display(report.resolved_by_user)}
+                    <div
+                      :if={report.resolved_by_user}
+                      class="flex items-center gap-1 text-xs text-muted"
+                    >
+                      {gettext("by")}
+                      <.user_avatar user={report.resolved_by_user} class="size-4 shrink-0" />
+                      {user_display(report.resolved_by_user)}
                     </div>
                   </td>
                   <td class="text-xs whitespace-nowrap">
@@ -501,7 +518,8 @@ defmodule GamendWeb.AdminLive.ChatReports do
       <div :if={@form} class="modal modal-open">
         <div class="modal-box">
           <h3 class="font-bold text-lg">{action_title(@action)}</h3>
-          <p class="text-sm text-muted mt-1">
+          <p class="flex items-center gap-2 text-sm text-muted mt-1">
+            <.user_avatar user={@action_report.reported_user} class="size-6 shrink-0" />
             {user_display(@action_report.reported_user)}
           </p>
 

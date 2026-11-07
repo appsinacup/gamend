@@ -13,6 +13,21 @@ defmodule Gamend.Icons do
   `profile_url`, a leaderboard's or a quest's `icon_url`). The website serves
   it and draws it inline; a client fetches it against the server's address
   like an uploaded image.
+
+  A picked icon may carry one of the site's colours, `path/2`
+  (`/icons/<name>.svg?color=<color>`): `colors/0`, the theme's own by default
+  (`primary info success warning error`), each a CSS colour the website draws
+  the icon in (`color_css/1`). A client reads the name from the URL's `color`
+  and tints it its own way; the SVG served is the same. A host picks its own
+  colours in Elixir:
+
+      config :gamend_core, Gamend.Icons,
+        colors: ["primary", "success", {"rose", "#e11d48"}]
+
+  a bare name being the theme's (`var(--color-<name>)`), a pair any CSS colour.
+
+  Every user has an icon: one they never picked is theirs by their id, an
+  icon and a colour (`for_id/1`), the same everywhere they are shown.
   """
 
   # heroicons is the host's dependency, not this app's (a GitHub-only dep,
@@ -72,18 +87,116 @@ defmodule Gamend.Icons do
   @spec name?(term()) :: boolean()
   def name?(name), do: is_binary(name) and MapSet.member?(@name_set, name)
 
-  @doc "The URL of an icon by name: `/icons/<name>.svg`."
-  @spec path(String.t()) :: String.t()
-  def path(name) when is_binary(name), do: "/icons/" <> name <> ".svg"
+  @doc "The URL of an icon by name: `/icons/<name>.svg`, with `color` when one of `colors/0`."
+  @spec path(String.t(), String.t() | nil) :: String.t()
+  def path(name, color \\ nil) when is_binary(name) do
+    if color?(color),
+      do: "/icons/" <> name <> ".svg?color=" <> color,
+      else: "/icons/" <> name <> ".svg"
+  end
 
-  @doc "The name of the icon a URL is (`path/1`), or nil (none, an upload)."
+  @doc """
+  The name of the icon a URL is (`path/1`), or nil (none, an upload). A colour
+  on it (`?color=`) is no part of the name, and one the site no longer has
+  keeps the icon (drawn in none).
+  """
   @spec name(String.t() | nil) :: String.t() | nil
-  def name("/icons/" <> file) do
-    name = String.replace_suffix(file, ".svg", "")
-    if name?(name), do: name
+  def name("/icons/" <> rest) do
+    with {file, query} <- split_query(rest),
+         true <- query_ok?(query),
+         name = String.replace_suffix(file, ".svg", ""),
+         true <- name?(name) do
+      name
+    else
+      _ -> nil
+    end
   end
 
   def name(_url), do: nil
+
+  @doc "The colour of an icon's URL (`path/2`), one of `colors/0`, or nil."
+  @spec color(String.t() | nil) :: String.t() | nil
+  def color("/icons/" <> rest) do
+    with {_file, "color=" <> color} <- split_query(rest),
+         true <- color?(color) do
+      color
+    else
+      _ -> nil
+    end
+  end
+
+  def color(_url), do: nil
+
+  # `<file>?<query>`: the query, when there is one, `color=<name>` and nothing
+  # else, so a stored icon is never an arbitrary URL.
+  defp split_query(rest) do
+    case String.split(rest, "?", parts: 2) do
+      [file] -> {file, nil}
+      [file, query] -> {file, query}
+    end
+  end
+
+  defp query_ok?(nil), do: true
+  defp query_ok?("color=" <> color), do: Regex.match?(~r/\A[a-z0-9-]{1,32}\z/, color)
+  defp query_ok?(_query), do: false
+
+  @default_colors ~w(primary info success warning error)
+
+  @doc """
+  The colours an icon is drawn in, by name, in order: the host's
+  (`config :gamend_core, Gamend.Icons, colors: [...]`), else the theme's
+  `primary info success warning error`.
+  """
+  @spec colors() :: [String.t()]
+  def colors, do: Enum.map(palette(), &elem(&1, 0))
+
+  @doc "Whether `color` is one of `colors/0`."
+  @spec color?(term()) :: boolean()
+  def color?(color) when is_binary(color), do: List.keymember?(palette(), color, 0)
+  def color?(_color), do: false
+
+  @doc """
+  The CSS colour a colour is drawn in: a theme's own name its
+  `var(--color-<name>)`, a pair's what it gives. Nil for none of `colors/0`.
+  """
+  @spec color_css(String.t() | nil) :: String.t() | nil
+  def color_css(color) do
+    case List.keyfind(palette(), color, 0) do
+      {_color, css} -> css
+      nil -> nil
+    end
+  end
+
+  defp palette do
+    :gamend_core
+    |> Application.get_env(__MODULE__, [])
+    |> Keyword.get(:colors, @default_colors)
+    |> Enum.flat_map(fn
+      name when is_binary(name) -> [{name, "var(--color-" <> name <> ")"}]
+      name when is_atom(name) -> [{Atom.to_string(name), "var(--color-#{name})"}]
+      {name, css} when is_binary(css) -> [{to_string(name), css}]
+      _other -> []
+    end)
+  end
+
+  @doc """
+  `params` with the colour picked beside an icon (`"<key>_color"`, what
+  `<.icon_picker>` sends) put on the icon's URL at `key` (`path/2`), the
+  colour's own key gone. An upload's URL stays as it is: a colour is only an
+  icon's.
+  """
+  @spec put_color(map(), String.t()) :: map()
+  def put_color(params, key) when is_map(params) and is_binary(key) do
+    color_key = key <> "_color"
+    {color, params} = Map.pop(params, color_key)
+
+    case name(params[key]) do
+      nil -> params
+      name -> Map.put(params, key, path(name, color || color(params[key])))
+    end
+  end
+
+  def put_color(params, _key), do: params
 
   @doc "One of `picks/0` at random, nil when there are none."
   @spec random() :: String.t() | nil
@@ -91,5 +204,40 @@ defmodule Gamend.Icons do
     def random, do: nil
   else
     def random, do: Enum.random(@picks)
+  end
+
+  @doc "The URL of an icon at random in a colour at random (`path/2`), nil when there are none."
+  @spec random_path() :: String.t() | nil
+  def random_path do
+    if name = random(), do: path(name, random_color())
+  end
+
+  defp random_color do
+    case colors() do
+      [] -> nil
+      colors -> Enum.random(colors)
+    end
+  end
+
+  @doc """
+  The icon a user who picked none has, by their `id`: one of `picks/0` in one
+  of `colors/0`, the same for that id every time, so it is theirs wherever they
+  are shown and in what every API answers. Nil when there are no icons.
+  """
+  @spec for_id(String.t()) :: String.t() | nil
+  if @picks == [] do
+    def for_id(_id), do: nil
+  else
+    def for_id(id) when is_binary(id) do
+      name = Enum.at(@picks, :erlang.phash2(id, length(@picks)))
+
+      color =
+        case colors() do
+          [] -> nil
+          colors -> Enum.at(colors, :erlang.phash2({id, :color}, length(colors)))
+        end
+
+      path(name, color)
+    end
   end
 end

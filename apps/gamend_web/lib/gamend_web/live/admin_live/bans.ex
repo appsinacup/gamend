@@ -154,7 +154,7 @@ defmodule GamendWeb.AdminLive.Bans do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <.link navigate={~p"/admin"} class="btn btn-surface mb-4">← Back to Admin</.link>
+      <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
       <div class="card bg-base-200">
         <div class="card-body">
@@ -259,7 +259,11 @@ defmodule GamendWeb.AdminLive.Bans do
                 <tr :for={ban <- @bans} id={"ban-#{ban.id}"}>
                   <td>
                     <%= if ban.kind in [:account, :chat] do %>
-                      <span class="badge badge-sm">{ban.kind}</span> {user_display(ban.user)}
+                      <div class="flex items-center gap-2">
+                        <span class="badge badge-sm">{ban.kind}</span>
+                        <.user_avatar user={ban.user} class="size-6 shrink-0" />
+                        {user_display(ban.user)}
+                      </div>
                       <div class="font-mono text-xs text-muted">{ban.subject}</div>
                       <div :if={ban.kind == :chat} class="text-xs text-muted">
                         {ban.scope}
@@ -297,7 +301,14 @@ defmodule GamendWeb.AdminLive.Bans do
                   </td>
                   <td class="text-xs">
                     <.timestamp at={ban.inserted_at} />
-                    <div class="text-muted">{placed_by(ban)}</div>
+                    <div class="flex items-center gap-1 text-muted">
+                      <.user_avatar
+                        :if={match?(%Gamend.Accounts.User{}, ban.banned_by_user)}
+                        user={ban.banned_by_user}
+                        class="size-4 shrink-0"
+                      />
+                      {placed_by(ban)}
+                    </div>
                   </td>
                   <td class="text-right">
                     <button

@@ -45,7 +45,7 @@ defmodule GamendWeb.AdminLive.Parties do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">&larr; Back to Admin</.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <div class="card bg-base-200">
           <div class="card-body">
@@ -186,12 +186,17 @@ defmodule GamendWeb.AdminLive.Parties do
                         </button>
                       </td>
                       <td class="text-sm">
-                        <span class="font-mono">{p.leader_id}</span>
-                        <%= if p.leader do %>
-                          <span class="text-muted ml-1">
-                            ({Gamend.Accounts.display_label(p.leader)})
-                          </span>
-                        <% end %>
+                        <div class="flex items-center gap-2">
+                          <.user_avatar :if={p.leader} user={p.leader} class="size-6 shrink-0" />
+                          <div>
+                            <span class="font-mono">{p.leader_id}</span>
+                            <%= if p.leader do %>
+                              <span class="text-muted ml-1">
+                                ({Gamend.Accounts.display_label(p.leader)})
+                              </span>
+                            <% end %>
+                          </div>
+                        </div>
                       </td>
                       <td class="text-sm">
                         {Parties.count_party_members(p.id)} / {p.max_size}
@@ -333,7 +338,14 @@ defmodule GamendWeb.AdminLive.Parties do
               <tbody>
                 <tr :for={m <- @members} id={"party-member-" <> to_string(m.id)}>
                   <td class="font-mono text-sm">{m.id}</td>
-                  <td class="text-sm">{Gamend.Accounts.display_label(m)}</td>
+                  <td class="text-sm">
+                    <.player_card
+                      user={m}
+                      name={Gamend.Accounts.display_label(m)}
+                      subtitle={nil}
+                      size="sm"
+                    />
+                  </td>
                   <td class="text-sm">
                     <%= if m.id == @selected_party.leader_id do %>
                       <span class="badge badge-primary badge-sm">Leader</span>

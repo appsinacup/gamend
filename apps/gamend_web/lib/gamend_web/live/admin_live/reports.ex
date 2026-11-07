@@ -214,9 +214,7 @@ defmodule GamendWeb.AdminLive.Reports do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <.link navigate={~p"/admin"} class="btn btn-surface mb-4">
-        ← {gettext("Back to Admin")}
-      </.link>
+      <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
       <div class="card bg-base-200">
         <div class="card-body space-y-3">
@@ -370,7 +368,12 @@ defmodule GamendWeb.AdminLive.Reports do
               </div>
 
               <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
-                <span>
+                <span class="inline-flex items-center gap-1">
+                  <.user_avatar
+                    :if={match?(%Gamend.Accounts.User{}, report.user)}
+                    user={report.user}
+                    class="size-4 shrink-0"
+                  />
                   {user_label(report)}
                   <span :if={report.user_id} class="font-mono">{report.user_id}</span>
                 </span>
@@ -389,8 +392,10 @@ defmodule GamendWeb.AdminLive.Reports do
 
               <div :if={report.status != "open"} class="text-xs text-muted">
                 {gettext("Closed")}
-                <span :if={report.resolved_by_user}>
-                  {gettext("by")} {user_display(report.resolved_by_user)}
+                <span :if={report.resolved_by_user} class="inline-flex items-center gap-1">
+                  {gettext("by")}
+                  <.user_avatar user={report.resolved_by_user} class="size-4 shrink-0" />
+                  {user_display(report.resolved_by_user)}
                 </span>
                 <span :if={report.resolution_note}>— {report.resolution_note}</span>
               </div>

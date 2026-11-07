@@ -91,7 +91,7 @@ defmodule GamendWeb.AdminLive.Friends do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <.link navigate={~p"/admin"} class="btn btn-surface mb-4">← Back to Admin</.link>
+      <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
       <div class="card bg-base-200">
         <div class="card-body">
@@ -143,14 +143,24 @@ defmodule GamendWeb.AdminLive.Friends do
               <tbody>
                 <tr :for={friendship <- @friendships} id={"friendship-#{friendship.id}"}>
                   <td>
-                    {user_name(friendship.requester)}
-                    <div class="font-mono text-xs text-muted">
-                      {friendship.requester_id}
+                    <div class="flex items-center gap-2">
+                      <.user_avatar user={friendship.requester} class="size-6 shrink-0" />
+                      <div>
+                        {user_name(friendship.requester)}
+                        <div class="font-mono text-xs text-muted">
+                          {friendship.requester_id}
+                        </div>
+                      </div>
                     </div>
                   </td>
                   <td>
-                    {user_name(friendship.target)}
-                    <div class="font-mono text-xs text-muted">{friendship.target_id}</div>
+                    <div class="flex items-center gap-2">
+                      <.user_avatar user={friendship.target} class="size-6 shrink-0" />
+                      <div>
+                        {user_name(friendship.target)}
+                        <div class="font-mono text-xs text-muted">{friendship.target_id}</div>
+                      </div>
+                    </div>
                   </td>
                   <td>
                     <span class={["badge badge-sm", status_class(friendship.status)]}>

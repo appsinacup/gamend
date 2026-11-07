@@ -1,5 +1,5 @@
 # Opt-in override that builds the `release` target — an OTP release, ~11x
-# smaller than the default `full` target.
+# smaller than the `full` target docker-compose.yml builds.
 #
 # Everything else comes from docker-compose.yml unchanged; this file only
 # redirects the build target. Both targets share the same builder stage, so

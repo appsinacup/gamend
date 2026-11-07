@@ -359,7 +359,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <.link navigate={~p"/admin"} class="btn btn-surface mb-4">← Back to Admin</.link>
+      <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
       <div class="card bg-base-200 mb-4">
         <div class="card-body">

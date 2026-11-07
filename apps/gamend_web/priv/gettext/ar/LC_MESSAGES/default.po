@@ -1736,13 +1736,6 @@ msgstr "العمر"
 msgid "Avatar uploads are not available."
 msgstr "رفع الصور الرمزية غير متاح."
 
-#: lib/gamend_web/live/admin_live/chat_reports.ex:344
-#: lib/gamend_web/live/admin_live/reports.ex:210
-#: lib/gamend_web/live/admin_live/results.ex:296
-#, elixir-autogen, elixir-format
-msgid "Back to Admin"
-msgstr "العودة إلى لوحة المشرف"
-
 #: lib/gamend_web/live/admin_live/chat_filter.ex:346
 #, elixir-autogen, elixir-format
 msgid "Blocked"
@@ -4348,3 +4341,23 @@ msgstr "أرسلت بلاغات كثيرة. حاول مرة أخرى بعد سا
 #, elixir-autogen, elixir-format
 msgid "Another name"
 msgstr "اسم آخر"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Owner"
+msgstr "المالك"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color"
+msgstr "اللون"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "No color"
+msgstr "بلا لون"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color %{number}"
+msgstr "اللون %{number}"

@@ -52,8 +52,13 @@ defmodule Gamend.Matchmaking do
   alias Gamend.Matchmaking.Constants
   alias Gamend.Matchmaking.Ticket
   alias Gamend.Matchmaking.Worker
+  alias Gamend.ReadyChecks.Check
   alias Gamend.ReadyChecks.Participant
   alias Gamend.Repo
+
+  # How long a claimed ticket, or one whose accept just settled, may wait for
+  # its seat or its place back in the queue: a join meanwhile is refused.
+  @held_ms 60_000
 
   @doc """
   Adds a user — or their whole party — to the matchmaking queue.
@@ -169,13 +174,26 @@ defmodule Gamend.Matchmaking do
   defp ensure_none_queued(members) do
     ids = Enum.map(members, & &1.id)
 
-    # A matched ticket not seated yet is still waiting (being seated, or in
-    # an accept), unless its holder declined that accept: their answer is
-    # final, and the ticket is cancelled as the check settles (*Accept*).
-    declined =
+    # A matched ticket with no match yet is held: being seated, or in an
+    # accept still asking, or one that just settled with its holder still in
+    # (seated next, or put back in the queue). Never an old one: a seated
+    # ticket loses its `match_id` when its lobby is deleted (`nilify_all`),
+    # and a holder who declined or let it run out is free (*Accept*).
+    now = DateTime.utc_now()
+    settled_since = now |> DateTime.add(-@held_ms, :millisecond) |> DateTime.truncate(:second)
+    claimed_since = DateTime.add(now, -@held_ms, :millisecond)
+
+    asked =
       from(p in Participant,
-        where: p.ticket_id == parent_as(:ticket).id and p.state == "declined"
+        join: c in Check,
+        on: c.id == p.ready_check_id,
+        where: p.ticket_id == parent_as(:ticket).id,
+        where:
+          c.status == "pending" or
+            (c.resolved_at > ^settled_since and p.state in ["ready", "pending"])
       )
+
+    any_check = from(p in Participant, where: p.ticket_id == parent_as(:ticket).id)
 
     waiting =
       from(t in Ticket,
@@ -184,7 +202,7 @@ defmodule Gamend.Matchmaking do
         where:
           t.status == ^Constants.status_queued() or
             (t.status == ^Constants.status_matched() and is_nil(t.match_id) and
-               not exists(declined))
+               (exists(asked) or (not exists(any_check) and t.matched_at > ^claimed_since)))
       )
 
     if Repo.exists?(waiting) do
@@ -290,7 +308,7 @@ defmodule Gamend.Matchmaking do
 
   defp decline_accept(user_id) do
     case Gamend.ReadyChecks.for_user(user_id, :match) do
-      %Gamend.ReadyChecks.Check{kind: "accept", lobby_id: nil, party_id: nil} ->
+      %Check{kind: "accept", lobby_id: nil, party_id: nil} ->
         Gamend.ReadyChecks.respond(user_id, false)
 
       _ ->

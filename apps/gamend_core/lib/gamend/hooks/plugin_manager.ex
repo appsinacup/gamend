@@ -197,6 +197,22 @@ defmodule Gamend.Hooks.PluginManager do
   end
 
   @doc """
+  Loads every plugin's code from the plugins directory without starting any,
+  and registers what they declare (`Gamend.Hooks.Declarations`, their
+  settings), with no manager running: for a node that reads what the plugins
+  declare and runs none of them, `Gamend.Release.Metadata` at an image's
+  build. A plugin that fails to load is listed with its error, as `list/0`
+  does.
+  """
+  @spec load_declarations() :: [Plugin.t()]
+  def load_declarations do
+    plugins = load_plugins_from_disk(start: false) |> state_to_list()
+    Declarations.refresh(plugins)
+    register_plugin_settings(hook_modules_of(plugins))
+    plugins
+  end
+
+  @doc """
   Stops and unloads one plugin, leaving the others running. Returns `true`
   when the manager had it (loaded or failed), `false` when it did not or the
   manager is not running.
@@ -424,16 +440,7 @@ defmodule Gamend.Hooks.PluginManager do
   # Refresh the lock-free read snapshot; called after every state change.
   defp publish_snapshot(state) when is_map(state) do
     list = state_to_list(state)
-
-    hook_modules =
-      Enum.flat_map(list, fn
-        %Plugin{name: name, hooks_module: mod, status: :ok}
-        when is_atom(mod) and not is_nil(mod) ->
-          [{name, mod}]
-
-        _ ->
-          []
-      end)
+    hook_modules = hook_modules_of(list)
 
     :persistent_term.put(@snapshot_key, %{
       list: list,
@@ -448,6 +455,18 @@ defmodule Gamend.Hooks.PluginManager do
     Declarations.refresh(list)
     register_plugin_settings(hook_modules)
     state
+  end
+
+  # Each loaded plugin's hooks module, by its name.
+  defp hook_modules_of(list) do
+    Enum.flat_map(list, fn
+      %Plugin{name: name, hooks_module: mod, status: :ok}
+      when is_atom(mod) and not is_nil(mod) ->
+        [{name, mod}]
+
+      _ ->
+        []
+    end)
   end
 
   # Plugins load after config/runtime.exs has already run, so a plugin's
@@ -605,7 +624,9 @@ defmodule Gamend.Hooks.PluginManager do
     end)
   end
 
-  defp load_plugins_from_disk do
+  # `start: false` loads each plugin's code and starts none
+  # (`load_declarations/0`).
+  defp load_plugins_from_disk(opts \\ []) do
     dir = plugins_dir()
 
     with true <- File.dir?(dir),
@@ -616,7 +637,7 @@ defmodule Gamend.Hooks.PluginManager do
       |> Enum.map(&Path.basename/1)
       |> Enum.sort()
       |> Enum.reduce(%{}, fn plugin_name, acc ->
-        case load_plugin(dir, plugin_name) do
+        case load_plugin(dir, plugin_name, opts) do
           %Plugin{} = plugin -> Map.put(acc, plugin_name, plugin)
           nil -> acc
         end
@@ -628,7 +649,10 @@ defmodule Gamend.Hooks.PluginManager do
 
   @max_plugin_name_length 64
 
-  defp load_plugin(root, plugin_name) when byte_size(plugin_name) <= @max_plugin_name_length do
+  defp load_plugin(root, plugin_name, opts \\ [])
+
+  defp load_plugin(root, plugin_name, opts)
+       when byte_size(plugin_name) <= @max_plugin_name_length do
     app = String.to_atom(plugin_name)
 
     plugin_dir = Path.join(root, plugin_name)
@@ -665,7 +689,7 @@ defmodule Gamend.Hooks.PluginManager do
          {:ok, vsn} <- app_vsn(app),
          {:ok, modules} <- app_modules(app),
          {:ok, hooks_mod} <- app_hooks_module(app),
-         :ok <- safe_ensure_started(app) do
+         :ok <- if(Keyword.get(opts, :start, true), do: safe_ensure_started(app), else: :ok) do
       Logger.info(
         "plugin=#{plugin_name} loaded vsn=#{inspect(vsn)} hooks_module=#{inspect(hooks_mod)} modules=#{length(modules)}"
       )
@@ -677,7 +701,7 @@ defmodule Gamend.Hooks.PluginManager do
     end
   end
 
-  defp load_plugin(_root, plugin_name) do
+  defp load_plugin(_root, plugin_name, _opts) do
     Logger.warning("plugin=#{plugin_name} skipped: name exceeds #{@max_plugin_name_length} chars")
     nil
   end

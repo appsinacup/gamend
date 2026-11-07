@@ -9,6 +9,7 @@ defmodule Gamend.Groups.Invites do
   import Ecto.Query, warn: false
   use Nebulex.Caching, cache: Gamend.Cache
 
+  alias Gamend.Accounts.User
   alias Gamend.Friends
   alias Gamend.Groups
   alias Gamend.Groups.GroupInvite
@@ -612,8 +613,10 @@ defmodule Gamend.Groups.Invites do
       group_title: invite.group.title,
       sender_id: invite.sender_id,
       sender_name: Gamend.Accounts.display_name(invite.sender),
+      sender_profile_url: User.public_avatar_url(invite.sender) || "",
       recipient_id: invite.recipient_id,
       recipient_name: Gamend.Accounts.display_name(invite.recipient),
+      recipient_profile_url: User.public_avatar_url(invite.recipient) || "",
       status: invite.status,
       inserted_at: invite.inserted_at
     }

@@ -84,7 +84,7 @@ defmodule GamendWeb.AdminLive.Blacklist do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <.link navigate={~p"/admin"} class="btn btn-surface mb-4">← Back to Admin</.link>
+      <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
       <div class="card bg-base-200">
         <div class="card-body">
@@ -127,12 +127,22 @@ defmodule GamendWeb.AdminLive.Blacklist do
               <tbody>
                 <tr :for={block <- @blocks} id={"block-#{block.id}"}>
                   <td>
-                    {user_name(block.target)}
-                    <div class="font-mono text-xs text-muted">{block.target_id}</div>
+                    <div class="flex items-center gap-2">
+                      <.user_avatar user={block.target} class="size-6 shrink-0" />
+                      <div>
+                        {user_name(block.target)}
+                        <div class="font-mono text-xs text-muted">{block.target_id}</div>
+                      </div>
+                    </div>
                   </td>
                   <td>
-                    {user_name(block.requester)}
-                    <div class="font-mono text-xs text-muted">{block.requester_id}</div>
+                    <div class="flex items-center gap-2">
+                      <.user_avatar user={block.requester} class="size-6 shrink-0" />
+                      <div>
+                        {user_name(block.requester)}
+                        <div class="font-mono text-xs text-muted">{block.requester_id}</div>
+                      </div>
+                    </div>
                   </td>
                   <td class="text-xs">
                     <.timestamp at={block.inserted_at} format="full" />

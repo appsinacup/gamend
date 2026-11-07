@@ -153,6 +153,7 @@ defmodule GamendWeb.AdminLive.AnalyticsPeople do
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div class="flex items-center gap-2">
+                  <.user_avatar user={@user} class="size-8 shrink-0" />
                   <span class="text-xl font-bold">{name(@user)}</span>
                   <span class="badge badge-ghost">{kind(@user)}</span>
                   <span :if={@user.is_admin} class="badge badge-ghost">admin</span>

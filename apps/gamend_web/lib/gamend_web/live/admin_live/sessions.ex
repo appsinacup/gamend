@@ -14,9 +14,7 @@ defmodule GamendWeb.AdminLive.Sessions do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">
-          ← Back to Admin
-        </.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <div class="card bg-base-200">
           <div class="card-body">
@@ -68,7 +66,12 @@ defmodule GamendWeb.AdminLive.Sessions do
                         checked={MapSet.member?(@selected_ids, session.id)}
                       />
                     </td>
-                    <td class="font-mono text-sm">{session.user.email}</td>
+                    <td class="font-mono text-sm">
+                      <div class="flex items-center gap-2">
+                        <.user_avatar user={session.user} class="size-6 shrink-0" />
+                        {session.user.email}
+                      </div>
+                    </td>
                     <td>
                       <span class="badge badge-info badge-sm">{session.context}</span>
                     </td>

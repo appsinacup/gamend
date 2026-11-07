@@ -14,8 +14,9 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   and its admins pick one of the site's icons as its `icon_url` (`Gamend.Icons`).
 
   A group opens by its row, and its URL names it by its slug
-  (`?group=<owner>/<slug>`, `Gamend.Groups.full_slug/1`); its page is where
-  it is left.
+  (`Gamend.Groups.full_slug/1`): on the page of its own a path under it,
+  `/users/groups/<owner>/<slug>`, and `?group=<owner>/<slug>` on the settings
+  page; its page is where it is left.
   """
 
   use GamendWeb, :html
@@ -25,6 +26,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   alias Gamend.Friends
   alias Gamend.Groups
   alias Gamend.Groups.Group
+  alias GamendWeb.GroupIconUpload
   alias GamendWeb.GroupLabels
   alias GamendWeb.GroupLinks
   alias GamendWeb.LiveHelpers
@@ -38,7 +40,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
              group_close_detail group_toggle_edit
              group_validate_edit group_save_edit group_kick group_promote
              group_demote group_members_prev group_members_next group_invite_search
-             group_invite_user group_link_create group_link_delete)
+             group_invite_user group_link_create group_link_delete group_icon_cancel)
 
   @reloads [
     :group_created,
@@ -71,6 +73,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     socket
     |> assign(:groups_path, nil)
     |> assign(:group_types, types)
+    |> GroupIconUpload.allow(Shared.current_user(socket))
     |> assign(:group_fixed_max, Groups.fixed_max_members())
     |> assign(:group_owner, owner_name(socket))
     |> assign(:create_slug_auto, "")
@@ -210,7 +213,12 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   type="number"
                   label={gettext("Max members")}
                 />
-                <div class="md:col-span-2">
+                <div class="md:col-span-2 space-y-3">
+                  <GroupIconUpload.input
+                    :if={@group_icon_upload?}
+                    uploads={@uploads}
+                    icon_url={@create_group_form[:icon_url].value}
+                  />
                   <.icon_picker field={@create_group_form[:icon_url]} label={gettext("Icon")} />
                 </div>
               </div>
@@ -254,6 +262,11 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   field={@group_edit_form[:max_members]}
                   label={gettext("Max members")}
                   type="number"
+                />
+                <GroupIconUpload.input
+                  :if={@group_icon_upload?}
+                  uploads={@uploads}
+                  icon_url={@group_edit_form[:icon_url].value}
                 />
                 <.icon_picker field={@group_edit_form[:icon_url]} label={gettext("Icon")} />
                 <div class="flex gap-2">
@@ -371,7 +384,13 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                         />
                       </td>
                       <td class="text-sm">
-                        <.player_name name={LiveHelpers.public_user_name(m.user)} />
+                        <.player_card
+                          user={m.user}
+                          name={LiveHelpers.public_user_name(m.user)}
+                          size="sm"
+                          you={m.user_id == @user.id}
+                          class="max-w-[16rem]"
+                        />
                       </td>
                       <td>
                         <span class={[
@@ -415,8 +434,6 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                             >
                               {gettext("Kick")}
                             </button>
-                          <% else %>
-                            <span class="text-xs text-muted">{gettext("You")}</span>
                           <% end %>
                         </td>
                       <% end %>
@@ -448,7 +465,12 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                 >
                   <div class="flex items-center gap-2">
                     <div class="text-sm font-medium">
-                      <.player_name name={LiveHelpers.public_user_name(req.user)} />
+                      <.player_card
+                        user={req.user}
+                        name={LiveHelpers.public_user_name(req.user)}
+                        subtitle={nil}
+                        size="sm"
+                      />
                     </div>
                     <span class="text-xs text-muted">
                       {LiveHelpers.public_user_handle(req.user)} &mdash;
@@ -585,6 +607,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           else: "bg-base-content/30"
                         )
                       ]} />
+                      <.user_avatar user={u} class="size-6 shrink-0" />
                       <div>
                         <span class="text-sm font-medium"><.player_name name={
                           LiveHelpers.public_user_name(u)
@@ -641,6 +664,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           else: "bg-base-content/30"
                         )
                       ]} />
+                      <.user_avatar user={f} class="size-6 shrink-0" />
                       <span class="text-sm"><.player_name name={LiveHelpers.public_user_name(f)} /></span>
                     </div>
                     <span
@@ -680,7 +704,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     id={"group-pending-invite-#{inv.id}"}
                     class="flex items-center justify-between gap-2 p-2 rounded-lg bg-base-200/40"
                   >
-                    <div class="text-sm">
+                    <div class="flex min-w-0 items-center gap-2 text-sm">
+                      <.user_avatar user={invite_user(inv, :recipient)} class="size-6 shrink-0" />
                       <.player_name name={inv.recipient_name} />
                       <span class="text-xs text-muted ms-1">
                         {gettext("by %{name}", name: inv.sender_name)} ·
@@ -949,8 +974,13 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       id={"group-inv-" <> to_string(inv.id)}
                     >
                       <td class="text-sm font-mono">{inv.group_title}</td>
-                      <td class="text-sm font-mono">
-                        {inv.sender_name}
+                      <td class="text-sm">
+                        <.player_card
+                          user={invite_user(inv, :sender)}
+                          name={inv.sender_name}
+                          subtitle={nil}
+                          size="sm"
+                        />
                       </td>
                       <td class="text-sm whitespace-nowrap">
                         <.timestamp at={inv.inserted_at} />
@@ -1052,8 +1082,13 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           {inv.group_title}
                         </.row_link>
                       </td>
-                      <td class="text-sm font-mono">
-                        {inv.recipient_name}
+                      <td class="text-sm">
+                        <.player_card
+                          user={invite_user(inv, :recipient)}
+                          name={inv.recipient_name}
+                          subtitle={nil}
+                          size="sm"
+                        />
                       </td>
                       <td class="text-sm whitespace-nowrap">
                         <.timestamp at={inv.inserted_at} />
@@ -1131,7 +1166,9 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
         else: group_params
 
     case Groups.create_group(user.id, group_params) do
-      {:ok, _group} ->
+      {:ok, group} ->
+        {socket, _group} = save_group_icon(socket, user, group)
+
         {:noreply,
          socket
          |> put_success_flash()
@@ -1150,6 +1187,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
          |> put_flash(:error, gettext("Failed"))
          |> assign(create_group_form: to_form(changeset, as: :group))}
     end
+  end
+
+  def handle_event("group_icon_cancel", %{"ref" => ref}, socket) do
+    {:noreply, GroupIconUpload.cancel(socket, ref)}
   end
 
   def handle_event("group_leave", %{"group_id" => gid}, socket) do
@@ -1346,6 +1387,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
     case Groups.update_group(user.id, group.id, group_params) do
       {:ok, updated} ->
+        {socket, updated} = save_group_icon(socket, user, updated)
         ref = Groups.full_slug(updated)
 
         {:noreply,
@@ -1712,10 +1754,16 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   end
 
   # The tab's own URL: the settings page's, or the page it is on its own
-  # (`GamendWeb.UserLive.Groups`, Forge's and Gamend Cloud's Groups).
+  # (`GamendWeb.UserLive.Groups`, Forge's and Gamend Cloud's Groups), where
+  # one group is a path under the list's (`GroupLinks.under/2`).
   defp groups_href(nil, query), do: ~p"/users/settings?#{[tab: "groups"] ++ query}"
-  defp groups_href(path, []), do: path
-  defp groups_href(path, query), do: path <> "?" <> URI.encode_query(query)
+
+  defp groups_href(path, query) do
+    {group, query} = Keyword.pop(query, :group)
+    path = if group, do: GroupLinks.under(path, group), else: path
+
+    if query == [], do: path, else: path <> "?" <> URI.encode_query(query)
+  end
 
   defp close_group_detail(socket) do
     socket
@@ -1844,4 +1892,21 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
       socket
     end
   end
+
+  # An image of one's own for the group's icon (`GamendWeb.GroupIconUpload`),
+  # made the icon once the form is saved, its trouble a flash.
+  defp save_group_icon(socket, user, group) do
+    case GroupIconUpload.save(socket, user, group) do
+      {socket, group, nil} -> {socket, group}
+      {socket, group, error} -> {put_flash(socket, :error, error), group}
+    end
+  end
+
+  # An invite's sender or recipient as the avatar reads one: their id and the
+  # avatar the invite was read with (`Gamend.Groups.Invites`).
+  defp invite_user(inv, :sender),
+    do: %{id: inv.sender_id, profile_url: Map.get(inv, :sender_profile_url)}
+
+  defp invite_user(inv, :recipient),
+    do: %{id: inv.recipient_id, profile_url: Map.get(inv, :recipient_profile_url)}
 end

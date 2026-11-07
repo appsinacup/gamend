@@ -604,21 +604,29 @@ defmodule Gamend.Accounts.User do
   @doc """
   The avatar URL anyone outside the server may see: `profile_url` when it is
   one we host (key `avatars/<id>/…`, an upload or an `AvatarMirror` copy) or
-  one of the site's own icons (`/icons/<name>.svg`, `Gamend.Icons`), else nil.
+  one of the site's own icons (`/icons/<name>.svg`, `Gamend.Icons`), else the
+  icon their id gives them; nil only for no user.
 
   A sign-in stores the provider's URL (Discord, Google, GitHub, Facebook,
   Steam) until `Gamend.Accounts.AvatarMirror` replaces it with our copy, and
   keeps it when the mirror fails. Shown, it would send every viewer's IP to the
   provider, and a Discord URL carries the player's Discord id. So every page,
   payload and API answer reads the avatar through here, and an avatar not yet
-  mirrored is no avatar.
+  mirrored is no avatar of theirs: in its place, as for one who never set any,
+  the icon their id gives them (`Gamend.Icons.for_id/1`), so everyone, a guest
+  too, is shown with one.
   """
   @spec public_avatar_url(t() | map() | nil) :: String.t() | nil
   def public_avatar_url(%{id: id, profile_url: url}) do
-    if hosted_avatar_url?(id, url) or Gamend.Icons.name(url) != nil, do: url
+    if hosted_avatar_url?(id, url) or Gamend.Icons.name(url) != nil,
+      do: url,
+      else: id_icon(id)
   end
 
   def public_avatar_url(_), do: nil
+
+  defp id_icon(id) when is_binary(id) and id != "", do: Gamend.Icons.for_id(id)
+  defp id_icon(_id), do: nil
 
   @doc "Whether `url` is an avatar we store for user `id`: its key is `avatars/<id>/…`."
   @spec hosted_avatar_url?(term(), term()) :: boolean()

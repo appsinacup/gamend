@@ -21,7 +21,6 @@ defmodule GamendWeb.NotificationsLive do
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div data-heading-fit class="flex items-center gap-3">
-              <.back_link href={home_path()} />
               <.page_title icon="hero-bell-solid">{gettext("Notifications")}</.page_title>
             </div>
             <p class="text-muted mt-1">
@@ -91,7 +90,12 @@ defmodule GamendWeb.NotificationsLive do
                             {gettext("Chat")}
                           </span>
                         <% Ecto.assoc_loaded?(n.sender) && n.sender -> %>
-                          <.player_name name={LiveHelpers.public_user_name(n.sender)} />
+                          <.player_card
+                            user={n.sender}
+                            name={LiveHelpers.public_user_name(n.sender)}
+                            subtitle={nil}
+                            size="sm"
+                          />
                         <% true -> %>
                           <.player_name name={LiveHelpers.public_user_name(n.sender_id)} />
                       <% end %>

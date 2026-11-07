@@ -49,7 +49,7 @@ defmodule GamendWeb.AdminLive.Notifications do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">← Back to Admin</.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <div :if={@admin_notify_groups != []} id="admin-notify-settings" class="card bg-base-200">
           <div class="card-body space-y-2">
@@ -199,8 +199,18 @@ defmodule GamendWeb.AdminLive.Notifications do
                         />
                       </td>
                       <td class="font-mono text-sm">{n.id}</td>
-                      <td class="text-sm" title={n.sender_id}>{user_display(n.sender)}</td>
-                      <td class="text-sm" title={n.recipient_id}>{user_display(n.recipient)}</td>
+                      <td class="text-sm" title={n.sender_id}>
+                        <div class="flex items-center gap-2">
+                          <.user_avatar user={n.sender} class="size-6 shrink-0" />
+                          {user_display(n.sender)}
+                        </div>
+                      </td>
+                      <td class="text-sm" title={n.recipient_id}>
+                        <div class="flex items-center gap-2">
+                          <.user_avatar user={n.recipient} class="size-6 shrink-0" />
+                          {user_display(n.recipient)}
+                        </div>
+                      </td>
                       <td class="text-sm max-w-xs truncate">{n.title}</td>
                       <td class="text-sm max-w-xs truncate">{n.content || "-"}</td>
                       <td class="text-xs font-mono max-w-xs truncate">

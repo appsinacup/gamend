@@ -39,7 +39,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">← Back to Admin</.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <div class="card bg-base-200">
           <div class="card-body">
@@ -252,7 +252,13 @@ defmodule GamendWeb.AdminLive.Tournaments do
                   <tbody>
                     <tr :for={entry <- @detail.entries}>
                       <td class="text-xs">
-                        {Map.get(@detail.names, entry.leader_id, entry.leader_id)}
+                        <div class="flex items-center gap-2">
+                          <.user_avatar
+                            user={@detail.leaders[entry.leader_id]}
+                            class="size-6 shrink-0"
+                          />
+                          {Map.get(@detail.names, entry.leader_id, entry.leader_id)}
+                        </div>
                       </td>
                       <td>{entry.state}</td>
                       <td>{entry.bracket_index}</td>
@@ -591,7 +597,8 @@ defmodule GamendWeb.AdminLive.Tournaments do
           brackets: brackets,
           selected_bracket: selected_bracket,
           matches: matches,
-          names: names
+          names: names,
+          leaders: Gamend.Accounts.users_by_ids(Enum.map(entries, & &1.leader_id))
         })
     end
   end

@@ -2,7 +2,8 @@ defmodule GamendWeb.NewGroupComponent do
   @moduledoc """
   A group made without leaving the page: a dialog asking its name (a random
   one to start), its slug (made from the name until it is typed into), its
-  icon (one of the site's, `Gamend.Icons`, a random one picked), and its type when the host
+  icon (one of the site's, `Gamend.Icons`, a random one picked, in a colour,
+  or an image of one's own, `GamendWeb.GroupIconUpload`), and its type when the host
   allows more than one (`Gamend.Groups.types/0`, the first picked), and the
   group made from it (`Gamend.Groups.create_group/2`), its maker its admin. The page then hears
   `{GamendWeb.NewGroupComponent, {:created, group}}` and puts the group
@@ -21,17 +22,32 @@ defmodule GamendWeb.NewGroupComponent do
 
   alias Gamend.Groups
   alias Gamend.Groups.Group
+  alias GamendWeb.GroupIconUpload
   alias GamendWeb.GroupLabels
   alias GamendWeb.LiveHelpers
 
-  @fields ["title", "slug", "type", "icon_url"]
+  # `icon_url_color`: the colour picked beside the icon (`<.icon_picker>`),
+  # which the context puts on its URL (`Gamend.Icons.put_color/2`).
+  @fields ["title", "slug", "type", "icon_url", "icon_url_color"]
 
   @impl true
   def mount(socket) do
     {:ok,
      socket
      |> assign(open?: false, error: nil, types: Groups.types(), slug_auto: "")
+     |> assign(:group_icon_upload?, nil)
      |> assign_form(Groups.change_group(%Group{}))}
+  end
+
+  # The image upload is set up once, for the reader the page gave
+  # (`GroupIconUpload.allow/2`): `nil` until then.
+  @impl true
+  def update(assigns, socket) do
+    socket = assign(socket, assigns)
+
+    if is_nil(socket.assigns.group_icon_upload?),
+      do: {:ok, GroupIconUpload.allow(socket, socket.assigns.user)},
+      else: {:ok, socket}
   end
 
   # A random name, its slug and a random icon to start from
@@ -47,7 +63,11 @@ defmodule GamendWeb.NewGroupComponent do
      |> assign_form(changeset)}
   end
 
-  def handle_event("close", _params, socket), do: {:noreply, assign(socket, :open?, false)}
+  def handle_event("close", _params, socket),
+    do: {:noreply, socket |> GroupIconUpload.cancel_all() |> assign(:open?, false)}
+
+  def handle_event("cancel_icon", %{"ref" => ref}, socket),
+    do: {:noreply, GroupIconUpload.cancel(socket, ref)}
 
   # A new random name, what else was typed so far staying.
   def handle_event("random_name", _params, socket) do
@@ -82,7 +102,10 @@ defmodule GamendWeb.NewGroupComponent do
 
     case Groups.create_group(socket.assigns.user.id, params) do
       {:ok, group} ->
+        # A picked image is its icon now that it has an id.
+        {socket, group, error} = GroupIconUpload.save(socket, socket.assigns.user, group)
         send(self(), {__MODULE__, {:created, group}})
+        socket = if error, do: put_flash(socket, :error, error), else: socket
         {:noreply, assign(socket, :open?, false)}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -160,6 +183,14 @@ defmodule GamendWeb.NewGroupComponent do
                 {owner(@user)}/{@form[:slug].value}
               </p>
             </div>
+            <GroupIconUpload.input
+              :if={@group_icon_upload?}
+              id={"#{@id}-icon-upload"}
+              uploads={@uploads}
+              icon_url={@form[:icon_url].value}
+              cancel="cancel_icon"
+              target={@myself}
+            />
             <.icon_picker field={@form[:icon_url]} label={gettext("Icon")} />
             <div :if={length(@types) > 1}>
               <.input

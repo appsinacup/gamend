@@ -15,6 +15,9 @@ defmodule GamendWeb.UserLive.Confirmation do
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="mx-auto max-w-narrow">
         <div class="text-center">
+          <div class="flex justify-center">
+            <.user_avatar user={@user} class="size-8" />
+          </div>
           <.header class="break-all">{@user.email}</.header>
         </div>
 

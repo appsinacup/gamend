@@ -15,7 +15,11 @@ defmodule GamendWeb.Schemas.UserBrief do
       id: %Schema{type: :string, format: :uuid},
       username: %Schema{type: :string, description: "Unique handle"},
       display_name: %Schema{type: :string, description: "Chosen name"},
-      profile_url: %Schema{type: :string, description: "Avatar URL, or empty"},
+      profile_url: %Schema{
+        type: :string,
+        description:
+          "The avatar: an image we host, or one of the server's icons (`/icons/<name>.svg?color=<color>`), one the user's id gives them when they set none"
+      },
       metadata: %Schema{type: :object, description: "Public user metadata"},
       is_online: %Schema{type: :boolean},
       is_activated: %Schema{type: :boolean},

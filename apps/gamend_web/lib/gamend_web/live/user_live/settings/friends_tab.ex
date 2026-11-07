@@ -55,10 +55,12 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                 class="p-2 border rounded mt-2"
               >
                 <div class="text-sm">
-                  <.player_name name={LiveHelpers.public_user_name(req.requester || req.requester_id)} />
-                  <span class="text-xs text-muted ms-2">
-                    {LiveHelpers.public_user_handle(req.requester)}
-                  </span>
+                  <.player_card
+                    user={req.requester}
+                    name={LiveHelpers.public_user_name(req.requester || req.requester_id)}
+                    subtitle={LiveHelpers.public_user_handle(req.requester)}
+                    size="sm"
+                  />
                 </div>
                 <div class="flex gap-2 mt-2">
                   <button
@@ -102,10 +104,12 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                 class="p-2 border rounded mt-2"
               >
                 <div class="text-sm">
-                  <.player_name name={LiveHelpers.public_user_name(req.target || req.target_id)} />
-                  <span class="text-xs text-muted ms-2">
-                    {LiveHelpers.public_user_handle(req.target)}
-                  </span>
+                  <.player_card
+                    user={req.target}
+                    name={LiveHelpers.public_user_name(req.target || req.target_id)}
+                    subtitle={LiveHelpers.public_user_handle(req.target)}
+                    size="sm"
+                  />
                 </div>
                 <div class="flex gap-2 mt-2">
                   <button phx-click="cancel_friend" phx-value-id={req.id} class="btn btn-sm btn-error">
@@ -142,10 +146,12 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                       ]}
                       title={if(u.is_online, do: gettext("Online"), else: gettext("Offline"))}
                     />
-                    <.player_name name={LiveHelpers.public_user_name(u)} />
-                    <span class="text-xs text-muted">
-                      {LiveHelpers.public_user_handle(u)}
-                    </span>
+                    <.player_card
+                      user={u}
+                      name={LiveHelpers.public_user_name(u)}
+                      subtitle={LiveHelpers.public_user_handle(u)}
+                      size="sm"
+                    />
                   </div>
                   <div class="flex gap-1">
                     <button
@@ -183,10 +189,12 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                 class="p-2 border rounded mt-2 flex items-center justify-between"
               >
                 <div class="text-sm">
-                  <.player_name name={LiveHelpers.public_user_name(b.requester || b.requester_id)} />
-                  <span class="text-xs text-muted ms-2">
-                    {LiveHelpers.public_user_handle(b.requester)}
-                  </span>
+                  <.player_card
+                    user={b.requester}
+                    name={LiveHelpers.public_user_name(b.requester || b.requester_id)}
+                    subtitle={LiveHelpers.public_user_handle(b.requester)}
+                    size="sm"
+                  />
                 </div>
                 <div>
                   <button
@@ -235,11 +243,13 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
             <div id="search-results" phx-update="stream" class="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div :for={{dom_id, s} <- @streams.search_results} id={dom_id}>
                 <div class="p-2 border rounded bg-base-100 flex items-center justify-between">
-                  <div class="text-sm">
-                    <.player_name name={LiveHelpers.public_user_name(s)} />
-                    <span class="text-xs text-muted ms-2">
-                      {LiveHelpers.public_user_handle(s)}
-                    </span>
+                  <div class="text-sm min-w-0">
+                    <.player_card
+                      user={s}
+                      name={LiveHelpers.public_user_name(s)}
+                      subtitle={LiveHelpers.public_user_handle(s)}
+                      size="sm"
+                    />
                   </div>
                   <div :if={s.id != @current_scope.user_id}>
                     <button

@@ -27,7 +27,7 @@ defmodule GamendWeb.AdminLive.Geo do
         <%!-- Header --%>
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div class="flex items-center gap-3">
-            <.link navigate={~p"/admin"} class="btn btn-surface btn-sm">&larr; Back to Admin</.link>
+            <.back_link navigate={~p"/admin"} />
             <h1 class="text-xl font-bold">Geo Traffic</h1>
           </div>
 

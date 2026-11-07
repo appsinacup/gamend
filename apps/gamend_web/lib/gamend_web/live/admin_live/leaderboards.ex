@@ -36,7 +36,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">← Back to Admin</.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <div class="card bg-base-200">
           <div class="card-body">
@@ -361,11 +361,14 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                     </td>
                     <td class="font-mono text-sm">{record.key}</td>
                     <td class="text-sm">
-                      {cond do
-                        record.label -> record.label
-                        record.user && record.user.display_name -> record.user.display_name
-                        true -> "-"
-                      end}
+                      <div class="flex items-center gap-2">
+                        <.user_avatar user={record.user} class="size-6 shrink-0" />
+                        {cond do
+                          record.label -> record.label
+                          record.user && record.user.display_name -> record.user.display_name
+                          true -> "-"
+                        end}
+                      </div>
                     </td>
                     <td class="font-mono">{record.score}</td>
                     <td class="text-sm">

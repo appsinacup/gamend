@@ -418,7 +418,6 @@ defmodule GamendWeb.GroupsLive do
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
         <div class="flex items-center gap-3">
-          <.back_link href={home_path()} />
           <.page_title
             icon={GamendWeb.HostLayouts.nav_icon("/groups", "hero-user-group-solid")}
             tone={GamendWeb.HostLayouts.nav_tone("/groups")}
@@ -461,7 +460,7 @@ defmodule GamendWeb.GroupsLive do
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
         <%!-- One title: a group's own (its icon and name), else the list's.
-              Back: from a group to the list, from the list home. --%>
+              Back: from a group to the list; the list has none. --%>
         <div class="flex items-center gap-3">
           <.back_link
             :if={@selected_group}
@@ -472,7 +471,6 @@ defmodule GamendWeb.GroupsLive do
               )
             }
           />
-          <.back_link :if={!@selected_group} href={home_path()} />
           <.page_title :if={@selected_group} class="flex min-w-0 items-center gap-3">
             <.entity_icon
               icon_url={@selected_group.icon_url}

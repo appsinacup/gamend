@@ -1736,13 +1736,6 @@ msgstr "경과 시간"
 msgid "Avatar uploads are not available."
 msgstr "아바타 업로드를 사용할 수 없습니다."
 
-#: lib/gamend_web/live/admin_live/chat_reports.ex:344
-#: lib/gamend_web/live/admin_live/reports.ex:210
-#: lib/gamend_web/live/admin_live/results.ex:296
-#, elixir-autogen, elixir-format
-msgid "Back to Admin"
-msgstr "관리자로 돌아가기"
-
 #: lib/gamend_web/live/admin_live/chat_filter.ex:346
 #, elixir-autogen, elixir-format
 msgid "Blocked"
@@ -4098,3 +4091,23 @@ msgstr "신고를 너무 많이 보냈습니다. 1시간 후에 다시 시도하
 #, elixir-autogen, elixir-format
 msgid "Another name"
 msgstr "다른 이름"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Owner"
+msgstr "소유자"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color"
+msgstr "색상"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "No color"
+msgstr "색상 없음"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color %{number}"
+msgstr "색상 %{number}"

@@ -850,7 +850,7 @@ defmodule GamendWeb.CoreComponents do
 
   attr :back_href, :string,
     default: nil,
-    doc: "the same for a plain page (`home_path/0`), followed with a full load"
+    doc: "the same for a plain page, followed with a full load"
 
   attr :back_label, :string, default: nil, doc: ~s(overrides the "Back" wording)
   slot :inner_block, required: true
@@ -887,13 +887,17 @@ defmodule GamendWeb.CoreComponents do
   attr :always, :boolean, default: false, doc: "drawn even where the host turns Back off"
 
   @doc """
-  The Back button. Every page under home has one at the start of its title
-  row, its link one step up the page's own trail (the page one step under
-  home pointing at `home_path/0`). A click goes back to the page the reader
-  came from instead, when they came by a click inside the site
-  (`back_link.js`, on `data-back`): from a finished round's results, Back is
-  the round, not the progress page. Arriving from elsewhere, in a new tab or
-  in another language, it follows the link.
+  The Back button. Every page under another page has one at the start of its
+  title row, its link one step up the page's own trail: a server to the
+  servers, a post to the blog, a guide to the guides, a group to the groups,
+  an admin section to `/admin`. A page one step under home (what the navbar,
+  the footer or the account menu opens: a list, the blog, the guides' index,
+  settings, sign-in) has none: the navigation on screen is its way out
+  (2026-11-07, user). A click goes back to the page the reader came from
+  instead, when they came by a click inside the site (`back_link.js`, on
+  `data-back`): from a finished round's results, Back is the round, not the
+  progress page. Arriving from elsewhere, in a new tab or in another
+  language, it follows the link.
 
   The word from `sm` up; a phone gets the arrow alone, which is the whole
   meaning, and the room goes to the heading. `sr-only`, not `hidden`, so it
@@ -903,9 +907,11 @@ defmodule GamendWeb.CoreComponents do
   Pass `navigate` for a live route and `href` for a plain page; a LiveView
   that sends `navigate` at a dead route breaks on the way out.
 
-  Pass `patch` where the parent is the same page under another query (a group
-  opened from the list): `back_link.js` walks past entries of the current
-  path, so it is not marked `data-back` and the link is followed.
+  Pass `patch` where the parent is the same page under another query:
+  `back_link.js` walks past entries of the current path, so it is not marked
+  `data-back` and the link is followed. A child with a path of its own (a
+  group at `/users/groups/<owner>/<slug>`) takes `navigate`, so Back returns
+  to the list it was opened from.
 
   A host whose navigation is always on screen (a sidebar, a tab bar) turns
   every Back off with `config :gamend_web, :back_link, false`: the button
@@ -937,9 +943,8 @@ defmodule GamendWeb.CoreComponents do
   end
 
   @doc """
-  The home page in the reader's locale (`/de`, `/` in the default one):
-  where Back goes on a page one step under it. A plain page, so pass it to
-  `back_link/1` as `href`.
+  The home page in the reader's locale (`/de`, `/` in the default one). A
+  plain page, so a link to it is an `href`.
   """
   @spec home_path() :: String.t()
   def home_path,
@@ -1303,9 +1308,16 @@ defmodule GamendWeb.CoreComponents do
     case GamendWeb.Icons.from_path(url) do
       # One of ours: inline it rather than fetching it back over HTTP, so its
       # `currentColor` follows the theme. In an <img> it would resolve to black
-      # and disappear against the dark theme.
-      {:ok, icon} -> assigns |> assign(:icon, icon) |> inline_icon()
-      :error -> uploaded_icon(assigns)
+      # and disappear against the dark theme. Picked in one of the site's
+      # colours (`Gamend.Icons.color/1`), it is drawn in that, over the class's.
+      {:ok, icon} ->
+        assigns
+        |> assign(:icon, icon)
+        |> assign(:color_css, Gamend.Icons.color_css(Gamend.Icons.color(url)))
+        |> inline_icon()
+
+      :error ->
+        uploaded_icon(assigns)
     end
   end
 
@@ -1324,9 +1336,20 @@ defmodule GamendWeb.CoreComponents do
     # for names it finds literally in source, and this one is chosen at runtime.
     # The class is interpolated into raw markup, so it has to be flattened to a
     # string first — a list would render as one run-on token.
+    style =
+      case assigns[:color_css] do
+        css when is_binary(css) ->
+          ~s| style="color: #{css |> Phoenix.HTML.html_escape() |> Phoenix.HTML.safe_to_string()}"|
+
+        _none ->
+          ""
+      end
+
     svg =
       GamendWeb.Icons.svg(icon)
-      |> String.replace("<svg ", ~s|<svg class="#{class_string(assigns.class)}" |, global: false)
+      |> String.replace("<svg ", ~s|<svg class="#{class_string(assigns.class)}"#{style} |,
+        global: false
+      )
 
     assigns = assign(assigns, :svg, svg)
 
@@ -1352,6 +1375,11 @@ defmodule GamendWeb.CoreComponents do
   (`GamendWeb.Icons.sprite_path/0`), which the browser fetches once and keeps,
   so the page carries a few bytes an icon, not its SVG.
 
+  Under it, while an icon is picked, its colour: none, or one of the site's
+  (`Gamend.Icons.colors/0`), the tiles drawn in it. The colour is a field of
+  its own, `<name>_color` (`group[icon_url_color]`), which the page puts on
+  the URL before it casts it: `Gamend.Icons.put_color(params, "icon_url")`.
+
       <.icon_picker field={@form[:icon_url]} label={gettext("Icon")} />
   """
   attr :field, Phoenix.HTML.FormField, required: true
@@ -1361,12 +1389,18 @@ defmodule GamendWeb.CoreComponents do
     field = assigns.field
     value = to_string(field.value)
     errors = if Component.used_input?(field), do: field.errors, else: []
+    color = Gamend.Icons.color(value)
+    css = Gamend.Icons.color_css(color)
 
     assigns =
       assign(assigns,
         names: Gamend.Icons.picks(),
         value: value,
         picked: Gamend.Icons.name(value),
+        color: color,
+        colors: Enum.map(Gamend.Icons.colors(), &{&1, Gamend.Icons.color_css(&1)}),
+        color_name: color_field_name(field.name),
+        pick_style: css && "--icon-pick: #{css}",
         sprite: GamendWeb.Icons.sprite_path(),
         errors: Enum.map(errors, &translate_error/1)
       )
@@ -1375,7 +1409,7 @@ defmodule GamendWeb.CoreComponents do
     ~H"""
     <fieldset :if={@names != []} id={@field.id} class="fieldset mb-2">
       <legend :if={@label} class="label mb-1">{@label}</legend>
-      <div class="@container">
+      <div class="@container" style={@pick_style}>
         <div class="grid grid-cols-5 gap-1.5 @sm:grid-cols-6 @lg:grid-cols-10 @3xl:grid-cols-15">
           <label :for={name <- @names} :key={name} class="cursor-pointer" title={name}>
             <input
@@ -1388,9 +1422,14 @@ defmodule GamendWeb.CoreComponents do
             />
             <span class={[
               "flex aspect-square items-center justify-center rounded-field border border-base-300",
-              "text-muted transition-colors hover:bg-base-300",
-              "peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-content",
-              "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
+              "transition-colors hover:bg-base-300",
+              "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary",
+              if(@color,
+                do:
+                  "text-(--icon-pick) peer-checked:border-(--icon-pick) peer-checked:bg-[color-mix(in_oklab,var(--icon-pick)_20%,var(--color-base-100))]",
+                else:
+                  "text-muted peer-checked:border-primary peer-checked:bg-primary peer-checked:text-primary-content"
+              )
             ]}>
               <svg class="aspect-square w-1/2" fill="currentColor" aria-hidden="true">
                 <use href={@sprite <> "#" <> name} />
@@ -1399,9 +1438,65 @@ defmodule GamendWeb.CoreComponents do
           </label>
         </div>
       </div>
+      <%!-- The picked icon's colour: none, or one of the site's. --%>
+      <div
+        :if={@picked && @colors != []}
+        role="radiogroup"
+        aria-label={gettext("Color")}
+        class="mt-2 flex flex-wrap items-center gap-2"
+      >
+        <span class="label text-xs">{gettext("Color")}</span>
+        <label class="cursor-pointer" title={gettext("No color")}>
+          <input
+            type="radio"
+            name={@color_name}
+            value=""
+            checked={is_nil(@color)}
+            aria-label={gettext("No color")}
+            class="peer sr-only"
+          />
+          <span class={[
+            "flex size-7 items-center justify-center rounded-full border border-base-300 bg-base-300 text-muted",
+            "peer-checked:ring-2 peer-checked:ring-base-content peer-checked:ring-offset-2 peer-checked:ring-offset-base-100",
+            "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
+          ]}>
+            <.icon name="hero-no-symbol" class="size-4" />
+          </span>
+        </label>
+        <label
+          :for={{{name, css}, i} <- Enum.with_index(@colors, 1)}
+          :key={name}
+          class="cursor-pointer"
+          title={gettext("Color %{number}", number: i)}
+        >
+          <input
+            type="radio"
+            name={@color_name}
+            value={name}
+            checked={@color == name}
+            aria-label={gettext("Color %{number}", number: i)}
+            class="peer sr-only"
+          />
+          <span
+            style={"background-color: #{css}"}
+            class={[
+              "block size-7 rounded-full",
+              "peer-checked:ring-2 peer-checked:ring-base-content peer-checked:ring-offset-2 peer-checked:ring-offset-base-100",
+              "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
+            ]}
+          />
+        </label>
+      </div>
       <.error :for={msg <- @errors}>{msg}</.error>
     </fieldset>
     """
+  end
+
+  # The colour's field beside an icon's: `group[icon_url]` → `group[icon_url_color]`.
+  defp color_field_name(name) do
+    if String.ends_with?(name, "]"),
+      do: String.replace_suffix(name, "]", "_color]"),
+      else: name <> "_color"
   end
 
   @doc """
@@ -1819,15 +1914,18 @@ defmodule GamendWeb.CoreComponents do
     assigns =
       assign(assigns,
         avatar_url: url,
-        avatar_icon?: match?({:ok, _}, GamendWeb.Icons.from_path(url || ""))
+        avatar_icon?: match?({:ok, _}, GamendWeb.Icons.from_path(url || "")),
+        tile_style: icon_tile_style(url)
       )
 
     ~H"""
     <%!-- One of the site's icons as the avatar (`Gamend.Icons`): drawn
           inline, so it follows the theme, on a round tile the size of a
-          picture. --%>
+          picture, tinted with its colour when it has one. Everyone has one
+          (`User.public_avatar_url/1`): the person icon is only for no user. --%>
     <span
       :if={@avatar_icon?}
+      style={@tile_style}
       class={[
         "inline-flex shrink-0 items-center justify-center rounded-full bg-base-300 text-muted",
         @class
@@ -1852,6 +1950,185 @@ defmodule GamendWeb.CoreComponents do
       class={"hidden " <> @class}
     />
     <.icon :if={!@avatar_url} name="hero-user-circle-solid" class={@class} />
+    """
+  end
+
+  # A coloured icon's round tile (`user_avatar/1`, `group_avatar/1`): its
+  # colour over the page's base, so it reads in both themes. Nil, the plain
+  # tile, for an icon in no colour.
+  defp icon_tile_style(url) do
+    if css = Gamend.Icons.color_css(Gamend.Icons.color(url)),
+      do: "background-color: color-mix(in oklab, #{css} 20%, var(--color-base-100))"
+  end
+
+  attr :icon_url, :string, default: nil, doc: "the group's `icon_url`"
+  attr :class, :any, default: "size-6"
+
+  @doc """
+  A group's icon as `user_avatar/1` draws a person's, on a tile the size of a
+  picture: an uploaded image filling it, or one of the site's icons inline,
+  tinted with its colour. Square-cornered where a person's is round, so a
+  group and a person beside it (`owner_picker/1`) read as two kinds.
+  """
+  def group_avatar(assigns) do
+    assigns =
+      assign(assigns,
+        icon?:
+          assigns.icon_url in [nil, ""] or GamendWeb.Icons.from_path(assigns.icon_url) != :error,
+        tile_style: icon_tile_style(assigns.icon_url)
+      )
+
+    ~H"""
+    <span
+      style={@tile_style}
+      class={[
+        "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-field bg-base-300 text-muted",
+        @class
+      ]}
+    >
+      <.entity_icon
+        icon_url={@icon_url}
+        type={:group}
+        class={if @icon?, do: "w-3/5 h-3/5", else: "size-full object-cover"}
+      />
+    </span>
+    """
+  end
+
+  attr :id, :string, required: true
+
+  attr :field, Phoenix.HTML.FormField,
+    default: nil,
+    doc: "the owning group's id field (`server[group_id]`); else `name` and `value`"
+
+  attr :name, :string, default: nil
+  attr :value, :any, default: nil
+  attr :user, :any, required: true, doc: "the reader, the owner when no group is picked"
+
+  attr :groups, :list,
+    required: true,
+    doc: "the groups that may own it: `%{id, title, icon_url}` (a `%Group{}`), or `{title, id}`"
+
+  attr :label, :any,
+    default: nil,
+    doc: "the field's label, Owner when not given; `false` for none seen (a panel titled Owner)"
+
+  attr :disabled, :boolean, default: false
+
+  slot :inner_block, doc: "beside the picker: the page's New group, its Members"
+
+  @doc """
+  Who owns a thing: the reader, or one of their groups, each drawn as a card,
+  a person's (`player_card/1`) or a group's (`group_avatar/1`) — not a bare
+  select, which can hold no icon. A button showing the owner opens the list;
+  a pick is a radio of the field's, so the form's `phx-change` hears it, and
+  closes the list. The reader's is the empty value: no group.
+
+      <.owner_picker id="server-owner" field={@form[:group_id]} user={@user} groups={@groups}>
+        <NewGroupComponent.open_button target="#new-group" />
+      </.owner_picker>
+  """
+  def owner_picker(assigns) do
+    {name, value} =
+      case assigns.field do
+        %Phoenix.HTML.FormField{name: name, value: value} -> {name, value}
+        nil -> {assigns.name, assigns.value}
+      end
+
+    groups = Enum.map(assigns.groups, &owner_group/1)
+    value = if value in [nil, ""], do: "", else: to_string(value)
+
+    assigns =
+      assign(assigns,
+        input_name: name,
+        options: [{"", nil} | Enum.map(groups, &{&1.id, &1})],
+        selected: Enum.find(groups, &(&1.id == value)),
+        value: value,
+        menu: "#{assigns.id}-menu",
+        legend_class: if(assigns.label == false, do: "sr-only", else: "label mb-1"),
+        label: assigns.label || gettext("Owner")
+      )
+
+    ~H"""
+    <fieldset id={@id} class="fieldset">
+      <legend class={@legend_class}>{@label}</legend>
+      <div class="flex flex-wrap items-center gap-2">
+        <div
+          class="relative w-full sm:w-auto sm:min-w-72"
+          phx-click-away={JS.hide(to: "##{@menu}")}
+          phx-window-keydown={JS.hide(to: "##{@menu}")}
+          phx-key="Escape"
+        >
+          <button
+            type="button"
+            id={"#{@id}-button"}
+            disabled={@disabled}
+            aria-haspopup="true"
+            aria-controls={@menu}
+            phx-click={JS.toggle(to: "##{@menu}")}
+            class="btn btn-surface h-auto min-h-11 w-full justify-between gap-3 py-1.5 font-normal"
+          >
+            <.owner_option user={@user} group={@selected} />
+            <.icon name="hero-chevron-up-down-solid" class="size-4 shrink-0 text-muted" />
+          </button>
+          <div
+            id={@menu}
+            role="radiogroup"
+            aria-label={@label}
+            class="absolute start-0 top-full z-30 mt-1 hidden max-h-80 w-full overflow-y-auto rounded-box border border-base-300 bg-base-100 p-1 shadow-lg"
+          >
+            <label
+              :for={{id, group} <- @options}
+              :key={id}
+              phx-click={JS.hide(to: "##{@menu}")}
+              class="flex cursor-pointer items-center gap-2 rounded-field px-2 py-1.5 hover:bg-base-200 has-checked:bg-base-200 has-focus-visible:outline-2 has-focus-visible:outline-primary"
+            >
+              <input
+                type="radio"
+                name={@input_name}
+                value={id}
+                checked={@value == id}
+                disabled={@disabled}
+                class="sr-only"
+              />
+              <.owner_option user={@user} group={group} />
+              <.icon :if={@value == id} name="hero-check-solid" class="ms-auto size-4 text-primary" />
+            </label>
+          </div>
+        </div>
+        {render_slot(@inner_block)}
+      </div>
+    </fieldset>
+    """
+  end
+
+  defp owner_group({title, id}), do: %{id: to_string(id), title: title, icon_url: nil}
+
+  defp owner_group(%{id: id, title: title} = group),
+    do: %{id: to_string(id), title: title, icon_url: Map.get(group, :icon_url)}
+
+  attr :user, :any, required: true
+  attr :group, :any, required: true
+
+  # One owner as a card: the reader's (their avatar, their name, You), or a
+  # group's (its icon, its name, Group).
+  defp owner_option(%{group: nil} = assigns) do
+    assigns = assign(assigns, :name, GamendWeb.LiveHelpers.public_user_name(assigns.user))
+
+    ~H"""
+    <.player_card user={@user} name={@name} subtitle={gettext("You")} size="sm" />
+    """
+  end
+
+  defp owner_option(assigns) do
+    ~H"""
+    <div class="flex min-w-0 items-center gap-2">
+      <.group_avatar icon_url={@group.icon_url} class="size-6" />
+      <span class="flex min-w-0 flex-col text-start leading-tight">
+        <span class="truncate" title={@group.title}>{@group.title}</span>
+        <span class="truncate text-xs text-muted">{gettext("Group")}</span>
+      </span>
+    </div>
     """
   end
 

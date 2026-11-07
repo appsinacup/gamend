@@ -593,7 +593,7 @@ defmodule Gamend.Groups do
              | {:hook_rejected, term()}
              | Ecto.Changeset.t()}
   def create_group(user_id, attrs) when is_binary(user_id) and is_map(attrs) do
-    attrs = normalize_params(attrs)
+    attrs = attrs |> normalize_params() |> Gamend.Icons.put_color("icon_url")
 
     case Gamend.Accounts.get_user(user_id) do
       nil ->
@@ -683,7 +683,12 @@ defmodule Gamend.Groups do
       # `user_image_uploads` feature gate — whose whole purpose is to close that
       # surface — was switched off. One of the site's own icons
       # (`/icons/<name>.svg`, `Gamend.Icons`) stays: it points nowhere else.
-      attrs = attrs |> normalize_params() |> drop_foreign_icon() |> drop_fixed_max()
+      attrs =
+        attrs
+        |> normalize_params()
+        |> Gamend.Icons.put_color("icon_url")
+        |> drop_foreign_icon()
+        |> drop_fixed_max()
 
       new_max = Map.get(attrs, "max_members") || Map.get(attrs, :max_members)
 
@@ -796,7 +801,7 @@ defmodule Gamend.Groups do
   @doc "Return a changeset for tracking group changes (admin edit forms)."
   @spec change_group(Group.t(), map()) :: Ecto.Changeset.t()
   def change_group(%Group{} = group, attrs \\ %{}) do
-    Group.changeset(group, attrs)
+    Group.changeset(group, Gamend.Icons.put_color(attrs, "icon_url"))
   end
 
   @doc """
@@ -1607,9 +1612,7 @@ defmodule Gamend.Groups do
     end
   end
 
-  defp random_icon_url do
-    if name = Gamend.Icons.random(), do: Gamend.Icons.path(name)
-  end
+  defp random_icon_url, do: Gamend.Icons.random_path()
 
   defp drop_foreign_icon(attrs) do
     if Gamend.Icons.name(param(attrs, :icon_url)),

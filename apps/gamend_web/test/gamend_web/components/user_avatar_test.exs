@@ -44,8 +44,25 @@ defmodule GamendWeb.Components.UserAvatarTest do
         render_component(&CoreComponents.user_avatar/1, user: %User{id: @id, profile_url: url})
 
       refute html =~ "<img", url
-      assert html =~ "hero-user-circle-solid"
+      refute html =~ url
+      # In its place, the icon the user's id gives them.
+      assert html =~ "<svg"
+      assert html =~ "var(--color-#{Gamend.Icons.color(Gamend.Icons.for_id(@id))})"
     end
+  end
+
+  test "an icon in one of the site's colours is drawn in it, on a tile tinted with it" do
+    user = %User{id: @id, profile_url: "/icons/rocket-launch.svg?color=warning"}
+
+    html = render_component(&CoreComponents.user_avatar/1, user: user)
+
+    assert html =~ ~s|style="color: var(--color-warning)"|
+    assert html =~ "color-mix(in oklab, var(--color-warning) 20%"
+  end
+
+  test "no user is the person icon" do
+    html = render_component(&CoreComponents.user_avatar/1, user: nil)
+    assert html =~ "hero-user-circle-solid"
   end
 
   test "one of the site's icons is drawn inline, not fetched" do

@@ -76,10 +76,16 @@ defmodule GamendWeb.UserLive.GroupJoin do
           <div :if={@link} class="card-body items-center text-center">
             <.icon name="hero-user-group" class="size-10 text-primary" />
             <h1 class="text-xl font-semibold">{@link.group.title}</h1>
-            <p :if={@link.created_by} class="text-sm text-muted">
-              {gettext("%{name} invited you to join.",
-                name: Gamend.Accounts.display_name(@link.created_by)
-              )}
+            <p
+              :if={@link.created_by}
+              class="flex items-center justify-center gap-2 text-sm text-muted"
+            >
+              <.user_avatar user={@link.created_by} class="size-6 shrink-0" />
+              <span>
+                {gettext("%{name} invited you to join.",
+                  name: Gamend.Accounts.display_name(@link.created_by)
+                )}
+              </span>
             </p>
             <p class="text-sm text-muted">
               {gettext("Members: %{count}", count: @count)}

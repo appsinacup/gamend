@@ -12,7 +12,7 @@ defmodule GamendWeb.AdminLive.Connections do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">&larr; Back to Admin</.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <%!-- Summary cards --%>
         <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -197,7 +197,10 @@ defmodule GamendWeb.AdminLive.Connections do
                       <tbody>
                         <tr :for={peer <- @webrtc_users}>
                           <td class="text-sm" title={peer.user_id}>
-                            {user_display(@user_names[peer.user_id])}
+                            <div class="flex items-center gap-2">
+                              <.user_avatar user={@user_names[peer.user_id]} class="size-6 shrink-0" />
+                              {user_display(@user_names[peer.user_id])}
+                            </div>
                           </td>
                           <td class="font-mono text-xs text-muted">{peer.pid}</td>
                         </tr>
@@ -262,7 +265,10 @@ defmodule GamendWeb.AdminLive.Connections do
                   <tbody>
                     <tr :for={user <- @paged_users} id={"conn-user-#{user.user_id}"}>
                       <td class="text-sm" title={user.user_id}>
-                        {user_display(@user_names[user.user_id])}
+                        <div class="flex items-center gap-2">
+                          <.user_avatar user={@user_names[user.user_id]} class="size-6 shrink-0" />
+                          {user_display(@user_names[user.user_id])}
+                        </div>
                       </td>
                       <td>
                         <span

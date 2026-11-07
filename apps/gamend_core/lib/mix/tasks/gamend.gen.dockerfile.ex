@@ -121,8 +121,8 @@ defmodule Mix.Tasks.Gamend.Gen.Dockerfile do
     # in from this app's mix.exs. Do not edit; change `gamend_dockerfile:` there
     # and run it again (`--check` fails on a file that drifted).
     #
-    #   docker build .                    full: the builder, running `mix phx.server`
-    #   docker build --target release .   an OTP release on gamend-runtime, ~11x smaller
+    #   docker build .                    an OTP release on gamend-runtime, ~11x smaller
+    #   docker build --target full .      the builder, running `mix phx.server`
     #
     # The system packages, Rust, Hex and the start scripts are the base images
     # (gamend's docker/README.md). Build args: GAMEND_DB_ADAPTER (a compile-time
@@ -182,12 +182,25 @@ defmodule Mix.Tasks.Gamend.Gen.Dockerfile do
     ARG GAMEND_CONTENT_APP_VERSION
     ENV GAMEND_CONTENT_APP_VERSION=${GAMEND_CONTENT_APP_VERSION}
 
-    # ── Release ───────────────────────────────────────────────────────────────
+    # ── Full ──────────────────────────────────────────────────────────────────
+    FROM builder AS full
+    EXPOSE 4000 443
+    CMD ["gamend-start"]
+
+    # ── Release (default target) ──────────────────────────────────────────────
+    # Last, so a bare `docker build .` builds it: what a host such as Gamend
+    # Cloud runs, `bin/<release>` in the working directory.
     FROM builder AS release-build
     ARG RELEASE
     # The release, with what it reads from its working directory beside it
     # (theme, content, docs, plugins): one directory for the runtime to take.
     RUN #{release_command(inputs)} && gamend-stage-release "${RELEASE}"
+    # What the release declares (its Gamend, its settings, its plugins'), in
+    # its directory, for a host to read from the image without booting it
+    # (`Gamend.Release.Metadata`). A Gamend before it writes none, and a host
+    # asks the running server instead.
+    RUN cd "_build/${MIX_ENV}/rel/${RELEASE}" && \\
+        "bin/${RELEASE}" eval 'if Code.ensure_loaded?(Gamend.Release.Metadata), do: Gamend.Release.Metadata.write()'
 
     FROM ${RUNNER_IMAGE} AS release
     ARG MIX_ENV
@@ -203,12 +216,6 @@ defmodule Mix.Tasks.Gamend.Gen.Dockerfile do
     COPY --from=release-build /app/_build/${MIX_ENV}/rel/${RELEASE} ./
     EXPOSE 4000 443
     CMD ["sh", "-c", "exec gamend-release-start \\"$GAMEND_RELEASE\\""]
-
-    # ── Full (default target) ─────────────────────────────────────────────────
-    # Last, so a bare `docker build .` builds it.
-    FROM builder AS full
-    EXPOSE 4000 443
-    CMD ["gamend-start"]
     """
   end
 

@@ -16,9 +16,7 @@ defmodule GamendWeb.AdminLive.Users do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">
-          ← Back to Admin
-        </.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <div class="card bg-base-200">
           <div class="card-body">
@@ -314,11 +312,14 @@ defmodule GamendWeb.AdminLive.Users do
                       <% end %>
                     </td>
                     <td class="text-sm">
-                      <%= if user.display_name && user.display_name != "" do %>
-                        {user.display_name}
-                      <% else %>
-                        <span class="text-gray-500">-</span>
-                      <% end %>
+                      <div class="flex items-center gap-2">
+                        <.user_avatar user={user} class="size-6 shrink-0" />
+                        <%= if user.display_name && user.display_name != "" do %>
+                          {user.display_name}
+                        <% else %>
+                          <span class="text-gray-500">-</span>
+                        <% end %>
+                      </div>
                     </td>
                     <td class="font-mono text-sm">
                       <%= if user.discord_id do %>

@@ -17,25 +17,53 @@ defmodule GamendWeb.GroupLinks do
   """
   @spec join_url(Phoenix.LiveView.Socket.t() | Plug.Conn.t(), String.t()) :: String.t()
   def join_url(socket_or_conn, token) do
-    path = String.replace(live_path(router(socket_or_conn), UserLive.GroupJoin), ":token", token)
+    path =
+      String.replace(
+        live_path(router(socket_or_conn), UserLive.GroupJoin, :show),
+        ":token",
+        token
+      )
+
     Phoenix.VerifiedRoutes.unverified_url(socket_or_conn, path)
   end
 
   @doc "The path that opens one of the reader's groups."
   @spec group_path(Phoenix.LiveView.Socket.t(), String.t()) :: String.t()
   def group_path(socket, group_id) do
-    case live_path(socket.router, UserLive.Groups) do
+    case groups_path(socket) do
       nil -> "/users/settings?" <> URI.encode_query(tab: "groups", group: group_id)
-      path -> path <> "?" <> URI.encode_query(group: group_id)
+      path -> under(path, group_id)
     end
+  end
+
+  @doc """
+  The reader's groups as a page of their own (`/users/groups`), as the
+  routes are written; nil on a host without it, where they are the settings
+  page's tab.
+  """
+  @spec groups_path(Phoenix.LiveView.Socket.t()) :: String.t() | nil
+  def groups_path(socket), do: live_path(socket.router, UserLive.Groups, :index)
+
+  @doc """
+  One group's page under the groups page at `groups_path`: its ref
+  (`<owner>/<slug>` or its id) as path segments, `/users/groups/ann/team`.
+  """
+  @spec under(String.t(), String.t()) :: String.t()
+  def under(groups_path, ref) do
+    segments =
+      ref
+      |> String.split("/")
+      |> Enum.map_join("/", fn segment -> URI.encode(segment, &URI.char_unreserved?/1) end)
+
+    String.trim_trailing(groups_path, "/") <> "/" <> segments
   end
 
   defp router(%Plug.Conn{} = conn), do: Phoenix.Controller.router_module(conn)
   defp router(socket), do: socket.router
 
-  defp live_path(router, view) do
+  defp live_path(router, view, action) do
     Enum.find_value(Phoenix.Router.routes(router), fn
-      %{path: path, metadata: %{phoenix_live_view: {^view, _action, _opts, _extra}}} -> path
+      %{path: path, metadata: %{phoenix_live_view: {^view, ^action, _opts, _extra}}} -> path
       _route -> nil
     end)
   end

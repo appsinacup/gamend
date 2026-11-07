@@ -3,7 +3,8 @@ defmodule Gamend.Accounts.PublicAvatarUrlTest do
   A sign-in stores the provider's avatar URL until `AvatarMirror` copies it to
   our storage. Shown, that URL sends every viewer's IP to the provider, and a
   Discord one carries the player's Discord id. So only an avatar under the
-  user's own `avatars/<id>/` key ever leaves the server.
+  user's own `avatars/<id>/` key ever leaves the server, and in place of any
+  other, the icon the user's id gives them (`Gamend.Icons.for_id/1`).
   """
   use ExUnit.Case, async: true
 
@@ -12,6 +13,7 @@ defmodule Gamend.Accounts.PublicAvatarUrlTest do
 
   @id "0190c0de-0000-7000-8000-000000000001"
   @hosted "/storage/avatars/#{@id}/abc.png"
+  @own_icon Gamend.Icons.for_id(@id)
   @provider_urls [
     "https://cdn.discordapp.com/avatars/123456789012345678/abc.png",
     "https://lh3.googleusercontent.com/a/abc=s96-c",
@@ -33,29 +35,35 @@ defmodule Gamend.Accounts.PublicAvatarUrlTest do
     assert User.public_avatar_url(user) == "/icons/rocket-launch.svg"
     assert User.serialize_brief(user).profile_url == "/icons/rocket-launch.svg"
 
-    assert User.public_avatar_url(%User{id: @id, profile_url: "/icons/not-ours.svg"}) == nil
+    colored = "/icons/rocket-launch.svg?color=success"
+    assert User.public_avatar_url(%User{id: @id, profile_url: colored}) == colored
+
+    assert User.public_avatar_url(%User{id: @id, profile_url: "/icons/not-ours.svg"}) ==
+             @own_icon
   end
 
-  test "a provider's URL is not" do
+  test "a provider's URL is not: the id's icon is in its place" do
     for url <- @provider_urls do
-      assert User.public_avatar_url(%User{id: @id, profile_url: url}) == nil, url
+      assert User.public_avatar_url(%User{id: @id, profile_url: url}) == @own_icon, url
     end
   end
 
-  test "no avatar, no user" do
-    assert User.public_avatar_url(%User{id: @id, profile_url: nil}) == nil
-    assert User.public_avatar_url(%User{id: @id, profile_url: ""}) == nil
+  test "no avatar is the id's icon, the same every time; no user, none" do
+    assert Gamend.Icons.name(@own_icon) in Gamend.Icons.picks()
+    assert Gamend.Icons.color(@own_icon) in Gamend.Icons.colors()
+    assert User.public_avatar_url(%User{id: @id, profile_url: nil}) == @own_icon
+    assert User.public_avatar_url(%User{id: @id, profile_url: ""}) == @own_icon
     assert User.public_avatar_url(%User{id: nil, profile_url: @hosted}) == nil
     assert User.public_avatar_url(nil) == nil
   end
 
-  test "every user payload sends it empty" do
+  test "every user payload sends the id's icon for a provider's URL" do
     for url <- @provider_urls do
       user = %User{id: @id, profile_url: url}
 
-      assert User.serialize_brief(user).profile_url == ""
-      assert Broadcasts.serialize_user_payload(user).profile_url == ""
-      assert user |> Jason.encode!() |> Jason.decode!() |> Map.fetch!("profile_url") == ""
+      assert User.serialize_brief(user).profile_url == @own_icon
+      assert Broadcasts.serialize_user_payload(user).profile_url == @own_icon
+      assert user |> Jason.encode!() |> Jason.decode!() |> Map.fetch!("profile_url") == @own_icon
     end
 
     user = %User{id: @id, profile_url: @hosted}

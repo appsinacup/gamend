@@ -26,8 +26,9 @@ mix gamend.gen.dockerfile           # write Dockerfile
 mix gamend.gen.dockerfile --check   # in CI
 ```
 
-Its targets are `full` (the default: the builder, running `mix phx.server`) and
-`release` (an OTP release on `gamend-runtime`). An app's own build steps, such
+Its targets are `release` (the default, its last stage: an OTP release on
+`gamend-runtime`, what a host such as Gamend Cloud runs) and `full` (`--target
+full`: the builder, running `mix phx.server`). An app's own build steps, such
 as fetching an engine build or the docs, go in its `assets.deploy` alias; a new
 `SYNC` build arg (`--build-arg SYNC=$(date +%s)` in `deploy.conf`'s
 `BUILD_ARGS`) runs that step again on every deploy, and `build_args:` declares

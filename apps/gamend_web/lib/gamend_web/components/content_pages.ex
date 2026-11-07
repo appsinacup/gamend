@@ -114,7 +114,6 @@ defmodule GamendWeb.ContentPages do
             for its name. --%>
       <div data-heading-fit class="flex flex-row items-center justify-between gap-3">
         <div class="flex min-w-0 items-center gap-3">
-          <.back_link href={home_path()} />
           <.page_title icon={@icon}>{@title}</.page_title>
         </div>
 
@@ -181,7 +180,6 @@ defmodule GamendWeb.ContentPages do
             class="mb-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-3"
           >
             <div class="flex min-w-0 items-center gap-3">
-              <.back_link href={home_path()} />
               <.page_title icon="hero-newspaper-solid">{gettext("Blog")}</.page_title>
             </div>
 
@@ -302,7 +300,10 @@ defmodule GamendWeb.ContentPages do
 
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={@current_path}>
-      <div class="mx-auto max-w-narrow py-8">
+      <%!-- The width of every other page, the blog's own list included
+            (2026-11-07, user): a narrow column made the post look like
+            another site's page. --%>
+      <div class="py-8">
         <article class="space-y-10">
           <div class="space-y-4">
             <%!-- Back to the blog, beside the date: the post's title is

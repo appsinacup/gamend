@@ -26,7 +26,7 @@ defmodule GamendWeb.AdminLive.Chat do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">&larr; Back to Admin</.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <div class="card bg-base-200">
           <div class="card-body">
@@ -139,12 +139,17 @@ defmodule GamendWeb.AdminLive.Chat do
                       </td>
                       <td class="font-mono text-sm">{m.id}</td>
                       <td class="text-sm" title={m.sender_id}>
-                        {user_display(m.sender)}
-                        <%= if Ecto.assoc_loaded?(m.sender) and m.sender do %>
-                          <div class="text-xs text-muted truncate max-w-[120px]">
-                            {m.sender.email}
+                        <div class="flex items-center gap-2">
+                          <.user_avatar user={m.sender} class="size-6 shrink-0" />
+                          <div>
+                            {user_display(m.sender)}
+                            <%= if Ecto.assoc_loaded?(m.sender) and m.sender do %>
+                              <div class="text-xs text-muted truncate max-w-[120px]">
+                                {m.sender.email}
+                              </div>
+                            <% end %>
                           </div>
-                        <% end %>
+                        </div>
                       </td>
                       <td>
                         <span class={[

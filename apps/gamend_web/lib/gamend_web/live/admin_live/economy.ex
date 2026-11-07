@@ -168,7 +168,7 @@ defmodule GamendWeb.AdminLive.Economy do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <.link navigate={~p"/admin"} class="btn btn-surface mb-4">← Back to Admin</.link>
+      <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
       <div class="card bg-base-200 mb-4">
         <div class="card-body">
@@ -252,7 +252,12 @@ defmodule GamendWeb.AdminLive.Economy do
               </thead>
               <tbody>
                 <tr :for={w <- @wallets} id={"wallet-#{w.id}"}>
-                  <td class="text-xs" title={w.user_id}>{user_display(w.user)}</td>
+                  <td class="text-xs" title={w.user_id}>
+                    <div class="flex items-center gap-2">
+                      <.user_avatar user={w.user} class="size-6 shrink-0" />
+                      {user_display(w.user)}
+                    </div>
+                  </td>
                   <td class="font-mono text-xs">{w.currency}</td>
                   <td class="text-right font-mono">{w.balance}</td>
                 </tr>
@@ -317,7 +322,12 @@ defmodule GamendWeb.AdminLive.Economy do
               </thead>
               <tbody>
                 <tr :for={i <- @items} id={"item-#{i.id}"}>
-                  <td class="text-xs" title={i.user_id}>{user_display(i.user)}</td>
+                  <td class="text-xs" title={i.user_id}>
+                    <div class="flex items-center gap-2">
+                      <.user_avatar user={i.user} class="size-6 shrink-0" />
+                      {user_display(i.user)}
+                    </div>
+                  </td>
                   <td class="font-mono text-xs">{i.item}</td>
                   <td class="text-right font-mono">{i.quantity}</td>
                 </tr>
@@ -345,7 +355,12 @@ defmodule GamendWeb.AdminLive.Economy do
                   <td class="text-xs whitespace-nowrap">
                     <.timestamp at={e.inserted_at} format="full" />
                   </td>
-                  <td class="text-xs" title={e.user_id}>{user_display(e.user)}</td>
+                  <td class="text-xs" title={e.user_id}>
+                    <div class="flex items-center gap-2">
+                      <.user_avatar user={e.user} class="size-6 shrink-0" />
+                      {user_display(e.user)}
+                    </div>
+                  </td>
                   <td class="font-mono text-xs">{e.currency}</td>
                   <td class={[
                     "text-right font-mono",

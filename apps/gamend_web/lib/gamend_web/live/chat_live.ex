@@ -229,7 +229,10 @@ defmodule GamendWeb.ChatLive do
                   <%= if msg.sender_id == @user_id do %>
                     {gettext("You")}
                   <% else %>
-                    {sender_name(msg)}
+                    <span class="inline-flex items-center gap-1 align-middle">
+                      <.user_avatar user={msg.sender} class="size-5 shrink-0" />
+                      {sender_name(msg)}
+                    </span>
                   <% end %>
                   <span class="ms-1"><.timestamp at={msg.inserted_at} format="time" /></span>
                   <%= if msg.updated_at && msg.updated_at != msg.inserted_at do %>

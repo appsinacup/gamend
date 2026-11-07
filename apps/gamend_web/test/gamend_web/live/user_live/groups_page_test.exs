@@ -166,26 +166,42 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     refute has_element?(view, "#my-group-#{team.id} button", "Leave")
     view |> element("#my-group-#{team.id} a") |> render_click()
 
-    assert_patch(view, "/users/groups?" <> URI.encode_query(group: "#{user.username}/studio"))
+    assert_patch(view, "/users/groups/#{user.username}/studio")
     assert assigns(view).group_detail.id == team.id
     assert has_element?(view, "button[phx-click='group_leave']")
   end
 
-  test "Back from a group opens the list, Back from the list goes home", %{
+  # A group is a page under the list's path, so `back_link.js` takes Back to
+  # the list the reader opened it from rather than walking past it.
+  test "Back from a group opens the list, which has no Back of its own", %{
     conn: conn,
     user: user
   } do
     {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
-    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups?group=#{team.id}")
+    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{team.id}")
 
-    refute has_element?(view, "a[data-back]")
+    assert has_element?(view, "a[data-back][href='/users/groups']")
     refute has_element?(view, "button[phx-click='group_close_detail']")
 
-    view |> element("a[title='Back']") |> render_click()
+    assert {:error, {:live_redirect, %{to: "/users/groups"}}} =
+             view |> element("a[title='Back']") |> render_click()
 
-    assert_patch(view, "/users/groups")
-    assert assigns(view).group_detail == nil
-    assert has_element?(view, "a[data-back][href='/']")
+    {:ok, list, _html} = conn |> log_in_user(user) |> live("/users/groups")
+    refute has_element?(list, "a[title='Back']")
+  end
+
+  test "the old ?group= link opens the group's own path", %{conn: conn, user: user} do
+    {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
+
+    assert {:error, {:live_redirect, %{to: to}}} =
+             conn
+             |> log_in_user(user)
+             |> live("/users/groups?" <> URI.encode_query(group: "#{user.username}/studio"))
+
+    assert to == "/users/groups/#{user.username}/studio"
+
+    {:ok, view, _html} = conn |> log_in_user(user) |> live(to)
+    assert assigns(view).group_detail.id == team.id
   end
 
   test "a team opens from its URL and a colleague is invited by email", %{
@@ -194,7 +210,7 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     other: other
   } do
     {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
-    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups?group=#{team.id}")
+    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{team.id}")
     assert assigns(view).group_detail.id == team.id
 
     render_keyup(view, "group_invite_search", %{"value" => String.upcase(other.email)})
@@ -236,7 +252,7 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     other: other
   } do
     {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
-    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups?group=#{team.id}")
+    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{team.id}")
 
     view |> element("#group-invite-link-create") |> render_click()
     %{token: token} = Groups.get_invite_link(team.id)
@@ -262,7 +278,7 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     assert {:error, {:live_redirect, %{to: to}}} =
              join |> element("#group-join-button") |> render_click()
 
-    assert to == "/users/groups?group=#{team.id}"
+    assert to == "/users/groups/#{team.id}"
     assert Groups.member?(team.id, other.id)
 
     view |> element("#group-invite-link-off") |> render_click()
@@ -281,7 +297,7 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
   test "an admin sees the group's pending invites, the invited stay marked, and one is cancelled",
        %{conn: conn, user: user, other: other} do
     {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
-    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups?group=#{team.id}")
+    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{team.id}")
     refute has_element?(view, "#group-pending-invites")
 
     render_keyup(view, "group_invite_search", %{"value" => other.email})
@@ -321,7 +337,7 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
 
   test "a stranger's team does not open", %{conn: conn, user: user, other: other} do
     {:ok, team} = Groups.create_group(other.id, %{"title" => "Theirs"})
-    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups?group=#{team.id}")
+    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{team.id}")
     assert assigns(view).group_detail == nil
   end
 

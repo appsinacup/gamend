@@ -44,8 +44,8 @@ defmodule GamendWeb.AdminLive.LobbiesTest do
     assert html =~ Calendar.strftime(lobby1.inserted_at, "%Y-%m-%d %H:%M")
     assert html =~ Calendar.strftime(lobby1.updated_at, "%Y-%m-%d %H:%M")
 
-    # ensure back to admin link exists
-    assert html =~ "← Back to Admin"
+    # Back to the admin index, the site's one Back button
+    assert html =~ ~r/<a[^>]*href="\/admin"[^>]*data-back/
 
     # test edit flow via live view: open manage UI, change title and save
     {:ok, view, _html} = conn |> log_in_user(user) |> live(~p"/admin/lobbies")

@@ -28,7 +28,19 @@ defmodule Mix.Tasks.Gamend.Gen.DockerfileTest do
     assert "ARG GAMEND_DB_ADAPTER=sqlite" in lines
     assert "ARG GAMEND_CONTENT_PLUGINS_DIR=modules/plugins" in lines
     assert ~s(CMD ["sh", "-c", "exec gamend-release-start \\"$GAMEND_RELEASE\\""]) in lines
-    assert List.last(Enum.reject(lines, &(&1 == ""))) == ~s(CMD ["gamend-start"])
+    assert ~s(CMD ["gamend-start"]) in lines
+  end
+
+  test "the release is the last stage, so a bare build is what a host runs" do
+    stages = for "FROM " <> from <- lines(render(%{})), do: from
+
+    assert List.last(stages) == "${RUNNER_IMAGE} AS release"
+    assert "builder AS full" in stages
+  end
+
+  test "the release build writes what it declares beside it" do
+    assert render(%{}) =~
+             ~s|"bin/${RELEASE}" eval 'if Code.ensure_loaded?(Gamend.Release.Metadata), do: Gamend.Release.Metadata.write()'|
   end
 
   test "path dependencies' mix.exs come before deps.get, the source after" do

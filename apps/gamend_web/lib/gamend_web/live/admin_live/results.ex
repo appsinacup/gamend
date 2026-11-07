@@ -164,9 +164,7 @@ defmodule GamendWeb.AdminLive.Results do
   def render(%{result: %Result{}} = assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <.link navigate={~p"/admin/results"} class="btn btn-surface mb-4">
-        ← {gettext("Results")}
-      </.link>
+      <div class="mb-4"><.back_link navigate={~p"/admin/results"} /></div>
 
       <div class="card bg-base-200">
         <div class="card-body space-y-4">
@@ -190,7 +188,8 @@ defmodule GamendWeb.AdminLive.Results do
 
           <dl id="result-fields" class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
             <dt class="text-muted">{gettext("Player")}</dt>
-            <dd>
+            <dd class="flex items-center gap-2">
+              <.user_avatar user={@players[@result.user_id]} class="size-6 shrink-0" />
               <.link navigate={~p"/admin/results?#{[user_id: @result.user_id]}"} class="link">
                 {player_label(@players, @result.user_id)}
               </.link>
@@ -292,9 +291,7 @@ defmodule GamendWeb.AdminLive.Results do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <.link navigate={~p"/admin"} class="btn btn-surface mb-4">
-        ← {gettext("Back to Admin")}
-      </.link>
+      <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
       <div class="card bg-base-200">
         <div class="card-body space-y-3">
@@ -378,12 +375,15 @@ defmodule GamendWeb.AdminLive.Results do
                     </.row_link>
                   </td>
                   <td>
-                    <.link
-                      navigate={~p"/admin/results?#{[user_id: result.user_id]}"}
-                      class={["link", row_control()]}
-                    >
-                      {player_label(@players, result.user_id)}
-                    </.link>
+                    <div class="flex items-center gap-2">
+                      <.user_avatar user={@players[result.user_id]} class="size-6 shrink-0" />
+                      <.link
+                        navigate={~p"/admin/results?#{[user_id: result.user_id]}"}
+                        class={["link", row_control()]}
+                      >
+                        {player_label(@players, result.user_id)}
+                      </.link>
+                    </div>
                   </td>
                   <td>
                     <span class={["badge badge-sm", status_class(result.status)]}>{result.status}</span>

@@ -47,7 +47,7 @@ defmodule GamendWeb.AdminLive.Quests do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.link navigate={~p"/admin"} class="btn btn-surface mb-4">&larr; Back to Admin</.link>
+        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
 
         <div class="card bg-base-200">
           <div class="card-body">
@@ -219,7 +219,14 @@ defmodule GamendWeb.AdminLive.Quests do
                 </thead>
                 <tbody>
                   <tr :for={p <- @progress_rows} id={"admin-qp-#{p.id}"}>
-                    <td class="text-sm">{progress_user_name(p)}</td>
+                    <td class="text-sm">
+                      <.player_card
+                        user={p.user}
+                        name={to_string(progress_user_name(p))}
+                        subtitle={nil}
+                        size="sm"
+                      />
+                    </td>
                     <td class="font-mono text-sm">{p.quest_key}</td>
                     <td class="font-mono text-sm">{p.period_key}</td>
                     <td class="text-xs font-mono">{Jason.encode!(p.objective_progress)}</td>

@@ -1736,13 +1736,6 @@ msgstr "Wiek"
 msgid "Avatar uploads are not available."
 msgstr "Przesyłanie awatara jest niedostępne."
 
-#: lib/gamend_web/live/admin_live/chat_reports.ex:344
-#: lib/gamend_web/live/admin_live/reports.ex:210
-#: lib/gamend_web/live/admin_live/results.ex:296
-#, elixir-autogen, elixir-format
-msgid "Back to Admin"
-msgstr "Powrót do Admin"
-
 #: lib/gamend_web/live/admin_live/chat_filter.ex:346
 #, elixir-autogen, elixir-format
 msgid "Blocked"
@@ -4198,3 +4191,23 @@ msgstr "Wysłano wiele zgłoszeń. Spróbuj ponownie za godzinę."
 #, elixir-autogen, elixir-format
 msgid "Another name"
 msgstr "Inna nazwa"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Owner"
+msgstr "Właściciel"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color"
+msgstr "Kolor"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "No color"
+msgstr "Bez koloru"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color %{number}"
+msgstr "Kolor %{number}"

@@ -1736,13 +1736,6 @@ msgstr "เวลาที่ผ่านมา"
 msgid "Avatar uploads are not available."
 msgstr "ไม่สามารถอัปโหลดอวตารได้"
 
-#: lib/gamend_web/live/admin_live/chat_reports.ex:344
-#: lib/gamend_web/live/admin_live/reports.ex:210
-#: lib/gamend_web/live/admin_live/results.ex:296
-#, elixir-autogen, elixir-format
-msgid "Back to Admin"
-msgstr "กลับไปหน้าผู้ดูแล"
-
 #: lib/gamend_web/live/admin_live/chat_filter.ex:346
 #, elixir-autogen, elixir-format
 msgid "Blocked"
@@ -4098,3 +4091,23 @@ msgstr "คุณส่งรายงานจำนวนมาก ลอง�
 #, elixir-autogen, elixir-format
 msgid "Another name"
 msgstr "ชื่ออื่น"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Owner"
+msgstr "เจ้าของ"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color"
+msgstr "สี"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "No color"
+msgstr "ไม่มีสี"
+
+#: lib/gamend_web/components/core_components.ex
+#, elixir-autogen, elixir-format
+msgid "Color %{number}"
+msgstr "สี %{number}"

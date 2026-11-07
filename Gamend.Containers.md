@@ -232,7 +232,8 @@ a `:chown` mount re-owns it.
 ```
 
 Run `argv` inside a running container and answer what it printed, stdout
-and stderr together. A non-zero exit is `{:podman_failed, :exec, status, line}`.
+and stderr together, its first 4 MiB: what runs there may be someone
+else's. A non-zero exit is `{:podman_failed, :exec, status, line}`.
 
 # `executable`
 
@@ -312,8 +313,14 @@ a job.
 `create/1` takes them both), `env:` (through
 a 0600 env file, as `create/1`), and `network: true` for a chore that must
 reach the network (a restore from a bucket). A chore running someone
-else's code (a build of a tenant's plugin) takes the limits `create/1`
-does: `memory_mb:`, `cpus:`, `pids:` and `runtime:` (`runsc`).
+else's code (a build of a tenant's plugin, anything in a tenant's image)
+takes the limits `create/1` does: `memory_mb:`, `cpus:`, `pids:` and
+`runtime:` (`runsc`), and `timeout:`, the seconds podman lets it run
+before killing it (`--timeout`).
+
+What it prints is kept to its first `max_output_bytes:` (4 MiB unless
+given) and the rest dropped as it comes, so an image that prints without
+end cannot fill this node's memory.
 
 # `pause`
 

@@ -55,6 +55,14 @@ Whether `color` is one of `colors/0`.
 The CSS colour a colour is drawn in: a theme's own name its
 `var(--color-<name>)`, a pair's what it gives. Nil for none of `colors/0`.
 
+# `color_for`
+
+```elixir
+@spec color_for(term()) :: String.t() | nil
+```
+
+One of `colors/0` for `term`: as good as random, the same for it every time. Nil with none.
+
 # `colors`
 
 ```elixir
@@ -126,7 +134,8 @@ The icons people pick from, `academic-cap`, …: the same order everywhere.
 `params` with the colour picked beside an icon (`"<key>_color"`, what
 `<.icon_picker>` sends) put on the icon's URL at `key` (`path/2`), the
 colour's own key gone. An upload's URL stays as it is: a colour is only an
-icon's.
+icon's. With no icon picked the colour's key stays, for the form to draw it
+as the one an icon picked next will have.
 
 # `random`
 

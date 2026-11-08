@@ -1,4 +1,4 @@
-# gamend_core v1.1.1396 - API Reference
+# gamend_core v1.1.1397 - API Reference
 
 ## Modules
 
@@ -65,6 +65,8 @@ L2 cache.
 - [Gamend.Database](Gamend.Database.md): Connection and tuning settings for `Gamend.Repo`.
 - [Gamend.DemoSeed](Gamend.DemoSeed.md): Fills the database with enough demo data to exercise pagination and the
 list/detail pages at realistic sizes.
+- [Gamend.Export](Gamend.Export.md): A host's data as files another host can start from: what only the
+application can copy.
 - [Gamend.GitHub](Gamend.GitHub.md): The server's GitHub App: who may use which installation, the credentials a
 job borrows from it, and what its webhook means.
 - [Gamend.GitHub.API](Gamend.GitHub.API.md): The GitHub REST calls a GitHub App makes, and the credentials that make

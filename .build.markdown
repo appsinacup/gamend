@@ -85,6 +85,7 @@ Gamend.DemoSeed.md
 Gamend.Economy.LedgerEntry.md
 Gamend.Economy.Wallet.md
 Gamend.Economy.md
+Gamend.Export.md
 Gamend.Friends.Friendship.md
 Gamend.Friends.md
 Gamend.GitHub.API.md

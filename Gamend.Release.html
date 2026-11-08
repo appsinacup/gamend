@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1396">
+    <meta name="project" content="gamend_core v1.1.1397">
 
 
-    <title>Gamend.Release — gamend_core v1.1.1396</title>
+    <title>Gamend.Release — gamend_core v1.1.1397</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-0881E08E.js"></script>
+    <script defer src="dist/sidebar_items-E2AF0291.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1396
+          v1.1.1397
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Release</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1396)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1397)</small>
 
     </h1>
 
@@ -159,6 +159,19 @@ endpoint against a database it does not match.</p>
 
         <div class="summary-synopsis"><p>Drops the database, mirroring <a href="https://ecto.hexdocs.pm/3.14.3/Mix.Tasks.Ecto.Drop.html"><code class="inline">mix ecto.drop</code></a>. A database that does not
 exist is not an error.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#export/2" data-no-tooltip="" translate="no">export(dir, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Copies what only the application can into <code class="inline">dir</code> (<a href="Gamend.Export.html"><code class="inline">Gamend.Export</code></a>): a SQLite
+database and the stored files, or just the database with <code class="inline">files: false</code>.
+Prints what it wrote and raises when it cannot. A running server goes on
+serving, so it can run beside one</p></div>
 
     </div>
 
@@ -242,7 +255,7 @@ or <code class="inline">nil</code> when there is none. <code class="inline">mix 
       <h1 class="signature" translate="no">createdb()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L56" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L57" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -271,7 +284,7 @@ the server provisions the database already can skip this entirely.</p>
       <h1 class="signature" translate="no">dropdb()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L63" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L64" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -290,6 +303,39 @@ the server provisions the database already can skip this entirely.</p>
 exist is not an error.</p>
   </section>
 </section>
+<section class="detail" id="export/2">
+
+    <span id="export/1"></span>
+
+  <div class="detail-header">
+    <a href="#export/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">export(dir, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L75" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> export(<a href="https://elixir.hexdocs.pm/Path.html#t:t/0">Path.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]</pre>
+
+      </div>
+
+<p>Copies what only the application can into <code class="inline">dir</code> (<a href="Gamend.Export.html"><code class="inline">Gamend.Export</code></a>): a SQLite
+database and the stored files, or just the database with <code class="inline">files: false</code>.
+Prints what it wrote and raises when it cannot. A running server goes on
+serving, so it can run beside one:</p><pre><code class="makeup elixir" translate="no"><span class="n">bin</span><span class="o">/</span><span class="n">gamend_host</span><span class="w"> </span><span class="n">eval</span><span class="w"> </span><span class="sc">&#39;Gamend.Release.export(&quot;/tmp/export&quot;)&#39;</span></code></pre>
+  </section>
+</section>
 <section class="detail" id="migrate/0">
 
   <div class="detail-header">
@@ -300,7 +346,7 @@ exist is not an error.</p>
       <h1 class="signature" translate="no">migrate()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L32" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L33" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -328,7 +374,7 @@ exist is not an error.</p>
       <h1 class="signature" translate="no">prepare()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L73" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L109" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -360,7 +406,7 @@ image's command both run this.</p>
       <h1 class="signature" translate="no">rollback(opts)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L45" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L46" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -389,7 +435,7 @@ image's command both run this.</p>
       <h1 class="signature" translate="no">rollback(repo, version)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L38" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L39" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -417,7 +463,7 @@ image's command both run this.</p>
       <h1 class="signature" translate="no">seeds_file()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L88" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L124" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -445,9 +491,9 @@ or <code class="inline">nil</code> when there is none. <code class="inline">mix 
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1396">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1397">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1396">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1397">Hex Preview</a>
 
             </span>
 

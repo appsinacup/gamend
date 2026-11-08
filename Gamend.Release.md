@@ -41,6 +41,19 @@ the server provisions the database already can skip this entirely.
 Drops the database, mirroring `mix ecto.drop`. A database that does not
 exist is not an error.
 
+# `export`
+
+```elixir
+@spec export(Path.t(), keyword()) :: [String.t()]
+```
+
+Copies what only the application can into `dir` (`Gamend.Export`): a SQLite
+database and the stored files, or just the database with `files: false`.
+Prints what it wrote and raises when it cannot. A running server goes on
+serving, so it can run beside one:
+
+    bin/gamend_host eval 'Gamend.Release.export("/tmp/export")'
+
 # `migrate`
 
 ```elixir

@@ -63,6 +63,7 @@ This module reads that layout; the flat one stays where it was.
   image: String.t() | nil,
   keywords: [String.t()],
   icon: String.t(),
+  color: String.t(),
   position: integer() | nil,
   category: String.t() | nil,
   index?: boolean(),

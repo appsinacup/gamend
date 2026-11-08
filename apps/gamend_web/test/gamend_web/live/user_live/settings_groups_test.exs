@@ -270,13 +270,16 @@ defmodule GamendWeb.UserLive.SettingsGroupsTest do
     assert assigns(view).group_edit_form
     render_submit(view, "group_save_edit", %{"group" => %{"title" => "Renamed crew"}})
     assert Groups.get_group(mine.id).title == "Renamed crew"
-    refute assigns(view).group_editing
+    assert_redirect(view, "/users/settings?tab=groups")
 
+    view = page(conn, other, "&group=#{mine.id}")
     render_click(view, "group_toggle_edit", %{})
     assert assigns(view).group_edit_form[:icon_url].value == mine.icon_url
     render_submit(view, "group_save_edit", %{"group" => %{"icon_url" => "/icons/moon.svg"}})
     assert Groups.get_group(mine.id).icon_url == "/icons/moon.svg"
+    assert_redirect(view, "/users/settings?tab=groups")
 
+    view = page(conn, other, "&group=#{mine.id}")
     render_click(view, "group_close_detail", %{})
     assert assigns(view).group_detail == nil
   end

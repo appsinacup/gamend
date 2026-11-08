@@ -89,7 +89,9 @@ defmodule GamendWeb.UserLive.SettingsAvatarTest do
     |> form("#avatar_icon_form", avatar: %{profile_url: "/icons/rocket-launch.svg"})
     |> render_change()
 
-    assert Accounts.get_user(user.id).profile_url == "/icons/rocket-launch.svg"
+    # In the colour already chosen for it, with no click on a colour.
+    picked = Accounts.get_user(user.id).profile_url
+    assert picked =~ ~r{\A/icons/rocket-launch\.svg\?color=[a-z]+\z}
 
     assert has_element?(
              lv,
@@ -102,7 +104,7 @@ defmodule GamendWeb.UserLive.SettingsAvatarTest do
     # A forged pick of anything but one of the site's icons changes nothing.
     render_change(lv, "pick_avatar_icon", %{"avatar" => %{"profile_url" => "/icons/not-ours.svg"}})
 
-    assert Accounts.get_user(user.id).profile_url == "/icons/rocket-launch.svg"
+    assert Accounts.get_user(user.id).profile_url == picked
   end
 
   test "the icon picked in a colour is the avatar in it; with none picked, the id's is lit", %{

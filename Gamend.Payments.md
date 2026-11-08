@@ -95,6 +95,14 @@ Counts `list_user_entitlements/2`'s entitlements; takes `:include_inactive`.
 Whether the user has EVER held `key`, active or not. What a once-per-account
 grant (a trial) checks, since the row outlives its end.
 
+# `entitlement_extendable?`
+
+```elixir
+@spec entitlement_extendable?(Gamend.Payments.Entitlement.t()) :: boolean()
+```
+
+Whether `extend_entitlement/3` can give `entitlement` more time.
+
 # `entitlement_key`
 
 ```elixir
@@ -103,6 +111,24 @@ grant (a trial) checks, since the row outlives its end.
 
 The entitlement key a purchase of `product` for `subject` grants: the
 product's own, or `"<key>:<subject>"` for a per-subject product.
+
+# `extend_entitlement`
+
+```elixir
+@spec extend_entitlement(Ecto.UUID.t(), pos_integer(), keyword()) ::
+  {:ok, Gamend.Payments.Entitlement.t()} | {:error, term()}
+```
+
+Give an entitlement `days` more: after its end while it is still running,
+from now once it has ended or been revoked, which makes it active again. A
+trial lengthened by support, a reward renewed.
+
+Only a granted row with an end (`entitlement_extendable?/1`). A row a
+purchase made answers `{:error, :purchased}`, since its provider's next sync
+would set the end back; a row with no end, `{:error, :no_end}`; no row,
+`{:error, :entitlement_not_found}`.
+
+Options: `:metadata`, a map merged into the row's (`%{"extended_by" => id}`).
 
 # `finalize_steam_purchase`
 

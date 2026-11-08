@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1408">
+    <meta name="project" content="gamend_core v1.1.1409">
 
 
-    <title>Gamend.Payments — gamend_core v1.1.1408</title>
+    <title>Gamend.Payments — gamend_core v1.1.1409</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-91CEE4A6.js"></script>
+    <script defer src="dist/sidebar_items-5F62CD45.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1408
+          v1.1.1409
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Payments</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1408)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1409)</small>
 
     </h1>
 
@@ -327,12 +327,34 @@ grant (a trial) checks, since the row outlives its end.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#entitlement_extendable?/1" data-no-tooltip="" translate="no">entitlement_extendable?(entitlement)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether <a href="#extend_entitlement/3"><code class="inline">extend_entitlement/3</code></a> can give <code class="inline">entitlement</code> more time.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#entitlement_key/2" data-no-tooltip="" translate="no">entitlement_key(product, subject)</a>
 
       </div>
 
         <div class="summary-synopsis"><p>The entitlement key a purchase of <code class="inline">product</code> for <code class="inline">subject</code> grants: the
 product's own, or <code class="inline">&quot;&lt;key&gt;:&lt;subject&gt;&quot;</code> for a per-subject product.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#extend_entitlement/3" data-no-tooltip="" translate="no">extend_entitlement(id, days, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Give an entitlement <code class="inline">days</code> more: after its end while it is still running,
+from now once it has ended or been revoked, which makes it active again. A
+trial lengthened by support, a reward renewed.</p></div>
 
     </div>
 
@@ -839,7 +861,7 @@ makes it active again.</p></div>
       <h1 class="signature" translate="no">admin_stats()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1028" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1073" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -961,7 +983,7 @@ makes it active again.</p></div>
       <h1 class="signature" translate="no">count_entitlements(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1058" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1103" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -985,7 +1007,7 @@ makes it active again.</p></div>
       <h1 class="signature" translate="no">count_products(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1040" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1085" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1009,7 +1031,7 @@ makes it active again.</p></div>
       <h1 class="signature" translate="no">count_provider_events(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1064" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1109" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1033,7 +1055,7 @@ makes it active again.</p></div>
       <h1 class="signature" translate="no">count_provider_products(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1046" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1091" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1057,7 +1079,7 @@ makes it active again.</p></div>
       <h1 class="signature" translate="no">count_purchases(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1052" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1097" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1081,7 +1103,7 @@ makes it active again.</p></div>
       <h1 class="signature" translate="no">count_reconciliation_cursors(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1070" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1115" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1307,7 +1329,7 @@ makes it active again.</p></div>
       <h1 class="signature" translate="no">entitlement_ever?(user_id, key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L974" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1019" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1326,6 +1348,34 @@ makes it active again.</p></div>
 grant (a trial) checks, since the row outlives its end.</p>
   </section>
 </section>
+<section class="detail" id="entitlement_extendable?/1">
+
+  <div class="detail-header">
+    <a href="#entitlement_extendable?/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">entitlement_extendable?(entitlement)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L978" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> entitlement_extendable?(<a href="Gamend.Payments.Entitlement.html#t:t/0">Gamend.Payments.Entitlement.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether <a href="#extend_entitlement/3"><code class="inline">extend_entitlement/3</code></a> can give <code class="inline">entitlement</code> more time.</p>
+  </section>
+</section>
 <section class="detail" id="entitlement_key/2">
 
   <div class="detail-header">
@@ -1336,7 +1386,7 @@ grant (a trial) checks, since the row outlives its end.</p>
       <h1 class="signature" translate="no">entitlement_key(product, subject)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1012" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1057" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1353,6 +1403,42 @@ grant (a trial) checks, since the row outlives its end.</p>
 
 <p>The entitlement key a purchase of <code class="inline">product</code> for <code class="inline">subject</code> grants: the
 product's own, or <code class="inline">&quot;&lt;key&gt;:&lt;subject&gt;&quot;</code> for a per-subject product.</p>
+  </section>
+</section>
+<section class="detail" id="extend_entitlement/3">
+
+    <span id="extend_entitlement/2"></span>
+
+  <div class="detail-header">
+    <a href="#extend_entitlement/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">extend_entitlement(id, days, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L952" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> extend_entitlement(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) ::
+  {:ok, <a href="Gamend.Payments.Entitlement.html#t:t/0">Gamend.Payments.Entitlement.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>Give an entitlement <code class="inline">days</code> more: after its end while it is still running,
+from now once it has ended or been revoked, which makes it active again. A
+trial lengthened by support, a reward renewed.</p><p>Only a granted row with an end (<a href="#entitlement_extendable?/1"><code class="inline">entitlement_extendable?/1</code></a>). A row a
+purchase made answers <code class="inline">{:error, :purchased}</code>, since its provider's next sync
+would set the end back; a row with no end, <code class="inline">{:error, :no_end}</code>; no row,
+<code class="inline">{:error, :entitlement_not_found}</code>.</p><p>Options: <code class="inline">:metadata</code>, a map merged into the row's (<code class="inline">%{&quot;extended_by&quot; =&gt; id}</code>).</p>
   </section>
 </section>
 <section class="detail" id="finalize_steam_purchase/2">
@@ -1654,7 +1740,7 @@ one original id, so there may be several.</p>
       <h1 class="signature" translate="no">get_user_entitlement_by_key(user_id, key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L980" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1025" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1819,7 +1905,7 @@ paid plan and its trial, on every render) costs one query between changes.</p>
       <h1 class="signature" translate="no">list_admin_entitlements(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1055" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1100" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1843,7 +1929,7 @@ paid plan and its trial, on every render) costs one query between changes.</p>
       <h1 class="signature" translate="no">list_admin_products(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1037" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1082" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1867,7 +1953,7 @@ paid plan and its trial, on every render) costs one query between changes.</p>
       <h1 class="signature" translate="no">list_admin_provider_products(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1043" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1088" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1891,7 +1977,7 @@ paid plan and its trial, on every render) costs one query between changes.</p>
       <h1 class="signature" translate="no">list_admin_purchases(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1049" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1094" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1980,7 +2066,7 @@ paid plan and its trial, on every render) costs one query between changes.</p>
       <h1 class="signature" translate="no">list_provider_events(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1061" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1106" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2004,7 +2090,7 @@ paid plan and its trial, on every render) costs one query between changes.</p>
       <h1 class="signature" translate="no">list_reconciliation_cursors(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1067" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1112" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2089,7 +2175,7 @@ paid plan and its trial, on every render) costs one query between changes.</p>
       <h1 class="signature" translate="no">mark_event_processed(event)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1112" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1157" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2119,7 +2205,7 @@ event id count as a duplicate.</p>
       <h1 class="signature" translate="no">per_subject?(product)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L997" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1042" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2151,7 +2237,7 @@ subjects. Plan upgrades (<code class="inline">Upgrades</code>) never apply to on
       <h1 class="signature" translate="no">product_entitlement_key(product)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L984" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1029" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2179,7 +2265,7 @@ subjects. Plan upgrades (<code class="inline">Upgrades</code>) never apply to on
       <h1 class="signature" translate="no">provider_adapter_statuses()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1034" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1079" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2201,7 +2287,7 @@ subjects. Plan upgrades (<code class="inline">Upgrades</code>) never apply to on
       <h1 class="signature" translate="no">provider_error_code(reason)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1338" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1383" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2231,7 +2317,7 @@ ours, never the message.</p>
       <h1 class="signature" translate="no">purchase_entitlement_key(purchase)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1020" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1065" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2283,7 +2369,7 @@ ours, never the message.</p>
       <h1 class="signature" translate="no">record_provider_event(provider, event_id, event_type, payload, metadata \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1074" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1119" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2482,7 +2568,7 @@ No row answers <code class="inline">{:error, :entitlement_not_found}</code>.</p>
       <h1 class="signature" translate="no">stripe_config_status()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1031" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1076" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2550,7 +2636,7 @@ No row answers <code class="inline">{:error, :entitlement_not_found}</code>.</p>
       <h1 class="signature" translate="no">subject(arg1)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1004" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments.ex#L1049" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2665,9 +2751,9 @@ No row answers <code class="inline">{:error, :entitlement_not_found}</code>.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1408">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1409">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1408">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1409">Hex Preview</a>
 
             </span>
 

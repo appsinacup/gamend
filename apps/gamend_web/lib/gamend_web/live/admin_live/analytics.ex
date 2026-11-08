@@ -17,6 +17,9 @@ defmodule GamendWeb.AdminLive.Analytics do
   alias Gamend.Analytics.Catalog
   alias Gamend.Analytics.Segment
 
+  require GamendWeb.FilterValue, as: FilterValue
+  require GamendWeb.UrlParam, as: UrlParam
+
   @windows [30, 90]
 
   @impl true
@@ -29,7 +32,7 @@ defmodule GamendWeb.AdminLive.Analytics do
     {:noreply,
      socket
      |> assign(:segment, Segment.parse(params["segment"]))
-     |> assign(:days, int_param(params, "days", @windows, 30))
+     |> assign(:days, int_param(params, UrlParam.days(), @windows, 30))
      |> load()}
   end
 
@@ -78,7 +81,7 @@ defmodule GamendWeb.AdminLive.Analytics do
         changes
       )
 
-    link_to("/admin/analytics", params, %{"segment" => "all", "days" => "30"})
+    link_to("/admin/analytics", params, %{"segment" => FilterValue.everything(), "days" => "30"})
   end
 
   @impl true

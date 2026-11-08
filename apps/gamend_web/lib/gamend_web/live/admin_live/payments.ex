@@ -13,6 +13,14 @@ defmodule GamendWeb.AdminLive.Payments do
     reload: :reload_all,
     keys: [pages: [keys: @sections, min: 1]]
 
+  require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
+  require Gamend.Payments.ProductKind, as: ProductKind
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+  require Gamend.Payments.StripeIdPrefix, as: StripeIdPrefix
+  require Gamend.Payments.StripeKeyMode, as: StripeKeyMode
+  require GamendWeb.CheckboxValue, as: CheckboxValue
+
   @impl true
   def mount(_params, _session, socket) do
     pages = Map.new(@sections, &{&1, 1})
@@ -827,7 +835,7 @@ defmodule GamendWeb.AdminLive.Payments do
       "sku" => "",
       "title" => "",
       "description" => "",
-      "kind" => "entitlement",
+      "kind" => ProductKind.entitlement(),
       "active" => "true",
       "grant_config_json" => "{}",
       "metadata_json" => "{}"
@@ -861,7 +869,7 @@ defmodule GamendWeb.AdminLive.Payments do
     params = %{
       "id" => "",
       "product_id" => product_id || "",
-      "provider" => "stripe",
+      "provider" => ProviderId.stripe(),
       "external_id" => "",
       "currency" => "USD",
       "unit_amount" => "",
@@ -956,7 +964,7 @@ defmodule GamendWeb.AdminLive.Payments do
 
   defp parse_int(_value), do: nil
 
-  defp parse_bool(value) when value in [true, "true", "on", "1", 1], do: true
+  defp parse_bool(value) when value in [true, "true", CheckboxValue.on(), "1", 1], do: true
   defp parse_bool(_value), do: false
 
   defp normalize_blank(nil), do: nil
@@ -1020,25 +1028,25 @@ defmodule GamendWeb.AdminLive.Payments do
   defp active_badge(false),
     do: Phoenix.HTML.raw(~s(<span class="badge badge-ghost">inactive</span>))
 
-  defp provider_badge_class("stripe"), do: "badge-primary"
-  defp provider_badge_class("apple"), do: "badge-neutral"
-  defp provider_badge_class("google"), do: "badge-success"
-  defp provider_badge_class("steam"), do: "badge-info"
+  defp provider_badge_class(ProviderId.stripe()), do: "badge-primary"
+  defp provider_badge_class(ProviderId.apple()), do: "badge-neutral"
+  defp provider_badge_class(ProviderId.google()), do: "badge-success"
+  defp provider_badge_class(ProviderId.steam()), do: "badge-info"
   defp provider_badge_class(_provider), do: "badge-ghost"
 
-  defp adapter_status_summary(%{provider: "stripe"} = status) do
+  defp adapter_status_summary(%{provider: ProviderId.stripe()} = status) do
     "checkout=#{yes_no(status.secret_key_configured)} webhook=#{yes_no(status.webhook_secret_configured)} env=#{status.environment}"
   end
 
-  defp adapter_status_summary(%{provider: "google"} = status) do
+  defp adapter_status_summary(%{provider: ProviderId.google()} = status) do
     "package=#{yes_no(status.package_name_configured)} service_account=#{yes_no(status.service_account_configured)} rtdn=#{yes_no(status.rtdn_token_configured)} auto_ack=#{yes_no(status.auto_acknowledge)}"
   end
 
-  defp adapter_status_summary(%{provider: "apple"} = status) do
+  defp adapter_status_summary(%{provider: ProviderId.apple()} = status) do
     "bundle=#{yes_no(status.bundle_id_configured)} issuer=#{yes_no(status.issuer_id_configured)} key=#{yes_no(status.key_id_configured)} private_key=#{yes_no(status.private_key_configured)} env=#{status.environment}"
   end
 
-  defp adapter_status_summary(%{provider: "steam"} = status) do
+  defp adapter_status_summary(%{provider: ProviderId.steam()} = status) do
     "api_key=#{yes_no(status.api_key_configured)} app_id=#{yes_no(status.app_id_configured)} env=#{status.environment}"
   end
 
@@ -1047,25 +1055,39 @@ defmodule GamendWeb.AdminLive.Payments do
   defp yes_no(true), do: "yes"
   defp yes_no(_value), do: "no"
 
-  defp status_badge_class("completed"), do: "badge-success"
-  defp status_badge_class(status) when status in ["refunded", "revoked"], do: "badge-error"
+  defp status_badge_class(PurchaseStatus.completed()), do: "badge-success"
 
-  defp status_badge_class(status) when status in ["pending", "requires_action"],
-    do: "badge-warning"
+  defp status_badge_class(status)
+       when status in [PurchaseStatus.refunded(), PurchaseStatus.revoked()], do: "badge-error"
+
+  defp status_badge_class(status)
+       when status in [PurchaseStatus.pending(), PurchaseStatus.requires_action()],
+       do: "badge-warning"
 
   defp status_badge_class(_status), do: "badge-ghost"
 
   defp stripe_reconcile_available?(
-         %{provider: "stripe", provider_transaction_id: "cs_" <> _rest} = p
+         %{
+           provider: ProviderId.stripe(),
+           provider_transaction_id: StripeIdPrefix.checkout_session() <> _rest
+         } = p
        ) do
-    p.status in ["pending", "requires_action", "failed", "cancelled"] or
+    p.status in [
+      PurchaseStatus.pending(),
+      PurchaseStatus.requires_action(),
+      PurchaseStatus.failed(),
+      PurchaseStatus.cancelled()
+    ] or
       stripe_completed_subscription?(p)
   end
 
   defp stripe_reconcile_available?(_purchase), do: false
 
-  defp stripe_completed_subscription?(%{status: "completed", product: %{kind: "subscription"}}),
-    do: true
+  defp stripe_completed_subscription?(%{
+         status: PurchaseStatus.completed(),
+         product: %{kind: ProductKind.subscription()}
+       }),
+       do: true
 
   defp stripe_completed_subscription?(_purchase), do: false
 
@@ -1083,12 +1105,12 @@ defmodule GamendWeb.AdminLive.Payments do
   defp admin_error(reason) when is_atom(reason), do: Atom.to_string(reason)
   defp admin_error(reason), do: inspect(reason)
 
-  defp entitlement_badge_class("active"), do: "badge-success"
-  defp entitlement_badge_class("revoked"), do: "badge-error"
+  defp entitlement_badge_class(EntitlementStatus.active()), do: "badge-success"
+  defp entitlement_badge_class(EntitlementStatus.revoked()), do: "badge-error"
   defp entitlement_badge_class(_status), do: "badge-ghost"
 
-  defp mode_badge_class("live"), do: "badge-success"
-  defp mode_badge_class("test"), do: "badge-info"
+  defp mode_badge_class(StripeKeyMode.live()), do: "badge-success"
+  defp mode_badge_class(StripeKeyMode.test()), do: "badge-info"
   defp mode_badge_class(_mode), do: "badge-ghost"
 
   defp changeset_error_summary(changeset) do

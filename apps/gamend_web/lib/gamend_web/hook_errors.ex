@@ -12,9 +12,11 @@ defmodule GamendWeb.HookErrors do
   `hook_error`, or its kind, with the detail as the message.
   """
 
+  require GamendWeb.HookErrorCode, as: HookErrorCode
+
   @doc "The error code, and the message when there is one, for a hook's error reason."
   @spec describe(term()) :: {String.t(), String.t() | nil}
-  def describe({:exception, _message}), do: {"exception", nil}
+  def describe({:exception, _message}), do: {HookErrorCode.exception(), nil}
 
   def describe({:function_clause, message}) when is_binary(message),
     do: {"function_clause", message}
@@ -22,15 +24,17 @@ defmodule GamendWeb.HookErrors do
   def describe({kind, reason}) when is_atom(kind) do
     if code?(kind),
       do: {Atom.to_string(kind), inspect(reason)},
-      else: {"hook_error", inspect({kind, reason})}
+      else: {HookErrorCode.hook_error(), inspect({kind, reason})}
   end
 
   def describe(reason) when is_atom(reason) do
-    if code?(reason), do: {Atom.to_string(reason), nil}, else: {"hook_error", inspect(reason)}
+    if code?(reason),
+      do: {Atom.to_string(reason), nil},
+      else: {HookErrorCode.hook_error(), inspect(reason)}
   end
 
-  def describe(reason) when is_binary(reason), do: {"hook_error", reason}
-  def describe(reason), do: {"hook_error", inspect(reason)}
+  def describe(reason) when is_binary(reason), do: {HookErrorCode.hook_error(), reason}
+  def describe(reason), do: {HookErrorCode.hook_error(), inspect(reason)}
 
   @doc "The error body for a hook's error reason: `%{error: code}`, plus `message` when there is one."
   @spec reply(term()) :: %{required(:error) => String.t(), optional(:message) => String.t()}

@@ -8,6 +8,7 @@ defmodule GamendWeb.Api.V1.ResultController do
   use OpenApiSpex.ControllerSpecs
 
   alias Gamend.Accounts.Scope
+  alias Gamend.Results.ResultStatus
   alias GamendWeb.ResultReads
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.{PlayResultEventsResponse, PlayResultPage, PlayResultResponse}
@@ -22,7 +23,11 @@ defmodule GamendWeb.Api.V1.ResultController do
     security: [%{"authorization" => []}],
     parameters: [
       kind: [in: :query, schema: %Schema{type: :string}, required: false],
-      status: [in: :query, schema: %Schema{type: :string, enum: ~w(open ended)}, required: false],
+      status: [
+        in: :query,
+        schema: %Schema{type: :string, enum: ResultStatus.all()},
+        required: false
+      ],
       page: [in: :query, schema: %Schema{type: :integer, default: 1}, required: false],
       page_size: [in: :query, schema: %Schema{type: :integer, default: 25}, required: false]
     ],

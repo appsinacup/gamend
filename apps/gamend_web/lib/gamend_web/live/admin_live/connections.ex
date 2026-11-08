@@ -5,6 +5,13 @@ defmodule GamendWeb.AdminLive.Connections do
   alias GamendWeb.ConnectionTracker
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.ChannelTopic, as: ChannelTopic
+  require GamendWeb.FilterValue, as: FilterValue
+  require GamendWeb.UrlParam, as: UrlParam
+
+  @unknown "unknown"
+  @websocket "websocket"
+
   @refresh_interval 3_000
 
   @impl true
@@ -334,7 +341,7 @@ defmodule GamendWeb.AdminLive.Connections do
 
   use GamendWeb.UrlState,
     reload: :assign_all,
-    keys: [conn_page: [param: "page"], conn_filter: [param: "filter"]]
+    keys: [conn_page: [param: UrlParam.page()], conn_filter: [param: UrlParam.filter()]]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -342,7 +349,7 @@ defmodule GamendWeb.AdminLive.Connections do
 
     socket =
       socket
-      |> assign(conn_page: 1, conn_filter: "all")
+      |> assign(conn_page: 1, conn_filter: FilterValue.everything())
       |> assign_all()
 
     {:ok, socket}
@@ -385,7 +392,7 @@ defmodule GamendWeb.AdminLive.Connections do
 
     filtered =
       case filter do
-        "websocket" -> Enum.filter(connected_users, &(&1.channels != []))
+        @websocket -> Enum.filter(connected_users, &(&1.channels != []))
         "liveview" -> Enum.filter(connected_users, & &1.live_view)
         "webrtc" -> Enum.filter(connected_users, & &1.webrtc)
         _all -> connected_users
@@ -419,10 +426,10 @@ defmodule GamendWeb.AdminLive.Connections do
 
   defp build_connected_users(all) do
     channel_types = [
-      {:user_channel, "user"},
-      {:lobby_channel, "lobby"},
-      {:group_channel, "group"},
-      {:party_channel, "party"}
+      {:user_channel, ChannelTopic.user()},
+      {:lobby_channel, ChannelTopic.lobby()},
+      {:group_channel, ChannelTopic.group()},
+      {:party_channel, ChannelTopic.party()}
     ]
 
     user_data =
@@ -434,7 +441,7 @@ defmodule GamendWeb.AdminLive.Connections do
     user_data =
       Enum.reduce(Map.get(all, :live_view, []), user_data, fn {_pid, meta}, acc ->
         user_id = Map.get(meta, :user_id)
-        module = Map.get(meta, :module, "unknown")
+        module = Map.get(meta, :module, @unknown)
 
         if user_id do
           Map.update(
@@ -494,7 +501,7 @@ defmodule GamendWeb.AdminLive.Connections do
   defp build_live_view_pages(all) do
     all
     |> Map.get(:live_view, [])
-    |> Enum.map(fn {_pid, meta} -> Map.get(meta, :module, "unknown") end)
+    |> Enum.map(fn {_pid, meta} -> Map.get(meta, :module, @unknown) end)
     |> Enum.frequencies()
     |> Enum.sort_by(fn {_, count} -> count end, :desc)
   end

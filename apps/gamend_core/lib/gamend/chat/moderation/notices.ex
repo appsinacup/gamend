@@ -22,6 +22,11 @@ defmodule Gamend.Chat.Moderation.Notices do
   alias Gamend.Bans.Ban
   alias Gamend.Notifications
 
+  require Gamend.Bans.BanScope, as: BanScope
+  require Gamend.Chat.ChatReportStatus, as: ChatReportStatus
+
+  @chat "chat"
+
   @report_title "New chat reports"
   @mute_title "You have been muted"
   @warning_title "Warning from the moderators"
@@ -90,7 +95,7 @@ defmodule Gamend.Chat.Moderation.Notices do
 
   @doc "Default body for the reply a reporter receives once their report is handled."
   @spec default_reporter_message(String.t()) :: String.t()
-  def default_reporter_message("dismissed") do
+  def default_reporter_message(ChatReportStatus.dismissed()) do
     "Thanks for the report. A moderator reviewed it and decided no action was needed."
   end
 
@@ -143,7 +148,7 @@ defmodule Gamend.Chat.Moderation.Notices do
 
   defp deliver(_user_id, _title, _content, _metadata), do: :ok
 
-  defp scope_phrase("global"), do: "chat"
+  defp scope_phrase(BanScope.global()), do: @chat
   defp scope_phrase(scope), do: "this #{scope}'s chat"
 
   defp duration_phrase(nil), do: ""

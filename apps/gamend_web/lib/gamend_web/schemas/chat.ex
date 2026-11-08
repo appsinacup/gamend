@@ -6,6 +6,8 @@ defmodule GamendWeb.Schemas.ChatMessage do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  require Gamend.Chat.ChatType, as: ChatType
+
   OpenApiSpex.schema(%{
     title: "ChatMessage",
     description: "A chat message",
@@ -16,7 +18,10 @@ defmodule GamendWeb.Schemas.ChatMessage do
       metadata: %Schema{type: :object},
       sender_id: %Schema{type: :string, format: :uuid},
       sender_name: %Schema{type: :string, description: "Sender's display name"},
-      chat_type: %Schema{type: :string, enum: ["lobby", "group", "party", "friend"]},
+      chat_type: %Schema{
+        type: :string,
+        enum: [ChatType.lobby(), ChatType.group(), ChatType.party(), ChatType.friend()]
+      },
       chat_ref_id: %Schema{
         type: :string,
         format: :uuid,
@@ -90,6 +95,9 @@ defmodule GamendWeb.Schemas.ChatMuteRecord do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  require Gamend.Bans.BanScope, as: BanScope
+  require Gamend.Chat.ChatType, as: ChatType
+
   OpenApiSpex.schema(%{
     title: "ChatMuteRecord",
     description: "A chat mute",
@@ -97,7 +105,10 @@ defmodule GamendWeb.Schemas.ChatMuteRecord do
     properties: %{
       id: %Schema{type: :string, format: :uuid},
       user_id: %Schema{type: :string, format: :uuid, description: "The muted player"},
-      scope: %Schema{type: :string, enum: ["global", "lobby", "group", "party"]},
+      scope: %Schema{
+        type: :string,
+        enum: [BanScope.global(), ChatType.lobby(), ChatType.group(), ChatType.party()]
+      },
       scope_ref_id: %Schema{
         type: :string,
         description: "The lobby, group or party; empty when global"

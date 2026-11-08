@@ -10,6 +10,8 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   tags(["Admin – Notifications"])
 
   operation(:index,
@@ -119,9 +121,9 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
 
     filters =
       %{}
-      |> maybe_put_filter("user_id", params["user_id"])
-      |> maybe_put_filter("sender_id", params["sender_id"])
-      |> maybe_put_filter("title", params["title"])
+      |> maybe_put_filter(UrlParam.user_id(), params["user_id"])
+      |> maybe_put_filter(UrlParam.sender_id(), params["sender_id"])
+      |> maybe_put_filter(UrlParam.title(), params["title"])
 
     notifications =
       Notifications.list_all_notifications(filters, page: page, page_size: page_size)

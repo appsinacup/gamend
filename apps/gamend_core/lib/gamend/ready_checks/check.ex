@@ -25,6 +25,9 @@ defmodule Gamend.ReadyChecks.Check do
   alias Gamend.Parties.Party
   alias Gamend.ReadyChecks.Participant
 
+  require Gamend.ReadyChecks.CheckKind, as: CheckKind
+  require Gamend.ReadyChecks.CheckStatus, as: CheckStatus
+
   @type t :: %__MODULE__{}
 
   @kinds ~w(accept ready)
@@ -33,7 +36,7 @@ defmodule Gamend.ReadyChecks.Check do
 
   schema "ready_checks" do
     field :kind, :string
-    field :status, :string, default: "pending"
+    field :status, :string, default: CheckStatus.pending()
     field :deadline_at, :utc_datetime
     field :reason, :string
     field :resolved_at, :utc_datetime
@@ -100,7 +103,8 @@ defmodule Gamend.ReadyChecks.Check do
   # An accept check with no deadline_at would strand a whole match on one absent
   # player, so the deadline_at is part of what "accept" means.
   defp validate_accept_deadline(changeset) do
-    if get_field(changeset, :kind) == "accept" and is_nil(get_field(changeset, :deadline_at)) do
+    if get_field(changeset, :kind) == CheckKind.accept() and
+         is_nil(get_field(changeset, :deadline_at)) do
       add_error(changeset, :deadline_at, "is required for accept checks")
     else
       changeset

@@ -50,6 +50,12 @@ defmodule Gamend.Payments.Upgrades do
   alias Gamend.Payments.StripeRefunds
   alias Gamend.Repo
 
+  require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
+  require Gamend.Payments.ProductKind, as: ProductKind
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+  require Gamend.Payments.StripeStatus, as: StripeStatus
+
   # Stripe refuses a trial ending within 48 hours (`Providers.Stripe` drops one
   # under 48 h 5 min) or more than two years out. Ten minutes over, so the page
   # that names the date and the checkout that sets it agree.
@@ -85,7 +91,7 @@ defmodule Gamend.Payments.Upgrades do
   """
   @spec replaced_purchase(Ecto.UUID.t() | nil, Product.t()) :: Purchase.t() | nil
   def replaced_purchase(user_id, %Product{kind: kind} = product)
-      when is_binary(user_id) and kind in ~w(entitlement subscription) do
+      when is_binary(user_id) and kind in [ProductKind.entitlement(), ProductKind.subscription()] do
     with false <- Payments.per_subject?(product),
          %Purchase{} = purchase <-
            holding_purchase(user_id, Payments.product_entitlement_key(product)),
@@ -119,9 +125,9 @@ defmodule Gamend.Payments.Upgrades do
     end
   end
 
-  defp span(%Product{kind: "entitlement"}), do: :forever
+  defp span(%Product{kind: ProductKind.entitlement()}), do: :forever
 
-  defp span(%Product{kind: "subscription", grant_config: config}),
+  defp span(%Product{kind: ProductKind.subscription(), grant_config: config}),
     do: Params.parse_positive_int((config || %{})["duration_seconds"], 0)
 
   defp span(%Product{}), do: 0
@@ -136,7 +142,7 @@ defmodule Gamend.Payments.Upgrades do
   @spec first_charge_at(Ecto.UUID.t() | nil, Product.t(), DateTime.t()) :: DateTime.t() | nil
   def first_charge_at(user_id, product, now \\ DateTime.utc_now(:second))
 
-  def first_charge_at(user_id, %Product{kind: "subscription"} = product, now) do
+  def first_charge_at(user_id, %Product{kind: ProductKind.subscription()} = product, now) do
     with %Purchase{} = old <- replaced_purchase(user_id, product),
          %DateTime{} = ends_at <- period_end(old),
          seconds = DateTime.diff(ends_at, now),
@@ -174,7 +180,8 @@ defmodule Gamend.Payments.Upgrades do
 
     purchase_id = purchase.id
 
-    with %Product{kind: kind} = product when kind in ~w(entitlement subscription) <-
+    with %Product{kind: kind} = product
+         when kind in [ProductKind.entitlement(), ProductKind.subscription()] <-
            purchase.product,
          false <- Payments.per_subject?(product),
          key = Payments.product_entitlement_key(product),
@@ -202,8 +209,9 @@ defmodule Gamend.Payments.Upgrades do
       join: e in Entitlement,
       on: e.user_id == p.user_id and e.source_purchase_id != p.id,
       where:
-        p.provider == "stripe" and p.status == "completed" and product.kind == "subscription" and
-          e.status == "active",
+        p.provider == ^ProviderId.stripe() and p.status == ^PurchaseStatus.completed() and
+          product.kind == ^ProductKind.subscription() and
+          e.status == ^EntitlementStatus.active(),
       select: {e.source_purchase_id, e.key, %{p | product: product}}
     )
     |> Repo.all()
@@ -217,7 +225,7 @@ defmodule Gamend.Payments.Upgrades do
     |> Enum.take(batch)
     |> Enum.flat_map(fn id ->
       case Payments.get_purchase(id) do
-        %Purchase{status: "completed"} = holder ->
+        %Purchase{status: PurchaseStatus.completed()} = holder ->
           {:ok, results} = supersede(holder)
           results
 
@@ -236,7 +244,8 @@ defmodule Gamend.Payments.Upgrades do
   defp running_subscriptions(user_id, key, except_id) do
     from(p in Purchase,
       where:
-        p.user_id == ^user_id and p.provider == "stripe" and p.status == "completed" and
+        p.user_id == ^user_id and p.provider == ^ProviderId.stripe() and
+          p.status == ^PurchaseStatus.completed() and
           p.id != ^except_id,
       preload: [:product]
     )
@@ -250,13 +259,16 @@ defmodule Gamend.Payments.Upgrades do
 
   defp running_stripe_subscription?(
          %Purchase{
-           provider: "stripe",
-           status: "completed",
-           product: %Product{kind: "subscription"}
+           provider: ProviderId.stripe(),
+           status: PurchaseStatus.completed(),
+           product: %Product{kind: ProductKind.subscription()}
          } = purchase
        ),
        do:
-         (purchase.metadata || %{})["stripe_subscription_status"] not in ~w(canceled incomplete_expired)
+         (purchase.metadata || %{})["stripe_subscription_status"] not in [
+           StripeStatus.canceled(),
+           StripeStatus.incomplete_expired()
+         ]
 
   defp running_stripe_subscription?(_purchase), do: false
 
@@ -339,7 +351,7 @@ defmodule Gamend.Payments.Upgrades do
   # nil when it was charged at once.
   defp deferred_start(%Purchase{raw_provider_payload: payload}) do
     case (payload || %{})["stripe_subscription"] do
-      %{"status" => "trialing", "trial_end" => trial_end} ->
+      %{"status" => StripeStatus.trialing(), "trial_end" => trial_end} ->
         Params.unix_seconds_to_datetime(trial_end)
 
       _charged ->
@@ -373,7 +385,7 @@ defmodule Gamend.Payments.Upgrades do
   end
 
   defp cancel_now(_adapter, %{"status" => status}, _old)
-       when status in ["canceled", "incomplete_expired"],
+       when status in [StripeStatus.canceled(), StripeStatus.incomplete_expired()],
        do: :ok
 
   defp cancel_now(adapter, %{"id" => subscription_id}, %Purchase{id: id}) do
@@ -463,7 +475,7 @@ defmodule Gamend.Payments.Upgrades do
     Repo.one(
       from e in Entitlement,
         where:
-          e.user_id == ^user_id and e.key == ^key and e.status == "active" and
+          e.user_id == ^user_id and e.key == ^key and e.status == ^EntitlementStatus.active() and
             (is_nil(e.expires_at) or e.expires_at > ^now),
         preload: [source_purchase: :product]
     )

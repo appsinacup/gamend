@@ -7,6 +7,8 @@ defmodule Gamend.Economy.LedgerEntry do
   use Gamend.Schema
   import Ecto.Changeset
 
+  require Gamend.LedgerReason, as: LedgerReason
+
   @type t :: %__MODULE__{}
 
   schema "ledger_entries" do
@@ -15,7 +17,7 @@ defmodule Gamend.Economy.LedgerEntry do
     # +grant / -spend; balance_after is the wallet balance right after this row.
     field :delta, :integer
     field :balance_after, :integer
-    field :reason, :string, default: "unspecified"
+    field :reason, :string, default: LedgerReason.unspecified()
     field :idempotency_key, :string
     field :metadata, :map, default: %{}
 

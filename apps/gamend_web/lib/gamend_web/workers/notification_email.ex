@@ -22,13 +22,15 @@ defmodule GamendWeb.Workers.NotificationEmail do
   alias Gamend.Notifications.Preferences
   alias GamendWeb.NotificationEmail
 
+  require Gamend.Notifications.NotificationChannel, as: NotificationChannel
+
   @impl Oban.Worker
   def timeout(_job), do: :timer.seconds(60)
 
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"user_id" => user_id, "group" => group} = args}) do
     with %User{email: email} = user when is_binary(email) <- Accounts.get_user(user_id),
-         true <- Preferences.enabled?(user, group, "email") do
+         true <- Preferences.enabled?(user, group, NotificationChannel.email()) do
       body =
         NotificationEmail.in_locale(AccountPreferences.locale(user), fn ->
           NotificationEmail.body(user.id, group, args["text"] || "", args["url"])

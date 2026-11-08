@@ -17,6 +17,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.Shared
 
+  require Gamend.Storage.StoragePrefix, as: StoragePrefix
+
   def assign_defaults(socket, user) do
     email_changeset = Accounts.change_user_email(user, %{}, validate_unique: false)
     password_changeset = Accounts.change_user_password(user, %{}, hash_password: false)
@@ -544,7 +546,13 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
             {:ok, :not_an_image}
 
           content_type ->
-            key = Storage.build_key("avatars", user.id, Storage.extension_for(content_type))
+            key =
+              Storage.build_key(
+                StoragePrefix.avatars(),
+                user.id,
+                Storage.extension_for(content_type)
+              )
+
             {:ok, _} = Storage.put(key, data, content_type: content_type)
             {:ok, {key, Storage.url(key)}}
         end

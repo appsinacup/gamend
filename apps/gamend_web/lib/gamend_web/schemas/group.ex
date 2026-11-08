@@ -8,6 +8,9 @@ defmodule GamendWeb.Schemas.Group do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  require Gamend.Groups.GroupType, as: GroupType
+  require Gamend.LocaleCode, as: LocaleCode
+
   OpenApiSpex.schema(%{
     title: "Group",
     description: "A group",
@@ -24,7 +27,7 @@ defmodule GamendWeb.Schemas.Group do
       icon_url: %Schema{type: :string, description: "Empty when unset"},
       type: %Schema{
         type: :string,
-        enum: ["public", "private", "hidden"],
+        enum: GroupType.all(),
         description: "Who may join and who may see it"
       },
       max_members: %Schema{type: :integer},
@@ -57,9 +60,9 @@ defmodule GamendWeb.Schemas.Group do
       slug: "awesome-guild",
       description: "A group for awesome players",
       icon_url: "",
-      type: "public",
+      type: GroupType.public(),
       max_members: 100,
-      metadata: %{"lang_tag" => "en"},
+      metadata: %{"lang_tag" => LocaleCode.en()},
       creator_id: "0198c0de-0002-7000-8000-000000000002",
       creator_name: "AwesomePlayer",
       member_count: 12,
@@ -80,6 +83,7 @@ defmodule GamendWeb.Schemas.GroupMember do
   false, `last_seen_at` the epoch) rather than left out.
   """
   require OpenApiSpex
+  alias Gamend.Groups.GroupRole
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -90,7 +94,7 @@ defmodule GamendWeb.Schemas.GroupMember do
       id: %Schema{type: :string, format: :uuid, description: "The membership row id"},
       user_id: %Schema{type: :string, format: :uuid},
       group_id: %Schema{type: :string, format: :uuid},
-      role: %Schema{type: :string, enum: ["admin", "member"]},
+      role: %Schema{type: :string, enum: GroupRole.all()},
       username: %Schema{type: :string},
       display_name: %Schema{type: :string},
       profile_url: %Schema{
@@ -125,6 +129,7 @@ end
 defmodule GamendWeb.Schemas.GroupJoinRequest do
   @moduledoc "A request to join a private group, with the requester's names."
   require OpenApiSpex
+  alias Gamend.Groups.JoinRequestStatus
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -135,7 +140,10 @@ defmodule GamendWeb.Schemas.GroupJoinRequest do
       id: %Schema{type: :string, format: :uuid},
       user_id: %Schema{type: :string, format: :uuid},
       group_id: %Schema{type: :string, format: :uuid},
-      status: %Schema{type: :string, enum: ["pending", "accepted", "rejected"]},
+      status: %Schema{
+        type: :string,
+        enum: JoinRequestStatus.all()
+      },
       username: %Schema{type: :string},
       display_name: %Schema{type: :string},
       inserted_at: %Schema{type: :string, format: :"date-time"}
@@ -217,6 +225,8 @@ defmodule GamendWeb.Schemas.GroupInviteOutcome do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  require GamendWeb.JoinOutcome, as: JoinOutcome
+
   OpenApiSpex.schema(%{
     title: "GroupInviteOutcome",
     description: "The result of an invitation",
@@ -224,7 +234,7 @@ defmodule GamendWeb.Schemas.GroupInviteOutcome do
     properties: %{
       status: %Schema{
         type: :string,
-        enum: ["invited", "request_approved"],
+        enum: [JoinOutcome.invited(), JoinOutcome.request_approved()],
         description:
           "`invited` when an invite was created, `request_approved` when the user had asked to join and was let in instead"
       }
@@ -267,6 +277,7 @@ end
 defmodule GamendWeb.Schemas.GroupInviteLinkPreview do
   @moduledoc "The group an invite link opens, as its join page shows it."
   require OpenApiSpex
+  alias Gamend.Groups.GroupType
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -276,7 +287,10 @@ defmodule GamendWeb.Schemas.GroupInviteLinkPreview do
     properties: %{
       group_id: %Schema{type: :string, format: :uuid},
       group_title: %Schema{type: :string},
-      group_type: %Schema{type: :string, enum: ["public", "private", "hidden"]},
+      group_type: %Schema{
+        type: :string,
+        enum: GroupType.all()
+      },
       member_count: %Schema{type: :integer},
       creator_name: %Schema{type: :string, description: "The admin who made the link"},
       expires_at: %Schema{type: :string, format: :"date-time"},

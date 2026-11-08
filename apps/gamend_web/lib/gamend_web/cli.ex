@@ -22,6 +22,9 @@ defmodule GamendWeb.CLI do
   alias Gamend.Release
   alias GamendWeb.CLI.Starter
 
+  @starter "starter"
+  @plugin_bundle "plugin.bundle"
+
   @usage """
   Usage: gamend COMMAND [ARGS]
 
@@ -133,9 +136,9 @@ defmodule GamendWeb.CLI do
     end
   end
 
-  def run(["plugin.bundle" | names]), do: bundle_plugins(names)
+  def run([@plugin_bundle | names]), do: bundle_plugins(names)
 
-  def run(["starter" | args]), do: Starter.run(args)
+  def run([@starter | args]), do: Starter.run(args)
 
   def run([help]) when help in ["help", "--help", "-h"] do
     IO.write(@usage)

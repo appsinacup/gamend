@@ -9,6 +9,22 @@ defmodule GamendWeb.HostLayouts do
   alias GamendWeb.HostLayoutShell
   alias GamendWeb.Plugs.LocalePath
 
+  require GamendWeb.NavAuth, as: NavAuth
+  require GamendWeb.NavLinkGroup, as: NavLinkGroup
+  require Gamend.LocaleCode, as: LocaleCode
+  require GamendWeb.NavLayout, as: NavLayout
+
+  @flash_group "flash-group"
+  @href "href"
+
+  @image "image"
+  @sections "sections"
+  @answer "answer"
+  @label "label"
+  @text "text"
+  @title "title"
+  @hero "hero"
+
   @known_locales GamendWeb.GettextSync.known_locales()
 
   @locale_labels %{
@@ -165,11 +181,11 @@ defmodule GamendWeb.HostLayouts do
   # The scripts that run before the page has a header read it
   # (`navbar_fit.js`).
   def side_nav_layout do
-    navigation = resolve_theme("en")["navigation"]
+    navigation = resolve_theme(LocaleCode.en())["navigation"]
 
     cond do
-      GamendWeb.HostLayoutNavigation.side_layout?(navigation) -> "sidebar"
-      GamendWeb.HostLayoutNavigation.auto_layout?(navigation) -> "auto"
+      GamendWeb.HostLayoutNavigation.side_layout?(navigation) -> NavLayout.sidebar()
+      GamendWeb.HostLayoutNavigation.auto_layout?(navigation) -> NavLayout.auto()
       true -> nil
     end
   end
@@ -363,23 +379,23 @@ defmodule GamendWeb.HostLayouts do
 
   defp translate_presentation_page(page) do
     page
-    |> update_map_at_path(["hero"], fn hero ->
+    |> update_map_at_path([@hero], fn hero ->
       hero
-      |> translate_map_field("title")
-      |> translate_map_field("text")
-      |> update_map_at_path(["image"], &translate_map_field(&1, "alt"))
-      |> translate_list_field_at_path(["buttons"], "label")
+      |> translate_map_field(@title)
+      |> translate_map_field(@text)
+      |> update_map_at_path([@image], &translate_map_field(&1, "alt"))
+      |> translate_list_field_at_path(["buttons"], @label)
       |> translate_list_field_at_path(["buttons"], "badge")
     end)
-    |> translate_list_field_at_path(["sections"], "title")
-    |> translate_list_field_at_path(["sections"], "text")
-    |> translate_list_field_at_path(["sections", "buttons"], "label")
-    |> translate_list_field_at_path(["sections", "buttons"], "badge")
-    |> translate_list_field_at_path(["sections", "links"], "label")
-    |> translate_list_field_at_path(["sections", "faq"], "question")
-    |> translate_list_field_at_path(["sections", "faq"], "answer")
-    |> update_list_at_path(["sections"], fn section ->
-      update_map_at_path(section, ["image"], &translate_map_field(&1, "alt"))
+    |> translate_list_field_at_path([@sections], @title)
+    |> translate_list_field_at_path([@sections], @text)
+    |> translate_list_field_at_path([@sections, "buttons"], @label)
+    |> translate_list_field_at_path([@sections, "buttons"], "badge")
+    |> translate_list_field_at_path([@sections, "links"], @label)
+    |> translate_list_field_at_path([@sections, "faq"], "question")
+    |> translate_list_field_at_path([@sections, "faq"], @answer)
+    |> update_list_at_path([@sections], fn section ->
+      update_map_at_path(section, [@image], &translate_map_field(&1, "alt"))
     end)
   end
 
@@ -512,7 +528,7 @@ defmodule GamendWeb.HostLayouts do
     locale = current_locale()
 
     theme = resolve_theme(locale, Map.get(assigns, :theme, %{}))
-    en_theme = resolve_theme("en")
+    en_theme = resolve_theme(LocaleCode.en())
 
     navigation = navigation_config(theme, en_theme)
     background_icons = shell_background_icons(assigns, theme, en_theme)
@@ -725,7 +741,7 @@ defmodule GamendWeb.HostLayouts do
   """
   @spec navigation(String.t() | nil) :: map()
   def navigation(locale \\ nil) do
-    navigation_config(resolve_theme(locale), resolve_theme("en"))
+    navigation_config(resolve_theme(locale), resolve_theme(LocaleCode.en()))
   end
 
   @doc """
@@ -784,15 +800,16 @@ defmodule GamendWeb.HostLayouts do
         navigation_links(
           provider_navigation,
           en_navigation,
-          "primary_links",
+          NavLinkGroup.primary_links(),
           default_primary_nav_links()
         ),
-      "guest_links" => navigation_links(provider_navigation, en_navigation, "guest_links"),
+      "guest_links" =>
+        navigation_links(provider_navigation, en_navigation, NavLinkGroup.guest_links()),
       "authenticated_links" =>
-        navigation_links(provider_navigation, en_navigation, "authenticated_links"),
+        navigation_links(provider_navigation, en_navigation, NavLinkGroup.authenticated_links()),
       "account_links" =>
         merge_default_navigation_links(
-          navigation_links(provider_navigation, en_navigation, "account_links"),
+          navigation_links(provider_navigation, en_navigation, NavLinkGroup.account_links()),
           default_account_nav_links()
         )
     }
@@ -874,7 +891,7 @@ defmodule GamendWeb.HostLayouts do
         "label" => translate("Admin"),
         "href" => "/admin",
         "icon" => "hero-cog-6-tooth-solid",
-        "auth" => "admin"
+        "auth" => NavAuth.admin()
       }
     ]
   end
@@ -955,7 +972,7 @@ defmodule GamendWeb.HostLayouts do
   @spec localize_hrefs(term(), String.t() | nil) :: term()
   def localize_hrefs(map, locale) when is_map(map) and not is_struct(map) do
     Map.new(map, fn
-      {"href", href} -> {"href", localized_href(href, locale)}
+      {@href, href} -> {@href, localized_href(href, locale)}
       {key, value} -> {key, localize_hrefs(value, locale)}
     end)
   end
@@ -990,7 +1007,7 @@ defmodule GamendWeb.HostLayouts do
   Shows the flash group with standard titles and content.
   """
   attr :flash, :map, required: true, doc: "the map of flash messages"
-  attr :id, :string, default: "flash-group", doc: "the optional id of flash container"
+  attr :id, :string, default: @flash_group, doc: "the optional id of flash container"
 
   def flash_group(assigns) do
     ~H"""

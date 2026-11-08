@@ -49,6 +49,14 @@ defmodule GamendWeb.WebRTCPeer do
   alias Gamend.Accounts
   alias Gamend.Hooks.HookSchemas
 
+  require GamendWeb.HookErrorCode, as: HookErrorCode
+  require GamendWeb.WsFormat, as: WsFormat
+
+  @call_hook "call_hook"
+  @unknown "unknown"
+
+  @events_channel "events"
+
   # DataChannel message rate limits (per user) — defaults, overridden by config
 
   # Max open DataChannels per peer. The JS and Godot clients open two by
@@ -248,7 +256,7 @@ defmodule GamendWeb.WebRTCPeer do
 
       {:noreply, state}
     else
-      format = if protocol == "protobuf", do: "protobuf", else: "json"
+      format = if protocol == WsFormat.protobuf(), do: WsFormat.protobuf(), else: WsFormat.json()
       Logger.info("WebRTCPeer user=#{state.user_id} DataChannel opened: #{label} (#{format})")
       send(state.channel_pid, {:webrtc_channel_open, ref, label})
 
@@ -308,8 +316,8 @@ defmodule GamendWeb.WebRTCPeer do
         {:stop, {:shutdown, :rate_limited}, state}
 
       true ->
-        label = Map.get(state.channels, ref, "unknown")
-        format = Map.get(state.formats, ref, "json")
+        label = Map.get(state.channels, ref, @unknown)
+        format = Map.get(state.formats, ref, WsFormat.json())
         maybe_handle_rpc(label, format, data, state)
         {:noreply, state}
     end
@@ -354,9 +362,9 @@ defmodule GamendWeb.WebRTCPeer do
 
   # ── RPC handling over DataChannels ──────────────────────────────────────────
 
-  defp maybe_handle_rpc("events", "json", data, state) do
+  defp maybe_handle_rpc(@events_channel, WsFormat.json(), data, state) do
     case Jason.decode(data) do
-      {:ok, %{"type" => "call_hook", "plugin" => plugin, "fn" => func} = payload} ->
+      {:ok, %{"type" => @call_hook, "plugin" => plugin, "fn" => func} = payload} ->
         args = Map.get(payload, "args", [])
         args = if is_list(args), do: args, else: [args]
 
@@ -369,7 +377,7 @@ defmodule GamendWeb.WebRTCPeer do
 
                 {:error, _} ->
                   Jason.encode!(%{
-                    type: "hook_error",
+                    type: HookErrorCode.hook_error(),
                     plugin: plugin,
                     fn: func,
                     error: "result_not_json_encodable"
@@ -378,14 +386,14 @@ defmodule GamendWeb.WebRTCPeer do
 
             {:error, reason} ->
               Jason.encode!(%{
-                type: "hook_error",
+                type: HookErrorCode.hook_error(),
                 plugin: plugin,
                 fn: func,
                 error: format_error(reason)
               })
           end
 
-        _ = send_on_channel(state, "events", resp)
+        _ = send_on_channel(state, @events_channel, resp)
 
       _ ->
         :ok
@@ -395,7 +403,7 @@ defmodule GamendWeb.WebRTCPeer do
   # Protobuf RPC envelope (proto/gamend_realtime.proto). Unlike the JSON
   # protocol, requests carry an id echoed in the reply so concurrent calls
   # can be correlated.
-  defp maybe_handle_rpc("events", "protobuf", data, state) do
+  defp maybe_handle_rpc(@events_channel, WsFormat.protobuf(), data, state) do
     alias Gamend.Realtime.V1, as: PB
 
     case decode_envelope(data) do
@@ -427,7 +435,7 @@ defmodule GamendWeb.WebRTCPeer do
               }
           end
 
-        _ = send_on_channel(state, "events", PB.RtcEnvelope.encode(reply), :binary)
+        _ = send_on_channel(state, @events_channel, PB.RtcEnvelope.encode(reply), :binary)
 
       _ ->
         :ok
@@ -469,7 +477,7 @@ defmodule GamendWeb.WebRTCPeer do
 
   # A crash's message is the server's business, as over HTTP and the channel
   # (`GamendWeb.HookErrors`): the code alone, the stack trace in the log.
-  defp format_error({:exception, _message}), do: "exception"
+  defp format_error({:exception, _message}), do: HookErrorCode.exception()
   defp format_error(reason) when is_binary(reason), do: reason
   defp format_error(reason) when is_atom(reason), do: to_string(reason)
   defp format_error(reason), do: inspect(reason)

@@ -63,6 +63,11 @@ defmodule Gamend.Reports do
   alias Gamend.Reports.Report
   alias Gamend.Storage
 
+  require Gamend.Reports.ReportSource, as: ReportSource
+  require Gamend.Reports.ReportStatus, as: ReportStatus
+
+  @client_context_keys ~w(user_agent viewport screen platform app_version)
+
   setting(:enabled, :boolean,
     default: true,
     doc: "Accept reports from /report and POST /api/v1/reports."
@@ -302,7 +307,7 @@ defmodule Gamend.Reports do
       from(r in Report,
         where:
           r.user_id == ^user_id and r.kind == ^kind and r.subject_ref == ^ref and
-            r.status == "open"
+            r.status == ^ReportStatus.open()
       )
 
     query =
@@ -321,7 +326,7 @@ defmodule Gamend.Reports do
       "description" => params["description"],
       "email" => params["email"],
       "locale" => context[:locale],
-      "source" => context[:source] || "web",
+      "source" => context[:source] || ReportSource.web(),
       "client" => client(context[:client]),
       "user_id" => context[:user_id]
     }
@@ -332,7 +337,7 @@ defmodule Gamend.Reports do
     client
     |> Gamend.Parse.string_keys()
     |> Enum.filter(fn {k, v} ->
-      k in ~w(user_agent viewport screen platform app_version) and is_binary(v)
+      k in @client_context_keys and is_binary(v)
     end)
     |> Map.new(fn {k, v} -> {k, String.slice(v, 0, 300)} end)
   end
@@ -414,7 +419,7 @@ defmodule Gamend.Reports do
 
   @doc "How many reports are open."
   @spec count_open() :: non_neg_integer()
-  def count_open, do: count(%{status: "open"})
+  def count_open, do: count(%{status: ReportStatus.open()})
 
   @doc "Reports per status, as `%{status => count}`."
   @spec count_by_status() :: %{String.t() => non_neg_integer()}
@@ -437,7 +442,7 @@ defmodule Gamend.Reports do
       %{}
     else
       from(r in Report,
-        where: r.status == "open" and r.subject_ref in ^refs,
+        where: r.status == ^ReportStatus.open() and r.subject_ref in ^refs,
         group_by: [r.kind, r.topic, r.subject_ref],
         select: {{r.kind, r.topic, r.subject_ref}, count(r.id)}
       )
@@ -518,9 +523,9 @@ defmodule Gamend.Reports do
     attrs = Gamend.Parse.string_keys(attrs)
 
     changes =
-      if status == "open" do
+      if status == ReportStatus.open() do
         %{
-          "status" => "open",
+          "status" => ReportStatus.open(),
           "resolution_note" => nil,
           "resolved_by" => nil,
           "resolved_at" => nil
@@ -538,7 +543,7 @@ defmodule Gamend.Reports do
 
     with {:ok, _valid} <- Ecto.Changeset.apply_action(changeset, :update),
          {:ok, updated} <- transition(report, changeset) do
-      if report.status == "open" and status != "open" do
+      if report.status == ReportStatus.open() and status != ReportStatus.open() do
         dispatch(:after_report_resolved, [updated])
       end
 
@@ -608,7 +613,9 @@ defmodule Gamend.Reports do
         cutoff = DateTime.add(DateTime.utc_now(:second), -days, :day)
 
         from(r in Report,
-          where: r.status != "open" and not is_nil(r.resolved_at) and r.resolved_at < ^cutoff
+          where:
+            r.status != ^ReportStatus.open() and not is_nil(r.resolved_at) and
+              r.resolved_at < ^cutoff
         )
         |> delete_all_with_files()
 

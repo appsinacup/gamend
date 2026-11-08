@@ -15,6 +15,8 @@ defmodule Gamend.Analytics.Segment do
 
   alias Gamend.Accounts.User
 
+  require Gamend.Analytics.SegmentName, as: SegmentName
+
   @type t :: :all | :registered | :guest
 
   @segments [:all, :registered, :guest]
@@ -25,8 +27,8 @@ defmodule Gamend.Analytics.Segment do
 
   @doc "A segment from a request parameter (`\"guest\"`); anything else is `:all`."
   @spec parse(term()) :: t()
-  def parse("registered"), do: :registered
-  def parse("guest"), do: :guest
+  def parse(SegmentName.registered()), do: :registered
+  def parse(SegmentName.guest()), do: :guest
   def parse(segment) when segment in @segments, do: segment
   def parse(_param), do: :all
 

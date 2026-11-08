@@ -32,6 +32,9 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.Shared
 
+  require Gamend.Groups.GroupRole, as: GroupRole
+  require Gamend.Groups.GroupType, as: GroupType
+
   @events ~w(groups_tab groups_toggle_create group_random_name group_validate_create group_create
              group_leave group_join group_request_join group_accept_invite
              group_decline_invite group_cancel_request group_cancel_invite
@@ -84,10 +87,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     # that allows neither, or closes the listing, has nothing to find.
     |> assign(
       :groups_browse?,
-      Enum.any?(types, &(&1 in ["public", "private"])) and
+      Enum.any?(types, &(&1 in [GroupType.public(), GroupType.private()])) and
         GamendWeb.Features.enabled?(:list_groups)
     )
-    |> assign(:group_requests?, "private" in types)
+    |> assign(:group_requests?, GroupType.private() in types)
     |> assign(:group_invite_anyone?, Groups.invite_anyone?())
     |> assign(:group_links?, Groups.invite_links?())
     |> assign(:group_invite_link, nil)
@@ -1625,8 +1628,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     """
   end
 
-  defp group_role_label("admin"), do: gettext("Admin")
-  defp group_role_label("member"), do: gettext("Member")
+  defp group_role_label(GroupRole.admin()), do: gettext("Admin")
+  defp group_role_label(GroupRole.member()), do: gettext("Member")
   defp group_role_label(nil), do: "-"
   defp group_role_label(role), do: role
 
@@ -1715,13 +1718,13 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     do: socket |> load_group_detail(ref) |> apply_edit_param(edit?)
 
   defp apply_edit_param(
-         %{assigns: %{group_detail_role: "admin", group_editing: true}} = socket,
+         %{assigns: %{group_detail_role: GroupRole.admin(), group_editing: true}} = socket,
          true
        ),
        do: socket
 
   defp apply_edit_param(
-         %{assigns: %{group_detail_role: "admin", group_detail: group}} = socket,
+         %{assigns: %{group_detail_role: GroupRole.admin(), group_detail: group}} = socket,
          true
        ) do
     assign(socket,
@@ -1821,7 +1824,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
-  defp load_join_requests("admin", user_id, group_id) do
+  defp load_join_requests(GroupRole.admin(), user_id, group_id) do
     case Groups.list_join_requests(user_id, group_id) do
       {:ok, reqs} -> reqs
       _ -> []
@@ -1832,7 +1835,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
   # The group's invite link, for its admins to copy: the link itself, and
   # its full URL on this host (`GroupLinks.join_url/2`).
-  defp assign_invite_link(socket, "admin") do
+  defp assign_invite_link(socket, GroupRole.admin()) do
     link = socket.assigns.group_links? && Groups.get_invite_link(socket.assigns.group_detail.id)
 
     socket
@@ -1846,7 +1849,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   # The group's pending invitations, for its admins: listed under Invite to
   # cancel, and what marks a search result or friend Invited rather than
   # offering them again.
-  defp assign_pending_invites(%{assigns: %{group_detail: %{id: group_id}}} = socket, "admin") do
+  defp assign_pending_invites(
+         %{assigns: %{group_detail: %{id: group_id}}} = socket,
+         GroupRole.admin()
+       ) do
     user = Shared.current_user(socket)
 
     invites =

@@ -22,6 +22,7 @@ defmodule Gamend.GitHub.API do
   """
 
   require Logger
+  require Gamend.HttpHeader, as: HttpHeader
 
   @api "https://api.github.com"
   @web "https://github.com"
@@ -237,9 +238,9 @@ defmodule Gamend.GitHub.API do
     Req.new(
       [
         headers: [
-          {"accept", "application/vnd.github+json"},
-          {"x-github-api-version", @version},
-          {"user-agent", "Gamend"}
+          {HttpHeader.accept(), "application/vnd.github+json"},
+          {HttpHeader.x_github_api_version(), @version},
+          {HttpHeader.user_agent(), "Gamend"}
         ],
         retry: false,
         receive_timeout: 15_000

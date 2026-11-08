@@ -57,6 +57,12 @@ defmodule Gamend.ReadyChecks do
   alias Gamend.ReadyChecks.Participant
   alias Gamend.Repo
 
+  require Gamend.ReadyChecks.CheckKind, as: CheckKind
+  require Gamend.ReadyChecks.CheckReason, as: CheckReason
+  require Gamend.ReadyChecks.CheckStatus, as: CheckStatus
+  require Gamend.ReadyChecks.ParticipantState, as: ParticipantState
+  require Gamend.RealtimeEvent, as: RealtimeEvent
+
   @type subject :: Lobby.t() | Party.t() | :matchmaking
   @type scope :: :match | :party
   @type answer :: boolean()
@@ -98,7 +104,7 @@ defmodule Gamend.ReadyChecks do
          {:ok, attrs} <- run_open_hook(subject, roster, opts),
          {:ok, check} <- insert_check(subject, user_ids, roster, attrs, opts) do
       check = Repo.preload(check, :participants)
-      broadcast(check, "ready_check_started")
+      broadcast(check, RealtimeEvent.ready_check_started())
       schedule_expiry(check)
       {:ok, check}
     end
@@ -132,7 +138,7 @@ defmodule Gamend.ReadyChecks do
     result =
       Gamend.Lock.serialize(:ready_check, check.id, fn ->
         case reload_pending(check) do
-          {:ok, check} -> resolve(check, "cancelled", "reset")
+          {:ok, check} -> resolve(check, CheckStatus.cancelled(), CheckReason.reset())
           {:error, reason} -> Repo.rollback(reason)
         end
       end)
@@ -159,7 +165,7 @@ defmodule Gamend.ReadyChecks do
       from(p in Participant,
         join: c in Check,
         on: c.id == p.ready_check_id,
-        where: p.user_id in ^user_ids and c.status == "pending"
+        where: p.user_id in ^user_ids and c.status == ^CheckStatus.pending()
       )
 
     query =
@@ -205,7 +211,7 @@ defmodule Gamend.ReadyChecks do
 
     check_attrs = %{
       kind: kind,
-      status: "pending",
+      status: CheckStatus.pending(),
       lobby_id: lobby_id(subject),
       party_id: party_id(subject),
       deadline_at: deadline_for(opts),
@@ -258,7 +264,7 @@ defmodule Gamend.ReadyChecks do
         ready_check_id: check.id,
         user_id: user_id,
         ticket_id: Map.get(tickets, user_id),
-        state: if(ready?, do: "ready", else: "pending"),
+        state: if(ready?, do: ParticipantState.ready(), else: ParticipantState.pending()),
         responded_at: if(ready?, do: now)
       }
 
@@ -269,9 +275,9 @@ defmodule Gamend.ReadyChecks do
     end)
   end
 
-  defp default_kind(%Lobby{}), do: "ready"
-  defp default_kind(%Party{}), do: "ready"
-  defp default_kind(:matchmaking), do: "accept"
+  defp default_kind(%Lobby{}), do: CheckKind.ready()
+  defp default_kind(%Party{}), do: CheckKind.ready()
+  defp default_kind(:matchmaking), do: CheckKind.accept()
 
   defp lobby_id(%Lobby{id: id}), do: id
   defp lobby_id(_subject), do: nil
@@ -348,9 +354,15 @@ defmodule Gamend.ReadyChecks do
     |> scope_filter(scope)
     |> Repo.one()
     |> case do
-      %Check{status: "pending"} = check -> check
-      %Check{kind: "ready", status: "failed", reason: "timeout"} = check -> check
-      _ -> nil
+      %Check{status: CheckStatus.pending()} = check ->
+        check
+
+      %Check{kind: CheckKind.ready(), status: CheckStatus.failed(), reason: CheckReason.timeout()} =
+          check ->
+        check
+
+      _ ->
+        nil
     end
   end
 
@@ -385,12 +397,12 @@ defmodule Gamend.ReadyChecks do
     end
   end
 
-  defp answer_state(true), do: "ready"
-  defp answer_state(false), do: "declined"
+  defp answer_state(true), do: ParticipantState.ready()
+  defp answer_state(false), do: ParticipantState.declined()
 
   defp reload_pending(%Check{id: id}) do
     case Repo.get_uuid(Check, id) do
-      %Check{status: "pending"} = check -> {:ok, check}
+      %Check{status: CheckStatus.pending()} = check -> {:ok, check}
       %Check{} -> {:error, :already_resolved}
       nil -> {:error, :no_open_check}
     end
@@ -401,10 +413,18 @@ defmodule Gamend.ReadyChecks do
   # someone called those off on purpose — and so do `accept` checks.
   defp reload_answerable(%Check{id: id}) do
     case Repo.get_uuid(Check, id) do
-      %Check{status: "pending"} = check -> {:ok, check}
-      %Check{kind: "ready", status: "failed", reason: "timeout"} = check -> {:ok, check}
-      %Check{} -> {:error, :already_resolved}
-      nil -> {:error, :no_open_check}
+      %Check{status: CheckStatus.pending()} = check ->
+        {:ok, check}
+
+      %Check{kind: CheckKind.ready(), status: CheckStatus.failed(), reason: CheckReason.timeout()} =
+          check ->
+        {:ok, check}
+
+      %Check{} ->
+        {:error, :already_resolved}
+
+      nil ->
+        {:error, :no_open_check}
     end
   end
 
@@ -420,8 +440,8 @@ defmodule Gamend.ReadyChecks do
 
   # An accept is a commitment: you cannot un-accept a match other players are
   # already waiting on. A ready toggles freely.
-  defp ensure_revocable(%Check{kind: "accept"}, %Participant{state: state})
-       when state != "pending",
+  defp ensure_revocable(%Check{kind: CheckKind.accept()}, %Participant{state: state})
+       when state != ParticipantState.pending(),
        do: {:error, :not_revocable}
 
   defp ensure_revocable(_check, _participant), do: :ok
@@ -441,10 +461,10 @@ defmodule Gamend.ReadyChecks do
 
     cond do
       Enum.all?(states, &(&1 == "ready")) ->
-        resolve(check, "passed", nil)
+        resolve(check, CheckStatus.passed(), nil)
 
-      check.kind == "accept" and Enum.any?(states, &(&1 == "declined")) ->
-        resolve(check, "failed", "declined")
+      check.kind == CheckKind.accept() and Enum.any?(states, &(&1 == CheckReason.declined())) ->
+        resolve(check, CheckStatus.failed(), CheckReason.declined())
 
       true ->
         {check, [:updated]}
@@ -464,11 +484,12 @@ defmodule Gamend.ReadyChecks do
     {check, [resolution_effect(status)]}
   end
 
-  defp resolution_effect("passed"), do: :passed
+  defp resolution_effect(CheckStatus.passed()), do: :passed
 
   # A cancelled check is a failed one from a client's point of view: the same
   # event, carrying "cancelled" as the reason.
-  defp resolution_effect(status) when status in ["failed", "cancelled"], do: :failed
+  defp resolution_effect(status) when status in [CheckStatus.failed(), CheckStatus.cancelled()],
+    do: :failed
 
   defp participant_states(check) do
     Participant
@@ -482,15 +503,15 @@ defmodule Gamend.ReadyChecks do
 
     Enum.each(effects, fn
       :updated ->
-        broadcast(check, "ready_check_updated")
+        broadcast(check, RealtimeEvent.ready_check_updated())
 
       :passed ->
-        broadcast(check, "ready_check_passed")
+        broadcast(check, RealtimeEvent.ready_check_passed())
         settle_match(check)
         defer(fn -> Gamend.Hooks.internal_call(:after_ready_check_passed, [check]) end)
 
       :failed ->
-        broadcast(check, "ready_check_failed")
+        broadcast(check, RealtimeEvent.ready_check_failed())
         settle_match(check)
 
         defer(fn ->
@@ -510,7 +531,7 @@ defmodule Gamend.ReadyChecks do
   # A matchmaking accept that resolved seats its match, or puts back whoever
   # accepted (`Gamend.Matchmaking.Match.accept_resolved/1`); a no-op for a
   # check with no tickets on it.
-  defp settle_match(%Check{lobby_id: nil, party_id: nil, kind: "accept"} = check),
+  defp settle_match(%Check{lobby_id: nil, party_id: nil, kind: CheckKind.accept()} = check),
     do: defer(fn -> Match.accept_resolved(check) end)
 
   defp settle_match(_check), do: :ok
@@ -554,7 +575,7 @@ defmodule Gamend.ReadyChecks do
             |> Repo.delete_all()
 
             case remaining_count(check) do
-              0 -> resolve(check, "cancelled", "cancelled")
+              0 -> resolve(check, CheckStatus.cancelled(), CheckStatus.cancelled())
               _ -> evaluate(check)
             end
 
@@ -604,7 +625,7 @@ defmodule Gamend.ReadyChecks do
              |> Participant.changeset(%{
                ready_check_id: check.id,
                user_id: user_id,
-               state: "pending"
+               state: ParticipantState.pending()
              })
              |> Repo.insert() do
         {check, [:updated]}
@@ -629,11 +650,11 @@ defmodule Gamend.ReadyChecks do
   @doc "Cancels a pending check — the host called it off, or the subject went away."
   @spec cancel(Check.t(), String.t()) ::
           {:ok, Check.t()} | {:error, :already_resolved | :no_open_check}
-  def cancel(%Check{} = check, reason \\ "cancelled") do
+  def cancel(%Check{} = check, reason \\ CheckReason.cancelled()) do
     result =
       Gamend.Lock.serialize(:ready_check, check.id, fn ->
         case reload_pending(check) do
-          {:ok, check} -> resolve(check, "cancelled", reason)
+          {:ok, check} -> resolve(check, CheckStatus.cancelled(), reason)
           {:error, reason} -> Repo.rollback(reason)
         end
       end)
@@ -678,7 +699,10 @@ defmodule Gamend.ReadyChecks do
   @spec expire_due(DateTime.t()) :: non_neg_integer()
   def expire_due(now \\ DateTime.utc_now()) do
     Check
-    |> where([c], c.status == "pending" and not is_nil(c.deadline_at) and c.deadline_at <= ^now)
+    |> where(
+      [c],
+      c.status == ^CheckStatus.pending() and not is_nil(c.deadline_at) and c.deadline_at <= ^now
+    )
     |> Repo.all()
     |> Enum.count(&(expire(&1) == :ok))
   end
@@ -691,10 +715,15 @@ defmodule Gamend.ReadyChecks do
         case reload_pending(check) do
           {:ok, check} ->
             Participant
-            |> where([p], p.ready_check_id == ^check.id and p.state == "pending")
-            |> Repo.update_all(set: [state: "timed_out", updated_at: DateTime.utc_now(:second)])
+            |> where(
+              [p],
+              p.ready_check_id == ^check.id and p.state == ^ParticipantState.pending()
+            )
+            |> Repo.update_all(
+              set: [state: ParticipantState.timed_out(), updated_at: DateTime.utc_now(:second)]
+            )
 
-            resolve(check, "failed", "timeout")
+            resolve(check, CheckStatus.failed(), CheckReason.timeout())
 
           {:error, reason} ->
             Repo.rollback(reason)
@@ -734,7 +763,7 @@ defmodule Gamend.ReadyChecks do
     from(c in Check,
       join: p in Participant,
       on: p.ready_check_id == c.id,
-      where: p.user_id == ^user_id and c.status == "pending",
+      where: p.user_id == ^user_id and c.status == ^CheckStatus.pending(),
       order_by: [desc: c.inserted_at, desc: c.id],
       limit: 1,
       preload: [:participants]
@@ -751,7 +780,7 @@ defmodule Gamend.ReadyChecks do
   @spec pending_for_lobby(Ecto.UUID.t()) :: Check.t() | nil
   def pending_for_lobby(lobby_id) when is_binary(lobby_id) do
     Check
-    |> where([c], c.lobby_id == ^lobby_id and c.status == "pending")
+    |> where([c], c.lobby_id == ^lobby_id and c.status == ^CheckStatus.pending())
     |> preload(:participants)
     |> Repo.one()
   end
@@ -762,7 +791,7 @@ defmodule Gamend.ReadyChecks do
   @spec pending_for_party(Ecto.UUID.t()) :: Check.t() | nil
   def pending_for_party(party_id) when is_binary(party_id) do
     Check
-    |> where([c], c.party_id == ^party_id and c.status == "pending")
+    |> where([c], c.party_id == ^party_id and c.status == ^CheckStatus.pending())
     |> preload(:participants)
     |> Repo.one()
   end
@@ -805,7 +834,7 @@ defmodule Gamend.ReadyChecks do
   def not_ready(%Check{} = check) do
     check
     |> load_participants()
-    |> Enum.reject(&(&1.state == "ready"))
+    |> Enum.reject(&(&1.state == ParticipantState.ready()))
   end
 
   @doc "Fetches a check by id (with participants), or nil."

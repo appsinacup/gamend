@@ -22,6 +22,9 @@ defmodule GamendWeb.Auth.ApiTokenAuth do
   alias Gamend.Accounts.ApiTokens
   alias GamendWeb.Auth.ErrorHandler
 
+  require GamendWeb.Auth.TokenType, as: TokenType
+  require Gamend.HttpHeader, as: HttpHeader
+
   @impl Plug
   def init(opts), do: opts
 
@@ -44,7 +47,7 @@ defmodule GamendWeb.Auth.ApiTokenAuth do
         claims = %{
           "sub" => to_string(user.id),
           "tv" => user.token_version,
-          "typ" => "access",
+          "typ" => TokenType.access(),
           "pat" => row.id
         }
 
@@ -60,7 +63,7 @@ defmodule GamendWeb.Auth.ApiTokenAuth do
   end
 
   defp bearer(conn) do
-    Enum.find_value(Plug.Conn.get_req_header(conn, "authorization"), fn header ->
+    Enum.find_value(Plug.Conn.get_req_header(conn, HttpHeader.authorization()), fn header ->
       case Regex.run(~r/\ABearer\s+(\S+)\z/i, String.trim(header)) do
         [_, token] -> token
         _ -> nil

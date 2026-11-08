@@ -30,6 +30,20 @@ defmodule Gamend.Payments do
   alias Gamend.Payments.Upgrades
   alias Gamend.Repo
 
+  require Gamend.Payments.CounterName, as: CounterName
+  require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
+  require Gamend.Payments.PaymentEnvironment, as: PaymentEnvironment
+  require Gamend.Payments.ProductKind, as: ProductKind
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseMetadata, as: PurchaseMetadata
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+  require Gamend.Payments.StripeEvent, as: StripeEvent
+
+  @fulfilled "fulfilled"
+  @provider "provider"
+  @error "error"
+  @invalid "invalid"
+
   @store_validation_providers ~w(apple google steam)
 
   # Cached catalog/ledger reads keyed by per-entity version counters bumped on
@@ -214,7 +228,7 @@ defmodule Gamend.Payments do
         "provider_product_id" => provider_product.id,
         "provider" => provider_product.provider,
         "order_id" => attrs["order_id"] || generate_order_id(),
-        "status" => attrs["status"] || "pending",
+        "status" => attrs["status"] || PurchaseStatus.pending(),
         "quantity" => quantity,
         "currency" => attrs["currency"] || provider_product.currency,
         "amount" => attrs["amount"] || total_amount(unit_amount, quantity),
@@ -302,10 +316,10 @@ defmodule Gamend.Payments do
           |> Repo.preload([:product, :provider_product])
 
         case purchase.status do
-          "completed" ->
+          PurchaseStatus.completed() ->
             {:ok, purchase, :already_fulfilled}
 
-          status when status in ["refunded", "revoked"] ->
+          status when status in [PurchaseStatus.refunded(), PurchaseStatus.revoked()] ->
             Repo.rollback({:not_fulfillable, status})
 
           _ ->
@@ -345,7 +359,7 @@ defmodule Gamend.Payments do
         |> Repo.get!(purchase.id)
         |> Repo.preload(:product)
 
-      status = revoked_status(purchase.status, attrs["status"] || "revoked")
+      status = revoked_status(purchase.status, attrs["status"] || PurchaseStatus.revoked())
       payload = Params.merge_payload(purchase.raw_provider_payload, attrs["payload"] || %{})
 
       if status == purchase.status do
@@ -404,7 +418,9 @@ defmodule Gamend.Payments do
   # A refund or a lost dispute is the purchase's end. The subscription's own
   # cancellation, which a refund sets off and whose webhook can arrive after
   # the refund's, does not walk it back to "cancelled".
-  defp revoked_status(current, "cancelled") when current in ["refunded", "revoked"], do: current
+  defp revoked_status(current, PurchaseStatus.cancelled())
+       when current in [PurchaseStatus.refunded(), PurchaseStatus.revoked()], do: current
+
   defp revoked_status(_current, requested), do: requested
 
   # The reason that ended it stays when a later event keeps the same status
@@ -441,7 +457,7 @@ defmodule Gamend.Payments do
         {:ok, updated} =
           purchase
           |> Purchase.changeset(%{
-            status: "completed",
+            status: PurchaseStatus.completed(),
             revoked_at: nil,
             # `disputed?/1` matched the reason inside it, so it is a map.
             metadata:
@@ -477,11 +493,11 @@ defmodule Gamend.Payments do
   # A subscription's dispute cancelled the subscription, so there is no
   # running plan to hand back: only a one-off purchase is restored.
   defp disputed?(%Purchase{
-         status: "revoked",
+         status: PurchaseStatus.revoked(),
          product: %Product{kind: kind},
          metadata: %{"revocation_reason" => reason}
        })
-       when kind != "subscription" and is_binary(reason),
+       when kind != ProductKind.subscription() and is_binary(reason),
        do: String.starts_with?(reason, "charge.dispute")
 
   defp disputed?(_purchase), do: false
@@ -492,7 +508,7 @@ defmodule Gamend.Payments do
     |> Enum.map(fn entitlement ->
       entitlement
       |> Entitlement.changeset(%{
-        status: "active",
+        status: EntitlementStatus.active(),
         revoked_at: nil,
         metadata: Map.delete(entitlement.metadata || %{}, "revocation_reason")
       })
@@ -649,14 +665,18 @@ defmodule Gamend.Payments do
   end
 
   defp open_steam_checkout(%User{} = user, attrs) do
-    with {:ok, provider_product} <- resolve_provider_product("steam", attrs),
+    with {:ok, provider_product} <- resolve_provider_product(ProviderId.steam(), attrs),
          :ok <- ensure_checkout_allowed(user, provider_product, attrs),
          {:ok, purchase} <- create_purchase(user, provider_product, attrs) do
-      case provider_adapter("steam").init_transaction(purchase, provider_product, attrs) do
+      case provider_adapter(ProviderId.steam()).init_transaction(
+             purchase,
+             provider_product,
+             attrs
+           ) do
         {:ok, result} ->
           with {:ok, updated_purchase} <- mark_steam_purchase_requires_action(purchase, result) do
             params = steam_response_params(result)
-            Counters.count("checkout.opened", purchase_dims(updated_purchase))
+            Counters.count(CounterName.checkout_opened(), purchase_dims(updated_purchase))
 
             {:ok,
              %{
@@ -672,7 +692,7 @@ defmodule Gamend.Payments do
       end
     else
       {:error, reason} ->
-        count_checkout_refused("steam", reason)
+        count_checkout_refused(ProviderId.steam(), reason)
         {:error, reason}
     end
   end
@@ -697,9 +717,11 @@ defmodule Gamend.Payments do
     attrs = Params.normalize(attrs)
 
     with {:ok, order_id} <- Params.required_value(attrs, "order_id"),
-         %Purchase{provider: "steam", user_id: user_id} = purchase when user_id == user.id <-
+         %Purchase{provider: ProviderId.steam(), user_id: user_id} = purchase
+         when user_id == user.id <-
            get_purchase_by_order_id(order_id),
-         {:ok, validation} <- provider_adapter("steam").finalize_transaction(purchase, attrs),
+         {:ok, validation} <-
+           provider_adapter(ProviderId.steam()).finalize_transaction(purchase, attrs),
          validation <- Params.normalize(validation),
          {:ok, updated} <- update_purchase_from_validation(purchase, validation),
          {:ok, final_purchase} <- apply_validated_status(updated, validation) do
@@ -754,7 +776,9 @@ defmodule Gamend.Payments do
       now = DateTime.utc_now(:second)
 
       from e in query,
-        where: e.status == "active" and (is_nil(e.expires_at) or e.expires_at > ^now)
+        where:
+          e.status == ^EntitlementStatus.active() and
+            (is_nil(e.expires_at) or e.expires_at > ^now)
     end
   end
 
@@ -772,7 +796,7 @@ defmodule Gamend.Payments do
     user_id
     |> entitlement_rows()
     |> Enum.any?(fn {row_key, status, expires_at} ->
-      row_key == key and status == "active" and
+      row_key == key and status == EntitlementStatus.active() and
         (is_nil(expires_at) or DateTime.compare(expires_at, now) == :gt)
     end)
   end
@@ -837,7 +861,7 @@ defmodule Gamend.Payments do
       attrs = %{
         user_id: user_id,
         key: key,
-        status: "active",
+        status: EntitlementStatus.active(),
         starts_at: (existing && existing_active?(existing, now) && existing.starts_at) || now,
         expires_at: granted_expiry(existing, requested, now),
         revoked_at: nil,
@@ -887,7 +911,7 @@ defmodule Gamend.Payments do
         %Entitlement{source_purchase_id: nil} = existing ->
           existing
           |> Entitlement.changeset(%{
-            status: "revoked",
+            status: EntitlementStatus.revoked(),
             revoked_at: existing.revoked_at || now,
             metadata: Map.merge(existing.metadata || %{}, extra)
           })
@@ -915,7 +939,7 @@ defmodule Gamend.Payments do
   # taking the row over at fulfilment, which runs it inside the fulfilment's
   # own transaction (the lock is then held until that commits).
   defp with_entitlement_lock(user_id, key, fun),
-    do: Lock.serialize("entitlement", "#{user_id}:#{key}", fun)
+    do: Lock.serialize(ProductKind.entitlement(), "#{user_id}:#{key}", fun)
 
   # The later of what the user holds (while it is still active) and what is
   # granted; no end beats any end.
@@ -931,10 +955,14 @@ defmodule Gamend.Payments do
     end
   end
 
-  defp existing_active?(%Entitlement{status: "active", expires_at: nil}, _now), do: true
+  defp existing_active?(%Entitlement{status: EntitlementStatus.active(), expires_at: nil}, _now),
+    do: true
 
-  defp existing_active?(%Entitlement{status: "active", expires_at: %DateTime{} = at}, now),
-    do: DateTime.compare(at, now) == :gt
+  defp existing_active?(
+         %Entitlement{status: EntitlementStatus.active(), expires_at: %DateTime{} = at},
+         now
+       ),
+       do: DateTime.compare(at, now) == :gt
 
   defp existing_active?(_entitlement, _now), do: false
 
@@ -1224,7 +1252,7 @@ defmodule Gamend.Payments do
   end
 
   defp ensure_single_ownership_quantity(%Product{kind: kind}, attrs)
-       when kind in ["entitlement", "subscription"] do
+       when kind in [ProductKind.entitlement(), ProductKind.subscription()] do
     if Params.parse_positive_int(attrs["quantity"], 1) == 1 do
       :ok
     else
@@ -1235,7 +1263,7 @@ defmodule Gamend.Payments do
   defp ensure_single_ownership_quantity(_product, _attrs), do: :ok
 
   defp ensure_single_ownership_available(%User{} = user, %Product{kind: kind} = product, subject)
-       when kind in ["entitlement", "subscription"] do
+       when kind in [ProductKind.entitlement(), ProductKind.subscription()] do
     key = entitlement_key(product, subject)
 
     cond do
@@ -1260,7 +1288,7 @@ defmodule Gamend.Payments do
   @doc false
   def purchases_in_progress(user_id, entitlement_key) do
     from(p in Purchase,
-      where: p.user_id == ^user_id and p.status == "requires_action",
+      where: p.user_id == ^user_id and p.status == ^PurchaseStatus.requires_action(),
       preload: [:product]
     )
     |> Repo.all()
@@ -1279,7 +1307,7 @@ defmodule Gamend.Payments do
     result =
       purchase
       |> Purchase.changeset(%{
-        status: "failed",
+        status: PurchaseStatus.failed(),
         raw_provider_payload: Params.merge_payload(purchase.raw_provider_payload, payload)
       })
       |> Repo.update()
@@ -1314,8 +1342,8 @@ defmodule Gamend.Payments do
 
   def provider_error_code({reason, _detail}) when is_atom(reason), do: Atom.to_string(reason)
   def provider_error_code(reason) when is_atom(reason), do: Atom.to_string(reason)
-  def provider_error_code(%Ecto.Changeset{}), do: "invalid"
-  def provider_error_code(_reason), do: "error"
+  def provider_error_code(%Ecto.Changeset{}), do: @invalid
+  def provider_error_code(_reason), do: @error
 
   @doc false
   def mark_purchase_requires_action(%Purchase{} = purchase, session) when is_map(session) do
@@ -1326,7 +1354,7 @@ defmodule Gamend.Payments do
 
     purchase
     |> Purchase.changeset(%{
-      status: "requires_action",
+      status: PurchaseStatus.requires_action(),
       provider_transaction_id: session["id"],
       metadata: metadata,
       raw_provider_payload:
@@ -1351,7 +1379,7 @@ defmodule Gamend.Payments do
 
     purchase
     |> Purchase.changeset(%{
-      status: "requires_action",
+      status: PurchaseStatus.requires_action(),
       provider_transaction_id: params["transid"] || purchase.provider_transaction_id,
       metadata: metadata,
       raw_provider_payload:
@@ -1363,7 +1391,7 @@ defmodule Gamend.Payments do
 
   @doc false
   def update_purchase_from_validation(%Purchase{} = purchase, validation) do
-    validated_status = validation["status"] || "completed"
+    validated_status = validation["status"] || PurchaseStatus.completed()
 
     attrs = %{
       # A completed purchase is never moved back to pending.
@@ -1399,7 +1427,7 @@ defmodule Gamend.Payments do
   end
 
   defp apply_validated_status(%Purchase{} = purchase, %{"status" => status})
-       when status in ["refunded", "revoked"] do
+       when status in [PurchaseStatus.refunded(), PurchaseStatus.revoked()] do
     revoke_purchase(purchase, %{
       "status" => status,
       "reason" => "provider_validation",
@@ -1407,7 +1435,7 @@ defmodule Gamend.Payments do
     })
   end
 
-  defp apply_validated_status(%Purchase{} = purchase, %{"status" => "completed"}) do
+  defp apply_validated_status(%Purchase{} = purchase, %{"status" => PurchaseStatus.completed()}) do
     fulfill_purchase(purchase, purchase.raw_provider_payload || %{})
   end
 
@@ -1416,7 +1444,7 @@ defmodule Gamend.Payments do
   defp complete_purchase(%Purchase{} = purchase, provider_payload) do
     purchase
     |> Purchase.changeset(%{
-      status: "completed",
+      status: PurchaseStatus.completed(),
       purchased_at: purchase.purchased_at || DateTime.utc_now(:second),
       raw_provider_payload: Params.merge_payload(purchase.raw_provider_payload, provider_payload)
     })
@@ -1424,7 +1452,7 @@ defmodule Gamend.Payments do
     |> tap_bump({:payments, :purchase_version})
   end
 
-  defp grant_purchase(%Purchase{product: %Product{kind: "consumable"}}), do: :ok
+  defp grant_purchase(%Purchase{product: %Product{kind: ProductKind.consumable()}}), do: :ok
 
   defp grant_purchase(%Purchase{product: %Product{} = product} = purchase) do
     key = purchase_entitlement_key(purchase)
@@ -1445,7 +1473,7 @@ defmodule Gamend.Payments do
         product_id: product.id,
         source_purchase_id: purchase.id,
         key: key,
-        status: "active",
+        status: EntitlementStatus.active(),
         starts_at: now,
         expires_at: expires_at,
         revoked_at: nil,
@@ -1477,7 +1505,7 @@ defmodule Gamend.Payments do
   defp carried_metadata(metadata) when is_map(metadata) do
     Map.reject(metadata, fn {key, _value} ->
       String.starts_with?(key, "stripe_") or
-        key in ["revocation_reason", "product_sku", "provider", "paid_through"]
+        key in ["revocation_reason", "product_sku", @provider, PurchaseMetadata.paid_through()]
     end)
   end
 
@@ -1546,8 +1574,8 @@ defmodule Gamend.Payments do
   # as seen and nothing more left no way for a revalidation to finish it.
   # `fulfill_purchase/2` locks the row, so a webhook fulfilling it at the same
   # time does not fulfil it twice.
-  defp seen_receipt(%Purchase{status: "pending"} = purchase, validation) do
-    if validated_status(validation) == "completed" do
+  defp seen_receipt(%Purchase{status: PurchaseStatus.pending()} = purchase, validation) do
+    if validated_status(validation) == PurchaseStatus.completed() do
       with {:ok, fulfilled} <- fulfill_purchase(purchase, purchase.raw_provider_payload || %{}) do
         {:ok, %{purchase: fulfilled, seen_before: true}}
       end
@@ -1570,9 +1598,9 @@ defmodule Gamend.Payments do
       # but never compared against the server's own — which meant anyone with
       # a TestFlight build or a sandbox tester account got every in-app
       # purchase for free on the production server.
-      "failed"
+      PurchaseStatus.failed()
     else
-      validation["status"] || "completed"
+      validation["status"] || PurchaseStatus.completed()
     end
   end
 
@@ -1589,17 +1617,22 @@ defmodule Gamend.Payments do
     reported = validation["environment"]
 
     ProviderConfig.production?() and is_binary(reported) and
-      String.downcase(reported) != "production"
+      String.downcase(reported) != PaymentEnvironment.production()
   end
 
   # Terminal states a re-validation must not walk back out of.
-  defp next_validated_status(%Purchase{status: "completed"}, "completed"), do: "completed"
+  defp next_validated_status(
+         %Purchase{status: PurchaseStatus.completed()},
+         PurchaseStatus.completed()
+       ),
+       do: PurchaseStatus.completed()
+
   defp next_validated_status(_purchase, status), do: status_before_fulfillment(status)
 
-  defp status_before_fulfillment("completed"), do: "pending"
+  defp status_before_fulfillment(PurchaseStatus.completed()), do: PurchaseStatus.pending()
   defp status_before_fulfillment(status), do: status
 
-  defp maybe_fulfill_validated_purchase(%Purchase{} = purchase, "completed") do
+  defp maybe_fulfill_validated_purchase(%Purchase{} = purchase, PurchaseStatus.completed()) do
     fulfill_purchase(purchase, purchase.raw_provider_payload)
   end
 
@@ -1641,7 +1674,7 @@ defmodule Gamend.Payments do
         purchase_from_original_transaction(object["charge_id"])
 
       is_binary(object["id"]) ->
-        case get_purchase_by_provider_transaction("stripe", object["id"]) do
+        case get_purchase_by_provider_transaction(ProviderId.stripe(), object["id"]) do
           %Purchase{} = purchase ->
             {:ok, purchase}
 
@@ -1670,13 +1703,13 @@ defmodule Gamend.Payments do
     |> case do
       %Entitlement{
         user_id: user_id,
-        product: %Product{kind: "subscription"},
-        source_purchase: %Purchase{provider: "stripe"}
+        product: %Product{kind: ProductKind.subscription()},
+        source_purchase: %Purchase{provider: ProviderId.stripe()}
       } = entitlement
       when user_id == user.id ->
         {:ok, entitlement}
 
-      %Entitlement{user_id: user_id, product: %Product{kind: "subscription"}}
+      %Entitlement{user_id: user_id, product: %Product{kind: ProductKind.subscription()}}
       when user_id == user.id ->
         {:error, :not_stripe_subscription}
 
@@ -1694,7 +1727,7 @@ defmodule Gamend.Payments do
   @doc false
   def reversal_effective?("charge.dispute" <> _rest, _object), do: true
 
-  def reversal_effective?("charge.refunded", object) do
+  def reversal_effective?(StripeEvent.charge_refunded(), object) do
     case {object["amount"], object["amount_refunded"]} do
       {amount, refunded} when is_integer(amount) and is_integer(refunded) -> refunded >= amount
       _unknown -> true
@@ -1718,7 +1751,7 @@ defmodule Gamend.Payments do
   defp purchase_from_original_transaction(nil), do: {:error, :purchase_not_found}
 
   defp purchase_from_original_transaction(transaction_id) when is_binary(transaction_id) do
-    case get_purchase_by_provider_original_transaction("stripe", transaction_id) do
+    case get_purchase_by_provider_original_transaction(ProviderId.stripe(), transaction_id) do
       %Purchase{} = purchase -> {:ok, purchase}
       nil -> {:error, :purchase_not_found}
     end
@@ -1767,7 +1800,7 @@ defmodule Gamend.Payments do
     |> Enum.map(fn entitlement ->
       entitlement
       |> Entitlement.changeset(%{
-        status: "revoked",
+        status: EntitlementStatus.revoked(),
         revoked_at: entitlement.revoked_at || now,
         metadata: Map.put(entitlement.metadata || %{}, "revocation_reason", reason)
       })
@@ -1777,7 +1810,7 @@ defmodule Gamend.Payments do
 
   defp after_purchase_fulfilled(%Purchase{} = purchase) do
     Gamend.Broadcast.publish("user:#{purchase.user_id}", {:purchase_updated, purchase})
-    log_purchase("fulfilled", purchase)
+    log_purchase(@fulfilled, purchase)
     Counters.count("purchase.fulfilled", purchase_dims(purchase))
 
     Gamend.Async.run(fn ->
@@ -1793,7 +1826,7 @@ defmodule Gamend.Payments do
 
   defp after_purchase_revoked(%Purchase{} = purchase) do
     Gamend.Broadcast.publish("user:#{purchase.user_id}", {:purchase_updated, purchase})
-    log_purchase("revoked", purchase)
+    log_purchase(PurchaseStatus.revoked(), purchase)
 
     Counters.count(
       "purchase.revoked",
@@ -1846,9 +1879,9 @@ defmodule Gamend.Payments do
     # A `case` with no catch-all raised CaseClauseError on any other string,
     # which is a 500 for what is really "no such provider".
     case provider do
-      "apple" -> Keyword.get(adapters, :apple, Providers.Apple)
-      "google" -> Keyword.get(adapters, :google, Providers.Google)
-      "steam" -> Keyword.get(adapters, :steam, Providers.Steam)
+      ProviderId.apple() -> Keyword.get(adapters, :apple, Providers.Apple)
+      ProviderId.google() -> Keyword.get(adapters, :google, Providers.Google)
+      ProviderId.steam() -> Keyword.get(adapters, :steam, Providers.Steam)
       _other -> nil
     end
   end
@@ -1862,7 +1895,7 @@ defmodule Gamend.Payments do
     )
   end
 
-  defp entitlement_expiry(%Product{kind: "subscription", grant_config: config}) do
+  defp entitlement_expiry(%Product{kind: ProductKind.subscription(), grant_config: config}) do
     duration = Params.parse_positive_int((config || %{})["duration_seconds"], 0)
 
     if duration > 0 do

@@ -11,6 +11,16 @@ defmodule Gamend.Payments.Providers.Steam do
   alias Gamend.Payments.Params
   alias Gamend.Payments.ProviderConfig
 
+  require Gamend.Payments.PaymentEnvironment, as: PaymentEnvironment
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+  require Gamend.LocaleCode, as: LocaleCode
+
+  @type_param "type"
+  @time "time"
+  @key "key"
+  @currency "currency"
+
   @production_base_url "https://partner.steam-api.com/ISteamMicroTxn"
   @sandbox_base_url "https://partner.steam-api.com/ISteamMicroTxnSandbox"
 
@@ -18,7 +28,7 @@ defmodule Gamend.Payments.Providers.Steam do
 
   def config_status do
     %{
-      provider: "steam",
+      provider: ProviderId.steam(),
       configured: present?(api_key()) and present?(app_id()),
       api_key_configured: present?(api_key()),
       app_id_configured: present?(app_id()),
@@ -43,13 +53,13 @@ defmodule Gamend.Payments.Providers.Steam do
          {:ok, currency} <- required_currency(attrs["currency"] || purchase.currency) do
       form =
         [
-          {"key", key},
+          {@key, key},
           {"orderid", purchase.order_id},
           {"steamid", steamid},
           {"appid", appid},
           {"itemcount", "1"},
-          {"language", attrs["language"] || "en"},
-          {"currency", currency},
+          {"language", attrs["language"] || LocaleCode.en()},
+          {@currency, currency},
           {"usersession", attrs["usersession"] || attrs["user_session"] || "client"},
           {"itemid[0]", to_string(itemid)},
           {"qty[0]", to_string(purchase.quantity)},
@@ -69,7 +79,7 @@ defmodule Gamend.Payments.Providers.Steam do
          {:ok, appid} <- required_app_id(),
          {:ok, body} <-
            steam_post("FinalizeTxn/v2", [
-             {"key", key},
+             {@key, key},
              {"orderid", purchase.order_id},
              {"appid", appid}
            ]) do
@@ -92,7 +102,7 @@ defmodule Gamend.Payments.Providers.Steam do
          {:ok, appid} <- required_app_id() do
       params =
         [
-          {"key", key},
+          {@key, key},
           {"appid", appid}
         ]
         |> maybe_put_form("orderid", attrs["order_id"] || attrs["orderid"])
@@ -111,14 +121,14 @@ defmodule Gamend.Payments.Providers.Steam do
 
     with {:ok, key} <- required_api_key(),
          {:ok, appid} <- required_app_id(),
-         {:ok, time} <- required_attr(attrs, "time") do
+         {:ok, time} <- required_attr(attrs, @time) do
       params =
         [
-          {"key", key},
+          {@key, key},
           {"appid", appid},
-          {"time", time}
+          {@time, time}
         ]
-        |> maybe_put_form("type", attrs["type"])
+        |> maybe_put_form(@type_param, attrs["type"])
         |> maybe_put_form("maxresults", attrs["maxresults"] || attrs["max_results"])
 
       steam_get("GetReport/v5", params)
@@ -133,7 +143,7 @@ defmodule Gamend.Payments.Providers.Steam do
       "transaction_id" =>
         params["transid"] || purchase.provider_transaction_id || purchase.order_id,
       "original_transaction_id" => params["orderid"] || purchase.order_id,
-      "status" => "completed",
+      "status" => PurchaseStatus.completed(),
       "environment" => steam_environment(),
       "raw_payload" => %{"steam_finalize" => body}
     }
@@ -163,11 +173,11 @@ defmodule Gamend.Payments.Providers.Steam do
   defp response_params(%{"response" => params}) when is_map(params), do: params
   defp response_params(params) when is_map(params), do: params
 
-  defp steam_status("Succeeded"), do: "completed"
-  defp steam_status("Approved"), do: "pending"
-  defp steam_status("Failed"), do: "failed"
-  defp steam_status(status) when status in @reversed_statuses, do: "refunded"
-  defp steam_status(_status), do: "pending"
+  defp steam_status("Succeeded"), do: PurchaseStatus.completed()
+  defp steam_status("Approved"), do: PurchaseStatus.pending()
+  defp steam_status("Failed"), do: PurchaseStatus.failed()
+  defp steam_status(status) when status in @reversed_statuses, do: PurchaseStatus.refunded()
+  defp steam_status(_status), do: PurchaseStatus.pending()
 
   defp steam_post(path, form) do
     url = "#{base_url()}/#{path}/"
@@ -219,7 +229,7 @@ defmodule Gamend.Payments.Providers.Steam do
   defp base_url do
     config_value("STEAM_MICROTXN_BASE_URL", :steam_microtxn_base_url) ||
       case steam_environment() do
-        "sandbox" -> @sandbox_base_url
+        PaymentEnvironment.sandbox() -> @sandbox_base_url
         _ -> @production_base_url
       end
   end

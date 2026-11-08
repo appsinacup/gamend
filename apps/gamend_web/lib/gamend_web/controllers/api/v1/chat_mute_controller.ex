@@ -25,6 +25,8 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
   alias GamendWeb.Schemas.{ChatMuteRecordPage, ChatMuteRecordResponse, DeletedCountResponse}
   alias OpenApiSpex.Schema
 
+  require Gamend.Chat.ChatType, as: ChatType
+
   tags(["Chat"])
 
   @mute_request %Schema{
@@ -71,7 +73,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
   def mute_lobby(conn, params) do
     with_lobby(conn, fn user, lobby ->
       if Lobbies.can_manage_lobby?(user, lobby) do
-        do_mute(conn, params, "lobby", lobby.id, user)
+        do_mute(conn, params, ChatType.lobby(), lobby.id, user)
       else
         reply_error(conn, :forbidden, "not_host")
       end
@@ -94,7 +96,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
   def unmute_lobby(conn, params) do
     with_lobby(conn, fn user, lobby ->
       if Lobbies.can_manage_lobby?(user, lobby) do
-        do_unmute(conn, params, "lobby", lobby.id, user)
+        do_unmute(conn, params, ChatType.lobby(), lobby.id, user)
       else
         reply_error(conn, :forbidden, "not_host")
       end
@@ -123,7 +125,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
   def list_lobby_mutes(conn, params) do
     with_lobby(conn, fn user, lobby ->
       if Lobbies.can_manage_lobby?(user, lobby) do
-        list_scoped(conn, params, "lobby", lobby.id)
+        list_scoped(conn, params, ChatType.lobby(), lobby.id)
       else
         reply_error(conn, :forbidden, "not_host")
       end
@@ -155,7 +157,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
 
   def mute_group(conn, %{"id" => group_id} = params) do
     with_group_admin(conn, group_id, fn user, group_id ->
-      do_mute(conn, params, "group", group_id, user)
+      do_mute(conn, params, ChatType.group(), group_id, user)
     end)
   end
 
@@ -181,7 +183,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
 
   def unmute_group(conn, %{"id" => group_id} = params) do
     with_group_admin(conn, group_id, fn user, group_id ->
-      do_unmute(conn, params, "group", group_id, user)
+      do_unmute(conn, params, ChatType.group(), group_id, user)
     end)
   end
 
@@ -211,7 +213,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
 
   def list_group_mutes(conn, %{"id" => group_id} = params) do
     with_group_admin(conn, group_id, fn _user, group_id ->
-      list_scoped(conn, params, "group", group_id)
+      list_scoped(conn, params, ChatType.group(), group_id)
     end)
   end
 
@@ -234,7 +236,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
   def mute_party(conn, params) do
     with_party(conn, fn user, party ->
       if Parties.can_manage_party?(user, party) do
-        do_mute(conn, params, "party", party.id, user)
+        do_mute(conn, params, ChatType.party(), party.id, user)
       else
         reply_error(conn, :forbidden, "not_leader")
       end
@@ -257,7 +259,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
   def unmute_party(conn, params) do
     with_party(conn, fn user, party ->
       if Parties.can_manage_party?(user, party) do
-        do_unmute(conn, params, "party", party.id, user)
+        do_unmute(conn, params, ChatType.party(), party.id, user)
       else
         reply_error(conn, :forbidden, "not_leader")
       end
@@ -286,7 +288,7 @@ defmodule GamendWeb.Api.V1.ChatMuteController do
   def list_party_mutes(conn, params) do
     with_party(conn, fn user, party ->
       if Parties.can_manage_party?(user, party) do
-        list_scoped(conn, params, "party", party.id)
+        list_scoped(conn, params, ChatType.party(), party.id)
       else
         reply_error(conn, :forbidden, "not_leader")
       end

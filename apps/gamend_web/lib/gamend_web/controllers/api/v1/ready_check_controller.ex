@@ -31,6 +31,8 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
+  require Gamend.ReadyChecks.CheckScope, as: CheckScope
+
   tags(["Ready checks"])
 
   operation(:show,
@@ -76,7 +78,11 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
         type: :object,
         properties: %{
           ready: %Schema{type: :boolean},
-          scope: %Schema{type: :string, enum: ["lobby", "party"], default: "lobby"}
+          scope: %Schema{
+            type: :string,
+            enum: [CheckScope.lobby(), CheckScope.party()],
+            default: CheckScope.lobby()
+          }
         },
         required: [:ready]
       }
@@ -92,7 +98,7 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
 
   def respond(conn, %{"ready" => ready} = params) when is_boolean(ready) do
     with_user(conn, fn user ->
-      case parse_scope(Map.get(params, "scope", "lobby")) do
+      case parse_scope(Map.get(params, "scope", CheckScope.lobby())) do
         {:ok, scope} -> do_respond(conn, user, ready, scope)
         :error -> reply_error(conn, :bad_request, "invalid_scope")
       end
@@ -282,8 +288,8 @@ defmodule GamendWeb.Api.V1.ReadyCheckController do
     end)
   end
 
-  defp parse_scope("lobby"), do: {:ok, :match}
-  defp parse_scope("party"), do: {:ok, :party}
+  defp parse_scope(CheckScope.lobby()), do: {:ok, :match}
+  defp parse_scope(CheckScope.party()), do: {:ok, :party}
   defp parse_scope(_scope), do: :error
 
   defp serialize(check, user), do: Serializers.serialize_ready_check(check, viewer_id: user.id)

@@ -12,6 +12,8 @@ defmodule GamendWeb.Api.V1.SessionController do
   alias GamendWeb.Schemas.{OkResponse, RegistrationResponse, SessionResponse}
   alias OpenApiSpex.Schema
 
+  require GamendWeb.Auth.TokenType, as: TokenType
+
   tags(["Authentication"])
 
   operation(:create,
@@ -295,9 +297,8 @@ defmodule GamendWeb.Api.V1.SessionController do
     })
   end
 
-  # A username someone already has: 409, the input was fine. An email someone
-  # already has answers as a free one does, and its owner gets an email: a 409
-  # told anyone who asked which addresses have accounts.
+  # An email someone already has answers as a free one does, and its owner gets
+  # an email: a 409 told anyone who asked which addresses have accounts.
   defp registered({:error, %Ecto.Changeset{} = changeset}, conn, params) do
     others = Accounts.drop_email_taken(changeset)
 
@@ -442,7 +443,7 @@ defmodule GamendWeb.Api.V1.SessionController do
     case refresh_user(refresh_token) do
       {:ok, user} ->
         {:ok, new_access_token, _claims} =
-          Guardian.encode_and_sign(user, %{}, token_type: "access")
+          Guardian.encode_and_sign(user, %{}, token_type: TokenType.access())
 
         reply_data(conn, Tokens.session(user, new_access_token, refresh_token))
 
@@ -467,7 +468,8 @@ defmodule GamendWeb.Api.V1.SessionController do
   # (`token_revoked`, `account_deactivated`, `user_not_found`, `invalid_id`,
   # `no_subject`). Which one is not the client's to know.
   defp refresh_user(refresh_token) do
-    with {:ok, claims} <- Guardian.decode_and_verify(refresh_token, %{"typ" => "refresh"}),
+    with {:ok, claims} <-
+           Guardian.decode_and_verify(refresh_token, %{"typ" => TokenType.refresh()}),
          {:ok, user} <- Guardian.resource_from_claims(claims) do
       {:ok, user}
     else

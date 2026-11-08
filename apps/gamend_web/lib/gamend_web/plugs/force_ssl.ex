@@ -25,6 +25,8 @@ defmodule GamendWeb.Plugs.ForceSSL do
   only on the path exclusion below.
   """
 
+  require Gamend.LocalHost, as: LocalHost
+
   @behaviour Plug
 
   @impl true
@@ -38,7 +40,7 @@ defmodule GamendWeb.Plugs.ForceSSL do
         # is on.
         log: false,
         exclude: [
-          hosts: ["localhost", "127.0.0.1"],
+          hosts: [LocalHost.localhost(), "127.0.0.1"],
           conn: {__MODULE__, :excluded?, []}
         ]
       ] ++ opts

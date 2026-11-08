@@ -19,6 +19,8 @@ defmodule Gamend.Push.DeliveryWorker do
   alias Gamend.Push.PushToken
   alias Gamend.Repo
 
+  @failed "failed"
+
   @impl Oban.Worker
   def perform(%Oban.Job{args: %{"token_id" => token_id, "message" => message_map}} = job) do
     token = Repo.get(PushToken, token_id)
@@ -52,12 +54,12 @@ defmodule Gamend.Push.DeliveryWorker do
             "#{token.id}: #{inspect(reason)} — check the provider configuration"
         )
 
-        notify_sent(token, message_map, "failed", reason)
+        notify_sent(token, message_map, @failed, reason)
         {:cancel, reason}
 
       {:error, :transient, reason} ->
         if job.attempt >= job.max_attempts do
-          notify_sent(token, message_map, "failed", reason)
+          notify_sent(token, message_map, @failed, reason)
         end
 
         {:error, reason}

@@ -24,6 +24,11 @@ defmodule Gamend.Chat.Moderation do
   alias Gamend.Chat.Moderation.Normalizer
   alias Gamend.Repo
 
+  require Gamend.Chat.FilterSeverity, as: FilterSeverity
+  require Gamend.Chat.MatchMode, as: MatchMode
+
+  @priv "priv"
+
   @bundled_dir "chat_filter"
 
   # ── Word filter: matching ──────────────────────────────────────────────────
@@ -49,7 +54,7 @@ defmodule Gamend.Chat.Moderation do
         {:ok, content, []}
 
       hits ->
-        if Enum.any?(hits, &(elem(&1, 1) == "block")) do
+        if Enum.any?(hits, &(elem(&1, 1) == FilterSeverity.block())) do
           {:error, :blocked_content}
         else
           resolve_non_blocking(content, hits)
@@ -60,8 +65,8 @@ defmodule Gamend.Chat.Moderation do
   def check_content(content), do: {:ok, content, []}
 
   defp resolve_non_blocking(content, hits) do
-    flagged = for {word, "flag", _mode} <- hits, do: word
-    mask_words = for {word, "mask", _mode} <- hits, do: word
+    flagged = for {word, FilterSeverity.flag(), _mode} <- hits, do: word
+    mask_words = for {word, FilterSeverity.mask(), _mode} <- hits, do: word
 
     case mask_words do
       [] ->
@@ -70,7 +75,7 @@ defmodule Gamend.Chat.Moderation do
       mask_words ->
         masked = mask_tokens(content, mask_words)
 
-        if Enum.any?(hits(masked), &(elem(&1, 1) == "mask")) do
+        if Enum.any?(hits(masked), &(elem(&1, 1) == FilterSeverity.mask())) do
           {:error, :blocked_content}
         else
           {:ok, masked, flagged}
@@ -102,7 +107,7 @@ defmodule Gamend.Chat.Moderation do
     |> Enum.uniq()
     |> Enum.flat_map(fn token ->
       case Cache.lookup_word(token) do
-        {severity, "exact" = mode} -> [{token, severity, mode}]
+        {severity, MatchMode.exact() = mode} -> [{token, severity, mode}]
         _ -> []
       end
     end)
@@ -281,7 +286,7 @@ defmodule Gamend.Chat.Moderation do
   @spec import_bundled_list(String.t(), String.t()) ::
           {:ok, non_neg_integer()}
           | {:error, :unknown_language | :too_many_filter_words | File.posix()}
-  def import_bundled_list(lang, severity \\ "block") do
+  def import_bundled_list(lang, severity \\ FilterSeverity.block()) do
     path = Path.join(bundled_dir(), "#{lang}.txt")
 
     with true <- lang in bundled_languages() and File.exists?(path),
@@ -311,7 +316,7 @@ defmodule Gamend.Chat.Moderation do
           "word" => word,
           "lang" => lang,
           "severity" => severity,
-          "match_mode" => "substring"
+          "match_mode" => MatchMode.substring()
         })
       end)
       |> Enum.filter(& &1.valid?)
@@ -333,7 +338,7 @@ defmodule Gamend.Chat.Moderation do
   end
 
   defp bundled_dir do
-    Application.app_dir(:gamend_core, ["priv", @bundled_dir])
+    Application.app_dir(:gamend_core, [@priv, @bundled_dir])
   end
 
   # ── Mutes ──────────────────────────────────────────────────────────────────

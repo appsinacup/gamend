@@ -26,6 +26,10 @@ defmodule Mix.Tasks.Gettext.ExportCsv do
   """
   use Mix.Task
 
+  @source "source"
+
+  @yes "yes"
+
   @shortdoc "Export a locale's translations to CSV"
 
   @gettext_dirs [
@@ -94,7 +98,7 @@ defmodule Mix.Tasks.Gettext.ExportCsv do
   end
 
   defp header_row do
-    ["domain", "msgid", "source", "translation", "fuzzy"]
+    ["domain", "msgid", @source, "translation", "fuzzy"]
   end
 
   defp message_to_row(domain, %Expo.Message.Singular{} = msg) do
@@ -117,7 +121,7 @@ defmodule Mix.Tasks.Gettext.ExportCsv do
     ]
   end
 
-  defp fuzzy_cell(msg), do: if(fuzzy?(msg), do: "yes", else: "")
+  defp fuzzy_cell(msg), do: if(fuzzy?(msg), do: @yes, else: "")
 
   defp fuzzy?(%{flags: flags}) do
     Enum.any?(flags, fn flag_list ->

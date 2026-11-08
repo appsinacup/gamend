@@ -15,6 +15,8 @@ defmodule Gamend.Accounts.TimeZone do
   alias Gamend.Accounts.Preferences
   alias Gamend.Accounts.User
 
+  @priv "priv"
+
   @db Tz.TimeZoneDatabase
   @key "timezone"
   @manual "timezone_manual"
@@ -86,7 +88,7 @@ defmodule Gamend.Accounts.TimeZone do
 
   defp read_names do
     :tz
-    |> Application.app_dir("priv")
+    |> Application.app_dir(@priv)
     |> Path.join("tzdata*/zone1970.tab")
     |> Path.wildcard()
     |> Enum.sort()

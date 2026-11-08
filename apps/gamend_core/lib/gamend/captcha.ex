@@ -42,6 +42,8 @@ defmodule Gamend.Captcha do
 
   require Logger
 
+  @unknown "unknown"
+
   setting(:enabled, :boolean,
     default: false,
     doc: "Require a captcha on the register and magic-link forms."
@@ -174,7 +176,7 @@ defmodule Gamend.Captcha do
   defp secret_key,
     do: presence(Gamend.Settings.get(__MODULE__, :secret_key)) || @test_secret_key
 
-  defp remote_ip_param(ip) when is_binary(ip) and ip != "" and ip != "unknown",
+  defp remote_ip_param(ip) when is_binary(ip) and ip != "" and ip != @unknown,
     do: [remoteip: ip]
 
   defp remote_ip_param(_ip), do: []

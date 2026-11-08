@@ -26,6 +26,9 @@ defmodule Mix.Tasks.Gamend.Stripe.Setup do
   alias Gamend.Payments.ProviderConfig
   alias Gamend.Payments.StripeSetup
 
+  require Gamend.Payments.StripeIdPrefix, as: StripeIdPrefix
+  require Gamend.Payments.StripeSetupStep, as: StripeSetupStep
+
   @switches [
     url: :string,
     apply: :boolean,
@@ -51,11 +54,17 @@ defmodule Mix.Tasks.Gamend.Stripe.Setup do
       opts[:url] ||
         Mix.raise("--url is required: the public URL of /api/v1/payments/webhooks/stripe")
 
-    only = only(opts, ~w(webhook portal))
+    only = only(opts, [StripeSetupStep.webhook(), StripeSetupStep.portal()])
 
     run_steps(opts, fn step_opts ->
-      webhook = if "webhook" in only, do: StripeSetup.ensure_webhook(url, step_opts), else: []
-      portal = if "portal" in only, do: StripeSetup.ensure_portal(step_opts), else: []
+      webhook =
+        if StripeSetupStep.webhook() in only,
+          do: StripeSetup.ensure_webhook(url, step_opts),
+          else: []
+
+      portal =
+        if StripeSetupStep.portal() in only, do: StripeSetup.ensure_portal(step_opts), else: []
+
       webhook ++ portal
     end)
   end
@@ -150,5 +159,9 @@ defmodule Mix.Tasks.Gamend.Stripe.Setup do
   defp mark(:error), do: "  ERROR  "
 
   defp live_key?,
-    do: String.starts_with?(ProviderConfig.stripe_secret_key() || "", ["sk_live_", "rk_live_"])
+    do:
+      String.starts_with?(ProviderConfig.stripe_secret_key() || "", [
+        StripeIdPrefix.secret_live(),
+        StripeIdPrefix.restricted_live()
+      ])
 end

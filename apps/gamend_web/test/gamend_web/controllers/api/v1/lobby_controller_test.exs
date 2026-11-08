@@ -358,7 +358,10 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
 
     {:ok, _} =
       Gamend.Accounts.update_user_metadata(host.id, fn metadata ->
-        Map.merge(metadata, %{"ship" => "brig", "payments" => %{"purchase_ids" => %{"p1" => true}}})
+        Map.merge(metadata, %{
+          "ship" => "brig",
+          "payments" => %{"purchase_ids" => %{"p1" => true}}
+        })
       end)
 
     {:ok, lobby} = Lobbies.create_lobby(%{title: "metadata-room", host_id: host.id})

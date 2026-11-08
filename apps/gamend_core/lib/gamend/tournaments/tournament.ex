@@ -17,6 +17,9 @@ defmodule Gamend.Tournaments.Tournament do
   @type t :: %__MODULE__{}
   import Ecto.Changeset
 
+  require Gamend.Tournaments.DeadlinePolicy, as: DeadlinePolicy
+  require Gamend.Tournaments.TournamentState, as: TournamentState
+
   @states ~w(scheduled registration running finished cancelled)
   @deadline_policies ~w(forfeit_both advance_first_slot random)
 
@@ -25,7 +28,7 @@ defmodule Gamend.Tournaments.Tournament do
     field :title, :string
     field :description, :string, default: ""
     field :icon_url, :string
-    field :state, :string, default: "scheduled"
+    field :state, :string, default: TournamentState.scheduled()
     field :registration_opens_at, :utc_datetime
     field :starts_at, :utc_datetime
     field :ends_at, :utc_datetime
@@ -34,7 +37,7 @@ defmodule Gamend.Tournaments.Tournament do
     field :team_size, :integer, default: 1
     field :bracket_size, :integer, default: 8
     field :round_window_sec, :integer
-    field :deadline_policy, :string, default: "forfeit_both"
+    field :deadline_policy, :string, default: DeadlinePolicy.forfeit_both()
     field :metadata, :map, default: %{}
 
     has_many :entries, Gamend.Tournaments.Entry

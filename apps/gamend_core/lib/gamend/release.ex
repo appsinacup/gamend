@@ -24,6 +24,8 @@ defmodule Gamend.Release do
   alias Gamend.Export
   alias Gamend.Repo.MigrationPaths
 
+  @create "create"
+
   @otp_app :gamend_core
 
   @doc """
@@ -54,7 +56,7 @@ defmodule Gamend.Release do
   the server provisions the database already can skip this entirely.
   """
   @spec createdb() :: :ok
-  def createdb, do: storage(:storage_up, :already_up, "create")
+  def createdb, do: storage(:storage_up, :already_up, @create)
 
   @doc """
   Drops the database, mirroring `mix ecto.drop`. A database that does not

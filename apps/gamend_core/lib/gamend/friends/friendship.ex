@@ -11,6 +11,8 @@ defmodule Gamend.Friends.Friendship do
 
   alias Gamend.Accounts.User
 
+  require Gamend.Friends.FriendshipStatus, as: FriendshipStatus
+
   @statuses ["pending", "accepted", "rejected", "blocked"]
 
   @derive {Jason.Encoder,
@@ -27,7 +29,7 @@ defmodule Gamend.Friends.Friendship do
     belongs_to :requester, User
     belongs_to :target, User
 
-    field :status, :string, default: "pending"
+    field :status, :string, default: FriendshipStatus.pending()
 
     timestamps(type: :utc_datetime)
   end

@@ -20,15 +20,21 @@ defmodule Gamend.Payments.Admin do
   alias Gamend.Payments.ReconciliationCursor
   alias Gamend.Repo
 
+  require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+  require Gamend.Payments.StripeIdPrefix, as: StripeIdPrefix
+  require Gamend.Payments.StripeKeyMode, as: StripeKeyMode
+
   @spec admin_stats() :: map()
   def admin_stats do
     %{
       products: count_products(),
       provider_products: count_provider_products(),
       purchases: count_purchases(),
-      completed_purchases: count_purchases(status: "completed"),
+      completed_purchases: count_purchases(status: PurchaseStatus.completed()),
       entitlements: count_entitlements(),
-      active_entitlements: count_entitlements(status: "active"),
+      active_entitlements: count_entitlements(status: EntitlementStatus.active()),
       provider_events: count_provider_events()
     }
   end
@@ -63,17 +69,17 @@ defmodule Gamend.Payments.Admin do
     stripe_status = stripe_config_status()
 
     stripe = %{
-      provider: "stripe",
+      provider: ProviderId.stripe(),
       module: Gamend.Payments.Providers.Stripe,
       configured: stripe_status.configured,
-      status: Map.put(stripe_status, :provider, "stripe")
+      status: Map.put(stripe_status, :provider, ProviderId.stripe())
     }
 
     store_adapters =
       for {provider, default_module} <- [
-            {"apple", Gamend.Payments.Providers.Apple},
-            {"google", Gamend.Payments.Providers.Google},
-            {"steam", Gamend.Payments.Providers.Steam}
+            {ProviderId.apple(), Gamend.Payments.Providers.Apple},
+            {ProviderId.google(), Gamend.Payments.Providers.Google},
+            {ProviderId.steam(), Gamend.Payments.Providers.Steam}
           ] do
         key = String.to_existing_atom(provider)
         module = Keyword.get(adapters, key, default_module)
@@ -237,11 +243,11 @@ defmodule Gamend.Payments.Admin do
     where(query, [row], fragment("? LIKE ? ESCAPE '\\'", field(row, ^field), ^pattern))
   end
 
-  defp stripe_key_mode("sk_test_" <> _rest), do: "test"
-  defp stripe_key_mode("rk_test_" <> _rest), do: "test"
-  defp stripe_key_mode("sk_live_" <> _rest), do: "live"
-  defp stripe_key_mode("rk_live_" <> _rest), do: "live"
-  defp stripe_key_mode(value) when is_binary(value) and value != "", do: "unknown"
+  defp stripe_key_mode(StripeIdPrefix.secret_test() <> _rest), do: StripeKeyMode.test()
+  defp stripe_key_mode(StripeIdPrefix.restricted_test() <> _rest), do: StripeKeyMode.test()
+  defp stripe_key_mode(StripeIdPrefix.secret_live() <> _rest), do: StripeKeyMode.live()
+  defp stripe_key_mode(StripeIdPrefix.restricted_live() <> _rest), do: StripeKeyMode.live()
+  defp stripe_key_mode(value) when is_binary(value) and value != "", do: StripeKeyMode.unknown()
   defp stripe_key_mode(_value), do: "not_configured"
 
   defp mask_secret(value) when is_binary(value) and value != "" do

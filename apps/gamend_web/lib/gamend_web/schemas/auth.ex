@@ -7,6 +7,8 @@ defmodule GamendWeb.Schemas.Session do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  @coolplayer_1234 "coolplayer-1234"
+
   OpenApiSpex.schema(%{
     title: "Session",
     description: "Tokens for a signed-in user",
@@ -33,7 +35,7 @@ defmodule GamendWeb.Schemas.Session do
       refresh_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
       expires_in: 900,
       user_id: "0198c0de-0002-7000-8000-000000000002",
-      username: "coolplayer-1234",
+      username: @coolplayer_1234,
       display_name: "CoolPlayer"
     }
   })
@@ -52,6 +54,8 @@ defmodule GamendWeb.Schemas.Registration do
   """
   require OpenApiSpex
   alias OpenApiSpex.Schema
+
+  @coolplayer_1234 "coolplayer-1234"
 
   OpenApiSpex.schema(%{
     title: "Registration",
@@ -75,7 +79,7 @@ defmodule GamendWeb.Schemas.Registration do
     required: [:user_id, :username, :display_name, :email_confirmed],
     example: %{
       user_id: "0198c0de-0002-7000-8000-000000000002",
-      username: "coolplayer-1234",
+      username: @coolplayer_1234,
       display_name: "",
       email_confirmed: false
     }
@@ -115,12 +119,21 @@ defmodule GamendWeb.Schemas.AuthProvidersResponse do
   @moduledoc "The OAuth providers a player may sign in with, under `data`."
   alias OpenApiSpex.Schema
 
+  require Gamend.OAuth.AuthProvider, as: AuthProvider
+
   use GamendWeb.Schemas.Envelope,
     data: %Schema{
       type: :array,
       items: %Schema{
         type: :string,
-        enum: ["discord", "google", "apple", "facebook", "github", "steam"]
+        enum: [
+          AuthProvider.discord(),
+          AuthProvider.google(),
+          AuthProvider.apple(),
+          AuthProvider.facebook(),
+          AuthProvider.github(),
+          AuthProvider.steam()
+        ]
       }
     },
     description: "Enabled sign-in providers under `data`"
@@ -142,6 +155,7 @@ defmodule GamendWeb.Schemas.ProviderLinkStatus do
   as its owner polls it.
   """
   require OpenApiSpex
+  alias Gamend.OAuth.SessionStatus
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -149,7 +163,10 @@ defmodule GamendWeb.Schemas.ProviderLinkStatus do
     description: "Where a provider link stands",
     type: :object,
     properties: %{
-      status: %Schema{type: :string, enum: ["pending", "completed", "error"]},
+      status: %Schema{
+        type: :string,
+        enum: SessionStatus.all()
+      },
       error: %Schema{
         type: :string,
         description:

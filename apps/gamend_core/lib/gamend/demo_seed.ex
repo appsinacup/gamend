@@ -112,6 +112,58 @@ defmodule Gamend.DemoSeed do
   alias Gamend.Tournaments.Tournament
   alias Gamend.UUIDv7
 
+  require Gamend.Bans.BanScope, as: BanScope
+  require Gamend.Chat.ChatReportStatus, as: ChatReportStatus
+  require Gamend.Chat.ChatType, as: ChatType
+  require Gamend.ReadyChecks.CheckReason, as: CheckReason
+  require Gamend.Tournaments.DeadlinePolicy, as: DeadlinePolicy
+  require Gamend.Friends.FriendshipStatus, as: FriendshipStatus
+  require Gamend.Groups.GroupRole, as: GroupRole
+  require Gamend.Groups.GroupType, as: GroupType
+  require Gamend.Quests.PeriodKey, as: PeriodKey
+  require Gamend.Quests.QuestReset, as: QuestReset
+  require Gamend.Quests.QuestStatus, as: QuestStatus
+  require Gamend.Reports.ReportStatus, as: ReportStatus
+  require Gamend.Quests.ReportedEvent, as: ReportedEvent
+  require Gamend.Quests.RewardType, as: RewardType
+  require Gamend.Tournaments.TournamentState, as: TournamentState
+  require Gamend.Payments.PaymentEnvironment, as: PaymentEnvironment
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+  require Gamend.Push.Platform, as: Platform
+  require Gamend.Push.PushProvider, as: PushProvider
+  require Gamend.Lobbies.LobbyState, as: LobbyState
+  require Gamend.LocaleCode, as: LocaleCode
+  require Gamend.ReadyChecks.CheckKind, as: CheckKind
+  require Gamend.ReadyChecks.CheckStatus, as: CheckStatus
+  require Gamend.ReadyChecks.ParticipantState, as: ParticipantState
+  require Gamend.Reports.ReportSource, as: ReportSource
+
+  @answer "answer"
+
+  @ready "ready"
+
+  @demo_langs ~w(fr es de ro)
+  @session "session"
+  @page "page"
+  @guest "guest"
+  @account "account"
+  @gold "gold"
+  @inventory "inventory"
+  @ban "ban"
+  @lobby "lobby"
+  @friend "friend"
+  @report "report"
+  @payment "payment"
+  @notification "notification"
+  @kv "kv"
+  @push "push"
+  @quest "quest"
+  @result "result"
+  @tournament "tournament"
+  @group "group"
+  @leaderboard "leaderboard"
+
   @prefix "demo-seed"
   @leaderboard_slug "demo_seed_scores"
   @season_slug "demo_seed_monthly"
@@ -207,25 +259,25 @@ defmodule Gamend.DemoSeed do
       users = ensure_users(count)
 
       Enum.each(sets, fn
-        "leaderboard" -> seed_leaderboard(users)
-        "group" -> seed_group(users)
-        "tournament" -> seed_tournament(users)
-        "result" -> seed_results(users)
-        "quest" -> seed_quests(users)
-        "push" -> seed_push_tokens(users)
+        @leaderboard -> seed_leaderboard(users)
+        @group -> seed_group(users)
+        @tournament -> seed_tournament(users)
+        @result -> seed_results(users)
+        @quest -> seed_quests(users)
+        @push -> seed_push_tokens(users)
         "ready_check" -> seed_ready_checks(users)
         "chat_moderation" -> seed_chat_moderation(users)
-        "kv" -> seed_kv(users)
-        "notification" -> seed_notifications(users)
+        @kv -> seed_kv(users)
+        @notification -> seed_notifications(users)
         "analytics" -> seed_analytics(users)
         "economy" -> seed_economy(users)
-        "payment" -> seed_payments(users)
-        "report" -> seed_reports(users)
-        "friend" -> seed_friends(users)
-        "session" -> seed_sessions(users)
-        "lobby" -> seed_lobbies(users)
-        "ban" -> seed_bans(users)
-        "inventory" -> seed_inventory(users)
+        @payment -> seed_payments(users)
+        @report -> seed_reports(users)
+        @friend -> seed_friends(users)
+        @session -> seed_sessions(users)
+        @lobby -> seed_lobbies(users)
+        @ban -> seed_bans(users)
+        @inventory -> seed_inventory(users)
       end)
 
       analyze()
@@ -528,7 +580,8 @@ defmodule Gamend.DemoSeed do
     now = DateTime.utc_now(:second)
 
     rows =
-      [%{user_id: creator, role: "admin"}] ++ Enum.map(members, &%{user_id: &1, role: "member"})
+      [%{user_id: creator, role: GroupRole.admin()}] ++
+        Enum.map(members, &%{user_id: &1, role: GroupRole.member()})
 
     rows
     |> Stream.map(fn row ->
@@ -550,7 +603,7 @@ defmodule Gamend.DemoSeed do
     upsert(Group, [title: @group_title], %{
       title: @group_title,
       description: "Volume demo data.",
-      type: "public",
+      type: GroupType.public(),
       max_members: length(user_ids) + 10,
       creator_id: hd(user_ids),
       metadata: %{}
@@ -565,13 +618,13 @@ defmodule Gamend.DemoSeed do
         slug: @tournament_slug,
         title: "Demo Seed Cup",
         description: "Volume demo data — registration is open.",
-        state: "registration",
+        state: TournamentState.registration(),
         registration_opens_at: DateTime.add(now, -3600),
         starts_at: DateTime.add(now, 7 * 86_400),
         round_window_sec: 3600,
         bracket_size: 8,
         team_size: 1,
-        deadline_policy: "forfeit_both",
+        deadline_policy: DeadlinePolicy.forfeit_both(),
         metadata: %{}
       })
 
@@ -608,10 +661,10 @@ defmodule Gamend.DemoSeed do
         key: @quest_key_prefix <> "daily-login",
         title: "Demo Daily Login",
         description: "Log in 3 times today.",
-        reset: "daily",
+        reset: QuestReset.daily(),
         category: "Daily",
-        objectives: [%{event: "login", target: 3, params: %{}}],
-        rewards: [%{type: "currency", code: "gold", amount: 100}],
+        objectives: [%{event: ReportedEvent.login(), target: 3, params: %{}}],
+        rewards: [%{type: RewardType.currency(), code: @gold, amount: 100}],
         auto_claim: false,
         active: true,
         metadata: %{}
@@ -622,7 +675,7 @@ defmodule Gamend.DemoSeed do
         key: @quest_key_prefix <> "first-win",
         title: "Demo First Win",
         description: "Win your first demo match.",
-        reset: "never",
+        reset: QuestReset.never(),
         category: "Achievements",
         objectives: [%{event: "demo_win", target: 1, params: %{}}],
         rewards: [],
@@ -636,10 +689,10 @@ defmodule Gamend.DemoSeed do
         key: @quest_key_prefix <> "veteran",
         title: "Demo Veteran",
         description: "Win 10 demo matches (after your first win).",
-        reset: "never",
+        reset: QuestReset.never(),
         category: "Chained",
         objectives: [%{event: "demo_win", target: 10, params: %{}}],
-        rewards: [%{type: "item", code: "loot_crate", amount: 1}],
+        rewards: [%{type: RewardType.item(), code: "loot_crate", amount: 1}],
         auto_claim: false,
         prerequisite_quest_key: achievement.key,
         active: true,
@@ -656,7 +709,7 @@ defmodule Gamend.DemoSeed do
           key: @quest_key_prefix <> "visit-" <> String.downcase(country),
           title: "Visit #{country}",
           description: "Visit 5 cities in #{country}.",
-          reset: "never",
+          reset: QuestReset.never(),
           category: "Exploration",
           group_key: @quest_key_prefix <> "world-tour",
           group_title: "World tour",
@@ -664,7 +717,7 @@ defmodule Gamend.DemoSeed do
           objectives: [
             %{event: "demo_city_visited", target: 5, params: %{"country" => country}}
           ],
-          rewards: [%{type: "currency", code: "gold", amount: 50}],
+          rewards: [%{type: RewardType.currency(), code: @gold, amount: 50}],
           auto_claim: false,
           active: true,
           metadata: %{}
@@ -672,7 +725,7 @@ defmodule Gamend.DemoSeed do
       end
 
     now = DateTime.utc_now(:second)
-    today = Gamend.Quests.period_key("daily", now)
+    today = Gamend.Quests.period_key(QuestReset.daily(), now)
 
     Repo.delete_all(from(p in QuestProgress, where: like(p.quest_key, ^"#{@quest_key_prefix}%")),
       timeout: :infinity
@@ -687,9 +740,9 @@ defmodule Gamend.DemoSeed do
 
         status =
           cond do
-            claimed? -> "claimed"
-            completed? -> "completed"
-            true -> "active"
+            claimed? -> QuestStatus.claimed()
+            completed? -> QuestStatus.completed()
+            true -> QuestStatus.active()
           end
 
         %{
@@ -717,7 +770,7 @@ defmodule Gamend.DemoSeed do
           id: UUIDv7.generate(),
           user_id: user_id,
           quest_key: achievement.key,
-          period_key: "static",
+          period_key: PeriodKey.static(),
           objective_progress: %{"0" => 1},
           status: "claimed",
           completed_at: now,
@@ -738,9 +791,9 @@ defmodule Gamend.DemoSeed do
           id: UUIDv7.generate(),
           user_id: user_id,
           quest_key: chain.key,
-          period_key: "static",
+          period_key: PeriodKey.static(),
           objective_progress: %{"0" => rem(i, 10)},
-          status: "active",
+          status: QuestStatus.active(),
           completed_at: nil,
           claimed_at: nil,
           rewards_granted_at: nil,
@@ -760,9 +813,9 @@ defmodule Gamend.DemoSeed do
           id: UUIDv7.generate(),
           user_id: user_id,
           quest_key: member.key,
-          period_key: "static",
+          period_key: PeriodKey.static(),
           objective_progress: %{"0" => rem(i, 5) + 1},
-          status: "active",
+          status: QuestStatus.active(),
           completed_at: nil,
           claimed_at: nil,
           rewards_granted_at: nil,
@@ -821,9 +874,9 @@ defmodule Gamend.DemoSeed do
     |> Stream.map(fn {user_id, i} ->
       {platform, provider} =
         case rem(i, 3) do
-          0 -> {"android", "fcm"}
-          1 -> {"ios", "apns"}
-          2 -> {"web", "fcm"}
+          0 -> {Platform.android(), PushProvider.fcm()}
+          1 -> {Platform.ios(), PushProvider.apns()}
+          2 -> {Platform.web(), PushProvider.fcm()}
         end
 
       %{
@@ -857,10 +910,10 @@ defmodule Gamend.DemoSeed do
       |> Enum.map(fn {host_id, i} ->
         {status, reason} =
           case rem(i, 4) do
-            0 -> {"pending", nil}
-            1 -> {"passed", nil}
-            2 -> {"failed", "timeout"}
-            3 -> {"failed", "declined"}
+            0 -> {CheckStatus.pending(), nil}
+            1 -> {CheckStatus.passed(), nil}
+            2 -> {CheckStatus.failed(), CheckReason.timeout()}
+            3 -> {CheckStatus.failed(), CheckReason.declined()}
           end
 
         lobby =
@@ -869,19 +922,19 @@ defmodule Gamend.DemoSeed do
             host_id: host_id,
             max_users: 4,
             metadata: %{},
-            state: "created",
+            state: LobbyState.created(),
             state_changed_at: now
           })
 
         %{
           id: UUIDv7.generate(),
-          kind: if(rem(i, 3) == 0, do: "accept", else: "ready"),
+          kind: if(rem(i, 3) == 0, do: CheckKind.accept(), else: @ready),
           status: status,
           lobby_id: lobby.id,
           deadline_at: DateTime.add(now, 15, :second),
           opened_by: host_id,
           reason: reason,
-          resolved_at: if(status != "pending", do: now),
+          resolved_at: if(status != CheckStatus.pending(), do: now),
           metadata: %{},
           inserted_at: now,
           updated_at: now
@@ -915,11 +968,14 @@ defmodule Gamend.DemoSeed do
     info("ready checks: #{length(checks)} (this set ignores --count) -> /admin/matchmaking")
   end
 
-  defp participant_state(%{status: "passed"}, _index), do: "ready"
-  defp participant_state(%{status: "failed", reason: "declined"}, 0), do: "declined"
-  defp participant_state(%{status: "failed", reason: "timeout"}, 0), do: "timed_out"
-  defp participant_state(%{status: "pending"}, 0), do: "pending"
-  defp participant_state(_check, _index), do: "ready"
+  defp participant_state(%{status: CheckStatus.passed()}, _index), do: @ready
+  defp participant_state(%{status: CheckStatus.failed(), reason: "declined"}, 0), do: "declined"
+
+  defp participant_state(%{status: CheckStatus.failed(), reason: CheckReason.timeout()}, 0),
+    do: "timed_out"
+
+  defp participant_state(%{status: CheckStatus.pending()}, 0), do: ParticipantState.pending()
+  defp participant_state(_check, _index), do: @ready
 
   # ── Chat moderation ───────────────────────────────────────────────────────
 
@@ -950,7 +1006,7 @@ defmodule Gamend.DemoSeed do
         host_id: host,
         max_users: 4,
         metadata: %{},
-        state: "created",
+        state: LobbyState.created(),
         state_changed_at: now
       })
 
@@ -1086,10 +1142,10 @@ defmodule Gamend.DemoSeed do
 
   defp report_status(i) do
     case rem(i, 4) do
-      0 -> {"open", nil}
-      1 -> {"reviewing", nil}
-      2 -> {"actioned", "24h mute — third report this week."}
-      3 -> {"dismissed", "Heated, but inside the rules."}
+      0 -> {ChatReportStatus.open(), nil}
+      1 -> {ChatReportStatus.reviewing(), nil}
+      2 -> {ChatReportStatus.actioned(), "24h mute — third report this week."}
+      3 -> {ChatReportStatus.dismissed(), "Heated, but inside the rules."}
     end
   end
 
@@ -1129,10 +1185,10 @@ defmodule Gamend.DemoSeed do
 
   defp mute_scope(rooms, i) do
     case rem(i, 4) do
-      0 -> {"global", nil}
-      1 -> {"lobby", Map.fetch!(rooms, "lobby")}
-      2 -> {"group", Map.fetch!(rooms, "group")}
-      3 -> {"party", Map.fetch!(rooms, "party")}
+      0 -> {BanScope.global(), nil}
+      1 -> {ChatType.lobby(), Map.fetch!(rooms, "lobby")}
+      2 -> {ChatType.group(), Map.fetch!(rooms, "group")}
+      3 -> {ChatType.party(), Map.fetch!(rooms, "party")}
     end
   end
 
@@ -1312,7 +1368,7 @@ defmodule Gamend.DemoSeed do
           name: Enum.at(@event_names, rem(i, length(@event_names))),
           dims: %{
             "lang" => Enum.at(@event_langs, rem(i, length(@event_langs))),
-            "who" => if(rem(i, 3) == 0, do: "account", else: "guest"),
+            "who" => if(rem(i, 3) == 0, do: @account, else: @guest),
             "score" => rem(i, 11)
           },
           user_id: user_id,
@@ -1443,14 +1499,24 @@ defmodule Gamend.DemoSeed do
         %{
           id: UUIDv7.generate(),
           user_id: user_id,
-          provider: "stripe",
+          provider: ProviderId.stripe(),
           order_id: "#{@prefix}-order-#{pad(i)}",
           provider_transaction_id: "#{@prefix}-tx-#{pad(i)}",
-          status: Enum.at(~w(completed completed completed refunded failed), rem(i, 5)),
+          status:
+            Enum.at(
+              [
+                PurchaseStatus.completed(),
+                PurchaseStatus.completed(),
+                PurchaseStatus.completed(),
+                PurchaseStatus.refunded(),
+                PurchaseStatus.failed()
+              ],
+              rem(i, 5)
+            ),
           quantity: 1,
           currency: "eur",
           amount: if(rem(i, 3) == 0, do: 3_900, else: 499),
-          environment: "production",
+          environment: PaymentEnvironment.production(),
           raw_provider_payload: %{},
           metadata: %{},
           purchased_at: at,
@@ -1460,13 +1526,13 @@ defmodule Gamend.DemoSeed do
       end)
 
     entitlements =
-      for %{status: "completed"} = purchase <- purchases do
+      for %{status: PurchaseStatus.completed()} = purchase <- purchases do
         %{
           id: UUIDv7.generate(),
           user_id: purchase.user_id,
           source_purchase_id: purchase.id,
           key: "demo_seed_pro",
-          status: "active",
+          status: QuestStatus.active(),
           starts_at: purchase.purchased_at,
           metadata: %{},
           inserted_at: purchase.inserted_at,
@@ -1499,17 +1565,17 @@ defmodule Gamend.DemoSeed do
 
         %{
           id: UUIDv7.generate(),
-          kind: "page",
+          kind: @page,
           subject_ref: path,
           subject: %{"path" => path},
           data: %{},
           description: "Demo report #{i}: the page shows the wrong word.",
-          locale: "en",
-          source: "web",
+          locale: LocaleCode.en(),
+          source: ReportSource.web(),
           client: %{},
           attachments: %{},
           status: status,
-          resolved_at: if(status != "open", do: at),
+          resolved_at: if(status != ReportStatus.open(), do: at),
           user_id: user_id,
           inserted_at: at,
           updated_at: at
@@ -1534,7 +1600,13 @@ defmodule Gamend.DemoSeed do
       |> Stream.zip(tl(user_ids))
       |> Stream.with_index(1)
       |> Stream.map(fn {{a, b}, i} ->
-        friendship_row(a, b, if(rem(i, 5) == 0, do: "pending", else: "accepted"), i, now)
+        friendship_row(
+          a,
+          b,
+          if(rem(i, 5) == 0, do: FriendshipStatus.pending(), else: FriendshipStatus.accepted()),
+          i,
+          now
+        )
       end)
 
     circle =
@@ -1542,7 +1614,9 @@ defmodule Gamend.DemoSeed do
       |> Stream.drop(2)
       |> Stream.take(div(length(user_ids), 100))
       |> Stream.with_index(1)
-      |> Stream.map(fn {friend, i} -> friendship_row(friend, heavy, "accepted", i, now) end)
+      |> Stream.map(fn {friend, i} ->
+        friendship_row(friend, heavy, FriendshipStatus.accepted(), i, now)
+      end)
 
     rows = insert_batches(Stream.concat(chain, circle), Friendship)
     info("friends: #{rows} friendships -> /admin/friends")
@@ -1565,7 +1639,7 @@ defmodule Gamend.DemoSeed do
   defp seed_sessions(user_ids) do
     Repo.delete_all(
       from(t in UserToken,
-        where: t.context == "session" and t.user_id in subquery(demo_user_ids())
+        where: t.context == ^@session and t.user_id in subquery(demo_user_ids())
       ),
       timeout: :infinity
     )
@@ -1581,7 +1655,7 @@ defmodule Gamend.DemoSeed do
         %{
           id: UUIDv7.generate(),
           token: :crypto.strong_rand_bytes(32),
-          context: "session",
+          context: @session,
           user_id: user_id,
           authenticated_at: at,
           inserted_at: at
@@ -1615,7 +1689,7 @@ defmodule Gamend.DemoSeed do
           is_hidden: rem(i, 7) == 0,
           is_locked: rem(i, 5) == 0,
           metadata: %{},
-          state: "created",
+          state: LobbyState.created(),
           state_changed_at: at,
           inserted_at: at,
           updated_at: at
@@ -1785,13 +1859,13 @@ defmodule Gamend.DemoSeed do
 
       {:ok, result} =
         Gamend.Results.start(user_id, kind,
-          metadata: %{"demo_seed" => true, "lang" => Enum.at(~w(fr es de ro), rem(n, 4))}
+          metadata: %{"demo_seed" => true, "lang" => Enum.at(@demo_langs, rem(n, 4))}
         )
 
       Gamend.Results.record(result, "deal", nil, %{"seed" => :rand.uniform(1_000_000)})
 
       for q <- 1..10 do
-        Gamend.Results.record(result, "answer", if(:rand.uniform() < 0.7, do: 1, else: 0), %{
+        Gamend.Results.record(result, @answer, if(:rand.uniform() < 0.7, do: 1, else: 0), %{
           "question" => "q#{q}"
         })
 

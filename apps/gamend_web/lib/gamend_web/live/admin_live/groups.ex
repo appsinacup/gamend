@@ -5,17 +5,25 @@ defmodule GamendWeb.AdminLive.Groups do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.FormName, as: FormName
+  require Gamend.SortKey, as: SortKey
+  require GamendWeb.UrlParam, as: UrlParam
+
+  @filter_keys ~w(title type min_members max_members)
+
   use GamendWeb.UrlState,
     reload: :reload_view,
     keys: [
-      groups_page: [param: "page"],
-      groups_page_size: [param: "page-size"],
-      sort_by: [param: "sort"],
-      filters: [keys: ~w(title type min_members max_members)],
-      members_of: [param: "members"],
+      groups_page: [param: UrlParam.page()],
+      groups_page_size: [param: UrlParam.page_size()],
+      sort_by: [param: UrlParam.sort()],
+      filters: [keys: @filter_keys],
+      members_of: [param: UrlParam.members()],
       members_page: [],
       members_page_size: [min: 25]
     ]
+
+  require Gamend.Groups.GroupRole, as: GroupRole
 
   @impl true
   def mount(_params, _session, socket) do
@@ -26,7 +34,7 @@ defmodule GamendWeb.AdminLive.Groups do
       |> assign(:groups_page, 1)
       |> assign(:groups_page_size, 25)
       |> assign(:filters, %{})
-      |> assign(:sort_by, "updated_at")
+      |> assign(:sort_by, SortKey.updated_at())
       |> assign(:selected_group, nil)
       |> assign(:form, nil)
       |> assign(:members, [])
@@ -420,7 +428,7 @@ defmodule GamendWeb.AdminLive.Groups do
   @impl true
   def handle_event("filter", params, socket) do
     # The sort select is inside the filter form, so extract it
-    sort_by = Map.get(params, "sort_by", socket.assigns[:sort_by] || "updated_at")
+    sort_by = Map.get(params, "sort_by", socket.assigns[:sort_by] || SortKey.updated_at())
 
     {:noreply,
      socket
@@ -518,7 +526,7 @@ defmodule GamendWeb.AdminLive.Groups do
   @impl true
   def handle_event("edit_group", %{"id" => id}, socket) do
     Shared.with_record(socket, Groups.get_group(to_string(id)), fn group ->
-      form = group |> Groups.change_group() |> to_form(as: "group")
+      form = group |> Groups.change_group() |> to_form(as: FormName.group())
 
       {:noreply,
        socket
@@ -701,7 +709,7 @@ defmodule GamendWeb.AdminLive.Groups do
     page = socket.assigns[:groups_page] || 1
     page_size = socket.assigns[:groups_page_size] || 25
     filters = socket.assigns[:filters] || %{}
-    sort_by = socket.assigns[:sort_by] || "updated_at"
+    sort_by = socket.assigns[:sort_by] || SortKey.updated_at()
 
     groups =
       Groups.list_all_groups(filters,
@@ -764,7 +772,7 @@ defmodule GamendWeb.AdminLive.Groups do
          |> reload_groups()}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :form, to_form(changeset, as: "group"))}
+        {:noreply, assign(socket, :form, to_form(changeset, as: FormName.group()))}
 
       {:error, reason} ->
         {:noreply,
@@ -807,7 +815,7 @@ defmodule GamendWeb.AdminLive.Groups do
   end
 
   defp acting_admin_id(group, members, target_id) do
-    admins = for %{role: "admin", user_id: id} <- members, id != target_id, do: id
+    admins = for %{role: GroupRole.admin(), user_id: id} <- members, id != target_id, do: id
 
     if group.creator_id in admins, do: group.creator_id, else: List.first(admins)
   end

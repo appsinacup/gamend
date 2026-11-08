@@ -41,6 +41,8 @@ defmodule Gamend.RaceLint do
     there), or from the row the write answers.
   """
 
+  @count_ "count_"
+
   @type violation :: %{
           rule: String.t(),
           file: String.t(),
@@ -268,7 +270,7 @@ defmodule Gamend.RaceLint do
   defp counting?({_mod, fun, _args}) do
     name = Atom.to_string(fun)
 
-    String.starts_with?(name, "count_") or
+    String.starts_with?(name, @count_) or
       (String.ends_with?(name, "?") and (name =~ "cap" or name =~ "limit"))
   end
 

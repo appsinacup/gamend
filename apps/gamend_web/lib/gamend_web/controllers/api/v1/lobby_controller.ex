@@ -14,6 +14,10 @@ defmodule GamendWeb.Api.V1.LobbyController do
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
+  require GamendWeb.UrlParam, as: UrlParam
+
+  @secret123 "secret123"
+
   tags(["Lobbies"])
 
   operation(:index,
@@ -258,7 +262,7 @@ defmodule GamendWeb.Api.V1.LobbyController do
         properties: %{
           password: %Schema{type: :string, description: "Lobby password if required"}
         },
-        example: %{password: "secret123"}
+        example: %{password: @secret123}
       }
     },
     responses: [
@@ -383,21 +387,21 @@ defmodule GamendWeb.Api.V1.LobbyController do
 
     filters =
       %{}
-      |> maybe_put_string_filter(:title, param_value(params, "title", :title))
+      |> maybe_put_string_filter(:title, param_value(params, UrlParam.title(), :title))
       |> maybe_put_bool_filter(
         :is_passworded,
         param_value(params, "is_passworded", :is_passworded)
       )
-      |> maybe_put_bool_filter(:is_locked, param_value(params, "is_locked", :is_locked))
-      |> maybe_put_int_filter(:min_users, param_value(params, "min_users", :min_users))
-      |> maybe_put_int_filter(:max_users, param_value(params, "max_users", :max_users))
+      |> maybe_put_bool_filter(:is_locked, param_value(params, UrlParam.is_locked(), :is_locked))
+      |> maybe_put_int_filter(:min_users, param_value(params, UrlParam.min_users(), :min_users))
+      |> maybe_put_int_filter(:max_users, param_value(params, UrlParam.max_users(), :max_users))
       |> maybe_put_string_filter(
         :metadata_key,
-        param_value(params, "metadata_key", :metadata_key)
+        param_value(params, UrlParam.metadata_key(), :metadata_key)
       )
       |> maybe_put_string_filter(
         :metadata_value,
-        param_value(params, "metadata_value", :metadata_value)
+        param_value(params, UrlParam.metadata_value(), :metadata_value)
       )
 
     {page, page_size} = GamendWeb.Pagination.params(params)

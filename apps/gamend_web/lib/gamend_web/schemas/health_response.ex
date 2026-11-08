@@ -3,12 +3,14 @@ defmodule GamendWeb.Schemas.Health do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  @ok "ok"
+
   OpenApiSpex.schema(%{
     title: "Health",
     description: "The API is up",
     type: :object,
     properties: %{
-      status: %Schema{type: :string, description: "Always `ok` when answered", example: "ok"},
+      status: %Schema{type: :string, description: "Always `ok` when answered", example: @ok},
       timestamp: %Schema{
         type: :string,
         format: :"date-time",

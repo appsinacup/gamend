@@ -25,6 +25,8 @@ enum ChannelStates {CLOSED, ERRORED, JOINED, JOINING, LEAVING}
 
 signal on_join_result(event, payload)
 signal on_event(event, payload, status)
+## The reply to one push: `ref` is the `last_push_ref` read just after it.
+signal on_reply(ref, event, payload, status)
 signal on_error(error)
 signal on_close(params)	
 
@@ -35,6 +37,8 @@ var _joined_once := false
 var _socket
 var _join_ref := ""
 var _pending_refs := {}
+## The ref of the latest push, which names its reply in `on_reply`.
+var last_push_ref := ""
 
 var _rejoin_timer : Timer
 var _should_rejoin_until_connected := false
@@ -115,6 +119,7 @@ func push(event : String, payload : Dictionary = {}) -> bool:
 	
 	var ref = _socket.make_ref()
 	_pending_refs[ref] = event
+	last_push_ref = ref
 	_socket.push(_socket.compose_message(event, payload, _topic, ref, _join_ref))
 	return true
 
@@ -214,6 +219,7 @@ func trigger(message : PhoenixMessage):
 		if pending_event:
 			event = pending_event
 			var _success = _pending_refs.erase(message.get_ref())
+			emit_signal("on_reply", message.get_ref(), event, message.get_response(), status)
 
 	if event != CHANNEL_EVENTS.leave:
 		emit_signal("on_event", event, message.get_response(), status)

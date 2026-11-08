@@ -15,6 +15,13 @@ defmodule Gamend.Payments.Providers.Google do
   alias Gamend.Payments.Params
   alias Gamend.Payments.ProviderConfig
   require Logger
+  require Gamend.Payments.PaymentEnvironment, as: PaymentEnvironment
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+
+  @yes "yes"
+  @subscription "subscription"
+  @data "data"
 
   @publisher_base_url "https://androidpublisher.googleapis.com/androidpublisher/v3"
 
@@ -31,7 +38,7 @@ defmodule Gamend.Payments.Providers.Google do
     auth_configured = present?(access_token) or match?({:ok, _}, service_json)
 
     %{
-      provider: "google",
+      provider: ProviderId.google(),
       configured: present?(package_name) and auth_configured,
       package_name_configured: present?(package_name),
       service_account_configured: auth_configured,
@@ -60,7 +67,7 @@ defmodule Gamend.Payments.Providers.Google do
     with :ok <- verify_rtdn_token(authorization_header),
          {:ok, envelope} <- Jason.decode(raw_body),
          {:ok, message} <- required_map(envelope, "message"),
-         {:ok, data} <- Params.required_binary(message, "data"),
+         {:ok, data} <- Params.required_binary(message, @data),
          {:ok, decoded} <- Base.decode64(data),
          {:ok, notification} <- Jason.decode(decoded) do
       {:ok,
@@ -138,24 +145,24 @@ defmodule Gamend.Payments.Providers.Google do
     end
   end
 
-  defp google_product_status(0), do: "completed"
-  defp google_product_status(1), do: "cancelled"
-  defp google_product_status(2), do: "pending"
-  defp google_product_status(_state), do: "pending"
+  defp google_product_status(0), do: PurchaseStatus.completed()
+  defp google_product_status(1), do: PurchaseStatus.cancelled()
+  defp google_product_status(2), do: PurchaseStatus.pending()
+  defp google_product_status(_state), do: PurchaseStatus.pending()
 
   defp google_subscription_status(state) when state in @active_subscription_states,
-    do: "completed"
+    do: PurchaseStatus.completed()
 
-  defp google_subscription_status("SUBSCRIPTION_STATE_CANCELED"), do: "cancelled"
-  defp google_subscription_status("SUBSCRIPTION_STATE_EXPIRED"), do: "revoked"
-  defp google_subscription_status("SUBSCRIPTION_STATE_ON_HOLD"), do: "pending"
-  defp google_subscription_status(_state), do: "pending"
+  defp google_subscription_status("SUBSCRIPTION_STATE_CANCELED"), do: PurchaseStatus.cancelled()
+  defp google_subscription_status("SUBSCRIPTION_STATE_EXPIRED"), do: PurchaseStatus.revoked()
+  defp google_subscription_status("SUBSCRIPTION_STATE_ON_HOLD"), do: PurchaseStatus.pending()
+  defp google_subscription_status(_state), do: PurchaseStatus.pending()
 
-  defp google_product_environment(%{"purchaseType" => 0}), do: "test"
+  defp google_product_environment(%{"purchaseType" => 0}), do: PaymentEnvironment.test()
   defp google_product_environment(_body), do: ProviderConfig.environment()
 
   defp google_subscription_environment(%{"testPurchase" => nil}), do: ProviderConfig.environment()
-  defp google_subscription_environment(%{"testPurchase" => _value}), do: "test"
+  defp google_subscription_environment(%{"testPurchase" => _value}), do: PaymentEnvironment.test()
 
   defp google_subscription_environment(_body), do: ProviderConfig.environment()
 
@@ -180,8 +187,8 @@ defmodule Gamend.Payments.Providers.Google do
   defp recurring_amount(_line_item), do: nil
 
   defp subscription_purchase?(attrs) do
-    attrs["purchase_type"] in ["subscription", "subs"] or
-      attrs["type"] in ["subscription", "subs"] or
+    attrs["purchase_type"] in [@subscription, "subs"] or
+      attrs["type"] in [@subscription, "subs"] or
       attrs["subscription"] == true or
       (is_nil(attrs["product_id"]) and is_nil(attrs["productId"]) and is_nil(attrs["sku"]))
   end
@@ -364,7 +371,7 @@ defmodule Gamend.Payments.Providers.Google do
 
   defp auto_acknowledge? do
     value = config_value("GOOGLE_PLAY_AUTO_ACKNOWLEDGE", :google_play_auto_acknowledge)
-    value in [true, "true", "1", "yes"]
+    value in [true, "true", "1", @yes]
   end
 
   defp publisher_base_url do

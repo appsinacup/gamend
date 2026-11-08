@@ -6,6 +6,17 @@ defmodule GamendWeb.HostLayoutNavigation do
   alias Gamend.Accounts.Scope
   alias GamendWeb.Plugs.LocalePath
 
+  require GamendWeb.NavAuth, as: NavAuth
+  require GamendWeb.NavLinkGroup, as: NavLinkGroup
+  require Gamend.LocaleCode, as: LocaleCode
+  require GamendWeb.NavLayout, as: NavLayout
+
+  @ro "ro"
+  @id "id"
+
+  @no "no"
+  @it "it"
+
   # What the bar has room for is measured, not guessed from a breakpoint
   # (`navbar_fit.js`): `<html data-nav>` names what shows, "bar labels name"
   # down to "bar", else the menu. Each word is a class's condition.
@@ -1247,10 +1258,10 @@ defmodule GamendWeb.HostLayoutNavigation do
     end
 
     assign(assigns,
-      primary_links: entries.("primary_links", "any"),
-      guest_links: entries.("guest_links", "unauthenticated"),
-      authenticated_links: entries.("authenticated_links", "authenticated"),
-      account_links: entries.("account_links", "authenticated"),
+      primary_links: entries.(NavLinkGroup.primary_links(), NavAuth.any()),
+      guest_links: entries.(NavLinkGroup.guest_links(), NavAuth.unauthenticated()),
+      authenticated_links: entries.(NavLinkGroup.authenticated_links(), NavAuth.authenticated()),
+      account_links: entries.(NavLinkGroup.account_links(), NavAuth.authenticated()),
       side?: side_layout?(assigns.navigation),
       auto?: auto_layout?(assigns.navigation),
       menu_button: Map.get(assigns.navigation, "menu_button", "menu")
@@ -1262,7 +1273,7 @@ defmodule GamendWeb.HostLayoutNavigation do
   `side_nav/1` from `md` up, the bar below it.
   """
   def side_layout?(navigation) when is_map(navigation),
-    do: Map.get(navigation, "layout") == "sidebar"
+    do: Map.get(navigation, "layout") == NavLayout.sidebar()
 
   def side_layout?(_navigation), do: false
 
@@ -1275,7 +1286,7 @@ defmodule GamendWeb.HostLayoutNavigation do
   the sidebar shows under `[data-nav~=side]`, not a breakpoint alone.
   """
   def auto_layout?(navigation) when is_map(navigation),
-    do: Map.get(navigation, "layout") == "auto"
+    do: Map.get(navigation, "layout") == NavLayout.auto()
 
   def auto_layout?(_navigation), do: false
 
@@ -1533,7 +1544,7 @@ defmodule GamendWeb.HostLayoutNavigation do
   """
   @spec entry_visible?(map(), map() | nil) :: boolean()
   def entry_visible?(entry, current_scope) do
-    link_visible?(entry, auth_level(Scope.user(current_scope)), "any")
+    link_visible?(entry, auth_level(Scope.user(current_scope)), NavAuth.any())
   end
 
   @doc """
@@ -1559,10 +1570,10 @@ defmodule GamendWeb.HostLayoutNavigation do
     auth_level = auth_level(Scope.user(current_scope))
 
     [
-      {"primary_links", "any"},
-      {"guest_links", "unauthenticated"},
-      {"authenticated_links", "authenticated"},
-      {"account_links", "authenticated"}
+      {NavLinkGroup.primary_links(), NavAuth.any()},
+      {NavLinkGroup.guest_links(), NavAuth.unauthenticated()},
+      {NavLinkGroup.authenticated_links(), NavAuth.authenticated()},
+      {NavLinkGroup.account_links(), NavAuth.authenticated()}
     ]
     |> Enum.flat_map(fn {key, default_auth} ->
       navigation
@@ -1607,11 +1618,11 @@ defmodule GamendWeb.HostLayoutNavigation do
     required = required_auth(link, default_auth)
 
     case {required, auth_level} do
-      {"any", _} -> true
-      {"unauthenticated", :unauthenticated} -> true
-      {"authenticated", :authenticated} -> true
-      {"authenticated", :admin} -> true
-      {"admin", :admin} -> true
+      {NavAuth.any(), _} -> true
+      {NavAuth.unauthenticated(), :unauthenticated} -> true
+      {NavAuth.authenticated(), :authenticated} -> true
+      {NavAuth.authenticated(), :admin} -> true
+      {NavAuth.admin(), :admin} -> true
       _ -> false
     end
   end
@@ -1620,10 +1631,17 @@ defmodule GamendWeb.HostLayoutNavigation do
     auth = Map.get(entry, "auth") || Map.get(entry, :auth)
 
     cond do
-      Map.get(entry, "admin_only") == true or Map.get(entry, :admin_only) == true -> "admin"
-      is_binary(auth) -> auth
-      is_atom(auth) and not is_nil(auth) -> Atom.to_string(auth)
-      true -> default_auth
+      Map.get(entry, "admin_only") == true or Map.get(entry, :admin_only) == true ->
+        NavAuth.admin()
+
+      is_binary(auth) ->
+        auth
+
+      is_atom(auth) and not is_nil(auth) ->
+        Atom.to_string(auth)
+
+      true ->
+        default_auth
     end
   end
 
@@ -1842,21 +1860,21 @@ defmodule GamendWeb.HostLayoutNavigation do
   defp locale_flag_code("da"), do: "dk"
   defp locale_flag_code("de"), do: "de"
   defp locale_flag_code("el"), do: "gr"
-  defp locale_flag_code("en"), do: "gb"
+  defp locale_flag_code(LocaleCode.en()), do: "gb"
   defp locale_flag_code("es"), do: "es"
   defp locale_flag_code("fi"), do: "fi"
   defp locale_flag_code("fr"), do: "fr"
   defp locale_flag_code("hu"), do: "hu"
-  defp locale_flag_code("id"), do: "id"
-  defp locale_flag_code("it"), do: "it"
+  defp locale_flag_code(@id), do: @id
+  defp locale_flag_code(@it), do: @it
   defp locale_flag_code("ja"), do: "jp"
   defp locale_flag_code("ko"), do: "kr"
   defp locale_flag_code("nl"), do: "nl"
-  defp locale_flag_code("no"), do: "no"
+  defp locale_flag_code(@no), do: @no
   defp locale_flag_code("pl"), do: "pl"
   defp locale_flag_code("pt"), do: "pt"
   defp locale_flag_code("pt_BR"), do: "br"
-  defp locale_flag_code("ro"), do: "ro"
+  defp locale_flag_code(@ro), do: @ro
   defp locale_flag_code("ru"), do: "ru"
   defp locale_flag_code("sv"), do: "se"
   defp locale_flag_code("th"), do: "th"

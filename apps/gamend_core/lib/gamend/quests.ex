@@ -85,6 +85,16 @@ defmodule Gamend.Quests do
   alias Gamend.Quests.QuestProgress
   alias Gamend.Repo
 
+  require Gamend.Quests.PeriodKey, as: PeriodKey
+  require Gamend.Quests.QuestCategory, as: QuestCategory
+  require Gamend.Quests.QuestFilter, as: QuestFilter
+  require Gamend.Quests.QuestReset, as: QuestReset
+  require Gamend.Quests.QuestStatus, as: QuestStatus
+  require Gamend.Quests.RewardType, as: RewardType
+  require Gamend.Notifications.NotificationType, as: NotificationType
+
+  @quests "quests"
+
   @type user_id :: Ecto.UUID.t()
 
   # Grace before the recovery sweep retries a claimed-but-ungranted row, so it
@@ -136,12 +146,12 @@ defmodule Gamend.Quests do
   @doc "Subscribe to global quest events (definition changes, completions)."
   @spec subscribe_quests() :: :ok | {:error, term()}
   def subscribe_quests do
-    Phoenix.PubSub.subscribe(@pubsub, "quests")
+    Phoenix.PubSub.subscribe(@pubsub, @quests)
   end
 
   defp broadcast_definition_change do
     invalidate_quests_cache()
-    Gamend.Broadcast.publish("quests", {:quests_changed})
+    Gamend.Broadcast.publish(@quests, {:quests_changed})
   end
 
   # Progress ticks go to the user's topic only — a global fan-out of every
@@ -153,7 +163,7 @@ defmodule Gamend.Quests do
 
   defp broadcast_progress(event, user_id, payload) do
     Gamend.Broadcast.publish("user:#{user_id}", {event, payload})
-    Gamend.Broadcast.publish("quests", {event, user_id, payload})
+    Gamend.Broadcast.publish(@quests, {event, user_id, payload})
   end
 
   # ---------------------------------------------------------------------------
@@ -481,7 +491,7 @@ defmodule Gamend.Quests do
   # never roll over and would suppress every later event for the whole TTL —
   # one completion per hour instead of an endless quest. And it banks while it
   # waits for its claim, so every event has to reach the row.
-  defp mark_done(_user_id, %Quest{reset: "repeat"}, _now), do: :ok
+  defp mark_done(_user_id, %Quest{reset: QuestReset.repeat()}, _now), do: :ok
 
   defp mark_done(user_id, quest, now) do
     _ = Gamend.Cache.put(done_marker_key(user_id, quest, now), true, ttl: @done_marker_ttl_ms)
@@ -568,12 +578,12 @@ defmodule Gamend.Quests do
         nil ->
           insert_under_cap(user_id, quest, event, amount, meta, now, period_key)
 
-        %QuestProgress{status: "active"} = progress ->
+        %QuestProgress{status: QuestStatus.active()} = progress ->
           update_progress(progress, quest, event, amount, meta, now)
 
         # A repeat run waiting for its claim, or mid-claim, keeps counting:
         # what passes the target is the next run (see "Resets").
-        %QuestProgress{} = progress when quest.reset == "repeat" ->
+        %QuestProgress{} = progress when quest.reset == QuestReset.repeat() ->
           update_progress(progress, quest, event, amount, meta, now)
 
         %QuestProgress{} ->
@@ -687,7 +697,7 @@ defmodule Gamend.Quests do
         quest_key: quest.key,
         period_key: period_key,
         objective_progress: objective_progress,
-        status: if(completed?, do: "completed", else: "active"),
+        status: if(completed?, do: QuestStatus.completed(), else: QuestStatus.active()),
         completed_at: if(completed?, do: now)
       })
       # Under the lock's transaction, a constraint the insert hits (a row an
@@ -727,15 +737,15 @@ defmodule Gamend.Quests do
       # becomes, from the counts this write leaves.
       status =
         cond do
-          progress.status == "claimed" -> "claimed"
-          all_objectives_met?(objective_progress, quest) -> "completed"
-          true -> "active"
+          progress.status == QuestStatus.claimed() -> QuestStatus.claimed()
+          all_objectives_met?(objective_progress, quest) -> QuestStatus.completed()
+          true -> QuestStatus.active()
         end
 
       completed_at =
         case {progress.status, status} do
-          {"active", "completed"} -> now
-          {"active", _} -> nil
+          {QuestStatus.active(), QuestStatus.completed()} -> now
+          {QuestStatus.active(), _} -> nil
           _ -> progress.completed_at
         end
 
@@ -778,7 +788,7 @@ defmodule Gamend.Quests do
         Map.put(
           acc,
           key,
-          if(quest.reset == "repeat", do: count, else: min(objective.target, count))
+          if(quest.reset == QuestReset.repeat(), do: count, else: min(objective.target, count))
         )
       else
         acc
@@ -840,7 +850,8 @@ defmodule Gamend.Quests do
 
     count =
       from(p in QuestProgress,
-        where: p.user_id == ^user_id and p.status == "active" and p.period_key in ^periods
+        where:
+          p.user_id == ^user_id and p.status == ^QuestStatus.active() and p.period_key in ^periods
       )
       |> Repo.aggregate(:count)
 
@@ -862,7 +873,7 @@ defmodule Gamend.Quests do
     # A run banked while the row is mid-claim is claimed by that claim's
     # re-arm (`do_claim/3`), not here. A guest's waits for registration when
     # claiming needs an account (`Gamend.AccountRequired`).
-    if quest.auto_claim and progress.status == "completed" and
+    if quest.auto_claim and progress.status == QuestStatus.completed() and
          AccountRequired.allowed?(user_id, :quest_claims) do
       case do_claim(user_id, quest, skip_hooks: true) do
         {:ok, _} ->
@@ -885,7 +896,7 @@ defmodule Gamend.Quests do
     # The stored title is the fallback; the notifications UI re-titles by
     # type + metadata (quests categorised "achievement" keep that flavor).
     title =
-      if quest.category == "achievement",
+      if quest.category == QuestCategory.achievement(),
         do: "Achievement unlocked: #{quest.title}",
         else: "Quest completed: #{quest.title}"
 
@@ -894,7 +905,7 @@ defmodule Gamend.Quests do
         "title" => title,
         "content" => "",
         "metadata" => %{
-          "type" => "quest_completed",
+          "type" => NotificationType.quest_completed(),
           "quest_key" => quest.key,
           "category" => quest.category,
           "quest_title" => quest.title
@@ -972,7 +983,9 @@ defmodule Gamend.Quests do
   # current period's (which says why there is nothing to claim).
   defp claim_target(user_id, quest, now) do
     from(p in QuestProgress,
-      where: p.user_id == ^user_id and p.quest_key == ^quest.key and p.status == "completed",
+      where:
+        p.user_id == ^user_id and p.quest_key == ^quest.key and
+          p.status == ^QuestStatus.completed(),
       order_by: [asc: p.completed_at, asc: p.period_key],
       limit: 1
     )
@@ -995,7 +1008,7 @@ defmodule Gamend.Quests do
   # scheme — `claim_count` is what keeps the next payout's idempotency key
   # distinct from this one's. One run's worth comes off the counts
   # (`spend_run/2`); a row that banked more stays completed for the next claim.
-  defp maybe_rearm(%Quest{reset: "repeat"} = quest, %QuestProgress{id: id}, now),
+  defp maybe_rearm(%Quest{reset: QuestReset.repeat()} = quest, %QuestProgress{id: id}, now),
     do: rearm(quest, id, now, @advance_attempts)
 
   defp maybe_rearm(_quest, _progress, _now), do: :noop
@@ -1004,17 +1017,19 @@ defmodule Gamend.Quests do
   # between the two moves `lock_version`, and the retry spends from its counts.
   defp rearm(quest, id, now, attempts_left) do
     case Repo.get_uuid(QuestProgress, id) do
-      %QuestProgress{status: "claimed", rewards_granted_at: %DateTime{}} = row ->
+      %QuestProgress{status: QuestStatus.claimed(), rewards_granted_at: %DateTime{}} = row ->
         left = spend_run(row.objective_progress, quest)
         banked? = all_objectives_met?(left, quest)
 
         {count, _} =
           from(p in QuestProgress,
-            where: p.id == ^id and p.status == "claimed" and p.lock_version == ^row.lock_version
+            where:
+              p.id == ^id and p.status == ^QuestStatus.claimed() and
+                p.lock_version == ^row.lock_version
           )
           |> Repo.update_all(
             set: [
-              status: if(banked?, do: "completed", else: "active"),
+              status: if(banked?, do: QuestStatus.completed(), else: QuestStatus.active()),
               objective_progress: left,
               completed_at: if(banked?, do: now),
               claimed_at: nil,
@@ -1080,7 +1095,7 @@ defmodule Gamend.Quests do
   title, "Wins × %{n}", and one msgid with it.
   """
   @spec resolve_counter(Quest.t(), QuestProgress.t() | nil) :: Quest.t()
-  def resolve_counter(%Quest{reset: "repeat"} = quest, progress) do
+  def resolve_counter(%Quest{reset: QuestReset.repeat()} = quest, progress) do
     if counter?(quest.title) or counter?(quest.description) do
       %{quest | counter: counter_number(quest, repetition(progress))}
     else
@@ -1142,7 +1157,7 @@ defmodule Gamend.Quests do
 
   defp repetition(%QuestProgress{claim_count: count, status: status}) do
     claimed = count || 0
-    if status == "claimed", do: max(claimed, 1), else: claimed + 1
+    if status == QuestStatus.claimed(), do: max(claimed, 1), else: claimed + 1
   end
 
   defp counter?(value) when is_binary(value), do: String.contains?(value, @counter_placeholder)
@@ -1162,7 +1177,8 @@ defmodule Gamend.Quests do
   """
   @spec rearm_repeat_quests(keyword()) :: non_neg_integer()
   def rearm_repeat_quests(opts \\ []) do
-    repeat = active_quests() |> Enum.filter(&(&1.reset == "repeat")) |> Map.new(&{&1.key, &1})
+    repeat =
+      active_quests() |> Enum.filter(&(&1.reset == QuestReset.repeat())) |> Map.new(&{&1.key, &1})
 
     if repeat == %{} do
       0
@@ -1173,7 +1189,7 @@ defmodule Gamend.Quests do
       query =
         from p in QuestProgress,
           where:
-            p.quest_key in ^repeat_keys and p.status == "claimed" and
+            p.quest_key in ^repeat_keys and p.status == ^QuestStatus.claimed() and
               not is_nil(p.rewards_granted_at),
           select: {p.id, p.quest_key}
 
@@ -1211,9 +1227,9 @@ defmodule Gamend.Quests do
   defp reward_idempotency_key(progress, index), do: "quest:#{progress.id}:#{index}"
 
   defp claimable(nil), do: {:error, :not_completed}
-  defp claimable(%QuestProgress{status: "active"}), do: {:error, :not_completed}
-  defp claimable(%QuestProgress{status: "claimed"}), do: {:error, :already_claimed}
-  defp claimable(%QuestProgress{status: "completed"} = progress), do: {:ok, progress}
+  defp claimable(%QuestProgress{status: QuestStatus.active()}), do: {:error, :not_completed}
+  defp claimable(%QuestProgress{status: QuestStatus.claimed()}), do: {:error, :already_claimed}
+  defp claimable(%QuestProgress{status: QuestStatus.completed()} = progress), do: {:ok, progress}
 
   defp run_before_claim(user_id, quest, progress, opts) do
     if Keyword.get(opts, :skip_hooks, false) do
@@ -1247,11 +1263,11 @@ defmodule Gamend.Quests do
   defp transition_to_claimed(progress, now) do
     from(p in QuestProgress,
       where:
-        p.id == ^progress.id and p.status == "completed" and
+        p.id == ^progress.id and p.status == ^QuestStatus.completed() and
           p.claim_count == ^progress.claim_count
     )
     |> Repo.compare_and_set(
-      set: [status: "claimed", claimed_at: now, updated_at: now],
+      set: [status: QuestStatus.claimed(), claimed_at: now, updated_at: now],
       inc: [lock_version: 1]
     )
     |> case do
@@ -1274,13 +1290,13 @@ defmodule Gamend.Quests do
 
         result =
           case reward.type do
-            "currency" ->
+            RewardType.currency() ->
               Gamend.Economy.grant(user_id, reward.code, reward.amount,
                 reason: reason,
                 idempotency_key: key
               )
 
-            "item" ->
+            RewardType.item() ->
               Gamend.Inventory.grant_item(user_id, reward.code, reward.amount,
                 reason: reason,
                 idempotency_key: key
@@ -1325,7 +1341,9 @@ defmodule Gamend.Quests do
 
     query =
       from p in QuestProgress,
-        where: p.status == "claimed" and is_nil(p.rewards_granted_at) and p.claimed_at < ^cutoff,
+        where:
+          p.status == ^QuestStatus.claimed() and is_nil(p.rewards_granted_at) and
+            p.claimed_at < ^cutoff,
         limit: 100
 
     query =
@@ -1385,7 +1403,7 @@ defmodule Gamend.Quests do
       %{
         quest: resolve_counter(quest, progress),
         progress: progress,
-        claimable: progress != nil and progress.status == "completed"
+        claimable: progress != nil and progress.status == QuestStatus.completed()
       }
     end)
   end
@@ -1690,7 +1708,7 @@ defmodule Gamend.Quests do
         where:
           p.user_id == ^user_id and
             ((p.quest_key in ^candidate_keys and
-                (p.period_key in ^periods or p.status == "completed")) or
+                (p.period_key in ^periods or p.status == ^QuestStatus.completed())) or
                (p.quest_key in ^prereq_keys and p.status in ^@statuses_done))
       )
       |> Repo.all()
@@ -1729,7 +1747,7 @@ defmodule Gamend.Quests do
 
   defp oldest_waiting(rows) do
     rows
-    |> Enum.filter(&(&1.status == "completed"))
+    |> Enum.filter(&(&1.status == QuestStatus.completed()))
     |> Enum.sort_by(&{&1.completed_at && DateTime.to_unix(&1.completed_at), &1.period_key})
     |> Enum.reduce(%{}, fn p, acc -> Map.put_new(acc, p.quest_key, p) end)
   end
@@ -1756,7 +1774,7 @@ defmodule Gamend.Quests do
       %{
         quest: resolve_counter(quest, progress),
         progress: progress,
-        claimable: progress != nil and progress.status == "completed"
+        claimable: progress != nil and progress.status == QuestStatus.completed()
       }
     end)
     |> Enum.filter(fn %{quest: quest, progress: progress} ->
@@ -1847,16 +1865,16 @@ defmodule Gamend.Quests do
   end
 
   defp claimed_entry?(%{progress: progress}),
-    do: progress != nil and progress.status == "claimed"
+    do: progress != nil and progress.status == QuestStatus.claimed()
 
   defp matches_status?(_entry, nil), do: true
 
-  defp matches_status?(%{progress: progress}, "in_progress"),
-    do: progress == nil or progress.status == "active"
+  defp matches_status?(%{progress: progress}, QuestFilter.in_progress()),
+    do: progress == nil or progress.status == QuestStatus.active()
 
-  defp matches_status?(%{claimable: claimable}, "claimable"), do: claimable
+  defp matches_status?(%{claimable: claimable}, QuestFilter.claimable()), do: claimable
 
-  defp matches_status?(%{progress: progress}, "done"),
+  defp matches_status?(%{progress: progress}, QuestFilter.done()),
     do: progress != nil and progress.status in @statuses_done
 
   defp matches_status?(_entry, _status), do: true
@@ -1918,14 +1936,14 @@ defmodule Gamend.Quests do
     quests = Map.new(active_quests(), &{&1.key, &1})
 
     from(p in QuestProgress,
-      where: p.user_id == ^user_id and p.status == "completed",
+      where: p.user_id == ^user_id and p.status == ^QuestStatus.completed(),
       select: {p.quest_key, p.objective_progress}
     )
     |> Repo.all()
     |> Enum.reduce(0, fn {key, counts}, total ->
       case Map.get(quests, key) do
         nil -> total
-        %Quest{reset: "repeat"} = quest -> total + max(runs_finished(counts, quest), 1)
+        %Quest{reset: QuestReset.repeat()} = quest -> total + max(runs_finished(counts, quest), 1)
         %Quest{} -> total + 1
       end
     end)
@@ -2041,7 +2059,7 @@ defmodule Gamend.Quests do
             progress
             |> QuestProgress.changeset(%{
               objective_progress: full,
-              status: "completed",
+              status: QuestStatus.completed(),
               completed_at: now
             })
             |> Ecto.Changeset.optimistic_lock(:lock_version)
@@ -2059,7 +2077,7 @@ defmodule Gamend.Quests do
             quest_key: quest.key,
             period_key: period_key,
             objective_progress: full,
-            status: "completed",
+            status: QuestStatus.completed(),
             completed_at: now
           })
           |> Repo.insert()
@@ -2128,7 +2146,9 @@ defmodule Gamend.Quests do
 
     {count, _} =
       from(p in QuestProgress,
-        where: p.period_key != "static" and p.status != "completed" and p.inserted_at < ^cutoff
+        where:
+          p.period_key != ^PeriodKey.static() and p.status != ^QuestStatus.completed() and
+            p.inserted_at < ^cutoff
       )
       |> Repo.delete_all()
 
@@ -2149,7 +2169,7 @@ defmodule Gamend.Quests do
       |> Repo.aggregate(:count)
 
     claimable_now =
-      from(p in QuestProgress, where: p.status == "completed")
+      from(p in QuestProgress, where: p.status == ^QuestStatus.completed())
       |> Repo.aggregate(:count)
 
     %{
@@ -2189,28 +2209,28 @@ defmodule Gamend.Quests do
   @spec period_key(Quest.t() | String.t(), DateTime.t()) :: String.t()
   def period_key(quest_or_reset, now)
 
-  def period_key(%Quest{reset: "interval", reset_interval_days: days}, now)
+  def period_key(%Quest{reset: QuestReset.interval(), reset_interval_days: days}, now)
       when is_integer(days) and days > 0 do
     "I#{days}-#{div(Date.diff(DateTime.to_date(now), ~D[1970-01-01]), days)}"
   end
 
   def period_key(%Quest{reset: reset}, now), do: period_key(reset, now)
 
-  def period_key("daily", now), do: now |> DateTime.to_date() |> Date.to_iso8601()
+  def period_key(QuestReset.daily(), now), do: now |> DateTime.to_date() |> Date.to_iso8601()
 
-  def period_key("weekly", now) do
+  def period_key(QuestReset.weekly(), now) do
     date = DateTime.to_date(now)
     {year, week} = :calendar.iso_week_number({date.year, date.month, date.day})
 
     "#{String.pad_leading(Integer.to_string(year), 4, "0")}-W#{String.pad_leading(Integer.to_string(week), 2, "0")}"
   end
 
-  def period_key("monthly", now) do
+  def period_key(QuestReset.monthly(), now) do
     date = DateTime.to_date(now)
     "#{date.year}-#{String.pad_leading(Integer.to_string(date.month), 2, "0")}"
   end
 
-  def period_key(_reset, _now), do: "static"
+  def period_key(_reset, _now), do: PeriodKey.static()
 
   # The clock a player's periods are read on (see "Resets"): `now` itself, or
   # with `:quest_clock` `:player` `now` in the player's own time zone, so
@@ -2230,7 +2250,8 @@ defmodule Gamend.Quests do
     active_quests() |> Enum.map(&period_key(&1, now)) |> Enum.uniq() |> add_static()
   end
 
-  defp add_static(keys), do: if("static" in keys, do: keys, else: ["static" | keys])
+  defp add_static(keys),
+    do: if(PeriodKey.static() in keys, do: keys, else: [PeriodKey.static() | keys])
 
   # ---------------------------------------------------------------------------
   # Private helpers

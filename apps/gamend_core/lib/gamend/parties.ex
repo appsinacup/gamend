@@ -57,6 +57,13 @@ defmodule Gamend.Parties do
   alias Gamend.Parties.PartyInvite
   alias Gamend.Repo
 
+  require Gamend.Chat.ChatType, as: ChatType
+  require Gamend.Parties.PartyInviteStatus, as: PartyInviteStatus
+  require Gamend.Notifications.NotificationType, as: NotificationType
+  require Gamend.SortKey, as: SortKey
+
+  @parties "parties"
+
   # ---------------------------------------------------------------------------
   # PubSub
   # ---------------------------------------------------------------------------
@@ -134,16 +141,18 @@ defmodule Gamend.Parties do
   defp cancel_pending_invites_for_party(party_id) do
     pending =
       from(i in PartyInvite,
-        where: i.party_id == ^party_id and i.status == "pending",
+        where: i.party_id == ^party_id and i.status == ^PartyInviteStatus.pending(),
         select: {i.sender_id, i.recipient_id}
       )
       |> Repo.all()
 
     if pending != [] do
       from(i in PartyInvite,
-        where: i.party_id == ^party_id and i.status == "pending"
+        where: i.party_id == ^party_id and i.status == ^PartyInviteStatus.pending()
       )
-      |> Repo.update_all(set: [status: "cancelled", updated_at: DateTime.utc_now()])
+      |> Repo.update_all(
+        set: [status: PartyInviteStatus.cancelled(), updated_at: DateTime.utc_now()]
+      )
 
       user_ids = pending |> Enum.flat_map(fn {s, r} -> [s, r] end) |> Enum.uniq()
 
@@ -161,7 +170,7 @@ defmodule Gamend.Parties do
     pending =
       from(i in PartyInvite,
         where:
-          i.party_id == ^party_id and i.status == "pending" and
+          i.party_id == ^party_id and i.status == ^PartyInviteStatus.pending() and
             (i.sender_id == ^user_id or i.recipient_id == ^user_id),
         select: {i.sender_id, i.recipient_id}
       )
@@ -170,10 +179,12 @@ defmodule Gamend.Parties do
     if pending != [] do
       from(i in PartyInvite,
         where:
-          i.party_id == ^party_id and i.status == "pending" and
+          i.party_id == ^party_id and i.status == ^PartyInviteStatus.pending() and
             (i.sender_id == ^user_id or i.recipient_id == ^user_id)
       )
-      |> Repo.update_all(set: [status: "cancelled", updated_at: DateTime.utc_now()])
+      |> Repo.update_all(
+        set: [status: PartyInviteStatus.cancelled(), updated_at: DateTime.utc_now()]
+      )
 
       user_ids = pending |> Enum.flat_map(fn {s, r} -> [s, r] end) |> Enum.uniq()
 
@@ -192,7 +203,7 @@ defmodule Gamend.Parties do
       from(i in PartyInvite,
         where:
           i.recipient_id == ^user_id and i.party_id != ^joined_party_id and
-            i.status == "pending",
+            i.status == ^PartyInviteStatus.pending(),
         select: {i.sender_id, i.party_id}
       )
       |> Repo.all()
@@ -201,9 +212,11 @@ defmodule Gamend.Parties do
       from(i in PartyInvite,
         where:
           i.recipient_id == ^user_id and i.party_id != ^joined_party_id and
-            i.status == "pending"
+            i.status == ^PartyInviteStatus.pending()
       )
-      |> Repo.update_all(set: [status: "cancelled", updated_at: DateTime.utc_now()])
+      |> Repo.update_all(
+        set: [status: PartyInviteStatus.cancelled(), updated_at: DateTime.utc_now()]
+      )
 
       sender_ids = pending |> Enum.map(fn {s, _} -> s end) |> Enum.uniq()
 
@@ -393,7 +406,7 @@ defmodule Gamend.Parties do
             "title" => "Party invite from #{Gamend.Accounts.display_name(leader)}",
             "content" => "",
             "metadata" => %{
-              "type" => "party_invite",
+              "type" => NotificationType.party_invite(),
               "party_id" => party.id,
               "sender_name" => Gamend.Accounts.display_name(leader),
               "recipient_name" => Gamend.Accounts.display_name(target)
@@ -451,7 +464,7 @@ defmodule Gamend.Parties do
       from(i in PartyInvite,
         where:
           i.sender_id == ^sender_id and i.recipient_id == ^recipient_id and
-            i.status == "pending"
+            i.status == ^PartyInviteStatus.pending()
       )
     )
   end
@@ -460,7 +473,7 @@ defmodule Gamend.Parties do
     from(i in PartyInvite,
       where:
         i.sender_id == ^sender_id and i.recipient_id == ^recipient_id and
-          i.status != "pending"
+          i.status != ^PartyInviteStatus.pending()
     )
     |> Repo.delete_all()
 
@@ -483,7 +496,7 @@ defmodule Gamend.Parties do
         from(i in PartyInvite,
           where:
             i.sender_id == ^leader.id and i.recipient_id == ^target_user_id and
-              i.status == "pending"
+              i.status == ^PartyInviteStatus.pending()
         )
         |> Repo.delete_all()
 
@@ -532,7 +545,7 @@ defmodule Gamend.Parties do
         from i in PartyInvite,
           where:
             i.recipient_id == ^user.id and i.party_id == ^party_id and
-              i.status == "pending",
+              i.status == ^PartyInviteStatus.pending(),
           limit: 1
       )
 
@@ -603,9 +616,11 @@ defmodule Gamend.Parties do
     from(i in PartyInvite,
       where:
         i.recipient_id == ^user.id and i.party_id == ^party_id and
-          i.status in ["pending", "accepted"]
+          i.status in ^[PartyInviteStatus.pending(), PartyInviteStatus.accepted()]
     )
-    |> Repo.update_all(set: [status: "declined", updated_at: DateTime.utc_now()])
+    |> Repo.update_all(
+      set: [status: PartyInviteStatus.declined(), updated_at: DateTime.utc_now()]
+    )
 
     invalidate_party_invite_cache(user.id)
     invalidate_party_invite_cache(invite.sender_id)
@@ -628,7 +643,7 @@ defmodule Gamend.Parties do
         "title" => "#{user_name} couldn't join — party full",
         "content" => "",
         "metadata" => %{
-          "type" => "party_invite_declined",
+          "type" => NotificationType.party_invite_declined(),
           "party_id" => party_id,
           "user_id" => user.id,
           "user_name" => user_name,
@@ -671,18 +686,22 @@ defmodule Gamend.Parties do
       from(i in PartyInvite,
         where:
           i.recipient_id == ^user_id and i.party_id == ^party_id and
-            i.status == "pending"
+            i.status == ^PartyInviteStatus.pending()
       )
-      |> Repo.update_all(set: [status: "accepted", updated_at: DateTime.utc_now()])
+      |> Repo.update_all(
+        set: [status: PartyInviteStatus.accepted(), updated_at: DateTime.utc_now()]
+      )
 
     if count > 0, do: :ok, else: {:error, :no_invite}
   end
 
   defp release_party_invite(user_id, party_id) do
     from(i in PartyInvite,
-      where: i.recipient_id == ^user_id and i.party_id == ^party_id and i.status == "accepted"
+      where:
+        i.recipient_id == ^user_id and i.party_id == ^party_id and
+          i.status == ^PartyInviteStatus.accepted()
     )
-    |> Repo.update_all(set: [status: "pending", updated_at: DateTime.utc_now()])
+    |> Repo.update_all(set: [status: PartyInviteStatus.pending(), updated_at: DateTime.utc_now()])
 
     invalidate_party_invite_cache(user_id)
   end
@@ -715,7 +734,7 @@ defmodule Gamend.Parties do
         "title" => "#{user_name} joined your party",
         "content" => "",
         "metadata" => %{
-          "type" => "party_invite_accepted",
+          "type" => NotificationType.party_invite_accepted(),
           "party_id" => party_id,
           "user_id" => user.id,
           "user_name" => user_name
@@ -748,7 +767,7 @@ defmodule Gamend.Parties do
       from(i in PartyInvite,
         where:
           i.recipient_id == ^user.id and i.party_id == ^party_id and
-            i.status == "pending",
+            i.status == ^PartyInviteStatus.pending(),
         select: i.sender_id
       )
       |> Repo.all()
@@ -756,9 +775,11 @@ defmodule Gamend.Parties do
     from(i in PartyInvite,
       where:
         i.recipient_id == ^user.id and i.party_id == ^party_id and
-          i.status == "pending"
+          i.status == ^PartyInviteStatus.pending()
     )
-    |> Repo.update_all(set: [status: "declined", updated_at: DateTime.utc_now()])
+    |> Repo.update_all(
+      set: [status: PartyInviteStatus.declined(), updated_at: DateTime.utc_now()]
+    )
 
     invalidate_party_invite_cache(user.id)
     Enum.each(sender_ids, &invalidate_party_invite_cache/1)
@@ -785,7 +806,7 @@ defmodule Gamend.Parties do
           "title" => "#{user_name} declined your party invite",
           "content" => "",
           "metadata" => %{
-            "type" => "party_invite_declined",
+            "type" => NotificationType.party_invite_declined(),
             "party_id" => party_id,
             "user_id" => user.id,
             "user_name" => user_name
@@ -814,7 +835,9 @@ defmodule Gamend.Parties do
   @spec count_party_invitations(User.t()) :: non_neg_integer()
   def count_party_invitations(%User{id: user_id}) do
     Repo.aggregate(
-      from(i in PartyInvite, where: i.recipient_id == ^user_id and i.status == "pending"),
+      from(i in PartyInvite,
+        where: i.recipient_id == ^user_id and i.status == ^PartyInviteStatus.pending()
+      ),
       :count
     )
   end
@@ -827,7 +850,7 @@ defmodule Gamend.Parties do
             )
   defp do_list_party_invitations(user_id, page, page_size) do
     from(i in PartyInvite,
-      where: i.recipient_id == ^user_id and i.status == "pending",
+      where: i.recipient_id == ^user_id and i.status == ^PartyInviteStatus.pending(),
       join: s in assoc(i, :sender),
       join: r in assoc(i, :recipient),
       order_by: [desc: i.inserted_at],
@@ -856,7 +879,9 @@ defmodule Gamend.Parties do
   @spec count_sent_party_invitations(User.t()) :: non_neg_integer()
   def count_sent_party_invitations(%User{id: leader_id}) do
     Repo.aggregate(
-      from(i in PartyInvite, where: i.sender_id == ^leader_id and i.status == "pending"),
+      from(i in PartyInvite,
+        where: i.sender_id == ^leader_id and i.status == ^PartyInviteStatus.pending()
+      ),
       :count
     )
   end
@@ -869,7 +894,7 @@ defmodule Gamend.Parties do
             )
   defp do_list_sent_party_invitations(leader_id, page, page_size) do
     from(i in PartyInvite,
-      where: i.sender_id == ^leader_id and i.status == "pending",
+      where: i.sender_id == ^leader_id and i.status == ^PartyInviteStatus.pending(),
       join: s in assoc(i, :sender),
       join: r in assoc(i, :recipient),
       order_by: [desc: i.inserted_at],
@@ -924,7 +949,7 @@ defmodule Gamend.Parties do
         from i in PartyInvite,
           where:
             i.sender_id == ^leader_id and i.recipient_id == ^target_user_id and
-              i.status == "pending"
+              i.status == ^PartyInviteStatus.pending()
       )
 
     if exists, do: {:error, :already_invited}, else: :ok
@@ -936,7 +961,7 @@ defmodule Gamend.Parties do
     count =
       Repo.one(
         from(i in PartyInvite,
-          where: i.recipient_id == ^target_user_id and i.status == "pending",
+          where: i.recipient_id == ^target_user_id and i.status == ^PartyInviteStatus.pending(),
           select: count(i.id)
         )
       ) || 0
@@ -1782,7 +1807,7 @@ defmodule Gamend.Parties do
           invalidate_user_cache(member.id)
         end)
 
-        Gamend.Async.run(fn -> Gamend.Chat.cleanup_chat("party", party.id) end)
+        Gamend.Async.run(fn -> Gamend.Chat.cleanup_chat(ChatType.party(), party.id) end)
 
         Enum.each(members, fn member ->
           _ = Accounts.broadcast_user_update(%{member | party_id: nil})
@@ -1958,17 +1983,17 @@ defmodule Gamend.Parties do
   @doc "Subscribe to all party events (create/delete)."
   @spec subscribe_parties() :: :ok | {:error, term()}
   def subscribe_parties do
-    Phoenix.PubSub.subscribe(Gamend.PubSub, "parties")
+    Phoenix.PubSub.subscribe(Gamend.PubSub, @parties)
   end
 
   defp broadcast_parties(event) do
-    Gamend.Broadcast.publish("parties", event)
+    Gamend.Broadcast.publish(@parties, event)
   end
 
   @doc "List all parties with optional filters and pagination."
   @spec list_all_parties(map(), keyword()) :: [Party.t()]
   def list_all_parties(filters \\ %{}, opts \\ []) do
-    sort_by = Keyword.get(opts, :sort_by, "updated_at")
+    sort_by = Keyword.get(opts, :sort_by, SortKey.updated_at())
 
     from(p in Party)
     |> apply_party_filters(filters)
@@ -2056,7 +2081,7 @@ defmodule Gamend.Parties do
         |> case do
           {:ok, {deleted, member_ids}} ->
             Enum.each(member_ids, &invalidate_user_cache/1)
-            Gamend.Async.run(fn -> Gamend.Chat.cleanup_chat("party", party_id) end)
+            Gamend.Async.run(fn -> Gamend.Chat.cleanup_chat(ChatType.party(), party_id) end)
             broadcast_party(party_id, {:party_disbanded, party_id})
             broadcast_parties({:party_deleted, party_id})
             {:ok, deleted}
@@ -2101,11 +2126,18 @@ defmodule Gamend.Parties do
 
   defp maybe_filter_max_size(query, _), do: query
 
-  defp apply_party_sort(query, "updated_at"), do: order_by(query, [p], desc: p.updated_at)
-  defp apply_party_sort(query, "updated_at_asc"), do: order_by(query, [p], asc: p.updated_at)
-  defp apply_party_sort(query, "inserted_at"), do: order_by(query, [p], desc: p.inserted_at)
-  defp apply_party_sort(query, "inserted_at_asc"), do: order_by(query, [p], asc: p.inserted_at)
-  defp apply_party_sort(query, "max_size"), do: order_by(query, [p], desc: p.max_size)
+  defp apply_party_sort(query, SortKey.updated_at()), do: order_by(query, [p], desc: p.updated_at)
+
+  defp apply_party_sort(query, SortKey.updated_at_asc()),
+    do: order_by(query, [p], asc: p.updated_at)
+
+  defp apply_party_sort(query, SortKey.inserted_at()),
+    do: order_by(query, [p], desc: p.inserted_at)
+
+  defp apply_party_sort(query, SortKey.inserted_at_asc()),
+    do: order_by(query, [p], asc: p.inserted_at)
+
+  defp apply_party_sort(query, SortKey.max_size()), do: order_by(query, [p], desc: p.max_size)
   defp apply_party_sort(query, "max_size_asc"), do: order_by(query, [p], asc: p.max_size)
   defp apply_party_sort(query, _), do: order_by(query, [p], desc: p.updated_at)
 

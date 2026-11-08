@@ -431,13 +431,6 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       assert Gamend.Accounts.get_user(user_id) == nil
     end
 
-    test "still answers 409 for a username taken", %{conn: conn} do
-      post(conn, "/api/v1/register", %{email: "heron@example.com", username: "heron"})
-      taken = post(conn, "/api/v1/register", %{email: "other-heron@example.com", username: "heron"})
-
-      assert Map.has_key?(json_response(taken, 409)["errors"], "username")
-    end
-
     test "answers 400 without an email", %{conn: conn} do
       missing = post(conn, "/api/v1/register", %{password: @valid_password})
 

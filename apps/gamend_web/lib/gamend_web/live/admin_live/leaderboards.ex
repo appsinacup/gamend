@@ -11,13 +11,16 @@ defmodule GamendWeb.AdminLive.Leaderboards do
     reload: :reload_view,
     keys: [:page, :page_size, :filter, :records_page, records_of: [param: "records"]]
 
+  require GamendWeb.FilterValue, as: FilterValue
+  require GamendWeb.FormName, as: FormName
+
   @impl true
   def mount(_params, _session, socket) do
     socket =
       socket
       |> assign(:page, 1)
       |> assign(:page_size, 25)
-      |> assign(:filter, "all")
+      |> assign(:filter, FilterValue.everything())
       |> assign(:selected_leaderboard, nil)
       |> assign(:viewing_records, false)
       |> assign(:records_of, nil)
@@ -546,7 +549,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
 
   def handle_event("new_leaderboard", _, socket) do
     changeset = Leaderboards.change_leaderboard(%Leaderboard{})
-    form = to_form(changeset, as: "leaderboard")
+    form = to_form(changeset, as: FormName.leaderboard())
 
     {:noreply,
      socket
@@ -567,7 +570,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
       }
 
       changeset = Leaderboards.change_leaderboard(new_leaderboard)
-      form = to_form(changeset, as: "leaderboard")
+      form = to_form(changeset, as: FormName.leaderboard())
 
       {:noreply,
        socket
@@ -578,7 +581,8 @@ defmodule GamendWeb.AdminLive.Leaderboards do
 
   def handle_event("edit_leaderboard", %{"id" => id}, socket) do
     Shared.with_record(socket, Leaderboards.get_leaderboard(id), fn leaderboard ->
-      form = leaderboard |> Leaderboards.change_leaderboard() |> to_form(as: "leaderboard")
+      form =
+        leaderboard |> Leaderboards.change_leaderboard() |> to_form(as: FormName.leaderboard())
 
       {:noreply,
        socket
@@ -659,7 +663,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
 
   def handle_event("add_record", _, socket) do
     changeset = Leaderboards.change_record(%Record{})
-    form = to_form(changeset, as: "record")
+    form = to_form(changeset, as: FormName.record())
 
     {:noreply,
      socket
@@ -669,7 +673,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
 
   def handle_event("edit_record", %{"id" => id}, socket) do
     Shared.with_record(socket, Leaderboards.get_record(id), fn record ->
-      form = record |> Leaderboards.change_record() |> to_form(as: "record")
+      form = record |> Leaderboards.change_record() |> to_form(as: FormName.record())
 
       {:noreply,
        socket
@@ -746,7 +750,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
          |> reload_leaderboards()}
 
       {:error, changeset} ->
-        {:noreply, assign(socket, :form, to_form(changeset, as: "leaderboard"))}
+        {:noreply, assign(socket, :form, to_form(changeset, as: FormName.leaderboard()))}
     end
   end
 
@@ -786,7 +790,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
          |> reload_records()}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :record_form, to_form(changeset, as: "record"))}
+        {:noreply, assign(socket, :record_form, to_form(changeset, as: FormName.record()))}
 
       # `submit_score/4` also answers with atoms (`:leaderboard_ended`,
       # `:user_not_found`), which this passed to `to_form/2` as if they were

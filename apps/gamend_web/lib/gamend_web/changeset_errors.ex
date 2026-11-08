@@ -44,6 +44,8 @@ defmodule GamendWeb.ChangesetErrors do
   alias Ecto.Changeset
   alias GamendWeb.CoreComponents
 
+  @validation_failed "validation_failed"
+
   @doc """
   Replies 422 with the standard validation payload.
 
@@ -54,7 +56,7 @@ defmodule GamendWeb.ChangesetErrors do
   def unprocessable(conn, %Changeset{} = changeset) do
     conn
     |> put_status(:unprocessable_entity)
-    |> Phoenix.Controller.json(%{error: "validation_failed", errors: errors(changeset)})
+    |> Phoenix.Controller.json(%{error: @validation_failed, errors: errors(changeset)})
   end
 
   # A validation that is not a changeset (a push message) reports per-field
@@ -63,7 +65,7 @@ defmodule GamendWeb.ChangesetErrors do
     conn
     |> put_status(:unprocessable_entity)
     |> Phoenix.Controller.json(%{
-      error: "validation_failed",
+      error: @validation_failed,
       errors: Map.new(errors, fn {field, messages} -> {field, List.wrap(messages)} end)
     })
   end
@@ -84,7 +86,7 @@ defmodule GamendWeb.ChangesetErrors do
     if taken?(changeset) do
       conn
       |> put_status(:conflict)
-      |> Phoenix.Controller.json(%{error: "validation_failed", errors: errors(changeset)})
+      |> Phoenix.Controller.json(%{error: @validation_failed, errors: errors(changeset)})
     else
       unprocessable(conn, changeset)
     end

@@ -36,6 +36,10 @@ defmodule GamendWeb.ResponseContract do
   alias OpenApiSpex.{Cast, Operation, PathItem, Reference, Response, Schema}
   alias OpenApiSpex.Plug.PutApiSpec
 
+  require Gamend.HttpHeader, as: HttpHeader
+
+  @json "json"
+
   defmodule Violation do
     @moduledoc "A response that contradicts its documented schema."
     defexception [:message]
@@ -62,7 +66,7 @@ defmodule GamendWeb.ResponseContract do
   # violation raised — checking it would replace the real message with its own.
   defp json?(conn) do
     conn.status != 204 and conn.status < 500 and
-      Enum.any?(Plug.Conn.get_resp_header(conn, "content-type"), &(&1 =~ "json"))
+      Enum.any?(Plug.Conn.get_resp_header(conn, HttpHeader.content_type()), &(&1 =~ @json))
   end
 
   # The spec is only on conns that went through the `:api` pipeline, which is

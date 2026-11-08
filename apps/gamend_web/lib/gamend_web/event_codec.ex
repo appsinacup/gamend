@@ -19,6 +19,9 @@ defmodule GamendWeb.EventCodec do
   alias Gamend.Hooks.MetadataSchemas
   alias Gamend.Realtime.V1, as: PB
 
+  require GamendWeb.ChannelTopic, as: ChannelTopic
+  require Gamend.RealtimeEvent, as: RealtimeEvent
+
   @doc """
   Encodes `payload` for `event` pushed on `topic`.
 
@@ -61,45 +64,51 @@ defmodule GamendWeb.EventCodec do
 
   # ── Event → message mapping ────────────────────────────────────────────
 
-  defp message_for("user", "updated", p), do: user(p)
-  defp message_for("user", "friend_updated", p), do: friend_update(p)
-  defp message_for(_, "kv_updated", p), do: kv_entry(p)
-  defp message_for(_, "kv_deleted", p), do: kv_entry(p)
-  defp message_for(_, "notification_created", p), do: notification(p)
-  defp message_for(_, "chat_message_created", p), do: chat_message(p)
-  defp message_for(_, "chat_message_updated", p), do: chat_message(p)
-  defp message_for(_, "chat_message_deleted", p), do: %PB.EntityId{id: get(p, :id)}
+  defp message_for(ChannelTopic.user(), RealtimeEvent.updated(), p), do: user(p)
+  defp message_for(ChannelTopic.user(), RealtimeEvent.friend_updated(), p), do: friend_update(p)
+  defp message_for(_, RealtimeEvent.kv_updated(), p), do: kv_entry(p)
+  defp message_for(_, RealtimeEvent.kv_deleted(), p), do: kv_entry(p)
+  defp message_for(_, RealtimeEvent.notification_created(), p), do: notification(p)
+  defp message_for(_, RealtimeEvent.chat_message_created(), p), do: chat_message(p)
+  defp message_for(_, RealtimeEvent.chat_message_updated(), p), do: chat_message(p)
+  defp message_for(_, RealtimeEvent.chat_message_deleted(), p), do: %PB.EntityId{id: get(p, :id)}
   # Messages that existed for these all along; only the encoder side was
   # missing, so the client decoded a binary frame the server never sent.
-  defp message_for(_, "group_invite_accepted", p), do: group_invite(p)
-  defp message_for(_, "group_invite_cancelled", p), do: group_invite(p)
-  defp message_for(_, "group_join_request_approved", p), do: group_invite(p)
-  defp message_for(_, "group_join_request_rejected", p), do: group_invite(p)
-  defp message_for(_, "party_invite_accepted", p), do: party_invite(p)
-  defp message_for(_, "party_invite_declined", p), do: party_invite(p)
-  defp message_for(_, "party_invite_cancelled", p), do: party_invite(p)
-  defp message_for(_, "wallet_updated", p), do: wallet_change(p)
-  defp message_for(_, "inventory_updated", p), do: inventory_change(p)
-  defp message_for(_, "chat_muted", p), do: chat_mute(p)
-  defp message_for(_, "chat_unmuted", p), do: chat_unmute(p)
-  defp message_for(_, "quest_progress", p), do: quest_progress(p)
-  defp message_for(_, "quest_completed", p), do: quest_progress(p)
-  defp message_for(_, "quest_claimed", p), do: quest_progress(p)
+  defp message_for(_, RealtimeEvent.group_invite_accepted(), p), do: group_invite(p)
+  defp message_for(_, RealtimeEvent.group_invite_cancelled(), p), do: group_invite(p)
+  defp message_for(_, RealtimeEvent.group_join_request_approved(), p), do: group_invite(p)
+  defp message_for(_, RealtimeEvent.group_join_request_rejected(), p), do: group_invite(p)
+  defp message_for(_, RealtimeEvent.party_invite_accepted(), p), do: party_invite(p)
+  defp message_for(_, RealtimeEvent.party_invite_declined(), p), do: party_invite(p)
+  defp message_for(_, RealtimeEvent.party_invite_cancelled(), p), do: party_invite(p)
+  defp message_for(_, RealtimeEvent.wallet_updated(), p), do: wallet_change(p)
+  defp message_for(_, RealtimeEvent.inventory_updated(), p), do: inventory_change(p)
+  defp message_for(_, RealtimeEvent.chat_muted(), p), do: chat_mute(p)
+  defp message_for(_, RealtimeEvent.chat_unmuted(), p), do: chat_unmute(p)
+  defp message_for(_, RealtimeEvent.quest_progress(), p), do: quest_progress(p)
+  defp message_for(_, RealtimeEvent.quest_completed(), p), do: quest_progress(p)
+  defp message_for(_, RealtimeEvent.quest_claimed(), p), do: quest_progress(p)
 
-  defp message_for("lobby", "updated", p), do: lobby(p)
+  defp message_for(ChannelTopic.lobby(), RealtimeEvent.updated(), p), do: lobby(p)
 
-  defp message_for("lobby", event, p)
-       when event in ~w(user_joined user_left user_kicked user_online user_offline),
+  defp message_for(ChannelTopic.lobby(), event, p)
+       when event in [
+              RealtimeEvent.user_joined(),
+              RealtimeEvent.user_left(),
+              RealtimeEvent.user_kicked(),
+              RealtimeEvent.user_online(),
+              RealtimeEvent.user_offline()
+            ],
        do: member_event(p)
 
-  defp message_for("lobby", "host_changed", p),
+  defp message_for(ChannelTopic.lobby(), RealtimeEvent.host_changed(), p),
     do: %PB.HostChanged{
       new_host_id: get(p, :new_host_id),
       display_name: get(p, :display_name) || ""
     }
 
   # `from`/`to` arrive as lobby state atoms and go out as strings.
-  defp message_for("lobby", "state_changed", p),
+  defp message_for(ChannelTopic.lobby(), RealtimeEvent.state_changed(), p),
     do: %PB.LobbyStateChanged{
       lobby_id: get(p, :lobby_id) || "",
       from: state_name(get(p, :from)),
@@ -107,55 +116,87 @@ defmodule GamendWeb.EventCodec do
       state_changed_at_ms: ms(p, :state_changed_at)
     }
 
-  defp message_for("lobby", "user_updated", p), do: user_brief(p)
+  defp message_for(ChannelTopic.lobby(), RealtimeEvent.user_updated(), p), do: user_brief(p)
 
-  defp message_for(kind, "member_updated", p) when kind in ~w(group party),
-    do: user_brief(p)
+  defp message_for(kind, RealtimeEvent.member_updated(), p)
+       when kind in [ChannelTopic.group(), ChannelTopic.party()],
+       do: user_brief(p)
 
-  defp message_for("lobbies", event, p) when event in ~w(lobby_created lobby_updated),
-    do: lobby(p)
+  defp message_for(ChannelTopic.lobbies(), event, p)
+       when event in [RealtimeEvent.lobby_created(), RealtimeEvent.lobby_updated()],
+       do: lobby(p)
 
-  defp message_for("lobbies", event, p) when event in ~w(lobby_deleted lobby_membership_changed),
+  defp message_for(ChannelTopic.lobbies(), event, p)
+       when event in [RealtimeEvent.lobby_deleted(), RealtimeEvent.lobby_membership_changed()],
+       do: %PB.EntityId{id: get(p, :id)}
+
+  defp message_for(ChannelTopic.group(), RealtimeEvent.updated(), p), do: group(p)
+
+  defp message_for(ChannelTopic.group(), event, p)
+       when event in [
+              RealtimeEvent.member_joined(),
+              RealtimeEvent.member_left(),
+              RealtimeEvent.member_kicked(),
+              RealtimeEvent.member_promoted(),
+              RealtimeEvent.member_demoted(),
+              RealtimeEvent.join_request_approved(),
+              RealtimeEvent.join_request_rejected(),
+              RealtimeEvent.member_online(),
+              RealtimeEvent.member_offline()
+            ],
+       do: member_event(p)
+
+  defp message_for(ChannelTopic.groups(), event, p)
+       when event in [RealtimeEvent.group_created(), RealtimeEvent.group_updated()],
+       do: group(p)
+
+  defp message_for(ChannelTopic.groups(), RealtimeEvent.group_deleted(), p),
     do: %PB.EntityId{id: get(p, :id)}
 
-  defp message_for("group", "updated", p), do: group(p)
+  defp message_for(ChannelTopic.party(), RealtimeEvent.updated(), p), do: party(p)
 
-  defp message_for("group", event, p)
-       when event in ~w(member_joined member_left member_kicked member_promoted member_demoted
-                        join_request_approved join_request_rejected member_online member_offline),
+  defp message_for(ChannelTopic.party(), event, p)
+       when event in [
+              RealtimeEvent.member_joined(),
+              RealtimeEvent.member_left(),
+              RealtimeEvent.member_online(),
+              RealtimeEvent.member_offline()
+            ],
        do: member_event(p)
 
-  defp message_for("groups", event, p) when event in ~w(group_created group_updated),
-    do: group(p)
+  defp message_for(ChannelTopic.party(), RealtimeEvent.disbanded(), p),
+    do: %PB.PartyRef{party_id: get(p, :party_id)}
 
-  defp message_for("groups", "group_deleted", p), do: %PB.EntityId{id: get(p, :id)}
-
-  defp message_for("party", "updated", p), do: party(p)
-
-  defp message_for("party", event, p)
-       when event in ~w(member_joined member_left member_online member_offline),
-       do: member_event(p)
-
-  defp message_for("party", "disbanded", p), do: %PB.PartyRef{party_id: get(p, :party_id)}
-
-  defp message_for("user", event, p)
-       when event in ~w(group_invite_accepted group_invite_cancelled group_join_request_approved group_join_request_rejected),
+  defp message_for(ChannelTopic.user(), event, p)
+       when event in [
+              RealtimeEvent.group_invite_accepted(),
+              RealtimeEvent.group_invite_cancelled(),
+              RealtimeEvent.group_join_request_approved(),
+              RealtimeEvent.group_join_request_rejected()
+            ],
        do: %PB.GroupInviteEvent{group_id: get(p, :group_id)}
 
-  defp message_for("user", event, p)
-       when event in ~w(party_invite_accepted party_invite_declined party_invite_cancelled),
+  defp message_for(ChannelTopic.user(), event, p)
+       when event in [
+              RealtimeEvent.party_invite_accepted(),
+              RealtimeEvent.party_invite_declined(),
+              RealtimeEvent.party_invite_cancelled()
+            ],
        do: %PB.PartyInviteEvent{party_id: get(p, :party_id), user_id: get(p, :user_id) || ""}
 
-  defp message_for("user", event, p)
-       when event in ~w(tournament_updated tournament_finished),
+  defp message_for(ChannelTopic.user(), event, p)
+       when event in [RealtimeEvent.tournament_updated(), RealtimeEvent.tournament_finished()],
        do: %PB.TournamentEvent{
          tournament_id: get(p, :tournament_id),
          slug: get(p, :slug) || "",
          state: get(p, :state) || ""
        }
 
-  defp message_for("user", event, p)
-       when event in ~w(tournament_match_ready tournament_match_resolved),
+  defp message_for(ChannelTopic.user(), event, p)
+       when event in [
+              RealtimeEvent.tournament_match_ready(),
+              RealtimeEvent.tournament_match_resolved()
+            ],
        do: %PB.TournamentMatchEvent{
          tournament_id: get(p, :tournament_id),
          slug: get(p, :slug) || "",
@@ -166,16 +207,21 @@ defmodule GamendWeb.EventCodec do
        }
 
   defp message_for(_kind, event, p)
-       when event in ~w(ready_check_started ready_check_updated ready_check_passed ready_check_failed),
+       when event in [
+              RealtimeEvent.ready_check_started(),
+              RealtimeEvent.ready_check_updated(),
+              RealtimeEvent.ready_check_passed(),
+              RealtimeEvent.ready_check_failed()
+            ],
        do: ready_check(p)
 
-  defp message_for("user", "match_found", p),
+  defp message_for(ChannelTopic.user(), "match_found", p),
     do: %PB.MatchmakingFound{
       lobby_id: get(p, :lobby_id),
       match_params: stringify_map(get(p, :match_params) || %{})
     }
 
-  defp message_for("user", "ticket_queued", p),
+  defp message_for(ChannelTopic.user(), "ticket_queued", p),
     do: %PB.MatchmakingTicketQueued{
       ticket_id: get(p, :ticket_id),
       match_params: stringify_map(get(p, :match_params) || %{}),
@@ -183,7 +229,7 @@ defmodule GamendWeb.EventCodec do
       requeued: get(p, :requeued) == true
     }
 
-  defp message_for("user", "ticket_cancelled", p),
+  defp message_for(ChannelTopic.user(), "ticket_cancelled", p),
     do: %PB.MatchmakingTicketCancelled{
       ticket_id: get(p, :ticket_id),
       reason: get(p, :reason) || ""

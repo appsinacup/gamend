@@ -6,10 +6,12 @@ defmodule GamendWeb.OnMount.Locale do
   this hook reads it so that LiveView renders use the correct locale.
   """
 
+  require Gamend.LocaleCode, as: LocaleCode
+
   @session_key "preferred_locale"
 
   def on_mount(:default, _params, session, socket) do
-    locale = GamendWeb.GettextSync.normalize_locale(session[@session_key]) || "en"
+    locale = GamendWeb.GettextSync.normalize_locale(session[@session_key]) || LocaleCode.en()
     GamendWeb.GettextSync.put_locale(locale)
     {:cont, Phoenix.Component.assign(socket, :locale, locale)}
   end

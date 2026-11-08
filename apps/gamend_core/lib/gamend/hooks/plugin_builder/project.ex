@@ -17,6 +17,8 @@ defmodule Gamend.Hooks.PluginBuilder.Project do
   app = the directory name, version `"0.0.0"`, elixirc_paths `["lib"]`.
   """
 
+  @mix_exs "mix.exs"
+
   @type dep :: %{
           name: atom(),
           runtime?: boolean(),
@@ -59,7 +61,7 @@ defmodule Gamend.Hooks.PluginBuilder.Project do
   """
   @spec read(Path.t()) :: {:ok, t()} | {:error, String.t()}
   def read(plugin_dir) do
-    path = Path.join(plugin_dir, "mix.exs")
+    path = Path.join(plugin_dir, @mix_exs)
     fallback_app = plugin_dir |> Path.basename() |> String.to_atom()
 
     with {:ok, source} <- read_file(path),

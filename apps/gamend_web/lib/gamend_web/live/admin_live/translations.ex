@@ -4,21 +4,25 @@ defmodule GamendWeb.AdminLive.Translations do
   alias GamendWeb.Gettext.Stats, as: TranslationStats
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   use GamendWeb.UrlState,
     reload: :reload_strings,
     keys: [
       :page,
       :page_size,
       :search,
-      selected_locale: [param: "locale"],
-      selected_domain: [param: "domain"],
-      selected_status: [param: "status"]
+      selected_locale: [param: UrlParam.locale()],
+      selected_domain: [param: UrlParam.domain()],
+      selected_status: [param: UrlParam.status()]
     ]
+
+  require Gamend.LocaleCode, as: LocaleCode
 
   @impl true
   def mount(_params, _session, socket) do
     locales = TranslationStats.locales()
-    first_locale = List.first(locales, "en")
+    first_locale = List.first(locales, LocaleCode.en())
     completeness = TranslationStats.all_completeness()
     domains = TranslationStats.domains(first_locale)
 
@@ -282,7 +286,7 @@ defmodule GamendWeb.AdminLive.Translations do
   # From the URL, whose locale may be none this host has.
   defp reload_strings(socket) do
     %{locales: locales, selected_locale: locale} = socket.assigns
-    locale = if locale in locales, do: locale, else: List.first(locales, "en")
+    locale = if locale in locales, do: locale, else: List.first(locales, LocaleCode.en())
 
     socket
     |> assign(:selected_locale, locale)

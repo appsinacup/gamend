@@ -75,6 +75,7 @@ end
 defmodule GamendWeb.Schemas.AdminPushToken do
   @moduledoc "A device push token, with the name of the user it belongs to."
   require OpenApiSpex
+  alias Gamend.Push.Platform
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -86,7 +87,7 @@ defmodule GamendWeb.Schemas.AdminPushToken do
       user_id: %Schema{type: :string, format: :uuid},
       user_name: %Schema{type: :string},
       token: %Schema{type: :string},
-      platform: %Schema{type: :string, enum: ["android", "ios", "web"]},
+      platform: %Schema{type: :string, enum: Platform.all()},
       provider: %Schema{type: :string, description: "fcm or apns; empty picks by platform"},
       device_id: %Schema{type: :string, description: "Empty when unset"},
       disabled_at: %Schema{type: :string, format: :"date-time", nullable: true},
@@ -111,6 +112,7 @@ end
 defmodule GamendWeb.Schemas.ChatReport do
   @moduledoc "A report against a chat message, as the moderation queue holds it."
   require OpenApiSpex
+  alias Gamend.Chat.ChatReportStatus
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -126,7 +128,10 @@ defmodule GamendWeb.Schemas.ChatReport do
       message_id: %Schema{type: :string},
       content_snapshot: %Schema{type: :string},
       reason: %Schema{type: :string},
-      status: %Schema{type: :string, enum: ["open", "reviewing", "actioned", "dismissed"]},
+      status: %Schema{
+        type: :string,
+        enum: ChatReportStatus.all()
+      },
       resolved_by: %Schema{type: :string, description: "Empty until resolved"},
       resolved_by_name: %Schema{type: :string},
       resolution_note: %Schema{type: :string},
@@ -157,6 +162,8 @@ end
 defmodule GamendWeb.Schemas.ChatFilterWord do
   @moduledoc "A word on the chat blocklist."
   require OpenApiSpex
+  alias Gamend.Chat.FilterSeverity
+  alias Gamend.Chat.MatchMode
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -166,8 +173,11 @@ defmodule GamendWeb.Schemas.ChatFilterWord do
     properties: %{
       id: %Schema{type: :string, format: :uuid},
       word: %Schema{type: :string},
-      severity: %Schema{type: :string, enum: ["block", "mask", "flag"]},
-      match_mode: %Schema{type: :string, enum: ["substring", "exact"]},
+      severity: %Schema{
+        type: :string,
+        enum: FilterSeverity.all()
+      },
+      match_mode: %Schema{type: :string, enum: MatchMode.all()},
       lang: %Schema{type: :string, description: "Bundled-list provenance, empty when hand-added"},
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
@@ -195,6 +205,8 @@ end
 defmodule GamendWeb.Schemas.ChatFilterHit do
   @moduledoc "One blocklist word a phrase matched."
   require OpenApiSpex
+  alias Gamend.Chat.FilterSeverity
+  alias Gamend.Chat.MatchMode
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -203,8 +215,11 @@ defmodule GamendWeb.Schemas.ChatFilterHit do
     type: :object,
     properties: %{
       word: %Schema{type: :string},
-      severity: %Schema{type: :string, enum: ["block", "mask", "flag"]},
-      match_mode: %Schema{type: :string, enum: ["substring", "exact"]}
+      severity: %Schema{
+        type: :string,
+        enum: FilterSeverity.all()
+      },
+      match_mode: %Schema{type: :string, enum: MatchMode.all()}
     },
     required: [:word, :severity, :match_mode]
   })
@@ -216,13 +231,23 @@ defmodule GamendWeb.Schemas.ChatFilterTest do
   alias GamendWeb.Schemas.ChatFilterHit
   alias OpenApiSpex.Schema
 
+  require Gamend.Chat.FilterSeverity, as: FilterSeverity
+
   OpenApiSpex.schema(%{
     title: "ChatFilterTest",
     description: "A phrase's filter outcome",
     type: :object,
     properties: %{
       phrase: %Schema{type: :string},
-      action: %Schema{type: :string, enum: ["block", "mask", "flag", "allow"]},
+      action: %Schema{
+        type: :string,
+        enum: [
+          FilterSeverity.block(),
+          FilterSeverity.mask(),
+          FilterSeverity.flag(),
+          FilterSeverity.allow()
+        ]
+      },
       content: %Schema{type: :string, description: "What would be stored; empty when blocked"},
       flagged_words: %Schema{type: :array, items: %Schema{type: :string}},
       hits: %Schema{type: :array, items: ChatFilterHit}
@@ -298,7 +323,13 @@ end
 defmodule GamendWeb.Schemas.AdminBan do
   @moduledoc "A ban (`Gamend.Bans`) as the admin API sends it: an IP, an account or a chat mute, with names."
   require OpenApiSpex
+  alias Gamend.Bans.BanKind
   alias OpenApiSpex.Schema
+
+  @plugin "plugin"
+  @admin "admin"
+
+  @api_source "api"
 
   OpenApiSpex.schema(%{
     title: "AdminBan",
@@ -306,7 +337,7 @@ defmodule GamendWeb.Schemas.AdminBan do
     type: :object,
     properties: %{
       id: %Schema{type: :string, format: :uuid},
-      kind: %Schema{type: :string, enum: ["ip", "account", "chat"]},
+      kind: %Schema{type: :string, enum: BanKind.all()},
       subject: %Schema{
         type: :string,
         description: "The IP (an IPv6 one as its /64), or the user id"
@@ -323,7 +354,7 @@ defmodule GamendWeb.Schemas.AdminBan do
       },
       expires_at: %Schema{type: :string, format: :"date-time", nullable: true},
       reason: %Schema{type: :string},
-      source: %Schema{type: :string, enum: ["admin", "api", "room", "plugin", "system"]},
+      source: %Schema{type: :string, enum: [@admin, @api_source, "room", @plugin, "system"]},
       banned_by: %Schema{type: :string, description: "Empty when no one placed it by hand"},
       banned_by_name: %Schema{type: :string},
       lifted_at: %Schema{type: :string, format: :"date-time", nullable: true},

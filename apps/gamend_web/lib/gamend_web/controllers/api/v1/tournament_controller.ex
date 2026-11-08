@@ -4,6 +4,7 @@ defmodule GamendWeb.Api.V1.TournamentController do
 
   alias Gamend.Accounts.Scope
   alias Gamend.Tournaments
+  alias Gamend.Tournaments.EntryState
   alias Gamend.Tournaments.Tournament
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
@@ -21,6 +22,8 @@ defmodule GamendWeb.Api.V1.TournamentController do
 
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
+
+  @tournament_entries "tournament_entries"
 
   tags(["Tournaments"])
 
@@ -172,13 +175,16 @@ defmodule GamendWeb.Api.V1.TournamentController do
   end
 
   operation(:entries,
-    operation_id: "tournament_entries",
+    operation_id: @tournament_entries,
     summary: "Registered entries (paginated)",
     parameters: [
       id: @id_param,
       state: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["registered", "active", "eliminated", "winner"]}
+        schema: %Schema{
+          type: :string,
+          enum: EntryState.all()
+        }
       ],
       page: [in: :query, schema: %Schema{type: :integer, default: 1}],
       page_size: [in: :query, schema: %Schema{type: :integer, default: 25}]

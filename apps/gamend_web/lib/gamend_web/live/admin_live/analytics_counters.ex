@@ -16,6 +16,8 @@ defmodule GamendWeb.AdminLive.AnalyticsCounters do
   alias Gamend.Analytics
   alias Gamend.Analytics.Catalog
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   @windows [7, 30, 90]
   @values_shown 12
 
@@ -28,7 +30,7 @@ defmodule GamendWeb.AdminLive.AnalyticsCounters do
   def handle_params(params, _uri, socket) do
     {:noreply,
      socket
-     |> assign(:days, int_param(params, "days", @windows, 7))
+     |> assign(:days, int_param(params, UrlParam.days(), @windows, 7))
      |> assign(:group, params["group"] |> to_string() |> String.trim())
      |> load()}
   end

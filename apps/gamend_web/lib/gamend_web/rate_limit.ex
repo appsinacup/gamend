@@ -26,6 +26,8 @@ defmodule GamendWeb.RateLimit do
 
   import Bitwise
 
+  @unknown "unknown"
+
   @doc """
   The bucket a client address is limited under: the address itself for IPv4,
   its /64 for IPv6.
@@ -118,11 +120,11 @@ defmodule GamendWeb.RateLimit do
   defp scope_of(key) when is_binary(key) do
     case String.split(key, ":", parts: 2) do
       [scope, _rest] -> scope
-      _ -> "unknown"
+      _ -> @unknown
     end
   end
 
-  defp scope_of(_key), do: "unknown"
+  defp scope_of(_key), do: @unknown
 
   # ETS counts per node, which is fine for one instance and wrong for several:
   # with N instances every limit is effectively N times higher. Redis shares

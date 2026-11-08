@@ -18,6 +18,9 @@ defmodule Gamend.Quests.QuestProgress do
   use Gamend.Schema
   import Ecto.Changeset
 
+  require Gamend.Quests.PeriodKey, as: PeriodKey
+  require Gamend.Quests.QuestStatus, as: QuestStatus
+
   @type t :: %__MODULE__{}
 
   @statuses ~w(active completed claimed)
@@ -45,9 +48,9 @@ defmodule Gamend.Quests.QuestProgress do
       references: :key,
       type: :string
 
-    field :period_key, :string, default: "static"
+    field :period_key, :string, default: PeriodKey.static()
     field :objective_progress, :map, default: %{}
-    field :status, :string, default: "active"
+    field :status, :string, default: QuestStatus.active()
     field :completed_at, :utc_datetime
     field :claimed_at, :utc_datetime
     field :rewards_granted_at, :utc_datetime

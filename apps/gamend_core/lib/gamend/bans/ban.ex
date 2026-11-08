@@ -25,6 +25,8 @@ defmodule Gamend.Bans.Ban do
 
   alias Gamend.Accounts.User
 
+  require Gamend.Bans.BanScope, as: BanScope
+
   @kinds [:ip, :account, :chat]
   @sources [:admin, :api, :room, :plugin, :system]
   @scopes ~w(global lobby group party)
@@ -67,7 +69,7 @@ defmodule Gamend.Bans.Ban do
   a chat ban.
   """
   @spec target(kind(), String.t(), String.t() | nil, String.t() | nil) :: tuple()
-  def target(:chat, subject, "global", _ref), do: {:chat, subject, "global"}
+  def target(:chat, subject, BanScope.global(), _ref), do: {:chat, subject, BanScope.global()}
   def target(:chat, subject, scope, ref), do: {:chat, subject, {scope, ref}}
   def target(kind, subject, _scope, _ref), do: {kind, subject, nil}
 
@@ -102,10 +104,10 @@ defmodule Gamend.Bans.Ban do
   defp validate_scope(changeset) do
     case {get_field(changeset, :kind), get_field(changeset, :scope),
           get_field(changeset, :scope_ref_id)} do
-      {:chat, "global", nil} ->
+      {:chat, BanScope.global(), nil} ->
         changeset
 
-      {:chat, "global", _ref} ->
+      {:chat, BanScope.global(), _ref} ->
         add_error(changeset, :scope_ref_id, "must be nil for a global mute")
 
       {:chat, scope, ref} when scope in @scopes ->

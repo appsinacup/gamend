@@ -8,6 +8,8 @@ defmodule GamendHost.Application do
   alias Gamend.Repo.AdvisoryLock
   alias GamendWeb.Auth.Tokens
 
+  require Gamend.LocalHost, as: LocalHost
+
   @impl true
   def start(_type, _args) do
     GamendWeb.HostSupervision.init_runtime()
@@ -213,7 +215,7 @@ defmodule GamendHost.Application do
   defp endpoint_info do
     endpoint_config = Application.get_env(:gamend_web, GamendWeb.Endpoint, [])
     url_config = endpoint_config[:url] || []
-    host = url_config[:host] || "localhost"
+    host = url_config[:host] || LocalHost.localhost()
     port = get_in(endpoint_config, [:http, :port]) || 4000
     "Endpoint: #{host}:#{port}"
   end

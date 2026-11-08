@@ -18,12 +18,17 @@ defmodule GamendWeb.CLI.Starter do
   needs to start.
   """
 
+  require Gamend.UrlScheme, as: UrlScheme
+
+  @starter "starter"
+  @default "default"
+
   @website_base "https://github.com/appsinacup/gamend/releases/download"
 
   @spec run([String.t()]) :: non_neg_integer()
   def run(args) do
     {opts, rest, _invalid} = OptionParser.parse(args, strict: [force: :boolean])
-    template = List.first(rest) || "default"
+    template = List.first(rest) || @default
     target = File.cwd!()
 
     with_template(template, fn source ->
@@ -35,7 +40,7 @@ defmodule GamendWeb.CLI.Starter do
     end)
   end
 
-  defp with_template("http" <> _ = url, fun), do: with_download(url, fun)
+  defp with_template(UrlScheme.http() <> _ = url, fun), do: with_download(url, fun)
 
   defp with_template("website", fun), do: with_download(website_url(), fun)
 
@@ -78,7 +83,7 @@ defmodule GamendWeb.CLI.Starter do
     app = GamendWeb.host_app()
 
     case :code.priv_dir(app) do
-      dir when is_list(dir) -> Path.join(to_string(dir), "starter")
+      dir when is_list(dir) -> Path.join(to_string(dir), @starter)
       {:error, _not_loaded} -> nil
     end
   end

@@ -3,6 +3,7 @@ defmodule GamendWeb.Api.V1.Admin.MatchmakingController do
   use OpenApiSpex.ControllerSpecs
 
   alias Gamend.Matchmaking
+  alias Gamend.Matchmaking.TicketStatus
   alias GamendWeb.Schemas
 
   alias GamendWeb.Schemas.{
@@ -22,7 +23,10 @@ defmodule GamendWeb.Api.V1.Admin.MatchmakingController do
     parameters: [
       status: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["queued", "matched", "cancelled"]},
+        schema: %Schema{
+          type: :string,
+          enum: TicketStatus.all()
+        },
         required: false
       ],
       user_id: [in: :query, schema: %Schema{type: :string, format: :uuid}, required: false],

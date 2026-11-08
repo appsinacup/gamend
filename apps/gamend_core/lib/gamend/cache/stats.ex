@@ -18,6 +18,8 @@ defmodule Gamend.Cache.Stats do
 
   use GenServer
 
+  @unknown "unknown"
+
   @table __MODULE__
 
   def start_link(opts) do
@@ -57,7 +59,7 @@ defmodule Gamend.Cache.Stats do
   end
 
   def handle_event([:gamend, :rate_limit, :deny], _measurements, metadata, _config) do
-    bump({:rate_limit_deny, Map.get(metadata, :scope, "unknown")})
+    bump({:rate_limit_deny, Map.get(metadata, :scope, @unknown)})
   end
 
   def handle_event([:gamend, :async, :overload], _measurements, _metadata, _config) do

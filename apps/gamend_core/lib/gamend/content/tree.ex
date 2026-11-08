@@ -31,6 +31,8 @@ defmodule Gamend.Content.Tree do
   alias Gamend.Content.Frontmatter
   alias Gamend.Content.Markdown
 
+  @index "index"
+
   @type doc :: %{
           type: :doc,
           slug: String.t(),
@@ -163,7 +165,7 @@ defmodule Gamend.Content.Tree do
         File.dir?(path) ->
           [category(root, relative, parent_slug, opts)]
 
-        Path.extname(name) in [".md", ".mdx"] and Path.rootname(name) != "index" ->
+        Path.extname(name) in [".md", ".mdx"] and Path.rootname(name) != @index ->
           [doc(root, relative, parent_slug, opts)]
 
         true ->
@@ -192,7 +194,7 @@ defmodule Gamend.Content.Tree do
 
     index =
       [".md", ".mdx"]
-      |> Enum.map(&Path.join([root, dir, "index" <> &1]))
+      |> Enum.map(&Path.join([root, dir, @index <> &1]))
       |> Enum.find(&File.regular?/1)
       |> case do
         nil -> nil

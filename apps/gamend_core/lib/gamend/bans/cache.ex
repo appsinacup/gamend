@@ -13,6 +13,8 @@ defmodule Gamend.Bans.Cache do
   alias Gamend.Bans
   alias Gamend.Bans.Ban
 
+  @ban "ban"
+
   @table :bans
   @topic "bans"
 
@@ -120,5 +122,5 @@ defmodule Gamend.Bans.Cache do
   end
 
   # Best-effort: a ban still applies on this node when PubSub is unavailable.
-  defp broadcast(message), do: Gamend.Broadcast.best_effort(@topic, message, "ban")
+  defp broadcast(message), do: Gamend.Broadcast.best_effort(@topic, message, @ban)
 end

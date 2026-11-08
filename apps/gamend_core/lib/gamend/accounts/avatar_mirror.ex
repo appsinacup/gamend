@@ -30,6 +30,9 @@ defmodule Gamend.Accounts.AvatarMirror do
   alias Gamend.Accounts
   alias Gamend.Storage
 
+  require Gamend.Storage.StoragePrefix, as: StoragePrefix
+  require Gamend.HttpHeader, as: HttpHeader
+
   @doc """
   Whether a provider's picture may be copied: not while `GamendWeb.Features` has
   `user_image_uploads` off. A flag of the web app, so it is on where that app is
@@ -67,7 +70,8 @@ defmodule Gamend.Accounts.AvatarMirror do
          body when is_binary(body) <- resp.body,
          content_type <- content_type(resp, source_url),
          :ok <- Storage.validate_upload(content_type, byte_size(body)),
-         key <- Storage.build_key("avatars", user.id, "avatar#{extension(content_type)}"),
+         key <-
+           Storage.build_key(StoragePrefix.avatars(), user.id, "avatar#{extension(content_type)}"),
          {:ok, ^key} <- Storage.put(key, body, content_type: content_type) do
       attach(user, key)
     else
@@ -121,7 +125,7 @@ defmodule Gamend.Accounts.AvatarMirror do
   end
 
   defp content_type(resp, url) do
-    case Req.Response.get_header(resp, "content-type") do
+    case Req.Response.get_header(resp, HttpHeader.content_type()) do
       [ct | _] when is_binary(ct) -> ct |> String.split(";") |> List.first() |> String.trim()
       _ -> url |> URI.parse() |> Map.get(:path, "") |> to_string() |> MIME.from_path()
     end

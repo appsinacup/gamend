@@ -7,9 +7,11 @@ defmodule GamendWeb.LobbyLive.Index do
   alias Gamend.Lobbies
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   use GamendWeb.UrlState,
     reload: :refresh_lobbies,
-    keys: [lobbies_page: [param: "page"]]
+    keys: [lobbies_page: [param: UrlParam.page()]]
 
   @impl true
   def mount(_params, _session, socket) do

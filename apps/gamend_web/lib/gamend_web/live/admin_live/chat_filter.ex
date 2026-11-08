@@ -20,6 +20,8 @@ defmodule GamendWeb.AdminLive.ChatFilter do
     "lang" => ""
   }
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   use GamendWeb.UrlState,
     reload: :reload,
     drop: ~w(word),
@@ -27,9 +29,11 @@ defmodule GamendWeb.AdminLive.ChatFilter do
       :page,
       :page_size,
       word_filter: [param: "q"],
-      severity_filter: [param: "severity"],
-      lang_filter: [param: "lang"]
+      severity_filter: [param: UrlParam.severity()],
+      lang_filter: [param: UrlParam.lang()]
     ]
+
+  require Gamend.Chat.FilterSeverity, as: FilterSeverity
 
   @impl true
   def mount(_params, _session, socket) do
@@ -45,7 +49,10 @@ defmodule GamendWeb.AdminLive.ChatFilter do
       |> assign(:lang_filter, "")
       |> assign(:languages, languages)
       |> assign(:word_form, @blank_word)
-      |> assign(:import_form, %{"lang" => List.first(languages) || "", "severity" => "block"})
+      |> assign(:import_form, %{
+        "lang" => List.first(languages) || "",
+        "severity" => FilterSeverity.block()
+      })
       |> assign(:phrase, "")
       |> assign(:chat_guide_url, chat_guide_url(socket))
       |> reload()
@@ -295,7 +302,9 @@ defmodule GamendWeb.AdminLive.ChatFilter do
       nil
     else
       hits = Moderation.hits(phrase)
-      blocking? = Enum.any?(hits, fn {_word, severity, _mode} -> severity == "block" end)
+
+      blocking? =
+        Enum.any?(hits, fn {_word, severity, _mode} -> severity == FilterSeverity.block() end)
 
       case Moderation.check_content(phrase) do
         {:error, :blocked_content} ->
@@ -333,9 +342,9 @@ defmodule GamendWeb.AdminLive.ChatFilter do
     |> Enum.map_join("; ", fn {field, messages} -> "#{field} #{Enum.join(messages, ", ")}" end)
   end
 
-  defp severity_badge("block"), do: "badge-error"
-  defp severity_badge("mask"), do: "badge-warning"
-  defp severity_badge("flag"), do: "badge-info"
+  defp severity_badge(FilterSeverity.block()), do: "badge-error"
+  defp severity_badge(FilterSeverity.mask()), do: "badge-warning"
+  defp severity_badge(FilterSeverity.flag()), do: "badge-info"
   defp severity_badge(_severity), do: "badge-ghost"
 
   defp outcome_badge(:blocked), do: "badge-error"

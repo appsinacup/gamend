@@ -37,6 +37,8 @@ defmodule Mix.Tasks.Gamend.Content.Extract do
 
   alias Gamend.Repo
 
+  @quests "quests"
+
   @default_path "priv/gettext/content.pot"
 
   @sources [
@@ -95,7 +97,7 @@ defmodule Mix.Tasks.Gamend.Content.Extract do
     |> Repo.all()
     |> Enum.flat_map(fn
       %{"reward_names" => %{} = names} ->
-        for {_code, name} <- names, is_binary(name), do: {name, "quests"}
+        for {_code, name} <- names, is_binary(name), do: {name, @quests}
 
       _ ->
         []

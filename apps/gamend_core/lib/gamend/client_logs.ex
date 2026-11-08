@@ -66,6 +66,17 @@ defmodule Gamend.ClientLogs do
   alias Gamend.ClientLogs.SessionLobby
   alias Gamend.Repo
 
+  require Gamend.ClientLogs.BuildKind, as: BuildKind
+  require Gamend.ClientLogs.LogLevel, as: LogLevel
+
+  @build "build"
+  @unknown "unknown"
+  @platform "platform"
+  @screen "screen"
+  @lobby "lobby"
+  @user "user"
+  @app_version "app_version"
+
   @levels ~w(trace debug info warn error)
 
   # Caps. A client that misbehaves — or is hostile — must not be able to turn
@@ -94,7 +105,7 @@ defmodule Gamend.ClientLogs do
   """
   @spec logger_level_blocks_collection?() :: boolean()
   def logger_level_blocks_collection? do
-    enabled?() and config(:level) in ["trace", "debug", "info"] and
+    enabled?() and config(:level) in [LogLevel.trace(), LogLevel.debug(), LogLevel.info()] and
       Logger.compare_levels(Logger.level(), :info) == :gt
   end
 
@@ -129,7 +140,10 @@ defmodule Gamend.ClientLogs do
         [category, level] ->
           category = String.trim(category)
           level = level |> String.trim() |> String.downcase()
-          if category != "" and level in ["off" | @levels], do: [{category, level}], else: []
+
+          if category != "" and level in [LogLevel.off() | @levels],
+            do: [{category, level}],
+            else: []
 
         _ ->
           []
@@ -205,7 +219,7 @@ defmodule Gamend.ClientLogs do
       user_id: user_id,
       device_id: string(attrs, "device_id"),
       platform: platform(attrs),
-      app_version: string(attrs, "app_version"),
+      app_version: string(attrs, @app_version),
       build: build(attrs),
       locale: string(attrs, "locale"),
       started_at: started_at(attrs, now),
@@ -337,7 +351,7 @@ defmodule Gamend.ClientLogs do
   defp level(entry) do
     case Map.get(entry, "level") do
       level when level in @levels -> level
-      _ -> "info"
+      _ -> LogLevel.info()
     end
   end
 
@@ -378,21 +392,21 @@ defmodule Gamend.ClientLogs do
   # See the "Levels" section of the moduledoc: only warn/error map through, so
   # a host purging `debug` in production does not silently discard the verbose
   # capture it just asked a client for.
-  defp logger_level("error"), do: :error
-  defp logger_level("warn"), do: :warning
+  defp logger_level(LogLevel.error()), do: :error
+  defp logger_level(LogLevel.warn()), do: :warning
   defp logger_level(_), do: :info
 
   defp line(entry, %Session{} = session) do
     [
       "[client] session=",
       session.client_session_id,
-      field("user", session.user_id),
+      field(@user, session.user_id),
       " level=",
       entry.level,
       " cat=",
       entry.category,
-      field("lobby", entry.lobby_id),
-      field("screen", entry.screen),
+      field(@lobby, entry.lobby_id),
+      field(@screen, entry.screen),
       field("seq", entry.seq),
       " | ",
       entry.message
@@ -618,13 +632,13 @@ defmodule Gamend.ClientLogs do
   end
 
   defp platform(attrs) do
-    value = attrs |> string("platform") |> String.downcase()
-    if value in Session.platforms(), do: value, else: "unknown"
+    value = attrs |> string(@platform) |> String.downcase()
+    if value in Session.platforms(), do: value, else: @unknown
   end
 
   defp build(attrs) do
-    value = attrs |> string("build") |> String.downcase()
-    if value in Session.builds(), do: value, else: "release"
+    value = attrs |> string(@build) |> String.downcase()
+    if value in Session.builds(), do: value, else: BuildKind.release()
   end
 
   defp started_at(attrs, now) do
@@ -684,7 +698,7 @@ defmodule Gamend.ClientLogs do
   )
 
   setting(:level, :string,
-    default: "info",
+    default: LogLevel.info(),
     doc:
       "Lowest client level to collect: trace, debug, info, warn or error. Clients gate their own uploads on this."
   )

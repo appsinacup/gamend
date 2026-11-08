@@ -8,15 +8,25 @@ defmodule GamendWeb.AdminLive.Lobbies do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.FormName, as: FormName
+  require Gamend.SortKey, as: SortKey
+  require GamendWeb.UrlParam, as: UrlParam
+
+  @filter_keys ~w(title state is_hidden is_locked has_password min_users max_users)
+
   use GamendWeb.UrlState,
     reload: :reload_view,
     keys: [
-      lobbies_page: [param: "page"],
-      lobbies_page_size: [param: "page-size"],
-      sort_by: [param: "sort"],
-      filters: [keys: ~w(title state is_hidden is_locked has_password min_users max_users)],
-      members_of: [param: "members"]
+      lobbies_page: [param: UrlParam.page()],
+      lobbies_page_size: [param: UrlParam.page_size()],
+      sort_by: [param: UrlParam.sort()],
+      filters: [keys: @filter_keys],
+      members_of: [param: UrlParam.members()]
     ]
+
+  require Gamend.ReadyChecks.CheckStatus, as: CheckStatus
+  require Gamend.ReadyChecks.ParticipantState, as: ParticipantState
+  require GamendWeb.CheckboxValue, as: CheckboxValue
 
   @impl true
   def mount(_params, _session, socket) do
@@ -27,7 +37,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
       |> assign(:lobbies_page, 1)
       |> assign(:lobbies_page_size, 25)
       |> assign(:filters, %{})
-      |> assign(:sort_by, "updated_at")
+      |> assign(:sort_by, SortKey.updated_at())
       |> assign(:selected_lobby, nil)
       |> assign(:form, nil)
       |> assign(:selected_ids, MapSet.new())
@@ -38,7 +48,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
       |> assign(:show_create, false)
       |> assign(
         :create_form,
-        to_form(%{"host_id" => "", "title" => "", "max_users" => "10"}, as: "lobby")
+        to_form(%{"host_id" => "", "title" => "", "max_users" => "10"}, as: FormName.lobby())
       )
       |> assign(:add_member_id, "")
       |> reload_lobbies()
@@ -527,7 +537,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
 
   @impl true
   def handle_event("filter", params, socket) do
-    sort_by = Map.get(params, "sort_by", socket.assigns[:sort_by] || "updated_at")
+    sort_by = Map.get(params, "sort_by", socket.assigns[:sort_by] || SortKey.updated_at())
 
     {:noreply,
      socket
@@ -553,7 +563,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
      |> assign(:show_create, true)
      |> assign(
        :create_form,
-       to_form(%{"host_id" => "", "title" => "", "max_users" => "10"}, as: "lobby")
+       to_form(%{"host_id" => "", "title" => "", "max_users" => "10"}, as: FormName.lobby())
      )}
   end
 
@@ -607,7 +617,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
   @impl true
   def handle_event("cancel_ready_check", %{"id" => id}, socket) do
     socket =
-      with %{status: "pending"} = check <- ReadyChecks.get_check(id),
+      with %{status: CheckStatus.pending()} = check <- ReadyChecks.get_check(id),
            {:ok, _} <- ReadyChecks.cancel(check) do
         put_flash(socket, :info, "Ready check cancelled")
       else
@@ -780,7 +790,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
 
   def handle_event("edit_lobby", %{"id" => id}, socket) do
     Shared.with_record(socket, Lobbies.get_lobby(to_string(id)), fn lobby ->
-      form = lobby |> Lobbies.change_lobby() |> to_form(as: "lobby")
+      form = lobby |> Lobbies.change_lobby() |> to_form(as: FormName.lobby())
 
       {:noreply,
        socket
@@ -822,8 +832,8 @@ defmodule GamendWeb.AdminLive.Lobbies do
     # Convert checkbox string values to booleans for Ecto
     params =
       params
-      |> Map.update("is_hidden", false, fn v -> v in ["true", "on", true] end)
-      |> Map.update("is_locked", false, fn v -> v in ["true", "on", true] end)
+      |> Map.update("is_hidden", false, fn v -> v in ["true", CheckboxValue.on(), true] end)
+      |> Map.update("is_locked", false, fn v -> v in ["true", CheckboxValue.on(), true] end)
 
     # The textarea holds JSON. Text that is not a JSON object is refused, not
     # saved as %{} — that would wipe the lobby's metadata behind a success flash.
@@ -882,7 +892,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
     {clear, params} = Map.pop(params, "clear_password")
 
     cond do
-      clear in ["true", "on"] ->
+      clear in ["true", CheckboxValue.on()] ->
         Map.put(params, "password_hash", nil)
 
       is_binary(password) and password != "" ->
@@ -904,7 +914,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
          |> reload_lobbies()}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :form, to_form(changeset, as: "lobby"))}
+        {:noreply, assign(socket, :form, to_form(changeset, as: FormName.lobby()))}
 
       {:error, reason} ->
         {:noreply, put_flash(socket, :error, "Update failed: #{inspect(reason)}")}
@@ -939,7 +949,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
     page = socket.assigns[:lobbies_page] || 1
     page_size = socket.assigns[:lobbies_page_size] || 25
     filters = socket.assigns[:filters] || %{}
-    sort_by = socket.assigns[:sort_by] || "updated_at"
+    sort_by = socket.assigns[:sort_by] || SortKey.updated_at()
 
     filters_with_sort = Map.put(filters, "sort_by", sort_by)
 
@@ -980,15 +990,15 @@ defmodule GamendWeb.AdminLive.Lobbies do
 
   defp ready_state_class(check, user_id) do
     case member_ready_state(check, user_id) do
-      "ready" -> "badge-success"
-      "declined" -> "badge-warning"
-      "timed_out" -> "badge-error"
+      ParticipantState.ready() -> "badge-success"
+      ParticipantState.declined() -> "badge-warning"
+      ParticipantState.timed_out() -> "badge-error"
       _ -> "badge-ghost"
     end
   end
 
   defp ready_summary(check) do
-    ready = Enum.count(check.participants, &(&1.state == "ready"))
+    ready = Enum.count(check.participants, &(&1.state == ParticipantState.ready()))
     "#{ready}/#{length(check.participants)}"
   end
 

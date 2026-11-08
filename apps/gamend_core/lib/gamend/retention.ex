@@ -100,6 +100,8 @@ defmodule Gamend.Retention do
   alias Gamend.Repo
   alias Gamend.Storage
 
+  require Gamend.Chat.ChatType, as: ChatType
+
   # First run shortly after boot, then every `interval_hours`.
   @initial_delay_ms :timer.minutes(5)
 
@@ -960,9 +962,9 @@ defmodule Gamend.Retention do
   # of parent. One statement per kind finds them.
   defp prune_orphaned_chat do
     for {chat_type, parent} <- [
-          {"lobby", Lobby},
-          {"group", Gamend.Groups.Group},
-          {"party", Gamend.Parties.Party}
+          {ChatType.lobby(), Lobby},
+          {ChatType.group(), Gamend.Groups.Group},
+          {ChatType.party(), Gamend.Parties.Party}
         ],
         schema <- [Gamend.Chat.Message, Gamend.Chat.ReadCursor],
         reduce: 0 do

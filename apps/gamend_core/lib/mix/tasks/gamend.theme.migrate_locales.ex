@@ -25,6 +25,8 @@ defmodule Mix.Tasks.Gamend.Theme.MigrateLocales do
 
   alias Gamend.Theme.Translatable
 
+  require Gamend.LocaleCode, as: LocaleCode
+
   @gettext_dir "priv/gettext"
 
   @impl true
@@ -101,7 +103,7 @@ defmodule Mix.Tasks.Gamend.Theme.MigrateLocales do
       {locale, path}
     end)
     # The base's own language needs no PO: it is the msgid.
-    |> Enum.reject(fn {locale, _path} -> locale in ["en", Path.basename(root)] end)
+    |> Enum.reject(fn {locale, _path} -> locale in [LocaleCode.en(), Path.basename(root)] end)
     |> Enum.sort()
   end
 

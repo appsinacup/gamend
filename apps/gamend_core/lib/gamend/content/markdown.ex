@@ -39,6 +39,24 @@ defmodule Gamend.Content.Markdown do
 
   alias Gamend.Content.Frontmatter
 
+  require Gamend.UrlScheme, as: UrlScheme
+
+  @index "index"
+  @details_attrs ~w(open)
+
+  @lazy "lazy"
+  @docs "docs"
+  @warning "warning"
+  @info "info"
+  @points_attrs ~w(points fill stroke)
+  @line_attrs ~w(x1 y1 x2 y2 stroke)
+  @rect_attrs ~w(x y width height rx fill stroke)
+  @circle_attrs ~w(cx cy r fill stroke)
+  @g_attrs ~w(fill stroke opacity transform)
+  @path_attrs ~w(d fill stroke stroke-width opacity fill-rule)
+  @svg_attrs ~w(viewBox xmlns fill width height stroke stroke-width)
+  @md "md"
+
   @typedoc """
   * `:collection` — the registered name, for `/content/<collection>/` asset paths
   * `:assets` — `:content` (the default) rewrites image paths into the
@@ -103,7 +121,7 @@ defmodule Gamend.Content.Markdown do
   @doc "Render a file, or `nil` when it cannot be read or parsed."
   @spec render_file(Path.t(), [opt()]) :: String.t() | nil
   def render_file(path, opts \\ []) do
-    opts = Keyword.put_new(opts, :index, Path.rootname(Path.basename(path)) == "index")
+    opts = Keyword.put_new(opts, :index, Path.rootname(Path.basename(path)) == @index)
 
     case File.read(path) do
       {:ok, content} ->
@@ -145,7 +163,7 @@ defmodule Gamend.Content.Markdown do
     document
     |> lift_balaur_script()
     |> alias_code_languages()
-    |> lift_mermaid(Keyword.get(opts, :id, "md"))
+    |> lift_mermaid(Keyword.get(opts, :id, @md))
     |> unify_admonitions()
     |> rewrite_links(opts)
   end
@@ -312,15 +330,15 @@ defmodule Gamend.Content.Markdown do
         "video" => ~w(controls muted loop playsinline preload poster width height autoplay),
         "source" => ~w(src type),
         "img" => ~w(loading decoding width height),
-        "svg" => ~w(viewBox xmlns fill width height stroke stroke-width),
-        "path" => ~w(d fill stroke stroke-width opacity fill-rule),
-        "g" => ~w(fill stroke opacity transform),
-        "circle" => ~w(cx cy r fill stroke),
-        "rect" => ~w(x y width height rx fill stroke),
-        "line" => ~w(x1 y1 x2 y2 stroke),
-        "polyline" => ~w(points fill stroke),
-        "polygon" => ~w(points fill stroke),
-        "details" => ~w(open),
+        "svg" => @svg_attrs,
+        "path" => @path_attrs,
+        "g" => @g_attrs,
+        "circle" => @circle_attrs,
+        "rect" => @rect_attrs,
+        "line" => @line_attrs,
+        "polyline" => @points_attrs,
+        "polygon" => @points_attrs,
+        "details" => @details_attrs,
         # The diagram element `lift_mermaid/2` emits is sanitised with the
         # rest of the page, so its source attribute is allowed on a `<div>`.
         "div" => ~w(data-diagram)
@@ -479,8 +497,8 @@ defmodule Gamend.Content.Markdown do
   end
 
   defp label("tip"), do: "Tip"
-  defp label("info"), do: "Info"
-  defp label("warning"), do: "Warning"
+  defp label(@info), do: "Info"
+  defp label(@warning), do: "Warning"
   defp label("danger"), do: "Danger"
   defp label("caution"), do: "Caution"
   defp label("important"), do: "Important"
@@ -535,7 +553,7 @@ defmodule Gamend.Content.Markdown do
         |> Enum.reduce(slug_dir |> Path.split() |> Enum.reverse(), fn
           ".", acc -> acc
           "..", acc -> Enum.drop(acc, 1)
-          "index", acc -> acc
+          @index, acc -> acc
           segment, acc -> [strip_order_prefix(segment) | acc]
         end)
         |> Enum.reverse()
@@ -546,7 +564,8 @@ defmodule Gamend.Content.Markdown do
   end
 
   defp relative_markdown?(path) do
-    Regex.match?(~r/\.mdx?$/, path) and not String.starts_with?(path, ["/", "http", "mailto:"])
+    Regex.match?(~r/\.mdx?$/, path) and
+      not String.starts_with?(path, ["/", UrlScheme.http(), "mailto:"])
   end
 
   ## HTML
@@ -595,7 +614,7 @@ defmodule Gamend.Content.Markdown do
   """
   @spec image_src(String.t(), [opt()]) :: String.t()
   def image_src(src, opts \\ []) when is_binary(src) do
-    collection = Keyword.get(opts, :collection, "docs")
+    collection = Keyword.get(opts, :collection, @docs)
     mode = Keyword.get(opts, :assets, :content)
     dir = opts |> Keyword.get(:dir, "") |> normalize_dir()
 
@@ -622,7 +641,7 @@ defmodule Gamend.Content.Markdown do
   @doc false
   # Not served by this site: left as written, and never handed to a host's
   # `:image_url`.
-  def external?(src), do: String.starts_with?(src, ["http", "data:"])
+  def external?(src), do: String.starts_with?(src, [UrlScheme.http(), "data:"])
 
   # A relative path in a nested guide is relative to that guide's folder, so
   # `../shared/x.png` from `10-manual/20-scenes.md` is `shared/x.png`.
@@ -634,7 +653,7 @@ defmodule Gamend.Content.Markdown do
 
   defp add_lazy_image_attrs(tag) do
     tag
-    |> ensure_image_attr("loading", "lazy")
+    |> ensure_image_attr("loading", @lazy)
     |> ensure_image_attr("decoding", "async")
   end
 

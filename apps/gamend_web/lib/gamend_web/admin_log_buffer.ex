@@ -10,6 +10,9 @@ defmodule GamendWeb.AdminLogBuffer do
 
   use GenServer
 
+  require GamendWeb.AdminLogSource, as: AdminLogSource
+  require GamendWeb.FilterValue, as: FilterValue
+
   @name __MODULE__
   @table __MODULE__
   @topic "admin_logs"
@@ -162,9 +165,15 @@ defmodule GamendWeb.AdminLogBuffer do
 
   defp client_entry?(entry), do: Map.get(entry[:meta] || %{}, :source) == :client
 
-  defp maybe_filter_source(entries, source) when source in [nil, "", "all"], do: entries
-  defp maybe_filter_source(entries, "client"), do: Enum.filter(entries, &client_entry?/1)
-  defp maybe_filter_source(entries, "server"), do: Enum.reject(entries, &client_entry?/1)
+  defp maybe_filter_source(entries, source) when source in [nil, "", FilterValue.everything()],
+    do: entries
+
+  defp maybe_filter_source(entries, AdminLogSource.client()),
+    do: Enum.filter(entries, &client_entry?/1)
+
+  defp maybe_filter_source(entries, AdminLogSource.server()),
+    do: Enum.reject(entries, &client_entry?/1)
+
   defp maybe_filter_source(entries, _), do: entries
 
   defp maybe_filter_meta(entries, _key, value) when value in [nil, ""], do: entries
@@ -216,7 +225,7 @@ defmodule GamendWeb.AdminLogBuffer do
 
   defp maybe_filter_level(entries, nil), do: entries
   defp maybe_filter_level(entries, ""), do: entries
-  defp maybe_filter_level(entries, "all"), do: entries
+  defp maybe_filter_level(entries, FilterValue.everything()), do: entries
 
   defp maybe_filter_level(entries, level) when is_binary(level) do
     atom_level = String.to_existing_atom(level)

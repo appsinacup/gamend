@@ -43,6 +43,8 @@ defmodule Gamend.Quests.Quest do
   alias Gamend.Quests.Objective
   alias Gamend.Quests.Reward
 
+  require Gamend.Quests.QuestReset, as: QuestReset
+
   @type t :: %__MODULE__{}
 
   # `repeat` re-arms the moment its reward is claimed rather than waiting for a
@@ -61,7 +63,7 @@ defmodule Gamend.Quests.Quest do
     field :group_key, :string
     # Names the collapsed entry, so every member of a group declares the same one.
     field :group_title, :string
-    field :reset, :string, default: "never"
+    field :reset, :string, default: QuestReset.never()
     field :reset_interval_days, :integer
     field :category, :string
 
@@ -128,10 +130,10 @@ defmodule Gamend.Quests.Quest do
   # not carry a stray one.
   defp validate_interval(changeset) do
     case {get_field(changeset, :reset), get_field(changeset, :reset_interval_days)} do
-      {"interval", days} when is_integer(days) and days > 0 ->
+      {QuestReset.interval(), days} when is_integer(days) and days > 0 ->
         changeset
 
-      {"interval", _} ->
+      {QuestReset.interval(), _} ->
         add_error(changeset, :reset_interval_days, "is required when reset is \"interval\"")
 
       {_reset, nil} ->

@@ -22,6 +22,8 @@ defmodule Gamend.Chat.Moderation.Cache do
   alias Gamend.Chat.FilterWord
   alias Gamend.Chat.Moderation.Normalizer
 
+  require Gamend.Chat.MatchMode, as: MatchMode
+
   @words_table :chat_filter_words
   @pattern_key {__MODULE__, :substring_pattern}
   @topic "chat_moderation"
@@ -157,7 +159,7 @@ defmodule Gamend.Chat.Moderation.Cache do
     words =
       @words_table
       |> :ets.tab2list()
-      |> Enum.filter(fn {_word, _severity, match_mode} -> match_mode == "substring" end)
+      |> Enum.filter(fn {_word, _severity, match_mode} -> match_mode == MatchMode.substring() end)
       |> Enum.map(fn {word, _severity, _match_mode} -> word end)
       |> Enum.reject(&(&1 in [nil, ""]))
 

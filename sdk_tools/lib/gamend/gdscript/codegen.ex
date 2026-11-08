@@ -25,6 +25,12 @@ defmodule Gamend.GDScript.Codegen do
   alias Gamend.GDScript.API
   alias Gamend.GDScript.CompileError
 
+  @new "new"
+  @duplicate "duplicate"
+  @continue "continue"
+  @break "break"
+  @nofile "nofile"
+
   # `@GlobalScope` functions, as `{helper, arity}`. Engine-only ones
   # (`instance_from_id`, the `rid_*` family, `bytes_to_var`) are left out;
   # everything here has a meaning without an engine. The arity is checked
@@ -326,7 +332,7 @@ defmodule Gamend.GDScript.Codegen do
   @doc "Generate Elixir source for `module` from parsed statements."
   @spec generate([tuple()], module :: String.t(), keyword()) :: String.t()
   def generate(statements, module, opts \\ []) do
-    file = Keyword.get(opts, :file, "nofile")
+    file = Keyword.get(opts, :file, @nofile)
     functions = Enum.filter(statements, &match?({:func, _, _, _, _}, &1))
     reject_reserved_names(functions, %{file: file})
 
@@ -841,7 +847,7 @@ defmodule Gamend.GDScript.Codegen do
         else: ""
 
     """
-      defp #{class_fun(name, "new")}#{signature} do
+      defp #{class_fun(name, @new)}#{signature} do
         gd_self = gd_new(%{#{defaults}})#{call}
         gd_self
       end\
@@ -889,7 +895,7 @@ defmodule Gamend.GDScript.Codegen do
   defp constructed_classes(node) when is_list(node),
     do: Enum.flat_map(node, &constructed_classes/1)
 
-  defp constructed_classes({:call, {:member, {:ident, class, _}, "new", _}, args, _}),
+  defp constructed_classes({:call, {:member, {:ident, class, _}, @new, _}, args, _}),
     do: [class | Enum.flat_map(args, &constructed_classes/1)]
 
   defp constructed_classes(node) when is_tuple(node),
@@ -1213,12 +1219,12 @@ defmodule Gamend.GDScript.Codegen do
   end
 
   defp gen_statement({:break, line}, scope, state, _tail?, _rest) do
-    assert_in_loop!("break", line, state)
+    assert_in_loop!(@break, line, state)
     {"throw({:gd_break, #{state.loop_acc || "nil"}})", scope}
   end
 
   defp gen_statement({:continue, line}, scope, state, _tail?, _rest) do
-    assert_in_loop!("continue", line, state)
+    assert_in_loop!(@continue, line, state)
     {"throw({:gd_continue, #{state.loop_acc || "nil"}})", scope}
   end
 
@@ -1990,7 +1996,7 @@ defmodule Gamend.GDScript.Codegen do
   # `Economy.callv("grant", [id, "gold", 5])` -- the name is resolved at run
   # time against the same generated table, so a script still cannot reach a
   # function outside it; only the error moves from build time to a raise.
-  defp gen_expression({:call, {:member, {:ident, class, line}, "new", _}, args, _}, state)
+  defp gen_expression({:call, {:member, {:ident, class, line}, @new, _}, args, _}, state)
        when is_binary(class) do
     if Map.has_key?(state.classes, class) do
       {init_args, _owner} = init_params(state.classes, class)
@@ -2003,14 +2009,14 @@ defmodule Gamend.GDScript.Codegen do
           message: "`#{class}.new` takes #{expected} argument(s), called with #{length(args)}"
       end
 
-      "#{class_fun(class, "new")}(#{gen_args(args, state)})"
+      "#{class_fun(class, @new)}(#{gen_args(args, state)})"
     else
       if context_name?(class) do
-        assert_context_call!(class, "new", length(args), line, state)
+        assert_context_call!(class, @new, length(args), line, state)
         call = "Gamend.#{class}.new(#{gen_context_args(args, state)})"
         if state.ref_mode?, do: "gd_box(#{call})", else: call
       else
-        gen_callable_call({:ident, class, line}, "new", args, line, state)
+        gen_callable_call({:ident, class, line}, @new, args, line, state)
       end
     end
   end
@@ -2291,8 +2297,8 @@ defmodule Gamend.GDScript.Codegen do
   # Rebuilding every nested reference is a different operation from the shallow
   # one, so the deep form is refused where it is written rather than quietly
   # doing the shallow thing.
-  defp reject_deep_copy!(method, args, line, state) when method in ["duplicate", "slice"] do
-    deep_at = if method == "duplicate", do: 0, else: 3
+  defp reject_deep_copy!(method, args, line, state) when method in [@duplicate, "slice"] do
+    deep_at = if method == @duplicate, do: 0, else: 3
 
     case Enum.at(args, deep_at) do
       nil ->
@@ -4268,7 +4274,7 @@ defmodule Gamend.GDScript.Codegen do
       # `Foo.new(...)` is a class constructor, which builds its instance
       # directly rather than boxing a value from gamend. No context exposes a
       # `new`, so the name is enough to tell them apart.
-      context_name?(name) and field == "new" and API.arities(name, "new") == nil ->
+      context_name?(name) and field == @new and API.arities(name, @new) == nil ->
         collect_helpers([object | args])
 
       context_name?(name) ->

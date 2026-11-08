@@ -4,6 +4,7 @@ defmodule GamendWeb.UserLive.Login do
   alias Gamend.Accounts
   alias Gamend.Accounts.{Scope, User}
   require Logger
+  require GamendWeb.FormName, as: FormName
 
   @impl true
   def render(assigns) do
@@ -142,7 +143,7 @@ defmodule GamendWeb.UserLive.Login do
       Phoenix.Flash.get(socket.assigns.flash, :email) ||
         (current_user && current_user.email)
 
-    form = to_form(%{"email" => email}, as: "user")
+    form = to_form(%{"email" => email}, as: FormName.user())
 
     client_ip = GamendWeb.LiveHelpers.client_ip(socket, session)
 

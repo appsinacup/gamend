@@ -16,6 +16,8 @@ defmodule Gamend.Repo.MigrationPaths do
   file under two names, and duplicate versions are a hard error.
   """
 
+  @priv "priv"
+
   @project_candidates [
     "apps/gamend_core/priv/repo/migrations",
     "deps/gamend_core/priv/repo/migrations",
@@ -66,7 +68,7 @@ defmodule Gamend.Repo.MigrationPaths do
   defp app_migrations_dir(app) do
     case :code.lib_dir(app) do
       {:error, _unknown_app} -> nil
-      lib_dir -> Path.join([List.to_string(lib_dir), "priv", "repo", "migrations"])
+      lib_dir -> Path.join([List.to_string(lib_dir), @priv, "repo", "migrations"])
     end
   end
 

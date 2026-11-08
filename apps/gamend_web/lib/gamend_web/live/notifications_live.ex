@@ -7,9 +7,15 @@ defmodule GamendWeb.NotificationsLive do
 
   @page_size 25
 
+  require Gamend.Notifications.NotificationType, as: NotificationType
+  require GamendWeb.UrlParam, as: UrlParam
+
   use GamendWeb.UrlState,
     reload: :reload_notifications,
-    keys: [notif_page: [param: "page"], notif_page_size: [param: "page-size"]]
+    keys: [notif_page: [param: UrlParam.page()], notif_page_size: [param: UrlParam.page_size()]]
+
+  require Gamend.Chat.ChatType, as: ChatType
+  require Gamend.Quests.QuestCategory, as: QuestCategory
 
   @impl true
   def render(assigns) do
@@ -249,26 +255,34 @@ defmodule GamendWeb.NotificationsLive do
   defp under?(path, root),
     do: path == root or String.starts_with?(path, [root <> "/", root <> "?"])
 
-  defp path_for_type("group_invite", n) do
+  defp path_for_type(NotificationType.group_invite(), n) do
     case n.metadata["group_id"] do
       nil -> ~p"/groups"
       group_id -> ~p"/groups/#{group_id}"
     end
   end
 
-  defp path_for_type(type, _n) when type in ["party_invite", "chat_lobby", "chat_party"],
-    do: ~p"/play"
+  defp path_for_type(type, _n)
+       when type in [
+              NotificationType.party_invite(),
+              NotificationType.chat_lobby(),
+              NotificationType.chat_party()
+            ],
+       do: ~p"/play"
 
-  defp path_for_type("friend_request", _n), do: ~p"/users/settings?#{[tab: "friends"]}"
-  defp path_for_type("quest_completed", _n), do: ~p"/quests"
+  defp path_for_type(NotificationType.friend_request(), _n),
+    do: ~p"/users/settings?#{[tab: "friends"]}"
 
-  defp path_for_type("chat_group", n), do: chat_path("group", n.metadata["group_id"])
+  defp path_for_type(NotificationType.quest_completed(), _n), do: ~p"/quests"
 
-  defp path_for_type("chat_friend", n),
-    do: chat_path("friend", n.metadata["friend_id"] || n.metadata["sender_id"])
+  defp path_for_type(NotificationType.chat_group(), n),
+    do: chat_path(ChatType.group(), n.metadata["group_id"])
 
-  defp path_for_type("friend_accepted", n),
-    do: chat_path("friend", n.metadata["friend_id"] || n.sender_id)
+  defp path_for_type(NotificationType.chat_friend(), n),
+    do: chat_path(ChatType.friend(), n.metadata["friend_id"] || n.metadata["sender_id"])
+
+  defp path_for_type(NotificationType.friend_accepted(), n),
+    do: chat_path(ChatType.friend(), n.metadata["friend_id"] || n.sender_id)
 
   defp path_for_type(_type, _n), do: nil
 
@@ -330,7 +344,7 @@ defmodule GamendWeb.NotificationsLive do
   defp title_for_type("quest_completed", n) do
     name = n.metadata["quest_title"] || ""
 
-    if n.metadata["kind"] == "achievement" do
+    if n.metadata["kind"] == QuestCategory.achievement() do
       dgettext("notifications", "Achievement unlocked: %{name}", name: name)
     else
       dgettext("notifications", "Quest completed: %{name}", name: name)

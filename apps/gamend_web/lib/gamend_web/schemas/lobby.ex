@@ -9,6 +9,8 @@ defmodule GamendWeb.Schemas.Lobby do
   alias GamendWeb.Schemas.UserBrief
   alias OpenApiSpex.Schema
 
+  require Gamend.Lobbies.LobbyState, as: LobbyState
+
   OpenApiSpex.schema(%{
     title: "Lobby",
     description: "A lobby",
@@ -64,7 +66,7 @@ defmodule GamendWeb.Schemas.Lobby do
       max_users: 8,
       is_hidden: false,
       is_locked: false,
-      state: "created",
+      state: LobbyState.created(),
       state_changed_at: nil,
       metadata: %{},
       is_passworded: false,

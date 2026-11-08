@@ -87,6 +87,16 @@ defmodule Gamend.Groups do
   alias Gamend.Lock
   alias Gamend.Repo
 
+  require Gamend.Chat.ChatType, as: ChatType
+  require Gamend.Groups.GroupRole, as: GroupRole
+  require Gamend.Groups.GroupType, as: GroupType
+  require Gamend.Notifications.NotificationType, as: NotificationType
+  require Gamend.SortKey, as: SortKey
+
+  @icon_url "icon_url"
+
+  @group_player "group_player"
+
   @all_types ["public", "private", "hidden"]
 
   setting(:types, :list,
@@ -285,7 +295,7 @@ defmodule Gamend.Groups do
   @spec free_slug(Ecto.UUID.t(), String.t() | nil) :: String.t()
   def free_slug(user_id, title) when is_binary(user_id) do
     title
-    |> Gamend.Slug.slugify("group")
+    |> Gamend.Slug.slugify(ChatType.group())
     |> Gamend.Slug.free(fn slug ->
       Repo.exists?(from(g in Group, where: g.creator_id == ^user_id and g.slug == ^slug))
     end)
@@ -375,7 +385,8 @@ defmodule Gamend.Groups do
 
   @doc "Count groups by type."
   @spec count_groups_by_type(String.t()) :: non_neg_integer()
-  def count_groups_by_type(type) when type in ["public", "private", "hidden"] do
+  def count_groups_by_type(type)
+      when type in [GroupType.public(), GroupType.private(), GroupType.hidden()] do
     Repo.one(from(g in Group, where: g.type == ^type, select: count(g.id))) || 0
   end
 
@@ -482,7 +493,7 @@ defmodule Gamend.Groups do
   def count_groups_created_by(user_id) when is_binary(user_id) do
     Repo.one(
       from(m in GroupMember,
-        where: m.user_id == ^user_id and m.role == "admin",
+        where: m.user_id == ^user_id and m.role == ^GroupRole.admin(),
         select: count(m.id)
       )
     ) || 0
@@ -518,7 +529,7 @@ defmodule Gamend.Groups do
 
   def can_manage_group?(user_id, group_id) when is_binary(user_id) and is_binary(group_id) do
     case get_membership(group_id, user_id) do
-      %GroupMember{role: "admin"} -> true
+      %GroupMember{role: GroupRole.admin()} -> true
       _ -> false
     end
   end
@@ -593,7 +604,7 @@ defmodule Gamend.Groups do
              | {:hook_rejected, term()}
              | Ecto.Changeset.t()}
   def create_group(user_id, attrs) when is_binary(user_id) and is_map(attrs) do
-    attrs = attrs |> normalize_params() |> Gamend.Icons.put_color("icon_url")
+    attrs = attrs |> normalize_params() |> Gamend.Icons.put_color(@icon_url)
 
     case Gamend.Accounts.get_user(user_id) do
       nil ->
@@ -622,7 +633,7 @@ defmodule Gamend.Groups do
   # inserted under the creator's lock (the one a join takes on the player):
   # two creates at once each counted the other's group as not there yet.
   defp do_create_group(user_id, attrs) do
-    Lock.serialize("group_player", user_id, fn ->
+    Lock.serialize(@group_player, user_id, fn ->
       if count_groups_created_by(user_id) >= Gamend.Limits.get(:max_groups_created_per_user) do
         Repo.rollback(:too_many_groups_created)
       end
@@ -634,7 +645,11 @@ defmodule Gamend.Groups do
              |> Repo.insert(),
            {:ok, _membership} <-
              %GroupMember{}
-             |> GroupMember.changeset(%{group_id: group.id, user_id: user_id, role: "admin"})
+             |> GroupMember.changeset(%{
+               group_id: group.id,
+               user_id: user_id,
+               role: GroupRole.admin()
+             })
              |> Repo.insert() do
         group
       else
@@ -686,7 +701,7 @@ defmodule Gamend.Groups do
       attrs =
         attrs
         |> normalize_params()
-        |> Gamend.Icons.put_color("icon_url")
+        |> Gamend.Icons.put_color(@icon_url)
         |> drop_foreign_icon()
         |> drop_fixed_max()
 
@@ -801,7 +816,7 @@ defmodule Gamend.Groups do
   @doc "Return a changeset for tracking group changes (admin edit forms)."
   @spec change_group(Group.t(), map()) :: Ecto.Changeset.t()
   def change_group(%Group{} = group, attrs \\ %{}) do
-    Group.changeset(group, Gamend.Icons.put_color(attrs, "icon_url"))
+    Group.changeset(group, Gamend.Icons.put_color(attrs, @icon_url))
   end
 
   @doc """
@@ -863,7 +878,7 @@ defmodule Gamend.Groups do
         Shared.invalidate_invite_caches_for_users(pending_invite_user_ids)
         Shared.notify_invite_users_group_deleted(pending_invite_user_ids, deleted)
         notify_members_group_deleted(deleted, member_ids -- [deleted_by], deleted_by)
-        Gamend.Chat.cleanup_chat("group", deleted.id)
+        Gamend.Chat.cleanup_chat(ChatType.group(), deleted.id)
         broadcast_groups({:group_deleted, deleted.id})
 
         Gamend.Async.run(fn ->
@@ -885,7 +900,7 @@ defmodule Gamend.Groups do
         "title" => "#{group.title} was deleted",
         "content" => "",
         "metadata" => %{
-          "type" => "group_deleted",
+          "type" => NotificationType.group_deleted(),
           "group_id" => group.id,
           "group_title" => group.title
         }
@@ -928,7 +943,7 @@ defmodule Gamend.Groups do
       Enum.each(memberships, fn member ->
         group_id = member.group_id
 
-        if member.role == "admin" do
+        if member.role == GroupRole.admin() do
           maybe_transfer_admin_before_leave(member, group_id, user_id)
         else
           do_leave(member, group_id, user_id)
@@ -957,7 +972,7 @@ defmodule Gamend.Groups do
       is_nil(group) ->
         {:error, :not_found}
 
-      group.type != "public" ->
+      group.type != GroupType.public() ->
         {:error, :not_public}
 
       member?(group_id, user_id) ->
@@ -999,7 +1014,7 @@ defmodule Gamend.Groups do
         member ->
           # If leaving user is admin, check if they're the last admin
           outcome =
-            if member.role == "admin" do
+            if member.role == GroupRole.admin() do
               maybe_transfer_admin_before_leave(member, group_id, user_id)
             else
               do_leave(member, group_id, user_id)
@@ -1033,7 +1048,7 @@ defmodule Gamend.Groups do
   # concurrent case (see AUDIT.md, "Group can be left with zero admins").
   defp would_orphan_group?(group_id, target_id) do
     case get_membership(group_id, target_id) do
-      %GroupMember{role: "admin"} -> last_admin?(group_id)
+      %GroupMember{role: GroupRole.admin()} -> last_admin?(group_id)
       _not_an_admin -> false
     end
   end
@@ -1041,7 +1056,7 @@ defmodule Gamend.Groups do
   defp last_admin?(group_id) do
     admin_count =
       from(m in GroupMember,
-        where: m.group_id == ^group_id and m.role == "admin",
+        where: m.group_id == ^group_id and m.role == ^GroupRole.admin(),
         select: count(m.id)
       )
       |> Repo.one()
@@ -1052,7 +1067,7 @@ defmodule Gamend.Groups do
   defp maybe_transfer_admin_before_leave(member, group_id, user_id) do
     admin_count =
       from(m in GroupMember,
-        where: m.group_id == ^group_id and m.role == "admin",
+        where: m.group_id == ^group_id and m.role == ^GroupRole.admin(),
         select: count(m.id)
       )
       |> Repo.one()
@@ -1061,14 +1076,15 @@ defmodule Gamend.Groups do
       # Last admin — try to promote the longest-standing non-admin member
       next_member =
         from(m in GroupMember,
-          where: m.group_id == ^group_id and m.user_id != ^user_id and m.role == "member",
+          where:
+            m.group_id == ^group_id and m.user_id != ^user_id and m.role == ^GroupRole.member(),
           order_by: [asc: m.inserted_at],
           limit: 1
         )
         |> Repo.one()
 
       if next_member do
-        case next_member |> Ecto.Changeset.change(%{role: "admin"}) |> Repo.update() do
+        case next_member |> Ecto.Changeset.change(%{role: GroupRole.admin()}) |> Repo.update() do
           {:ok, _} -> :ok
           {:error, _} -> :ok
         end
@@ -1099,7 +1115,8 @@ defmodule Gamend.Groups do
           # Pick another admin to become the new creator
           next_admin =
             from(m in GroupMember,
-              where: m.group_id == ^group_id and m.user_id != ^user_id and m.role == "admin",
+              where:
+                m.group_id == ^group_id and m.user_id != ^user_id and m.role == ^GroupRole.admin(),
               order_by: [asc: m.inserted_at],
               limit: 1
             )
@@ -1155,7 +1172,7 @@ defmodule Gamend.Groups do
     broadcast_groups({:group_deleted, group_id})
 
     Gamend.Async.run(fn ->
-      Gamend.Chat.cleanup_chat("group", group_id)
+      Gamend.Chat.cleanup_chat(ChatType.group(), group_id)
       Gamend.Hooks.internal_call(:after_group_deleted, [group])
     end)
   end
@@ -1284,8 +1301,8 @@ defmodule Gamend.Groups do
     end
   end
 
-  defp make_admin(%GroupMember{role: "admin"}), do: {:error, :already_admin}
-  defp make_admin(member), do: set_role(member, "admin")
+  defp make_admin(%GroupMember{role: GroupRole.admin()}), do: {:error, :already_admin}
+  defp make_admin(member), do: set_role(member, GroupRole.admin())
 
   @doc "Demote an admin to member. Only admins can demote other admins."
   @spec demote_member(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) ::
@@ -1309,12 +1326,12 @@ defmodule Gamend.Groups do
     end
   end
 
-  defp make_member(%GroupMember{role: "member"}), do: {:error, :already_member}
+  defp make_member(%GroupMember{role: GroupRole.member()}), do: {:error, :already_member}
 
   defp make_member(%GroupMember{group_id: group_id, user_id: target_id} = member) do
     if would_orphan_group?(group_id, target_id),
       do: {:error, :last_admin},
-      else: set_role(member, "member")
+      else: set_role(member, GroupRole.member())
   end
 
   defp set_role(member, role) do
@@ -1473,7 +1490,7 @@ defmodule Gamend.Groups do
   # ---------------------------------------------------------------------------
 
   defp filter_hidden_false(q) do
-    from g in q, where: g.type != "hidden"
+    from g in q, where: g.type != ^GroupType.hidden()
   end
 
   defp apply_filters(q, filters) do
@@ -1500,10 +1517,17 @@ defmodule Gamend.Groups do
 
   defp filter_by_type(q, filters) do
     case Map.get(filters, :type) || Map.get(filters, "type") do
-      nil -> q
-      "" -> q
-      t when t in ["public", "private", "hidden"] -> from g in q, where: g.type == ^t
-      _ -> q
+      nil ->
+        q
+
+      "" ->
+        q
+
+      t when t in [GroupType.public(), GroupType.private(), GroupType.hidden()] ->
+        from g in q, where: g.type == ^t
+
+      _ ->
+        q
     end
   end
 
@@ -1576,14 +1600,14 @@ defmodule Gamend.Groups do
 
   defp apply_sort(q, opts) do
     case Keyword.get(opts, :sort_by) do
-      "updated_at" -> from g in q, order_by: [desc: g.updated_at]
-      "updated_at_asc" -> from g in q, order_by: [asc: g.updated_at]
-      "inserted_at" -> from g in q, order_by: [desc: g.inserted_at]
-      "inserted_at_asc" -> from g in q, order_by: [asc: g.inserted_at]
-      "title" -> from g in q, order_by: [asc: g.title]
-      "title_desc" -> from g in q, order_by: [desc: g.title]
-      "max_members" -> from g in q, order_by: [desc: g.max_members]
-      "max_members_asc" -> from g in q, order_by: [asc: g.max_members]
+      SortKey.updated_at() -> from g in q, order_by: [desc: g.updated_at]
+      SortKey.updated_at_asc() -> from g in q, order_by: [asc: g.updated_at]
+      SortKey.inserted_at() -> from g in q, order_by: [desc: g.inserted_at]
+      SortKey.inserted_at_asc() -> from g in q, order_by: [asc: g.inserted_at]
+      SortKey.title() -> from g in q, order_by: [asc: g.title]
+      SortKey.title_desc() -> from g in q, order_by: [desc: g.title]
+      SortKey.max_members() -> from g in q, order_by: [desc: g.max_members]
+      SortKey.max_members_asc() -> from g in q, order_by: [asc: g.max_members]
       _ -> from g in q, order_by: [desc: g.inserted_at]
     end
   end

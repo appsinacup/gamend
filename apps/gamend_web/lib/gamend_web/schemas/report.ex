@@ -3,12 +3,14 @@ defmodule GamendWeb.Schemas.ReportKind do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  @page "page"
+
   OpenApiSpex.schema(%{
     title: "ReportKind",
     description: "What a report can be about, and what it may carry",
     type: :object,
     properties: %{
-      key: %Schema{type: :string, description: "The kind's key, sent as `kind`", example: "page"},
+      key: %Schema{type: :string, description: "The kind's key, sent as `kind`", example: @page},
       topics: %Schema{
         type: :array,
         items: %Schema{type: :string},
@@ -50,12 +52,16 @@ defmodule GamendWeb.Schemas.ReportRequest do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  require Gamend.LocaleCode, as: LocaleCode
+
+  @page "page"
+
   OpenApiSpex.schema(%{
     title: "ReportRequest",
     description: "A report about the game's content",
     type: :object,
     properties: %{
-      kind: %Schema{type: :string, description: "A key from GET /reports/kinds", example: "page"},
+      kind: %Schema{type: :string, description: "A key from GET /reports/kinds", example: @page},
       topic: %Schema{type: :string, description: "One of the kind's topics, if it has any"},
       subject: %Schema{
         type: :object,
@@ -70,7 +76,7 @@ defmodule GamendWeb.Schemas.ReportRequest do
       },
       description: %Schema{type: :string, maxLength: 2000, description: "What happened"},
       email: %Schema{type: :string, description: "Where to send a reply, if anywhere"},
-      locale: %Schema{type: :string, example: "en"},
+      locale: %Schema{type: :string, example: LocaleCode.en()},
       client: %Schema{
         type: :object,
         description: "Short device facts: user_agent, viewport, screen, platform, app_version",
@@ -91,6 +97,8 @@ defmodule GamendWeb.Schemas.ReportReceipt do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  require Gamend.Reports.ReportStatus, as: ReportStatus
+
   OpenApiSpex.schema(%{
     title: "ReportReceipt",
     description: "A filed report",
@@ -98,7 +106,7 @@ defmodule GamendWeb.Schemas.ReportReceipt do
     properties: %{
       id: %Schema{type: :string, description: "Report id"},
       kind: %Schema{type: :string},
-      status: %Schema{type: :string, example: "open"}
+      status: %Schema{type: :string, example: ReportStatus.open()}
     },
     required: [:id, :kind, :status]
   })

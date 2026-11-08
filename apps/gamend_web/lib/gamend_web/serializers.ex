@@ -20,6 +20,8 @@ defmodule GamendWeb.Serializers do
   alias Gamend.Parties
   alias GamendWeb.Features
 
+  require Gamend.ReadyChecks.ParticipantState, as: ParticipantState
+
   @doc """
   A user as someone outside their lobby, party and friends sees them:
   `User.serialize_brief/1` with the metadata cut to the keys the host made
@@ -83,11 +85,11 @@ defmodule GamendWeb.Serializers do
       reason: check.reason || "",
       metadata: check.metadata || %{},
       total: length(participants),
-      ready_count: Enum.count(participants, &(&1.state == "ready")),
+      ready_count: Enum.count(participants, &(&1.state == ParticipantState.ready())),
       your_state: viewer_state(participants, viewer_id)
     }
 
-    if check.kind == "ready" do
+    if check.kind == ParticipantState.ready() do
       Map.put(base, :participants, Enum.map(participants, &serialize_ready_participant/1))
     else
       base

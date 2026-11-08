@@ -44,6 +44,11 @@ defmodule Gamend.Payments.StripePlanChange do
   alias Gamend.Payments.StripeEvents
   alias Gamend.Repo
 
+  require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
+  require Gamend.Payments.ProductKind, as: ProductKind
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.StripeStatus, as: StripeStatus
+
   @doc """
   Move the user's subscription behind `entitlement_id` to `target`, an active
   Stripe price of another subscription product with the same period, the
@@ -118,7 +123,8 @@ defmodule Gamend.Payments.StripePlanChange do
   end
 
   defp follow_price(purchase, price_id) do
-    with %ProviderProduct{} = target <- Payments.get_provider_product("stripe", price_id),
+    with %ProviderProduct{} = target <-
+           Payments.get_provider_product(ProviderId.stripe(), price_id),
          :ok <- followable(purchase, target.product) do
       move(purchase, target)
     else
@@ -143,7 +149,7 @@ defmodule Gamend.Payments.StripePlanChange do
 
   defp changeable(%Purchase{product: %Product{} = from} = purchase, %ProviderProduct{} = target) do
     cond do
-      target.provider != "stripe" or not target.active -> {:error, :not_for_sale}
+      target.provider != ProviderId.stripe() or not target.active -> {:error, :not_for_sale}
       target.product_id == from.id -> {:error, :same_product}
       period(target.product) != period(from) -> {:error, :incompatible_product}
       not same_currency?(purchase.provider_product, target) -> {:error, :incompatible_product}
@@ -152,7 +158,7 @@ defmodule Gamend.Payments.StripePlanChange do
   end
 
   defp followable(%Purchase{product: %Product{} = from}, %Product{} = to) do
-    if to.kind == "subscription" and from.kind == "subscription" and
+    if to.kind == ProductKind.subscription() and from.kind == ProductKind.subscription() and
          Payments.per_subject?(to) == Payments.per_subject?(from),
        do: :ok,
        else: {:error, :incompatible_product}
@@ -176,14 +182,16 @@ defmodule Gamend.Payments.StripePlanChange do
     end
   end
 
-  defp live?(%Entitlement{status: "active", expires_at: nil}), do: true
+  defp live?(%Entitlement{status: EntitlementStatus.active(), expires_at: nil}), do: true
 
-  defp live?(%Entitlement{status: "active", expires_at: at}),
+  defp live?(%Entitlement{status: EntitlementStatus.active(), expires_at: at}),
     do: DateTime.compare(at, DateTime.utc_now()) == :gt
 
   defp live?(_row), do: false
 
-  defp running(%{"status" => status}) when status in ["active", "trialing"], do: :ok
+  defp running(%{"status" => status})
+       when status in [EntitlementStatus.active(), StripeStatus.trialing()], do: :ok
+
   defp running(_subscription), do: {:error, :subscription_not_active}
 
   defp single_item_id(%{"items" => %{"data" => [%{"id" => id}]}}) when is_binary(id),

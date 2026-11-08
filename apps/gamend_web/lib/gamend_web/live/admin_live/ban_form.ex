@@ -14,6 +14,8 @@ defmodule GamendWeb.AdminLive.BanForm do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.Plugs.IpBan
 
+  require Gamend.Bans.BanScope, as: BanScope
+
   @max_days 3650
 
   @doc "A blank form: a week, no reason."
@@ -111,7 +113,7 @@ defmodule GamendWeb.AdminLive.BanForm do
   @doc "The chat fields' blank values: global, notify with the default notice."
   @spec chat_defaults() :: map()
   def chat_defaults,
-    do: %{"scope" => "global", "scope_ref_id" => "", "notify" => "true", "message" => ""}
+    do: %{"scope" => BanScope.global(), "scope_ref_id" => "", "notify" => "true", "message" => ""}
 
   @doc "The longest custom ban, in days."
   @spec max_days() :: pos_integer()
@@ -150,9 +152,9 @@ defmodule GamendWeb.AdminLive.BanForm do
   # A room id left in the field when the scope went back to global is not part
   # of the ban.
   defp chat_reach(form) do
-    case form["scope"] || "global" do
-      "global" ->
-        [scope: "global", scope_ref_id: nil]
+    case form["scope"] || BanScope.global() do
+      BanScope.global() ->
+        [scope: BanScope.global(), scope_ref_id: nil]
 
       scope ->
         [

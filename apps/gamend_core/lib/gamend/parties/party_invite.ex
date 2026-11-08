@@ -20,6 +20,8 @@ defmodule Gamend.Parties.PartyInvite do
   alias Gamend.Accounts.User
   alias Gamend.Parties.Party
 
+  require Gamend.Parties.PartyInviteStatus, as: PartyInviteStatus
+
   @type t :: %__MODULE__{}
 
   @derive {Jason.Encoder,
@@ -38,7 +40,7 @@ defmodule Gamend.Parties.PartyInvite do
     belongs_to :sender, User
     belongs_to :recipient, User
 
-    field :status, :string, default: "pending"
+    field :status, :string, default: PartyInviteStatus.pending()
 
     timestamps(type: :utc_datetime)
   end
@@ -50,7 +52,7 @@ defmodule Gamend.Parties.PartyInvite do
     invite
     |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
-    |> validate_inclusion(:status, ["pending", "accepted", "declined", "cancelled"])
+    |> validate_inclusion(:status, PartyInviteStatus.all())
     |> unique_constraint([:sender_id, :recipient_id],
       name: :party_invites_sender_id_recipient_id_index
     )

@@ -19,6 +19,8 @@ defmodule GamendWeb.Api.V1.PaymentController do
 
   alias OpenApiSpex.Schema
 
+  require Gamend.Payments.ProviderId, as: ProviderId
+
   tags(["Payments"])
 
   @page_params [
@@ -203,7 +205,7 @@ defmodule GamendWeb.Api.V1.PaymentController do
     user = Scope.user(conn.assigns.current_scope)
     attrs = Map.drop(params, ["provider"])
 
-    if provider in ["apple", "google", "steam"] do
+    if provider in [ProviderId.apple(), ProviderId.google(), ProviderId.steam()] do
       case Payments.validate_store_purchase(user, provider, attrs) do
         {:ok, result} ->
           reply_data(conn, %{

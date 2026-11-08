@@ -1,6 +1,7 @@
 defmodule GamendWeb.Schemas.ReadyCheckParticipant do
   @moduledoc "One participant's answer, as the realtime proto's `ReadyCheckParticipant`."
   require OpenApiSpex
+  alias Gamend.ReadyChecks.ParticipantState
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -10,7 +11,10 @@ defmodule GamendWeb.Schemas.ReadyCheckParticipant do
     properties: %{
       user_id: %Schema{type: :string, format: :uuid},
       display_name: %Schema{type: :string},
-      state: %Schema{type: :string, enum: ["pending", "ready", "declined", "timed_out"]},
+      state: %Schema{
+        type: :string,
+        enum: ParticipantState.all()
+      },
       responded_at: %Schema{type: :string, format: :"date-time", nullable: true}
     },
     required: [:user_id, :display_name, :state, :responded_at]
@@ -25,6 +29,8 @@ defmodule GamendWeb.Schemas.ReadyCheckState do
   neither, and lists no participants.
   """
   require OpenApiSpex
+  alias Gamend.ReadyChecks.CheckKind
+  alias Gamend.ReadyChecks.CheckStatus
   alias GamendWeb.Schemas.ReadyCheckParticipant
   alias OpenApiSpex.Schema
 
@@ -34,8 +40,11 @@ defmodule GamendWeb.Schemas.ReadyCheckState do
     type: :object,
     properties: %{
       id: %Schema{type: :string, format: :uuid},
-      kind: %Schema{type: :string, enum: ["ready", "accept"]},
-      status: %Schema{type: :string, enum: ["pending", "passed", "failed", "cancelled"]},
+      kind: %Schema{type: :string, enum: CheckKind.all()},
+      status: %Schema{
+        type: :string,
+        enum: CheckStatus.all()
+      },
       lobby_id: %Schema{type: :string, description: "Empty unless a lobby board"},
       party_id: %Schema{type: :string, description: "Empty unless a party board"},
       deadline_at: %Schema{

@@ -12,6 +12,12 @@ defmodule Gamend.Accounts.Search do
   alias Gamend.Repo
   alias Gamend.Types
 
+  require Gamend.OAuth.AuthProvider, as: AuthProvider
+  require Gamend.SortDirection, as: SortDirection
+  require Gamend.SortKey, as: SortKey
+
+  @email_provider "email"
+
   # Fields the ADMIN search matches. Deliberately wider than search_users/2
   # (username + display_name only): email, device id and provider ids are
   # sensitive and must never be searchable through the public player search.
@@ -218,38 +224,38 @@ defmodule Gamend.Accounts.Search do
     if combined, do: from(u in query, where: ^combined), else: query
   end
 
-  defp provider_presence_clause("discord"),
+  defp provider_presence_clause(AuthProvider.discord()),
     do: dynamic([u], not is_nil(u.discord_id) and u.discord_id != "")
 
-  defp provider_presence_clause("google"),
+  defp provider_presence_clause(AuthProvider.google()),
     do: dynamic([u], not is_nil(u.google_id) and u.google_id != "")
 
-  defp provider_presence_clause("apple"),
+  defp provider_presence_clause(AuthProvider.apple()),
     do: dynamic([u], not is_nil(u.apple_id) and u.apple_id != "")
 
-  defp provider_presence_clause("facebook"),
+  defp provider_presence_clause(AuthProvider.facebook()),
     do: dynamic([u], not is_nil(u.facebook_id) and u.facebook_id != "")
 
-  defp provider_presence_clause("github"),
+  defp provider_presence_clause(AuthProvider.github()),
     do: dynamic([u], not is_nil(u.github_id) and u.github_id != "")
 
-  defp provider_presence_clause("steam"),
+  defp provider_presence_clause(AuthProvider.steam()),
     do: dynamic([u], not is_nil(u.steam_id) and u.steam_id != "")
 
   defp provider_presence_clause("device"),
     do: dynamic([u], not is_nil(u.device_id) and u.device_id != "")
 
-  defp provider_presence_clause("email"),
+  defp provider_presence_clause(@email_provider),
     do: dynamic([u], not is_nil(u.hashed_password) and u.hashed_password != "")
 
   defp provider_presence_clause(_), do: nil
 
   defp admin_user_sort(opts) do
-    dir = if Keyword.get(opts, :sort_dir) == "asc", do: :asc, else: :desc
+    dir = if Keyword.get(opts, :sort_dir) == SortDirection.asc(), do: :asc, else: :desc
 
     field =
       case Keyword.get(opts, :sort_field) do
-        "updated_at" -> :updated_at
+        SortKey.updated_at() -> :updated_at
         "last_seen_at" -> :last_seen_at
         _ -> :inserted_at
       end

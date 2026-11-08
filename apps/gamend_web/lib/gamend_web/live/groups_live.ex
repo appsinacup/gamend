@@ -11,11 +11,15 @@ defmodule GamendWeb.GroupsLive do
   alias GamendWeb.OnMount.SeoTitle
   alias GamendWeb.Plugs.FeatureGate
 
+  require Gamend.Groups.GroupType, as: GroupType
+  require GamendWeb.FilterValue, as: FilterValue
+  require Gamend.SortKey, as: SortKey
+
   @page_size 12
 
   @impl true
   def mount(_params, _session, socket) do
-    if socket.assigns.live_action == :index and Groups.types() == ["hidden"] and
+    if socket.assigns.live_action == :index and Groups.types() == [GroupType.hidden()] and
          FeatureGate.enabled?(:web_groups) do
       mount_intro(socket)
     else
@@ -67,8 +71,8 @@ defmodule GamendWeb.GroupsLive do
      assign(socket,
        page_title: gettext("Groups"),
        search: "",
-       type_filter: "all",
-       sort_by: "updated_at",
+       type_filter: FilterValue.everything(),
+       sort_by: SortKey.updated_at(),
        page: 1,
        page_size: @page_size,
        groups: [],
@@ -127,7 +131,7 @@ defmodule GamendWeb.GroupsLive do
   # A hidden group exists only for its members, here as on `GET /groups/:id`.
   defp visible_group(socket, group_id) do
     case Groups.get_group(group_id) do
-      %{type: "hidden"} = group ->
+      %{type: GroupType.hidden()} = group ->
         case Scope.user(socket.assigns[:current_scope]) do
           %User{id: user_id} -> if Groups.member?(group.id, user_id), do: group
           nil -> nil
@@ -352,7 +356,7 @@ defmodule GamendWeb.GroupsLive do
         filters
       end
 
-    if socket.assigns.type_filter != "all" do
+    if socket.assigns.type_filter != FilterValue.everything() do
       Map.put(filters, :type, socket.assigns.type_filter)
     else
       filters

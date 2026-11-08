@@ -62,6 +62,15 @@ defmodule Gamend.Containers do
 
   alias Gamend.Containers.Bounded
 
+  @running "running"
+  @created "created"
+  @create "create"
+  @run "run"
+  @image "image"
+  @build "build"
+  @info "info"
+  @start "start"
+
   # What a container's command or log may hand this node: an image that
   # prints without end cannot fill its memory.
   @max_output_bytes 4 * 1024 * 1024
@@ -140,7 +149,7 @@ defmodule Gamend.Containers do
 
   @doc "Start a created or stopped container."
   @spec start(String.t()) :: :ok | {:error, term()}
-  def start(name), do: run_verb(:start, ["start", name])
+  def start(name), do: run_verb(:start, [@start, name])
 
   @doc "Stop a container, killing it after `timeout_s` seconds."
   @spec stop(String.t(), non_neg_integer()) :: :ok | {:error, term()}
@@ -208,7 +217,7 @@ defmodule Gamend.Containers do
   @doc "This machine's memory and CPUs, as podman sees them."
   @spec info() :: {:ok, %{memory_mb: non_neg_integer(), cpus: pos_integer()}} | {:error, term()}
   def info do
-    case podman(["info", "--format", "{{.Host.MemTotal}} {{.Host.CPUs}}"]) do
+    case podman([@info, "--format", "{{.Host.MemTotal}} {{.Host.CPUs}}"]) do
       {:ok, {out, 0}} ->
         [memory, cpus] = out |> String.trim() |> String.split(" ", parts: 2)
 
@@ -320,7 +329,7 @@ defmodule Gamend.Containers do
   @spec create_volume_args(String.t(), %{String.t() => String.t()}, keyword()) :: [String.t()]
   def create_volume_args(name, labels, opts) do
     Enum.concat([
-      ["volume", "create", "--ignore"],
+      ["volume", @create, "--ignore"],
       label_args(labels),
       case Keyword.get(opts, :owner) do
         {uid, gid} when is_integer(uid) and is_integer(gid) ->
@@ -373,7 +382,7 @@ defmodule Gamend.Containers do
   @spec create_network_args(String.t(), keyword()) :: [String.t()]
   def create_network_args(name, opts) do
     Enum.concat([
-      ["network", "create", "--ignore"],
+      ["network", @create, "--ignore"],
       if(Keyword.get(opts, :internal, false), do: ["--internal"], else: []),
       label_args(Keyword.get(opts, :labels, %{})),
       [name]
@@ -459,7 +468,7 @@ defmodule Gamend.Containers do
   @spec build_args(Path.t(), keyword(), Path.t()) :: [String.t()]
   def build_args(context, opts, iidfile) do
     Enum.concat([
-      ["build", "--tag", Keyword.fetch!(opts, :tag), "--iidfile", iidfile],
+      [@build, "--tag", Keyword.fetch!(opts, :tag), "--iidfile", iidfile],
       if(file = Keyword.get(opts, :dockerfile),
         do: ["--file", Path.expand(file, context)],
         else: []
@@ -629,7 +638,7 @@ defmodule Gamend.Containers do
 
   @doc "Whether the image store has `image`."
   @spec image_exists?(String.t()) :: boolean()
-  def image_exists?(image), do: match?({:ok, {_out, 0}}, podman(["image", "exists", image]))
+  def image_exists?(image), do: match?({:ok, {_out, 0}}, podman([@image, "exists", image]))
 
   # `-q` so a gigabyte's progress bars are not what comes back.
   @doc "Pull `image` into the image store."
@@ -793,7 +802,7 @@ defmodule Gamend.Containers do
   """
   @spec inspect_image(String.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
   def inspect_image(image, format) do
-    case podman(["image", "inspect", "--format", format, image]) do
+    case podman([@image, "inspect", "--format", format, image]) do
       {:ok, {out, 0}} -> {:ok, String.trim(out)}
       other -> failed(:inspect_image, other)
     end
@@ -808,7 +817,7 @@ defmodule Gamend.Containers do
     network = if Keyword.get(opts, :network, false), do: [], else: ["--network=none"]
 
     Enum.concat([
-      ["run", "--rm", "--pull=never"],
+      [@run, "--rm", "--pull=never"],
       network,
       ["--read-only", "--cap-drop=ALL", "--security-opt=no-new-privileges"],
       if(user = Keyword.get(opts, :user), do: ["--user", user], else: []),
@@ -831,7 +840,7 @@ defmodule Gamend.Containers do
   @spec create_args(spec(), String.t()) :: [String.t()]
   def create_args(spec, env_file) do
     Enum.concat([
-      ["create", "--name", spec.name, "--env-file", env_file],
+      [@create, "--name", spec.name, "--env-file", env_file],
       runtime_args(Map.get(spec, :runtime)),
       if(user = Map.get(spec, :user), do: ["--user", user], else: []),
       [
@@ -1001,8 +1010,8 @@ defmodule Gamend.Containers do
     |> last_line()
   end
 
-  defp parse_state("created"), do: :created
-  defp parse_state("running"), do: :running
+  defp parse_state(@created), do: :created
+  defp parse_state(@running), do: :running
   defp parse_state("paused"), do: :paused
   defp parse_state("exited"), do: :exited
   defp parse_state("stopped"), do: :exited

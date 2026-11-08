@@ -6,6 +6,11 @@ defmodule GamendWeb.StoreLive.Index do
   alias Gamend.Payments.ProviderConfig
   alias GamendWeb.LiveHelpers
 
+  require Gamend.Payments.ProductKind, as: ProductKind
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+  require Gamend.Payments.GrantKey, as: GrantKey
+
   @impl true
   def mount(_params, _session, socket) do
     unless GamendWeb.Features.enabled?(:web_store) do
@@ -229,7 +234,7 @@ defmodule GamendWeb.StoreLive.Index do
     purchase =
       case params["session_id"] do
         session_id when is_binary(session_id) and session_id != "" ->
-          case Payments.get_purchase_by_provider_transaction("stripe", session_id) do
+          case Payments.get_purchase_by_provider_transaction(ProviderId.stripe(), session_id) do
             %{user_id: user_id} = purchase when user_id == user.id -> purchase
             _ -> nil
           end
@@ -247,16 +252,16 @@ defmodule GamendWeb.StoreLive.Index do
     gettext("Your payment is still being processed. Refresh this page in a moment.")
   end
 
-  defp success_purchase_message(%{order_id: order_id, status: "completed"}) do
+  defp success_purchase_message(%{order_id: order_id, status: PurchaseStatus.completed()}) do
     gettext("Order %{order_id} completed.", order_id: order_id)
   end
 
   defp success_purchase_message(%{order_id: order_id, status: status})
-       when status in ["pending", "requires_action"] do
+       when status in [PurchaseStatus.pending(), PurchaseStatus.requires_action()] do
     gettext("Order %{order_id} is waiting for payment confirmation.", order_id: order_id)
   end
 
-  defp success_purchase_message(%{order_id: order_id, status: "failed"}) do
+  defp success_purchase_message(%{order_id: order_id, status: PurchaseStatus.failed()}) do
     gettext("Order %{order_id} failed before payment was completed.", order_id: order_id)
   end
 
@@ -307,12 +312,12 @@ defmodule GamendWeb.StoreLive.Index do
     "#{String.upcase(currency)} #{major}.#{minor}"
   end
 
-  defp kind_badge_class("subscription"), do: "badge-info"
-  defp kind_badge_class("consumable"), do: "badge-warning"
+  defp kind_badge_class(ProductKind.subscription()), do: "badge-info"
+  defp kind_badge_class(ProductKind.consumable()), do: "badge-warning"
   defp kind_badge_class(_kind), do: "badge-primary"
 
   defp owned?(%{product: %{kind: kind} = product}, owned_entitlement_keys)
-       when kind in ["entitlement", "subscription"] do
+       when kind in [ProductKind.entitlement(), ProductKind.subscription()] do
     MapSet.member?(owned_entitlement_keys, Payments.product_entitlement_key(product))
   end
 
@@ -384,13 +389,14 @@ defmodule GamendWeb.StoreLive.Index do
   end
 
   defp download_config(product) do
-    map_value(product.grant_config, "download") || map_value(product.metadata, "download")
+    map_value(product.grant_config, GrantKey.download()) ||
+      map_value(product.metadata, GrantKey.download())
   end
 
   defp map_value(nil, _key), do: nil
   defp map_value(map, key) when is_map(map), do: map[key] || atom_map_value(map, key)
   defp map_value(_value, _key), do: nil
 
-  defp atom_map_value(map, "download"), do: map[:download]
+  defp atom_map_value(map, GrantKey.download()), do: map[:download]
   defp atom_map_value(_map, _key), do: nil
 end

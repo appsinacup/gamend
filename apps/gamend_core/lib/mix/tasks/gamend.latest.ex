@@ -18,13 +18,15 @@ defmodule Mix.Tasks.Gamend.Latest do
 
   use Mix.Task
 
+  @mix_exs "mix.exs"
+
   @url "https://hex.pm/api/packages/gamend_core"
   @floor ~r/@gamend_min "([^"]+)"/
 
   @impl true
   def run(_argv) do
     {:ok, _started} = Application.ensure_all_started(:req)
-    source = File.read!("mix.exs")
+    source = File.read!(@mix_exs)
 
     current =
       case Regex.run(@floor, source) do
@@ -40,7 +42,7 @@ defmodule Mix.Tasks.Gamend.Latest do
 
   defp raise_floor(source, current, latest) do
     if Version.compare(latest, current) == :gt do
-      File.write!("mix.exs", Regex.replace(@floor, source, ~s(@gamend_min "#{latest}")))
+      File.write!(@mix_exs, Regex.replace(@floor, source, ~s(@gamend_min "#{latest}")))
       Mix.shell().info("@gamend_min #{current} -> #{latest}")
     else
       Mix.shell().info("@gamend_min #{current} is the newest")

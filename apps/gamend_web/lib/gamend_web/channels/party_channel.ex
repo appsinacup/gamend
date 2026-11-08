@@ -38,6 +38,9 @@ defmodule GamendWeb.PartyChannel do
   alias GamendWeb.ChannelUpdates
   alias GamendWeb.Serializers
 
+  require GamendWeb.ChannelError, as: ChannelError
+  require Gamend.RealtimeEvent, as: RealtimeEvent
+
   # A banned account joins no channel but its own user channel.
   @impl true
   def join(topic, payload, socket) do
@@ -72,7 +75,7 @@ defmodule GamendWeb.PartyChannel do
       end
     else
       _ ->
-        {:error, %{reason: "invalid_topic_or_unauthenticated"}}
+        {:error, %{reason: ChannelError.invalid_topic_or_unauthenticated()}}
     end
   end
 
@@ -96,14 +99,14 @@ defmodule GamendWeb.PartyChannel do
         %{user_id: user_id, display_name: ""}
       end
 
-    push_event(socket, "member_joined", payload)
+    push_event(socket, RealtimeEvent.member_joined(), payload)
 
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:party_member_left, _party_id, user_id}, socket) do
-    push_event(socket, "member_left", %{
+    push_event(socket, RealtimeEvent.member_left(), %{
       user_id: user_id,
       display_name: Serializers.display_name(user_id)
     })
@@ -120,7 +123,7 @@ defmodule GamendWeb.PartyChannel do
   @impl true
   def handle_info({:party_updated, %Gamend.Parties.Party{} = party}, socket) do
     payload = Serializers.serialize_party(party)
-    {:noreply, ChannelUpdates.push(socket, "updated", :party, payload)}
+    {:noreply, ChannelUpdates.push(socket, RealtimeEvent.updated(), :party, payload)}
   end
 
   @impl true
@@ -131,20 +134,23 @@ defmodule GamendWeb.PartyChannel do
 
       party ->
         payload = Serializers.serialize_party(party)
-        {:noreply, ChannelUpdates.push(socket, "updated", :party, payload)}
+        {:noreply, ChannelUpdates.push(socket, RealtimeEvent.updated(), :party, payload)}
     end
   end
 
   @impl true
   def handle_info({:party_disbanded, party_id}, socket) do
-    push_event(socket, "disbanded", %{party_id: party_id})
+    push_event(socket, RealtimeEvent.disbanded(), %{party_id: party_id})
     {:noreply, socket}
   end
 
   # Same shape as the lobby channel: a burst of members readying at once
   # coalesces into one frame; a resolution is never held in the debounce timer.
   @impl true
-  def handle_info({:ready_check_event, "ready_check_updated" = event, check}, socket) do
+  def handle_info(
+        {:ready_check_event, RealtimeEvent.ready_check_updated() = event, check},
+        socket
+      ) do
     payload = serialize_ready_check(check, socket)
     {:noreply, ChannelUpdates.push(socket, event, check.id, payload)}
   end
@@ -159,31 +165,47 @@ defmodule GamendWeb.PartyChannel do
 
   @impl true
   def handle_info({:chat_message_created, message}, socket) do
-    push_event(socket, "chat_message_created", Serializers.serialize_chat_message(message))
+    push_event(
+      socket,
+      RealtimeEvent.chat_message_created(),
+      Serializers.serialize_chat_message(message)
+    )
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:chat_message_updated, message}, socket) do
-    push_event(socket, "chat_message_updated", Serializers.serialize_chat_message(message))
+    push_event(
+      socket,
+      RealtimeEvent.chat_message_updated(),
+      Serializers.serialize_chat_message(message)
+    )
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:chat_message_deleted, message}, socket) do
-    push_event(socket, "chat_message_deleted", %{id: message.id})
+    push_event(socket, RealtimeEvent.chat_message_deleted(), %{id: message.id})
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({event, user_id}, socket) when event in [:member_online, :member_offline] do
-    wire = if event == :member_online, do: "member_online", else: "member_offline"
+    wire =
+      if event == :member_online,
+        do: RealtimeEvent.member_online(),
+        else: RealtimeEvent.member_offline()
+
     {:noreply, ChannelEvents.push_presence(socket, event, user_id, wire)}
   end
 
   @impl true
   def handle_info({:member_updated, user_id}, socket),
-    do: {:noreply, ChannelEvents.push_member_updated(socket, user_id, "member_updated")}
+    do:
+      {:noreply,
+       ChannelEvents.push_member_updated(socket, user_id, RealtimeEvent.member_updated())}
 
   @impl true
   def handle_info({:after_join, nil}, socket) do
@@ -193,8 +215,8 @@ defmodule GamendWeb.PartyChannel do
   @impl true
   def handle_info({:after_join, party}, socket) do
     payload = Serializers.serialize_party(party)
-    push_event(socket, "updated", payload)
-    {:noreply, ChannelUpdates.remember(socket, "updated", :party, payload)}
+    push_event(socket, RealtimeEvent.updated(), payload)
+    {:noreply, ChannelUpdates.remember(socket, RealtimeEvent.updated(), :party, payload)}
   end
 
   @impl true

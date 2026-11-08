@@ -24,6 +24,9 @@ defmodule GamendWeb.AdminLive.AnalyticsExplore do
   alias Gamend.Analytics.Explore
   alias Gamend.Analytics.Segment
 
+  require GamendWeb.FilterValue, as: FilterValue
+  require GamendWeb.UrlParam, as: UrlParam
+
   @windows [7, 30, 90]
   @page_size 50
   @values_shown 50
@@ -77,7 +80,7 @@ defmodule GamendWeb.AdminLive.AnalyticsExplore do
     %{
       event: blank(params["event"]),
       group: blank(params["group"]),
-      days: int_param(params, "days", @windows, 30),
+      days: int_param(params, UrlParam.days(), @windows, 30),
       segment: Segment.parse(params["segment"]),
       where:
         params
@@ -88,7 +91,7 @@ defmodule GamendWeb.AdminLive.AnalyticsExplore do
         end),
       by: blank(params["by"]),
       user: params["user"] |> blank() |> valid_uuid(),
-      page: max(int_param(params, "page", Enum.to_list(1..10_000), 1), 1)
+      page: max(int_param(params, UrlParam.page(), Enum.to_list(1..10_000), 1), 1)
     }
   end
 
@@ -235,7 +238,7 @@ defmodule GamendWeb.AdminLive.AnalyticsExplore do
         "user" => p.user,
         "page" => p.page
       },
-      %{"days" => "30", "segment" => "all", "page" => "1"}
+      %{"days" => "30", "segment" => FilterValue.everything(), "page" => "1"}
     )
   end
 

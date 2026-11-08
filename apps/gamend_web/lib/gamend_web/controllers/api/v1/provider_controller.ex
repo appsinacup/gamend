@@ -26,6 +26,10 @@ defmodule GamendWeb.Api.V1.ProviderController do
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
+  require Gamend.OAuth.AuthProvider, as: AuthProvider
+
+  @session_id "session_id"
+
   tags(["Authentication"])
 
   @provider_param [
@@ -106,9 +110,9 @@ defmodule GamendWeb.Api.V1.ProviderController do
   )
 
   def link_google_id_token(conn, params) do
-    with :ok <- enabled("google"),
+    with :ok <- enabled(AuthProvider.google()),
          {:ok, user_params} <- OAuthExchange.google_params(params["id_token"]) do
-      link_with(conn, "google", user_params)
+      link_with(conn, AuthProvider.google(), user_params)
     else
       {:error, :unknown_provider} -> unknown_provider(conn)
       {:error, reason} -> OAuthExchange.reply_refused(conn, reason)
@@ -128,7 +132,9 @@ defmodule GamendWeb.Api.V1.ProviderController do
          type: :object,
          required: [:code],
          properties: %{
-           code: %Schema{type: :string, description: "Apple authorization code"}
+           code: %Schema{type: :string, description: "Apple authorization code"},
+           given_name: %Schema{type: :string, description: "Ignored: a legal name is not kept"},
+           family_name: %Schema{type: :string, description: "Ignored, as `given_name`"}
          }
        }},
     responses: [
@@ -142,9 +148,9 @@ defmodule GamendWeb.Api.V1.ProviderController do
   )
 
   def link_apple_ios(conn, params) do
-    with :ok <- enabled("apple"),
+    with :ok <- enabled(AuthProvider.apple()),
          {:ok, user_params} <- OAuthExchange.apple_ios_params(params["code"]) do
-      link_with(conn, "apple", user_params)
+      link_with(conn, AuthProvider.apple(), user_params)
     else
       {:error, :unknown_provider} -> unknown_provider(conn)
       {:error, reason} -> OAuthExchange.reply_refused(conn, reason)
@@ -187,7 +193,7 @@ defmodule GamendWeb.Api.V1.ProviderController do
         "`linked_providers`.",
     security: [%{"authorization" => []}],
     parameters: [
-      session_id: [in: :path, name: "session_id", schema: %Schema{type: :string}, required: true]
+      session_id: [in: :path, name: @session_id, schema: %Schema{type: :string}, required: true]
     ],
     responses: [
       ok: {"Link status", "application/json", ProviderLinkStatusResponse},

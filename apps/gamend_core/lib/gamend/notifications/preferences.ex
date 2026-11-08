@@ -51,6 +51,18 @@ defmodule Gamend.Notifications.Preferences do
   alias Gamend.Accounts.Preferences
   alias Gamend.Accounts.User
 
+  require Gamend.Chat.ChatType, as: ChatType
+  require Gamend.Notifications.NotificationChannel, as: NotificationChannel
+  require Gamend.Notifications.NotificationType, as: NotificationType
+  require Gamend.Notifications.PreferenceGroup, as: PreferenceGroup
+
+  @month "month"
+  @week "week"
+  @day "day"
+  @admin "admin"
+  @key_field "key"
+  @label "label"
+
   @channels ~w(in_app email push)
   @digest_every [:day, :week, :month]
   @key "notifications"
@@ -151,12 +163,15 @@ defmodule Gamend.Notifications.Preferences do
   nil for a type in no group (a moderator's notice), which is always sent.
   """
   @spec group_for_type(term()) :: String.t() | nil
-  def group_for_type("chat_" <> kind) when kind in ~w(friend group lobby party), do: "chat"
-  def group_for_type("friend_" <> _), do: "social"
-  def group_for_type("group_" <> _), do: "social"
-  def group_for_type("party_" <> _), do: "social"
-  def group_for_type("lobby_kicked"), do: "social"
-  def group_for_type("quest_completed"), do: "quests"
+  def group_for_type("chat_" <> kind)
+      when kind in [ChatType.friend(), ChatType.group(), ChatType.lobby(), ChatType.party()],
+      do: PreferenceGroup.chat()
+
+  def group_for_type("friend_" <> _), do: PreferenceGroup.social()
+  def group_for_type("group_" <> _), do: PreferenceGroup.social()
+  def group_for_type("party_" <> _), do: PreferenceGroup.social()
+  def group_for_type(NotificationType.lobby_kicked()), do: PreferenceGroup.social()
+  def group_for_type(NotificationType.quest_completed()), do: PreferenceGroup.quests()
 
   def group_for_type(type) when is_binary(type) do
     Enum.find_value(groups(), fn group -> if type in group.types, do: group.key end)
@@ -180,19 +195,19 @@ defmodule Gamend.Notifications.Preferences do
   end
 
   defp to_atom_key(key) when is_atom(key), do: key
-  defp to_atom_key("key"), do: :key
-  defp to_atom_key("label"), do: :label
+  defp to_atom_key(@key_field), do: :key
+  defp to_atom_key(@label), do: :label
   defp to_atom_key("defaults"), do: :defaults
   defp to_atom_key("configurable"), do: :configurable
   defp to_atom_key("types"), do: :types
-  defp to_atom_key("admin"), do: :admin
+  defp to_atom_key(@admin), do: :admin
   defp to_atom_key("email_every"), do: :email_every
   defp to_atom_key("email_now"), do: :email_now
   defp to_atom_key(other), do: other
 
   defp email_every(every) when every in @digest_every, do: every
 
-  defp email_every(every) when every in ["day", "week", "month"],
+  defp email_every(every) when every in [@day, @week, @month],
     do: String.to_existing_atom(every)
 
   defp email_every(_every), do: nil
@@ -258,10 +273,10 @@ defmodule Gamend.Notifications.Preferences do
           prefs["off_all"] == true ->
             false
 
-          channel == "email" and prefs["off_email"] == true ->
+          channel == NotificationChannel.email() and prefs["off_email"] == true ->
             false
 
-          channel == "push" and prefs["off_push"] == true ->
+          channel == NotificationChannel.push() and prefs["off_push"] == true ->
             false
 
           is_boolean(get_in(prefs, ["groups", group_key, channel])) ->

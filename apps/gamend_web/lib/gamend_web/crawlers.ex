@@ -39,6 +39,8 @@ defmodule GamendWeb.Crawlers do
 
   alias GamendWeb.Crawlers.Verify
 
+  require Gamend.HttpHeader, as: HttpHeader
+
   setting(:verify, :boolean,
     default: true,
     doc:
@@ -264,7 +266,7 @@ defmodule GamendWeb.Crawlers do
   @spec classify_conn(Plug.Conn.t()) :: {kind(), String.t() | nil}
   def classify_conn(%Plug.Conn{} = conn) do
     agent =
-      case Plug.Conn.get_req_header(conn, "user-agent") do
+      case Plug.Conn.get_req_header(conn, HttpHeader.user_agent()) do
         [agent | _] -> agent
         [] -> nil
       end

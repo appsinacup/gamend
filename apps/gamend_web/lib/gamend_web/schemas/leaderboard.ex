@@ -3,6 +3,9 @@ defmodule GamendWeb.Schemas.Leaderboard do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  require Gamend.SortDirection, as: SortDirection
+  require Gamend.Leaderboards.ScoreOperator, as: ScoreOperator
+
   OpenApiSpex.schema(%{
     title: "Leaderboard",
     description: "A leaderboard (one season of a slug)",
@@ -21,12 +24,12 @@ defmodule GamendWeb.Schemas.Leaderboard do
       },
       sort_order: %Schema{
         type: :string,
-        enum: ["desc", "asc"],
+        enum: [SortDirection.desc(), SortDirection.asc()],
         description: "`desc`: higher is better; `asc`: lower is better"
       },
       operator: %Schema{
         type: :string,
-        enum: ["set", "best", "incr", "decr"],
+        enum: ScoreOperator.all(),
         description: "How a submitted score combines with the stored one"
       },
       starts_at: %Schema{type: :string, format: :"date-time", nullable: true},
@@ -62,8 +65,8 @@ defmodule GamendWeb.Schemas.Leaderboard do
       title: "Weekly Kills",
       description: "Get the most kills this week!",
       icon_url: "",
-      sort_order: "desc",
-      operator: "incr",
+      sort_order: SortDirection.desc(),
+      operator: ScoreOperator.incr(),
       starts_at: "2025-12-02T00:00:00Z",
       ends_at: nil,
       is_active: true,

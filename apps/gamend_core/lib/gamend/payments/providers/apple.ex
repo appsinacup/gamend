@@ -12,12 +12,16 @@ defmodule Gamend.Payments.Providers.Apple do
   alias Gamend.Payments.Params
   alias Gamend.Payments.ProviderConfig
 
+  require Gamend.Payments.PaymentEnvironment, as: PaymentEnvironment
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+
   @production_base_url "https://api.storekit.itunes.apple.com/inApps/v1"
   @sandbox_base_url "https://api.storekit-sandbox.itunes.apple.com/inApps/v1"
 
   def config_status do
     %{
-      provider: "apple",
+      provider: ProviderId.apple(),
       configured:
         present?(bundle_id_value()) and present?(issuer_id()) and present?(key_id()) and
           private_key_configured?(),
@@ -135,14 +139,14 @@ defmodule Gamend.Payments.Providers.Apple do
     }
   end
 
-  defp apple_transaction_status(%{"revocationDate" => nil}), do: "completed"
-  defp apple_transaction_status(%{"revocationDate" => _value}), do: "revoked"
+  defp apple_transaction_status(%{"revocationDate" => nil}), do: PurchaseStatus.completed()
+  defp apple_transaction_status(%{"revocationDate" => _value}), do: PurchaseStatus.revoked()
 
-  defp apple_transaction_status(_transaction), do: "completed"
+  defp apple_transaction_status(_transaction), do: PurchaseStatus.completed()
 
-  defp apple_transaction_environment("Sandbox"), do: "sandbox"
-  defp apple_transaction_environment("Production"), do: "production"
-  defp apple_transaction_environment("Xcode"), do: "test"
+  defp apple_transaction_environment("Sandbox"), do: PaymentEnvironment.sandbox()
+  defp apple_transaction_environment("Production"), do: PaymentEnvironment.production()
+  defp apple_transaction_environment("Xcode"), do: PaymentEnvironment.test()
   defp apple_transaction_environment(_), do: ProviderConfig.environment()
 
   # Fails closed when no bundle id is configured.
@@ -218,7 +222,7 @@ defmodule Gamend.Payments.Providers.Apple do
   defp server_base_url do
     config_value("APPLE_APP_STORE_SERVER_BASE_URL", :apple_app_store_server_base_url) ||
       case apple_environment() do
-        "sandbox" -> @sandbox_base_url
+        PaymentEnvironment.sandbox() -> @sandbox_base_url
         _ -> @production_base_url
       end
   end

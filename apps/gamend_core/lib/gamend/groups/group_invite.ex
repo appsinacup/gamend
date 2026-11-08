@@ -20,6 +20,8 @@ defmodule Gamend.Groups.GroupInvite do
   alias Gamend.Accounts.User
   alias Gamend.Groups.Group
 
+  require Gamend.Groups.GroupInviteStatus, as: GroupInviteStatus
+
   @type t :: %__MODULE__{}
 
   @derive {Jason.Encoder,
@@ -38,7 +40,7 @@ defmodule Gamend.Groups.GroupInvite do
     belongs_to :sender, User
     belongs_to :recipient, User
 
-    field :status, :string, default: "pending"
+    field :status, :string, default: GroupInviteStatus.pending()
 
     timestamps(type: :utc_datetime)
   end
@@ -50,7 +52,7 @@ defmodule Gamend.Groups.GroupInvite do
     invite
     |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
-    |> validate_inclusion(:status, ["pending", "accepted", "declined", "cancelled"])
+    |> validate_inclusion(:status, GroupInviteStatus.all())
     |> unique_constraint([:recipient_id, :group_id],
       name: :group_invites_recipient_id_group_id_index
     )

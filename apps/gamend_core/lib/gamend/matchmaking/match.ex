@@ -37,6 +37,10 @@ defmodule Gamend.Matchmaking.Match do
   alias Gamend.Repo
   alias Gamend.Types
 
+  require Gamend.ReadyChecks.CheckReason, as: CheckReason
+  require Gamend.ReadyChecks.CheckStatus, as: CheckStatus
+  require Gamend.ReadyChecks.ParticipantState, as: ParticipantState
+
   # The sweep starts its matches one after another, and a claimed ticket is
   # held for a minute (`Gamend.Matchmaking`): a game's answer must come well
   # inside that, not take the hooks' own default of a minute.
@@ -132,12 +136,17 @@ defmodule Gamend.Matchmaking.Match do
       answers == %{} ->
         :ok
 
-      status == "passed" and length(held) == map_size(answers) ->
+      status == CheckStatus.passed() and length(held) == map_size(answers) ->
         held |> Matchmaking.with_lobbies() |> seat(MatchSeating.load(check.seating))
 
       true ->
-        {still_in, out} = Enum.split_with(held, &(answers[&1.id] in ["ready", "pending"]))
-        _ = Matchmaking.discard(out, check.reason || "declined")
+        {still_in, out} =
+          Enum.split_with(
+            held,
+            &(answers[&1.id] in [ParticipantState.ready(), ParticipantState.pending()])
+          )
+
+        _ = Matchmaking.discard(out, check.reason || CheckReason.declined())
         _ = Matchmaking.requeue(still_in, true)
         Matchmaking.Worker.nudge()
         :ok

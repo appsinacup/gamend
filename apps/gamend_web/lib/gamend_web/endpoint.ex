@@ -5,6 +5,14 @@ defmodule GamendWeb.Endpoint do
   alias Phoenix.Socket.Transport
   alias Phoenix.Transports.WebSocket
 
+  require GamendWeb.ApiSegment, as: ApiSegment
+
+  @fonts "fonts"
+  @assets "assets"
+  @game "game"
+  @websocket "websocket"
+  @socket "socket"
+
   @session_options [
     store: :cookie,
     key: "_gamend_key",
@@ -135,7 +143,7 @@ defmodule GamendWeb.Endpoint do
   # not cookie, so with no allowlist a web build served from anywhere may
   # connect, where the pages' socket keeps to the server's own names. Unset
   # outside a release, where the endpoint's `check_origin` applies.
-  defp game_socket(%Plug.Conn{path_info: ["socket", "websocket"]} = conn, _opts) do
+  defp game_socket(%Plug.Conn{path_info: [@socket, @websocket]} = conn, _opts) do
     conn
     |> WebSocket.call({__MODULE__, GamendWeb.UserSocket, game_socket_opts()})
     |> halt()
@@ -193,7 +201,9 @@ defmodule GamendWeb.Endpoint do
   @compiled_session_opts Plug.Session.init(@session_options)
   plug :maybe_session
 
-  defp maybe_session(%{path_info: ["api", "v1" | _]} = conn, _opts), do: conn
+  defp maybe_session(%{path_info: [ApiSegment.api(), ApiSegment.v1() | _]} = conn, _opts),
+    do: conn
+
   defp maybe_session(conn, _opts), do: Plug.Session.call(conn, @compiled_session_opts)
 
   plug GamendWeb.Plugs.LocalePath
@@ -253,7 +263,7 @@ defmodule GamendWeb.Endpoint do
   defp serve_project_dirs(conn, dirs, first) do
     kind =
       cond do
-        first == "game" -> :game_static_opts
+        first == @game -> :game_static_opts
         first in @revalidating_static -> :revalidating_static_opts
         true -> :host_static_opts
       end
@@ -267,7 +277,7 @@ defmodule GamendWeb.Endpoint do
   end
 
   defp serve_host_static(conn, _opts) do
-    paths = host_static_paths() -- ~w(game)
+    paths = host_static_paths() -- [@game]
 
     Plug.Static.call(
       conn,
@@ -296,14 +306,14 @@ defmodule GamendWeb.Endpoint do
   defp serve_game_static(conn, _opts) do
     Plug.Static.call(
       conn,
-      configurable_static_opts(:game_static_opts, GamendWeb.host_app(), ~w(game))
+      configurable_static_opts(:game_static_opts, GamendWeb.host_app(), [@game])
     )
   end
 
   defp serve_asset_static(conn, _opts) do
     Plug.Static.call(
       conn,
-      configurable_static_opts(:asset_static_opts, GamendWeb.asset_app(), ~w(assets))
+      configurable_static_opts(:asset_static_opts, GamendWeb.asset_app(), [@assets])
     )
   end
 
@@ -312,7 +322,7 @@ defmodule GamendWeb.Endpoint do
   defp serve_bundled_static(conn, _opts) do
     Plug.Static.call(
       conn,
-      configurable_static_opts(:bundled_static_opts, :gamend_web, ~w(fonts flags))
+      configurable_static_opts(:bundled_static_opts, :gamend_web, [@fonts, "flags"])
     )
   end
 

@@ -9,6 +9,7 @@ defmodule GamendWeb.Api.V1.Admin.ResultController do
 
   alias Gamend.Results
   alias Gamend.Results.Result
+  alias Gamend.Results.ResultStatus
   alias GamendWeb.ResultReads
   alias GamendWeb.Schemas
 
@@ -30,7 +31,10 @@ defmodule GamendWeb.Api.V1.Admin.ResultController do
     security: [%{"authorization" => []}],
     parameters: [
       kind: [in: :query, schema: %Schema{type: :string}],
-      status: [in: :query, schema: %Schema{type: :string, enum: ~w(open ended)}],
+      status: [
+        in: :query,
+        schema: %Schema{type: :string, enum: ResultStatus.all()}
+      ],
       user_id: [in: :query, schema: %Schema{type: :string, format: :uuid}],
       lobby_id: [in: :query, schema: %Schema{type: :string, format: :uuid}],
       page: [in: :query, schema: %Schema{type: :integer, default: 1}],

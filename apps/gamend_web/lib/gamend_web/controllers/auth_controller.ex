@@ -21,6 +21,12 @@ defmodule GamendWeb.AuthController do
   alias GamendWeb.Schemas
   alias GamendWeb.UserAuth
 
+  require GamendWeb.AuthError, as: AuthError
+  require Gamend.OAuth.AuthProvider, as: AuthProvider
+  require Gamend.OAuth.SessionStatus, as: SessionStatus
+
+  @email_scope "email"
+
   @browser_state_prefix "browser:"
 
   @steam_session_key "steam_oauth_session_id"
@@ -62,11 +68,11 @@ defmodule GamendWeb.AuthController do
   # clears it, so a game's flow left unfinished cannot complete a later one.
   defp stash_steam_session(conn, _opts) do
     case {Phoenix.Controller.action_name(conn), conn.params} do
-      {:request, %{"provider" => "steam", "session_id" => session_id}}
+      {:request, %{"provider" => AuthProvider.steam(), "session_id" => session_id}}
       when is_binary(session_id) and session_id != "" ->
         put_session(conn, @steam_session_key, session_id)
 
-      {:request, %{"provider" => "steam"}} ->
+      {:request, %{"provider" => AuthProvider.steam()}} ->
         delete_session(conn, @steam_session_key)
 
       _other ->
@@ -95,7 +101,7 @@ defmodule GamendWeb.AuthController do
     {:ok, _session} =
       OAuthSessions.create_session(state, %{
         provider: provider,
-        status: "pending",
+        status: SessionStatus.pending(),
         data: data
       })
 
@@ -148,7 +154,7 @@ defmodule GamendWeb.AuthController do
       %{} = session ->
         # Consume state once. Do not fall back to Plug session cookies for browser
         # OAuth: Apple form_post callbacks can legitimately arrive without them.
-        _ = OAuthSessions.update_session(browser_state, %{status: "completed"})
+        _ = OAuthSessions.update_session(browser_state, %{status: SessionStatus.completed()})
 
         conn = maybe_restore_browser_link_scope(conn, session)
 
@@ -162,7 +168,7 @@ defmodule GamendWeb.AuthController do
         # designed is not a CSRF failure; reporting it as one buries the real
         # thing. An expired or provider-mismatched state is a genuine reject.
         case OAuthSessions.get_session(browser_state) do
-          %{status: status} when status != "pending" -> {:state_replayed, conn}
+          %{status: status} when status != SessionStatus.pending() -> {:state_replayed, conn}
           _ -> {:csrf_error, conn}
         end
     end
@@ -208,11 +214,14 @@ defmodule GamendWeb.AuthController do
       %User{} = user ->
         case Accounts.link_account(user, user_params, config.id_field, config.changeset) do
           {:ok, _updated_user} ->
-            %{status: "completed", data: %{link_user_id: link_user_id, provider: provider}}
+            %{
+              status: SessionStatus.completed(),
+              data: %{link_user_id: link_user_id, provider: provider}
+            }
 
           {:error, {:conflict, _other_user}} ->
             session_error(
-              "provider_already_linked",
+              AuthError.provider_already_linked(),
               "This provider is already linked to another account",
               %{link_user_id: link_user_id, provider: provider}
             )
@@ -225,7 +234,7 @@ defmodule GamendWeb.AuthController do
         end
 
       nil ->
-        session_error("user_not_found", "The user to link to was not found", %{
+        session_error(AuthError.user_not_found(), "The user to link to was not found", %{
           link_user_id: link_user_id,
           provider: provider
         })
@@ -236,7 +245,7 @@ defmodule GamendWeb.AuthController do
     case config.finder.(user_params) do
       {:ok, user} ->
         case Tokens.refusal(user) do
-          nil -> %{status: "completed", data: Tokens.sign_in(user)}
+          nil -> %{status: SessionStatus.completed(), data: Tokens.sign_in(user)}
           {_status, code, message} -> session_error(code, message)
         end
 
@@ -246,7 +255,7 @@ defmodule GamendWeb.AuthController do
   end
 
   defp session_error(code, message, data \\ %{}) do
-    %{status: "error", data: Map.merge(data, %{error: code, message: message})}
+    %{status: SessionStatus.error(), data: Map.merge(data, %{error: code, message: message})}
   end
 
   # A provider sign-in over the API: find or create the account, answer the
@@ -282,8 +291,11 @@ defmodule GamendWeb.AuthController do
   # reads it), or never there and aged out.
   defp steam_session_gone(conn, session_id) do
     case OAuthSessions.get_session(session_id) do
-      %{status: status} when status != "pending" -> browser_oauth_replay_redirect(conn, "steam")
-      _ -> browser_oauth_error_redirect(conn, "steam", "oauth_session_expired")
+      %{status: status} when status != SessionStatus.pending() ->
+        browser_oauth_replay_redirect(conn, AuthProvider.steam())
+
+      _ ->
+        browser_oauth_error_redirect(conn, AuthProvider.steam(), "oauth_session_expired")
     end
   end
 
@@ -424,7 +436,7 @@ defmodule GamendWeb.AuthController do
         name: "provider",
         schema: %OpenApiSpex.Schema{
           type: :string,
-          enum: ["discord", "apple", "google", "facebook", "github", "steam"]
+          enum: AuthProvider.all()
         },
         required: true
       ]
@@ -434,13 +446,13 @@ defmodule GamendWeb.AuthController do
     ]
   )
 
-  def request(conn, %{"provider" => "discord"}) do
+  def request(conn, %{"provider" => AuthProvider.discord()}) do
     client_id = Gamend.Settings.get(Gamend.OAuth.Providers, :discord_client_id)
 
     base = GamendWeb.endpoint().url()
     redirect_uri = "#{base}/auth/discord/callback"
     scope = "identify email"
-    {conn, state} = put_oauth_state(conn, "discord")
+    {conn, state} = put_oauth_state(conn, AuthProvider.discord())
 
     url =
       "https://discord.com/oauth2/authorize?client_id=#{client_id}&redirect_uri=#{URI.encode_www_form(redirect_uri)}&response_type=code&scope=#{URI.encode_www_form(scope)}&state=#{URI.encode_www_form(state)}"
@@ -452,13 +464,13 @@ defmodule GamendWeb.AuthController do
 
   # Steam callback handlers live alongside other provider callbacks below
 
-  def request(conn, %{"provider" => "google"}) do
+  def request(conn, %{"provider" => AuthProvider.google()}) do
     client_id = Gamend.Settings.get(Gamend.OAuth.Providers, :google_client_id)
 
     base = GamendWeb.endpoint().url()
     redirect_uri = "#{base}/auth/google/callback"
     scope = "email profile"
-    {conn, state} = put_oauth_state(conn, "google")
+    {conn, state} = put_oauth_state(conn, AuthProvider.google())
 
     url =
       "https://accounts.google.com/o/oauth2/v2/auth?client_id=#{client_id}&redirect_uri=#{URI.encode_www_form(redirect_uri)}&response_type=code&scope=#{URI.encode_www_form(scope)}&access_type=offline&state=#{URI.encode_www_form(state)}"
@@ -466,13 +478,13 @@ defmodule GamendWeb.AuthController do
     redirect(conn, external: url)
   end
 
-  def request(conn, %{"provider" => "facebook"}) do
+  def request(conn, %{"provider" => AuthProvider.facebook()}) do
     client_id = Gamend.Settings.get(Gamend.OAuth.Providers, :facebook_client_id)
 
     base = GamendWeb.endpoint().url()
     redirect_uri = "#{base}/auth/facebook/callback"
-    scope = "email"
-    {conn, state} = put_oauth_state(conn, "facebook")
+    scope = @email_scope
+    {conn, state} = put_oauth_state(conn, AuthProvider.facebook())
 
     url =
       "https://www.facebook.com/v18.0/dialog/oauth?client_id=#{client_id}&redirect_uri=#{URI.encode_www_form(redirect_uri)}&response_type=code&scope=#{URI.encode_www_form(scope)}&state=#{URI.encode_www_form(state)}"
@@ -481,12 +493,12 @@ defmodule GamendWeb.AuthController do
   end
 
   # No scope: a GitHub App ignores it, its permissions are set on the App.
-  def request(conn, %{"provider" => "github"}) do
+  def request(conn, %{"provider" => AuthProvider.github()}) do
     client_id = Gamend.Settings.get(Gamend.OAuth.Providers, :github_client_id)
 
     base = GamendWeb.endpoint().url()
     redirect_uri = "#{base}/auth/github/callback"
-    {conn, state} = put_oauth_state(conn, "github")
+    {conn, state} = put_oauth_state(conn, AuthProvider.github())
 
     url =
       "https://github.com/login/oauth/authorize?client_id=#{client_id}&redirect_uri=#{URI.encode_www_form(redirect_uri)}&state=#{URI.encode_www_form(state)}"
@@ -494,14 +506,14 @@ defmodule GamendWeb.AuthController do
     redirect(conn, external: url)
   end
 
-  def request(conn, %{"provider" => "apple"}) do
+  def request(conn, %{"provider" => AuthProvider.apple()}) do
     cfg = Application.get_env(:ueberauth, Ueberauth.Strategy.Apple.OAuth, [])
     client_id = Gamend.Settings.get(Gamend.OAuth.Providers, :apple_client_id)
 
     base = GamendWeb.endpoint().url()
     redirect_uri = cfg[:redirect_uri] || "#{base}/auth/apple/callback"
     scope = "name email"
-    {conn, state} = put_oauth_state(conn, "apple")
+    {conn, state} = put_oauth_state(conn, AuthProvider.apple())
 
     url =
       "https://appleid.apple.com/auth/authorize?client_id=#{client_id}&redirect_uri=#{URI.encode_www_form(redirect_uri)}&response_type=code&response_mode=form_post&scope=#{URI.encode_www_form(scope)}&state=#{URI.encode_www_form(state)}"
@@ -532,7 +544,7 @@ defmodule GamendWeb.AuthController do
   )
 
   def steam_callback(conn, params) do
-    callback(conn, Map.put(params, "provider", "steam"))
+    callback(conn, Map.put(params, "provider", AuthProvider.steam()))
   end
 
   operation(:callback,
@@ -571,7 +583,13 @@ defmodule GamendWeb.AuthController do
   # API flows include a 'state' parameter with session_id
   # Browser flows don't have state
   def callback(conn, %{"provider" => provider, "code" => code} = params)
-      when provider in ["discord", "google", "facebook", "github", "apple"] do
+      when provider in [
+             AuthProvider.discord(),
+             AuthProvider.google(),
+             AuthProvider.facebook(),
+             AuthProvider.github(),
+             AuthProvider.apple()
+           ] do
     case OAuthExchange.exchange_code(provider, code) do
       {:ok, user_params} ->
         handle_oauth_state_success(conn, provider, user_params, params["state"])
@@ -583,7 +601,7 @@ defmodule GamendWeb.AuthController do
 
   def callback(
         %Plug.Conn{assigns: %{ueberauth_auth: auth}} = conn,
-        %{"provider" => "steam"}
+        %{"provider" => AuthProvider.steam()}
       ) do
     uid = to_string(auth.uid)
     info = auth.info || %{}
@@ -606,36 +624,39 @@ defmodule GamendWeb.AuthController do
 
     case pop_steam_session(conn) do
       {conn, nil} ->
-        handle_browser_oauth_callback(conn, "steam", user_params)
+        handle_browser_oauth_callback(conn, AuthProvider.steam(), user_params)
 
       {conn, session_id} ->
         # Only a pending Steam session, as `dispatch_oauth_state/2` requires
         # for the other providers: a finished one redeemed again would hand
         # this player's tokens to whoever started it.
-        case OAuthSessions.get_pending_session(session_id, "steam") do
+        case OAuthSessions.get_pending_session(session_id, AuthProvider.steam()) do
           nil -> steam_session_gone(conn, session_id)
-          _ -> handle_session_oauth_callback(conn, session_id, user_params, "steam")
+          _ -> handle_session_oauth_callback(conn, session_id, user_params, AuthProvider.steam())
         end
     end
   end
 
   def callback(
         %Plug.Conn{assigns: %{ueberauth_failure: failure}} = conn,
-        %{"provider" => "steam"}
+        %{"provider" => AuthProvider.steam()}
       ) do
     case pop_steam_session(conn) do
       {conn, nil} ->
-        browser_oauth_error_redirect(conn, "steam", failure)
+        browser_oauth_error_redirect(conn, AuthProvider.steam(), failure)
 
       {conn, session_id} ->
-        case OAuthSessions.get_pending_session(session_id, "steam") do
+        case OAuthSessions.get_pending_session(session_id, AuthProvider.steam()) do
           nil ->
-            browser_oauth_error_redirect(conn, "steam", failure)
+            browser_oauth_error_redirect(conn, AuthProvider.steam(), failure)
 
           _ ->
             Gamend.OAuthSessions.create_session(
               session_id,
-              session_error("authentication_failed", "The provider did not sign the player in")
+              session_error(
+                AuthError.authentication_failed(),
+                "The provider did not sign the player in"
+              )
             )
 
             redirect(conn, to: ~p"/auth/success?session_id=#{session_id}")
@@ -683,7 +704,10 @@ defmodule GamendWeb.AuthController do
       {:api, session_id} ->
         Gamend.OAuthSessions.create_session(
           session_id,
-          session_error("authentication_failed", "The provider did not sign the player in")
+          session_error(
+            AuthError.authentication_failed(),
+            "The provider did not sign the player in"
+          )
         )
 
         redirect(conn, to: ~p"/auth/success?session_id=#{session_id}")
@@ -813,7 +837,7 @@ defmodule GamendWeb.AuthController do
 
   def api_google_id_token(conn, params) do
     case OAuthExchange.google_params(params["id_token"]) do
-      {:ok, user_params} -> sign_in_api(conn, "google", user_params)
+      {:ok, user_params} -> sign_in_api(conn, AuthProvider.google(), user_params)
       {:error, reason} -> OAuthExchange.reply_refused(conn, reason)
     end
   end
@@ -836,7 +860,12 @@ defmodule GamendWeb.AuthController do
           code: %OpenApiSpex.Schema{
             type: :string,
             description: "Apple authorization code from the native Sign in with Apple flow"
-          }
+          },
+          given_name: %OpenApiSpex.Schema{
+            type: :string,
+            description: "Ignored: a legal name is not kept"
+          },
+          family_name: %OpenApiSpex.Schema{type: :string, description: "Ignored, as `given_name`"}
         }
       }
     },
@@ -851,7 +880,7 @@ defmodule GamendWeb.AuthController do
   def api_apple_ios_callback(conn, params) do
     case OAuthExchange.apple_ios_params(params["code"]) do
       {:ok, user_params} ->
-        sign_in_api(conn, "apple", user_params)
+        sign_in_api(conn, AuthProvider.apple(), user_params)
 
       {:error, reason} ->
         OAuthExchange.reply_refused(conn, reason)

@@ -19,9 +19,13 @@ defmodule GamendWeb.AdminLive.Reports do
 
   @closing ~w(fixed wontfix duplicate)
 
+  @filter_keys ~w(status kind topic q subject_ref)
+
   use GamendWeb.UrlState,
     reload: :reload,
-    keys: [:page, :page_size, filters: [keys: ~w(status kind topic q subject_ref)]]
+    keys: [:page, :page_size, filters: [keys: @filter_keys]]
+
+  require Gamend.Reports.ReportStatus, as: ReportStatus
 
   @impl true
   def mount(_params, _session, socket) do
@@ -30,7 +34,12 @@ defmodule GamendWeb.AdminLive.Reports do
      |> assign(:page_title, "Admin · Reports")
      |> assign(:page, 1)
      |> assign(:page_size, 25)
-     |> assign(:filters, %{"status" => "open", "kind" => "", "topic" => "", "q" => ""})
+     |> assign(:filters, %{
+       "status" => ReportStatus.open(),
+       "kind" => "",
+       "topic" => "",
+       "q" => ""
+     })
      |> assign(:kinds, Reports.kinds())
      |> close_form()
      |> reload()}
@@ -54,7 +63,7 @@ defmodule GamendWeb.AdminLive.Reports do
 
   def handle_event("group", %{"kind" => kind, "topic" => topic, "ref" => ref}, socket) do
     filters = %{
-      "status" => "open",
+      "status" => ReportStatus.open(),
       "kind" => kind,
       "topic" => topic,
       "q" => "",
@@ -131,7 +140,7 @@ defmodule GamendWeb.AdminLive.Reports do
   def handle_event("reopen", %{"id" => id}, socket) do
     socket =
       with %Report{} = report <- find(socket, id),
-           {:ok, _report} <- Reports.resolve(report, "open") do
+           {:ok, _report} <- Reports.resolve(report, ReportStatus.open()) do
         put_flash(socket, :info, gettext("Report reopened"))
       else
         _ -> put_flash(socket, :error, gettext("Could not reopen the report"))
@@ -192,8 +201,8 @@ defmodule GamendWeb.AdminLive.Reports do
     "/admin/reports/export/#{filters["kind"]}?" <> URI.encode_query(query)
   end
 
-  defp status_class("open"), do: "badge-warning"
-  defp status_class("fixed"), do: "badge-success"
+  defp status_class(ReportStatus.open()), do: "badge-warning"
+  defp status_class(ReportStatus.fixed()), do: "badge-success"
   defp status_class(_status), do: "badge-ghost"
 
   defp user_label(%{user: %Gamend.Accounts.User{} = user}), do: user_display(user)

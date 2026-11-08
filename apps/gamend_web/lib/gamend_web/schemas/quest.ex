@@ -19,6 +19,7 @@ end
 defmodule GamendWeb.Schemas.QuestReward do
   @moduledoc "What a quest pays on claim."
   require OpenApiSpex
+  alias Gamend.Quests.RewardType
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -26,7 +27,7 @@ defmodule GamendWeb.Schemas.QuestReward do
     description: "A quest reward",
     type: :object,
     properties: %{
-      type: %Schema{type: :string, enum: ["currency", "item"]},
+      type: %Schema{type: :string, enum: RewardType.all()},
       code: %Schema{type: :string, description: "Currency or item code"},
       amount: %Schema{type: :integer, description: "Amount granted"}
     },
@@ -41,6 +42,7 @@ defmodule GamendWeb.Schemas.QuestProgress do
   times in milliseconds.
   """
   require OpenApiSpex
+  alias Gamend.Quests.QuestStatus
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -57,7 +59,10 @@ defmodule GamendWeb.Schemas.QuestProgress do
         description: "Objective index (as a string) to its current count",
         additionalProperties: %Schema{type: :integer}
       },
-      status: %Schema{type: :string, enum: ["active", "completed", "claimed"]},
+      status: %Schema{
+        type: :string,
+        enum: QuestStatus.all()
+      },
       completed_at: %Schema{type: :string, format: :"date-time", nullable: true},
       claimed_at: %Schema{type: :string, format: :"date-time", nullable: true},
       claim_count: %Schema{

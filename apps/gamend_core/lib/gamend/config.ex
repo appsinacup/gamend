@@ -28,6 +28,9 @@ defmodule Gamend.Config do
 
   require Logger
 
+  @falsy ~w(0 false FALSE False no off)
+  @truthy ~w(1 true TRUE True yes on)
+
   @type value :: String.t() | integer() | float() | boolean() | nil
 
   @doc """
@@ -80,8 +83,8 @@ defmodule Gamend.Config do
     end
   end
 
-  defp cast(raw, :boolean, _name, _default) when raw in ~w(1 true TRUE True yes on), do: true
-  defp cast(raw, :boolean, _name, _default) when raw in ~w(0 false FALSE False no off), do: false
+  defp cast(raw, :boolean, _name, _default) when raw in @truthy, do: true
+  defp cast(raw, :boolean, _name, _default) when raw in @falsy, do: false
 
   defp cast(raw, :integer, name, default) do
     case Integer.parse(raw) do

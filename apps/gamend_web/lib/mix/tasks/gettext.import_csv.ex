@@ -26,6 +26,12 @@ defmodule Mix.Tasks.Gettext.ImportCsv do
   """
   use Mix.Task
 
+  @source "source"
+  @translation "translation"
+  @msgid "msgid"
+  @domain "domain"
+  @fuzzy "fuzzy"
+
   @shortdoc "Import reviewed translations from CSV into PO files"
 
   @gettext_dirs [
@@ -192,7 +198,7 @@ defmodule Mix.Tasks.Gettext.ImportCsv do
       Enum.map(flags, fn flag_list ->
         flag_list
         |> List.wrap()
-        |> Enum.reject(&(&1 == "fuzzy"))
+        |> Enum.reject(&(&1 == @fuzzy))
       end)
       |> Enum.reject(&(&1 == []))
 
@@ -213,10 +219,10 @@ defmodule Mix.Tasks.Gettext.ImportCsv do
       Enum.find_index(headers, &(String.trim(&1) == name))
     end
 
-    domain_idx = col_index.("domain") || raise_csv_error!("domain")
-    msgid_idx = col_index.("msgid") || raise_csv_error!("msgid")
-    translation_idx = col_index.("translation") || raise_csv_error!("translation")
-    source_idx = col_index.("source") || col_index.("msgid_plural")
+    domain_idx = col_index.(@domain) || raise_csv_error!(@domain)
+    msgid_idx = col_index.(@msgid) || raise_csv_error!(@msgid)
+    translation_idx = col_index.(@translation) || raise_csv_error!(@translation)
+    source_idx = col_index.(@source) || col_index.("msgid_plural")
 
     data_lines
     |> Enum.reject(&(String.trim(&1) == ""))

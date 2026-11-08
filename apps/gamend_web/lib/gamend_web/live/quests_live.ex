@@ -38,6 +38,8 @@ defmodule GamendWeb.QuestsLive do
 
   @status_filters [nil, "in_progress", "claimable", "done"]
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   use GamendWeb.UrlState,
     reload: :load_quests,
     keys: [
@@ -45,9 +47,13 @@ defmodule GamendWeb.QuestsLive do
       :category,
       page_size: [min: 24],
       status: [in: @status_filters],
-      group_key: [param: "group", type: :nilable],
-      shown_group: [param: "open"]
+      group_key: [param: UrlParam.group(), type: :nilable],
+      shown_group: [param: UrlParam.open()]
     ]
+
+  require Gamend.Quests.QuestFilter, as: QuestFilter
+  require Gamend.Quests.QuestReset, as: QuestReset
+  require Gamend.Quests.QuestStatus, as: QuestStatus
 
   @impl true
   def mount(_params, _session, socket) do
@@ -415,27 +421,29 @@ defmodule GamendWeb.QuestsLive do
     String.downcase(to_string(quest.category)) == String.downcase(reset_label(quest))
   end
 
-  defp reset_label(%Quest{reset: "daily"}), do: gettext("Daily")
-  defp reset_label(%Quest{reset: "weekly"}), do: gettext("Weekly")
-  defp reset_label(%Quest{reset: "monthly"}), do: gettext("Monthly")
+  defp reset_label(%Quest{reset: QuestReset.daily()}), do: gettext("Daily")
+  defp reset_label(%Quest{reset: QuestReset.weekly()}), do: gettext("Weekly")
+  defp reset_label(%Quest{reset: QuestReset.monthly()}), do: gettext("Monthly")
 
-  defp reset_label(%Quest{reset: "interval", reset_interval_days: days}),
+  defp reset_label(%Quest{reset: QuestReset.interval(), reset_interval_days: days}),
     do: gettext("Every %{count}d", count: days)
 
   defp reset_label(_quest), do: ""
 
   defp show_reset_badge?(quest),
-    do: quest.reset != "never" and not same_as_category?(quest) and reset_label(quest) != ""
+    do:
+      quest.reset != QuestReset.never() and not same_as_category?(quest) and
+        reset_label(quest) != ""
 
   defp status_label(nil), do: gettext("All")
-  defp status_label("in_progress"), do: gettext("In Progress")
-  defp status_label("claimable"), do: gettext("Claimable")
-  defp status_label("done"), do: gettext("Completed")
+  defp status_label(QuestFilter.in_progress()), do: gettext("In Progress")
+  defp status_label(QuestFilter.claimable()), do: gettext("Claimable")
+  defp status_label(QuestFilter.done()), do: gettext("Completed")
 
   defp status_icon(nil), do: "hero-squares-2x2"
-  defp status_icon("in_progress"), do: "hero-clock"
-  defp status_icon("claimable"), do: "hero-gift"
-  defp status_icon("done"), do: "hero-check-circle"
+  defp status_icon(QuestFilter.in_progress()), do: "hero-clock"
+  defp status_icon(QuestFilter.claimable()), do: "hero-gift"
+  defp status_icon(QuestFilter.done()), do: "hero-check-circle"
 
   # Whichever comes first: the window closing, or the next reset — tagged, so
   # the card says "Resets in" when the reset is what it is counting down to.
@@ -454,17 +462,17 @@ defmodule GamendWeb.QuestsLive do
 
   defp window_left(_quest, _now), do: nil
 
-  defp reset_left(%Quest{reset: "never"}, _now), do: nil
+  defp reset_left(%Quest{reset: QuestReset.never()}, _now), do: nil
 
   defp reset_left(quest, now) do
     date = DateTime.to_date(now)
 
     next =
       case quest.reset do
-        "daily" -> Date.add(date, 1)
-        "weekly" -> Date.add(date, 8 - Date.day_of_week(date))
-        "monthly" -> date |> Date.end_of_month() |> Date.add(1)
-        "interval" -> Date.add(date, interval_days_left(quest, date))
+        QuestReset.daily() -> Date.add(date, 1)
+        QuestReset.weekly() -> Date.add(date, 8 - Date.day_of_week(date))
+        QuestReset.monthly() -> date |> Date.end_of_month() |> Date.add(1)
+        QuestReset.interval() -> Date.add(date, interval_days_left(quest, date))
         _ -> nil
       end
 
@@ -715,7 +723,7 @@ defmodule GamendWeb.QuestsLive do
   defp group_member_counts(_entry), do: ""
 
   defp entry_done?(%{progress: progress}),
-    do: progress != nil and progress.status in ["completed", "claimed"]
+    do: progress != nil and progress.status in [QuestStatus.completed(), QuestStatus.claimed()]
 
   defp entry_secret?(entry), do: entry.quest.hidden and not entry_done?(entry)
 
@@ -725,11 +733,20 @@ defmodule GamendWeb.QuestsLive do
 
   defp entry_status_label(entry) do
     cond do
-      entry.progress != nil and entry.progress.status == "claimed" -> gettext("Claimed")
-      entry.claimable -> gettext("Ready to claim")
-      entry_done?(entry) -> gettext("Completed")
-      entry.progress != nil -> gettext("In progress")
-      true -> gettext("Not started")
+      entry.progress != nil and entry.progress.status == QuestStatus.claimed() ->
+        gettext("Claimed")
+
+      entry.claimable ->
+        gettext("Ready to claim")
+
+      entry_done?(entry) ->
+        gettext("Completed")
+
+      entry.progress != nil ->
+        gettext("In progress")
+
+      true ->
+        gettext("Not started")
     end
   end
 
@@ -798,8 +815,11 @@ defmodule GamendWeb.QuestsLive do
     quest = assigns.entry.quest
     progress = assigns.entry.progress
     claimable = assigns.entry.claimable
-    done? = progress != nil and progress.status in ["completed", "claimed"]
-    claimed? = progress != nil and progress.status == "claimed"
+
+    done? =
+      progress != nil and progress.status in [QuestStatus.completed(), QuestStatus.claimed()]
+
+    claimed? = progress != nil and progress.status == QuestStatus.claimed()
     # Hidden quests stay teasers until earned, the way achievements did.
     secret? = quest.hidden and not done?
     # A finished run waits for its claim with no clock: nothing to count down.

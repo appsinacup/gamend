@@ -11,6 +11,10 @@ defmodule Gamend.Accounts.UserToken do
   import Ecto.Query
   alias Gamend.Accounts.UserToken
 
+  require Gamend.Accounts.TokenContext, as: TokenContext
+
+  @day "day"
+
   @hash_algorithm :sha256
   @rand_size 32
   @confirm_code_digits 6
@@ -59,10 +63,12 @@ defmodule Gamend.Accounts.UserToken do
 
     from t in __MODULE__,
       where:
-        (t.context == "session" and t.inserted_at < ago(^session_days, "day")) or
-          (t.context == "login" and t.inserted_at < ago(^magic_link_minutes, "minute")) or
-          (like(t.context, "change:%") and t.inserted_at < ago(^change_email_days, "day")) or
-          (t.context in ["confirm", "confirm_code"] and t.inserted_at < ago(^confirm_days, "day"))
+        (t.context == ^TokenContext.session() and t.inserted_at < ago(^session_days, ^@day)) or
+          (t.context == ^TokenContext.login() and
+             t.inserted_at < ago(^magic_link_minutes, "minute")) or
+          (like(t.context, "change:%") and t.inserted_at < ago(^change_email_days, ^@day)) or
+          (t.context in ^[TokenContext.confirm(), TokenContext.confirm_code()] and
+             t.inserted_at < ago(^confirm_days, ^@day))
   end
 
   @doc "How long a browser session lasts, in days (`auth.session_days`)."
@@ -106,7 +112,14 @@ defmodule Gamend.Accounts.UserToken do
   def build_session_token(user) do
     token = :crypto.strong_rand_bytes(@rand_size)
     dt = user.authenticated_at || DateTime.utc_now(:second)
-    {token, %UserToken{token: token, context: "session", user_id: user.id, authenticated_at: dt}}
+
+    {token,
+     %UserToken{
+       token: token,
+       context: TokenContext.session(),
+       user_id: user.id,
+       authenticated_at: dt
+     }}
   end
 
   @doc """
@@ -121,9 +134,9 @@ defmodule Gamend.Accounts.UserToken do
     days = session_validity_in_days()
 
     query =
-      from token in by_token_and_context_query(token, "session"),
+      from token in by_token_and_context_query(token, TokenContext.session()),
         join: user in assoc(token, :user),
-        where: token.inserted_at > ago(^days, "day"),
+        where: token.inserted_at > ago(^days, ^@day),
         select: {%{user | authenticated_at: token.authenticated_at}, token.inserted_at}
 
     {:ok, query}
@@ -176,7 +189,7 @@ defmodule Gamend.Accounts.UserToken do
         minutes = magic_link_validity_in_minutes()
 
         query =
-          from token in by_token_and_context_query(hashed_token, "login"),
+          from token in by_token_and_context_query(hashed_token, TokenContext.login()),
             join: user in assoc(token, :user),
             where: token.inserted_at > ago(^minutes, "minute"),
             where: token.sent_to == user.email,
@@ -208,7 +221,7 @@ defmodule Gamend.Accounts.UserToken do
 
         query =
           from token in by_token_and_context_query(hashed_token, context),
-            where: token.inserted_at > ago(^days, "day")
+            where: token.inserted_at > ago(^days, ^@day)
 
         {:ok, query}
 
@@ -235,7 +248,7 @@ defmodule Gamend.Accounts.UserToken do
     {code,
      %UserToken{
        token: hash_confirm_code(user.id, code),
-       context: "confirm_code",
+       context: TokenContext.confirm_code(),
        sent_to: user.email,
        user_id: user.id
      }}
@@ -249,9 +262,12 @@ defmodule Gamend.Accounts.UserToken do
   def verify_confirm_code_query(user, code) when is_binary(code) do
     days = confirm_validity_in_days()
 
-    from token in by_token_and_context_query(hash_confirm_code(user.id, code), "confirm_code"),
-      where: token.user_id == ^user.id and token.sent_to == ^user.email,
-      where: token.inserted_at > ago(^days, "day")
+    from token in by_token_and_context_query(
+           hash_confirm_code(user.id, code),
+           TokenContext.confirm_code()
+         ),
+         where: token.user_id == ^user.id and token.sent_to == ^user.email,
+         where: token.inserted_at > ago(^days, ^@day)
   end
 
   defp hash_confirm_code(user_id, code), do: :crypto.hash(@hash_algorithm, "#{user_id}:#{code}")

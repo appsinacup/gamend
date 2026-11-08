@@ -19,14 +19,22 @@ defmodule GamendWeb.AdminLive.ChatReports do
   @form_keys ~w(duration scope scope_ref_id reason message notify_user notify_reporter
                 reporter_message)
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   use GamendWeb.UrlState,
     reload: :reload,
     keys: [
       :page,
       :page_size,
-      status_filter: [param: "status"],
-      user_filter: [param: "reported_user_id"]
+      status_filter: [param: UrlParam.status()],
+      user_filter: [param: UrlParam.reported_user_id()]
     ]
+
+  require Gamend.Bans.BanScope, as: BanScope
+  require Gamend.Chat.ChatReportStatus, as: ChatReportStatus
+
+  @warn "warn"
+  @permanent "permanent"
 
   @impl true
   def mount(_params, _session, socket) do
@@ -47,8 +55,8 @@ defmodule GamendWeb.AdminLive.ChatReports do
   def handle_event("filter", params, socket) do
     {:noreply,
      socket
-     |> assign(:status_filter, param(params, "status", ""))
-     |> assign(:user_filter, param(params, "reported_user_id", ""))
+     |> assign(:status_filter, param(params, UrlParam.status(), ""))
+     |> assign(:user_filter, param(params, UrlParam.reported_user_id(), ""))
      |> assign(:page, 1)
      |> reload()}
   end
@@ -133,7 +141,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
       socket,
       report,
       form,
-      "dismissed",
+      ChatReportStatus.dismissed(),
       gettext("Dismissed from the report queue"),
       gettext("Report dismissed")
     )
@@ -149,14 +157,14 @@ defmodule GamendWeb.AdminLive.ChatReports do
           socket,
           report,
           form,
-          "actioned",
+          ChatReportStatus.actioned(),
           gettext("Message deleted from the report queue"),
           gettext("Message deleted")
         )
     end
   end
 
-  defp apply_action(socket, "warn", report, form) do
+  defp apply_action(socket, @warn, report, form) do
     message = notice(form["message"], Notices.default_warning_message(report.content_snapshot))
     Notices.notify_warning(report.reported_user_id, message)
 
@@ -164,17 +172,17 @@ defmodule GamendWeb.AdminLive.ChatReports do
       socket,
       report,
       form,
-      "actioned",
+      ChatReportStatus.actioned(),
       gettext("Warned from the report queue"),
       gettext("Player warned")
     )
   end
 
   defp apply_action(socket, "mute", report, form) do
-    scope = form["scope"] || "global"
+    scope = form["scope"] || BanScope.global()
     scope_ref_id = Gamend.Parse.blank_to_nil(String.trim(form["scope_ref_id"] || ""))
 
-    if scope != "global" and is_nil(scope_ref_id) do
+    if scope != BanScope.global() and is_nil(scope_ref_id) do
       assign(socket, :form_error, gettext("A scoped mute needs the lobby, group or party id."))
     else
       mute(socket, report, form, scope, scope_ref_id)
@@ -197,7 +205,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
           socket,
           report,
           form,
-          "actioned",
+          ChatReportStatus.actioned(),
           gettext("Muted from the report queue"),
           gettext("Player muted")
         )
@@ -239,23 +247,26 @@ defmodule GamendWeb.AdminLive.ChatReports do
 
   defp new_form("mute", report) do
     %{
-      "duration" => "permanent",
-      "scope" => "global",
+      "duration" => @permanent,
+      "scope" => BanScope.global(),
       "scope_ref_id" => "",
       "reason" => gettext("Chat report %{id}", id: report.id),
       "message" => "",
       "notify_user" => "true"
     }
-    |> reporter_defaults(report, "actioned")
+    |> reporter_defaults(report, ChatReportStatus.actioned())
   end
 
-  defp new_form("warn", report) do
+  defp new_form(@warn, report) do
     %{"message" => Notices.default_warning_message(report.content_snapshot)}
-    |> reporter_defaults(report, "actioned")
+    |> reporter_defaults(report, ChatReportStatus.actioned())
   end
 
-  defp new_form("dismiss", report), do: reporter_defaults(%{}, report, "dismissed")
-  defp new_form(_delete_message, report), do: reporter_defaults(%{}, report, "actioned")
+  defp new_form("dismiss", report),
+    do: reporter_defaults(%{}, report, ChatReportStatus.dismissed())
+
+  defp new_form(_delete_message, report),
+    do: reporter_defaults(%{}, report, ChatReportStatus.actioned())
 
   defp reporter_defaults(form, %Report{reporter_id: nil}, _status), do: form
 
@@ -275,7 +286,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
   end
 
   defp action_title("mute"), do: gettext("Mute player")
-  defp action_title("warn"), do: gettext("Warn player")
+  defp action_title(@warn), do: gettext("Warn player")
   defp action_title("dismiss"), do: gettext("Dismiss report")
   defp action_title(_delete_message), do: gettext("Delete message")
 
@@ -320,9 +331,9 @@ defmodule GamendWeb.AdminLive.ChatReports do
   defp reporter_name(%Report{reporter_id: nil}), do: gettext("Filter")
   defp reporter_name(%Report{reporter: reporter}), do: user_display(reporter)
 
-  defp status_class("open"), do: "badge-warning"
-  defp status_class("reviewing"), do: "badge-info"
-  defp status_class("actioned"), do: "badge-error"
+  defp status_class(ChatReportStatus.open()), do: "badge-warning"
+  defp status_class(ChatReportStatus.reviewing()), do: "badge-info"
+  defp status_class(ChatReportStatus.actioned()), do: "badge-error"
   defp status_class(_status), do: "badge-ghost"
 
   defp age(%DateTime{} = at) do

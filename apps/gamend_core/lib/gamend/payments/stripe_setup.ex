@@ -36,6 +36,14 @@ defmodule Gamend.Payments.StripeSetup do
 
   alias Gamend.Payments.ProviderConfig
 
+  require Gamend.Payments.StripeSetupStep, as: StripeSetupStep
+
+  @interval "interval"
+  @disabled "disabled"
+
+  @none "none"
+  @currency "currency"
+
   # Exactly what `StripeEvents.process_stripe_event/1` handles. A new handler
   # adds its event here, or the endpoint never sends it.
   @webhook_events ~w(
@@ -100,7 +108,7 @@ defmodule Gamend.Payments.StripeSetup do
         {enabled, disabled} =
           endpoints
           |> Enum.filter(&(&1["url"] == url))
-          |> Enum.split_with(&(&1["status"] != "disabled"))
+          |> Enum.split_with(&(&1["status"] != @disabled))
 
         target =
           case {enabled, disabled} do
@@ -116,7 +124,7 @@ defmodule Gamend.Payments.StripeSetup do
             {several, _disabled} ->
               [
                 manual(
-                  "webhook",
+                  StripeSetupStep.webhook(),
                   "#{length(several)} endpoints share #{url}: keep one in the Dashboard"
                 )
               ]
@@ -125,12 +133,16 @@ defmodule Gamend.Payments.StripeSetup do
         target ++ strays(endpoints, url)
 
       {:error, reason} ->
-        [error("webhook", reason)]
+        [error(StripeSetupStep.webhook(), reason)]
     end
   end
 
   defp replaced_note(endpoint),
-    do: ok("webhook", "#{endpoint["id"]} at the same URL is disabled: delete it in the Dashboard")
+    do:
+      ok(
+        StripeSetupStep.webhook(),
+        "#{endpoint["id"]} at the same URL is disabled: delete it in the Dashboard"
+      )
 
   # Another endpoint on the same host is an old one (a wrong path, a test):
   # it is never matched, so it would go on receiving events beside the right
@@ -142,9 +154,9 @@ defmodule Gamend.Payments.StripeSetup do
     for %{"url" => other} = endpoint <- endpoints,
         other != url,
         URI.parse(other).host == host,
-        endpoint["status"] != "disabled" do
+        endpoint["status"] != @disabled do
       manual(
-        "webhook",
+        StripeSetupStep.webhook(),
         "another endpoint on #{host}: #{endpoint["id"]} at #{other}, still enabled. " <>
           "Delete it in the Dashboard if it is an old one"
       )
@@ -159,7 +171,7 @@ defmodule Gamend.Payments.StripeSetup do
           # the findings decides where it goes (`--secret-file`).
           created =
             changed(
-              "webhook",
+              StripeSetupStep.webhook(),
               "created #{endpoint["id"]} for #{url} on #{endpoint["api_version"]}, " <>
                 "#{length(@webhook_events)} events. Its signing secret is shown only now: " <>
                 "set it as the webhook secret in .env"
@@ -168,10 +180,15 @@ defmodule Gamend.Payments.StripeSetup do
           [Map.put(created, :secret, endpoint["secret"])]
 
         {:error, reason} ->
-          [error("webhook", reason)]
+          [error(StripeSetupStep.webhook(), reason)]
       end
     else
-      [pending("webhook", "no endpoint for #{url}: would create one on #{api_version()}")]
+      [
+        pending(
+          StripeSetupStep.webhook(),
+          "no endpoint for #{url}: would create one on #{api_version()}"
+        )
+      ]
     end
   end
 
@@ -202,7 +219,7 @@ defmodule Gamend.Payments.StripeSetup do
 
     cond do
       is_binary(version) and ProviderConfig.stripe_api_release(version) == wanted ->
-        [ok("webhook", "#{endpoint["id"]} on #{version}")]
+        [ok(StripeSetupStep.webhook(), "#{endpoint["id"]} on #{version}")]
 
       opts[:apply] && opts[:recreate] ->
         replace_webhook(endpoint, url)
@@ -210,7 +227,7 @@ defmodule Gamend.Payments.StripeSetup do
       true ->
         [
           manual(
-            "webhook",
+            StripeSetupStep.webhook(),
             "#{endpoint["id"]} is on #{version || "the account's default version"}, not the #{wanted} release. " <>
               "Stripe sets an endpoint's version only when it is created: rerun with --recreate --apply " <>
               "(a new endpoint and a new signing secret; the old one is disabled)"
@@ -225,27 +242,30 @@ defmodule Gamend.Payments.StripeSetup do
       [
         created,
         changed(
-          "webhook",
+          StripeSetupStep.webhook(),
           "disabled the old endpoint #{endpoint["id"]}: delete it in the Dashboard"
         )
       ]
     else
       [%{} | _] = findings -> findings
-      {:error, reason} -> [error("webhook", reason)]
+      {:error, reason} -> [error(StripeSetupStep.webhook(), reason)]
     end
   end
 
   defp status_finding(%{"status" => "enabled"} = endpoint, _opts),
-    do: ok("webhook", "#{endpoint["id"]} is enabled")
+    do: ok(StripeSetupStep.webhook(), "#{endpoint["id"]} is enabled")
 
   defp status_finding(endpoint, opts) do
     if opts[:apply] do
       case call(:update_webhook_endpoint, [endpoint["id"], %{disabled: false}]) do
-        {:ok, _} -> changed("webhook", "enabled #{endpoint["id"]}")
-        {:error, reason} -> error("webhook", reason)
+        {:ok, _} -> changed(StripeSetupStep.webhook(), "enabled #{endpoint["id"]}")
+        {:error, reason} -> error(StripeSetupStep.webhook(), reason)
       end
     else
-      pending("webhook", "#{endpoint["id"]} is #{endpoint["status"]}: would enable it")
+      pending(
+        StripeSetupStep.webhook(),
+        "#{endpoint["id"]} is #{endpoint["status"]}: would enable it"
+      )
     end
   end
 
@@ -257,21 +277,27 @@ defmodule Gamend.Payments.StripeSetup do
     cond do
       missing == [] and extra == [] ->
         ok(
-          "webhook",
+          StripeSetupStep.webhook(),
           "#{endpoint["id"]} sends exactly the #{length(@webhook_events)} events handled"
         )
 
       opts[:apply] ->
         case call(:update_webhook_endpoint, [endpoint["id"], %{enabled_events: @webhook_events}]) do
           {:ok, _} ->
-            changed("webhook", "events set; added #{list(missing)}, removed #{list(extra)}")
+            changed(
+              StripeSetupStep.webhook(),
+              "events set; added #{list(missing)}, removed #{list(extra)}"
+            )
 
           {:error, reason} ->
-            error("webhook", reason)
+            error(StripeSetupStep.webhook(), reason)
         end
 
       true ->
-        pending("webhook", "events: missing #{list(missing)}, extra #{list(extra)}")
+        pending(
+          StripeSetupStep.webhook(),
+          "events: missing #{list(missing)}, extra #{list(extra)}"
+        )
     end
   end
 
@@ -291,13 +317,13 @@ defmodule Gamend.Payments.StripeSetup do
       {:ok, _none} ->
         [
           manual(
-            "portal",
+            StripeSetupStep.portal(),
             "not activated: Settings -> Billing -> Customer portal -> Activate, then rerun"
           )
         ]
 
       {:error, reason} ->
-        [error("portal", reason)]
+        [error(StripeSetupStep.portal(), reason)]
     end
   end
 
@@ -315,19 +341,22 @@ defmodule Gamend.Payments.StripeSetup do
       wrong == [] ->
         [
           ok(
-            "portal",
+            StripeSetupStep.portal(),
             "#{config["id"]}: cancel at period end, card update, invoices, no plan switching"
           )
         ]
 
       opts[:apply] ->
         case call(:update_portal_configuration, [config["id"], %{features: @portal_features}]) do
-          {:ok, _} -> [changed("portal", "#{config["id"]}: set #{Enum.join(wrong, ", ")}")]
-          {:error, reason} -> [error("portal", reason)]
+          {:ok, _} ->
+            [changed(StripeSetupStep.portal(), "#{config["id"]}: set #{Enum.join(wrong, ", ")}")]
+
+          {:error, reason} ->
+            [error(StripeSetupStep.portal(), reason)]
         end
 
       true ->
-        [pending("portal", "#{config["id"]}: #{Enum.join(wrong, ", ")}")]
+        [pending(StripeSetupStep.portal(), "#{config["id"]}: #{Enum.join(wrong, ", ")}")]
     end
   end
 
@@ -348,7 +377,7 @@ defmodule Gamend.Payments.StripeSetup do
     case fetch(:retrieve_product, id) do
       {:ok, product} -> {id, check_product(product, wanted, opts)}
       :missing -> adopt_or_create_product(wanted, opts)
-      {:error, reason} -> {nil, [error("product", reason)]}
+      {:error, reason} -> {nil, [error(StripeSetupStep.product(), reason)]}
     end
   end
 
@@ -357,7 +386,7 @@ defmodule Gamend.Payments.StripeSetup do
       {:ok, product} ->
         note =
           ok(
-            "product",
+            StripeSetupStep.product(),
             "no #{wanted.id}; using #{adopt}, the product the configured prices are on"
           )
 
@@ -367,7 +396,7 @@ defmodule Gamend.Payments.StripeSetup do
         create_product(wanted, opts)
 
       {:error, reason} ->
-        {nil, [error("product", reason)]}
+        {nil, [error(StripeSetupStep.product(), reason)]}
     end
   end
 
@@ -380,19 +409,19 @@ defmodule Gamend.Payments.StripeSetup do
           {product["id"],
            [
              changed(
-               "product",
+               StripeSetupStep.product(),
                "created #{product["id"]} (#{product["name"]}, #{product["tax_code"]})"
              )
            ]}
 
         {:error, reason} ->
-          {nil, [error("product", reason)]}
+          {nil, [error(StripeSetupStep.product(), reason)]}
       end
     else
       {wanted.id,
        [
          pending(
-           "product",
+           StripeSetupStep.product(),
            "no product #{wanted.id}: would create #{wanted.name}, tax code #{wanted.tax_code}"
          )
        ]}
@@ -420,16 +449,24 @@ defmodule Gamend.Payments.StripeSetup do
 
     cond do
       wrong == [] ->
-        [ok("product", "#{product["id"]}: #{product["name"]}, #{current.tax_code}")]
+        [
+          ok(
+            StripeSetupStep.product(),
+            "#{product["id"]}: #{product["name"]}, #{current.tax_code}"
+          )
+        ]
 
       opts[:apply] ->
         case call(:update_product, [product["id"], Map.new(wrong)]) do
-          {:ok, _} -> [changed("product", "#{product["id"]}: set #{describe(wrong)}")]
-          {:error, reason} -> [error("product", reason)]
+          {:ok, _} ->
+            [changed(StripeSetupStep.product(), "#{product["id"]}: set #{describe(wrong)}")]
+
+          {:error, reason} ->
+            [error(StripeSetupStep.product(), reason)]
         end
 
       true ->
-        [pending("product", "#{product["id"]}: #{describe(wrong, current)}")]
+        [pending(StripeSetupStep.product(), "#{product["id"]}: #{describe(wrong, current)}")]
     end
   end
 
@@ -608,10 +645,10 @@ defmodule Gamend.Payments.StripeSetup do
         else: wanted[:tax_behavior] || price["tax_behavior"]
 
     [
-      {"product", object_id(price["product"]), wanted.product},
+      {StripeSetupStep.product(), object_id(price["product"]), wanted.product},
       {"amount", price["unit_amount"], wanted.unit_amount},
-      {"currency", price["currency"], String.downcase(wanted.currency)},
-      {"interval", get_in(price, ["recurring", "interval"]), recurring_interval(wanted)},
+      {@currency, price["currency"], String.downcase(wanted.currency)},
+      {@interval, get_in(price, ["recurring", "interval"]), recurring_interval(wanted)},
       {"tax_behavior", price["tax_behavior"], tax}
     ]
     |> Enum.reject(fn {_name, have, want} -> have == want end)
@@ -687,7 +724,7 @@ defmodule Gamend.Payments.StripeSetup do
   defp object_id(%{"id" => id}), do: id
   defp object_id(id), do: id
 
-  defp list([]), do: "none"
+  defp list([]), do: @none
   defp list(items), do: Enum.join(items, ", ")
 
   defp describe(pairs),

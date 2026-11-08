@@ -32,6 +32,8 @@ defmodule Gamend.GDScript do
   alias Gamend.GDScript.Parser
   alias Gamend.GDScript.Registry
 
+  @nofile "nofile"
+
   @doc """
   Compile GDScript source into Elixir source for `module`.
 
@@ -40,7 +42,7 @@ defmodule Gamend.GDScript do
   """
   @spec compile_string(String.t(), String.t(), keyword()) :: String.t()
   def compile_string(source, module, opts \\ []) do
-    file = Keyword.get(opts, :file, "nofile")
+    file = Keyword.get(opts, :file, @nofile)
 
     source
     |> Lexer.tokenize(file)

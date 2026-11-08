@@ -16,15 +16,22 @@ defmodule GamendWeb.AdminLive.Bans do
   alias GamendWeb.AdminLive.BanForm
   alias GamendWeb.LiveHelpers
 
+  require Gamend.Bans.BanKind, as: BanKind
+
+  require GamendWeb.UrlParam, as: UrlParam
+
   use GamendWeb.UrlState,
     reload: :reload,
-    drop: ~w(user_id),
+    drop: [UrlParam.user_id()],
     keys: [
       :page,
       :page_size,
-      kind_filter: [param: "kind", in: ["", "ip", "account", "chat"]],
+      kind_filter: [
+        param: UrlParam.kind(),
+        in: ["", BanKind.ip(), BanKind.account(), BanKind.chat()]
+      ],
       target_filter: [param: "target"],
-      active_only: [param: "active"]
+      active_only: [param: UrlParam.active()]
     ]
 
   @impl true
@@ -47,7 +54,7 @@ defmodule GamendWeb.AdminLive.Bans do
   @impl true
   def handle_params(%{"user_id" => user_id}, _uri, socket) when is_binary(user_id) do
     user_id = String.trim(user_id)
-    form = Map.merge(socket.assigns.form, %{"kind" => "account", "target" => user_id})
+    form = Map.merge(socket.assigns.form, %{"kind" => BanKind.account(), "target" => user_id})
 
     {:noreply,
      socket
@@ -125,7 +132,7 @@ defmodule GamendWeb.AdminLive.Bans do
   defp new_form do
     BanForm.empty()
     |> Map.merge(BanForm.chat_defaults())
-    |> Map.merge(%{"kind" => "account", "target" => ""})
+    |> Map.merge(%{"kind" => BanKind.account(), "target" => ""})
   end
 
   defp reload(socket) do

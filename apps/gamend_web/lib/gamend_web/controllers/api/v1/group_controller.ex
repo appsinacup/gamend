@@ -29,6 +29,11 @@ defmodule GamendWeb.Api.V1.GroupController do
   alias GamendWeb.Uploads
   alias OpenApiSpex.Schema
 
+  require Gamend.Groups.GroupType, as: GroupType
+  require GamendWeb.UploadName, as: UploadName
+  require GamendWeb.UrlParam, as: UrlParam
+  require GamendWeb.JoinOutcome, as: JoinOutcome
+
   tags(["Groups"])
 
   # ---------------------------------------------------------------------------
@@ -48,7 +53,7 @@ defmodule GamendWeb.Api.V1.GroupController do
       ],
       type: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["public", "private"]},
+        schema: %Schema{type: :string, enum: [GroupType.public(), GroupType.private()]},
         description: "Filter by group type"
       ],
       min_members: [
@@ -128,8 +133,8 @@ defmodule GamendWeb.Api.V1.GroupController do
           },
           type: %Schema{
             type: :string,
-            enum: ["public", "private", "hidden"],
-            default: "public"
+            enum: GroupType.all(),
+            default: GroupType.public()
           },
           max_members: %Schema{
             type: :integer,
@@ -141,7 +146,7 @@ defmodule GamendWeb.Api.V1.GroupController do
             description: "Chat slowdown in seconds (0 = disabled, max 3600)"
           }
         },
-        example: %{title: "My Guild", type: "public", max_members: 50}
+        example: %{title: "My Guild", type: GroupType.public(), max_members: 50}
       }
     },
     responses: [
@@ -187,7 +192,10 @@ defmodule GamendWeb.Api.V1.GroupController do
             description:
               "One of the server's own icons, `/icons/<name>.svg` (a heroicon name); anything else is ignored. An image is uploaded through `/groups/{id}/icon`"
           },
-          type: %Schema{type: :string, enum: ["public", "private", "hidden"]},
+          type: %Schema{
+            type: :string,
+            enum: GroupType.all()
+          },
           max_members: %Schema{
             type: :integer,
             description: "Ignored when the host fixes every group's"
@@ -849,17 +857,23 @@ defmodule GamendWeb.Api.V1.GroupController do
   def index(conn, params) do
     filters =
       %{}
-      |> maybe_put_string_filter(:title, param_value(params, "title", :title))
-      |> maybe_put_string_filter(:type, param_value(params, "type", :type))
-      |> maybe_put_int_filter(:min_members, param_value(params, "min_members", :min_members))
-      |> maybe_put_int_filter(:max_members, param_value(params, "max_members", :max_members))
+      |> maybe_put_string_filter(:title, param_value(params, UrlParam.title(), :title))
+      |> maybe_put_string_filter(:type, param_value(params, UrlParam.type(), :type))
+      |> maybe_put_int_filter(
+        :min_members,
+        param_value(params, UrlParam.min_members(), :min_members)
+      )
+      |> maybe_put_int_filter(
+        :max_members,
+        param_value(params, UrlParam.max_members(), :max_members)
+      )
       |> maybe_put_string_filter(
         :metadata_key,
-        param_value(params, "metadata_key", :metadata_key)
+        param_value(params, UrlParam.metadata_key(), :metadata_key)
       )
       |> maybe_put_string_filter(
         :metadata_value,
-        param_value(params, "metadata_value", :metadata_value)
+        param_value(params, UrlParam.metadata_value(), :metadata_value)
       )
 
     {page, page_size} = GamendWeb.Pagination.params(params)
@@ -901,7 +915,7 @@ defmodule GamendWeb.Api.V1.GroupController do
   # definition, so non-members get the same 404 as a group that does not exist.
   defp visible_group(conn, group_id) do
     case Groups.get_group(group_id) do
-      %{type: "hidden"} = group ->
+      %{type: GroupType.hidden()} = group ->
         case Scope.user(conn.assigns[:current_scope]) do
           %User{id: user_id} -> if Groups.member?(group_id, user_id), do: group
           _ -> nil
@@ -988,7 +1002,13 @@ defmodule GamendWeb.Api.V1.GroupController do
   def icon_upload_url(conn, %{"id" => id} = params) do
     with_auth(conn, fn user ->
       with_group_admin(conn, user, id, fn group_id ->
-        Uploads.ticket(conn, "icons/groups", group_id, "icon", Uploads.content_type(params))
+        Uploads.ticket(
+          conn,
+          "icons/groups",
+          group_id,
+          UploadName.icon(),
+          Uploads.content_type(params)
+        )
       end)
     end)
   end
@@ -1079,14 +1099,14 @@ defmodule GamendWeb.Api.V1.GroupController do
     reply_error(conn, :not_found, "not_found")
   end
 
-  defp do_join(conn, user, %{type: "public"} = _group, group_id) do
+  defp do_join(conn, user, %{type: GroupType.public()} = _group, group_id) do
     case Groups.join_group(user.id, group_id) do
       {:ok, member} -> reply_data(conn, serialize_member(member))
       {:error, reason} -> reply_reason(conn, reason)
     end
   end
 
-  defp do_join(conn, user, %{type: "private"} = _group, group_id) do
+  defp do_join(conn, user, %{type: GroupType.private()} = _group, group_id) do
     case Groups.request_join(user.id, group_id) do
       {:ok, request} -> reply_data(conn, :created, serialize_join_request(request))
       {:error, reason} -> reply_reason(conn, reason)
@@ -1280,10 +1300,10 @@ defmodule GamendWeb.Api.V1.GroupController do
         {group_id, tid} ->
           case Groups.invite_to_group(user.id, group_id, tid) do
             {:ok, :request_approved} ->
-              reply_data(conn, %{status: "request_approved"})
+              reply_data(conn, %{status: JoinOutcome.request_approved()})
 
             {:ok, _invite} ->
-              reply_data(conn, %{status: "invited"})
+              reply_data(conn, %{status: JoinOutcome.invited()})
 
             {:error, reason} ->
               reply_reason(conn, reason)

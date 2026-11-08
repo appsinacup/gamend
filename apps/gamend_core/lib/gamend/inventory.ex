@@ -36,6 +36,8 @@ defmodule Gamend.Inventory do
   alias Gamend.Inventory.LedgerEntry
   alias Gamend.Repo
 
+  require Gamend.LedgerReason, as: LedgerReason
+
   @type user_id :: Ecto.UUID.t()
   @type item :: String.t()
 
@@ -83,7 +85,7 @@ defmodule Gamend.Inventory do
   end
 
   defp change_quantity(user_id, item, delta, opts) do
-    reason = opts |> Keyword.get(:reason, "unspecified") |> to_string()
+    reason = opts |> Keyword.get(:reason, LedgerReason.unspecified()) |> to_string()
     idem = Keyword.get(opts, :idempotency_key)
     metadata = Keyword.get(opts, :metadata, %{})
 

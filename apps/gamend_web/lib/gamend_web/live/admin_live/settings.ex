@@ -18,9 +18,14 @@ defmodule GamendWeb.AdminLive.Settings do
 
   alias Gamend.Settings
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   use GamendWeb.UrlState,
     reload: :assign_rows,
-    keys: [:filter, group_filter: [param: "group", type: :atom]]
+    keys: [:filter, group_filter: [param: UrlParam.group(), type: :atom]]
+
+  @required "required"
+  @default "default"
 
   @impl true
   def mount(_params, _session, socket) do
@@ -87,9 +92,9 @@ defmodule GamendWeb.AdminLive.Settings do
   defp display_value(%{value: value}), do: inspect(value)
 
   defp source_badge(:config), do: {"badge-info", "config"}
-  defp source_badge(:default), do: {"badge-ghost", "default"}
+  defp source_badge(:default), do: {"badge-ghost", @default}
 
-  defp level_badge(%{required: :prod}), do: {"badge-error", "required"}
+  defp level_badge(%{required: :prod}), do: {"badge-error", @required}
   defp level_badge(%{required: :warn}), do: {"badge-warning", "warn"}
   defp level_badge(_row), do: nil
 

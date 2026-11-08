@@ -21,7 +21,10 @@ defmodule GamendWeb.Schemas.PlayResult do
   count and sum. An unset lobby is `""`.
   """
   require OpenApiSpex
+  alias Gamend.Results.ResultStatus
   alias OpenApiSpex.Schema
+
+  require Gamend.Results.ResultVisibility, as: ResultVisibility
 
   OpenApiSpex.schema(%{
     title: "PlayResult",
@@ -34,10 +37,16 @@ defmodule GamendWeb.Schemas.PlayResult do
       kind: %Schema{type: :string, description: "What was played"},
       visibility: %Schema{
         type: :string,
-        enum:
-          ~w(public owner_only lobby_members_only owner_or_lobby_member admin_only server_only)
+        enum: [
+          ResultVisibility.public(),
+          ResultVisibility.owner_only(),
+          ResultVisibility.lobby_members_only(),
+          ResultVisibility.owner_or_lobby_member(),
+          "admin_only",
+          ResultVisibility.server_only()
+        ]
       },
-      status: %Schema{type: :string, enum: ~w(open ended)},
+      status: %Schema{type: :string, enum: ResultStatus.all()},
       metadata: %Schema{type: :object, description: "What the play was: its settings"},
       started_at: %Schema{type: :string, format: :"date-time"},
       ended_at: %Schema{type: :string, format: :"date-time", nullable: true},

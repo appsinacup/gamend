@@ -35,6 +35,8 @@ defmodule GamendWeb.ProjectStatic do
   the page links what the endpoint serves.
   """
 
+  @assets "assets"
+
   @dirs_key {__MODULE__, :dirs}
   @roots_key {__MODULE__, :roots}
   @generation_key {__MODULE__, :generation}
@@ -89,7 +91,7 @@ defmodule GamendWeb.ProjectStatic do
   without `assets`.
   """
   @spec overlay_paths() :: [String.t()]
-  def overlay_paths, do: host_static_paths() -- ["assets"]
+  def overlay_paths, do: host_static_paths() -- [@assets]
 
   @doc "The configured `:host_static_paths`: the top-level entries served from the host app."
   @spec host_static_paths() :: [String.t()]
@@ -224,7 +226,7 @@ defmodule GamendWeb.ProjectStatic do
           roots
       end
 
-    if first == "assets", do: roots.assets, else: roots.other
+    if first == @assets, do: roots.assets, else: roots.other
   end
 
   defp build_app_roots({host_app, asset_app}) do

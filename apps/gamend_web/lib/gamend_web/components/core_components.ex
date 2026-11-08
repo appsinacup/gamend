@@ -37,6 +37,8 @@ defmodule GamendWeb.CoreComponents do
   alias Phoenix.HTML.Form
   alias Phoenix.LiveView.JS
 
+  @div "div"
+
   attr :name, :string, required: true
 
   attr :class, :any,
@@ -283,7 +285,7 @@ defmodule GamendWeb.CoreComponents do
     end
   end
 
-  attr :tag, :string, default: "div", doc: "`section`, `article`, `li`…"
+  attr :tag, :string, default: @div, doc: "`section`, `article`, `li`…"
   attr :compact, :boolean, default: false, doc: "`p-3`, not `p-4`: in a list or a sidebar"
   attr :title, :string, default: nil, doc: "a small heading on top (`eyebrow/1`)"
 
@@ -2266,7 +2268,7 @@ defmodule GamendWeb.CoreComponents do
   `html` is what `Gamend.Content` rendered, already sanitised.
   """
   attr :html, :string, default: nil, doc: "sanitised HTML from `Gamend.Content`"
-  attr :tag, :string, default: "div"
+  attr :tag, :string, default: @div
   attr :class, :string, default: nil
   attr :rest, :global
 

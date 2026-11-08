@@ -11,6 +11,9 @@ defmodule Gamend.Lobbies.Lobby do
   import Ecto.Changeset
 
   alias Gamend.Accounts.User
+
+  require Gamend.Lobbies.LobbyState, as: LobbyState
+
   # membership via users.lobby_id
 
   schema "lobbies" do
@@ -26,7 +29,7 @@ defmodule Gamend.Lobbies.Lobby do
     # Server-owned lifecycle (see Gamend.Lobbies.States). Deliberately not
     # castable: only Lobbies.transition_state/3 may write these, so a generic
     # PATCH /lobbies/:id can never move a lobby's state.
-    field :state, :string, default: "created"
+    field :state, :string, default: LobbyState.created()
     field :state_changed_at, :utc_datetime
 
     # Signaling configuration, server-owned for the same reason. It lived in

@@ -5,6 +5,7 @@ defmodule GamendWeb.Schemas.OAuthSessionStatus do
   """
 
   require OpenApiSpex
+  alias Gamend.OAuth.SessionStatus
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -15,7 +16,7 @@ defmodule GamendWeb.Schemas.OAuthSessionStatus do
       status: %Schema{
         type: :string,
         description: "`pending` until the player finishes at the provider",
-        enum: ["pending", "completed", "error"]
+        enum: SessionStatus.all()
       },
       error: %Schema{
         type: :string,

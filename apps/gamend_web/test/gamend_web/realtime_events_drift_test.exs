@@ -31,12 +31,22 @@ defmodule GamendWeb.RealtimeEventsDriftTest do
 
       # `ChannelEvents.push_member_updated/3` takes the event last; the literal
       # is still written at the channel's call site, so it counts as a push.
-      direct = Regex.scan(~r/push(?:_event)?\(\s*socket,\s*"([a-z_0-9:]+)"/, source)
+      direct =
+        Regex.scan(
+          ~r/push(?:_event)?\(\s*socket,\s*(?:"([a-z_0-9:]+)"|RealtimeEvent\.([a-z_0-9]+)\(\))/,
+          source
+        )
 
       member_updated =
-        Regex.scan(~r/push_member_updated\(\s*socket,\s*\w+,\s*"([a-z_0-9:]+)"/, source)
+        Regex.scan(
+          ~r/push_member_updated\(\s*socket,\s*\w+,\s*(?:"([a-z_0-9:]+)"|RealtimeEvent\.([a-z_0-9]+)\(\))/,
+          source
+        )
 
-      Enum.map(direct ++ member_updated, fn [_, event] -> event end)
+      # A macro of `Gamend.RealtimeEvent` is named after its value.
+      Enum.map(direct ++ member_updated, fn [_ | events] ->
+        Enum.find(events, &(&1 != ""))
+      end)
     end)
     |> MapSet.new()
   end

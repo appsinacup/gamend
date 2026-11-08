@@ -11,6 +11,8 @@ defmodule GamendWeb.Api.V1.Admin.SessionController do
   alias GamendWeb.Schemas.{AdminSessionPage, OkResponse}
   alias OpenApiSpex.Schema
 
+  require Gamend.Accounts.TokenContext, as: TokenContext
+
   tags(["Admin – Sessions"])
 
   operation(:index,
@@ -30,7 +32,7 @@ defmodule GamendWeb.Api.V1.Admin.SessionController do
 
   def index(conn, params) do
     {page, page_size} = GamendWeb.Pagination.params(params)
-    session_query = from(t in UserToken, where: t.context == "session")
+    session_query = from(t in UserToken, where: t.context == ^TokenContext.session())
 
     total_count = Repo.aggregate(session_query, :count)
 
@@ -111,7 +113,7 @@ defmodule GamendWeb.Api.V1.Admin.SessionController do
       _ ->
         _ =
           Repo.delete_all(
-            from(t in UserToken, where: t.user_id == ^id and t.context == "session")
+            from(t in UserToken, where: t.user_id == ^id and t.context == ^TokenContext.session())
           )
 
         reply_ok(conn)

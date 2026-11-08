@@ -25,7 +25,6 @@ var _format := "json"
 ## reconnect re-proves it rather than trusting the last session.
 var _first_binary_frame_logged := false
 var _channels := {}
-var _request_seq := 0
 const LOG_REDACTED := "[redacted]"
 const EVENT_LOG_MAX_CHARS := 768
 const SENSITIVE_LOG_KEYS := {
@@ -105,53 +104,48 @@ func push(event: String, payload: Dictionary = {}, topic: String = "") -> bool:
 
 func request(event: String, payload: Dictionary = {}, topic: String = "", timeout_sec: float = 15.0) -> Dictionary:
 	var ch: PhoenixChannel
-	var reply_topic := topic
 	if topic == "":
 		ch = _get_user_channel()
-		if ch != null:
-			reply_topic = ch.get_topic()
 	elif _channels.has(topic):
 		ch = _channels[topic]
 	if ch == null:
 		return _request_error("no_channel", "No channel found for request")
 
-	var request_id := _next_request_id()
-	var request_payload := payload.duplicate(true)
-	request_payload["_request_id"] = request_id
 	var state := {
 		"done": false,
 		"payload": {},
 		"status": "error",
+		"ref": "",
 	}
-	var handler := func(reply_event: String, reply_payload: Dictionary, status, event_topic: String) -> void:
-		if reply_event != event or event_topic != reply_topic:
-			return
-		if str(reply_payload.get("_request_id", "")) != request_id:
+	# Matched on the push's own ref, which every reply carries.
+	var handler := func(ref, _reply_event, reply_payload, status) -> void:
+		if ref != state["ref"]:
 			return
 		state["done"] = true
-		state["payload"] = reply_payload.duplicate(true)
+		state["payload"] = (reply_payload as Dictionary).duplicate(true) if reply_payload is Dictionary else {}
 		state["status"] = str(status)
 
-	channel_event.connect(handler)
-	var pushed := ch.push(event, request_payload)
+	ch.on_reply.connect(handler)
+	var pushed := ch.push(event, payload)
 	if not pushed:
-		if channel_event.is_connected(handler):
-			channel_event.disconnect(handler)
+		if ch.on_reply.is_connected(handler):
+			ch.on_reply.disconnect(handler)
 		return _request_error("push_failed", "Channel rejected request")
+	state["ref"] = ch.last_push_ref
 
 	var tree := get_tree()
 	if tree == null:
-		if channel_event.is_connected(handler):
-			channel_event.disconnect(handler)
+		if ch.on_reply.is_connected(handler):
+			ch.on_reply.disconnect(handler)
 		return _request_error("no_scene_tree", "Cannot wait for channel reply")
 
 	var started_ms := Time.get_ticks_msec()
 	var timeout_ms := int(max(0.1, timeout_sec) * 1000.0)
-	while not bool(state["done"]) and Time.get_ticks_msec() - started_ms < timeout_ms:
+	while not bool(state["done"]) and is_instance_valid(ch) and Time.get_ticks_msec() - started_ms < timeout_ms:
 		await tree.process_frame
 
-	if channel_event.is_connected(handler):
-		channel_event.disconnect(handler)
+	if is_instance_valid(ch) and ch.on_reply.is_connected(handler):
+		ch.on_reply.disconnect(handler)
 	if bool(state["done"]):
 		return {"status": state["status"], "payload": state["payload"]}
 	return _request_error("timeout", "Channel request timed out")
@@ -266,10 +260,6 @@ func _socket_params() -> Dictionary:
 	if _format == "protobuf":
 		params["format"] = "protobuf"
 	return params
-
-func _next_request_id() -> String:
-	_request_seq += 1
-	return "%s:%d:%d" % [str(get_instance_id()), Time.get_ticks_msec(), _request_seq]
 
 func _request_error(error_name: String, message: String) -> Dictionary:
 	return {

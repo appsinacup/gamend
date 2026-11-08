@@ -6,6 +6,8 @@ defmodule Gamend.Payments.Entitlement do
   use Gamend.Schema
   import Ecto.Changeset
 
+  require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
+
   @type t :: %__MODULE__{}
 
   @statuses ~w(active expired revoked)
@@ -15,7 +17,7 @@ defmodule Gamend.Payments.Entitlement do
     belongs_to :product, Gamend.Payments.Product
     belongs_to :source_purchase, Gamend.Payments.Purchase
     field :key, :string
-    field :status, :string, default: "active"
+    field :status, :string, default: EntitlementStatus.active()
     field :starts_at, :utc_datetime
     field :expires_at, :utc_datetime
     field :revoked_at, :utc_datetime

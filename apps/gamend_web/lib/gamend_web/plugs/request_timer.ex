@@ -8,6 +8,7 @@ defmodule GamendWeb.Plugs.RequestTimer do
   """
   import Plug.Conn
   require Logger
+  require Gamend.ParamType, as: ParamType
 
   @default_slow_request_threshold_ms 200.0
   @max_param_depth 4
@@ -131,14 +132,14 @@ defmodule GamendWeb.Plugs.RequestTimer do
       Enum.any?(@sensitive_key_parts, &String.contains?(normalized, &1))
   end
 
-  defp param_type(value) when is_binary(value), do: "string"
-  defp param_type(value) when is_integer(value), do: "integer"
-  defp param_type(value) when is_float(value), do: "float"
-  defp param_type(value) when is_boolean(value), do: "boolean"
-  defp param_type(value) when is_list(value), do: "list"
-  defp param_type(value) when is_map(value), do: "map"
+  defp param_type(value) when is_binary(value), do: ParamType.string()
+  defp param_type(value) when is_integer(value), do: ParamType.integer()
+  defp param_type(value) when is_float(value), do: ParamType.float()
+  defp param_type(value) when is_boolean(value), do: ParamType.boolean()
+  defp param_type(value) when is_list(value), do: ParamType.list()
+  defp param_type(value) when is_map(value), do: ParamType.map()
   defp param_type(nil), do: "nil"
-  defp param_type(_value), do: "unknown"
+  defp param_type(_value), do: ParamType.unknown()
 
   defp truncate_string(value) do
     if byte_size(value) <= @max_string_bytes do

@@ -917,6 +917,20 @@ defmodule Gamend.Accounts do
   end
 
   @doc ~S"""
+    `changeset` without the refusal `email_taken?/1` finds, valid when it was the only one.
+  """
+  @spec drop_email_taken(Ecto.Changeset.t()) :: Ecto.Changeset.t()
+  def drop_email_taken(_changeset) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Accounts.drop_email_taken/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Accounts whose deletion date has passed. For `Gamend.Retention`.
   """
   @spec due_deletions_query() :: Ecto.Query.t()
@@ -927,6 +941,25 @@ defmodule Gamend.Accounts do
 
       _ ->
         raise "Gamend.Accounts.due_deletions_query/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Whether `changeset` refuses its email because another account has it.
+    
+    The person who typed the address may not learn that: it would say which
+    addresses have accounts. The caller answers as for a free address, and the
+    owner hears by email (`notify_existing_account/4`).
+    
+  """
+  @spec email_taken?(Ecto.Changeset.t()) :: boolean()
+  def email_taken?(_changeset) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :erlang.phash2(make_ref(), 2) == 0
+
+      _ ->
+        raise "Gamend.Accounts.email_taken?/1 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -1823,6 +1856,33 @@ defmodule Gamend.Accounts do
 
       _ ->
         raise "Gamend.Accounts.merge_metadata/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Someone tried to sign up with `email`, which already has an account: the
+    confirmation again if it never confirmed, else a login link. In the
+    background, so the sign-up answers as soon as it does for a free address.
+    
+  """
+  @spec notify_existing_account(
+          String.t(),
+          (String.t() -> String.t()),
+          (String.t() -> String.t()),
+          module()
+        ) :: :ok
+  def notify_existing_account(
+        _email,
+        _confirmation_url_fun,
+        _login_url_fun,
+        _notifier \\ Gamend.Accounts.UserNotifier
+      ) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :ok
+
+      _ ->
+        raise "Gamend.Accounts.notify_existing_account/4 is a stub - only available at runtime on Gamend"
     end
   end
 

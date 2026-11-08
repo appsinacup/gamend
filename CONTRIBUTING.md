@@ -56,8 +56,9 @@ A string the code compares, matches or stores as a name (a status, a job's actio
   def busy?(status) when status in [Status.creating(), Status.failed()], do: true
   ```
 
-- **Not names:** a map's keys (the shape of a document), anything shown or logged, a LiveView event. Tests may spell a value out, and reuse the name where it reads as well.
-- `mix gamend.literal.lint` (in `precommit`) fails on a name typed out in two or more modules, or five or more times in one, past the counts in `.literal-lint-baseline`. Those hold what was there when the check arrived and only go down: `--all` lists every one, and `--update-baseline` records the new counts after a migration. A string that is someone else's (a provider's event name) is marked `# literal-ok: <why>`. HEEx templates are not read.
+- **Where a macro cannot go:** inside an Ecto query `Status.running()` is read as a field, so pin it (`^Status.running()`). In HEEx `@name` is an assign, so a template calls the macro, never a module attribute. `require` comes before any attribute that uses one. A file `gen.sdk.ex` copies into the SDK whole (`@copied_sources`) may use nothing but the standard library, so it keeps a module attribute.
+- **Not names:** a map's keys (the shape of a document), anything shown or logged, a LiveView event, an API error's code in `reply_error/3` (`mix gamend.api.lint` reads it as a literal). Tests may spell a value out, and reuse the name where it reads as well.
+- `mix gamend.literal.lint` (in `precommit`) fails on a name typed out in two or more modules, or five or more times in one. A string that is someone else's (a provider's one-off token) is marked `# literal-ok: <why>`. HEEx templates are not read. A host still part way through may keep `.literal-lint-baseline`, whose counts only go down: `--all` lists every offender, and `--update-baseline` records the new counts. Gamend has none.
 
 ## Errors
 

@@ -5,14 +5,20 @@ defmodule GamendWeb.AdminLive.Parties do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.FormName, as: FormName
+  require Gamend.SortKey, as: SortKey
+  require GamendWeb.UrlParam, as: UrlParam
+
+  @filter_keys ~w(leader_id min_size max_size)
+
   use GamendWeb.UrlState,
     reload: :reload_view,
     keys: [
-      parties_page: [param: "page"],
-      parties_page_size: [param: "page-size"],
-      sort_by: [param: "sort"],
-      filters: [keys: ~w(leader_id min_size max_size)],
-      members_of: [param: "members"]
+      parties_page: [param: UrlParam.page()],
+      parties_page_size: [param: UrlParam.page_size()],
+      sort_by: [param: UrlParam.sort()],
+      filters: [keys: @filter_keys],
+      members_of: [param: UrlParam.members()]
     ]
 
   @impl true
@@ -24,7 +30,7 @@ defmodule GamendWeb.AdminLive.Parties do
       |> assign(:parties_page, 1)
       |> assign(:parties_page_size, 25)
       |> assign(:filters, %{})
-      |> assign(:sort_by, "updated_at")
+      |> assign(:sort_by, SortKey.updated_at())
       |> assign(:selected_party, nil)
       |> assign(:form, nil)
       |> assign(:members, [])
@@ -32,7 +38,10 @@ defmodule GamendWeb.AdminLive.Parties do
       |> assign(:show_members, false)
       |> assign(:selected_ids, MapSet.new())
       |> assign(:show_create, false)
-      |> assign(:create_form, to_form(%{"leader_id" => "", "max_size" => "4"}, as: "party"))
+      |> assign(
+        :create_form,
+        to_form(%{"leader_id" => "", "max_size" => "4"}, as: FormName.party())
+      )
       |> assign(:add_member_id, "")
       |> assign(:max_party_size, Gamend.Limits.get(:max_party_size))
       |> reload_parties()
@@ -418,7 +427,10 @@ defmodule GamendWeb.AdminLive.Parties do
     {:noreply,
      socket
      |> assign(:show_create, true)
-     |> assign(:create_form, to_form(%{"leader_id" => "", "max_size" => "4"}, as: "party"))}
+     |> assign(
+       :create_form,
+       to_form(%{"leader_id" => "", "max_size" => "4"}, as: FormName.party())
+     )}
   end
 
   @impl true
@@ -470,7 +482,7 @@ defmodule GamendWeb.AdminLive.Parties do
 
   @impl true
   def handle_event("filter", params, socket) do
-    sort_by = Map.get(params, "sort_by", socket.assigns[:sort_by] || "updated_at")
+    sort_by = Map.get(params, "sort_by", socket.assigns[:sort_by] || SortKey.updated_at())
 
     {:noreply,
      socket
@@ -568,7 +580,7 @@ defmodule GamendWeb.AdminLive.Parties do
   @impl true
   def handle_event("edit_party", %{"id" => id}, socket) do
     Shared.with_record(socket, Parties.get_party(to_string(id)), fn party ->
-      form = party |> Parties.change_party() |> to_form(as: "party")
+      form = party |> Parties.change_party() |> to_form(as: FormName.party())
 
       {:noreply,
        socket
@@ -605,7 +617,7 @@ defmodule GamendWeb.AdminLive.Parties do
              |> reload_parties()}
 
           {:error, changeset} ->
-            {:noreply, assign(socket, :form, to_form(changeset, as: "party"))}
+            {:noreply, assign(socket, :form, to_form(changeset, as: FormName.party()))}
         end
 
       :error ->
@@ -775,7 +787,7 @@ defmodule GamendWeb.AdminLive.Parties do
     page = socket.assigns[:parties_page] || 1
     page_size = socket.assigns[:parties_page_size] || 25
     filters = socket.assigns[:filters] || %{}
-    sort_by = socket.assigns[:sort_by] || "updated_at"
+    sort_by = socket.assigns[:sort_by] || SortKey.updated_at()
 
     parties =
       Parties.list_all_parties(filters,

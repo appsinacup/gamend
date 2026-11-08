@@ -20,6 +20,8 @@ defmodule Gamend.GDScript.Lexer do
 
   alias Gamend.GDScript.CompileError
 
+  @nofile "nofile"
+
   # Unsupported constructs are keywords too. Lexing `for` as an identifier
   # would produce "expected end of line, got `x`"; as a keyword the parser can
   # say "`for` is not supported server-side" and name the line.
@@ -68,7 +70,7 @@ defmodule Gamend.GDScript.Lexer do
   Tokenize `source`. Raises `Gamend.GDScript.CompileError` on bad input.
   """
   @spec tokenize(String.t(), String.t()) :: [tuple()]
-  def tokenize(source, file \\ "nofile") do
+  def tokenize(source, file \\ @nofile) do
     state = %{
       file: file,
       tokens: [],

@@ -6,6 +6,9 @@ defmodule Gamend.Payments.Purchase do
   use Gamend.Schema
   import Ecto.Changeset
 
+  require Gamend.Payments.PaymentEnvironment, as: PaymentEnvironment
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+
   @type t :: %__MODULE__{}
 
   @providers ~w(apple google steam stripe)
@@ -20,11 +23,11 @@ defmodule Gamend.Payments.Purchase do
     field :order_id, :string
     field :provider_transaction_id, :string
     field :provider_original_transaction_id, :string
-    field :status, :string, default: "pending"
+    field :status, :string, default: PurchaseStatus.pending()
     field :quantity, :integer, default: 1
     field :currency, :string
     field :amount, :integer
-    field :environment, :string, default: "production"
+    field :environment, :string, default: PaymentEnvironment.production()
     field :raw_provider_payload, :map, default: %{}
     field :metadata, :map, default: %{}
     field :purchased_at, :utc_datetime

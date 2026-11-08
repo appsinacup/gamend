@@ -15,6 +15,10 @@ defmodule GamendWeb.Api.V1.Admin.BanController do
   alias GamendWeb.Schemas.{AdminBanPage, AdminBanResponse}
   alias OpenApiSpex.Schema
 
+  require Gamend.Bans.BanKind, as: BanKind
+  require Gamend.Bans.BanScope, as: BanScope
+  require GamendWeb.UrlParam, as: UrlParam
+
   tags(["Admin – Bans"])
 
   operation(:index,
@@ -24,7 +28,10 @@ defmodule GamendWeb.Api.V1.Admin.BanController do
       "Every ban, ended ones too, newest first. `active=true` keeps the ones in force.",
     security: [%{"authorization" => []}],
     parameters: [
-      kind: [in: :query, schema: %Schema{type: :string, enum: ["ip", "account", "chat"]}],
+      kind: [
+        in: :query,
+        schema: %Schema{type: :string, enum: BanKind.all()}
+      ],
       user_id: [in: :query, schema: %Schema{type: :string, format: :uuid}],
       subject: [
         in: :query,
@@ -33,7 +40,10 @@ defmodule GamendWeb.Api.V1.Admin.BanController do
       ],
       scope: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["global", "lobby", "group", "party"]},
+        schema: %Schema{
+          type: :string,
+          enum: BanScope.all()
+        },
         description: "A chat ban's reach"
       ],
       scope_ref_id: [
@@ -52,20 +62,23 @@ defmodule GamendWeb.Api.V1.Admin.BanController do
   )
 
   def index(conn, params) do
-    if Enum.all?(~w(user_id scope_ref_id), &(params[&1] in [nil, ""] or parse_id(params[&1]))),
-      do: list(conn, params),
-      else: invalid_id(conn)
+    if Enum.all?(
+         [UrlParam.user_id(), "scope_ref_id"],
+         &(params[&1] in [nil, ""] or parse_id(params[&1]))
+       ),
+       do: list(conn, params),
+       else: invalid_id(conn)
   end
 
   defp list(conn, params) do
     filters =
       %{}
-      |> maybe_put_string_filter("kind", params["kind"])
-      |> maybe_put_string_filter("user_id", params["user_id"])
+      |> maybe_put_string_filter(UrlParam.kind(), params["kind"])
+      |> maybe_put_string_filter(UrlParam.user_id(), params["user_id"])
       |> maybe_put_string_filter("subject", params["subject"])
       |> maybe_put_string_filter("scope", params["scope"])
       |> maybe_put_string_filter("scope_ref_id", params["scope_ref_id"])
-      |> maybe_put_bool_filter("active", params["active"])
+      |> maybe_put_bool_filter(UrlParam.active(), params["active"])
 
     {page, page_size} = GamendWeb.Pagination.params(params)
     bans = Bans.list(filters, page: page, page_size: page_size)
@@ -90,7 +103,7 @@ defmodule GamendWeb.Api.V1.Admin.BanController do
          type: :object,
          required: [:kind],
          properties: %{
-           kind: %Schema{type: :string, enum: ["ip", "account", "chat"]},
+           kind: %Schema{type: :string, enum: BanKind.all()},
            ip: %Schema{type: :string, description: "For an `ip` ban"},
            user_id: %Schema{
              type: :string,
@@ -99,8 +112,8 @@ defmodule GamendWeb.Api.V1.Admin.BanController do
            },
            scope: %Schema{
              type: :string,
-             enum: ["global", "lobby", "group", "party"],
-             default: "global",
+             enum: BanScope.all(),
+             default: BanScope.global(),
              description: "For a `chat` ban"
            },
            scope_ref_id: %Schema{
@@ -141,10 +154,17 @@ defmodule GamendWeb.Api.V1.Admin.BanController do
 
     result =
       case {params["kind"], params["ip"], parse_id(params["user_id"])} do
-        {"ip", ip, _} when is_binary(ip) and ip != "" -> IpBan.ban(ip, opts)
-        {"account", _, user_id} when is_binary(user_id) -> Bans.ban(:account, user_id, opts)
-        {"chat", _, user_id} when is_binary(user_id) -> chat_ban(user_id, params, opts)
-        _ -> :invalid
+        {BanKind.ip(), ip, _} when is_binary(ip) and ip != "" ->
+          IpBan.ban(ip, opts)
+
+        {BanKind.account(), _, user_id} when is_binary(user_id) ->
+          Bans.ban(:account, user_id, opts)
+
+        {BanKind.chat(), _, user_id} when is_binary(user_id) ->
+          chat_ban(user_id, params, opts)
+
+        _ ->
+          :invalid
       end
 
     case result do
@@ -204,7 +224,11 @@ defmodule GamendWeb.Api.V1.Admin.BanController do
 
     if raw in [nil, ""] or ref,
       do:
-        Bans.ban(:chat, user_id, [scope: params["scope"] || "global", scope_ref_id: ref] ++ opts),
+        Bans.ban(
+          :chat,
+          user_id,
+          [scope: params["scope"] || BanScope.global(), scope_ref_id: ref] ++ opts
+        ),
       else: :invalid
   end
 

@@ -9,6 +9,11 @@ defmodule GamendWeb.AdminLive.Quests do
   @resets Quest.resets()
   @statuses ~w(active completed claimed)
 
+  require GamendWeb.FormName, as: FormName
+  require GamendWeb.UrlParam, as: UrlParam
+
+  @progress_filter_keys ~w(user_id quest_key status)
+
   use GamendWeb.UrlState,
     reload: :reload_view,
     keys: [
@@ -16,9 +21,12 @@ defmodule GamendWeb.AdminLive.Quests do
       :page_size,
       :progress_page,
       :progress_page_size,
-      category_filter: [param: "category"],
-      progress_filters: [keys: ~w(user_id quest_key status)]
+      category_filter: [param: UrlParam.category()],
+      progress_filters: [keys: @progress_filter_keys]
     ]
+
+  require Gamend.Quests.QuestReset, as: QuestReset
+  require Gamend.Quests.QuestStatus, as: QuestStatus
 
   @impl true
   def mount(_params, _session, socket) do
@@ -468,7 +476,7 @@ defmodule GamendWeb.AdminLive.Quests do
      |> assign(:selected_quest, nil)
      |> assign(:objectives_json, ~s([{"event": "example_event", "target": 1, "params": {}}]))
      |> assign(:rewards_json, "[]")
-     |> assign(:form, to_form(changeset, as: "quest"))}
+     |> assign(:form, to_form(changeset, as: FormName.quest()))}
   end
 
   def handle_event("edit_quest", %{"id" => id}, socket) do
@@ -478,7 +486,7 @@ defmodule GamendWeb.AdminLive.Quests do
        |> assign(:selected_quest, quest)
        |> assign(:objectives_json, Jason.encode!(quest.objectives))
        |> assign(:rewards_json, Jason.encode!(quest.rewards))
-       |> assign(:form, to_form(Quests.change_quest(quest), as: "quest"))}
+       |> assign(:form, to_form(Quests.change_quest(quest), as: FormName.quest()))}
     end)
   end
 
@@ -516,7 +524,7 @@ defmodule GamendWeb.AdminLive.Quests do
          |> reload_quests()}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :form, to_form(changeset, as: "quest"))}
+        {:noreply, assign(socket, :form, to_form(changeset, as: FormName.quest()))}
 
       {:error, reason} ->
         {:noreply, put_flash(socket, :error, "Failed to save quest: #{inspect(reason)}")}
@@ -548,7 +556,7 @@ defmodule GamendWeb.AdminLive.Quests do
       {:noreply,
        socket
        |> assign(:selected_quest, quest)
-       |> assign(:grant_form, to_form(%{"user_id" => ""}, as: "grant"))}
+       |> assign(:grant_form, to_form(%{"user_id" => ""}, as: FormName.grant()))}
     end)
   end
 
@@ -755,23 +763,25 @@ defmodule GamendWeb.AdminLive.Quests do
 
   defp reset_badge(reset) do
     case reset do
-      "never" -> "badge-primary"
-      "daily" -> "badge-info"
-      "weekly" -> "badge-accent"
-      "monthly" -> "badge-secondary"
-      "interval" -> "badge-warning"
+      QuestReset.never() -> "badge-primary"
+      QuestReset.daily() -> "badge-info"
+      QuestReset.weekly() -> "badge-accent"
+      QuestReset.monthly() -> "badge-secondary"
+      QuestReset.interval() -> "badge-warning"
       _ -> "badge-ghost"
     end
   end
 
-  defp reset_text(%{reset: "interval", reset_interval_days: days}), do: "every #{days}d"
+  defp reset_text(%{reset: QuestReset.interval(), reset_interval_days: days}),
+    do: "every #{days}d"
+
   defp reset_text(%{reset: reset}), do: reset
 
   defp status_badge(status) do
     case status do
-      "active" -> "badge-info"
-      "completed" -> "badge-success"
-      "claimed" -> "badge-neutral"
+      QuestStatus.active() -> "badge-info"
+      QuestStatus.completed() -> "badge-success"
+      QuestStatus.claimed() -> "badge-neutral"
       _ -> "badge-ghost"
     end
   end

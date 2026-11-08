@@ -9,9 +9,11 @@ defmodule GamendWeb.AdminLive.Blacklist do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   use GamendWeb.UrlState,
     reload: :reload,
-    keys: [:page, :page_size, user_filter: [param: "user"]]
+    keys: [:page, :page_size, user_filter: [param: UrlParam.user()]]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -30,7 +32,7 @@ defmodule GamendWeb.AdminLive.Blacklist do
   def handle_event("filter", params, socket) do
     {:noreply,
      socket
-     |> Shared.put_filters(params, user_filter: "user_id")
+     |> Shared.put_filters(params, user_filter: UrlParam.user_id())
      |> reload()}
   end
 

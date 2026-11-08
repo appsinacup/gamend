@@ -27,6 +27,12 @@ defmodule GamendWeb.AdminLive.Logs do
   alias GamendWeb.AdminLogBuffer
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.AdminLogSource, as: AdminLogSource
+  require GamendWeb.FilterValue, as: FilterValue
+  require GamendWeb.UrlParam, as: UrlParam
+
+  @unknown "unknown"
+
   @refresh_interval 3_000
   @page_size 200
   @session_page_size 50
@@ -538,16 +544,16 @@ defmodule GamendWeb.AdminLive.Logs do
     reload: :reload_view,
     drop: ~w(lobby_id),
     keys: [
-      tab: [in: ~w(server client)],
+      tab: [in: [AdminLogSource.server(), AdminLogSource.client()]],
       level_filter: [param: "level"],
       module_filter: [param: "module"],
       search_query: [param: "q"],
-      session_filter: [param: "session"],
-      user_filter: [param: "user"],
-      source_filter: [param: "source"],
+      session_filter: [param: UrlParam.session()],
+      user_filter: [param: UrlParam.user()],
+      source_filter: [param: UrlParam.source()],
       auto_scroll: [],
-      session_page: [param: "page"],
-      open_session: [param: "open"],
+      session_page: [param: UrlParam.page()],
+      open_session: [param: UrlParam.open()],
       session_filters: [
         keys: [:query, :user_id, :lobby_id, :platform, :app_version, :since, :until, :errors_only]
       ]
@@ -563,15 +569,15 @@ defmodule GamendWeb.AdminLive.Logs do
     {:ok,
      socket
      |> assign(
-       tab: "server",
-       level_filter: "all",
+       tab: AdminLogSource.server(),
+       level_filter: FilterValue.everything(),
        module_filter: "",
        search_query: "",
        session_filter: "",
        user_filter: "",
        # Client entries share this buffer; showing them by default would bury
        # the server's own tail.
-       source_filter: "server",
+       source_filter: AdminLogSource.server(),
        auto_scroll: true,
        selected: nil,
        open_session: nil,
@@ -597,7 +603,7 @@ defmodule GamendWeb.AdminLive.Logs do
 
         {:noreply,
          socket
-         |> assign(tab: "client", session_filters: filters, session_page: 1)
+         |> assign(tab: AdminLogSource.client(), session_filters: filters, session_page: 1)
          |> load_sessions()}
 
       _ ->
@@ -608,7 +614,7 @@ defmodule GamendWeb.AdminLive.Logs do
   @impl true
   def handle_info({:admin_log, entry}, socket) do
     socket =
-      if socket.assigns.tab == "server" and matches_filters?(entry, socket.assigns) do
+      if socket.assigns.tab == AdminLogSource.server() and matches_filters?(entry, socket.assigns) do
         assign(socket, logs: Enum.take([entry | socket.assigns.logs], @page_size))
       else
         socket
@@ -631,7 +637,10 @@ defmodule GamendWeb.AdminLive.Logs do
 
   def handle_info(:refresh_counts, socket) do
     schedule_refresh()
-    socket = if socket.assigns.tab == "client", do: load_sessions(socket), else: socket
+
+    socket =
+      if socket.assigns.tab == AdminLogSource.client(), do: load_sessions(socket), else: socket
+
     {:noreply, refresh_counts(socket)}
   end
 
@@ -640,9 +649,10 @@ defmodule GamendWeb.AdminLive.Logs do
   # ── Events ──────────────────────────────────────────────────────────────────
 
   @impl true
-  def handle_event("switch_tab", %{"tab" => tab}, socket) when tab in ["server", "client"] do
+  def handle_event("switch_tab", %{"tab" => tab}, socket)
+      when tab in [AdminLogSource.server(), AdminLogSource.client()] do
     socket = assign(socket, tab: tab)
-    {:noreply, if(tab == "client", do: load_sessions(socket), else: socket)}
+    {:noreply, if(tab == AdminLogSource.client(), do: load_sessions(socket), else: socket)}
   end
 
   def handle_event("filter_level", %{"level" => level}, socket) do
@@ -657,7 +667,7 @@ defmodule GamendWeb.AdminLive.Logs do
        search_query: Map.get(params, "query", ""),
        session_filter: Map.get(params, "session", ""),
        user_filter: Map.get(params, "user", ""),
-       source_filter: Map.get(params, "source", "server"),
+       source_filter: Map.get(params, "source", AdminLogSource.server()),
        auto_scroll: Map.get(params, "auto_scroll") == "true"
      )
      |> refresh_logs()}
@@ -671,8 +681,8 @@ defmodule GamendWeb.AdminLive.Logs do
        search_query: "",
        session_filter: "",
        user_filter: "",
-       level_filter: "all",
-       source_filter: "server"
+       level_filter: FilterValue.everything(),
+       source_filter: AdminLogSource.server()
      )
      |> refresh_logs()}
   end
@@ -776,7 +786,7 @@ defmodule GamendWeb.AdminLive.Logs do
 
   # `nil` means "no level filter" — including a level string that names no
   # level, which `AdminLogBuffer` also ignores rather than filtering to nothing.
-  defp level_atom(level) when level in [nil, "", "all"], do: nil
+  defp level_atom(level) when level in [nil, "", FilterValue.everything()], do: nil
 
   defp level_atom(level) when is_binary(level) do
     String.to_existing_atom(level)
@@ -895,14 +905,14 @@ defmodule GamendWeb.AdminLive.Logs do
   defp matches_filters?(entry, assigns) do
     source_ok? =
       case assigns.source_filter do
-        "client" -> client_entry?(entry)
-        "server" -> not client_entry?(entry)
+        AdminLogSource.client() -> client_entry?(entry)
+        AdminLogSource.server() -> not client_entry?(entry)
         _ -> true
       end
 
     level_ok? =
       case assigns.level_filter do
-        "all" -> true
+        FilterValue.everything() -> true
         level -> entry.level == String.to_existing_atom(level)
       end
 
@@ -957,7 +967,7 @@ defmodule GamendWeb.AdminLive.Logs do
   defp short(""), do: "—"
   defp short(id) when is_binary(id), do: String.slice(id, 0, 12)
 
-  defp version(%{app_version: ""}), do: "unknown"
+  defp version(%{app_version: ""}), do: @unknown
   defp version(%{app_version: version}), do: version
 
   defp level_color(:error), do: "text-error"

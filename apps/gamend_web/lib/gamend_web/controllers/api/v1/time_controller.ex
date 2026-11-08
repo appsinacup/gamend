@@ -11,10 +11,12 @@ defmodule GamendWeb.Api.V1.TimeController do
 
   alias GamendWeb.Schemas.ServerTimeResponse
 
+  @get_server_time "get_server_time"
+
   tags(["Time"])
 
   operation(:show,
-    operation_id: "get_server_time",
+    operation_id: @get_server_time,
     summary: "Server clock",
     description:
       "Milliseconds since the Unix epoch. Sample a few times and average to " <>

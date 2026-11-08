@@ -11,6 +11,8 @@ defmodule GamendWeb.Auth.Pipeline do
     module: GamendWeb.Auth.Guardian,
     error_handler: GamendWeb.Auth.ErrorHandler
 
+  require GamendWeb.Auth.TokenType, as: TokenType
+
   # A personal API token (`gamend_pat_…`) is verified first and put in place
   # as if it were an access token; everything below then runs on it as is.
   plug GamendWeb.Auth.ApiTokenAuth
@@ -19,7 +21,7 @@ defmodule GamendWeb.Auth.Pipeline do
   # signature, so a 30-day refresh token authenticated every API route as if it
   # were a 15-minute access token — which defeats the point of the short access
   # TTL. Every issuer sets the type explicitly (`token_type: "access"`).
-  plug Guardian.Plug.VerifyHeader, scheme: "Bearer", claims: %{"typ" => "access"}
+  plug Guardian.Plug.VerifyHeader, scheme: "Bearer", claims: %{"typ" => TokenType.access()}
   plug Guardian.Plug.EnsureAuthenticated
   plug Guardian.Plug.LoadResource
   plug GamendWeb.Auth.AssignCurrentScope

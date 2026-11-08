@@ -13,6 +13,8 @@ defmodule GamendWeb.AdminLive.ConfigSections do
 
   import GamendWeb.AdminLive.ConfigDiagnostics, only: [mask_secret: 1, display_value: 1]
 
+  require GamendWeb.NavAuth, as: NavAuth
+
   @doc "Device login, account activation and the password policy."
   attr :config, :any, required: true
 
@@ -720,7 +722,7 @@ defmodule GamendWeb.AdminLive.ConfigSections do
   defp theme_nav_entry_path(%{"href" => href}) when is_binary(href), do: href
   defp theme_nav_entry_path(_entry), do: "—"
 
-  defp theme_nav_entry_auth(%{"admin_only" => true}), do: "admin"
+  defp theme_nav_entry_auth(%{"admin_only" => true}), do: NavAuth.admin()
   defp theme_nav_entry_auth(%{"auth" => auth}) when is_binary(auth) and auth != "", do: auth
   defp theme_nav_entry_auth(_entry), do: nil
 end

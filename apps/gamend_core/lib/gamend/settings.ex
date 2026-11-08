@@ -31,6 +31,12 @@ defmodule Gamend.Settings do
 
   require Logger
 
+  @falsy_short ~w(false 0 off none)
+  @warn "warn"
+  @log_levels ~w(debug info warning error)
+  @falsy ~w(false 0 no n off none)
+  @truthy ~w(true 1 yes y on)
+
   @pt_key {__MODULE__, :providers}
 
   @core_apps [:gamend_core, :gamend_web]
@@ -325,17 +331,17 @@ defmodule Gamend.Settings do
 
   def cast(raw, :boolean, _values) do
     case raw |> String.trim() |> String.downcase() do
-      truthy when truthy in ~w(true 1 yes y on) -> {:ok, true}
-      falsy when falsy in ~w(false 0 no n off none) -> {:ok, false}
+      truthy when truthy in @truthy -> {:ok, true}
+      falsy when falsy in @falsy -> {:ok, false}
       _ -> :error
     end
   end
 
   def cast(raw, :log_level, _values) do
     case raw |> String.trim() |> String.downcase() do
-      level when level in ~w(debug info warning error) -> {:ok, String.to_existing_atom(level)}
-      "warn" -> {:ok, :warning}
-      off when off in ~w(false 0 off none) -> {:ok, false}
+      level when level in @log_levels -> {:ok, String.to_existing_atom(level)}
+      @warn -> {:ok, :warning}
+      off when off in @falsy_short -> {:ok, false}
       _ -> :error
     end
   end

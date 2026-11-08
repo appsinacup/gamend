@@ -7,6 +7,13 @@ defmodule GamendWeb.LiveHelpers do
 
   alias Gamend.Captcha
 
+  require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
+  require Gamend.Payments.ProductKind, as: ProductKind
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+
+  @unknown "unknown"
+
   # ── Pagination ──────────────────────────────────────────────────────────
   #
   # Eighteen LiveViews each wrote their own prev/next/page-size handlers, and
@@ -128,7 +135,7 @@ defmodule GamendWeb.LiveHelpers do
   defp peer_ip(socket) do
     case Phoenix.LiveView.get_connect_info(socket, :peer_data) do
       %{address: addr} -> addr |> :inet.ntoa() |> to_string()
-      _ -> "unknown"
+      _ -> @unknown
     end
   end
 
@@ -318,32 +325,32 @@ defmodule GamendWeb.LiveHelpers do
   # "subscription"). The store and the Payments tab showed them raw.
 
   @doc "The store a purchase went through, as a brand name."
-  def payment_provider_label("stripe"), do: "Stripe"
-  def payment_provider_label("apple"), do: "Apple"
-  def payment_provider_label("google"), do: "Google Play"
-  def payment_provider_label("steam"), do: "Steam"
+  def payment_provider_label(ProviderId.stripe()), do: "Stripe"
+  def payment_provider_label(ProviderId.apple()), do: "Apple"
+  def payment_provider_label(ProviderId.google()), do: "Google Play"
+  def payment_provider_label(ProviderId.steam()), do: "Steam"
   def payment_provider_label(provider), do: provider
 
   @doc """
   A product kind (`Gamend.Payments.Product`) in words, or `"granted"`: an
   entitlement given without a purchase.
   """
-  def payment_kind_label("entitlement"), do: gettext("One-time")
-  def payment_kind_label("consumable"), do: gettext("Consumable")
-  def payment_kind_label("subscription"), do: gettext("Subscription")
-  def payment_kind_label("granted"), do: gettext("Granted")
+  def payment_kind_label(ProductKind.entitlement()), do: gettext("One-time")
+  def payment_kind_label(ProductKind.consumable()), do: gettext("Consumable")
+  def payment_kind_label(ProductKind.subscription()), do: gettext("Subscription")
+  def payment_kind_label(ProductKind.granted()), do: gettext("Granted")
   def payment_kind_label(kind), do: kind
 
   @doc "A purchase or entitlement status in words."
-  def payment_status_label("pending"), do: gettext("Pending")
-  def payment_status_label("requires_action"), do: gettext("Awaiting payment")
-  def payment_status_label("completed"), do: gettext("Completed")
-  def payment_status_label("failed"), do: gettext("Failed")
-  def payment_status_label("cancelled"), do: gettext("Canceled")
-  def payment_status_label("refunded"), do: gettext("Refunded")
-  def payment_status_label("revoked"), do: gettext("Revoked")
-  def payment_status_label("active"), do: gettext("Active")
-  def payment_status_label("expired"), do: gettext("Expired")
+  def payment_status_label(PurchaseStatus.pending()), do: gettext("Pending")
+  def payment_status_label(PurchaseStatus.requires_action()), do: gettext("Awaiting payment")
+  def payment_status_label(PurchaseStatus.completed()), do: gettext("Completed")
+  def payment_status_label(PurchaseStatus.failed()), do: gettext("Failed")
+  def payment_status_label(PurchaseStatus.cancelled()), do: gettext("Canceled")
+  def payment_status_label(PurchaseStatus.refunded()), do: gettext("Refunded")
+  def payment_status_label(PurchaseStatus.revoked()), do: gettext("Revoked")
+  def payment_status_label(EntitlementStatus.active()), do: gettext("Active")
+  def payment_status_label(EntitlementStatus.expired()), do: gettext("Expired")
   def payment_status_label(status), do: status
 
   @doc """

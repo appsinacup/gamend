@@ -5,10 +5,13 @@ defmodule GamendWeb.Api.V1.Admin.ChatController do
   import GamendWeb.Helpers.ParamParser
 
   alias Gamend.Chat
+  alias Gamend.Chat.ChatType
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.{ChatMessagePage, DeletedCountResponse, OkResponse}
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
+
+  require Gamend.SortKey, as: SortKey
 
   tags(["Admin – Chat"])
 
@@ -22,7 +25,10 @@ defmodule GamendWeb.Api.V1.Admin.ChatController do
       sender_id: [in: :query, schema: %Schema{type: :string, format: :uuid}],
       chat_type: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["lobby", "group", "friend", "party"]}
+        schema: %Schema{
+          type: :string,
+          enum: ChatType.all()
+        }
       ],
       chat_ref_id: [in: :query, schema: %Schema{type: :string, format: :uuid}],
       content: [in: :query, schema: %Schema{type: :string}],
@@ -30,7 +36,7 @@ defmodule GamendWeb.Api.V1.Admin.ChatController do
         in: :query,
         schema: %Schema{
           type: :string,
-          enum: ["inserted_at", "inserted_at_asc"]
+          enum: [SortKey.inserted_at(), SortKey.inserted_at_asc()]
         }
       ],
       page: [in: :query, schema: %Schema{type: :integer}],
@@ -63,7 +69,10 @@ defmodule GamendWeb.Api.V1.Admin.ChatController do
     parameters: [
       chat_type: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["lobby", "group", "friend", "party"]},
+        schema: %Schema{
+          type: :string,
+          enum: ChatType.all()
+        },
         required: true
       ],
       chat_ref_id: [in: :query, schema: %Schema{type: :string, format: :uuid}, required: true]

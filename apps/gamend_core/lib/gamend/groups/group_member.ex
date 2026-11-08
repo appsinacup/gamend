@@ -16,6 +16,8 @@ defmodule Gamend.Groups.GroupMember do
   alias Gamend.Accounts.User
   alias Gamend.Groups.Group
 
+  require Gamend.Groups.GroupRole, as: GroupRole
+
   @type t :: %__MODULE__{}
 
   @derive {Jason.Encoder,
@@ -32,7 +34,7 @@ defmodule Gamend.Groups.GroupMember do
     belongs_to :group, Group
     belongs_to :user, User
 
-    field :role, :string, default: "member"
+    field :role, :string, default: GroupRole.member()
 
     timestamps(type: :utc_datetime)
   end
@@ -45,7 +47,7 @@ defmodule Gamend.Groups.GroupMember do
     member
     |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
-    |> validate_inclusion(:role, ["admin", "member"])
+    |> validate_inclusion(:role, GroupRole.all())
     |> unique_constraint([:group_id, :user_id])
   end
 end

@@ -6,9 +6,11 @@ defmodule GamendWeb.AdminLive.Notifications do
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.NotificationsTab
 
+  @filter_keys ~w(sender_id title user_id)
+
   use GamendWeb.UrlState,
     reload: :reload_notifications,
-    keys: [:page, :page_size, filters: [keys: ~w(sender_id title user_id)]]
+    keys: [:page, :page_size, filters: [keys: @filter_keys]]
 
   @impl true
   def mount(_params, _session, socket) do

@@ -40,6 +40,7 @@ defmodule GamendWeb.Schemas.AdminTournament do
   @moduledoc "A tournament's full configuration, as an admin edits it."
   require OpenApiSpex
   alias Gamend.Tournaments.Tournament
+  alias Gamend.Tournaments.TournamentState
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -54,7 +55,7 @@ defmodule GamendWeb.Schemas.AdminTournament do
       icon_url: %Schema{type: :string},
       state: %Schema{
         type: :string,
-        enum: ["scheduled", "registration", "running", "finished", "cancelled"]
+        enum: TournamentState.all()
       },
       registration_opens_at: %Schema{type: :string, format: :"date-time", nullable: true},
       starts_at: %Schema{type: :string, format: :"date-time", nullable: true},
@@ -164,6 +165,7 @@ defmodule GamendWeb.Schemas.AdminQuestProgress do
   it: the same fields as the realtime `QuestProgress`, with ISO times.
   """
   require OpenApiSpex
+  alias Gamend.Quests.QuestStatus
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -176,7 +178,10 @@ defmodule GamendWeb.Schemas.AdminQuestProgress do
       quest_key: %Schema{type: :string},
       period_key: %Schema{type: :string},
       objective_progress: %Schema{type: :object, additionalProperties: %Schema{type: :integer}},
-      status: %Schema{type: :string, enum: ["active", "completed", "claimed"]},
+      status: %Schema{
+        type: :string,
+        enum: QuestStatus.all()
+      },
       completed_at: %Schema{type: :string, format: :"date-time", nullable: true},
       claimed_at: %Schema{type: :string, format: :"date-time", nullable: true},
       metadata: %Schema{type: :object},

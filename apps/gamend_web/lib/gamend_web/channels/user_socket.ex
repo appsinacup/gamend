@@ -7,6 +7,10 @@ defmodule GamendWeb.UserSocket do
   alias GamendWeb.Auth.Guardian
   alias GamendWeb.Plugs.ClientSession
 
+  require Gamend.RealtimeEvent, as: RealtimeEvent
+  require GamendWeb.Auth.TokenType, as: TokenType
+  require GamendWeb.WsFormat, as: WsFormat
+
   # A Socket handler
   #
   # It's possible to control the websocket connection and
@@ -61,7 +65,7 @@ defmodule GamendWeb.UserSocket do
     with token when is_binary(token) <- extract_token(params),
          # Access tokens only: a refresh token is a 30-day credential and must
          # not open a socket. Matches the two HTTP pipelines.
-         {:ok, claims} <- Guardian.decode_and_verify(token, %{"typ" => "access"}),
+         {:ok, claims} <- Guardian.decode_and_verify(token, %{"typ" => TokenType.access()}),
          {:ok, user} <- Guardian.resource_from_claims(claims),
          false <- socket_limit_reached?(user.id),
          false <- server_full?() do
@@ -106,7 +110,7 @@ defmodule GamendWeb.UserSocket do
   def refuse_banned(socket) do
     with user_id when is_binary(user_id) <- Scope.user_id(socket.assigns[:current_scope]),
          true <- Gamend.Bans.banned?(:account, user_id) do
-      {:error, %{reason: "account_banned"}}
+      {:error, %{reason: RealtimeEvent.account_banned()}}
     else
       _ -> :ok
     end
@@ -126,7 +130,7 @@ defmodule GamendWeb.UserSocket do
   defp extract_format(%{params: %{"format" => f}}, socket), do: normalize_format(f, socket)
   defp extract_format(%{"params" => %{"format" => f}}, socket), do: normalize_format(f, socket)
   defp extract_format(%{"format" => f}, socket), do: normalize_format(f, socket)
-  defp extract_format(_, _socket), do: "json"
+  defp extract_format(_, _socket), do: WsFormat.json()
 
   # The format the client ASKED for, before the serializer veto below.
   defp requested_format(%{params: %{"format" => f}}), do: f
@@ -138,8 +142,8 @@ defmodule GamendWeb.UserSocket do
   # here with no other symptom: everything keeps working, just uncompressed and
   # with every binary decoder on the client idle. Almost always a missing
   # `vsn=2.0.0` on the socket URL.
-  defp warn_on_format_downgrade(params, "json", user_id) do
-    if requested_format(params) == "protobuf" do
+  defp warn_on_format_downgrade(params, WsFormat.json(), user_id) do
+    if requested_format(params) == WsFormat.protobuf() do
       Logger.info(
         "ws socket: protobuf requested but the connection negotiated the v1 " <>
           "serializer, which cannot carry binary frames — falling back to JSON " <>
@@ -153,11 +157,11 @@ defmodule GamendWeb.UserSocket do
   # Binary frames require the V2 channel protocol; the V1 serializer (vsn
   # 1.x, the Phoenix default) cannot emit them, so "protobuf" is only
   # honored on sockets that negotiated a binary-capable serializer.
-  defp normalize_format("protobuf", %{serializer: serializer})
+  defp normalize_format(WsFormat.protobuf(), %{serializer: serializer})
        when serializer != Phoenix.Socket.V1.JSONSerializer,
-       do: "protobuf"
+       do: WsFormat.protobuf()
 
-  defp normalize_format(_, _), do: "json"
+  defp normalize_format(_, _), do: WsFormat.json()
 
   # 0 disables; counted per app instance.
   #

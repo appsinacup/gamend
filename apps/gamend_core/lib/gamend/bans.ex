@@ -61,6 +61,10 @@ defmodule Gamend.Bans do
   alias Gamend.Bans.ExpiryWorker
   alias Gamend.Repo
 
+  require Gamend.Bans.BanKind, as: BanKind
+  require Gamend.Bans.BanScope, as: BanScope
+  require Gamend.Chat.ChatType, as: ChatType
+
   @doc """
   Bans `subject` until `:expires_at` (a `DateTime`, `nil` for permanent).
 
@@ -180,8 +184,9 @@ defmodule Gamend.Bans do
   """
   @spec muted?(String.t(), String.t() | nil, String.t() | nil) :: boolean()
   def muted?(user_id, chat_type, chat_ref_id) when is_binary(user_id) do
-    Cache.active?(Ban.target(:chat, user_id, "global", nil)) or
-      (chat_type in ~w(lobby group party) and is_binary(chat_ref_id) and
+    Cache.active?(Ban.target(:chat, user_id, BanScope.global(), nil)) or
+      (chat_type in [ChatType.lobby(), ChatType.group(), ChatType.party()] and
+         is_binary(chat_ref_id) and
          Cache.active?(Ban.target(:chat, user_id, chat_type, chat_ref_id)))
   end
 
@@ -363,8 +368,13 @@ defmodule Gamend.Bans do
   defp of_target(query, {kind, subject, nil}),
     do: where(query, [b], b.kind == ^kind and b.subject == ^subject and is_nil(b.scope))
 
-  defp of_target(query, {:chat, subject, "global"}),
-    do: where(query, [b], b.kind == :chat and b.subject == ^subject and b.scope == "global")
+  defp of_target(query, {:chat, subject, BanScope.global()}),
+    do:
+      where(
+        query,
+        [b],
+        b.kind == :chat and b.subject == ^subject and b.scope == ^BanScope.global()
+      )
 
   # A room scope with no room never matches a row; the changeset refuses it.
   defp of_target(query, {:chat, subject, {scope, nil}}) do
@@ -404,9 +414,9 @@ defmodule Gamend.Bans do
   end
 
   defp kind_filter(kind) when kind in [:ip, :account, :chat], do: kind
-  defp kind_filter("ip"), do: :ip
-  defp kind_filter("account"), do: :account
-  defp kind_filter("chat"), do: :chat
+  defp kind_filter(BanKind.ip()), do: :ip
+  defp kind_filter(BanKind.account()), do: :account
+  defp kind_filter(BanKind.chat()), do: :chat
   defp kind_filter(_), do: nil
 
   # An account ban is for a user that exists and is not an admin.

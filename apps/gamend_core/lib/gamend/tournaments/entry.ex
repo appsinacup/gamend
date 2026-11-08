@@ -11,6 +11,8 @@ defmodule Gamend.Tournaments.Entry do
   @type t :: %__MODULE__{}
   import Ecto.Changeset
 
+  require Gamend.Tournaments.EntryState, as: EntryState
+
   @states ~w(registered active eliminated winner)
 
   schema "tournament_entries" do
@@ -20,7 +22,7 @@ defmodule Gamend.Tournaments.Entry do
     field :seed, :integer
     field :bracket_index, :integer
     field :wins, :integer, default: 0
-    field :state, :string, default: "registered"
+    field :state, :string, default: EntryState.registered()
     field :metadata, :map, default: %{}
 
     timestamps(type: :utc_datetime)

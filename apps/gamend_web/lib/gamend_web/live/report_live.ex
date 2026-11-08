@@ -37,6 +37,9 @@ defmodule GamendWeb.ReportLive do
   # A kind and a topic are what a link names; `handle_params/3` checks the topic.
   use GamendWeb.UrlState, keys: [topic: [type: :nilable]]
 
+  require Gamend.Reports.ReportSource, as: ReportSource
+  require Gamend.Reports.ReportStatus, as: ReportStatus
+
   @impl true
   def mount(_params, session, socket) do
     kinds = Enum.filter(Reports.kinds(), &Reports.ui/1)
@@ -234,7 +237,7 @@ defmodule GamendWeb.ReportLive do
   # an admin has closed meanwhile stays closed, and the edit is filed beside
   # it. The report is the socket's own, never an id from the browser.
   defp drop_replaced(%{assigns: %{replacing: %Report{id: id}}} = socket) do
-    with %Report{status: "open"} = report <- Reports.get(id),
+    with %Report{status: ReportStatus.open()} = report <- Reports.get(id),
          {:error, reason} <- Reports.delete(report) do
       Logger.warning("report #{id}: an edit could not replace it: #{inspect(reason)}")
     end
@@ -258,7 +261,7 @@ defmodule GamendWeb.ReportLive do
     context = %{
       user_id: user_id(socket),
       locale: socket.assigns.locale,
-      source: "web",
+      source: ReportSource.web(),
       client: socket.assigns.client,
       attachments: images
     }

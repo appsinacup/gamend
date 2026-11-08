@@ -45,6 +45,8 @@ defmodule Gamend.Notifications do
   alias Gamend.Repo
   alias Gamend.Repo.AdvisoryLock
 
+  require Gamend.Notifications.NotificationChannel, as: NotificationChannel
+
   @type user_id :: Ecto.UUID.t()
 
   # ---------------------------------------------------------------------------
@@ -396,18 +398,24 @@ defmodule Gamend.Notifications do
         }
 
         in_app? =
-          Preferences.enabled?(user, group, "in_app") and
+          Preferences.enabled?(user, group, NotificationChannel.in_app()) and
             match?({:ok, _}, upsert_notification(user_id, user_id, row, fan_out: false))
 
         push? =
-          Preferences.enabled?(user, group, "push") and
+          Preferences.enabled?(user, group, NotificationChannel.push()) and
             push_message(user_id, row, "notify-#{group}")
 
-        email? = Preferences.enabled?(user, group, "email") and enqueue_email(user, group, attrs)
+        email? =
+          Preferences.enabled?(user, group, NotificationChannel.email()) and
+            enqueue_email(user, group, attrs)
 
         {:ok,
          for(
-           {channel, true} <- [{"in_app", in_app?}, {"push", push?}, {"email", email?}],
+           {channel, true} <- [
+             {NotificationChannel.in_app(), in_app?},
+             {NotificationChannel.push(), push?},
+             {NotificationChannel.email(), email?}
+           ],
            do: channel
          )}
     end
@@ -631,10 +639,10 @@ defmodule Gamend.Notifications do
     else
       user = Gamend.Accounts.get_user(recipient_id)
 
-      if Preferences.enabled?(user, group, "push"),
+      if Preferences.enabled?(user, group, NotificationChannel.push()),
         do: push_message(recipient_id, row, "notif-#{notification.id}")
 
-      if Preferences.enabled?(user, group, "email"),
+      if Preferences.enabled?(user, group, NotificationChannel.email()),
         do:
           enqueue_email(user, group, %{
             "title" => notification.title,

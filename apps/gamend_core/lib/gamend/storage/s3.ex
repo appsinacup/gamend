@@ -11,6 +11,10 @@ defmodule Gamend.Storage.S3 do
 
   alias ExAws.S3
 
+  require Gamend.HttpHeader, as: HttpHeader
+
+  @auto "auto"
+
   @impl true
   def put(key, data, opts) do
     s3_opts =
@@ -115,7 +119,7 @@ defmodule Gamend.Storage.S3 do
         {:ok,
          %{
            size: headers |> header("content-length") |> to_size(),
-           content_type: header(headers, "content-type")
+           content_type: header(headers, HttpHeader.content_type())
          }}
 
       {:error, reason} ->
@@ -190,7 +194,7 @@ defmodule Gamend.Storage.S3 do
     [
       access_key_id: cfg[:access_key_id],
       secret_access_key: cfg[:secret_access_key],
-      region: cfg[:region] || "auto"
+      region: cfg[:region] || @auto
     ]
     |> maybe_endpoint(cfg[:endpoint])
   end
@@ -224,7 +228,7 @@ defmodule Gamend.Storage.S3 do
   setting(:secret_access_key, :string, secret: true, required: :prod, when: @s3_selected)
 
   setting(:region, :string,
-    default: "auto",
+    default: @auto,
     doc: "Region, or \"auto\" for services that do not use one (R2, MinIO)."
   )
 

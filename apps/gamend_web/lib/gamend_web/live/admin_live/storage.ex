@@ -13,6 +13,10 @@ defmodule GamendWeb.AdminLive.Storage do
     reload: :reload,
     keys: [:page, :page_size, :prefix]
 
+  require Gamend.Storage.StoragePrefix, as: StoragePrefix
+
+  @admin "admin"
+
   @impl true
   def mount(_params, _session, socket) do
     socket =
@@ -96,7 +100,7 @@ defmodule GamendWeb.AdminLive.Storage do
 
   # Blank path → auto-generate under uploads/admin/. A trailing slash means
   # "this folder" (append the file name); otherwise the path is the full key.
-  defp target_key("", filename), do: Storage.build_key("uploads", "admin", filename)
+  defp target_key("", filename), do: Storage.build_key(StoragePrefix.uploads(), @admin, filename)
 
   defp target_key(path, filename) do
     path = String.trim_leading(path, "/")

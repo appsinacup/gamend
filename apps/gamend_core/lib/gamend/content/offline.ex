@@ -29,6 +29,10 @@ defmodule Gamend.Content.Offline do
   alias Gamend.Content
   alias Gamend.Content.Markdown
 
+  @src "src"
+  @href "href"
+  @id "id"
+
   @type option ::
           {:title, String.t()}
           | {:index_path, String.t()}
@@ -217,11 +221,11 @@ defmodule Gamend.Content.Offline do
     end)
   end
 
-  defp attribute(_tag, "id", value, context), do: "#{context.anchor}--#{value}"
+  defp attribute(_tag, @id, value, context), do: "#{context.anchor}--#{value}"
   defp attribute(_tag, _name, "//" <> _ = url, _context), do: url
-  defp attribute(_tag, "href", "#" <> fragment, context), do: "##{context.anchor}--#{fragment}"
-  defp attribute(_tag, "href", "/" <> _ = url, context), do: link(url, context)
-  defp attribute("<img" <> _, "src", "/" <> _ = url, context), do: embed(url, context)
+  defp attribute(_tag, @href, "#" <> fragment, context), do: "##{context.anchor}--#{fragment}"
+  defp attribute(_tag, @href, "/" <> _ = url, context), do: link(url, context)
+  defp attribute("<img" <> _, @src, "/" <> _ = url, context), do: embed(url, context)
   defp attribute(_tag, _name, "/" <> _ = url, context), do: context.origin <> url
   defp attribute(_tag, _name, value, _context), do: value
 

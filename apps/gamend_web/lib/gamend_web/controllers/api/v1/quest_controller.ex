@@ -8,6 +8,10 @@ defmodule GamendWeb.Api.V1.QuestController do
   alias GamendWeb.Schemas.{QuestClaimResponse, QuestPage, QuestStatsResponse}
   alias OpenApiSpex.Schema
 
+  require Gamend.Quests.QuestCategory, as: QuestCategory
+  require Gamend.Quests.QuestStatus, as: QuestStatus
+  require GamendWeb.UrlParam, as: UrlParam
+
   tags(["Quests"])
 
   # ---------------------------------------------------------------------------
@@ -41,7 +45,7 @@ defmodule GamendWeb.Api.V1.QuestController do
       %{user_id: user_id} ->
         {page, page_size} = Pagination.params(params)
         category = category_filter(params)
-        group = blank_filter(params, "group")
+        group = blank_filter(params, UrlParam.group())
         opts = [page: page, page_size: page_size, category: category, group: group]
 
         %{entries: entries, total: total_count} = Quests.user_quest_page(user_id, opts)
@@ -173,7 +177,7 @@ defmodule GamendWeb.Api.V1.QuestController do
   # `?category=` decodes to "" rather than nil, and "" is nobody's category, so
   # the filter dropped every quest — a client asking for ALL categories got an
   # empty list back. Blank means no filter, the same as leaving the param off.
-  defp category_filter(params), do: blank_filter(params, "category")
+  defp category_filter(params), do: blank_filter(params, UrlParam.category())
 
   defp blank_filter(params, name) do
     case params[name] do
@@ -219,7 +223,7 @@ defmodule GamendWeb.Api.V1.QuestController do
     case Ecto.UUID.cast(user_id_str) do
       {:ok, user_id} ->
         {page, page_size} = Pagination.params(params)
-        category = category_filter(params) || "achievement"
+        category = category_filter(params) || QuestCategory.achievement()
         opts = [page: page, page_size: page_size, category: category]
 
         entries = Quests.list_user_completions(user_id, opts)
@@ -250,7 +254,8 @@ defmodule GamendWeb.Api.V1.QuestController do
   end
 
   defp serialize_quest(%{quest: quest, progress: progress, claimable: claimable}) do
-    completed? = progress != nil and progress.status in ["completed", "claimed"]
+    completed? =
+      progress != nil and progress.status in [QuestStatus.completed(), QuestStatus.claimed()]
 
     # The API ships the stored string, so a repeat quest's `%{n}` has to be
     # collapsed here. The web pages leave it in place until Gettext fills it,

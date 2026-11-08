@@ -18,6 +18,9 @@ defmodule GamendWeb.AdminLive.Index do
   alias GamendWeb.Plugs.GeoCountry
 
   require Ecto.Query
+  require Gamend.Groups.GroupType, as: GroupType
+  require Gamend.Results.ResultStatus, as: ResultStatus
+  require Gamend.Accounts.TokenContext, as: TokenContext
 
   @dev_routes? Application.compile_env(:gamend_web, :dev_routes, false)
 
@@ -161,8 +164,7 @@ defmodule GamendWeb.AdminLive.Index do
             <.admin_card page="/admin/friends" value={@friends_count}>
               <div>Friendships</div>
               <div>
-                Blocks:
-                <.link navigate={~p"/admin/blacklist"} class="link">{@blacklist_count}</.link>
+                Blocks: <.link navigate={~p"/admin/blacklist"} class="link">{@blacklist_count}</.link>
               </div>
             </.admin_card>
 
@@ -308,9 +310,7 @@ defmodule GamendWeb.AdminLive.Index do
               <div class="flex justify-between items-center">
                 <span>Last hour</span>
                 <span class="font-mono font-semibold">
-                  {format_number(@geo_total_1h)} reqs &middot; {countries_label(
-                    length(@geo_stats_1h)
-                  )}
+                  {format_number(@geo_total_1h)} reqs &middot; {countries_label(length(@geo_stats_1h))}
                 </span>
               </div>
               <div class="flex justify-between items-center">
@@ -493,7 +493,10 @@ defmodule GamendWeb.AdminLive.Index do
           # (reset, confirm, API) made this read higher than that page ever showed.
           sessions_count:
             Task.async(fn ->
-              Repo.aggregate(Ecto.Query.where(UserToken, [t], t.context == "session"), :count)
+              Repo.aggregate(
+                Ecto.Query.where(UserToken, [t], t.context == ^TokenContext.session()),
+                :count
+              )
             end),
           notifications_count: Task.async(fn -> Notifications.count_all_notifications() end),
           push_stats: Task.async(fn -> Gamend.Push.token_stats() end),
@@ -516,9 +519,9 @@ defmodule GamendWeb.AdminLive.Index do
           lobbies_passworded: Task.async(fn -> Gamend.Lobbies.count_passworded_lobbies() end),
           leaderboard_records: Task.async(fn -> Gamend.Leaderboards.count_all_records() end),
           groups_count: Task.async(fn -> Groups.count_all_groups() end),
-          groups_public: Task.async(fn -> Groups.count_groups_by_type("public") end),
-          groups_private: Task.async(fn -> Groups.count_groups_by_type("private") end),
-          groups_hidden: Task.async(fn -> Groups.count_groups_by_type("hidden") end),
+          groups_public: Task.async(fn -> Groups.count_groups_by_type(GroupType.public()) end),
+          groups_private: Task.async(fn -> Groups.count_groups_by_type(GroupType.private()) end),
+          groups_hidden: Task.async(fn -> Groups.count_groups_by_type(GroupType.hidden()) end),
           groups_members: Task.async(fn -> Groups.count_all_members() end),
           parties_count: Task.async(fn -> Parties.count_all_parties() end),
           blacklist_count: Task.async(fn -> Gamend.Friends.count_all_blocks() end),
@@ -855,7 +858,7 @@ defmodule GamendWeb.AdminLive.Index do
   end
 
   defp safe_result_counts do
-    %{total: Gamend.Results.count(), open: Gamend.Results.count(%{status: "open"})}
+    %{total: Gamend.Results.count(), open: Gamend.Results.count(%{status: ResultStatus.open()})}
   rescue
     _ -> %{total: 0, open: 0}
   end

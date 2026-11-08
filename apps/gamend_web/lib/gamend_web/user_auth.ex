@@ -18,6 +18,10 @@ defmodule GamendWeb.UserAuth do
   alias Gamend.Accounts.UserToken
 
   require Logger
+  require Gamend.Quests.ReportedEvent, as: ReportedEvent
+  require GamendWeb.ApiSegment, as: ApiSegment
+
+  @unknown "unknown"
 
   # The remember-me cookie lives exactly as long as the session token it holds:
   # both come from `auth.session_days` (`UserToken.session_validity_in_days/0`).
@@ -90,7 +94,7 @@ defmodule GamendWeb.UserAuth do
         # The quest event travels with the hook: password and OAuth logins land
         # here, and only the magic-link path (Accounts) emits it itself — without
         # this, "log in" quests never progressed for most sign-ins.
-        Gamend.Quests.report_event(user.id, "login")
+        Gamend.Quests.report_event(user.id, ReportedEvent.login())
       end)
     end
 
@@ -223,7 +227,7 @@ defmodule GamendWeb.UserAuth do
   # sends. Not the registration bucket (10 a minute): a class or a mobile
   # carrier shares one address, and that one also gates the login form.
   defp guest_rate_limit(ip) do
-    case GamendWeb.LiveHelpers.check_rate_limit(ip || "unknown", :general) do
+    case GamendWeb.LiveHelpers.check_rate_limit(ip || @unknown, :general) do
       :ok -> :ok
       {:error, _retry_after} -> {:error, :rate_limited}
     end
@@ -797,5 +801,9 @@ defmodule GamendWeb.UserAuth do
   @doc "Whether path segments name a sign-in page: log in or register, any locale prefix."
   @spec sign_in_page?([String.t()]) :: boolean()
   def sign_in_page?(path_info),
-    do: Enum.take(path_info, -2) in [["users", "log_in"], ["users", "register"]]
+    do:
+      Enum.take(path_info, -2) in [
+        [ApiSegment.users(), ApiSegment.log_in()],
+        [ApiSegment.users(), ApiSegment.register()]
+      ]
 end

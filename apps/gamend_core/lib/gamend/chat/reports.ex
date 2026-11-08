@@ -19,6 +19,8 @@ defmodule Gamend.Chat.Reports do
   alias Gamend.Lock
   alias Gamend.Repo
 
+  require Gamend.Chat.ChatReportStatus, as: ChatReportStatus
+
   @doc """
   File a report about `message_id` on behalf of `reporter_id`.
 
@@ -159,7 +161,7 @@ defmodule Gamend.Chat.Reports do
 
   @doc "Count reports still awaiting a moderator."
   @spec count_open_reports() :: non_neg_integer()
-  def count_open_reports, do: count_reports(%{status: "open"})
+  def count_open_reports, do: count_reports(%{status: ChatReportStatus.open()})
 
   @doc """
   Count reports filed by `reporter_id` in the last 24 hours.
@@ -214,7 +216,7 @@ defmodule Gamend.Chat.Reports do
   @spec review_report(Report.t() | Ecto.UUID.t()) :: {:ok, Report.t()} | {:error, term()}
   def review_report(%Report{} = report) do
     report
-    |> Report.resolve_changeset(%{"status" => "reviewing"})
+    |> Report.resolve_changeset(%{"status" => ChatReportStatus.reviewing()})
     |> Repo.update()
   end
 

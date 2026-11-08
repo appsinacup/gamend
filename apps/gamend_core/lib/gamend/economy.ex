@@ -38,6 +38,8 @@ defmodule Gamend.Economy do
   alias Gamend.Economy.Wallet
   alias Gamend.Repo
 
+  require Gamend.LedgerReason, as: LedgerReason
+
   @type user_id :: Ecto.UUID.t()
   @type currency :: String.t()
 
@@ -124,7 +126,7 @@ defmodule Gamend.Economy do
   # SQL statement (upsert-inc for grants, conditional decrement for spends), so
   # it's race-free on both Postgres and SQLite without an application lock.
   defp change_balance(user_id, currency, delta, opts) do
-    reason = opts |> Keyword.get(:reason, "unspecified") |> to_string()
+    reason = opts |> Keyword.get(:reason, LedgerReason.unspecified()) |> to_string()
     idem = Keyword.get(opts, :idempotency_key)
     metadata = Keyword.get(opts, :metadata, %{})
 

@@ -1355,7 +1355,6 @@ func _request_ws(event: String, payload: Dictionary, topic: String = "") -> Game
 	var response_payload: Dictionary = {}
 	if reply.get("payload", {}) is Dictionary:
 		response_payload = (reply["payload"] as Dictionary).duplicate(true)
-	response_payload.erase("_request_id")
 
 	if str(reply.get("status", "error")) == "ok":
 		var response := ApiApiResponseClient.new()

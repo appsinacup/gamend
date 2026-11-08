@@ -20,6 +20,9 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
   alias Gamend.Notifications.Preferences
   alias GamendWeb.NotificationEmail
 
+  require Gamend.Notifications.PreferenceGroup, as: PreferenceGroup
+  require Gamend.Notifications.PreferenceSwitch, as: PreferenceSwitch
+
   def assign_defaults(socket, user), do: assign(socket, :notify_groups, shown_groups(user))
 
   # A group whose every notification is about a feature the site has switched
@@ -33,11 +36,11 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
   @spec admin_groups(Gamend.Accounts.User.t()) :: [map()]
   def admin_groups(user), do: Enum.filter(Preferences.groups_for(user), & &1.admin)
 
-  defp shown?(%{key: "social"}),
+  defp shown?(%{key: PreferenceGroup.social()}),
     do: GamendWeb.Features.enabled?(:web_friends) or GamendWeb.Features.enabled?(:web_groups)
 
-  defp shown?(%{key: "chat"}), do: GamendWeb.Features.enabled?(:web_chat)
-  defp shown?(%{key: "quests"}), do: GamendWeb.Features.enabled?(:list_quests)
+  defp shown?(%{key: PreferenceGroup.chat()}), do: GamendWeb.Features.enabled?(:web_chat)
+  defp shown?(%{key: PreferenceGroup.quests()}), do: GamendWeb.Features.enabled?(:list_quests)
   defp shown?(_group), do: true
 
   attr :settings_tab, :string, required: true
@@ -187,7 +190,11 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
   end
 
   def handle_event("notify_switch", %{"switch" => switch}, socket)
-      when switch in ~w(off_email off_push off_all) do
+      when switch in [
+             PreferenceSwitch.off_email(),
+             PreferenceSwitch.off_push(),
+             PreferenceSwitch.off_all()
+           ] do
     user = socket.assigns.user
     which = %{"off_email" => :email, "off_push" => :push, "off_all" => :all}[switch]
 

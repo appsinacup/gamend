@@ -35,6 +35,9 @@ defmodule Gamend.Payments.StripeSweeper do
   alias Gamend.Payments.Upgrades
   alias Gamend.Repo
 
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+
   @interval :timer.hours(1)
   @first :timer.minutes(7)
   # A session lives 31 minutes; past that it has been paid or has expired.
@@ -109,7 +112,7 @@ defmodule Gamend.Payments.StripeSweeper do
 
     from(p in Purchase,
       where:
-        p.provider == "stripe" and p.status == "requires_action" and
+        p.provider == ^ProviderId.stripe() and p.status == ^PurchaseStatus.requires_action() and
           like(p.provider_transaction_id, "cs_%") and p.updated_at < ^cutoff,
       order_by: [asc: p.inserted_at],
       limit: @batch

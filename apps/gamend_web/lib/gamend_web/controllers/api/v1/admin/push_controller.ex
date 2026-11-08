@@ -7,9 +7,13 @@ defmodule GamendWeb.Api.V1.Admin.PushController do
   use OpenApiSpex.ControllerSpecs
 
   alias Gamend.Push
+  alias Gamend.Push.Platform
+  alias Gamend.Push.PushProvider
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.{AdminPushTokenPage, OkResponse}
   alias OpenApiSpex.Schema
+
+  require Gamend.Push.TokenFilter, as: TokenFilter
 
   tags(["Admin – Push"])
 
@@ -21,17 +25,17 @@ defmodule GamendWeb.Api.V1.Admin.PushController do
       user_id: [in: :query, schema: %Schema{type: :string, format: :uuid}, required: false],
       platform: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["android", "ios", "web"]},
+        schema: %Schema{type: :string, enum: Platform.all()},
         required: false
       ],
       provider: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["fcm", "apns"]},
+        schema: %Schema{type: :string, enum: PushProvider.all()},
         required: false
       ],
       status: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["live", "disabled"]},
+        schema: %Schema{type: :string, enum: [TokenFilter.live(), TokenFilter.disabled()]},
         required: false
       ],
       page: [in: :query, schema: %Schema{type: :integer, default: 1}, required: false],

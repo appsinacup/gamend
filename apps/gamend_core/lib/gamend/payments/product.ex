@@ -6,6 +6,8 @@ defmodule Gamend.Payments.Product do
   use Gamend.Schema
   import Ecto.Changeset
 
+  require Gamend.Payments.ProductKind, as: ProductKind
+
   @type t :: %__MODULE__{}
 
   @kinds ~w(entitlement consumable subscription)
@@ -14,7 +16,7 @@ defmodule Gamend.Payments.Product do
     field :sku, :string
     field :title, :string
     field :description, :string, default: ""
-    field :kind, :string, default: "entitlement"
+    field :kind, :string, default: ProductKind.entitlement()
     field :active, :boolean, default: true
     field :grant_config, :map, default: %{}
     field :metadata, :map, default: %{}

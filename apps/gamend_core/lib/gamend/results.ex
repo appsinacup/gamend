@@ -30,6 +30,14 @@ defmodule Gamend.Results do
   alias Gamend.Results.Event
   alias Gamend.Results.Result
 
+  require Gamend.Results.ResultStatus, as: ResultStatus
+  require Gamend.Results.ResultVisibility, as: ResultVisibility
+
+  @user_id "user_id"
+  @lobby_id "lobby_id"
+  @status "status"
+  @kind "kind"
+
   # Visibilities whose events reach the owner, and the lobby's members.
   @owner_pushed ~w(public owner_only lobby_members_only owner_or_lobby_member)
   @lobby_pushed ~w(public lobby_members_only owner_or_lobby_member)
@@ -83,7 +91,7 @@ defmodule Gamend.Results do
     end
   end
 
-  def record(%Result{status: "ended"}, _key, _value, _metadata), do: {:error, :ended}
+  def record(%Result{status: ResultStatus.ended()}, _key, _value, _metadata), do: {:error, :ended}
 
   # The struct's status is an early refusal only: it was read before, maybe
   # long before (`record_lobby/4`'s list, a caller's own copy). The result is
@@ -98,7 +106,7 @@ defmodule Gamend.Results do
         nil ->
           Repo.rollback(:not_found)
 
-        %Result{status: "ended"} ->
+        %Result{status: ResultStatus.ended()} ->
           Repo.rollback(:ended)
 
         %Result{} = current ->
@@ -139,7 +147,7 @@ defmodule Gamend.Results do
   """
   @spec record_lobby(String.t(), String.t(), number() | nil, map()) :: non_neg_integer()
   def record_lobby(lobby_id, key, value \\ nil, metadata \\ %{}) when is_binary(lobby_id) do
-    from(r in Result, where: r.lobby_id == ^lobby_id and r.status == "open")
+    from(r in Result, where: r.lobby_id == ^lobby_id and r.status == ^ResultStatus.open())
     |> Repo.all()
     |> Enum.count(&match?({:ok, _}, record(&1, key, value, metadata)))
   end
@@ -155,8 +163,8 @@ defmodule Gamend.Results do
     # Under the lock `record/4` takes, so no event is being written beside it,
     # and timed inside it, so every event recorded first is before the end.
     with_result_lock(result_id, fn ->
-      from(r in Result, where: r.id == ^result_id and r.status == "open")
-      |> Repo.compare_and_set(set: [status: "ended", ended_at: DateTime.utc_now()])
+      from(r in Result, where: r.id == ^result_id and r.status == ^ResultStatus.open())
+      |> Repo.compare_and_set(set: [status: ResultStatus.ended(), ended_at: DateTime.utc_now()])
       |> case do
         {:ok, result} ->
           push(result, {:result_ended, result})
@@ -221,15 +229,15 @@ defmodule Gamend.Results do
   end
 
   defp filter(query, _key, nil), do: query
-  defp filter(query, "kind", kinds) when is_list(kinds), do: where(query, [r], r.kind in ^kinds)
-  defp filter(query, "kind", value), do: where(query, [r], r.kind == ^value)
-  defp filter(query, "status", value), do: where(query, [r], r.status == ^value)
+  defp filter(query, @kind, kinds) when is_list(kinds), do: where(query, [r], r.kind in ^kinds)
+  defp filter(query, @kind, value), do: where(query, [r], r.kind == ^value)
+  defp filter(query, @status, value), do: where(query, [r], r.status == ^value)
 
   # An id that is not one matches nothing, rather than raising on the cast.
-  defp filter(query, key, value) when key in ["user_id", "lobby_id"] do
+  defp filter(query, key, value) when key in [@user_id, @lobby_id] do
     case Gamend.UUIDv7.cast_or_nil(value) do
       nil -> where(query, false)
-      id when key == "user_id" -> where(query, [r], r.user_id == ^id)
+      id when key == @user_id -> where(query, [r], r.user_id == ^id)
       id -> where(query, [r], r.lobby_id == ^id)
     end
   end
@@ -327,15 +335,17 @@ defmodule Gamend.Results do
   an admin. `server_only` no client.
   """
   @spec readable?(Result.t(), User.t() | nil) :: boolean()
-  def readable?(%Result{visibility: "server_only"}, _user), do: false
+  def readable?(%Result{visibility: ResultVisibility.server_only()}, _user), do: false
   def readable?(%Result{}, %User{is_admin: true}), do: true
-  def readable?(%Result{visibility: "public"}, _user), do: true
-  def readable?(%Result{visibility: "owner_only"} = r, user), do: played_by?(r, user)
+  def readable?(%Result{visibility: ResultVisibility.public()}, _user), do: true
 
-  def readable?(%Result{visibility: "lobby_members_only"} = r, user),
+  def readable?(%Result{visibility: ResultVisibility.owner_only()} = r, user),
+    do: played_by?(r, user)
+
+  def readable?(%Result{visibility: ResultVisibility.lobby_members_only()} = r, user),
     do: seated_in_lobby?(r, user)
 
-  def readable?(%Result{visibility: "owner_or_lobby_member"} = r, user),
+  def readable?(%Result{visibility: ResultVisibility.owner_or_lobby_member()} = r, user),
     do: played_by?(r, user) or seated_in_lobby?(r, user)
 
   def readable?(%Result{}, _user), do: false

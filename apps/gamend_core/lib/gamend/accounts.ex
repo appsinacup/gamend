@@ -40,6 +40,10 @@ defmodule Gamend.Accounts do
   }
 
   require Logger
+  require Gamend.Chat.ChatType, as: ChatType
+
+  @user_metadata "user_metadata"
+  @metadata "metadata"
 
   # Upper bound on cross-node staleness for cached user structs: explicit
   # invalidations propagate immediately via `Gamend.Cache.invalidate/1`,
@@ -1194,7 +1198,7 @@ defmodule Gamend.Accounts do
         # here must not skip the cleanups below — storage in particular, which
         # nothing else would ever revisit.
         best_effort(user, "friend chat cleanup", fn ->
-          Gamend.Chat.cleanup_chat("friend", user.id)
+          Gamend.Chat.cleanup_chat(ChatType.friend(), user.id)
         end)
 
         # Deleting cache entries asynchronously can cause a short-lived race where
@@ -1356,7 +1360,7 @@ defmodule Gamend.Accounts do
     with %User{metadata: read} = user <- Repo.get_uuid(User, user_id) || {:error, :not_found},
          metadata when is_map(metadata) <- fun.(read || %{}),
          {:ok, attrs} <- run_before_user_update(user, %{metadata: metadata}) do
-      "user_metadata"
+      @user_metadata
       |> Gamend.Lock.serialize(user_id, fn ->
         case Repo.get(User, user_id) do
           %User{metadata: ^read} = current -> apply_user_update(current, attrs)
@@ -1416,7 +1420,7 @@ defmodule Gamend.Accounts do
   defp metadata_key(attrs) do
     cond do
       is_map(Map.get(attrs, :metadata)) -> :metadata
-      is_map(Map.get(attrs, "metadata")) -> "metadata"
+      is_map(Map.get(attrs, "metadata")) -> @metadata
       true -> nil
     end
   end
@@ -1427,7 +1431,7 @@ defmodule Gamend.Accounts do
   # the lock in between was lost the same way. It now writes what the caller
   # changed onto the stored map, under the same lock.
   defp update_user_with_metadata(%User{} = user, attrs, key) do
-    "user_metadata"
+    @user_metadata
     |> Gamend.Lock.serialize(user.id, fn ->
       case Repo.get(User, user.id) do
         %User{} = current ->

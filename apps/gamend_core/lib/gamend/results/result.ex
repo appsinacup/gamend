@@ -13,6 +13,9 @@ defmodule Gamend.Results.Result do
 
   alias Gamend.Accounts.User
 
+  require Gamend.Results.ResultStatus, as: ResultStatus
+  require Gamend.Results.ResultVisibility, as: ResultVisibility
+
   @type t :: %__MODULE__{}
 
   # KV's access words (`Gamend.Hooks.kv_access/0`), as strings.
@@ -23,8 +26,8 @@ defmodule Gamend.Results.Result do
   schema "results" do
     field :lobby_id, Ecto.UUID
     field :kind, :string
-    field :visibility, :string, default: "owner_only"
-    field :status, :string, default: "open"
+    field :visibility, :string, default: ResultVisibility.owner_only()
+    field :status, :string, default: ResultStatus.open()
     field :metadata, :map, default: %{}
     field :started_at, :utc_datetime_usec
     field :ended_at, :utc_datetime_usec

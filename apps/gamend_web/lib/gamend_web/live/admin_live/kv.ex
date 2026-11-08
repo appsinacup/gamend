@@ -4,6 +4,9 @@ defmodule GamendWeb.AdminLive.KV do
   alias Gamend.KV
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.UrlParam, as: UrlParam
+  require GamendWeb.CheckboxValue, as: CheckboxValue
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -246,13 +249,13 @@ defmodule GamendWeb.AdminLive.KV do
 
   use GamendWeb.UrlState,
     reload: :reload_from_url,
-    drop: ~w(user_id),
+    drop: [UrlParam.user_id()],
     keys: [
       :page,
       :page_size,
-      filter_key: [param: "key"],
-      filter_user_id: [param: "user"],
-      filter_lobby_id: [param: "lobby"],
+      filter_key: [param: UrlParam.key()],
+      filter_user_id: [param: UrlParam.user()],
+      filter_lobby_id: [param: UrlParam.lobby()],
       filter_global_only: [param: "global"]
     ]
 
@@ -758,6 +761,6 @@ defmodule GamendWeb.AdminLive.KV do
 
   defp parse_bool(true), do: true
   defp parse_bool("true"), do: true
-  defp parse_bool("on"), do: true
+  defp parse_bool(CheckboxValue.on()), do: true
   defp parse_bool(_), do: false
 end

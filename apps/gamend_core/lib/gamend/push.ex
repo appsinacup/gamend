@@ -35,6 +35,10 @@ defmodule Gamend.Push do
   alias Gamend.Push.PushToken
   alias Gamend.Repo
 
+  require Gamend.Push.Platform, as: Platform
+  require Gamend.Push.PushProvider, as: PushProvider
+  require Gamend.Push.TokenFilter, as: TokenFilter
+
   @type user_id :: Ecto.UUID.t()
 
   # ---------------------------------------------------------------------------
@@ -108,7 +112,8 @@ defmodule Gamend.Push do
     attrs =
       if attrs["provider"] in [nil, ""], do: Map.delete(attrs, "provider"), else: attrs
 
-    default_provider = if attrs["platform"] == "ios", do: "apns", else: "fcm"
+    default_provider =
+      if attrs["platform"] == Platform.ios(), do: PushProvider.apns(), else: PushProvider.fcm()
 
     Map.put_new(attrs, "provider", default_provider)
   end
@@ -377,8 +382,12 @@ defmodule Gamend.Push do
   defp maybe_filter(query, _field, value) when value in [nil, ""], do: query
   defp maybe_filter(query, field, value), do: where(query, [t], field(t, ^field) == ^value)
 
-  defp maybe_filter_status(query, "live"), do: where(query, [t], is_nil(t.disabled_at))
-  defp maybe_filter_status(query, "disabled"), do: where(query, [t], not is_nil(t.disabled_at))
+  defp maybe_filter_status(query, TokenFilter.live()),
+    do: where(query, [t], is_nil(t.disabled_at))
+
+  defp maybe_filter_status(query, TokenFilter.disabled()),
+    do: where(query, [t], not is_nil(t.disabled_at))
+
   defp maybe_filter_status(query, _), do: query
 
   @doc """

@@ -5,6 +5,7 @@ defmodule GamendWeb.Schemas.TournamentEntry do
   are set by the draw.
   """
   require OpenApiSpex
+  alias Gamend.Tournaments.EntryState
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -21,7 +22,10 @@ defmodule GamendWeb.Schemas.TournamentEntry do
         description: "Null until the draw"
       },
       wins: %Schema{type: :integer},
-      state: %Schema{type: :string, enum: ["registered", "active", "eliminated", "winner"]},
+      state: %Schema{
+        type: :string,
+        enum: EntryState.all()
+      },
       metadata: %Schema{type: :object}
     },
     required: [:id, :leader_id, :seed, :bracket_index, :wins, :state, :metadata]
@@ -31,6 +35,7 @@ end
 defmodule GamendWeb.Schemas.Tournament do
   @moduledoc "A tournament occurrence, as `GamendWeb.Api.V1.TournamentController` sends it."
   require OpenApiSpex
+  alias Gamend.Tournaments.TournamentState
   alias GamendWeb.Schemas.TournamentEntry
   alias OpenApiSpex.Schema
 
@@ -52,7 +57,7 @@ defmodule GamendWeb.Schemas.Tournament do
       },
       state: %Schema{
         type: :string,
-        enum: ["scheduled", "registration", "running", "finished", "cancelled"]
+        enum: TournamentState.all()
       },
       registration_opens_at: %Schema{type: :string, format: :"date-time", nullable: true},
       starts_at: %Schema{
@@ -176,6 +181,7 @@ end
 defmodule GamendWeb.Schemas.TournamentPlacement do
   @moduledoc "An entry's final standing."
   require OpenApiSpex
+  alias Gamend.Tournaments.EntryState
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -187,7 +193,10 @@ defmodule GamendWeb.Schemas.TournamentPlacement do
       entry_id: %Schema{type: :string, format: :uuid},
       leader_id: %Schema{type: :string, format: :uuid},
       wins: %Schema{type: :integer},
-      state: %Schema{type: :string, enum: ["registered", "active", "eliminated", "winner"]},
+      state: %Schema{
+        type: :string,
+        enum: EntryState.all()
+      },
       bracket_index: %Schema{type: :integer, nullable: true}
     },
     required: [:placement, :entry_id, :leader_id, :wins, :state, :bracket_index]

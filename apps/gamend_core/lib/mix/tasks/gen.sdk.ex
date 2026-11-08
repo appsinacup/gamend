@@ -13,6 +13,10 @@ defmodule Mix.Tasks.Gen.Sdk do
   """
   use Mix.Task
 
+  @arg "arg"
+  @gamend "gamend"
+  @lib "lib"
+
   @shortdoc "Generate SDK stubs from real Gamend modules"
 
   @sdk_modules [
@@ -85,7 +89,7 @@ defmodule Mix.Tasks.Gen.Sdk do
   def run(_args) do
     Mix.Task.run("compile")
 
-    sdk_dir = Path.join([output_root(), "sdk", "lib", "gamend"])
+    sdk_dir = Path.join([output_root(), "sdk", @lib, @gamend])
     File.mkdir_p!(sdk_dir)
 
     api_table =
@@ -122,7 +126,7 @@ defmodule Mix.Tasks.Gen.Sdk do
   # map past 32 keys inspects in hash order, which reshuffled the file.
   defp write_api_table(table) do
     path =
-      Path.join([output_root(), "sdk_tools", "lib", "gamend", "gdscript", "api.ex"])
+      Path.join([output_root(), "sdk_tools", @lib, @gamend, "gdscript", "api.ex"])
 
     File.mkdir_p!(Path.dirname(path))
 
@@ -1160,7 +1164,7 @@ defmodule Mix.Tasks.Gen.Sdk do
     var
     |> Atom.to_string()
     |> String.trim_leading("_")
-    |> blank_to("arg")
+    |> blank_to(@arg)
   end
 
   defp arg_name_from_pattern({:%, _meta, [alias_ast, map_ast]}, idx) do
@@ -1230,7 +1234,7 @@ defmodule Mix.Tasks.Gen.Sdk do
   defp ensure_unique_arg_names(arg_names) when is_list(arg_names) do
     {uniq, _counts} =
       Enum.map_reduce(arg_names, %{}, fn name, counts ->
-        name = if is_binary(name) and name != "", do: name, else: "arg"
+        name = if is_binary(name) and name != "", do: name, else: @arg
         count = Map.get(counts, name, 0) + 1
         counts = Map.put(counts, name, count)
         uniq = if count == 1, do: name, else: "#{name}#{count}"

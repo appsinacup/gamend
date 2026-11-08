@@ -988,7 +988,7 @@ fn append(out: [any], specs: any) {
 }
 
 fn label(text: str, role: str) -> any {
-    { "kind": "label", "role": role, "text": text }
+    { "kind": ui::WIDGET_LABEL, "role": role, "text": text }
 }
 
 /// A line of text across the dock, wrapped.

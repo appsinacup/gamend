@@ -8,6 +8,8 @@ defmodule Gamend.Inventory.LedgerEntry do
   use Gamend.Schema
   import Ecto.Changeset
 
+  require Gamend.LedgerReason, as: LedgerReason
+
   @type t :: %__MODULE__{}
 
   schema "inventory_ledger" do
@@ -16,7 +18,7 @@ defmodule Gamend.Inventory.LedgerEntry do
     # +grant / -consume; quantity_after is the stack size right after this row.
     field :delta, :integer
     field :quantity_after, :integer
-    field :reason, :string, default: "unspecified"
+    field :reason, :string, default: LedgerReason.unspecified()
     field :idempotency_key, :string
     field :metadata, :map, default: %{}
 

@@ -23,6 +23,8 @@ defmodule GamendWeb.UserLive.Groups do
   alias GamendWeb.HostLayouts
   alias GamendWeb.UserLive.Settings.GroupsTab
 
+  require GamendWeb.SettingsTab, as: SettingsTab
+
   @events GroupsTab.events()
   @reloads GroupsTab.reloads()
 
@@ -41,7 +43,7 @@ defmodule GamendWeb.UserLive.Groups do
      socket
      |> assign(:page_title, gettext("Groups"))
      |> assign(:user, user)
-     |> assign(:settings_tab, "groups")
+     |> assign(:settings_tab, SettingsTab.groups())
      |> GroupsTab.assign_defaults()}
   end
 

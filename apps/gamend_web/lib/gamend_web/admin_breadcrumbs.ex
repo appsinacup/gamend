@@ -13,6 +13,8 @@ defmodule GamendWeb.AdminBreadcrumbs do
   deserves a better name than its slug.
   """
 
+  @admin "admin"
+
   # The dashboard's buttons, where they say more than the segment does.
   @names %{
     "config" => "Configuration",
@@ -30,7 +32,7 @@ defmodule GamendWeb.AdminBreadcrumbs do
   @spec trail(String.t()) :: [{String.t(), String.t() | nil}]
   def trail(path) when is_binary(path) do
     case String.split(path, "/", trim: true) do
-      ["admin" | segments] ->
+      [@admin | segments] ->
         crumbs =
           Enum.scan(segments, {"Admin", "/admin"}, fn segment, {_label, parent} ->
             {name(segment), parent <> "/" <> segment}

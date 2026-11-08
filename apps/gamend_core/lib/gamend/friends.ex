@@ -37,6 +37,10 @@ defmodule Gamend.Friends do
   alias Gamend.Repo
   alias Gamend.Repo.AdvisoryLock
   alias Gamend.Types
+
+  require Gamend.Friends.FriendshipStatus, as: FriendshipStatus
+  require Gamend.Notifications.NotificationType, as: NotificationType
+
   @friends_topic "friends"
 
   @type user_id :: Ecto.UUID.t()
@@ -144,7 +148,7 @@ defmodule Gamend.Friends do
       Gamend.Notifications.admin_create_notification(f.requester_id, f.target_id, %{
         "title" => "#{requester_name} sent you a friend request",
         "content" => "",
-        "metadata" => %{"type" => "friend_request", "friendship_id" => f.id}
+        "metadata" => %{"type" => NotificationType.friend_request(), "friendship_id" => f.id}
       })
 
     :ok
@@ -157,7 +161,7 @@ defmodule Gamend.Friends do
       Gamend.Notifications.admin_create_notification(f.target_id, f.requester_id, %{
         "title" => "#{target_name} accepted your friend request",
         "content" => "",
-        "metadata" => %{"type" => "friend_accepted", "friendship_id" => f.id}
+        "metadata" => %{"type" => NotificationType.friend_accepted(), "friendship_id" => f.id}
       })
 
     :ok
@@ -238,19 +242,20 @@ defmodule Gamend.Friends do
         reverse = Repo.get_by(Friendship, requester_id: target_id, target_id: requester_id)
 
         cond do
-          status?(same, "blocked") or status?(reverse, "blocked") ->
+          status?(same, FriendshipStatus.blocked()) or
+              status?(reverse, FriendshipStatus.blocked()) ->
             Repo.rollback(:blocked)
 
-          status?(same, "accepted") ->
+          status?(same, FriendshipStatus.accepted()) ->
             Repo.rollback({:already_friends, same})
 
-          status?(reverse, "accepted") ->
+          status?(reverse, FriendshipStatus.accepted()) ->
             Repo.rollback({:already_friends, reverse})
 
-          status?(same, "pending") ->
+          status?(same, FriendshipStatus.pending()) ->
             Repo.rollback({:already_requested, same})
 
-          status?(reverse, "pending") ->
+          status?(reverse, FriendshipStatus.pending()) ->
             # Roll back so accept_friend_request can use its own transaction
             Repo.rollback({:accept_reverse, reverse.id})
 
@@ -381,9 +386,14 @@ defmodule Gamend.Friends do
   # it wanted, and otherwise answered some other way.
   defp moved_on(id, wanted) do
     case {Repo.get(Friendship, id), wanted} do
-      {nil, _} -> :not_found
-      {%Friendship{status: "accepted"}, "accepted"} -> :already_friends
-      {%Friendship{}, _} -> :not_pending
+      {nil, _} ->
+        :not_found
+
+      {%Friendship{status: FriendshipStatus.accepted()}, FriendshipStatus.accepted()} ->
+        :already_friends
+
+      {%Friendship{}, _} ->
+        :not_pending
     end
   end
 
@@ -398,8 +408,8 @@ defmodule Gamend.Friends do
     existing_same = get_by_pair(requester_id, target_id)
     existing_reverse = get_by_pair(target_id, requester_id)
 
-    (existing_same && existing_same.status == "blocked") ||
-      (existing_reverse && existing_reverse.status == "blocked")
+    (existing_same && existing_same.status == FriendshipStatus.blocked()) ||
+      (existing_reverse && existing_reverse.status == FriendshipStatus.blocked())
   end
 
   @doc """
@@ -412,12 +422,12 @@ defmodule Gamend.Friends do
 
   defp already_friends?(requester_id, target_id) do
     case get_by_pair(requester_id, target_id) do
-      %Friendship{status: "accepted"} = f ->
+      %Friendship{status: FriendshipStatus.accepted()} = f ->
         f
 
       _ ->
         case get_by_pair(target_id, requester_id) do
-          %Friendship{status: "accepted"} = f -> f
+          %Friendship{status: FriendshipStatus.accepted()} = f -> f
           _ -> nil
         end
     end
@@ -456,7 +466,8 @@ defmodule Gamend.Friends do
   defp accept_locked(%Friendship{} = f) do
     lock_players([f.requester_id, f.target_id])
 
-    with {:ok, accepted} <- transition(f, ["pending"], "accepted"),
+    with {:ok, accepted} <-
+           transition(f, [FriendshipStatus.pending()], FriendshipStatus.accepted()),
          :ok <- within_friends_limit(accepted.requester_id),
          :ok <- within_friends_limit(accepted.target_id) do
       # remove any reverse pending request if present
@@ -464,7 +475,7 @@ defmodule Gamend.Friends do
         from ff in Friendship,
           where:
             ff.requester_id == ^f.target_id and ff.target_id == ^f.requester_id and
-              ff.status == "pending"
+              ff.status == ^FriendshipStatus.pending()
       )
 
       {:ok, accepted}
@@ -481,7 +492,7 @@ defmodule Gamend.Friends do
     with {:ok, f} <- fetch_request(friendship_id, :target_id, user_id),
          {:ok, rejected} <-
            with_pair_lock(f.requester_id, f.target_id, fn ->
-             transition(f, ["pending"], "rejected")
+             transition(f, [FriendshipStatus.pending()], FriendshipStatus.rejected())
            end) do
       _ = invalidate_friendship_cache(rejected.id)
       _ = invalidate_friends_cache_pair(rejected.requester_id, rejected.target_id)
@@ -505,7 +516,9 @@ defmodule Gamend.Friends do
   def cancel_request(friendship_id, %User{id: user_id}) when is_binary(friendship_id) do
     with {:ok, f} <- fetch_request(friendship_id, :requester_id, user_id),
          {:ok, :deleted} <-
-           with_pair_lock(f.requester_id, f.target_id, fn -> delete_in_status(f, "pending") end) do
+           with_pair_lock(f.requester_id, f.target_id, fn ->
+             delete_in_status(f, FriendshipStatus.pending())
+           end) do
       _ = invalidate_friendship_cache(f.id)
       _ = invalidate_friends_cache_pair(f.requester_id, f.target_id)
 
@@ -533,13 +546,16 @@ defmodule Gamend.Friends do
       case Repo.one(
              from f in Friendship,
                where:
-                 f.status == "accepted" and
+                 f.status == ^FriendshipStatus.accepted() and
                    ((f.requester_id == ^user_id and f.target_id == ^friend_id) or
                       (f.requester_id == ^friend_id and f.target_id == ^user_id)),
                limit: 1
            ) do
-        %Friendship{} = f -> with {:ok, :deleted} <- delete_in_status(f, "accepted"), do: {:ok, f}
-        nil -> {:error, :not_found}
+        %Friendship{} = f ->
+          with {:ok, :deleted} <- delete_in_status(f, FriendshipStatus.accepted()), do: {:ok, f}
+
+        nil ->
+          {:error, :not_found}
       end
     end)
     |> case do
@@ -572,7 +588,11 @@ defmodule Gamend.Friends do
     with {:ok, f} <- fetch_request(friendship_id, :target_id, user_id),
          {:ok, blocked} <-
            with_pair_lock(f.requester_id, f.target_id, fn ->
-             transition(f, ["pending", "rejected"], "blocked")
+             transition(
+               f,
+               [FriendshipStatus.pending(), FriendshipStatus.rejected()],
+               FriendshipStatus.blocked()
+             )
            end) do
       _ = invalidate_friendship_cache(blocked.id)
       _ = invalidate_friends_cache_pair(blocked.requester_id, blocked.target_id)
@@ -620,14 +640,14 @@ defmodule Gamend.Friends do
 
       case Repo.get_by(Friendship, requester_id: blocked_id, target_id: blocker_id) do
         %Friendship{} = f ->
-          f |> Ecto.Changeset.change(status: "blocked") |> Repo.update()
+          f |> Ecto.Changeset.change(status: FriendshipStatus.blocked()) |> Repo.update()
 
         nil ->
           %Friendship{}
           |> Friendship.changeset(%{
             requester_id: blocked_id,
             target_id: blocker_id,
-            status: "blocked"
+            status: FriendshipStatus.blocked()
           })
           |> Repo.insert()
       end
@@ -656,7 +676,7 @@ defmodule Gamend.Friends do
   @spec unblock_user(User.t(), user_id()) :: {:ok, :unblocked} | {:error, :not_found}
   def unblock_user(%User{id: blocker_id}, blocked_id) when is_binary(blocked_id) do
     case get_by_pair(blocked_id, blocker_id) do
-      %Friendship{status: "blocked"} = f ->
+      %Friendship{status: FriendshipStatus.blocked()} = f ->
         with {:ok, :deleted} <- delete_block_row(f) do
           _ = invalidate_friendship_cache(f.id)
           _ = invalidate_friends_cache_pair(blocker_id, blocked_id)
@@ -677,7 +697,9 @@ defmodule Gamend.Friends do
   # once: the second finds no row and answers `:not_found`.
   defp delete_block_row(%Friendship{} = f) do
     with {:error, _} <-
-           with_pair_lock(f.requester_id, f.target_id, fn -> delete_in_status(f, "blocked") end),
+           with_pair_lock(f.requester_id, f.target_id, fn ->
+             delete_in_status(f, FriendshipStatus.blocked())
+           end),
          do: {:error, :not_found}
   end
 
@@ -695,7 +717,7 @@ defmodule Gamend.Friends do
 
     from(f in Friendship,
       where:
-        f.status == "blocked" and f.requester_id in ^ids and
+        f.status == ^FriendshipStatus.blocked() and f.requester_id in ^ids and
           f.target_id in ^ids,
       select: {f.requester_id, f.target_id}
     )
@@ -722,7 +744,7 @@ defmodule Gamend.Friends do
       from u in User,
         join: f in Friendship,
         on: f.requester_id == u.id,
-        where: f.target_id == ^user_id and f.status == "blocked",
+        where: f.target_id == ^user_id and f.status == ^FriendshipStatus.blocked(),
         order_by: [desc: f.inserted_at],
         limit: ^page_size,
         offset: ^offset
@@ -760,7 +782,7 @@ defmodule Gamend.Friends do
   end
 
   defp all_blocks_query(opts) do
-    query = from f in Friendship, where: f.status == "blocked"
+    query = from f in Friendship, where: f.status == ^FriendshipStatus.blocked()
 
     case Keyword.get(opts, :user_id) do
       nil ->
@@ -786,7 +808,7 @@ defmodule Gamend.Friends do
   """
   @spec delete_block(Ecto.UUID.t()) :: {:ok, :unblocked} | {:error, :not_found}
   def delete_block(friendship_id) when is_binary(friendship_id) do
-    with %Friendship{status: "blocked"} = f <- get_friendship(friendship_id),
+    with %Friendship{status: FriendshipStatus.blocked()} = f <- get_friendship(friendship_id),
          {:ok, :deleted} <- delete_block_row(f) do
       _ = invalidate_friendship_cache(f.id)
       _ = invalidate_friends_cache_pair(f.requester_id, f.target_id)
@@ -830,7 +852,7 @@ defmodule Gamend.Friends do
   end
 
   defp all_friendships_query(opts) do
-    query = from f in Friendship, where: f.status != "blocked"
+    query = from f in Friendship, where: f.status != ^FriendshipStatus.blocked()
 
     query =
       case Keyword.get(opts, :status) do
@@ -869,7 +891,8 @@ defmodule Gamend.Friends do
   """
   @spec delete_friendship(Ecto.UUID.t()) :: {:ok, :removed} | {:error, :not_found}
   def delete_friendship(friendship_id) when is_binary(friendship_id) do
-    with %Friendship{status: status} = f when status != "blocked" <- get_friendship(friendship_id),
+    with %Friendship{status: status} = f when status != FriendshipStatus.blocked() <-
+           get_friendship(friendship_id),
          # Deleted only while it is still what was read, so the event below
          # names what the row was: a request accepted or blocked meanwhile is
          # left for another look.
@@ -886,17 +909,19 @@ defmodule Gamend.Friends do
     _ = invalidate_friends_cache_pair(f.requester_id, f.target_id)
 
     # An accepted pair leaves a DM history behind, same as remove_friend/2.
-    if f.status == "accepted" do
+    if f.status == FriendshipStatus.accepted() do
       Gamend.Chat.cleanup_friend_chat(f.requester_id, f.target_id)
     end
 
     # A cancelled request and a removed friendship are different events to
     # a connected client, so broadcast whichever the row actually was.
-    event = if f.status == "pending", do: :request_cancelled, else: :friend_removed
+    event =
+      if f.status == FriendshipStatus.pending(), do: :request_cancelled, else: :friend_removed
+
     broadcast_user(f.requester_id, {event, f})
     broadcast_user(f.target_id, {event, f})
     broadcast_all({event, f})
-    if f.status == "pending", do: retract_friend_request_notification(f)
+    if f.status == FriendshipStatus.pending(), do: retract_friend_request_notification(f)
 
     {:ok, :removed}
   end
@@ -913,7 +938,7 @@ defmodule Gamend.Friends do
       Repo.exists?(
         from f in Friendship,
           where:
-            f.status == "blocked" and
+            f.status == ^FriendshipStatus.blocked() and
               ((f.requester_id == ^user_id and f.target_id in ^others) or
                  (f.target_id == ^user_id and f.requester_id in ^others))
       )
@@ -933,7 +958,7 @@ defmodule Gamend.Friends do
       Repo.exists?(
         from f in Friendship,
           where:
-            f.status == "blocked" and
+            f.status == ^FriendshipStatus.blocked() and
               ((f.requester_id in ^ids and f.target_id in ^others) or
                  (f.target_id in ^ids and f.requester_id in ^others))
       )
@@ -961,7 +986,7 @@ defmodule Gamend.Friends do
 
     Repo.all(
       from f in Friendship,
-        where: f.target_id == ^user_id and f.status == "blocked",
+        where: f.target_id == ^user_id and f.status == ^FriendshipStatus.blocked(),
         preload: [:requester],
         limit: ^page_size,
         offset: ^offset
@@ -978,7 +1003,7 @@ defmodule Gamend.Friends do
   defp count_blocked_for_user_uncached(user_id) do
     Repo.one(
       from f in Friendship,
-        where: f.target_id == ^user_id and f.status == "blocked",
+        where: f.target_id == ^user_id and f.status == ^FriendshipStatus.blocked(),
         select: count(f.id)
     ) || 0
   end
@@ -989,7 +1014,7 @@ defmodule Gamend.Friends do
   def unblock_friendship(friendship_id, %User{id: user_id}) when is_binary(friendship_id) do
     with %Friendship{} = f <- get_friendship(friendship_id),
          true <- f.target_id == user_id,
-         true <- f.status == "blocked",
+         true <- f.status == FriendshipStatus.blocked(),
          {:ok, :deleted} <- delete_block_row(f) do
       _ = invalidate_friendship_cache(f.id)
       _ = invalidate_friends_cache_pair(f.requester_id, f.target_id)
@@ -1030,12 +1055,12 @@ defmodule Gamend.Friends do
 
     q1 =
       from f in Friendship,
-        where: f.status == "accepted" and f.requester_id == ^user_id,
+        where: f.status == ^FriendshipStatus.accepted() and f.requester_id == ^user_id,
         select: %{id: f.target_id}
 
     q2 =
       from f in Friendship,
-        where: f.status == "accepted" and f.target_id == ^user_id,
+        where: f.status == ^FriendshipStatus.accepted() and f.target_id == ^user_id,
         select: %{id: f.requester_id}
 
     union_q = union_all(q1, ^q2)
@@ -1080,7 +1105,7 @@ defmodule Gamend.Friends do
       Repo.all(
         from f in Friendship,
           where:
-            f.status == "accepted" and
+            f.status == ^FriendshipStatus.accepted() and
               (f.requester_id == ^user_id or f.target_id == ^user_id),
           preload: [:requester, :target],
           limit: ^page_size,
@@ -1103,12 +1128,12 @@ defmodule Gamend.Friends do
   defp count_friends_for_user_uncached(user_id) do
     q1 =
       from f in Friendship,
-        where: f.status == "accepted" and f.requester_id == ^user_id,
+        where: f.status == ^FriendshipStatus.accepted() and f.requester_id == ^user_id,
         select: %{id: f.target_id}
 
     q2 =
       from f in Friendship,
-        where: f.status == "accepted" and f.target_id == ^user_id,
+        where: f.status == ^FriendshipStatus.accepted() and f.target_id == ^user_id,
         select: %{id: f.requester_id}
 
     union_q = union_all(q1, ^q2)
@@ -1139,7 +1164,7 @@ defmodule Gamend.Friends do
 
     Repo.all(
       from f in Friendship,
-        where: f.target_id == ^user_id and f.status == "pending",
+        where: f.target_id == ^user_id and f.status == ^FriendshipStatus.pending(),
         preload: [:requester],
         limit: ^page_size,
         offset: ^offset
@@ -1156,7 +1181,7 @@ defmodule Gamend.Friends do
   defp count_incoming_requests_uncached(user_id) do
     Repo.one(
       from f in Friendship,
-        where: f.target_id == ^user_id and f.status == "pending",
+        where: f.target_id == ^user_id and f.status == ^FriendshipStatus.pending(),
         select: count(f.id)
     ) || 0
   end
@@ -1184,7 +1209,7 @@ defmodule Gamend.Friends do
 
     Repo.all(
       from f in Friendship,
-        where: f.requester_id == ^user_id and f.status == "pending",
+        where: f.requester_id == ^user_id and f.status == ^FriendshipStatus.pending(),
         preload: [:target],
         limit: ^page_size,
         offset: ^offset
@@ -1201,7 +1226,7 @@ defmodule Gamend.Friends do
   defp count_outgoing_requests_uncached(user_id) do
     Repo.one(
       from f in Friendship,
-        where: f.requester_id == ^user_id and f.status == "pending",
+        where: f.requester_id == ^user_id and f.status == ^FriendshipStatus.pending(),
         select: count(f.id)
     ) || 0
   end
@@ -1239,12 +1264,12 @@ defmodule Gamend.Friends do
   def friend_ids(user_id) when is_binary(user_id) do
     q1 =
       from f in Friendship,
-        where: f.status == "accepted" and f.requester_id == ^user_id,
+        where: f.status == ^FriendshipStatus.accepted() and f.requester_id == ^user_id,
         select: f.target_id
 
     q2 =
       from f in Friendship,
-        where: f.status == "accepted" and f.target_id == ^user_id,
+        where: f.status == ^FriendshipStatus.accepted() and f.target_id == ^user_id,
         select: f.requester_id
 
     union_all(q1, ^q2) |> Repo.all()

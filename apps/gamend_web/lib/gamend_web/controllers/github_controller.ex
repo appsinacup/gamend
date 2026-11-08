@@ -25,6 +25,7 @@ defmodule GamendWeb.GitHubController do
   alias Gamend.OAuthSessions
 
   require Logger
+  require Gamend.OAuth.SessionStatus, as: SessionStatus
 
   @provider "github_app"
 
@@ -37,7 +38,7 @@ defmodule GamendWeb.GitHubController do
       {:ok, _session} =
         OAuthSessions.create_session(state, %{
           provider: @provider,
-          status: "pending",
+          status: SessionStatus.pending(),
           data: %{"user_id" => user.id, "return_to" => return_to(params)}
         })
 
@@ -59,7 +60,7 @@ defmodule GamendWeb.GitHubController do
     user = Scope.user(conn.assigns.current_scope)
 
     with %{data: data} <- OAuthSessions.get_pending_session(state, @provider) || {:error, :state},
-         _ = OAuthSessions.update_session(state, %{status: "completed"}),
+         _ = OAuthSessions.update_session(state, %{status: SessionStatus.completed()}),
          true <- data["user_id"] == user.id || {:error, :state},
          {:ok, installations} <- GitHub.link_installations(user, code, redirect_uri()) do
       conn

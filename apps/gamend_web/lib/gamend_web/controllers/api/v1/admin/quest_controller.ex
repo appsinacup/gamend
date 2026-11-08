@@ -22,6 +22,8 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
   alias GamendWeb.Uploads
   alias OpenApiSpex.Schema
 
+  require GamendWeb.UploadName, as: UploadName
+
   tags(["Admin – Quests"])
 
   @quest_body_schema %Schema{
@@ -191,7 +193,13 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
 
   def icon_upload_url(conn, %{"id" => id} = params) do
     with_quest(conn, id, fn quest ->
-      Uploads.ticket(conn, "icons/quests", quest.id, "icon", Uploads.content_type(params))
+      Uploads.ticket(
+        conn,
+        "icons/quests",
+        quest.id,
+        UploadName.icon(),
+        Uploads.content_type(params)
+      )
     end)
   end
 

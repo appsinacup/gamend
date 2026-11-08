@@ -10,6 +10,10 @@ defmodule GamendWeb.Schemas.ClientLogEntry do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  require Gamend.ClientLogs.LogLevel, as: LogLevel
+
+  @game "game"
+
   OpenApiSpex.schema(%{
     title: "ClientLogEntry",
     description: "A single client log entry",
@@ -28,14 +32,14 @@ defmodule GamendWeb.Schemas.ClientLogEntry do
       },
       level: %Schema{
         type: :string,
-        enum: ["trace", "debug", "info", "warn", "error"],
+        enum: LogLevel.all(),
         description: "Client level. Carried through as data; see the capture policy.",
-        example: "info"
+        example: LogLevel.info()
       },
       category: %Schema{
         type: :string,
         description: "Free-form subsystem tag owned by the game, e.g. game, network, perf.",
-        example: "game"
+        example: @game
       },
       message: %Schema{type: :string, description: "The line itself.", example: "Game starting"},
       lobby_id: %Schema{
@@ -62,7 +66,13 @@ defmodule GamendWeb.Schemas.ClientLogSession do
   registers.
   """
   require OpenApiSpex
+  alias Gamend.ClientLogs.Session
   alias OpenApiSpex.Schema
+
+  require Gamend.ClientLogs.BuildKind, as: BuildKind
+  require Gamend.ClientLogs.LogLevel, as: LogLevel
+
+  @ro "ro"
 
   OpenApiSpex.schema(%{
     title: "ClientLogSession",
@@ -81,12 +91,16 @@ defmodule GamendWeb.Schemas.ClientLogSession do
       device_id: %Schema{type: :string, description: "Stable device identifier.", example: ""},
       platform: %Schema{
         type: :string,
-        enum: ["android", "ios", "web", "windows", "macos", "linux", "unknown"],
+        enum: Session.platforms(),
         example: "android"
       },
       app_version: %Schema{type: :string, example: "1.4.2"},
-      build: %Schema{type: :string, enum: ["debug", "release"], example: "release"},
-      locale: %Schema{type: :string, example: "ro"},
+      build: %Schema{
+        type: :string,
+        enum: [LogLevel.debug(), BuildKind.release()],
+        example: BuildKind.release()
+      },
+      locale: %Schema{type: :string, example: @ro},
       started_at: %Schema{
         type: :number,
         description: "When the run began, client clock, seconds since the Unix epoch."
@@ -167,6 +181,8 @@ defmodule GamendWeb.Schemas.ClientLogPolicy do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  require Gamend.ClientLogs.LogLevel, as: LogLevel
+
   OpenApiSpex.schema(%{
     title: "ClientLogPolicy",
     description: "Capture policy for game clients",
@@ -175,9 +191,9 @@ defmodule GamendWeb.Schemas.ClientLogPolicy do
       enabled: %Schema{type: :boolean, description: "Collect at all.", example: true},
       level: %Schema{
         type: :string,
-        enum: ["trace", "debug", "info", "warn", "error"],
+        enum: LogLevel.all(),
         description: "Lowest level to upload.",
-        example: "info"
+        example: LogLevel.info()
       },
       categories: %Schema{
         type: :object,

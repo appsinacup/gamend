@@ -27,6 +27,8 @@ defmodule GamendWeb.PlayLive do
   alias GamendWeb.Auth.Guardian
   alias GamendWeb.Plugs.FeatureGate
 
+  require GamendWeb.Auth.TokenType, as: TokenType
+
   @impl true
   def mount(_params, _session, socket) do
     unless FeatureGate.enabled?(:play) do
@@ -84,9 +86,9 @@ defmodule GamendWeb.PlayLive do
 
   defp build_token_data(user) do
     with {:ok, access_token, _claims} <-
-           Guardian.encode_and_sign(user, %{}, token_type: "access"),
+           Guardian.encode_and_sign(user, %{}, token_type: TokenType.access()),
          {:ok, refresh_token, _claims} <-
-           Guardian.encode_and_sign(user, %{}, token_type: "refresh") do
+           Guardian.encode_and_sign(user, %{}, token_type: TokenType.refresh()) do
       %{access_token: access_token, refresh_token: refresh_token}
     else
       _error -> %{}

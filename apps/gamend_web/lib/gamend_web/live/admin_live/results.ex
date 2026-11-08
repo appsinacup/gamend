@@ -18,6 +18,8 @@ defmodule GamendWeb.AdminLive.Results do
   use GamendWeb.UrlState,
     keys: [:page, :page_size, filters: [keys: @filters]]
 
+  require Gamend.Results.ResultStatus, as: ResultStatus
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
@@ -98,8 +100,8 @@ defmodule GamendWeb.AdminLive.Results do
     |> assign(:players, players(results))
     |> assign(:count, total)
     |> assign(:by_status, %{
-      "open" => Results.count(Map.put(filters, "status", "open")),
-      "ended" => Results.count(Map.put(filters, "status", "ended"))
+      "open" => Results.count(Map.put(filters, "status", ResultStatus.open())),
+      "ended" => Results.count(Map.put(filters, "status", ResultStatus.ended()))
     })
     |> assign(:total_pages, LiveHelpers.total_pages(total, socket.assigns.page_size))
   end
@@ -153,7 +155,7 @@ defmodule GamendWeb.AdminLive.Results do
   defp number(nil), do: ""
   defp number(value), do: to_string(value)
 
-  defp status_class("open"), do: "badge-warning"
+  defp status_class(ResultStatus.open()), do: "badge-warning"
   defp status_class(_status), do: "badge-ghost"
 
   defp short(id), do: String.slice(id, -8, 8)

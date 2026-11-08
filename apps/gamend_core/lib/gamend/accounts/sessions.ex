@@ -16,6 +16,9 @@ defmodule Gamend.Accounts.Sessions do
   alias Gamend.Accounts.UserToken
   alias Gamend.Repo
 
+  require Gamend.Quests.ReportedEvent, as: ReportedEvent
+  require Gamend.Accounts.TokenContext, as: TokenContext
+
   @doc """
   Generates a session token.
   """
@@ -87,7 +90,7 @@ defmodule Gamend.Accounts.Sessions do
 
         Gamend.Async.run(fn ->
           Gamend.Hooks.internal_call(:after_user_logged_in, [user])
-          Gamend.Quests.report_event(user.id, "login")
+          Gamend.Quests.report_event(user.id, ReportedEvent.login())
         end)
 
         {:ok, {user, []}}
@@ -110,7 +113,7 @@ defmodule Gamend.Accounts.Sessions do
       {:ok, {user, _tokens}} = ok ->
         Gamend.Async.run(fn ->
           Gamend.Hooks.internal_call(:after_user_logged_in, [user])
-          Gamend.Quests.report_event(user.id, "login")
+          Gamend.Quests.report_event(user.id, ReportedEvent.login())
         end)
 
         ok
@@ -149,7 +152,7 @@ defmodule Gamend.Accounts.Sessions do
           {:ok, Swoosh.Email.t()} | {:error, term()}
   def deliver_login_instructions(%User{} = user, magic_link_url_fun)
       when is_function(magic_link_url_fun, 1) do
-    {encoded_token, user_token} = UserToken.build_email_token(user, "login")
+    {encoded_token, user_token} = UserToken.build_email_token(user, ReportedEvent.login())
     Repo.insert!(user_token)
     UserNotifier.deliver_login_instructions(user, magic_link_url_fun.(encoded_token))
   end
@@ -161,7 +164,10 @@ defmodule Gamend.Accounts.Sessions do
   def delete_user_session_token(token) do
     ids =
       Repo.all(
-        from(t in UserToken, where: t.token == ^token and t.context == "session", select: t.id)
+        from(t in UserToken,
+          where: t.token == ^token and t.context == ^TokenContext.session(),
+          select: t.id
+        )
       )
 
     Repo.delete_all(from(t in UserToken, where: t.id in ^ids))
@@ -235,7 +241,7 @@ defmodule Gamend.Accounts.Sessions do
   @spec session_tokens(Ecto.UUID.t()) :: [%{token: binary()}]
   def session_tokens(user_id) when is_binary(user_id) do
     from(t in UserToken,
-      where: t.user_id == ^user_id and t.context == "session",
+      where: t.user_id == ^user_id and t.context == ^TokenContext.session(),
       select: %{token: t.token}
     )
     |> Repo.all()
@@ -248,13 +254,13 @@ defmodule Gamend.Accounts.Sessions do
   def revoke_all_user_sessions(user_id) when is_binary(user_id) do
     token_ids =
       from(t in UserToken,
-        where: t.user_id == ^user_id and t.context == "session",
+        where: t.user_id == ^user_id and t.context == ^TokenContext.session(),
         select: t.id
       )
       |> Repo.all()
 
     result =
-      from(t in UserToken, where: t.user_id == ^user_id and t.context == "session")
+      from(t in UserToken, where: t.user_id == ^user_id and t.context == ^TokenContext.session())
       |> Repo.delete_all()
 
     Enum.each(token_ids, fn id ->

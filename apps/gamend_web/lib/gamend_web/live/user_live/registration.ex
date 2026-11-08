@@ -5,6 +5,9 @@ defmodule GamendWeb.UserLive.Registration do
   alias Gamend.Accounts.{Scope, User, UserToken}
   alias Gamend.Repo
 
+  require Gamend.Accounts.TokenContext, as: TokenContext
+  require GamendWeb.FormName, as: FormName
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -144,7 +147,7 @@ defmodule GamendWeb.UserLive.Registration do
         if is_first_user do
           # First user: registered confirmed, and logged in straight away.
           # Generate a magic link token for auto-login
-          {token, user_token} = UserToken.build_email_token(user, "login")
+          {token, user_token} = UserToken.build_email_token(user, TokenContext.login())
           Repo.insert!(user_token)
 
           # Redirect to login with the token (will auto-login the confirmed user)
@@ -211,7 +214,7 @@ defmodule GamendWeb.UserLive.Registration do
   end
 
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
-    form = to_form(changeset, as: "user")
+    form = to_form(changeset, as: FormName.user())
     assign(socket, form: form)
   end
 end

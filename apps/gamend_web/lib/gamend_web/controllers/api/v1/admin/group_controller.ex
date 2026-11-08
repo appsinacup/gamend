@@ -5,10 +5,13 @@ defmodule GamendWeb.Api.V1.Admin.GroupController do
   import GamendWeb.Helpers.ParamParser
 
   alias Gamend.Groups
+  alias Gamend.Groups.GroupType
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.{GroupPage, GroupResponse, OkResponse}
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
+
+  require Gamend.SortKey, as: SortKey
 
   tags(["Admin – Groups"])
 
@@ -21,7 +24,10 @@ defmodule GamendWeb.Api.V1.Admin.GroupController do
       title: [in: :query, schema: %Schema{type: :string}],
       type: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["public", "private", "hidden"]}
+        schema: %Schema{
+          type: :string,
+          enum: GroupType.all()
+        }
       ],
       min_members: [in: :query, schema: %Schema{type: :integer}],
       max_members: [in: :query, schema: %Schema{type: :integer}],
@@ -30,14 +36,14 @@ defmodule GamendWeb.Api.V1.Admin.GroupController do
         schema: %Schema{
           type: :string,
           enum: [
-            "updated_at",
-            "updated_at_asc",
-            "inserted_at",
-            "inserted_at_asc",
-            "title",
-            "title_desc",
-            "max_members",
-            "max_members_asc"
+            SortKey.updated_at(),
+            SortKey.updated_at_asc(),
+            SortKey.inserted_at(),
+            SortKey.inserted_at_asc(),
+            SortKey.title(),
+            SortKey.title_desc(),
+            SortKey.max_members(),
+            SortKey.max_members_asc()
           ]
         }
       ],

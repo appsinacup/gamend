@@ -16,6 +16,12 @@ defmodule GamendWeb.Auth.OAuthExchange do
   alias Gamend.OAuth.GoogleIDToken
   alias Gamend.OAuthSessions
 
+  require Gamend.OAuth.AuthProvider, as: AuthProvider
+  require Gamend.OAuth.SessionStatus, as: SessionStatus
+
+  @email_scope "email"
+  @response_type_code "code"
+
   @type provider :: String.t()
   @type config :: %{
           label: String.t(),
@@ -32,7 +38,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
 
   @doc "A provider's account field, changeset and finder."
   @spec provider(provider()) :: {:ok, config()} | {:error, :unsupported_provider}
-  def provider("discord") do
+  def provider(AuthProvider.discord()) do
     {:ok,
      %{
        label: "Discord",
@@ -42,7 +48,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
      }}
   end
 
-  def provider("google") do
+  def provider(AuthProvider.google()) do
     {:ok,
      %{
        label: "Google",
@@ -52,7 +58,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
      }}
   end
 
-  def provider("facebook") do
+  def provider(AuthProvider.facebook()) do
     {:ok,
      %{
        label: "Facebook",
@@ -62,7 +68,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
      }}
   end
 
-  def provider("github") do
+  def provider(AuthProvider.github()) do
     {:ok,
      %{
        label: "GitHub",
@@ -72,7 +78,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
      }}
   end
 
-  def provider("apple") do
+  def provider(AuthProvider.apple()) do
     {:ok,
      %{
        label: "Apple",
@@ -82,7 +88,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
      }}
   end
 
-  def provider("steam") do
+  def provider(AuthProvider.steam()) do
     {:ok,
      %{
        label: "Steam",
@@ -105,58 +111,58 @@ defmodule GamendWeb.Auth.OAuthExchange do
   session id) back to `/auth/<provider>/callback`.
   """
   @spec authorization_url(provider(), String.t()) :: String.t()
-  def authorization_url("discord", state) do
+  def authorization_url(AuthProvider.discord(), state) do
     query(
       "https://discord.com/oauth2/authorize",
       client_id: setting(:discord_client_id),
-      redirect_uri: redirect_uri("discord"),
-      response_type: "code",
+      redirect_uri: redirect_uri(AuthProvider.discord()),
+      response_type: @response_type_code,
       scope: "identify email",
       state: state
     )
   end
 
-  def authorization_url("apple", state) do
+  def authorization_url(AuthProvider.apple(), state) do
     query(
       "https://appleid.apple.com/auth/authorize",
       client_id: setting(:apple_client_id),
-      redirect_uri: redirect_uri("apple"),
-      response_type: "code",
+      redirect_uri: redirect_uri(AuthProvider.apple()),
+      response_type: @response_type_code,
       response_mode: "form_post",
       scope: "name email",
       state: state
     )
   end
 
-  def authorization_url("google", state) do
+  def authorization_url(AuthProvider.google(), state) do
     query(
       "https://accounts.google.com/o/oauth2/v2/auth",
       client_id: setting(:google_client_id),
-      redirect_uri: redirect_uri("google"),
-      response_type: "code",
+      redirect_uri: redirect_uri(AuthProvider.google()),
+      response_type: @response_type_code,
       scope: "email profile",
       access_type: "offline",
       state: state
     )
   end
 
-  def authorization_url("facebook", state) do
+  def authorization_url(AuthProvider.facebook(), state) do
     query(
       "https://www.facebook.com/v18.0/dialog/oauth",
       client_id: setting(:facebook_client_id),
-      redirect_uri: redirect_uri("facebook"),
-      response_type: "code",
-      scope: "email",
+      redirect_uri: redirect_uri(AuthProvider.facebook()),
+      response_type: @response_type_code,
+      scope: @email_scope,
       state: state
     )
   end
 
   # No `scope`: a GitHub App ignores it, its permissions are set on the App.
-  def authorization_url("github", state) do
+  def authorization_url(AuthProvider.github(), state) do
     query(
       "https://github.com/login/oauth/authorize",
       client_id: setting(:github_client_id),
-      redirect_uri: redirect_uri("github"),
+      redirect_uri: redirect_uri(AuthProvider.github()),
       state: state
     )
   end
@@ -166,7 +172,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
   # `/auth/steam`, in the browser that will sign in; the session id rides
   # along and waits for the callback in the Plug session
   # (`GamendWeb.AuthController`'s `stash_steam_session/2`).
-  def authorization_url("steam", session_id) do
+  def authorization_url(AuthProvider.steam(), session_id) do
     query("#{GamendWeb.endpoint().url()}/auth/steam", session_id: session_id)
   end
 
@@ -184,7 +190,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
 
     OAuthSessions.create_session(session_id, %{
       provider: provider,
-      status: "pending",
+      status: SessionStatus.pending(),
       data: data
     })
 
@@ -196,7 +202,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
   a session ticket for Steam.
   """
   @spec code_params(provider(), term()) :: {:ok, map()} | {:error, term()}
-  def code_params("steam", ticket), do: steam_ticket(ticket)
+  def code_params(AuthProvider.steam(), ticket), do: steam_ticket(ticket)
 
   def code_params(provider, code) when is_binary(code) and code != "",
     do: exchange_code(provider, code)
@@ -213,7 +219,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
   @doc "What a native Sign in with Apple code proves."
   @spec apple_ios_params(term()) :: {:ok, map()} | {:error, term()}
   def apple_ios_params(code) when is_binary(code) and code != "",
-    do: exchange_code("apple", code, :ios)
+    do: exchange_code(AuthProvider.apple(), code, :ios)
 
   def apple_ios_params(_code), do: {:error, :missing_param}
 
@@ -265,7 +271,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
   @spec steam_ticket(String.t() | nil) :: {:ok, map()} | {:error, term()}
   def steam_ticket(ticket) when is_binary(ticket) and ticket != "" do
     with {:ok, profile_info} <- exchanger().exchange_steam_ticket(ticket, fetch_profile: true) do
-      user_params("steam", profile_info)
+      user_params(AuthProvider.steam(), profile_info)
     end
   end
 
@@ -294,7 +300,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
   accounts start with a generated username and pick a name in their settings.
   """
   @spec user_params(provider(), map()) :: {:ok, map()} | {:error, :missing_user_info}
-  def user_params("discord", %{"id" => discord_id, "email" => email} = response) do
+  def user_params(AuthProvider.discord(), %{"id" => discord_id, "email" => email} = response) do
     avatar = response["avatar"]
     display_name = Map.get(response, "global_name") || Map.get(response, "username")
 
@@ -312,7 +318,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
      }}
   end
 
-  def user_params("google", %{"id" => google_id, "email" => email} = user_info) do
+  def user_params(AuthProvider.google(), %{"id" => google_id, "email" => email} = user_info) do
     picture = Map.get(user_info, "picture")
 
     user_params = %{
@@ -324,7 +330,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
     {:ok, if(picture, do: Map.put(user_params, :profile_url, picture), else: user_params)}
   end
 
-  def user_params("facebook", %{"id" => facebook_id} = user_info) do
+  def user_params(AuthProvider.facebook(), %{"id" => facebook_id} = user_info) do
     profile_url =
       user_info
       |> Map.get("picture", %{})
@@ -343,7 +349,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
   end
 
   # GitHub's `id` is an integer in its JSON; the column is a string.
-  def user_params("github", %{"id" => github_id} = user_info) do
+  def user_params(AuthProvider.github(), %{"id" => github_id} = user_info) do
     {:ok,
      %{
        email: user_info["email"],
@@ -354,7 +360,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
      }}
   end
 
-  def user_params("apple", %{"sub" => apple_id} = user_info) do
+  def user_params(AuthProvider.apple(), %{"sub" => apple_id} = user_info) do
     {:ok,
      %{
        email: user_info["email"],
@@ -363,7 +369,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
      }}
   end
 
-  def user_params("steam", %{"id" => steam_id} = profile_info) do
+  def user_params(AuthProvider.steam(), %{"id" => steam_id} = profile_info) do
     {:ok,
      %{
        steam_id: steam_id,
@@ -378,50 +384,51 @@ defmodule GamendWeb.Auth.OAuthExchange do
   @spec redirect_uri(provider()) :: String.t()
   def redirect_uri(provider), do: "#{GamendWeb.endpoint().url()}/auth/#{provider}/callback"
 
-  defp exchange_provider_code("discord", code, :web) do
+  defp exchange_provider_code(AuthProvider.discord(), code, :web) do
     exchanger().exchange_discord_code(
       code,
       setting(:discord_client_id),
       setting(:discord_client_secret),
-      redirect_uri("discord")
+      redirect_uri(AuthProvider.discord())
     )
   end
 
-  defp exchange_provider_code("google", code, :web) do
+  defp exchange_provider_code(AuthProvider.google(), code, :web) do
     exchanger().exchange_google_code(
       code,
       setting(:google_client_id),
       setting(:google_client_secret),
-      redirect_uri("google")
+      redirect_uri(AuthProvider.google())
     )
   end
 
-  defp exchange_provider_code("facebook", code, :web) do
+  defp exchange_provider_code(AuthProvider.facebook(), code, :web) do
     exchanger().exchange_facebook_code(
       code,
       setting(:facebook_client_id),
       setting(:facebook_client_secret),
-      redirect_uri("facebook")
+      redirect_uri(AuthProvider.facebook())
     )
   end
 
-  defp exchange_provider_code("github", code, :web) do
+  defp exchange_provider_code(AuthProvider.github(), code, :web) do
     exchanger().exchange_github_code(
       code,
       setting(:github_client_id),
       setting(:github_client_secret),
-      redirect_uri("github")
+      redirect_uri(AuthProvider.github())
     )
   end
 
-  defp exchange_provider_code("apple", code, client_type) when client_type in [:web, :ios] do
+  defp exchange_provider_code(AuthProvider.apple(), code, client_type)
+       when client_type in [:web, :ios] do
     client_id = if client_type == :ios, do: apple_ios_client_id(), else: apple_web_client_id()
 
     exchanger().exchange_apple_code(
       code,
       client_id,
       apple_client_secret(client_id),
-      redirect_uri("apple")
+      redirect_uri(AuthProvider.apple())
     )
   end
 

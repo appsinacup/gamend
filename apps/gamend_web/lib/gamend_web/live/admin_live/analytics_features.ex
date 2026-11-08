@@ -15,6 +15,8 @@ defmodule GamendWeb.AdminLive.AnalyticsFeatures do
   alias Gamend.Analytics.Catalog
   alias Gamend.Analytics.Segment
 
+  require GamendWeb.FilterValue, as: FilterValue
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok, assign(socket, :page_title, "Admin · Analytics · Features")}
@@ -56,12 +58,15 @@ defmodule GamendWeb.AdminLive.AnalyticsFeatures do
   end
 
   defp here(segment),
-    do: link_to("/admin/analytics/features", %{"segment" => segment}, %{"segment" => "all"})
+    do:
+      link_to("/admin/analytics/features", %{"segment" => segment}, %{
+        "segment" => FilterValue.everything()
+      })
 
   defp explore(name, segment),
     do:
       link_to("/admin/analytics/explore", %{"event" => name, "segment" => segment}, %{
-        "segment" => "all"
+        "segment" => FilterValue.everything()
       })
 
   @impl true

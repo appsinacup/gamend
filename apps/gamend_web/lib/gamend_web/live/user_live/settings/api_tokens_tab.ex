@@ -14,6 +14,8 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
   alias Gamend.Accounts.ApiTokens
   alias GamendWeb.LiveHelpers
 
+  @never "never"
+
   @page_size 25
 
   def assign_defaults(socket) do
@@ -221,12 +223,12 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
 
   defp expiry_options do
     Enum.map(ApiToken.expiry_choices(), fn
-      nil -> {gettext("Never"), "never"}
+      nil -> {gettext("Never"), @never}
       days -> {ngettext("In %{count} day", "In %{count} days", days), to_string(days)}
     end)
   end
 
-  defp parse_days("never"), do: nil
+  defp parse_days(@never), do: nil
 
   defp parse_days(value) when is_binary(value) do
     case Integer.parse(value) do

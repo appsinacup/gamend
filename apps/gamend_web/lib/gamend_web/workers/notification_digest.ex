@@ -19,6 +19,8 @@ defmodule GamendWeb.Workers.NotificationDigest do
   alias Gamend.Notifications.Preferences
   alias GamendWeb.NotificationEmail
 
+  require Gamend.Notifications.NotificationChannel, as: NotificationChannel
+
   @impl Oban.Worker
   def timeout(_job), do: :timer.seconds(60)
 
@@ -32,7 +34,7 @@ defmodule GamendWeb.Workers.NotificationDigest do
         :ok
 
       match?(%User{email: email} when is_binary(email), user) and
-          Preferences.enabled?(user, group, "email") ->
+          Preferences.enabled?(user, group, NotificationChannel.email()) ->
         send_digest(user, group, items)
 
       true ->

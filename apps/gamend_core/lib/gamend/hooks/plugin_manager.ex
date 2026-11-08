@@ -41,6 +41,13 @@ defmodule Gamend.Hooks.PluginManager do
     group: :hooks,
     label: "Hooks"
 
+  require Gamend.ParamType, as: ParamType
+
+  @ok "ok"
+  @user_id "user_id"
+
+  @ebin "ebin"
+
   setting(:call_timeout_ms, :integer,
     default: 60_000,
     doc:
@@ -520,7 +527,7 @@ defmodule Gamend.Hooks.PluginManager do
     [
       {"plugin", plugin},
       {"fn", fn_name},
-      {"user_id", opts |> Keyword.get(:caller) |> user_id()},
+      {@user_id, opts |> Keyword.get(:caller) |> user_id()},
       {"args_count", length(args)},
       {"args_types", Enum.map_join(args, ",", &arg_type/1)}
     ]
@@ -531,16 +538,16 @@ defmodule Gamend.Hooks.PluginManager do
     |> Enum.join(" ")
   end
 
-  defp arg_type(value) when is_binary(value), do: "string"
-  defp arg_type(value) when is_integer(value), do: "integer"
-  defp arg_type(value) when is_float(value), do: "float"
-  defp arg_type(value) when is_boolean(value), do: "boolean"
-  defp arg_type(value) when is_list(value), do: "list"
-  defp arg_type(value) when is_map(value), do: "map"
+  defp arg_type(value) when is_binary(value), do: ParamType.string()
+  defp arg_type(value) when is_integer(value), do: ParamType.integer()
+  defp arg_type(value) when is_float(value), do: ParamType.float()
+  defp arg_type(value) when is_boolean(value), do: ParamType.boolean()
+  defp arg_type(value) when is_list(value), do: ParamType.list()
+  defp arg_type(value) when is_map(value), do: ParamType.map()
   defp arg_type(nil), do: "nil"
-  defp arg_type(_value), do: "unknown"
+  defp arg_type(_value), do: ParamType.unknown()
 
-  defp rpc_result_status({:ok, _result}), do: "ok"
+  defp rpc_result_status({:ok, _result}), do: @ok
   defp rpc_result_status({:error, reason}), do: "error:#{inspect(reason)}"
 
   defp user_id(%{id: id}) when is_binary(id), do: id
@@ -668,7 +675,7 @@ defmodule Gamend.Hooks.PluginManager do
       if provided_by_build?(app, plugin_dir) do
         []
       else
-        [Path.join(plugin_dir, "ebin")] ++
+        [Path.join(plugin_dir, @ebin)] ++
           Path.wildcard(Path.join(plugin_dir, "deps/*/ebin"))
       end
 

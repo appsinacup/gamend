@@ -5,16 +5,21 @@ defmodule GamendWeb.AdminLive.Tournaments do
   alias Gamend.Tournaments.Tournament
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.FilterValue, as: FilterValue
+  require GamendWeb.UrlParam, as: UrlParam
+
   use GamendWeb.UrlState,
     reload: :reload_view,
     keys: [
       :page,
       :page_size,
-      state_filter: [param: "state"],
-      detail_id: [param: "open"],
+      state_filter: [param: UrlParam.state()],
+      detail_id: [param: UrlParam.open()],
       detail_page: [],
       detail_bracket: [param: "bracket", type: :integer]
     ]
+
+  require Gamend.Tournaments.TournamentState, as: TournamentState
 
   @impl true
   def mount(_params, _session, socket) do
@@ -22,7 +27,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
       socket
       |> assign(:page, 1)
       |> assign(:page_size, 25)
-      |> assign(:state_filter, "all")
+      |> assign(:state_filter, FilterValue.everything())
       |> assign(:form, nil)
       |> assign(:selected, nil)
       |> assign(:detail, nil)
@@ -453,7 +458,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
 
   def handle_event("force_registration", _params, socket) do
     with_detail(socket, fn tournament ->
-      Tournaments.update_tournament(tournament, %{state: "registration"})
+      Tournaments.update_tournament(tournament, %{state: TournamentState.registration()})
     end)
   end
 
@@ -531,7 +536,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
       [page: socket.assigns.page, page_size: socket.assigns.page_size]
       |> then(fn opts ->
         case socket.assigns.state_filter do
-          "all" -> opts
+          FilterValue.everything() -> opts
           state -> Keyword.put(opts, :state, state)
         end
       end)
@@ -663,10 +668,10 @@ defmodule GamendWeb.AdminLive.Tournaments do
 
     base <>
       case state do
-        "running" -> "badge-success"
-        "registration" -> "badge-info"
-        "finished" -> "badge-neutral"
-        "cancelled" -> "badge-error"
+        TournamentState.running() -> "badge-success"
+        TournamentState.registration() -> "badge-info"
+        TournamentState.finished() -> "badge-neutral"
+        TournamentState.cancelled() -> "badge-error"
         _ -> "badge-ghost"
       end
   end

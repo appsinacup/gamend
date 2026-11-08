@@ -35,6 +35,14 @@ defmodule Gamend.Payments.StripeRefunds do
   alias Gamend.Payments.StripeEvents
   alias Gamend.Repo
 
+  require Gamend.Payments.ProductKind, as: ProductKind
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+  require Gamend.Payments.StripeIdPrefix, as: StripeIdPrefix
+  require Gamend.Payments.StripeStatus, as: StripeStatus
+
+  @admin "admin"
+
   # What a buyer can refund themselves: things a revocation takes back. A
   # consumable (coins) is spent the moment it lands, so only an admin refunds
   # one.
@@ -84,7 +92,7 @@ defmodule Gamend.Payments.StripeRefunds do
   @doc "Refund any Stripe purchase not refunded yet, with no window: the admin page's."
   @spec admin_refund_stripe_purchase(Ecto.UUID.t()) :: result()
   def admin_refund_stripe_purchase(purchase_id) do
-    run(purchase_id, "admin", &check_refundable/1)
+    run(purchase_id, @admin, &check_refundable/1)
   end
 
   # One refund of a purchase at a time; each step reads the row fresh.
@@ -119,12 +127,12 @@ defmodule Gamend.Payments.StripeRefunds do
     end
   end
 
-  defp check_refundable(%Purchase{provider: "stripe"} = purchase) do
+  defp check_refundable(%Purchase{provider: ProviderId.stripe()} = purchase) do
     cond do
       refunded?(purchase) -> {:error, :already_refunded}
-      purchase.status == "completed" -> :ok
+      purchase.status == PurchaseStatus.completed() -> :ok
       # A subscription cancelled by an earlier request whose refund then failed.
-      purchase.status == "cancelled" and requested?(purchase) -> :ok
+      purchase.status == PurchaseStatus.cancelled() and requested?(purchase) -> :ok
       true -> {:error, :not_refundable}
     end
   end
@@ -160,7 +168,8 @@ defmodule Gamend.Payments.StripeRefunds do
     used =
       if limit > 0 do
         from(p in Purchase,
-          where: p.user_id == ^user_id and p.provider == "stripe" and p.id != ^purchase_id,
+          where:
+            p.user_id == ^user_id and p.provider == ^ProviderId.stripe() and p.id != ^purchase_id,
           select: p.metadata
         )
         |> Repo.all()
@@ -189,7 +198,7 @@ defmodule Gamend.Payments.StripeRefunds do
       else: {:error, :refund_window_closed}
   end
 
-  defp refunded?(%Purchase{status: "refunded"}), do: true
+  defp refunded?(%Purchase{status: PurchaseStatus.refunded()}), do: true
   defp refunded?(%Purchase{} = purchase), do: is_binary(stripe_refund(purchase)["refund_id"])
 
   defp requested?(%Purchase{} = purchase), do: is_binary(stripe_refund(purchase)["requested_at"])
@@ -200,9 +209,9 @@ defmodule Gamend.Payments.StripeRefunds do
   # When the buyer last paid, as the row knows it: a one-off purchase when it
   # was fulfilled; a subscription when its current period started, if that is
   # later (a renewal, or the first charge at the end of a trial).
-  defp paid_at(%Purchase{product: %Product{kind: "subscription"}} = purchase) do
+  defp paid_at(%Purchase{product: %Product{kind: ProductKind.subscription()}} = purchase) do
     case (purchase.raw_provider_payload || %{})["stripe_subscription"] do
-      %{"status" => "trialing"} ->
+      %{"status" => StripeStatus.trialing()} ->
         {:error, :nothing_to_refund}
 
       subscription ->
@@ -232,7 +241,7 @@ defmodule Gamend.Payments.StripeRefunds do
 
   defp items_period_start(_items), do: nil
 
-  defp refund(%Purchase{product: %Product{kind: "subscription"}} = purchase, by) do
+  defp refund(%Purchase{product: %Product{kind: ProductKind.subscription()}} = purchase, by) do
     with {:ok, subscription_id} <- StripeEvents.stripe_subscription_id(purchase),
          {:ok, subscription} <-
            Payments.stripe_adapter().retrieve_subscription_with_latest_invoice(subscription_id),
@@ -260,7 +269,7 @@ defmodule Gamend.Payments.StripeRefunds do
   defp check_payment_window(_payment, _by), do: :ok
 
   defp cancel_now(%{"status" => status}, _purchase)
-       when status in ["canceled", "incomplete_expired"],
+       when status in [StripeStatus.canceled(), StripeStatus.incomplete_expired()],
        do: :ok
 
   defp cancel_now(%{"id" => subscription_id}, %Purchase{id: purchase_id}) do
@@ -300,7 +309,7 @@ defmodule Gamend.Payments.StripeRefunds do
   # The payment behind a subscription's latest invoice, when money was taken:
   # `%{id: "pi_…" | "ch_…", paid_at: DateTime | nil}`. A trial's invoice is
   # paid with nothing. Public for `Gamend.Payments.Upgrades`.
-  def invoice_payment(%{"status" => "paid", "amount_paid" => amount} = invoice)
+  def invoice_payment(%{"status" => StripeStatus.paid(), "amount_paid" => amount} = invoice)
       when is_integer(amount) and amount > 0 do
     case invoice_payment_id(invoice) do
       nil ->
@@ -322,7 +331,7 @@ defmodule Gamend.Payments.StripeRefunds do
       data when is_list(data) ->
         data
         |> Enum.flat_map(fn
-          %{"status" => "paid", "payment" => %{} = payment} ->
+          %{"status" => StripeStatus.paid(), "payment" => %{} = payment} ->
             [payment["payment_intent"], payment["charge"]]
 
           _other ->
@@ -357,9 +366,9 @@ defmodule Gamend.Payments.StripeRefunds do
   defp object_id(%{"id" => id}), do: id
   defp object_id(id), do: id
 
-  defp payment_id?("pi_" <> _rest), do: true
-  defp payment_id?("ch_" <> _rest), do: true
-  defp payment_id?("py_" <> _rest), do: true
+  defp payment_id?(StripeIdPrefix.payment_intent() <> _rest), do: true
+  defp payment_id?(StripeIdPrefix.charge() <> _rest), do: true
+  defp payment_id?(StripeIdPrefix.payment() <> _rest), do: true
   defp payment_id?(_value), do: false
 
   defp stripe_error_code({:stripe_error, %{} = error}) do

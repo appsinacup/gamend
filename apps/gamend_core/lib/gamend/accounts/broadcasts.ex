@@ -14,6 +14,8 @@ defmodule Gamend.Accounts.Broadcasts do
   alias Gamend.Accounts
   alias Gamend.Accounts.User
 
+  require Gamend.RealtimeEvent, as: RealtimeEvent
+
   @doc """
   Broadcast that the given user has been updated.
 
@@ -28,7 +30,7 @@ defmodule Gamend.Accounts.Broadcasts do
 
       Gamend.Broadcast.publish(
         topic,
-        %Phoenix.Socket.Broadcast{topic: topic, event: "updated", payload: payload}
+        %Phoenix.Socket.Broadcast{topic: topic, event: RealtimeEvent.updated(), payload: payload}
       )
 
       :ok
@@ -89,7 +91,11 @@ defmodule Gamend.Accounts.Broadcasts do
 
         Gamend.Broadcast.publish(
           topic,
-          %Phoenix.Socket.Broadcast{topic: topic, event: "friend_updated", payload: payload}
+          %Phoenix.Socket.Broadcast{
+            topic: topic,
+            event: RealtimeEvent.friend_updated(),
+            payload: payload
+          }
         )
       end
 

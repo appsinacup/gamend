@@ -29,6 +29,8 @@ defmodule Mix.Tasks.Gamend.Gdscript.New do
 
   alias Gamend.GDScript
 
+  @scripts "scripts"
+
   @impl true
   def run(args) do
     {opts, rest, _invalid} = OptionParser.parse(args, strict: [sdk_path: :string])
@@ -47,8 +49,8 @@ defmodule Mix.Tasks.Gamend.Gdscript.New do
 
     module = GDScript.default_module("#{name}.gd")
 
-    File.mkdir_p!(Path.join(name, "scripts"))
-    write(Path.join([name, "scripts", "#{name}.gd"]), script(module))
+    File.mkdir_p!(Path.join(name, @scripts))
+    write(Path.join([name, @scripts, "#{name}.gd"]), script(module))
     write(Path.join(name, "mix.exs"), mix_exs(name, module, opts))
     write(Path.join(name, ".formatter.exs"), formatter())
     write(Path.join(name, ".gitignore"), gitignore())

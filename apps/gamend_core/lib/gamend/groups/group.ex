@@ -27,6 +27,10 @@ defmodule Gamend.Groups.Group do
   alias Gamend.Accounts.User
   alias Gamend.Groups.GroupMember
 
+  require Gamend.Groups.GroupType, as: GroupType
+
+  @group "group"
+
   @type t :: %__MODULE__{}
 
   schema "groups" do
@@ -34,7 +38,7 @@ defmodule Gamend.Groups.Group do
     field :slug, :string
     field :description, :string, default: ""
     field :icon_url, :string
-    field :type, :string, default: "public"
+    field :type, :string, default: GroupType.public()
     field :max_members, :integer, default: 100
     field :metadata, :map, default: %{}
     field :slowdown, :integer, default: 0
@@ -82,7 +86,7 @@ defmodule Gamend.Groups.Group do
   defp put_default_slug(%{data: %{__meta__: %{state: :built}}} = changeset) do
     case get_field(changeset, :slug) do
       blank when blank in [nil, ""] ->
-        put_change(changeset, :slug, Gamend.Slug.slugify(get_field(changeset, :title), "group"))
+        put_change(changeset, :slug, Gamend.Slug.slugify(get_field(changeset, :title), @group))
 
       _slug ->
         changeset

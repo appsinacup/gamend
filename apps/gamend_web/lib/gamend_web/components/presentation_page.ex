@@ -10,6 +10,21 @@ defmodule GamendWeb.PresentationPage do
   alias GamendWeb.ProjectStatic
   alias Phoenix.HTML.Safe
 
+  @primary "primary"
+  @default "default"
+  @section "section"
+  @full "full"
+  @hero "hero"
+  @metadata "metadata"
+  @auto "auto"
+  @none "none"
+  @wide "wide"
+  @right "right"
+  @screen "screen"
+  @sm "sm"
+  @start "start"
+  @lazy "lazy"
+
   @bold_pattern ~r/\*\*(.+?)\*\*/
   @italic_pattern ~r/(?<!\*)\*([^*\n]+)\*(?!\*)/
   @link_pattern ~r/\[([^\]]+)\]\(([^)\s]+)\)/
@@ -357,7 +372,7 @@ defmodule GamendWeb.PresentationPage do
       assign(assigns,
         image: image_config(assigns.item),
         fit: media_fit_class(assigns.item),
-        loading: if(assigns.eager, do: "eager", else: "lazy"),
+        loading: if(assigns.eager, do: "eager", else: @lazy),
         # non_empty_string/1 returns the string (or nil), not a boolean.
         has_copy: has_copy?(assigns.item),
         scrim: has_copy?(assigns.item) and Map.get(assigns.item, "scrim") != false
@@ -570,7 +585,7 @@ defmodule GamendWeb.PresentationPage do
   end
 
   attr :links, :list, default: []
-  attr :align, :string, default: "start"
+  attr :align, :string, default: @start
 
   @doc """
   A section's `"links"`: a wrapping row of small link chips.
@@ -809,7 +824,7 @@ defmodule GamendWeb.PresentationPage do
   end
 
   attr :item, :map, required: true
-  attr :variant, :string, default: "section"
+  attr :variant, :string, default: @section
   attr :columns, :integer, default: 1
 
   @doc """
@@ -851,8 +866,8 @@ defmodule GamendWeb.PresentationPage do
   attr :image, :map, default: %{}
   attr :video, :map, default: %{}
   attr :icon, :string, default: nil
-  attr :variant, :string, default: "section"
-  attr :size, :string, default: "section"
+  attr :variant, :string, default: @section
+  attr :size, :string, default: @section
 
   def media_visual(assigns) do
     # `media_visual/1` is public and callable with a partial `image` or no
@@ -1048,7 +1063,7 @@ defmodule GamendWeb.PresentationPage do
   # (16:9 art keeps its shape — no aspect-square box), then centered text and
   # buttons. Media stays optional, so full-layout also covers text-only or
   # icon-only sections.
-  def section(%{section: %{"media_layout" => "full"}} = assigns) do
+  def section(%{section: %{"media_layout" => @full}} = assigns) do
     ~H"""
     <section class={[
       "flex w-full flex-col items-center justify-center gap-6",
@@ -1151,10 +1166,10 @@ defmodule GamendWeb.PresentationPage do
     desktop_position = desktop_image_position(item)
 
     case {width, desktop_position} do
-      {"third", "right"} -> "md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]"
+      {"third", @right} -> "md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]"
       {"third", _} -> "md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]"
-      {"wide", "right"} -> "md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
-      {"wide", _} -> "md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]"
+      {@wide, @right} -> "md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]"
+      {@wide, _} -> "md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]"
       _ -> "md:grid-cols-2"
     end
   end
@@ -1170,7 +1185,7 @@ defmodule GamendWeb.PresentationPage do
   # min-height above it a percentage basis is the content's height, and the
   # component would grow to its whole list. From `md` up it is the hero as
   # ever, centred.
-  defp mobile_fit?(hero), do: Map.get(hero, "mobile_fit") == "screen"
+  defp mobile_fit?(hero), do: Map.get(hero, "mobile_fit") == @screen
 
   defp hero_height_class(hero),
     do: if(mobile_fit?(hero), do: "min-h-svh md:min-h-dvh", else: "min-h-dvh")
@@ -1188,21 +1203,21 @@ defmodule GamendWeb.PresentationPage do
   # and visibly jumps once layout settles. `svh` is fixed for the session.
   defp bleed_height_class(section) do
     case section_height(section) do
-      value when value in ["compact", "sm", "small"] -> "min-h-[40svh]"
-      value when value in ["full", "screen", "100", "100%"] -> "min-h-[100dvh]"
+      value when value in ["compact", @sm, "small"] -> "min-h-[40svh]"
+      value when value in [@full, @screen, "100", "100%"] -> "min-h-[100dvh]"
       _ -> "min-h-[50svh]"
     end
   end
 
   defp section_height_class(section) do
     case section_height(section) do
-      value when value in ["compact", "sm", "small"] ->
+      value when value in ["compact", @sm, "small"] ->
         "py-8"
 
       value when value in ["half", "50", "50%"] ->
         "min-h-[calc(50svh-2.5rem)] py-8"
 
-      value when value in ["full", "screen", "100", "100%"] ->
+      value when value in [@full, @screen, "100", "100%"] ->
         "min-h-[calc(100svh-5rem)] py-12"
 
       _ ->
@@ -1265,7 +1280,7 @@ defmodule GamendWeb.PresentationPage do
         do: "order-2",
         else: "order-1"
       ),
-      if(desktop_image_position(item) == "right", do: "md:order-2", else: "md:order-1")
+      if(desktop_image_position(item) == @right, do: "md:order-2", else: "md:order-1")
     ]
   end
 
@@ -1275,14 +1290,14 @@ defmodule GamendWeb.PresentationPage do
         do: "order-1",
         else: "order-2"
       ),
-      if(desktop_image_position(item) == "right", do: "md:order-1", else: "md:order-2")
+      if(desktop_image_position(item) == @right, do: "md:order-1", else: "md:order-2")
     ]
   end
 
   defp text_align_class(item) do
     case Map.get(item, "text_align", "center") do
       "left" -> "text-start items-start"
-      "right" -> "text-end items-end"
+      @right -> "text-end items-end"
       _ -> "text-center items-center"
     end
   end
@@ -1424,10 +1439,10 @@ defmodule GamendWeb.PresentationPage do
   # `sections_columns_class(2)`'s `gap-x-4` between two-up sections.
   @sections_columns_gap 16
 
-  defp media_sizes(item, "hero", _columns),
-    do: column_sizes(@hero_boxes, @hero_phone, column_share(media_width(item, "hero")))
+  defp media_sizes(item, @hero, _columns),
+    do: column_sizes(@hero_boxes, @hero_phone, column_share(media_width(item, @hero)))
 
-  defp media_sizes(_item, "full", columns),
+  defp media_sizes(_item, @full, columns),
     do: column_sizes(two_up(@section_boxes, columns), @section_phone, :whole)
 
   defp media_sizes(item, variant, columns),
@@ -1458,7 +1473,7 @@ defmodule GamendWeb.PresentationPage do
 
   # The media column's fraction of the grid, from `grid_class/2`'s `fr` pairs.
   defp column_share("third"), do: 0.4
-  defp column_share("wide"), do: 0.575
+  defp column_share(@wide), do: 0.575
   defp column_share(_half), do: 0.5
 
   # A `"video"` item renders in place of `"image"`, so the same slot in a hero
@@ -1494,13 +1509,13 @@ defmodule GamendWeb.PresentationPage do
       alt: "",
       width: nil,
       height: nil,
-      preload: "metadata",
+      preload: @metadata,
       muted: true
     }
   end
 
-  defp video_preload(value) when value in ["none", "metadata", "auto"], do: value
-  defp video_preload(_value), do: "metadata"
+  defp video_preload(value) when value in [@none, @metadata, @auto], do: value
+  defp video_preload(_value), do: @metadata
 
   defp section_text_frame_class(section) do
     if image_config(section).light || video_config(section).src do
@@ -1628,21 +1643,21 @@ defmodule GamendWeb.PresentationPage do
 
   defp webp_dimensions(_rest), do: {nil, nil}
 
-  defp media_width(item, "hero"), do: Map.get(item, "media_width", "half")
+  defp media_width(item, @hero), do: Map.get(item, "media_width", "half")
   defp media_width(item, _variant), do: Map.get(item, "media_width", "third")
 
   defp media_size(item, variant) do
     case Map.get(item, "media_size", variant) do
-      value when value in ["hero", "section", "full", "bleed"] -> value
+      value when value in [@hero, @section, @full, "bleed"] -> value
       _ -> variant
     end
   end
 
   defp desktop_image_position(item), do: Map.get(item, "image_position_desktop", "left")
 
-  defp media_class("hero", _image), do: "block max-h-[58dvh] w-full rounded-lg object-contain"
+  defp media_class(@hero, _image), do: "block max-h-[58dvh] w-full rounded-lg object-contain"
 
-  defp media_class("full", _image), do: "block max-h-[70dvh] w-full rounded-lg object-contain"
+  defp media_class(@full, _image), do: "block max-h-[70dvh] w-full rounded-lg object-contain"
 
   # Edge to edge: no rounding (it meets both screen edges) and no height
   # cap beyond the viewport itself.
@@ -1653,26 +1668,26 @@ defmodule GamendWeb.PresentationPage do
   # on a desktop home page), and audits read the box against the picture as
   # a distorted image. Only an image whose size could not be read keeps the
   # square, so the slot still holds its place before a lazy image loads.
-  defp media_class("section", %{width: width, height: height})
+  defp media_class(@section, %{width: width, height: height})
        when is_integer(width) and is_integer(height),
        do: "block max-h-[42dvh] w-full rounded-lg object-contain"
 
-  defp media_class("section", _image),
+  defp media_class(@section, _image),
     do: "block aspect-square max-h-[42dvh] w-full rounded-lg object-contain"
 
   # No `aspect-square` here, unlike `media_class/2` — video is natively
   # widescreen and squaring the box would letterbox it into a fraction of the
   # slot.
-  defp media_video_class("hero"),
+  defp media_video_class(@hero),
     do: "block max-h-[58dvh] w-full rounded-lg object-contain"
 
-  defp media_video_class("full"),
+  defp media_video_class(@full),
     do: "block max-h-[70dvh] w-full rounded-lg object-contain"
 
   defp media_video_class("bleed"),
     do: "block max-h-[85dvh] w-full object-contain"
 
-  defp media_video_class("section"),
+  defp media_video_class(@section),
     do: "block max-h-[42dvh] w-full rounded-lg object-contain"
 
   defp media_shell_class,
@@ -1685,8 +1700,8 @@ defmodule GamendWeb.PresentationPage do
     base = "btn h-11 w-full gap-2.5 px-5 text-base sm:w-auto sm:min-w-36"
 
     style =
-      case Map.get(button, "style", "default") do
-        "primary" -> "btn-primary"
+      case Map.get(button, "style", @default) do
+        @primary -> "btn-primary"
         "secondary" -> "btn-secondary"
         "accent" -> "btn-accent"
         _ -> "btn-surface"
@@ -1698,8 +1713,8 @@ defmodule GamendWeb.PresentationPage do
   # On a coloured button the badge takes the button's content colour, or it
   # vanishes into the fill.
   defp badge_class(button) do
-    case Map.get(button, "style", "default") do
-      style when style in ["primary", "secondary", "accent"] ->
+    case Map.get(button, "style", @default) do
+      style when style in [@primary, "secondary", "accent"] ->
         "border-current/40 bg-current/15 text-current"
 
       _ ->

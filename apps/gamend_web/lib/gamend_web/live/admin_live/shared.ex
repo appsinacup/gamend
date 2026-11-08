@@ -10,6 +10,8 @@ defmodule GamendWeb.AdminLive.Shared do
 
   use Gettext, backend: GamendWeb.Gettext
 
+  require GamendWeb.FilterValue, as: FilterValue
+
   @durations %{
     "10m" => 600,
     "1h" => 3_600,
@@ -94,7 +96,7 @@ defmodule GamendWeb.AdminLive.Shared do
     filters =
       Enum.map(fields, fn {option, assign_key} ->
         {option,
-         if(assigns[assign_key] == "all",
+         if(assigns[assign_key] == FilterValue.everything(),
            do: nil,
            else: Gamend.Parse.blank_to_nil(assigns[assign_key])
          )}

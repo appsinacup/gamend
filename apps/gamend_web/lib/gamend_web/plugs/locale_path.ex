@@ -29,6 +29,8 @@ defmodule GamendWeb.Plugs.LocalePath do
 
   import Plug.Conn
 
+  require GamendWeb.ApiSegment, as: ApiSegment
+
   @session_key :preferred_locale
   @default_locale "en"
   @known_locales GamendWeb.GettextSync.known_locales()
@@ -59,7 +61,7 @@ defmodule GamendWeb.Plugs.LocalePath do
 
   def init(opts), do: opts
 
-  def call(%Plug.Conn{path_info: ["api" | _]} = conn, _opts) do
+  def call(%Plug.Conn{path_info: [ApiSegment.api() | _]} = conn, _opts) do
     # API routes never use locale prefixes or sessions — skip entirely
     GamendWeb.GettextSync.put_locale(@default_locale)
     Plug.Conn.assign(conn, :locale, @default_locale)

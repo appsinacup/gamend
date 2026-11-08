@@ -6,6 +6,9 @@ defmodule Gamend.Payments.ProviderConfig do
   production provider credentials for this host.
   """
 
+  require Gamend.Payments.PaymentEnvironment, as: PaymentEnvironment
+  require Gamend.Payments.StripeIdPrefix, as: StripeIdPrefix
+
   @environments ~w(production sandbox)
 
   # The one Stripe API version every request names: the version
@@ -27,11 +30,11 @@ defmodule Gamend.Payments.ProviderConfig do
     # a typo must never silently take real money.
     Gamend.Payments.Settings
     |> Gamend.Settings.get(:environment)
-    |> normalize_environment("sandbox")
+    |> normalize_environment(PaymentEnvironment.sandbox())
   end
 
   @spec normalize_environment(term()) :: environment()
-  def normalize_environment(value, fallback \\ "production")
+  def normalize_environment(value, fallback \\ PaymentEnvironment.production())
 
   def normalize_environment(value, fallback) when is_atom(value) do
     value |> Atom.to_string() |> normalize_environment(fallback)
@@ -39,16 +42,21 @@ defmodule Gamend.Payments.ProviderConfig do
 
   def normalize_environment(value, fallback) when is_binary(value) do
     case value |> String.trim() |> String.downcase() do
-      value when value in ["production", "prod", "live", "real"] -> "production"
-      value when value in ["sandbox", "test"] -> "sandbox"
-      _ -> fallback
+      value when value in [PaymentEnvironment.production(), "prod", "live", "real"] ->
+        PaymentEnvironment.production()
+
+      value when value in [PaymentEnvironment.sandbox(), PaymentEnvironment.test()] ->
+        PaymentEnvironment.sandbox()
+
+      _ ->
+        fallback
     end
   end
 
   def normalize_environment(_value, fallback), do: fallback
 
   @spec production?() :: boolean()
-  def production?, do: environment() == "production"
+  def production?, do: environment() == PaymentEnvironment.production()
 
   @spec environments() :: [String.t()]
   def environments, do: @environments
@@ -119,26 +127,50 @@ defmodule Gamend.Payments.ProviderConfig do
     end)
   end
 
-  defp stripe_value_allowed?(:secret_key, "production", "sk_live_" <> _rest), do: true
-  defp stripe_value_allowed?(:secret_key, "production", "rk_live_" <> _rest), do: true
-  defp stripe_value_allowed?(:secret_key, "sandbox", "sk_test_" <> _rest), do: true
-  defp stripe_value_allowed?(:secret_key, "sandbox", "rk_test_" <> _rest), do: true
+  defp stripe_value_allowed?(
+         :secret_key,
+         PaymentEnvironment.production(),
+         StripeIdPrefix.secret_live() <> _rest
+       ),
+       do: true
+
+  defp stripe_value_allowed?(
+         :secret_key,
+         PaymentEnvironment.production(),
+         StripeIdPrefix.restricted_live() <> _rest
+       ),
+       do: true
+
+  defp stripe_value_allowed?(
+         :secret_key,
+         PaymentEnvironment.sandbox(),
+         StripeIdPrefix.secret_test() <> _rest
+       ),
+       do: true
+
+  defp stripe_value_allowed?(
+         :secret_key,
+         PaymentEnvironment.sandbox(),
+         StripeIdPrefix.restricted_test() <> _rest
+       ),
+       do: true
+
   defp stripe_value_allowed?(:secret_key, _environment, _value), do: false
   defp stripe_value_allowed?(:webhook_secret, _environment, _value), do: true
 
-  defp stripe_candidates(:secret_key, "production") do
+  defp stripe_candidates(:secret_key, PaymentEnvironment.production()) do
     [{"GAMEND_PAYMENTS_STRIPE_PRODUCTION_SECRET_KEY", :stripe_production_secret_key}]
   end
 
-  defp stripe_candidates(:secret_key, "sandbox") do
+  defp stripe_candidates(:secret_key, PaymentEnvironment.sandbox()) do
     [{"GAMEND_PAYMENTS_STRIPE_SANDBOX_SECRET_KEY", :stripe_sandbox_secret_key}]
   end
 
-  defp stripe_candidates(:webhook_secret, "production") do
+  defp stripe_candidates(:webhook_secret, PaymentEnvironment.production()) do
     [{"GAMEND_PAYMENTS_STRIPE_PRODUCTION_WEBHOOK_SECRET", :stripe_production_webhook_secret}]
   end
 
-  defp stripe_candidates(:webhook_secret, "sandbox") do
+  defp stripe_candidates(:webhook_secret, PaymentEnvironment.sandbox()) do
     [{"GAMEND_PAYMENTS_STRIPE_SANDBOX_WEBHOOK_SECRET", :stripe_sandbox_webhook_secret}]
   end
 end

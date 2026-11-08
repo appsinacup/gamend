@@ -125,7 +125,7 @@ defmodule Gamend.ReadyChecks do
   """
   @spec cancel(Gamend.ReadyChecks.Check.t(), String.t()) ::
           {:ok, Gamend.ReadyChecks.Check.t()} | {:error, :already_resolved | :no_open_check}
-  def cancel(_check, _reason \\ "cancelled") do
+  def cancel(_check, _reason \\ CheckReason.cancelled()) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
         {:ok,

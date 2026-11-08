@@ -7,6 +7,8 @@ defmodule Gamend.OAuthSessions do
   alias Gamend.OAuthSession
   alias Gamend.Repo
 
+  require Gamend.OAuth.SessionStatus, as: SessionStatus
+
   @oauth_sessions_cache_ttl_ms 30_000
 
   defp invalidate_oauth_session_cache(session_id) when is_binary(session_id) do
@@ -65,7 +67,7 @@ defmodule Gamend.OAuthSessions do
   """
   @spec get_pending_session(String.t(), String.t() | nil) :: OAuthSession.t() | nil
   def get_pending_session(session_id, provider \\ nil) when is_binary(session_id) do
-    with %OAuthSession{status: "pending"} = session <- get_session(session_id),
+    with %OAuthSession{status: SessionStatus.pending()} = session <- get_session(session_id),
          true <- is_nil(provider) or session.provider in [nil, provider],
          true <- fresh?(session) do
       session

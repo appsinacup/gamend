@@ -27,6 +27,8 @@ defmodule Gamend.Analytics.Explore do
   alias Gamend.Analytics.Segment
   alias Gamend.Repo
 
+  @none "none"
+
   @type filter :: %{
           names: [String.t()] | :all,
           from: Date.t(),
@@ -338,7 +340,7 @@ defmodule Gamend.Analytics.Explore do
 
   defp where_dims(query, where) do
     Enum.reduce(where, query, fn
-      {dim, "none"}, query ->
+      {dim, @none}, query ->
         where(query, [e], is_nil(fragment("? ->> CAST(? AS TEXT)", e.dims, ^dim)))
 
       {dim, value}, query ->
@@ -350,7 +352,7 @@ defmodule Gamend.Analytics.Explore do
     Enum.map(0..Date.diff(filter.to, filter.from)//1, &Date.add(filter.from, &1))
   end
 
-  defp value_name(nil), do: "none"
+  defp value_name(nil), do: @none
   defp value_name(value), do: to_string(value)
 
   defp to_float(nil), do: 0.0

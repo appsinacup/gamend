@@ -35,6 +35,8 @@ defmodule GamendWeb.GroupChannel do
   alias GamendWeb.ChannelUpdates
   alias GamendWeb.Serializers
 
+  require Gamend.RealtimeEvent, as: RealtimeEvent
+
   # A banned account joins no channel but its own user channel.
   @impl true
   def join(topic, payload, socket) do
@@ -79,19 +81,19 @@ defmodule GamendWeb.GroupChannel do
   @impl true
   def handle_info({:after_join, group}, socket) do
     payload = Serializers.serialize_group(group)
-    push_event(socket, "updated", payload)
-    {:noreply, ChannelUpdates.remember(socket, "updated", :group, payload)}
+    push_event(socket, RealtimeEvent.updated(), payload)
+    {:noreply, ChannelUpdates.remember(socket, RealtimeEvent.updated(), :group, payload)}
   end
 
   @impl true
   def handle_info({:group_updated, group}, socket) do
     payload = Serializers.serialize_group(group)
-    {:noreply, ChannelUpdates.push(socket, "updated", :group, payload)}
+    {:noreply, ChannelUpdates.push(socket, RealtimeEvent.updated(), :group, payload)}
   end
 
   @impl true
   def handle_info({:member_joined, group_id, user_id}, socket) do
-    push_event(socket, "member_joined", %{
+    push_event(socket, RealtimeEvent.member_joined(), %{
       group_id: group_id,
       user_id: user_id,
       display_name: Serializers.display_name(user_id)
@@ -102,7 +104,7 @@ defmodule GamendWeb.GroupChannel do
 
   @impl true
   def handle_info({:member_left, group_id, user_id}, socket) do
-    push_event(socket, "member_left", %{
+    push_event(socket, RealtimeEvent.member_left(), %{
       group_id: group_id,
       user_id: user_id,
       display_name: Serializers.display_name(user_id)
@@ -113,7 +115,7 @@ defmodule GamendWeb.GroupChannel do
 
   @impl true
   def handle_info({:member_kicked, group_id, user_id}, socket) do
-    push_event(socket, "member_kicked", %{
+    push_event(socket, RealtimeEvent.member_kicked(), %{
       group_id: group_id,
       user_id: user_id,
       display_name: Serializers.display_name(user_id)
@@ -124,7 +126,7 @@ defmodule GamendWeb.GroupChannel do
 
   @impl true
   def handle_info({:member_promoted, group_id, user_id}, socket) do
-    push_event(socket, "member_promoted", %{
+    push_event(socket, RealtimeEvent.member_promoted(), %{
       group_id: group_id,
       user_id: user_id,
       display_name: Serializers.display_name(user_id)
@@ -135,7 +137,7 @@ defmodule GamendWeb.GroupChannel do
 
   @impl true
   def handle_info({:member_demoted, group_id, user_id}, socket) do
-    push_event(socket, "member_demoted", %{
+    push_event(socket, RealtimeEvent.member_demoted(), %{
       group_id: group_id,
       user_id: user_id,
       display_name: Serializers.display_name(user_id)
@@ -146,7 +148,7 @@ defmodule GamendWeb.GroupChannel do
 
   @impl true
   def handle_info({:join_request_approved, group_id, user_id}, socket) do
-    push_event(socket, "join_request_approved", %{
+    push_event(socket, RealtimeEvent.join_request_approved(), %{
       group_id: group_id,
       user_id: user_id,
       display_name: Serializers.display_name(user_id)
@@ -157,7 +159,7 @@ defmodule GamendWeb.GroupChannel do
 
   @impl true
   def handle_info({:join_request_rejected, group_id, user_id}, socket) do
-    push_event(socket, "join_request_rejected", %{
+    push_event(socket, RealtimeEvent.join_request_rejected(), %{
       group_id: group_id,
       user_id: user_id,
       display_name: Serializers.display_name(user_id)
@@ -168,35 +170,47 @@ defmodule GamendWeb.GroupChannel do
 
   @impl true
   def handle_info({:chat_message_created, message}, socket) do
-    push_event(socket, "chat_message_created", Serializers.serialize_chat_message(message))
+    push_event(
+      socket,
+      RealtimeEvent.chat_message_created(),
+      Serializers.serialize_chat_message(message)
+    )
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:chat_message_updated, message}, socket) do
-    push_event(socket, "chat_message_updated", Serializers.serialize_chat_message(message))
+    push_event(
+      socket,
+      RealtimeEvent.chat_message_updated(),
+      Serializers.serialize_chat_message(message)
+    )
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:chat_message_deleted, message}, socket) do
-    push_event(socket, "chat_message_deleted", %{id: message.id})
+    push_event(socket, RealtimeEvent.chat_message_deleted(), %{id: message.id})
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:member_updated, user_id}, socket),
-    do: {:noreply, ChannelEvents.push_member_updated(socket, user_id, "member_updated")}
+    do:
+      {:noreply,
+       ChannelEvents.push_member_updated(socket, user_id, RealtimeEvent.member_updated())}
 
   @impl true
   def handle_info({:member_online, user_id}, socket) do
-    push_event(socket, "member_online", %{user_id: user_id, is_online: true})
+    push_event(socket, RealtimeEvent.member_online(), %{user_id: user_id, is_online: true})
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:member_offline, user_id}, socket) do
-    push_event(socket, "member_offline", %{user_id: user_id, is_online: false})
+    push_event(socket, RealtimeEvent.member_offline(), %{user_id: user_id, is_online: false})
     {:noreply, socket}
   end
 

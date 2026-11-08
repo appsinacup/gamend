@@ -26,13 +26,15 @@ defmodule Mix.Tasks.Gamend.Gdscript.Compile do
 
   alias Gamend.GDScript
 
+  @gen "gen"
+
   @impl true
   def run(args) do
     {opts, _rest, _invalid} =
       OptionParser.parse(args, strict: [check: :boolean, src: :string, out: :string])
 
     src = Keyword.get(opts, :src, "scripts")
-    out = Keyword.get(opts, :out, "gen")
+    out = Keyword.get(opts, :out, @gen)
     check? = Keyword.get(opts, :check, false)
 
     scripts = Path.wildcard(Path.join(src, "*.gd"))

@@ -49,6 +49,8 @@ defmodule GamendWeb.Plugs.GeoCountry do
 
   alias GamendWeb.Crawlers
 
+  @none "none"
+
   @behaviour Plug
 
   @table :geo_country_stats
@@ -89,7 +91,7 @@ defmodule GamendWeb.Plugs.GeoCountry do
     :telemetry.execute(
       [:gamend, :crawler, :rate_limited],
       %{count: 1},
-      %{class: kind, bot: name || "none"}
+      %{class: kind, bot: name || @none}
     )
 
     :ok

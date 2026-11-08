@@ -18,6 +18,9 @@ defmodule GamendWeb.AdminLive.AnalyticsPeople do
   alias Gamend.Analytics.Explore
   alias Gamend.Economy
 
+  require Gamend.Analytics.SegmentName, as: SegmentName
+  require GamendWeb.UrlParam, as: UrlParam
+
   @weeks 13
   @page_size 50
   @ledger_rows 25
@@ -41,7 +44,7 @@ defmodule GamendWeb.AdminLive.AnalyticsPeople do
      |> assign(:results, search(q))
      |> assign(:user, user)
      |> assign(:event, blank(params["event"]))
-     |> assign(:page, max(int_param(params, "page", Enum.to_list(1..10_000), 1), 1))
+     |> assign(:page, max(int_param(params, UrlParam.page(), Enum.to_list(1..10_000), 1), 1))
      |> load()}
   end
 
@@ -330,7 +333,8 @@ defmodule GamendWeb.AdminLive.AnalyticsPeople do
   defp name(%User{} = user),
     do: Accounts.display_label(user)
 
-  defp kind(%User{} = user), do: if(User.anonymous?(user), do: "guest", else: "registered")
+  defp kind(%User{} = user),
+    do: if(User.anonymous?(user), do: SegmentName.guest(), else: SegmentName.registered())
 
   defp day(nil), do: "—"
   defp day(%Date{} = d), do: Date.to_iso8601(d)

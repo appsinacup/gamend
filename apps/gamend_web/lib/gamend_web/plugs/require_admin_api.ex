@@ -9,6 +9,8 @@ defmodule GamendWeb.Plugs.RequireAdminApi do
 
   alias Gamend.Accounts.Scope
 
+  require GamendWeb.ChannelError, as: ChannelError
+
   @spec init(keyword()) :: keyword()
   def init(opts), do: opts
 
@@ -29,7 +31,7 @@ defmodule GamendWeb.Plugs.RequireAdminApi do
   end
 
   defp forbidden(conn) do
-    body = Jason.encode!(%{error: "forbidden"})
+    body = Jason.encode!(%{error: ChannelError.forbidden()})
 
     conn
     |> put_resp_content_type("application/json")
@@ -38,7 +40,7 @@ defmodule GamendWeb.Plugs.RequireAdminApi do
   end
 
   defp unauthorized(conn) do
-    body = Jason.encode!(%{error: "unauthorized"})
+    body = Jason.encode!(%{error: ChannelError.unauthorized()})
 
     conn
     |> put_resp_content_type("application/json")

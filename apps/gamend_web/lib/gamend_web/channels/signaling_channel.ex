@@ -51,6 +51,9 @@ defmodule GamendWeb.SignalingChannel do
   alias Gamend.Signaling
   alias GamendWeb.ChannelEvents
 
+  require GamendWeb.ChannelError, as: ChannelError
+  require Gamend.RealtimeEvent, as: RealtimeEvent
+
   # Per-user message and ICE budgets are the `signaling_*` settings on
   # GamendWeb.Plugs.RateLimiter. ICE has its own so a flood of candidates cannot
   # starve other channel events; a typical WebRTC session sends 5–30.
@@ -70,7 +73,7 @@ defmodule GamendWeb.SignalingChannel do
         "SignalingChannel: unauthorized join attempt room=#{room_id} missing user_id"
       )
 
-      {:error, %{reason: "unauthorized"}}
+      {:error, %{reason: ChannelError.unauthorized()}}
     else
       case Signaling.authorize(room_id, user_id) do
         {:ok, role} ->
@@ -102,14 +105,14 @@ defmodule GamendWeb.SignalingChannel do
             "SignalingChannel: join failed room_not_found room=#{room_id} user=#{user_id}"
           )
 
-          {:error, %{reason: "room_not_found"}}
+          {:error, %{reason: ChannelError.room_not_found()}}
 
         {:error, :not_allowed} ->
           Logger.warning(
             "SignalingChannel: join failed not_allowed room=#{room_id} user=#{user_id}"
           )
 
-          {:error, %{reason: "not_allowed"}}
+          {:error, %{reason: ChannelError.not_allowed()}}
       end
     end
   end
@@ -132,21 +135,21 @@ defmodule GamendWeb.SignalingChannel do
             "SignalingChannel: offer failed user_not_found room=#{room} from=#{from} target=#{target}"
           )
 
-          {:reply, {:error, %{error: "user_not_found"}}, socket}
+          {:reply, {:error, %{error: ChannelError.user_not_found()}}, socket}
 
         {:error, :not_allowed} ->
           Logger.warning(
             "SignalingChannel: offer failed not_allowed room=#{room} from=#{from} target=#{target}"
           )
 
-          {:reply, {:error, %{error: "not_allowed"}}, socket}
+          {:reply, {:error, %{error: ChannelError.not_allowed()}}, socket}
 
         {:error, :room_not_found} ->
           Logger.warning(
             "SignalingChannel: offer failed room_not_found room=#{room} from=#{from}"
           )
 
-          {:stop, :normal, {:error, %{error: "room_not_found"}}, socket}
+          {:stop, :normal, {:error, %{error: ChannelError.room_not_found()}}, socket}
       end
     end
   end
@@ -167,21 +170,21 @@ defmodule GamendWeb.SignalingChannel do
             "SignalingChannel: answer failed user_not_found room=#{room} from=#{from} target=#{target}"
           )
 
-          {:reply, {:error, %{error: "user_not_found"}}, socket}
+          {:reply, {:error, %{error: ChannelError.user_not_found()}}, socket}
 
         {:error, :not_allowed} ->
           Logger.warning(
             "SignalingChannel: answer failed not_allowed room=#{room} from=#{from} target=#{target}"
           )
 
-          {:reply, {:error, %{error: "not_allowed"}}, socket}
+          {:reply, {:error, %{error: ChannelError.not_allowed()}}, socket}
 
         {:error, :room_not_found} ->
           Logger.warning(
             "SignalingChannel: answer failed room_not_found room=#{room} from=#{from}"
           )
 
-          {:stop, :normal, {:error, %{error: "room_not_found"}}, socket}
+          {:stop, :normal, {:error, %{error: ChannelError.room_not_found()}}, socket}
       end
     end
   end
@@ -202,18 +205,18 @@ defmodule GamendWeb.SignalingChannel do
             "SignalingChannel: ice failed user_not_found room=#{room} from=#{from} target=#{target}"
           )
 
-          {:reply, {:error, %{error: "user_not_found"}}, socket}
+          {:reply, {:error, %{error: ChannelError.user_not_found()}}, socket}
 
         {:error, :not_allowed} ->
           Logger.warning(
             "SignalingChannel: ice failed not_allowed room=#{room} from=#{from} target=#{target}"
           )
 
-          {:reply, {:error, %{error: "not_allowed"}}, socket}
+          {:reply, {:error, %{error: ChannelError.not_allowed()}}, socket}
 
         {:error, :room_not_found} ->
           Logger.warning("SignalingChannel: ice failed room_not_found room=#{room} from=#{from}")
-          {:stop, :normal, {:error, %{error: "room_not_found"}}, socket}
+          {:stop, :normal, {:error, %{error: ChannelError.room_not_found()}}, socket}
       end
     end
   end
@@ -234,14 +237,14 @@ defmodule GamendWeb.SignalingChannel do
             "SignalingChannel: broadcast_offer failed not_allowed room=#{room} from=#{from}"
           )
 
-          {:reply, {:error, %{error: "not_allowed"}}, socket}
+          {:reply, {:error, %{error: ChannelError.not_allowed()}}, socket}
 
         {:error, :room_not_found} ->
           Logger.warning(
             "SignalingChannel: broadcast_offer failed room_not_found room=#{room} from=#{from}"
           )
 
-          {:stop, :normal, {:error, %{error: "room_not_found"}}, socket}
+          {:stop, :normal, {:error, %{error: ChannelError.room_not_found()}}, socket}
       end
     end
   end
@@ -255,7 +258,7 @@ defmodule GamendWeb.SignalingChannel do
         {:reply, {:ok, %{users: Signaling.peers(room)}}, socket}
       else
         Logger.warning("SignalingChannel: list_users failed room_not_found room=#{room}")
-        {:stop, :normal, {:error, %{error: "room_not_found"}}, socket}
+        {:stop, :normal, {:error, %{error: ChannelError.room_not_found()}}, socket}
       end
     end
   end
@@ -297,7 +300,7 @@ defmodule GamendWeb.SignalingChannel do
 
     # Seed the newcomer with everyone already here so it can start connecting.
     for {other_id, other_role} <- Signaling.peers(room), other_id != user_id do
-      push_event(socket, "user_joined", %{user_id: other_id, role: other_role})
+      push_event(socket, RealtimeEvent.user_joined(), %{user_id: other_id, role: other_role})
     end
 
     {:noreply, socket}
@@ -312,7 +315,7 @@ defmodule GamendWeb.SignalingChannel do
     socket = update_in(socket.assigns.pending_leaves, &Map.delete(&1, user_id))
 
     if is_nil(Signaling.peer_role(room, user_id)) do
-      push_event(socket, "user_left", %{user_id: user_id})
+      push_event(socket, RealtimeEvent.user_left(), %{user_id: user_id})
     end
 
     {:noreply, socket}
@@ -379,9 +382,9 @@ defmodule GamendWeb.SignalingChannel do
   defp relay_event_name(:offer), do: "offer"
   defp relay_event_name(:answer), do: "answer"
   defp relay_event_name(:ice), do: "ice"
-  defp relay_event_name(:user_joined), do: "user_joined"
+  defp relay_event_name(:user_joined), do: RealtimeEvent.user_joined()
   defp relay_event_name(:user_rejoined), do: "user_rejoined"
-  defp relay_event_name(:user_left), do: "user_left"
+  defp relay_event_name(:user_left), do: RealtimeEvent.user_left()
   defp relay_event_name(:room_closed), do: "room_closed"
 
   defp announce_joins(socket, joins) do
@@ -395,7 +398,7 @@ defmodule GamendWeb.SignalingChannel do
         {timer, pending} = Map.pop(acc.assigns.pending_leaves, user_id)
 
         # A join while a leave is pending is a reconnect, not a new peer.
-        event = if timer, do: "user_rejoined", else: "user_joined"
+        event = if timer, do: "user_rejoined", else: RealtimeEvent.user_joined()
         if timer, do: Process.cancel_timer(timer)
 
         push_event(acc, event, %{user_id: user_id, role: role})
@@ -442,7 +445,7 @@ defmodule GamendWeb.SignalingChannel do
             "SignalingChannel: rate limit exceeded user=#{user_id} room=#{socket.assigns[:signaling_room] || "nil"}"
           )
 
-          {:stop, :normal, {:error, %{error: "rate_limited"}}, socket}
+          {:stop, :normal, {:error, %{error: ChannelError.rate_limited()}}, socket}
       end
     else
       :ok
@@ -464,7 +467,7 @@ defmodule GamendWeb.SignalingChannel do
             "SignalingChannel: ICE rate limit exceeded user=#{user_id} room=#{socket.assigns[:signaling_room] || "nil"}"
           )
 
-          {:reply, {:error, %{error: "ice_rate_limited"}}, socket}
+          {:reply, {:error, %{error: ChannelError.ice_rate_limited()}}, socket}
       end
     else
       :ok

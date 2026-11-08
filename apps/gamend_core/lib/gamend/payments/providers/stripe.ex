@@ -6,6 +6,14 @@ defmodule Gamend.Payments.Providers.Stripe do
   alias Gamend.Payments.ProviderConfig
   alias Gamend.Theme.JSONConfig
 
+  require Gamend.Payments.ProductKind, as: ProductKind
+  require Gamend.Payments.StripeIdPrefix, as: StripeIdPrefix
+  require Gamend.Payments.StripeMode, as: StripeMode
+  require Gamend.UrlScheme, as: UrlScheme
+
+  @url "url"
+  @now "now"
+
   @webhook_tolerance_seconds 300
 
   # How long a new Checkout Session can be paid. Stripe's default is 24 hours,
@@ -131,7 +139,7 @@ defmodule Gamend.Payments.Providers.Stripe do
       payment_behavior: "error_if_incomplete"
     }
 
-    params = if opts[:end_trial] == true, do: Map.put(params, :trial_end, "now"), else: params
+    params = if opts[:end_trial] == true, do: Map.put(params, :trial_end, @now), else: params
 
     with {:ok, secret_key} <- secret_key() do
       case update_subscription_with_sdk(
@@ -250,9 +258,11 @@ defmodule Gamend.Payments.Providers.Stripe do
     end
   end
 
-  defp refund_target("pi_" <> _rest = id), do: {:ok, %{payment_intent: id}}
-  defp refund_target("ch_" <> _rest = id), do: {:ok, %{charge: id}}
-  defp refund_target("py_" <> _rest = id), do: {:ok, %{charge: id}}
+  defp refund_target(StripeIdPrefix.payment_intent() <> _rest = id),
+    do: {:ok, %{payment_intent: id}}
+
+  defp refund_target(StripeIdPrefix.charge() <> _rest = id), do: {:ok, %{charge: id}}
+  defp refund_target(StripeIdPrefix.payment() <> _rest = id), do: {:ok, %{charge: id}}
   defp refund_target(_id), do: {:error, :invalid_stripe_payment_id}
 
   defp put_refund_amount(params, amount) when is_integer(amount) and amount > 0,
@@ -313,8 +323,8 @@ defmodule Gamend.Payments.Providers.Stripe do
 
   def verify_webhook(_raw_body, _signature_header), do: {:error, :invalid_stripe_payload}
 
-  defp stripe_mode("subscription"), do: "subscription"
-  defp stripe_mode(_kind), do: "payment"
+  defp stripe_mode(ProductKind.subscription()), do: StripeMode.subscription()
+  defp stripe_mode(_kind), do: StripeMode.payment()
 
   defp checkout_metadata(purchase, provider_product) do
     %{
@@ -348,10 +358,10 @@ defmodule Gamend.Payments.Providers.Stripe do
   # lifetime buyer would have no portal and no receipts in it. The id is
   # server-supplied (`StripeEvents.create_stripe_checkout/2`), never a
   # client's, and only a `cus_` id is ever passed through.
-  defp put_checkout_customer(params, _mode, "cus_" <> _rest = customer_id),
+  defp put_checkout_customer(params, _mode, StripeIdPrefix.customer() <> _rest = customer_id),
     do: Map.put(params, :customer, customer_id)
 
-  defp put_checkout_customer(params, "payment", _customer_id),
+  defp put_checkout_customer(params, StripeMode.payment(), _customer_id),
     do: Map.put(params, :customer_creation, "always")
 
   defp put_checkout_customer(params, _mode, _customer_id), do: params
@@ -366,7 +376,7 @@ defmodule Gamend.Payments.Providers.Stripe do
   @min_trial_seconds 48 * 3600 + 5 * 60
   @max_trial_seconds 730 * 86_400
 
-  defp put_trial_end(%{subscription_data: data} = params, "subscription", trial_end)
+  defp put_trial_end(%{subscription_data: data} = params, StripeMode.subscription(), trial_end)
        when is_integer(trial_end) do
     now = System.os_time(:second)
 
@@ -429,12 +439,12 @@ defmodule Gamend.Payments.Providers.Stripe do
 
   defp brand_logo(logo, success_url) when is_binary(logo) do
     with %URI{scheme: scheme, host: host} = base
-         when scheme in ["http", "https"] and is_binary(host) <-
+         when scheme in [UrlScheme.http(), UrlScheme.https()] and is_binary(host) <-
            URI.parse(success_url),
-         %URI{scheme: "https", path: path} = url when is_binary(path) <-
+         %URI{scheme: UrlScheme.https(), path: path} = url when is_binary(path) <-
            URI.merge(base, String.trim(logo)),
          true <- String.downcase(Path.extname(path)) in @logo_types do
-      %{type: "url", url: URI.to_string(url)}
+      %{type: @url, url: URI.to_string(url)}
     else
       _ -> nil
     end
@@ -442,7 +452,7 @@ defmodule Gamend.Payments.Providers.Stripe do
 
   defp brand_logo(_logo, _success_url), do: nil
 
-  defp put_checkout_payment_metadata(params, "subscription", metadata) do
+  defp put_checkout_payment_metadata(params, StripeMode.subscription(), metadata) do
     Map.put(params, :subscription_data, %{metadata: metadata})
   end
 

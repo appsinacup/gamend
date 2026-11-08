@@ -38,6 +38,9 @@ defmodule Gamend.Accounts.Online do
   alias Gamend.Lobbies
   alias Gamend.Parties
 
+  @page "page"
+  @socket "socket"
+
   @supervisor Gamend.Accounts.Online.Watchers
 
   # Long enough for a cross-node tracker diff to land, short enough that a
@@ -53,8 +56,8 @@ defmodule Gamend.Accounts.Online do
   written, or `{:error, reason}` when the account is gone.
   """
   @spec connected(pid(), Ecto.UUID.t(), String.t()) :: {:ok, User.t()} | {:error, term()}
-  def connected(pid, user_id, kind \\ "socket")
-      when is_pid(pid) and is_binary(user_id) and kind in ["socket", "page"] do
+  def connected(pid, user_id, kind \\ @socket)
+      when is_pid(pid) and is_binary(user_id) and kind in [@socket, @page] do
     # Presence is the source of truth for "connected"; `users.is_online` is a
     # projection of it (`Gamend.Presence`). Tracking the socket rather than
     # setting the flag alone is what makes a second socket on another node
@@ -149,7 +152,7 @@ defmodule Gamend.Accounts.Online do
   """
   @spec watch(pid(), Ecto.UUID.t()) :: :ok | {:error, term()}
   def watch(pid, user_id) when is_pid(pid) and is_binary(user_id) do
-    with {:ok, _user} <- connected(pid, user_id, "page") do
+    with {:ok, _user} <- connected(pid, user_id, @page) do
       if watching?(), do: start_watcher(pid, user_id), else: :ok
     end
   end

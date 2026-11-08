@@ -26,6 +26,9 @@ defmodule GamendWeb.Schemas.AdminMatchmakingTicket do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  require Gamend.ReadyChecks.CheckStatus, as: CheckStatus
+  require Gamend.Matchmaking.TicketStatus, as: TicketStatus
+
   OpenApiSpex.schema(%{
     title: "AdminMatchmakingTicket",
     description: "A matchmaking ticket",
@@ -33,7 +36,10 @@ defmodule GamendWeb.Schemas.AdminMatchmakingTicket do
     properties: %{
       id: %Schema{type: :string, format: :uuid},
       user_id: %Schema{type: :string, format: :uuid},
-      status: %Schema{type: :string, enum: ["queued", "matched", "cancelled"]},
+      status: %Schema{
+        type: :string,
+        enum: [TicketStatus.queued(), TicketStatus.matched(), CheckStatus.cancelled()]
+      },
       match_params: %Schema{type: :object, additionalProperties: %Schema{type: :string}},
       min_players: %Schema{type: :integer},
       max_players: %Schema{type: :integer},
@@ -82,6 +88,8 @@ end
 defmodule GamendWeb.Schemas.AdminReadyCheck do
   @moduledoc "A ready check as stored, every participant listed whatever its kind."
   require OpenApiSpex
+  alias Gamend.ReadyChecks.CheckKind
+  alias Gamend.ReadyChecks.CheckStatus
   alias GamendWeb.Schemas.ReadyCheckParticipant
   alias OpenApiSpex.Schema
 
@@ -91,8 +99,11 @@ defmodule GamendWeb.Schemas.AdminReadyCheck do
     type: :object,
     properties: %{
       id: %Schema{type: :string, format: :uuid},
-      kind: %Schema{type: :string, enum: ["ready", "accept"]},
-      status: %Schema{type: :string, enum: ["pending", "passed", "failed", "cancelled"]},
+      kind: %Schema{type: :string, enum: CheckKind.all()},
+      status: %Schema{
+        type: :string,
+        enum: CheckStatus.all()
+      },
       lobby_id: %Schema{type: :string, description: "Empty unless a lobby board"},
       party_id: %Schema{type: :string, description: "Empty unless a party board"},
       deadline_at: %Schema{type: :string, format: :"date-time", nullable: true},
@@ -199,6 +210,9 @@ defmodule GamendWeb.Schemas.AnalyticsSummary do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  require GamendWeb.FilterValue, as: FilterValue
+  require Gamend.Analytics.SegmentName, as: SegmentName
+
   @rate %Schema{
     type: :number,
     format: :float,
@@ -214,7 +228,7 @@ defmodule GamendWeb.Schemas.AnalyticsSummary do
       day: %Schema{type: :string, format: :date},
       segment: %Schema{
         type: :string,
-        enum: ["all", "registered", "guest"],
+        enum: [FilterValue.everything(), SegmentName.registered(), SegmentName.guest()],
         description: "Which accounts the numbers count"
       },
       dau: %Schema{type: :integer, description: "Seen today so far (UTC)"},

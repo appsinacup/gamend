@@ -20,6 +20,10 @@ defmodule Gamend.Content do
   alias Gamend.Content.Markdown
   alias Gamend.Content.Tree
 
+  @other "other"
+  @roadmap "roadmap"
+  @changelog "changelog"
+
   # Heroicon names; the docs page falls back to these when a file names none.
   @default_doc_icon "hero-document-text"
   @default_category_icon "hero-folder"
@@ -209,7 +213,7 @@ defmodule Gamend.Content do
           nil
 
         path ->
-          case render_markdown_file(path, "changelog") do
+          case render_markdown_file(path, @changelog) do
             nil -> nil
             html -> apply_changelog_pills(html)
           end
@@ -233,7 +237,7 @@ defmodule Gamend.Content do
           nil
 
         path ->
-          case render_markdown_file(path, "roadmap") do
+          case render_markdown_file(path, @roadmap) do
             nil -> nil
             html -> apply_changelog_pills(html)
           end
@@ -1229,7 +1233,7 @@ defmodule Gamend.Content do
 
         case Map.get(@changelog_tags, key) do
           {class_suffix, label} -> pill(class_suffix, label)
-          nil -> pill("other", String.capitalize(tag))
+          nil -> pill(@other, String.capitalize(tag))
         end
       end
     )
@@ -1267,7 +1271,7 @@ defmodule Gamend.Content do
   def relabel_pills(html, tags) when is_map(tags) do
     Enum.reduce(tags, html, fn {tag, {class_suffix, label}}, acc ->
       acc
-      |> String.replace(pill("other", tag), pill(class_suffix, label))
+      |> String.replace(pill(@other, tag), pill(class_suffix, label))
       |> String.replace("[#{tag}]", pill(class_suffix, label))
     end)
   end

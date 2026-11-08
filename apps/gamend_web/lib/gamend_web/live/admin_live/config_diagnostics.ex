@@ -19,6 +19,9 @@ defmodule GamendWeb.AdminLive.ConfigDiagnostics do
   alias Gamend.Payments.Providers.Steam
   alias Gamend.Repo.AdvisoryLock
 
+  @arg "arg"
+  @none "none"
+
   @limit_categories %{
     "Global" => ~w(max_metadata_size max_page_size)a,
     "User" => ~w(max_display_name max_email max_profile_url max_device_id)a,
@@ -110,7 +113,7 @@ defmodule GamendWeb.AdminLive.ConfigDiagnostics do
 
   defp cache_l2_label(Gamend.Cache.L2.Redis), do: "redis"
   defp cache_l2_label(Gamend.Cache.L2.Partitioned), do: "partitioned"
-  defp cache_l2_label(nil), do: "none"
+  defp cache_l2_label(nil), do: @none
   defp cache_l2_label(other), do: inspect(other)
 
   def clustering_diagnostics do
@@ -223,7 +226,7 @@ defmodule GamendWeb.AdminLive.ConfigDiagnostics do
 
     names =
       Enum.map(args_list, fn a ->
-        Map.get(a, :name) || Map.get(a, "name") || "arg"
+        Map.get(a, :name) || Map.get(a, "name") || @arg
       end)
 
     arity = length(names)

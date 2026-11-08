@@ -15,6 +15,8 @@ defmodule GamendWeb.ErrorResponse do
 
   import Plug.Conn
 
+  @html "html"
+
   @doc """
   Replies 404 with the standard error page and halts.
 
@@ -36,7 +38,7 @@ defmodule GamendWeb.ErrorResponse do
     Phoenix.Template.render_to_string(
       GamendWeb.ErrorHTML,
       "#{status}.html",
-      "html",
+      @html,
       %{conn: conn}
     )
   end

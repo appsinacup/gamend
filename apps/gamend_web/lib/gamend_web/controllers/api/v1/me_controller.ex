@@ -11,6 +11,8 @@ defmodule GamendWeb.Api.V1.MeController do
   alias GamendWeb.Uploads
   alias OpenApiSpex.Schema
 
+  require Gamend.Storage.StoragePrefix, as: StoragePrefix
+
   tags(["Users"])
 
   operation(:show,
@@ -217,7 +219,13 @@ defmodule GamendWeb.Api.V1.MeController do
     user = Scope.user(conn.assigns.current_scope)
 
     if Accounts.can_upload_avatar?(user) do
-      Uploads.ticket(conn, "avatars", user.id, "avatar", Uploads.content_type(params))
+      Uploads.ticket(
+        conn,
+        StoragePrefix.avatars(),
+        user.id,
+        "avatar",
+        Uploads.content_type(params)
+      )
     else
       avatar_forbidden(conn)
     end
@@ -257,7 +265,7 @@ defmodule GamendWeb.Api.V1.MeController do
   end
 
   defp do_set_avatar(conn, user, params) do
-    Uploads.confirm(conn, "avatars", user.id, params["key"], fn url ->
+    Uploads.confirm(conn, StoragePrefix.avatars(), user.id, params["key"], fn url ->
       case Gamend.Accounts.update_user_avatar(user, url) do
         {:ok, updated} -> reply_data(conn, current_user(updated))
         {:error, changeset} -> unprocessable(conn, changeset)

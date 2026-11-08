@@ -11,9 +11,21 @@ defmodule GamendWeb.AdminLive.Matchmaking do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.FilterValue, as: FilterValue
+  require GamendWeb.UrlParam, as: UrlParam
+
   use GamendWeb.UrlState,
     reload: :reload,
-    keys: [:page, :page_size, status_filter: [param: "status"], user_filter: [param: "user"]]
+    keys: [
+      :page,
+      :page_size,
+      status_filter: [param: UrlParam.status()],
+      user_filter: [param: UrlParam.user()]
+    ]
+
+  require Gamend.ReadyChecks.CheckStatus, as: CheckStatus
+  require Gamend.ReadyChecks.ParticipantState, as: ParticipantState
+  require Gamend.Matchmaking.TicketStatus, as: TicketStatus
 
   @impl true
   def mount(_params, _session, socket) do
@@ -22,7 +34,7 @@ defmodule GamendWeb.AdminLive.Matchmaking do
       |> assign(:page_title, "Admin · Matchmaking")
       |> assign(:page, 1)
       |> assign(:page_size, 25)
-      |> assign(:status_filter, "all")
+      |> assign(:status_filter, FilterValue.everything())
       |> assign(:user_filter, "")
       |> reload()
 
@@ -33,7 +45,10 @@ defmodule GamendWeb.AdminLive.Matchmaking do
   def handle_event("filter", params, socket) do
     {:noreply,
      socket
-     |> Shared.put_filters(params, status_filter: {"status", "all"}, user_filter: "user_id")
+     |> Shared.put_filters(params,
+       status_filter: {UrlParam.status(), FilterValue.everything()},
+       user_filter: UrlParam.user_id()
+     )
      |> reload()}
   end
 
@@ -58,7 +73,7 @@ defmodule GamendWeb.AdminLive.Matchmaking do
 
   def handle_event("cancel_ready_check", %{"id" => id}, socket) do
     socket =
-      with %{status: "pending"} = check <- ReadyChecks.get_check(id),
+      with %{status: CheckStatus.pending()} = check <- ReadyChecks.get_check(id),
            {:ok, _} <- ReadyChecks.cancel(check) do
         put_flash(socket, :info, "Ready check cancelled")
       else
@@ -102,16 +117,16 @@ defmodule GamendWeb.AdminLive.Matchmaking do
   # a list that does not otherwise show it) and then the raw id.
   defp user_name(user), do: Gamend.Accounts.display_label(user)
 
-  defp status_class("queued"), do: "badge-info"
-  defp status_class("matched"), do: "badge-success"
-  defp status_class("cancelled"), do: "badge-ghost"
-  defp status_class("pending"), do: "badge-info"
-  defp status_class("passed"), do: "badge-success"
-  defp status_class("failed"), do: "badge-error"
+  defp status_class(TicketStatus.queued()), do: "badge-info"
+  defp status_class(TicketStatus.matched()), do: "badge-success"
+  defp status_class(CheckStatus.cancelled()), do: "badge-ghost"
+  defp status_class(CheckStatus.pending()), do: "badge-info"
+  defp status_class(CheckStatus.passed()), do: "badge-success"
+  defp status_class(CheckStatus.failed()), do: "badge-error"
   defp status_class(_status), do: "badge-ghost"
 
   defp ready_counts(check) do
-    ready = Enum.count(check.participants, &(&1.state == "ready"))
+    ready = Enum.count(check.participants, &(&1.state == ParticipantState.ready()))
     "#{ready}/#{length(check.participants)}"
   end
 

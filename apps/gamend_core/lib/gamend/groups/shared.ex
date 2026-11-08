@@ -13,6 +13,10 @@ defmodule Gamend.Groups.Shared do
   alias Gamend.Repo
   alias Gamend.Repo.AdvisoryLock
 
+  require Gamend.Groups.GroupInviteStatus, as: GroupInviteStatus
+  require Gamend.Groups.GroupRole, as: GroupRole
+  require Gamend.Notifications.NotificationType, as: NotificationType
+
   @doc false
   def broadcast_group(group_id, event) do
     Gamend.Broadcast.publish("group:#{group_id}", event)
@@ -66,7 +70,7 @@ defmodule Gamend.Groups.Shared do
       from(i in GroupInvite,
         where:
           i.recipient_id == ^user_id and i.group_id == ^group_id and
-            i.status == "pending"
+            i.status == ^GroupInviteStatus.pending()
       )
       |> Repo.all()
 
@@ -74,9 +78,11 @@ defmodule Gamend.Groups.Shared do
       from(i in GroupInvite,
         where:
           i.recipient_id == ^user_id and i.group_id == ^group_id and
-            i.status == "pending"
+            i.status == ^GroupInviteStatus.pending()
       )
-      |> Repo.update_all(set: [status: "accepted", updated_at: DateTime.utc_now()])
+      |> Repo.update_all(
+        set: [status: GroupInviteStatus.accepted(), updated_at: DateTime.utc_now()]
+      )
 
       invalidate_invite_cache_sync(user_id)
 
@@ -97,7 +103,7 @@ defmodule Gamend.Groups.Shared do
             "title" => "#{user_name} joined #{group_title}",
             "content" => "",
             "metadata" => %{
-              "type" => "group_invite_accepted",
+              "type" => NotificationType.group_invite_accepted(),
               "group_id" => group_id,
               "group_title" => group_title,
               "user_id" => user_id,
@@ -120,7 +126,7 @@ defmodule Gamend.Groups.Shared do
   # Must be called BEFORE deleting the group (cascade deletes the rows).
   def gather_pending_invite_user_ids(group_id) do
     from(i in GroupInvite,
-      where: i.group_id == ^group_id and i.status == "pending",
+      where: i.group_id == ^group_id and i.status == ^GroupInviteStatus.pending(),
       select: {i.sender_id, i.recipient_id}
     )
     |> Repo.all()
@@ -248,7 +254,11 @@ defmodule Gamend.Groups.Shared do
   defp insert_group_member(group_id, user_id) do
     case Repo.rescue_foreign_key(:not_found, fn ->
            %GroupMember{}
-           |> GroupMember.changeset(%{group_id: group_id, user_id: user_id, role: "member"})
+           |> GroupMember.changeset(%{
+             group_id: group_id,
+             user_id: user_id,
+             role: GroupRole.member()
+           })
            |> Repo.insert()
          end) do
       {:ok, member} ->

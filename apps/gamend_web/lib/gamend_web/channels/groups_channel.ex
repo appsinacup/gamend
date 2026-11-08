@@ -23,6 +23,11 @@ defmodule GamendWeb.GroupsChannel do
   alias GamendWeb.Plugs.FeatureGate
   alias GamendWeb.Serializers
 
+  require Gamend.Groups.GroupType, as: GroupType
+  require GamendWeb.ChannelError, as: ChannelError
+  require GamendWeb.ChannelTopic, as: ChannelTopic
+  require Gamend.RealtimeEvent, as: RealtimeEvent
+
   # A banned account joins no channel but its own user channel.
   @impl true
   def join(topic, payload, socket) do
@@ -30,13 +35,13 @@ defmodule GamendWeb.GroupsChannel do
          do: join_topic(topic, payload, socket)
   end
 
-  defp join_topic("groups", _payload, socket) do
+  defp join_topic(ChannelTopic.groups(), _payload, socket) do
     # Same flag as GET /api/v1/groups — the feed must not outlive the API.
     if FeatureGate.enabled?(:list_groups) do
       GamendWeb.ConnectionTracker.register(:groups_channel)
       {:ok, socket}
     else
-      {:error, %{reason: "listing_disabled"}}
+      {:error, %{reason: ChannelError.listing_disabled()}}
     end
   end
 
@@ -49,10 +54,12 @@ defmodule GamendWeb.GroupsChannel do
   @impl true
   def handle_info({:group_created, group}, socket) do
     # Don't broadcast hidden groups to the public list channel
-    if group.type != "hidden" do
+    if group.type != GroupType.hidden() do
       payload = Serializers.serialize_group(group)
-      push_event(socket, "group_created", payload)
-      {:noreply, ChannelUpdates.remember(socket, "group_updated", payload.id, payload)}
+      push_event(socket, RealtimeEvent.group_created(), payload)
+
+      {:noreply,
+       ChannelUpdates.remember(socket, RealtimeEvent.group_updated(), payload.id, payload)}
     else
       {:noreply, socket}
     end
@@ -60,9 +67,9 @@ defmodule GamendWeb.GroupsChannel do
 
   @impl true
   def handle_info({:group_updated, group}, socket) do
-    if group.type != "hidden" do
+    if group.type != GroupType.hidden() do
       payload = Serializers.serialize_group(group)
-      {:noreply, ChannelUpdates.push(socket, "group_updated", payload.id, payload)}
+      {:noreply, ChannelUpdates.push(socket, RealtimeEvent.group_updated(), payload.id, payload)}
     else
       {:noreply, socket}
     end
@@ -70,8 +77,8 @@ defmodule GamendWeb.GroupsChannel do
 
   @impl true
   def handle_info({:group_deleted, group_id}, socket) do
-    push_event(socket, "group_deleted", %{id: group_id})
-    {:noreply, ChannelUpdates.forget(socket, "group_updated", group_id)}
+    push_event(socket, RealtimeEvent.group_deleted(), %{id: group_id})
+    {:noreply, ChannelUpdates.forget(socket, RealtimeEvent.group_updated(), group_id)}
   end
 
   @impl true

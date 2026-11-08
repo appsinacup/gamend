@@ -6,6 +6,11 @@ defmodule GamendWeb.AdminLive.RateLimiting do
   alias GamendWeb.AdminLive.BanForm
   alias GamendWeb.Plugs.IpBan
 
+  require GamendWeb.Plugs.RateLimitBucket, as: RateLimitBucket
+
+  @permanent "permanent"
+  @ice "ice"
+
   @refresh_interval 5_000
 
   @impl true
@@ -550,33 +555,33 @@ defmodule GamendWeb.AdminLive.RateLimiting do
 
   # Buckets keyed by user id rather than IP.
   defp user_bucket?(type),
-    do: type in ~w(ws dc ice signaling_ws signaling_ice chatd chatrep)
+    do: type in ["ws", "dc", @ice, "signaling_ws", "signaling_ice", "chatd", "chatrep"]
 
   defp bucket_types do
     [
-      {"general", "HTTP", "badge-primary"},
-      {"auth", "Auth", "badge-warning"},
+      {RateLimitBucket.general(), "HTTP", "badge-primary"},
+      {RateLimitBucket.auth(), "Auth", "badge-warning"},
       {"ws", "WebSocket", "badge-secondary"},
       {"dc", "WebRTC", "badge-info"},
-      {"ice", "ICE", "badge-accent"}
+      {@ice, "ICE", "badge-accent"}
     ]
   end
 
-  defp type_badge_class("auth"), do: "badge-warning"
+  defp type_badge_class(RateLimitBucket.auth()), do: "badge-warning"
   defp type_badge_class("dc"), do: "badge-info"
   defp type_badge_class("ws"), do: "badge-secondary"
-  defp type_badge_class("ice"), do: "badge-accent"
+  defp type_badge_class(@ice), do: "badge-accent"
   defp type_badge_class("lv_auth"), do: "badge-warning"
   defp type_badge_class("lv_general"), do: "badge-primary"
   defp type_badge_class(_), do: "badge-primary"
 
   defp type_label("dc"), do: "WebRTC"
   defp type_label("ws"), do: "WebSocket"
-  defp type_label("auth"), do: "Auth"
-  defp type_label("ice"), do: "ICE"
+  defp type_label(RateLimitBucket.auth()), do: "Auth"
+  defp type_label(@ice), do: "ICE"
   defp type_label("lv_auth"), do: "LV Auth"
   defp type_label("lv_general"), do: "LV General"
-  defp type_label("client_logs"), do: "Client logs"
+  defp type_label(RateLimitBucket.client_logs()), do: "Client logs"
   defp type_label("signaling_ws"), do: "Signaling"
   defp type_label("signaling_ice"), do: "Signaling ICE"
   defp type_label("chatd"), do: "Chat/day"
@@ -587,7 +592,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
     expires_at |> DateTime.diff(DateTime.utc_now(), :millisecond) |> max(0) |> format_ms()
   end
 
-  defp format_ban_duration(%{expires_at: nil}), do: "permanent"
+  defp format_ban_duration(%{expires_at: nil}), do: @permanent
 
   defp format_ban_duration(%{expires_at: expires_at, inserted_at: inserted_at}),
     do: expires_at |> DateTime.diff(inserted_at, :millisecond) |> max(0) |> format_ms()

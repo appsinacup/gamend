@@ -4,6 +4,10 @@ defmodule GamendWeb.PaymentDownloadController do
   alias Gamend.Accounts.Scope
   alias Gamend.Payments
 
+  require Gamend.Payments.GrantKey, as: GrantKey
+
+  @file_key "file"
+
   def show(conn, %{"id" => id}) do
     user = Scope.user(conn.assigns.current_scope)
 
@@ -28,7 +32,7 @@ defmodule GamendWeb.PaymentDownloadController do
   defp download_file(entitlement) do
     case download_config(entitlement) do
       %{} = download ->
-        asset_key = map_value(download, "asset_key") || map_value(download, "file")
+        asset_key = map_value(download, "asset_key") || map_value(download, @file_key)
         filename = map_value(download, "filename") || asset_key
 
         with true <- is_binary(asset_key) and asset_key != "",
@@ -48,9 +52,13 @@ defmodule GamendWeb.PaymentDownloadController do
 
   defp download_config(entitlement) do
     entitlement.metadata
-    |> map_value("download")
-    |> fallback(map_value(entitlement.product && entitlement.product.grant_config, "download"))
-    |> fallback(map_value(entitlement.product && entitlement.product.metadata, "download"))
+    |> map_value(GrantKey.download())
+    |> fallback(
+      map_value(entitlement.product && entitlement.product.grant_config, GrantKey.download())
+    )
+    |> fallback(
+      map_value(entitlement.product && entitlement.product.metadata, GrantKey.download())
+    )
   end
 
   defp downloads_dir do
@@ -63,8 +71,8 @@ defmodule GamendWeb.PaymentDownloadController do
   defp map_value(_value, _key), do: nil
 
   defp atom_map_value(map, "asset_key"), do: map[:asset_key]
-  defp atom_map_value(map, "download"), do: map[:download]
-  defp atom_map_value(map, "file"), do: map[:file]
+  defp atom_map_value(map, GrantKey.download()), do: map[:download]
+  defp atom_map_value(map, @file_key), do: map[:file]
   defp atom_map_value(map, "filename"), do: map[:filename]
   defp atom_map_value(_map, _key), do: nil
 

@@ -28,6 +28,10 @@ defmodule GamendWeb.HostRuntime do
   """
 
   require Logger
+  require Gamend.LocalHost, as: LocalHost
+  require Gamend.UrlScheme, as: UrlScheme
+
+  @gamend "gamend"
 
   @type entry :: {atom(), keyword()} | {atom(), term(), term()}
 
@@ -40,11 +44,13 @@ defmodule GamendWeb.HostRuntime do
     settings = Gamend.Settings.resolve()
     setting = fn module, key -> Map.get(settings, {module, key}) end
 
-    host = setting.(GamendWeb.Http, :host) || "localhost"
+    host = setting.(GamendWeb.Http, :host) || LocalHost.localhost()
 
     scheme =
       setting.(GamendWeb.Http, :scheme) ||
-        if host in ["localhost", "127.0.0.1"], do: "http", else: "https"
+        if host in [LocalHost.localhost(), "127.0.0.1"],
+          do: UrlScheme.http(),
+          else: UrlScheme.https()
 
     server_entries(setting) ++
       log_level_entries(setting) ++
@@ -528,7 +534,7 @@ defmodule GamendWeb.HostRuntime do
 
     # Token lifetimes are not here: GamendWeb.Auth.Guardian reads them from
     # the auth.*_token_ttl_* settings in every environment.
-    [{:gamend_web, GamendWeb.Auth.Guardian, [issuer: "gamend", secret_key: guardian_secret_key]}]
+    [{:gamend_web, GamendWeb.Auth.Guardian, [issuer: @gamend, secret_key: guardian_secret_key]}]
   end
 
   defp rate_limit_entries(setting) do
@@ -609,7 +615,11 @@ defmodule GamendWeb.HostRuntime do
 
     endpoint_config =
       [
-        url: [host: host, port: if(scheme == "https", do: 443, else: port), scheme: scheme],
+        url: [
+          host: host,
+          port: if(scheme == UrlScheme.https(), do: 443, else: port),
+          scheme: scheme
+        ],
         http: [
           # Enable IPv6 and bind on all interfaces. Set it to
           # {0, 0, 0, 0, 0, 0, 0, 1} for local network only access. See
@@ -660,7 +670,7 @@ defmodule GamendWeb.HostRuntime do
   defp normalize_origin(<<"regex:", pattern::binary>>), do: Regex.compile!(pattern)
 
   defp normalize_origin(origin) do
-    if String.starts_with?(origin, "//") or String.starts_with?(origin, "http") do
+    if String.starts_with?(origin, "//") or String.starts_with?(origin, UrlScheme.http()) do
       origin
     else
       "//" <> origin

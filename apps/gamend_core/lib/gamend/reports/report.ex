@@ -14,6 +14,9 @@ defmodule Gamend.Reports.Report do
 
   alias Gamend.Accounts.User
 
+  require Gamend.Reports.ReportSource, as: ReportSource
+  require Gamend.Reports.ReportStatus, as: ReportStatus
+
   @type t :: %__MODULE__{}
 
   @statuses ~w(open fixed wontfix duplicate)
@@ -32,10 +35,10 @@ defmodule Gamend.Reports.Report do
     field :description, :string
     field :email, :string
     field :locale, :string
-    field :source, :string, default: "web"
+    field :source, :string, default: ReportSource.web()
     field :client, :map, default: %{}
     field :attachments, :map, default: %{}
-    field :status, :string, default: "open"
+    field :status, :string, default: ReportStatus.open()
     field :resolution_note, :string
     field :resolved_at, :utc_datetime
 

@@ -20,6 +20,11 @@ defmodule Gamend.Groups.Invites do
   alias Gamend.Lock
   alias Gamend.Repo
 
+  require Gamend.Groups.GroupInviteStatus, as: GroupInviteStatus
+  require Gamend.Notifications.NotificationType, as: NotificationType
+
+  @full "full"
+
   @doc "Count pending invitations for a user."
   @spec count_invitations(Ecto.UUID.t()) :: non_neg_integer()
   @decorate cacheable(
@@ -30,7 +35,7 @@ defmodule Gamend.Groups.Invites do
     import Ecto.Query
 
     from(i in GroupInvite,
-      where: i.recipient_id == ^user_id and i.status == "pending",
+      where: i.recipient_id == ^user_id and i.status == ^GroupInviteStatus.pending(),
       select: count(i.id)
     )
     |> Repo.one()
@@ -47,7 +52,7 @@ defmodule Gamend.Groups.Invites do
     import Ecto.Query
 
     from(i in GroupInvite,
-      where: i.sender_id == ^user_id and i.status == "pending",
+      where: i.sender_id == ^user_id and i.status == ^GroupInviteStatus.pending(),
       select: count(i.id)
     )
     |> Repo.one()
@@ -120,7 +125,7 @@ defmodule Gamend.Groups.Invites do
           Repo.get_by(GroupJoinRequest,
             group_id: group_id,
             user_id: target_user_id,
-            status: "pending"
+            status: GroupInviteStatus.pending()
           )
 
         if pending_request do
@@ -145,7 +150,7 @@ defmodule Gamend.Groups.Invites do
           "title" => "Invited to #{group.title}",
           "content" => "",
           "metadata" => %{
-            "type" => "group_invite",
+            "type" => NotificationType.group_invite(),
             "group_id" => group_id,
             "group_title" => group.title,
             "sender_name" => Gamend.Accounts.display_name(sender),
@@ -171,7 +176,7 @@ defmodule Gamend.Groups.Invites do
       pending_count =
         Repo.one(
           from(i in GroupInvite,
-            where: i.recipient_id == ^target_user_id and i.status == "pending",
+            where: i.recipient_id == ^target_user_id and i.status == ^GroupInviteStatus.pending(),
             select: count(i.id)
           )
         ) || 0
@@ -214,7 +219,7 @@ defmodule Gamend.Groups.Invites do
   def accept_invite(user_id, invite_id)
       when is_binary(user_id) and is_binary(invite_id) do
     case Repo.get(GroupInvite, invite_id) do
-      %GroupInvite{recipient_id: ^user_id, status: "pending"} = invite ->
+      %GroupInvite{recipient_id: ^user_id, status: GroupInviteStatus.pending()} = invite ->
         do_accept_invite(user_id, invite)
 
       %GroupInvite{recipient_id: ^user_id} ->
@@ -270,8 +275,10 @@ defmodule Gamend.Groups.Invites do
   # transition is what authorises the seat. `:no_invite` when a cancel, a
   # decline or another accept moved it first.
   defp claim_invite(%GroupInvite{id: id}) do
-    from(i in GroupInvite, where: i.id == ^id and i.status == "pending")
-    |> Repo.compare_and_set(set: [status: "accepted", updated_at: DateTime.utc_now(:second)])
+    from(i in GroupInvite, where: i.id == ^id and i.status == ^GroupInviteStatus.pending())
+    |> Repo.compare_and_set(
+      set: [status: GroupInviteStatus.accepted(), updated_at: DateTime.utc_now(:second)]
+    )
     |> case do
       {:ok, _claimed} -> :ok
       {:error, :precondition_failed} -> {:error, :no_invite}
@@ -290,8 +297,10 @@ defmodule Gamend.Groups.Invites do
   # Pending → declined, or nothing: a decline, a full group and a cancel
   # landing together answer the sender once.
   defp decline_pending(%GroupInvite{id: id}) do
-    from(i in GroupInvite, where: i.id == ^id and i.status == "pending")
-    |> Repo.update_all(set: [status: "declined", updated_at: DateTime.utc_now(:second)])
+    from(i in GroupInvite, where: i.id == ^id and i.status == ^GroupInviteStatus.pending())
+    |> Repo.update_all(
+      set: [status: GroupInviteStatus.declined(), updated_at: DateTime.utc_now(:second)]
+    )
     |> case do
       {1, _} -> :ok
       {0, _} -> {:error, :not_found}
@@ -326,7 +335,7 @@ defmodule Gamend.Groups.Invites do
           "group_title" => group.title,
           "user_id" => user_id,
           "user_name" => user_name,
-          "reason" => "full"
+          "reason" => @full
         }
       }
     )
@@ -334,7 +343,7 @@ defmodule Gamend.Groups.Invites do
     # Real-time PubSub so the sender's UI updates immediately
     Gamend.Broadcast.publish(
       "user:#{invite.sender_id}",
-      {:group_invite_declined, %{group_id: group_id, user_id: user_id, reason: "full"}}
+      {:group_invite_declined, %{group_id: group_id, user_id: user_id, reason: @full}}
     )
   end
 
@@ -355,7 +364,7 @@ defmodule Gamend.Groups.Invites do
         "title" => "#{user_name} joined #{group.title}",
         "content" => "",
         "metadata" => %{
-          "type" => "group_invite_accepted",
+          "type" => NotificationType.group_invite_accepted(),
           "group_id" => group_id,
           "group_title" => group.title,
           "user_id" => user_id,
@@ -400,7 +409,7 @@ defmodule Gamend.Groups.Invites do
     import Ecto.Query
 
     from(i in GroupInvite,
-      where: i.recipient_id == ^user_id and i.status == "pending",
+      where: i.recipient_id == ^user_id and i.status == ^GroupInviteStatus.pending(),
       join: g in assoc(i, :group),
       join: s in assoc(i, :sender),
       join: r in assoc(i, :recipient),
@@ -434,7 +443,7 @@ defmodule Gamend.Groups.Invites do
     import Ecto.Query
 
     from(i in GroupInvite,
-      where: i.sender_id == ^user_id and i.status == "pending",
+      where: i.sender_id == ^user_id and i.status == ^GroupInviteStatus.pending(),
       join: g in assoc(i, :group),
       join: s in assoc(i, :sender),
       join: r in assoc(i, :recipient),
@@ -464,7 +473,7 @@ defmodule Gamend.Groups.Invites do
     if Groups.can_manage_group?(admin_id, group_id) do
       invites =
         from(i in GroupInvite,
-          where: i.group_id == ^group_id and i.status == "pending",
+          where: i.group_id == ^group_id and i.status == ^GroupInviteStatus.pending(),
           join: g in assoc(i, :group),
           join: s in assoc(i, :sender),
           join: r in assoc(i, :recipient),
@@ -488,7 +497,7 @@ defmodule Gamend.Groups.Invites do
     import Ecto.Query
 
     from(i in GroupInvite,
-      where: i.group_id == ^group_id and i.status == "pending",
+      where: i.group_id == ^group_id and i.status == ^GroupInviteStatus.pending(),
       select: count(i.id)
     )
     |> Repo.one()
@@ -506,7 +515,7 @@ defmodule Gamend.Groups.Invites do
       nil ->
         {:error, :not_found}
 
-      %GroupInvite{status: "pending"} = invite ->
+      %GroupInvite{status: GroupInviteStatus.pending()} = invite ->
         if invite.sender_id == user_id or Groups.can_manage_group?(user_id, invite.group_id),
           do: do_cancel_invite(invite),
           else: {:error, :not_owner}
@@ -520,7 +529,9 @@ defmodule Gamend.Groups.Invites do
   # seated the player, and a second cancel finds nothing to retract.
   defp do_cancel_invite(invite) do
     case Repo.delete_all(
-           from(i in GroupInvite, where: i.id == ^invite.id and i.status == "pending")
+           from(i in GroupInvite,
+             where: i.id == ^invite.id and i.status == ^GroupInviteStatus.pending()
+           )
          ) do
       {1, _} -> retract_cancelled_invite(invite)
       {0, _} -> {:error, :not_found}
@@ -552,7 +563,7 @@ defmodule Gamend.Groups.Invites do
   @spec decline_invite(Ecto.UUID.t(), Ecto.UUID.t()) :: :ok | {:error, atom()}
   def decline_invite(user_id, invite_id)
       when is_binary(user_id) and is_binary(invite_id) do
-    with %GroupInvite{recipient_id: ^user_id, status: "pending"} = invite <-
+    with %GroupInvite{recipient_id: ^user_id, status: GroupInviteStatus.pending()} = invite <-
            Repo.get(GroupInvite, invite_id),
          # Only the decline that moves it tells the sender: an accept that
          # claimed it first has seated the player.

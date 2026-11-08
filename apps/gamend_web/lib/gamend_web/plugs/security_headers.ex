@@ -24,6 +24,8 @@ defmodule GamendWeb.Plugs.SecurityHeaders do
 
   import Plug.Conn
 
+  require Gamend.UrlScheme, as: UrlScheme
+
   @behaviour Plug
 
   @impl true
@@ -102,7 +104,7 @@ defmodule GamendWeb.Plugs.SecurityHeaders do
         _ -> nil
       end
 
-    if scheme == :https or forwarded_proto == "https" do
+    if scheme == :https or forwarded_proto == UrlScheme.https() do
       # max-age=1 year, includeSubDomains + preload for HSTS preload list eligibility
       put_resp_header(
         conn,

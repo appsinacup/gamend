@@ -17,6 +17,9 @@ defmodule GamendWeb.Api.V1.Admin.TournamentController do
   alias GamendWeb.Uploads
   alias OpenApiSpex.Schema
 
+  require Gamend.Tournaments.TournamentState, as: TournamentState
+  require GamendWeb.UploadName, as: UploadName
+
   tags(["Admin – Tournaments"])
 
   @tournament_body %Schema{
@@ -115,7 +118,7 @@ defmodule GamendWeb.Api.V1.Admin.TournamentController do
         conn,
         "icons/tournaments",
         tournament.id,
-        "icon",
+        UploadName.icon(),
         Uploads.content_type(params)
       )
     end)
@@ -230,7 +233,7 @@ defmodule GamendWeb.Api.V1.Admin.TournamentController do
 
   def draw(conn, %{"id" => id}) do
     with_tournament(conn, id, fn tournament ->
-      if tournament.state in ["scheduled", "registration"] do
+      if tournament.state in [TournamentState.scheduled(), TournamentState.registration()] do
         tournament
         |> Tournaments.update_tournament(%{starts_at: DateTime.utc_now(:second)})
         |> advanced(conn)
@@ -255,7 +258,7 @@ defmodule GamendWeb.Api.V1.Admin.TournamentController do
 
   def finish(conn, %{"id" => id}) do
     with_tournament(conn, id, fn tournament ->
-      if tournament.state == "running" do
+      if tournament.state == TournamentState.running() do
         tournament
         |> Tournaments.update_tournament(finish_window(tournament))
         |> advanced(conn)

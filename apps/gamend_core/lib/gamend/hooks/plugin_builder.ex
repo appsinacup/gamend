@@ -23,6 +23,8 @@ defmodule Gamend.Hooks.PluginBuilder do
 
   alias Gamend.Hooks.PluginBuilder.InProcess
 
+  @mix_exs "mix.exs"
+
   @type step_result :: %{
           cmd: String.t(),
           status: non_neg_integer(),
@@ -93,7 +95,7 @@ defmodule Gamend.Hooks.PluginBuilder do
       entries
       |> Enum.map(&Path.join(dir, &1))
       |> Enum.filter(fn p ->
-        File.dir?(p) and File.exists?(Path.join(p, "mix.exs"))
+        File.dir?(p) and File.exists?(Path.join(p, @mix_exs))
       end)
       |> Enum.map(&Path.basename/1)
       |> Enum.sort()
@@ -144,7 +146,7 @@ defmodule Gamend.Hooks.PluginBuilder do
         plugin_name not in list_buildable_plugins() ->
           {:error, {:unknown_plugin, plugin_name}}
 
-        File.exists?(Path.join(plugin_dir, "mix.exs")) ->
+        File.exists?(Path.join(plugin_dir, @mix_exs)) ->
           run_build(mode, plugin_name, source_dir, plugin_dir)
 
         true ->

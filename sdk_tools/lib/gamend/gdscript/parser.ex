@@ -44,6 +44,12 @@ defmodule Gamend.GDScript.Parser do
 
   alias Gamend.GDScript.CompileError
 
+  @match "match"
+  @break "break"
+  @continue "continue"
+  @class "class"
+  @static "static"
+
   @doc "Parse tokens into a list of top-level statements."
   @spec parse([tuple()], String.t()) :: [tuple()]
   def parse(tokens, file \\ "nofile") do
@@ -72,7 +78,7 @@ defmodule Gamend.GDScript.Parser do
 
   # `static func` is an ordinary function server-side: there is no instance for
   # it to be static against.
-  defp parse_statement([{:keyword, "static", _}, {:keyword, "func", _} | _] = tokens, state),
+  defp parse_statement([{:keyword, @static, _}, {:keyword, "func", _} | _] = tokens, state),
     do: parse_statement(tl(tokens), state)
 
   # `class_name X` names the script's own class in Godot. Here the module is
@@ -82,7 +88,7 @@ defmodule Gamend.GDScript.Parser do
     {{:class_name, name, line}, expect_newline(rest, state)}
   end
 
-  defp parse_statement([{:keyword, "class", line} | rest], state) do
+  defp parse_statement([{:keyword, @class, line} | rest], state) do
     {name, rest} = expect_ident(rest, state)
 
     {parent, rest} =
@@ -173,7 +179,7 @@ defmodule Gamend.GDScript.Parser do
     {{:if, clauses, else_body, line}, rest}
   end
 
-  defp parse_statement([{:keyword, "match", line} | rest], state) do
+  defp parse_statement([{:keyword, @match, line} | rest], state) do
     {subject, rest} = parse_expression(rest, state)
 
     rest =
@@ -201,10 +207,10 @@ defmodule Gamend.GDScript.Parser do
     {{:while, condition, body, line}, rest}
   end
 
-  defp parse_statement([{:keyword, "break", line} | rest], state),
+  defp parse_statement([{:keyword, @break, line} | rest], state),
     do: {{:break, line}, expect_newline(rest, state)}
 
-  defp parse_statement([{:keyword, "continue", line} | rest], state),
+  defp parse_statement([{:keyword, @continue, line} | rest], state),
     do: {{:continue, line}, expect_newline(rest, state)}
 
   defp parse_statement([{:keyword, "return", line} | rest], state) do
@@ -468,7 +474,7 @@ defmodule Gamend.GDScript.Parser do
   # single-expression form. Saying that beats "expected an expression, got
   # `var`".
   defp parse_lambda_statement([{:keyword, word, line} | _], state)
-       when word in ~w(var const if for while match pass break continue) do
+       when word in ["var", "const", "if", "for", "while", @match, "pass", @break, @continue] do
     raise CompileError,
       file: state.file,
       line: line,

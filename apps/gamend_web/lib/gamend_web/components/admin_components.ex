@@ -31,6 +31,8 @@ defmodule GamendWeb.AdminComponents do
 
   alias GamendWeb.AdminLive.Pages
 
+  @md "md"
+
   @default_icon "hero-squares-2x2"
   @default_color "slate"
 
@@ -59,6 +61,8 @@ defmodule GamendWeb.AdminComponents do
     "error" => "bg-error/15 text-error"
   }
 
+  @size_names ~w(sm md lg)
+
   @sizes %{
     "sm" => {"size-8", "size-4"},
     "md" => {"size-9", "size-5"},
@@ -71,7 +75,7 @@ defmodule GamendWeb.AdminComponents do
 
   attr :icon, :string, default: nil, doc: "a `hero-*` name"
   attr :color, :string, default: nil, doc: "a name from `colors/0`; an unknown one draws slate"
-  attr :size, :string, default: "md", values: ~w(sm md lg)
+  attr :size, :string, default: @md, values: @size_names
   attr :class, :any, default: nil, doc: "layout only"
 
   @doc """
@@ -183,7 +187,10 @@ defmodule GamendWeb.AdminComponents do
     """
   end
 
-  attr :sections, :list, required: true, doc: "`%{title:, links: [%{path:, title:, icon:, color:}]}`"
+  attr :sections, :list,
+    required: true,
+    doc: "`%{title:, links: [%{path:, title:, icon:, color:}]}`"
+
   attr :counts, :map, default: %{}, doc: "what a tile shows beside its name, by path"
 
   @doc """

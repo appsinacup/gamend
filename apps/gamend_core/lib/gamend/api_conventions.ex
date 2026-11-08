@@ -14,6 +14,11 @@ defmodule Gamend.ApiConventions do
   A convention nothing enforces is a suggestion.
   """
 
+  @get_ "get_"
+  @lib "lib"
+  @apps "apps"
+  @deps "deps"
+
   @type violation :: %{
           rule: String.t(),
           file: String.t(),
@@ -33,7 +38,7 @@ defmodule Gamend.ApiConventions do
 
   # In a host repo core/web are deps; their code obeys the rules too, and a
   # violation there means the host pulled a bad version - worth failing on.
-  defp dep_dir(app), do: Path.join(["deps", app, "apps", app, "lib"])
+  defp dep_dir(app), do: Path.join([@deps, app, @apps, app, @lib])
 
   defp existing(paths), do: paths |> Enum.filter(&File.dir?/1) |> Enum.uniq()
 
@@ -691,7 +696,7 @@ defmodule Gamend.ApiConventions do
 
   defp raising_lookup?(_module, fun) do
     name = Atom.to_string(fun)
-    String.starts_with?(name, "get_") and String.ends_with?(name, "!")
+    String.starts_with?(name, @get_) and String.ends_with?(name, "!")
   end
 
   # ── R18: a reason no clause names goes to reply_reason/2 ───────────────────

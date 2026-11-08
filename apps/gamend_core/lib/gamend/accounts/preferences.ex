@@ -24,6 +24,8 @@ defmodule Gamend.Accounts.Preferences do
   alias Gamend.Accounts.User
   alias Gamend.Repo
 
+  require Gamend.Accounts.ThemeName, as: ThemeName
+
   @doc "A user's preferences map (string keys), empty when none are set."
   @spec get(User.t() | nil) :: map()
   def get(%User{preferences: %{} = prefs}), do: prefs
@@ -57,7 +59,7 @@ defmodule Gamend.Accounts.Preferences do
   def put_client(%User{} = user, key, value) when is_binary(key) and is_binary(value) do
     cond do
       value not in Map.get(client_keys(), key, []) -> {:error, :invalid}
-      key == "theme" and value == "system" -> update(user, &Map.delete(&1, key))
+      key == "theme" and value == ThemeName.system() -> update(user, &Map.delete(&1, key))
       true -> update(user, &Map.put(&1, key, value))
     end
   end
@@ -68,7 +70,7 @@ defmodule Gamend.Accounts.Preferences do
   @spec theme(User.t() | nil) :: String.t() | nil
   def theme(user) do
     case get(user)["theme"] do
-      theme when theme in ["dark", "light"] -> theme
+      theme when theme in [ThemeName.dark(), ThemeName.light()] -> theme
       _ -> nil
     end
   end

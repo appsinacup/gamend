@@ -23,6 +23,10 @@ defmodule Gamend.Accounts.Registration do
   # and this TTL caps staleness if an invalidation broadcast is ever missed.
   alias Gamend.Accounts
 
+  require Gamend.Accounts.TokenContext, as: TokenContext
+
+  @day "day"
+
   @username_insert_attempts 4
 
   # Asked on every registration, and it only needs "is the table empty" — a
@@ -440,8 +444,9 @@ defmodule Gamend.Accounts.Registration do
       {:ok, decoded} ->
         query =
           from t in UserToken,
-            where: t.token == ^:crypto.hash(:sha256, decoded) and t.context == "confirm",
-            where: t.inserted_at > ago(^UserToken.confirm_validity_in_days(), "day"),
+            where:
+              t.token == ^:crypto.hash(:sha256, decoded) and t.context == ^TokenContext.confirm(),
+            where: t.inserted_at > ago(^UserToken.confirm_validity_in_days(), ^@day),
             join: u in assoc(t, :user),
             select: u
 
@@ -478,7 +483,9 @@ defmodule Gamend.Accounts.Registration do
   # Every link and code still waiting for `user`'s inbox.
   defp confirmation_tokens_query(%User{id: user_id}) do
     from(t in UserToken,
-      where: t.user_id == ^user_id and t.context in ["confirm", "confirm_code"]
+      where:
+        t.user_id == ^user_id and
+          t.context in ^[TokenContext.confirm(), TokenContext.confirm_code()]
     )
   end
 
@@ -555,7 +562,9 @@ defmodule Gamend.Accounts.Registration do
 
       {:locked, seconds} ->
         with %User{confirmed_at: nil} = user <- user_by_email_uncached(email) do
-          Repo.delete_all(where(confirmation_tokens_query(user), context: "confirm_code"))
+          Repo.delete_all(
+            where(confirmation_tokens_query(user), context: ^TokenContext.confirm_code())
+          )
         end
 
         {:error, {:locked, seconds}}
@@ -642,12 +651,15 @@ defmodule Gamend.Accounts.Registration do
   # Mints one email's link and code for `user`, replacing any earlier code.
   # Returns `{encoded_link_token, code}`.
   def insert_confirmation_tokens(%User{} = user) do
-    {encoded, link_token} = UserToken.build_email_token(user, "confirm")
+    {encoded, link_token} = UserToken.build_email_token(user, TokenContext.confirm())
     {code, code_token} = UserToken.build_confirm_code_token(user)
 
     {:ok, _} =
       Gamend.AfterCommit.transaction(fn ->
-        Repo.delete_all(where(confirmation_tokens_query(user), context: "confirm_code"))
+        Repo.delete_all(
+          where(confirmation_tokens_query(user), context: ^TokenContext.confirm_code())
+        )
+
         Repo.insert!(link_token)
         Repo.insert!(code_token)
       end)

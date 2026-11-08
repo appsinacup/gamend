@@ -57,6 +57,10 @@ defmodule Mix.Tasks.Host.Proto.Check do
   alias Gamend.Hooks.MetadataSchemas
   alias Gamend.Hooks.PluginManager
 
+  @key "key"
+  @hooks "hooks"
+  @metadata "metadata"
+
   @shortdoc "Check protobuf schemas against the JSON values they encode"
 
   @default_limit 50
@@ -384,11 +388,11 @@ defmodule Mix.Tasks.Host.Proto.Check do
     coverage_line("kv keys", Enum.map(cov.kv, &describe_kv_pattern/1))
 
     coverage_line(
-      "metadata",
+      @metadata,
       Enum.map(cov.metadata, fn {e, n} -> "#{e} (#{plural(n, "row")})" end)
     )
 
-    coverage_line("hooks", Enum.map(cov.hooks, fn {plugin, fun} -> "#{plugin}.#{fun}" end))
+    coverage_line(@hooks, Enum.map(cov.hooks, fn {plugin, fun} -> "#{plugin}.#{fun}" end))
 
     if cov.kv != [] do
       Mix.shell().info("        register these from the plugin's kv_schemas/0;")
@@ -404,7 +408,7 @@ defmodule Mix.Tasks.Host.Proto.Check do
   defp describe_kv_pattern({pattern, rows, 1}), do: "#{pattern} (#{plural(rows, "row")})"
 
   defp describe_kv_pattern({pattern, rows, keys}),
-    do: "#{pattern} (#{plural(rows, "row")}, #{plural(keys, "key")})"
+    do: "#{pattern} (#{plural(rows, "row")}, #{plural(keys, @key)})"
 
   defp plural(1, noun), do: "1 #{noun}"
   defp plural(n, noun), do: "#{n} #{noun}s"

@@ -23,6 +23,8 @@ defmodule GamendWeb.Pagination do
 
   alias Gamend.Limits
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   @type window :: {pos_integer(), pos_integer()}
 
   @doc """
@@ -34,8 +36,8 @@ defmodule GamendWeb.Pagination do
   @spec params(map()) :: window()
   def params(params) when is_map(params) do
     {
-      Limits.clamp_page(value(params, "page", :page)),
-      Limits.clamp_page_size(value(params, "page_size", :page_size))
+      Limits.clamp_page(value(params, UrlParam.page(), :page)),
+      Limits.clamp_page_size(value(params, UrlParam.page_size_key(), :page_size))
     }
   end
 

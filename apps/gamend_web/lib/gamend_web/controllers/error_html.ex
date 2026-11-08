@@ -23,6 +23,8 @@ defmodule GamendWeb.ErrorHTML do
 
   alias GamendWeb.Plugs.LocalePath
 
+  require GamendWeb.ColorScheme, as: ColorScheme
+
   embed_templates "error_html/*"
 
   @doc """
@@ -158,7 +160,7 @@ defmodule GamendWeb.ErrorHTML do
     do: mode
 
   defp color_mode(%{color_mode: mode}) when is_binary(mode), do: mode
-  defp color_mode(_assigns), do: "light"
+  defp color_mode(_assigns), do: ColorScheme.light()
 
   # The host theme's stylesheet, which is where the brand palette lives —
   # app.css alone is daisyUI's defaults. Resolving a theme touches host config,

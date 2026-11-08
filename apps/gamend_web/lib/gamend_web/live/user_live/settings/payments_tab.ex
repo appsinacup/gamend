@@ -11,6 +11,13 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.Shared
 
+  require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
+  require Gamend.Payments.ProductKind, as: ProductKind
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseMetadata, as: PurchaseMetadata
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+  require Gamend.Payments.GrantKey, as: GrantKey
+
   def assign_payment_data(socket) do
     user = Shared.current_user(socket)
 
@@ -335,7 +342,9 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
 
   defp payment_entitlement_kind(%{product: %{kind: kind}}) when is_binary(kind), do: kind
   # Given without a purchase: a trial, a reward.
-  defp payment_entitlement_kind(%{product: nil, source_purchase_id: nil}), do: "granted"
+  defp payment_entitlement_kind(%{product: nil, source_purchase_id: nil}),
+    do: ProductKind.granted()
+
   defp payment_entitlement_kind(_entitlement), do: "-"
 
   defp payment_entitlement_period_label(entitlement) do
@@ -343,7 +352,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
       payment_subscription_cancel_scheduled?(entitlement) ->
         gettext("Cancels")
 
-      payment_entitlement_kind(entitlement) == "subscription" ->
+      payment_entitlement_kind(entitlement) == ProductKind.subscription() ->
         gettext("Renews")
 
       true ->
@@ -352,7 +361,8 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
   end
 
   defp payment_auto_renews?(entitlement) do
-    payment_entitlement_kind(entitlement) == "subscription" and is_nil(entitlement.expires_at)
+    payment_entitlement_kind(entitlement) == ProductKind.subscription() and
+      is_nil(entitlement.expires_at)
   end
 
   defp payment_amount(%{amount: nil}), do: "-"
@@ -364,19 +374,22 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
     "#{String.upcase(currency)} #{major}.#{minor}"
   end
 
-  defp payment_status_badge_class("completed"), do: "badge-success"
-  defp payment_status_badge_class("active"), do: "badge-success"
-  defp payment_status_badge_class("requires_action"), do: "badge-info"
-  defp payment_status_badge_class("pending"), do: "badge-warning"
-  defp payment_status_badge_class("refunded"), do: "badge-warning"
-  defp payment_status_badge_class("revoked"), do: "badge-error"
-  defp payment_status_badge_class("failed"), do: "badge-error"
+  defp payment_status_badge_class(PurchaseStatus.completed()), do: "badge-success"
+  defp payment_status_badge_class(EntitlementStatus.active()), do: "badge-success"
+  defp payment_status_badge_class(PurchaseStatus.requires_action()), do: "badge-info"
+  defp payment_status_badge_class(PurchaseStatus.pending()), do: "badge-warning"
+  defp payment_status_badge_class(PurchaseStatus.refunded()), do: "badge-warning"
+  defp payment_status_badge_class(PurchaseStatus.revoked()), do: "badge-error"
+  defp payment_status_badge_class(PurchaseStatus.failed()), do: "badge-error"
   defp payment_status_badge_class(_status), do: "badge-ghost"
 
   defp payment_downloadable?(entitlement), do: is_map(payment_download_config(entitlement))
 
-  defp payment_refund_sent?(%{status: "completed", metadata: %{"stripe_refund" => %{} = refund}}),
-    do: is_binary(refund["refund_id"])
+  defp payment_refund_sent?(%{
+         status: PurchaseStatus.completed(),
+         metadata: %{"stripe_refund" => %{} = refund}
+       }),
+       do: is_binary(refund["refund_id"])
 
   defp payment_refund_sent?(_purchase), do: false
 
@@ -392,16 +405,20 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
   end
 
   defp payment_current_stripe_subscription?(entitlement) do
-    ((payment_entitlement_kind(entitlement) == "subscription" and
+    ((payment_entitlement_kind(entitlement) == ProductKind.subscription() and
         payment_current_entitlement?(entitlement) and
         entitlement.source_purchase) &&
-       entitlement.source_purchase.provider == "stripe") and
+       entitlement.source_purchase.provider == ProviderId.stripe()) and
       payment_stripe_subscription_id(entitlement.source_purchase) != nil
   end
 
-  defp payment_current_entitlement?(%{status: "active", expires_at: nil}), do: true
+  defp payment_current_entitlement?(%{status: EntitlementStatus.active(), expires_at: nil}),
+    do: true
 
-  defp payment_current_entitlement?(%{status: "active", expires_at: %DateTime{} = expires_at}) do
+  defp payment_current_entitlement?(%{
+         status: EntitlementStatus.active(),
+         expires_at: %DateTime{} = expires_at
+       }) do
     DateTime.compare(expires_at, DateTime.utc_now(:second)) == :gt
   end
 
@@ -417,8 +434,8 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
   end
 
   defp payment_stripe_subscription_id(purchase) do
-    payment_map_value(purchase.metadata, "stripe_subscription_id") ||
-      payment_map_value(purchase.raw_provider_payload, "stripe_subscription_id") ||
+    payment_map_value(purchase.metadata, PurchaseMetadata.stripe_subscription_id()) ||
+      payment_map_value(purchase.raw_provider_payload, PurchaseMetadata.stripe_subscription_id()) ||
       payment_nested_stripe_subscription_id(purchase.raw_provider_payload)
   end
 
@@ -440,12 +457,15 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
 
   defp payment_download_config(entitlement) do
     entitlement.metadata
-    |> payment_map_value("download")
+    |> payment_map_value(GrantKey.download())
     |> payment_fallback(
-      payment_map_value(entitlement.product && entitlement.product.grant_config, "download")
+      payment_map_value(
+        entitlement.product && entitlement.product.grant_config,
+        GrantKey.download()
+      )
     )
     |> payment_fallback(
-      payment_map_value(entitlement.product && entitlement.product.metadata, "download")
+      payment_map_value(entitlement.product && entitlement.product.metadata, GrantKey.download())
     )
   end
 
@@ -456,8 +476,10 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
 
   defp payment_map_value(_value, _key), do: nil
 
-  defp payment_atom_map_value(map, "download"), do: map[:download]
-  defp payment_atom_map_value(map, "stripe_subscription_id"), do: map[:stripe_subscription_id]
+  defp payment_atom_map_value(map, GrantKey.download()), do: map[:download]
+
+  defp payment_atom_map_value(map, PurchaseMetadata.stripe_subscription_id()),
+    do: map[:stripe_subscription_id]
 
   defp payment_atom_map_value(map, "stripe_subscription_cancel_at_period_end"),
     do: map[:stripe_subscription_cancel_at_period_end]

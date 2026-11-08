@@ -10,10 +10,17 @@ defmodule GamendWeb.AdminLive.Economy do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   use GamendWeb.UrlState,
     reload: :reload,
-    drop: ~w(user_id),
-    keys: [:page, :page_size, user_filter: [param: "user"], currency_filter: [param: "currency"]]
+    drop: [UrlParam.user_id()],
+    keys: [
+      :page,
+      :page_size,
+      user_filter: [param: UrlParam.user()],
+      currency_filter: [param: UrlParam.currency()]
+    ]
 
   @impl true
   def mount(_params, _session, socket) do
@@ -56,7 +63,10 @@ defmodule GamendWeb.AdminLive.Economy do
   def handle_event("filter", params, socket) do
     {:noreply,
      socket
-     |> Shared.put_filters(params, user_filter: "user_id", currency_filter: "currency")
+     |> Shared.put_filters(params,
+       user_filter: UrlParam.user_id(),
+       currency_filter: UrlParam.currency()
+     )
      |> reload()}
   end
 

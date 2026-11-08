@@ -32,6 +32,9 @@ defmodule GamendWeb.Uploads do
 
   alias Gamend.Storage
 
+  require GamendWeb.ChannelError, as: ChannelError
+  require Gamend.HttpHeader, as: HttpHeader
+
   @doc """
   Issues a presigned upload ticket for `prefix/owner_id/<random><ext>`, after
   checking the declared content type is one the server accepts.
@@ -97,7 +100,7 @@ defmodule GamendWeb.Uploads do
         {:error, :not_an_image} -> error(conn, :unsupported_media_type, "not_an_image")
       end
     else
-      error(conn, :forbidden, "forbidden")
+      error(conn, :forbidden, ChannelError.forbidden())
     end
   end
 
@@ -165,7 +168,7 @@ defmodule GamendWeb.Uploads do
   """
   @spec request_content_type(Plug.Conn.t(), String.t()) :: String.t()
   def request_content_type(conn, default \\ "") do
-    case Plug.Conn.get_req_header(conn, "content-type") do
+    case Plug.Conn.get_req_header(conn, HttpHeader.content_type()) do
       [content_type | _] -> content_type |> String.split(";") |> hd() |> String.trim()
       [] -> default
     end

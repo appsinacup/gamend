@@ -22,6 +22,8 @@ defmodule GamendWeb.AccountBanKicks do
   alias Gamend.Accounts.Sessions
   alias Gamend.Bans.Cache
 
+  @disconnect "disconnect"
+
   @grace_ms 500
 
   def start_link(opts \\ []) do
@@ -52,7 +54,7 @@ defmodule GamendWeb.AccountBanKicks do
   @doc "Disconnects `user_id`'s sockets and open pages."
   @spec kick(String.t()) :: :ok
   def kick(user_id) do
-    GamendWeb.endpoint().broadcast("user_socket:#{user_id}", "disconnect", %{})
+    GamendWeb.endpoint().broadcast("user_socket:#{user_id}", @disconnect, %{})
     user_id |> Sessions.session_tokens() |> GamendWeb.UserAuth.disconnect_sessions()
     :ok
   rescue

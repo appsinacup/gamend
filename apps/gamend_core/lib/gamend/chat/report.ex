@@ -14,6 +14,8 @@ defmodule Gamend.Chat.Report do
   alias Gamend.Accounts.User
   alias Gamend.Chat.Message
 
+  require Gamend.Chat.ChatReportStatus, as: ChatReportStatus
+
   @type t :: %__MODULE__{}
 
   @statuses ~w(open reviewing actioned dismissed)
@@ -21,7 +23,7 @@ defmodule Gamend.Chat.Report do
   schema "chat_reports" do
     field :content_snapshot, :string
     field :reason, :string
-    field :status, :string, default: "open"
+    field :status, :string, default: ChatReportStatus.open()
     field :resolution_note, :string
     field :resolved_at, :utc_datetime
 

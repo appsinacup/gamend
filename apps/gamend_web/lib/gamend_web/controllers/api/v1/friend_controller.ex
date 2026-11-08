@@ -22,6 +22,8 @@ defmodule GamendWeb.Api.V1.FriendController do
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
+  require Gamend.Friends.FriendshipStatus, as: FriendshipStatus
+
   tags(["Friends"])
 
   operation(:create,
@@ -574,13 +576,14 @@ defmodule GamendWeb.Api.V1.FriendController do
 
   defp handle_delete_friendship(conn, user, f) do
     cond do
-      f.status == "pending" and f.requester_id == user.id ->
+      f.status == FriendshipStatus.pending() and f.requester_id == user.id ->
         case Friends.cancel_request(f.id, user) do
           {:ok, :cancelled} -> reply_ok(conn)
           {:error, reason} -> reply_reason(conn, reason)
         end
 
-      f.status == "accepted" and (f.requester_id == user.id or f.target_id == user.id) ->
+      f.status == FriendshipStatus.accepted() and
+          (f.requester_id == user.id or f.target_id == user.id) ->
         case Friends.remove_friend(
                user.id,
                if(f.requester_id == user.id, do: f.target_id, else: f.requester_id)
@@ -617,7 +620,7 @@ defmodule GamendWeb.Api.V1.FriendController do
   # A side that was not preloaded is sent as a blank member row with its id,
   # built by the same serializer, so it has every field a loaded one has.
   # Anyone can send a request, so a side's metadata waits for the acceptance.
-  defp brief(%User{} = user, _id, "accepted"), do: User.serialize_brief(user)
+  defp brief(%User{} = user, _id, FriendshipStatus.accepted()), do: User.serialize_brief(user)
   defp brief(%User{} = user, _id, _status), do: Serializers.public_brief(user)
   defp brief(_not_loaded, id, _status), do: User.serialize_brief(%User{id: id})
 end

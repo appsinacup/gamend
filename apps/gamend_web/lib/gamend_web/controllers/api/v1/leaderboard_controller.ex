@@ -18,6 +18,11 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
+  require GamendWeb.OpenApiFormat, as: OpenApiFormat
+  require Gamend.SortKey, as: SortKey
+
+  @weekly_kills "weekly_kills"
+
   tags(["Leaderboards"])
 
   # A board can hold several rankings, one per `key` (`Gamend.Leaderboards`,
@@ -62,28 +67,32 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
       ],
       order_by: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["ends_at", "inserted_at"], default: "ends_at"},
+        schema: %Schema{
+          type: :string,
+          enum: ["ends_at", SortKey.inserted_at()],
+          default: "ends_at"
+        },
         description:
           "Order results by field. 'ends_at' (default) puts active first, then by end date. 'inserted_at' orders by creation date."
       ],
       starts_after: [
         in: :query,
-        schema: %Schema{type: :string, format: "date-time"},
+        schema: %Schema{type: :string, format: OpenApiFormat.date_time()},
         description: "Only leaderboards that started after this time (ISO 8601)"
       ],
       starts_before: [
         in: :query,
-        schema: %Schema{type: :string, format: "date-time"},
+        schema: %Schema{type: :string, format: OpenApiFormat.date_time()},
         description: "Only leaderboards that started before this time (ISO 8601)"
       ],
       ends_after: [
         in: :query,
-        schema: %Schema{type: :string, format: "date-time"},
+        schema: %Schema{type: :string, format: OpenApiFormat.date_time()},
         description: "Only leaderboards ending after this time (ISO 8601)"
       ],
       ends_before: [
         in: :query,
-        schema: %Schema{type: :string, format: "date-time"},
+        schema: %Schema{type: :string, format: OpenApiFormat.date_time()},
         description: "Only leaderboards ending before this time (ISO 8601)"
       ],
       page: [
@@ -183,7 +192,7 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
             type: :array,
             items: %Schema{type: :string},
             description: "List of leaderboard slugs to resolve",
-            example: ["weekly_kills", "monthly_score"]
+            example: [@weekly_kills, "monthly_score"]
           }
         }
       }
@@ -522,7 +531,10 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   defp maybe_add_active_filter(opts, _), do: opts
 
   defp maybe_add_order_by(opts, "ends_at"), do: Keyword.put(opts, :order_by, :ends_at)
-  defp maybe_add_order_by(opts, "inserted_at"), do: Keyword.put(opts, :order_by, :inserted_at)
+
+  defp maybe_add_order_by(opts, SortKey.inserted_at()),
+    do: Keyword.put(opts, :order_by, :inserted_at)
+
   defp maybe_add_order_by(opts, _), do: Keyword.put(opts, :order_by, :ends_at)
 
   defp maybe_add_datetime_filter(opts, _key, nil), do: opts

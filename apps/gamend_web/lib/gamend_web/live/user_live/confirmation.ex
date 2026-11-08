@@ -9,6 +9,8 @@ defmodule GamendWeb.UserLive.Confirmation do
 
   alias Gamend.Accounts
 
+  require GamendWeb.FormName, as: FormName
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -100,7 +102,7 @@ defmodule GamendWeb.UserLive.Confirmation do
   @impl true
   def mount(%{"token" => token}, _session, socket) do
     if user = user_for(socket.assigns.live_action, token) do
-      form = to_form(%{"token" => token}, as: "user")
+      form = to_form(%{"token" => token}, as: FormName.user())
 
       {:ok,
        assign(socket,
@@ -128,6 +130,6 @@ defmodule GamendWeb.UserLive.Confirmation do
 
   @impl true
   def handle_event("submit", %{"user" => params}, socket) do
-    {:noreply, assign(socket, form: to_form(params, as: "user"), trigger_submit: true)}
+    {:noreply, assign(socket, form: to_form(params, as: FormName.user()), trigger_submit: true)}
   end
 end

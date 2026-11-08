@@ -11,13 +11,15 @@ defmodule GamendWeb.Http do
     group: :http,
     label: "Server & HTTP"
 
+  require Gamend.LocalHost, as: LocalHost
+
   setting(:port, :integer,
     default: 4000,
     doc: "TCP port the HTTP listener binds."
   )
 
   setting(:host, :string,
-    default: "localhost",
+    default: LocalHost.localhost(),
     doc: "Public hostname, used to build URLs and OAuth redirect URIs."
   )
 

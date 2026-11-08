@@ -9,6 +9,9 @@ defmodule GamendWeb.AdminLive.Sessions do
 
   import Ecto.Query
 
+  require Gamend.Accounts.TokenContext, as: TokenContext
+  require GamendWeb.UrlParam, as: UrlParam
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -127,20 +130,24 @@ defmodule GamendWeb.AdminLive.Sessions do
 
   use GamendWeb.UrlState,
     reload: :reload_sessions,
-    keys: [sessions_page: [param: "page"], sessions_page_size: [param: "page-size"]]
+    keys: [
+      sessions_page: [param: UrlParam.page()],
+      sessions_page_size: [param: UrlParam.page_size()]
+    ]
 
   @impl true
   def mount(_params, _session, socket) do
     page = 1
     page_size = 50
 
-    sessions_count = Repo.aggregate(from(t in UserToken, where: t.context == "session"), :count)
+    sessions_count =
+      Repo.aggregate(from(t in UserToken, where: t.context == ^TokenContext.session()), :count)
 
     recent_sessions =
       Repo.all(
         from t in UserToken,
           join: u in assoc(t, :user),
-          where: t.context == "session",
+          where: t.context == ^TokenContext.session(),
           order_by: [desc: t.inserted_at],
           offset: ^((page - 1) * page_size),
           limit: ^page_size,
@@ -276,7 +283,10 @@ defmodule GamendWeb.AdminLive.Sessions do
         page_size = socket.assigns[:sessions_page_size] || 50
 
         sessions_count =
-          Repo.aggregate(from(t in UserToken, where: t.context == "session"), :count)
+          Repo.aggregate(
+            from(t in UserToken, where: t.context == ^TokenContext.session()),
+            :count
+          )
 
         total_pages =
           LiveHelpers.total_pages(sessions_count, page_size)
@@ -287,7 +297,7 @@ defmodule GamendWeb.AdminLive.Sessions do
           Repo.all(
             from t in UserToken,
               join: u in assoc(t, :user),
-              where: t.context == "session",
+              where: t.context == ^TokenContext.session(),
               order_by: [desc: t.inserted_at],
               offset: ^((page - 1) * page_size),
               limit: ^page_size,
@@ -312,7 +322,8 @@ defmodule GamendWeb.AdminLive.Sessions do
     page = socket.assigns[:sessions_page] || 1
     page_size = socket.assigns[:sessions_page_size] || 50
 
-    sessions_count = Repo.aggregate(from(t in UserToken, where: t.context == "session"), :count)
+    sessions_count =
+      Repo.aggregate(from(t in UserToken, where: t.context == ^TokenContext.session()), :count)
 
     total_pages =
       LiveHelpers.total_pages(sessions_count, page_size)
@@ -323,7 +334,7 @@ defmodule GamendWeb.AdminLive.Sessions do
       Repo.all(
         from t in UserToken,
           join: u in assoc(t, :user),
-          where: t.context == "session",
+          where: t.context == ^TokenContext.session(),
           order_by: [desc: t.inserted_at],
           offset: ^((page - 1) * page_size),
           limit: ^page_size,

@@ -25,6 +25,8 @@ defmodule Gamend.Hooks do
   alias Gamend.Payments.Purchase
   require Logger
 
+  @name "name"
+
   @type hook_result(attrs_or_user) :: {:ok, attrs_or_user} | {:error, term()}
 
   @typedoc """
@@ -1481,7 +1483,7 @@ defmodule Gamend.Hooks do
           p ->
             cond do
               String.match?(p, ~r/^\w+\d+$/) -> p
-              String.match?(p, ~r/name|user|email|id|msg|message|text/i) -> "name"
+              String.match?(p, ~r/name|user|email|id|msg|message|text/i) -> @name
               String.match?(p, ~r/count|num|index|n|id\b/i) -> 0
               String.match?(p, ~r/bool|flag|active|enabled|true|false/i) -> true
               String.match?(p, ~r/list|items|arr|_list/i) -> []
@@ -1694,6 +1696,11 @@ defmodule Gamend.Hooks.Default do
   alias Gamend.Accounts.User
   alias Gamend.Payments.Entitlement
   alias Gamend.Payments.Purchase
+
+  require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+
+  @entitlements "entitlements"
 
   @impl true
   def after_startup, do: :ok
@@ -1976,7 +1983,7 @@ defmodule Gamend.Hooks.Default do
   @impl true
   def after_purchase_fulfilled(%Purchase{} = purchase) do
     update_user_payment_metadata(purchase.user_id, fn metadata ->
-      purchase_active = purchase.status == "completed"
+      purchase_active = purchase.status == PurchaseStatus.completed()
       purchase_id = to_string(purchase.id)
 
       metadata
@@ -2008,7 +2015,7 @@ defmodule Gamend.Hooks.Default do
       entitlement_id = to_string(entitlement.id)
 
       metadata
-      |> put_payment_child("entitlements", entitlement.key, active)
+      |> put_payment_child(@entitlements, entitlement.key, active)
       |> put_payment_child("entitlement_ids", entitlement_id, active)
       |> put_payment_child(
         "entitlement_details",
@@ -2074,9 +2081,13 @@ defmodule Gamend.Hooks.Default do
     }
   end
 
-  defp entitlement_active?(%Entitlement{status: "active", expires_at: nil}), do: true
+  defp entitlement_active?(%Entitlement{status: EntitlementStatus.active(), expires_at: nil}),
+    do: true
 
-  defp entitlement_active?(%Entitlement{status: "active", expires_at: %DateTime{} = expires_at}) do
+  defp entitlement_active?(%Entitlement{
+         status: EntitlementStatus.active(),
+         expires_at: %DateTime{} = expires_at
+       }) do
     DateTime.compare(expires_at, DateTime.utc_now(:second)) == :gt
   end
 

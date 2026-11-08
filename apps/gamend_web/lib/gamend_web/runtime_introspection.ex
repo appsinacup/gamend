@@ -24,6 +24,12 @@ defmodule GamendWeb.RuntimeIntrospection do
   alias Gamend.Repo.MigrationPaths
   alias Gamend.Schedule
 
+  @json "json"
+  @set "set"
+
+  @server_source "server"
+  @plugin_source "plugin"
+
   # ── Compile-time sources ────────────────────────────────────────────────
   # Both files live at the repo root; when this app is consumed as a bare dep
   # they may be absent, so everything degrades to structure-only.
@@ -168,7 +174,7 @@ defmodule GamendWeb.RuntimeIntrospection do
       id: name,
       name: name,
       set: value != nil,
-      state: if(value == nil, do: "unset", else: "set"),
+      state: if(value == nil, do: "unset", else: @set),
       value: mask(name, value, declared_secret?),
       default: to_string(default),
       type: to_string(type || guess_type(default)),
@@ -219,7 +225,7 @@ defmodule GamendWeb.RuntimeIntrospection do
   here — including messages it has defined but not yet wired up.
   """
   def protobuf_messages do
-    server = Enum.map(app_modules(:gamend_web), &{&1, "server"})
+    server = Enum.map(app_modules(:gamend_web), &{&1, @server_source})
 
     plugin =
       for %{name: name, modules: modules} <- PluginManager.list(),
@@ -234,7 +240,7 @@ defmodule GamendWeb.RuntimeIntrospection do
       (Map.values(kv.exact) ++
          Enum.map(kv.prefixes, &elem(&1, 1)) ++
          Enum.flat_map(HookSchemas.all(), fn {_k, %{request: rq, reply: rp}} -> [rq, rp] end))
-      |> Enum.map(&{&1, "plugin"})
+      |> Enum.map(&{&1, @plugin_source})
 
     (server ++ plugin ++ registered)
     |> Enum.uniq_by(&elem(&1, 0))
@@ -242,7 +248,7 @@ defmodule GamendWeb.RuntimeIntrospection do
       Code.ensure_loaded?(mod) and function_exported?(mod, :__message_props__, 0)
     end)
     |> Enum.map(fn {mod, source} -> proto_row(mod, source) end)
-    |> Enum.sort_by(&{&1.source != "server", &1.full_name})
+    |> Enum.sort_by(&{&1.source != @server_source, &1.full_name})
   end
 
   defp app_modules(app) do
@@ -318,7 +324,7 @@ defmodule GamendWeb.RuntimeIntrospection do
   def events do
     core =
       for entry <- GamendWeb.RealtimeEvents.all() do
-        Map.merge(entry, %{source: "server", id: "#{entry.topic}/#{entry.event}"})
+        Map.merge(entry, %{source: @server_source, id: "#{entry.topic}/#{entry.event}"})
       end
 
     plugin =
@@ -329,7 +335,7 @@ defmodule GamendWeb.RuntimeIntrospection do
           pb: false,
           payload: "game-defined",
           description: description,
-          source: "plugin",
+          source: @plugin_source,
           id: "user:*/#{event}"
         }
       end
@@ -349,7 +355,7 @@ defmodule GamendWeb.RuntimeIntrospection do
     core = NotificationTypes.core()
 
     for {code, description} <- NotificationTypes.all() do
-      source = if Map.has_key?(core, code), do: "server", else: source_plugin(plugin, code)
+      source = if Map.has_key?(core, code), do: @server_source, else: source_plugin(plugin, code)
 
       %{
         id: code,
@@ -359,11 +365,11 @@ defmodule GamendWeb.RuntimeIntrospection do
         search: String.downcase("#{code} #{source} #{description}")
       }
     end
-    |> Enum.sort_by(&{&1.source != "server", &1.code})
+    |> Enum.sort_by(&{&1.source != @server_source, &1.code})
   end
 
   defp source_plugin(plugin_types, code) do
-    if Map.has_key?(plugin_types, code), do: "plugin", else: "server"
+    if Map.has_key?(plugin_types, code), do: @plugin_source, else: @server_source
   end
 
   # ── Data model ──────────────────────────────────────────────────────────
@@ -379,7 +385,7 @@ defmodule GamendWeb.RuntimeIntrospection do
   def data_model do
     server =
       for mod <- ecto_schemas(app_modules(:gamend_core)),
-          do: {mod, schema_domain(mod), "server"}
+          do: {mod, schema_domain(mod), @server_source}
 
     # The host app (:gamend_host) is the running game; its own Ecto schemas
     # (a game's custom tables) live here, not in core or a plugin, so they were
@@ -662,7 +668,7 @@ defmodule GamendWeb.RuntimeIntrospection do
   defp payload_for(typed, plugin, fn_name) do
     case Map.get(typed, {plugin, to_string(fn_name)}) do
       %{request: req, reply: rep} -> "protobuf (#{short_module(req)}/#{short_module(rep)})"
-      nil -> "json"
+      nil -> @json
     end
   end
 

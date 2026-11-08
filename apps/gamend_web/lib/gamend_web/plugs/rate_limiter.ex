@@ -32,6 +32,12 @@ defmodule GamendWeb.Plugs.RateLimiter do
     group: :ratelimit,
     label: "Rate limiting"
 
+  require GamendWeb.ApiSegment, as: ApiSegment
+  require GamendWeb.Plugs.RateLimitBucket, as: RateLimitBucket
+
+  @browser_auth_actions ~w(log_in log-in register)
+  @auth_paths ~w(login register refresh)
+
   setting(:enabled, :boolean,
     default: true,
     doc: "Master switch for all request/message throttling."
@@ -154,7 +160,7 @@ defmodule GamendWeb.Plugs.RateLimiter do
   # This plug runs before `LocalePath` (so before the body is parsed), and so
   # sees `/ro/users/log_in` where the router will see `/users/log_in`: strip the
   # locale here, or a localized login would count against the general bucket.
-  defp routed_path(["api" | _] = path_info), do: path_info
+  defp routed_path([ApiSegment.api() | _] = path_info), do: path_info
   defp routed_path(path_info), do: LocalePath.strip_locale(path_info)
 
   # Skip rate limiting for internal/infrastructure endpoints
@@ -182,7 +188,7 @@ defmodule GamendWeb.Plugs.RateLimiter do
     end
   end
 
-  defp send_rate_limit_response(%{path_info: ["api" | _]} = conn, _retry_secs) do
+  defp send_rate_limit_response(%{path_info: [ApiSegment.api() | _]} = conn, _retry_secs) do
     conn
     |> put_resp_content_type("application/json")
     |> send_resp(429, Jason.encode!(%{error: "Too Many Requests"}))
@@ -209,8 +215,8 @@ defmodule GamendWeb.Plugs.RateLimiter do
   end
 
   # API login/registration/refresh — stricter auth bucket
-  defp bucket_for(%{path_info: ["api", "v1", path | _]} = _conn, ip)
-       when path in ~w(login register refresh) do
+  defp bucket_for(%{path_info: [ApiSegment.api(), ApiSegment.v1(), path | _]} = _conn, ip)
+       when path in @auth_paths do
     auth_bucket(ip)
   end
 
@@ -222,12 +228,19 @@ defmodule GamendWeb.Plugs.RateLimiter do
   # on production defaults, for a sign-in that had actually succeeded. Reads of
   # a random 32-byte session id are cheap and idempotent; the general bucket is
   # the right home for them.
-  defp bucket_for(%{path_info: ["api", "v1", "auth", "session" | _]} = _conn, ip) do
+  defp bucket_for(
+         %{path_info: [ApiSegment.api(), ApiSegment.v1(), RateLimitBucket.auth(), "session" | _]} =
+           _conn,
+         ip
+       ) do
     {"general:#{ip}", setting(:general_window_ms), setting(:general_limit)}
   end
 
   # API OAuth endpoints — also auth bucket
-  defp bucket_for(%{path_info: ["api", "v1", "auth" | _]} = _conn, ip) do
+  defp bucket_for(
+         %{path_info: [ApiSegment.api(), ApiSegment.v1(), RateLimitBucket.auth() | _]} = _conn,
+         ip
+       ) do
     auth_bucket(ip)
   end
 
@@ -236,13 +249,13 @@ defmodule GamendWeb.Plugs.RateLimiter do
   # Both spellings: the routes are `/users/log_in` and `/users/log_in/:token`,
   # so matching only the hyphenated form left browser password login in the
   # general bucket (240/min) instead of the auth one (10/min).
-  defp bucket_for(%{path_info: ["users", action | _], method: method} = _conn, ip)
-       when action in ~w(log_in log-in register) and method in ["POST", "GET"] do
+  defp bucket_for(%{path_info: [ApiSegment.users(), action | _], method: method} = _conn, ip)
+       when action in @browser_auth_actions and method in ["POST", "GET"] do
     auth_bucket(ip)
   end
 
   # Browser OAuth request/callback
-  defp bucket_for(%{path_info: ["auth" | _]} = _conn, ip) do
+  defp bucket_for(%{path_info: [RateLimitBucket.auth() | _]} = _conn, ip) do
     auth_bucket(ip)
   end
 
@@ -250,7 +263,13 @@ defmodule GamendWeb.Plugs.RateLimiter do
   # than ordinary API calls (a batch every few seconds per client) but must not
   # be able to fill a log store, and sharing the general bucket would mean a
   # device flushing diagnostics throttles its own gameplay requests.
-  defp bucket_for(%{path_info: ["api", "v1", "client_logs" | _], method: "POST"} = _conn, ip) do
+  defp bucket_for(
+         %{
+           path_info: [ApiSegment.api(), ApiSegment.v1(), RateLimitBucket.client_logs() | _],
+           method: "POST"
+         } = _conn,
+         ip
+       ) do
     {"client_logs:#{ip}", setting(:client_logs_window_ms), setting(:client_logs_limit)}
   end
 

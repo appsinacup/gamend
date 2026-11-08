@@ -19,6 +19,12 @@ defmodule GamendWeb.AdminLive.Config do
   alias GamendWeb.AdminLive.ConfigDiagnostics
   alias GamendWeb.Plugs.GeoCountry
 
+  require GamendWeb.WsFormat, as: WsFormat
+
+  @partitioned "partitioned"
+  @single "single"
+  @name "name"
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -164,7 +170,7 @@ defmodule GamendWeb.AdminLive.Config do
       release_node_env: ConfigDiagnostics.cluster_env("RELEASE_NODE"),
       release_cookie_env: ConfigDiagnostics.cluster_env("RELEASE_COOKIE"),
       dns_cluster_query_env: Gamend.Settings.get(Gamend.Cluster, :dns_query),
-      release_distribution_recommended: "name",
+      release_distribution_recommended: @name,
       release_node_recommended: clustering.release_node_recommended,
       dns_cluster_query_recommended: clustering.dns_cluster_query_recommended,
       erl_aflags_env: ConfigDiagnostics.cluster_env("ERL_AFLAGS"),
@@ -183,8 +189,8 @@ defmodule GamendWeb.AdminLive.Config do
       cache_redis_pool_size_env:
         ConfigDiagnostics.setting_if_set(Gamend.Cache.Settings, :redis_pool_size),
       cache_enabled_default: "true",
-      cache_mode_default: "single",
-      cache_l2_default: "partitioned",
+      cache_mode_default: @single,
+      cache_l2_default: @partitioned,
       cache_redis_pool_size_default: "10",
       cache_enabled_effective?: not cache.cache_bypass_mode_effective,
       cache_bypass_mode: cache.cache_bypass_mode,
@@ -440,7 +446,7 @@ defmodule GamendWeb.AdminLive.Config do
       )
       when is_binary(plugin) and is_binary(fn_name) do
     args = parse_hook_args(args_text)
-    format = if params["format"] == "protobuf", do: :protobuf, else: :json
+    format = if params["format"] == WsFormat.protobuf(), do: :protobuf, else: :json
 
     caller = socket.assigns.current_scope && Scope.user(socket.assigns.current_scope)
 

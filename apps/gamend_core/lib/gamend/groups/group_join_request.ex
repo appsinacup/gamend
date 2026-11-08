@@ -18,6 +18,8 @@ defmodule Gamend.Groups.GroupJoinRequest do
   alias Gamend.Accounts.User
   alias Gamend.Groups.Group
 
+  require Gamend.Groups.JoinRequestStatus, as: JoinRequestStatus
+
   @type t :: %__MODULE__{}
 
   @derive {Jason.Encoder,
@@ -34,7 +36,7 @@ defmodule Gamend.Groups.GroupJoinRequest do
     belongs_to :group, Group
     belongs_to :user, User
 
-    field :status, :string, default: "pending"
+    field :status, :string, default: JoinRequestStatus.pending()
 
     timestamps(type: :utc_datetime)
   end
@@ -46,7 +48,7 @@ defmodule Gamend.Groups.GroupJoinRequest do
     request
     |> cast(attrs, @required_fields ++ @optional_fields)
     |> validate_required(@required_fields)
-    |> validate_inclusion(:status, ["pending", "accepted", "rejected"])
+    |> validate_inclusion(:status, JoinRequestStatus.all())
     |> unique_constraint([:group_id, :user_id])
   end
 end

@@ -14,6 +14,8 @@ defmodule GamendWeb.AdminLive.AnalyticsEconomy do
 
   alias Gamend.Analytics
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   @windows [7, 30, 90]
 
   @impl true
@@ -25,7 +27,7 @@ defmodule GamendWeb.AdminLive.AnalyticsEconomy do
   def handle_params(params, _uri, socket) do
     {:noreply,
      socket
-     |> assign(:days, int_param(params, "days", @windows, 30))
+     |> assign(:days, int_param(params, UrlParam.days(), @windows, 30))
      |> assign(:currency_param, params["currency"])
      |> load()}
   end

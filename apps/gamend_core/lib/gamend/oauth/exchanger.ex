@@ -7,6 +7,10 @@ defmodule Gamend.OAuth.Exchanger do
   """
 
   require Logger
+  require Gamend.OAuth.AuthProvider, as: AuthProvider
+  require Gamend.HttpHeader, as: HttpHeader
+
+  @ok "ok"
 
   @apple_jwks_url "https://appleid.apple.com/auth/keys"
   @apple_issuer "https://appleid.apple.com"
@@ -183,7 +187,7 @@ defmodule Gamend.OAuth.Exchanger do
     # only a body carrying `access_token` counts as success.
     case http_client().post(@github_token_url,
            form: body,
-           headers: [{"accept", "application/json"}]
+           headers: [{HttpHeader.accept(), "application/json"}]
          ) do
       {:ok, %{status: 200, body: %{"access_token" => access_token}}}
       when is_binary(access_token) ->
@@ -206,10 +210,10 @@ defmodule Gamend.OAuth.Exchanger do
 
   defp github_headers(access_token) do
     [
-      {"authorization", "Bearer #{access_token}"},
-      {"accept", "application/vnd.github+json"},
-      {"x-github-api-version", "2022-11-28"},
-      {"user-agent", "Gamend"}
+      {HttpHeader.authorization(), "Bearer #{access_token}"},
+      {HttpHeader.accept(), "application/vnd.github+json"},
+      {HttpHeader.x_github_api_version(), "2022-11-28"},
+      {HttpHeader.user_agent(), "Gamend"}
     ]
   end
 
@@ -456,7 +460,7 @@ defmodule Gamend.OAuth.Exchanger do
       # Accept either a steam id or a prefixed value like "steam:12345"
       steam_id =
         case String.split(code, ":") do
-          ["steam", id] -> id
+          [AuthProvider.steam(), id] -> id
           [id] -> id
           _ -> code
         end
@@ -505,7 +509,7 @@ defmodule Gamend.OAuth.Exchanger do
       with {:ok,
             %{status: 200, body: %{"response" => %{"params" => params_map, "result" => result}}}} <-
              http_client().post(url, form: params),
-           true <- result in ["OK", "ok"],
+           true <- result in ["OK", @ok],
            # `steamid` is the account playing; `ownersteamid` is whoever owns the
            # license, which differs under Family Sharing. Preferring the owner
            # signed a borrower into the lender's account, and disagreed with the

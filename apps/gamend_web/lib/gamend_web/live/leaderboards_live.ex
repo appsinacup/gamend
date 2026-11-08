@@ -36,6 +36,8 @@ defmodule GamendWeb.LeaderboardsLive do
     reload: :reload_groups,
     keys: [:page, :page_size, :records_page, :records_search]
 
+  require GamendWeb.FilterValue, as: FilterValue
+
   @impl true
   def mount(_params, _session, socket) do
     unless FeatureGate.enabled?(:list_leaderboards) do
@@ -614,7 +616,10 @@ defmodule GamendWeb.LeaderboardsLive do
     # Load all leaderboards with same slug for season navigation
     slug_leaderboards = Leaderboards.list_leaderboards_by_slug(leaderboard.slug)
     current_index = Enum.find_index(slug_leaderboards, &(&1.id == leaderboard.id)) || 0
-    all_time = params["period"] == "all" and Leaderboards.all_time?(leaderboard)
+
+    all_time =
+      params["period"] == FilterValue.everything() and Leaderboards.all_time?(leaderboard)
+
     {view, tab, picked, key} = view_for(leaderboard, params, all_time)
     user_record = get_user_record(socket, leaderboard.id, key, all_time)
     period_tabs = period_tabs(leaderboard, slug_leaderboards, tab, picked, all_time)
@@ -721,7 +726,7 @@ defmodule GamendWeb.LeaderboardsLive do
   # The URL's query for a view: the tab, then the picked filters in order,
   # then the period when it is all time. A board without views has no tab.
   defp query(tab, picked, all_time) do
-    period = if all_time, do: [{"period", "all"}], else: []
+    period = if all_time, do: [{"period", FilterValue.everything()}], else: []
     if tab, do: [{"tab", tab} | picked] ++ period, else: period
   end
 

@@ -15,6 +15,10 @@ defmodule Gamend.ClientLogs.Session do
   use Gamend.Schema
   import Ecto.Changeset
 
+  require Gamend.ClientLogs.BuildKind, as: BuildKind
+
+  @unknown "unknown"
+
   @type t :: %__MODULE__{}
 
   @platforms ~w(android ios web windows macos linux unknown)
@@ -25,9 +29,9 @@ defmodule Gamend.ClientLogs.Session do
   schema "client_sessions" do
     field :client_session_id, :string
     field :device_id, :string, default: ""
-    field :platform, :string, default: "unknown"
+    field :platform, :string, default: @unknown
     field :app_version, :string, default: ""
-    field :build, :string, default: "release"
+    field :build, :string, default: BuildKind.release()
     field :locale, :string, default: ""
 
     field :started_at, :utc_datetime_usec

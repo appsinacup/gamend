@@ -20,6 +20,8 @@ defmodule GamendWeb.Api.V1.ChatController do
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
+  require Gamend.Chat.ChatType, as: ChatType
+
   tags(["Chat"])
 
   # What `Gamend.Chat.authorize_access/3` refuses, for the endpoints that read
@@ -46,7 +48,7 @@ defmodule GamendWeb.Api.V1.ChatController do
          properties: %{
            chat_type: %Schema{
              type: :string,
-             enum: ["lobby", "group", "friend", "party"],
+             enum: ChatType.all(),
              description: "Type of chat"
            },
            chat_ref_id: %Schema{
@@ -151,16 +153,16 @@ defmodule GamendWeb.Api.V1.ChatController do
 
   defp can_access_message?(user, message) do
     case message.chat_type do
-      "friend" ->
+      ChatType.friend() ->
         message.sender_id == user.id || message.chat_ref_id == user.id
 
-      "lobby" ->
+      ChatType.lobby() ->
         user.lobby_id != nil && user.lobby_id == message.chat_ref_id
 
-      "group" ->
+      ChatType.group() ->
         Gamend.Groups.member?(message.chat_ref_id, user.id)
 
-      "party" ->
+      ChatType.party() ->
         user.party_id != nil && user.party_id == message.chat_ref_id
 
       _ ->
@@ -182,7 +184,10 @@ defmodule GamendWeb.Api.V1.ChatController do
       chat_type: [
         in: :query,
         required: true,
-        schema: %Schema{type: :string, enum: ["lobby", "group", "friend", "party"]},
+        schema: %Schema{
+          type: :string,
+          enum: ChatType.all()
+        },
         description: "Type of chat"
       ],
       chat_ref_id: [
@@ -220,7 +225,7 @@ defmodule GamendWeb.Api.V1.ChatController do
     case authorize_conversation(conn, user_id, chat_type, chat_ref_id) do
       :ok ->
         {messages, total_count} =
-          if chat_type == "friend" do
+          if chat_type == ChatType.friend() do
             msgs =
               Chat.list_friend_messages(user_id, chat_ref_id, page: page, page_size: page_size)
 
@@ -254,7 +259,10 @@ defmodule GamendWeb.Api.V1.ChatController do
          type: :object,
          required: [:chat_type, :chat_ref_id, :message_id],
          properties: %{
-           chat_type: %Schema{type: :string, enum: ["lobby", "group", "friend", "party"]},
+           chat_type: %Schema{
+             type: :string,
+             enum: ChatType.all()
+           },
            chat_ref_id: %Schema{type: :string, format: :uuid},
            message_id: %Schema{type: :string, format: :uuid, description: "Last read message ID"}
          }
@@ -311,7 +319,10 @@ defmodule GamendWeb.Api.V1.ChatController do
       chat_type: [
         in: :query,
         required: true,
-        schema: %Schema{type: :string, enum: ["lobby", "group", "friend", "party"]}
+        schema: %Schema{
+          type: :string,
+          enum: ChatType.all()
+        }
       ],
       chat_ref_id: [
         in: :query,
@@ -335,7 +346,7 @@ defmodule GamendWeb.Api.V1.ChatController do
     case authorize_conversation(conn, user_id, chat_type, chat_ref_id) do
       :ok ->
         count =
-          if chat_type == "friend" do
+          if chat_type == ChatType.friend() do
             Chat.count_unread_friend(user_id, chat_ref_id)
           else
             Chat.count_unread(user_id, chat_type, chat_ref_id)

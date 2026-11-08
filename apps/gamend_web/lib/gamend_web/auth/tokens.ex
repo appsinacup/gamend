@@ -9,6 +9,10 @@ defmodule GamendWeb.Auth.Tokens do
   alias Gamend.Accounts.User
   alias GamendWeb.Auth.Guardian
 
+  require Gamend.Quests.ReportedEvent, as: ReportedEvent
+  require GamendWeb.AuthError, as: AuthError
+  require GamendWeb.Auth.TokenType, as: TokenType
+
   @doc """
   A new access and refresh token for `user`, as `GamendWeb.Schemas.Session`
   describes them, after the login side effects: `last_seen_at`, the
@@ -30,11 +34,11 @@ defmodule GamendWeb.Auth.Tokens do
     Gamend.Async.run(fn ->
       Gamend.Accounts.touch_last_seen(user)
       Gamend.Hooks.internal_call(:after_user_logged_in, [user])
-      Gamend.Quests.report_event(user.id, "login")
+      Gamend.Quests.report_event(user.id, ReportedEvent.login())
     end)
 
-    {:ok, access_token, _} = Guardian.encode_and_sign(user, %{}, token_type: "access")
-    {:ok, refresh_token, _} = Guardian.encode_and_sign(user, %{}, token_type: "refresh")
+    {:ok, access_token, _} = Guardian.encode_and_sign(user, %{}, token_type: TokenType.access())
+    {:ok, refresh_token, _} = Guardian.encode_and_sign(user, %{}, token_type: TokenType.refresh())
 
     session(user, access_token, refresh_token)
   end
@@ -53,7 +57,7 @@ defmodule GamendWeb.Auth.Tokens do
   def refusal(%User{} = user) do
     cond do
       not Accounts.user_activated?(user) ->
-        {:forbidden, "account_not_activated",
+        {:forbidden, AuthError.account_not_activated(),
          "Your account is pending activation by an administrator."}
 
       Accounts.deletion_scheduled?(user) ->

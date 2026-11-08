@@ -22,6 +22,17 @@ defmodule Gamend.Payments.StripeEvents do
   alias Gamend.Payments.Upgrades
   alias Gamend.Repo
 
+  require Gamend.Payments.CounterName, as: CounterName
+  require Gamend.Payments.ProductKind, as: ProductKind
+  require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseMetadata, as: PurchaseMetadata
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+  require Gamend.Payments.StripeEvent, as: StripeEvent
+  require Gamend.Payments.StripeIdPrefix, as: StripeIdPrefix
+  require Gamend.Payments.StripeStatus, as: StripeStatus
+
+  @id "id"
+
   # What takes money back: a refund, or a dispute. `charge.dispute.closed`
   # is handled apart (a dispute the seller won gives it back).
   @reversal_types ~w(
@@ -64,7 +75,7 @@ defmodule Gamend.Payments.StripeEvents do
   end
 
   defp open_checkout(%User{} = user, attrs, opts) do
-    with {:ok, provider_product} <- Payments.resolve_provider_product("stripe", attrs),
+    with {:ok, provider_product} <- Payments.resolve_provider_product(ProviderId.stripe(), attrs),
          attrs =
            put_trial_end(
              attrs,
@@ -76,7 +87,10 @@ defmodule Gamend.Payments.StripeEvents do
         {:ok, session} ->
           with {:ok, updated_purchase} <-
                  Payments.mark_purchase_requires_action(purchase, session) do
-            Counters.count("checkout.opened", Payments.purchase_dims(updated_purchase))
+            Counters.count(
+              CounterName.checkout_opened(),
+              Payments.purchase_dims(updated_purchase)
+            )
 
             {:ok,
              %{
@@ -92,7 +106,7 @@ defmodule Gamend.Payments.StripeEvents do
       end
     else
       {:error, reason} ->
-        Payments.count_checkout_refused("stripe", reason)
+        Payments.count_checkout_refused(ProviderId.stripe(), reason)
         {:error, reason}
     end
   end
@@ -132,11 +146,14 @@ defmodule Gamend.Payments.StripeEvents do
   end
 
   defp release_stripe_checkout(
-         %Purchase{provider: "stripe", provider_transaction_id: "cs_" <> _rest = session_id} =
+         %Purchase{
+           provider: ProviderId.stripe(),
+           provider_transaction_id: StripeIdPrefix.checkout_session() <> _rest = session_id
+         } =
            purchase
        ) do
     with {:ok, session} <- Payments.stripe_adapter().expire_checkout_session(session_id),
-         %{"status" => "expired"} = session <- Params.normalize(session) do
+         %{"status" => StripeStatus.expired()} = session <- Params.normalize(session) do
       mark_stripe_checkout_expired(purchase, session)
     else
       _not_open ->
@@ -158,7 +175,7 @@ defmodule Gamend.Payments.StripeEvents do
   defp mark_stripe_checkout_expired(%Purchase{} = purchase, session) do
     purchase
     |> Purchase.changeset(%{
-      status: "cancelled",
+      status: PurchaseStatus.cancelled(),
       raw_provider_payload:
         Params.merge_payload(purchase.raw_provider_payload, %{"stripe_session" => session})
     })
@@ -176,7 +193,7 @@ defmodule Gamend.Payments.StripeEvents do
   @spec stripe_customer_id(User.t()) :: String.t() | nil
   def stripe_customer_id(%User{id: user_id}) do
     from(p in Purchase,
-      where: p.user_id == ^user_id and p.provider == "stripe",
+      where: p.user_id == ^user_id and p.provider == ^ProviderId.stripe(),
       order_by: [desc: p.inserted_at],
       select: p.raw_provider_payload
     )
@@ -187,8 +204,8 @@ defmodule Gamend.Payments.StripeEvents do
   defp payload_customer_id(%{} = payload) do
     [payload["stripe_session"], payload["stripe_subscription"]]
     |> Enum.find_value(fn
-      %{"customer" => "cus_" <> _ = id} -> id
-      %{"customer" => %{"id" => "cus_" <> _ = id}} -> id
+      %{"customer" => StripeIdPrefix.customer() <> _ = id} -> id
+      %{"customer" => %{"id" => StripeIdPrefix.customer() <> _ = id}} -> id
       _ -> nil
     end)
   end
@@ -239,11 +256,11 @@ defmodule Gamend.Payments.StripeEvents do
   def handle_stripe_webhook(raw_body, signature) when is_binary(raw_body) do
     with {:ok, event} <- Payments.stripe_adapter().verify_webhook(raw_body, signature),
          event <- Params.normalize(event),
-         {:ok, event_id} <- Params.required_value(event, "id"),
+         {:ok, event_id} <- Params.required_value(event, @id),
          event_type when is_binary(event_type) <- event["type"] do
       check_event_version(event, event_id)
 
-      "stripe"
+      ProviderId.stripe()
       |> Payments.claim_provider_event(event_id, event_type, event, fn ->
         process_stripe_event(event)
       end)
@@ -270,13 +287,22 @@ defmodule Gamend.Payments.StripeEvents do
           "(#{expected}) event_id=#{event_id}: set the webhook endpoint's version in the Stripe Dashboard"
       )
 
-      Counters.count("webhook", provider: "stripe", result: "version_mismatch")
+      Counters.count(CounterName.webhook(),
+        provider: ProviderId.stripe(),
+        result: "version_mismatch"
+      )
     end
   end
 
   defp report_webhook({:ok, result} = answer, event_id, event_type) do
     Logger.info("Stripe webhook #{result} type=#{event_type} event_id=#{event_id}")
-    Counters.count("webhook", provider: "stripe", type: event_type, result: result)
+
+    Counters.count(CounterName.webhook(),
+      provider: ProviderId.stripe(),
+      type: event_type,
+      result: result
+    )
+
     answer
   end
 
@@ -286,7 +312,12 @@ defmodule Gamend.Payments.StripeEvents do
         "reason=#{inspect(reason) |> String.slice(0, 1_000)}"
     )
 
-    Counters.count("webhook", provider: "stripe", type: event_type, result: "failed")
+    Counters.count(CounterName.webhook(),
+      provider: ProviderId.stripe(),
+      type: event_type,
+      result: PurchaseStatus.failed()
+    )
+
     answer
   end
 
@@ -296,8 +327,8 @@ defmodule Gamend.Payments.StripeEvents do
         "(check the endpoint's signing secret)"
     )
 
-    Counters.count("webhook",
-      provider: "stripe",
+    Counters.count(CounterName.webhook(),
+      provider: ProviderId.stripe(),
       result: "refused",
       reason: Payments.provider_error_code(reason)
     )
@@ -310,8 +341,8 @@ defmodule Gamend.Payments.StripeEvents do
           | {:error, term()}
   def reconcile_stripe_purchase(
         %Purchase{
-          provider: "stripe",
-          provider_transaction_id: "cs_" <> _rest = session_id
+          provider: ProviderId.stripe(),
+          provider_transaction_id: StripeIdPrefix.checkout_session() <> _rest = session_id
         } = purchase
       ) do
     with {:ok, session} <- Payments.stripe_adapter().retrieve_checkout_session(session_id),
@@ -323,7 +354,7 @@ defmodule Gamend.Payments.StripeEvents do
     end
   end
 
-  def reconcile_stripe_purchase(%Purchase{provider: "stripe"}),
+  def reconcile_stripe_purchase(%Purchase{provider: ProviderId.stripe()}),
     do: {:error, :missing_stripe_session_id}
 
   def reconcile_stripe_purchase(%Purchase{}), do: {:error, :not_stripe_purchase}
@@ -478,7 +509,7 @@ defmodule Gamend.Payments.StripeEvents do
            update_purchase_from_stripe_subscription(purchase, object, "subscription_deleted"),
          {:ok, _purchase} <-
            Payments.revoke_purchase(updated, %{
-             "status" => "cancelled",
+             "status" => PurchaseStatus.cancelled(),
              "reason" => "customer.subscription.deleted",
              "payload" => %{"stripe_subscription" => object}
            }) do
@@ -491,7 +522,7 @@ defmodule Gamend.Payments.StripeEvents do
 
   defp process_stripe_event(_event), do: {:ok, :ignored}
 
-  defp process_checkout_session("completed", object) do
+  defp process_checkout_session(StripeStatus.completed(), object) do
     with {:ok, purchase} <- Payments.purchase_from_provider_object(object),
          {:ok, updated} <- update_purchase_from_stripe_session(purchase, object) do
       if stripe_session_paid?(object) do
@@ -515,7 +546,12 @@ defmodule Gamend.Payments.StripeEvents do
   defp process_checkout_session("async_payment_failed", object) do
     with {:ok, purchase} <- Payments.purchase_from_provider_object(object),
          {:ok, _purchase, :failed} <-
-           update_purchase_from_stripe_reconciliation(purchase, object, "failed", :failed) do
+           update_purchase_from_stripe_reconciliation(
+             purchase,
+             object,
+             PurchaseStatus.failed(),
+             :failed
+           ) do
       {:ok, :processed}
     end
   end
@@ -524,7 +560,7 @@ defmodule Gamend.Payments.StripeEvents do
   # cancel: another server on this Stripe account opened it, with the same
   # metadata (`ours?/1` cannot tell). A paid session with no purchase stays an
   # error above. Answering 404 here had Stripe retry for three days.
-  defp process_checkout_session("expired", object) do
+  defp process_checkout_session(StripeStatus.expired(), object) do
     case Payments.purchase_from_provider_object(object) do
       {:ok, purchase} ->
         _ = mark_stripe_checkout_expired(purchase, object)
@@ -564,13 +600,17 @@ defmodule Gamend.Payments.StripeEvents do
   defp purchase_from_invoice_subscription(object) do
     adapter = Payments.stripe_adapter()
 
-    with "pi_" <> _ = payment_intent <- object_ref(object["payment_intent"]),
+    with StripeIdPrefix.payment_intent() <> _ = payment_intent <-
+           object_ref(object["payment_intent"]),
          true <-
            Code.ensure_loaded?(adapter) and function_exported?(adapter, :list_invoice_payments, 1),
          {:ok, %{"data" => [_ | _] = payments}} <- adapter.list_invoice_payments(payment_intent),
          "sub_" <> _ = subscription_id <- Enum.find_value(payments, &payment_subscription_id/1),
          %Purchase{user_id: user_id} = purchase when is_binary(user_id) <-
-           Payments.get_purchase_by_provider_original_transaction("stripe", subscription_id) do
+           Payments.get_purchase_by_provider_original_transaction(
+             ProviderId.stripe(),
+             subscription_id
+           ) do
       {:ok, purchase}
     else
       {:error, reason} -> {:error, reason}
@@ -610,12 +650,15 @@ defmodule Gamend.Payments.StripeEvents do
   # cancellation instead of trying a second. A failure is logged and left: the
   # entitlement is gone either way, and the subscription can be cancelled in
   # the Dashboard.
-  defp end_subscription(%Purchase{product: %Product{kind: "subscription"}} = purchase) do
+  defp end_subscription(%Purchase{product: %Product{kind: ProductKind.subscription()}} = purchase) do
     adapter = Payments.stripe_adapter()
 
     with {:ok, subscription_id} <- stripe_subscription_id(purchase),
          false <-
-           (purchase.metadata || %{})["stripe_subscription_status"] in ~w(canceled incomplete_expired),
+           (purchase.metadata || %{})["stripe_subscription_status"] in [
+             StripeStatus.canceled(),
+             StripeStatus.incomplete_expired()
+           ],
          true <- function_exported?(adapter, :cancel_subscription_now, 2) do
       case adapter.cancel_subscription_now(subscription_id,
              idempotency_key: "refund-cancel-#{purchase.id}"
@@ -674,7 +717,10 @@ defmodule Gamend.Payments.StripeEvents do
 
   defp stripe_metadata_purchase_mismatch?(_purchase_id, _expected_id), do: true
 
-  defp reconcile_stripe_purchase_from_session(%Purchase{status: "completed"} = purchase, session) do
+  defp reconcile_stripe_purchase_from_session(
+         %Purchase{status: PurchaseStatus.completed()} = purchase,
+         session
+       ) do
     if stripe_session_paid?(session) do
       with {:ok, updated} <- update_purchase_from_stripe_session(purchase, session),
            {:ok, _entitlements} <- maybe_update_entitlements_from_stripe_purchase(updated) do
@@ -690,7 +736,11 @@ defmodule Gamend.Payments.StripeEvents do
   # here: fulfilling it again would hand back what its end took away, until a
   # period end Stripe has already left behind.
   defp reconcile_stripe_purchase_from_session(%Purchase{status: status} = purchase, _session)
-       when status in ["refunded", "revoked", "cancelled"] do
+       when status in [
+              PurchaseStatus.refunded(),
+              PurchaseStatus.revoked(),
+              PurchaseStatus.cancelled()
+            ] do
     {:ok, Payments.preload_purchase(purchase), :unchanged}
   end
 
@@ -706,17 +756,27 @@ defmodule Gamend.Payments.StripeEvents do
           {:ok, fulfilled, :fulfilled}
         end
 
-      session["status"] == "expired" ->
-        update_purchase_from_stripe_reconciliation(purchase, session, "cancelled", :cancelled)
-
-      stripe_payment_failed?(session) ->
-        update_purchase_from_stripe_reconciliation(purchase, session, "failed", :failed)
-
-      session["status"] == "open" ->
+      session["status"] == StripeStatus.expired() ->
         update_purchase_from_stripe_reconciliation(
           purchase,
           session,
-          "requires_action",
+          PurchaseStatus.cancelled(),
+          :cancelled
+        )
+
+      stripe_payment_failed?(session) ->
+        update_purchase_from_stripe_reconciliation(
+          purchase,
+          session,
+          PurchaseStatus.failed(),
+          :failed
+        )
+
+      session["status"] == StripeStatus.open() ->
+        update_purchase_from_stripe_reconciliation(
+          purchase,
+          session,
+          PurchaseStatus.requires_action(),
           :still_open
         )
 
@@ -724,14 +784,14 @@ defmodule Gamend.Payments.StripeEvents do
         update_purchase_from_stripe_reconciliation(
           purchase,
           session,
-          "requires_action",
+          PurchaseStatus.requires_action(),
           :payment_processing
         )
     end
   end
 
   defp stripe_session_paid?(%{"payment_status" => status})
-       when status in ["paid", "no_payment_required"],
+       when status in [StripeStatus.paid(), "no_payment_required"],
        do: true
 
   defp stripe_session_paid?(_session), do: false
@@ -884,7 +944,11 @@ defmodule Gamend.Payments.StripeEvents do
         metadata:
           (entitlement.metadata || %{})
           |> Params.merge_payload(metadata)
-          |> Params.put_if_present("paid_through", Params.datetime_iso(paid_through), true)
+          |> Params.put_if_present(
+            PurchaseMetadata.paid_through(),
+            Params.datetime_iso(paid_through),
+            true
+          )
       }
 
       attrs = if expires_at, do: Map.put(attrs, :expires_at, expires_at), else: attrs
@@ -916,7 +980,7 @@ defmodule Gamend.Payments.StripeEvents do
 
     cond do
       # No status on the object (a bare id) or a plan that pays: Stripe's end.
-      is_nil(status) or status in ["active", "trialing"] ->
+      is_nil(status) or status in [StripeStatus.active(), StripeStatus.trialing()] ->
         {period_end, period_end || paid_through}
 
       is_nil(paid_through) ->
@@ -961,7 +1025,7 @@ defmodule Gamend.Payments.StripeEvents do
            old["stripe_subscription_cancel_at_period_end"] != true, "cancel_scheduled"},
         {new["stripe_subscription_cancel_at_period_end"] == false and
            old["stripe_subscription_cancel_at_period_end"] == true, "resumed"},
-        {status == "active" and later?(now.expires_at, before.expires_at), "renewed"}
+        {status == StripeStatus.active() and later?(now.expires_at, before.expires_at), "renewed"}
       ]
       |> Enum.filter(&elem(&1, 0))
       |> Enum.map(&elem(&1, 1))
@@ -1012,14 +1076,14 @@ defmodule Gamend.Payments.StripeEvents do
 
   defp stripe_reversal_status(type)
        when type in [
-              "charge.refunded",
+              StripeEvent.charge_refunded(),
               "refund.created",
               "refund.updated",
               "charge.refund.updated"
             ],
-       do: "refunded"
+       do: PurchaseStatus.refunded()
 
-  defp stripe_reversal_status(_type), do: "revoked"
+  defp stripe_reversal_status(_type), do: PurchaseStatus.revoked()
 
   defp stripe_purchase_metadata(%Purchase{} = purchase, object) do
     metadata = purchase.metadata || %{}
@@ -1033,7 +1097,7 @@ defmodule Gamend.Payments.StripeEvents do
     |> Params.put_if_present("stripe_payment_intent_id", object["payment_intent"], true)
     |> Params.put_if_present("stripe_charge_id", object["id"], object["object"] == "charge")
     |> Params.put_if_present(
-      "stripe_subscription_id",
+      PurchaseMetadata.stripe_subscription_id(),
       stripe_session_subscription_id(object),
       true
     )
@@ -1043,7 +1107,7 @@ defmodule Gamend.Payments.StripeEvents do
 
   defp stripe_subscription_metadata(metadata, subscription) when is_map(subscription) do
     metadata
-    |> Params.put_if_present("stripe_subscription_id", subscription["id"], true)
+    |> Params.put_if_present(PurchaseMetadata.stripe_subscription_id(), subscription["id"], true)
     |> Params.put_if_present("stripe_subscription_status", subscription["status"], true)
     |> Params.put_if_present(
       "stripe_subscription_current_period_end",
@@ -1066,7 +1130,10 @@ defmodule Gamend.Payments.StripeEvents do
     }
   end
 
-  defp stripe_session_subscription(%Purchase{product: %Product{kind: "subscription"}}, object) do
+  defp stripe_session_subscription(
+         %Purchase{product: %Product{kind: ProductKind.subscription()}},
+         object
+       ) do
     case object["subscription"] do
       %{} = subscription ->
         subscription

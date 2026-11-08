@@ -12,6 +12,8 @@ defmodule Gamend.Reports.Kinds.Page do
   another site keys as itself.
   """
 
+  require Gamend.UrlScheme, as: UrlScheme
+
   @behaviour Gamend.Reports.Kind
 
   @max_path 500
@@ -62,7 +64,7 @@ defmodule Gamend.Reports.Kinds.Page do
   # This site's URL is keyed by its path; anything else by itself.
   defp local_path(page) do
     case URI.parse(page) do
-      %URI{scheme: scheme} = uri when scheme in ["http", "https"] ->
+      %URI{scheme: scheme} = uri when scheme in [UrlScheme.http(), UrlScheme.https()] ->
         if same_host?(uri), do: uri.path || "/", else: page
 
       _ ->

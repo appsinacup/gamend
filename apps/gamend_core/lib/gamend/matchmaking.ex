@@ -70,6 +70,11 @@ defmodule Gamend.Matchmaking do
   alias Gamend.ReadyChecks.Participant
   alias Gamend.Repo
 
+  require Gamend.Matchmaking.CancelReason, as: CancelReason
+  require Gamend.ReadyChecks.CheckKind, as: CheckKind
+  require Gamend.ReadyChecks.CheckStatus, as: CheckStatus
+  require Gamend.ReadyChecks.ParticipantState, as: ParticipantState
+
   # How long a claimed ticket, or one whose accept just settled, may wait for
   # its seat or its place back in the queue: a join meanwhile is refused.
   @held_ms 60_000
@@ -200,8 +205,9 @@ defmodule Gamend.Matchmaking do
         on: c.id == p.ready_check_id,
         where: p.ticket_id == parent_as(:ticket).id,
         where:
-          c.status == "pending" or
-            (c.resolved_at > ^settled_since and p.state in ["ready", "pending"])
+          c.status == ^CheckStatus.pending() or
+            (c.resolved_at > ^settled_since and
+               p.state in ^[ParticipantState.ready(), ParticipantState.pending()])
       )
 
     any_check = from(p in Participant, where: p.ticket_id == parent_as(:ticket).id)
@@ -310,7 +316,7 @@ defmodule Gamend.Matchmaking do
       |> select([t], map(t, [:id, :user_id]))
       |> Repo.update_all(set: cancelled_fields())
 
-    Broadcast.ticket_cancelled(cancelled, "left")
+    Broadcast.ticket_cancelled(cancelled, CancelReason.left())
 
     if count > 0 do
       Gamend.Async.run(fn ->
@@ -323,7 +329,7 @@ defmodule Gamend.Matchmaking do
 
   defp decline_accept(user_id) do
     case Gamend.ReadyChecks.for_user(user_id, :match) do
-      %Check{kind: "accept", lobby_id: nil, party_id: nil} ->
+      %Check{kind: CheckKind.accept(), lobby_id: nil, party_id: nil} ->
         Gamend.ReadyChecks.respond(user_id, false)
 
       _ ->
@@ -344,7 +350,7 @@ defmodule Gamend.Matchmaking do
     with %Ticket{id: id} <- Repo.get_uuid(Ticket, ticket_id),
          {:ok, ticket} <-
            queued() |> where([t], t.id == ^id) |> Repo.compare_and_set(set: cancelled_fields()) do
-      Broadcast.ticket_cancelled([ticket], "admin")
+      Broadcast.ticket_cancelled([ticket], CancelReason.admin())
       {:ok, ticket}
     else
       _ -> {:error, :not_found}
@@ -646,7 +652,7 @@ defmodule Gamend.Matchmaking do
         |> select([t], map(t, [:id, :user_id]))
         |> Repo.update_all(set: cancelled_fields())
 
-      Broadcast.ticket_cancelled(cancelled, "offline")
+      Broadcast.ticket_cancelled(cancelled, CancelReason.offline())
       count
     end
   end

@@ -66,7 +66,7 @@ defmodule Gamend.LiteralLintTest do
     test "text: gettext, Logger, raise, and anything with a space" do
       assert literals("""
              defmodule M do
-               def a, do: gettext("failed")
+               def a, do: {gettext("failed"), gettext_noop("failed"), pgettext_noop("x", "failed")}
                def b, do: Logger.info("failed")
                def c, do: raise("failed")
                def d, do: "it failed"
@@ -89,6 +89,7 @@ defmodule Gamend.LiteralLintTest do
                def a(m), do: {m["id"], Map.get(m, "id"), m |> Map.get("id"), get_in(m, ["id"])}
                def b(%{"id" => id}), do: id
                def c(m), do: %{m | "id" => 1}
+               def d(m), do: {Map.take(m, ["id"]), m |> Map.drop(["id"]), Map.split(m, ["id"])}
              end
              """) == []
     end

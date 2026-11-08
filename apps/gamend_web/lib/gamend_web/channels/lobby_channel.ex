@@ -41,6 +41,9 @@ defmodule GamendWeb.LobbyChannel do
   alias GamendWeb.Plugs.ClientSession
   alias GamendWeb.Serializers
 
+  require GamendWeb.ChannelError, as: ChannelError
+  require Gamend.RealtimeEvent, as: RealtimeEvent
+
   # A banned account joins no channel but its own user channel.
   @impl true
   def join(topic, payload, socket) do
@@ -95,7 +98,7 @@ defmodule GamendWeb.LobbyChannel do
       end
     else
       _ ->
-        {:error, %{reason: "invalid_topic_or_unauthenticated"}}
+        {:error, %{reason: ChannelError.invalid_topic_or_unauthenticated()}}
     end
   end
 
@@ -127,13 +130,13 @@ defmodule GamendWeb.LobbyChannel do
         %{user_id: user_id, display_name: ""}
       end
 
-    push_event(socket, "user_joined", payload)
+    push_event(socket, RealtimeEvent.user_joined(), payload)
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:user_left, _lobby_id, user_id}, socket) do
-    push_event(socket, "user_left", %{
+    push_event(socket, RealtimeEvent.user_left(), %{
       user_id: user_id,
       display_name: Serializers.display_name(user_id)
     })
@@ -143,7 +146,7 @@ defmodule GamendWeb.LobbyChannel do
 
   @impl true
   def handle_info({:user_kicked, _lobby_id, user_id}, socket) do
-    push_event(socket, "user_kicked", %{
+    push_event(socket, RealtimeEvent.user_kicked(), %{
       user_id: user_id,
       display_name: Serializers.display_name(user_id)
     })
@@ -159,12 +162,12 @@ defmodule GamendWeb.LobbyChannel do
         outsider: socket.assigns[:spectator] == true
       )
 
-    {:noreply, ChannelUpdates.push(socket, "updated", :lobby, payload)}
+    {:noreply, ChannelUpdates.push(socket, RealtimeEvent.updated(), :lobby, payload)}
   end
 
   @impl true
   def handle_info({:lobby_state_changed, payload}, socket) do
-    push_event(socket, "state_changed", payload)
+    push_event(socket, RealtimeEvent.state_changed(), payload)
     {:noreply, socket}
   end
 
@@ -173,27 +176,35 @@ defmodule GamendWeb.LobbyChannel do
   # same, and a client keeps one.
   @impl true
   def handle_info({:result_started, result}, socket) do
-    push_event(socket, "result_started", result |> Jason.encode!() |> Jason.decode!())
+    push_event(
+      socket,
+      RealtimeEvent.result_started(),
+      result |> Jason.encode!() |> Jason.decode!()
+    )
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:result_event, %{result_id: result_id, event: event}}, socket) do
     payload = %{result_id: result_id, event: event |> Jason.encode!() |> Jason.decode!()}
-    push_event(socket, "result_event", payload)
+    push_event(socket, RealtimeEvent.result_event(), payload)
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:result_ended, result}, socket) do
-    push_event(socket, "result_ended", result |> Jason.encode!() |> Jason.decode!())
+    push_event(socket, RealtimeEvent.result_ended(), result |> Jason.encode!() |> Jason.decode!())
     {:noreply, socket}
   end
 
   # A burst of members readying at once coalesces into one frame; a resolution
   # is not a state refresh, so it is never held in the debounce timer.
   @impl true
-  def handle_info({:ready_check_event, "ready_check_updated" = event, check}, socket) do
+  def handle_info(
+        {:ready_check_event, RealtimeEvent.ready_check_updated() = event, check},
+        socket
+      ) do
     payload = serialize_ready_check(check, socket)
     {:noreply, ChannelUpdates.push(socket, event, check.id, payload)}
   end
@@ -206,7 +217,7 @@ defmodule GamendWeb.LobbyChannel do
 
   @impl true
   def handle_info({:host_changed, _lobby_id, new_host_id}, socket) do
-    push_event(socket, "host_changed", %{
+    push_event(socket, RealtimeEvent.host_changed(), %{
       new_host_id: new_host_id,
       display_name: Serializers.display_name(new_host_id)
     })
@@ -224,25 +235,35 @@ defmodule GamendWeb.LobbyChannel do
       )
       |> Map.put(:spectator, socket.assigns[:spectator] || false)
 
-    push_event(socket, "updated", payload)
-    {:noreply, ChannelUpdates.remember(socket, "updated", :lobby, payload)}
+    push_event(socket, RealtimeEvent.updated(), payload)
+    {:noreply, ChannelUpdates.remember(socket, RealtimeEvent.updated(), :lobby, payload)}
   end
 
   @impl true
   def handle_info({:chat_message_created, message}, socket) do
-    push_event(socket, "chat_message_created", Serializers.serialize_chat_message(message))
+    push_event(
+      socket,
+      RealtimeEvent.chat_message_created(),
+      Serializers.serialize_chat_message(message)
+    )
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:chat_message_updated, message}, socket) do
-    push_event(socket, "chat_message_updated", Serializers.serialize_chat_message(message))
+    push_event(
+      socket,
+      RealtimeEvent.chat_message_updated(),
+      Serializers.serialize_chat_message(message)
+    )
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:chat_message_deleted, message}, socket) do
-    push_event(socket, "chat_message_deleted", %{id: message.id})
+    push_event(socket, RealtimeEvent.chat_message_deleted(), %{id: message.id})
     {:noreply, socket}
   end
 
@@ -250,13 +271,18 @@ defmodule GamendWeb.LobbyChannel do
   # Internal atom is shared with group/party; on the lobby topic occupants are
   # "users", so the wire event is user_online/user_offline.
   def handle_info({event, user_id}, socket) when event in [:member_online, :member_offline] do
-    wire = if event == :member_online, do: "user_online", else: "user_offline"
+    wire =
+      if event == :member_online,
+        do: RealtimeEvent.user_online(),
+        else: RealtimeEvent.user_offline()
+
     {:noreply, ChannelEvents.push_presence(socket, event, user_id, wire)}
   end
 
   @impl true
   def handle_info({:member_updated, user_id}, socket),
-    do: {:noreply, ChannelEvents.push_member_updated(socket, user_id, "user_updated")}
+    do:
+      {:noreply, ChannelEvents.push_member_updated(socket, user_id, RealtimeEvent.user_updated())}
 
   @impl true
   def handle_info(msg, socket), do: {:noreply, ChannelEvents.other_info(msg, socket)}

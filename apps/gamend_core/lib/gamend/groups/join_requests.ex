@@ -15,11 +15,16 @@ defmodule Gamend.Groups.JoinRequests do
   alias Gamend.Groups.Shared
   alias Gamend.Repo
 
+  require Gamend.Groups.GroupRole, as: GroupRole
+  require Gamend.Groups.GroupType, as: GroupType
+  require Gamend.Groups.JoinRequestStatus, as: JoinRequestStatus
+  require Gamend.Notifications.NotificationType, as: NotificationType
+
   @doc "List pending join requests sent by a user."
   @spec list_user_pending_requests(Ecto.UUID.t()) :: [GroupJoinRequest.t()]
   def list_user_pending_requests(user_id) when is_binary(user_id) do
     from(r in GroupJoinRequest,
-      where: r.user_id == ^user_id and r.status == "pending",
+      where: r.user_id == ^user_id and r.status == ^JoinRequestStatus.pending(),
       join: g in assoc(r, :group),
       order_by: [desc: r.inserted_at],
       preload: [group: g]
@@ -40,7 +45,7 @@ defmodule Gamend.Groups.JoinRequests do
       is_nil(group) ->
         {:error, :not_found}
 
-      group.type != "private" ->
+      group.type != GroupType.private() ->
         {:error, :not_private}
 
       Groups.member?(group_id, user_id) ->
@@ -52,7 +57,7 @@ defmodule Gamend.Groups.JoinRequests do
           Repo.get_by(GroupJoinRequest,
             group_id: group_id,
             user_id: user_id,
-            status: "pending"
+            status: JoinRequestStatus.pending()
           )
 
         if existing do
@@ -87,7 +92,7 @@ defmodule Gamend.Groups.JoinRequests do
 
     admins =
       from(m in GroupMember,
-        where: m.group_id == ^group_id and m.role == "admin",
+        where: m.group_id == ^group_id and m.role == ^GroupRole.admin(),
         select: m.user_id
       )
       |> Repo.all()
@@ -123,7 +128,7 @@ defmodule Gamend.Groups.JoinRequests do
 
       requests =
         from(r in GroupJoinRequest,
-          where: r.group_id == ^group_id and r.status == "pending",
+          where: r.group_id == ^group_id and r.status == ^JoinRequestStatus.pending(),
           order_by: [asc: r.inserted_at],
           limit: ^page_size,
           offset: ^offset,
@@ -141,7 +146,7 @@ defmodule Gamend.Groups.JoinRequests do
   def count_join_requests(group_id) when is_binary(group_id) do
     Repo.one(
       from(r in GroupJoinRequest,
-        where: r.group_id == ^group_id and r.status == "pending",
+        where: r.group_id == ^group_id and r.status == ^JoinRequestStatus.pending(),
         select: count(r.id)
       )
     ) || 0
@@ -157,7 +162,7 @@ defmodule Gamend.Groups.JoinRequests do
       nil ->
         {:error, :not_found}
 
-      %GroupJoinRequest{status: status} when status != "pending" ->
+      %GroupJoinRequest{status: status} when status != JoinRequestStatus.pending() ->
         {:error, :not_pending}
 
       %GroupJoinRequest{group_id: group_id} = request ->
@@ -186,7 +191,7 @@ defmodule Gamend.Groups.JoinRequests do
     }
 
     claim = fn ->
-      with {:ok, _accepted} <- answer_request(request, "accepted"), do: :ok
+      with {:ok, _accepted} <- answer_request(request, JoinRequestStatus.accepted()), do: :ok
     end
 
     case Shared.do_add_group_member(user_id, group_id, group, hook_opts, claim) do
@@ -205,7 +210,7 @@ defmodule Gamend.Groups.JoinRequests do
             "title" => "Approved to join #{group.title}",
             "content" => "",
             "metadata" => %{
-              "type" => "group_join_request_approved",
+              "type" => NotificationType.group_join_request_approved(),
               "group_id" => group_id,
               "group_title" => group.title,
               "admin_id" => admin_id,
@@ -235,7 +240,7 @@ defmodule Gamend.Groups.JoinRequests do
   # anyone. The losers answer `:not_pending`, or `:not_found` for a request
   # cancelled (or its group deleted) first.
   defp answer_request(%GroupJoinRequest{id: id}, status) do
-    from(r in GroupJoinRequest, where: r.id == ^id and r.status == "pending")
+    from(r in GroupJoinRequest, where: r.id == ^id and r.status == ^JoinRequestStatus.pending())
     |> Repo.compare_and_set(set: [status: status, updated_at: DateTime.utc_now(:second)])
     |> case do
       {:ok, answered} -> {:ok, answered}
@@ -256,13 +261,13 @@ defmodule Gamend.Groups.JoinRequests do
       nil ->
         {:error, :not_found}
 
-      %GroupJoinRequest{status: status} when status != "pending" ->
+      %GroupJoinRequest{status: status} when status != JoinRequestStatus.pending() ->
         {:error, :not_pending}
 
       %GroupJoinRequest{group_id: group_id} = request ->
         if Groups.can_manage_group?(admin_id, group_id) do
           request
-          |> answer_request("rejected")
+          |> answer_request(JoinRequestStatus.rejected())
           |> case do
             {:ok, updated} ->
               Shared.broadcast_group(
@@ -281,7 +286,7 @@ defmodule Gamend.Groups.JoinRequests do
                   "title" => "Declined from #{group_title}",
                   "content" => "",
                   "metadata" => %{
-                    "type" => "group_join_request_rejected",
+                    "type" => NotificationType.group_join_request_rejected(),
                     "group_id" => group_id,
                     "group_title" => group_title
                   }
@@ -313,11 +318,13 @@ defmodule Gamend.Groups.JoinRequests do
       nil ->
         {:error, :not_found}
 
-      %GroupJoinRequest{user_id: ^user_id, status: "pending"} = request ->
+      %GroupJoinRequest{user_id: ^user_id, status: JoinRequestStatus.pending()} = request ->
         # Deleted only while still pending: an approve that claimed it first
         # has seated the player.
         case Repo.delete_all(
-               from(r in GroupJoinRequest, where: r.id == ^request.id and r.status == "pending")
+               from(r in GroupJoinRequest,
+                 where: r.id == ^request.id and r.status == ^JoinRequestStatus.pending()
+               )
              ) do
           {1, _} ->
             Shared.broadcast_group(
@@ -331,7 +338,7 @@ defmodule Gamend.Groups.JoinRequests do
             {:error, answered_or_gone(request.id)}
         end
 
-      %GroupJoinRequest{status: status} when status != "pending" ->
+      %GroupJoinRequest{status: status} when status != JoinRequestStatus.pending() ->
         {:error, :not_pending}
 
       _other ->

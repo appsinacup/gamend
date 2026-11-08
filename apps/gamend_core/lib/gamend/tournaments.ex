@@ -33,6 +33,13 @@ defmodule Gamend.Tournaments do
   alias Crontab.CronExpression.Parser, as: CronParser
   alias Crontab.Scheduler, as: CronScheduler
 
+  require Gamend.Tournaments.DeadlinePolicy, as: DeadlinePolicy
+  require Gamend.Tournaments.EntryState, as: EntryState
+  require Gamend.Tournaments.TournamentState, as: TournamentState
+  require Gamend.RealtimeEvent, as: RealtimeEvent
+
+  @global "global"
+
   # Cached reads keyed by a version counter bumped on every tournament-row write,
   # so any write (single or bulk) invalidates all cached tournament rows at once.
   defp tournament_cache_version, do: Gamend.Cache.get!({:tournaments, :version}) || 1
@@ -80,8 +87,9 @@ defmodule Gamend.Tournaments do
   @doc "Cancels a tournament (terminal, no hooks fired, no recurrence spawn)."
   @spec cancel_tournament(Tournament.t()) :: {:ok, Tournament.t()} | {:error, term()}
   def cancel_tournament(%Tournament{} = tournament) do
-    with {:ok, cancelled} <- update_state(tournament, "cancelled", any_state: true) do
-      broadcast_tournament(cancelled, "tournament_updated")
+    with {:ok, cancelled} <-
+           update_state(tournament, TournamentState.cancelled(), any_state: true) do
+      broadcast_tournament(cancelled, RealtimeEvent.tournament_updated())
       {:ok, cancelled}
     end
   end
@@ -94,11 +102,14 @@ defmodule Gamend.Tournaments do
   throw away the draw. Any due transition is applied immediately afterwards.
   """
   @spec reopen_tournament(Tournament.t()) :: {:ok, Tournament.t()} | {:error, term()}
-  def reopen_tournament(%Tournament{state: "cancelled"} = tournament) do
-    state = if count_brackets(tournament.id) > 0, do: "running", else: "registration"
+  def reopen_tournament(%Tournament{state: TournamentState.cancelled()} = tournament) do
+    state =
+      if count_brackets(tournament.id) > 0,
+        do: TournamentState.running(),
+        else: TournamentState.registration()
 
     with {:ok, reopened} <- update_state(tournament, state) do
-      broadcast_tournament(reopened, "tournament_updated")
+      broadcast_tournament(reopened, RealtimeEvent.tournament_updated())
       {:ok, advance_lifecycle(reopened)}
     end
   end
@@ -181,7 +192,12 @@ defmodule Gamend.Tournaments do
   defp build_group_info(slug) do
     occurrences = list_occurrences(slug)
     latest = List.first(occurrences)
-    current = Enum.find(occurrences, &(&1.state not in ["finished", "cancelled"]))
+
+    current =
+      Enum.find(
+        occurrences,
+        &(&1.state not in [TournamentState.finished(), TournamentState.cancelled()])
+      )
 
     %{
       slug: slug,
@@ -258,7 +274,7 @@ defmodule Gamend.Tournaments do
     tournament = advance_lifecycle(tournament)
 
     cond do
-      tournament.state != "registration" ->
+      tournament.state != TournamentState.registration() ->
         {:error, :registration_closed}
 
       get_entry(tournament.id, user.id) != nil ->
@@ -282,7 +298,7 @@ defmodule Gamend.Tournaments do
             Gamend.Hooks.internal_call(:after_tournament_register, [user, tournament])
           end)
 
-          broadcast_tournament(tournament, "tournament_updated")
+          broadcast_tournament(tournament, RealtimeEvent.tournament_updated())
           {:ok, entry}
         end
     end
@@ -316,7 +332,8 @@ defmodule Gamend.Tournaments do
   defp release_entry_seat(tournament, %Entry{id: entry_id}) do
     Gamend.AfterCommit.transaction(fn ->
       case current_tournament(tournament.id, :share) do
-        %Tournament{state: state} when state in ["scheduled", "registration"] ->
+        %Tournament{state: state}
+        when state in [TournamentState.scheduled(), TournamentState.registration()] ->
           Repo.delete_all(from(e in Entry, where: e.id == ^entry_id))
           :released
 
@@ -338,7 +355,7 @@ defmodule Gamend.Tournaments do
   # side is emptied instead, by the same conditional write a winner's
   # advance uses, and the bracket settles that side as a bye: now, if the
   # other side is settled already, or when its feeder resolves.
-  defp forfeit_entry(%Tournament{state: "running"} = tournament, entry_id) do
+  defp forfeit_entry(%Tournament{state: TournamentState.running()} = tournament, entry_id) do
     open_match =
       from(m in Match,
         where:
@@ -380,7 +397,7 @@ defmodule Gamend.Tournaments do
           {:ok, _} =
             from(e in Entry, where: e.id == ^entry_id)
             |> Repo.one()
-            |> update_entry(%{state: "eliminated"})
+            |> update_entry(%{state: EntryState.eliminated()})
 
           maybe_bye_resolve(tournament, unseated)
 
@@ -401,7 +418,7 @@ defmodule Gamend.Tournaments do
         nil ->
           Repo.rollback(:not_found)
 
-        %Tournament{state: "registration"} = tournament ->
+        %Tournament{state: TournamentState.registration()} = tournament ->
           if tournament.max_entries != nil and
                count_entries(tournament.id) >= tournament.max_entries do
             Repo.rollback(:tournament_full)
@@ -454,13 +471,13 @@ defmodule Gamend.Tournaments do
       entry == nil ->
         {:error, :not_registered}
 
-      tournament.state not in ["scheduled", "registration"] ->
+      tournament.state not in [TournamentState.scheduled(), TournamentState.registration()] ->
         {:error, :already_drawn}
 
       true ->
         with :ok <- run_leave_hook(tournament, user),
              {:ok, :left} <- withdraw_entry(tournament.id, entry) do
-          broadcast_tournament(tournament, "tournament_updated")
+          broadcast_tournament(tournament, RealtimeEvent.tournament_updated())
           {:ok, tournament}
         end
     end
@@ -478,7 +495,8 @@ defmodule Gamend.Tournaments do
   defp withdraw_entry(tournament_id, entry) do
     Gamend.AfterCommit.transaction(fn ->
       case current_tournament(tournament_id, :share) do
-        %Tournament{state: state} when state in ["scheduled", "registration"] ->
+        %Tournament{state: state}
+        when state in [TournamentState.scheduled(), TournamentState.registration()] ->
           delete_entry!(entry)
 
         nil ->
@@ -588,18 +606,18 @@ defmodule Gamend.Tournaments do
 
   defp do_advance_lifecycle(%Tournament{} = tournament, now) do
     case tournament.state do
-      "scheduled" ->
+      TournamentState.scheduled() ->
         if past?(tournament.registration_opens_at, now),
           do: open_registration(tournament, now),
           else: tournament
 
-      "registration" ->
+      TournamentState.registration() ->
         # nil starts_at = manual start: wait for an admin/game to set it.
         if tournament.starts_at != nil and past?(tournament.starts_at, now),
           do: draw(tournament, now),
           else: tournament
 
-      "running" ->
+      TournamentState.running() ->
         cond do
           all_brackets_decided?(tournament) ->
             finish_tournament(tournament)
@@ -617,9 +635,9 @@ defmodule Gamend.Tournaments do
   end
 
   defp open_registration(tournament, now) do
-    case update_state(tournament, "registration") do
+    case update_state(tournament, TournamentState.registration()) do
       {:ok, opened} ->
-        defer(fn -> broadcast_tournament(opened, "tournament_updated") end)
+        defer(fn -> broadcast_tournament(opened, RealtimeEvent.tournament_updated()) end)
         do_advance_lifecycle(opened, now)
 
       # Moved since `tournament` was read: another caller opened it first, or
@@ -674,13 +692,20 @@ defmodule Gamend.Tournaments do
     # Once cluster-wide, but not one transaction: each tournament's draw and
     # sweep commits on its own, so a tick with many due never holds the
     # database (on SQLite, its only write lock) for all of them at once.
-    Gamend.Lock.exclusive(:tournaments_tick, "global", fn ->
-      from(t in Tournament, where: t.state in ["scheduled", "registration", "running"])
+    Gamend.Lock.exclusive(:tournaments_tick, @global, fn ->
+      from(t in Tournament,
+        where:
+          t.state in ^[
+            TournamentState.scheduled(),
+            TournamentState.registration(),
+            TournamentState.running()
+          ]
+      )
       |> Repo.all()
       |> Enum.each(fn tournament ->
         tournament = advance_lifecycle(tournament, now)
 
-        if tournament.state == "running" do
+        if tournament.state == TournamentState.running() do
           fire_due_readies(tournament, now)
           sweep_deadlines(tournament, now)
         end
@@ -700,7 +725,7 @@ defmodule Gamend.Tournaments do
       # row lock makes a join or a withdrawal in flight finish first, so the
       # entries read below are the final field.
       case current_tournament(tournament.id, :update) do
-        %Tournament{state: "registration"} = tournament ->
+        %Tournament{state: TournamentState.registration()} = tournament ->
           {:ok, tournament} = Gamend.AfterCommit.transaction(fn -> do_draw(tournament, now) end)
           after_draw(tournament, now)
           tournament
@@ -718,15 +743,15 @@ defmodule Gamend.Tournaments do
   defp do_draw(tournament, now) do
     entries =
       from(e in Entry,
-        where: e.tournament_id == ^tournament.id and e.state == "registered",
+        where: e.tournament_id == ^tournament.id and e.state == ^EntryState.registered(),
         order_by: [asc: e.inserted_at, asc: e.id]
       )
       |> Repo.all()
 
     if length(entries) < 2 do
       # Nothing to play: a lone entry wins uncontested, an empty field just ends.
-      Enum.each(entries, fn entry -> update_entry(entry, %{state: "winner"}) end)
-      {:ok, tournament} = update_state(tournament, "finished")
+      Enum.each(entries, fn entry -> update_entry(entry, %{state: EntryState.winner()}) end)
+      {:ok, tournament} = update_state(tournament, TournamentState.finished())
       tournament
     else
       entries
@@ -736,7 +761,7 @@ defmodule Gamend.Tournaments do
         draw_bracket(tournament, chunk, bracket_index, now)
       end)
 
-      {:ok, tournament} = update_state(tournament, "running")
+      {:ok, tournament} = update_state(tournament, TournamentState.running())
       tournament
     end
   end
@@ -755,7 +780,7 @@ defmodule Gamend.Tournaments do
     |> Enum.with_index()
     |> Enum.each(fn {entry, rank} ->
       slot = Enum.find_index(order, &(&1 == rank + 1))
-      update_entry(entry, %{seed: slot, bracket_index: bracket_index, state: "active"})
+      update_entry(entry, %{seed: slot, bracket_index: bracket_index, state: EntryState.active()})
     end)
 
     occupant = fn slot ->
@@ -783,7 +808,7 @@ defmodule Gamend.Tournaments do
     end
   end
 
-  defp after_draw(%Tournament{state: "running"} = tournament, now) do
+  defp after_draw(%Tournament{state: TournamentState.running()} = tournament, now) do
     # Deferred, like every other effect in this module.
     #
     # `draw/2` calls this from inside `Lock.serialize(:tournament_draw, ...)`,
@@ -792,7 +817,7 @@ defmodule Gamend.Tournaments do
     # see uncommitted state. A subscriber that re-read on this event got the
     # pre-commit snapshot on Postgres (still `registration`, no brackets), or
     # contended for the writer this very transaction was holding on SQLite.
-    defer(fn -> broadcast_tournament(tournament, "tournament_updated") end)
+    defer(fn -> broadcast_tournament(tournament, RealtimeEvent.tournament_updated()) end)
 
     from(m in Match, where: m.tournament_id == ^tournament.id and m.round == 1)
     |> Repo.all()
@@ -803,7 +828,7 @@ defmodule Gamend.Tournaments do
     fire_due_readies(tournament, now)
   end
 
-  defp after_draw(%Tournament{state: "finished"} = tournament, _now) do
+  defp after_draw(%Tournament{state: TournamentState.finished()} = tournament, _now) do
     do_finish_side_effects(tournament)
   end
 
@@ -864,7 +889,7 @@ defmodule Gamend.Tournaments do
         Gamend.Hooks.internal_call(:tournament_match_ready, [payload])
       end)
 
-      broadcast_match(tournament, match, "tournament_match_ready")
+      broadcast_match(tournament, match, RealtimeEvent.tournament_match_ready())
     end)
   end
 
@@ -962,7 +987,7 @@ defmodule Gamend.Tournaments do
         end)
       end
 
-      broadcast_match(tournament, match, "tournament_match_resolved")
+      broadcast_match(tournament, match, RealtimeEvent.tournament_match_resolved())
 
       # Champion decided / brackets emptied out? Close the tournament.
       _ = advance_lifecycle(tournament)
@@ -984,11 +1009,11 @@ defmodule Gamend.Tournaments do
         entry.id == match.winner_entry_id ->
           update_entry(entry, %{
             wins: entry.wins + 1,
-            state: if(final_round?, do: "winner", else: entry.state)
+            state: if(final_round?, do: EntryState.winner(), else: entry.state)
           })
 
         true ->
-          update_entry(entry, %{state: "eliminated"})
+          update_entry(entry, %{state: EntryState.eliminated()})
       end
     end
   end
@@ -1144,7 +1169,7 @@ defmodule Gamend.Tournaments do
     verdict =
       case {tournament.deadline_policy, present} do
         {_policy, []} -> :no_winner
-        {"forfeit_both", _} -> :no_winner
+        {DeadlinePolicy.forfeit_both(), _} -> :no_winner
         {"advance_first_slot", [first | _]} -> first
         {"random", present} -> Enum.random(present)
       end
@@ -1174,21 +1199,23 @@ defmodule Gamend.Tournaments do
   # "running", both wrote "finished", and both ran the effects: the completion
   # hook fired twice (games pay prizes there) and two next occurrences were
   # spawned, because neither transaction could see the other's row yet.
-  defp finish_tournament(%Tournament{state: "running"} = tournament) do
+  defp finish_tournament(%Tournament{state: TournamentState.running()} = tournament) do
     query =
-      from(t in Tournament, where: t.id == ^tournament.id and t.state == "running")
+      from(t in Tournament,
+        where: t.id == ^tournament.id and t.state == ^TournamentState.running()
+      )
 
     now = DateTime.utc_now(:second)
 
-    case Repo.update_all(query, set: [state: "finished", updated_at: now]) do
+    case Repo.update_all(query, set: [state: TournamentState.finished(), updated_at: now]) do
       {1, _} ->
         tap_bump_tournament({:ok, tournament})
-        finished = %{tournament | state: "finished"}
+        finished = %{tournament | state: TournamentState.finished()}
         do_finish_side_effects(finished)
         finished
 
       _already_finished_by_someone_else ->
-        %{tournament | state: "finished"}
+        %{tournament | state: TournamentState.finished()}
     end
   end
 
@@ -1202,7 +1229,7 @@ defmodule Gamend.Tournaments do
         Gamend.Hooks.internal_call(:after_tournament_finished, [tournament, standings])
       end)
 
-      broadcast_tournament(tournament, "tournament_finished")
+      broadcast_tournament(tournament, RealtimeEvent.tournament_finished())
       spawn_next_occurrence(tournament)
     end)
   end
@@ -1212,7 +1239,7 @@ defmodule Gamend.Tournaments do
   def standings(%Tournament{} = tournament) do
     entries =
       list_entries(tournament.id)
-      |> Enum.sort_by(fn e -> {if(e.state == "winner", do: 0, else: 1), -e.wins} end)
+      |> Enum.sort_by(fn e -> {if(e.state == EntryState.winner(), do: 0, else: 1), -e.wins} end)
 
     %{
       champions: Enum.filter(entries, &(&1.state == "winner")),
@@ -1260,7 +1287,7 @@ defmodule Gamend.Tournaments do
         slug: tournament.slug,
         title: tournament.title,
         description: tournament.description,
-        state: "scheduled",
+        state: TournamentState.scheduled(),
         registration_opens_at: reg_lead && DateTime.add(next_starts, -reg_lead, :second),
         starts_at: next_starts,
         ends_at: span && DateTime.add(next_starts, span, :second),
@@ -1296,7 +1323,11 @@ defmodule Gamend.Tournaments do
     from(t in Tournament,
       where:
         t.slug == ^tournament.slug and t.id != ^tournament.id and
-          t.state in ["scheduled", "registration", "running"]
+          t.state in ^[
+            TournamentState.scheduled(),
+            TournamentState.registration(),
+            TournamentState.running()
+          ]
     )
     |> Repo.exists?()
   end
@@ -1305,7 +1336,9 @@ defmodule Gamend.Tournaments do
   # finish-time spawn failed or the node died) still gets its next occurrence.
   defp spawn_missed_recurrences(_now) do
     from(t in Tournament,
-      where: not is_nil(t.recur) and t.recur != "" and t.state in ["finished", "cancelled"]
+      where:
+        not is_nil(t.recur) and t.recur != "" and
+          t.state in ^[TournamentState.finished(), TournamentState.cancelled()]
     )
     |> Repo.all()
     |> Enum.group_by(& &1.slug)

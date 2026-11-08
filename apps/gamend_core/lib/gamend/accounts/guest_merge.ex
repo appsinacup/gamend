@@ -62,6 +62,8 @@ defmodule Gamend.Accounts.GuestMerge do
   alias Gamend.Payments.Entitlement
   alias Gamend.Repo
 
+  require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
+
   @hook_timeout_ms 30_000
 
   # Reads of a balance a move gets before it gives up on it: each retry
@@ -251,8 +253,13 @@ defmodule Gamend.Accounts.GuestMerge do
   end
 
   # Taken away from the account on purpose, and a grant would bring it back.
-  defp merge_entitlement(_granted, %Entitlement{status: "revoked"} = held, _user_id, _now),
-    do: {:ok, held}
+  defp merge_entitlement(
+         _granted,
+         %Entitlement{status: EntitlementStatus.revoked()} = held,
+         _user_id,
+         _now
+       ),
+       do: {:ok, held}
 
   # Only a write that adds something: a grant that changes nothing still tells
   # every `after_entitlement_changed` hook that something did.
@@ -262,10 +269,15 @@ defmodule Gamend.Accounts.GuestMerge do
       else: Payments.grant_entitlement(user_id, granted.key, expires_at: granted.expires_at)
   end
 
-  defp lasts_as_long?(%Entitlement{status: "active", expires_at: nil}, _granted, _now), do: true
+  defp lasts_as_long?(
+         %Entitlement{status: EntitlementStatus.active(), expires_at: nil},
+         _granted,
+         _now
+       ),
+       do: true
 
   defp lasts_as_long?(
-         %Entitlement{status: "active", expires_at: %DateTime{} = ends},
+         %Entitlement{status: EntitlementStatus.active(), expires_at: %DateTime{} = ends},
          granted,
          now
        ) do

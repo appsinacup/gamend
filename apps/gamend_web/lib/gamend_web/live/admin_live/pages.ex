@@ -35,7 +35,12 @@ defmodule GamendWeb.AdminLive.Pages do
     %{
       title: "Gameplay",
       links: [
-        %{path: "/admin/lobbies", title: "Lobbies", icon: "hero-rectangle-group", color: "violet"},
+        %{
+          path: "/admin/lobbies",
+          title: "Lobbies",
+          icon: "hero-rectangle-group",
+          color: "violet"
+        },
         %{
           path: "/admin/leaderboards",
           title: "Leaderboards",
@@ -71,14 +76,24 @@ defmodule GamendWeb.AdminLive.Pages do
           color: "orange"
         },
         %{path: "/admin/bans", title: "Bans", icon: "hero-no-symbol", color: "rose"},
-        %{path: "/admin/notifications", title: "Notifications", icon: "hero-bell", color: "violet"},
+        %{
+          path: "/admin/notifications",
+          title: "Notifications",
+          icon: "hero-bell",
+          color: "violet"
+        },
         %{
           path: "/admin/push",
           title: "Push devices",
           icon: "hero-device-phone-mobile",
           color: "indigo"
         },
-        %{path: "/admin/translations", title: "Translations", icon: "hero-language", color: "teal"}
+        %{
+          path: "/admin/translations",
+          title: "Translations",
+          icon: "hero-language",
+          color: "teal"
+        }
       ]
     },
     %{
@@ -118,7 +133,12 @@ defmodule GamendWeb.AdminLive.Pages do
           icon: "hero-adjustments-horizontal",
           color: "sky"
         },
-        %{path: "/admin/connections", title: "Connections", icon: "hero-signal", color: "emerald"},
+        %{
+          path: "/admin/connections",
+          title: "Connections",
+          icon: "hero-signal",
+          color: "emerald"
+        },
         %{
           path: "/admin/rate_limiting",
           title: "Rate Limiting",

@@ -31,6 +31,9 @@ defmodule Gamend.Payments.Counters do
 
   alias Gamend.Analytics
 
+  @other "other"
+  @invalid "invalid"
+
   @doc "Adds one to `payments.<event>` and to each `payments.<event>.<dim>:<value>`."
   @spec count(String.t(), keyword()) :: :ok
   def count(event, dims \\ []) when is_binary(event) do
@@ -59,6 +62,6 @@ defmodule Gamend.Payments.Counters do
   defp dim_value(value) when is_tuple(value) and tuple_size(value) > 0,
     do: dim_value(elem(value, 0))
 
-  defp dim_value(%Ecto.Changeset{}), do: "invalid"
-  defp dim_value(_value), do: "other"
+  defp dim_value(%Ecto.Changeset{}), do: @invalid
+  defp dim_value(_value), do: @other
 end

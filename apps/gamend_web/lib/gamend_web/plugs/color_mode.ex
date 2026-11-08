@@ -16,6 +16,8 @@ defmodule GamendWeb.Plugs.ColorMode do
   alias Gamend.Accounts.Preferences
   alias Gamend.Accounts.Scope
 
+  require GamendWeb.ColorScheme, as: ColorScheme
+
   def init(opts), do: opts
 
   def call(conn, _opts) do
@@ -24,8 +26,11 @@ defmodule GamendWeb.Plugs.ColorMode do
     case Preferences.theme(Scope.user(conn.assigns[:current_scope])) do
       nil ->
         case conn.cookies["phx_theme"] do
-          theme when theme in ["dark", "light"] -> assign(conn, :color_mode, theme)
-          _ -> conn
+          theme when theme in [ColorScheme.dark(), ColorScheme.light()] ->
+            assign(conn, :color_mode, theme)
+
+          _ ->
+            conn
         end
 
       saved ->

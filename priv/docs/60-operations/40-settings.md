@@ -232,7 +232,7 @@ That declares `GAMEND_UGC_MAX_UPLOADS`, read with
 
 | Variable | Type | Default | Notes |
 |---|---|---|---|
-| `GAMEND_GROUPS_INVITES` | atom | `:friends` | Whom a group's admin may invite: `friends` (someone who accepted their friend request) or `anyone` (any account, found by name or exact email). For a host whose groups are teams of colleagues; the invite is still the recipient's to accept. |
+| `GAMEND_GROUPS_INVITES` | atom | `:friends` | Whom a group's admin may invite: `friends` (someone who accepted their friend request) or `anyone` (any account, found by name). For a host whose groups are teams of colleagues; the invite is still the recipient's to accept. |
 | `GAMEND_GROUPS_LINK_DAYS` | integer | `7` | How many days a group's invite link lasts: anyone signed in who opens it joins the group as a member. 0 turns invite links off. |
 | `GAMEND_GROUPS_MAX_MEMBERS` | integer | `0` | Every new group's member cap, the same for all: a group's admins are not asked it and the API ignores it (an operator still may change one group's on the admin page). 0 lets each group's admin pick, up to the `max_group_members` limit. |
 | `GAMEND_GROUPS_TYPES` | list | `public,private,hidden` | The types a group may be created as or changed to, the first one the default: public, private, hidden. `hidden` alone makes every group invite-only and unlisted. |

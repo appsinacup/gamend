@@ -18,6 +18,12 @@ defmodule GamendWeb.NotificationUnsubscribeController do
   alias Gamend.Notifications.Preferences
   alias GamendWeb.NotificationEmail
 
+  require GamendWeb.FilterValue, as: FilterValue
+  require Gamend.Notifications.NotificationChannel, as: NotificationChannel
+  require Gamend.Notifications.PreferenceSwitch, as: PreferenceSwitch
+
+  @group "group"
+
   def show(conn, %{"token" => token} = params) do
     case load(token) do
       {:ok, user, group} ->
@@ -26,10 +32,11 @@ defmodule GamendWeb.NotificationUnsubscribeController do
         |> assign(:token, token)
         |> assign(:group, group)
         |> assign(:group_label, NotificationEmail.group_label(group))
-        |> assign(:group_off?, not Preferences.enabled?(user, group, "email"))
+        |> assign(:group_off?, not Preferences.enabled?(user, group, NotificationChannel.email()))
         |> assign(
           :all_off?,
-          Preferences.off?(user, "off_email") or Preferences.off?(user, "off_all")
+          Preferences.off?(user, PreferenceSwitch.off_email()) or
+            Preferences.off?(user, PreferenceSwitch.off_all())
         )
         |> assign(:done, params["done"])
         |> render(:show)
@@ -45,12 +52,15 @@ defmodule GamendWeb.NotificationUnsubscribeController do
   def create(conn, %{"token" => token} = params) do
     case load(token) do
       {:ok, user, group} ->
-        scope = if params["scope"] == "all", do: "all", else: "group"
+        scope =
+          if params["scope"] == FilterValue.everything(),
+            do: FilterValue.everything(),
+            else: @group
 
         _ =
-          if scope == "all",
+          if scope == FilterValue.everything(),
             do: Preferences.turn_off(user, :email),
-            else: Preferences.put(user, group, "email", false)
+            else: Preferences.put(user, group, NotificationChannel.email(), false)
 
         if params["List-Unsubscribe"] == "One-Click",
           do: send_resp(conn, 200, ""),

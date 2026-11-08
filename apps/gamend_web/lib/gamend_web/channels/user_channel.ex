@@ -42,7 +42,9 @@ defmodule GamendWeb.UserChannel do
   import GamendWeb.ChannelPush
   require Logger
 
-  intercept ["updated", "friend_updated"]
+  require Gamend.RealtimeEvent, as: RealtimeEvent
+
+  intercept [RealtimeEvent.updated(), RealtimeEvent.friend_updated()]
 
   alias Gamend.Accounts
   alias Gamend.Accounts.Online
@@ -59,6 +61,8 @@ defmodule GamendWeb.UserChannel do
   alias GamendWeb.Plugs.ClientSession
   alias GamendWeb.ResultReads
   alias GamendWeb.Serializers
+
+  require GamendWeb.ChannelError, as: ChannelError
 
   # WebSocket message rate limits (per user) — defaults, overridden by config
 
@@ -89,7 +93,7 @@ defmodule GamendWeb.UserChannel do
 
           _ ->
             Logger.warning("UserChannel: unauthorized join attempt for user=#{user_id}")
-            {:error, %{reason: "unauthorized"}}
+            {:error, %{reason: ChannelError.unauthorized()}}
         end
 
       _ ->
@@ -116,7 +120,7 @@ defmodule GamendWeb.UserChannel do
         |> Enum.any?(fn atom -> to_string(atom) == fn_name end)
 
       if reserved? do
-        {:reply, {:error, %{error: "reserved_hook_name"}}, socket}
+        {:reply, {:error, %{error: ChannelError.reserved_hook_name()}}, socket}
       else
         user = current_user(socket)
 
@@ -163,7 +167,8 @@ defmodule GamendWeb.UserChannel do
           {:reply, {:ok, kv_subscribe_reply(key, user_id, lobby_id, payload)}, socket}
 
         true ->
-          {:reply, {:error, kv_reply_payload(%{error: "forbidden"}, payload)}, socket}
+          {:reply, {:error, kv_reply_payload(%{error: ChannelError.forbidden()}, payload)},
+           socket}
       end
     end
   end
@@ -287,12 +292,12 @@ defmodule GamendWeb.UserChannel do
   # ── PubSub event forwarding ────────────────────────────────────────────────
 
   @impl true
-  def handle_out("updated", payload, socket) do
-    {:noreply, ChannelUpdates.push(socket, "updated", :user, payload)}
+  def handle_out(RealtimeEvent.updated(), payload, socket) do
+    {:noreply, ChannelUpdates.push(socket, RealtimeEvent.updated(), :user, payload)}
   end
 
   @impl true
-  def handle_out("friend_updated", payload, socket) do
+  def handle_out(RealtimeEvent.friend_updated(), payload, socket) do
     user_id = friend_user_id(payload)
 
     if is_nil(user_id) do
@@ -302,10 +307,19 @@ defmodule GamendWeb.UserChannel do
       # Presence-only broadcasts omit friendship_id; carry it over so the
       # client never sees a friend lose the field.
       payload =
-        preserve_friendship_id(ChannelUpdates.last(socket, "friend_updated", key), payload)
+        preserve_friendship_id(
+          ChannelUpdates.last(socket, RealtimeEvent.friend_updated(), key),
+          payload
+        )
 
       {:noreply,
-       ChannelUpdates.push(socket, "friend_updated", key, payload, &%{friends: %{key => &1}})}
+       ChannelUpdates.push(
+         socket,
+         RealtimeEvent.friend_updated(),
+         key,
+         payload,
+         &%{friends: %{key => &1}}
+       )}
     end
   end
 
@@ -324,13 +338,13 @@ defmodule GamendWeb.UserChannel do
       case Online.connected(self(), user.id) do
         {:ok, updated_user} ->
           payload = Accounts.serialize_user_payload(updated_user)
-          push_event(socket, "updated", payload)
-          ChannelUpdates.remember(socket, "updated", :user, payload)
+          push_event(socket, RealtimeEvent.updated(), payload)
+          ChannelUpdates.remember(socket, RealtimeEvent.updated(), :user, payload)
 
         _ ->
           payload = Accounts.serialize_user_payload(user)
-          push_event(socket, "updated", payload)
-          ChannelUpdates.remember(socket, "updated", :user, payload)
+          push_event(socket, RealtimeEvent.updated(), payload)
+          ChannelUpdates.remember(socket, RealtimeEvent.updated(), :user, payload)
       end
 
     # Subscribe to notifications PubSub
@@ -387,28 +401,32 @@ defmodule GamendWeb.UserChannel do
   end
 
   def handle_info({:wallet_updated, payload}, socket) do
-    push_event(socket, "wallet_updated", payload)
+    push_event(socket, RealtimeEvent.wallet_updated(), payload)
     {:noreply, socket}
   end
 
   def handle_info({:inventory_updated, payload}, socket) do
-    push_event(socket, "inventory_updated", payload)
+    push_event(socket, RealtimeEvent.inventory_updated(), payload)
     {:noreply, socket}
   end
 
   # A result of the user's, as it is written (`Gamend.Results`).
   def handle_info({:result_started, result}, socket) do
-    push_event(socket, "result_started", result_payload(result))
+    push_event(socket, RealtimeEvent.result_started(), result_payload(result))
     {:noreply, socket}
   end
 
   def handle_info({:result_event, %{result_id: result_id, event: event}}, socket) do
-    push_event(socket, "result_event", %{result_id: result_id, event: event_payload(event)})
+    push_event(socket, RealtimeEvent.result_event(), %{
+      result_id: result_id,
+      event: event_payload(event)
+    })
+
     {:noreply, socket}
   end
 
   def handle_info({:result_ended, result}, socket) do
-    push_event(socket, "result_ended", result_payload(result))
+    push_event(socket, RealtimeEvent.result_ended(), result_payload(result))
     {:noreply, socket}
   end
 
@@ -431,7 +449,7 @@ defmodule GamendWeb.UserChannel do
     lobby_id = Map.get(payload, :lobby_id)
 
     if is_binary(key) and kv_read_allowed?(socket, key, user_id, lobby_id) do
-      push_event(socket, "kv_updated", payload)
+      push_event(socket, RealtimeEvent.kv_updated(), payload)
     end
 
     {:noreply, socket}
@@ -444,7 +462,7 @@ defmodule GamendWeb.UserChannel do
     lobby_id = Map.get(payload, :lobby_id)
 
     if is_binary(key) and kv_read_allowed?(socket, key, user_id, lobby_id) do
-      push_event(socket, "kv_deleted", payload)
+      push_event(socket, RealtimeEvent.kv_deleted(), payload)
     end
 
     {:noreply, socket}
@@ -454,31 +472,46 @@ defmodule GamendWeb.UserChannel do
 
   @impl true
   def handle_info({:notification_created, notification}, socket) do
-    push_event(socket, "notification_created", Serializers.serialize_notification(notification))
+    push_event(
+      socket,
+      RealtimeEvent.notification_created(),
+      Serializers.serialize_notification(notification)
+    )
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:chat_message_created, message}, socket) do
-    push_event(socket, "chat_message_created", Serializers.serialize_chat_message(message))
+    push_event(
+      socket,
+      RealtimeEvent.chat_message_created(),
+      Serializers.serialize_chat_message(message)
+    )
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:chat_message_updated, message}, socket) do
-    push_event(socket, "chat_message_updated", Serializers.serialize_chat_message(message))
+    push_event(
+      socket,
+      RealtimeEvent.chat_message_updated(),
+      Serializers.serialize_chat_message(message)
+    )
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:chat_message_deleted, message}, socket) do
-    push_event(socket, "chat_message_deleted", %{id: message.id})
+    push_event(socket, RealtimeEvent.chat_message_deleted(), %{id: message.id})
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:chat_muted, mute}, socket) do
-    push_event(socket, "chat_muted", %{
+    push_event(socket, RealtimeEvent.chat_muted(), %{
       scope: mute.scope,
       scope_ref_id: mute.scope_ref_id || "",
       expires_at: mute.expires_at,
@@ -490,7 +523,11 @@ defmodule GamendWeb.UserChannel do
 
   @impl true
   def handle_info({:chat_unmuted, %{scope: scope, scope_ref_id: scope_ref_id}}, socket) do
-    push_event(socket, "chat_unmuted", %{scope: scope, scope_ref_id: scope_ref_id || ""})
+    push_event(socket, RealtimeEvent.chat_unmuted(), %{
+      scope: scope,
+      scope_ref_id: scope_ref_id || ""
+    })
+
     {:noreply, socket}
   end
 
@@ -498,7 +535,7 @@ defmodule GamendWeb.UserChannel do
   # socket a moment later, once this event is on its way.
   @impl true
   def handle_info({:account_banned, ban}, socket) do
-    push_event(socket, "account_banned", Serializers.serialize_account_ban(ban))
+    push_event(socket, RealtimeEvent.account_banned(), Serializers.serialize_account_ban(ban))
     {:noreply, socket}
   end
 
@@ -510,61 +547,76 @@ defmodule GamendWeb.UserChannel do
 
   @impl true
   def handle_info({:group_invite_accepted, payload}, socket) do
-    push_event(socket, "group_invite_accepted", payload)
+    push_event(socket, RealtimeEvent.group_invite_accepted(), payload)
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:group_invite_cancelled, payload}, socket) do
-    push_event(socket, "group_invite_cancelled", payload)
+    push_event(socket, RealtimeEvent.group_invite_cancelled(), payload)
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:group_join_request_approved, payload}, socket) do
-    push_event(socket, "group_join_request_approved", payload)
+    push_event(socket, RealtimeEvent.group_join_request_approved(), payload)
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:group_join_request_rejected, payload}, socket) do
-    push_event(socket, "group_join_request_rejected", payload)
+    push_event(socket, RealtimeEvent.group_join_request_rejected(), payload)
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:party_invite_accepted, payload}, socket) do
-    push_event(socket, "party_invite_accepted", payload)
+    push_event(socket, RealtimeEvent.party_invite_accepted(), payload)
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:party_invite_declined, payload}, socket) do
-    push_event(socket, "party_invite_declined", payload)
+    push_event(socket, RealtimeEvent.party_invite_declined(), payload)
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:party_invite_cancelled, payload}, socket) do
-    push_event(socket, "party_invite_cancelled", payload)
+    push_event(socket, RealtimeEvent.party_invite_cancelled(), payload)
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:quest_progress, progress}, socket) do
-    push_event(socket, "quest_progress", Serializers.serialize_quest_progress(progress))
+    push_event(
+      socket,
+      RealtimeEvent.quest_progress(),
+      Serializers.serialize_quest_progress(progress)
+    )
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:quest_completed, progress}, socket) do
-    push_event(socket, "quest_completed", Serializers.serialize_quest_progress(progress))
+    push_event(
+      socket,
+      RealtimeEvent.quest_completed(),
+      Serializers.serialize_quest_progress(progress)
+    )
+
     {:noreply, socket}
   end
 
   @impl true
   def handle_info({:quest_claimed, progress}, socket) do
-    push_event(socket, "quest_claimed", Serializers.serialize_quest_progress(progress))
+    push_event(
+      socket,
+      RealtimeEvent.quest_claimed(),
+      Serializers.serialize_quest_progress(progress)
+    )
+
     {:noreply, socket}
   end
 
@@ -639,7 +691,11 @@ defmodule GamendWeb.UserChannel do
     notifications = Notifications.list_recent_notifications(user_id, @initial_notification_window)
 
     Enum.each(notifications, fn notification ->
-      push_event(socket, "notification_created", Serializers.serialize_notification(notification))
+      push_event(
+        socket,
+        RealtimeEvent.notification_created(),
+        Serializers.serialize_notification(notification)
+      )
     end)
   end
 
@@ -652,10 +708,10 @@ defmodule GamendWeb.UserChannel do
         {to_string(payload.user_id), payload}
       end)
 
-    push_event(socket, "friend_updated", %{friends: friend_payloads})
+    push_event(socket, RealtimeEvent.friend_updated(), %{friends: friend_payloads})
 
     Enum.reduce(friend_payloads, socket, fn {key, payload}, acc ->
-      ChannelUpdates.remember(acc, "friend_updated", key, payload)
+      ChannelUpdates.remember(acc, RealtimeEvent.friend_updated(), key, payload)
     end)
   end
 
@@ -827,7 +883,7 @@ defmodule GamendWeb.UserChannel do
 
         {:deny, _retry_after} ->
           Logger.warning("UserChannel: rate limit exceeded for user=#{user_id}")
-          {:stop, :normal, {:error, %{error: "rate_limited"}}, socket}
+          {:stop, :normal, {:error, %{error: ChannelError.rate_limited()}}, socket}
       end
     else
       :ok
@@ -858,7 +914,7 @@ defmodule GamendWeb.UserChannel do
 
         {:deny, _retry_after} ->
           Logger.warning("UserChannel: ICE rate limit exceeded for user=#{user_id}")
-          {:reply, {:error, %{error: "ice_rate_limited"}}, socket}
+          {:reply, {:error, %{error: ChannelError.ice_rate_limited()}}, socket}
       end
     else
       :ok

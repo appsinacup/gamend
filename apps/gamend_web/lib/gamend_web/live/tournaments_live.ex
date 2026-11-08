@@ -23,6 +23,10 @@ defmodule GamendWeb.TournamentsLive do
   alias GamendWeb.OnMount.SeoTitle
   alias GamendWeb.Plugs.FeatureGate
 
+  require Gamend.Tournaments.EntryState, as: EntryState
+  require Gamend.Tournaments.TournamentState, as: TournamentState
+  require GamendWeb.FilterValue, as: FilterValue
+
   @page_size 25
   @brackets_page_size 12
 
@@ -40,8 +44,8 @@ defmodule GamendWeb.TournamentsLive do
      |> assign(:brackets_page_size, @brackets_page_size)
      |> assign(:players_page, 1)
      |> assign(:search, "")
-     |> assign(:state_filter, "all")
-     |> assign(:state_filter, "all")
+     |> assign(:state_filter, FilterValue.everything())
+     |> assign(:state_filter, FilterValue.everything())
      |> assign(:tournament, nil)
      |> assign(:bracket, nil)
      |> assign(:own?, false)
@@ -959,30 +963,30 @@ defmodule GamendWeb.TournamentsLive do
     """
   end
 
-  defp state_class("running"), do: "badge-success"
-  defp state_class("registration"), do: "badge-info"
-  defp state_class("finished"), do: "badge-neutral"
-  defp state_class("cancelled"), do: "badge-error"
+  defp state_class(TournamentState.running()), do: "badge-success"
+  defp state_class(TournamentState.registration()), do: "badge-info"
+  defp state_class(TournamentState.finished()), do: "badge-neutral"
+  defp state_class(TournamentState.cancelled()), do: "badge-error"
   defp state_class(_state), do: "badge-ghost"
 
-  defp state_filter("all"), do: nil
+  defp state_filter(FilterValue.everything()), do: nil
   defp state_filter(state), do: state
 
-  defp entry_state_class("winner"), do: "badge-success"
-  defp entry_state_class("active"), do: "badge-info"
-  defp entry_state_class("eliminated"), do: "badge-ghost opacity-60"
+  defp entry_state_class(EntryState.winner()), do: "badge-success"
+  defp entry_state_class(EntryState.active()), do: "badge-info"
+  defp entry_state_class(EntryState.eliminated()), do: "badge-ghost opacity-60"
   defp entry_state_class(_state), do: "badge-ghost"
 
-  defp entry_state_label("winner"), do: gettext("Champion")
-  defp entry_state_label("active"), do: gettext("Playing")
-  defp entry_state_label("eliminated"), do: gettext("Eliminated")
-  defp entry_state_label("registered"), do: gettext("Registered")
+  defp entry_state_label(EntryState.winner()), do: gettext("Champion")
+  defp entry_state_label(EntryState.active()), do: gettext("Playing")
+  defp entry_state_label(EntryState.eliminated()), do: gettext("Eliminated")
+  defp entry_state_label(EntryState.registered()), do: gettext("Registered")
   defp entry_state_label(other), do: other
 
-  defp state_label("scheduled"), do: gettext("Scheduled")
-  defp state_label("registration"), do: gettext("Registration open")
-  defp state_label("running"), do: gettext("Running")
-  defp state_label("finished"), do: gettext("Finished")
-  defp state_label("cancelled"), do: gettext("Canceled")
+  defp state_label(TournamentState.scheduled()), do: gettext("Scheduled")
+  defp state_label(TournamentState.registration()), do: gettext("Registration open")
+  defp state_label(TournamentState.running()), do: gettext("Running")
+  defp state_label(TournamentState.finished()), do: gettext("Finished")
+  defp state_label(TournamentState.cancelled()), do: gettext("Canceled")
   defp state_label(other), do: other
 end

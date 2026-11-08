@@ -34,6 +34,8 @@ defmodule Mix.Tasks.Gamend.Github.App do
 
   alias Gamend.GitHub.Manifest
 
+  @open "open"
+
   @impl true
   def run(argv) do
     {opts, _rest} =
@@ -145,7 +147,7 @@ defmodule Mix.Tasks.Gamend.Github.App do
   defp open_browser(url) do
     cmd =
       case :os.type() do
-        {:unix, :darwin} -> "open"
+        {:unix, :darwin} -> @open
         {:unix, _} -> "xdg-open"
         _ -> nil
       end

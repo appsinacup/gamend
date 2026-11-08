@@ -35,6 +35,11 @@ defmodule Gamend.Chat do
   alias Gamend.Repo
 
   require Logger
+  require Gamend.Chat.ChatType, as: ChatType
+  require Gamend.Notifications.NotificationType, as: NotificationType
+  require Gamend.SortKey, as: SortKey
+
+  @metadata "metadata"
 
   @typedoc "Why `authorize_access/3` refuses a player a conversation."
   @type access_error ::
@@ -136,16 +141,16 @@ defmodule Gamend.Chat do
 
     # For friend DMs, also broadcast to the recipient's user topic so the
     # UserChannel can forward the message without subscribing to every pair.
-    if chat_type == "friend" do
+    if chat_type == ChatType.friend() do
       Gamend.Broadcast.publish("user:#{chat_ref_id}", event)
     end
   end
 
-  defp chat_topic("lobby", lobby_id, _sender_id), do: "chat:lobby:#{lobby_id}"
-  defp chat_topic("group", group_id, _sender_id), do: "chat:group:#{group_id}"
-  defp chat_topic("party", party_id, _sender_id), do: "chat:party:#{party_id}"
+  defp chat_topic(ChatType.lobby(), lobby_id, _sender_id), do: "chat:lobby:#{lobby_id}"
+  defp chat_topic(ChatType.group(), group_id, _sender_id), do: "chat:group:#{group_id}"
+  defp chat_topic(ChatType.party(), party_id, _sender_id), do: "chat:party:#{party_id}"
 
-  defp chat_topic("friend", friend_id, sender_id) do
+  defp chat_topic(ChatType.friend(), friend_id, sender_id) do
     {low, high} = friend_pair(sender_id, friend_id)
     "chat:friend:#{low}:#{high}"
   end
@@ -226,8 +231,8 @@ defmodule Gamend.Chat do
   defp mark_flagged(attrs, []), do: attrs
 
   defp mark_flagged(attrs, _flagged) do
-    metadata = attr(attrs, "metadata") || %{}
-    put_attr(attrs, "metadata", Map.put(metadata, "flagged", true))
+    metadata = attr(attrs, @metadata) || %{}
+    put_attr(attrs, @metadata, Map.put(metadata, "flagged", true))
   end
 
   # Callers pass string keys over HTTP and atom keys from plugins.
@@ -313,7 +318,7 @@ defmodule Gamend.Chat do
   # by type and carry the id in metadata.
   defp send_chat_notifications(message) do
     case message.chat_type do
-      "friend" ->
+      ChatType.friend() ->
         # Consolidated: one notification per recipient for ALL friend DMs
         # Use recipient_id as sender_id so upsert groups all friend messages together
         recipient_id = message.chat_ref_id
@@ -321,10 +326,13 @@ defmodule Gamend.Chat do
         notify_chat(recipient_id, %{
           "title" => "New messages from friends",
           "content" => "",
-          "metadata" => %{"type" => "chat_friend", "chat_type" => "friend"}
+          "metadata" => %{
+            "type" => NotificationType.chat_friend(),
+            "chat_type" => ChatType.friend()
+          }
         })
 
-      "group" ->
+      ChatType.group() ->
         group = Gamend.Groups.get_group(message.chat_ref_id)
         group_name = (group && group.title) || "Group #{message.chat_ref_id}"
 
@@ -341,14 +349,14 @@ defmodule Gamend.Chat do
             "title" => "New messages in group #{group_name}",
             "content" => "",
             "metadata" => %{
-              "type" => "chat_group",
-              "chat_type" => "group",
+              "type" => NotificationType.chat_group(),
+              "chat_type" => ChatType.group(),
               "group_id" => message.chat_ref_id
             }
           })
         end
 
-      "lobby" ->
+      ChatType.lobby() ->
         lobby_users = Gamend.Lobbies.get_lobby_members(message.chat_ref_id)
 
         for user <- lobby_users, user.id != message.sender_id do
@@ -357,14 +365,14 @@ defmodule Gamend.Chat do
             "title" => "New messages in your lobby",
             "content" => "",
             "metadata" => %{
-              "type" => "chat_lobby",
-              "chat_type" => "lobby",
+              "type" => NotificationType.chat_lobby(),
+              "chat_type" => ChatType.lobby(),
               "lobby_id" => message.chat_ref_id
             }
           })
         end
 
-      "party" ->
+      ChatType.party() ->
         send_party_chat_notifications(message)
 
       _ ->
@@ -386,8 +394,8 @@ defmodule Gamend.Chat do
         "title" => "New messages in your party",
         "content" => "",
         "metadata" => %{
-          "type" => "chat_party",
-          "chat_type" => "party",
+          "type" => NotificationType.chat_party(),
+          "chat_type" => ChatType.party(),
           "party_id" => message.chat_ref_id
         }
       })
@@ -426,22 +434,28 @@ defmodule Gamend.Chat do
 
   def authorize_access(_user_id, _chat_type, _chat_ref_id), do: {:error, :invalid_chat_ref}
 
-  defp validate_chat_access(sender_id, %{"chat_type" => "lobby", "chat_ref_id" => lobby_id}) do
-    validate_chat_access(sender_id, %{chat_type: "lobby", chat_ref_id: lobby_id})
+  defp validate_chat_access(sender_id, %{
+         "chat_type" => ChatType.lobby(),
+         "chat_ref_id" => lobby_id
+       }) do
+    validate_chat_access(sender_id, %{chat_type: ChatType.lobby(), chat_ref_id: lobby_id})
   end
 
-  defp validate_chat_access(sender_id, %{chat_type: "lobby", chat_ref_id: lobby_id}) do
+  defp validate_chat_access(sender_id, %{chat_type: ChatType.lobby(), chat_ref_id: lobby_id}) do
     case Accounts.get_user(sender_id) do
       %User{lobby_id: ^lobby_id} when lobby_id != nil -> :ok
       _ -> {:error, :not_in_lobby}
     end
   end
 
-  defp validate_chat_access(sender_id, %{"chat_type" => "group", "chat_ref_id" => group_id}) do
-    validate_chat_access(sender_id, %{chat_type: "group", chat_ref_id: group_id})
+  defp validate_chat_access(sender_id, %{
+         "chat_type" => ChatType.group(),
+         "chat_ref_id" => group_id
+       }) do
+    validate_chat_access(sender_id, %{chat_type: ChatType.group(), chat_ref_id: group_id})
   end
 
-  defp validate_chat_access(sender_id, %{chat_type: "group", chat_ref_id: group_id}) do
+  defp validate_chat_access(sender_id, %{chat_type: ChatType.group(), chat_ref_id: group_id}) do
     case Gamend.Groups.get_membership(group_id, sender_id) do
       nil -> {:error, :not_in_group}
       _member -> :ok
@@ -449,13 +463,13 @@ defmodule Gamend.Chat do
   end
 
   defp validate_chat_access(sender_id, %{
-         "chat_type" => "friend",
+         "chat_type" => ChatType.friend(),
          "chat_ref_id" => friend_id
        }) do
-    validate_chat_access(sender_id, %{chat_type: "friend", chat_ref_id: friend_id})
+    validate_chat_access(sender_id, %{chat_type: ChatType.friend(), chat_ref_id: friend_id})
   end
 
-  defp validate_chat_access(sender_id, %{chat_type: "friend", chat_ref_id: friend_id}) do
+  defp validate_chat_access(sender_id, %{chat_type: ChatType.friend(), chat_ref_id: friend_id}) do
     cond do
       Gamend.Friends.blocked?(sender_id, friend_id) ->
         {:error, :blocked}
@@ -468,11 +482,14 @@ defmodule Gamend.Chat do
     end
   end
 
-  defp validate_chat_access(sender_id, %{"chat_type" => "party", "chat_ref_id" => party_id}) do
-    validate_chat_access(sender_id, %{chat_type: "party", chat_ref_id: party_id})
+  defp validate_chat_access(sender_id, %{
+         "chat_type" => ChatType.party(),
+         "chat_ref_id" => party_id
+       }) do
+    validate_chat_access(sender_id, %{chat_type: ChatType.party(), chat_ref_id: party_id})
   end
 
-  defp validate_chat_access(sender_id, %{chat_type: "party", chat_ref_id: party_id}) do
+  defp validate_chat_access(sender_id, %{chat_type: ChatType.party(), chat_ref_id: party_id}) do
     case Accounts.get_user(sender_id) do
       %User{party_id: ^party_id} when party_id != nil -> :ok
       _ -> {:error, :not_in_party}
@@ -485,21 +502,21 @@ defmodule Gamend.Chat do
   # Slowdown enforcement
   # ---------------------------------------------------------------------------
 
-  defp check_slowdown(sender_id, %{"chat_type" => "group", "chat_ref_id" => ref_id}) do
+  defp check_slowdown(sender_id, %{"chat_type" => ChatType.group(), "chat_ref_id" => ref_id}) do
     group_id = ref_id
 
     case Gamend.Groups.get_group(group_id) do
       nil -> :ok
-      group -> enforce_slowdown(sender_id, "group", group_id, group.slowdown)
+      group -> enforce_slowdown(sender_id, ChatType.group(), group_id, group.slowdown)
     end
   end
 
-  defp check_slowdown(sender_id, %{"chat_type" => "lobby", "chat_ref_id" => ref_id}) do
+  defp check_slowdown(sender_id, %{"chat_type" => ChatType.lobby(), "chat_ref_id" => ref_id}) do
     lobby_id = ref_id
 
     case Gamend.Lobbies.get_lobby(lobby_id) do
       nil -> :ok
-      lobby -> enforce_slowdown(sender_id, "lobby", lobby_id, lobby.slowdown)
+      lobby -> enforce_slowdown(sender_id, ChatType.lobby(), lobby_id, lobby.slowdown)
     end
   end
 
@@ -590,8 +607,10 @@ defmodule Gamend.Chat do
 
     from(m in Message,
       where:
-        (m.chat_type == "friend" and m.sender_id == ^user_a_id and m.chat_ref_id == ^user_b_id) or
-          (m.chat_type == "friend" and m.sender_id == ^user_b_id and m.chat_ref_id == ^user_a_id),
+        (m.chat_type == ^ChatType.friend() and m.sender_id == ^user_a_id and
+           m.chat_ref_id == ^user_b_id) or
+          (m.chat_type == ^ChatType.friend() and m.sender_id == ^user_b_id and
+             m.chat_ref_id == ^user_a_id),
       order_by: [desc: m.inserted_at, desc: m.id],
       limit: ^page_size,
       offset: ^offset,
@@ -616,13 +635,15 @@ defmodule Gamend.Chat do
   def count_friend_messages(user_a_id, user_b_id) do
     from(m in Message,
       where:
-        (m.chat_type == "friend" and m.sender_id == ^user_a_id and m.chat_ref_id == ^user_b_id) or
-          (m.chat_type == "friend" and m.sender_id == ^user_b_id and m.chat_ref_id == ^user_a_id)
+        (m.chat_type == ^ChatType.friend() and m.sender_id == ^user_a_id and
+           m.chat_ref_id == ^user_b_id) or
+          (m.chat_type == ^ChatType.friend() and m.sender_id == ^user_b_id and
+             m.chat_ref_id == ^user_a_id)
     )
     |> Repo.aggregate(:count, :id)
   end
 
-  defp base_query("friend", _chat_ref_id) do
+  defp base_query(ChatType.friend(), _chat_ref_id) do
     # For friend chats, callers should use list_friend_messages/3 instead
     from(m in Message, where: false)
   end
@@ -696,12 +717,12 @@ defmodule Gamend.Chat do
        when not is_binary(message_id),
        do: {:error, :invalid_message}
 
-  defp validate_read_message(user_id, "friend", friend_id, message_id) do
+  defp validate_read_message(user_id, ChatType.friend(), friend_id, message_id) do
     case Repo.get(Message, message_id) do
-      %Message{chat_type: "friend", sender_id: ^user_id, chat_ref_id: ^friend_id} ->
+      %Message{chat_type: ChatType.friend(), sender_id: ^user_id, chat_ref_id: ^friend_id} ->
         :ok
 
-      %Message{chat_type: "friend", sender_id: ^friend_id, chat_ref_id: ^user_id} ->
+      %Message{chat_type: ChatType.friend(), sender_id: ^friend_id, chat_ref_id: ^user_id} ->
         :ok
 
       nil ->
@@ -764,11 +785,13 @@ defmodule Gamend.Chat do
   """
   @spec count_unread_friend(Ecto.UUID.t(), Ecto.UUID.t()) :: non_neg_integer()
   def count_unread_friend(user_id, friend_id) do
-    cursor = get_read_cursor(user_id, "friend", friend_id)
+    cursor = get_read_cursor(user_id, ChatType.friend(), friend_id)
 
     query =
       from(m in Message,
-        where: m.chat_type == "friend" and m.sender_id == ^friend_id and m.chat_ref_id == ^user_id
+        where:
+          m.chat_type == ^ChatType.friend() and m.sender_id == ^friend_id and
+            m.chat_ref_id == ^user_id
       )
 
     case cursor do
@@ -799,10 +822,10 @@ defmodule Gamend.Chat do
     from(m in Message,
       left_join: c in ReadCursor,
       on:
-        c.user_id == ^user_id and c.chat_type == "friend" and
+        c.user_id == ^user_id and c.chat_type == ^ChatType.friend() and
           c.chat_ref_id == m.sender_id,
       where:
-        m.chat_type == "friend" and m.sender_id in ^friend_ids and
+        m.chat_type == ^ChatType.friend() and m.sender_id in ^friend_ids and
           m.chat_ref_id == ^user_id,
       where: is_nil(c.last_read_message_id) or m.id > c.last_read_message_id,
       group_by: m.sender_id,
@@ -826,9 +849,9 @@ defmodule Gamend.Chat do
     from(m in Message,
       left_join: c in ReadCursor,
       on:
-        c.user_id == ^user_id and c.chat_type == "group" and
+        c.user_id == ^user_id and c.chat_type == ^ChatType.group() and
           c.chat_ref_id == m.chat_ref_id,
-      where: m.chat_type == "group" and m.chat_ref_id in ^group_ids,
+      where: m.chat_type == ^ChatType.group() and m.chat_ref_id in ^group_ids,
       where: is_nil(c.last_read_message_id) or m.id > c.last_read_message_id,
       group_by: m.chat_ref_id,
       select: {m.chat_ref_id, count(m.id)}
@@ -882,21 +905,25 @@ defmodule Gamend.Chat do
     # Delete messages in both directions
     from(m in Message,
       where:
-        (m.chat_type == "friend" and m.sender_id == ^user_a_id and m.chat_ref_id == ^user_b_id) or
-          (m.chat_type == "friend" and m.sender_id == ^user_b_id and m.chat_ref_id == ^user_a_id)
+        (m.chat_type == ^ChatType.friend() and m.sender_id == ^user_a_id and
+           m.chat_ref_id == ^user_b_id) or
+          (m.chat_type == ^ChatType.friend() and m.sender_id == ^user_b_id and
+             m.chat_ref_id == ^user_a_id)
     )
     |> Repo.delete_all()
 
     # Delete read cursors for both users
     from(c in ReadCursor,
       where:
-        (c.chat_type == "friend" and c.user_id == ^user_a_id and c.chat_ref_id == ^user_b_id) or
-          (c.chat_type == "friend" and c.user_id == ^user_b_id and c.chat_ref_id == ^user_a_id)
+        (c.chat_type == ^ChatType.friend() and c.user_id == ^user_a_id and
+           c.chat_ref_id == ^user_b_id) or
+          (c.chat_type == ^ChatType.friend() and c.user_id == ^user_b_id and
+             c.chat_ref_id == ^user_a_id)
     )
     |> Repo.delete_all()
 
-    invalidate_chat_cache("friend", user_a_id)
-    invalidate_chat_cache("friend", user_b_id)
+    invalidate_chat_cache(ChatType.friend(), user_a_id)
+    invalidate_chat_cache(ChatType.friend(), user_b_id)
     :ok
   end
 
@@ -1096,8 +1123,8 @@ defmodule Gamend.Chat do
     end
   end
 
-  defp admin_sort(query, "inserted_at_asc"), do: order_by(query, [m], asc: m.inserted_at)
-  defp admin_sort(query, "inserted_at"), do: order_by(query, [m], desc: m.inserted_at)
+  defp admin_sort(query, SortKey.inserted_at_asc()), do: order_by(query, [m], asc: m.inserted_at)
+  defp admin_sort(query, SortKey.inserted_at()), do: order_by(query, [m], desc: m.inserted_at)
   defp admin_sort(query, _), do: order_by(query, [m], desc: m.inserted_at)
 
   # ---------------------------------------------------------------------------

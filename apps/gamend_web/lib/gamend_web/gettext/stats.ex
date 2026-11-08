@@ -20,6 +20,8 @@ defmodule GamendWeb.Gettext.Stats do
       }
   """
 
+  require Gamend.LocaleCode, as: LocaleCode
+
   @priv_dir :code.priv_dir(:gamend_web) |> to_string()
   @gettext_dir Path.join(@priv_dir, "gettext")
 
@@ -35,7 +37,7 @@ defmodule GamendWeb.Gettext.Stats do
       {:ok, entries} ->
         entries
         |> Enum.filter(fn entry ->
-          entry != "en" and
+          entry != LocaleCode.en() and
             File.dir?(Path.join(@gettext_dir, entry)) and
             not String.ends_with?(entry, ".pot")
         end)

@@ -16,6 +16,8 @@ defmodule GamendWeb.Auth.OptionalPipeline do
     module: GamendWeb.Auth.Guardian,
     error_handler: GamendWeb.Auth.ErrorHandler
 
+  require GamendWeb.Auth.TokenType, as: TokenType
+
   # A personal API token counts here as it does in `GamendWeb.Auth.Pipeline`.
   plug GamendWeb.Auth.ApiTokenAuth
 
@@ -24,7 +26,7 @@ defmodule GamendWeb.Auth.OptionalPipeline do
   plug Guardian.Plug.VerifyHeader,
     scheme: "Bearer",
     allow_blank: true,
-    claims: %{"typ" => "access"}
+    claims: %{"typ" => TokenType.access()}
 
   plug Guardian.Plug.LoadResource, allow_blank: true
   plug GamendWeb.Auth.AssignCurrentScope

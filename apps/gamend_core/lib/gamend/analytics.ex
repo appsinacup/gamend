@@ -56,6 +56,12 @@ defmodule Gamend.Analytics do
   alias Gamend.Repo
   alias Gamend.Repo.AdvisoryLock
 
+  require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
+  require Gamend.Payments.PaymentEnvironment, as: PaymentEnvironment
+  require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
+
+  @none "none"
+
   @stats_cache_ttl_ms :timer.minutes(5)
   @snapshot_cache_ttl_ms :timer.minutes(1)
   # A user's "already recorded today" marker. Longer than a day so it survives
@@ -633,7 +639,7 @@ defmodule Gamend.Analytics do
     |> in_segment(Keyword.get(opts, :segment, :all))
     |> Repo.all()
     |> Enum.map(fn row ->
-      %{row | value: if(is_nil(row.value), do: "none", else: to_string(row.value))}
+      %{row | value: if(is_nil(row.value), do: @none, else: to_string(row.value))}
     end)
     |> Enum.sort_by(&{-&1.people, -&1.events, &1.value})
   end
@@ -993,7 +999,7 @@ defmodule Gamend.Analytics do
     start = start_of_day(from)
 
     from(p in Purchase,
-      where: p.status == "completed" and p.inserted_at >= ^start,
+      where: p.status == ^PurchaseStatus.completed() and p.inserted_at >= ^start,
       select: count(p.user_id, :distinct)
     )
     |> in_segment(Keyword.get(opts, :segment, :all))
@@ -1282,7 +1288,9 @@ defmodule Gamend.Analytics do
 
     revenue =
       from(p in Purchase,
-        where: p.status == "completed" and p.environment == "production",
+        where:
+          p.status == ^PurchaseStatus.completed() and
+            p.environment == ^PaymentEnvironment.production(),
         where: p.inserted_at >= ^start and not is_nil(p.amount),
         group_by: p.currency,
         select: {p.currency, sum(p.amount)}
@@ -1315,7 +1323,8 @@ defmodule Gamend.Analytics do
         from(e in base,
           join: p in Purchase,
           on:
-            p.user_id == e.user_id and p.status == "completed" and p.inserted_at >= e.inserted_at
+            p.user_id == e.user_id and p.status == ^PurchaseStatus.completed() and
+              p.inserted_at >= e.inserted_at
         )
       )
 
@@ -1326,7 +1335,7 @@ defmodule Gamend.Analytics do
           where(
             base,
             [e],
-            e.status == "active" and is_nil(e.revoked_at) and
+            e.status == ^EntitlementStatus.active() and is_nil(e.revoked_at) and
               (is_nil(e.expires_at) or e.expires_at > ^now)
           )
         ),

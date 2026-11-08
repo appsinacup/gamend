@@ -28,6 +28,8 @@ defmodule GamendWeb.UserLive.Settings do
   use GamendWeb.UrlState,
     keys: [:ledger_page, :items_page, :devices_page, :api_tokens_page, :kv_page, :kv_key_filter]
 
+  require GamendWeb.SettingsTab, as: SettingsTab
+
   @valid_tabs ~w(account notifications friends groups wallet items payments data devices
                  api_tokens)
 
@@ -173,7 +175,7 @@ defmodule GamendWeb.UserLive.Settings do
     socket =
       socket
       |> assign(:page_title, gettext("Account"))
-      |> assign(:settings_tab, "account")
+      |> assign(:settings_tab, SettingsTab.account())
       |> assign(:user, user)
       |> assign(:conflict_user, conflict_user)
       |> assign(:conflict_provider, conflict_provider)
@@ -237,7 +239,7 @@ defmodule GamendWeb.UserLive.Settings do
     do: ApiTokensTab.handle_event(event, params, socket)
 
   def handle_event(event, params, socket) when event in @groups_events do
-    if tab_enabled?("groups"),
+    if tab_enabled?(SettingsTab.groups()),
       do: GroupsTab.handle_event(event, params, socket),
       else: {:noreply, socket}
   end
@@ -290,7 +292,7 @@ defmodule GamendWeb.UserLive.Settings do
              :join_request_approved,
              :join_request_rejected
            ] do
-    {:noreply, reload_if_open(socket, "groups")}
+    {:noreply, reload_if_open(socket, SettingsTab.groups())}
   end
 
   # Catch-all: ignore unhandled PubSub messages (e.g. :chat_message_created,
@@ -307,7 +309,7 @@ defmodule GamendWeb.UserLive.Settings do
     tab =
       if Map.get(params, "tab") in @valid_tabs and tab_enabled?(params["tab"]),
         do: params["tab"],
-        else: socket.assigns[:settings_tab] || "account"
+        else: socket.assigns[:settings_tab] || SettingsTab.account()
 
     {:noreply,
      socket
@@ -321,7 +323,9 @@ defmodule GamendWeb.UserLive.Settings do
   end
 
   defp apply_group_params(socket, params) do
-    if tab_enabled?("groups"), do: GroupsTab.apply_params(socket, params), else: socket
+    if tab_enabled?(SettingsTab.groups()),
+      do: GroupsTab.apply_params(socket, params),
+      else: socket
   end
 
   defp tab_enabled?(tab) do
@@ -338,13 +342,13 @@ defmodule GamendWeb.UserLive.Settings do
   defp load_tab(socket, "friends"),
     do: FriendsTab.refresh_friend_lists(socket, Shared.current_user(socket))
 
-  defp load_tab(socket, "data"), do: DataTab.reload_kv_entries(socket)
-  defp load_tab(socket, "wallet"), do: WalletTab.load_wallet(socket)
+  defp load_tab(socket, SettingsTab.data()), do: DataTab.reload_kv_entries(socket)
+  defp load_tab(socket, SettingsTab.wallet()), do: WalletTab.load_wallet(socket)
   defp load_tab(socket, "items"), do: ItemsTab.reload_items(socket)
-  defp load_tab(socket, "groups"), do: GroupsTab.reload_groups(socket)
+  defp load_tab(socket, SettingsTab.groups()), do: GroupsTab.reload_groups(socket)
   defp load_tab(socket, "payments"), do: PaymentsTab.assign_payment_data(socket)
   defp load_tab(socket, "devices"), do: DevicesTab.reload_devices(socket)
-  defp load_tab(socket, "api_tokens"), do: ApiTokensTab.reload_api_tokens(socket)
+  defp load_tab(socket, SettingsTab.api_tokens()), do: ApiTokensTab.reload_api_tokens(socket)
   defp load_tab(socket, _tab), do: socket
 
   # A friend or group event reloads its tab only while it is open; opening it

@@ -39,6 +39,13 @@ defmodule GamendWeb.AdminLive.Runtime do
   use GamendWeb.UrlState,
     keys: [:search, :facet, :page, :page_size, :expanded, :show_diagram]
 
+  require GamendWeb.FilterValue, as: FilterValue
+
+  @migrations "migrations"
+  @notifications "notifications"
+  @proto "proto"
+  @hooks "hooks"
+
   @impl true
   def mount(_params, _session, socket) do
     {:ok,
@@ -50,12 +57,12 @@ defmodule GamendWeb.AdminLive.Runtime do
      |> assign(:expanded, MapSet.new())
      |> assign(:show_diagram, false)
      |> assign(:diagram, nil)
-     |> assign(:facet, "all")}
+     |> assign(:facet, FilterValue.everything())}
   end
 
   @impl true
   def handle_params(params, _uri, socket) do
-    tab = if params["tab"] in @tab_keys, do: params["tab"], else: "hooks"
+    tab = if params["tab"] in @tab_keys, do: params["tab"], else: @hooks
     moved? = socket.assigns[:tab] != tab
     socket = assign(socket, :tab, tab)
 
@@ -147,7 +154,7 @@ defmodule GamendWeb.AdminLive.Runtime do
     %{all_rows: all, search: search, page: page} = socket.assigns
     # Hooks render grouped by category, so they show all at once — a section
     # split across pages would defeat the grouping.
-    page_size = if socket.assigns.tab == "hooks", do: 1000, else: socket.assigns.page_size
+    page_size = if socket.assigns.tab == @hooks, do: 1000, else: socket.assigns.page_size
 
     filtered =
       all
@@ -166,7 +173,7 @@ defmodule GamendWeb.AdminLive.Runtime do
   end
 
   defp filter_by_facet(rows, nil, _value), do: rows
-  defp filter_by_facet(rows, _field, "all"), do: rows
+  defp filter_by_facet(rows, _field, FilterValue.everything()), do: rows
 
   defp filter_by_facet(rows, field, value),
     do: Enum.filter(rows, &(to_string(Map.get(&1, field)) == value))
@@ -307,7 +314,7 @@ defmodule GamendWeb.AdminLive.Runtime do
   attr :rows, :list, required: true
   attr :expanded, :any, required: true
 
-  defp tab_table(%{tab: "hooks"} = assigns) do
+  defp tab_table(%{tab: @hooks} = assigns) do
     ~H"""
     <table class="table table-sm">
       <thead>
@@ -388,7 +395,7 @@ defmodule GamendWeb.AdminLive.Runtime do
     """
   end
 
-  defp tab_table(%{tab: "proto"} = assigns) do
+  defp tab_table(%{tab: @proto} = assigns) do
     ~H"""
     <table class="table table-sm">
       <thead>
@@ -503,7 +510,7 @@ defmodule GamendWeb.AdminLive.Runtime do
     """
   end
 
-  defp tab_table(%{tab: "notifications"} = assigns) do
+  defp tab_table(%{tab: @notifications} = assigns) do
     ~H"""
     <table class="table table-sm">
       <thead>
@@ -724,7 +731,7 @@ defmodule GamendWeb.AdminLive.Runtime do
     """
   end
 
-  defp tab_table(%{tab: "migrations"} = assigns) do
+  defp tab_table(%{tab: @migrations} = assigns) do
     ~H"""
     <table class="table table-sm">
       <thead>

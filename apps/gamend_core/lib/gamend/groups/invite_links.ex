@@ -27,6 +27,8 @@ defmodule Gamend.Groups.InviteLinks do
   alias Gamend.Groups.Shared
   alias Gamend.Repo
 
+  require Gamend.Notifications.NotificationType, as: NotificationType
+
   @token_bytes 16
 
   @doc "How many days a new link lasts (`link_days`); 0 when links are off."
@@ -182,7 +184,7 @@ defmodule Gamend.Groups.InviteLinks do
       "title" => "#{user_name} joined #{group.title}",
       "content" => "",
       "metadata" => %{
-        "type" => "group_invite_accepted",
+        "type" => NotificationType.group_invite_accepted(),
         "group_id" => group.id,
         "group_title" => group.title,
         "user_id" => user_id,

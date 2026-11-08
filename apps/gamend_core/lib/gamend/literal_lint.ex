@@ -14,8 +14,8 @@ defmodule Gamend.LiteralLint do
 
     * the value of a module attribute, or a function that is nothing but its
       value: `@failed "failed"` and `defmacro failed, do: "failed"` are the cure
-    * a key: `%{"id" => id}`, `params["id"]`, `Map.get(params, "id")`, `get_in/2`.
-      Keys are the shape of a document, not a closed set of values
+    * a key: `%{"id" => id}`, `params["id"]`, `Map.get(params, "id")`, `Map.take/2`,
+      `get_in/2`. Keys are the shape of a document, not a closed set of values
     * text: gettext, `Logger`, `raise`, `IO`, `Mix`, `System`, and any sigil
       other than a string `~w`, so a HEEx template is not read
     * a LiveView event's name in `handle_event/3`, and HTTP header names
@@ -65,10 +65,13 @@ defmodule Gamend.LiteralLint do
 
   @definitions ~w(def defp defmacro defmacrop)a
   @map_keyed ~w(delete fetch fetch! get has_key? pop put put_new replace replace! update update!)a
+  @map_key_lists ~w(drop split take)a
 
   # Text, a command line, or a path into a document: not a value of ours.
   @silent_modules ~w(Logger Gettext IO Mix System)a
-  @silent_calls ~w(gettext dgettext dpgettext dngettext ngettext pgettext raise reraise
+  @silent_calls ~w(gettext dgettext dpgettext dngettext ngettext pgettext
+                   gettext_noop dgettext_noop dpgettext_noop dngettext_noop ngettext_noop
+                   pgettext_noop raise reraise
                    reply_error get_in put_in update_in pop_in
                    get_req_header get_resp_header put_req_header put_resp_header
                    delete_req_header delete_resp_header)a
@@ -207,6 +210,12 @@ defmodule Gamend.LiteralLint do
   defp walk({{:., _, [{:__aliases__, _, [:Map]}, fun]}, _, args}, module, acc)
        when fun in @map_keyed do
     walk(without_key(args), module, acc)
+  end
+
+  # Whether piped or not, the list of keys comes last.
+  defp walk({{:., _, [{:__aliases__, _, [:Map]}, fun]}, _, args}, module, acc)
+       when fun in @map_key_lists do
+    walk(Enum.drop(args, -1), module, acc)
   end
 
   defp walk({{:., _, [{:__aliases__, _, [head | _]}, _]}, _, _}, _module, acc)

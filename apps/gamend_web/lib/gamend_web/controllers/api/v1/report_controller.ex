@@ -20,6 +20,8 @@ defmodule GamendWeb.Api.V1.ReportController do
   alias GamendWeb.Schemas.ReportReceiptResponse
   alias GamendWeb.Schemas.ReportRequest
 
+  @api_source "api"
+
   tags(["Reports"])
 
   operation(:kinds,
@@ -72,7 +74,7 @@ defmodule GamendWeb.Api.V1.ReportController do
            Reports.create(params, %{
              user_id: Scope.user_id(conn.assigns[:current_scope]),
              locale: params["locale"],
-             source: "api",
+             source: @api_source,
              client: params["client"],
              attachments: images
            }) do

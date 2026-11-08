@@ -34,6 +34,8 @@ defmodule Gamend.GitHub.Manifest do
 
   alias Gamend.GitHub.API
 
+  @push "push"
+
   @name "Gamend"
   @description "Sign in with GitHub, and the repositories you choose."
   @callback_paths ["/auth/github/callback", "/github/callback"]
@@ -87,7 +89,7 @@ defmodule Gamend.GitHub.Manifest do
       path ->
         manifest
         |> Map.put("hook_attributes", %{"url" => host_url <> path, "active" => true})
-        |> Map.put("default_events", Keyword.get(config, :events, ["push"]))
+        |> Map.put("default_events", Keyword.get(config, :events, [@push]))
     end
   end
 

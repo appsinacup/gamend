@@ -19,6 +19,8 @@ defmodule GamendWeb.Plugs.AccountBan do
   alias Gamend.Accounts.Scope
   alias Gamend.Bans
 
+  require GamendWeb.ChannelError, as: ChannelError
+
   @spec init(keyword()) :: keyword()
   def init(opts), do: opts
 
@@ -27,7 +29,7 @@ defmodule GamendWeb.Plugs.AccountBan do
     with user_id when is_binary(user_id) <- Scope.user_id(conn.assigns[:current_scope]),
          true <- Bans.banned?(:account, user_id) do
       body = %{
-        error: "account_banned",
+        error: ChannelError.account_banned(),
         message: "This account is banned; GET /api/v1/me says why."
       }
 

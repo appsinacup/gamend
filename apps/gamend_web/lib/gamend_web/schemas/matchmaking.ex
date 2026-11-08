@@ -1,6 +1,7 @@
 defmodule GamendWeb.Schemas.MatchmakingTicket do
   @moduledoc "A place in the matchmaking queue."
   require OpenApiSpex
+  alias Gamend.Matchmaking.TicketStatus
   alias OpenApiSpex.Schema
 
   OpenApiSpex.schema(%{
@@ -9,7 +10,10 @@ defmodule GamendWeb.Schemas.MatchmakingTicket do
     type: :object,
     properties: %{
       id: %Schema{type: :string, format: :uuid},
-      status: %Schema{type: :string, enum: ["queued", "matched", "cancelled"]},
+      status: %Schema{
+        type: :string,
+        enum: TicketStatus.all()
+      },
       match_params: %Schema{
         type: :object,
         description: "String key/value pairs; only identical params match together",

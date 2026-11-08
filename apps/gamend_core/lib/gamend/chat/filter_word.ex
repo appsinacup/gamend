@@ -19,6 +19,9 @@ defmodule Gamend.Chat.FilterWord do
 
   alias Gamend.Chat.Moderation.Normalizer
 
+  require Gamend.Chat.FilterSeverity, as: FilterSeverity
+  require Gamend.Chat.MatchMode, as: MatchMode
+
   @type t :: %__MODULE__{}
 
   @severities ~w(block mask flag)
@@ -26,8 +29,8 @@ defmodule Gamend.Chat.FilterWord do
 
   schema "chat_filter_words" do
     field :word, :string
-    field :severity, :string, default: "block"
-    field :match_mode, :string, default: "substring"
+    field :severity, :string, default: FilterSeverity.block()
+    field :match_mode, :string, default: MatchMode.substring()
     field :lang, :string
 
     timestamps(type: :utc_datetime)

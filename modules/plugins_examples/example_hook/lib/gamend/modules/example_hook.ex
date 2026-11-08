@@ -32,6 +32,13 @@ defmodule Gamend.Modules.ExampleHook do
   alias Gamend.Rating
   alias Gamend.Tournaments
 
+  @name "name"
+
+  @gold "gold"
+  @currency "currency"
+  @login "login"
+  @never "never"
+
   # The ranked sample's names, each defined once so a typo cannot split its
   # data between two spellings.
   @rating_leaderboard "example_ranked_rating"
@@ -79,7 +86,7 @@ defmodule Gamend.Modules.ExampleHook do
         hook: "custom_hello",
         meta: %{
           description: "Example dynamic hook that returns hello",
-          args: [%{name: "name", type: "string"}],
+          args: [%{name: @name, type: "string"}],
           example_args: ["Dragos"]
         }
       }
@@ -178,10 +185,10 @@ defmodule Gamend.Modules.ExampleHook do
         title: "Welcome aboard",
         description: "Log in for the first time.",
         category: "Achievements",
-        reset: "never",
+        reset: @never,
         auto_claim: true,
-        objectives: [%{event: "login", target: 1}],
-        rewards: [%{type: "currency", code: "gold", amount: 100}]
+        objectives: [%{event: @login, target: 1}],
+        rewards: [%{type: @currency, code: @gold, amount: 100}]
       },
       %{
         key: "daily_login",
@@ -190,8 +197,8 @@ defmodule Gamend.Modules.ExampleHook do
         description: "Log in today.",
         category: "Check-ins",
         reset: "daily",
-        objectives: [%{event: "login", target: 1}],
-        rewards: [%{type: "currency", code: "gold", amount: 25}]
+        objectives: [%{event: @login, target: 1}],
+        rewards: [%{type: @currency, code: @gold, amount: 25}]
       },
       %{
         key: "weekly_regular",
@@ -200,10 +207,10 @@ defmodule Gamend.Modules.ExampleHook do
         description: "Log in on five different days this week.",
         category: "Check-ins",
         reset: "weekly",
-        objectives: [%{event: "login", target: 5}],
+        objectives: [%{event: @login, target: 5}],
         rewards: [
-          %{type: "currency", code: "gold", amount: 150},
-          %{type: "currency", code: "gems", amount: 5}
+          %{type: @currency, code: @gold, amount: 150},
+          %{type: @currency, code: "gems", amount: 5}
         ]
       },
       %{
@@ -213,8 +220,8 @@ defmodule Gamend.Modules.ExampleHook do
         description: "Log in twenty times this month.",
         category: "Check-ins",
         reset: "monthly",
-        objectives: [%{event: "login", target: 20}],
-        rewards: [%{type: "currency", code: "gems", amount: 25}]
+        objectives: [%{event: @login, target: 20}],
+        rewards: [%{type: @currency, code: "gems", amount: 25}]
       },
       # `interval` restarts a fixed number of days after each completion,
       # rather than on a calendar boundary.
@@ -226,8 +233,8 @@ defmodule Gamend.Modules.ExampleHook do
         category: "Check-ins",
         reset: "interval",
         reset_interval_days: 3,
-        objectives: [%{event: "login", target: 1}],
-        rewards: [%{type: "currency", code: "gold", amount: 40}]
+        objectives: [%{event: @login, target: 1}],
+        rewards: [%{type: @currency, code: @gold, amount: 40}]
       },
       # Chained: stays locked until its prerequisite is completed.
       %{
@@ -236,9 +243,9 @@ defmodule Gamend.Modules.ExampleHook do
         title: "Loyal veteran",
         description: "Log in fifty times, once you have said hello.",
         category: "Achievements",
-        reset: "never",
+        reset: @never,
         prerequisite_quest_key: @quest_prefix <> "first_login",
-        objectives: [%{event: "login", target: 50}],
+        objectives: [%{event: @login, target: 50}],
         rewards: [%{type: "item", code: "veteran_banner", amount: 1}]
       },
       # Hidden quests stay a teaser in the catalog until they are earned.
@@ -248,9 +255,9 @@ defmodule Gamend.Modules.ExampleHook do
         title: "Night owl",
         description: "Some things are found rather than announced.",
         category: "Secrets",
-        reset: "never",
+        reset: @never,
         hidden: true,
-        objectives: [%{event: "login", target: 100}],
+        objectives: [%{event: @login, target: 100}],
         rewards: [%{type: "item", code: "lantern", amount: 1}]
       },
       # A window is orthogonal to the reset cycle: this is a daily that only
@@ -264,8 +271,8 @@ defmodule Gamend.Modules.ExampleHook do
         reset: "daily",
         starts_at: DateTime.add(now, -1, :day),
         ends_at: DateTime.add(now, 30, :day),
-        objectives: [%{event: "login", target: 1}],
-        rewards: [%{type: "currency", code: "gold", amount: 75}]
+        objectives: [%{event: @login, target: 1}],
+        rewards: [%{type: @currency, code: @gold, amount: 75}]
       }
     ]
     |> Enum.each(fn attrs ->
@@ -485,7 +492,7 @@ defmodule Gamend.Modules.ExampleHook do
     if Payments.has_entitlement?(user.id, @pass_entitlement) do
       today = Date.utc_today() |> Date.to_iso8601()
 
-      Economy.grant(user.id, "gold", @pass_daily_gold,
+      Economy.grant(user.id, @gold, @pass_daily_gold,
         reason: "monthly_pass_daily",
         idempotency_key: "pass:#{user.id}:#{today}"
       )

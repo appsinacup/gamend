@@ -61,6 +61,12 @@ defmodule Gamend.Lobbies do
   alias Gamend.Repo
   alias Gamend.Types
 
+  require Gamend.Chat.ChatType, as: ChatType
+  require Gamend.Notifications.NotificationType, as: NotificationType
+  require Gamend.SortKey, as: SortKey
+
+  @unknown "unknown"
+
   # A state is a game-chosen word (see Gamend.Lobbies.States); core only
   # keeps it a sane string, since a host can set it over the API.
   @max_state_length 64
@@ -317,7 +323,7 @@ defmodule Gamend.Lobbies do
        when is_map(filters) and is_integer(page) and is_integer(page_size) do
     q = from(l in Lobby)
     q = apply_admin_filters(q, filters)
-    sort_by = Map.get(filters, "sort_by") || Map.get(filters, :sort_by) || "updated_at"
+    sort_by = Map.get(filters, "sort_by") || Map.get(filters, :sort_by) || SortKey.updated_at()
     q = apply_admin_sort(q, sort_by)
 
     offset = (page - 1) * page_size
@@ -381,7 +387,7 @@ defmodule Gamend.Lobbies do
   defp lobby_counts_by_state do
     from(l in Lobby, group_by: l.state, select: {l.state, count(l.id)})
     |> Repo.all()
-    |> Map.new(fn {state, count} -> {state || "unknown", count} end)
+    |> Map.new(fn {state, count} -> {state || @unknown, count} end)
   end
 
   @doc """
@@ -505,11 +511,11 @@ defmodule Gamend.Lobbies do
     end
   end
 
-  defp apply_admin_sort(q, "updated_at"), do: order_by(q, [l], desc: l.updated_at)
-  defp apply_admin_sort(q, "updated_at_asc"), do: order_by(q, [l], asc: l.updated_at)
-  defp apply_admin_sort(q, "inserted_at"), do: order_by(q, [l], desc: l.inserted_at)
-  defp apply_admin_sort(q, "inserted_at_asc"), do: order_by(q, [l], asc: l.inserted_at)
-  defp apply_admin_sort(q, "max_users"), do: order_by(q, [l], desc: l.max_users)
+  defp apply_admin_sort(q, SortKey.updated_at()), do: order_by(q, [l], desc: l.updated_at)
+  defp apply_admin_sort(q, SortKey.updated_at_asc()), do: order_by(q, [l], asc: l.updated_at)
+  defp apply_admin_sort(q, SortKey.inserted_at()), do: order_by(q, [l], desc: l.inserted_at)
+  defp apply_admin_sort(q, SortKey.inserted_at_asc()), do: order_by(q, [l], asc: l.inserted_at)
+  defp apply_admin_sort(q, SortKey.max_users()), do: order_by(q, [l], desc: l.max_users)
   defp apply_admin_sort(q, "max_users_asc"), do: order_by(q, [l], asc: l.max_users)
   defp apply_admin_sort(q, _), do: order_by(q, [l], desc: l.updated_at)
 
@@ -774,12 +780,12 @@ defmodule Gamend.Lobbies do
         # No title provided: generate a unique candidate using default base.
         title_key =
           cond do
-            Map.has_key?(attrs, "title") -> "title"
+            Map.has_key?(attrs, "title") -> SortKey.title()
             Map.has_key?(attrs, :title) -> :title
-            true -> if(prefer_string_keys?(attrs), do: "title", else: :title)
+            true -> if(prefer_string_keys?(attrs), do: SortKey.title(), else: :title)
           end
 
-        Map.put(attrs, title_key, unique_title_candidate("lobby"))
+        Map.put(attrs, title_key, unique_title_candidate(ChatType.lobby()))
       end
 
     case Gamend.Hooks.internal_call(:before_lobby_create, [attrs]) do
@@ -1137,7 +1143,7 @@ defmodule Gamend.Lobbies do
         case do_delete_lobby(lobby) do
           {:ok, {deleted, members}} ->
             Gamend.Async.run(fn ->
-              Gamend.Chat.cleanup_chat("lobby", deleted.id)
+              Gamend.Chat.cleanup_chat(ChatType.lobby(), deleted.id)
               Gamend.Hooks.internal_call(:after_lobby_deleted, [deleted])
             end)
 
@@ -1404,7 +1410,7 @@ defmodule Gamend.Lobbies do
   defp broadcast_leave_result(result, lobby_id, user_id) do
     case result do
       {:ok, :lobby_deleted} ->
-        Gamend.Async.run(fn -> Gamend.Chat.cleanup_chat("lobby", lobby_id) end)
+        Gamend.Async.run(fn -> Gamend.Chat.cleanup_chat(ChatType.lobby(), lobby_id) end)
         _ = invalidate_accounts_user_cache(user_id)
         _ = invalidate_lobby_cache(lobby_id)
         maybe_broadcast_user_updated(user_id)
@@ -1555,7 +1561,7 @@ defmodule Gamend.Lobbies do
                 "title" => "Removed from #{lobby_title}",
                 "content" => "",
                 "metadata" => %{
-                  "type" => "lobby_kicked",
+                  "type" => NotificationType.lobby_kicked(),
                   "lobby_id" => lobby.id,
                   "lobby_name" => lobby_title
                 }

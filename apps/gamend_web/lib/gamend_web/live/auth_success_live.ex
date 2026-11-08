@@ -1,6 +1,10 @@
 defmodule GamendWeb.AuthSuccessLive do
   use GamendWeb, :live_view
   require Logger
+  require GamendWeb.AuthError, as: AuthError
+  require Gamend.OAuth.SessionStatus, as: SessionStatus
+
+  @not_found "not_found"
 
   @impl true
   def mount(params, _session, socket) do
@@ -41,7 +45,7 @@ defmodule GamendWeb.AuthSuccessLive do
              session_id: session_id,
              page_title: gettext("Log in"),
              session_data: %{
-               status: "completed",
+               status: SessionStatus.completed(),
                message: gettext("Success.")
              }
            )}
@@ -50,7 +54,7 @@ defmodule GamendWeb.AuthSuccessLive do
            assign(socket,
              session_id: session_id,
              page_title: gettext("Log in"),
-             session_data: %{status: "not_found"}
+             session_data: %{status: @not_found}
            )}
         end
     end
@@ -219,16 +223,16 @@ defmodule GamendWeb.AuthSuccessLive do
         Map.get(session_data, "details") || Map.get(session_data, :details)
 
     case code do
-      "provider_already_linked" ->
+      AuthError.provider_already_linked() ->
         gettext("This sign-in is already linked to another account")
 
-      "account_not_activated" ->
+      AuthError.account_not_activated() ->
         gettext("Your account is waiting for an administrator to activate it.")
 
-      "user_not_found" ->
+      AuthError.user_not_found() ->
         gettext("Player not found.")
 
-      "authentication_failed" ->
+      AuthError.authentication_failed() ->
         gettext("The sign-in was canceled or did not complete. Please try again.")
 
       _other ->

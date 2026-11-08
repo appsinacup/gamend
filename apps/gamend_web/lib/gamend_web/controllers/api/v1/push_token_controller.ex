@@ -8,6 +8,8 @@ defmodule GamendWeb.Api.V1.PushTokenController do
 
   alias Gamend.Accounts.Scope
   alias Gamend.Push
+  alias Gamend.Push.Platform
+  alias Gamend.Push.PushProvider
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.{PushTokenPage, PushTokenResponse}
@@ -30,8 +32,11 @@ defmodule GamendWeb.Api.V1.PushTokenController do
          required: [:token, :platform],
          properties: %{
            token: %Schema{type: :string},
-           platform: %Schema{type: :string, enum: ["android", "ios", "web"]},
-           provider: %Schema{type: :string, enum: ["fcm", "apns"]},
+           platform: %Schema{
+             type: :string,
+             enum: Platform.all()
+           },
+           provider: %Schema{type: :string, enum: PushProvider.all()},
            device_id: %Schema{type: :string},
            metadata: %Schema{type: :object}
          }

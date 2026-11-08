@@ -4,6 +4,8 @@ defmodule GamendWeb.Api.V1.Admin.ReadyCheckController do
 
   alias Gamend.ReadyChecks
   alias Gamend.ReadyChecks.Check
+  alias Gamend.ReadyChecks.CheckKind
+  alias Gamend.ReadyChecks.CheckStatus
   alias GamendWeb.Schemas
 
   alias GamendWeb.Schemas.{
@@ -24,12 +26,15 @@ defmodule GamendWeb.Api.V1.Admin.ReadyCheckController do
     parameters: [
       status: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["pending", "passed", "failed", "cancelled"]},
+        schema: %Schema{
+          type: :string,
+          enum: CheckStatus.all()
+        },
         required: false
       ],
       kind: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["ready", "accept"]},
+        schema: %Schema{type: :string, enum: CheckKind.all()},
         required: false
       ],
       lobby_id: [in: :query, schema: %Schema{type: :string, format: :uuid}, required: false],

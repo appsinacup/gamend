@@ -11,6 +11,13 @@ defmodule GamendWeb.AdminLive.Users do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  require Gamend.Accounts.TokenContext, as: TokenContext
+  require GamendWeb.FormName, as: FormName
+  require Gamend.SortDirection, as: SortDirection
+  require Gamend.SortKey, as: SortKey
+  require GamendWeb.UrlParam, as: UrlParam
+  require GamendWeb.CheckboxValue, as: CheckboxValue
+
   @impl true
   def render(assigns) do
     ~H"""
@@ -742,12 +749,12 @@ defmodule GamendWeb.AdminLive.Users do
   use GamendWeb.UrlState,
     reload: :reload_users,
     keys: [
-      users_page: [param: "page"],
-      users_page_size: [param: "page-size"],
+      users_page: [param: UrlParam.page()],
+      users_page_size: [param: UrlParam.page_size()],
       search_query: [param: "q"],
-      filters: [param: "filter"],
-      sort_field: [param: "sort"],
-      sort_dir: [param: "dir", in: ~w(asc desc)]
+      filters: [param: UrlParam.filter()],
+      sort_field: [param: UrlParam.sort()],
+      sort_dir: [param: "dir", in: [SortDirection.asc(), SortDirection.desc()]]
     ]
 
   @impl true
@@ -755,8 +762,8 @@ defmodule GamendWeb.AdminLive.Users do
     # paginated admin users view (admins can see all users)
     page = 1
     page_size = 25
-    sort_field = "inserted_at"
-    sort_dir = "desc"
+    sort_field = SortKey.inserted_at()
+    sort_dir = SortDirection.desc()
     # `?filter=unactivated` (the dashboard's link) is read from the URL.
     initial_filters = []
 
@@ -794,7 +801,7 @@ defmodule GamendWeb.AdminLive.Users do
   @impl true
   def handle_event("edit_user", %{"id" => id}, socket) do
     Shared.with_record(socket, Accounts.get_user(id), fn user ->
-      form = user |> User.admin_changeset(%{}) |> to_form(as: "user")
+      form = user |> User.admin_changeset(%{}) |> to_form(as: FormName.user())
 
       {:noreply,
        socket
@@ -935,15 +942,17 @@ defmodule GamendWeb.AdminLive.Users do
   end
 
   def handle_event("sort_users", %{"field" => field}, socket) do
-    current_field = socket.assigns[:sort_field] || "inserted_at"
-    current_dir = socket.assigns[:sort_dir] || "desc"
+    current_field = socket.assigns[:sort_field] || SortKey.inserted_at()
+    current_dir = socket.assigns[:sort_dir] || SortDirection.desc()
 
     # Toggle direction if same field, otherwise default to desc
     sort_dir =
       if field == current_field do
-        if current_dir == "desc", do: "asc", else: "desc"
+        if current_dir == SortDirection.desc(),
+          do: SortDirection.asc(),
+          else: SortDirection.desc()
       else
-        "desc"
+        SortDirection.desc()
       end
 
     page = 1
@@ -1263,10 +1272,13 @@ defmodule GamendWeb.AdminLive.Users do
       user_params
       |> Map.put(
         "confirmed_at",
-        if(user_params["confirmed"] == "on", do: DateTime.utc_now(:second), else: nil)
+        if(user_params["confirmed"] == CheckboxValue.on(),
+          do: DateTime.utc_now(:second),
+          else: nil
+        )
       )
-      |> Map.put("is_admin", user_params["is_admin"] == "on")
-      |> Map.put("is_activated", user_params["is_activated"] == "on")
+      |> Map.put("is_admin", user_params["is_admin"] == CheckboxValue.on())
+      |> Map.put("is_activated", user_params["is_activated"] == CheckboxValue.on())
 
     case Accounts.update_user(user, attrs) do
       {:ok, updated_user} ->
@@ -1302,14 +1314,14 @@ defmodule GamendWeb.AdminLive.Users do
          |> sync_selected_ids(user_ids(users))}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, :form, to_form(changeset, as: "user"))}
+        {:noreply, assign(socket, :form, to_form(changeset, as: FormName.user()))}
 
       {:error, :not_found} ->
         {:noreply, put_flash(socket, :error, "That user no longer exists")}
     end
   end
 
-  defp session_count(tokens), do: Enum.count(tokens, &(&1.context == "session"))
+  defp session_count(tokens), do: Enum.count(tokens, &(&1.context == TokenContext.session()))
 
   defp login_locked?(%User{email: email}) when is_binary(email),
     do: LoginLockouts.check(email) != :ok

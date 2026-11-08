@@ -12,6 +12,12 @@ defmodule GamendWeb.Api.V1.HookController do
   alias GamendWeb.Schemas.{HookCallResponse, HookFunctionPage}
   alias OpenApiSpex.Schema
   require Logger
+  require GamendWeb.ChannelError, as: ChannelError
+  require GamendWeb.HookErrorCode, as: HookErrorCode
+
+  @call_hook "call_hook"
+
+  @arg "arg"
 
   operation(:index,
     operation_id: "list_hooks",
@@ -51,7 +57,7 @@ defmodule GamendWeb.Api.V1.HookController do
 
           arg_names =
             Enum.map(args_list, fn a ->
-              Map.get(a, :name) || Map.get(a, "name") || "arg"
+              Map.get(a, :name) || Map.get(a, "name") || @arg
             end)
 
           arity = length(arg_names)
@@ -120,7 +126,7 @@ defmodule GamendWeb.Api.V1.HookController do
   }
 
   operation(:invoke,
-    operation_id: "call_hook",
+    operation_id: @call_hook,
     summary: "Invoke a hook function",
     description: """
     Calls `fn` in `plugin` with `args` and answers what it returned under
@@ -193,7 +199,7 @@ defmodule GamendWeb.Api.V1.HookController do
         )
 
       reserved_hook_name?(fn_name) ->
-        log_rejected(hook, "reserved_hook_name")
+        log_rejected(hook, ChannelError.reserved_hook_name())
 
         reply_error(conn, :bad_request, "reserved_hook_name")
 
@@ -234,7 +240,7 @@ defmodule GamendWeb.Api.V1.HookController do
         reply_error(conn, :not_found, "missing_hooks_module")
 
       {:error, :timeout} ->
-        log_rejected(hook, "timeout")
+        log_rejected(hook, HookErrorCode.timeout())
         reply_error(conn, :gateway_timeout, "timeout")
 
       # Logged with its stack trace by `Gamend.Hooks`; the client gets no detail.

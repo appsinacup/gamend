@@ -39,6 +39,10 @@ defmodule Gamend.Hooks.PluginBuilder.InProcess do
   alias Gamend.Hooks.PluginBuilder.Project
   alias Gamend.Hooks.PluginManager
 
+  @ebin "ebin"
+  @deps "deps"
+  @gen "gen"
+
   # Compile-time stubs and tooling: never needed, never loaded, at runtime.
   @ignored_deps [:gamend_sdk, :gamend_plugin_tools]
   @base_apps [:kernel, :stdlib, :elixir]
@@ -148,7 +152,7 @@ defmodule Gamend.Hooks.PluginBuilder.InProcess do
         scripts
         |> transpiler.compile_all(root: state.dir)
         |> Enum.map(fn {module, source} ->
-          target = Path.join("gen", transpiler.source_path(module))
+          target = Path.join(@gen, transpiler.source_path(module))
           path = Path.join(state.dir, target)
           File.mkdir_p!(Path.dirname(path))
           File.write!(path, source)
@@ -156,7 +160,7 @@ defmodule Gamend.Hooks.PluginBuilder.InProcess do
         end)
 
       unused =
-        if "gen" in state.project.elixirc_paths,
+        if @gen in state.project.elixirc_paths,
           do: [],
           else: ["warning: elixirc_paths does not include gen/, so none of it compiles"]
 
@@ -224,7 +228,7 @@ defmodule Gamend.Hooks.PluginBuilder.InProcess do
   end
 
   defp check_dep(dep, dir) do
-    prebuilt = Path.join([dir, "deps", Atom.to_string(dep.name), "ebin"])
+    prebuilt = Path.join([dir, @deps, Atom.to_string(dep.name), @ebin])
 
     cond do
       engine_app?(dep.name, dir) -> {:engine, "#{dep.name}: provided by the engine", dep}
@@ -286,7 +290,7 @@ defmodule Gamend.Hooks.PluginBuilder.InProcess do
   # then undo all of that and start the plugin again if it was running.
   defp with_plugin_unloaded(state, fun) do
     suspended? = PluginManager.suspend(state.name)
-    own_ebin = Path.join(state.dir, "ebin")
+    own_ebin = Path.join(state.dir, @ebin)
     had_own_ebin? = Code.delete_path(own_ebin)
 
     dep_paths =
@@ -347,7 +351,7 @@ defmodule Gamend.Hooks.PluginBuilder.InProcess do
   # the new bundle from disk like any other.
   defp evict_loaded(dir) do
     dir = Path.expand(dir)
-    deps = Path.join(dir, "deps")
+    deps = Path.join(dir, @deps)
 
     for {module, file} <- :code.all_loaded(),
         is_list(file),
@@ -434,7 +438,7 @@ defmodule Gamend.Hooks.PluginBuilder.InProcess do
          {:ok, hooks_module, how} <- hooks_module(state, modules, attributes) do
       app_file = Path.join(tmp, "#{project.app}.app")
       File.write!(app_file, app_contents(state, modules, hooks_module))
-      :ok = swap_in(tmp, Path.join(state.dir, "ebin"))
+      :ok = swap_in(tmp, Path.join(state.dir, @ebin))
 
       {:ok,
        step(@label_bundle, 0, [

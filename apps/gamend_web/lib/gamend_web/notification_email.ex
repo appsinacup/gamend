@@ -15,6 +15,9 @@ defmodule GamendWeb.NotificationEmail do
   alias Gamend.Notifications.DigestItem
   alias Gamend.Notifications.Preferences
 
+  require Gamend.Notifications.NotificationChannel, as: NotificationChannel
+  require Gamend.Notifications.PreferenceGroup, as: PreferenceGroup
+
   @salt "notification unsubscribe"
 
   @doc "A group's name as the reader sees it (core's in the catalogue, a host's through its own)."
@@ -22,18 +25,18 @@ defmodule GamendWeb.NotificationEmail do
   def group_label(key) when is_binary(key),
     do: key |> Preferences.group() |> Kernel.||(%{key: key, label: key}) |> group_label()
 
-  def group_label(%{key: "account"}), do: gettext("Account and security")
-  def group_label(%{key: "social"}), do: gettext("Friends and groups")
-  def group_label(%{key: "chat"}), do: gettext("Chat messages")
-  def group_label(%{key: "quests"}), do: gettext("Quests and rewards")
-  def group_label(%{key: "reports"}), do: gettext("Your reports")
+  def group_label(%{key: PreferenceGroup.account()}), do: gettext("Account and security")
+  def group_label(%{key: PreferenceGroup.social()}), do: gettext("Friends and groups")
+  def group_label(%{key: PreferenceGroup.chat()}), do: gettext("Chat messages")
+  def group_label(%{key: PreferenceGroup.quests()}), do: gettext("Quests and rewards")
+  def group_label(%{key: PreferenceGroup.reports()}), do: gettext("Your reports")
   def group_label(%{label: label}), do: GamendWeb.HostLayouts.translate(label)
 
   @doc "A channel's name."
   @spec channel_label(String.t()) :: String.t()
-  def channel_label("in_app"), do: gettext("On the site")
-  def channel_label("email"), do: gettext("Email")
-  def channel_label("push"), do: gettext("Phone")
+  def channel_label(NotificationChannel.in_app()), do: gettext("On the site")
+  def channel_label(NotificationChannel.email()), do: gettext("Email")
+  def channel_label(NotificationChannel.push()), do: gettext("Phone")
 
   @doc "The token behind an unsubscribe link."
   @spec token(String.t(), String.t()) :: String.t()

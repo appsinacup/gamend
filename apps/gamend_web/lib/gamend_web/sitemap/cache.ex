@@ -50,6 +50,7 @@ defmodule GamendWeb.Sitemap.Cache do
   alias GamendWeb.Sitemap.Source
 
   require Logger
+  require Gamend.HttpHeader, as: HttpHeader
 
   @prefix "sitemap"
 
@@ -139,7 +140,7 @@ defmodule GamendWeb.Sitemap.Cache do
     etag = ~s("#{signature()}-#{name}")
 
     conn = Plug.Conn.put_resp_header(conn, "etag", etag)
-    conn = Plug.Conn.put_resp_header(conn, "cache-control", cache_control)
+    conn = Plug.Conn.put_resp_header(conn, HttpHeader.cache_control(), cache_control)
 
     if etag in Plug.Conn.get_req_header(conn, "if-none-match") do
       Plug.Conn.send_resp(conn, 304, "")

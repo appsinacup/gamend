@@ -17,6 +17,8 @@ defmodule Gamend.ReadyChecks.Participant do
   alias Gamend.Matchmaking.Ticket
   alias Gamend.ReadyChecks.Check
 
+  require Gamend.ReadyChecks.ParticipantState, as: ParticipantState
+
   @type t :: %__MODULE__{}
 
   @states ~w(pending ready declined timed_out)
@@ -24,7 +26,7 @@ defmodule Gamend.ReadyChecks.Participant do
   @derive {Jason.Encoder, only: [:id, :ready_check_id, :user_id, :state, :responded_at]}
 
   schema "ready_check_participants" do
-    field :state, :string, default: "pending"
+    field :state, :string, default: ParticipantState.pending()
     field :responded_at, :utc_datetime
 
     belongs_to :ready_check, Check

@@ -27,6 +27,8 @@ defmodule Gamend.Matchmaking.Worker do
   alias Gamend.Matchmaking.Match
   alias Gamend.Matchmaking.Matcher
 
+  @global "global"
+
   @initial_delay_ms :timer.seconds(3)
 
   # Long enough to absorb the joins of a party arriving together or a burst of
@@ -145,7 +147,7 @@ defmodule Gamend.Matchmaking.Worker do
       |> Enum.flat_map(&form_bucket/1)
 
     claimed =
-      case Gamend.Lock.serialize(:matchmaking_sweep, "global", fn -> claim_phase(proposed) end) do
+      case Gamend.Lock.serialize(:matchmaking_sweep, @global, fn -> claim_phase(proposed) end) do
         {:ok, matches} -> matches
         {:error, _} -> []
       end

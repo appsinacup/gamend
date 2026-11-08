@@ -11,6 +11,8 @@ defmodule GamendWeb.GroupLinks do
 
   alias GamendWeb.UserLive
 
+  require GamendWeb.SettingsTab, as: SettingsTab
+
   @doc """
   The full URL of an invite link's token, for an admin to copy: from a
   LiveView's socket, or a controller's conn (the API's `url`).
@@ -31,7 +33,7 @@ defmodule GamendWeb.GroupLinks do
   @spec group_path(Phoenix.LiveView.Socket.t(), String.t()) :: String.t()
   def group_path(socket, group_id) do
     case groups_path(socket) do
-      nil -> "/users/settings?" <> URI.encode_query(tab: "groups", group: group_id)
+      nil -> "/users/settings?" <> URI.encode_query(tab: SettingsTab.groups(), group: group_id)
       path -> under(path, group_id)
     end
   end

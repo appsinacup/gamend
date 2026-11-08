@@ -9,6 +9,8 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.PaymentWebhookReceiptResponse
 
+  require Gamend.Payments.ProviderId, as: ProviderId
+
   tags(["Payments"])
 
   # Called by the provider, not a game client. A non-2xx answer makes it
@@ -71,7 +73,7 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
         reply_data(conn, %{status: to_string(status)})
 
       {:error, reason} ->
-        refused("google", reason)
+        refused(ProviderId.google(), reason)
         PaymentErrors.reply(conn, reason)
     end
   end
@@ -91,7 +93,7 @@ defmodule GamendWeb.Api.V1.PaymentWebhookController do
         reply_data(conn, %{status: to_string(status)})
 
       {:error, reason} ->
-        refused("apple", reason)
+        refused(ProviderId.apple(), reason)
         PaymentErrors.reply(conn, reason)
     end
   end

@@ -38,6 +38,8 @@ defmodule Gamend.Accounts.ApiTokens do
   alias Gamend.Accounts.User
   alias Gamend.Repo
 
+  @api_tokens "api_tokens"
+
   @prefix "gamend_pat_"
   @hint_length 6
   # A token used in a tight loop would otherwise write its row on every call.
@@ -78,7 +80,7 @@ defmodule Gamend.Accounts.ApiTokens do
     # Counted and inserted under the user's lock. Counted first with no lock,
     # several creates at once (a double submit, a script) all saw room for
     # one more and all inserted, past `max_api_tokens_per_user`.
-    Gamend.Lock.serialize("api_tokens", user.id, fn ->
+    Gamend.Lock.serialize(@api_tokens, user.id, fn ->
       if count(user.id) >= Gamend.Limits.get(:max_api_tokens_per_user) do
         Repo.rollback(:limit_reached)
       else

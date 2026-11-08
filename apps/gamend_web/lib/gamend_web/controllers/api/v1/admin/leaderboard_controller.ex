@@ -3,11 +3,16 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
   use OpenApiSpex.ControllerSpecs
 
   alias Gamend.Leaderboards
+  alias Gamend.Leaderboards.ScoreOperator
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.{LeaderboardResponse, OkResponse, UploadTicketResponse}
   alias GamendWeb.Serializers
   alias GamendWeb.Uploads
   alias OpenApiSpex.Schema
+
+  require GamendWeb.OpenApiFormat, as: OpenApiFormat
+  require Gamend.SortDirection, as: SortDirection
+  require GamendWeb.UploadName, as: UploadName
 
   tags(["Admin – Leaderboards"])
 
@@ -25,10 +30,13 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
           title: %Schema{type: :string},
           description: %Schema{type: :string},
           icon_url: %Schema{type: :string},
-          sort_order: %Schema{type: :string, enum: ["desc", "asc"]},
-          operator: %Schema{type: :string, enum: ["set", "best", "incr", "decr"]},
-          starts_at: %Schema{type: :string, format: "date-time"},
-          ends_at: %Schema{type: :string, format: "date-time"},
+          sort_order: %Schema{type: :string, enum: [SortDirection.desc(), SortDirection.asc()]},
+          operator: %Schema{
+            type: :string,
+            enum: ScoreOperator.all()
+          },
+          starts_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
+          ends_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
           metadata: %Schema{type: :object}
         },
         required: [:slug, :title]
@@ -68,8 +76,8 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
           title: %Schema{type: :string},
           description: %Schema{type: :string},
           icon_url: %Schema{type: :string},
-          starts_at: %Schema{type: :string, format: "date-time"},
-          ends_at: %Schema{type: :string, format: "date-time"},
+          starts_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
+          ends_at: %Schema{type: :string, format: OpenApiFormat.date_time()},
           metadata: %Schema{type: :object}
         }
       }
@@ -153,7 +161,7 @@ defmodule GamendWeb.Api.V1.Admin.LeaderboardController do
         conn,
         "icons/leaderboards",
         leaderboard.id,
-        "icon",
+        UploadName.icon(),
         Uploads.content_type(params)
       )
     end)

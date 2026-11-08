@@ -32,6 +32,11 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
 
   alias OpenApiSpex.Schema
 
+  require Gamend.Chat.ChatReportStatus, as: ChatReportStatus
+  require Gamend.Chat.FilterSeverity, as: FilterSeverity
+  require Gamend.Chat.MatchMode, as: MatchMode
+  require GamendWeb.UrlParam, as: UrlParam
+
   tags(["Admin – Chat"])
 
   # ---------------------------------------------------------------------------
@@ -46,7 +51,10 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
     parameters: [
       status: [
         in: :query,
-        schema: %Schema{type: :string, enum: ["open", "reviewing", "actioned", "dismissed"]}
+        schema: %Schema{
+          type: :string,
+          enum: ChatReportStatus.all()
+        }
       ],
       reported_user_id: [in: :query, schema: %Schema{type: :string, format: :uuid}],
       reporter_id: [in: :query, schema: %Schema{type: :string, format: :uuid}],
@@ -60,12 +68,12 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
   )
 
   def list_reports(conn, params) do
-    case id_filters(params, ["reported_user_id", "reporter_id"]) do
+    case id_filters(params, [UrlParam.reported_user_id(), "reporter_id"]) do
       :error ->
         invalid_id(conn)
 
       {:ok, filters} ->
-        filters = maybe_put_string_filter(filters, "status", params["status"])
+        filters = maybe_put_string_filter(filters, UrlParam.status(), params["status"])
         {page, page_size} = GamendWeb.Pagination.params(params)
 
         reports = Reports.list_reports(filters, page: page, page_size: page_size)
@@ -93,7 +101,7 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
          properties: %{
            status: %Schema{
              type: :string,
-             enum: ["open", "reviewing", "actioned", "dismissed"]
+             enum: ChatReportStatus.all()
            },
            note: %Schema{type: :string, description: "Moderator note, not shown to players"}
          }
@@ -164,7 +172,13 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
     security: [%{"authorization" => []}],
     parameters: [
       word: [in: :query, schema: %Schema{type: :string}, description: "Substring match"],
-      severity: [in: :query, schema: %Schema{type: :string, enum: ["block", "mask", "flag"]}],
+      severity: [
+        in: :query,
+        schema: %Schema{
+          type: :string,
+          enum: FilterSeverity.all()
+        }
+      ],
       lang: [in: :query, schema: %Schema{type: :string}],
       page: [in: :query, schema: %Schema{type: :integer, default: 1}],
       page_size: [in: :query, schema: %Schema{type: :integer, default: 25}]
@@ -177,9 +191,9 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
   def list_filter_words(conn, params) do
     filters =
       %{}
-      |> maybe_put_string_filter("word", params["word"])
-      |> maybe_put_string_filter("severity", params["severity"])
-      |> maybe_put_string_filter("lang", params["lang"])
+      |> maybe_put_string_filter(UrlParam.word(), params["word"])
+      |> maybe_put_string_filter(UrlParam.severity(), params["severity"])
+      |> maybe_put_string_filter(UrlParam.lang(), params["lang"])
 
     {page, page_size} = GamendWeb.Pagination.params(params)
 
@@ -217,14 +231,14 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
            word: %Schema{type: :string},
            severity: %Schema{
              type: :string,
-             enum: ["block", "mask", "flag"],
-             default: "block",
+             enum: FilterSeverity.all(),
+             default: FilterSeverity.block(),
              description: "block rejects, mask stars out the hit, flag files a report"
            },
            match_mode: %Schema{
              type: :string,
-             enum: ["substring", "exact"],
-             default: "substring"
+             enum: MatchMode.all(),
+             default: MatchMode.substring()
            },
            lang: %Schema{type: :string}
          }
@@ -239,8 +253,8 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
   def create_filter_word(conn, params) do
     attrs = %{
       "word" => params["word"],
-      "severity" => params["severity"] || "block",
-      "match_mode" => params["match_mode"] || "substring",
+      "severity" => params["severity"] || FilterSeverity.block(),
+      "match_mode" => params["match_mode"] || MatchMode.substring(),
       "lang" => params["lang"]
     }
 
@@ -263,8 +277,11 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
          type: :object,
          properties: %{
            word: %Schema{type: :string},
-           severity: %Schema{type: :string, enum: ["block", "mask", "flag"]},
-           match_mode: %Schema{type: :string, enum: ["substring", "exact"]},
+           severity: %Schema{
+             type: :string,
+             enum: FilterSeverity.all()
+           },
+           match_mode: %Schema{type: :string, enum: MatchMode.all()},
            lang: %Schema{type: :string}
          }
        }},
@@ -327,8 +344,8 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
            lang: %Schema{type: :string, description: "Bundled list to import, e.g. \"en\""},
            severity: %Schema{
              type: :string,
-             enum: ["block", "mask", "flag"],
-             default: "block"
+             enum: FilterSeverity.all(),
+             default: FilterSeverity.block()
            }
          }
        }},
@@ -341,7 +358,8 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
   )
 
   def import_filter_words(conn, params) do
-    severity = if is_binary(params["severity"]), do: params["severity"], else: "block"
+    severity =
+      if is_binary(params["severity"]), do: params["severity"], else: FilterSeverity.block()
 
     case params["lang"] do
       lang when is_binary(lang) ->
@@ -426,7 +444,7 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
   defp outcome(phrase) do
     case Moderation.check_content(phrase) do
       {:error, :blocked_content} ->
-        %{action: "block", content: "", flagged_words: []}
+        %{action: FilterSeverity.block(), content: "", flagged_words: []}
 
       {:ok, content, flagged} ->
         %{action: action(phrase, content, flagged), content: content, flagged_words: flagged}
@@ -435,9 +453,9 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
 
   defp action(phrase, content, flagged) do
     cond do
-      content != phrase -> "mask"
-      flagged != [] -> "flag"
-      true -> "allow"
+      content != phrase -> FilterSeverity.mask()
+      flagged != [] -> FilterSeverity.flag()
+      true -> FilterSeverity.allow()
     end
   end
 
@@ -451,7 +469,7 @@ defmodule GamendWeb.Api.V1.Admin.ChatModerationController do
       message_id: report.message_id || "",
       content_snapshot: report.content_snapshot || "",
       reason: report.reason || "",
-      status: report.status || "open",
+      status: report.status || ChatReportStatus.open(),
       resolved_by: report.resolved_by || "",
       resolved_by_name: display_name(report, :resolved_by_user),
       resolution_note: report.resolution_note || "",

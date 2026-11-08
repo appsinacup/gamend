@@ -37,6 +37,10 @@ defmodule Mix.Tasks.Host.Proto.Gen do
 
   alias Gamend.Proto.GodobufPresence
 
+  @proto "proto"
+  @clients "clients"
+  @lib "lib"
+
   @shortdoc "Generate protobuf bindings (Elixir, JS, Godot) from .proto files"
 
   @search_globs [
@@ -112,7 +116,7 @@ defmodule Mix.Tasks.Host.Proto.Gen do
   # ── Elixir ──────────────────────────────────────────────────────────────
 
   defp gen_elixir(proto, opts) do
-    out = opts[:elixir_out] || Path.join(plugin_root(proto), "lib")
+    out = opts[:elixir_out] || Path.join(plugin_root(proto), @lib)
 
     cond do
       is_nil(System.find_executable("protoc")) ->
@@ -173,7 +177,7 @@ defmodule Mix.Tasks.Host.Proto.Gen do
   # ── JavaScript ──────────────────────────────────────────────────────────
 
   defp gen_js(proto, opts) do
-    out = opts[:js_out] || Path.join([plugin_root(proto), "clients", "#{base(proto)}.pb.js"])
+    out = opts[:js_out] || Path.join([plugin_root(proto), @clients, "#{base(proto)}.pb.js"])
 
     if System.find_executable("npx") do
       File.mkdir_p!(Path.dirname(out))
@@ -291,6 +295,6 @@ defmodule Mix.Tasks.Host.Proto.Gen do
   # plugin rather than next to the proto file itself.
   defp plugin_root(proto) do
     dir = Path.dirname(proto)
-    if Path.basename(dir) == "proto", do: Path.dirname(dir), else: dir
+    if Path.basename(dir) == @proto, do: Path.dirname(dir), else: dir
   end
 end

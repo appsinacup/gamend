@@ -11,6 +11,9 @@ defmodule GamendWeb.ChatLive do
   alias Gamend.Groups
   alias GamendWeb.LiveHelpers
 
+  require Gamend.Chat.ChatType, as: ChatType
+  require Gamend.RealtimeEvent, as: RealtimeEvent
+
   @page_size 25
   # `reload_messages/1` never loads more than 500.
   @max_pages div(500, @page_size)
@@ -75,7 +78,7 @@ defmodule GamendWeb.ChatLive do
   # the first page would have no message to open on.
   @impl true
   def handle_params(%{"type" => type, "id" => id_str} = params, _uri, socket)
-      when type in ["group", "friend"] do
+      when type in [ChatType.group(), ChatType.friend()] do
     id = parse_id(id_str)
     page = parse_page(params["page"])
 
@@ -518,7 +521,10 @@ defmodule GamendWeb.ChatLive do
   # A friend's profile or presence changed. Only the presence fields matter to
   # this view, and swapping in place keeps the sidebar from reordering under the
   # pointer while someone is reading it.
-  def handle_info(%Phoenix.Socket.Broadcast{event: "updated", payload: payload}, socket) do
+  def handle_info(
+        %Phoenix.Socket.Broadcast{event: RealtimeEvent.updated(), payload: payload},
+        socket
+      ) do
     id = Map.get(payload, :id, Map.get(payload, "id"))
 
     friends =
@@ -553,16 +559,16 @@ defmodule GamendWeb.ChatLive do
 
   # The rule `GET /chat/messages` answers to: `Chat.list_messages/3` filters by
   # conversation, not by reader, so the gate is here.
-  defp open_chat(socket, "group", gid) do
+  defp open_chat(socket, ChatType.group(), gid) do
     user = Scope.user(socket.assigns.current_scope)
 
-    with :ok <- Chat.authorize_access(user.id, "group", gid),
+    with :ok <- Chat.authorize_access(user.id, ChatType.group(), gid),
          %{} = group <- Groups.get_group(gid) do
       mark_group_chat_read(user.id, gid)
 
       {:ok,
        socket
-       |> assign(:chat_type, "group")
+       |> assign(:chat_type, ChatType.group())
        |> assign(:chat_target, gid)
        |> assign(:chat_target_name, group.title || group.name)
        |> assign(:chat_target_user, nil)
@@ -575,16 +581,16 @@ defmodule GamendWeb.ChatLive do
     end
   end
 
-  defp open_chat(socket, "friend", fid) do
+  defp open_chat(socket, ChatType.friend(), fid) do
     user = Scope.user(socket.assigns.current_scope)
 
-    with :ok <- Chat.authorize_access(user.id, "friend", fid),
+    with :ok <- Chat.authorize_access(user.id, ChatType.friend(), fid),
          %{} = target <- Accounts.get_user(fid) do
       mark_friend_chat_read(user.id, fid)
 
       {:ok,
        socket
-       |> assign(:chat_type, "friend")
+       |> assign(:chat_type, ChatType.friend())
        |> assign(:chat_target, fid)
        |> assign(:chat_target_name, LiveHelpers.public_user_name(target))
        |> assign(:chat_target_user, target)
@@ -682,11 +688,11 @@ defmodule GamendWeb.ChatLive do
 
       messages =
         case chat_type do
-          "friend" ->
+          ChatType.friend() ->
             Chat.list_friend_messages(user.id, chat_target, page: 1, page_size: total)
 
-          "group" ->
-            Chat.list_messages("group", chat_target, page: 1, page_size: total)
+          ChatType.group() ->
+            Chat.list_messages(ChatType.group(), chat_target, page: 1, page_size: total)
         end
         |> Enum.reverse()
 
@@ -704,8 +710,8 @@ defmodule GamendWeb.ChatLive do
     user = Scope.user(socket.assigns.current_scope)
 
     case {socket.assigns.chat_type, socket.assigns.chat_target} do
-      {"friend", fid} when is_binary(fid) -> mark_friend_chat_read(user.id, fid)
-      {"group", gid} when is_binary(gid) -> mark_group_chat_read(user.id, gid)
+      {ChatType.friend(), fid} when is_binary(fid) -> mark_friend_chat_read(user.id, fid)
+      {ChatType.group(), gid} when is_binary(gid) -> mark_group_chat_read(user.id, gid)
       _ -> :ok
     end
   end
@@ -716,11 +722,11 @@ defmodule GamendWeb.ChatLive do
       socket
     else
       case msg.chat_type do
-        "friend" ->
+        ChatType.friend() ->
           fid = msg.sender_id
           update(socket, :friend_unread, fn m -> Map.update(m, fid, 1, &(&1 + 1)) end)
 
-        "group" ->
+        ChatType.group() ->
           gid = msg.chat_ref_id
           update(socket, :group_unread, fn m -> Map.update(m, gid, 1, &(&1 + 1)) end)
 
@@ -735,10 +741,11 @@ defmodule GamendWeb.ChatLive do
     chat_target = socket.assigns.chat_target
 
     cond do
-      chat_type == "group" && msg.chat_type == "group" && msg.chat_ref_id == chat_target ->
+      chat_type == ChatType.group() && msg.chat_type == ChatType.group() &&
+          msg.chat_ref_id == chat_target ->
         true
 
-      chat_type == "friend" && msg.chat_type == "friend" &&
+      chat_type == ChatType.friend() && msg.chat_type == ChatType.friend() &&
           (msg.sender_id == chat_target || msg.chat_ref_id == chat_target) ->
         true
 
@@ -749,14 +756,14 @@ defmodule GamendWeb.ChatLive do
 
   defp mark_friend_chat_read(user_id, friend_id) do
     case Chat.list_friend_messages(user_id, friend_id, page: 1, page_size: 1) do
-      [latest | _] -> Chat.mark_read(user_id, "friend", friend_id, latest.id)
+      [latest | _] -> Chat.mark_read(user_id, ChatType.friend(), friend_id, latest.id)
       _ -> :ok
     end
   end
 
   defp mark_group_chat_read(user_id, group_id) do
-    case Chat.list_messages("group", group_id, page: 1, page_size: 1) do
-      [latest | _] -> Chat.mark_read(user_id, "group", group_id, latest.id)
+    case Chat.list_messages(ChatType.group(), group_id, page: 1, page_size: 1) do
+      [latest | _] -> Chat.mark_read(user_id, ChatType.group(), group_id, latest.id)
       _ -> :ok
     end
   end

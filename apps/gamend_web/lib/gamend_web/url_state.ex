@@ -47,6 +47,8 @@ defmodule GamendWeb.UrlState do
 
   alias Phoenix.LiveView
 
+  require GamendWeb.UrlParam, as: UrlParam
+
   @private :gamend_url_state
 
   defmacro __using__(opts) do
@@ -329,7 +331,7 @@ defmodule GamendWeb.UrlState do
   end
 
   defp floor_of(name, opts) do
-    if name == "page" or String.ends_with?(name, "_page"),
+    if name == UrlParam.page() or String.ends_with?(name, "_page"),
       do: Map.get(opts, :min, 1),
       else: Map.get(opts, :min)
   end

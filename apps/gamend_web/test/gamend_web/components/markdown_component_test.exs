@@ -22,8 +22,8 @@ defmodule GamendWeb.MarkdownComponentTest do
   test "brings the colors of code in both themes" do
     html = render(html: "<p>Hi</p>")
 
-    assert html =~ ~s(:where(.markdown-content [class*="l-keyword"]))
-    assert html =~ ~s(:where([data-theme="dark"] .markdown-content [class*="l-keyword"]))
+    assert html =~ ~s|:where(.markdown-content [class*="l-keyword"])|
+    assert html =~ ~s|:where([data-theme="dark"] .markdown-content [class*="l-keyword"])|
   end
 
   # Every selector in `:where()` is what lets a host's own palette win.

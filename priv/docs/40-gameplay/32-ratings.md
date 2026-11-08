@@ -65,4 +65,4 @@ def matchmaking_form_matches(%{@mode => @ranked}, tickets) do
 end
 ```
 
-See [Matchmaking](/docs/matchmaking) for the queue, and `modules/plugins_examples/example_hook` for all of this in one plugin: the rating board, the matcher, and the update when a ranked lobby ends.
+See [Matchmaking](/docs/matchmaking) for the queue, and `modules/plugins_examples/example_hook` for all of this in one plugin: the rating board, the matcher, and the update when a ranked lobby ends. The plugin SDK carries the real `Gamend.Rating`, so it runs in a plugin's own tests, and a [GDScript hook](/docs/gdscript-hooks) calls it as `Rating.settle(teams, places)`.

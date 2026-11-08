@@ -25,7 +25,9 @@ This SDK provides stub modules that match the Gamend API:
 - `Gamend.Lobbies` - Lobby management (create, join, leave, kick, host transfer)
 - `Gamend.Groups` - Group management (create, join, leave, invite, promote/demote, join requests)
 - `Gamend.Parties` - Ephemeral party management (create, invite, lobby integration)
-- `Gamend.Matchmaking` - The matchmaking queue (tickets, backfill, accept), for a game's matchmaking hooks
+- `Gamend.Matchmaking` - The matchmaking queue (tickets, backfill), for a game's matchmaking hooks
+- `Gamend.MatchSeating` - What `matchmaking_seat_match/1` answers: where a formed match sits, and whether its players accept first. The real module, not a stub
+- `Gamend.Rating` - Skill ratings (Elo, Glicko-2, teams, free-for-alls) and the rating gap a matcher accepts as a player waits. The real module, not a stub
 - `Gamend.Leaderboards` - Leaderboard operations (submit scores, rankings, seasonal resets)
 - `Gamend.Friends` - Friend relationships and blocking (send/accept/decline requests, block/unblock)
 - `Gamend.Notifications` - In-app notification delivery (friend requests, group invites, system alerts)

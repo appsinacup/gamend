@@ -666,7 +666,7 @@ defmodule GamendWeb.AdminLive.Index do
 
   # Core's pages by section, then a host's own (`GamendWeb.AdminCard`).
   defp menu_sections(host_links) do
-    Pages.sections() ++ [%{title: "More", links: host_links}]
+    Enum.concat(Pages.sections(), [%{title: "More", links: host_links}])
   end
 
   # What each tile shows beside its name. A page with no figure worth a glance

@@ -1,3 +1,5 @@
+<!-- api-lint: unimplemented -->
+
 # Redemption codes: rewards and activation keys
 
 Goal: a player types a code and gets something: currency, items, or access to a

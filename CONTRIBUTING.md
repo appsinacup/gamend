@@ -90,6 +90,7 @@ Adding one callback touches six places — miss one and plugins break in confusi
 
 - Add the context to `@sdk_modules` in `mix gen.sdk`, then run `mix gen.sdk`.
 - Hand-write struct stubs in `sdk/lib/gamend/<feature>/` (the generator does not create them) — plugins can't compile against a struct that doesn't exist.
+- A pure module (no database, no other context, only the standard library) needs no stub: list its file in `@copied_sources` and the module in `@extra_api_modules`, and the SDK and GDScript get the real thing (`Gamend.Rating`, `Gamend.MatchSeating`).
 - Add placeholder rules in `gen.sdk` for the new structs (`T | nil` and `{:ok, T}` return types). Without them a stub returns only `nil`/`{:ok, _}`, and every plugin that pattern-matches the other branch gets a bogus "clause cannot match" warning.
 - Verify with `cd modules/plugins_examples/example_hook && mix compile --force` — it must be warning-free.
 - The server loads plugins from their bundled `ebin/`, not from `_build` — after changing a plugin, run `mix plugin.bundle` in its directory (or the admin Config build button) or the running server keeps the old code. Without `mix` on the PATH (a release) the button builds in-process (`Gamend.Hooks.PluginBuilder.InProcess`), against the engine's modules rather than the SDK's stubs.

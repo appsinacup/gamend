@@ -74,8 +74,8 @@ defmodule GamendWeb.AdminLive.IndexTest do
     {:ok, _} = KV.put("dash-kv-1", %{v: 1}, %{"m" => "a"})
     {:ok, _} = KV.put("dash-kv-2", %{v: 2}, %{"m" => "b"})
 
-    {:ok, _view, html} = conn |> log_in_user(admin) |> live(~p"/admin")
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
 
-    assert html =~ "KV (2)"
+    assert has_element?(view, ~s|#admin-menu a[href="/admin/kv"]|, "2")
   end
 end

@@ -75,6 +75,8 @@ end
 
 The hook has 5 seconds. One that fails, runs out of time or answers anything else puts the tickets back too: the match is not seated somewhere the game did not choose. A party goes in whole or stays queued, and a seat lost to someone quicker keeps the player's place.
 
+The plugin SDK carries the real `Gamend.MatchSeating`, so an answer can be built in a plugin's own tests, and a [GDScript hook](/docs/gdscript-hooks) calls it the same way. The ranked queue in `modules/plugins_examples/example_hook` answers this hook.
+
 ### Filling a leaver's seat
 
 A running match with a free seat needs no ticket of its own. Form each newcomer into a match of one, and name the lobby:

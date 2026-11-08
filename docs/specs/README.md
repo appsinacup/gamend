@@ -26,9 +26,9 @@ Not a plan; a living reference.
 
 - [cloud-saves.md](cloud-saves.md) — **Cloud saves.** Versioned save-slots on
   object storage with lock-free optimistic conflict detection.
-- [skill-matchmaking.md](skill-matchmaking.md) — **Skill matchmaking.** Rating +
-  wait-widening skill bands in the existing pure matcher, with the override hook
-  intact.
+- [skill-matchmaking.md](skill-matchmaking.md) — **Skill matchmaking.** Partly
+  shipped: `Gamend.Rating` and the seat hook. The rating table and bands in the
+  default matcher wait for a second game that needs them.
 - [webhooks-remote-config.md](webhooks-remote-config.md) — **Webhooks + remote
   config.** Signed, retried outbound webhooks on the Oban `webhooks` queue;
   client-read-only live remote config.

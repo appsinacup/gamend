@@ -2,7 +2,7 @@ defmodule Gamend.Matchmaking do
   @moduledoc """
   Public API for the built-in matchmaking system.
 
-  Matchmaking is ticket-based. Each call to `join/5` creates a ticket in the
+  Matchmaking is ticket-based. Each call to `join/4` creates a ticket in the
   database. The periodic `Gamend.Matchmaking.Worker` groups queued tickets
   that share the same `match_params` and creates a hidden lobby for each match.
 

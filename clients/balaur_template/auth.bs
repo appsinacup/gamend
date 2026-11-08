@@ -6,6 +6,7 @@ use authentication;
 
 const COMPLETED: str = "completed";
 const PENDING: str = "pending";
+const CODE: str = "code";
 
 /// The save slot the session is kept in.
 pub const SLOT: str = "gamend";
@@ -97,12 +98,12 @@ async fn provider_page(provider: str, start: fn(str) -> int, status: fn(str) -> 
         if now.kind() != types::KIND_MAP {
             continue;
         }
-        let state = now["status"].text();
+        let state = now[core::STATUS].text();
         if state == COMPLETED {
             return now;
         }
         if state != PENDING {
-            log::warn("gamend: {provider} {now["error"].text()}: {now["message"].text()}");
+            log::warn("gamend: {provider} {now["error"].text()}: {now[core::MESSAGE].text()}");
             return nil;
         }
     }
@@ -117,7 +118,7 @@ async fn provider_page(provider: str, start: fn(str) -> int, status: fn(str) -> 
 /// codes; the code is void, so ask for a new one with
 /// `client::resend_confirmation`), or `validation_failed` (the password).
 pub async fn confirm_registration(email: str, code: str, password: str) -> any {
-    let params: any = { "email": email, "code": code, "password": password };
+    let params: any = { core::EMAIL: email, CODE: code, "password": password };
     let reply = await task::wait(authentication::confirm_registration(params));
     if !core::ok(reply) {
         log::warn(core::error_of(reply));
@@ -134,7 +135,7 @@ pub async fn confirm_registration(email: str, code: str, password: str) -> any {
 
 /// What `{"data": ...}` carries, or nil for any other body.
 fn data_of(body: any) -> any {
-    if body.has("data") { body["data"] } else { nil }
+    if body.has(core::DATA) { body[core::DATA] } else { nil }
 }
 
 /// Keep a session for the next run. Not `save`: a function of that name

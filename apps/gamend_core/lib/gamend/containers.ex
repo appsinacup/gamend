@@ -657,6 +657,18 @@ defmodule Gamend.Containers do
   @spec untag(String.t()) :: :ok | {:error, term()}
   def untag(ref), do: run_verb(:untag, ["rmi", ref])
 
+  @doc """
+  Write `image`, with its names, to the file `path` on this machine: how an
+  image goes from one podman service to another, each call inside `on/2`, with
+  `load_image/1` on the other.
+  """
+  @spec save_image(String.t(), Path.t()) :: :ok | {:error, term()}
+  def save_image(image, path), do: run_verb(:save_image, ["save", "-q", "-o", path, image])
+
+  @doc "Load into the image store what `save_image/2` wrote, under the names it had."
+  @spec load_image(Path.t()) :: :ok | {:error, term()}
+  def load_image(path), do: run_verb(:load_image, ["load", "-q", "-i", path])
+
   @doc "Every `repo:tag` name of `repo` in the image store."
   @spec tags(String.t()) :: [String.t()]
   def tags(repo) do

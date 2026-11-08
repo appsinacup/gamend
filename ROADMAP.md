@@ -1,7 +1,6 @@
 ## 2026
 
 - **Cloud saves** — versioned save slots on object storage.
-- **Skill matchmaking** — ratings, widening bands, leaver refill.
 - **Webhooks & remote config** — signed and retried, on the job queue.
 - **Event tracking** — a simple events API into the database.
 - **Translations** — native review of the 30 machine-translated locales.

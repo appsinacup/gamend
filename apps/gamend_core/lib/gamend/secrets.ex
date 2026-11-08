@@ -233,12 +233,13 @@ defmodule Gamend.Secrets do
   end
 
   defp stale_rows(cursor, key_id, batch) do
-    Secret
-    |> where([s], s.key_id != ^key_id)
-    |> after_id(cursor)
-    |> order_by([s], asc: s.id)
-    |> limit(^batch)
-    |> Repo.all()
+    query =
+      from s in after_id(Secret, cursor),
+        where: s.key_id != ^key_id,
+        order_by: [asc: s.id],
+        limit: ^batch
+
+    Repo.all(query)
   end
 
   defp after_id(query, nil), do: query

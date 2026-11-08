@@ -7,7 +7,8 @@ defmodule Gamend.TestSupport.NoopHooks do
 
   - `before_kv_get/2` returns `:public`
   - `on_custom_hook/2` returns `{:error, :not_implemented}`
-  - `validate_username/1` returns `:default` (core's rules)
+  - `validate_username/1` and `matchmaking_seat_match/1` return `:default`
+    (core's rules)
   - other `before_*` pipeline hooks pass their input through as `{:ok, input}`
   - `after_*` hooks return `:ok`
   """
@@ -38,6 +39,7 @@ defmodule Gamend.TestSupport.NoopHooks do
   defp default_body(:before_kv_get, _args), do: :public
   defp default_body(:on_custom_hook, _args), do: quote(do: {:error, :not_implemented})
   defp default_body(:validate_username, _args), do: :default
+  defp default_body(:matchmaking_seat_match, _args), do: :default
 
   defp default_body(name, args) do
     if String.starts_with?(Atom.to_string(name), "before_") do

@@ -202,6 +202,12 @@ defmodule Gamend.Hooks do
   - `before_ready_check_open/2` - Before a ready check opens, receives `(lobby | :matchmaking, user_ids)`. Veto-only: return `{:error, reason}` to reject
   - `after_ready_check_passed/1` - Everyone answered ready (fire-and-forget), receives the check. Where you start the match: `Lobbies.transition_state(lobby, "starting")`
   - `after_ready_check_failed/3` - A check was declined, timed out or cancelled, receives `(check, reason, not_ready_participants)`. Core kicks nobody — decide here
+  - `before_matchmaking_join/2` - Before a ticket is written, receives `(user, attrs)`. Rewrite the attrs or return `{:error, reason}` to refuse
+  - `after_matchmaking_join/2` - After a ticket is written (fire-and-forget), receives `(user, ticket)`
+  - `after_matchmaking_cancel/2` - After a user's tickets are cancelled (fire-and-forget), receives `(user_id, count)`
+  - `matchmaking_form_matches/2` - Replaces the matcher for one bucket, receives `(params, tickets)`. Return ticket groups or `:default`
+  - `matchmaking_seat_match/1` - Once per formed match, receives its tickets. Return a `Gamend.MatchSeating`, `:default` for core's seat, or `{:error, reason}` to put the tickets back
+  - `after_matchmaking_matched/2` - After a match is seated (fire-and-forget), receives `(tickets, lobby_id)`
   - `before_kv_get/2` - Called before a client KV `get` to return a KV access decision such as `:public`, `:owner_only`, or `:server_only`
 
     ## Custom RPC Functions

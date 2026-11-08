@@ -18,12 +18,14 @@ defmodule GamendWeb.AdminLive.PagesTest do
   end
 
   # A tab or a detail view (`/admin/analytics/people`, `/admin/results/:id`)
-  # wears the heading of the page it is under.
+  # wears the heading of the page it is under. A dependency's console
+  # (LiveDashboard) brings its own.
   test "every admin LiveView is a page in the table or under one" do
     routes =
       for route <- Phoenix.Router.routes(GamendWeb.Router),
           String.starts_with?(route.path, "/admin/"),
-          route.metadata[:phoenix_live_view],
+          {view, _action, _opts, _session} <- [route.metadata[:phoenix_live_view]],
+          match?(["GamendWeb" | _], Module.split(view)),
           do: route.path
 
     assert routes != []
@@ -35,10 +37,11 @@ defmodule GamendWeb.AdminLive.PagesTest do
   end
 
   test "every icon is a heroicon" do
-    heroicons = Mix.Project.deps_paths()[:heroicons]
+    # The dependency is `sparse: "optimized"`, so its path already ends there.
+    optimized = Mix.Project.deps_paths()[:heroicons]
 
     for %{icon: "hero-" <> name} <- Pages.all() do
-      assert File.exists?(Path.join([heroicons, "optimized/24/outline", name <> ".svg"])),
+      assert File.exists?(Path.join([optimized, "24/outline", name <> ".svg"])),
              "no heroicon named #{name}"
     end
   end

@@ -65,6 +65,13 @@ Inventory.grant_item(user.id, "potion", 1, opts({"idempotency_key": "quest:" + q
 
 A Dictionary *without* `opts()` stays a map.
 
+A hook that answers with a built value uses the same calls. `MatchSeating` says where a formed match sits, and `Rating.settle(teams, places)` rates a finished one:
+
+```gdscript
+func matchmaking_seat_match(_tickets):
+	return MatchSeating.default(opts({"accept_timeout_ms": 15000}))
+```
+
 ## What is supported
 
 | Works | Rejected at compile time |

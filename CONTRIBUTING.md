@@ -106,7 +106,7 @@ Adding one callback touches six places — miss one and plugins break in confusi
 
 ## Admin
 
-- Admin LiveView page in `apps/gamend_web/lib/gamend_web/live/admin_live/`, opening with `<.admin_header page="/admin/thing" />`, plus its route, its title, icon and colour in `GamendWeb.AdminLive.Pages` (the menu tile on `/admin` comes from that), an `<.admin_card>` on `/admin`, and an entry in `admin_pages_render_test`.
+- Admin LiveView page in `apps/gamend_web/lib/gamend_web/live/admin_live/`, opening with `<.admin_header page="/admin/thing" />`, plus its route, its title, icon and colour in `GamendWeb.AdminLive.Pages`, an `<.admin_card>` on `/admin` (a test fails a listed page with none), and an entry in `admin_pages_render_test`.
 - Show names, not raw UUIDs, and paginate every table.
 - Admin API controller under `controllers/api/v1/admin/` with **parity for every admin UI action** — anything an admin can click, a script can call.
 

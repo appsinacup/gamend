@@ -333,6 +333,20 @@ defmodule Gamend.Payments do
   end
 
   @doc ~S"""
+    Whether `extend_entitlement/3` can give `entitlement` more time.
+  """
+  @spec entitlement_extendable?(Gamend.Payments.Entitlement.t()) :: boolean()
+  def entitlement_extendable?(_entitlement) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :erlang.phash2(make_ref(), 2) == 0
+
+      _ ->
+        raise "Gamend.Payments.entitlement_extendable?/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     The entitlement key a purchase of `product` for `subject` grants: the
     product's own, or `"<key>:<subject>"` for a per-subject product.
     
@@ -345,6 +359,31 @@ defmodule Gamend.Payments do
 
       _ ->
         raise "Gamend.Payments.entitlement_key/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Give an entitlement `days` more: after its end while it is still running,
+    from now once it has ended or been revoked, which makes it active again. A
+    trial lengthened by support, a reward renewed.
+    
+    Only a granted row with an end (`entitlement_extendable?/1`). A row a
+    purchase made answers `{:error, :purchased}`, since its provider's next sync
+    would set the end back; a row with no end, `{:error, :no_end}`; no row,
+    `{:error, :entitlement_not_found}`.
+    
+    Options: `:metadata`, a map merged into the row's (`%{"extended_by" => id}`).
+    
+  """
+  @spec extend_entitlement(Ecto.UUID.t(), pos_integer(), keyword()) ::
+          {:ok, Gamend.Payments.Entitlement.t()} | {:error, term()}
+  def extend_entitlement(_id, _days, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok, nil}
+
+      _ ->
+        raise "Gamend.Payments.extend_entitlement/3 is a stub - only available at runtime on Gamend"
     end
   end
 

@@ -38,13 +38,11 @@ defmodule Gamend.MatchmakingSweepRaceTest do
     # The sweep that claimed seats its players only once the other sweep has
     # finished: its claim has failed by then, and done whatever it does.
     @impl true
-    def before_lobby_update(lobby, %{"is_locked" => true} = attrs) do
+    def matchmaking_seat_match(_tickets) do
       coordinator = Application.fetch_env!(:gamend, :matchmaking_sweep_race)
       wait_until(fn -> Agent.get(coordinator, & &1.done) >= 1 end)
-      {:ok, {lobby, attrs}}
+      :default
     end
-
-    def before_lobby_update(lobby, attrs), do: {:ok, {lobby, attrs}}
 
     defp wait_until(fun, attempts \\ 300) do
       cond do

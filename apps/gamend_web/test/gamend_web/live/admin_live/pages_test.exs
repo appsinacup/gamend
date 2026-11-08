@@ -1,6 +1,6 @@
 defmodule GamendWeb.AdminLive.PagesTest do
   @moduledoc """
-  The table every admin heading and tile reads: each entry opens a real page in
+  The table every admin heading and card reads: each entry opens a real page in
   a colour and an icon that exist, and no admin page is left out of it.
   """
   use ExUnit.Case, async: true
@@ -52,9 +52,9 @@ defmodule GamendWeb.AdminLive.PagesTest do
     end
   end
 
-  test "a page has one tile" do
-    links = Enum.flat_map(Pages.sections(), & &1.links)
+  test "a page is listed once" do
+    pages = Pages.dashboard()
 
-    assert Enum.uniq_by(links, & &1.path) == links
+    assert Enum.uniq_by(pages, & &1.path) == pages
   end
 end

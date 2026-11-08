@@ -5,8 +5,45 @@ defmodule GamendWeb.AdminLive.IndexTest do
   alias Gamend.AccountsFixtures
   alias Gamend.KV
   alias Gamend.Repo
+  alias GamendWeb.AdminLive.Pages
 
-  test "admin dashboard shows lobbies count in the quick links", %{conn: conn} do
+  defp card(path), do: ~s|#admin-cards .card:has(a[href="#{path}"])|
+
+  test "every page in the table opens from a card on the dashboard", %{conn: conn} do
+    admin = AccountsFixtures.user_fixture()
+    {:ok, admin} = admin |> User.admin_changeset(%{"is_admin" => true}) |> Repo.update()
+
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
+
+    for %{path: path} <- Pages.dashboard() do
+      assert has_element?(view, card(path)), "no card opens #{path}"
+    end
+  end
+
+  test "the dashboard is cards alone, with no menu and no View link", %{conn: conn} do
+    admin = AccountsFixtures.user_fixture()
+    {:ok, admin} = admin |> User.admin_changeset(%{"is_admin" => true}) |> Repo.update()
+
+    {:ok, view, html} = conn |> log_in_user(admin) |> live(~p"/admin")
+
+    assert has_element?(view, "#admin-cards")
+    refute has_element?(view, "#admin-menu")
+    refute html =~ "View →"
+  end
+
+  test "the translations card lists three languages and counts the rest", %{conn: conn} do
+    admin = AccountsFixtures.user_fixture()
+    {:ok, admin} = admin |> User.admin_changeset(%{"is_admin" => true}) |> Repo.update()
+
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
+
+    hidden = length(GamendWeb.Gettext.Stats.all_completeness()) - 3
+
+    assert hidden > 0
+    assert has_element?(view, card("/admin/translations"), "+#{hidden} more")
+  end
+
+  test "admin dashboard shows lobbies count on its card", %{conn: conn} do
     admin = AccountsFixtures.user_fixture()
 
     {:ok, admin} =
@@ -20,7 +57,7 @@ defmodule GamendWeb.AdminLive.IndexTest do
 
     {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
 
-    assert has_element?(view, ~s|#admin-menu a[href="/admin/lobbies"]|, "2")
+    assert has_element?(view, card("/admin/lobbies"), ~r/Lobbies\s+2\s+Hostless/)
   end
 
   test "admin overview shows user/provider and leaderboard stats", %{conn: conn} do
@@ -63,7 +100,7 @@ defmodule GamendWeb.AdminLive.IndexTest do
     assert html =~ "Scores total: 2"
   end
 
-  test "admin dashboard shows kv count in the quick links", %{conn: conn} do
+  test "admin dashboard shows kv count on its card", %{conn: conn} do
     admin = AccountsFixtures.user_fixture()
 
     {:ok, admin} =
@@ -76,6 +113,6 @@ defmodule GamendWeb.AdminLive.IndexTest do
 
     {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
 
-    assert has_element?(view, ~s|#admin-menu a[href="/admin/kv"]|, "2")
+    assert has_element?(view, card("/admin/kv"), ~r/Key-Value\s+2\s+Global/)
   end
 end

@@ -1141,14 +1141,17 @@ defmodule GamendWeb.CoreComponents do
 
   A card that does something on a click (`navigate`, `href` or a
   `phx-click`) rises a little on hover; one that does nothing stays still.
+
+  A card that is not a game entity brings its own mark in the `:mark` slot and
+  needs no `type`; `GamendWeb.AdminComponents.admin_card/1` does.
   """
   attr :title, :string, required: true
   attr :icon_url, :string, default: nil
   attr :icon, :atom, default: nil
 
   attr :type, :atom,
-    required: true,
-    values: [:group, :tournament, :leaderboard, :quest, :notification, :user]
+    default: nil,
+    values: [nil, :group, :tournament, :leaderboard, :quest, :notification, :user]
 
   attr :tone, :string,
     default: nil,
@@ -1161,6 +1164,7 @@ defmodule GamendWeb.CoreComponents do
   attr :class, :any, default: nil
   attr :rest, :global
 
+  slot :mark, doc: "drawn in the place of the entity's icon"
   slot :badges
   slot :inner_block
 
@@ -1203,7 +1207,8 @@ defmodule GamendWeb.CoreComponents do
               (leaderboards, quests, groups), and an `h3` there skips a
               level (axe `heading-order`). The look is the classes'. --%>
         <h2 class="card-title text-lg">
-          <span data-tone={@tone} class="contents">
+          {render_slot(@mark)}
+          <span :if={@mark == []} data-tone={@tone} class="contents">
             <.entity_icon
               icon_url={@icon_url}
               icon={@icon}

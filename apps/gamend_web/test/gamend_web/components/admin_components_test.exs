@@ -1,7 +1,6 @@
 defmodule GamendWeb.AdminComponentsTest do
   @moduledoc """
-  The admin console's heading, card and tile, as core's pages and a host's use
-  them.
+  The admin console's heading and card, as core's pages and a host's use them.
   """
   use ExUnit.Case, async: true
 
@@ -57,15 +56,15 @@ defmodule GamendWeb.AdminComponentsTest do
     assert LazyHTML.text(html) =~ "3"
   end
 
-  test "a card that opens nothing shows its note in the link's place" do
-    html = card(title: "Cache", note: "since boot")
+  test "a card's one link is its title, and it is the site's card" do
+    html = LazyHTML.from_fragment(card(title: "Cache", path: "/admin/x"))
 
-    assert html =~ "since boot"
-    refute html =~ "href"
+    assert html |> LazyHTML.query("a") |> LazyHTML.text() |> String.trim() == "Cache"
+    assert LazyHTML.query(html, "div.card.bg-base-200 > div.card-body") |> Enum.count() == 1
   end
 
   test "zero is a figure" do
-    assert LazyHTML.from_fragment(card(title: "Logs", value: 0))
+    assert LazyHTML.from_fragment(card(title: "Logs", path: "/admin/logs", value: 0))
            |> LazyHTML.query("div.text-2xl")
            |> LazyHTML.text() =~ "0"
   end

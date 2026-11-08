@@ -661,7 +661,9 @@ defmodule Gamend.PaymentsTest do
 
       refute Payments.entitlement_extendable?(e)
       assert {:error, :no_end} = Payments.extend_entitlement(e.id, 7)
-      assert {:error, :entitlement_not_found} = Payments.extend_entitlement(Ecto.UUID.generate(), 7)
+
+      assert {:error, :entitlement_not_found} =
+               Payments.extend_entitlement(Ecto.UUID.generate(), 7)
     end
 
     test "refuses a row a purchase made, whose provider's sync would set it back" do

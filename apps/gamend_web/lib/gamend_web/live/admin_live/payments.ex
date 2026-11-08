@@ -378,7 +378,7 @@ defmodule GamendWeb.AdminLive.Payments do
                         phx-submit="extend_entitlement"
                         class="flex items-center gap-1"
                       >
-                        <input type="hidden" name="id" value={e.id} />
+                        <input type="hidden" name="entitlement_id" value={e.id} />
                         <input
                           type="number"
                           name="days"
@@ -791,12 +791,12 @@ defmodule GamendWeb.AdminLive.Payments do
     end
   end
 
-  def handle_event("extend_entitlement", %{"id" => id, "days" => days}, socket) do
+  def handle_event("extend_entitlement", %{"entitlement_id" => id, "days" => days}, socket) do
     result =
       with id when is_binary(id) <- parse_id(id),
            days when is_integer(days) and days > 0 and days <= @max_extend_days <- parse_int(days) do
         Payments.extend_entitlement(id, days,
-          metadata: %{"extended_by" => socket.assigns.current_scope.user.id}
+          metadata: %{"extended_by" => socket.assigns.current_scope.user_id}
         )
       else
         _ -> {:error, :invalid_days}

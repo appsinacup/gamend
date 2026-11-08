@@ -335,7 +335,7 @@ like `active_quests/0`, so a host running no codes never sees it. The flash reus
 through `gamend_admin_live_routes/1` because it is admin-only: generate, add one,
 exact search on `lookup`, revoke and restore, used-by names, pagination, copy with
 the `CopyText` hook. It is a sub-page of Quests, so it goes in
-`AdminLive.Pages`' `@subpages` and draws `<.admin_header>`, with no tile or stat
+`AdminLive.Pages`' `@subpages` and draws `<.admin_header>`, with no dashboard
 card. CSV is a controller action at `/admin/quests/:id/codes/export` in the
 `[:browser, :require_admin_user]` scope; scripts page through the JSON list, since
 the API has no CSV shape.

@@ -1,10 +1,10 @@
 defmodule GamendWeb.AdminComponents do
   @moduledoc """
-  The admin console's page furniture: a heading, a coloured icon, a dashboard
-  card and a menu tile. Imported wherever `use GamendWeb, :live_view` is, so
-  core's pages and a host's (Forge, Polyglot, a fork) are the same shapes
-  without restating a class. There is nothing to configure: a page says what
-  it is where it draws itself.
+  The admin console's page furniture: a heading, a coloured icon and a
+  dashboard card. Imported wherever `use GamendWeb, :live_view` is, so core's
+  pages and a host's (Forge, Polyglot, a fork) are the same shapes without
+  restating a class. There is nothing to configure: a page says what it is
+  where it draws itself.
 
   A core page names its table entry (`GamendWeb.AdminLive.Pages`):
 
@@ -27,7 +27,7 @@ defmodule GamendWeb.AdminComponents do
 
   use Phoenix.Component
 
-  import GamendWeb.CoreComponents, only: [back_link: 1, eyebrow: 1, icon: 1, page_title: 1]
+  import GamendWeb.CoreComponents, only: [back_link: 1, entity_card: 1, icon: 1, page_title: 1]
 
   alias GamendWeb.AdminLive.Pages
 
@@ -146,9 +146,7 @@ defmodule GamendWeb.AdminComponents do
   attr :title, :string, default: nil
   attr :icon, :string, default: nil
   attr :color, :string, default: nil
-  attr :path, :string, default: nil, doc: "where the link goes; `page` when not given"
-  attr :link_label, :string, default: "View"
-  attr :note, :string, default: nil, doc: "in the link's place, on a card that opens nothing"
+  attr :path, :string, default: nil, doc: "the page a click opens; `page` when not given"
   attr :value, :any, default: nil, doc: "the headline figure"
   attr :unit, :string, default: nil, doc: "a word after the figure: `plays`, `errors (1h)`"
   attr :value_class, :any, default: nil, doc: "the figure's colour, where it means something"
@@ -156,8 +154,11 @@ defmodule GamendWeb.AdminComponents do
   slot :inner_block, doc: "the lines under the figure"
 
   @doc """
-  One card on `/admin`: icon, title, a link to the page, a headline figure and
-  the lines under it. A host's cards (`GamendWeb.AdminCard`) are drawn with it.
+  One card on `/admin`: an `entity_card/1` with the page's coloured mark, a
+  headline figure and the lines under it, so it is the site's card and not a
+  look of its own. A click anywhere on it opens the page; a link in its lines
+  sits above the stretched title and goes where it says. A host's cards
+  (`GamendWeb.AdminCard`) are drawn with it.
 
   The link is a plain `href`: `live_nav.js` moves it over the open socket when
   the target is a LiveView of this session, and a host's card may just as well
@@ -168,73 +169,15 @@ defmodule GamendWeb.AdminComponents do
     assigns = assign(assigns, :href, assigns.path || assigns.page)
 
     ~H"""
-    <div class="card bg-base-100 p-4" {@rest}>
-      <div class="mb-2 flex items-center gap-3">
-        <.admin_icon icon={@icon} color={@color} />
-        <div class="min-w-0 flex-1 truncate text-sm font-semibold">{@title}</div>
-        <.link :if={@href} href={@href} class="link link-primary shrink-0 text-xs">
-          {@link_label} →
-        </.link>
-        <span :if={@note && !@href} class="shrink-0 text-xs text-muted">{@note}</span>
-      </div>
+    <.entity_card title={@title} href={@href} {@rest}>
+      <:mark><.admin_icon icon={@icon} color={@color} /></:mark>
       <div :if={@value != nil} class={["text-2xl font-bold", @value_class]}>
         {@value}<span :if={@unit} class="ml-1 text-sm font-normal text-muted">{@unit}</span>
       </div>
-      <div :if={@inner_block != []} class="mt-2 space-y-1 text-xs text-muted">
+      <div :if={@inner_block != []} class="space-y-1 text-sm text-muted [&_a]:relative [&_a]:z-10">
         {render_slot(@inner_block)}
       </div>
-    </div>
-    """
-  end
-
-  attr :sections, :list,
-    required: true,
-    doc: "`%{title:, links: [%{path:, title:, icon:, color:}]}`"
-
-  attr :counts, :map, default: %{}, doc: "what a tile shows beside its name, by path"
-
-  @doc """
-  The menu on `/admin`: core's pages by section, then a host's. Every page has
-  a tile of the same icon and colour as its heading, so the mark is what the
-  eye looks for.
-  """
-  def admin_menu(assigns) do
-    ~H"""
-    <nav id="admin-menu" aria-label="Admin pages" class="space-y-4">
-      <section :for={section <- @sections} :if={section.links != []} class="space-y-2">
-        <.eyebrow tag="h2">{section.title}</.eyebrow>
-        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <.admin_link
-            :for={link <- section.links}
-            path={link.path}
-            title={link.title}
-            icon={link[:icon]}
-            color={link[:color]}
-            count={Map.get(@counts, link.path, link[:value])}
-          />
-        </div>
-      </section>
-    </nav>
-    """
-  end
-
-  attr :path, :string, required: true
-  attr :title, :string, required: true
-  attr :icon, :string, default: nil
-  attr :color, :string, default: nil
-  attr :count, :any, default: nil, doc: "a figure or a few words, beside the name"
-
-  @doc "One tile of `admin_menu/1`."
-  def admin_link(assigns) do
-    ~H"""
-    <a
-      href={@path}
-      class="flex min-w-0 items-center gap-3 rounded-box border border-base-300 bg-base-100 p-2 transition-colors hover:border-base-content/30 hover:bg-base-200"
-    >
-      <.admin_icon icon={@icon} color={@color} size="sm" />
-      <span class="min-w-0 flex-1 truncate text-sm font-medium">{@title}</span>
-      <span :if={@count != nil} class="shrink-0 pr-1 text-xs tabular-nums text-muted">{@count}</span>
-    </a>
+    </.entity_card>
     """
   end
 

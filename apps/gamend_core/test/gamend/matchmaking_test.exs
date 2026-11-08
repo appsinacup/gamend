@@ -449,12 +449,16 @@ defmodule Gamend.MatchmakingTest do
   end
 
   describe "assign_lobby/2 and a deleted match lobby" do
-    defmodule LobbyGoneAtLockHook do
+    defmodule LobbyGoneAtUnlockHook do
       use Gamend.TestSupport.NoopHooks
+
+      # Opening the new lobby is the one update core makes once all are seated.
+      @impl true
+      def matchmaking_seat_match(_tickets), do: Gamend.MatchSeating.new_lobby(is_locked: false)
 
       # Hooks receive attrs with string keys.
       @impl true
-      def before_lobby_update(lobby, %{"is_locked" => true} = attrs) do
+      def before_lobby_update(lobby, %{"is_locked" => false} = attrs) do
         {:ok, _} = Gamend.Lobbies.delete_lobby(lobby)
         {:ok, {lobby, attrs}}
       end
@@ -492,7 +496,7 @@ defmodule Gamend.MatchmakingTest do
       tickets = [ticket!(user()), ticket!(user())]
 
       previous = Application.get_env(:gamend_core, :hooks_module)
-      Application.put_env(:gamend_core, :hooks_module, LobbyGoneAtLockHook)
+      Application.put_env(:gamend_core, :hooks_module, LobbyGoneAtUnlockHook)
 
       on_exit(fn ->
         if previous,

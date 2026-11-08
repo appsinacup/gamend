@@ -139,7 +139,7 @@ defmodule GamendWeb do
       import Phoenix.HTML
       # Core UI components
       import GamendWeb.CoreComponents
-      # The admin console's heading, icon, card and menu tile
+      # The admin console's heading, icon and card
       import GamendWeb.AdminComponents
       # Dynamic SVG loader component (runtime hero icons)
       import GamendWeb.Components.DynamicIcon

@@ -183,16 +183,18 @@ defmodule Gamend.Icons do
   `params` with the colour picked beside an icon (`"<key>_color"`, what
   `<.icon_picker>` sends) put on the icon's URL at `key` (`path/2`), the
   colour's own key gone. An upload's URL stays as it is: a colour is only an
-  icon's.
+  icon's. With no icon picked the colour's key stays, for the form to draw it
+  as the one an icon picked next will have.
   """
   @spec put_color(map(), String.t()) :: map()
   def put_color(params, key) when is_map(params) and is_binary(key) do
-    color_key = key <> "_color"
-    {color, params} = Map.pop(params, color_key)
-
     case name(params[key]) do
-      nil -> params
-      name -> Map.put(params, key, path(name, color || color(params[key])))
+      nil ->
+        params
+
+      name ->
+        {color, params} = Map.pop(params, key <> "_color")
+        Map.put(params, key, path(name, color || color(params[key])))
     end
   end
 
@@ -210,6 +212,15 @@ defmodule Gamend.Icons do
   @spec random_path() :: String.t() | nil
   def random_path do
     if name = random(), do: path(name, random_color())
+  end
+
+  @doc "One of `colors/0` for `term`: as good as random, the same for it every time. Nil with none."
+  @spec color_for(term()) :: String.t() | nil
+  def color_for(term) do
+    case colors() do
+      [] -> nil
+      colors -> Enum.at(colors, :erlang.phash2(term, length(colors)))
+    end
   end
 
   defp random_color do
@@ -230,14 +241,7 @@ defmodule Gamend.Icons do
   else
     def for_id(id) when is_binary(id) do
       name = Enum.at(@picks, :erlang.phash2(id, length(@picks)))
-
-      color =
-        case colors() do
-          [] -> nil
-          colors -> Enum.at(colors, :erlang.phash2({id, :color}, length(colors)))
-        end
-
-      path(name, color)
+      path(name, color_for({id, :color}))
     end
   end
 end

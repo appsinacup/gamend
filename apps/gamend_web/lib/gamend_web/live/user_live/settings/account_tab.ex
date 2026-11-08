@@ -101,7 +101,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
           <%!-- Or one of the site's icons for the avatar: its URL is the
                 avatar, as an upload's is, and shows at once. So a reconnect
                 has nothing to recover here, and with no icon lit it would send
-                an empty pick. --%>
+                an empty pick; a colour clicked before an icon stays as clicked. --%>
           <.form
             for={avatar_icon_form(@user)}
             id="avatar_icon_form"
@@ -413,12 +413,16 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     user = Shared.current_user(socket)
     url = Gamend.Icons.put_color(params, "profile_url")["profile_url"]
 
-    with name when is_binary(name) <- Gamend.Icons.name(url),
-         {:ok, updated} <- Accounts.update_user_avatar(user, url) do
-      _ = Accounts.prune_user_avatars(user.id, "")
-      {:noreply, assign(socket, :user, updated)}
-    else
-      _ -> {:noreply, put_flash(socket, :error, gettext("Failed"))}
+    case Gamend.Icons.name(url) && Accounts.update_user_avatar(user, url) do
+      nil ->
+        {:noreply, socket}
+
+      {:ok, updated} ->
+        _ = Accounts.prune_user_avatars(user.id, "")
+        {:noreply, assign(socket, :user, updated)}
+
+      _failed ->
+        {:noreply, put_flash(socket, :error, gettext("Failed"))}
     end
   end
 

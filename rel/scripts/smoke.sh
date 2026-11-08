@@ -7,8 +7,8 @@
 # `gamend plugin.bundle` (no Mix involved), runs `gamend daemon`, waits for the
 # health endpoint, renders the home page, calls the plugin as a player, seeds
 # demo data against the running server, stops it, then rolls back, migrates and
-# resets the database. For a Postgres build, point GAMEND_DB_URL at a database
-# first.
+# resets the database, and exports it. For a Postgres build, point GAMEND_DB_URL
+# at a database first.
 set -euo pipefail
 
 archive=$(cd "$(dirname "${1:?usage: smoke.sh ARCHIVE}")" && pwd -P)/$(basename "$1")
@@ -65,5 +65,8 @@ curl -fsS "http://127.0.0.1:$port/api/v1/leaderboards" | grep demo_seed >/dev/nu
 "$gamend" db.migrate
 "$gamend" db.reset
 "$gamend" demo.seed --count 5 --only group
+
+"$gamend" export "$work/export"
+[ -n "${GAMEND_DB_URL:-}" ] || [ -s "$work/export/gamend.db" ]
 
 echo "smoke: ok"

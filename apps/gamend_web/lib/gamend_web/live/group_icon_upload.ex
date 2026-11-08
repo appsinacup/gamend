@@ -33,17 +33,21 @@ defmodule GamendWeb.GroupIconUpload do
   @doc """
   The upload, `:group_icon`, when `user` may upload one, and
   `@group_icon_upload?` saying whether they may. Called once, in a page's
-  mount or a component's first update.
+  mount or a component's first update. `opts` go to `allow_upload/3`: an
+  edit form that saves a file as it arrives gives `auto_upload:` and `progress:`.
   """
-  @spec allow(Phoenix.LiveView.Socket.t(), term()) :: Phoenix.LiveView.Socket.t()
-  def allow(socket, user) do
+  @spec allow(Phoenix.LiveView.Socket.t(), term(), keyword()) :: Phoenix.LiveView.Socket.t()
+  def allow(socket, user, opts \\ []) do
     if allowed?(user) do
       socket
       |> assign(:group_icon_upload?, true)
-      |> allow_upload(@name,
-        accept: ~w(.png .jpg .jpeg .webp .gif),
-        max_entries: 1,
-        max_file_size: Gamend.Limits.get(:max_upload_bytes)
+      |> allow_upload(
+        @name,
+        [
+          accept: ~w(.png .jpg .jpeg .webp .gif),
+          max_entries: 1,
+          max_file_size: Gamend.Limits.get(:max_upload_bytes)
+        ] ++ opts
       )
     else
       assign(socket, :group_icon_upload?, false)

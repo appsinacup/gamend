@@ -21,6 +21,7 @@ defmodule Gamend.Release do
   endpoint against a database it does not match.
   """
 
+  alias Gamend.Export
   alias Gamend.Repo.MigrationPaths
 
   @otp_app :gamend_core
@@ -61,6 +62,41 @@ defmodule Gamend.Release do
   """
   @spec dropdb() :: :ok
   def dropdb, do: storage(:storage_down, :already_down, "drop")
+
+  @doc """
+  Copies what only the application can into `dir` (`Gamend.Export`): a SQLite
+  database and the stored files, or just the database with `files: false`.
+  Prints what it wrote and raises when it cannot. A running server goes on
+  serving, so it can run beside one:
+
+      bin/gamend_host eval 'Gamend.Release.export("/tmp/export")'
+  """
+  @spec export(Path.t(), keyword()) :: [String.t()]
+  def export(dir, opts \\ []) do
+    Application.load(@otp_app)
+
+    case exported(dir, opts) do
+      {:ok, written} ->
+        Enum.each(written, &IO.puts("wrote " <> Path.join(dir, &1)))
+        unless Export.database?(), do: IO.puts("not copied: Postgres, which pg_dump exports")
+        written
+
+      {:error, reason} ->
+        raise "export to #{dir} failed: #{inspect(reason)}"
+    end
+  end
+
+  # A Postgres host's database is not copied here, and may be down.
+  defp exported(dir, opts) do
+    if Export.database?() do
+      {:ok, result, _apps} =
+        Ecto.Migrator.with_repo(Gamend.Repo, fn _repo -> Export.write(dir, opts) end)
+
+      result
+    else
+      Export.write(dir, opts)
+    end
+  end
 
   @doc """
   What a release runs before it starts serving: create the database when it

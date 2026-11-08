@@ -41,6 +41,8 @@ defmodule GamendWeb.CLI do
     db.reset            Drop the database and set it up again
     db.seed             Run priv/repo/seeds.exs
     demo.seed           Seed demo data: --count N, --only SETS, --clean
+    export DIR          Copy the SQLite database and stored files into DIR,
+                        beside a running server; --no-files for the database
 
   Project:
     starter [TEMPLATE]  Copy a starter project into this folder; never
@@ -117,6 +119,18 @@ defmodule GamendWeb.CLI do
   def run(["demo.seed" | args]) do
     with_app(fn -> Gamend.DemoSeed.run(args) end)
     0
+  end
+
+  def run(["export" | args]) do
+    case OptionParser.parse(args, strict: [files: :boolean]) do
+      {opts, [dir], []} ->
+        Release.export(dir, opts)
+        0
+
+      _usage ->
+        IO.puts(:stderr, "usage: gamend export DIR [--no-files]")
+        1
+    end
   end
 
   def run(["plugin.bundle" | names]), do: bundle_plugins(names)

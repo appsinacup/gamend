@@ -99,6 +99,7 @@ checkout, and run the same code.
 | `gamend db.reset` | Drop the database and set it up again |
 | `gamend db.seed` | Run `priv/repo/seeds.exs` |
 | `gamend demo.seed` | Fill the database with demo players, leaderboards, groups and more; `--count N`, `--only leaderboard,group`, `--clean` removes them |
+| `gamend export DIR` | Copy the SQLite database and stored files into `DIR`, beside a running server too; `--no-files` for the database alone. [Moving to another host](/docs/deployment) |
 | `gamend plugin.bundle [NAME]` | Build the plugins in `modules/plugins`, Elixir or GDScript, with the compiler inside the download; restart to load them |
 | `gamend starter [TEMPLATE]` | Copy a starter into the folder, never overwriting a file unless `--force` |
 | `gamend version`, `gamend help` | |

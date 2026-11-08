@@ -14,10 +14,13 @@ directory's) starts it:
 ```
 
 `--export` writes what Gamend Cloud imports a server from
-(`GamendCloud.Imports`): `.env` as it is and `gamend.dump`, `pg_dump -Fc` of
-the running `DB_SERVICE` (`db` unless deploy.conf sets it), both mode 600, and
-whatever the app's `app_export DIR` hook adds (`files.tar`, its stored files).
-It stops nothing: for the last export before a move, stop the app first.
+(`GamendCloud.Imports`), every file mode 600: `.env` as it is; `gamend.dump`,
+`pg_dump -Fc` of the running `DB_SERVICE` (`db` unless deploy.conf sets it), on
+Postgres; and what only the app can copy (`Gamend.Export`, in a one-off
+container of its image): `gamend.db` on SQLite and `files.tar`, its stored
+files with `storage/` inside (`EXPORT_FILES=0` leaves them out, for a host
+whose folders move with it). The app's `app_export DIR` hook adds anything
+else. It stops nothing: for the last export before a move, stop the app first.
 
 `rebuild.sh` pulls the checkout first, so the checks and the deploy are the new
 code's, then fetches `gamend-deploy` from this repository at the version
@@ -52,6 +55,7 @@ DNS_NAMES="example.org www.example.org"
 PODMAN_IMAGES="ghcr.io/appsinacup/gamend:latest-slim"   # pulled when missing
 BUILD_ARGS=(--build-arg "SYNC=$(date +%s)")             # a layer never cached
 MAKE_DIRS="backups logs"                 # default; created for bind mounts
+EXPORT_FILES=0                           # --export leaves the stored files out
 MIN_FREE_GB=50 DISK_PATH=.
 UP_TIMEOUT=600                           # how long `up --wait` waits
 KEEP_HOURS=336                           # build cache kept by the prune (or KEEP_CACHE=20GB)

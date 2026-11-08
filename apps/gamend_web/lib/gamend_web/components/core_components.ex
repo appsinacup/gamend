@@ -1375,8 +1375,10 @@ defmodule GamendWeb.CoreComponents do
   (`GamendWeb.Icons.sprite_path/0`), which the browser fetches once and keeps,
   so the page carries a few bytes an icon, not its SVG.
 
-  Under it, while an icon is picked, its colour: none, or one of the site's
-  (`Gamend.Icons.colors/0`), the tiles drawn in it. The colour is a field of
+  Under it, always, the colour: none, or one of the site's
+  (`Gamend.Icons.colors/0`), the tiles drawn in it. With no icon picked yet one
+  is already chosen, as good as at random and the same for this form on every
+  render, so the icon clicked next comes coloured. The colour is a field of
   its own, `<name>_color` (`group[icon_url_color]`), which the page puts on
   the URL before it casts it: `Gamend.Icons.put_color(params, "icon_url")`.
 
@@ -1389,14 +1391,15 @@ defmodule GamendWeb.CoreComponents do
     field = assigns.field
     value = to_string(field.value)
     errors = if Component.used_input?(field), do: field.errors, else: []
-    color = Gamend.Icons.color(value)
+    picked = Gamend.Icons.name(value)
+    color = if picked, do: Gamend.Icons.color(value), else: next_color(field, value)
     css = Gamend.Icons.color_css(color)
 
     assigns =
       assign(assigns,
         names: Gamend.Icons.picks(),
         value: value,
-        picked: Gamend.Icons.name(value),
+        picked: picked,
         color: color,
         colors: Enum.map(Gamend.Icons.colors(), &{&1, Gamend.Icons.color_css(&1)}),
         color_name: color_field_name(field.name),
@@ -1438,9 +1441,9 @@ defmodule GamendWeb.CoreComponents do
           </label>
         </div>
       </div>
-      <%!-- The picked icon's colour: none, or one of the site's. --%>
+      <%!-- The icon's colour: none, or one of the site's. --%>
       <div
-        :if={@picked && @colors != []}
+        :if={@colors != []}
         role="radiogroup"
         aria-label={gettext("Color")}
         class="mt-2 flex flex-wrap items-center gap-2"
@@ -1490,6 +1493,19 @@ defmodule GamendWeb.CoreComponents do
       <.error :for={msg <- @errors}>{msg}</.error>
     </fieldset>
     """
+  end
+
+  # With no icon picked, the colour the next one will have: the one chosen so
+  # far (`Gamend.Icons.put_color/2` leaves it on the form), "" being none, else
+  # one for this form, the same on every render.
+  defp next_color(field, value) do
+    chosen = field.form.params[to_string(field.field) <> "_color"]
+
+    cond do
+      chosen == "" -> nil
+      Gamend.Icons.color?(chosen) -> chosen
+      true -> Gamend.Icons.color_for({field.id, Map.get(field.form.data, :id), value})
+    end
   end
 
   # The colour's field beside an icon's: `group[icon_url]` → `group[icon_url_color]`.

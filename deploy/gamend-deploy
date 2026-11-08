@@ -129,6 +129,7 @@ PUBLIC_IP=""                         # with DNS_NAMES: where those names should 
 DNS_NAMES=""
 PODMAN_IMAGES=""                     # pulled into the host's podman when missing
 MAKE_DIRS="backups logs"             # created when missing (bind mounts)
+EXPORT_FILES=1                       # 0: --export leaves the stored files out
 DISK_PATH="."
 MIN_FREE_GB=50
 UP_TIMEOUT=600
@@ -168,12 +169,13 @@ done
 # ── Export ────────────────────────────────────────────────────────────────
 
 # What Gamend Cloud imports a server from (its `GamendCloud.Imports`): `.env`
-# as it is, and the database as `pg_dump -Fc` writes it, from the running
-# `DB_SERVICE`. An app's own files go in through its `app_export DIR` hook
-# (`files.tar`, unpacked into the server's /data/storage); files a trusted
-# server mounts from the host stay where they are. Nothing is stopped: for
-# the last export before a move, stop the app first (`$COMPOSE stop
-# $APP_SERVICE`), so no write lands after the dump.
+# as it is, a Postgres database as `pg_dump -Fc` writes it from the running
+# `DB_SERVICE`, and what only the app can copy (`Gamend.Export`): a SQLite
+# database and `files.tar`, its stored files with `storage/` inside. A host
+# whose folders move with it (a trusted server mounts them) sets
+# EXPORT_FILES=0. An app's own extras go in through its `app_export DIR`
+# hook. Nothing is stopped: for the last export before a move, stop the app
+# first (`$COMPOSE stop $APP_SERVICE`), so no write lands after the copy.
 if [ -n "$EXPORT_DIR" ]; then
   step "Exporting to $EXPORT_DIR"
   # Players' data and the app's secrets: nobody else's to read.
@@ -184,18 +186,48 @@ if [ -n "$EXPORT_DIR" ]; then
   ok ".env (secrets: keep $EXPORT_DIR off shared disks, and delete it after the import)"
 
   db_service=${DB_SERVICE:-db}
+  dumped=0
   if $COMPOSE ps --services --status running 2>/dev/null | grep -qx "$db_service"; then
     # The container's own POSTGRES_USER and POSTGRES_DB, as the image read them.
     if $COMPOSE exec -T "$db_service" sh -c 'exec pg_dump -Fc -U "$POSTGRES_USER" "$POSTGRES_DB"' \
       > "$EXPORT_DIR/gamend.dump.part"; then
       mv "$EXPORT_DIR/gamend.dump.part" "$EXPORT_DIR/gamend.dump"
       ok "gamend.dump ($(du -h "$EXPORT_DIR/gamend.dump" | cut -f1))"
+      dumped=1
     else
       rm -f "$EXPORT_DIR/gamend.dump.part"
       bad "pg_dump failed in $db_service"
     fi
-  else
-    warn "no running $db_service service: no database in the export"
+  fi
+
+  # In a one-off container of the app's own image, so the app may be stopped.
+  # Out as a tar on stdout, so the files are this user's; what the app prints
+  # goes to stderr. An app on a Gamend without `Gamend.Export` warns.
+  export_args="" export_flags=""
+  if [ "$EXPORT_FILES" = "0" ]; then
+    export_args=", files: false" export_flags=" --no-files"
+  fi
+  if [ "$dumped" = "0" ] || [ -z "$export_flags" ]; then
+    # shellcheck disable=SC2016 # the container's shell expands these
+    if $COMPOSE run --rm --no-deps -T "$APP_SERVICE" sh -c '
+        d=$(mktemp -d)
+        if [ -x "bin/${GAMEND_RELEASE:-none}" ]; then
+          "bin/$GAMEND_RELEASE" eval "Gamend.Release.export(\"$d\"'"$export_args"')" >&2
+        else
+          mix host.export "$d"'"$export_flags"' >&2
+        fi && tar -cf - -C "$d" .' | tar -xf - -C "$EXPORT_DIR" 2>/dev/null; then
+      for piece in gamend.db files.tar; do
+        if [ -f "$EXPORT_DIR/$piece" ]; then
+          ok "$piece ($(du -h "$EXPORT_DIR/$piece" | cut -f1))"
+        fi
+      done
+    else
+      warn "$APP_SERVICE could not copy its data (Gamend.Export needs a newer Gamend)"
+    fi
+  fi
+
+  if [ ! -f "$EXPORT_DIR/gamend.dump" ] && [ ! -f "$EXPORT_DIR/gamend.db" ]; then
+    warn "no database in the export: no running $db_service service, and no SQLite copy"
   fi
 
   if declare -F app_export >/dev/null; then

@@ -54,11 +54,11 @@ defmodule Gamend.IconsTest do
              "icon_url"
            ) == %{"icon_url" => "/icons/star.svg"}
 
-    # An upload is no icon: no colour on it.
+    # An upload is no icon: no colour on it, and the one chosen stays for the form.
     assert Icons.put_color(
              %{"icon_url" => "/storage/icons/a.png", "icon_url_color" => "info"},
              "icon_url"
-           ) == %{"icon_url" => "/storage/icons/a.png"}
+           ) == %{"icon_url" => "/storage/icons/a.png", "icon_url_color" => "info"}
   end
 
   test "for_id/1 is one icon in one colour, the same for the same id" do

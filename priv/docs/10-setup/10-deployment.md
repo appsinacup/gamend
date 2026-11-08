@@ -135,6 +135,50 @@ holding a purchase or entitlement. Deleting an account also deletes its
 stored objects, which nothing else reaches - object storage has no foreign key
 to cascade.
 
+## Moving to another host
+
+A host deployed with `rebuild.sh` (`deploy/README.md` in the
+[gamend repository](https://github.com/appsinacup/gamend)) writes what it needs
+to move, from its checkout:
+
+```bash
+docker compose stop app
+./rebuild.sh --no-pull --export /path/to/export
+```
+
+The export stops nothing itself and works with the app running or stopped. Stop
+the app first for the last one, so no write lands after the copy.
+
+| File | Contents |
+|---|---|
+| `.env` | The host's variables as they are, secrets included |
+| `gamend.dump` | A Postgres database: `pg_dump -Fc` of the running `db` service (`DB_SERVICE` in `deploy.conf` names another) |
+| `gamend.db` | A SQLite database, a whole copy |
+| `files.tar` | The stored files, `storage/` inside. `EXPORT_FILES=0` in `deploy.conf` leaves them out |
+| Anything else | What the app's `app_export DIR` function in `deploy.conf` writes |
+
+Every file is mode 600. Keep the folder off shared disks and delete it after
+the import.
+
+Without `rebuild.sh`, the app copies its own SQLite database and stored files
+into a folder, beside a running server too:
+
+```bash
+gamend export /path/to/export                               # the download
+bin/my_app eval 'Gamend.Release.export("/path/to/export")'  # a release
+mix host.export /path/to/export                             # an Elixir host
+```
+
+On Postgres these copy the stored files only: run `pg_dump -Fc` where the
+database is. Objects on S3 are not copied, since they are already off the host.
+`--no-files` (`files: false` for a release) leaves the stored files out.
+
+- **Restoring on your own host:**
+  `docker compose exec -T db pg_restore --clean --if-exists --no-owner -U <user> -d <database> < gamend.dump`
+- **Restoring on Gamend Cloud:** an owner uploads the files on the server's
+  Backups tab. An operator copies the folder to
+  `GAMEND_CLOUD_IMPORTS_DIR/<slug>/` and uses *Import a server*.
+
 ## HTTPS
 
 Gamend terminates TLS itself through Bandit, with no nginx or reverse proxy. Point

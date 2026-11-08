@@ -17,12 +17,13 @@ FROM ${DEBIAN_IMAGE}
 
 # libstdc++6, libncurses6, openssl   ERTS and the crypto NIFs
 # libsqlite3-0, libsrtp2-1           the SQLite adapter, WebRTC's SRTP
+# libsctp1                           opened by ERTS's socket NIF, which warns at boot without it
 # curl                               the image's healthcheck
 # git, git-lfs                       hosts that clone repositories at run time
 # podman-remote, as `podman`         Gamend.Containers, through the host's socket
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates curl libstdc++6 libncurses6 \
-      openssl libsqlite3-0 libsrtp2-1 locales git git-lfs podman-remote && \
+      openssl libsqlite3-0 libsrtp2-1 libsctp1 locales git git-lfs podman-remote && \
     ln -s /usr/bin/podman-remote /usr/local/bin/podman && \
     rm -rf /var/lib/apt/lists/*
 

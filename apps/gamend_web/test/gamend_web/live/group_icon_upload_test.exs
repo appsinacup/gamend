@@ -129,10 +129,100 @@ defmodule GamendWeb.GroupIconUploadTest do
     |> file_input("#group-edit-form", :group_icon, png("other.png"))
     |> render_upload("other.png")
 
-    view |> form("#group-edit-form") |> render_submit()
-
+    # Saved as it arrived, with no Save.
     icon = Groups.get_group(group.id).icon_url
     assert icon =~ "icons/groups/#{group.id}/"
     refute icon == first
+  end
+
+  describe "the groups page's buttons" do
+    setup %{user: user} do
+      {:ok, group} = Groups.create_group(user.id, %{"title" => "Studio"})
+      {:ok, group: group}
+    end
+
+    test "only the list has Create", %{conn: conn, user: user, group: group} do
+      conn = log_in_user(conn, user)
+
+      {:ok, list, _html} = live(conn, "/users/groups")
+      assert has_element?(list, "#groups-toggle-create", "Create")
+
+      {:ok, page, _html} = live(conn, "/users/groups/#{group.id}")
+      refute has_element?(page, "#groups-toggle-create")
+
+      {:ok, edit, _html} = live(conn, "/users/groups/#{group.id}?edit=1")
+      refute has_element?(edit, "#groups-toggle-create")
+      assert has_element?(edit, "button#group-edit-save[form=group-edit-form]", "Save")
+    end
+
+    test "Cancel goes back to the group", %{conn: conn, user: user, group: group} do
+      {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{group.id}?edit=1")
+
+      view |> element("#group-edit-cancel") |> render_click()
+
+      refute has_element?(view, "#group-edit-form")
+      assert_patch(view)
+    end
+
+    test "Save goes to the list as a navigation", %{conn: conn, user: user, group: group} do
+      {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{group.id}?edit=1")
+
+      view |> form("#group-edit-form", group: %{title: "Renamed"}) |> render_submit()
+
+      assert_redirect(view, "/users/groups")
+      assert Groups.get_group(group.id).title == "Renamed"
+    end
+
+    test "an icon saves as it is picked, the rest waits for Save",
+         %{conn: conn, user: user, group: group} do
+      {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{group.id}?edit=1")
+
+      view
+      |> form("#group-edit-form",
+        group: %{title: "Typed", icon_url: "/icons/star.svg", icon_url_color: "info"}
+      )
+      |> render_change()
+
+      saved = Groups.get_group(group.id)
+      assert saved.icon_url == "/icons/star.svg?color=info"
+      assert saved.title == "Studio"
+    end
+
+    test "the colours are there before an icon is, one chosen",
+         %{conn: conn, user: user, group: group} do
+      {:ok, _} = Groups.set_icon_url(user.id, group.id, "/storage/icons/groups/x/a.png")
+      {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{group.id}?edit=1")
+
+      refute has_element?(view, "#group-edit-form input[name='group[icon_url]'][checked]")
+
+      chosen =
+        Enum.filter(Gamend.Icons.colors(), fn color ->
+          has_element?(view, "input[name='group[icon_url_color]'][value='#{color}'][checked]")
+        end)
+
+      assert length(chosen) == 1
+      [color] = chosen
+
+      # The icon clicked next comes in it.
+      view
+      |> form("#group-edit-form", group: %{icon_url: "/icons/star.svg", icon_url_color: color})
+      |> render_change()
+
+      assert Groups.get_group(group.id).icon_url == "/icons/star.svg?color=#{color}"
+    end
+
+    test "a colour chosen before an icon stays chosen", %{conn: conn, user: user, group: group} do
+      {:ok, _} = Groups.set_icon_url(user.id, group.id, "/storage/icons/groups/x/a.png")
+      {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{group.id}?edit=1")
+
+      for color <- Gamend.Icons.colors() do
+        view |> form("#group-edit-form", group: %{icon_url_color: color}) |> render_change()
+
+        assert has_element?(
+                 view,
+                 "input[name='group[icon_url_color]'][value='#{color}'][checked]"
+               )
+      end
+    end
   end
 end

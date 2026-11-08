@@ -39,9 +39,12 @@ defmodule GamendWeb.SdkEventsDriftTest do
 
   defp read(path), do: File.read!(path)
 
-  test "clients/events.json is the registry as generated" do
+  test "clients/events.json and commands.json are the registries as generated" do
     assert read(Path.join(@clients, "events.json")) == Events.render(),
            "clients/events.json is stale: run `mix gamend.gen.events`"
+
+    assert read(Path.join(@clients, "commands.json")) == Events.render_commands(),
+           "clients/commands.json is stale: run `mix gamend.gen.events`"
   end
 
   @handlers %{

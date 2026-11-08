@@ -57,6 +57,32 @@ A new event: add its row to the registry (and its message to the codec and
 the schema when it is protobuf), run `mix gamend.gen.events` and
 `mix host.proto.gen`, then let the drift test name what each client lacks.
 
+## One source for what a client sends
+
+Every event a channel answers is declared once, in
+`GamendWeb.RealtimeCommands`, which `realtime_events_drift_test.exs` holds to
+the channels' `handle_in` clauses. `mix gamend.gen.events` writes it to
+`clients/commands.json`, and the C++ (`gamend::commands`) and Balaur
+(`commands.bs`) SDKs get one function per row from it. The Godot and
+JavaScript clients have theirs by hand.
+
+## Does every SDK have everything
+
+`python3 clients/sdkgen lint` prints each SDK against the operations and
+schemas of the OpenAPI document, the events the socket sends and the events it
+answers, and fails on anything missing. `precommit` runs it. CI runs it with
+`--generated`, which also reads what openapi-generator wrote.
+
+A new operation fails there until `GamendApi.gd` has its function, a removed
+one until it is gone. A new socket event fails until the Godot and JavaScript
+clients send it. An API schema whose Godot model would take the name of a
+hand-written class (`GamendResult`) fails too, since two scripts cannot share a
+`class_name`.
+
+The lint says an SDK can call a thing, not that it does anything more with it:
+Balaur has `webrtc_offer` and no WebRTC peer behind it, and only Godot has a
+peer-to-peer client over the `signaling:*` commands.
+
 ## Balaur and C++
 
 The Balaur and C++ SDKs come from our own generator, `sdkgen/`: one model of

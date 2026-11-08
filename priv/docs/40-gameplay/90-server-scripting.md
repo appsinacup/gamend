@@ -80,7 +80,7 @@ def before_group_create(user, attrs) do
 end
 ```
 
-Other "before" hooks follow the same pattern: `before_lobby_create/1`, `before_lobby_join/3`, `before_group_join/3`, `before_user_update/2`. Return {:ok, attrs} (or the appropriate tuple) to allow, {:error, reason} to reject. At registration time, before_user_register/2 receives the tentative user and the registration attrs (including the generated username) on every signup path (email, device, and OAuth) and may adjust the attrs or abort. Tournaments have their own hook family (before/after_tournament_register, before_tournament_leave, tournament_match_ready, tournament_match_expired, before_tournament_result, after_tournament_match_resolved, after_tournament_finished); see the Tournaments guide for the match resolution contract. One of them runs at a different point from the rest: before_tournament_register runs after the player's seat is taken, with it held, so a full tournament or a repeated request never reaches it and the entry fee can be charged there; a refusal gives the seat back (the Tournaments guide, *Registration and the entry fee*). Matchmaking has its own family too (before_matchmaking_join, after_matchmaking_join, after_matchmaking_cancel, matchmaking_form_matches, after_matchmaking_matched); see the Matchmaking guide. Two hooks replace built-in logic rather than gating it: matchmaking_form_matches/2 hands you a whole queue bucket and lets you group it yourself, and validate_username/1 answers `:ok`, `{:error, message}` or `:default` for a normalized handle in place of core's character rules (length, uniqueness and invisible characters stay with core; see the Authentication guide).
+Other "before" hooks follow the same pattern: `before_lobby_create/1`, `before_lobby_join/3`, `before_group_join/3`, `before_user_update/2`. Return {:ok, attrs} (or the appropriate tuple) to allow, {:error, reason} to reject. At registration time, before_user_register/2 receives the tentative user and the registration attrs (including the generated username) on every signup path (email, device, and OAuth) and may adjust the attrs or abort. Tournaments have their own hook family (before/after_tournament_register, before_tournament_leave, tournament_match_ready, tournament_match_expired, before_tournament_result, after_tournament_match_resolved, after_tournament_finished); see the Tournaments guide for the match resolution contract. One of them runs at a different point from the rest: before_tournament_register runs after the player's seat is taken, with it held, so a full tournament or a repeated request never reaches it and the entry fee can be charged there; a refusal gives the seat back (the Tournaments guide, *Registration and the entry fee*). Matchmaking has its own family too (before_matchmaking_join, after_matchmaking_join, after_matchmaking_cancel, matchmaking_form_matches, matchmaking_seat_match, after_matchmaking_matched); see the Matchmaking guide. Three hooks replace built-in logic rather than gating it: matchmaking_form_matches/2 hands you a whole queue bucket and lets you group it yourself, matchmaking_seat_match/1 answers where a formed match sits and whether its players are asked first, and validate_username/1 answers `:ok`, `{:error, message}` or `:default` for a normalized handle in place of core's character rules (length, uniqueness and invisible characters stay with core; see the Authentication guide).
 
 ### Declaring what your plugin contributes
 
@@ -447,7 +447,7 @@ change is committed and its return value is ignored.
 | Domain | `before_*` (may veto) | `after_*` (observe) |
 |---|---|---|
 | Lifecycle | `before_stop` | `after_startup` |
-| Users | `before_user_register` `before_user_update` | `after_socket_connected` `after_user_deleted` `after_user_logged_in` `after_user_offline` `after_user_online` `after_user_register` `after_user_updated` `merge_user_data` |
+| Users | `before_user_delete` `before_user_register` `before_user_update` | `after_socket_connected` `after_user_deleted` `after_user_logged_in` `after_user_offline` `after_user_online` `after_user_register` `after_user_updated` `merge_user_data` |
 | Lobbies | `before_lobby_create` `before_lobby_delete` `before_lobby_join` `before_lobby_kick` `before_lobby_leave` `before_lobby_state_change` `before_lobby_update` | `after_lobby_create` `after_lobby_deleted` `after_lobby_host_change` `after_lobby_join` `after_lobby_kick` `after_lobby_leave` `after_lobby_state_changed` `after_lobby_updated` |
 | Parties | `before_party_create` `before_party_join` `before_party_kick` `before_party_update` | `after_party_create` `after_party_disband` `after_party_join` `after_party_kick` `after_party_leave` `after_party_updated` |
 | Groups | `before_group_create` `before_group_delete` `before_group_join` `before_group_kick` `before_group_update` | `after_group_create` `after_group_deleted` `after_group_join` `after_group_kick` `after_group_leave` `after_group_updated` |
@@ -466,10 +466,13 @@ change is committed and its return value is ignored.
 | Entitlements | — | `after_entitlement_changed` |
 | Push | `before_push_send` | `after_push_sent` |
 
-Five more neither gate nor observe: `matchmaking_form_matches` and
-`validate_username` replace built-in logic, `tournament_match_ready` and
+Six more neither gate nor observe: `matchmaking_form_matches`,
+`matchmaking_seat_match` and `validate_username` replace built-in logic,
+`tournament_match_ready` and
 `tournament_match_expired` hand a match to the game, and `on_custom_hook`
 answers RPC names registered at runtime.
+
+`before_lobby_leave` and `before_user_delete` cannot veto: they run first so a plugin can read what is about to go, and their answer is ignored. `after_user_deleted` runs once the account's rows have cascaded, so what it needs to find, `before_user_delete` has to read.
 
 Each callback's exact signature, arguments and return contract is in the
 [`Gamend.Hooks` docs](https://docs.gamend.org/Gamend.Hooks.html). The

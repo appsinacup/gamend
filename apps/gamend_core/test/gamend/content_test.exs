@@ -24,6 +24,31 @@ defmodule Gamend.ContentTest do
     assert Content.asset_path(name, "../blog_secret/secret.txt") == nil
   end
 
+  test "asset_path serves media only, from a folder that holds anything" do
+    root =
+      Path.join(System.tmp_dir!(), "gamend_content_#{System.unique_integer([:positive])}")
+
+    name = "content_test_#{System.unique_integer([:positive])}"
+    private = [".env", "app.log", "db/game_server_prod.db", "config.exs", ".secret/shot.png"]
+
+    File.mkdir_p!(Path.join(root, "db"))
+    File.mkdir_p!(Path.join(root, ".secret"))
+    File.write!(Path.join(root, "CHANGELOG.md"), "# Changes")
+    File.write!(Path.join(root, "shot.PNG"), "ok")
+    for file <- private, do: File.write!(Path.join(root, file), "secret")
+
+    on_exit(fn -> File.rm_rf(root) end)
+
+    # A `:file` source: its asset root is the folder the file is in.
+    Content.register_path(name, kind: :file, path: Path.join(root, "CHANGELOG.md"))
+
+    assert Content.asset_path(name, "shot.PNG") == Path.join(root, "shot.PNG")
+
+    for file <- ["CHANGELOG.md" | private] do
+      assert Content.asset_path(name, file) == nil, "#{file} must not be served"
+    end
+  end
+
   test "markdown rendering strips unsafe HTML and link attributes" do
     root =
       Path.join(System.tmp_dir!(), "gamend_content_#{System.unique_integer([:positive])}")

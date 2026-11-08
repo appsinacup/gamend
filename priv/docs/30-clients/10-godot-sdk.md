@@ -41,6 +41,7 @@ may have its own `Lobby`:
 | `users_get_current_user()` | `GamendCurrentUserResponse`: `data`, a `GamendCurrentUser` |
 | `authenticate_device_login(id)` | `GamendSessionResponse`: `data`, a `GamendSession` |
 | `tournaments_tournament_bracket(id)` | `GamendTournamentBracketPage`: `data` (`GamendTournamentBracket` rows, each with its `matches` and `entries`), `meta` |
+| `results_get_result(id)` | `GamendPlayResultResponse`: `data`, a `GamendPlayResult` |
 | `lobbies_leave_lobby()` | `GamendOkResponse`: `ok` |
 
 Every answer has the same four shapes (see API conventions): the resource
@@ -120,6 +121,11 @@ Phoenix socket and takes its token from the same API instance, so it
 reconnects with a refreshed token automatically. Set
 `gamend_api.realtime_format = "protobuf"` before the call for binary frames.
 Topics, events and payloads are in the Realtime guide.
+
+Over the socket, once it is up: `hooks_call_hook_ws`, `kv_subscribe_ws`,
+`kv_unsubscribe_ws`, `results_list_ws`, `results_get_ws`, `results_events_ws`,
+`lobby_get_server_time_ws`, `signaling_broadcast_offer_ws` and
+`signaling_list_users_ws`. Each awaits like a REST call.
 
 ## Client logs
 

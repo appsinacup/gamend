@@ -209,9 +209,12 @@ defmodule GamendHost.MixProject do
           # the Balaur SDK, which is generated from both.
           "gamend.gen.events",
           "cmd python3 clients/sdkgen balaur",
+          # Every SDK against every operation, schema and socket event.
+          "cmd python3 clients/sdkgen lint",
           "credo --strict",
           "gamend.api.lint",
-          "gamend.race.lint"
+          "gamend.race.lint",
+          "gamend.literal.lint"
         ] ++
           local_web_commands([
             # No `xref unreachable`: Elixir folded that check into the compiler,

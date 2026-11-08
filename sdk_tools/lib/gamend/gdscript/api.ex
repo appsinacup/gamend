@@ -529,6 +529,15 @@ defmodule Gamend.GDScript.API do
       "write_webrtc_config" => [2]
     },
     "Lock" => %{"exclusive" => [3], "serialize" => [3]},
+    "MatchSeating" => %{
+      "default" => [0, 1],
+      "dump" => [1],
+      "in_lobby" => [1, 2],
+      "load" => [1],
+      "lobby_attrs" => [2],
+      "new_lobby" => [0, 1],
+      "unlock?" => [1]
+    },
     "Matchmaking" => %{
       "assign_lobby" => [2],
       "cancel" => [1],
@@ -538,7 +547,7 @@ defmodule Gamend.GDScript.API do
       "current_ticket" => [1],
       "discard" => [1, 2],
       "get_ticket" => [1],
-      "join" => [2, 3, 4, 5],
+      "join" => [2, 3, 4],
       "list_queued_by_params" => [0],
       "list_tickets" => [0, 1],
       "prune_offline" => [0],
@@ -741,6 +750,16 @@ defmodule Gamend.GDScript.API do
       "update_quest" => [2],
       "user_quest_page" => [1, 2],
       "visible_categories" => [0, 1]
+    },
+    "Rating" => %{
+      "band" => [1, 2],
+      "dump" => [1],
+      "elo" => [3, 4],
+      "expected" => [2],
+      "glicko2" => [2, 3],
+      "load" => [1],
+      "new" => [0, 1],
+      "settle" => [2, 3]
     },
     "ReadyChecks" => %{
       "add_member" => [2],

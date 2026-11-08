@@ -168,7 +168,28 @@ defmodule GamendWeb.UserLive.Registration do
         end
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, socket |> assign(check_errors: true) |> assign_form(changeset)}
+        others = Accounts.drop_email_taken(changeset)
+
+        if Accounts.email_taken?(changeset) and others.valid? do
+          # Answered as a free address is, and its owner gets an email: saying
+          # "taken" tells anyone who asks which addresses have accounts.
+          Accounts.notify_existing_account(
+            user_params["email"],
+            &url(~p"/users/confirm/#{&1}"),
+            &url(~p"/users/log_in/#{&1}"),
+            notifier
+          )
+
+          {:noreply,
+           socket
+           |> put_flash(
+             :info,
+             gettext("Account created. Check your email for a link to confirm it.")
+           )
+           |> after_registration()}
+        else
+          {:noreply, socket |> assign(check_errors: true) |> assign_form(others)}
+        end
 
       {:error, reason} ->
         # A `before_user_register` plugin refused the sign-up (the email is

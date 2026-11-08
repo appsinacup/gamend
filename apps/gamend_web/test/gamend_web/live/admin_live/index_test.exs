@@ -18,9 +18,9 @@ defmodule GamendWeb.AdminLive.IndexTest do
     Gamend.Lobbies.create_lobby(%{title: "dash-1", hostless: true})
     Gamend.Lobbies.create_lobby(%{title: "dash-2", hostless: true})
 
-    {:ok, _view, html} = conn |> log_in_user(admin) |> live(~p"/admin")
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
 
-    assert html =~ "Lobbies (2)"
+    assert has_element?(view, ~s|#admin-menu a[href="/admin/lobbies"]|, "2")
   end
 
   test "admin overview shows user/provider and leaderboard stats", %{conn: conn} do

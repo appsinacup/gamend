@@ -98,8 +98,10 @@ defmodule GamendWeb.AdminPagesRenderTest do
     setup [:create_admin]
 
     for {path, _label} <- @admin_routes do
-      test "GET #{path} renders for admin", %{conn: conn, admin: admin} do
-        {:ok, _view, _html} = conn |> log_in_user(admin) |> live(unquote(path))
+      test "GET #{path} renders for admin, under a title", %{conn: conn, admin: admin} do
+        {:ok, view, _html} = conn |> log_in_user(admin) |> live(unquote(path))
+
+        assert has_element?(view, "h1")
       end
     end
   end

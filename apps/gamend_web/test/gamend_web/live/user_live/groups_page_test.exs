@@ -27,7 +27,7 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
   # The groups as a page of their own (`UserLive.Groups`, Forge's and Gamend
   # Cloud's Groups) on a host whose groups are hidden only, anyone invited.
   # A team is made there and opened from its URL, a colleague found by their
-  # exact email and invited; nothing offers a type, a listing or requests.
+  # name and invited; nothing offers a type, a listing or requests.
   # And `NewGroupComponent`, which makes one from another page's form.
   use GamendWeb.ConnCase, async: false
 
@@ -206,7 +206,7 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     assert assigns(view).group_detail.id == team.id
   end
 
-  test "a team opens from its URL and a colleague is invited by email", %{
+  test "a team opens from its URL and a colleague is invited by name, never found by email", %{
     conn: conn,
     user: user,
     other: other
@@ -215,7 +215,10 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{team.id}")
     assert assigns(view).group_detail.id == team.id
 
-    render_keyup(view, "group_invite_search", %{"value" => String.upcase(other.email)})
+    render_keyup(view, "group_invite_search", %{"value" => other.email})
+    assert assigns(view).invite_search_results == []
+
+    render_keyup(view, "group_invite_search", %{"value" => other.username})
     assert [%{id: other_id}] = assigns(view).invite_search_results
     assert other_id == other.id
 
@@ -302,7 +305,7 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{team.id}")
     refute has_element?(view, "#group-pending-invites")
 
-    render_keyup(view, "group_invite_search", %{"value" => other.email})
+    render_keyup(view, "group_invite_search", %{"value" => other.username})
     render_click(view, "group_invite_user", %{"group_id" => team.id, "user_id" => other.id})
 
     # Still in the results, marked Invited, and listed under the group.

@@ -43,6 +43,9 @@ defmodule Gamend.Hooks.Defaults do
       def after_user_offline(_user), do: :ok
 
       @impl true
+      def before_user_delete(_user), do: :ok
+
+      @impl true
       def after_user_deleted(_user), do: :ok
 
       @impl true
@@ -258,6 +261,9 @@ defmodule Gamend.Hooks.Defaults do
       def matchmaking_form_matches(_params, _tickets), do: :default
 
       @impl true
+      def matchmaking_seat_match(_tickets), do: :default
+
+      @impl true
       def after_matchmaking_matched(_tickets, _lobby_id), do: :ok
 
       @impl true
@@ -308,6 +314,7 @@ defmodule Gamend.Hooks.Defaults do
                      after_user_online: 1,
                      after_socket_connected: 3,
                      after_user_offline: 1,
+                     before_user_delete: 1,
                      after_user_deleted: 1,
                      after_wallet_changed: 1,
                      after_inventory_changed: 1,
@@ -368,6 +375,7 @@ defmodule Gamend.Hooks.Defaults do
                      after_matchmaking_join: 2,
                      after_matchmaking_cancel: 2,
                      matchmaking_form_matches: 2,
+                     matchmaking_seat_match: 1,
                      after_matchmaking_matched: 2,
                      before_tournament_register: 2,
                      after_tournament_register: 2,

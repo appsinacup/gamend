@@ -99,7 +99,7 @@ defmodule Gamend.Groups do
     default: :friends,
     values: [:friends, :anyone],
     doc:
-      "Whom a group's admin may invite: `friends` (someone who accepted their friend request) or `anyone` (any account, found by name or exact email). For a host whose groups are teams of colleagues; the invite is still the recipient's to accept."
+      "Whom a group's admin may invite: `friends` (someone who accepted their friend request) or `anyone` (any account, found by name). For a host whose groups are teams of colleagues; the invite is still the recipient's to accept."
   )
 
   setting(:link_days, :integer,

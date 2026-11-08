@@ -24,8 +24,9 @@ defmodule GamendWeb.Api.V1.MatchmakingController do
     match_params are grouped; when enough are queued the server creates a
     hidden lobby and pushes a `match_found` event on the caller's user
     channel; `ticket_queued` and `ticket_cancelled` tell where the ticket
-    stands. With `accept_timeout_ms` a formed match asks everyone first (the
-    `ready_check_*` events, answered at `POST /me/ready_check`). A lobby's host
+    stands. A game's server hook may ask everyone to accept a formed match
+    first (the `ready_check_*` events, answered at `POST /me/ready_check`), or
+    seat it in a lobby of its choice. A lobby's host
     who queues fills that lobby (backfill: the ticket's `lobby_id`). Keep a
     socket connected while queued — a player who stays offline past the grace
     period is dropped from the queue by the sweep.
@@ -45,12 +46,7 @@ defmodule GamendWeb.Api.V1.MatchmakingController do
          properties: %{
            match_params: %Schema{type: :object},
            min_players: %Schema{type: :integer},
-           max_players: %Schema{type: :integer},
-           accept_timeout_ms: %Schema{
-             type: :integer,
-             description:
-               "Ask every player to accept a formed match first, within this many ms (a ready check of kind accept); none seats them at once. The game's join hook may set or change it."
-           }
+           max_players: %Schema{type: :integer}
          }
        }},
     responses: [
@@ -70,8 +66,7 @@ defmodule GamendWeb.Api.V1.MatchmakingController do
            user,
            Map.get(params, "match_params", %{}),
            parse_optional_int(params["min_players"]),
-           parse_optional_int(params["max_players"]),
-           accept_timeout_ms: parse_optional_int(params["accept_timeout_ms"])
+           parse_optional_int(params["max_players"])
          ) do
       {:ok, ticket} ->
         reply_data(conn, :created, serialize(ticket))
@@ -142,7 +137,6 @@ defmodule GamendWeb.Api.V1.MatchmakingController do
       min_players: ticket.min_players,
       max_players: ticket.max_players,
       timeout_ms: ticket.timeout_ms,
-      accept_timeout_ms: ticket.accept_timeout_ms || 0,
       lobby_id: ticket.lobby_id || "",
       queued_at: ticket.queued_at,
       matched_at: ticket.matched_at,

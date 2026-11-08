@@ -646,12 +646,21 @@ defmodule Gamend.Accounts.User do
       username: user.username || "",
       display_name: user.display_name || "",
       profile_url: public_avatar_url(user) || "",
-      metadata: user.metadata || %{},
+      metadata: shared_metadata(user),
       is_online: user.is_online || false,
       is_activated: user.is_activated,
       last_seen_at: last_seen_at_or_fallback(user)
     }
   end
+
+  @doc """
+  The metadata other people may be sent: everything but `"payments"`, where
+  `Gamend.Hooks.Default` keeps the user's purchases and entitlements (amounts,
+  order and transaction ids). The owner reads those on `GET /me`.
+  """
+  @spec shared_metadata(t()) :: map()
+  def shared_metadata(%__MODULE__{metadata: %{} = metadata}), do: Map.delete(metadata, "payments")
+  def shared_metadata(%__MODULE__{}), do: %{}
 end
 
 defimpl Jason.Encoder, for: Gamend.Accounts.User do
@@ -661,7 +670,7 @@ defimpl Jason.Encoder, for: Gamend.Accounts.User do
       username: user.username || "",
       display_name: user.display_name || "",
       profile_url: Gamend.Accounts.User.public_avatar_url(user) || "",
-      metadata: user.metadata || %{},
+      metadata: Gamend.Accounts.User.shared_metadata(user),
       lobby_id: user.lobby_id || "",
       party_id: user.party_id || "",
       is_online: user.is_online || false,

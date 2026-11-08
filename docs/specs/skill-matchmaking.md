@@ -4,6 +4,13 @@ Design spec for the Phase 2 **Skill matchmaking** item in
 [ROADMAP.md](../../ROADMAP.md). Extends the existing `Gamend.Matchmaking`
 (matcher) — it does **not** replace it.
 
+**Status (2026-11-08):** the reusable half shipped as `Gamend.Rating` (Elo,
+Glicko-2, teams, `band/2`), with `matchmaking_seat_match/1` for where a match
+sits. Skill matching is a game's `matchmaking_form_matches` calling those
+functions. Not built, and wanted only once two games need them: the
+`player_ratings` table, the ticket `rating` column, bands in the default
+matcher, the toggle and the admin page. Below is the original design.
+
 Goal: match players of **similar skill**, while **widening** the acceptable
 skill gap the longer someone waits so no one is stuck in queue — and keep the
 whole thing overridable by a game that wants its own logic.

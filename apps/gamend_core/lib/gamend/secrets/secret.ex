@@ -22,7 +22,6 @@ defmodule Gamend.Secrets.Secret do
     field :iv, :binary
     field :tag, :binary
     field :key_id, :string
-    field :fingerprint, :binary
 
     field :kind, :string
     field :byte_size, :integer
@@ -44,7 +43,6 @@ defmodule Gamend.Secrets.Secret do
       :iv,
       :tag,
       :key_id,
-      :fingerprint,
       :kind,
       :byte_size,
       :expires_at,
@@ -54,6 +52,10 @@ defmodule Gamend.Secrets.Secret do
     |> validate_length(:scope, max: 60)
     |> validate_length(:scope_id, max: 60)
     |> validate_length(:name, max: 60)
+    # `scope/scope_id/name` is what gets authenticated: a `/` in either of the
+    # first two would let two different owners spell the same bytes.
+    |> validate_format(:scope, ~r/\A[^\/]+\z/, message: "must not contain /")
+    |> validate_format(:scope_id, ~r/\A[^\/]+\z/, message: "must not contain /")
     # The name is half the additional authenticated data, so it has to be the
     # same bytes going in as coming out. A name that needs a newline is not a
     # name, and one that differs only by trailing whitespace is a support call.

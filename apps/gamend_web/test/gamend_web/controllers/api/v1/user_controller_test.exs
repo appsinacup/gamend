@@ -70,6 +70,21 @@ defmodule GamendWeb.Api.V1.UserControllerTest do
     assert resp["last_seen_at"] == "1970-01-01T00:00:00Z"
   end
 
+  test "GET /api/v1/users/:id says nothing of when the player is online", %{conn: conn} do
+    u = user_fixture(%{email: "seen-user@example.com"})
+
+    u
+    |> Ecto.Changeset.change(is_online: true, last_seen_at: DateTime.utc_now(:second))
+    |> Gamend.Repo.update!()
+
+    Gamend.Accounts.invalidate_user_cache_by_id(u.id)
+
+    resp = conn |> get("/api/v1/users/#{u.id}") |> json_response(200) |> Map.fetch!("data")
+
+    assert resp["is_online"] == false
+    assert resp["last_seen_at"] == "1970-01-01T00:00:00Z"
+  end
+
   test "GET /api/v1/users/:id returns 404 if not found", %{conn: conn} do
     conn = get(conn, "/api/v1/users/00000000-0000-0000-0000-000000000000")
     assert conn.status == 404

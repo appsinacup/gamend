@@ -1610,7 +1610,18 @@ defmodule Gamend.Payments do
   def processed_result({:error, reason}), do: {:error, reason}
 
   @doc false
+  # A deleted account's purchase stays as the record of the sale, with nobody
+  # left to act for. Found, every event about it fails on its missing owner
+  # (`Purchase.changeset/2`), which Stripe retries for three days and can then
+  # disable the endpoint over.
   def purchase_from_provider_object(object) do
+    case provider_object_purchase(object) do
+      {:ok, %Purchase{user_id: nil}} -> {:error, :purchase_not_found}
+      found -> found
+    end
+  end
+
+  defp provider_object_purchase(object) do
     metadata = object["metadata"] || %{}
 
     cond do

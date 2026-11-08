@@ -51,6 +51,22 @@ defmodule GamendWeb.LobbyChannelTest do
     assert socket.assigns.spectator == true
   end
 
+  test "a spectator is sent no member's metadata" do
+    host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+    spectator = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+    {:ok, _} = Gamend.Accounts.update_user_metadata(host.id, &Map.put(&1, "ship", "brig"))
+
+    {:ok, lobby} = Lobbies.create_lobby(%{title: "spectate-metadata", host_id: host.id})
+
+    {:ok, token, _} = Guardian.encode_and_sign(spectator)
+    {:ok, socket} = connect(GamendWeb.UserSocket, %{"token" => token})
+    {:ok, _, _socket} = subscribe_and_join(socket, "lobby:#{lobby.id}", %{})
+
+    assert_push "updated", %{spectator: true, members: [%{id: host_id, metadata: metadata}]}
+    assert host_id == host.id
+    assert metadata == %{}
+  end
+
   test "non-members cannot join a hidden lobby" do
     host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
     stranger = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()

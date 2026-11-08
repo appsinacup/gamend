@@ -72,6 +72,8 @@ export class GameRealtime {
     this._socket.onError(() => this._refreshToken())
     /** @type {Map<string, Object>} topic → Phoenix Channel */
     this._channels = new Map()
+    /** @type {Map<string, Object>} KV subscriptions to repeat on every rejoin */
+    this._kvSubscriptions = new Map()
     // Channels joined before the token arrives are buffered by Phoenix.
     this._refreshToken().then(() => {
       if (!this._closed) this._socket.connect()
@@ -200,6 +202,104 @@ export class GameRealtime {
   }
 
   /**
+   * Hear `kv_updated` / `kv_deleted` for a row on the user channel. Repeated
+   * when the channel rejoins, since a new channel holds no subscriptions.
+   * @param {string} key
+   * @param {{user_id?: string, lobby_id?: string}} [scope] - whose row it is
+   * @returns {Promise<Object>} the server's reply, with the row
+   */
+  kvSubscribe(key, scope = {}) {
+    const payload = { key, ...scope }
+    this._kvSubscriptions.set(JSON.stringify(payload), payload)
+    return this._userRequest('kv:subscribe', payload)
+  }
+
+  /**
+   * Stop hearing a row.
+   * @param {string} key
+   * @param {{user_id?: string, lobby_id?: string}} [scope]
+   * @returns {Promise<Object>}
+   */
+  kvUnsubscribe(key, scope = {}) {
+    const payload = { key, ...scope }
+    this._kvSubscriptions.delete(JSON.stringify(payload))
+    return this._userRequest('kv:unsubscribe', payload)
+  }
+
+  /**
+   * A page of the caller's results.
+   * @param {{kind?: string, status?: string, page?: number, page_size?: number}} [params]
+   * @returns {Promise<Object>} `{data, meta}`
+   */
+  resultsList(params = {}) {
+    return this._userRequest('results:list', params)
+  }
+
+  /**
+   * One result and its stats.
+   * @param {string} id
+   * @returns {Promise<Object>}
+   */
+  resultsGet(id) {
+    return this._userRequest('results:get', { id })
+  }
+
+  /**
+   * A result's events, oldest first.
+   * @param {string} id
+   * @param {{after?: string, limit?: number}} [params]
+   * @returns {Promise<Object>}
+   */
+  resultsEvents(id, params = {}) {
+    return this._userRequest('results:events', { ...params, id })
+  }
+
+  /**
+   * The server's clock, over a joined lobby channel.
+   * @param {string} lobbyId
+   * @returns {Promise<{server_now: number}>}
+   */
+  lobbyGetServerTime(lobbyId) {
+    return this._topicRequest(`lobby:${lobbyId}`, 'get_server_time')
+  }
+
+  /**
+   * Join a lobby's signaling room, for peer-to-peer WebRTC between its players.
+   * Topic: `"signaling:<lobbyId>"`
+   * @param {string} lobbyId
+   * @param {Object} params
+   * @returns {Object} Phoenix Channel
+   */
+  joinSignalingChannel(lobbyId, params = {}) {
+    return this._join(`signaling:${lobbyId}`, params)
+  }
+
+  /** Send one peer an SDP offer. @returns {Promise<Object>} */
+  signalingOffer(lobbyId, target, sdp) {
+    return this._topicRequest(`signaling:${lobbyId}`, 'offer', { target, sdp })
+  }
+
+  /** Send one peer an SDP answer. @returns {Promise<Object>} */
+  signalingAnswer(lobbyId, target, sdp) {
+    return this._topicRequest(`signaling:${lobbyId}`, 'answer', { target, sdp })
+  }
+
+  /** Send one peer an ICE candidate. @returns {Promise<Object>} */
+  signalingIce(lobbyId, target, candidate) {
+    return this._topicRequest(`signaling:${lobbyId}`, 'ice', { target, candidate })
+  }
+
+  /** Send every peer in the room an SDP offer. @returns {Promise<Object>} */
+  signalingBroadcastOffer(lobbyId, sdp) {
+    return this._topicRequest(`signaling:${lobbyId}`, 'broadcast_offer', { sdp })
+  }
+
+  /** Who is in the room. @returns {Promise<Object>} */
+  signalingListUsers(lobbyId) {
+    return this._topicRequest(`signaling:${lobbyId}`, 'list_users')
+  }
+
+  /**
    * Join an arbitrary channel topic.
    * @param {string} topic  - Full Phoenix channel topic string
    * @param {Object} params - Join params
@@ -258,6 +358,9 @@ export class GameRealtime {
     const ch = this._socket.channel(topic, extraParams)
     if (this._format === 'protobuf') this._wrapBinaryDecode(ch)
     ch.join()
+      .receive('ok', () => {
+        if (topic.startsWith('user:')) this._kvSubscriptions.forEach((p) => ch.push('kv:subscribe', p))
+      })
       .receive('error', (err) =>
         console.error(`GameRealtime: failed to join channel "${topic}"`, err)
       )
@@ -300,6 +403,27 @@ export class GameRealtime {
       }
       return originalTrigger(event, decoded, ref, joinRef)
     }
+  }
+
+  _userRequest(event, payload) {
+    return this._request(this._findUserChannel(), 'the user channel', event, payload)
+  }
+
+  _topicRequest(topic, event, payload = {}) {
+    return this._request(this._channels.get(topic), `"${topic}"`, event, payload)
+  }
+
+  _request(channel, name, event, payload) {
+    return new Promise((resolve, reject) => {
+      if (!channel) {
+        reject(new Error(`Not joined to ${name}. Join it first.`))
+        return
+      }
+      channel.push(event, payload)
+        .receive('ok', resolve)
+        .receive('error', (resp) => reject(new Error(resp.error || 'unknown_error')))
+        .receive('timeout', () => reject(new Error('timeout')))
+    })
   }
 
   _findUserChannel() {

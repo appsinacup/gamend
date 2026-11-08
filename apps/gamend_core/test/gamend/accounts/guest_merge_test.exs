@@ -6,6 +6,9 @@ defmodule Gamend.Accounts.GuestMergeTest do
   alias Gamend.AccountsFixtures
   alias Gamend.Economy
   alias Gamend.Inventory
+  alias Gamend.Payments
+  alias Gamend.Payments.Entitlement
+  alias Gamend.Payments.Purchase
   alias Gamend.Quests
 
   setup do
@@ -73,4 +76,187 @@ defmodule Gamend.Accounts.GuestMergeTest do
     assert Quests.get_progress(account.id, "merge_b").objective_progress == %{"0" => 2}
     assert Quests.get_progress(guest.id, "merge_a").objective_progress == %{"0" => 2}
   end
+
+  describe "entitlements" do
+    setup do
+      %{now: DateTime.utc_now(:second)}
+    end
+
+    test "a granted one reaches the account, with its end and its metadata", %{
+      guest: guest,
+      account: account,
+      now: now
+    } do
+      ends_at = DateTime.add(now, 7, :day)
+
+      {:ok, _} =
+        Payments.grant_entitlement(guest.id, "beta",
+          expires_at: ends_at,
+          metadata: %{"title" => "Beta"}
+        )
+
+      {:ok, _} = Payments.grant_entitlement(guest.id, "lifetime")
+
+      assert :ok = GuestMerge.merge(guest, account)
+
+      beta = entitlement(account, "beta")
+      assert beta.status == "active"
+      assert beta.expires_at == ends_at
+      assert beta.metadata == %{"title" => "Beta"}
+
+      assert entitlement(account, "lifetime").expires_at == nil
+      assert Payments.has_entitlement?(account.id, "beta")
+      assert Payments.has_entitlement?(account.id, "lifetime")
+    end
+
+    test "the account's longer end stands and its metadata is not overwritten", %{
+      guest: guest,
+      account: account,
+      now: now
+    } do
+      longer = DateTime.add(now, 30, :day)
+
+      {:ok, _} =
+        Payments.grant_entitlement(guest.id, "beta",
+          expires_at: DateTime.add(now, 7, :day),
+          metadata: %{"source" => "guest"}
+        )
+
+      {:ok, _} =
+        Payments.grant_entitlement(account.id, "beta",
+          expires_at: longer,
+          metadata: %{"source" => "account"}
+        )
+
+      assert :ok = GuestMerge.merge(guest, account)
+
+      beta = entitlement(account, "beta")
+      assert beta.expires_at == longer
+      assert beta.metadata == %{"source" => "account"}
+    end
+
+    test "a longer grant extends the account's end and leaves its metadata", %{
+      guest: guest,
+      account: account,
+      now: now
+    } do
+      longer = DateTime.add(now, 30, :day)
+
+      {:ok, _} =
+        Payments.grant_entitlement(guest.id, "beta",
+          expires_at: longer,
+          metadata: %{"source" => "guest"}
+        )
+
+      {:ok, _} =
+        Payments.grant_entitlement(account.id, "beta",
+          expires_at: DateTime.add(now, 7, :day),
+          metadata: %{"source" => "account"}
+        )
+
+      assert :ok = GuestMerge.merge(guest, account)
+
+      beta = entitlement(account, "beta")
+      assert beta.expires_at == longer
+      assert beta.metadata == %{"source" => "account"}
+    end
+
+    test "a row of the account's that has ended comes back with the guest's end", %{
+      guest: guest,
+      account: account,
+      now: now
+    } do
+      ends_at = DateTime.add(now, 7, :day)
+      {:ok, _} = Payments.grant_entitlement(guest.id, "beta", expires_at: ends_at)
+
+      Repo.insert!(%Entitlement{
+        user_id: account.id,
+        key: "beta",
+        status: "active",
+        expires_at: DateTime.add(now, -1, :day)
+      })
+
+      assert :ok = GuestMerge.merge(guest, account)
+
+      assert entitlement(account, "beta").expires_at == ends_at
+      assert Payments.has_entitlement?(account.id, "beta")
+    end
+
+    test "one the account had revoked stays revoked", %{guest: guest, account: account} do
+      {:ok, _} = Payments.grant_entitlement(guest.id, "beta")
+      {:ok, _} = Payments.grant_entitlement(account.id, "beta")
+      {:ok, _} = Payments.revoke_entitlement(account.id, "beta")
+
+      assert :ok = GuestMerge.merge(guest, account)
+
+      assert entitlement(account, "beta").status == "revoked"
+      refute Payments.has_entitlement?(account.id, "beta")
+    end
+
+    test "one a purchase made stays with the guest", %{guest: guest, account: account} do
+      purchase =
+        Repo.insert!(%Purchase{
+          user_id: guest.id,
+          provider: "test",
+          order_id: "merge_#{System.unique_integer([:positive])}",
+          status: "completed"
+        })
+
+      Repo.insert!(%Entitlement{
+        user_id: guest.id,
+        key: "paid",
+        status: "active",
+        source_purchase_id: purchase.id
+      })
+
+      assert :ok = GuestMerge.merge(guest, account)
+
+      refute Payments.entitlement_ever?(account.id, "paid")
+    end
+
+    test "one the guest no longer holds is not carried over", %{
+      guest: guest,
+      account: account,
+      now: now
+    } do
+      {:ok, _} = Payments.grant_entitlement(guest.id, "revoked_one")
+      {:ok, _} = Payments.revoke_entitlement(guest.id, "revoked_one")
+
+      Repo.insert!(%Entitlement{
+        user_id: guest.id,
+        key: "ended_one",
+        status: "active",
+        expires_at: DateTime.add(now, -1, :day)
+      })
+
+      assert :ok = GuestMerge.merge(guest, account)
+
+      refute Payments.entitlement_ever?(account.id, "revoked_one")
+      refute Payments.entitlement_ever?(account.id, "ended_one")
+    end
+
+    test "a second merge writes nothing and announces nothing", %{
+      guest: guest,
+      account: account,
+      now: now
+    } do
+      {:ok, _} =
+        Payments.grant_entitlement(guest.id, "beta", expires_at: DateTime.add(now, 7, :day))
+
+      {:ok, _} = Payments.grant_entitlement(guest.id, "lifetime")
+      Phoenix.PubSub.subscribe(Gamend.PubSub, "user:#{account.id}")
+
+      assert :ok = GuestMerge.merge(guest, account)
+      assert_receive {:entitlement_changed, %Entitlement{key: "beta"}}
+      assert_receive {:entitlement_changed, %Entitlement{key: "lifetime"}}
+      beta = entitlement(account, "beta")
+
+      assert :ok = GuestMerge.merge(guest, account)
+
+      refute_receive {:entitlement_changed, _}, 100
+      assert entitlement(account, "beta") == beta
+    end
+  end
+
+  defp entitlement(user, key), do: Repo.get_by!(Entitlement, user_id: user.id, key: key)
 end

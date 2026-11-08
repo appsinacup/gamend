@@ -63,4 +63,39 @@ defmodule GamendWeb.RealtimeEventsDriftTest do
            "registry events no longer pushed anywhere: #{inspect(stale)} — " <>
              "remove them from RealtimeEvents (or add to @indirect if forwarded dynamically)"
   end
+
+  # Every event a channel answers by name, as {channel, event}. The clause
+  # that takes a variable is the catch-all for an unknown event.
+  defp handled_commands do
+    for file <- Path.wildcard(@channels_glob),
+        String.ends_with?(file, "_channel.ex"),
+        channel = Path.basename(file, "_channel.ex"),
+        [event] <-
+          Regex.scan(~r/def handle_in\(\s*"([a-z_0-9:]+)"/, File.read!(file),
+            capture: :all_but_first
+          ),
+        into: MapSet.new(),
+        do: {channel, event}
+  end
+
+  defp registered_commands do
+    for entry <- GamendWeb.RealtimeCommands.all(),
+        into: MapSet.new(),
+        do: {entry.topic |> String.split(":") |> hd(), entry.event}
+  end
+
+  test "every event a channel answers is in the command registry" do
+    missing = MapSet.difference(handled_commands(), registered_commands())
+
+    assert MapSet.size(missing) == 0,
+           "channels answer events RealtimeCommands does not list: " <>
+             inspect(MapSet.to_list(missing)) <> " — add them, and every SDK a function"
+  end
+
+  test "every registered command is still answered by its channel" do
+    stale = MapSet.difference(registered_commands(), handled_commands())
+
+    assert MapSet.size(stale) == 0,
+           "RealtimeCommands lists what no channel answers: #{inspect(MapSet.to_list(stale))}"
+  end
 end

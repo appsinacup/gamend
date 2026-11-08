@@ -697,7 +697,7 @@ defmodule GamendWeb.LobbyLive.Index do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="p-6">
-        <div class="mb-4"><.back_link navigate={~p"/admin/lobbies"} /></div>
+        <.admin_header page="/admin/lobbies/live" back={~p"/admin/lobbies"} />
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
           <div class="card bg-base-200 p-4 rounded-lg">

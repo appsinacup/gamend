@@ -145,6 +145,9 @@ they are decoded before they reach you, with timestamps as unix milliseconds.
 Metadata and KV data your plugin sends in its own schema reach a decoder you
 register (`register_metadata_decoder`, `register_kv_decoder`).
 
+`gamend::commands` has a function for each event a channel answers, such as
+`commands::results_list(client.realtime(), {{"kind", "match"}}, done)`.
+
 ## Live rows and presence
 
 ```cpp

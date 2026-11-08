@@ -11,7 +11,14 @@ defmodule GamendWeb.Api.V1.Admin.ResultController do
   alias Gamend.Results.Result
   alias GamendWeb.ResultReads
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{OkResponse, ResultEventsResponse, ResultPage, ResultResponse}
+
+  alias GamendWeb.Schemas.{
+    OkResponse,
+    PlayResultEventsResponse,
+    PlayResultPage,
+    PlayResultResponse
+  }
+
   alias OpenApiSpex.Schema
 
   tags(["Admin – Results"])
@@ -30,7 +37,7 @@ defmodule GamendWeb.Api.V1.Admin.ResultController do
       page_size: [in: :query, schema: %Schema{type: :integer, default: 25}]
     ],
     responses: [
-      ok: {"Results", "application/json", ResultPage}
+      ok: {"Results", "application/json", PlayResultPage}
     ]
   )
 
@@ -49,7 +56,7 @@ defmodule GamendWeb.Api.V1.Admin.ResultController do
     security: [%{"authorization" => []}],
     parameters: [id: [in: :path, schema: %Schema{type: :string, format: :uuid}, required: true]],
     responses: [
-      ok: {"The result", "application/json", ResultResponse},
+      ok: {"The result", "application/json", PlayResultResponse},
       not_found: Schemas.error("Not found")
     ]
   )
@@ -71,7 +78,7 @@ defmodule GamendWeb.Api.V1.Admin.ResultController do
       limit: [in: :query, schema: %Schema{type: :integer, default: 500}]
     ],
     responses: [
-      ok: {"The events", "application/json", ResultEventsResponse},
+      ok: {"The events", "application/json", PlayResultEventsResponse},
       not_found: Schemas.error("Not found")
     ]
   )

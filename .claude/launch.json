@@ -28,6 +28,24 @@
       ],
       "port": 4000,
       "autoPort": true
+    },
+    {
+      "name": "gamend-sdk-check",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "export MIX_ENV=test MIX_TEST_PARTITION=77 GAMEND_CONTENT_PLUGINS_DIR=modules/plugins_examples GAMEND_RATELIMIT_ENABLED=false; exec mix run --no-start --no-halt -e 'c = Application.get_env(:gamend_web, GamendWeb.Endpoint); Application.put_env(:gamend_web, GamendWeb.Endpoint, Keyword.put(c, :server, true)); r = Application.get_env(:gamend_core, Gamend.Repo); Application.put_env(:gamend_core, Gamend.Repo, Keyword.merge(r, pool: DBConnection.ConnectionPool, pool_size: 5)); {:ok, _} = Application.ensure_all_started(:gamend_host)'"
+      ],
+      "port": 4002
+    },
+    {
+      "name": "gamend-admin-shot",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "MIX_BUILD_PATH=_build/test_admin_ui MIX_ENV=test MIX_TEST_PARTITION=79 exec mix phx.server"
+      ],
+      "port": 4002
     }
   ]
 }

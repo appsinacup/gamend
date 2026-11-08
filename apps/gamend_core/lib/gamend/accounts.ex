@@ -19,6 +19,7 @@ defmodule Gamend.Accounts do
 
   import Ecto.Query, warn: false
   alias Gamend.Lock.Local
+  alias Gamend.Payments.DeletedAccountSubscriptions
   alias Gamend.Repo
   alias Gamend.Types
 
@@ -128,6 +129,21 @@ defmodule Gamend.Accounts do
   defdelegate resend_confirmation(
                 email,
                 confirmation_url_fun,
+                notifier \\ Gamend.Accounts.UserNotifier
+              ),
+              to: Registration
+
+  @doc delegate_to: {Registration, :email_taken?, 1}
+  defdelegate email_taken?(changeset), to: Registration
+
+  @doc delegate_to: {Registration, :drop_email_taken, 1}
+  defdelegate drop_email_taken(changeset), to: Registration
+
+  @doc delegate_to: {Registration, :notify_existing_account, 4}
+  defdelegate notify_existing_account(
+                email,
+                confirmation_url_fun,
+                login_url_fun,
                 notifier \\ Gamend.Accounts.UserNotifier
               ),
               to: Registration
@@ -991,6 +1007,11 @@ defmodule Gamend.Accounts do
              ) do
         invalidate_user_cache(user)
         invalidate_user_cache(updated_user)
+
+        Gamend.Async.run(fn ->
+          Gamend.Hooks.internal_call(:after_user_updated, [updated_user])
+        end)
+
         {:ok, updated_user}
       else
         _ -> {:error, :transaction_aborted}
@@ -1107,6 +1128,8 @@ defmodule Gamend.Accounts do
     )
   end
 
+  @before_delete_hook_timeout_ms 30_000
+
   @doc """
   Deletes a user and associated resources.
 
@@ -1117,6 +1140,15 @@ defmodule Gamend.Accounts do
 
   @spec delete_user(User.t()) :: {:ok, User.t()} | {:error, :not_found | Ecto.Changeset.t()}
   def delete_user(%User{} = user) do
+    # First, while everything of the account's can still be read. It cannot
+    # stop the delete: its answer is ignored, and a raise is logged like the
+    # steps below.
+    best_effort(user, "before delete hook", fn ->
+      Gamend.Hooks.internal_call(:before_user_delete, [user],
+        timeout_ms: @before_delete_hook_timeout_ms
+      )
+    end)
+
     # Best-effort: try to remove the user from any party they may belong to.
     # If they are the leader the party is disbanded (PubSub + cache cleanup).
     best_effort(user, "leave party", fn -> Gamend.Parties.leave_party(user) end)
@@ -1141,10 +1173,18 @@ defmodule Gamend.Accounts do
       _ = set_user_offline(fresh_user.id)
     end
 
+    # Read before the delete, which takes the purchases' owner; cancelled after
+    # it, so an account whose delete fails keeps what it pays for.
+    subscriptions = DeletedAccountSubscriptions.of_user(user.id)
+
     # Two deletes racing (an admin and retention): the second finds no row.
     case Repo.rescue_stale(:not_found, fn -> Repo.delete(user) end) do
       {:ok, _user} = ok ->
         invalidate_users_count_cache()
+
+        best_effort(user, "subscription cancel", fn ->
+          DeletedAccountSubscriptions.cancel(subscriptions)
+        end)
 
         # Friend DMs sent *to* this user (chat_type "friend", chat_ref_id = user)
         # have no FK to cascade — the sender's own messages go via sender_id, so

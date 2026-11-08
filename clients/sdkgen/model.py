@@ -1,7 +1,8 @@
 """What every emitter reads: the operations, the realtime table and the names.
 
 The OpenAPI document says what the REST layer is; `clients/events.json` says
-what the socket sends, since OpenAPI does not describe it; and
+what the socket sends and `clients/commands.json` what it answers, since
+OpenAPI describes neither; and
 `clients/balaur_names.json` holds the names the Godot façade chose where they
 differ from `<tag>_<operationId>`, so a game ported between engines calls the
 same thing.
@@ -17,6 +18,7 @@ CLIENTS = HERE.parent
 ROOT = CLIENTS.parent
 SPEC = CLIENTS / "godot" / "openapi.json"
 EVENTS = CLIENTS / "events.json"
+COMMANDS = CLIENTS / "commands.json"
 NAMES = CLIENTS / "balaur_names.json"
 
 METHODS = ("get", "post", "put", "patch", "delete")
@@ -27,6 +29,7 @@ class Model:
     spec: dict
     ops: list[dict]
     table: list[dict]
+    commands: list[dict]
     aliases: dict[str, str]
 
     def name(self, op: dict) -> str:
@@ -42,6 +45,7 @@ def load() -> Model:
         spec=spec,
         ops=operations(spec),
         table=json.loads(EVENTS.read_text()),
+        commands=json.loads(COMMANDS.read_text()),
         aliases=json.loads(NAMES.read_text()),
     )
 

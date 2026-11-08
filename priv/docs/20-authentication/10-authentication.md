@@ -31,7 +31,9 @@ A game client signs a player up in two steps, and the password comes second:
    and queues the confirmation email, as the browser form does. It answers
    `201` with the account (`user_id`, `username`, `display_name`,
    `email_confirmed: false`) and no tokens, without waiting on the mail
-   server.
+   server. An address that already has an account gets the same answer, so
+   nobody learns which addresses are registered; its owner is emailed a login
+   link instead.
 2. The email carries a link and a six-digit code. The game asks the player for
    the code and a password and sends them to `POST /api/v1/register/confirm`
    (`email`, `code`, `password`), which confirms the email, sets the password
@@ -134,6 +136,7 @@ A guest (an account with no email and no provider, made for a visitor's first sa
 | The host's own data | The `merge_user_data/2` hook runs first and merges what the host understands, by its own rules |
 | Other KV keys | Moved where the account has none; a key both have stays the account's |
 | Wallets, inventory | Moved: taken off the guest and added to the account's in one transaction, so a coin the guest spends meanwhile is not also moved |
+| Entitlements granted without a purchase | Added to the account, and the later end wins. One the account had revoked stays revoked; one a purchase made stays with the guest |
 | Leaderboard records | `best` boards keep the better score, `incr` boards add, `set` and `decr` only where the account has none |
 | Quest progress | Moved for quest periods the account has not played |
 | Activity days, analytics events, content reports, notifications | Moved |

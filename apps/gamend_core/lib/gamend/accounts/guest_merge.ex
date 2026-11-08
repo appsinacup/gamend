@@ -31,13 +31,17 @@ defmodule Gamend.Accounts.GuestMerge do
        not counted twice.
     4. Inventory: quantities moved the same way (`Gamend.Inventory.consume_item/4`,
        `Gamend.Inventory.grant_item/4`).
-    5. Leaderboards: `Gamend.Leaderboards.merge_user_records/2` (best kept,
+    5. Entitlements granted without a purchase, through
+       `Gamend.Payments.grant_entitlement/3`, which never shortens what the
+       account holds. One the account had revoked stays revoked, and one a
+       purchase made stays with the guest.
+    6. Leaderboards: `Gamend.Leaderboards.merge_user_records/2` (best kept,
        counters added, the account's never lowered).
-    6. Quests: `Gamend.Quests.merge_user_progress/2` (periods the account has
+    7. Quests: `Gamend.Quests.merge_user_progress/2` (periods the account has
        not played).
-    7. Activity days the account lacks; the guest's analytics events,
+    8. Activity days the account lacks; the guest's analytics events,
        content reports and notifications become the account's.
-    8. `users.metadata` and `users.preferences` keys the account lacks.
+    9. `users.metadata` and `users.preferences` keys the account lacks.
 
   Sessions, push tokens, bans, lobby and party seats are not moved. Wallet
   and inventory moves carry idempotency keys and every other step only moves
@@ -54,6 +58,8 @@ defmodule Gamend.Accounts.GuestMerge do
   alias Gamend.Economy
   alias Gamend.Inventory
   alias Gamend.Lock.Local
+  alias Gamend.Payments
+  alias Gamend.Payments.Entitlement
   alias Gamend.Repo
 
   @hook_timeout_ms 30_000
@@ -82,6 +88,7 @@ defmodule Gamend.Accounts.GuestMerge do
         step(:kv, fn -> merge_kv(guest_id, user_id) end)
         step(:wallets, fn -> merge_wallets(guest_id, user_id) end)
         step(:inventory, fn -> merge_inventory(guest_id, user_id) end)
+        step(:entitlements, fn -> merge_entitlements(guest_id, user_id) end)
         step(:leaderboards, fn -> Gamend.Leaderboards.merge_user_records(guest_id, user_id) end)
         step(:quests, fn -> Gamend.Quests.merge_user_progress(guest_id, user_id) end)
         step(:results, fn -> Gamend.Results.move_user(guest_id, user_id) end)
@@ -218,6 +225,55 @@ defmodule Gamend.Accounts.GuestMerge do
         end
     end
   end
+
+  # Copied, not moved: nothing can spend an entitlement, and the guest's rows
+  # go with the guest. A row a purchase made stays there: its provider sync
+  # looks for it under the purchase, which is not moved.
+  defp merge_entitlements(guest_id, user_id) do
+    held =
+      user_id
+      |> Payments.list_user_entitlements(include_inactive: true)
+      |> Map.new(&{&1.key, &1})
+
+    now = DateTime.utc_now(:second)
+
+    for %Entitlement{source_purchase_id: nil} = granted <-
+          Payments.list_user_entitlements(guest_id) do
+      {:ok, _} = merge_entitlement(granted, Map.get(held, granted.key), user_id, now)
+    end
+  end
+
+  defp merge_entitlement(granted, nil, user_id, _now) do
+    Payments.grant_entitlement(user_id, granted.key,
+      expires_at: granted.expires_at,
+      metadata: granted.metadata
+    )
+  end
+
+  # Taken away from the account on purpose, and a grant would bring it back.
+  defp merge_entitlement(_granted, %Entitlement{status: "revoked"} = held, _user_id, _now),
+    do: {:ok, held}
+
+  # Only a write that adds something: a grant that changes nothing still tells
+  # every `after_entitlement_changed` hook that something did.
+  defp merge_entitlement(granted, %Entitlement{} = held, user_id, now) do
+    if lasts_as_long?(held, granted, now),
+      do: {:ok, held},
+      else: Payments.grant_entitlement(user_id, granted.key, expires_at: granted.expires_at)
+  end
+
+  defp lasts_as_long?(%Entitlement{status: "active", expires_at: nil}, _granted, _now), do: true
+
+  defp lasts_as_long?(
+         %Entitlement{status: "active", expires_at: %DateTime{} = ends},
+         granted,
+         now
+       ) do
+    DateTime.after?(ends, now) and is_struct(granted.expires_at, DateTime) and
+      DateTime.compare(ends, granted.expires_at) != :lt
+  end
+
+  defp lasts_as_long?(%Entitlement{}, _granted, _now), do: false
 
   # The guest's currencies (or items) with something in them, from the
   # table, not the cache.

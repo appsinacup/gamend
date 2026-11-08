@@ -574,15 +574,6 @@ defmodule GamendWeb.AuthController do
       when provider in ["discord", "google", "facebook", "github", "apple"] do
     case OAuthExchange.exchange_code(provider, code) do
       {:ok, user_params} ->
-        user_params =
-          if provider == "apple",
-            do:
-              OAuthExchange.put_apple_name(
-                user_params,
-                OAuthExchange.apple_web_name(params["user"])
-              ),
-            else: user_params
-
         handle_oauth_state_success(conn, provider, user_params, params["state"])
 
       {:error, error} ->
@@ -600,11 +591,9 @@ defmodule GamendWeb.AuthController do
     raw_info = Map.get(extra, :raw_info) || %{}
     raw_user = Map.get(raw_info, :user) || %{}
 
-    display_name =
-      Map.get(info, :name) ||
-        Map.get(info, :nickname) ||
-        Map.get(raw_user, :personaname) ||
-        Map.get(raw_user, :realname)
+    # The persona, a name chosen for being seen. Never `info.name` or `realname`,
+    # which are the player's legal name (`OAuthExchange.user_params/2`).
+    display_name = Map.get(info, :nickname) || Map.get(raw_user, :personaname)
 
     urls = Map.get(info, :urls, %{})
     profile_url = Map.get(urls, :profile) || Map.get(info, :image)
@@ -847,16 +836,6 @@ defmodule GamendWeb.AuthController do
           code: %OpenApiSpex.Schema{
             type: :string,
             description: "Apple authorization code from the native Sign in with Apple flow"
-          },
-          given_name: %OpenApiSpex.Schema{
-            type: :string,
-            description:
-              "Given name from the credential. Apple hands it over only on the first " <>
-                "authorization and never in the token; it fills a blank display name."
-          },
-          family_name: %OpenApiSpex.Schema{
-            type: :string,
-            description: "Family name from the credential, as `given_name`."
           }
         }
       }
@@ -870,11 +849,9 @@ defmodule GamendWeb.AuthController do
   )
 
   def api_apple_ios_callback(conn, params) do
-    name = OAuthExchange.apple_name(params["given_name"], params["family_name"])
-
     case OAuthExchange.apple_ios_params(params["code"]) do
       {:ok, user_params} ->
-        sign_in_api(conn, "apple", OAuthExchange.put_apple_name(user_params, name))
+        sign_in_api(conn, "apple", user_params)
 
       {:error, reason} ->
         OAuthExchange.reply_refused(conn, reason)

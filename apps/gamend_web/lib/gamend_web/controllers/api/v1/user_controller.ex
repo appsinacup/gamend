@@ -5,11 +5,10 @@ defmodule GamendWeb.Api.V1.UserController do
   import GamendWeb.Helpers.ParamParser
 
   alias Gamend.Accounts
-  alias Gamend.Accounts.User
-  alias GamendWeb.Features
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.{PlayerStatsResponse, PublicUserPage, PublicUserResponse}
+  alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
   tags(["Users"])
@@ -96,19 +95,14 @@ defmodule GamendWeb.Api.V1.UserController do
   # went out blank for a while, carrying nothing; now they are gone.
   # Authenticated callers get membership from the lobby, party and channel
   # APIs, which check the caller's relationship to it.
+  #
+  # Presence too goes out blank, as in `GET /groups/:id/members` to a stranger:
+  # whether a named player is online, and when they last were, is for the people
+  # who play with them. Friends and members hear it on their channels.
   defp serialize_user(user) do
     user
-    |> User.serialize_brief()
+    |> Serializers.public_brief()
     |> Map.drop([:profile_url])
-    |> Map.put(:metadata, public_metadata(user.metadata))
+    |> Map.merge(%{is_online: false, last_seen_at: ~U[1970-01-01 00:00:00Z]})
   end
-
-  defp public_metadata(metadata) when is_map(metadata) do
-    case Features.public_user_metadata_keys() do
-      [] -> %{}
-      keys -> Map.take(metadata, keys)
-    end
-  end
-
-  defp public_metadata(_metadata), do: %{}
 end

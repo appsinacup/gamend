@@ -65,19 +65,19 @@ defmodule GamendWeb.UserLive.RegistrationTest do
                "Account created. Check your email"
     end
 
-    test "renders errors for duplicated email", %{conn: conn} do
+    test "answers a duplicated email as it does a free one", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
       user = user_fixture(%{email: "test@email.com"})
 
-      result =
+      {:ok, _lv, html} =
         lv
-        |> form("#registration_form",
-          user: %{"email" => user.email}
-        )
+        |> form("#registration_form", user: %{"email" => user.email})
         |> render_submit()
+        |> follow_redirect(conn, ~p"/users/log_in")
 
-      assert result =~ "has already been taken"
+      assert html =~ "Account created. Check your email"
+      refute html =~ "has already been taken"
     end
   end
 

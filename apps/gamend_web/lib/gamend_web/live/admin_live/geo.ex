@@ -24,14 +24,8 @@ defmodule GamendWeb.AdminLive.Geo do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-4">
-        <%!-- Header --%>
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <.back_link navigate={~p"/admin"} />
-            <h1 class="text-xl font-bold">Geo Traffic</h1>
-          </div>
-
-          <div class="flex items-center gap-3">
+        <.admin_header page="/admin/geo">
+          <:actions>
             <span class="text-xs text-muted">
               Source:
               <span class="font-semibold">
@@ -45,8 +39,8 @@ defmodule GamendWeb.AdminLive.Geo do
             >
               Reset
             </button>
-          </div>
-        </div>
+          </:actions>
+        </.admin_header>
 
         <%!-- Time window and traffic selectors --%>
         <div class="flex flex-wrap items-center justify-between gap-2">

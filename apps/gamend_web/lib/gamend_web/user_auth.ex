@@ -669,17 +669,29 @@ defmodule GamendWeb.UserAuth do
   Plug for routes that require the user to be authenticated.
 
   A signed-out visitor goes to the sign-in page and back, with no flash:
-  nothing failed.
+  nothing failed. A banned account goes to `/suspended` from a controller
+  route; a LiveView route decides for itself (`on_mount`), since a banned
+  account keeps its settings page.
   """
   def require_authenticated_user(conn, _opts) do
-    if Scope.user(conn.assigns.current_scope) do
-      conn
-    else
-      conn
-      |> redirect(to: sign_in_redirect(conn, ~p"/users/log_in"))
-      |> halt()
+    cond do
+      is_nil(Scope.user(conn.assigns.current_scope)) ->
+        conn
+        |> redirect(to: sign_in_redirect(conn, ~p"/users/log_in"))
+        |> halt()
+
+      refused_while_banned?(conn) ->
+        conn |> redirect(to: ~p"/suspended") |> halt()
+
+      true ->
+        conn
     end
   end
+
+  defp refused_while_banned?(%Plug.Conn{private: %{phoenix_live_view: _route}}), do: false
+
+  defp refused_while_banned?(conn),
+    do: Gamend.Bans.banned?(:account, Scope.user_id(conn.assigns.current_scope))
 
   @doc """
   Plug for routes a guest (an anonymous account, `Scope.anonymous?/1`) may not
@@ -693,7 +705,7 @@ defmodule GamendWeb.UserAuth do
 
     cond do
       Scope.user(scope) && not Scope.anonymous?(scope) ->
-        conn
+        require_authenticated_user(conn, [])
 
       Scope.user(scope) ->
         conn

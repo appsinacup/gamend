@@ -36,16 +36,11 @@ defmodule GamendWeb.AdminLive.Payments do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
-
-        <div class="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 class="text-3xl font-bold">Payments</h1>
-            <p class="mt-1 text-sm text-muted">
-              Payment configuration, catalog, purchases, entitlements, and provider events.
-            </p>
-          </div>
-          <div class="flex flex-wrap gap-2">
+        <.admin_header page="/admin/payments">
+          <:subtitle>
+            Payment configuration, catalog, purchases, entitlements, and provider events.
+          </:subtitle>
+          <:actions>
             <a href="/api/docs" class="btn btn-surface btn-sm">OpenAPI</a>
             <a href="/admin/config" class="btn btn-surface btn-sm">Provider config</a>
             <a
@@ -64,8 +59,8 @@ defmodule GamendWeb.AdminLive.Payments do
             >
               Stripe webhooks
             </a>
-          </div>
-        </div>
+          </:actions>
+        </.admin_header>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div class="card bg-base-200">

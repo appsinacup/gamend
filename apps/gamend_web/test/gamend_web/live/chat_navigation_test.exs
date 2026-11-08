@@ -83,4 +83,22 @@ defmodule GamendWeb.ChatNavigationTest do
 
     refute html =~ "Open chat"
   end
+
+  test "a group's chat opens only for its members", %{conn: conn} do
+    owner = Gamend.AccountsFixtures.user_fixture()
+    {:ok, group} = Groups.create_group(owner.id, %{"title" => "Closed", "type" => "hidden"})
+
+    {:ok, _msg} =
+      Chat.send_message(%{user: owner}, %{
+        "chat_type" => "group",
+        "chat_ref_id" => group.id,
+        "content" => "members only"
+      })
+
+    {:ok, view, _html} = live(conn, ~p"/chat?#{[type: "group", id: group.id]}")
+    assigns = :sys.get_state(view.pid).socket.assigns
+
+    assert assigns.chat_target == nil
+    assert assigns.messages == []
+  end
 end

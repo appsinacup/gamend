@@ -1498,7 +1498,6 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           |> MapSet.new()
 
         Accounts.search_users(query, page: 1, page_size: 10)
-        |> with_email_match(query)
         |> Enum.reject(fn u -> MapSet.member?(all_member_ids, u.id) end)
       end
 
@@ -1574,19 +1573,6 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
       nil ->
         {:noreply, socket}
-    end
-  end
-
-  # Where any account may be invited (`Groups.invite_anyone?/0`), an exact
-  # email finds its account too: a colleague is invited by the address they
-  # work at. The result shows the account's public name, never the address.
-  defp with_email_match(results, query) do
-    with true <- Groups.invite_anyone?(),
-         true <- String.contains?(query, "@"),
-         %{} = user <- Accounts.get_user_by_email(query) do
-      [user | Enum.reject(results, &(&1.id == user.id))]
-    else
-      _ -> results
     end
   end
 

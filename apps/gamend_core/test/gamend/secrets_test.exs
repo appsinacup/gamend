@@ -9,6 +9,8 @@ defmodule Gamend.SecretsTest do
   """
   use Gamend.DataCase, async: false
 
+  import ExUnit.CaptureLog
+
   alias Gamend.Repo
   alias Gamend.Secrets
   alias Gamend.Secrets.Secret
@@ -65,7 +67,6 @@ defmodule Gamend.SecretsTest do
 
       refute stored.ciphertext == "correct-horse-battery"
       refute String.contains?(Base.encode64(stored.ciphertext), "correct-horse")
-      refute String.contains?(Base.encode64(stored.fingerprint), "correct-horse")
     end
   end
 
@@ -151,6 +152,7 @@ defmodule Gamend.SecretsTest do
       assert {:error, :no_key} = Secrets.put(@scope, project, "api_key", "x")
     end
 
+    @tag :capture_log
     test "a malformed key is no key", %{project: project} do
       SettingsHelpers.put(:gamend_core, Secrets, :keys, "v1:not-base64!!")
 
@@ -158,6 +160,37 @@ defmodule Gamend.SecretsTest do
       assert {:error, :no_key} = Secrets.put(@scope, project, "api_key", "x")
     end
 
+    # Falling through to the next well-formed key would keep writing under the
+    # one the operator just retired, and nothing would say so.
+    @tag :capture_log
+    test "a malformed current key does not fall through to an old one", %{project: project} do
+      SettingsHelpers.put(:gamend_core, Secrets, :keys, "v2:not-base64!!,v1:#{key()}")
+
+      refute Secrets.configured?()
+      assert {:error, :no_key} = Secrets.put(@scope, project, "api_key", "x")
+    end
+
+    @tag :capture_log
+    test "a malformed current key still lets old rows be read", %{project: project} do
+      old = key()
+      SettingsHelpers.put(:gamend_core, Secrets, :keys, "v1:#{old}")
+      {:ok, _} = Secrets.put(@scope, project, "api_key", "x")
+
+      SettingsHelpers.put(:gamend_core, Secrets, :keys, "v2:not-base64!!,v1:#{old}")
+
+      assert {:ok, "x"} = Secrets.fetch(@scope, project, "api_key")
+    end
+
+    test "a malformed key is reported by position, never by what it holds" do
+      SettingsHelpers.put(:gamend_core, Secrets, :keys, "v1:#{key()},v0:not-base64!!")
+
+      log = capture_log(fn -> assert Secrets.configured?() end)
+
+      assert log =~ "entry 2"
+      refute log =~ "not-base64"
+    end
+
+    @tag :capture_log
     test "a key of the wrong length is refused", %{project: project} do
       short = :crypto.strong_rand_bytes(16) |> Base.encode64()
       SettingsHelpers.put(:gamend_core, Secrets, :keys, "v1:#{short}")
@@ -210,6 +243,38 @@ defmodule Gamend.SecretsTest do
       {:ok, _} = Secrets.rotate()
 
       assert {:ok, %{moved: 0, stuck: 0}} = Secrets.rotate()
+    end
+
+    test "a pass covers every row, however small the batch", %{project: project} do
+      both = SettingsHelpers.get(:gamend_core, Secrets, :keys)
+      [_current, v1] = String.split(both, ",")
+
+      SettingsHelpers.put(:gamend_core, Secrets, :keys, v1)
+      for name <- ~w(a b c), do: {:ok, _} = Secrets.put(@scope, project, name, name)
+      SettingsHelpers.put(:gamend_core, Secrets, :keys, both)
+
+      assert {:ok, %{moved: 4, stuck: 0}} = Secrets.rotate(2)
+      assert Enum.all?(Secrets.list(@scope, project), &(&1.key_id == "v2"))
+    end
+  end
+
+  describe "a rotation past a row that will not open" do
+    # Oldest first, so the row nothing can open is what a page would keep
+    # coming back to.
+    test "still reaches the rows behind it", %{project: project} do
+      SettingsHelpers.put(:gamend_core, Secrets, :keys, "gone:#{key()}")
+      {:ok, _} = Secrets.put(@scope, project, "unreadable", "lost")
+
+      old = key()
+      SettingsHelpers.put(:gamend_core, Secrets, :keys, "v1:#{old}")
+      {:ok, _} = Secrets.put(@scope, project, "readable", "kept")
+
+      SettingsHelpers.put(:gamend_core, Secrets, :keys, "v2:#{key()},v1:#{old}")
+
+      assert {:ok, %{moved: 1, stuck: 1}} = Secrets.rotate(1)
+      assert Secrets.get(@scope, project, "readable").key_id == "v2"
+      assert {:ok, "kept"} = Secrets.fetch(@scope, project, "readable")
+      assert Secrets.get(@scope, project, "unreadable").key_id == "gone"
     end
   end
 
@@ -266,6 +331,18 @@ defmodule Gamend.SecretsTest do
       end
 
       assert {:ok, _} = Secrets.put(@scope, project, "good_name_2", "x")
+    end
+  end
+
+  describe "owners" do
+    # `scope/scope_id/name` is what gets authenticated: a `/` in either of the
+    # first two would let two different owners spell the same bytes.
+    test "cannot hold the separator of the authenticated data", %{project: project} do
+      assert {:error, changeset} = Secrets.put("forge/project", project, "api_key", "x")
+      assert %{scope: [_message]} = errors_on(changeset)
+
+      assert {:error, changeset} = Secrets.put(@scope, "a/b", "api_key", "x")
+      assert %{scope_id: [_message]} = errors_on(changeset)
     end
   end
 

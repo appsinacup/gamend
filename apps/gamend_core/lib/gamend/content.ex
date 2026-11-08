@@ -113,8 +113,9 @@ defmodule Gamend.Content do
   end
 
   @doc """
-  Returns the absolute path for an asset relative to a registered content
-  source. Returns `nil` when not found or path traversal is attempted.
+  Returns the absolute path for a picture, sound or video relative to a
+  registered content source. Returns `nil` when not found, when path traversal
+  is attempted, and for any other kind of file.
   """
   @spec asset_path(atom() | String.t(), String.t()) :: String.t() | nil
   def asset_path(name, relative) when is_atom(name) or is_binary(name) do
@@ -1024,17 +1025,30 @@ defmodule Gamend.Content do
     |> Keyword.get(key, Keyword.fetch!(@default_content_config, key))
   end
 
+  # Media only, and never a dotfile. A `:file` source's root is the folder its
+  # file sits in, which for a changelog in a release or a standalone install is
+  # the project folder: `.env`, the SQLite database and the logs are beside it,
+  # and this answers `/content/*` with no sign-in.
+  @asset_extensions ~w(.avif .gif .ico .jpeg .jpg .m4a .mp3 .mp4 .oga .ogg .png .svg .wav .webm .webp)
+
   defp serve_asset(nil, _relative), do: nil
 
   defp serve_asset(base_dir, relative) do
     base = Path.expand(base_dir)
     clean = Path.expand(relative, base)
 
-    if inside_dir?(clean, base) and File.regular?(clean) do
+    if inside_dir?(clean, base) and media_file?(clean, base) and File.regular?(clean) do
       clean
     else
       nil
     end
+  end
+
+  defp media_file?(path, base) do
+    segments = path |> Path.relative_to(base) |> Path.split()
+
+    String.downcase(Path.extname(path)) in @asset_extensions and
+      not Enum.any?(segments, &String.starts_with?(&1, "."))
   end
 
   defp inside_dir?(path, dir) do

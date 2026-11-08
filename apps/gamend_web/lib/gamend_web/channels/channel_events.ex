@@ -22,6 +22,17 @@ defmodule GamendWeb.ChannelEvents do
   alias Gamend.Accounts.User
   alias GamendWeb.ChannelPush
   alias GamendWeb.ChannelUpdates
+  alias GamendWeb.Serializers
+
+  @doc """
+  A member's brief profile as this socket may see it: a spectator watches the
+  lobby from outside it, so gets the public one.
+  """
+  @spec member_brief(Phoenix.Socket.t(), User.t()) :: map()
+  def member_brief(%{assigns: %{spectator: true}}, %User{} = user),
+    do: Serializers.public_brief(user)
+
+  def member_brief(_socket, %User{} = user), do: User.serialize_brief(user)
 
   @doc """
   Replies to an event the channel does not handle.
@@ -84,7 +95,7 @@ defmodule GamendWeb.ChannelEvents do
     payload =
       case Accounts.get_user(user_id) do
         %User{} = user ->
-          user |> User.serialize_brief() |> Map.put(:user_id, user_id)
+          socket |> member_brief(user) |> Map.put(:user_id, user_id)
 
         nil ->
           %{user_id: user_id, display_name: "", is_online: event == :member_online}
@@ -102,7 +113,7 @@ defmodule GamendWeb.ChannelEvents do
   def push_member_updated(socket, user_id, wire_event) do
     case Accounts.get_user(user_id) do
       %User{} = user ->
-        payload = user |> User.serialize_brief() |> Map.put(:user_id, user_id)
+        payload = socket |> member_brief(user) |> Map.put(:user_id, user_id)
         ChannelUpdates.push(socket, wire_event, user_id, payload)
 
       nil ->

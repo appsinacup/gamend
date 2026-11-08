@@ -183,7 +183,8 @@ A dropped connection reconnects on its own, backing off (0.1 s, 0.5 s, 1 s,
 2 s, 5 s, then every 10 s: `Config::reconnect_delays`), refreshing the token
 first when the last attempt never opened, and rejoins every topic it had, in
 order; `on_state` says when (`Connecting`, `Connected`, `Reconnecting`,
-`Disconnected`). A missed heartbeat counts as a drop. A channel the server
+`Disconnected`). `gamend::commands` has a function for each event a channel
+answers. A missed heartbeat counts as a drop. A channel the server
 errors is joined again; one it closes (a kick) is not. Signing out
 disconnects.
 

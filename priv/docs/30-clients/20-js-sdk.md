@@ -137,6 +137,12 @@ lobby.on('updated', lobbyPayload => console.log('lobby changed', lobbyPayload));
 realtime.disconnect();
 ```
 
+Each event a channel answers has a method returning a promise of the reply:
+`kvSubscribe` and `kvUnsubscribe` (repeated when the channel rejoins),
+`resultsList`, `resultsGet`, `resultsEvents`, `lobbyGetServerTime`, and for a
+`joinSignalingChannel` room `signalingOffer`, `signalingAnswer`,
+`signalingIce`, `signalingBroadcastOffer` and `signalingListUsers`.
+
 The server checks the token only when the socket connects, and Phoenix
 reconnects on its own after a dropped network, a sleeping laptop or a tab back
 from the background, often long after the token it started with expired. So the

@@ -12,7 +12,7 @@ defmodule GamendWeb.AdminLive.Connections do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
+        <.admin_header page="/admin/connections" />
 
         <%!-- Summary cards --%>
         <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">

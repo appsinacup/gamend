@@ -20,9 +20,12 @@ POST /matchmaking/tickets ──► ticket (queued)
                              GAMEND_LIMITS_MATCHMAKING_TIMEOUT_MS: match now
                          ──► otherwise: keep waiting
                                   │
-        accept_timeout_ms set?  ──► everyone accepts first (Accept)
+        matchmaking_seat_match: where, and asked first?
                                   │
-        seated: in the backfill lobby, else a new hidden lobby, locked
+        asked?  ──► everyone holding a ticket accepts first (Accept)
+                                  │
+        seated: where the game said, else in the backfill lobby,
+                else in a new hidden lobby, locked
                                   │
         "match_found" pushed on each player's user channel
 ```
@@ -44,11 +47,61 @@ alone leaves it (an empty lobby is deleted) and joins the match's. Of two
 such solo lobbies, the oldest ticket's is kept. A lobby member who is not
 its host, or a party, queues as before.
 
+## Seating a match: the game decides
+
+Once a match forms, `matchmaking_seat_match/1` answers where it sits and whether its players are asked first. The hook only answers; core seats the players and checks seats and blocks. Build the answer with `Gamend.MatchSeating`, so a misspelt name fails where it is written.
+
+| Answer | The match |
+|---|---|
+| `:default`, or no hook | The lobby a host's ticket fills, else a new hidden, locked, hostless lobby |
+| `MatchSeating.default(opts)` | The same, with `accept_timeout_ms` |
+| `MatchSeating.new_lobby(opts)` | A new lobby: `title`, `max_users`, `host_id`, `hostless`, `is_hidden`, `is_locked`, `metadata`, `slowdown`, `accept_timeout_ms`. What you leave out is the default above |
+| `MatchSeating.in_lobby(id, opts)` | An existing lobby, past its hidden and locked flags, with `accept_timeout_ms` |
+| `{:error, reason}` | Back in the queue, keeping its place |
+
+```elixir
+alias Gamend.MatchSeating
+
+@accept_ms 15_000
+
+@impl true
+def matchmaking_seat_match(tickets) do
+  case MyGame.room_for(tickets) do
+    nil -> MatchSeating.new_lobby(max_users: 10, accept_timeout_ms: @accept_ms)
+    lobby_id -> MatchSeating.in_lobby(lobby_id)
+  end
+end
+```
+
+The hook has 5 seconds. One that fails, runs out of time or answers anything else puts the tickets back too: the match is not seated somewhere the game did not choose. A party goes in whole or stays queued, and a seat lost to someone quicker keeps the player's place.
+
+### Filling a leaver's seat
+
+A running match with a free seat needs no ticket of its own. Form each newcomer into a match of one, and name the lobby:
+
+```elixir
+@mode "mode"
+@squad "squad"
+
+@impl true
+def matchmaking_form_matches(%{@mode => @squad}, tickets) do
+  Enum.map(tickets, &List.wrap/1)
+end
+
+@impl true
+def matchmaking_seat_match([_newcomer]) do
+  case MyGame.match_with_free_seat() do
+    nil -> {:error, :no_free_seat}
+    lobby_id -> MatchSeating.in_lobby(lobby_id, accept_timeout_ms: @accept_ms)
+  end
+end
+```
+
+Only the newcomer is asked, so whoever is already playing is not interrupted, and a hostless lobby fills like any other. Your game decides what a joiner mid-play sees: they arrive through `match_found` and the lobby's `user_joined`.
+
 ## Accept: everyone says yes first
 
-Pass `accept_timeout_ms` to `Gamend.Matchmaking.join/5` (or set it in the
-attrs `before_matchmaking_join/2` returns) and a formed match asks before it
-seats anyone: a ready check of kind `accept` over its players, with the
+A seating with `accept_timeout_ms` asks before it seats anyone: a ready check of kind `accept` over the players holding the match's tickets, with the
 four `ready_check_*` events on each player's user channel. Answer it with
 `POST /me/ready_check`. Everyone accepts: the match is seated. Someone
 declines or the deadline passes: whoever accepted, or had not answered yet,
@@ -85,7 +138,7 @@ queued ────► matched      lobby created; match_id points at it
 
 ## Server hooks
 
-Five hooks cover the queue. Four are the usual gate-and-notify pattern; matchmaking_form_matches/2 is different, in that it replaces the matcher for one bucket.
+Six hooks cover the queue. Four are the usual gate-and-notify pattern; matchmaking_form_matches/2 replaces the matcher for one bucket, and matchmaking_seat_match/1 decides where a formed match sits.
 
 | Hook | When | Returns |
 |---|---|---|
@@ -93,6 +146,7 @@ Five hooks cover the queue. Four are the usual gate-and-notify pattern; matchmak
 | `after_matchmaking_join/2` | After the ticket is written, async | Ignored |
 | `after_matchmaking_cancel/2` | After a user's tickets are cancelled, async; not fired when none were queued | Ignored |
 | `matchmaking_form_matches/2` | Once per bucket per sweep | A list of ticket groups, or :default to use the built-in matcher |
+| `matchmaking_seat_match/1` | Once per formed match, its tickets claimed | A `Gamend.MatchSeating`, :default for core's seat, or {:error, reason} to put the tickets back |
 | `after_matchmaking_matched/2` | After the lobby exists and players are seated, async. A ticket's `lobby_id` is the lobby it filled; the match's lobby is the second argument | Ignored |
 
 ## Server-authoritative queue parameters
@@ -140,7 +194,7 @@ def matchmaking_form_matches(_params, _tickets), do: :default
 
 The server re-checks whatever you return: groups containing a ticket from outside the bucket, a duplicate ticket, a pair where one player has blocked the other, or two lobbies with players in them (or more players than the backfill lobby seats) are dropped with a warning rather than seated. A backfill ticket's `size` is its lobby's members, `capacity` its seats. A bug in your matcher costs you a match, not a broken lobby.
 
-A worked example combining both (a string mode validated on join and an integer rating used in the matcher) ships in modules/plugins_examples/example_hook.
+A worked example combining both (a string mode validated on join and an integer rating used in the matcher) ships in modules/plugins_examples/example_hook. To compute the rating itself, see [Ratings](/docs/ratings).
 
 ## Parties
 

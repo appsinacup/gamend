@@ -91,7 +91,8 @@ the reference implementation of the list.
   same thing. Balaur is the exception: its modules are called by path, one
   per tag, so a name drops the tag the path already carries
   (`gamend::lobbies::create_lobby` for `lobbies_create_lobby`).
-- **Events come from `events.json`**, never a hand-kept list per SDK.
+- **Events come from `events.json`**, and what a client sends from
+  `commands.json`, never a hand-kept list per SDK.
 - **Callbacks arrive on the game's thread.** I/O runs off it; results queue
   and are delivered when the game pumps the client (`poll()` / per-tick).
   Engines are single-threaded at the script layer, and a callback on a socket
@@ -107,5 +108,6 @@ the reference implementation of the list.
 - [ ] Generated REST layer in CI (`--check` or regenerate-on-release), no
       hand edits to generated files.
 - [ ] Conformance scenario passing against a booted server in CI.
+- [ ] A column of its own in `python3 clients/sdkgen lint`, passing.
 - [ ] Guide page in `priv/docs/30-clients/`; README's *Client SDKs* list.
 - [ ] CHANGELOG `[added]`.

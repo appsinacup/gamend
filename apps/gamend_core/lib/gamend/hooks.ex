@@ -129,6 +129,16 @@ defmodule Gamend.Hooks do
   @callback after_user_deleted(User.t()) :: any()
 
   @doc """
+  Runs just before an account is deleted, every path alike (a player, an admin,
+  a retention sweep, a guest merged into an account), while everything of it
+  can still be read: `c:after_user_deleted/1` runs once foreign keys have
+  cascaded. Synchronous (30 s), so queue what is slow. It cannot stop the
+  delete: its answer is ignored, and a raise is logged.
+  """
+  @callback before_user_delete(User.t()) :: any()
+  @optional_callbacks before_user_delete: 1
+
+  @doc """
   Handle a dynamically-exported RPC function.
 
   This callback is used for function names that were registered at runtime (eg.
@@ -233,17 +243,26 @@ defmodule Gamend.Hooks do
   # to seat. Returning `:default` (or not exporting it) keeps the built-in
   # FIFO matcher. Core still enforces the block-list on whatever it returns,
   # so a custom matcher cannot pair players who blocked each other.
+  #
+  # `matchmaking_seat_match` answers once per formed match, its tickets
+  # claimed: where it sits and whether its players are asked first
+  # (`Gamend.MatchSeating`). `:default` keeps core's seat, `{:error, reason}`
+  # puts the tickets back. It only answers: core seats the players, so nothing
+  # a plugin forgets or crashes on can strand a claimed ticket.
   @callback before_matchmaking_join(User.t(), map()) :: hook_result(map())
   @callback after_matchmaking_join(User.t(), Gamend.Matchmaking.Ticket.t()) :: any()
   @callback after_matchmaking_cancel(Ecto.UUID.t(), non_neg_integer()) :: any()
   @callback matchmaking_form_matches(map(), [Gamend.Matchmaking.Ticket.t()]) ::
               [[Gamend.Matchmaking.Ticket.t()]] | :default
+  @callback matchmaking_seat_match([Gamend.Matchmaking.Ticket.t()]) ::
+              Gamend.MatchSeating.t() | :default | {:error, term()}
   @callback after_matchmaking_matched([Gamend.Matchmaking.Ticket.t()], Ecto.UUID.t()) :: any()
 
   @optional_callbacks before_matchmaking_join: 2,
                       after_matchmaking_join: 2,
                       after_matchmaking_cancel: 2,
                       matchmaking_form_matches: 2,
+                      matchmaking_seat_match: 1,
                       after_matchmaking_matched: 2,
                       before_tournament_register: 2,
                       after_tournament_register: 2,
@@ -653,6 +672,7 @@ defmodule Gamend.Hooks do
       :after_user_online,
       :after_socket_connected,
       :after_user_offline,
+      :before_user_delete,
       :after_user_deleted,
       :after_wallet_changed,
       :after_inventory_changed,
@@ -716,6 +736,7 @@ defmodule Gamend.Hooks do
       :after_matchmaking_join,
       :after_matchmaking_cancel,
       :matchmaking_form_matches,
+      :matchmaking_seat_match,
       :after_matchmaking_matched,
       :before_purchase,
       :before_tournament_register,
@@ -1097,6 +1118,9 @@ defmodule Gamend.Hooks do
       _ when name == :matchmaking_form_matches and arity == 2 ->
         run_matchmaking_form_matches(exporting_mods, args, opts, timeout)
 
+      _ when name == :matchmaking_seat_match and arity == 1 ->
+        run_matchmaking_seat_match(exporting_mods, args, opts, timeout)
+
       _ when name == :validate_username and arity == 1 ->
         run_validate_username(exporting_mods, args, opts, timeout)
 
@@ -1139,6 +1163,31 @@ defmodule Gamend.Hooks do
           )
 
           {:cont, acc}
+      end
+    end)
+  end
+
+  # The first real answer wins, as for the matcher. A hook that fails answers
+  # an error, not `:default`: a game with an opinion on this match would have
+  # it seated somewhere it does not expect, so the tickets wait for the next
+  # sweep.
+  defp run_matchmaking_seat_match(mods, args, opts, timeout) do
+    Enum.reduce_while(mods, {:ok, :default}, fn mod, acc ->
+      case safe_apply_raw(mod, :matchmaking_seat_match, args, opts, timeout) do
+        {:ok, :default} ->
+          {:cont, acc}
+
+        {:ok, %Gamend.MatchSeating{} = seating} ->
+          {:halt, {:ok, seating}}
+
+        {:ok, {:error, reason}} ->
+          {:halt, {:error, reason}}
+
+        {:error, reason} ->
+          {:halt, {:error, reason}}
+
+        {:ok, other} ->
+          {:halt, {:error, {:invalid_seating, other}}}
       end
     end)
   end
@@ -1680,6 +1729,9 @@ defmodule Gamend.Hooks.Default do
   def after_user_offline(_user), do: :ok
 
   @impl true
+  def before_user_delete(_user), do: :ok
+
+  @impl true
   def after_user_deleted(_user), do: :ok
 
   @impl true
@@ -1887,6 +1939,9 @@ defmodule Gamend.Hooks.Default do
 
   @impl true
   def matchmaking_form_matches(_params, _tickets), do: :default
+
+  @impl true
+  def matchmaking_seat_match(_tickets), do: :default
 
   @impl true
   def after_matchmaking_matched(_tickets, _lobby_id), do: :ok

@@ -352,6 +352,32 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
     assert Enum.all?(resp["members"], fn m -> not Map.has_key?(m, "email") end)
   end
 
+  test "GET /api/v1/lobbies/:id keeps metadata for the people in the lobby, purchases for no one" do
+    host = AccountsFixtures.user_fixture()
+    outsider = AccountsFixtures.user_fixture()
+
+    {:ok, _} =
+      Gamend.Accounts.update_user_metadata(host.id, fn metadata ->
+        Map.merge(metadata, %{"ship" => "brig", "payments" => %{"purchase_ids" => %{"p1" => true}}})
+      end)
+
+    {:ok, lobby} = Lobbies.create_lobby(%{title: "metadata-room", host_id: host.id})
+
+    host_row = fn reader ->
+      {:ok, token, _} = Guardian.encode_and_sign(reader)
+
+      build_conn()
+      |> put_req_header("authorization", "Bearer " <> token)
+      |> get("/api/v1/lobbies/#{lobby.id}")
+      |> json_response(200)
+      |> get_in(["data", "members"])
+      |> Enum.find(&(&1["id"] == host.id))
+    end
+
+    assert host_row.(host)["metadata"] == %{"ship" => "brig"}
+    assert host_row.(outsider)["metadata"] == %{}
+  end
+
   test "POST /api/v1/lobbies (hosted) requires auth and creates a lobby", %{conn: conn} do
     user = AccountsFixtures.user_fixture()
     {:ok, token, _} = Guardian.encode_and_sign(user)

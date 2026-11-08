@@ -57,7 +57,7 @@ defmodule GamendWeb.AdminLive.Translations do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
+        <.admin_header page="/admin/translations" />
 
         <%!-- Completeness overview --%>
         <div class="card bg-base-200">

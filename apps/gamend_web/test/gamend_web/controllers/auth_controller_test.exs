@@ -358,7 +358,7 @@ defmodule GamendWeb.AuthControllerTest do
     # GitHub's integer id is stored as a string
     user = Accounts.get_user_by_github_id("583231")
     assert user.email == "octocat@example.com"
-    assert user.display_name == "The Octocat"
+    assert user.display_name == "octocat"
     assert user.profile_url == "https://avatars.githubusercontent.com/u/583231"
 
     # api flow with state
@@ -499,7 +499,7 @@ defmodule GamendWeb.AuthControllerTest do
       })
 
     assert redirected_to(conn) == "/"
-    assert Accounts.get_user_by_apple_id("apple-with-name").display_name == "Ada Lovelace"
+    assert Accounts.get_user_by_apple_id("apple-with-name").display_name == nil
   end
 
   test "callback (apple) browser form_post works without callback session cookie", %{conn: conn} do

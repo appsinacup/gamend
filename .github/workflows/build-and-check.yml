@@ -346,6 +346,9 @@ jobs:
       - name: Race shapes (AGENTS.md, Locks)
         run: MIX_ENV=dev mix gamend.race.lint
 
+      - name: Named strings (CONTRIBUTING.md)
+        run: MIX_ENV=dev mix gamend.literal.lint
+
       - name: Credo (strict, web app)
         working-directory: apps/gamend_web
         run: MIX_ENV=dev mix credo --strict
@@ -907,6 +910,10 @@ jobs:
       - name: Check the Balaur SDK is current
         # generate_godot.sh just wrote the document it is generated from.
         run: python3 clients/sdkgen balaur --check
+
+      - name: Check every SDK reaches the whole API
+        # --generated also reads the Godot models and APIs written above.
+        run: python3 clients/sdkgen lint --generated
 
       - name: Stamp the version into the Balaur SDK
         env:

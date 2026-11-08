@@ -13,14 +13,11 @@ defmodule GamendWeb.AdminLive.RateLimiting do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
-
-        <div>
-          <h1 class="text-3xl font-bold">Rate Limiting & IP Bans</h1>
-          <p class="mt-1 text-sm text-muted">
+        <.admin_header page="/admin/rate_limiting" title="Rate Limiting & IP Bans">
+          <:subtitle>
             Manage IP bans and monitor rate limiting across HTTP, Auth, WebSocket, and WebRTC.
-          </p>
-        </div>
+          </:subtitle>
+        </.admin_header>
 
         <%!-- Summary cards. There is no "Hammer banned" count: Hammer only
               counts, and bans live in IpBan's own table — the first card. --%>

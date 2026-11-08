@@ -3,6 +3,7 @@
     python3 clients/sdkgen balaur            # regenerate balaur_addons/addons/gamend
     python3 clients/sdkgen balaur --check    # fail when the addon is stale (CI)
     python3 clients/sdkgen cpp               # write cpp_sdk/ (not committed)
+    python3 clients/sdkgen lint              # fail when an SDK lacks something
 
 One model (`model.py`: the operations, the events, the names) and one
 emitter per target. openapi-generator serves the targets it knows well
@@ -16,6 +17,7 @@ from pathlib import Path
 
 import balaur
 import cpp
+import lint
 import output
 from model import load
 
@@ -24,18 +26,26 @@ TARGETS = {"balaur": balaur, "cpp": cpp}
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("target", choices=sorted(TARGETS))
+    parser.add_argument("target", choices=[*sorted(TARGETS), "lint"])
     parser.add_argument("--out", type=Path)
     parser.add_argument(
         "--check",
         action="store_true",
         help="fail when the written files are not what this would write",
     )
+    parser.add_argument(
+        "--generated",
+        action="store_true",
+        help="lint: also read what openapi-generator wrote on this disk",
+    )
     args = parser.parse_args()
-    target = TARGETS[args.target]
-    out = args.out or target.OUT
 
     model = load()
+    if args.target == "lint":
+        return lint.run(model, args.generated)
+
+    target = TARGETS[args.target]
+    out = args.out or target.OUT
     files = target.emit(model)
 
     owns = getattr(target, "OWNS_OUT", False)

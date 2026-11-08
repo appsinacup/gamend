@@ -24,6 +24,30 @@ defmodule GamendWeb.ApiSpecTest do
     end
   end
 
+  # The generated SDKs are only as complete as the document: a route with no
+  # `operation` is served, and no SDK can call it. Two are not calls: the
+  # address an `…/upload_url` answer hands back, and the catch-all 404.
+  @not_operations [{:put, "/api/v1/storage/upload"}, {:*, "/api/v1/*path"}]
+
+  test "the document has every route under /api/v1" do
+    documented =
+      for {path, item} <- ApiSpec.spec().paths,
+          verb <- [:get, :post, :put, :patch, :delete],
+          Map.get(item, verb),
+          into: MapSet.new(),
+          do: {verb, Regex.replace(~r/\{(\w+)\}/, path, ":\\1")}
+
+    router = Application.get_env(:gamend_web, :router, GamendWeb.Router)
+
+    undocumented =
+      for %{verb: verb, path: "/api/v1" <> _ = path} <- router.__routes__(),
+          {verb, path} not in documented,
+          {verb, path} not in @not_operations,
+          do: "#{verb} #{path}"
+
+    assert undocumented == [], "no `operation` for: #{Enum.join(undocumented, ", ")}"
+  end
+
   describe "spec/0 router resolution" do
     setup do
       original = Application.get_env(:gamend_web, :router)

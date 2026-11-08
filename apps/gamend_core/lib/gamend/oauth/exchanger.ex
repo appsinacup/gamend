@@ -138,8 +138,8 @@ defmodule Gamend.OAuth.Exchanger do
         user_url = "https://graph.facebook.com/v18.0/me"
 
         user_params = %{
-          # request picture and name from facebook so we can map display_name and avatar url
-          fields: "id,email,name,picture",
+          # No `name`: it is a legal name, which an account does not publish.
+          fields: "id,email,picture",
           access_token: access_token
         }
 

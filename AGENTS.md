@@ -19,7 +19,7 @@ runnable host app at the repository root.
 
 ## Project guidelines
 
-- Run `mix precommit` when done and fix what it reports. It compiles with `--warnings-as-errors`, formats, regenerates the SDK, the settings docs and the `Dockerfile`, extracts theme strings, runs `test`, regenerates `clients/events.json` from the realtime event registry (`mix gamend.gen.events`) and the Balaur SDK from it and a fresh OpenAPI document (CI fails a stale one of either), runs `credo --strict`, `gamend.api.lint` and `gamend.race.lint`, and repeats the compile/format/credo steps in `apps/gamend_core` and `apps/gamend_web` (plus `format` in plugins, `sdk` and `sdk_tools`). CI also runs dialyzer and `deps.audit`.
+- Run `mix precommit` when done and fix what it reports. It compiles with `--warnings-as-errors`, formats, regenerates the SDK, the settings docs and the `Dockerfile`, extracts theme strings, runs `test`, regenerates `clients/events.json` from the realtime event registry (`mix gamend.gen.events`) and the Balaur SDK from it and a fresh OpenAPI document (CI fails a stale one of either), runs `clients/sdkgen lint` (every SDK against every operation, schema and socket event), `credo --strict`, `gamend.api.lint`, `gamend.race.lint` and `gamend.literal.lint`, and repeats the compile/format/credo steps in `apps/gamend_core` and `apps/gamend_web` (plus `format` in plugins, `sdk` and `sdk_tools`). CI also runs dialyzer and `deps.audit`.
 - `Dockerfile` is generated (`mix gamend.gen.dockerfile`, from the project and `gamend_dockerfile:` in `mix.exs`), the same file every app built on Gamend uses ([docker/README.md](docker/README.md)). Never edit it by hand.
 - Use `:req` (`Req`) for HTTP. **Avoid** `:httpoison`, `:tesla` and `:httpc`.
 - Declare settings with `Gamend.Settings.Provider`; never read `System.get_env/1`. The env var name derives from the declaration: `GAMEND_<GROUP>_<NAME>` (`GAMEND_DB_URL`, `GAMEND_LIMITS_MAX_PAGE_SIZE`, `GAMEND_FEATURES_LIST_QUESTS`). `.env.example` and the Settings guide are generated (`mix gamend.settings.env_example`, `mix gamend.settings.guide`).
@@ -217,7 +217,8 @@ invariants code must keep.
 | `Gamend.Quests` | [quests](priv/docs/40-gameplay/40-quests.md) | Achievements are quests with `category: "achievement"`; there is no Achievements context. Progress is server-authoritative, rewards pay exactly once |
 | `Gamend.Leaderboards` | [leaderboards](priv/docs/40-gameplay/10-leaderboards.md) | A record is unique per user (or label) and `key` (`""` by default); every read ranks within one key, `key: :all` reads across. `hidden` boards are left out of every public listing |
 | `Gamend.Tournaments` | [tournaments](priv/docs/40-gameplay/20-tournaments.md) | Hooks and broadcasts wait for the commit (`Gamend.AfterCommit`); `tick/1` locks with `Lock.exclusive/3`, one transaction per tournament |
-| `Gamend.Matchmaking`, `Gamend.ReadyChecks` | [matchmaking](priv/docs/40-gameplay/30-matchmaking.md) | A party queues as one unit |
+| `Gamend.Matchmaking`, `Gamend.ReadyChecks` | [matchmaking](priv/docs/40-gameplay/30-matchmaking.md) | A party queues as one unit. Where a formed match sits and whether it asks first is the game's answer (`matchmaking_seat_match`, built with `Gamend.MatchSeating`), and core does the seating |
+| `Gamend.Rating` | [ratings](priv/docs/40-gameplay/32-ratings.md) | Pure, stores nothing. Like `Gamend.MatchSeating`, the SDK carries the module itself (`@copied_sources` in `mix gen.sdk`), so it uses nothing but the standard library |
 | `Gamend.Economy`, `Gamend.Inventory` | [economy](priv/docs/50-monetization/05-economy.md) | Ledgered through `Gamend.Ledger`. `Economy.spend/4` is one conditional SQL statement and needs no lock |
 | `Gamend.Payments` | [payments](priv/docs/50-monetization/10-payments.md) | |
 | `Gamend.KV` | [key-value](priv/docs/45-storage/10-key-value.md) | Client reads pass the `before_kv_get` hook |
@@ -243,7 +244,7 @@ Web-side features with no context: the site search palette (`GamendWeb.SearchInd
 ### PubSub & realtime
 
 - Topics are `"resource:<id>"` for one instance and `"resources"` for the collection (`"lobby:<id>"` / `"lobbies"`, `"group:<id>"` / `"groups"`, `"party:<id>"`, `"user:<id>"`). Chat uses `"chat:lobby:<id>"`, `"chat:group:<id>"`, `"chat:party:<id>"` and `"chat:friend:<low>:<high>"` (sorted id pair).
-- Socket channels are registered in `@channels` in `user_socket.ex`: `UserChannel`, `LobbyChannel`, `LobbiesChannel`, `GroupChannel`, `GroupsChannel`, `PartyChannel`, `SignalingChannel`. Every server→client event is registered in `GamendWeb.RealtimeEvents`.
+- Socket channels are registered in `@channels` in `user_socket.ex`: `UserChannel`, `LobbyChannel`, `LobbiesChannel`, `GroupChannel`, `GroupsChannel`, `PartyChannel`, `SignalingChannel`. Every server→client event is registered in `GamendWeb.RealtimeEvents`, and every event a channel answers in `GamendWeb.RealtimeCommands`.
 - LiveViews subscribe to PubSub directly (context `subscribe_*` functions), not through channels.
 - WebRTC: the server is a peer, signalled over `UserChannel` (`webrtc:*` events, one `GamendWeb.WebRTCPeer` per user); peer-to-peer rooms use `SignalingChannel` on `signaling:<lobby_id>`. Config is `config :gamend_web, :webrtc` in `config/host_config.exs`. Details: [webrtc guide](priv/docs/30-clients/50-webrtc.md).
 - Event payloads and client usage: [realtime guide](priv/docs/30-clients/30-realtime.md).
@@ -283,7 +284,7 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md). Where things live:
 - Context: `apps/gamend_core/lib/gamend/`. Migrations: `apps/gamend_core/priv/repo/migrations/`.
 - API controllers: `apps/gamend_web/lib/gamend_web/controllers/api/v1/` (admin under `admin/`), documented with OpenApiSpex `operation/2`; the spec is built from code.
 - Routes: the matching macro in `router/shared.ex`.
-- Admin LiveViews: `apps/gamend_web/lib/gamend_web/live/admin_live/`, routed in `gamend_admin_live_routes/1`.
+- Admin LiveViews: `apps/gamend_web/lib/gamend_web/live/admin_live/`, routed in `gamend_admin_live_routes/1`. Every one opens with `<.admin_header>` (`GamendWeb.AdminComponents`, imported with `:live_view`); a core page's title, icon and colour are one entry in `GamendWeb.AdminLive.Pages`. A host's page passes `title`, `icon` and `color` itself and reaches `/admin` through `GamendWeb.AdminCard`.
 - Public LiveViews: `apps/gamend_web/lib/gamend_web/live/`. Nav links: `navigation.primary_links` in `theme/config.json` and `default_primary_nav_links/0` in `host_layouts.ex`.
 - Channels: `apps/gamend_web/lib/gamend_web/channels/`, registered in `@channels` in `user_socket.ex`.
 - Guide: a markdown file in `priv/docs/<NN-category>/`. No registration.

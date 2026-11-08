@@ -84,6 +84,25 @@ defmodule GamendWeb.Api.V1.FriendControllerTest do
     refute Enum.any?(incoming, &(&1["id"] == f.id))
   end
 
+  test "a request carries no metadata until it is accepted", %{conn: conn} do
+    a = AccountsFixtures.user_fixture()
+    b = AccountsFixtures.user_fixture()
+    {:ok, _} = Gamend.Accounts.update_user_metadata(b.id, &Map.put(&1, "ship", "brig"))
+
+    {:ok, token_a, _} = Guardian.encode_and_sign(a)
+    conn_a = conn |> put_req_header("authorization", "Bearer " <> token_a)
+    post(conn_a, "/api/v1/friends", %{target_user_id: b.id})
+
+    [request] =
+      conn_a
+      |> get("/api/v1/me/friend_requests")
+      |> json_response(200)
+      |> get_in(["data", "outgoing"])
+
+    assert request["target"]["id"] == b.id
+    assert request["target"]["metadata"] == %{}
+  end
+
   test "requests endpoint returns incoming and outgoing", %{conn: conn} do
     a = AccountsFixtures.user_fixture()
     b = AccountsFixtures.user_fixture()

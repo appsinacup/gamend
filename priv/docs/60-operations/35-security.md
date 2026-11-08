@@ -37,7 +37,7 @@ An account ban (`Gamend.Bans`, kind `:account`) keeps a player out of the game w
 
 - **API**: every authenticated call answers 403 `account_banned` (`GamendWeb.Plugs.AccountBan`, in the `:api_auth` and `:api_optional_auth` pipelines; a personal API token too).
 - **Socket**: it connects and joins its own user channel, which carries `account_banned` and `account_unbanned`, and nothing else; the user channel refuses its hook calls, KV subscriptions and WebRTC.
-- **Website**: every LiveView sends it to `/suspended` (until when, why, a way to its settings and to log out), its settings excepted; a plain page shows a notice leading there.
+- **Website**: every LiveView sends it to `/suspended` (until when, why, a way to its settings and to log out), its settings excepted, and so does a controller route that needs a signed-in account (`GamendWeb.UserAuth.require_authenticated_user/2`, a host's own included); a plain page shows a notice leading there.
 
 A ban placed while the account is connected closes its sockets and open pages within a second (`GamendWeb.AccountBanKicks`), and they reconnect into those limits. An admin account cannot be banned, so no admin can lock another out of the console.
 

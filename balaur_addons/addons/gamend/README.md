@@ -13,7 +13,7 @@ let reply = await task::wait(lobbies::quick_join({ "title": "duel", "max_users":
 if e["kind"].as_str() == lobby::MEMBER_JOINED { }
 ```
 
-279 operations in 44 modules, and 100 realtime events.
+279 operations in 44 modules, and 100 realtime events, 15 socket commands.
 
 Beside the generated modules and `events.bs`, written by hand:
 
@@ -24,6 +24,7 @@ Beside the generated modules and `events.bs`, written by hand:
 | `gamend::presence` | The user cache |
 | `gamend::prefs` | The player's prefs on this device |
 | `gamend::logs` | This run's log, shipped in batches; put `log_sink.bs` on a node that lives as long as the game |
+| `gamend::commands` | Generated: one function per event a channel answers |
 | `gamend::core` | The query string, the required-field check and the reply helpers |
 | `editor/gamend.bs` | The Gamend dock in the Balaur editor: the server, the session, and what the calls answered |
 

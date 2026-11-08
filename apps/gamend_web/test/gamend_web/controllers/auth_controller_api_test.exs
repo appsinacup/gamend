@@ -279,7 +279,7 @@ defmodule GamendWeb.AuthControllerApiTest do
       assert conn.status == 200
 
       reloaded = Gamend.Repo.get(Gamend.Accounts.User, user.id)
-      assert reloaded.display_name == "FetchedG"
+      assert reloaded.display_name == nil
     end
 
     test "POST /api/v1/auth/steam/callback returns 400 when verification fails", %{conn: conn} do
@@ -413,7 +413,7 @@ defmodule GamendWeb.AuthControllerApiTest do
       assert conn.status == 200
 
       reloaded = Gamend.Repo.get(Gamend.Accounts.User, user.id)
-      assert reloaded.display_name == "FetchedA"
+      assert reloaded.display_name == nil
     end
 
     test "POST /api/v1/auth/apple/callback uses APPLE_WEB_CLIENT_ID when set", %{conn: conn} do
@@ -546,7 +546,7 @@ defmodule GamendWeb.AuthControllerApiTest do
         })
 
       assert conn.status == 200
-      assert Gamend.Accounts.get_user_by_apple_id("a_ios_named").display_name == "Grace Hopper"
+      assert Gamend.Accounts.get_user_by_apple_id("a_ios_named").display_name == nil
     end
 
     test "POST /api/v1/auth/steam/callback skips profile lookup when user already has profile", %{

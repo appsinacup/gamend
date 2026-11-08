@@ -309,23 +309,25 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
 
   def handle_event("update_email", %{"user" => user_params}, socket) do
     user = Shared.current_user(socket)
+    changeset = Accounts.change_user_email(user, user_params)
+    sent = gettext("Check your new email address for a link to confirm the change.")
 
-    case Accounts.change_user_email(user, user_params) do
-      %{valid?: true} = changeset ->
+    cond do
+      changeset.valid? ->
         Accounts.deliver_user_update_email_instructions(
           Ecto.Changeset.apply_action!(changeset, :insert),
           user.email,
           &url(~p"/users/settings/confirm_email/#{&1}")
         )
 
-        {:noreply,
-         put_flash(
-           socket,
-           :info,
-           gettext("Check your new email address for a link to confirm the change.")
-         )}
+        {:noreply, put_flash(socket, :info, sent)}
 
-      changeset ->
+      # The same answer, and no email: refusing would tell any account which
+      # addresses have one.
+      Accounts.email_taken?(changeset) and Accounts.drop_email_taken(changeset).valid? ->
+        {:noreply, put_flash(socket, :info, sent)}
+
+      true ->
         {:noreply, assign(socket, :email_form, to_form(changeset, action: :insert))}
     end
   end

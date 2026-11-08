@@ -169,7 +169,7 @@ defmodule GamendWeb.ApiSpec do
         Ticket-based queueing that turns waiting players into hidden, locked lobbies:
 
         - **Join over HTTP** (`POST /matchmaking/tickets` with a `match_params` string map); only tickets with identical params match together — encode mode/map/skill band as parameter values
-        - **A match forms** when a group reaches `max_players`, or has at least `min_players` and the oldest ticket outwaited the timeout; the server creates a hidden lobby, seats everyone and locks it
+        - **A match forms** when a group reaches `max_players`, or has at least `min_players` and the oldest ticket outwaited the timeout; the server creates a hidden lobby, seats everyone and locks it, unless the game's server hook seats the match elsewhere or asks its players to accept first
         - **The result is a push, not a poll**: matched players receive `match_found` (`lobby_id`, `match_params`) on their user channel, and `ticket_queued` / `ticket_cancelled` as their ticket goes in or out of the queue; closing your last socket cancels your tickets
         - **Inspect**: `GET /matchmaking/tickets/me` for your ticket, `GET /matchmaking/stats` for queue depths
         - **Admin management** over HTTP: list/filter tickets, force-cancel, and stats under `/api/v1/admin/matchmaking`

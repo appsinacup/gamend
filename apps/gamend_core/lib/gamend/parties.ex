@@ -1583,7 +1583,8 @@ defmodule Gamend.Parties do
   The lobby must have enough free slots for the entire party, and the party
   gets in only where each member could alone: a hidden lobby answers
   `{:error, :not_found}` (unless a server-side caller passes
-  `bypass_hidden: true`, as for `Lobbies.join_lobby/3`), a block between
+  `bypass_hidden: true`, as for `Lobbies.join_lobby/3`, or `bypass_lock: true`
+  for a locked one, which answers `{:error, :locked}`), a block between
   any member and anyone already seated answers `{:error, :blocked}`, and the
   game's `before_lobby_join` is asked for every member (`"party_id"` in its
   opts), the first refusal answering `{:error, {:hook_rejected, reason}}`.
@@ -1651,10 +1652,11 @@ defmodule Gamend.Parties do
   # reaches a player, and a party walked in where the player alone got 404.
   defp fetch_joinable_lobby(lobby_id, opts) do
     bypass_hidden? = Map.get(opts, :bypass_hidden, false) == true
+    bypass_lock? = Map.get(opts, :bypass_lock, false) == true
 
     case Lobbies.get_lobby(lobby_id) do
       nil -> {:error, :invalid_lobby}
-      %{is_locked: true} -> {:error, :locked}
+      %{is_locked: true} when not bypass_lock? -> {:error, :locked}
       %{is_hidden: true} when not bypass_hidden? -> {:error, :not_found}
       lobby -> {:ok, lobby}
     end

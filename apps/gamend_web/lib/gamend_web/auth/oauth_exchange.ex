@@ -217,46 +217,6 @@ defmodule GamendWeb.Auth.OAuthExchange do
 
   def apple_ios_params(_code), do: {:error, :missing_param}
 
-  @doc """
-  The display name from Apple's web `user` form field: a JSON string,
-  `{"name": {"firstName", "lastName"}, "email"}`. Apple sends it only on a
-  player's FIRST authorization and never puts the name in the ID token, so
-  dropping it here loses it for good.
-  """
-  @spec apple_web_name(term()) :: String.t() | nil
-  def apple_web_name(user) when is_binary(user) do
-    case Jason.decode(user) do
-      {:ok, %{"name" => %{} = name}} -> apple_name(name["firstName"], name["lastName"])
-      _ -> nil
-    end
-  end
-
-  def apple_web_name(_user), do: nil
-
-  @doc """
-  "Given Family", trimmed, or nil when both are blank. A name past the
-  display-name limit is dropped whole rather than cut: kept, it would fail
-  the changeset and with it the whole sign-in.
-  """
-  @spec apple_name(term(), term()) :: String.t() | nil
-  def apple_name(given, family) do
-    [given, family]
-    |> Enum.filter(&is_binary/1)
-    |> Enum.map(&String.trim/1)
-    |> Enum.reject(&(&1 == ""))
-    |> Enum.join(" ")
-    |> case do
-      "" -> nil
-      # Codepoints, as the changeset and the column count them.
-      name -> if length(String.codepoints(name)) <= Gamend.Limits.get(:max_display_name), do: name
-    end
-  end
-
-  @doc "Sets the Apple-provided name when there is one; a nil keeps the params."
-  @spec put_apple_name(map(), String.t() | nil) :: map()
-  def put_apple_name(user_params, nil), do: user_params
-  def put_apple_name(user_params, name), do: Map.put(user_params, :display_name, name)
-
   @doc "The answer to a code, ticket or token the provider would not vouch for."
   @spec reply_refused(Plug.Conn.t(), term()) :: Plug.Conn.t()
   def reply_refused(conn, :missing_param),
@@ -320,13 +280,19 @@ defmodule GamendWeb.Auth.OAuthExchange do
          google_id: Map.get(claims, "sub"),
          email: Map.get(claims, "email"),
          email_verified: verified_email?(Map.get(claims, "email_verified")),
-         display_name: Map.get(claims, "name"),
          profile_url: Map.get(claims, "picture")
        }}
     end
   end
 
-  @doc "The attributes a provider's profile gives an account."
+  @doc """
+  The attributes a provider's profile gives an account.
+
+  `display_name` is public and searchable, so only a name chosen for being seen
+  comes across: a Discord or Steam name, a GitHub login. Google, Facebook and
+  Apple give a legal name, which nobody signing in asked us to publish; those
+  accounts start with a generated username and pick a name in their settings.
+  """
   @spec user_params(provider(), map()) :: {:ok, map()} | {:error, :missing_user_info}
   def user_params("discord", %{"id" => discord_id, "email" => email} = response) do
     avatar = response["avatar"]
@@ -348,13 +314,11 @@ defmodule GamendWeb.Auth.OAuthExchange do
 
   def user_params("google", %{"id" => google_id, "email" => email} = user_info) do
     picture = Map.get(user_info, "picture")
-    name = Map.get(user_info, "name") || Map.get(user_info, "given_name")
 
     user_params = %{
       email: email,
       email_verified: verified_email?(user_info["email_verified"] || user_info["verified_email"]),
-      google_id: google_id,
-      display_name: name
+      google_id: google_id
     }
 
     {:ok, if(picture, do: Map.put(user_params, :profile_url, picture), else: user_params)}
@@ -372,8 +336,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
       # Facebook does not expose a per-login email-verification claim, so its
       # emails are never trusted for auto-linking to an existing account.
       email_verified: false,
-      facebook_id: facebook_id,
-      display_name: Map.get(user_info, "name")
+      facebook_id: facebook_id
     }
 
     {:ok, if(profile_url, do: Map.put(user_params, :profile_url, profile_url), else: user_params)}
@@ -386,7 +349,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
        email: user_info["email"],
        email_verified: verified_email?(user_info["email_verified"]),
        github_id: to_string(github_id),
-       display_name: Map.get(user_info, "name") || Map.get(user_info, "login"),
+       display_name: Map.get(user_info, "login"),
        profile_url: Map.get(user_info, "avatar_url")
      }}
   end
@@ -396,8 +359,7 @@ defmodule GamendWeb.Auth.OAuthExchange do
      %{
        email: user_info["email"],
        email_verified: verified_email?(user_info["email_verified"]),
-       apple_id: apple_id,
-       display_name: Map.get(user_info, "name")
+       apple_id: apple_id
      }}
   end
 

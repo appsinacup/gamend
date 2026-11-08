@@ -152,6 +152,7 @@ defmodule Gamend.Hooks do
   - `after_user_logged_in/1` - Called after a user logs in
   - `after_user_updated/1` - Called after a user is updated (fire-and-forget)
   - `validate_username/1` - Replaces the username rules for one handle (`:default` keeps core's)
+  - `before_user_delete/1` - Called just before an account is deleted, while all of it can be read; it cannot stop the delete
   - `after_user_online/1` - Called after a user comes online (fire-and-forget)
   - `after_socket_connected/3` - Called for every socket of a user that opens, with its process and kind (`"socket"` or `"page"`) (fire-and-forget)
   - `after_user_offline/1` - Called after a user goes offline (fire-and-forget)
@@ -344,6 +345,8 @@ defmodule Gamend.Hooks do
   @callback after_user_online(user()) :: any()
   @callback after_socket_connected(user(), pid(), String.t()) :: any()
   @callback after_user_offline(user()) :: any()
+  @callback before_user_delete(user()) :: any()
+  @optional_callbacks before_user_delete: 1
   @callback after_user_deleted(user()) :: any()
 
   # Economy lifecycle callbacks. The change map carries the user, the
@@ -456,6 +459,17 @@ defmodule Gamend.Hooks do
   """
   @callback matchmaking_form_matches(params :: map(), tickets :: [struct()]) ::
               [[struct()]] | :default
+
+  @doc """
+  Answers once per formed match: where it sits and whether its players are
+  asked first. Build the answer with `Gamend.MatchSeating`, return `:default`
+  for core's seat, or `{:error, reason}` to put the tickets back in the queue.
+
+  Only answer here: core seats the players and checks seats and blocks. It
+  has 5 seconds, and a failure puts the tickets back too.
+  """
+  @callback matchmaking_seat_match(tickets :: [struct()]) ::
+              Gamend.MatchSeating.t() | :default | {:error, term()}
   @callback after_matchmaking_matched(tickets :: [struct()], lobby_id :: String.t()) :: any()
 
   @callback before_tournament_register(user(), tournament :: struct()) :: hook_result(term())
@@ -470,6 +484,7 @@ defmodule Gamend.Hooks do
                       after_matchmaking_join: 2,
                       after_matchmaking_cancel: 2,
                       matchmaking_form_matches: 2,
+                      matchmaking_seat_match: 1,
                       after_matchmaking_matched: 2,
                       before_tournament_register: 2,
                       after_tournament_register: 2,

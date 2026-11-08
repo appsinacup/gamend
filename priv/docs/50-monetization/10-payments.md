@@ -138,6 +138,8 @@ Stripe subscription entitlements stay active while the subscription auto-renews.
 
 Cancel renewal calls Stripe and schedules cancellation at period end; it does not revoke access immediately. If a subscription shows no expiry, configure Stripe subscription webhook events and use Admin > Payments > Reconcile Stripe to backfill period data. duration_seconds is only a fallback for custom/non-Stripe flows.
 
+Deleting an account cancels its Stripe subscriptions at once, with no refund, through a job that retries while Stripe is unreachable. Its purchases stay as the record of the sale, and later Stripe events about them are ignored.
+
 ```json
 {
   "entitlement_key": "starter_pack",

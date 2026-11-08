@@ -19,6 +19,7 @@ defmodule GamendWeb.Api.V1.FriendController do
     UserBriefPage
   }
 
+  alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
   tags(["Friends"])
@@ -593,17 +594,16 @@ defmodule GamendWeb.Api.V1.FriendController do
     end
   end
 
-  defp serialize_user(user) do
-    User.serialize_brief(user)
-  end
+  # Someone blocked is no friend: what `serialize_friend/1` sends is for friends.
+  defp serialize_user(user), do: Serializers.public_brief(user)
 
   defp serialize_friend(%{friendship_id: fid, user: user}) do
     User.serialize_brief(user) |> Map.put(:friendship_id, fid)
   end
 
   defp serialize_request(%Friends.Friendship{} = f) do
-    requester = brief(f.requester, f.requester_id)
-    target = brief(f.target, f.target_id)
+    requester = brief(f.requester, f.requester_id, f.status)
+    target = brief(f.target, f.target_id, f.status)
 
     %{
       id: f.id,
@@ -616,6 +616,8 @@ defmodule GamendWeb.Api.V1.FriendController do
 
   # A side that was not preloaded is sent as a blank member row with its id,
   # built by the same serializer, so it has every field a loaded one has.
-  defp brief(%User{} = user, _id), do: User.serialize_brief(user)
-  defp brief(_not_loaded, id), do: User.serialize_brief(%User{id: id})
+  # Anyone can send a request, so a side's metadata waits for the acceptance.
+  defp brief(%User{} = user, _id, "accepted"), do: User.serialize_brief(user)
+  defp brief(%User{} = user, _id, _status), do: Serializers.public_brief(user)
+  defp brief(_not_loaded, id, _status), do: User.serialize_brief(%User{id: id})
 end

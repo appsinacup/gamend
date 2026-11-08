@@ -122,7 +122,7 @@ defmodule GamendWeb.LobbyChannel do
 
     payload =
       if user do
-        User.serialize_brief(user) |> Map.put(:user_id, user_id)
+        socket |> ChannelEvents.member_brief(user) |> Map.put(:user_id, user_id)
       else
         %{user_id: user_id, display_name: ""}
       end
@@ -153,7 +153,12 @@ defmodule GamendWeb.LobbyChannel do
 
   @impl true
   def handle_info({:lobby_updated, lobby}, socket) do
-    payload = Serializers.serialize_lobby(lobby, include_members: true)
+    payload =
+      Serializers.serialize_lobby(lobby,
+        include_members: true,
+        outsider: socket.assigns[:spectator] == true
+      )
+
     {:noreply, ChannelUpdates.push(socket, "updated", :lobby, payload)}
   end
 
@@ -213,7 +218,10 @@ defmodule GamendWeb.LobbyChannel do
   def handle_info({:after_join, lobby}, socket) do
     payload =
       lobby
-      |> Serializers.serialize_lobby(include_members: true)
+      |> Serializers.serialize_lobby(
+        include_members: true,
+        outsider: socket.assigns[:spectator] == true
+      )
       |> Map.put(:spectator, socket.assigns[:spectator] || false)
 
     push_event(socket, "updated", payload)

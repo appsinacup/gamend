@@ -123,15 +123,12 @@ defmodule GamendWeb.AdminLive.Settings do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
-
-        <div>
-          <h1 class="text-3xl font-bold">Settings</h1>
-          <p class="mt-1 text-sm text-muted">
+        <.admin_header page="/admin/settings">
+          <:subtitle>
             Every setting the server declares — {length(Settings.all())} across {length(@groups)} groups.
             Values resolve once at boot; change one in your config or environment and restart.
-          </p>
-        </div>
+          </:subtitle>
+        </.admin_header>
 
         <div :if={@failures != []} class="alert alert-error">
           <div>

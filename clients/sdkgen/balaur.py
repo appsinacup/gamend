@@ -7,6 +7,7 @@ module inside the addon links its neighbours by name (`use core;`). A
 function is named for its operation without the tag. The realtime events
 are one file per channel under `events/` (`use addons::gamend::events::lobby;`,
 `lobby::MEMBER_JOINED`) and `events.bs`, the table and the decoder.
+`commands.bs` is one function per event a channel answers.
 `README.md` is the reference, by tag. Everything else in the addon is the
 hand-written `clients/balaur_template/`, copied over the top.
 """
@@ -26,7 +27,10 @@ OWNS_OUT = True
 # A tag whose file would read as something else.
 FILE_NAMES = {"push": "push_tokens"}
 # What a tag's file must not take: the template's files.
-TAKEN = {"auth", "client", "core", "events", "log_sink", "logs", "prefs", "presence", "version"}
+TAKEN = {
+    "auth", "client", "commands", "core", "events", "log_sink", "logs", "prefs", "presence",
+    "version",
+}
 
 BANNER = (
     "// Written by clients/sdkgen (balaur) from the OpenAPI document.\n"
@@ -216,6 +220,40 @@ def write_events(model: Model) -> dict[str, str]:
     return out
 
 
+def command_function(row: dict) -> str:
+    """One command as a function over `gamend::push`, answering its id."""
+    on_user = row["channel"] == "user"
+    args = ["socket: int"]
+    if not on_user:
+        args.append("id: str")
+    fields = [(key, True) for key in row["required"]] + [(key, False) for key in row["optional"]]
+    if fields:
+        args.append("params: any")
+    where = "the user channel" if on_user else f"`{row['channel']}:<id>`"
+    out = wrap(f"`{row['event']}` on {where}.", 76, "///")
+    if fields:
+        listed = ", ".join(f"`{key}`{' (required)' if needed else ''}" for key, needed in fields)
+        out += wrap(f"`params`: {listed}.", 76, "///")
+    topic = '"user:" + auth::user_id()' if on_user else f'"{row["channel"]}:" + id'
+    payload = "params" if fields else "{}"
+    out.append(f"pub fn {row['name']}({', '.join(args)}) -> int {{")
+    out.append(f'    gamend::push(socket, {topic}, "{row["event"]}", {payload})')
+    out.append("}")
+    return "\n".join(out)
+
+
+def write_commands(model: Model) -> str:
+    chunks = [
+        BANNER.rstrip("\n"),
+        "// Every event a channel answers, one function each, from\n"
+        "// `clients/commands.json`. A call answers the id `gamend::push` answers,\n"
+        "// to await with `task::wait`.\n"
+        "\nuse auth;",
+    ]
+    chunks += [command_function(row) for row in model.commands]
+    return "\n\n".join(chunks) + "\n"
+
+
 def write_readme(model: Model) -> str:
     files = by_file(model)
     lines = [
@@ -235,7 +273,7 @@ def write_readme(model: Model) -> str:
         "```",
         "",
         f"{len(model.ops)} operations in {len(files)} modules, and "
-        f"{len(model.signals())} realtime events.",
+        f"{len(model.signals())} realtime events, {len(model.commands)} socket commands.",
         "",
         "Beside the generated modules and `events.bs`, written by hand:",
         "",
@@ -246,6 +284,7 @@ def write_readme(model: Model) -> str:
         "| `gamend::presence` | The user cache |",
         "| `gamend::prefs` | The player's prefs on this device |",
         "| `gamend::logs` | This run's log, shipped in batches; put `log_sink.bs` on a node that lives as long as the game |",
+        "| `gamend::commands` | Generated: one function per event a channel answers |",
         "| `gamend::core` | The query string, the required-field check and the reply helpers |",
         "| `editor/gamend.bs` | The Gamend dock in the Balaur editor: the server, the session, and what the calls answered |",
         "",
@@ -276,9 +315,13 @@ def emit(model: Model) -> dict[str, str]:
     return {
         **write_tags(model),
         **write_events(model),
+        "commands.bs": write_commands(model),
         "README.md": write_readme(model),
     }
 
 
 def summary(model: Model) -> str:
-    return f"wrote {len(model.ops)} operations and {len(model.signals())} events"
+    return (
+        f"wrote {len(model.ops)} operations, {len(model.signals())} events "
+        f"and {len(model.commands)} commands"
+    )

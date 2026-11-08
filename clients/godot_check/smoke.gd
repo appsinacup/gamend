@@ -87,6 +87,12 @@ func _run() -> void:
 		var group: GamendGroup = created.data
 		_expect(await api.groups_get_group(group.id), "get_group", GamendGroupResponse)
 		_expect(await api.groups_list_group_members(group.id), "list_group_members", GamendGroupMemberPage)
+		_expect(await api.groups_list_group_invites(group.id), "list_group_invites", GamendGroupInvitePage)
+		var link = _expect(await api.groups_create_group_invite_link(group.id), "create_group_invite_link", GamendGroupInviteLinkResponse)
+		_expect(await api.groups_get_group_invite_link(group.id), "get_group_invite_link", GamendGroupInviteLinkResponse)
+		if link:
+			_expect(await api.groups_preview_group_invite_link(link.data.token), "preview_group_invite_link", GamendGroupInviteLinkPreviewResponse)
+		_expect(await api.groups_delete_group_invite_link(group.id), "delete_group_invite_link", GamendOkResponse)
 	_expect(await api.groups_list_groups(), "list_groups", GamendGroupPage)
 	_expect(await api.groups_list_my_groups(), "list_my_groups", GamendGroupPage)
 
@@ -137,11 +143,28 @@ func _run() -> void:
 	_expect(await api.matchmaking_stats(), "matchmaking_stats", GamendMatchmakingStatsResponse)
 	_expect(await api.hooks_list_hooks(), "list_hooks", GamendHookFunctionPage)
 	_expect(await api.ready_checks_get_mine(), "get_my_ready_check", GamendMyReadyChecksResponse)
+	_expect(await api.results_list_results(), "list_results", GamendPlayResultPage)
+	_expect(await api.reports_list_report_kinds(), "list_report_kinds", GamendReportKindsResponse)
+
+	await api.realtime_start()
+	api.listen_to_user()
+	await api._realtime.user_channel_joined
+	_expect_ws(await api.kv_subscribe_ws("godot-check"), "kv_subscribe_ws")
+	_expect_ws(await api.kv_unsubscribe_ws("godot-check"), "kv_unsubscribe_ws")
+	_expect_ws(await api.results_list_ws({"page_size": 1}), "results_list_ws")
 
 	_check_kv_row()
 
 	print("failures=", failures)
 	quit(1 if failures > 0 else 0)
+
+
+func _expect_ws(result: GamendResult, label: String) -> void:
+	if result.error:
+		failures += 1
+		print("FAIL ", label, ": ", result.error.message)
+	else:
+		print("ok   ", label)
 
 
 # GamendClient reads a KV row out of a get_kv answer by hand. The typed model,

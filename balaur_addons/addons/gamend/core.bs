@@ -5,7 +5,7 @@
 /// Whether a map carries a key with a value. A key set to nil is absent:
 /// the server would refuse it, and refusing here names the field instead.
 pub fn given(table: any, key: str) -> bool {
-    table.kind() == "map" && table.has(key) && table[key] != nil
+    table.kind() == types::KIND_MAP && table.has(key) && table[key] != nil
 }
 
 /// A call this SDK would not send. It logs which field was missing and
@@ -20,7 +20,7 @@ pub fn missing(call: str, field: str) -> int {
 /// them, skipping the ones the caller left out. Empty when none are given,
 /// so the path stays exactly as the document wrote it.
 pub fn query(options: any, allowed: [str]) -> str {
-    if options.kind() != "map" {
+    if options.kind() != types::KIND_MAP {
         return "";
     }
     let out = "";
@@ -51,7 +51,7 @@ pub fn escape(text: str) -> str {
 /// Whether a `rest` completion carried a 2xx status.
 pub fn ok(reply: any) -> bool {
     let status = reply["status"];
-    status.kind() == "int" && status.as_int() >= 200 && status.as_int() < 300
+    status.kind() == types::KIND_INT && status.as_int() >= 200 && status.as_int() < 300
 }
 
 /// The decoded body of a reply, or nil.

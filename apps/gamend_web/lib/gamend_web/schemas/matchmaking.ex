@@ -24,10 +24,6 @@ defmodule GamendWeb.Schemas.MatchmakingTicket do
         type: :string,
         description: "The lobby the ticket was matched into; empty while queued"
       },
-      accept_timeout_ms: %Schema{
-        type: :integer,
-        description: "The ms a formed match gives its players to accept; 0 seats them at once"
-      },
       lobby_id: %Schema{
         type: :string,
         description:
@@ -44,7 +40,6 @@ defmodule GamendWeb.Schemas.MatchmakingTicket do
       :queued_at,
       :matched_at,
       :match_id,
-      :accept_timeout_ms,
       :lobby_id
     ]
   })

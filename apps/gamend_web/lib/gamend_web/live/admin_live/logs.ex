@@ -36,23 +36,20 @@ defmodule GamendWeb.AdminLive.Logs do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <.back_link navigate={~p"/admin"} />
-            <h1 class="text-xl font-bold">Logs</h1>
-          </div>
-
-          <div class="flex items-center gap-2 text-xs text-muted">
-            <span>
-              Buffer: {ngettext("%{count} entry", "%{count} entries", @total_buffered)}
-            </span>
-            <span>&middot;</span>
-            <span>{@source_counts.client} from clients</span>
-            <span :if={@buffer_level_counts[:error]} class="text-error font-semibold">
-              &middot; {ngettext("%{count} error", "%{count} errors", @buffer_level_counts[:error])}
-            </span>
-          </div>
-        </div>
+        <.admin_header page="/admin/logs">
+          <:actions>
+            <div class="flex items-center gap-2 text-xs text-muted">
+              <span>
+                Buffer: {ngettext("%{count} entry", "%{count} entries", @total_buffered)}
+              </span>
+              <span>&middot;</span>
+              <span>{@source_counts.client} from clients</span>
+              <span :if={@buffer_level_counts[:error]} class="text-error font-semibold">
+                &middot; {ngettext("%{count} error", "%{count} errors", @buffer_level_counts[:error])}
+              </span>
+            </div>
+          </:actions>
+        </.admin_header>
 
         <%!-- Tabs --%>
         <div role="tablist" class="tabs tabs-box w-fit">

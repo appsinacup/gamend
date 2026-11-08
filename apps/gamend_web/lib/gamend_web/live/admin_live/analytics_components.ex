@@ -13,9 +13,8 @@ defmodule GamendWeb.AdminLive.AnalyticsComponents do
   it can be reloaded, bookmarked and sent.
   """
   use Phoenix.Component
-  use GamendWeb, :verified_routes
 
-  import GamendWeb.CoreComponents, only: [back_link: 1, page_title: 1, eyebrow: 1, panel: 1]
+  import GamendWeb.CoreComponents, only: [eyebrow: 1, panel: 1]
 
   alias Gamend.Analytics.Catalog
 
@@ -41,16 +40,10 @@ defmodule GamendWeb.AdminLive.AnalyticsComponents do
     assigns = assign(assigns, :tabs, tabs())
 
     ~H"""
-    <header class="space-y-3">
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <.back_link navigate={~p"/admin"} />
-          <.page_title>Analytics</.page_title>
-        </div>
-        <div :if={@controls != []} class="flex flex-wrap items-center gap-2">
-          {render_slot(@controls)}
-        </div>
-      </div>
+    <div class="space-y-3">
+      <GamendWeb.AdminComponents.admin_header page="/admin/analytics">
+        <:actions :if={@controls != []}>{render_slot(@controls)}</:actions>
+      </GamendWeb.AdminComponents.admin_header>
       <nav class="tabs tabs-border overflow-x-auto" aria-label="Analytics">
         <.link
           :for={tab <- @tabs}
@@ -62,7 +55,7 @@ defmodule GamendWeb.AdminLive.AnalyticsComponents do
         </.link>
       </nav>
       <p :if={@note} class="text-sm text-muted">{@note}</p>
-    </header>
+    </div>
     """
   end
 

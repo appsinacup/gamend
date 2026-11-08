@@ -41,7 +41,6 @@ defmodule GamendWeb.Schemas.AdminMatchmakingTicket do
       queued_at: %Schema{type: :string, format: :"date-time"},
       matched_at: %Schema{type: :string, format: :"date-time", nullable: true},
       match_id: %Schema{type: :string, description: "Empty while queued"},
-      accept_timeout_ms: %Schema{type: :integer, description: "0: seated at once"},
       lobby_id: %Schema{type: :string, description: "The lobby it fills; empty for none"}
     },
     required: [
@@ -55,7 +54,6 @@ defmodule GamendWeb.Schemas.AdminMatchmakingTicket do
       :queued_at,
       :matched_at,
       :match_id,
-      :accept_timeout_ms,
       :lobby_id
     ]
   })

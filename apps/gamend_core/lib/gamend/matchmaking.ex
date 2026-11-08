@@ -38,18 +38,24 @@ defmodule Gamend.Matchmaking do
   the match's. With no lobby among them, a match gets a new hidden lobby, as
   before.
 
+  ## Seating
+
+  Once a match forms, the game's `matchmaking_seat_match/1` says where it sits
+  and whether its players are asked first (`Gamend.MatchSeating`). With no
+  answer, core seats it as *Backfill* says.
+
   ## Accept
 
-  `accept_timeout_ms` (a `join/5` option, or the `before_matchmaking_join`
-  hook's attrs) makes a formed match ask first: a ready check of kind
-  `accept` over its players (`Gamend.ReadyChecks`, subject `:matchmaking`).
-  Nobody is seated until everyone accepts. A decline or the deadline fails
-  it: whoever accepted, or had not answered when another declined, goes
-  back in the queue, keeping their place, and the others' tickets are
-  cancelled. Cancelling a ticket (`cancel/1`, a socket closing) declines the
-  accept its holder was asked for. A player who declined may queue again at
-  once (a game's Skip that keeps looking): their declined ticket no longer
-  counts as queued, though it is cancelled only once the check settles.
+  A seating with `accept_timeout_ms` makes a formed match ask first: a ready
+  check of kind `accept` over the players holding its tickets
+  (`Gamend.ReadyChecks`, subject `:matchmaking`). Nobody is seated until
+  everyone accepts. A decline or the deadline fails it: whoever accepted, or
+  had not answered when another declined, goes back in the queue, keeping
+  their place, and the others' tickets are cancelled. Cancelling a ticket
+  (`cancel/1`, a socket closing) declines the accept its holder was asked
+  for. A player who declined may queue again at once (a game's Skip that
+  keeps looking): their declined ticket no longer counts as queued, though it
+  is cancelled only once the check settles.
   """
 
   import Ecto.Query
@@ -76,8 +82,6 @@ defmodule Gamend.Matchmaking do
   same parameters are matched together.
 
   `min_players` and `max_players` can be passed to override the defaults.
-  `opts`: `accept_timeout_ms`, the time a formed match gives its players to
-  accept (see *Accept*); none seats them at once.
 
   A lobby's host queues to fill that lobby (see *Backfill*).
 
@@ -96,14 +100,13 @@ defmodule Gamend.Matchmaking do
     * `{:error, :party_has_blocked_pair}` — two members have blocked each other
     * `{:error, :already_queued}` — the caller or a party member is queued
   """
-  @spec join(User.t(), map(), pos_integer() | nil, pos_integer() | nil, keyword()) ::
+  @spec join(User.t(), map(), pos_integer() | nil, pos_integer() | nil) ::
           {:ok, Ticket.t()} | {:error, Ecto.Changeset.t() | atom()}
-  def join(%User{} = user, match_params, min_players \\ nil, max_players \\ nil, opts \\ []) do
+  def join(%User{} = user, match_params, min_players \\ nil, max_players \\ nil) do
     proposed = %{
       "match_params" => normalize_params(match_params),
       "min_players" => min_players || default_min_players(),
-      "max_players" => max_players || default_max_players(),
-      "accept_timeout_ms" => Keyword.get(opts, :accept_timeout_ms)
+      "max_players" => max_players || default_max_players()
     }
 
     # The client proposes; the game decides. A hook may rewrite the params
@@ -229,7 +232,6 @@ defmodule Gamend.Matchmaking do
       min_players: Map.get(attrs, "min_players") || default_min_players(),
       max_players: Map.get(attrs, "max_players") || default_max_players(),
       timeout_ms: Limits.get(:matchmaking_timeout_ms),
-      accept_timeout_ms: Map.get(attrs, "accept_timeout_ms"),
       queued_at: now,
       party_id: caller.party_id,
       lobby_id: backfill_lobby_id(caller, members)

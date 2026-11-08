@@ -114,6 +114,32 @@ TEST_CASE("a hook call goes over the user channel and answers its data or its er
   CHECK(got.error == "unknown_function");
 }
 
+TEST_CASE("a command goes to its channel with its event and params") {
+  Connected c;
+  gamend::commands::results_list(c.client->realtime(), {{"kind", "match"}});
+  auto frames = c.socket->take_frames();
+  REQUIRE(frames.size() == 1);
+  json sent = frame_of(frames[0]);
+  CHECK(sent[2] == "user:u1");
+  CHECK(sent[3] == "results:list");
+  CHECK(sent[4]["kind"] == "match");
+
+  c.client->realtime().join_lobby("L1");
+  frames = c.socket->take_frames();
+  REQUIRE(frames.size() == 1);
+  json join = frame_of(frames[0]);
+  c.socket->receive(
+      reply(join[0].get<std::string>(), join[1].get<std::string>(), "lobby:L1", "ok"));
+  c.client->poll();
+
+  gamend::commands::lobby_get_server_time(c.client->realtime(), "L1");
+  frames = c.socket->take_frames();
+  REQUIRE(frames.size() == 1);
+  sent = frame_of(frames[0]);
+  CHECK(sent[2] == "lobby:L1");
+  CHECK(sent[3] == "get_server_time");
+}
+
 TEST_CASE("a push nobody answers times out; one to an unjoined topic is refused") {
   Connected c;
   gamend::Reply got;

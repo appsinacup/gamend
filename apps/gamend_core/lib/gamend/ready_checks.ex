@@ -81,6 +81,8 @@ defmodule Gamend.ReadyChecks do
     * `:ready` — user ids to pre-mark ready (bots, an auto-ready mode)
     * `:tickets` — `%{user_id => ticket_id}` for matchmaking checks
     * `:metadata` — game payload echoed to clients (match params, mode)
+    * `:seating` — where a matchmaking check's match sits once accepted
+      (`Gamend.MatchSeating.dump/1`), never sent to clients
 
   Fails with `{:error, :already_pending}` when the subject already has an open
   check or any player is in one in the same lane, `{:error, :no_participants}`,
@@ -208,7 +210,8 @@ defmodule Gamend.ReadyChecks do
       party_id: party_id(subject),
       deadline_at: deadline_for(opts),
       opened_by: opened_by,
-      metadata: Keyword.get(opts, :metadata, %{})
+      metadata: Keyword.get(opts, :metadata, %{}),
+      seating: Keyword.get(opts, :seating)
     }
 
     # The lobby or party was read before this; deleted since, the check would

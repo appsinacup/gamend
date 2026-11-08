@@ -1,6 +1,19 @@
 // The Gamend dock: the engine's `gamend` state, and GETs whose replies
 // `await_reply` keeps, which refills it. Nothing runs on a clock.
 
+const CALLS: str = "calls";
+const CLAIM: str = "claim";
+const ERROR: str = "error";
+const ERRORS: str = "errors";
+const LINK: str = "link";
+const LOGIN: str = "login";
+const MESSAGE: str = "message";
+const MESSAGES: str = "messages";
+const OK: str = "ok";
+const OPEN: str = "open";
+const PRODUCTION: str = "production";
+const WAITING: str = "waiting";
+
 /// The save slots the addon keeps on the device.
 const SESSION_SLOT: str = "gamend";
 const PREFS_SLOT: str = "gamend_prefs";
@@ -87,7 +100,7 @@ fn features() -> [any] {
             view("requests", "/api/v1/me/friend_requests"),
             view("blocked", "/api/v1/me/blocked"),
         ]),
-        feature("Chat", "", [view("unread", "/api/v1/chat/unread"), view("messages", "/api/v1/chat/messages")]),
+        feature("Chat", "", [view("unread", "/api/v1/chat/unread"), view(MESSAGES, "/api/v1/chat/messages")]),
         feature("Parties", "", [view("my party", "/api/v1/parties/me"), view("invitations", "/api/v1/parties/invitations")]),
         feature("Groups", "group id", [
             view("mine", "/api/v1/groups/me"),
@@ -159,13 +172,13 @@ impl Gamend {
         self.cloud_replies[kind] = reply;
         let status = reply["status"].as_int();
         let data = parsed(reply["body"])["data"];
-        if kind == "link" && status == 201 {
+        if kind == LINK && status == 201 {
             self.cloud_link = { "code": data["code"], "approve_url": data["approve_url"] };
             engine::open_url(data["approve_url"].as_str());
             let body = json::encode({ "code": data["code"], "secret": data["secret"] });
-            self.cloud_send("claim", "POST", CLAIM_PATH, body, CLAIM_SECONDS);
+            self.cloud_send(CLAIM, "POST", CLAIM_PATH, body, CLAIM_SECONDS);
         }
-        if kind == "claim" {
+        if kind == CLAIM {
             self.cloud_link = nil;
             if status == 200 {
                 settings::set(CLOUD_TOKEN, data["token"].as_str());
@@ -224,7 +237,7 @@ impl Gamend {
         out.push(heading("Player"));
         out.push(field("user", if link.username != nil { link.username.unwrap() } else { "not signed in" }, {}));
         for socket in link.sockets {
-            let state = if socket.open { "open" } else { "closed" };
+            let state = if socket.open { OPEN } else { "closed" };
             out.push(field("socket {socket.socket}", state + ": " + listed(socket.topics), {}));
         }
         out.push(field("saved session", if saved_session() == nil { "none" } else { "yes, readable signed out" }, {}));
@@ -292,9 +305,9 @@ impl Gamend {
         }
         out.push(line("Connect this editor to your Gamend Cloud account to list your servers here and make one this project's server.", MUTED));
         out.push(buttons([button(self.node, "Connect", "cloud_connect", {})]));
-        let failed = self.cloud_replies["claim"];
+        let failed = self.cloud_replies[CLAIM];
         if failed == nil {
-            failed = self.cloud_replies["link"];
+            failed = self.cloud_replies[LINK];
         }
         if failed != nil && failed["status"].as_int() != 200 && failed["status"].as_int() != 201 {
             let text = if failed["status"].as_int() == 410 { "The code ran out before it was approved. Connect again." } else { "Not connected: " + describe(failed) };
@@ -363,7 +376,7 @@ impl Gamend {
     fn signed_out() -> [any] {
         let out: [any] = [empty("not signed in")];
         out.push(buttons([button(self.node, "Sign in with this device", "sign_in", {})]));
-        let login = self.replies["login"];
+        let login = self.replies[LOGIN];
         if login != nil {
             out.push(line(brief(login), MUTED));
         }
@@ -481,7 +494,7 @@ impl Gamend {
             took = "{ms} ms";
         }
         let mark = if open { "▾" } else { "▸" };
-        let role = if failed(row) { FAILED } else if row.kind == "message" { QUIET } else { MUTED };
+        let role = if failed(row) { FAILED } else if row.kind == MESSAGE { QUIET } else { MUTED };
         let what = label(row.what + "  " + row.status + "  " + took, role);
         what["grow"] = 1;
         what["truncate"] = true;
@@ -577,14 +590,14 @@ impl Gamend {
     pub fn cloud_connect(_data: any, _value: any) {
         self.cloud_replies = {};
         let body = json::encode({ "label": "Balaur editor" });
-        self.cloud_send("link", "POST", LINKS_PATH, body, 15.0);
+        self.cloud_send(LINK, "POST", LINKS_PATH, body, 15.0);
     }
 
     /// Stop waiting: the held claim is cut and the code left to run out.
     pub fn cloud_cancel(_data: any, _value: any) {
-        if self.cloud_asked.has("claim") {
-            http::cancel(self.cloud_asked["claim"].as_int());
-            self.cloud_asked.remove("claim");
+        if self.cloud_asked.has(CLAIM) {
+            http::cancel(self.cloud_asked[CLAIM].as_int());
+            self.cloud_asked.remove(CLAIM);
         }
         self.cloud_link = nil;
     }
@@ -627,9 +640,9 @@ impl Gamend {
     }
 
     pub fn sign_in(_data: any, _value: any) {
-        self.forget("login");
+        self.forget(LOGIN);
         let asked = gamend::login(gamend::Credentials { device_id: engine::device_id() });
-        self.requests["login"] = asked;
+        self.requests[LOGIN] = asked;
         self.node.call("await_reply", asked);
     }
 
@@ -716,8 +729,8 @@ fn header(to: Node) -> [any] {
     let target = gamend::server();
     let url = gamend::connection().url;
     let out: [any] = [];
-    for name in ["production", "local"] {
-        let at = if name == "production" { target.production } else { target.local };
+    for name in [PRODUCTION, "local"] {
+        let at = if name == PRODUCTION { target.production } else { target.local };
         let on = target.name == name && url == at;
         let pick = button(to, name + " · " + host_of(at), "pick_server", { "server": name });
         pick["checked"] = on;
@@ -764,7 +777,7 @@ fn logs(to: Node) -> [any] {
     }
     out.push(heading("Shipping to Gamend"));
     let report = script::stored(LOGS_KEY);
-    if report.kind() != "map" {
+    if report.kind() != types::KIND_MAP {
         out.push(line("not shipping: put addons/gamend/log_sink.bs on a node that lives as long as the game", QUIET));
         return out;
     }
@@ -779,7 +792,7 @@ fn logs(to: Node) -> [any] {
 fn newest_messages() -> any {
     let out: any = {};
     for row in gamend::activity() {
-        if row.kind != "message" {
+        if row.kind != MESSAGE {
             continue;
         }
         let parts = row.what.split(" ");
@@ -792,13 +805,13 @@ fn newest_messages() -> any {
 }
 
 fn kept(filter: str, row: gamend::Entry) -> bool {
-    if filter == "calls" {
-        return row.kind != "message";
+    if filter == CALLS {
+        return row.kind != MESSAGE;
     }
-    if filter == "messages" {
-        return row.kind == "message";
+    if filter == MESSAGES {
+        return row.kind == MESSAGE;
     }
-    if filter == "errors" {
+    if filter == ERRORS {
         return failed(row);
     }
     true
@@ -808,7 +821,7 @@ fn kept(filter: str, row: gamend::Entry) -> bool {
 /// status, a socket reply of "ok", or one still waiting.
 fn failed(row: gamend::Entry) -> bool {
     let status = row.status;
-    if row.kind == "message" || status == "waiting" || status == "ok" || status == "open" {
+    if row.kind == MESSAGE || status == WAITING || status == OK || status == OPEN {
         return false;
     }
     !(status.starts_with("1") || status.starts_with("2") || status.starts_with("3"))
@@ -820,8 +833,8 @@ fn show(out: [any], key: str, reply: any) {
         out.push(line("loading…", QUIET));
         return;
     }
-    if reply["kind"].as_str() == "error" {
-        out.push(line(reply["error"].as_str(), FAILED));
+    if reply["kind"].as_str() == ERROR {
+        out.push(line(reply[ERROR].as_str(), FAILED));
         return;
     }
     let status = reply["status"].as_int();
@@ -830,7 +843,7 @@ fn show(out: [any], key: str, reply: any) {
         out.push(line("{status}: " + short(body), FAILED));
         return;
     }
-    let shown = if body.kind() == "map" && body.has("data") { body["data"] } else { body };
+    let shown = if body.kind() == types::KIND_MAP && body.has("data") { body["data"] } else { body };
     if shown == nil {
         out.push(line("{status}: empty", QUIET));
         return;
@@ -844,10 +857,10 @@ fn brief(reply: any) -> str {
         return "…";
     }
     let kind = reply["kind"].as_str();
-    if kind == "error" {
-        return reply["error"].as_str();
+    if kind == ERROR {
+        return reply[ERROR].as_str();
     }
-    if kind == "login" {
+    if kind == LOGIN {
         return "signed in as " + reply["username"].as_str();
     }
     let status = reply["status"].as_int();
@@ -894,7 +907,7 @@ fn saved_session() -> any {
     for slot in save::slots() {
         if slot == SESSION_SLOT {
             let held = save::read(SESSION_SLOT);
-            if held.kind() == "map" {
+            if held.kind() == types::KIND_MAP {
                 return held;
             }
         }
@@ -913,29 +926,29 @@ fn addon_version() -> str {
 
 fn cloud_url() -> str {
     let set = settings::get(CLOUD);
-    let url = if set.kind() == "str" { set.as_str() } else { "" };
+    let url = if set.kind() == types::KIND_STRING { set.as_str() } else { "" };
     if url == "" { "https://gamend.org" } else { url.trim() }
 }
 
 fn cloud_token() -> str {
     let set = settings::get(CLOUD_TOKEN);
-    if set.kind() == "str" { set.as_str() } else { "" }
+    if set.kind() == types::KIND_STRING { set.as_str() } else { "" }
 }
 
 /// A reply's body as data: `http::` answers text.
 fn parsed(body: any) -> any {
-    if body.kind() == "str" { json::parse(body.as_str()) } else { body }
+    if body.kind() == types::KIND_STRING { json::parse(body.as_str()) } else { body }
 }
 
 /// Why a raw reply failed, in a few words.
 fn describe(reply: any) -> str {
-    if reply["kind"].as_str() == "error" {
-        return reply["error"].as_str();
+    if reply["kind"].as_str() == ERROR {
+        return reply[ERROR].as_str();
     }
     let body = parsed(reply["body"]);
-    let error = body["error"];
+    let error = body[ERROR];
     let status = reply["status"].as_int();
-    if error.kind() == "str" { "{status} " + error.as_str() } else { "status {status}" }
+    if error.kind() == types::KIND_STRING { "{status} " + error.as_str() } else { "status {status}" }
 }
 
 fn host_of(url: str) -> str {
@@ -994,7 +1007,7 @@ fn buttons(controls: [any]) -> any {
 /// A chip whose press calls `method` on the dock's node, with `data`.
 fn button(to: Node, text: str, method: str, data: any) -> any {
     {
-        "kind": "button",
+        "kind": ui::WIDGET_BUTTON,
         "role": "chip",
         "text": text,
         "on_click": "relay",
@@ -1016,7 +1029,7 @@ fn relayed(data: any, to: Node, method: str) -> any {
 /// A field whose every edit, and its Enter, call `method` on the dock's node.
 fn text_field(to: Node, method: str, text: str, placeholder: str, data: any) -> any {
     {
-        "kind": "text_field",
+        "kind": ui::WIDGET_TEXT_FIELD,
         "role": "input_form",
         "width": 220,
         "text": text,

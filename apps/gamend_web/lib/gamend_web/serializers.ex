@@ -18,6 +18,24 @@ defmodule GamendWeb.Serializers do
   alias Gamend.Lobbies
   alias Gamend.Lobbies.SpectatorTracker
   alias Gamend.Parties
+  alias GamendWeb.Features
+
+  @doc """
+  A user as someone outside their lobby, party and friends sees them:
+  `User.serialize_brief/1` with the metadata cut to the keys the host made
+  public (`:public_user_metadata_keys`, none by default). A game keeps position,
+  destination or study state in there, which is for the people in the room.
+  """
+  @spec public_brief(User.t()) :: map()
+  def public_brief(%User{} = user) do
+    metadata =
+      case Features.public_user_metadata_keys() do
+        [] -> %{}
+        keys -> user |> User.shared_metadata() |> Map.take(keys)
+      end
+
+    user |> User.serialize_brief() |> Map.put(:metadata, metadata)
+  end
 
   @doc """
   The raw `display_name` column for a user id, `""` when unset or unknown.
@@ -264,20 +282,23 @@ defmodule GamendWeb.Serializers do
     )
     |> maybe_put(
       :members,
-      serialize_lobby_members(lobby),
+      serialize_lobby_members(lobby, Keyword.get(opts, :outsider, false)),
       Keyword.get(opts, :include_members, false)
     )
   end
 
   # Uses members already loaded onto the struct (e.g. by the broadcast source)
   # so the per-socket channel fan-out never re-queries; falls back to a single
-  # query for callers that pass a bare lobby (HTTP controllers).
-  defp serialize_lobby_members(lobby) do
+  # query for callers that pass a bare lobby (HTTP controllers). `outsider?` is
+  # a reader who is not in the lobby: a spectator, or anyone reading it by id.
+  defp serialize_lobby_members(lobby, outsider?) do
+    serialize = if outsider?, do: &public_brief/1, else: &User.serialize_brief/1
+
     case loaded_assoc(lobby, :memberships) do
       nil -> Lobbies.get_lobby_members(lobby)
       members -> members
     end
-    |> Enum.map(&User.serialize_brief/1)
+    |> Enum.map(serialize)
   end
 
   @spec serialize_group(term(), keyword()) :: map()

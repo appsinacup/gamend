@@ -434,16 +434,19 @@ defmodule GamendWeb.Api.V1.LobbyController do
   )
 
   def show(conn, %{"id" => id_str}) do
+    caller = Scope.user(conn.assigns[:current_scope])
+
     with {:ok, lobby_id} <- Ecto.UUID.cast(id_str),
          %Gamend.Lobbies.Lobby{} = lobby <- Lobbies.get_lobby(lobby_id),
-         true <- Lobbies.can_view_lobby?(Scope.user(conn.assigns[:current_scope]), lobby) do
+         true <- Lobbies.can_view_lobby?(caller, lobby) do
       reply_data(
         conn,
         Serializers.serialize_lobby(lobby,
           include_passworded: true,
           include_slowdown: true,
           include_members: true,
-          include_spectator_count: true
+          include_spectator_count: true,
+          outsider: not match?(%User{lobby_id: ^lobby_id}, caller)
         )
       )
     else

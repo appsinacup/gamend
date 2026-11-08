@@ -586,6 +586,58 @@ defmodule Gamend.Accounts.Registration do
     :ok
   end
 
+  @doc """
+  Whether `changeset` refuses its email because another account has it.
+
+  The person who typed the address may not learn that: it would say which
+  addresses have accounts. The caller answers as for a free address, and the
+  owner hears by email (`notify_existing_account/4`).
+  """
+  @spec email_taken?(Ecto.Changeset.t()) :: boolean()
+  def email_taken?(%Ecto.Changeset{errors: errors}), do: Enum.any?(errors, &taken_email_error?/1)
+
+  @doc "`changeset` without the refusal `email_taken?/1` finds, valid when it was the only one."
+  @spec drop_email_taken(Ecto.Changeset.t()) :: Ecto.Changeset.t()
+  def drop_email_taken(%Ecto.Changeset{errors: errors} = changeset) do
+    errors = Enum.reject(errors, &taken_email_error?/1)
+    %{changeset | errors: errors, valid?: errors == []}
+  end
+
+  defp taken_email_error?({:email, {_message, opts}}),
+    do: opts[:constraint] == :unique or opts[:validation] == :unsafe_unique
+
+  defp taken_email_error?(_error), do: false
+
+  @doc """
+  Someone tried to sign up with `email`, which already has an account: the
+  confirmation again if it never confirmed, else a login link. In the
+  background, so the sign-up answers as soon as it does for a free address.
+  """
+  @spec notify_existing_account(
+          String.t(),
+          (String.t() -> String.t()),
+          (String.t() -> String.t()),
+          module()
+        ) :: :ok
+  def notify_existing_account(
+        email,
+        confirmation_url_fun,
+        login_url_fun,
+        notifier \\ Gamend.Accounts.UserNotifier
+      )
+      when is_binary(email) and is_function(confirmation_url_fun, 1) and
+             is_function(login_url_fun, 1) do
+    Gamend.Async.run(fn ->
+      case Accounts.get_user_by_email(email) do
+        %User{confirmed_at: nil} -> resend_confirmation(email, confirmation_url_fun, notifier)
+        %User{} = user -> Accounts.deliver_login_instructions(user, login_url_fun)
+        nil -> :ok
+      end
+    end)
+
+    :ok
+  end
+
   @doc false
   # Mints one email's link and code for `user`, replacing any earlier code.
   # Returns `{encoded_link_token, code}`.

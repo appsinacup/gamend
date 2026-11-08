@@ -168,7 +168,7 @@ defmodule GamendWeb.AdminLive.Economy do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <div class="mb-4"><.back_link navigate={~p"/admin"} /></div>
+      <.admin_header page="/admin/economy" />
 
       <div class="card bg-base-200 mb-4">
         <div class="card-body">

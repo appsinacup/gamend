@@ -33,9 +33,6 @@ defmodule Gamend.Secrets do
       is: add a key, make it current, let `rotate/0` rewrite rows in the
       background. Old rows stay readable in the meantime rather than the whole
       table needing one transaction.
-    * **The fingerprint is an HMAC**, not a digest. A plain digest of a short
-      secret is a dictionary away from the secret, and this column is shown on
-      a page.
 
   ## Configuration
 
@@ -49,7 +46,9 @@ defmodule Gamend.Secrets do
 
   Unset, every call answers `{:error, :no_key}`. That is deliberate: a host
   that has not configured a key should fail loudly on the first write rather
-  than store a credential in a way it cannot honour later.
+  than store a credential in a way it cannot honour later. A malformed first
+  pair counts as unset: the next pair is an older key, and writing under it
+  would quietly undo a rotation. Any malformed pair is logged, by its position.
   """
 
   use Gamend.Settings.Provider,
@@ -59,9 +58,10 @@ defmodule Gamend.Secrets do
 
   import Ecto.Query
 
-  alias Gamend.Query
   alias Gamend.Repo
   alias Gamend.Secrets.Secret
+
+  require Logger
 
   @cipher :aes_256_gcm
   @iv_size 12
@@ -102,7 +102,6 @@ defmodule Gamend.Secrets do
         iv: iv,
         tag: tag,
         key_id: key_id,
-        fingerprint: fingerprint(key, value),
         kind: Keyword.get(opts, :kind),
         byte_size: byte_size(value),
         expires_at: Keyword.get(opts, :expires_at),
@@ -199,9 +198,10 @@ defmodule Gamend.Secrets do
   @doc """
   Re-encrypt every row not already written under the current key.
 
-  Run after adding a key to the front of the setting. Rows are rewritten one at
-  a time and the old key stays configured until this reports nothing left —
-  removing it earlier is how a certificate becomes unreadable.
+  Run after adding a key to the front of the setting. One call walks the whole
+  table, `batch` rows read at a time and each rewritten on its own. The old key
+  stays configured until this reports none stuck — removing it earlier is how a
+  certificate becomes unreadable.
 
   Answers how many rows moved, and how many could not be opened at all.
   """
@@ -209,31 +209,7 @@ defmodule Gamend.Secrets do
           {:ok, %{moved: non_neg_integer(), stuck: non_neg_integer()}} | {:error, :no_key}
   def rotate(batch \\ 100) do
     with {:ok, {key_id, _key}} <- current_key() do
-      stale =
-        Secret
-        |> where([s], s.key_id != ^key_id)
-        |> Query.page(page: 1, page_size: batch)
-        |> Repo.all()
-
-      {moved, stuck} =
-        Enum.reduce(stale, {0, 0}, fn secret, {moved, stuck} ->
-          case open(secret) do
-            {:ok, value} ->
-              {:ok, _} =
-                put(secret.scope, secret.scope_id, secret.name, value,
-                  kind: secret.kind,
-                  expires_at: secret.expires_at,
-                  created_by_id: secret.created_by_id
-                )
-
-              {moved + 1, stuck}
-
-            {:error, _reason} ->
-              {moved, stuck + 1}
-          end
-        end)
-
-      {:ok, %{moved: moved, stuck: stuck}}
+      {:ok, rotate_after(nil, key_id, batch, %{moved: 0, stuck: 0})}
     end
   end
 
@@ -242,6 +218,48 @@ defmodule Gamend.Secrets do
   def configured?, do: match?({:ok, _}, current_key())
 
   ## Internals
+
+  # Forward by id. A row that will not open stays stale, so reading the first
+  # page again would bring it back every time and never reach the rows behind.
+  defp rotate_after(cursor, key_id, batch, tally) do
+    rows = stale_rows(cursor, key_id, batch)
+    tally = Enum.reduce(rows, tally, &rotate_row/2)
+
+    if length(rows) < batch do
+      tally
+    else
+      rotate_after(List.last(rows).id, key_id, batch, tally)
+    end
+  end
+
+  defp stale_rows(cursor, key_id, batch) do
+    Secret
+    |> where([s], s.key_id != ^key_id)
+    |> after_id(cursor)
+    |> order_by([s], asc: s.id)
+    |> limit(^batch)
+    |> Repo.all()
+  end
+
+  defp after_id(query, nil), do: query
+  defp after_id(query, id), do: where(query, [s], s.id > ^id)
+
+  defp rotate_row(%Secret{} = secret, tally) do
+    case open(secret) do
+      {:ok, value} ->
+        {:ok, _} =
+          put(secret.scope, secret.scope_id, secret.name, value,
+            kind: secret.kind,
+            expires_at: secret.expires_at,
+            created_by_id: secret.created_by_id
+          )
+
+        %{tally | moved: tally.moved + 1}
+
+      {:error, _reason} ->
+        %{tally | stuck: tally.stuck + 1}
+    end
+  end
 
   defp open(%Secret{} = secret) do
     with {:ok, key} <- key_for(secret.key_id) do
@@ -267,17 +285,17 @@ defmodule Gamend.Secrets do
   # making it somebody else's secret.
   defp aad(scope, scope_id, name), do: "#{scope}/#{scope_id}/#{name}"
 
-  defp fingerprint(key, value), do: :crypto.mac(:hmac, :sha256, key, value)
-
+  # The first entry or none: falling through to the next well-formed one would
+  # keep writing under the key a rotation just retired.
   defp current_key do
     case keys() do
       [{id, key} | _rest] -> {:ok, {id, key}}
-      [] -> {:error, :no_key}
+      _none_or_malformed -> {:error, :no_key}
     end
   end
 
   defp key_for(key_id) do
-    case Enum.find(keys(), fn {id, _key} -> id == key_id end) do
+    case Enum.find(keys(), &match?({^key_id, _key}, &1)) do
       {_id, key} -> {:ok, key}
       nil -> {:error, :undecryptable}
     end
@@ -289,16 +307,20 @@ defmodule Gamend.Secrets do
     config(:keys)
     |> to_string()
     |> String.split(",", trim: true)
-    |> Enum.flat_map(&parse_key/1)
+    |> Enum.with_index(1)
+    |> Enum.map(&parse_key/1)
   end
 
-  defp parse_key(pair) do
+  defp parse_key({pair, position}) do
     with [id, encoded] <- String.split(String.trim(pair), ":", parts: 2),
          {:ok, key} <- Base.decode64(String.trim(encoded)),
          true <- byte_size(key) == @key_size do
-      [{String.trim(id), key}]
+      {String.trim(id), key}
     else
-      _malformed -> []
+      _malformed ->
+        # By position: what was typed here may be the key itself.
+        Logger.error("GAMEND_SECRETS_KEYS entry #{position} is malformed and ignored")
+        :malformed
     end
   end
 

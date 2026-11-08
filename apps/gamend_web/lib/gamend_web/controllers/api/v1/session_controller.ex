@@ -3,6 +3,8 @@ defmodule GamendWeb.Api.V1.SessionController do
   use OpenApiSpex.ControllerSpecs
 
   alias Gamend.Accounts
+  alias Gamend.Accounts.Username
+  alias Gamend.Accounts.UsernameGenerator
   alias Gamend.Captcha
   alias GamendWeb.Auth.Guardian
   alias GamendWeb.Auth.Tokens
@@ -126,7 +128,7 @@ defmodule GamendWeb.Api.V1.SessionController do
         Schemas.error(
           "The captcha failed, or a plugin refused the sign-up (registration_refused)"
         ),
-      conflict: Schemas.error("Email or username already taken"),
+      conflict: Schemas.error("Username already taken"),
       unprocessable_entity: Schemas.error("Invalid email or username"),
       service_unavailable: Schemas.error("The captcha check could not be completed")
     ]
@@ -140,7 +142,7 @@ defmodule GamendWeb.Api.V1.SessionController do
         params
         |> Map.take(["email", "username"])
         |> Accounts.register_unconfirmed_user_and_deliver(&confirm_url/1, notifier())
-        |> registered(conn)
+        |> registered(conn, params)
 
       {:error, :unavailable} ->
         reply_error(
@@ -284,7 +286,7 @@ defmodule GamendWeb.Api.V1.SessionController do
   # in at once: registering proves nothing about the inbox, and a token here
   # would let anyone play as any address. The emailed code signs in, through
   # `confirm_registration/2`.
-  defp registered({:ok, user}, conn) do
+  defp registered({:ok, user}, conn, _params) do
     reply_data(conn, :created, %{
       user_id: user.id,
       username: user.username || "",
@@ -293,16 +295,42 @@ defmodule GamendWeb.Api.V1.SessionController do
     })
   end
 
-  # An email or a username someone already has: 409, the input was fine.
-  defp registered({:error, %Ecto.Changeset{} = changeset}, conn),
-    do: unprocessable_or_conflict(conn, changeset)
+  # A username someone already has: 409, the input was fine. An email someone
+  # already has answers as a free one does, and its owner gets an email: a 409
+  # told anyone who asked which addresses have accounts.
+  defp registered({:error, %Ecto.Changeset{} = changeset}, conn, params) do
+    others = Accounts.drop_email_taken(changeset)
+
+    if Accounts.email_taken?(changeset) and others.valid? do
+      Accounts.notify_existing_account(
+        params["email"],
+        &confirm_url/1,
+        &url(~p"/users/log_in/#{&1}"),
+        notifier()
+      )
+
+      reply_data(conn, :created, %{
+        user_id: Gamend.UUIDv7.generate(),
+        username: unclaimed_username(params),
+        display_name: "",
+        email_confirmed: false
+      })
+    else
+      unprocessable_or_conflict(conn, others)
+    end
+  end
 
   # A `before_user_register` plugin refused the sign-up. The email is queued,
   # never sent here, so it cannot fail this request.
-  defp registered({:error, reason}, conn) do
+  defp registered({:error, reason}, conn, _params) do
     message = if is_binary(reason), do: reason, else: "The registration was refused"
     reply_error(conn, :forbidden, "registration_refused", message)
   end
+
+  defp unclaimed_username(%{"username" => username}) when is_binary(username) and username != "",
+    do: Username.normalize(username)
+
+  defp unclaimed_username(_params), do: UsernameGenerator.generate()
 
   operation(:create_device,
     operation_id: "device_login",

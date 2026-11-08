@@ -256,8 +256,8 @@ if [ "$CHECK_SECRETS_KEYS" = "1" ]; then
     bad "GAMEND_SECRETS_KEYS is not set: every secret save will fail.
         Generate one with:  echo \"v1:\$(openssl rand -base64 32)\"
         Keep a copy off this host: the database backup is ciphertext without it."
-  elif ! printf '%s' "$GAMEND_SECRETS_KEYS" | grep -qE '^[A-Za-z0-9_]+:[A-Za-z0-9+/]{43}='; then
-    bad "GAMEND_SECRETS_KEYS is set but is not <id>:<32 bytes base64>"
+  elif ! printf '%s' "$GAMEND_SECRETS_KEYS" | grep -qE '^[A-Za-z0-9_]+:[A-Za-z0-9+/]{43}=([[:space:]]*,[[:space:]]*[A-Za-z0-9_]+:[A-Za-z0-9+/]{43}=)*$'; then
+    bad "GAMEND_SECRETS_KEYS is set but is not <id>:<32 bytes base64>, comma-separated"
   else
     ok "GAMEND_SECRETS_KEYS looks well-formed"
   fi

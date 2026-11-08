@@ -10,7 +10,7 @@ defmodule GamendWeb.Api.V1.ResultController do
   alias Gamend.Accounts.Scope
   alias GamendWeb.ResultReads
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{ResultEventsResponse, ResultPage, ResultResponse}
+  alias GamendWeb.Schemas.{PlayResultEventsResponse, PlayResultPage, PlayResultResponse}
   alias OpenApiSpex.Schema
 
   tags(["Results"])
@@ -27,7 +27,7 @@ defmodule GamendWeb.Api.V1.ResultController do
       page_size: [in: :query, schema: %Schema{type: :integer, default: 25}, required: false]
     ],
     responses: [
-      ok: {"The caller's results", "application/json", ResultPage},
+      ok: {"The caller's results", "application/json", PlayResultPage},
       unauthorized: Schemas.error("Not authenticated")
     ]
   )
@@ -46,7 +46,7 @@ defmodule GamendWeb.Api.V1.ResultController do
       id: [in: :path, schema: %Schema{type: :string, format: :uuid}, required: true]
     ],
     responses: [
-      ok: {"The result", "application/json", ResultResponse},
+      ok: {"The result", "application/json", PlayResultResponse},
       unauthorized: Schemas.error("Not authenticated"),
       forbidden: Schemas.error("The caller's own result, hidden from clients"),
       not_found: Schemas.error("No result the caller may read")
@@ -69,7 +69,7 @@ defmodule GamendWeb.Api.V1.ResultController do
       limit: [in: :query, schema: %Schema{type: :integer, default: 500}, required: false]
     ],
     responses: [
-      ok: {"The events", "application/json", ResultEventsResponse},
+      ok: {"The events", "application/json", PlayResultEventsResponse},
       unauthorized: Schemas.error("Not authenticated"),
       forbidden: Schemas.error("The caller's own result, hidden from clients"),
       not_found: Schemas.error("No result the caller may read")

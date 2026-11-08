@@ -13,9 +13,6 @@ defmodule Gamend.Matchmaking.Ticket do
   (backfill): a match seats the other players there instead of in a new
   lobby. `size` and `capacity` are what the sweep read for it, the lobby's
   members and seats (1 and nil for any other ticket).
-
-  `accept_timeout_ms` set, a formed match asks everyone to accept first
-  (a ready check of kind `accept`, `Gamend.ReadyChecks`).
   """
 
   use Gamend.Schema
@@ -42,7 +39,6 @@ defmodule Gamend.Matchmaking.Ticket do
     field :queued_at, :utc_datetime_usec
     field :matched_at, :utc_datetime_usec
     field :match_id, :binary_id
-    field :accept_timeout_ms, :integer
     field :size, :integer, virtual: true, default: 1
     field :capacity, :integer, virtual: true
 
@@ -77,8 +73,7 @@ defmodule Gamend.Matchmaking.Ticket do
       :queued_at,
       :matched_at,
       :match_id,
-      :lobby_id,
-      :accept_timeout_ms
+      :lobby_id
     ])
     |> validate_required(@required)
     |> validate_inclusion(:status, @statuses)
@@ -88,7 +83,6 @@ defmodule Gamend.Matchmaking.Ticket do
       less_than_or_equal_to: Gamend.Limits.get(:max_matchmaking_players)
     )
     |> validate_number(:timeout_ms, greater_than: 0)
-    |> validate_number(:accept_timeout_ms, greater_than: 0)
     |> validate_max_gte_min()
     |> Gamend.Limits.validate_metadata_size(:match_params, :max_matchmaking_params_size)
     |> foreign_key_constraint(:user_id)

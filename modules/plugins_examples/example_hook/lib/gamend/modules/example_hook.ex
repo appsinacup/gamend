@@ -25,9 +25,26 @@ defmodule Gamend.Modules.ExampleHook do
   alias Gamend.Inventory
   alias Gamend.KV
   alias Gamend.Leaderboards
+  alias Gamend.Lobbies
+  alias Gamend.MatchSeating
   alias Gamend.Notifications
   alias Gamend.Payments
+  alias Gamend.Rating
   alias Gamend.Tournaments
+
+  # The ranked sample's names, each defined once so a typo cannot split its
+  # data between two spellings.
+  @rating_leaderboard "example_ranked_rating"
+  @match_params_key "match_params"
+  @mode_key "mode"
+  @band_key "band"
+  @casual_mode "casual"
+  @ranked_mode "ranked"
+  @modes [@casual_mode, @ranked_mode]
+  @winner_key "winner"
+  @ended_state "ended"
+  @ranked_accept_ms 15_000
+  @ranked_title "Ranked duel"
 
   # Sample content this plugin owns. Both are namespaced so the hooks below can
   # ignore leaderboards/tournaments belonging to the rest of the game.
@@ -50,6 +67,7 @@ defmodule Gamend.Modules.ExampleHook do
     # Every sample is created only when missing, so restarts and plugin
     # reloads are safe.
     ensure_login_leaderboard()
+    ensure_rating_leaderboard()
     ensure_weekly_cup()
     ensure_quests()
     ensure_welcome_kv()
@@ -87,6 +105,29 @@ defmodule Gamend.Modules.ExampleHook do
 
       existing ->
         sync_icon(existing, "/icons/chart-bar.svg", &Leaderboards.update_leaderboard/2)
+    end
+  end
+
+  # ── Sample leaderboard: each player's skill rating ───────────────────────
+  #
+  # The `set` operator stores what it is given, so the board is the rating: the
+  # score is the number players see, and the record's metadata holds the rest
+  # of `Gamend.Rating`.
+
+  defp ensure_rating_leaderboard do
+    case Leaderboards.get_active_leaderboard_by_slug(@rating_leaderboard) do
+      nil ->
+        Leaderboards.create_leaderboard(%{
+          slug: @rating_leaderboard,
+          title: "Ranked",
+          icon_url: "/icons/trophy.svg",
+          description: "Skill rating from ranked duels.",
+          sort_order: :desc,
+          operator: :set
+        })
+
+      existing ->
+        sync_icon(existing, "/icons/trophy.svg", &Leaderboards.update_leaderboard/2)
     end
   end
 
@@ -639,20 +680,20 @@ defmodule Gamend.Modules.ExampleHook do
   """
   @impl true
   def before_matchmaking_join(user, attrs) do
-    params = Map.get(attrs, "match_params", %{})
-    mode = Map.get(params, "mode", "casual")
+    params = Map.get(attrs, @match_params_key, %{})
+    mode = Map.get(params, @mode_key, @casual_mode)
 
-    if mode in ~w(casual ranked) do
+    if mode in @modes do
       rating = server_rating(user)
 
       # match_params IS the bucket key: tickets only meet when it matches
       # byte-for-byte. So it may hold coarse, string dimensions only — putting
       # the exact rating here would give every player their own bucket. The
-      # precise number stays on the user record for the matcher to read.
+      # precise number stays on the leaderboard for the matcher to read.
       {:ok,
-       Map.put(attrs, "match_params", %{
-         "mode" => mode,
-         "band" => Integer.to_string(div(rating, 500))
+       Map.put(attrs, @match_params_key, %{
+         @mode_key => mode,
+         @band_key => Integer.to_string(div(rating, 500))
        })}
     else
       {:error, :unknown_mode}
@@ -664,16 +705,16 @@ defmodule Gamend.Modules.ExampleHook do
 
   Called once per bucket per sweep, in-process — so an O(n^2) scan is fine;
   this one is O(n log n). Ranked play reads each player's exact integer rating
-  (from the user record — `match_params` only carries the coarse band), pairs
-  the closest two, and refuses pairs further apart than a window that widens
-  the longer someone has waited. Casual falls through to `:default`, the
-  built-in FIFO matcher.
+  (from the leaderboard — `match_params` only carries the coarse band), pairs
+  the closest two, and refuses pairs further apart than `Gamend.Rating.band/2`,
+  which widens the longer someone has waited. Casual falls through to
+  `:default`, the built-in FIFO matcher.
 
   Core re-checks the block list on whatever is returned, so a bug here can
   never seat players who blocked each other.
   """
   @impl true
-  def matchmaking_form_matches(%{"mode" => "ranked"}, tickets) do
+  def matchmaking_form_matches(%{@mode_key => @ranked_mode}, tickets) do
     tickets
     |> Enum.map(&{server_rating(&1.user), &1})
     |> Enum.sort_by(&elem(&1, 0))
@@ -686,6 +727,22 @@ defmodule Gamend.Modules.ExampleHook do
 
   def matchmaking_form_matches(_params, _tickets), do: :default
 
+  @doc """
+  Where a formed match sits, and whether its players are asked first.
+
+  A ranked duel gets a lobby of its own and both players must accept within
+  15 seconds; casual play keeps core's seat. The answer only says what to do:
+  core seats the players, and a player who cannot be seated goes back in the
+  queue. To fill a free seat in a running match, answer
+  `MatchSeating.in_lobby(lobby_id)` instead: only the newcomer is asked.
+  """
+  @impl true
+  def matchmaking_seat_match([%{match_params: %{@mode_key => @ranked_mode}} | _]) do
+    MatchSeating.new_lobby(title: @ranked_title, accept_timeout_ms: @ranked_accept_ms)
+  end
+
+  def matchmaking_seat_match(_tickets), do: :default
+
   @doc "Log the pairing so the example server shows matchmaking working."
   @impl true
   def after_matchmaking_matched(tickets, lobby_id) do
@@ -693,27 +750,52 @@ defmodule Gamend.Modules.ExampleHook do
     Logger.info("[ExampleHook] match ready in lobby #{lobby_id}: #{names}")
   end
 
-  # Rating tolerance grows by 100 for every 5s spent queueing, so nobody waits
-  # forever just because their rating is unusual.
-  defp window(ticket) do
-    waited_ms = DateTime.diff(DateTime.utc_now(), ticket.queued_at, :millisecond)
-    100 + div(waited_ms, 5_000) * 100
+  @doc """
+  A finished match rates its players.
+
+  The game's server code decides who won and writes it before ending the
+  lobby (`Lobbies.merge_metadata(lobby, %{@winner_key => user_id})`). A client
+  cannot: a hostless match has no one who may edit it. A player is in one lobby
+  at a time, so nothing else writes their rating while this runs.
+  """
+  @impl true
+  def after_lobby_state_changed(
+        %{metadata: %{@winner_key => winner_id}} = lobby,
+        _from,
+        @ended_state
+      ) do
+    members = Lobbies.get_lobby_members(lobby)
+    teams = Enum.map(members, &[stored_rating(&1.id)])
+    places = Enum.map(members, &if(&1.id == winner_id, do: 1, else: 2))
+
+    members
+    |> Enum.zip(Rating.settle(teams, places))
+    |> Enum.each(fn {member, [rating]} -> store_rating(member.id, rating) end)
   end
 
-  defp server_rating(user) do
-    # A real game would read this from its own store; the point is that it is
-    # server-side, not whatever the client claimed.
-    case user.metadata do
-      %{"rating" => rating} when is_integer(rating) -> rating
-      %{"rating" => rating} when is_binary(rating) -> parse_int(rating, 1000)
-      _ -> 1000
+  def after_lobby_state_changed(_lobby, _from, _to), do: :ok
+
+  defp window(ticket) do
+    ticket.queued_at
+    |> then(&DateTime.diff(DateTime.utc_now(), &1, :millisecond))
+    |> Rating.band()
+  end
+
+  # Server-side, never whatever the client claimed.
+  defp server_rating(user), do: round(stored_rating(user.id).rating)
+
+  defp stored_rating(user_id) do
+    with %{id: board_id} <- Leaderboards.get_active_leaderboard_by_slug(@rating_leaderboard),
+         {:ok, record} <- Leaderboards.get_user_record(board_id, user_id) do
+      Rating.load(record.metadata)
+    else
+      _no_rating_yet -> Rating.new()
     end
   end
 
-  defp parse_int(value, default) when is_binary(value) do
-    case Integer.parse(value) do
-      {int, _} -> int
-      :error -> default
+  defp store_rating(user_id, rating) do
+    with %{id: board_id} <- Leaderboards.get_active_leaderboard_by_slug(@rating_leaderboard) do
+      Leaderboards.submit_score(board_id, user_id, round(rating.rating), Rating.dump(rating))
     end
   end
 

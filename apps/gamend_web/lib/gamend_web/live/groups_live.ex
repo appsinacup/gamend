@@ -95,7 +95,7 @@ defmodule GamendWeb.GroupsLive do
       :show ->
         group_id = params["id"]
 
-        case Groups.get_group(group_id) do
+        case visible_group(socket, group_id) do
           nil ->
             {:noreply,
              socket
@@ -121,6 +121,20 @@ defmodule GamendWeb.GroupsLive do
          |> unsubscribe_group()
          |> assign(selected_group: nil)
          |> SeoTitle.assign_page_title(gettext("Groups"))}
+    end
+  end
+
+  # A hidden group exists only for its members, here as on `GET /groups/:id`.
+  defp visible_group(socket, group_id) do
+    case Groups.get_group(group_id) do
+      %{type: "hidden"} = group ->
+        case Scope.user(socket.assigns[:current_scope]) do
+          %User{id: user_id} -> if Groups.member?(group.id, user_id), do: group
+          nil -> nil
+        end
+
+      group ->
+        group
     end
   end
 

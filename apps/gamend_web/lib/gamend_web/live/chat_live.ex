@@ -551,9 +551,13 @@ defmodule GamendWeb.ChatLive do
   # Private helpers
   # ---------------------------------------------------------------------------
 
+  # The rule `GET /chat/messages` answers to: `Chat.list_messages/3` filters by
+  # conversation, not by reader, so the gate is here.
   defp open_chat(socket, "group", gid) do
-    if group = Groups.get_group(gid) do
-      user = Scope.user(socket.assigns.current_scope)
+    user = Scope.user(socket.assigns.current_scope)
+
+    with :ok <- Chat.authorize_access(user.id, "group", gid),
+         %{} = group <- Groups.get_group(gid) do
       mark_group_chat_read(user.id, gid)
 
       {:ok,
@@ -567,13 +571,15 @@ defmodule GamendWeb.ChatLive do
        |> update(:group_unread, &Map.delete(&1, gid))
        |> reload_messages()}
     else
-      :error
+      _ -> :error
     end
   end
 
   defp open_chat(socket, "friend", fid) do
-    if target = Accounts.get_user(fid) do
-      user = Scope.user(socket.assigns.current_scope)
+    user = Scope.user(socket.assigns.current_scope)
+
+    with :ok <- Chat.authorize_access(user.id, "friend", fid),
+         %{} = target <- Accounts.get_user(fid) do
       mark_friend_chat_read(user.id, fid)
 
       {:ok,
@@ -587,7 +593,7 @@ defmodule GamendWeb.ChatLive do
        |> update(:friend_unread, &Map.delete(&1, fid))
        |> reload_messages()}
     else
-      :error
+      _ -> :error
     end
   end
 

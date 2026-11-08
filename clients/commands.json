@@ -1,0 +1,154 @@
+[
+  {
+    "channel": "user",
+    "event": "call_hook",
+    "name": "call_hook",
+    "required": [
+      "plugin",
+      "fn"
+    ],
+    "optional": [
+      "args"
+    ]
+  },
+  {
+    "channel": "user",
+    "event": "kv:subscribe",
+    "name": "kv_subscribe",
+    "required": [
+      "key"
+    ],
+    "optional": [
+      "user_id",
+      "lobby_id"
+    ]
+  },
+  {
+    "channel": "user",
+    "event": "kv:unsubscribe",
+    "name": "kv_unsubscribe",
+    "required": [
+      "key"
+    ],
+    "optional": [
+      "user_id",
+      "lobby_id"
+    ]
+  },
+  {
+    "channel": "user",
+    "event": "results:list",
+    "name": "results_list",
+    "required": [],
+    "optional": [
+      "kind",
+      "status",
+      "page",
+      "page_size"
+    ]
+  },
+  {
+    "channel": "user",
+    "event": "results:get",
+    "name": "results_get",
+    "required": [
+      "id"
+    ],
+    "optional": []
+  },
+  {
+    "channel": "user",
+    "event": "results:events",
+    "name": "results_events",
+    "required": [
+      "id"
+    ],
+    "optional": [
+      "after",
+      "limit"
+    ]
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:offer",
+    "name": "webrtc_offer",
+    "required": [
+      "sdp"
+    ],
+    "optional": [
+      "type"
+    ]
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:ice",
+    "name": "webrtc_ice",
+    "required": [
+      "candidate"
+    ],
+    "optional": [
+      "sdpMid",
+      "sdpMLineIndex"
+    ]
+  },
+  {
+    "channel": "user",
+    "event": "webrtc:close",
+    "name": "webrtc_close",
+    "required": [],
+    "optional": []
+  },
+  {
+    "channel": "lobby",
+    "event": "get_server_time",
+    "name": "lobby_get_server_time",
+    "required": [],
+    "optional": []
+  },
+  {
+    "channel": "signaling",
+    "event": "offer",
+    "name": "signaling_offer",
+    "required": [
+      "target",
+      "sdp"
+    ],
+    "optional": []
+  },
+  {
+    "channel": "signaling",
+    "event": "answer",
+    "name": "signaling_answer",
+    "required": [
+      "target",
+      "sdp"
+    ],
+    "optional": []
+  },
+  {
+    "channel": "signaling",
+    "event": "ice",
+    "name": "signaling_ice",
+    "required": [
+      "target",
+      "candidate"
+    ],
+    "optional": []
+  },
+  {
+    "channel": "signaling",
+    "event": "broadcast_offer",
+    "name": "signaling_broadcast_offer",
+    "required": [
+      "sdp"
+    ],
+    "optional": []
+  },
+  {
+    "channel": "signaling",
+    "event": "list_users",
+    "name": "signaling_list_users",
+    "required": [],
+    "optional": []
+  }
+]

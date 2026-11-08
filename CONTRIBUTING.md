@@ -32,6 +32,33 @@ zone is only known in their browser. So:
 - A rule ("one per player", "pays once", "at most N") is enforced by the write itself, not by a read before it: a unique index, else `Gamend.Repo.compare_and_set/2` with the precondition in its `where`, else a lock keyed on the entity the rule belongs to. A check through the cache or outside the transaction only refuses early. Decide what comes next from the row the write answers, not from a struct read before it. Details in AGENTS.md, Locks.
 - Background work (sweeps, schedulers) as a supervised GenServer — add it to `GamendWeb.HostSupervision.children/1`, which every host (this repo and the starter) starts. A host-only process goes in that function's `:extra` option instead.
 
+## Named strings
+
+A string the code compares, matches or stores as a name (a status, a job's action, a kind, a file in a bucket) is typed once. `"creat"` compiles, and whatever reads it simply never matches.
+
+- **One module uses it:** `@failed "failed"`.
+- **Another module reads it:** the module that owns the value names it, as a macro, so a pattern or a guard can use it and a typo is a compile error. The same list feeds `validate_inclusion/3`:
+
+  ```elixir
+  defmodule MyApp.Servers.Status do
+    @all ~w(creating running failed)
+
+    for name <- @all do
+      defmacro unquote(String.to_atom(name))(), do: unquote(name)
+    end
+
+    def all, do: @all
+  end
+
+  require MyApp.Servers.Status, as: Status
+
+  def up?(%Server{status: Status.running()}), do: true
+  def busy?(status) when status in [Status.creating(), Status.failed()], do: true
+  ```
+
+- **Not names:** a map's keys (the shape of a document), anything shown or logged, a LiveView event. Tests may spell a value out, and reuse the name where it reads as well.
+- `mix gamend.literal.lint` (in `precommit`) fails on a name typed out in two or more modules, or five or more times in one, past the counts in `.literal-lint-baseline`. Those hold what was there when the check arrived and only go down: `--all` lists every one, and `--update-baseline` records the new counts after a migration. A string that is someone else's (a provider's event name) is marked `# literal-ok: <why>`. HEEx templates are not read.
+
 ## Errors
 
 A failure is either **expected** — a client, bad input or a concurrent write can cause it — or a **bug**. They travel differently, and hosts (Forge, Polyglot Pirates) follow the same rules.
@@ -77,7 +104,7 @@ Adding one callback touches six places — miss one and plugins break in confusi
 
 ## Admin
 
-- Admin LiveView page in `apps/gamend_web/lib/gamend_web/live/admin_live/`, plus its route, a nav link and a stat card on `/admin`, and an entry in `admin_pages_render_test`.
+- Admin LiveView page in `apps/gamend_web/lib/gamend_web/live/admin_live/`, opening with `<.admin_header page="/admin/thing" />`, plus its route, its title, icon and colour in `GamendWeb.AdminLive.Pages` (the menu tile on `/admin` comes from that), an `<.admin_card>` on `/admin`, and an entry in `admin_pages_render_test`.
 - Show names, not raw UUIDs, and paginate every table.
 - Admin API controller under `controllers/api/v1/admin/` with **parity for every admin UI action** — anything an admin can click, a script can call.
 
@@ -102,5 +129,5 @@ Adding one callback touches six places — miss one and plugins break in confusi
 - Keep guides short. They render inside a disclosure someone opened with a question in mind: lead with the answer, prefer a table or a short example over prose, and leave the exhaustive reference to the API docs.
 - New settings declared with `Gamend.Settings.Provider`, never read with `System.get_env/1`. The env var name derives from the declaration, and both `.env.example` and the public Settings guide are generated — run `mix gamend.settings.env_example` and `mix gamend.settings.guide`, and commit the result. Both take `--check` so CI catches a declaration whose docs were never regenerated.
 - `CHANGELOG.md` entry (`[added]` / `[changed]` / `[fixed]` / `[removed]` / `[breaking]`): a bold one-line summary and at most a short sentence, folded into the month's entry for the same area when there is one. Keep it light: what a reader notices, plus a one-line **Hosts:** note when they must change something. The details go in the guide and the commit.
-- `mix format`, `mix credo --strict`, `mix gamend.api.lint`, full `mix test` green.
-- SDKs regenerate from the OpenAPI spec in CI — no manual SDK edits.
+- `mix format`, `mix credo --strict`, `mix gamend.api.lint`, `mix gamend.literal.lint`, full `mix test` green.
+- SDKs regenerate from the OpenAPI spec in CI — no manual SDK edits, but for what `python3 clients/sdkgen lint` asks for: a new operation's function in the Godot façade (`clients/gamend_template/GamendApi.gd`), and a new socket event in `GamendWeb.RealtimeCommands` and the Godot and JavaScript clients.

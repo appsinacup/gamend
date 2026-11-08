@@ -38,6 +38,10 @@ defmodule Gamend.ReadyChecks.Check do
     field :reason, :string
     field :resolved_at, :utc_datetime
     field :metadata, :map, default: %{}
+    # Where an accepted match will sit (`Gamend.MatchSeating.dump/1`). Left out
+    # of the JSON below: `metadata` is echoed to clients, and this can name a
+    # hidden lobby.
+    field :seating, :map
 
     belongs_to :lobby, Lobby
     belongs_to :party, Party
@@ -61,7 +65,8 @@ defmodule Gamend.ReadyChecks.Check do
       :opened_by,
       :reason,
       :resolved_at,
-      :metadata
+      :metadata,
+      :seating
     ])
     |> validate_required([:kind, :status])
     |> validate_inclusion(:kind, @kinds)

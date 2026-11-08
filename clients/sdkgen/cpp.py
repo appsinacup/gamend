@@ -1,13 +1,14 @@
 """The C++ emitter: `Api` over `gamend::Rest`, and the realtime names.
 
-Writes four files into `cpp_sdk/`. `include/gamend/api.hpp` and
+Writes into `cpp_sdk/`. `include/gamend/api.hpp` and
 `src/api.cpp` are one method per operation, named as `GamendApi.gd` names
 it; the arguments are the path's parameters as `std::string_view`, then
 `const json& params` for a body, then `const json& options` for the query,
 then the callback. A required body or query field that is missing refuses
 the call: its callback gets an error naming the field instead of the server
 getting a request it would reject. `include/gamend/events.hpp` is one
-constant per realtime signal and the table that names a socket message.
+constant per realtime signal and the table that names a socket message;
+`include/gamend/commands.hpp` is one function per event a channel answers.
 `REFERENCE.md` lists the operations by tag. Everything else is the
 hand-written `clients/cpp_template/`, copied over the top.
 """
@@ -305,6 +306,65 @@ def write_events(model: Model) -> str:
         "}\n"
         "\n"
         "}  // namespace gamend::events\n"
+    )
+
+
+def command_declaration(row: dict) -> str:
+    """One command as a function: to the caller's channel, or a named one's."""
+    on_user = row["channel"] == "user"
+    args = ["Realtime& realtime"]
+    if not on_user:
+        args.append("std::string_view id")
+    fields = [(key, True) for key in row["required"]] + [(key, False) for key in row["optional"]]
+    if fields:
+        args.append("const json& params")
+    args.append("ReplyCallback done = {}")
+    where = "the user channel" if on_user else f"`{row['channel']}:<id>`"
+    doc = wrap(f"`{row['event']}` on {where}.", 96, "///")
+    if fields:
+        listed = ", ".join(f"`{key}`{' (required)' if needed else ''}" for key, needed in fields)
+        doc += wrap(f"`params`: {listed}.", 96, "///")
+    topic = (
+        "realtime.user_topic()"
+        if on_user
+        else f'std::string("{row["channel"]}:").append(id)'
+    )
+    payload = "params" if fields else "json::object()"
+    return "\n".join(
+        doc
+        + [
+            f"inline void {row['name']}({', '.join(args)}) {{",
+            f'  realtime.push({topic}, "{row["event"]}", {payload}, std::move(done));',
+            "}",
+        ]
+    )
+
+
+def write_commands(model: Model) -> str:
+    body = "\n\n".join(command_declaration(row) for row in model.commands)
+    return (
+        BANNER
+        + "//\n"
+        "// Every event a channel answers, one function each, from\n"
+        "// `clients/commands.json`. Each is a `Realtime::push` with its topic and\n"
+        "// event filled in, and answers through the same `done`:\n"
+        "//\n"
+        '//     gamend::commands::results_list(client.realtime(), {{"kind", "match"}},\n'
+        "//       [](const gamend::Reply& r) { if (r.ok) use(r.response); });\n"
+        "#pragma once\n"
+        "\n"
+        "#include <string>\n"
+        "#include <string_view>\n"
+        "#include <utility>\n"
+        "\n"
+        '#include "gamend/json.hpp"\n'
+        '#include "gamend/realtime.hpp"\n'
+        "\n"
+        "namespace gamend::commands {\n"
+        "\n"
+        f"{body}\n"
+        "\n"
+        "}  // namespace gamend::commands\n"
     )
 
 
@@ -636,6 +696,7 @@ def emit(model: Model) -> dict[str, str]:
         "include/gamend/api.hpp": write_header(model),
         "src/api.cpp": write_source(model),
         "include/gamend/events.hpp": write_events(model),
+        "include/gamend/commands.hpp": write_commands(model),
         "include/gamend/models.hpp": write_models_header(model),
         "src/models.cpp": write_models_source(model),
         "src/proto_schema.cpp": write_proto_schema(model),
@@ -644,4 +705,7 @@ def emit(model: Model) -> dict[str, str]:
 
 
 def summary(model: Model) -> str:
-    return f"wrote {len(model.ops)} operations and {len(model.signals())} events"
+    return (
+        f"wrote {len(model.ops)} operations, {len(model.signals())} events "
+        f"and {len(model.commands)} commands"
+    )

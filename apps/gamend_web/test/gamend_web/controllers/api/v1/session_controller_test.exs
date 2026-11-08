@@ -422,11 +422,20 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       assert json_response(created, 201)["data"]["username"] == "quail"
     end
 
-    test "answers 409 for an email already taken", %{conn: conn} do
+    test "answers an email already taken as it does a free one", %{conn: conn} do
       taken = post(conn, "/api/v1/register", %{email: @valid_email})
 
-      assert %{"error" => "validation_failed", "errors" => %{"email" => _}} =
-               json_response(taken, 409)
+      assert %{"user_id" => user_id, "username" => "" <> _, "email_confirmed" => false} =
+               json_response(taken, 201)["data"]
+
+      assert Gamend.Accounts.get_user(user_id) == nil
+    end
+
+    test "still answers 409 for a username taken", %{conn: conn} do
+      post(conn, "/api/v1/register", %{email: "heron@example.com", username: "heron"})
+      taken = post(conn, "/api/v1/register", %{email: "other-heron@example.com", username: "heron"})
+
+      assert Map.has_key?(json_response(taken, 409)["errors"], "username")
     end
 
     test "answers 400 without an email", %{conn: conn} do

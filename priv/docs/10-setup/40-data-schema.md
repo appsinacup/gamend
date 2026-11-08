@@ -318,8 +318,8 @@ ledger is the audit trail; the balance is a cache of it.
 | `oauth_sessions` | In-flight OAuth handshakes, pruned daily | Authentication |
 | `login_lockouts` | Failed passwords per email address (a SHA-256 of it, never the address) and the lock they set, pruned once both run out | Authentication |
 | `bans` | IP address, account and chat bans (mutes): end, reason, who placed and lifted them; kept as history after they end, pruned by retention | Security |
-| `matchmaking_tickets` | Queue state, one per player (a party's tickets share its id); the lobby a host's ticket fills (`lobby_id`) and the time a match gives to accept (`accept_timeout_ms`) | Matchmaking |
-| `ready_checks`, `ready_check_participants` | "Everyone must answer" boards on a lobby or party, one row per participant | Matchmaking |
+| `matchmaking_tickets` | Queue state, one per player (a party's tickets share its id); the lobby a host's ticket fills (`lobby_id`) | Matchmaking |
+| `ready_checks`, `ready_check_participants` | "Everyone must answer" boards on a lobby or party, one row per participant; where an accepted match will sit (`seating`, never sent to clients) | Matchmaking |
 | `tournaments`, `tournament_entries`, `tournament_matches`, `tournament_brackets` | Bracket state per occurrence | Tournaments |
 | `results`, `result_events` | One play per player and what happened in it, in order | [Results](/docs/results) |
 | `purchases`, `entitlements`, `store_products`, `provider_products`, `provider_events`, `reconciliation_cursors` | Store catalogue, receipts and provider webhooks | Payments |

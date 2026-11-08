@@ -569,7 +569,7 @@ defmodule Gamend.Payments.StripeEvents do
            Code.ensure_loaded?(adapter) and function_exported?(adapter, :list_invoice_payments, 1),
          {:ok, %{"data" => [_ | _] = payments}} <- adapter.list_invoice_payments(payment_intent),
          "sub_" <> _ = subscription_id <- Enum.find_value(payments, &payment_subscription_id/1),
-         %Purchase{} = purchase <-
+         %Purchase{user_id: user_id} = purchase when is_binary(user_id) <-
            Payments.get_purchase_by_provider_original_transaction("stripe", subscription_id) do
       {:ok, purchase}
     else

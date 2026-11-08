@@ -1307,19 +1307,51 @@ func kv_unsubscribe_ws(key: String, user_id = null, lobby_id = null) -> GamendRe
 	return await _kv_subscription_request_ws("kv:unsubscribe", key, user_id, lobby_id)
 
 func _kv_subscription_request_ws(event: String, key: String, user_id = null, lobby_id = null) -> GamendResult:
+	var payload := {"key": key}
+	if user_id != null:
+		payload["user_id"] = user_id
+	if lobby_id != null:
+		payload["lobby_id"] = lobby_id
+	return await _request_ws(event, payload)
+
+## A page of the caller's results over the user channel (`results:list`).
+## `params`: `kind`, `status`, `page`, `page_size`.
+func results_list_ws(params: Dictionary = {}) -> GamendResult:
+	return await _request_ws("results:list", params)
+
+## One result and its stats over the user channel (`results:get`).
+func results_get_ws(id: String) -> GamendResult:
+	return await _request_ws("results:get", {"id": id})
+
+## A result's events over the user channel (`results:events`).
+## `params`: `after`, `limit`.
+func results_events_ws(id: String, params: Dictionary = {}) -> GamendResult:
+	var payload := params.duplicate()
+	payload["id"] = id
+	return await _request_ws("results:events", payload)
+
+## The server's clock over a joined lobby channel (`get_server_time`).
+func lobby_get_server_time_ws(lobby_id: String) -> GamendResult:
+	return await _request_ws("get_server_time", {}, "lobby:" + lobby_id)
+
+## Send every peer in a joined signaling room an SDP offer (`broadcast_offer`).
+func signaling_broadcast_offer_ws(lobby_id: String, sdp: String) -> GamendResult:
+	return await _request_ws("broadcast_offer", {"sdp": sdp}, "signaling:" + lobby_id)
+
+## Who is in a joined signaling room (`list_users`).
+func signaling_list_users_ws(lobby_id: String) -> GamendResult:
+	return await _request_ws("list_users", {}, "signaling:" + lobby_id)
+
+## Send `event` to a joined channel, the user channel when `topic` is empty,
+## and answer the server's reply as a GamendResult.
+func _request_ws(event: String, payload: Dictionary, topic: String = "") -> GamendResult:
 	var result := GamendResult.new()
 	var error_prefix := event.replace(":", ".") + ".websocket"
 	if not _realtime:
 		result.error = _make_api_error(error_prefix + ".no_realtime", "Realtime socket is not started.", FAILED)
 		return result
 
-	var payload := {"key": key}
-	if user_id != null:
-		payload["user_id"] = user_id
-	if lobby_id != null:
-		payload["lobby_id"] = lobby_id
-
-	var reply: Dictionary = await _realtime.request(event, payload, "", http_request_timeout_sec)
+	var reply: Dictionary = await _realtime.request(event, payload, topic, http_request_timeout_sec)
 	var response_payload: Dictionary = {}
 	if reply.get("payload", {}) is Dictionary:
 		response_payload = (reply["payload"] as Dictionary).duplicate(true)
@@ -2052,17 +2084,30 @@ func admin_analytics_admin_get_analytics_snapshot() -> GamendResult:
 	return await _call_api(AdminAnalyticsApi.new(_config), "admin_get_analytics_snapshot")
 
 
+### ADMIN BANS
+## Ban an IP address, an account or a chat sender (admin)
+## Operation adminCreateBan → POST /api/v1/admin/bans
+func admin_bans_admin_create_ban(adminCreateBanRequest: GamendAdminCreateBanRequest) -> GamendResult:
+	return await _call_api(AdminBansApi.new(_config), "admin_create_ban", [adminCreateBanRequest])
+
+
+## Lift a ban (admin)
+## Operation adminLiftBan → DELETE /api/v1/admin/bans/{id}
+func admin_bans_admin_lift_ban(id: String) -> GamendResult:
+	return await _call_api(AdminBansApi.new(_config), "admin_lift_ban", [id])
+
+
+## List bans (admin)
+## Operation adminListBans → GET /api/v1/admin/bans
+func admin_bans_admin_list_bans(kind = "", userId = null, subject = "", scope = "", scopeRefId = null, active = null, page = 1, pageSize = 25) -> GamendResult:
+	return await _call_api(AdminBansApi.new(_config), "admin_list_bans", [kind, userId, subject, scope, scopeRefId, active, page, pageSize])
+
+
 ### ADMIN CHAT
 ## Add a blocklist word (admin)
 ## Operation adminCreateChatFilterWord → POST /api/v1/admin/chat/filter_words
 func admin_chat_admin_create_chat_filter_word(adminCreateChatFilterWordRequest = null) -> GamendResult:
 	return await _call_api(AdminChatApi.new(_config), "admin_create_chat_filter_word", [adminCreateChatFilterWordRequest])
-
-
-## Mute a player (admin)
-## Operation adminCreateChatMute → POST /api/v1/admin/chat/mutes
-func admin_chat_admin_create_chat_mute(adminCreateChatMuteRequest = null) -> GamendResult:
-	return await _call_api(AdminChatApi.new(_config), "admin_create_chat_mute", [adminCreateChatMuteRequest])
 
 
 ## Remove a blocklist word (admin)
@@ -2075,12 +2120,6 @@ func admin_chat_admin_delete_chat_filter_word(id: String) -> GamendResult:
 ## Operation adminDeleteChatFilterWordsByLang → DELETE /api/v1/admin/chat/filter_words
 func admin_chat_admin_delete_chat_filter_words_by_lang(lang: String) -> GamendResult:
 	return await _call_api(AdminChatApi.new(_config), "admin_delete_chat_filter_words_by_lang", [lang])
-
-
-## Lift a mute (admin)
-## Operation adminDeleteChatMute → DELETE /api/v1/admin/chat/mutes/{id}
-func admin_chat_admin_delete_chat_mute(id: String) -> GamendResult:
-	return await _call_api(AdminChatApi.new(_config), "admin_delete_chat_mute", [id])
 
 
 ## Delete a chat report (admin)
@@ -2105,12 +2144,6 @@ func admin_chat_admin_list_chat_filter_words(word = "", severity = "", lang = ""
 ## Operation adminListChatFilterLanguages → GET /api/v1/admin/chat/filter_words/languages
 func admin_chat_admin_list_chat_filter_languages() -> GamendResult:
 	return await _call_api(AdminChatApi.new(_config), "admin_list_chat_filter_languages")
-
-
-## List chat mutes (admin)
-## Operation adminListChatMutes → GET /api/v1/admin/chat/mutes
-func admin_chat_admin_list_chat_mutes(userId = null, scope = "", scopeRefId = null, active = null, page = 1, pageSize = 25) -> GamendResult:
-	return await _call_api(AdminChatApi.new(_config), "admin_list_chat_mutes", [userId, scope, scopeRefId, active, page, pageSize])
 
 
 ## List chat reports (admin)
@@ -2242,6 +2275,31 @@ func admin_ready_checks_admin_list_ready_checks(status = "", kind = "", lobbyId 
 ## Operation adminReadyCheckStats → GET /api/v1/admin/ready_checks/stats
 func admin_ready_checks_admin_ready_check_stats() -> GamendResult:
 	return await _call_api(AdminReadyChecksApi.new(_config), "admin_ready_check_stats")
+
+
+### ADMIN RESULTS
+## Delete a result and its events (admin)
+## Operation adminDeleteResult → DELETE /api/v1/admin/results/{id}
+func admin_results_admin_delete_result(id: String) -> GamendResult:
+	return await _call_api(AdminResultsApi.new(_config), "admin_delete_result", [id])
+
+
+## Get a result (admin)
+## Operation adminGetResult → GET /api/v1/admin/results/{id}
+func admin_results_admin_get_result(id: String) -> GamendResult:
+	return await _call_api(AdminResultsApi.new(_config), "admin_get_result", [id])
+
+
+## List a result's events (admin)
+## Operation adminListResultEvents → GET /api/v1/admin/results/{id}/events
+func admin_results_admin_list_result_events(id: String, after = null, limit = 500) -> GamendResult:
+	return await _call_api(AdminResultsApi.new(_config), "admin_list_result_events", [id, after, limit])
+
+
+## List results (admin)
+## Operation adminListResults → GET /api/v1/admin/results
+func admin_results_admin_list_results(kind = "", status = "", userId = null, lobbyId = null, page = 1, pageSize = 25) -> GamendResult:
+	return await _call_api(AdminResultsApi.new(_config), "admin_list_results", [kind, status, userId, lobbyId, page, pageSize])
 
 
 ### ADMIN RETENTION
@@ -2474,6 +2532,42 @@ func groups_set_group_icon(id: String, request = null) -> GamendResult:
 	return await _call_api(GroupsApi.new(_config), "set_group_icon", [id, request])
 
 
+## List a group's pending invitations (admin only)
+## Operation listGroupInvites → GET /api/v1/groups/{id}/invites
+func groups_list_group_invites(id: String, page = null, pageSize = null) -> GamendResult:
+	return await _call_api(GroupsApi.new(_config), "list_group_invites", [id, page, pageSize])
+
+
+## Make a group's invite link (admin only)
+## Operation createGroupInviteLink → POST /api/v1/groups/{id}/invite_link
+func groups_create_group_invite_link(id: String) -> GamendResult:
+	return await _call_api(GroupsApi.new(_config), "create_group_invite_link", [id])
+
+
+## Get a group's invite link (admin only)
+## Operation getGroupInviteLink → GET /api/v1/groups/{id}/invite_link
+func groups_get_group_invite_link(id: String) -> GamendResult:
+	return await _call_api(GroupsApi.new(_config), "get_group_invite_link", [id])
+
+
+## Turn a group's invite link off (admin only)
+## Operation deleteGroupInviteLink → DELETE /api/v1/groups/{id}/invite_link
+func groups_delete_group_invite_link(id: String) -> GamendResult:
+	return await _call_api(GroupsApi.new(_config), "delete_group_invite_link", [id])
+
+
+## See the group an invite link opens
+## Operation previewGroupInviteLink → GET /api/v1/groups/invite_links/{token}
+func groups_preview_group_invite_link(token: String) -> GamendResult:
+	return await _call_api(GroupsApi.new(_config), "preview_group_invite_link", [token])
+
+
+## Join a group through its invite link
+## Operation joinGroupByInviteLink → POST /api/v1/groups/invite_links/{token}/join
+func groups_join_group_by_invite_link(token: String) -> GamendResult:
+	return await _call_api(GroupsApi.new(_config), "join_group_by_invite_link", [token])
+
+
 ### LOBBIES
 ## Lobby counts
 ## Operation lobbyStats → GET /api/v1/lobbies/stats
@@ -2573,6 +2667,38 @@ func push_register_push_token(registerPushTokenRequest = null) -> GamendResult:
 ## Operation questStats → GET /api/v1/quests/stats
 func quests_quest_stats() -> GamendResult:
 	return await _call_api(QuestsApi.new(_config), "quest_stats")
+
+
+### REPORTS
+## File a report
+## Operation createReport → POST /api/v1/reports
+func reports_create_report(reportRequest: GamendReportRequest) -> GamendResult:
+	return await _call_api(ReportsApi.new(_config), "create_report", [reportRequest])
+
+
+## Report kinds
+## Operation listReportKinds → GET /api/v1/reports/kinds
+func reports_list_report_kinds() -> GamendResult:
+	return await _call_api(ReportsApi.new(_config), "list_report_kinds")
+
+
+### RESULTS
+## Get a result
+## Operation getResult → GET /api/v1/results/{id}
+func results_get_result(id: String) -> GamendResult:
+	return await _call_api(ResultsApi.new(_config), "get_result", [id])
+
+
+## List a result's events
+## Operation listResultEvents → GET /api/v1/results/{id}/events
+func results_list_result_events(id: String, after = null, limit = 500) -> GamendResult:
+	return await _call_api(ResultsApi.new(_config), "list_result_events", [id, after, limit])
+
+
+## List the caller's results
+## Operation listResults → GET /api/v1/results
+func results_list_results(kind = "", status = "", page = 1, pageSize = 25) -> GamendResult:
+	return await _call_api(ResultsApi.new(_config), "list_results", [kind, status, page, pageSize])
 
 
 ### CLIENT LOGS

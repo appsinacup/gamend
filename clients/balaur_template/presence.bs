@@ -6,7 +6,7 @@ const ROSTER_KEY: str = "gamend:users";
 
 /// Remember a user payload, as a `user_updated` or a member event carries it.
 pub fn cache(user: any) {
-    if user.kind() != "map" || !user.has("id") {
+    if user.kind() != types::KIND_MAP || !user.has("id") {
         return;
     }
     let roster = all();
@@ -22,7 +22,7 @@ pub fn user(id: str) -> any {
 /// Everyone cached, by id.
 pub fn all() -> any {
     let kept = script::stored(ROSTER_KEY);
-    if kept.kind() == "map" { kept } else { {} }
+    if kept.kind() == types::KIND_MAP { kept } else { {} }
 }
 
 /// Forget everyone: the roster after a sign-out.

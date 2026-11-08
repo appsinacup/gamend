@@ -1,0 +1,148 @@
+defmodule Gamend.MatchSeating do
+  @moduledoc """
+  What a game decides for a formed match: where its players sit, and whether
+  they are asked first. `matchmaking_seat_match/1` answers with one:
+
+      def matchmaking_seat_match(tickets) do
+        case room_with_a_free_seat(tickets) do
+          nil -> MatchSeating.new_lobby(max_users: 10, accept_timeout_ms: 15_000)
+          lobby_id -> MatchSeating.in_lobby(lobby_id)
+        end
+      end
+
+  Every answer is built by a function here, so a misspelt name fails where it
+  is written: a function the compiler does not know, or an option that raises.
+  Core does the rest: it seats the players, checks seats and blocks, and puts
+  the tickets back in the queue when it cannot.
+
+  Pure, and the SDK carries a copy of it (`mix gen.sdk`).
+  """
+
+  @typedoc "A lobby's settings, as `new_lobby/1` takes them."
+  @type lobby_attrs :: %{optional(atom()) => term()}
+
+  @type t :: %__MODULE__{
+          lobby_id: String.t() | nil,
+          lobby: lobby_attrs() | nil,
+          accept_timeout_ms: pos_integer() | nil
+        }
+
+  defstruct lobby_id: nil, lobby: nil, accept_timeout_ms: nil
+
+  @ask_options [:accept_timeout_ms]
+  @lobby_options [
+    :title,
+    :host_id,
+    :hostless,
+    :max_users,
+    :is_hidden,
+    :is_locked,
+    :metadata,
+    :slowdown
+  ]
+
+  @doc """
+  Core's seat: the lobby a host's ticket fills, else a new hidden, locked,
+  hostless lobby sized to the match. Answer this to change only whether the
+  players are asked.
+
+  `:accept_timeout_ms`: the time everyone holding a ticket has to accept.
+  Left out, they are seated at once.
+  """
+  @spec default(keyword()) :: t()
+  def default(opts \\ []), do: %__MODULE__{accept_timeout_ms: accept_timeout(opts, @ask_options)}
+
+  @doc """
+  A new lobby for the match. Takes `:title`, `:max_users`, `:host_id`,
+  `:hostless`, `:is_hidden`, `:is_locked`, `:metadata`, `:slowdown` and
+  `:accept_timeout_ms`.
+
+  What is left out is core's: hidden, locked, sized to the match, hostless
+  unless a `:host_id` is named. A host who holds a ticket is not seated twice.
+  """
+  @spec new_lobby(keyword()) :: t()
+  def new_lobby(opts \\ []) do
+    {ask, lobby} =
+      opts |> Keyword.validate!(@lobby_options ++ @ask_options) |> Keyword.split(@ask_options)
+
+    %__MODULE__{lobby: Map.new(lobby), accept_timeout_ms: accept_timeout(ask, @ask_options)}
+  end
+
+  @doc """
+  An existing lobby: `lobby_id`, past its hidden and locked flags. Takes
+  `:accept_timeout_ms`. Only the players holding the match's tickets are asked,
+  so whoever is already seated there is not interrupted.
+  """
+  @spec in_lobby(String.t(), keyword()) :: t()
+  def in_lobby(lobby_id, opts \\ []) when is_binary(lobby_id) do
+    %__MODULE__{lobby_id: lobby_id, accept_timeout_ms: accept_timeout(opts, @ask_options)}
+  end
+
+  defp accept_timeout(opts, allowed) do
+    case opts |> Keyword.validate!(allowed) |> Keyword.get(:accept_timeout_ms) do
+      nil ->
+        nil
+
+      ms when is_integer(ms) and ms > 0 ->
+        ms
+
+      other ->
+        raise ArgumentError,
+              "accept_timeout_ms must be a positive integer, got: #{inspect(other)}"
+    end
+  end
+
+  @doc """
+  The attrs core creates a new lobby with, for a match whose oldest ticket is
+  `ticket`. Always locked at birth, so a stranger cannot take a seat while
+  the match is being seated; `unlock?/1` says whether to open it after.
+  """
+  @spec lobby_attrs(t(), %{max_players: pos_integer(), match_params: map()}) :: map()
+  def lobby_attrs(%__MODULE__{lobby: lobby}, %{max_players: max_players, match_params: params}) do
+    given = lobby || %{}
+
+    %{
+      max_users: max_players,
+      is_hidden: true,
+      hostless: not Map.has_key?(given, :host_id),
+      metadata: %{match_params: params}
+    }
+    |> Map.merge(given)
+    |> Map.put(:is_locked, true)
+  end
+
+  @doc "Whether the new lobby is opened once the match is seated."
+  @spec unlock?(t()) :: boolean()
+  def unlock?(%__MODULE__{lobby: %{is_locked: false}}), do: true
+  def unlock?(%__MODULE__{}), do: false
+
+  @doc """
+  JSON for the wait while players accept: where the match will sit. The accept
+  may resolve on another node, or after a restart.
+  """
+  @spec dump(t()) :: map()
+  def dump(%__MODULE__{lobby_id: lobby_id, lobby: lobby}) do
+    stringify(%{lobby_id: lobby_id, lobby: lobby && stringify(lobby)})
+  end
+
+  @doc "The seating `dump/1` wrote. Nothing stored is `default/1`."
+  @spec load(map() | nil) :: t()
+  def load(nil), do: %__MODULE__{}
+
+  def load(%{} = stored) do
+    %__MODULE__{
+      lobby_id: Map.get(stored, Atom.to_string(:lobby_id)),
+      lobby: stored |> Map.get(Atom.to_string(:lobby)) |> load_lobby()
+    }
+  end
+
+  defp load_lobby(nil), do: nil
+
+  defp load_lobby(%{} = stored) do
+    for field <- @lobby_options, Map.has_key?(stored, Atom.to_string(field)), into: %{} do
+      {field, Map.fetch!(stored, Atom.to_string(field))}
+    end
+  end
+
+  defp stringify(map), do: Map.new(map, fn {key, value} -> {Atom.to_string(key), value} end)
+end

@@ -65,6 +65,9 @@ Not a plan; a living reference.
   transports and a per-frame `poll()`, the base the Unreal plugin wraps. Built
   and released as `gamend-cpp-sdk.tar.gz`; open until CI has built it on
   Windows.
+- [redemption-codes.md](redemption-codes.md) — **Redemption codes.** Reward
+  codes and activation keys as a way to finish a quest: single-use or public,
+  bulk generated, paid by the existing claim.
 
 ## Resolved — shipped
 

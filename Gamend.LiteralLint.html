@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1406">
+    <meta name="project" content="gamend_core v1.1.1407">
 
 
-    <title>Gamend.LiteralLint — gamend_core v1.1.1406</title>
+    <title>Gamend.LiteralLint — gamend_core v1.1.1407</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-67891045.js"></script>
+    <script defer src="dist/sidebar_items-DA5E4F59.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1406
+          v1.1.1407
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />LiteralLint</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1406)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1407)</small>
 
     </h1>
 
@@ -121,8 +121,8 @@ it, and everyone else asks that module (CONTRIBUTING.md, &quot;Named strings&quo
 <code class="inline">&quot;gamend.db&quot;</code>, no spaces) and stands in code, and it is reported when it
 stands in two or more modules, or five or more times in one. These do not
 count, because a name for them would say less than they do:</p><ul><li>the value of a module attribute, or a function that is nothing but its
-value: <code class="inline">@failed &quot;failed&quot;</code> and <code class="inline">defmacro failed, do: &quot;failed&quot;</code> are the cure</li><li>a key: <code class="inline">%{&quot;id&quot; =&gt; id}</code>, <code class="inline">params[&quot;id&quot;]</code>, <code class="inline">Map.get(params, &quot;id&quot;)</code>, <a href="https://elixir.hexdocs.pm/Kernel.html#get_in/2"><code class="inline">get_in/2</code></a>.
-Keys are the shape of a document, not a closed set of values</li><li>text: gettext, <a href="https://logger.hexdocs.pm/Logger.html"><code class="inline">Logger</code></a>, <code class="inline">raise</code>, <a href="https://elixir.hexdocs.pm/IO.html"><code class="inline">IO</code></a>, <a href="https://mix.hexdocs.pm/Mix.html"><code class="inline">Mix</code></a>, <a href="https://elixir.hexdocs.pm/System.html"><code class="inline">System</code></a>, and any sigil
+value: <code class="inline">@failed &quot;failed&quot;</code> and <code class="inline">defmacro failed, do: &quot;failed&quot;</code> are the cure</li><li>a key: <code class="inline">%{&quot;id&quot; =&gt; id}</code>, <code class="inline">params[&quot;id&quot;]</code>, <code class="inline">Map.get(params, &quot;id&quot;)</code>, <a href="https://elixir.hexdocs.pm/Map.html#take/2"><code class="inline">Map.take/2</code></a>,
+<a href="https://elixir.hexdocs.pm/Kernel.html#get_in/2"><code class="inline">get_in/2</code></a>. Keys are the shape of a document, not a closed set of values</li><li>text: gettext, <a href="https://logger.hexdocs.pm/Logger.html"><code class="inline">Logger</code></a>, <code class="inline">raise</code>, <a href="https://elixir.hexdocs.pm/IO.html"><code class="inline">IO</code></a>, <a href="https://mix.hexdocs.pm/Mix.html"><code class="inline">Mix</code></a>, <a href="https://elixir.hexdocs.pm/System.html"><code class="inline">System</code></a>, and any sigil
 other than a string <code class="inline">~w</code>, so a HEEx template is not read</li><li>a LiveView event's name in <code class="inline">handle_event/3</code>, and HTTP header names</li><li>an API error's code in <code class="inline">reply_error/3</code>, which has to be a literal:
 <a href="Mix.Tasks.Gamend.Api.Lint.html"><code class="inline">mix gamend.api.lint</code></a> (R18) holds it to <code class="inline">GamendWeb.ErrorStatus</code></li><li>a CSS class of the shared vocabulary (<code class="inline">&quot;badge-error&quot;</code>), and <code class="inline">&quot;true&quot;</code></li></ul><p>It is a heuristic, and says so. A use it is wrong about is marked with the
 reason, on its line or the line above:</p><pre><code class="makeup elixir" translate="no"><span class="c1"># literal-ok: Stripe&#39;s event name</span><span class="w">
@@ -386,7 +386,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">baseline_file()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L78" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -414,7 +414,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">format_baseline(offenders)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L144" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L147" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -442,7 +442,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">new_offenders(offenders, baseline)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L119" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L122" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -470,7 +470,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">occurrences_in(source, path)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L157" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L160" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -498,7 +498,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">offenders()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L82" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L85" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -526,7 +526,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">offenders(occurrences)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L98" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -554,7 +554,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">parse_baseline(text)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L134" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L137" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -584,7 +584,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">read_baseline(path \\ &quot;.literal-lint-baseline&quot;)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L128" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -611,9 +611,9 @@ more, so the count only goes down.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1406">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1407">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1406">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1407">Hex Preview</a>
 
             </span>
 

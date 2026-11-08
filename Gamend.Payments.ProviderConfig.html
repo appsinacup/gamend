@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1406">
+    <meta name="project" content="gamend_core v1.1.1407">
 
 
-    <title>Gamend.Payments.ProviderConfig — gamend_core v1.1.1406</title>
+    <title>Gamend.Payments.ProviderConfig — gamend_core v1.1.1407</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-67891045.js"></script>
+    <script defer src="dist/sidebar_items-DA5E4F59.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1406
+          v1.1.1407
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Payments.<wbr />ProviderConfig</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1406)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1407)</small>
 
     </h1>
 
@@ -164,7 +164,7 @@ production provider credentials for this host.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#normalize_environment/2" data-no-tooltip="" translate="no">normalize_environment(value, fallback \\ &quot;production&quot;)</a>
+        <a href="#normalize_environment/2" data-no-tooltip="" translate="no">normalize_environment(value, fallback \\ PaymentEnvironment.production())</a>
 
       </div>
 
@@ -274,7 +274,7 @@ Inside one release Stripe only adds; a breaking change starts the next.</p></div
       <h1 class="signature" translate="no">environment()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L22" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L25" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -315,7 +315,7 @@ Inside one release Stripe only adds; a breaking change starts the next.</p></div
       <h1 class="signature" translate="no">environment()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L25" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L28" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -343,7 +343,7 @@ Inside one release Stripe only adds; a breaking change starts the next.</p></div
       <h1 class="signature" translate="no">environments()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L54" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L62" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -370,10 +370,10 @@ Inside one release Stripe only adds; a breaking change starts the next.</p></div
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">normalize_environment(value, fallback \\ &quot;production&quot;)</h1>
+      <h1 class="signature" translate="no">normalize_environment(value, fallback \\ PaymentEnvironment.production())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L34" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L37" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -395,7 +395,7 @@ Inside one release Stripe only adds; a breaking change starts the next.</p></div
       <h1 class="signature" translate="no">production?()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L51" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L59" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -423,7 +423,7 @@ Inside one release Stripe only adds; a breaking change starts the next.</p></div
       <h1 class="signature" translate="no">stripe_api_release(version)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L85" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -453,7 +453,7 @@ Inside one release Stripe only adds; a breaking change starts the next.</p>
       <h1 class="signature" translate="no">stripe_api_version()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L69" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -481,7 +481,7 @@ Inside one release Stripe only adds; a breaking change starts the next.</p>
       <h1 class="signature" translate="no">stripe_candidate_labels(kind)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L93" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -509,7 +509,7 @@ Inside one release Stripe only adds; a breaking change starts the next.</p>
       <h1 class="signature" translate="no">stripe_managed_payments?()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L58" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L66" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -537,7 +537,7 @@ Inside one release Stripe only adds; a breaking change starts the next.</p>
       <h1 class="signature" translate="no">stripe_secret_key()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L62" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L70" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -565,7 +565,7 @@ Inside one release Stripe only adds; a breaking change starts the next.</p>
       <h1 class="signature" translate="no">stripe_secret_key_source()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L87" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L95" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -593,7 +593,7 @@ Inside one release Stripe only adds; a breaking change starts the next.</p>
       <h1 class="signature" translate="no">stripe_webhook_secret()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L65" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L73" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -621,7 +621,7 @@ Inside one release Stripe only adds; a breaking change starts the next.</p>
       <h1 class="signature" translate="no">stripe_webhook_secret_source()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L90" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/provider_config.ex#L98" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -648,9 +648,9 @@ Inside one release Stripe only adds; a breaking change starts the next.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1406">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1407">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1406">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1407">Hex Preview</a>
 
             </span>
 

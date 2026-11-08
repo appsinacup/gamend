@@ -15,8 +15,8 @@ count, because a name for them would say less than they do:
 
   * the value of a module attribute, or a function that is nothing but its
     value: `@failed "failed"` and `defmacro failed, do: "failed"` are the cure
-  * a key: `%{"id" => id}`, `params["id"]`, `Map.get(params, "id")`, `get_in/2`.
-    Keys are the shape of a document, not a closed set of values
+  * a key: `%{"id" => id}`, `params["id"]`, `Map.get(params, "id")`, `Map.take/2`,
+    `get_in/2`. Keys are the shape of a document, not a closed set of values
   * text: gettext, `Logger`, `raise`, `IO`, `Mix`, `System`, and any sigil
     other than a string `~w`, so a HEEx template is not read
   * a LiveView event's name in `handle_event/3`, and HTTP header names

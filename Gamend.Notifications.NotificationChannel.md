@@ -1,0 +1,25 @@
+# `Gamend.Notifications.NotificationChannel`
+[🔗](https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/notification_channel.ex#L1)
+
+The channels a notification can be sent on.
+
+# `all`
+
+```elixir
+@spec all() :: [String.t()]
+```
+
+Every value.
+
+# `email`
+*macro* 
+
+# `in_app`
+*macro* 
+
+# `push`
+*macro* 
+
+---
+
+*Consult [api-reference.md](api-reference.md) for complete listing*

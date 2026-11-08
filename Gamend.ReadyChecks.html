@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1406">
+    <meta name="project" content="gamend_core v1.1.1407">
 
 
-    <title>Gamend.ReadyChecks — gamend_core v1.1.1406</title>
+    <title>Gamend.ReadyChecks — gamend_core v1.1.1407</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-67891045.js"></script>
+    <script defer src="dist/sidebar_items-DA5E4F59.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1406
+          v1.1.1407
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />ReadyChecks</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1406)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1407)</small>
 
     </h1>
 
@@ -209,7 +209,7 @@ cannot press anything.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#cancel/2" data-no-tooltip="" translate="no">cancel(check, reason \\ &quot;cancelled&quot;)</a>
+        <a href="#cancel/2" data-no-tooltip="" translate="no">cancel(check, reason \\ CheckReason.cancelled())</a>
 
       </div>
 
@@ -426,7 +426,7 @@ numbers on the admin page.</p></div>
       <h1 class="signature" translate="no">answer()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L62" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -454,7 +454,7 @@ numbers on the admin page.</p></div>
       <h1 class="signature" translate="no">scope()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L61" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L67" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -482,7 +482,7 @@ numbers on the admin page.</p></div>
       <h1 class="signature" translate="no">subject()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L60" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L66" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -523,7 +523,7 @@ numbers on the admin page.</p></div>
       <h1 class="signature" translate="no">add_member(lobby_id, user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L578" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L599" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -553,7 +553,7 @@ seat before it counts the next answer, or passed before the seat existed.</p>
       <h1 class="signature" translate="no">add_party_member(party_id, user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L584" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L605" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -581,7 +581,7 @@ seat before it counts the next answer, or passed before the seat existed.</p>
       <h1 class="signature" translate="no">answer_for(check, user_id, ready?)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L365" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L377" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -611,10 +611,10 @@ over RPC and mark someone else ready.</p>
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">cancel(check, reason \\ &quot;cancelled&quot;)</h1>
+      <h1 class="signature" translate="no">cancel(check, reason \\ CheckReason.cancelled())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L632" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L653" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -644,7 +644,7 @@ over RPC and mark someone else ready.</p>
       <h1 class="signature" translate="no">cancel_for_lobby(lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L655" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L676" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -675,7 +675,7 @@ read pending, and the cancel did not happen.</p>
       <h1 class="signature" translate="no">cancel_for_party(party_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L664" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L685" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -706,7 +706,7 @@ read pending, and the cancel did not happen.</p>
       <h1 class="signature" translate="no">count_checks(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L838" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L867" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -734,7 +734,7 @@ read pending, and the cancel did not happen.</p>
       <h1 class="signature" translate="no">expire(check)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L688" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L712" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -764,7 +764,7 @@ read pending, and the cancel did not happen.</p>
       <h1 class="signature" translate="no">expire_due(now \\ DateTime.utc_now())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L679" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L700" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -796,7 +796,7 @@ matchmaking sweep's backstop can both run it.</p>
       <h1 class="signature" translate="no">for_user(user, scope \\ :any)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L731" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L760" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -827,7 +827,7 @@ API's.</p>
       <h1 class="signature" translate="no">get_check(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L813" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L842" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -857,7 +857,7 @@ API's.</p>
       <h1 class="signature" translate="no">list_checks(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L827" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L856" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -886,7 +886,7 @@ API's.</p>
       <h1 class="signature" translate="no">not_ready(check)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L805" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L834" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -917,7 +917,7 @@ API's.</p>
       <h1 class="signature" translate="no">open(subject, user_ids, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L93" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L99" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -956,7 +956,7 @@ and <code class="inline">{:error, :too_many_participants}</code> past <code clas
       <h1 class="signature" translate="no">passed?(lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L780" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L809" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -987,7 +987,7 @@ rematch cannot ride the previous match's pass.</p>
       <h1 class="signature" translate="no">pending_for_lobby(lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L752" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L781" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1015,7 +1015,7 @@ rematch cannot ride the previous match's pass.</p>
       <h1 class="signature" translate="no">pending_for_party(party_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L763" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L792" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1043,7 +1043,7 @@ rematch cannot ride the previous match's pass.</p>
       <h1 class="signature" translate="no">remove_member(lobby_id, user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L527" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L548" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1072,7 +1072,7 @@ answered is a legitimate way to pass a check.</p>
       <h1 class="signature" translate="no">remove_party_member(party_id, user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L533" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L554" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1102,7 +1102,7 @@ answered is a legitimate way to pass a check.</p>
       <h1 class="signature" translate="no">reset(subject, user_ids, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L119" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1138,7 +1138,7 @@ re-confirm on a deadline_at (&quot;force ready&quot;). Same options as <a href="
       <h1 class="signature" translate="no">respond(user, ready?, scope \\ :match)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L325" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L331" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1180,7 +1180,7 @@ answered, <code class="inline">{:error, :not_revocable}</code>.</p>
       <h1 class="signature" translate="no">stats(hours \\ 24)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L847" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/ready_checks.ex#L876" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1208,9 +1208,9 @@ numbers on the admin page.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1406">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1407">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1406">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1407">Hex Preview</a>
 
             </span>
 

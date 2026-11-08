@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1406">
+    <meta name="project" content="gamend_core v1.1.1407">
 
 
-    <title>Gamend.Chat.Moderation — gamend_core v1.1.1406</title>
+    <title>Gamend.Chat.Moderation — gamend_core v1.1.1407</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-67891045.js"></script>
+    <script defer src="dist/sidebar_items-DA5E4F59.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1406
+          v1.1.1407
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Chat.<wbr />Moderation</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1406)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1407)</small>
 
     </h1>
 
@@ -239,7 +239,7 @@ path actually reads; mutes are cached by <a href="Gamend.Bans.Cache.html"><code 
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#import_bundled_list/2" data-no-tooltip="" translate="no">import_bundled_list(lang, severity \\ &quot;block&quot;)</a>
+        <a href="#import_bundled_list/2" data-no-tooltip="" translate="no">import_bundled_list(lang, severity \\ FilterSeverity.block())</a>
 
       </div>
 
@@ -332,7 +332,7 @@ path actually reads; mutes are cached by <a href="Gamend.Bans.Cache.html"><code 
       <h1 class="signature" translate="no">bundled_languages()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L260" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L265" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -361,7 +361,7 @@ until an admin imports it.</p>
       <h1 class="signature" translate="no">check_content(content)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L46" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L51" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -398,7 +398,7 @@ covers) it is blocked rather than sent through half-masked.</p>
       <h1 class="signature" translate="no">count_filter_words(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L160" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L165" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -428,7 +428,7 @@ covers) it is blocked rather than sent through half-masked.</p>
       <h1 class="signature" translate="no">count_mutes(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L410" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L415" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -456,7 +456,7 @@ covers) it is blocked rather than sent through half-masked.</p>
       <h1 class="signature" translate="no">create_filter_word(attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L176" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L181" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -487,7 +487,7 @@ covers) it is blocked rather than sent through half-masked.</p>
       <h1 class="signature" translate="no">delete_filter_word(word)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L202" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L207" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -516,7 +516,7 @@ covers) it is blocked rather than sent through half-masked.</p>
       <h1 class="signature" translate="no">delete_filter_words_by_lang(lang)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L210" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L215" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -544,7 +544,7 @@ covers) it is blocked rather than sent through half-masked.</p>
       <h1 class="signature" translate="no">get_filter_word(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L166" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L171" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -572,7 +572,7 @@ covers) it is blocked rather than sent through half-masked.</p>
       <h1 class="signature" translate="no">get_mute(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L393" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L398" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -600,7 +600,7 @@ covers) it is blocked rather than sent through half-masked.</p>
       <h1 class="signature" translate="no">hits(content)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L88" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L93" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -628,10 +628,10 @@ runtime path would do.</p>
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">import_bundled_list(lang, severity \\ &quot;block&quot;)</h1>
+      <h1 class="signature" translate="no">import_bundled_list(lang, severity \\ FilterSeverity.block())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L284" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L289" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -668,7 +668,7 @@ when the list cannot be read.</p>
       <h1 class="signature" translate="no">list_filter_words(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L150" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L155" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -700,7 +700,7 @@ when the list cannot be read.</p>
       <h1 class="signature" translate="no">list_mutes(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L405" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L410" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -731,7 +731,7 @@ when the list cannot be read.</p>
       <h1 class="signature" translate="no">mute_user(user_id, scope, scope_ref_id, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L365" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L370" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -765,7 +765,7 @@ can extend or shorten one without unmuting first.</p>
       <h1 class="signature" translate="no">muted?(user_id, chat_type, chat_ref_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L349" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L354" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -797,7 +797,7 @@ can extend or shorten one without unmuting first.</p>
       <h1 class="signature" translate="no">unmute_user(user_id, scope, scope_ref_id \\ nil, by \\ nil)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L384" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L389" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -826,7 +826,7 @@ can extend or shorten one without unmuting first.</p>
       <h1 class="signature" translate="no">update_filter_word(word, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L188" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/chat/moderation.ex#L193" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -854,9 +854,9 @@ can extend or shorten one without unmuting first.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1406">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1407">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1406">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1407">Hex Preview</a>
 
             </span>
 

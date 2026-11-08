@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1406">
+    <meta name="project" content="gamend_core v1.1.1407">
 
 
-    <title>API Reference — gamend_core v1.1.1406</title>
+    <title>API Reference — gamend_core v1.1.1407</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-67891045.js"></script>
+    <script defer src="dist/sidebar_items-DA5E4F59.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1406
+          v1.1.1407
         </div>
       </div>
     </div>
@@ -92,7 +92,7 @@ gamend_core
 
 <div id="top-content">
   <div class="heading-with-actions top-heading">
-    <h1>API Reference <small class="app-vsn">gamend_core v#1.1.1406</small></h1>
+    <h1>API Reference <small class="app-vsn">gamend_core v#1.1.1407</small></h1>
 <a href="api-reference.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
   <i class="ri-markdown-line" aria-hidden="true"></i>
   <span class="sr-only">Copy Markdown</span>
@@ -373,6 +373,15 @@ that carry them, and listing or revoking a user's sessions.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Accounts.ThemeName.html" translate="no">Gamend.<wbr />Accounts.<wbr />ThemeName</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A user's theme preference.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Accounts.TimeZone.html" translate="no">Gamend.<wbr />Accounts.<wbr />TimeZone</a>
 
   </div>
@@ -384,6 +393,15 @@ that carry them, and listing or revoking a user's sessions.</p></div>
 chosen in settings. A zone chosen by hand (<a href="#choose/2"><code class="inline">choose/2</code></a>) stays until the user
 goes back to automatic: the browser no longer overwrites it
 (<a href="#manual?/1"><code class="inline">manual?/1</code></a>). Unknown or unset, everything falls back to UTC.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Accounts.TokenContext.html" translate="no">Gamend.<wbr />Accounts.<wbr />TokenContext</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The <code class="inline">user_tokens.context</code> values that name what a token is for.</p></div>
 
 </div>
 <div class="summary-row">
@@ -540,6 +558,15 @@ them, no row does.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Analytics.SegmentName.html" translate="no">Gamend.<wbr />Analytics.<wbr />SegmentName</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The analytics segments that are not everyone.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.ApiConventions.html" translate="no">Gamend.<wbr />ApiConventions</a>
 
   </div>
@@ -583,6 +610,24 @@ for good.</p></div>
 
     <div class="summary-synopsis"><p>One ban: an IP address, an account or a chat sender kept out until
 <code class="inline">expires_at</code> (<code class="inline">nil</code> is permanent), or until someone lifts it.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Bans.BanKind.html" translate="no">Gamend.<wbr />Bans.<wbr />BanKind</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>What a ban is against.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Bans.BanScope.html" translate="no">Gamend.<wbr />Bans.<wbr />BanScope</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Where a chat ban applies.</p></div>
 
 </div>
 <div class="summary-row">
@@ -720,12 +765,48 @@ aggregated from telemetry events</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Chat.ChatReportStatus.html" translate="no">Gamend.<wbr />Chat.<wbr />ChatReportStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The states of a report about a chat message.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Chat.ChatType.html" translate="no">Gamend.<wbr />Chat.<wbr />ChatType</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The kinds of conversation.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Chat.FilterSeverity.html" translate="no">Gamend.<wbr />Chat.<wbr />FilterSeverity</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>What the word filter does with a match.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Chat.FilterWord.html" translate="no">Gamend.<wbr />Chat.<wbr />FilterWord</a>
 
   </div>
 
     <div class="summary-synopsis"><p>Ecto schema for the <code class="inline">chat_filter_words</code> table — one entry of the chat word
 blocklist.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Chat.MatchMode.html" translate="no">Gamend.<wbr />Chat.<wbr />MatchMode</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>How the word filter matches a word.</p></div>
 
 </div>
 <div class="summary-row">
@@ -822,6 +903,24 @@ about a chat message.</p></div>
   </div>
 
     <div class="summary-synopsis"><p>Logs from the game client, put where the server's own logs already are.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.ClientLogs.BuildKind.html" translate="no">Gamend.<wbr />ClientLogs.<wbr />BuildKind</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The kind of build a client log came from.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.ClientLogs.LogLevel.html" translate="no">Gamend.<wbr />ClientLogs.<wbr />LogLevel</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The levels of a client log.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1012,6 +1111,15 @@ application can copy.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Friends.FriendshipStatus.html" translate="no">Gamend.<wbr />Friends.<wbr />FriendshipStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The states of a friendship row.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.GitHub.html" translate="no">Gamend.<wbr />GitHub</a>
 
   </div>
@@ -1089,6 +1197,15 @@ leaving, kicking, promoting/demoting members, and handling join requests.</p></d
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Groups.GroupInviteStatus.html" translate="no">Gamend.<wbr />Groups.<wbr />GroupInviteStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The states of an invitation to a group.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Groups.GroupJoinRequest.html" translate="no">Gamend.<wbr />Groups.<wbr />GroupJoinRequest</a>
 
   </div>
@@ -1103,6 +1220,24 @@ leaving, kicking, promoting/demoting members, and handling join requests.</p></d
   </div>
 
     <div class="summary-synopsis"><p>Ecto schema for the <code class="inline">group_members</code> join table.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Groups.GroupRole.html" translate="no">Gamend.<wbr />Groups.<wbr />GroupRole</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A member's role in a group: <code class="inline">group_members.role</code>.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Groups.GroupType.html" translate="no">Gamend.<wbr />Groups.<wbr />GroupType</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Who can find and join a group: <code class="inline">groups.type</code>.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1126,6 +1261,15 @@ nobody is added to anything.</p></div>
 
     <div class="summary-synopsis"><p>Group invitations: creating, accepting, declining, cancelling, and
 listing/counting pending invites.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Groups.JoinRequestStatus.html" translate="no">Gamend.<wbr />Groups.<wbr />JoinRequestStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The states of a request to join a group.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1263,6 +1407,15 @@ source code on disk, for the admin Config page and the command line.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.HttpHeader.html" translate="no">Gamend.<wbr />HttpHeader</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The header names core and its HTTP clients send.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Icons.html" translate="no">Gamend.<wbr />Icons</a>
 
   </div>
@@ -1350,12 +1503,30 @@ Carries the <code class="inline">idempotency_key</code> that makes item grants s
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Leaderboards.ScoreOperator.html" translate="no">Gamend.<wbr />Leaderboards.<wbr />ScoreOperator</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>How a leaderboard's records combine a new score.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Ledger.html" translate="no">Gamend.<wbr />Ledger</a>
 
   </div>
 
     <div class="summary-synopsis"><p>The mechanics both ledgered balances share: <a href="Gamend.Economy.html"><code class="inline">Gamend.Economy</code></a> (currency in a
 wallet) and <a href="Gamend.Inventory.html"><code class="inline">Gamend.Inventory</code></a> (quantity of an item).</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.LedgerReason.html" translate="no">Gamend.<wbr />LedgerReason</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The ledger reason recorded when a caller gave none.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1397,6 +1568,15 @@ out wherever it is used. <a href="Mix.Tasks.Gamend.Literal.Lint.html"><code clas
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Lobbies.LobbyState.html" translate="no">Gamend.<wbr />Lobbies.<wbr />LobbyState</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A lobby's initial state.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Lobbies.SpectatorTracker.html" translate="no">Gamend.<wbr />Lobbies.<wbr />SpectatorTracker</a>
 
   </div>
@@ -1411,6 +1591,24 @@ out wherever it is used. <a href="Mix.Tasks.Gamend.Literal.Lint.html"><code clas
   </div>
 
     <div class="summary-synopsis"><p>The vocabulary a lobby's <code class="inline">state</code> commonly uses.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.LocalHost.html" translate="no">Gamend.<wbr />LocalHost</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The name a server uses for itself when no host is set.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.LocaleCode.html" translate="no">Gamend.<wbr />LocaleCode</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A locale spoken in code: the default language.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1490,6 +1688,15 @@ matched into a lobby.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Matchmaking.CancelReason.html" translate="no">Gamend.<wbr />Matchmaking.<wbr />CancelReason</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Why a matchmaking ticket was cancelled, as broadcast to the player.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Matchmaking.Constants.html" translate="no">Gamend.<wbr />Matchmaking.<wbr />Constants</a>
 
   </div>
@@ -1523,6 +1730,15 @@ matched into a lobby.</p></div>
   </div>
 
     <div class="summary-synopsis"><p>Ecto schema for a matchmaking ticket.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Matchmaking.TicketStatus.html" translate="no">Gamend.<wbr />Matchmaking.<wbr />TicketStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The states of a matchmaking ticket.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1587,6 +1803,42 @@ once: the job is unique per user and group.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Notifications.NotificationChannel.html" translate="no">Gamend.<wbr />Notifications.<wbr />NotificationChannel</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The channels a notification can be sent on.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Notifications.NotificationType.html" translate="no">Gamend.<wbr />Notifications.<wbr />NotificationType</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The <code class="inline">metadata[&quot;type&quot;]</code> codes core writes on a notification. The registry with their descriptions is <a href="Gamend.Notifications.Types.html"><code class="inline">Gamend.Notifications.Types</code></a>.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Notifications.PreferenceGroup.html" translate="no">Gamend.<wbr />Notifications.<wbr />PreferenceGroup</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The groups a player's notification choices are made per.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Notifications.PreferenceSwitch.html" translate="no">Gamend.<wbr />Notifications.<wbr />PreferenceSwitch</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The switches that turn a channel off for every group.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Notifications.Preferences.html" translate="no">Gamend.<wbr />Notifications.<wbr />Preferences</a>
 
   </div>
@@ -1604,6 +1856,15 @@ everything: all email off, all push off, everything off.</p></div>
   </div>
 
     <div class="summary-synopsis"><p>The <code class="inline">metadata[&quot;type&quot;]</code> codes a notification may carry.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.OAuth.AuthProvider.html" translate="no">Gamend.<wbr />OAuth.<wbr />AuthProvider</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The OAuth providers a player signs in with.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1635,6 +1896,15 @@ everything: all email off, all push off, everything off.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.OAuth.SessionStatus.html" translate="no">Gamend.<wbr />OAuth.<wbr />SessionStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The states of a provider sign-in in progress.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.OAuthSession.html" translate="no">Gamend.<wbr />OAuthSession</a>
 
   </div>
@@ -1649,6 +1919,15 @@ everything: all email off, all push off, everything off.</p></div>
   </div>
 
     <div class="summary-synopsis"><p>Helpers for creating and retrieving short-lived OAuth sessions.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.ParamType.html" translate="no">Gamend.<wbr />ParamType</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The type names shown for an argument in the runtime pages.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1690,6 +1969,15 @@ params, hook arguments, JSON.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Parties.PartyInviteStatus.html" translate="no">Gamend.<wbr />Parties.<wbr />PartyInviteStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The states of an invitation to a party.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Payments.html" translate="no">Gamend.<wbr />Payments</a>
 
   </div>
@@ -1706,6 +1994,15 @@ params, hook arguments, JSON.</p></div>
     <div class="summary-synopsis"><p>What the admin payments pages and API read: the stats, provider configuration
 status, and filtered listings of products, purchases, entitlements, provider
 events and reconciliation cursors.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Payments.CounterName.html" translate="no">Gamend.<wbr />Payments.<wbr />CounterName</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The counters of payments in <a href="Gamend.Payments.Counters.html"><code class="inline">Gamend.Payments.Counters</code></a>.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1738,6 +2035,24 @@ the admin analytics page lists them under &quot;Counters&quot; with the game's o
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Payments.EntitlementStatus.html" translate="no">Gamend.<wbr />Payments.<wbr />EntitlementStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The states of an entitlement.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Payments.GrantKey.html" translate="no">Gamend.<wbr />Payments.<wbr />GrantKey</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Keys of a product's grant config that core and the store read.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Payments.Params.html" translate="no">Gamend.<wbr />Payments.<wbr />Params</a>
 
   </div>
@@ -1747,11 +2062,29 @@ the admin analytics page lists them under &quot;Counters&quot; with the game's o
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Payments.PaymentEnvironment.html" translate="no">Gamend.<wbr />Payments.<wbr />PaymentEnvironment</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Where a purchase was made: <code class="inline">purchases.environment</code>.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Payments.Product.html" translate="no">Gamend.<wbr />Payments.<wbr />Product</a>
 
   </div>
 
     <div class="summary-synopsis"><p>Internal product sold by one or more payment providers.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Payments.ProductKind.html" translate="no">Gamend.<wbr />Payments.<wbr />ProductKind</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>What a product grants.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1779,6 +2112,15 @@ the admin analytics page lists them under &quot;Counters&quot; with the game's o
   </div>
 
     <div class="summary-synopsis"><p>Dedupe record for webhook and store notification events.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Payments.ProviderId.html" translate="no">Gamend.<wbr />Payments.<wbr />ProviderId</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The payment providers core knows, as stored in <code class="inline">purchases.provider</code>.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1847,6 +2189,24 @@ Server Notifications V2).</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Payments.PurchaseMetadata.html" translate="no">Gamend.<wbr />Payments.<wbr />PurchaseMetadata</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Keys payments keeps in a purchase's metadata.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Payments.PurchaseStatus.html" translate="no">Gamend.<wbr />Payments.<wbr />PurchaseStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The states of a purchase: <code class="inline">purchases.status</code>.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Payments.ReconciliationCursor.html" translate="no">Gamend.<wbr />Payments.<wbr />ReconciliationCursor</a>
 
   </div>
@@ -1875,6 +2235,15 @@ them once, and applying what they say to purchases and entitlements.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Payments.StripeEvent.html" translate="no">Gamend.<wbr />Payments.<wbr />StripeEvent</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A Stripe webhook's event name.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Payments.StripeEvents.html" translate="no">Gamend.<wbr />Payments.<wbr />StripeEvents</a>
 
   </div>
@@ -1882,6 +2251,33 @@ them once, and applying what they say to purchases and entitlements.</p></div>
     <div class="summary-synopsis"><p>Stripe: starting a checkout, and keeping purchases and entitlements in step
 with what Stripe says — webhooks as they arrive, reconciliation when one was
 missed, and cancelling a subscription at the end of its period.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Payments.StripeIdPrefix.html" translate="no">Gamend.<wbr />Payments.<wbr />StripeIdPrefix</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The prefixes of Stripe ids and keys.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Payments.StripeKeyMode.html" translate="no">Gamend.<wbr />Payments.<wbr />StripeKeyMode</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>What a Stripe API key is for, read from its prefix.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Payments.StripeMode.html" translate="no">Gamend.<wbr />Payments.<wbr />StripeMode</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A Stripe Checkout session's <code class="inline">mode</code>.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1915,6 +2311,24 @@ purchase from the admin page.</p></div>
     <div class="summary-synopsis"><p>The Stripe account set up the way this code reads it, from a script
 (<a href="Mix.Tasks.Gamend.Stripe.Setup.html"><code class="inline">mix gamend.stripe.setup</code></a>, a host's own task for its prices), never by
 hand-copying a checklist</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Payments.StripeSetupStep.html" translate="no">Gamend.<wbr />Payments.<wbr />StripeSetupStep</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The steps of <a href="Mix.Tasks.Gamend.Stripe.Setup.html"><code class="inline">mix gamend.stripe.setup</code></a>.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Payments.StripeStatus.html" translate="no">Gamend.<wbr />Payments.<wbr />StripeStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Stripe's own statuses, read off its objects (not the rows it updates).</p></div>
 
 </div>
 <div class="summary-row">
@@ -2035,6 +2449,15 @@ what the delivery workers carry through job args.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Push.Platform.html" translate="no">Gamend.<wbr />Push.<wbr />Platform</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>What a push token was registered from.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Push.Provider.html" translate="no">Gamend.<wbr />Push.<wbr />Provider</a>
 
   </div>
@@ -2079,6 +2502,15 @@ so the whole flow is exercisable with no credentials.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Push.PushProvider.html" translate="no">Gamend.<wbr />Push.<wbr />PushProvider</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Who delivers a push token's notifications.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Push.PushToken.html" translate="no">Gamend.<wbr />Push.<wbr />PushToken</a>
 
   </div>
@@ -2094,6 +2526,15 @@ so the whole flow is exercisable with no credentials.</p></div>
 
     <div class="summary-synopsis"><p>Supervises the push delivery processes: the Goth worker (FCM OAuth) and the
 two Pigeon dispatchers.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Push.TokenFilter.html" translate="no">Gamend.<wbr />Push.<wbr />TokenFilter</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The status filters of the push tokens list.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2126,11 +2567,38 @@ two Pigeon dispatchers.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Quests.PeriodKey.html" translate="no">Gamend.<wbr />Quests.<wbr />PeriodKey</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The period key of a quest that never resets.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Quests.Quest.html" translate="no">Gamend.<wbr />Quests.<wbr />Quest</a>
 
   </div>
 
     <div class="summary-synopsis"><p>Ecto schema for the <code class="inline">quests</code> table.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Quests.QuestCategory.html" translate="no">Gamend.<wbr />Quests.<wbr />QuestCategory</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A quest category with a meaning of its own.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Quests.QuestFilter.html" translate="no">Gamend.<wbr />Quests.<wbr />QuestFilter</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The status filters of a quest list (not stored values).</p></div>
 
 </div>
 <div class="summary-row">
@@ -2145,6 +2613,33 @@ reset period.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Quests.QuestReset.html" translate="no">Gamend.<wbr />Quests.<wbr />QuestReset</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>How often a quest resets.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Quests.QuestStatus.html" translate="no">Gamend.<wbr />Quests.<wbr />QuestStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A player's progress on a quest: <code class="inline">quest_progress.status</code>.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Quests.ReportedEvent.html" translate="no">Gamend.<wbr />Quests.<wbr />ReportedEvent</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>An event core reports to the quests of a player.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Quests.Reward.html" translate="no">Gamend.<wbr />Quests.<wbr />Reward</a>
 
   </div>
@@ -2152,6 +2647,15 @@ reset period.</p></div>
     <div class="summary-synopsis"><p>One reward entry on a quest definition: <code class="inline">amount</code> of a currency
 (via <a href="Gamend.Economy.html#grant/4"><code class="inline">Gamend.Economy.grant/4</code></a>) or an item
 (via <a href="Gamend.Inventory.html#grant_item/4"><code class="inline">Gamend.Inventory.grant_item/4</code></a>).</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Quests.RewardType.html" translate="no">Gamend.<wbr />Quests.<wbr />RewardType</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>What a quest's reward grants.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2197,6 +2701,42 @@ each answer before something proceeds.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.ReadyChecks.CheckKind.html" translate="no">Gamend.<wbr />ReadyChecks.<wbr />CheckKind</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Which question a ready check asks.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.ReadyChecks.CheckReason.html" translate="no">Gamend.<wbr />ReadyChecks.<wbr />CheckReason</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Why a ready check ended without passing.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.ReadyChecks.CheckScope.html" translate="no">Gamend.<wbr />ReadyChecks.<wbr />CheckScope</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>What a ready check runs on.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.ReadyChecks.CheckStatus.html" translate="no">Gamend.<wbr />ReadyChecks.<wbr />CheckStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The states of a ready check: <code class="inline">ready_checks.status</code>.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.ReadyChecks.Participant.html" translate="no">Gamend.<wbr />ReadyChecks.<wbr />Participant</a>
 
   </div>
@@ -2206,11 +2746,29 @@ each answer before something proceeds.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.ReadyChecks.ParticipantState.html" translate="no">Gamend.<wbr />ReadyChecks.<wbr />ParticipantState</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A participant's answer to a ready check.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Realtime.html" translate="no">Gamend.<wbr />Realtime</a>
 
   </div>
 
     <div class="summary-synopsis"><p>Pushing game-defined realtime events to a player's socket.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.RealtimeEvent.html" translate="no">Gamend.<wbr />RealtimeEvent</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The names of the server-to-client channel events core and the channels both spell. The registry that lists them with their payloads is <code class="inline">GamendWeb.RealtimeEvents</code>.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2319,6 +2877,24 @@ game — a page, a word, anything a <a href="Gamend.Reports.Kind.html"><code cla
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Reports.ReportSource.html" translate="no">Gamend.<wbr />Reports.<wbr />ReportSource</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Where a report was filed from.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Reports.ReportStatus.html" translate="no">Gamend.<wbr />Reports.<wbr />ReportStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A report's status before anyone answers it. The other statuses come from the kind.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Results.html" translate="no">Gamend.<wbr />Results</a>
 
   </div>
@@ -2343,6 +2919,24 @@ game — a page, a word, anything a <a href="Gamend.Reports.Kind.html"><code cla
   </div>
 
     <div class="summary-synopsis"><p>Ecto schema for <code class="inline">results</code>: one play by one player (<a href="Gamend.Results.html"><code class="inline">Gamend.Results</code></a>).</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Results.ResultStatus.html" translate="no">Gamend.<wbr />Results.<wbr />ResultStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The states of a play's result.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Results.ResultVisibility.html" translate="no">Gamend.<wbr />Results.<wbr />ResultVisibility</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Who can read a play's result.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2455,6 +3049,24 @@ account's (Forge's <code class="inline">/projects/&lt;owner&gt;/&lt;name&gt;</co
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.SortDirection.html" translate="no">Gamend.<wbr />SortDirection</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The direction of a sorted list.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.SortKey.html" translate="no">Gamend.<wbr />SortKey</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The sort orders of the admin lists of rooms, shared across lobbies, groups, parties and chat.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Storage.html" translate="no">Gamend.<wbr />Storage</a>
 
   </div>
@@ -2487,6 +3099,15 @@ account's (Forge's <code class="inline">/projects/&lt;owner&gt;/&lt;name&gt;</co
   </div>
 
     <div class="summary-synopsis"><p>S3-compatible storage via ExAws.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Storage.StoragePrefix.html" translate="no">Gamend.<wbr />Storage.<wbr />StoragePrefix</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The first segment of an object's key.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2550,11 +3171,29 @@ rounds → champions. See TOURNAMENT_DESIGN.md.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Tournaments.DeadlinePolicy.html" translate="no">Gamend.<wbr />Tournaments.<wbr />DeadlinePolicy</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>What happens to a match past its deadline.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Tournaments.Entry.html" translate="no">Gamend.<wbr />Tournaments.<wbr />Entry</a>
 
   </div>
 
     <div class="summary-synopsis"><p>One side of the bracket: a leader and their tournament progress.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Tournaments.EntryState.html" translate="no">Gamend.<wbr />Tournaments.<wbr />EntryState</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A participant's state in a tournament.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2589,6 +3228,15 @@ firing, deadline_at sweeps and recurrence spawns (<a href="Gamend.Tournaments.ht
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Tournaments.TournamentState.html" translate="no">Gamend.<wbr />Tournaments.<wbr />TournamentState</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The states of a tournament.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Types.html" translate="no">Gamend.<wbr />Types</a>
 
   </div>
@@ -2603,6 +3251,15 @@ firing, deadline_at sweeps and recurrence spawns (<a href="Gamend.Tournaments.ht
   </div>
 
     <div class="summary-synopsis"><p>The id of every row: a UUIDv7 (RFC 9562), made by <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html"><code class="inline">Ecto.UUID</code></a>.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.UrlScheme.html" translate="no">Gamend.<wbr />UrlScheme</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>URL schemes.</p></div>
 
 </div>
 
@@ -2780,9 +3437,9 @@ the production key, read from <code class="inline">.env</code> like the server r
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1406">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1407">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1406">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1407">Hex Preview</a>
 
             </span>
 

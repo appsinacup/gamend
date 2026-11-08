@@ -235,6 +235,8 @@ With `base_path: "/docs"`, a link to a neighbouring file — `[Scenes](./scenes.
 
 `use GamendWeb.DocsLive, layout: :sidebar` renders such a collection with the tree beside every page, a table of contents, breadcrumbs, a landing page per category and an "Edit this page" link (`edit_url:`); route it as `live "/docs/*path"`. The default `:cards` layout is the one-level index gamend's own guides use.
 
+A category's `_category.md` names its `icon` and a `color` from `GamendWeb.DocsLive.category_colors/0`, which every host's stylesheet has. A subcategory without one keeps its parent's, and a page's icon wears its category's color.
+
 Either layout can offer the whole collection as one HTML file for reading offline: give `use GamendWeb.DocsLive` a `download_path:` for the button on its index, and route it beside the pages, in the same pipeline, as `get "/guide/download", GuideLive, :download`, before any `/guide/:slug`. `/docs/download` is already routed for the host's `docs:` module.
 
 #### Blog

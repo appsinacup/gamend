@@ -82,6 +82,8 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     refute html =~ "Find groups"
     refute html =~ "My requests"
     assert has_element?(view, "#create-group-form")
+    assert has_element?(view, "#group-create-submit[form=create-group-form]")
+    refute has_element?(view, "#create-group-form button[type=submit]")
     refute has_element?(view, "#create-group-form select[name='group[type]']")
 
     render_submit(view, "group_create", %{"group" => %{"title" => "Studio"}})

@@ -90,6 +90,7 @@ custom classes must fully style the input
 - daisyUI 5 is loaded as a Tailwind plugin (`assets/vendor/daisyui.js`) and the UI is built on its tokens and component classes. Follow existing pages; radii and colours come from daisyUI tokens ([RULES.md](RULES.md))
 - **Three widths.** A page is the layout's column: the default, or `<Layouts.app wide>` for a page with its own side columns. Anything narrower (a form, an article, a whole login page) is `max-w-narrow` (`--container-narrow`, 48rem, declared in every host stylesheet). Never another `max-w-*` on a page or a centred block; `page_width_test.exs` fails on one, and `/ui` shows it
 - **One-screen pages.** `<Layouts.app screen>` is a page that is one thing to do (a game, a test): no footer and no landing for one under the content, so it scrolls only as far as its own content, and the root is `overscroll-y-none` (no bounce, no pull to refresh)
+- Rendered markdown goes through `<.markdown html={...} />`, which brings the colors of highlighted code (`markdown_code.css`). A `_category.md` color comes from `GamendWeb.DocsLive.category_colors/0`: Tailwind only writes a class it reads in a scanned source, and a host's guides may not be one
 - The esbuild bundles are fixed in `config/host_config.exs`: `app.js`, `theme-init.js`, `mermaid.js` from `apps/gamend_web/assets/js`, plus the host's `assets/js/host_hooks.js`
   - You cannot reference an external vendor'd script `src` or link `href` in the layouts
   - You must import the vendor deps into app.js and app.css to use them

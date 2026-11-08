@@ -58,9 +58,11 @@ RUN mix compile
 # compiles as a path dependency was built just now and is skipped.
 RUN gamend-build-plugins --verbose
 
-# The app's own build steps live in its `assets.deploy` alias.
+# The app's own build steps live in its `assets.deploy` alias. Tailwind's CLI
+# comes only from GitHub, so a 503 there gets more than the one try.
 ARG SYNC=0
 RUN echo "sync ${SYNC}" && \
+    for attempt in 1 2 3 4 5; do mix assets.setup && break; sleep 20; done && \
     if [ "$MIX_ENV" = prod ]; then \
       mix assets.deploy && gamend-copy-static gamend_host --require; \
     else \

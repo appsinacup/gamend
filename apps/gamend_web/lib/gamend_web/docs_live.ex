@@ -498,7 +498,7 @@ defmodule GamendWeb.DocsLive do
               not installed, so `prose` matches no rules at all and the body
               renders as unstyled text. `.markdown-content` is the hand-written
               stylesheet in `assets/css/app.css`. --%>
-        <div class="markdown-content">{raw(@html)}</div>
+        <.markdown html={@html} />
 
         <.pager prev={@prev} next={@next} item_path={@item_path} />
 
@@ -663,7 +663,7 @@ defmodule GamendWeb.DocsLive do
           </div>
         </details>
 
-        <div class="markdown-content">{raw(@html)}</div>
+        <.markdown html={@html} />
 
         <.entry_cards
           :if={@guide[:index?] && category_page_children(@tree, @current_slug) != []}

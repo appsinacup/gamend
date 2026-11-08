@@ -69,6 +69,11 @@ defmodule GamendWeb.IconsTest do
       assert html =~ ~s(src="/images/logo.png")
     end
 
+    test "an uploaded image is read for a backdrop, one of ours is not" do
+      assert render_icon(%{icon_url: "/images/logo.png", type: :group}) =~ "data-icon-backdrop"
+      refute render_icon(%{icon_url: Icons.path(:trophy), type: :quest}) =~ "data-icon-backdrop"
+    end
+
     test "no icon at all falls back to the type default" do
       html = render_icon(%{type: :leaderboard})
 

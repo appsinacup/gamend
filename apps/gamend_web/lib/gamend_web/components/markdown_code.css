@@ -1,0 +1,58 @@
+/* The colours of highlighted code in rendered markdown, for every host.
+
+   Sent by `<.markdown>` rather than kept in each host's `assets/css/app.css`:
+   two hosts carried identical copies and two had none, so their code was one
+   colour and nothing said so.
+
+   Matched by prefix, not enumerated: lumis emits a long tail of token names
+   (l-keyword-conditional, l-function-builtin, l-variable-builtin, ...) and any
+   name missed here renders as plain body text, which reads as "highlighting is
+   broken" for whole languages.
+
+   Inside `:where()`, so zero specificity: a host with its own palette writes
+   `.markdown-content [class*="l-keyword"]` in its stylesheet and wins. */
+:where(.markdown-content [class*="l-comment"]) {
+  color: color-mix(in oklch, var(--color-base-content) 45%, transparent);
+  font-style: italic;
+}
+:where(.markdown-content [class*="l-keyword"]) { color: oklch(0.52 0.24 305); }
+:where(.markdown-content [class*="l-string"]) { color: oklch(0.5 0.16 145); }
+:where(.markdown-content :is([class*="l-number"], [class*="l-boolean"], [class*="l-constant"], [class*="l-float"])) {
+  color: oklch(0.55 0.18 45);
+}
+:where(.markdown-content :is([class*="l-function"], [class*="l-constructor"])) {
+  color: oklch(0.52 0.2 250);
+}
+:where(.markdown-content :is([class*="l-type"], [class*="l-module"], [class*="l-namespace"])) {
+  color: oklch(0.52 0.14 195);
+}
+:where(.markdown-content :is([class*="l-property"], [class*="l-variable-member"], [class*="l-attribute"], [class*="l-tag"])) {
+  color: oklch(0.5 0.14 220);
+}
+/* Plain identifiers stay body-coloured on purpose: colouring everything is the
+   same as colouring nothing. */
+:where(.markdown-content [class*="l-variable"]:not([class*="member"])) {
+  color: var(--color-base-content);
+}
+:where(.markdown-content :is([class*="l-operator"], [class*="l-punctuation"])) {
+  color: color-mix(in oklch, var(--color-base-content) 60%, transparent);
+}
+
+/* Dark themes need lighter, less saturated tokens to stay legible. */
+:where([data-theme="dark"] .markdown-content [class*="l-keyword"]) { color: oklch(0.8 0.16 305); }
+:where([data-theme="dark"] .markdown-content [class*="l-string"]) { color: oklch(0.82 0.16 145); }
+:where([data-theme="dark"] .markdown-content :is([class*="l-number"], [class*="l-boolean"], [class*="l-constant"], [class*="l-float"])) {
+  color: oklch(0.84 0.15 65);
+}
+:where([data-theme="dark"] .markdown-content :is([class*="l-function"], [class*="l-constructor"])) {
+  color: oklch(0.8 0.14 250);
+}
+:where([data-theme="dark"] .markdown-content :is([class*="l-type"], [class*="l-module"], [class*="l-namespace"])) {
+  color: oklch(0.84 0.12 195);
+}
+:where([data-theme="dark"] .markdown-content :is([class*="l-property"], [class*="l-variable-member"], [class*="l-attribute"], [class*="l-tag"])) {
+  color: oklch(0.82 0.12 220);
+}
+:where([data-theme="dark"] .markdown-content [class*="l-variable"]:not([class*="member"])) {
+  color: var(--color-base-content);
+}

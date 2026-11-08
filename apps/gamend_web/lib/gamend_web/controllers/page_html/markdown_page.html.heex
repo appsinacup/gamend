@@ -10,6 +10,6 @@
       <:subtitle :if={@page[:description]}>{@page.description}</:subtitle>
     </.header>
 
-    <div class="markdown-content">{Phoenix.HTML.raw(@html)}</div>
+    <.markdown html={@html} />
   </article>
 </Layouts.app>

@@ -82,6 +82,14 @@ defmodule Mix.Tasks.Gamend.Gen.DockerfileTest do
              index.("ENV GAMEND_CONTENT_APP_VERSION=${GAMEND_CONTENT_APP_VERSION}")
   end
 
+  test "the asset tools get more than one try before the asset step" do
+    lines = lines(render(%{}))
+    retry = "for attempt in 1 2 3 4 5; do mix assets.setup && break; sleep 20; done && \\"
+
+    assert Enum.find_index(lines, &(String.trim(&1) == retry)) <
+             Enum.find_index(lines, &(&1 =~ "mix assets.deploy"))
+  end
+
   test "a NIF that will not download builds from source" do
     assert render(%{}) =~
              "RUN mix deps.compile --skip-local-deps || \\\n" <>

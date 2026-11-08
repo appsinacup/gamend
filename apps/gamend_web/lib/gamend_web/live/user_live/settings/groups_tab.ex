@@ -163,6 +163,15 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
               <% end %>
             </button>
             <%!-- Up here where the form's length cannot hide it. --%>
+            <button
+              :if={@groups_show_create}
+              id="group-create-submit"
+              type="submit"
+              form="create-group-form"
+              class="btn btn-sm btn-primary"
+            >
+              {gettext("Create")}
+            </button>
             <%= if @group_editing && @group_detail_role == "admin" && !@groups_show_create do %>
               <button
                 id="group-edit-cancel"
@@ -245,11 +254,6 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     uploads={@group_icon_upload? && @uploads}
                   />
                 </div>
-              </div>
-              <div class="mt-3">
-                <button type="submit" class="btn btn-sm btn-primary">
-                  {gettext("Create")}
-                </button>
               </div>
             </.form>
           </div>

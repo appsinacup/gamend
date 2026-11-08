@@ -57,6 +57,27 @@ defmodule GamendWeb.GroupIconUploadTest do
 
   defp png(name \\ "team.png"), do: [%{name: name, content: @png, type: "image/png"}]
 
+  describe "field/1" do
+    defp icon_field(assigns) do
+      field = Phoenix.Component.to_form(%{"icon_url" => "/images/logo.png"}, as: :group)[:icon_url]
+
+      render_component(
+        &GamendWeb.GroupIconUpload.field/1,
+        Map.merge(%{id: "icon", field: field}, assigns)
+      )
+      |> LazyHTML.from_fragment()
+    end
+
+    test "with uploads off it still shows the icon as it will be, and the site's icons" do
+      html = icon_field(%{uploads: nil})
+
+      assert html |> LazyHTML.query("#icon img[src='/images/logo.png']") |> Enum.count() == 1
+      assert html |> LazyHTML.query("#icon input[name='group[icon_url]']") |> Enum.count() > 0
+      assert html |> LazyHTML.query("#icon input[name='group[icon_url_color]']") |> Enum.count() > 0
+      assert html |> LazyHTML.query("#icon-upload") |> Enum.count() == 0
+    end
+  end
+
   test "the dialog takes an image, the group's icon once it is made", %{conn: conn, user: user} do
     {:ok, view, _html} =
       live_isolated(conn, __MODULE__.Host, session: %{"user_id" => user.id})

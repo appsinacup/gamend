@@ -735,6 +735,9 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
+      - name: Install libsrtp (for when the ex_libsrtp prebuilt will not download)
+        run: sudo apt-get update && sudo apt-get install -y libsrtp2-dev
+
       - name: Install Elixir deps (for generating spec)
         run: |
           mix deps.get
@@ -874,6 +877,9 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
 
+      - name: Install libsrtp (for when the ex_libsrtp prebuilt will not download)
+        run: sudo apt-get update && sudo apt-get install -y libsrtp2-dev
+
       - name: Install dependencies (mix deps.get)
         working-directory: .
         run: |
@@ -992,8 +998,9 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev libssl-dev
 
-      - name: Configure
-        run: cmake -S cpp_sdk -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.flags }}
+      - name: Configure (FetchContent downloads from GitHub, so it gets more than one try)
+        shell: bash
+        run: for attempt in 1 2 3 4 5; do cmake -S cpp_sdk -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.flags }} && exit 0; sleep 30; done; exit 1
 
       - name: Build
         run: cmake --build build --config Release --parallel
@@ -1110,8 +1117,7 @@ jobs:
 
       - name: Build the C++ SDK with every transport
         run: |
-          cmake -S cpp_sdk -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
-            -DGAMEND_WITH_WEBRTC=ON -DGAMEND_WARNINGS_AS_ERRORS=ON -DGAMEND_BUILD_TESTS=OFF
+          for attempt in 1 2 3 4 5; do cmake -S cpp_sdk -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DGAMEND_WITH_WEBRTC=ON -DGAMEND_WARNINGS_AS_ERRORS=ON -DGAMEND_BUILD_TESTS=OFF && break; [ "$attempt" != 5 ] || exit 1; sleep 30; done
           cmake --build build --target gamend_conformance
 
       - name: Conformance (JSON)
@@ -1218,6 +1224,9 @@ jobs:
               exit 1
             fi
           done
+
+      - name: Install libsrtp (for when the ex_libsrtp prebuilt will not download)
+        run: sudo apt-get update && sudo apt-get install -y libsrtp2-dev
 
       - name: Publish gamend_sdk
         working-directory: sdk
@@ -1403,7 +1412,7 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends \
-            build-essential autoconf pkg-config perl curl ca-certificates git \
+            build-essential cmake autoconf pkg-config perl curl ca-certificates git \
             libncurses-dev jq file binutils unzip xz-utils brotli \
             imagemagick optipng pngquant
 

@@ -22,6 +22,7 @@ FROM ${ELIXIR_IMAGE}
 #   build-essential, pkg-config, libssl-dev   NIFs in C (argon2, bcrypt, crc, …)
 #   libsqlite3-dev, sqlite3                   the SQLite adapter
 #   libsrtp2-dev                              WebRTC's SRTP, when built from source
+#   cmake                                     lumis's wasmtime, when its NIF builds from source
 #   libsctp1                                  opened by ERTS's socket NIF, which warns at boot without it
 #   git, git-lfs                              git dependencies, and repositories a host clones
 #   optipng, pngquant, imagemagick            image optimisation at build time
@@ -29,7 +30,7 @@ FROM ${ELIXIR_IMAGE}
 #   podman-remote, as `podman`                Gamend.Containers, from inside a container,
 #                                             through the host's socket (CONTAINER_HOST)
 RUN apt-get update && \
-    apt-get install -y git git-lfs build-essential pkg-config ca-certificates curl libssl-dev \
+    apt-get install -y git git-lfs build-essential cmake pkg-config ca-certificates curl libssl-dev \
       libsqlite3-dev sqlite3 libsrtp2-dev libsctp1 optipng pngquant imagemagick brotli podman-remote && \
     ln -s /usr/bin/podman-remote /usr/local/bin/podman && \
     rm -rf /var/lib/apt/lists/*

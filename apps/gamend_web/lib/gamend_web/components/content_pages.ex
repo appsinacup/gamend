@@ -132,7 +132,7 @@ defmodule GamendWeb.ContentPages do
         :if={@html}
         class="rounded-3xl border border-base-300 bg-base-100/90 p-5 shadow-sm sm:p-8"
       >
-        <article class="markdown-content">{raw(@html)}</article>
+        <.markdown tag="article" html={@html} />
       </section>
 
       <.empty_state :if={!@html} icon={@empty_icon} title={gettext("No results.")} text={@empty_text} />
@@ -341,7 +341,7 @@ defmodule GamendWeb.ContentPages do
             />
           </div>
 
-          <article class="markdown-content">{raw(@html)}</article>
+          <.markdown tag="article" html={@html} />
 
           <%!-- `Content.blog_neighbours/1` walks a newest-first list, so `prev`
                 is the NEWER post and `next` the older one. --%>

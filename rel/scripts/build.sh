@@ -21,8 +21,11 @@ elixir_version=${ELIXIR_VERSION:-1.20.4}
 OTP_VERSION=$otp_version "$here/build-otp.sh" "$build_root/otp" "$build_root/deps"
 
 if [ ! -x "$build_root/elixir/bin/elixir" ]; then
-  curl -fsSL "https://github.com/elixir-lang/elixir/releases/download/v$elixir_version/elixir-otp-${otp_version%%.*}.zip" \
-    -o "$build_root/elixir.zip"
+  # builds.hex.pm has the same build when GitHub's release downloads are down.
+  curl -fsSL --retry 3 --retry-all-errors -o "$build_root/elixir.zip" \
+    "https://github.com/elixir-lang/elixir/releases/download/v$elixir_version/elixir-otp-${otp_version%%.*}.zip" ||
+    curl -fsSL --retry 3 --retry-all-errors -o "$build_root/elixir.zip" \
+      "https://builds.hex.pm/builds/elixir/v$elixir_version-otp-${otp_version%%.*}.zip"
   mkdir -p "$build_root/elixir"
   unzip -q -o "$build_root/elixir.zip" -d "$build_root/elixir"
 fi
@@ -47,5 +50,7 @@ mix deps.get --only prod
 # A precompiled NIF GitHub will not serve builds from source on the second pass.
 mix deps.compile --skip-local-deps || RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps
 mix compile
+# Tailwind's CLI comes only from GitHub, so a 503 there gets more than one try.
+for attempt in 1 2 3 4 5; do mix assets.setup && break; sleep 20; done
 mix assets.deploy
 mix release --overwrite

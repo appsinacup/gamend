@@ -79,13 +79,15 @@ defmodule Gamend.UserReadCacheTest do
     test "a grant counts at once, and its end is kept while cached", %{user: user} do
       refute Payments.has_entitlement?(user.id, "pro")
 
-      ends = DateTime.add(DateTime.utc_now(:second), 1, :second)
+      # Whole seconds, as the column keeps them, so one more would leave no time
+      # at all late in a second: two is at least a second to read it back in.
+      ends = DateTime.add(DateTime.utc_now(:second), 2, :second)
       {:ok, _} = Payments.grant_entitlement(user.id, "pro", expires_at: ends)
       assert Payments.has_entitlement?(user.id, "pro")
 
       # Decided against the clock at read time: the cached row stops counting
       # when it ends, with no write to evict it.
-      Process.sleep(1_100)
+      Process.sleep(max(DateTime.diff(ends, DateTime.utc_now(), :millisecond) + 100, 0))
 
       {_, count} =
         queries("entitlements", fn ->

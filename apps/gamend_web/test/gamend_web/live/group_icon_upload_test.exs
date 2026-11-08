@@ -59,7 +59,8 @@ defmodule GamendWeb.GroupIconUploadTest do
 
   describe "field/1" do
     defp icon_field(assigns) do
-      field = Phoenix.Component.to_form(%{"icon_url" => "/images/logo.png"}, as: :group)[:icon_url]
+      field =
+        Phoenix.Component.to_form(%{"icon_url" => "/images/logo.png"}, as: :group)[:icon_url]
 
       render_component(
         &GamendWeb.GroupIconUpload.field/1,
@@ -73,7 +74,10 @@ defmodule GamendWeb.GroupIconUploadTest do
 
       assert html |> LazyHTML.query("#icon img[src='/images/logo.png']") |> Enum.count() == 1
       assert html |> LazyHTML.query("#icon input[name='group[icon_url]']") |> Enum.count() > 0
-      assert html |> LazyHTML.query("#icon input[name='group[icon_url_color]']") |> Enum.count() > 0
+
+      assert html |> LazyHTML.query("#icon input[name='group[icon_url_color]']") |> Enum.count() >
+               0
+
       assert html |> LazyHTML.query("#icon-upload") |> Enum.count() == 0
     end
   end

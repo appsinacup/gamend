@@ -9,10 +9,10 @@ defmodule GamendWeb.MarkdownComponentTest do
 
   alias GamendWeb.CoreComponents
 
-  defp render(assigns), do: render_component(&CoreComponents.markdown/1, assigns)
+  defp markup(assigns), do: render_component(&CoreComponents.markdown/1, assigns)
 
   test "wraps the HTML in the element a host's stylesheet lays out" do
-    html = render(html: "<p>Hi</p>", tag: "article", class: "max-h-96")
+    html = markup(html: "<p>Hi</p>", tag: "article", class: "max-h-96")
 
     assert html =~ ~s(class="markdown-content max-h-96")
     assert html =~ "<article"
@@ -20,7 +20,7 @@ defmodule GamendWeb.MarkdownComponentTest do
   end
 
   test "brings the colors of code in both themes" do
-    html = render(html: "<p>Hi</p>")
+    html = markup(html: "<p>Hi</p>")
 
     assert html =~ ~s|:where(.markdown-content [class*="l-keyword"])|
     assert html =~ ~s|:where([data-theme="dark"] .markdown-content [class*="l-keyword"])|
@@ -28,7 +28,7 @@ defmodule GamendWeb.MarkdownComponentTest do
 
   # Every selector in `:where()` is what lets a host's own palette win.
   test "no rule outweighs a host's" do
-    [_, css] = Regex.run(~r{<style>(.*)</style>}s, render(html: ""))
+    [_, css] = Regex.run(~r{<style>(.*)</style>}s, markup(html: ""))
 
     selectors = Regex.scan(~r/^[^\s}][^{]*(?=\{)/m, css) |> List.flatten()
 
@@ -37,6 +37,6 @@ defmodule GamendWeb.MarkdownComponentTest do
   end
 
   test "an empty block is fine" do
-    assert render(html: nil) =~ "markdown-content"
+    assert markup(html: nil) =~ "markdown-content"
   end
 end

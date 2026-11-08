@@ -1,5 +1,6 @@
 # November 2026
 
+- [added] **An admin can add days to a granted entitlement** from Payments, in the Entitlements table: a trial lengthened by support, say, on any host. `Payments.extend_entitlement/3` adds after the end of one still running, and counts from now for one that ended or was revoked, which makes it active again; it fires `after_entitlement_changed`, so a host follows. Not for a row a purchase made, whose provider's sync would set the end back, or one with no end.
 - [added] **`Gamend.Containers.save_image/2` and `load_image/1`** take an image from one podman service to another through a file, each call inside `on/2`, for a host that builds on one service and runs on another.
 - [added] **`before_user_delete/1` runs just before an account is deleted**, while everything of it can still be read; `after_user_deleted` comes once its rows have cascaded. It cannot stop the delete.
 - [fixed] **A banned account is refused on controller routes too.** `require_authenticated_user` checked only for a signed-in user, so downloads and a host's own controllers still answered; they now send it to `/suspended`.

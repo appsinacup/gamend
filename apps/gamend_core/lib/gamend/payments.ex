@@ -935,6 +935,51 @@ defmodule Gamend.Payments do
     end
   end
 
+  @doc """
+  Give an entitlement `days` more: after its end while it is still running,
+  from now once it has ended or been revoked, which makes it active again. A
+  trial lengthened by support, a reward renewed.
+
+  Only a granted row with an end (`entitlement_extendable?/1`). A row a
+  purchase made answers `{:error, :purchased}`, since its provider's next sync
+  would set the end back; a row with no end, `{:error, :no_end}`; no row,
+  `{:error, :entitlement_not_found}`.
+
+  Options: `:metadata`, a map merged into the row's (`%{"extended_by" => id}`).
+  """
+  @spec extend_entitlement(Ecto.UUID.t(), pos_integer(), keyword()) ::
+          {:ok, Entitlement.t()} | {:error, term()}
+  def extend_entitlement(id, days, opts \\ [])
+      when is_binary(id) and is_integer(days) and days > 0 do
+    now = DateTime.utc_now(:second)
+
+    case Repo.get(Entitlement, id) do
+      nil ->
+        {:error, :entitlement_not_found}
+
+      %Entitlement{source_purchase_id: purchase} when is_binary(purchase) ->
+        {:error, :purchased}
+
+      %Entitlement{expires_at: nil} ->
+        {:error, :no_end}
+
+      %Entitlement{} = entitlement ->
+        from = if existing_active?(entitlement, now), do: entitlement.expires_at, else: now
+
+        grant_entitlement(entitlement.user_id, entitlement.key,
+          expires_at: DateTime.add(from, days, :day),
+          metadata: Keyword.get(opts, :metadata, %{})
+        )
+    end
+  end
+
+  @doc "Whether `extend_entitlement/3` can give `entitlement` more time."
+  @spec entitlement_extendable?(Entitlement.t()) :: boolean()
+  def entitlement_extendable?(%Entitlement{source_purchase_id: nil, expires_at: %DateTime{}}),
+    do: true
+
+  def entitlement_extendable?(%Entitlement{}), do: false
+
   # The one `(user, key)` row's read-modify-write: a grant, and a purchase
   # taking the row over at fulfilment, which runs it inside the fulfilment's
   # own transaction (the lock is then held until that commits).

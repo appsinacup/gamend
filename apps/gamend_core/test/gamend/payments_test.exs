@@ -614,6 +614,75 @@ defmodule Gamend.PaymentsTest do
     end
   end
 
+  describe "extend_entitlement/3" do
+    test "adds after the end of one still running, and keeps who asked" do
+      user = AccountsFixtures.user_fixture()
+      ends = DateTime.add(DateTime.utc_now(:second), 10, :day)
+      {:ok, e} = Payments.grant_entitlement(user.id, "k", expires_at: ends)
+
+      assert {:ok, extended} =
+               Payments.extend_entitlement(e.id, 30, metadata: %{"extended_by" => "admin"})
+
+      assert extended.id == e.id
+      assert extended.expires_at == DateTime.add(ends, 30, :day)
+      assert extended.starts_at == e.starts_at
+      assert extended.metadata["extended_by"] == "admin"
+    end
+
+    test "counts from now once it has ended, and it is active again" do
+      user = AccountsFixtures.user_fixture()
+      now = DateTime.utc_now(:second)
+      {:ok, e} = Payments.grant_entitlement(user.id, "k", expires_at: DateTime.add(now, -5, :day))
+      refute Payments.has_entitlement?(user.id, "k")
+
+      assert {:ok, extended} = Payments.extend_entitlement(e.id, 7)
+
+      assert DateTime.compare(extended.expires_at, DateTime.add(now, 7, :day)) in [:eq, :gt]
+      assert DateTime.compare(extended.expires_at, DateTime.add(now, 8, :day)) == :lt
+      assert Payments.has_entitlement?(user.id, "k")
+    end
+
+    test "counts from now for a revoked one, not from the end it had" do
+      user = AccountsFixtures.user_fixture()
+      now = DateTime.utc_now(:second)
+      {:ok, e} = Payments.grant_entitlement(user.id, "k", expires_at: DateTime.add(now, 30, :day))
+      {:ok, _revoked} = Payments.revoke_entitlement(user.id, "k")
+
+      assert {:ok, extended} = Payments.extend_entitlement(e.id, 7)
+
+      assert extended.status == "active"
+      assert is_nil(extended.revoked_at)
+      assert DateTime.compare(extended.expires_at, DateTime.add(now, 8, :day)) == :lt
+    end
+
+    test "refuses a row with no end, and one nobody holds" do
+      user = AccountsFixtures.user_fixture()
+      {:ok, e} = Payments.grant_entitlement(user.id, "k", expires_at: nil)
+
+      refute Payments.entitlement_extendable?(e)
+      assert {:error, :no_end} = Payments.extend_entitlement(e.id, 7)
+      assert {:error, :entitlement_not_found} = Payments.extend_entitlement(Ecto.UUID.generate(), 7)
+    end
+
+    test "refuses a row a purchase made, whose provider's sync would set it back" do
+      user = AccountsFixtures.user_fixture()
+      {_product, provider_product} = create_consumable_provider_product("stripe", "price_extend")
+
+      {:ok, purchase} =
+        Payments.create_purchase(user, provider_product, %{
+          "provider_transaction_id" => "cs_test_extend"
+        })
+
+      ends = DateTime.add(DateTime.utc_now(:second), 30, :day)
+      {:ok, e} = Payments.grant_entitlement(user.id, "k", expires_at: ends)
+      e = e |> Ecto.Changeset.change(source_purchase_id: purchase.id) |> Repo.update!()
+
+      refute Payments.entitlement_extendable?(e)
+      assert {:error, :purchased} = Payments.extend_entitlement(e.id, 7)
+      assert Repo.get!(Entitlement, e.id).expires_at == ends
+    end
+  end
+
   describe "revoke_entitlement/3" do
     test "ends a grant now, keeping the row and what it recorded" do
       user = AccountsFixtures.user_fixture()

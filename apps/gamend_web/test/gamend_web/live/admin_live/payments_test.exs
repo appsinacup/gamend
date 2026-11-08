@@ -388,4 +388,29 @@ defmodule GamendWeb.AdminLive.PaymentsTest do
     refute html =~ "Provider SKU not found"
     assert html =~ "price_edit_form_test"
   end
+
+  test "admin adds days to a granted entitlement", %{conn: conn, admin: admin} do
+    ends = DateTime.add(DateTime.utc_now(:second), 10, :day)
+    {:ok, granted} = Payments.grant_entitlement(admin.id, "trial_key", expires_at: ends)
+
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin/payments")
+
+    html =
+      view
+      |> form("#admin-entitlement-extend-#{granted.id}", %{"days" => "30"})
+      |> render_submit()
+
+    extended = Repo.get!(Payments.Entitlement, granted.id)
+    assert extended.expires_at == DateTime.add(ends, 30, :day)
+    assert extended.metadata["extended_by"] == admin.id
+    assert html =~ "trial_key now ends"
+  end
+
+  test "an entitlement with no end has nothing to extend", %{conn: conn, admin: admin} do
+    {:ok, granted} = Payments.grant_entitlement(admin.id, "lifetime_key", expires_at: nil)
+
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin/payments")
+
+    refute has_element?(view, "#admin-entitlement-extend-#{granted.id}")
+  end
 end

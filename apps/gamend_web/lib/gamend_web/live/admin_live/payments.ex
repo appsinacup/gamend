@@ -8,6 +8,7 @@ defmodule GamendWeb.AdminLive.Payments do
 
   @sections ~w(products provider_products purchases entitlements provider_events reconciliation_cursors)a
   @default_page_size 25
+  @max_extend_days 3650
 
   use GamendWeb.UrlState,
     reload: :reload_all,
@@ -32,6 +33,7 @@ defmodule GamendWeb.AdminLive.Payments do
      |> assign(:page_sizes, page_sizes)
      |> assign(:counts, %{})
      |> assign(:total_pages, %{})
+     |> assign(:max_extend_days, @max_extend_days)
      |> assign(:product_form, nil)
      |> assign(:selected_product, nil)
      |> assign(:provider_product_form, nil)
@@ -336,7 +338,7 @@ defmodule GamendWeb.AdminLive.Payments do
           <div class="card-body">
             <h2 class="card-title">Entitlements ({@counts.entitlements || 0})</h2>
             <div class="overflow-x-auto mt-4">
-              <table class="table table-zebra w-full min-w-[64rem]">
+              <table class="table table-zebra w-full min-w-[72rem]">
                 <thead>
                   <tr>
                     <th>ID</th>
@@ -348,6 +350,7 @@ defmodule GamendWeb.AdminLive.Payments do
                     <th>Starts</th>
                     <th>Expires</th>
                     <th>Revoked</th>
+                    <th>Extend</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -368,6 +371,28 @@ defmodule GamendWeb.AdminLive.Payments do
                     <td class="font-mono text-xs"><.timestamp at={e.starts_at} format="full" /></td>
                     <td class="font-mono text-xs"><.timestamp at={e.expires_at} format="full" /></td>
                     <td class="font-mono text-xs"><.timestamp at={e.revoked_at} format="full" /></td>
+                    <td>
+                      <form
+                        :if={Payments.entitlement_extendable?(e)}
+                        id={"admin-entitlement-extend-#{e.id}"}
+                        phx-submit="extend_entitlement"
+                        class="flex items-center gap-1"
+                      >
+                        <input type="hidden" name="id" value={e.id} />
+                        <input
+                          type="number"
+                          name="days"
+                          min="1"
+                          max={@max_extend_days}
+                          value="30"
+                          aria-label="Days to add"
+                          class="input input-xs input-bordered w-16"
+                        />
+                        <button type="submit" class="btn btn-xs btn-outline btn-primary">
+                          Add days
+                        </button>
+                      </form>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -762,6 +787,35 @@ defmodule GamendWeb.AdminLive.Payments do
         {:noreply,
          socket
          |> put_flash(:error, "Stripe refund failed: #{admin_error(reason)}")
+         |> reload_all()}
+    end
+  end
+
+  def handle_event("extend_entitlement", %{"id" => id, "days" => days}, socket) do
+    result =
+      with id when is_binary(id) <- parse_id(id),
+           days when is_integer(days) and days > 0 and days <= @max_extend_days <- parse_int(days) do
+        Payments.extend_entitlement(id, days,
+          metadata: %{"extended_by" => socket.assigns.current_scope.user.id}
+        )
+      else
+        _ -> {:error, :invalid_days}
+      end
+
+    case result do
+      {:ok, entitlement} ->
+        {:noreply,
+         socket
+         |> put_flash(
+           :info,
+           "#{entitlement.key} now ends #{Calendar.strftime(entitlement.expires_at, "%Y-%m-%d %H:%M UTC")}"
+         )
+         |> reload_all()}
+
+      {:error, reason} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Could not extend: #{admin_error(reason)}")
          |> reload_all()}
     end
   end

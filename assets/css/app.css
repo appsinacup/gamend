@@ -528,10 +528,6 @@
    (l-keyword-conditional, l-function-builtin, l-variable-builtin, ...) and any
    name missed here renders as plain body text, which reads as "highlighting is
    broken" for whole languages. */
-.markdown-content .l-line {
-  display: block;
-  min-height: 1lh;
-}
 .markdown-content [class*="l-comment"] {
   color: color-mix(in oklch, var(--color-base-content) 45%, transparent);
   font-style: italic;

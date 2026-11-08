@@ -34,9 +34,6 @@ claiming otherwise is describing a different product.
     is: add a key, make it current, let `rotate/0` rewrite rows in the
     background. Old rows stay readable in the meantime rather than the whole
     table needing one transaction.
-  * **The fingerprint is an HMAC**, not a digest. A plain digest of a short
-    secret is a dictionary away from the secret, and this column is shown on
-    a page.
 
 ## Configuration
 
@@ -50,7 +47,9 @@ before a rotation can still be read. Generate one with:
 
 Unset, every call answers `{:error, :no_key}`. That is deliberate: a host
 that has not configured a key should fail loudly on the first write rather
-than store a credential in a way it cannot honour later.
+than store a credential in a way it cannot honour later. A malformed first
+pair counts as unset: the next pair is an older key, and writing under it
+would quietly undo a rotation. Any malformed pair is logged, by its position.
 
 # `config`
 
@@ -139,9 +138,10 @@ and `:created_by_id`.
 
 Re-encrypt every row not already written under the current key.
 
-Run after adding a key to the front of the setting. Rows are rewritten one at
-a time and the old key stays configured until this reports nothing left —
-removing it earlier is how a certificate becomes unreadable.
+Run after adding a key to the front of the setting. One call walks the whole
+table, `batch` rows read at a time and each rewritten on its own. The old key
+stays configured until this reports none stuck — removing it earlier is how a
+certificate becomes unreadable.
 
 Answers how many rows moved, and how many could not be opened at all.
 

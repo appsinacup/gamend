@@ -229,6 +229,8 @@ who had set no display name arrived from nobody; group invites wrote
 `display_name || username`; three admin views fell through to the email and
 then the raw id, which `display_label/1` documents as the thing not to do.
 
+# `drop_email_taken`
+
 # `due_deletions_query`
 
 ```elixir
@@ -236,6 +238,8 @@ then the raw id, which `display_label/1` documents as the thing not to do.
 ```
 
 Accounts whose deletion date has passed. For `Gamend.Retention`.
+
+# `email_taken?`
 
 # `find_or_create_from_apple`
 
@@ -447,6 +451,8 @@ Accepts a user ID and clears both the primary and all index caches.
 # `login_user_by_magic_link`
 
 # `merge_metadata`
+
+# `notify_existing_account`
 
 # `player_stats`
 

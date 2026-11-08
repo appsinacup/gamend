@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.40.4">
+    <meta name="project" content="gamend_core v1.1.1406">
+
+
+    <title>Gamend.LiteralLint — gamend_core v1.1.1406</title>
+
+    <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
+
+    <script defer src="dist/sidebar_items-67891045.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-MI33G4N7.js"></script>
+
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
+
+<div class="body-wrapper">
+
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<nav id="sidebar" class="sidebar">
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
+
+      <div>
+        <a href="readme.html" class="sidebar-projectName" translate="no">
+gamend_core
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v1.1.1406
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras="Pages"></ul>
+  </div>
+</nav>
+
+<output role="status" id="toast"></output>
+
+<main class="content page-module" id="main" data-type="modules">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of gamend_core</span>
+            <div class="search-input-wrapper">
+              <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+                <i class="ri-close-line ri-lg" title="Cancel search"></i>
+              </button>
+            </div>
+          </label>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <div class="engine-selector" data-multiple="false">
+          <button type="button" class="engine-button" aria-label="Select search engine" aria-haspopup="true" aria-expanded="false">
+            <i class="ri-search-2-line" aria-hidden="true"></i>
+            <span class="engine-name">Default</span>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </button>
+          <div class="engine-dropdown" hidden role="menu">
+
+              <button type="button"
+                      class="engine-option"
+                      data-engine-url="search.html?q="
+                      role="menuitemradio"
+                      aria-checked="true">
+                <span class="name">Default</span>
+                <span class="help">In-browser search</span>
+              </button>
+
+          </div>
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
+
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>
+      <span translate="no">Gamend.<wbr />LiteralLint</span> 
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1406)</small>
+
+    </h1>
+
+<a href="Gamend.LiteralLint.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
+  <i class="ri-markdown-line" aria-hidden="true"></i>
+  <span class="sr-only">Copy Markdown</span>
+</a>
+
+
+
+      <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L1" title="View Source" class="icon-action" rel="help nofollow">
+        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        <span class="sr-only">View Source</span>
+      </a>
+
+  </div>
+
+
+    <section id="moduledoc">
+<p>Finds the strings that are really names: a status, an action, a kind, typed
+out wherever it is used. <a href="Mix.Tasks.Gamend.Literal.Lint.html"><code class="inline">mix gamend.literal.lint</code></a> runs it.</p><p><code class="inline">&quot;creat&quot;</code> compiles, and the module that reads it simply never matches. A
+name that one module writes and another reads belongs to a module that owns
+it, and everyone else asks that module (CONTRIBUTING.md, &quot;Named strings&quot;).</p><p>A string counts when it is shaped like a name (<code class="inline">&quot;failed&quot;</code>, <code class="inline">&quot;move_in&quot;</code>,
+<code class="inline">&quot;gamend.db&quot;</code>, no spaces) and stands in code, and it is reported when it
+stands in two or more modules, or five or more times in one. These do not
+count, because a name for them would say less than they do:</p><ul><li>the value of a module attribute, or a function that is nothing but its
+value: <code class="inline">@failed &quot;failed&quot;</code> and <code class="inline">defmacro failed, do: &quot;failed&quot;</code> are the cure</li><li>a key: <code class="inline">%{&quot;id&quot; =&gt; id}</code>, <code class="inline">params[&quot;id&quot;]</code>, <code class="inline">Map.get(params, &quot;id&quot;)</code>, <a href="https://elixir.hexdocs.pm/Kernel.html#get_in/2"><code class="inline">get_in/2</code></a>.
+Keys are the shape of a document, not a closed set of values</li><li>text: gettext, <a href="https://logger.hexdocs.pm/Logger.html"><code class="inline">Logger</code></a>, <code class="inline">raise</code>, <a href="https://elixir.hexdocs.pm/IO.html"><code class="inline">IO</code></a>, <a href="https://mix.hexdocs.pm/Mix.html"><code class="inline">Mix</code></a>, <a href="https://elixir.hexdocs.pm/System.html"><code class="inline">System</code></a>, and any sigil
+other than a string <code class="inline">~w</code>, so a HEEx template is not read</li><li>a LiveView event's name in <code class="inline">handle_event/3</code>, and HTTP header names</li><li>an API error's code in <code class="inline">reply_error/3</code>, which has to be a literal:
+<a href="Mix.Tasks.Gamend.Api.Lint.html"><code class="inline">mix gamend.api.lint</code></a> (R18) holds it to <code class="inline">GamendWeb.ErrorStatus</code></li><li>a CSS class of the shared vocabulary (<code class="inline">&quot;badge-error&quot;</code>), and <code class="inline">&quot;true&quot;</code></li></ul><p>It is a heuristic, and says so. A use it is wrong about is marked with the
+reason, on its line or the line above:</p><pre><code class="makeup elixir" translate="no"><span class="c1"># literal-ok: Stripe&#39;s event name</span><span class="w">
+</span><span class="s">&quot;invoice.paid&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">paid</span><span class="p" data-group-id="group-1">(</span><span class="n">event</span><span class="p" data-group-id="group-1">)</span></code></pre><p>What was already there when the check arrived is counted in
+<code class="inline">.literal-lint-baseline</code>. A string there may appear that many times and no
+more, so the count only goes down.</p>
+    </section>
+
+</div>
+
+  <section id="summary" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h2>
+<div class="summary-types summary">
+  <h3>
+    <a href="#types">Types</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:baseline/0" data-no-tooltip="" translate="no">baseline()</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:occurrence/0" data-no-tooltip="" translate="no">occurrence()</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:offender/0" data-no-tooltip="" translate="no">offender()</a>
+
+      </div>
+
+    </div>
+
+</div>
+<div class="summary-functions summary">
+  <h3>
+    <a href="#functions">Functions</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#baseline_file/0" data-no-tooltip="" translate="no">baseline_file()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Where the counts of what was already there are kept.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#format_baseline/1" data-no-tooltip="" translate="no">format_baseline(offenders)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The text of a baseline holding these offenders.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#new_offenders/2" data-no-tooltip="" translate="no">new_offenders(offenders, baseline)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The offenders beyond what the baseline allows.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#occurrences_in/2" data-no-tooltip="" translate="no">occurrences_in(source, path)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The named-looking strings in one file's source.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#offenders/0" data-no-tooltip="" translate="no">offenders()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Every string under the scan roots that should be named, most used first.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#offenders/1" data-no-tooltip="" translate="no">offenders(occurrences)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Groups occurrences into the strings that should be named, most used first.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#parse_baseline/1" data-no-tooltip="" translate="no">parse_baseline(text)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Reads a baseline's text: <code class="inline">&lt;count&gt; &lt;string&gt;</code>, a line each, <code class="inline">#</code> for a comment.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#read_baseline/1" data-no-tooltip="" translate="no">read_baseline(path \\ &quot;.literal-lint-baseline&quot;)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The baseline in the working directory, empty if there is none.</p></div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="types" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#types">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Types</span>
+    </h2>
+
+    <div class="types-list">
+<section class="detail" id="t:baseline/0">
+
+  <div class="detail-header">
+    <a href="#t:baseline/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">baseline()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L51" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> baseline() :: %{optional(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()}</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:occurrence/0">
+
+  <div class="detail-header">
+    <a href="#t:occurrence/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">occurrence()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L37" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> occurrence() :: %{
+  literal: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(),
+  file: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(),
+  line: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>() | nil,
+  module: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil
+}</pre>
+
+      </div>
+
+
+  </section>
+</section>
+<section class="detail" id="t:offender/0">
+
+  <div class="detail-header">
+    <a href="#t:offender/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">offender()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L44" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> offender() :: %{
+  literal: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(),
+  count: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>(),
+  modules: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>(),
+  occurrences: [<a href="#t:occurrence/0">occurrence</a>()]
+}</pre>
+
+      </div>
+
+
+  </section>
+</section>
+
+    </div>
+  </section>
+
+  <section id="functions" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h2>
+
+    <div class="functions-list">
+<section class="detail" id="baseline_file/0">
+
+  <div class="detail-header">
+    <a href="#baseline_file/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">baseline_file()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L78" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> baseline_file() :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+
+      </div>
+
+<p>Where the counts of what was already there are kept.</p>
+  </section>
+</section>
+<section class="detail" id="format_baseline/1">
+
+  <div class="detail-header">
+    <a href="#format_baseline/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">format_baseline(offenders)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L144" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> format_baseline([<a href="#t:offender/0">offender</a>()]) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
+
+      </div>
+
+<p>The text of a baseline holding these offenders.</p>
+  </section>
+</section>
+<section class="detail" id="new_offenders/2">
+
+  <div class="detail-header">
+    <a href="#new_offenders/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">new_offenders(offenders, baseline)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L119" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> new_offenders([<a href="#t:offender/0">offender</a>()], <a href="#t:baseline/0">baseline</a>()) :: [<a href="#t:offender/0">offender</a>()]</pre>
+
+      </div>
+
+<p>The offenders beyond what the baseline allows.</p>
+  </section>
+</section>
+<section class="detail" id="occurrences_in/2">
+
+  <div class="detail-header">
+    <a href="#occurrences_in/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">occurrences_in(source, path)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L157" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> occurrences_in(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: [<a href="#t:occurrence/0">occurrence</a>()]</pre>
+
+      </div>
+
+<p>The named-looking strings in one file's source.</p>
+  </section>
+</section>
+<section class="detail" id="offenders/0">
+
+  <div class="detail-header">
+    <a href="#offenders/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">offenders()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L82" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> offenders() :: [<a href="#t:offender/0">offender</a>()]</pre>
+
+      </div>
+
+<p>Every string under the scan roots that should be named, most used first.</p>
+  </section>
+</section>
+<section class="detail" id="offenders/1">
+
+  <div class="detail-header">
+    <a href="#offenders/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">offenders(occurrences)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L98" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> offenders([<a href="#t:occurrence/0">occurrence</a>()]) :: [<a href="#t:offender/0">offender</a>()]</pre>
+
+      </div>
+
+<p>Groups occurrences into the strings that should be named, most used first.</p>
+  </section>
+</section>
+<section class="detail" id="parse_baseline/1">
+
+  <div class="detail-header">
+    <a href="#parse_baseline/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">parse_baseline(text)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L134" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> parse_baseline(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="#t:baseline/0">baseline</a>()</pre>
+
+      </div>
+
+<p>Reads a baseline's text: <code class="inline">&lt;count&gt; &lt;string&gt;</code>, a line each, <code class="inline">#</code> for a comment.</p>
+  </section>
+</section>
+<section class="detail" id="read_baseline/1">
+
+    <span id="read_baseline/0"></span>
+
+  <div class="detail-header">
+    <a href="#read_baseline/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">read_baseline(path \\ &quot;.literal-lint-baseline&quot;)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L125" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> read_baseline(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="#t:baseline/0">baseline</a>()</pre>
+
+      </div>
+
+<p>The baseline in the working directory, empty if there is none.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+    <footer class="footer">
+
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/gamend_core/1.1.1406">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1406">Hex Preview</a>
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Go to package docs">
+              Go to package docs
+            </button>
+
+              <a href="llms.txt" target="_blank">
+                View llms.txt
+              </a>
+
+
+              <a href="gamend_core.epub">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.4) for the
+
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
+
+        </p>
+
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
+</html>

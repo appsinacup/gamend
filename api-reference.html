@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1405">
+    <meta name="project" content="gamend_core v1.1.1406">
 
 
-    <title>API Reference — gamend_core v1.1.1405</title>
+    <title>API Reference — gamend_core v1.1.1406</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-C72A750A.js"></script>
+    <script defer src="dist/sidebar_items-67891045.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1405
+          v1.1.1406
         </div>
       </div>
     </div>
@@ -92,7 +92,7 @@ gamend_core
 
 <div id="top-content">
   <div class="heading-with-actions top-heading">
-    <h1>API Reference <small class="app-vsn">gamend_core v#1.1.1405</small></h1>
+    <h1>API Reference <small class="app-vsn">gamend_core v#1.1.1406</small></h1>
 <a href="api-reference.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
   <i class="ri-markdown-line" aria-hidden="true"></i>
   <span class="sr-only">Copy Markdown</span>
@@ -1369,6 +1369,16 @@ wallet) and <a href="Gamend.Inventory.html"><code class="inline">Gamend.Inventor
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.LiteralLint.html" translate="no">Gamend.<wbr />LiteralLint</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Finds the strings that are really names: a status, an action, a kind, typed
+out wherever it is used. <a href="Mix.Tasks.Gamend.Literal.Lint.html"><code class="inline">mix gamend.literal.lint</code></a> runs it.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Lobbies.html" translate="no">Gamend.<wbr />Lobbies</a>
 
   </div>
@@ -1447,6 +1457,16 @@ callers after it, served in the order they asked.</p></div>
     <a href="Gamend.Mailer.html" translate="no">Gamend.<wbr />Mailer</a>
 
   </div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.MatchSeating.html" translate="no">Gamend.<wbr />MatchSeating</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>What a game decides for a formed match: where its players sit, and whether
+they are asked first. <code class="inline">matchmaking_seat_match/1</code> answers with one</p></div>
 
 </div>
 <div class="summary-row">
@@ -1696,6 +1716,15 @@ events and reconciliation cursors.</p></div>
 
     <div class="summary-synopsis"><p>What happened to payments, per day, as <a href="Gamend.Analytics.html#count/3"><code class="inline">Gamend.Analytics.count/3</code></a> counters:
 the admin analytics page lists them under &quot;Counters&quot; with the game's own.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Payments.DeletedAccountSubscriptions.html" translate="no">Gamend.<wbr />Payments.<wbr />DeletedAccountSubscriptions</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A deleted account stops being charged.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2134,6 +2163,17 @@ reset period.</p></div>
     <div class="summary-synopsis"><p>Source checks for the shapes that race: a rule (&quot;one per player&quot;, &quot;pays
 once&quot;, &quot;at most N&quot;, &quot;only while pending&quot;) checked by a read and kept by a
 write that does not look again. <a href="Mix.Tasks.Gamend.Race.Lint.html"><code class="inline">mix gamend.race.lint</code></a> runs them.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Rating.html" translate="no">Gamend.<wbr />Rating</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Skill ratings, computed: Elo and Glicko-2, for two players, teams and
+free-for-alls, and the gap a matcher accepts as a player waits
+(priv/docs/40-gameplay/32-ratings.md).</p></div>
 
 </div>
 <div class="summary-row">
@@ -2633,6 +2673,17 @@ own <code class="inline">mix.exs</code>, so Gamend, the starter and every host b
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Mix.Tasks.Gamend.Literal.Lint.html" translate="no">mix gamend.<wbr />literal.<wbr />lint</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Flags a string that is really a name (a status, an action, a kind) typed out
+across modules. See <a href="Gamend.LiteralLint.html"><code class="inline">Gamend.LiteralLint</code></a> for what counts and for the
+<code class="inline"># literal-ok: &lt;reason&gt;</code> marker that accepts one.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Mix.Tasks.Gamend.Race.Lint.html" translate="no">mix gamend.<wbr />race.<wbr />lint</a>
 
   </div>
@@ -2729,9 +2780,9 @@ the production key, read from <code class="inline">.env</code> like the server r
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1405">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1406">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1405">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1406">Hex Preview</a>
 
             </span>
 

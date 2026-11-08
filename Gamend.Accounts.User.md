@@ -226,6 +226,16 @@ A user changeset for registering a new user.
 Serialize a user into a compact public map suitable for member lists in parties,
 lobbies, and friends. Includes metadata for rendering player appearance.
 
+# `shared_metadata`
+
+```elixir
+@spec shared_metadata(t()) :: map()
+```
+
+The metadata other people may be sent: everything but `"payments"`, where
+`Gamend.Hooks.Default` keeps the user's purchases and entitlements (amounts,
+order and transaction ids). The owner reads those on `GET /me`.
+
 # `steam_oauth_changeset`
 
 A user changeset for Steam OpenID registration.

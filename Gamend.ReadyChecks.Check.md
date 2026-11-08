@@ -35,6 +35,7 @@ no lobby has been created.
   party_id: term(),
   reason: term(),
   resolved_at: term(),
+  seating: term(),
   status: term(),
   updated_at: term()
 }

@@ -126,6 +126,7 @@ Gamend.Leaderboards.Record.md
 Gamend.Leaderboards.md
 Gamend.Ledger.md
 Gamend.Limits.md
+Gamend.LiteralLint.md
 Gamend.Lobbies.Lobby.md
 Gamend.Lobbies.SpectatorTracker.md
 Gamend.Lobbies.States.md
@@ -135,6 +136,7 @@ Gamend.Lock.Queue.md
 Gamend.Lock.md
 Gamend.Mail.md
 Gamend.Mailer.md
+Gamend.MatchSeating.md
 Gamend.Matchmaking.Broadcast.md
 Gamend.Matchmaking.Constants.md
 Gamend.Matchmaking.Match.md
@@ -160,6 +162,7 @@ Gamend.Parties.PartyInvite.md
 Gamend.Parties.md
 Gamend.Payments.Admin.md
 Gamend.Payments.Counters.md
+Gamend.Payments.DeletedAccountSubscriptions.md
 Gamend.Payments.Entitlement.md
 Gamend.Payments.Params.md
 Gamend.Payments.Product.md
@@ -205,6 +208,7 @@ Gamend.Quests.QuestProgress.md
 Gamend.Quests.Reward.md
 Gamend.Quests.md
 Gamend.RaceLint.md
+Gamend.Rating.md
 Gamend.ReadyChecks.Check.md
 Gamend.ReadyChecks.Participant.md
 Gamend.ReadyChecks.md
@@ -257,6 +261,7 @@ Mix.Tasks.Gamend.Content.Extract.md
 Mix.Tasks.Gamend.Content.MigrateMetadata.md
 Mix.Tasks.Gamend.Gen.Dockerfile.md
 Mix.Tasks.Gamend.Latest.md
+Mix.Tasks.Gamend.Literal.Lint.md
 Mix.Tasks.Gamend.Race.Lint.md
 Mix.Tasks.Gamend.Settings.EnvExample.md
 Mix.Tasks.Gamend.Settings.Guide.md

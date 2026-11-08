@@ -127,6 +127,7 @@ Gamend.Leaderboards.Record.html
 Gamend.Leaderboards.html
 Gamend.Ledger.html
 Gamend.Limits.html
+Gamend.LiteralLint.html
 Gamend.Lobbies.Lobby.html
 Gamend.Lobbies.SpectatorTracker.html
 Gamend.Lobbies.States.html
@@ -136,6 +137,7 @@ Gamend.Lock.Queue.html
 Gamend.Lock.html
 Gamend.Mail.html
 Gamend.Mailer.html
+Gamend.MatchSeating.html
 Gamend.Matchmaking.Broadcast.html
 Gamend.Matchmaking.Constants.html
 Gamend.Matchmaking.Match.html
@@ -161,6 +163,7 @@ Gamend.Parties.PartyInvite.html
 Gamend.Parties.html
 Gamend.Payments.Admin.html
 Gamend.Payments.Counters.html
+Gamend.Payments.DeletedAccountSubscriptions.html
 Gamend.Payments.Entitlement.html
 Gamend.Payments.Params.html
 Gamend.Payments.Product.html
@@ -206,6 +209,7 @@ Gamend.Quests.QuestProgress.html
 Gamend.Quests.Reward.html
 Gamend.Quests.html
 Gamend.RaceLint.html
+Gamend.Rating.html
 Gamend.ReadyChecks.Check.html
 Gamend.ReadyChecks.Participant.html
 Gamend.ReadyChecks.html
@@ -258,6 +262,7 @@ Mix.Tasks.Gamend.Content.Extract.html
 Mix.Tasks.Gamend.Content.MigrateMetadata.html
 Mix.Tasks.Gamend.Gen.Dockerfile.html
 Mix.Tasks.Gamend.Latest.html
+Mix.Tasks.Gamend.Literal.Lint.html
 Mix.Tasks.Gamend.Race.Lint.html
 Mix.Tasks.Gamend.Settings.EnvExample.html
 Mix.Tasks.Gamend.Settings.Guide.html
@@ -276,8 +281,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-F71BDA74.js
-dist/sidebar_items-C72A750A.js
+dist/search_data-CB9522B4.js
+dist/sidebar_items-67891045.js
 index.html
 readme.html
 search.html

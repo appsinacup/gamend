@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.40.4">
+    <meta name="project" content="gamend_core v1.1.1406">
+
+
+    <title>Gamend.MatchSeating — gamend_core v1.1.1406</title>
+
+    <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
+
+    <script defer src="dist/sidebar_items-67891045.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-MI33G4N7.js"></script>
+
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
+
+<div class="body-wrapper">
+
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<nav id="sidebar" class="sidebar">
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
+
+      <div>
+        <a href="readme.html" class="sidebar-projectName" translate="no">
+gamend_core
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v1.1.1406
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras="Pages"></ul>
+  </div>
+</nav>
+
+<output role="status" id="toast"></output>
+
+<main class="content page-module" id="main" data-type="modules">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of gamend_core</span>
+            <div class="search-input-wrapper">
+              <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+                <i class="ri-close-line ri-lg" title="Cancel search"></i>
+              </button>
+            </div>
+          </label>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <div class="engine-selector" data-multiple="false">
+          <button type="button" class="engine-button" aria-label="Select search engine" aria-haspopup="true" aria-expanded="false">
+            <i class="ri-search-2-line" aria-hidden="true"></i>
+            <span class="engine-name">Default</span>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </button>
+          <div class="engine-dropdown" hidden role="menu">
+
+              <button type="button"
+                      class="engine-option"
+                      data-engine-url="search.html?q="
+                      role="menuitemradio"
+                      aria-checked="true">
+                <span class="name">Default</span>
+                <span class="help">In-browser search</span>
+              </button>
+
+          </div>
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
+
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>
+      <span translate="no">Gamend.<wbr />MatchSeating</span> 
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1406)</small>
+
+    </h1>
+
+<a href="Gamend.MatchSeating.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
+  <i class="ri-markdown-line" aria-hidden="true"></i>
+  <span class="sr-only">Copy Markdown</span>
+</a>
+
+
+
+      <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/match_seating.ex#L1" title="View Source" class="icon-action" rel="help nofollow">
+        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        <span class="sr-only">View Source</span>
+      </a>
+
+  </div>
+
+
+    <section id="moduledoc">
+<p>What a game decides for a formed match: where its players sit, and whether
+they are asked first. <code class="inline">matchmaking_seat_match/1</code> answers with one:</p><pre><code class="makeup elixir" translate="no"><span class="kd">def</span><span class="w"> </span><span class="nf">matchmaking_seat_match</span><span class="p" data-group-id="group-1">(</span><span class="n">tickets</span><span class="p" data-group-id="group-1">)</span><span class="w"> </span><span class="k" data-group-id="group-2">do</span><span class="w">
+  </span><span class="k">case</span><span class="w"> </span><span class="n">room_with_a_free_seat</span><span class="p" data-group-id="group-3">(</span><span class="n">tickets</span><span class="p" data-group-id="group-3">)</span><span class="w"> </span><span class="k" data-group-id="group-4">do</span><span class="w">
+    </span><span class="no">nil</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">MatchSeating</span><span class="o">.</span><span class="n">new_lobby</span><span class="p" data-group-id="group-5">(</span><span class="ss">max_users</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="ss">accept_timeout_ms</span><span class="p">:</span><span class="w"> </span><span class="mi">15_000</span><span class="p" data-group-id="group-5">)</span><span class="w">
+    </span><span class="n">lobby_id</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">MatchSeating</span><span class="o">.</span><span class="n">in_lobby</span><span class="p" data-group-id="group-6">(</span><span class="n">lobby_id</span><span class="p" data-group-id="group-6">)</span><span class="w">
+  </span><span class="k" data-group-id="group-4">end</span><span class="w">
+</span><span class="k" data-group-id="group-2">end</span></code></pre><p>Every answer is built by a function here, so a misspelt name fails where it
+is written: a function the compiler does not know, or an option that raises.
+Core does the rest: it seats the players, checks seats and blocks, and puts
+the tickets back in the queue when it cannot.</p><p>Pure, and the SDK carries a copy of it (<a href="Mix.Tasks.Gen.Sdk.html"><code class="inline">mix gen.sdk</code></a>).</p>
+    </section>
+
+</div>
+
+  <section id="summary" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h2>
+<div class="summary-types summary">
+  <h3>
+    <a href="#types">Types</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:lobby_attrs/0" data-no-tooltip="" translate="no">lobby_attrs()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A lobby's settings, as <a href="#new_lobby/1"><code class="inline">new_lobby/1</code></a> takes them.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#t:t/0" data-no-tooltip="" translate="no">t()</a>
+
+      </div>
+
+    </div>
+
+</div>
+<div class="summary-functions summary">
+  <h3>
+    <a href="#functions">Functions</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#default/1" data-no-tooltip="" translate="no">default(opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Core's seat: the lobby a host's ticket fills, else a new hidden, locked,
+hostless lobby sized to the match. Answer this to change only whether the
+players are asked.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#dump/1" data-no-tooltip="" translate="no">dump(match_seating)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>JSON for the wait while players accept: where the match will sit. The accept
+may resolve on another node, or after a restart.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#in_lobby/2" data-no-tooltip="" translate="no">in_lobby(lobby_id, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>An existing lobby: <code class="inline">lobby_id</code>, past its hidden and locked flags. Takes
+<code class="inline">:accept_timeout_ms</code>. Only the players holding the match's tickets are asked,
+so whoever is already seated there is not interrupted.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#load/1" data-no-tooltip="" translate="no">load(stored)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The seating <a href="#dump/1"><code class="inline">dump/1</code></a> wrote. Nothing stored is <a href="#default/1"><code class="inline">default/1</code></a>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#lobby_attrs/2" data-no-tooltip="" translate="no">lobby_attrs(match_seating, map)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The attrs core creates a new lobby with, for a match whose oldest ticket is
+<code class="inline">ticket</code>. Always locked at birth, so a stranger cannot take a seat while
+the match is being seated; <a href="#unlock?/1"><code class="inline">unlock?/1</code></a> says whether to open it after.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#new_lobby/1" data-no-tooltip="" translate="no">new_lobby(opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A new lobby for the match. Takes <code class="inline">:title</code>, <code class="inline">:max_users</code>, <code class="inline">:host_id</code>,
+<code class="inline">:hostless</code>, <code class="inline">:is_hidden</code>, <code class="inline">:is_locked</code>, <code class="inline">:metadata</code>, <code class="inline">:slowdown</code> and
+<code class="inline">:accept_timeout_ms</code>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#unlock?/1" data-no-tooltip="" translate="no">unlock?(match_seating)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether the new lobby is opened once the match is seated.</p></div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="types" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#types">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Types</span>
+    </h2>
+
+    <div class="types-list">
+<section class="detail" id="t:lobby_attrs/0">
+
+  <div class="detail-header">
+    <a href="#t:lobby_attrs/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">lobby_attrs()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/match_seating.ex#L22" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> lobby_attrs() :: %{optional(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
+
+      </div>
+
+<p>A lobby's settings, as <a href="#new_lobby/1"><code class="inline">new_lobby/1</code></a> takes them.</p>
+  </section>
+</section>
+<section class="detail" id="t:t/0">
+
+  <div class="detail-header">
+    <a href="#t:t/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">t()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/match_seating.ex#L24" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@type</span> t() :: %Gamend.MatchSeating{
+  accept_timeout_ms: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>() | nil,
+  lobby: <a href="#t:lobby_attrs/0">lobby_attrs</a>() | nil,
+  lobby_id: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil
+}</pre>
+
+      </div>
+
+
+  </section>
+</section>
+
+    </div>
+  </section>
+
+  <section id="functions" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h2>
+
+    <div class="functions-list">
+<section class="detail" id="default/1">
+
+    <span id="default/0"></span>
+
+  <div class="detail-header">
+    <a href="#default/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">default(opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/match_seating.ex#L53" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> default(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: <a href="#t:t/0">t</a>()</pre>
+
+      </div>
+
+<p>Core's seat: the lobby a host's ticket fills, else a new hidden, locked,
+hostless lobby sized to the match. Answer this to change only whether the
+players are asked.</p><p><code class="inline">:accept_timeout_ms</code>: the time everyone holding a ticket has to accept.
+Left out, they are seated at once.</p>
+  </section>
+</section>
+<section class="detail" id="dump/1">
+
+  <div class="detail-header">
+    <a href="#dump/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">dump(match_seating)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/match_seating.ex#L124" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> dump(<a href="#t:t/0">t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()</pre>
+
+      </div>
+
+<p>JSON for the wait while players accept: where the match will sit. The accept
+may resolve on another node, or after a restart.</p>
+  </section>
+</section>
+<section class="detail" id="in_lobby/2">
+
+    <span id="in_lobby/1"></span>
+
+  <div class="detail-header">
+    <a href="#in_lobby/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">in_lobby(lobby_id, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/match_seating.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> in_lobby(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: <a href="#t:t/0">t</a>()</pre>
+
+      </div>
+
+<p>An existing lobby: <code class="inline">lobby_id</code>, past its hidden and locked flags. Takes
+<code class="inline">:accept_timeout_ms</code>. Only the players holding the match's tickets are asked,
+so whoever is already seated there is not interrupted.</p>
+  </section>
+</section>
+<section class="detail" id="load/1">
+
+  <div class="detail-header">
+    <a href="#load/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">load(stored)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/match_seating.ex#L130" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> load(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>() | nil) :: <a href="#t:t/0">t</a>()</pre>
+
+      </div>
+
+<p>The seating <a href="#dump/1"><code class="inline">dump/1</code></a> wrote. Nothing stored is <a href="#default/1"><code class="inline">default/1</code></a>.</p>
+  </section>
+</section>
+<section class="detail" id="lobby_attrs/2">
+
+  <div class="detail-header">
+    <a href="#lobby_attrs/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">lobby_attrs(match_seating, map)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/match_seating.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> lobby_attrs(<a href="#t:t/0">t</a>(), %{max_players: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>(), match_params: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()}) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()</pre>
+
+      </div>
+
+<p>The attrs core creates a new lobby with, for a match whose oldest ticket is
+<code class="inline">ticket</code>. Always locked at birth, so a stranger cannot take a seat while
+the match is being seated; <a href="#unlock?/1"><code class="inline">unlock?/1</code></a> says whether to open it after.</p>
+  </section>
+</section>
+<section class="detail" id="new_lobby/1">
+
+    <span id="new_lobby/0"></span>
+
+  <div class="detail-header">
+    <a href="#new_lobby/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">new_lobby(opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/match_seating.ex#L64" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> new_lobby(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: <a href="#t:t/0">t</a>()</pre>
+
+      </div>
+
+<p>A new lobby for the match. Takes <code class="inline">:title</code>, <code class="inline">:max_users</code>, <code class="inline">:host_id</code>,
+<code class="inline">:hostless</code>, <code class="inline">:is_hidden</code>, <code class="inline">:is_locked</code>, <code class="inline">:metadata</code>, <code class="inline">:slowdown</code> and
+<code class="inline">:accept_timeout_ms</code>.</p><p>What is left out is core's: hidden, locked, sized to the match, hostless
+unless a <code class="inline">:host_id</code> is named. A host who holds a ticket is not seated twice.</p>
+  </section>
+</section>
+<section class="detail" id="unlock?/1">
+
+  <div class="detail-header">
+    <a href="#unlock?/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">unlock?(match_seating)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/match_seating.ex#L116" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> unlock?(<a href="#t:t/0">t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether the new lobby is opened once the match is seated.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+    <footer class="footer">
+
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/gamend_core/1.1.1406">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1406">Hex Preview</a>
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Go to package docs">
+              Go to package docs
+            </button>
+
+              <a href="llms.txt" target="_blank">
+                View llms.txt
+              </a>
+
+
+              <a href="gamend_core.epub">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.4) for the
+
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
+
+        </p>
+
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
+</html>

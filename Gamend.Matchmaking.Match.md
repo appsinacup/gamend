@@ -12,11 +12,12 @@ and retried on the next tick.
 Errors return tuples instead of raising, so one bad match never aborts the
 rest of the sweep.
 
-A match whose tickets ask for an accept (`accept_timeout_ms`) is not seated
-here at first: `start/1` opens the accept check, and `accept_resolved/1`
-seats it once everyone accepted, or puts the ones who did back in the
-queue. A match with a backfill ticket is seated in that lobby (see
-`Gamend.Matchmaking`, *Backfill*).
+The game answers where a match sits and whether its players are asked
+first (`matchmaking_seat_match/1`, `Gamend.MatchSeating`). A match that asks
+is not seated here at first: `start/1` opens the accept check, and
+`accept_resolved/1` seats it once everyone accepted, or puts the ones who
+did back in the queue. With no answer, a match with a backfill ticket is
+seated in that lobby (see `Gamend.Matchmaking`, *Backfill*).
 
 # `accept_resolved`
 
@@ -26,24 +27,24 @@ queue. A match with a backfill ticket is seated in that lobby (see
 ```
 
 A matchmaking accept check resolved (called by `Gamend.ReadyChecks` once
-it passed or failed). Passed: the match is seated (`create/1`). Failed: the
+it passed or failed). Passed: the match is seated (`seat/2`). Failed: the
 tickets of whoever accepted, or had not answered yet when someone declined,
 go back in the queue, keeping their place; whoever declined or let the
 deadline pass has their ticket cancelled. Tickets no longer held by the match (an admin
 cancelled one) are left alone; a check with no tickets is not
 matchmaking's.
 
-# `create`
+# `seat`
 
 ```elixir
-@spec create([Gamend.Types.matchmaking_ticket()]) ::
+@spec seat([Gamend.Types.matchmaking_ticket()], Gamend.MatchSeating.t()) ::
   {:ok, Ecto.UUID.t()} | {:error, term()}
 ```
 
-Seats a claimed match: in its backfill ticket's lobby when it has one
-(`Gamend.Matchmaking.target_ticket/1`), else in a new hidden lobby, locked
-once everyone is in. Records the lobby on the tickets and broadcasts
-`match_found`.
+Seats a claimed match where `seating` says: a lobby the game named, a new
+lobby with the game's settings, or by default its backfill ticket's lobby
+when it has one (`Gamend.Matchmaking.target_ticket/1`), else a new hidden,
+locked one. Records the lobby on the tickets and broadcasts `match_found`.
 
 # `start`
 
@@ -52,8 +53,10 @@ once everyone is in. Records the lobby on the tickets and broadcasts
   {:ok, Ecto.UUID.t()} | {:accepting, Ecto.UUID.t()} | {:error, term()}
 ```
 
-A claimed match, begun: its accept check opened when its oldest ticket
-asks for one (`{:accepting, check_id}`), else seated at once (`create/1`).
+A claimed match, begun: the game says how (`matchmaking_seat_match/1`), then
+its accept check is opened if that asks for one (`{:accepting, check_id}`),
+else it is seated at once (`seat/2`). A refusal, a hook that fails or runs
+past its time puts the tickets back in the queue.
 
 ---
 

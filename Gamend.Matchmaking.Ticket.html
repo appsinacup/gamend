@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1405">
+    <meta name="project" content="gamend_core v1.1.1406">
 
 
-    <title>Gamend.Matchmaking.Ticket — gamend_core v1.1.1405</title>
+    <title>Gamend.Matchmaking.Ticket — gamend_core v1.1.1406</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-C72A750A.js"></script>
+    <script defer src="dist/sidebar_items-67891045.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1405
+          v1.1.1406
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Matchmaking.<wbr />Ticket</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1405)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1406)</small>
 
     </h1>
 
@@ -120,8 +120,7 @@ sharing a <code class="inline">party_id</code> form an indivisible unit: the mat
 same lobby or leaves them all queued.</p><p>A ticket queued by a lobby's host carries that lobby's <code class="inline">lobby_id</code>
 (backfill): a match seats the other players there instead of in a new
 lobby. <code class="inline">size</code> and <code class="inline">capacity</code> are what the sweep read for it, the lobby's
-members and seats (1 and nil for any other ticket).</p><p><code class="inline">accept_timeout_ms</code> set, a formed match asks everyone to accept first
-(a ready check of kind <code class="inline">accept</code>, <a href="Gamend.ReadyChecks.html"><code class="inline">Gamend.ReadyChecks</code></a>).</p>
+members and seats (1 and nil for any other ticket).</p>
     </section>
 
 </div>
@@ -170,7 +169,7 @@ members and seats (1 and nil for any other ticket).</p><p><code class="inline">a
       <h1 class="signature" translate="no">t()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/ticket.ex#L23" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/ticket.ex#L20" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -183,7 +182,6 @@ members and seats (1 and nil for any other ticket).</p><p><code class="inline">a
 
           <pre translate="no"><span class="attribute">@type</span> t() :: %Gamend.Matchmaking.Ticket{
   __meta__: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
-  accept_timeout_ms: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   capacity: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   id: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   inserted_at: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
@@ -219,9 +217,9 @@ members and seats (1 and nil for any other ticket).</p><p><code class="inline">a
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1405">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1406">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1405">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1406">Hex Preview</a>
 
             </span>
 

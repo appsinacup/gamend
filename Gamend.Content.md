@@ -40,8 +40,9 @@ A host that wants translated pills re-labels them per request — see `pill/2`.
 @spec asset_path(atom() | String.t(), String.t()) :: String.t() | nil
 ```
 
-Returns the absolute path for an asset relative to a registered content
-source. Returns `nil` when not found or path traversal is attempted.
+Returns the absolute path for a picture, sound or video relative to a
+registered content source. Returns `nil` when not found, when path traversal
+is attempted, and for any other kind of file.
 
 # `blog_neighbours`
 

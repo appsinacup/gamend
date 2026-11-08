@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1405">
+    <meta name="project" content="gamend_core v1.1.1406">
 
 
-    <title>Gamend.Matchmaking.Match — gamend_core v1.1.1405</title>
+    <title>Gamend.Matchmaking.Match — gamend_core v1.1.1406</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-C72A750A.js"></script>
+    <script defer src="dist/sidebar_items-67891045.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1405
+          v1.1.1406
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Matchmaking.<wbr />Match</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1405)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1406)</small>
 
     </h1>
 
@@ -119,11 +119,12 @@ gamend_core
 inside a transaction. The tickets are already claimed (status <code class="inline">matched</code>),
 so no other node can pick them up meanwhile; on failure they are requeued
 and retried on the next tick.</p><p>Errors return tuples instead of raising, so one bad match never aborts the
-rest of the sweep.</p><p>A match whose tickets ask for an accept (<code class="inline">accept_timeout_ms</code>) is not seated
-here at first: <a href="#start/1"><code class="inline">start/1</code></a> opens the accept check, and <a href="#accept_resolved/1"><code class="inline">accept_resolved/1</code></a>
-seats it once everyone accepted, or puts the ones who did back in the
-queue. A match with a backfill ticket is seated in that lobby (see
-<a href="Gamend.Matchmaking.html"><code class="inline">Gamend.Matchmaking</code></a>, <em>Backfill</em>).</p>
+rest of the sweep.</p><p>The game answers where a match sits and whether its players are asked
+first (<code class="inline">matchmaking_seat_match/1</code>, <a href="Gamend.MatchSeating.html"><code class="inline">Gamend.MatchSeating</code></a>). A match that asks
+is not seated here at first: <a href="#start/1"><code class="inline">start/1</code></a> opens the accept check, and
+<a href="#accept_resolved/1"><code class="inline">accept_resolved/1</code></a> seats it once everyone accepted, or puts the ones who
+did back in the queue. With no answer, a match with a backfill ticket is
+seated in that lobby (see <a href="Gamend.Matchmaking.html"><code class="inline">Gamend.Matchmaking</code></a>, <em>Backfill</em>).</p>
     </section>
 
 </div>
@@ -147,7 +148,7 @@ queue. A match with a backfill ticket is seated in that lobby (see
       </div>
 
         <div class="summary-synopsis"><p>A matchmaking accept check resolved (called by <a href="Gamend.ReadyChecks.html"><code class="inline">Gamend.ReadyChecks</code></a> once
-it passed or failed). Passed: the match is seated (<a href="#create/1"><code class="inline">create/1</code></a>). Failed: the
+it passed or failed). Passed: the match is seated (<a href="#seat/2"><code class="inline">seat/2</code></a>). Failed: the
 tickets of whoever accepted, or had not answered yet when someone declined,
 go back in the queue, keeping their place; whoever declined or let the
 deadline pass has their ticket cancelled. Tickets no longer held by the match (an admin
@@ -158,14 +159,14 @@ matchmaking's.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#create/1" data-no-tooltip="" translate="no">create(tickets)</a>
+        <a href="#seat/2" data-no-tooltip="" translate="no">seat(tickets, seating)</a>
 
       </div>
 
-        <div class="summary-synopsis"><p>Seats a claimed match: in its backfill ticket's lobby when it has one
-(<a href="Gamend.Matchmaking.html#target_ticket/1"><code class="inline">Gamend.Matchmaking.target_ticket/1</code></a>), else in a new hidden lobby, locked
-once everyone is in. Records the lobby on the tickets and broadcasts
-<code class="inline">match_found</code>.</p></div>
+        <div class="summary-synopsis"><p>Seats a claimed match where <code class="inline">seating</code> says: a lobby the game named, a new
+lobby with the game's settings, or by default its backfill ticket's lobby
+when it has one (<a href="Gamend.Matchmaking.html#target_ticket/1"><code class="inline">Gamend.Matchmaking.target_ticket/1</code></a>), else a new hidden,
+locked one. Records the lobby on the tickets and broadcasts <code class="inline">match_found</code>.</p></div>
 
     </div>
 
@@ -175,8 +176,10 @@ once everyone is in. Records the lobby on the tickets and broadcasts
 
       </div>
 
-        <div class="summary-synopsis"><p>A claimed match, begun: its accept check opened when its oldest ticket
-asks for one (<code class="inline">{:accepting, check_id}</code>), else seated at once (<a href="#create/1"><code class="inline">create/1</code></a>).</p></div>
+        <div class="summary-synopsis"><p>A claimed match, begun: the game says how (<code class="inline">matchmaking_seat_match/1</code>), then
+its accept check is opened if that asks for one (<code class="inline">{:accepting, check_id}</code>),
+else it is seated at once (<a href="#seat/2"><code class="inline">seat/2</code></a>). A refusal, a hook that fails or runs
+past its time puts the tickets back in the queue.</p></div>
 
     </div>
 
@@ -204,7 +207,7 @@ asks for one (<code class="inline">{:accepting, check_id}</code>), else seated a
       <h1 class="signature" translate="no">accept_resolved(check)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/match.ex#L80" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/match.ex#L114" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -221,7 +224,7 @@ asks for one (<code class="inline">{:accepting, check_id}</code>), else seated a
       </div>
 
 <p>A matchmaking accept check resolved (called by <a href="Gamend.ReadyChecks.html"><code class="inline">Gamend.ReadyChecks</code></a> once
-it passed or failed). Passed: the match is seated (<a href="#create/1"><code class="inline">create/1</code></a>). Failed: the
+it passed or failed). Passed: the match is seated (<a href="#seat/2"><code class="inline">seat/2</code></a>). Failed: the
 tickets of whoever accepted, or had not answered yet when someone declined,
 go back in the queue, keeping their place; whoever declined or let the
 deadline pass has their ticket cancelled. Tickets no longer held by the match (an admin
@@ -229,17 +232,17 @@ cancelled one) are left alone; a check with no tickets is not
 matchmaking's.</p>
   </section>
 </section>
-<section class="detail" id="create/1">
+<section class="detail" id="seat/2">
 
   <div class="detail-header">
-    <a href="#create/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+    <a href="#seat/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
     </a>
     <div class="heading-with-actions">
-      <h1 class="signature" translate="no">create(tickets)</h1>
+      <h1 class="signature" translate="no">seat(tickets, seating)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/match.ex#L120" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/match.ex#L155" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -250,15 +253,15 @@ matchmaking's.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> create([<a href="Gamend.Types.html#t:matchmaking_ticket/0">Gamend.Types.matchmaking_ticket</a>()]) ::
+          <pre translate="no"><span class="attribute">@spec</span> seat([<a href="Gamend.Types.html#t:matchmaking_ticket/0">Gamend.Types.matchmaking_ticket</a>()], <a href="Gamend.MatchSeating.html#t:t/0">Gamend.MatchSeating.t</a>()) ::
   {:ok, <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()} | {:error, <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>()}</pre>
 
       </div>
 
-<p>Seats a claimed match: in its backfill ticket's lobby when it has one
-(<a href="Gamend.Matchmaking.html#target_ticket/1"><code class="inline">Gamend.Matchmaking.target_ticket/1</code></a>), else in a new hidden lobby, locked
-once everyone is in. Records the lobby on the tickets and broadcasts
-<code class="inline">match_found</code>.</p>
+<p>Seats a claimed match where <code class="inline">seating</code> says: a lobby the game named, a new
+lobby with the game's settings, or by default its backfill ticket's lobby
+when it has one (<a href="Gamend.Matchmaking.html#target_ticket/1"><code class="inline">Gamend.Matchmaking.target_ticket/1</code></a>), else a new hidden,
+locked one. Records the lobby on the tickets and broadcasts <code class="inline">match_found</code>.</p>
   </section>
 </section>
 <section class="detail" id="start/1">
@@ -271,7 +274,7 @@ once everyone is in. Records the lobby on the tickets and broadcasts
       <h1 class="signature" translate="no">start(tickets)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/match.ex#L43" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/matchmaking/match.ex#L61" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -287,8 +290,10 @@ once everyone is in. Records the lobby on the tickets and broadcasts
 
       </div>
 
-<p>A claimed match, begun: its accept check opened when its oldest ticket
-asks for one (<code class="inline">{:accepting, check_id}</code>), else seated at once (<a href="#create/1"><code class="inline">create/1</code></a>).</p>
+<p>A claimed match, begun: the game says how (<code class="inline">matchmaking_seat_match/1</code>), then
+its accept check is opened if that asks for one (<code class="inline">{:accepting, check_id}</code>),
+else it is seated at once (<a href="#seat/2"><code class="inline">seat/2</code></a>). A refusal, a hook that fails or runs
+past its time puts the tickets back in the queue.</p>
   </section>
 </section>
 
@@ -300,9 +305,9 @@ asks for one (<code class="inline">{:accepting, check_id}</code>), else seated a
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1405">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1406">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1405">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1406">Hex Preview</a>
 
             </span>
 

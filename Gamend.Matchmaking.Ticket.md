@@ -15,15 +15,11 @@ A ticket queued by a lobby's host carries that lobby's `lobby_id`
 lobby. `size` and `capacity` are what the sweep read for it, the lobby's
 members and seats (1 and nil for any other ticket).
 
-`accept_timeout_ms` set, a formed match asks everyone to accept first
-(a ready check of kind `accept`, `Gamend.ReadyChecks`).
-
 # `t`
 
 ```elixir
 @type t() :: %Gamend.Matchmaking.Ticket{
   __meta__: term(),
-  accept_timeout_ms: term(),
   capacity: term(),
   id: term(),
   inserted_at: term(),

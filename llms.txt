@@ -1,4 +1,4 @@
-# gamend_core v1.1.1405 - Table of Contents
+# gamend_core v1.1.1406 - Table of Contents
 
 > Core functionality for Gamend, including user management, authentication, friends, matchmaking, and more.
 
@@ -89,7 +89,11 @@ set, read from the host's `heroicons` dependency when this compiles, the same
 set the website draws (`GamendWeb.Icons`).
 - [Gamend.Ledger](Gamend.Ledger.md): The mechanics both ledgered balances share: `Gamend.Economy` (currency in a
 wallet) and `Gamend.Inventory` (quantity of an item).
+- [Gamend.LiteralLint](Gamend.LiteralLint.md): Finds the strings that are really names: a status, an action, a kind, typed
+out wherever it is used. `mix gamend.literal.lint` runs it.
 - [Gamend.Mail](Gamend.Mail.md): Outbound email transport.
+- [Gamend.MatchSeating](Gamend.MatchSeating.md): What a game decides for a formed match: where its players sit, and whether
+they are asked first. `matchmaking_seat_match/1` answers with one
 - [Gamend.Parse](Gamend.Parse.md): Parsing and normalizing values that arrive from outside: request bodies, form
 params, hook arguments, JSON.
 - [Gamend.Policy](Gamend.Policy.md): One question — "may this user do this to this thing?" — asked the same way
@@ -99,6 +103,9 @@ everywhere.
 - [Gamend.RaceLint](Gamend.RaceLint.md): Source checks for the shapes that race: a rule ("one per player", "pays
 once", "at most N", "only while pending") checked by a read and kept by a
 write that does not look again. `mix gamend.race.lint` runs them.
+- [Gamend.Rating](Gamend.Rating.md): Skill ratings, computed: Elo and Glicko-2, for two players, teams and
+free-for-alls, and the gap a matcher accepts as a player waits
+(priv/docs/40-gameplay/32-ratings.md).
 - [Gamend.Release](Gamend.Release.md): Release-time equivalents of the `host.*` mix tasks.
 - [Gamend.Release.Metadata](Gamend.Release.Metadata.md): What a release declares, written into its image as it is built, so a host
 that runs the image from outside reads it without booting it. Gamend Cloud
@@ -299,6 +306,7 @@ status, and filtered listings of products, purchases, entitlements, provider
 events and reconciliation cursors.
   - [Gamend.Payments.Counters](Gamend.Payments.Counters.md): What happened to payments, per day, as `Gamend.Analytics.count/3` counters:
 the admin analytics page lists them under "Counters" with the game's own.
+  - [Gamend.Payments.DeletedAccountSubscriptions](Gamend.Payments.DeletedAccountSubscriptions.md): A deleted account stops being charged.
   - [Gamend.Payments.Entitlement](Gamend.Payments.Entitlement.md): User access grant derived from a purchase or admin/server action.
 
   - [Gamend.Payments.Params](Gamend.Payments.Params.md): Shape-wrangling shared by `Gamend.Payments` and its provider adapters.
@@ -506,6 +514,9 @@ leaderboards and tournaments, and the names a quest gives its item rewards
 - [mix gamend.gen.dockerfile](Mix.Tasks.Gamend.Gen.Dockerfile.md): Writes `Dockerfile` from Gamend's one template, filled in from the app's
 own `mix.exs`, so Gamend, the starter and every host build the same way.
 - [mix gamend.latest](Mix.Tasks.Gamend.Latest.md): Sets `@gamend_min` in the app's `mix.exs` to Gamend's newest release on Hex.
+- [mix gamend.literal.lint](Mix.Tasks.Gamend.Literal.Lint.md): Flags a string that is really a name (a status, an action, a kind) typed out
+across modules. See `Gamend.LiteralLint` for what counts and for the
+`# literal-ok: <reason>` marker that accepts one.
 - [mix gamend.race.lint](Mix.Tasks.Gamend.Race.Lint.md): Flags functions that keep a rule with a write only an earlier read made
 safe: a state column written on a struct, a count then an insert, a cached
 read deciding a write. See `Gamend.RaceLint` for each check and for the

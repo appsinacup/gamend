@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1405">
+    <meta name="project" content="gamend_core v1.1.1406">
 
 
-    <title>Gamend.Accounts.GuestMerge — gamend_core v1.1.1405</title>
+    <title>Gamend.Accounts.GuestMerge — gamend_core v1.1.1406</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-C72A750A.js"></script>
+    <script defer src="dist/sidebar_items-67891045.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1405
+          v1.1.1406
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />GuestMerge</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1405)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1406)</small>
 
     </h1>
 
@@ -133,7 +133,10 @@ and subscribers follow). A key both have stays the account's.</li><li>Wallets: e
 (<a href="Gamend.Economy.html#grant/4"><code class="inline">Gamend.Economy.grant/4</code></a>) in one transaction. A host that grants
 starting coins spends the guest's own grant first in step 1, so it is
 not counted twice.</li><li>Inventory: quantities moved the same way (<a href="Gamend.Inventory.html#consume_item/4"><code class="inline">Gamend.Inventory.consume_item/4</code></a>,
-<a href="Gamend.Inventory.html#grant_item/4"><code class="inline">Gamend.Inventory.grant_item/4</code></a>).</li><li>Leaderboards: <a href="Gamend.Leaderboards.html#merge_user_records/2"><code class="inline">Gamend.Leaderboards.merge_user_records/2</code></a> (best kept,
+<a href="Gamend.Inventory.html#grant_item/4"><code class="inline">Gamend.Inventory.grant_item/4</code></a>).</li><li>Entitlements granted without a purchase, through
+<a href="Gamend.Payments.html#grant_entitlement/3"><code class="inline">Gamend.Payments.grant_entitlement/3</code></a>, which never shortens what the
+account holds. One the account had revoked stays revoked, and one a
+purchase made stays with the guest.</li><li>Leaderboards: <a href="Gamend.Leaderboards.html#merge_user_records/2"><code class="inline">Gamend.Leaderboards.merge_user_records/2</code></a> (best kept,
 counters added, the account's never lowered).</li><li>Quests: <a href="Gamend.Quests.html#merge_user_progress/2"><code class="inline">Gamend.Quests.merge_user_progress/2</code></a> (periods the account has
 not played).</li><li>Activity days the account lacks; the guest's analytics events,
 content reports and notifications become the account's.</li><li><code class="inline">users.metadata</code> and <code class="inline">users.preferences</code> keys the account lacks.</li></ol><p>Sessions, push tokens, bans, lobby and party seats are not moved. Wallet
@@ -190,7 +193,7 @@ unless <code class="inline">guest</code> is a guest and the two differ. Answers 
       <h1 class="signature" translate="no">merge(guest, user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/guest_merge.ex#L71" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/guest_merge.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -218,9 +221,9 @@ unless <code class="inline">guest</code> is a guest and the two differ. Answers 
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1405">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1406">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1405">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1406">Hex Preview</a>
 
             </span>
 

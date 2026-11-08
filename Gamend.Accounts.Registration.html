@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1405">
+    <meta name="project" content="gamend_core v1.1.1406">
 
 
-    <title>Gamend.Accounts.Registration — gamend_core v1.1.1405</title>
+    <title>Gamend.Accounts.Registration — gamend_core v1.1.1406</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-C72A750A.js"></script>
+    <script defer src="dist/sidebar_items-67891045.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1405
+          v1.1.1406
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Registration</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1405)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1406)</small>
 
     </h1>
 
@@ -194,6 +194,26 @@ caller (<code class="inline">POST /api/v1/register/confirm</code>).</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#drop_email_taken/1" data-no-tooltip="" translate="no">drop_email_taken(changeset)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p><code class="inline">changeset</code> without the refusal <a href="#email_taken?/1"><code class="inline">email_taken?/1</code></a> finds, valid when it was the only one.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#email_taken?/1" data-no-tooltip="" translate="no">email_taken?(changeset)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Whether <code class="inline">changeset</code> refuses its email because another account has it.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#get_user_by_confirm_token/1" data-no-tooltip="" translate="no">get_user_by_confirm_token(token)</a>
 
       </div>
@@ -203,6 +223,18 @@ that is malformed, spent or expired. It only reads: the page the link opens
 shows the account, and confirming waits for its button
 (<a href="#confirm_user_by_token/1"><code class="inline">confirm_user_by_token/1</code></a>), so a mail scanner that opens every link in an
 email confirms nothing and spends nothing.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#notify_existing_account/4" data-no-tooltip="" translate="no">notify_existing_account(email, confirmation_url_fun, login_url_fun, notifier \\ Gamend.Accounts.UserNotifier)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Someone tried to sign up with <code class="inline">email</code>, which already has an account: the
+confirmation again if it never confirmed, else a login link. In the
+background, so the sign-up answers as soon as it does for a free address.</p></div>
 
     </div>
 
@@ -291,7 +323,7 @@ email signs in to it on any device and confirms the address.</p></div>
       <h1 class="signature" translate="no">change_user_registration(user, attrs \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L608" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L660" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -319,7 +351,7 @@ email signs in to it on any device and confirms the address.</p></div>
       <h1 class="signature" translate="no">change_user_registration_for_validation(user, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L627" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L679" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -461,7 +493,7 @@ page signs them in, or confirms with the code instead.</p>
       <h1 class="signature" translate="no">deliver_user_confirmation_instructions(user, confirmation_url_fun)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L633" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L685" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -479,6 +511,64 @@ page signs them in, or confirms with the code instead.</p>
       </div>
 
 
+  </section>
+</section>
+<section class="detail" id="drop_email_taken/1">
+
+  <div class="detail-header">
+    <a href="#drop_email_taken/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">drop_email_taken(changeset)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L601" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> drop_email_taken(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()) :: <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()</pre>
+
+      </div>
+
+<p><code class="inline">changeset</code> without the refusal <a href="#email_taken?/1"><code class="inline">email_taken?/1</code></a> finds, valid when it was the only one.</p>
+  </section>
+</section>
+<section class="detail" id="email_taken?/1">
+
+  <div class="detail-header">
+    <a href="#email_taken?/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">email_taken?(changeset)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L597" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> email_taken?(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.Changeset.html#t:t/0">Ecto.Changeset.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">boolean</a>()</pre>
+
+      </div>
+
+<p>Whether <code class="inline">changeset</code> refuses its email because another account has it.</p><p>The person who typed the address may not learn that: it would say which
+addresses have accounts. The caller answers as for a free address, and the
+owner hears by email (<a href="#notify_existing_account/4"><code class="inline">notify_existing_account/4</code></a>).</p>
   </section>
 </section>
 <section class="detail" id="get_user_by_confirm_token/1">
@@ -511,6 +601,43 @@ that is malformed, spent or expired. It only reads: the page the link opens
 shows the account, and confirming waits for its button
 (<a href="#confirm_user_by_token/1"><code class="inline">confirm_user_by_token/1</code></a>), so a mail scanner that opens every link in an
 email confirms nothing and spends nothing.</p>
+  </section>
+</section>
+<section class="detail" id="notify_existing_account/4">
+
+    <span id="notify_existing_account/3"></span>
+
+  <div class="detail-header">
+    <a href="#notify_existing_account/4" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">notify_existing_account(email, confirmation_url_fun, login_url_fun, notifier \\ Gamend.Accounts.UserNotifier)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/registration.ex#L622" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> notify_existing_account(
+  <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(),
+  (<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() -&gt; <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()),
+  (<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() -&gt; <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()),
+  <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">module</a>()
+) :: :ok</pre>
+
+      </div>
+
+<p>Someone tried to sign up with <code class="inline">email</code>, which already has an account: the
+confirmation again if it never confirmed, else a login link. In the
+background, so the sign-up answers as soon as it does for a free address.</p>
   </section>
 </section>
 <section class="detail" id="register_unconfirmed_user_and_deliver/3">
@@ -708,9 +835,9 @@ email signs in to it on any device and confirms the address.</p><p><code class="
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1405">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1406">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1405">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1406">Hex Preview</a>
 
             </span>
 

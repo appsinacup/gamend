@@ -83,6 +83,19 @@ Receives the function name and the argument list.
 @callback after_user_updated(Gamend.Accounts.User.t()) :: any()
 ```
 
+# `before_user_delete`
+*optional* 
+
+```elixir
+@callback before_user_delete(Gamend.Accounts.User.t()) :: any()
+```
+
+Runs just before an account is deleted, every path alike (a player, an admin,
+a retention sweep, a guest merged into an account), while everything of it
+can still be read: `c:after_user_deleted/1` runs once foreign keys have
+cascaded. Synchronous (30 s), so queue what is slow. It cannot stop the
+delete: its answer is ignored, and a raise is logged.
+
 # `before_user_register`
 *optional* 
 
@@ -598,6 +611,14 @@ player out.
 ```elixir
 @callback matchmaking_form_matches(map(), [Gamend.Matchmaking.Ticket.t()]) ::
   [[Gamend.Matchmaking.Ticket.t()]] | :default
+```
+
+# `matchmaking_seat_match`
+*optional* 
+
+```elixir
+@callback matchmaking_seat_match([Gamend.Matchmaking.Ticket.t()]) ::
+  Gamend.MatchSeating.t() | :default | {:error, term()}
 ```
 
 # `after_ready_check_failed`

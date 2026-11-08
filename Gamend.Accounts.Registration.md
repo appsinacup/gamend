@@ -103,6 +103,26 @@ page signs them in, or confirms with the code instead.
   {:ok, Swoosh.Email.t()} | {:error, :already_confirmed | term()}
 ```
 
+# `drop_email_taken`
+
+```elixir
+@spec drop_email_taken(Ecto.Changeset.t()) :: Ecto.Changeset.t()
+```
+
+`changeset` without the refusal `email_taken?/1` finds, valid when it was the only one.
+
+# `email_taken?`
+
+```elixir
+@spec email_taken?(Ecto.Changeset.t()) :: boolean()
+```
+
+Whether `changeset` refuses its email because another account has it.
+
+The person who typed the address may not learn that: it would say which
+addresses have accounts. The caller answers as for a free address, and the
+owner hears by email (`notify_existing_account/4`).
+
 # `get_user_by_confirm_token`
 
 ```elixir
@@ -114,6 +134,21 @@ that is malformed, spent or expired. It only reads: the page the link opens
 shows the account, and confirming waits for its button
 (`confirm_user_by_token/1`), so a mail scanner that opens every link in an
 email confirms nothing and spends nothing.
+
+# `notify_existing_account`
+
+```elixir
+@spec notify_existing_account(
+  String.t(),
+  (String.t() -&gt; String.t()),
+  (String.t() -&gt; String.t()),
+  module()
+) :: :ok
+```
+
+Someone tried to sign up with `email`, which already has an account: the
+confirmation again if it never confirmed, else a login link. In the
+background, so the sign-up answers as soon as it does for a free address.
 
 # `register_unconfirmed_user_and_deliver`
 

@@ -39,18 +39,24 @@ in its seats; a player queued from a lobby of their own alone leaves it for
 the match's. With no lobby among them, a match gets a new hidden lobby, as
 before.
 
+## Seating
+
+Once a match forms, the game's `matchmaking_seat_match/1` says where it sits
+and whether its players are asked first (`Gamend.MatchSeating`). With no
+answer, core seats it as *Backfill* says.
+
 ## Accept
 
-`accept_timeout_ms` (a `join/5` option, or the `before_matchmaking_join`
-hook's attrs) makes a formed match ask first: a ready check of kind
-`accept` over its players (`Gamend.ReadyChecks`, subject `:matchmaking`).
-Nobody is seated until everyone accepts. A decline or the deadline fails
-it: whoever accepted, or had not answered when another declined, goes
-back in the queue, keeping their place, and the others' tickets are
-cancelled. Cancelling a ticket (`cancel/1`, a socket closing) declines the
-accept its holder was asked for. A player who declined may queue again at
-once (a game's Skip that keeps looking): their declined ticket no longer
-counts as queued, though it is cancelled only once the check settles.
+A seating with `accept_timeout_ms` makes a formed match ask first: a ready
+check of kind `accept` over the players holding its tickets
+(`Gamend.ReadyChecks`, subject `:matchmaking`). Nobody is seated until
+everyone accepts. A decline or the deadline fails it: whoever accepted, or
+had not answered when another declined, goes back in the queue, keeping
+their place, and the others' tickets are cancelled. Cancelling a ticket
+(`cancel/1`, a socket closing) declines the accept its holder was asked
+for. A player who declined may queue again at once (a game's Skip that
+keeps looking): their declined ticket no longer counts as queued, though it
+is cancelled only once the check settles.
 
 # `assign_lobby`
 
@@ -145,13 +151,7 @@ Fetches a ticket by id, or nil when the id is unknown or malformed.
 # `join`
 
 ```elixir
-@spec join(
-  Gamend.Accounts.User.t(),
-  map(),
-  pos_integer() | nil,
-  pos_integer() | nil,
-  keyword()
-) ::
+@spec join(Gamend.Accounts.User.t(), map(), pos_integer() | nil, pos_integer() | nil) ::
   {:ok, Gamend.Matchmaking.Ticket.t()} | {:error, Ecto.Changeset.t() | atom()}
 ```
 
@@ -162,8 +162,6 @@ Adds a user — or their whole party — to the matchmaking queue.
 same parameters are matched together.
 
 `min_players` and `max_players` can be passed to override the defaults.
-`opts`: `accept_timeout_ms`, the time a formed match gives its players to
-accept (see *Accept*); none seats them at once.
 
 A lobby's host queues to fill that lobby (see *Backfill*).
 

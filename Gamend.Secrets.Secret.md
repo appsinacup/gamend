@@ -16,7 +16,6 @@ The struct is safe to hand to a template: it holds ciphertext, not a secret.
   ciphertext: term(),
   created_by_id: term(),
   expires_at: term(),
-  fingerprint: term(),
   id: term(),
   inserted_at: term(),
   iv: term(),

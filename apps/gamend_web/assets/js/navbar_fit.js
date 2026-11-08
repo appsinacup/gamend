@@ -177,9 +177,16 @@ export function startNavbarFit(header) {
 
   // Only a change of width: a stage that changes the header's height must
   // not measure it again. In the auto layout the window's: the sidebar
-  // showing narrows the header and decides nothing.
+  // showing narrows the header and decides nothing. In the next frame, not
+  // in this callback: a stage resizes what is observed, and from inside the
+  // callback the browser reports that as "ResizeObserver loop completed with
+  // undelivered notifications".
+  let frame = null
   const observer = new ResizeObserver(() => {
-    if (roomOf(header) !== width) refit()
+    frame ??= requestAnimationFrame(() => {
+      frame = null
+      if (roomOf(header) !== width) refit()
+    })
   })
   observer.observe(header)
   document.fonts?.ready.then(refit)
@@ -193,6 +200,7 @@ export function startNavbarFit(header) {
 
   const stop = () => {
     observer.disconnect()
+    if (frame !== null) cancelAnimationFrame(frame)
     document.removeEventListener("gamend:side", resided)
     fitted.delete(header)
   }

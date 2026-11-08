@@ -44,7 +44,7 @@ client.realtime().connect();
 ```
 
 - Decoded protobuf payloads keep the JSON field names, with two documented differences: timestamps are unix-millisecond integers (last_seen_at_ms, inserted_at_ms, ...) instead of ISO 8601 strings, and metadata/data values arrive already parsed.
-- Every event pushed by the server is protobuf-mapped, except the webrtc:* signaling events and phx_reply payloads (join/push replies), which remain JSON. Any future unmapped event is delivered as JSON on the same socket, so coverage can grow without breaking clients.
+- Most events are protobuf-mapped. These remain JSON: the webrtc:* and signaling events, the friendship events (incoming_request, friend_accepted, ...), result_started / result_event / result_ended, account_banned / account_unbanned, and phx_reply payloads (join/push replies). Any future unmapped event is delivered as JSON on the same socket, so coverage can grow without breaking clients.
 - The format is negotiated per connection, so JSON and protobuf clients coexist freely on the same server.
 
 **Which to choose:** keep JSON unless you have a reason not to. It is human-readable on the wire, and because WebSocket traffic is permessage-deflate compressed the real bandwidth difference on this transport is small. Choose protobuf when you want schema-enforced payload shapes, cheaper client-side decoding, or numeric timestamps; raw payloads measure 35–84% smaller (see the encoding benchmark in protobuf_bench_test.exs), which matters mainly for clients without compression support.
@@ -130,13 +130,15 @@ Detailed payload shapes for every event pushed from the server to the client, gr
 | party_invite_accepted | Someone accepted your party invite | {party_id, user_id} |
 | party_invite_declined | Someone declined your party invite | {party_id, user_id} |
 | party_invite_cancelled | Party leader cancelled your invite | {party_id, user_id} |
+| chat_muted / chat_unmuted | The user was muted / the mute was lifted | {scope, scope_ref_id, expires_at, reason} / {scope, scope_ref_id} |
+| account_banned / account_unbanned | The account was banned / its ban ended | {expires_at, reason} / {} |
+| ready_check_started / ready_check_updated / ready_check_passed / ready_check_failed | A matchmaking accept opened, someone answered, or it resolved | The ready check with its participants |
+| incoming_request / outgoing_request / request_cancelled / friend_accepted / friend_rejected / friend_removed / friend_blocked / friend_unblocked | A friendship changed ([friends](/docs/friends)) | {id, requester_id, target_id, status} |
 
-Friend requests, acceptances, blocks and removals **do not** each get their own
-channel event. Every one of them arrives as a single `friend_updated` carrying
-the refreshed friend list, plus a `notification_created` whose `metadata.type`
-names what happened (`incoming_request`, `friend_accepted`, `friend_blocked`,
-and so on). Handle those two events; a listener bound to `friend_accepted` on
-the socket will never fire.
+The `webrtc:*` events on this channel are on the [WebRTC](/docs/webrtc) page.
+`friend_updated` is a friend's profile and presence, not the friendship: each
+change to a friendship is its own event above, and a request, an accept and a
+reject also create a `notification_created`.
 
 The UserChannel also accepts a "call_hook" push from the client to invoke server-side plugin hooks with a reply.
 
@@ -203,6 +205,7 @@ The UserChannel also accepts a "call_hook" push from the client to invoke server
 | member_joined | User joined the party | {user_id, id, username, display_name, profile_url, metadata, is_online, is_activated, last_seen_at} |
 | member_left | User left the party | {user_id, display_name} |
 | disbanded | Party was disbanded | {party_id} |
+| ready_check_started / ready_check_updated / ready_check_passed / ready_check_failed | A ready check opened, someone answered, or it resolved | The ready check with its participants |
 | member_online | A party member came online | {user_id, id, username, display_name, profile_url, metadata, is_online, is_activated, last_seen_at} |
 | member_offline | A party member went offline | {user_id, id, username, display_name, profile_url, metadata, is_online, is_activated, last_seen_at} |
 | member_updated | A party member was updated | {user_id, id, username, display_name, profile_url, metadata, is_online, is_activated, last_seen_at} |

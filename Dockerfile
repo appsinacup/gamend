@@ -38,8 +38,12 @@ COPY apps/gamend_core/mix.exs apps/gamend_core/
 COPY apps/gamend_web/mix.exs apps/gamend_web/
 COPY sdk_tools/mix.exs sdk_tools/
 RUN mix deps.get
+
+# A precompiled NIF GitHub will not serve (a 504, an outage) fails the first
+# pass; the second builds what is left from source, with the builder's Rust.
 COPY config/config.exs config/dev.exs config/dotenv.exs config/host_config.exs config/prod.exs config/test.exs config/
-RUN mix deps.compile --skip-local-deps
+RUN mix deps.compile --skip-local-deps || \
+    RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps
 
 # The lock as deps.get left it. Beside a gamend checkout Gamend's packages
 # are path dependencies, so an app's committed lock has none of them; the

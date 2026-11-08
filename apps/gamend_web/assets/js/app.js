@@ -29,6 +29,7 @@ import "./lobbies"
 import {Captcha} from "./captcha"
 import {LocalDatetimeInput, startLocalTime} from "./local_time"
 import {startAvatarFallback} from "./avatar_fallback"
+import {startIconBackdrop} from "./icon_backdrop"
 import {startVideoClickToPlay} from "./video_click_to_play"
 import {startConnectionState} from "./connection_state"
 import {startSearchPalette} from "./search_palette"
@@ -501,6 +502,7 @@ function createLiveSocket(extraHooks) {
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
 startAvatarFallback()
+startIconBackdrop()
 // Before the poster can be shown: the overlay button is in the server-rendered
 // markup, so the listener must exist by the time the first click can land.
 startVideoClickToPlay()

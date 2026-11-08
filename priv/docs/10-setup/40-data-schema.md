@@ -20,10 +20,10 @@ touch and the invariants that are not visible from a type.
 These hold everywhere, so the tables below list only what is specific to them:
 
 - **Ids** are UUIDv7 strings — time-ordered, so they sort chronologically.
-- **Timestamps** are always UTC. Every table has `inserted_at`; append-only
-  tables (`ledger_entries`, `inventory_ledger`, `users_tokens`,
-  `user_activity_days`, `tournament_brackets`, `results`, `result_events`)
-  have no `updated_at`.
+- **Timestamps** are always UTC. Every table has `inserted_at`, except
+  `results` and `result_events` (`started_at` and `elapsed_ms` say when);
+  append-only tables (`ledger_entries`, `inventory_ledger`, `users_tokens`,
+  `user_activity_days`, `tournament_brackets`) have no `updated_at`.
 - **`metadata`** is a free-form JSON map you own. Core never interprets it.
 - **Foreign keys** cascade on delete unless noted, so removing a user removes
   their rows.
@@ -36,14 +36,14 @@ These hold everywhere, so the tables below list only what is specific to them:
 |---|---|---|
 | `email` | string | Unique; null for provider-only accounts |
 | `hashed_password` | string | Argon2id (old bcrypt hashes still verify); null for OAuth-only accounts |
-| `username` | string | Unique lowercase handle, generated at registration |
+| `username` | string | Unique lowercase handle, chosen at registration or generated |
 | `display_name` | string | Human-friendly, not unique |
 | `profile_url` | string | Avatar URL. May hold a provider's URL until it is mirrored; only one under `avatars/<id>/`, or one of the site's icons (`/icons/<name>.svg`), is ever sent (`User.public_avatar_url/1`) |
 | `discord_id` `google_id` `facebook_id` `github_id` `steam_id` `apple_id` `device_id` | string | Linked identities, all nullable |
 | `is_admin` | boolean | Grants `/admin` and the admin API |
 | `is_activated` | boolean | `false` blocks login without deleting the account |
 | `is_online` | boolean | Presence; cleared on disconnect |
-| `last_seen_at` | utc_datetime | Stamped when presence drops |
+| `last_seen_at` | utc_datetime | Last contact; a connected socket keeps refreshing it |
 | `token_version` | integer | Bump to revoke every JWT the user holds |
 | `lobby_id` | FK lobbies | Current lobby, nullable. **Not** cleared on disconnect |
 | `party_id` | FK parties | Current party, nullable |
@@ -57,7 +57,7 @@ These hold everywhere, so the tables below list only what is specific to them:
 
 | Column | Type | Notes |
 |---|---|---|
-| `title` | string | Display title, unique |
+| `title` | string | Display title; two lobbies may share one |
 | `host_id` | FK users | Null for hostless (matchmaking-owned) lobbies |
 | `hostless` | boolean | Server owns it; no player may edit it |
 | `max_users` | integer | Default 8 |
@@ -182,7 +182,7 @@ no separate achievements table.
 
 Unique on `(user_id, quest_key, period_key)`. A new period is simply a new row
 on the next reported event; nothing fires at midnight, and period boundaries
-are UTC.
+are UTC unless the host sets `:quest_clock` to `:player`.
 
 ## leaderboards and leaderboard_records
 
@@ -318,7 +318,7 @@ ledger is the audit trail; the balance is a cache of it.
 | `oauth_sessions` | In-flight OAuth handshakes, pruned daily | Authentication |
 | `login_lockouts` | Failed passwords per email address (a SHA-256 of it, never the address) and the lock they set, pruned once both run out | Authentication |
 | `bans` | IP address, account and chat bans (mutes): end, reason, who placed and lifted them; kept as history after they end, pruned by retention | Security |
-| `matchmaking_tickets` | Queue state, one per user or party; the lobby a host's ticket fills (`lobby_id`) and the time a match gives to accept (`accept_timeout_ms`) | Matchmaking |
+| `matchmaking_tickets` | Queue state, one per player (a party's tickets share its id); the lobby a host's ticket fills (`lobby_id`) and the time a match gives to accept (`accept_timeout_ms`) | Matchmaking |
 | `ready_checks`, `ready_check_participants` | "Everyone must answer" boards on a lobby or party, one row per participant | Matchmaking |
 | `tournaments`, `tournament_entries`, `tournament_matches`, `tournament_brackets` | Bracket state per occurrence | Tournaments |
 | `results`, `result_events` | One play per player and what happened in it, in order | [Results](/docs/results) |

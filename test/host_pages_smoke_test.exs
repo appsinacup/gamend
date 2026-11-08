@@ -150,6 +150,16 @@ defmodule GamendHost.PagesSmokeTest do
     assert ids == Enum.uniq(ids)
   end
 
+  # Any other class renders and is simply absent from a stylesheet that never
+  # scanned these files, which is how gamend.org lost every category's colour.
+  test "every guide category names a color from the shared palette" do
+    for path <- Path.wildcard("priv/docs/*/_category.md") do
+      color = path |> File.read!() |> Gamend.Content.frontmatter() |> Map.get("color")
+
+      assert color in GamendWeb.DocsLive.category_colors(), "#{path} names #{inspect(color)}"
+    end
+  end
+
   test "the guides' index offers the download" do
     assert html_response(get(build_conn(), "/docs/setup"), 200) =~ ~s(href="/docs/download")
   end

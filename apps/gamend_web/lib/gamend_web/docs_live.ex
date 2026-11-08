@@ -67,6 +67,15 @@ defmodule GamendWeb.DocsLive do
   `:require_admin_user` and is as private as its guides. List it before a
   `/guide/:slug`, which would take the path for a guide's.
 
+  ## Colours
+
+  A `_category.md` names its `color:` from `category_colors/0`, and a
+  subcategory without one keeps its parent's. A guide's icon is its category's
+  colour. The list is in this module because Tailwind only writes a class it
+  reads in a scanned source, every host scans this one, and a host's guides
+  may sit outside its own tree: gamend.org serves gamend's, and its stylesheet
+  had none of their colours.
+
   ## Navigation carries both shapes
 
   Prev/next *and* the sibling list. A collection written to be read front to
@@ -287,6 +296,22 @@ defmodule GamendWeb.DocsLive do
     end
   end
 
+  @doc "The colours a guide category may name in its `_category.md`."
+  @spec category_colors() :: [String.t()]
+  def category_colors do
+    # Quoted, not `~w()`: Tailwind misses a class that touches the parenthesis.
+    [
+      "text-sky-400",
+      "text-amber-400",
+      "text-violet-400",
+      "text-emerald-400",
+      "text-cyan-400",
+      "text-rose-400",
+      "text-teal-400",
+      "text-slate-400"
+    ]
+  end
+
   @doc """
   Fills in the assigns the layout reads but a LiveView does not always have.
 
@@ -343,7 +368,8 @@ defmodule GamendWeb.DocsLive do
         title: "#{source.title} - #{site}",
         index_path: source.index_path,
         item_path: source.item_path,
-        origin: GamendWeb.Endpoint.url()
+        origin: GamendWeb.Endpoint.url(),
+        static_file: &GamendWeb.ProjectStatic.path_for/1
       )
 
     case html do
@@ -463,7 +489,7 @@ defmodule GamendWeb.DocsLive do
         <.header back={@index_path} class="flex items-center gap-3">
           <.icon
             name={@guide.icon}
-            class={"size-8 shrink-0 opacity-80 #{(@category && @category.color) || "text-primary"}"}
+            class={"size-8 shrink-0 opacity-80 #{page_color(@guide, @category)}"}
           />
           {@guide.title}
         </.header>
@@ -616,7 +642,11 @@ defmodule GamendWeb.DocsLive do
           title={@title}
         />
 
-        <.header>
+        <.header class="flex items-center gap-3">
+          <.icon
+            name={@guide.icon}
+            class={"size-8 shrink-0 opacity-80 #{page_color(@guide, @category)}"}
+          />
           {@guide.title}
           <:subtitle :if={@guide[:description]}>{@guide.description}</:subtitle>
         </.header>
@@ -660,6 +690,11 @@ defmodule GamendWeb.DocsLive do
     </Layouts.app>
     """
   end
+
+  # A tree's guide carries its colour. A flat collection's is its category's.
+  defp page_color(%{color: color}, _category), do: color
+  defp page_color(_guide, %{color: color}), do: color
+  defp page_color(_guide, _category), do: "text-primary"
 
   # The children of the category a guide is the index of, for the cards
   # after its body. Called from the template with the tree in hand, so it
@@ -772,6 +807,7 @@ defmodule GamendWeb.DocsLive do
                 name="hero-chevron-right"
                 class="size-3 shrink-0 transition-transform [details[open]>summary>&]:rotate-90"
               />
+              <.icon name={entry.icon} class={"size-4 shrink-0 #{entry.color}"} />
               <.link
                 navigate={"#{@item_path}/#{entry.slug}"}
                 class={["grow", entry.slug == @current_slug && "text-primary"]}

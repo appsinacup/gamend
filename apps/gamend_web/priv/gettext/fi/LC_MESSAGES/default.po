@@ -4161,3 +4161,8 @@ msgstr "Ei väriä"
 #, elixir-autogen, elixir-format
 msgid "Color %{number}"
 msgstr "Väri %{number}"
+
+#: lib/gamend_web/docs_live.ex:375
+#, elixir-autogen, elixir-format
+msgid "Download for offline"
+msgstr "Lataa offline-käyttöön"

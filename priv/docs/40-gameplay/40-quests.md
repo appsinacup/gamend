@@ -8,7 +8,7 @@ One engine for achievements, dailies, seasonal events and quest lines. A quest i
 
 | Setting | What it does |
 |---|---|
-| reset | When progress restarts: `never`, `daily`, `weekly`, `monthly`, `interval` with `reset_interval_days` (biweekly = 14, any cadence), or `repeat` (again the moment it is claimed, no clock). Every period boundary is 00:00 UTC, the same instant for every player - so a daily rolls over at noon in New Zealand and the previous afternoon on the US west coast. Show players the countdown a quest already carries rather than a reset time. |
+| reset | When progress restarts: `never`, `daily`, `weekly`, `monthly`, `interval` with `reset_interval_days` (biweekly = 14, any cadence), or `repeat` (again the moment it is claimed, no clock). Every period boundary is 00:00 UTC, the same instant for every player - so a daily rolls over at noon in New Zealand and the previous afternoon on the US west coast. Show players the countdown a quest already carries rather than a reset time. `config :gamend_core, :quest_clock, :player` turns each player's periods over on their own clock instead. |
 | starts_at / ends_at | Availability window. Set them and it is an "event". |
 | prerequisite_quest_key | Must be completed first. Set it and it is a "chain" — hidden and frozen until unlocked. |
 | category | Free-form label for your UI tabs. No engine behavior. |
@@ -53,11 +53,9 @@ One engine for achievements, dailies, seasonal events and quest lines. A quest i
 `prerequisite_quest_key` links quests into tiers. A chain occupies **one
 slot** in the quest list: the earliest tier the player can still act on, whether in
 progress or completed-but-unclaimed. Claiming advances the slot to the next
-tier; once every tier is claimed the final one stands for the chain. On the
-web quests page, clicking the chained card opens the whole chain: earlier
-tiers and locked ones ahead alike (hidden quests stay `???` until earned).
-Plugins can read the same view with
-`Gamend.Quests.chain(user_id, quest_key)`.
+tier; once every tier is claimed the final one stands for the chain. The web
+quests page shows a chain as the tier the player is on and nothing more: the
+next tier appears once this one is done.
 
 Quests also carry an optional `icon_url`; when unset, the web UI shows the
 shared default quest icon and the API returns an empty value so game clients

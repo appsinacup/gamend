@@ -265,7 +265,7 @@ apple_id, facebook_id, github_id, steam_id, device_id). Linking mirrors signing 
 | `GET /{provider}`, then poll `GET /session/{id}` | `POST /{provider}/authorize`, then poll `GET /sessions/{id}` |
 
 A link answers the whole current user, whose `linked_providers` shows the new
-one, and pushes `user_updated` on the user channel. A provider account that
+one, and pushes `updated` on the user channel. A provider account that
 already belongs to another player is `409 provider_already_linked`; a polled
 link ends with that code in `error`. `DELETE /api/v1/me/providers/{provider}`
 unlinks, refusing the last provider (`last_auth_method`); `POST` and

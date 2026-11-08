@@ -192,6 +192,27 @@ defmodule Gamend.Content.TreeTest do
            ]
   end
 
+  test "a colour reaches the guides under it, and a subcategory with none keeps its parent's" do
+    root = Path.join(System.tmp_dir!(), "gamend_tree_color_#{System.unique_integer([:positive])}")
+    on_exit(fn -> File.rm_rf!(root) end)
+
+    write(root, "10-outer/_category.md", "---\ncolor: text-sky-400\n---\n")
+    write(root, "10-outer/index.md", "# Outer\n")
+    write(root, "10-outer/page.md", "# Page\n")
+    write(root, "10-outer/20-plain/deep.md", "# Deep\n")
+    write(root, "10-outer/30-own/_category.md", "---\ncolor: text-rose-400\n---\n")
+    write(root, "10-outer/30-own/leaf.md", "# Leaf\n")
+
+    tree = Tree.scan(root)
+
+    assert Tree.find_doc(tree, "outer").color == "text-sky-400"
+    assert Tree.find_doc(tree, "outer/page").color == "text-sky-400"
+    assert Tree.find_category(tree, "outer/plain").color == "text-sky-400"
+    assert Tree.find_doc(tree, "outer/plain/deep").color == "text-sky-400"
+    assert Tree.find_category(tree, "outer/own").color == "text-rose-400"
+    assert Tree.find_doc(tree, "outer/own/leaf").color == "text-rose-400"
+  end
+
   test "Tree.find_doc answers a category's index by the category slug" do
     tree = Content.doc_tree(@collection)
 

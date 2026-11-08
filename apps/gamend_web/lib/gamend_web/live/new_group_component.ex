@@ -183,15 +183,13 @@ defmodule GamendWeb.NewGroupComponent do
                 {owner(@user)}/{@form[:slug].value}
               </p>
             </div>
-            <GroupIconUpload.input
-              :if={@group_icon_upload?}
-              id={"#{@id}-icon-upload"}
-              uploads={@uploads}
-              icon_url={@form[:icon_url].value}
+            <GroupIconUpload.field
+              id={"#{@id}-icon"}
+              field={@form[:icon_url]}
+              uploads={@group_icon_upload? && @uploads}
               cancel="cancel_icon"
               target={@myself}
             />
-            <.icon_picker field={@form[:icon_url]} label={gettext("Icon")} />
             <div :if={length(@types) > 1}>
               <.input
                 field={@form[:type]}

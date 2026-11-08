@@ -43,6 +43,7 @@ A user with `is_admin` set can open the console; everyone else gets redirected. 
 | [/admin/chat](/admin/chat) | Every message, filterable, with single and bulk delete. |
 | [/admin/chat/reports](/admin/chat/reports) | The player-report review queue — review a report and act on it in place. |
 | [/admin/chat/filter](/admin/chat/filter) | The word blocklist: add and edit words, import the bundled per-language lists, and test a message against the live filter. |
+| [/admin/reports](/admin/reports) | The queue of content reports filed from `/report` or the API — see the [Reports guide](/docs/reports). |
 | [/admin/notifications](/admin/notifications) | Browse, create and delete in-app notifications. |
 | [/admin/push](/admin/push) | Registered device tokens, with delete for stale ones and a send form for test pushes. |
 
@@ -80,6 +81,7 @@ Two pages that look similar and are deliberately not:
 | [/admin/logs](/admin/logs) | The in-memory log ring buffer, filterable by level, module, text, source (server vs client) and session — including uploaded client-log sessions with per-session timelines and flagging. |
 | [/admin/translations](/admin/translations) | Locale completeness and every translatable string, filterable by domain and status. |
 | [/admin/analytics](/admin/analytics) | DAU / WAU / MAU, new users, D1 / D7 / D30 cohort retention and payer conversion over the last 30 or 90 days. |
+| [/admin/github](/admin/github) | Every installation of the server's GitHub App: which are suspended and which nothing uses any more. Read-only. |
 
 ## Mounted alongside
 

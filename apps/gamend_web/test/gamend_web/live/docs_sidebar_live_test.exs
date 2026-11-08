@@ -38,7 +38,12 @@ defmodule GamendWeb.DocsSidebarLiveTest do
       "---\ntitle: Introduction\ndescription: Start here.\n---\n\nHello.\n\n## Why\n\n### Because\n"
     )
 
-    write(root, "20-manual/_category.md", "---\ntitle: The manual\ncollapsed: true\n---\n")
+    write(
+      root,
+      "20-manual/_category.md",
+      "---\ntitle: The manual\ncollapsed: true\ncolor: text-rose-400\n---\n"
+    )
+
     write(root, "20-manual/10-scenes.md", "# Scenes\n\nTrees.\n\n## Nodes\n")
     write(root, "20-manual/20-scripting.md", "# Scripting\n\nRune.\n")
 
@@ -166,6 +171,10 @@ defmodule GamendWeb.DocsSidebarLiveTest do
     # Previous and next across the tree.
     assert html =~ ~s(href="/docs/intro")
     assert html =~ ~s(href="/docs/manual/scripting")
+
+    # The page's icon and its category in the tree wear the category's colour.
+    assert html =~ "hero-document-text size-8 shrink-0 opacity-80 text-rose-400"
+    assert html =~ "hero-folder size-4 shrink-0 text-rose-400"
   end
 
   test "a category without an index gets a landing page of its children" do

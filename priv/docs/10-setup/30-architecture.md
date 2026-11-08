@@ -180,7 +180,7 @@ These projects live in one repository, but the runtime split is intentional: cor
 ```text
   gamend/               # The runnable host app itself
   ├── lib/gamend_host/  # Router, supervision tree, boot config, branding
-  ├── lib/gamend_web/   # Host-owned pages (docs, blog, presentation)
+  ├── lib/gamend_web/   # Host-owned docs page and content assets
   ├── priv/docs/        # These guides, as markdown
   ├── apps/
   │   ├── gamend_core/  # Shared domain: contexts, schemas, migrations

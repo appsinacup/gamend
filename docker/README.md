@@ -19,7 +19,10 @@ Every app has the same one, core's included, written by
 `mix gamend.gen.dockerfile` from the app's `mix.exs`: its path dependencies,
 its compile-time config, its release, and `gamend_dockerfile:` for the rest
 (`db_adapter:`, `plugins_dir:`, `build_args:`). `--check` fails when the file
-drifted from them; nothing in it is edited by hand.
+drifted from them; nothing in it is edited by hand. A precompiled NIF GitHub
+will not serve (a 504, an outage) does not fail the build: `mix deps.compile`
+runs again with `RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1` and builds it from
+source, slower but with the same result.
 
 ```sh
 mix gamend.gen.dockerfile           # write Dockerfile

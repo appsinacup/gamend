@@ -123,8 +123,7 @@ before_quest_claim/3 can veto a player's claim (return an error tuple to reject;
 @impl true
 def before_quest_claim(_user_id, quest, _progress) do
 # Example: event quests only claimable while the event runs
-  if quest.kind == "event" and quest.ends_at &&
-       DateTime.compare(DateTime.utc_now(), quest.ends_at) == :gt do
+  if quest.ends_at && DateTime.compare(DateTime.utc_now(), quest.ends_at) == :gt do
     {:error, :event_over}
   else
     :ok
@@ -440,7 +439,7 @@ A complete, runnable example is in
 
 ## Every hook
 
-81 callbacks, all optional; implement only what you need. A `before_*`
+87 callbacks, all optional; implement only what you need. A `before_*`
 hook returns `{:ok, value}` to continue (optionally rewriting the value) or
 `{:error, reason}` to reject the operation. An `after_*` hook runs once the
 change is committed and its return value is ignored.
@@ -466,6 +465,11 @@ change is committed and its return value is ignored.
 | Purchases | `before_purchase` | `after_purchase_fulfilled` `after_purchase_revoked` |
 | Entitlements | — | `after_entitlement_changed` |
 | Push | `before_push_send` | `after_push_sent` |
+
+Five more neither gate nor observe: `matchmaking_form_matches` and
+`validate_username` replace built-in logic, `tournament_match_ready` and
+`tournament_match_expired` hand a match to the game, and `on_custom_hook`
+answers RPC names registered at runtime.
 
 Each callback's exact signature, arguments and return contract is in the
 [`Gamend.Hooks` docs](https://docs.gamend.org/Gamend.Hooks.html). The

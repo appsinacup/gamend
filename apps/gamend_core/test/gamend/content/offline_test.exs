@@ -11,6 +11,7 @@ defmodule Gamend.Content.OfflineTest do
   @flat :offline_test_flat
   @tree :offline_test_tree
   @empty :offline_test_empty
+  @static :offline_test_static
   @show_hidden {__MODULE__, :show_hidden}
 
   @opts [
@@ -53,7 +54,14 @@ defmodule Gamend.Content.OfflineTest do
     root = Path.join(System.tmp_dir!(), "gamend_offline_#{System.unique_integer([:positive])}")
 
     write(root, "10-start/10-one.md", @one)
-    write(root, "10-start/20-two.md", "# Two\n\n## Overview\n\n## Setup\n")
+
+    write(
+      root,
+      "10-start/20-two.md",
+      "# Two\n\n## Overview\n\n## Setup\n\n![S](/img/static.png)\n"
+    )
+
+    write(root, "site/img/static.png", "png bytes")
     write(root, "10-start/30-three.md", "---\nfeature: hidden\n---\n# Three\n\nSecret.\n")
     write(root, "images/chart.svg", "<svg></svg>")
     File.mkdir_p!(Path.join(root, "empty"))
@@ -68,14 +76,15 @@ defmodule Gamend.Content.OfflineTest do
     end
 
     Content.register_path(@empty, kind: :dir, path: Path.join(root, "empty"))
+    Content.register_path(@static, kind: :dir, path: root, assets: :static)
 
     on_exit(fn ->
-      Enum.each([@flat, @tree, @empty], &Content.unregister_path/1)
+      Enum.each([@flat, @tree, @empty, @static], &Content.unregister_path/1)
       :persistent_term.erase(@show_hidden)
       File.rm_rf!(root)
     end)
 
-    %{html: Offline.html(@flat, @opts)}
+    %{html: Offline.html(@flat, @opts), root: root}
   end
 
   test "is every guide in reading order, under a contents list", %{html: html} do
@@ -112,6 +121,16 @@ defmodule Gamend.Content.OfflineTest do
     assert html =~ "data:image/svg+xml;base64,#{Base.encode64("<svg></svg>")}"
     assert html =~ ~s(src="https://game.example/content/offline_test_flat/)
     refute html =~ ~r/\ssrc="\/[^\/]/
+  end
+
+  test "an image from the site's static files is in the file too", %{root: root} do
+    static_file = fn url -> Path.join([root, "site", url]) end
+    html = Offline.html(@static, Keyword.put(@opts, :static_file, static_file))
+
+    assert html =~ "data:image/png;base64,#{Base.encode64("png bytes")}"
+
+    # Without the lookup it can only be a link to the site.
+    assert Offline.html(@static, @opts) =~ ~s(src="https://game.example/img/static.png")
   end
 
   test "markup shown as code is left as written", %{html: html} do

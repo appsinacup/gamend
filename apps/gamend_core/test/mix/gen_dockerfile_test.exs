@@ -78,7 +78,13 @@ defmodule Mix.Tasks.Gamend.Gen.DockerfileTest do
     lines = lines(render(%{}))
     index = &Enum.find_index(lines, fn line -> line == &1 end)
 
-    assert index.("RUN mix deps.compile --skip-local-deps") <
+    assert index.("RUN mix deps.compile --skip-local-deps || \\") <
              index.("ENV GAMEND_CONTENT_APP_VERSION=${GAMEND_CONTENT_APP_VERSION}")
+  end
+
+  test "a NIF that will not download builds from source" do
+    assert render(%{}) =~
+             "RUN mix deps.compile --skip-local-deps || \\\n" <>
+               "    RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps\n"
   end
 end

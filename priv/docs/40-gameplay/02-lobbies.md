@@ -51,7 +51,7 @@ A non-member can watch a public lobby - not hidden, not locked - by joining its 
 
 The matcher creates its lobbies itself: hidden, hostless, sized to the match, seated one join at a time, then locked - so a matchmade room never appears in the public list and never gains a player host. If any winner cannot be seated, the half-built lobby is deleted and the remaining tickets requeue. See [/docs/matchmaking](/docs/matchmaking).
 
-When a lobby is deleted or empties out, its final state is captured as a snapshot for later inspection - see [/docs/lobby-snapshots](/docs/lobby-snapshots).
+A lobby that is deleted or empties out leaves nothing behind. What a play leaves is its [results](/docs/results), which the game writes as things happen.
 
 ## HTTP API
 

@@ -4111,3 +4111,8 @@ msgstr "色なし"
 #, elixir-autogen, elixir-format
 msgid "Color %{number}"
 msgstr "色 %{number}"
+
+#: lib/gamend_web/docs_live.ex:375
+#, elixir-autogen, elixir-format
+msgid "Download for offline"
+msgstr "オフライン用にダウンロード"

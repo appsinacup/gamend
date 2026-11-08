@@ -43,6 +43,7 @@ defmodule Gamend.Content.Tree do
           image: String.t() | nil,
           keywords: [String.t()],
           icon: String.t(),
+          color: String.t(),
           position: integer() | nil,
           category: String.t() | nil,
           index?: boolean(),
@@ -180,6 +181,11 @@ defmodule Gamend.Content.Tree do
     meta = category_meta(root, dir)
     slug = join_slug(parent_slug, Markdown.strip_order_prefix(name))
 
+    # Its own colour or its parent's, and everything under it follows, so a
+    # page's icon reads as part of the section it is in.
+    color = string(meta["color"]) || Keyword.get(opts, :category_color, "text-primary")
+    opts = Keyword.put(opts, :category_color, color)
+
     title =
       string(meta["title"]) || string(meta["label"]) ||
         humanize(Markdown.strip_order_prefix(name))
@@ -200,7 +206,7 @@ defmodule Gamend.Content.Tree do
       title: title,
       label: string(meta["label"]) || title,
       icon: string(meta["icon"]) || Keyword.get(opts, :category_icon, "hero-folder"),
-      color: string(meta["color"]) || Keyword.get(opts, :category_color, "text-primary"),
+      color: color,
       description: string(meta["description"]) || (index && index.description),
       position: position(meta, name),
       collapsed: meta["collapsed"] != false,
@@ -237,6 +243,7 @@ defmodule Gamend.Content.Tree do
       image: string(meta["image"]),
       keywords: Frontmatter.list(meta["keywords"]),
       icon: string(meta["icon"]) || Keyword.get(opts, :doc_icon, "hero-document-text"),
+      color: Keyword.get(opts, :category_color, "text-primary"),
       position: position(meta, Path.basename(relative)),
       category: parent_slug,
       index?: forced_slug != nil,

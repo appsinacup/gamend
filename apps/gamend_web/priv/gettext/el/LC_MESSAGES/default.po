@@ -4161,3 +4161,8 @@ msgstr "Χωρίς χρώμα"
 #, elixir-autogen, elixir-format
 msgid "Color %{number}"
 msgstr "Χρώμα %{number}"
+
+#: lib/gamend_web/docs_live.ex:375
+#, elixir-autogen, elixir-format
+msgid "Download for offline"
+msgstr "Λήψη για χρήση εκτός σύνδεσης"

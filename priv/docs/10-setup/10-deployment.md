@@ -87,7 +87,7 @@ docker compose logs -f app
 - Enable HTTPS with automatic certificate renewal (see below)
 - Set GAMEND_HTTP_HOST to your actual domain
 - Configure OAuth providers for social login (see the [Authentication](/docs/authentication) guides)
-- Enable email delivery via SMTP for password resets and notifications
+- Enable email delivery via SMTP for confirmation emails, sign-in links and notifications
 - Set up Redis for distributed caching when running multiple instances (see [Scaling](/docs/scaling))
 - Review rate limiting settings for your expected traffic
 
@@ -109,7 +109,7 @@ Two rules worth knowing before you tune them:
 
 ### Accounts
 
-Accounts are swept too, on their own two windows.
+Accounts are swept too, on their own three windows.
 
 **Anonymous accounts** - those created by `POST /api/v1/login/device`, holding
 nothing but a device id - are deleted after
@@ -118,8 +118,11 @@ one unauthenticated request to create and cannot be emailed, so this sweep is on
 by default; without it the only bound on how much a bot accumulates is how long
 it keeps asking.
 
-**Accounts with a real identity** (an email address or a linked sign-in
-provider) are only swept if you opt in with
+**Accounts whose only identity is an email never confirmed** are deleted after
+`GAMEND_RETENTION_UNCONFIRMED_USERS_DAYS` (default `30`) of inactivity.
+
+**Accounts with a real identity** (a confirmed email address or a linked
+sign-in provider) are only swept if you opt in with
 `GAMEND_RETENTION_INACTIVE_USERS_DAYS`, which defaults to `0`. If you turn it
 on, `730` matches what Google and Microsoft use for consumer accounts. A warning
 email goes out `GAMEND_RETENTION_INACTIVE_USERS_WARN_DAYS` (default `30`) before
@@ -130,7 +133,7 @@ the warning. An account with no email address (a linked provider only) cannot be
 warned, so it is deleted at the cutoff with no notice. A warn window of `0` does
 the same for every account.
 
-Two kinds of account are never swept on either window: admins, and anyone
+Two kinds of account are never swept on any window: admins, and anyone
 holding a purchase or entitlement. Deleting an account also deletes its
 stored objects, which nothing else reaches - object storage has no foreign key
 to cascade.

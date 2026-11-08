@@ -238,13 +238,12 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   type="number"
                   label={gettext("Max members")}
                 />
-                <div class="md:col-span-2 space-y-3">
-                  <GroupIconUpload.input
-                    :if={@group_icon_upload?}
-                    uploads={@uploads}
-                    icon_url={@create_group_form[:icon_url].value}
+                <div class="md:col-span-2">
+                  <GroupIconUpload.field
+                    id="create-group-icon"
+                    field={@create_group_form[:icon_url]}
+                    uploads={@group_icon_upload? && @uploads}
                   />
-                  <.icon_picker field={@create_group_form[:icon_url]} label={gettext("Icon")} />
                 </div>
               </div>
               <div class="mt-3">
@@ -288,12 +287,11 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                   label={gettext("Max members")}
                   type="number"
                 />
-                <GroupIconUpload.input
-                  :if={@group_icon_upload?}
-                  uploads={@uploads}
-                  icon_url={@group_edit_form[:icon_url].value}
+                <GroupIconUpload.field
+                  id="edit-group-icon"
+                  field={@group_edit_form[:icon_url]}
+                  uploads={@group_icon_upload? && @uploads}
                 />
-                <.icon_picker field={@group_edit_form[:icon_url]} label={gettext("Icon")} />
               </.form>
             <% else %>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

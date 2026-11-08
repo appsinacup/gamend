@@ -118,6 +118,10 @@ defmodule GamendCore.MixProject do
       # Syntax highlighting engine MDEx delegates to; without it fenced code
       # renders as undifferentiated text.
       {:lumis, "~> 0.10"},
+      # What lumis and mdex_native build their NIF with when GitHub will not
+      # serve the precompiled one (RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1). The
+      # version ex_sctp asks for, in gamend_web.
+      {:rustler, "~> 0.37.1", runtime: false},
       # A grammar is its own dependency. One no package supplies renders its
       # fence as plain text, silently, so each language the guides fence is
       # here; `~> 0.26.0` is the tree-sitter series Lumis 0.10 loads.

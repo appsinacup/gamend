@@ -35,7 +35,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Rust: NIFs with no prebuilt binary for the platform compile from source
-# (ex_sctp, through WebRTC, always; mdex_native when its download fails).
+# (ex_sctp, through WebRTC, always; lumis and mdex_native when their download
+# fails, the retry on `mix deps.compile` in the generated Dockerfile).
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --profile minimal
 ENV PATH="/root/.cargo/bin:${PATH}"
 

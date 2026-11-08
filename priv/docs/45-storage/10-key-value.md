@@ -102,7 +102,7 @@ On protobuf sockets, `kv_updated` data for a matching key is pushed as compact b
 
 ## Caching and limits
 
-Every read runs through the app cache with a 60-second TTL: writes re-warm the entry (evicting it on other instances first so no node serves the old value out its TTL), deletes evict it, and listings are versioned per scope. On a multi-node deploy the cache mode decides how that invalidation travels. See [Cache Setup](/docs/cache-setup).
+Every read runs through the app cache with a 60-second TTL: writes and deletes evict the entry on every instance, so no node serves the old value out its TTL, and listings are versioned per scope. On a multi-node deploy the cache mode decides how that invalidation travels. See [Cache Setup](/docs/cache-setup).
 
 - `GAMEND_LIMITS_MAX_KV_KEY` (512): maximum key length.
 - `GAMEND_LIMITS_MAX_KV_VALUE_SIZE` (65536): maximum serialized value size, in bytes.

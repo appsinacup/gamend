@@ -128,6 +128,17 @@ Chat notifications include a message_count field in metadata indicating how many
 
 `quest_completed` carries `quest_key`, `category` and `quest_title`.
 
+### Reports
+
+```text
+  ┌──────────────────────┬──────────────────────────────────────────────┐
+  │ Type                 │ Description                                  │
+  ├──────────────────────┼──────────────────────────────────────────────┤
+  │ report               │ A report is waiting for review (admins)      │
+  │ report_resolved      │ A report you filed was reviewed              │
+  └──────────────────────┴──────────────────────────────────────────────┘
+```
+
 ## Behaviour notes
 
 - Notifications upsert on (sender_id, recipient_id, title): sending the same notification again updates the existing one.
@@ -144,8 +155,9 @@ A user chooses per **group** and per **channel** (`in_app`, `email`, `push`) on 
 | `account` | sign-in links, email changes | email | nothing: it is how the account works |
 | `social` | `friend_*`, `group_*`, `party_*`, `lobby_kicked` | in-app + push | email, push |
 | `chat` | `chat_friend`, `chat_group`, `chat_lobby`, `chat_party` | in-app + push | push |
-| `quests` | `quest_completed` | in-app | email, push |
+| `quests` | `quest_completed` | in-app | push |
 | `reports` | `report_resolved`, `chat_report_resolved`, `chat_warning`, `chat_mute` | in-app + email + push, email weekly but for a warning or mute | email, push |
+| `moderation` | `report`, `chat_report` (admins only, chosen on `/admin/notifications`) | in-app + email + push | email, push |
 
 A type in no group (a moderator's notice) is always pushed. A host adds its own groups in config:
 
@@ -153,11 +165,11 @@ A type in no group (a moderator's notice) is always pushed. A host adds its own 
 config :gamend_core, :notification_groups, [
   %{key: "streak", label: "Streak about to end",
     defaults: %{"in_app" => true, "email" => false, "push" => false},
-    types: [], signup: true}
+    types: []}
 ]
 ```
 
-`signup: true` offers the group's email on the registration form, unticked. `configurable` (default: all three channels) limits what the user may change.
+`configurable` (default: all three channels) limits what the user may change.
 
 To send one, the server calls `Gamend.Notifications.notify(user_id, group, attrs)` with `"title"`, `"content"`, an optional `"url"` (a path on the site, shown as the notification's Open button) and optional `"subject"`/`"text"` for the email. Each channel the user left on gets it: the in-app row (sender = recipient, so a repeated title refreshes one row), a push, and an email job (`GamendWeb.Workers.NotificationEmail`, on the `mailers` queue). The email ends with a one-click unsubscribe link and carries `List-Unsubscribe` + `List-Unsubscribe-Post` headers, so a mail client's own Unsubscribe button works.
 

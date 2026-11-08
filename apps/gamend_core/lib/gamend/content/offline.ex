@@ -19,8 +19,9 @@ defmodule Gamend.Content.Offline do
     * A link to another guide goes to that guide's section. Any other link to
       this site (`/admin/config`) is made absolute, since the file has no site
       of its own to be relative to.
-    * An `<img>` the collection serves is written in as a `data:` URI. A video
-      is too big for that and stays a link.
+    * An `<img>` on this site is written in as a `data:` URI, whether the
+      collection serves it or, with `assets: :static`, the site's static files
+      do. A video is too big for that and stays a link.
     * A mermaid diagram stays its source. Drawing it takes a script several
       times the size of the guides.
   """
@@ -33,6 +34,7 @@ defmodule Gamend.Content.Offline do
           | {:index_path, String.t()}
           | {:item_path, String.t()}
           | {:origin, String.t()}
+          | {:static_file, (String.t() -> Path.t() | nil)}
 
   # In the file because nothing else can be: a page opened from disk has no
   # stylesheet to fetch. `screen` on the dark palette, or a PDF printed from a
@@ -98,6 +100,10 @@ defmodule Gamend.Content.Offline do
     * `:item_path` — the prefix of a guide's URL on the site
     * `:origin` — the site's URL, for every other link to it
 
+  With `:static_file`, a function answering which file on disk a URL path is
+  served from, an image outside the collection is written in too. Without it,
+  such an image is a link to the site.
+
   Cached until `Gamend.Content.reload/0`, under the guides it holds: `:visible`
   is decided per call, and a switch flipped at runtime has to reach a file
   built before it.
@@ -121,7 +127,8 @@ defmodule Gamend.Content.Offline do
       slugs: MapSet.new(docs, & &1.slug),
       index_path: opts.index_path,
       item_path: opts.item_path,
-      origin: opts.origin
+      origin: opts.origin,
+      static_file: Map.get(opts, :static_file, fn _url -> nil end)
     }
 
     title = Markdown.escape(opts.title)
@@ -230,13 +237,18 @@ defmodule Gamend.Content.Offline do
   end
 
   defp embed(url, context) do
-    relative = url |> String.replace_prefix("/content/#{context.collection}/", "") |> URI.decode()
-
-    with path when is_binary(path) <- Content.asset_path(context.collection, relative),
+    with path when is_binary(path) <- image_file(url, context),
          {:ok, bytes} <- File.read(path) do
       "data:#{MIME.from_path(path)};base64,#{Base.encode64(bytes)}"
     else
       _unreadable -> context.origin <> url
+    end
+  end
+
+  defp image_file(url, context) do
+    case String.split(url, "/content/#{context.collection}/", parts: 2) do
+      ["", relative] -> Content.asset_path(context.collection, URI.decode(relative))
+      _elsewhere -> context.static_file.(url)
     end
   end
 end

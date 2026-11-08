@@ -131,10 +131,10 @@ Already answerable from existing tables (no new plumbing):
 | Notification read rate; reachable installs by platform | `notifications.read`, `push_tokens` |
 | Item ownership, wallet distribution | `inventory_items`, `wallets` |
 
-Answerable **only via counters** your game writes: anything about a match or a
-level once it is over, since a lobby is usually deleted when the match ends and
-nothing else records it (matches started / finished / abandoned per day, per
-mode, solo vs group), and the funnel around any gate your game adds.
+Answerable **only via counters or [results](/docs/results)** your game writes:
+anything about a match or a level once it is over, since a lobby is usually
+deleted when the match ends (matches started / finished / abandoned per day,
+per mode, solo vs group), and the funnel around any gate your game adds.
 
 Not recorded by core; add a counter or a table if you need it: session length
 and peak concurrency history; onboarding funnel steps; shop opens / SKU views /

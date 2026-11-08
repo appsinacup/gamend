@@ -63,7 +63,7 @@ Add presentation pages under `pages`. Each page needs a `path`; existing code-ow
           "buttons": [
             {
               "label": "Docs",
-              "href": "/docs/setup",
+              "href": "/docs/deployment",
               "icon": "hero-book-open-solid"
             }
           ]
@@ -105,7 +105,7 @@ Add presentation pages under `pages`. Each page needs a `path`; existing code-ow
       }
     ],
     "guest_links": [
-      { "label": "Guides", "href": "/docs/setup" }
+      { "label": "Guides", "href": "/docs" }
     ],
     "authenticated_links": [
       { "label": "Dashboard", "href": "/dashboard" }
@@ -200,7 +200,7 @@ Presentation media is visual only. Use buttons for links and calls to action.
 
 Edit assets/css/app.css when you want to change the full base stylesheet. The compiled bundle is written to priv/static/assets/css/app.css. Use priv/static/theme.css for a small layer of token or color overrides without forking the whole base CSS.
 
-Changelog, roadmap, and blog pages are host-owned, and their Markdown content now lives at the repository root as CHANGELOG.md, ROADMAP.md, and blog/. They are no longer configured through GAMEND_CONTENT_THEME_CONFIG.
+The changelog, roadmap and blog pages come with gamend_web (`GamendWeb.ContentPages`); their Markdown content lives at the repository root as CHANGELOG.md, ROADMAP.md, and blog/. They are not configured through GAMEND_CONTENT_THEME_CONFIG.
 
 ### Your own static files
 

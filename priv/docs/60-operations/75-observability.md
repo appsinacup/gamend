@@ -33,7 +33,7 @@ scrape_configs:
 
 ### Grafana
 
-`docker compose up` starts Prometheus (scraping `/metrics` every 15s) and Grafana at `localhost:3000`, with provisioning that auto-adds the Prometheus data source. No dashboards are provisioned: the "Gamend" folder's provider reads `/var/lib/grafana/dashboards`, which nothing fills, so it starts empty. PromEx ships BEAM, Phoenix and Ecto dashboards; render one with `mix prom_ex.dashboard.export --dashboard beam.json --module GamendWeb.PromEx --stdout` (likewise `phoenix.json`, `ecto.json`) and import it in Grafana. If you host Grafana elsewhere, set `GAMEND_OBSERVABILITY_GRAFANA_URL` and the admin dashboard links to it.
+In the gamend repository, `docker compose -f docker-compose.multi.yml up` starts Prometheus (scraping `/metrics` every 15s) and Grafana at `localhost:3000`, with provisioning that auto-adds the Prometheus data source. No dashboards are provisioned: the "Gamend" folder's provider reads `/var/lib/grafana/dashboards`, which nothing fills, so it starts empty. PromEx ships BEAM, Phoenix and Ecto dashboards; render one with `mix prom_ex.dashboard.export --dashboard beam.json --module GamendWeb.PromEx --stdout` (likewise `phoenix.json`, `ecto.json`) and import it in Grafana. If you host Grafana elsewhere, set `GAMEND_OBSERVABILITY_GRAFANA_URL` and the admin dashboard links to it.
 
 ## Logs
 

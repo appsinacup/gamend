@@ -1323,9 +1323,18 @@ defmodule GamendWeb.CoreComponents do
 
   def entity_icon(assigns), do: inline_icon(assigns)
 
+  # `data-icon-backdrop`: a logo that would vanish on the theme gets a
+  # background that shows it (`icon_backdrop.js`).
   defp uploaded_icon(assigns) do
     ~H"""
-    <img src={@icon_url} alt="" loading="lazy" decoding="async" class={[@class, "object-contain"]} />
+    <img
+      src={@icon_url}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      data-icon-backdrop
+      class={[@class, "rounded-field object-contain"]}
+    />
     """
   end
 
@@ -1958,6 +1967,7 @@ defmodule GamendWeb.CoreComponents do
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
       data-avatar-fallback
+      data-icon-backdrop
       class={["rounded-full object-cover bg-base-300", @class]}
     />
     <.icon

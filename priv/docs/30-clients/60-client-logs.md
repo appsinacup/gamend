@@ -67,7 +67,7 @@ The endpoint itself is language-agnostic: `POST /api/v1/client_logs` with a `ses
 - `level` is `trace`, `debug`, `info`, `warn` or `error`; `at` is unix seconds by the client's clock, kept as sent.
 - Messages are clamped to 2000 bytes, folded onto one line, and unmistakable secrets (JWTs, `token=...` assignments) are redacted on arrival.
 
-Success is `202` with `{"accepted": 12, "dropped": 0, "errors": 1, "client_session_id": "0f1e2d3c..."}`. A `503` means collection is disabled: back off and retry later; `403` means the session belongs to another user; `400` a malformed batch.
+Success is `202` with `{"data": {"accepted": 12, "dropped": 0, "errors": 1, "client_session_id": "0f1e2d3c..."}}`. A `503` means collection is disabled: back off and retry later; `403` means the session belongs to another user; `400` a malformed batch.
 
 ## Reading them: Admin → Logs
 

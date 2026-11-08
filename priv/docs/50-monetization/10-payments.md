@@ -21,19 +21,17 @@ GAMEND_PAYMENTS_ENVIRONMENT is the global payment mode. Use sandbox for non-real
 ```bash
 # Stripe sandbox mode (Stripe test keys)
 GAMEND_PAYMENTS_ENVIRONMENT=sandbox
-GAMEND_PAYMENTS_STRIPE_API_VERSION=2022-11-15
 GAMEND_PAYMENTS_STRIPE_SANDBOX_SECRET_KEY=sk_test_...
 GAMEND_PAYMENTS_STRIPE_SANDBOX_WEBHOOK_SECRET=whsec_...
 # Stripe live mode
 GAMEND_PAYMENTS_ENVIRONMENT=production
-GAMEND_PAYMENTS_STRIPE_API_VERSION=2022-11-15
 GAMEND_PAYMENTS_STRIPE_PRODUCTION_SECRET_KEY=sk_live_...
 GAMEND_PAYMENTS_STRIPE_PRODUCTION_WEBHOOK_SECRET=whsec_...
 ```
 
 - Copy the Stripe API secret key from `Developers / Workbench > API keys`. Use a `sk_test_...` key for sandbox and a `sk_live_...` key for production.
 - The webhook secret is not the API key. Copy the webhook signing secret from the Stripe webhook endpoint details after the endpoint exists.
-- `GAMEND_PAYMENTS_STRIPE_API_VERSION` is optional. If omitted, the Stripe SDK default is 2022-11-15; the webhook endpoint should use the same version.
+- The server pins its Stripe API version (`2025-11-17.clover`, the SDK's own); the webhook endpoint should use the same version.
 - Live secret keys may be shown only once when created. Store them in deployment secrets or environment variables, never in source control.
 
 ### Create a Stripe webhook endpoint
@@ -41,7 +39,7 @@ GAMEND_PAYMENTS_STRIPE_PRODUCTION_WEBHOOK_SECRET=whsec_...
 1. Open Stripe Dashboard `Developers / Workbench > Webhooks`.
 2. Click Add endpoint.
 3. Set endpoint URL to `https://your-domain.com/api/v1/payments/webhooks/stripe`.
-4. For API version, choose `2022-11-15` for the default integration, or the exact value configured in GAMEND_PAYMENTS_STRIPE_API_VERSION. Checkout requests use stripity_stripe with the same API version.
+4. For API version, choose `2025-11-17.clover`, the version the server pins. Checkout requests use stripity_stripe with the same API version.
 5. Select only the events this server handles:
 
 ```text
@@ -58,6 +56,7 @@ refund.updated
 charge.refund.updated
 charge.dispute.created
 charge.dispute.funds_withdrawn
+charge.dispute.closed
 ```
 
 6. Save the endpoint.
@@ -68,7 +67,7 @@ Do not enable all Stripe events. Extra events add webhook traffic, stored provid
 
 refund.failed is not enabled by default because a failed refund does not mean access should be automatically regranted; add that only with an explicit ops policy.
 
-Do not choose Latest API version without testing. If you change GAMEND_PAYMENTS_STRIPE_API_VERSION, update the webhook endpoint to the same version and run Stripe checkout/webhook tests before production.
+Do not choose Latest API version. An event in another Stripe release is still handled, but it reads other shapes and the server logs a warning; a webhook endpoint's version is set when it is created, so changing it means a new endpoint with a new signing secret.
 
 ```text
 # Local testing with Stripe CLI
@@ -161,6 +160,7 @@ Stripe refund and dispute events are callbacks. When one takes effect it updates
 | `refund.created`, `refund.updated`, `charge.refund.updated` | the refund's status is `succeeded` (a pending, failed or cancelled refund changes nothing) | Purchase marked refunded; entitlements revoked |
 | `charge.dispute.created` | always | Purchase marked revoked; entitlements revoked |
 | `charge.dispute.funds_withdrawn` | always | Purchase marked revoked; entitlements revoked |
+| `charge.dispute.closed` | the dispute was won (`won`, `warning_closed`) | A purchase the dispute revoked is restored, with its entitlements |
 
 ### Refunding from the site
 

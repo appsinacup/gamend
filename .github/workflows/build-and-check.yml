@@ -304,6 +304,11 @@ jobs:
       - name: Install dependencies
         run: MIX_ENV=dev mix deps.get
 
+      - name: Compile dependencies (from source if a NIF will not download)
+        env:
+          MIX_ENV: dev
+        run: mix deps.compile --skip-local-deps || { echo RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 >> "$GITHUB_ENV"; RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps; }
+
       - name: Install web dependencies
         working-directory: apps/gamend_web
         run: MIX_ENV=dev mix deps.get
@@ -386,6 +391,11 @@ jobs:
       # project resolves its own deps/ — the root fetch does not reach them.
       - name: Install dependencies
         run: MIX_ENV=dev mix deps.get
+
+      - name: Compile dependencies (from source if a NIF will not download)
+        env:
+          MIX_ENV: dev
+        run: mix deps.compile --skip-local-deps || { echo RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 >> "$GITHUB_ENV"; RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps; }
 
       - name: Install dependencies (gamend_core)
         working-directory: apps/gamend_core
@@ -507,6 +517,11 @@ jobs:
       - name: Install dependencies
         run: MIX_ENV=test mix deps.get
 
+      - name: Compile dependencies (from source if a NIF will not download)
+        env:
+          MIX_ENV: test
+        run: mix deps.compile --skip-local-deps || { echo RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 >> "$GITHUB_ENV"; RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps; }
+
       - name: Install web test dependencies
         working-directory: apps/gamend_web
         run: MIX_ENV=test mix deps.get
@@ -583,6 +598,11 @@ jobs:
       - name: Install dependencies
         run: MIX_ENV=test mix deps.get
 
+      - name: Compile dependencies (from source if a NIF will not download)
+        env:
+          MIX_ENV: test
+        run: mix deps.compile --skip-local-deps || { echo RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 >> "$GITHUB_ENV"; RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps; }
+
       - name: Install web test dependencies
         working-directory: apps/gamend_web
         run: MIX_ENV=test mix deps.get
@@ -628,6 +648,11 @@ jobs:
       # Exercise the documented developer commands end-to-end (SQLite dev
       # database), so alias/task breakage is caught even though tests bypass
       # these aliases.
+      - name: Compile dependencies (from source if a NIF will not download)
+        run: |
+          mix deps.get
+          mix deps.compile --skip-local-deps || { echo RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 >> "$GITHUB_ENV"; RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps; }
+
       - name: mix setup
         run: mix setup
 
@@ -713,6 +738,7 @@ jobs:
       - name: Install Elixir deps (for generating spec)
         run: |
           mix deps.get
+          mix deps.compile --skip-local-deps || { echo RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 >> "$GITHUB_ENV"; RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps; }
 
       - name: Prepare database (app boot requires a migrated DB)
         run: |
@@ -852,6 +878,7 @@ jobs:
         working-directory: .
         run: |
           mix deps.get
+          mix deps.compile --skip-local-deps || { echo RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 >> "$GITHUB_ENV"; RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps; }
 
       - name: Prepare database (app boot requires a migrated DB)
         run: |
@@ -1020,6 +1047,9 @@ jobs:
 
       - name: Install dependencies
         run: mix deps.get
+
+      - name: Compile dependencies (from source if a NIF will not download)
+        run: mix deps.compile --skip-local-deps || { echo RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 >> "$GITHUB_ENV"; RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps; }
 
       # Steps 5 and 9 call example_hook.hello, so the server loads the
       # example plugins, bundled as the loader reads them.
@@ -1233,6 +1263,7 @@ jobs:
         working-directory: apps/gamend_core
         run: |
           mix deps.get
+          mix deps.compile --skip-local-deps || { echo RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 >> "$GITHUB_ENV"; RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps; }
           # Same re-publish guard as gamend_sdk above.
           if curl -sfo /dev/null "https://hex.pm/api/packages/gamend_core/releases/${APP_VERSION}"; then
             echo "gamend_core ${APP_VERSION} is already on Hex - skipping (workflow re-run on the same commit)."
@@ -1255,6 +1286,7 @@ jobs:
             echo "gamend_core ${APP_VERSION} not in the registry yet - retrying in 20s."
             sleep 20
           done
+          mix deps.compile --skip-local-deps || { echo RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 >> "$GITHUB_ENV"; RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps; }
           # Same re-publish guard as gamend_sdk above.
           if curl -sfo /dev/null "https://hex.pm/api/packages/gamend_web/releases/${APP_VERSION}"; then
             echo "gamend_web ${APP_VERSION} is already on Hex - skipping (workflow re-run on the same commit)."
@@ -1304,6 +1336,7 @@ jobs:
         working-directory: apps/gamend_core
         run: |
           mix deps.get
+          mix deps.compile --skip-local-deps || { echo RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 >> "$GITHUB_ENV"; RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps; }
 
       # Docs are generated from gamend_core: it holds the public API
       # (Gamend.* domain modules, hooks). The root :gamend_host is a

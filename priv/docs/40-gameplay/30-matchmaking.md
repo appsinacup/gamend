@@ -148,9 +148,9 @@ A party queues as one. The leader calls join for everybody: the server writes on
 
 | Rule | Why |
 |---|---|
-| Only the leader can queue a party | A member calling join gets 409 not_party_leader. One caller means members can never disagree about min_players or max_players. |
-| A party larger than max_players is refused | 409 party_too_large. It could never be seated, so it is rejected at join instead of waiting forever. |
-| A party holding a blocked pair cannot queue | 409 party_has_blocked_pair. An invite cannot put a blocked pair in a party, but blocking someone already in it can. Such a party is unseatable, so it is refused at join rather than losing a member to a failed lobby. |
+| Only the leader can queue a party | A member calling join gets 403 not_party_leader. One caller means members can never disagree about min_players or max_players. |
+| A party larger than max_players is refused | 400 party_too_large. It could never be seated, so it is rejected at join instead of waiting forever. |
+| A party holding a blocked pair cannot queue | 403 party_has_blocked_pair. An invite cannot put a blocked pair in a party, but blocking someone already in it can. Such a party is unseatable, so it is refused at join rather than losing a member to a failed lobby. |
 | One queued ticket per player | 409 already_queued, including when a party member is already queued solo. |
 | Any member can cancel | Cancelling one member's ticket cancels the whole party's — only the leader queues, but nobody should be stuck in a queue they cannot leave. |
 | One member times out, the party leaves | A party that can no longer field everyone should not hold a slot, so the sweep removes all of its tickets together. |

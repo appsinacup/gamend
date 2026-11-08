@@ -13,7 +13,7 @@ defmodule GamendWeb.GroupIconUpload do
 
       socket = GroupIconUpload.allow(socket, user)
 
-      <GroupIconUpload.input :if={@group_icon_upload?} uploads={@uploads} icon_url={...} />
+      <GroupIconUpload.field id="..." field={@form[:icon_url]} uploads={@group_icon_upload? && @uploads} />
 
       {socket, group, error} = GroupIconUpload.save(socket, user, group)
   """
@@ -122,6 +122,43 @@ defmodule GamendWeb.GroupIconUpload do
   defp set([_failed], _user, group), do: {group, gettext("Failed")}
   defp set([], _user, group), do: {group, nil}
 
+  attr :id, :string, required: true, doc: "the file input's row is `<id>-upload`"
+  attr :field, Phoenix.HTML.FormField, required: true, doc: "the form's icon URL field"
+  attr :uploads, :any, default: nil, doc: "`@uploads` when the reader may upload, else nil"
+  attr :cancel, :string, default: "group_icon_cancel", doc: "the event dropping a file"
+  attr :target, :any, default: nil, doc: "a component's `@myself`, for `cancel`"
+
+  @doc """
+  The one icon field every form uses, a group's, a server's or a project's: the
+  icon as it will be, the file input beside it when the reader may upload one,
+  and the site's icons and colours under it (`<.icon_picker>`). The form's
+  `phx-change` hears all of it; `allow/3` sets up the upload.
+
+      <GroupIconUpload.field
+        id="project-icon"
+        field={@form[:icon_url]}
+        uploads={@group_icon_upload? && @uploads}
+      />
+  """
+  def field(assigns) do
+    ~H"""
+    <div id={@id} class="space-y-3">
+      <%= if @uploads do %>
+        <GamendWeb.GroupIconUpload.input
+          id={"#{@id}-upload"}
+          uploads={@uploads}
+          icon_url={@field.value}
+          cancel={@cancel}
+          target={@target}
+        />
+      <% else %>
+        <.group_avatar icon_url={@field.value} class="size-16" />
+      <% end %>
+      <.icon_picker field={@field} label={gettext("Icon")} />
+    </div>
+    """
+  end
+
   attr :uploads, :any, required: true
   attr :icon_url, :string, default: nil, doc: "the icon the form has now, shown with no file"
   attr :cancel, :string, default: "group_icon_cancel", doc: "the event dropping a file"
@@ -130,7 +167,8 @@ defmodule GamendWeb.GroupIconUpload do
 
   @doc """
   The group's icon as it will be, and the file input beside it: a picked file
-  shown in place of the icon, with its name and a way to drop it.
+  shown in place of the icon, with its name and a way to drop it. A form wants
+  `field/1`, which has this and the site's icons.
   """
   def input(assigns) do
     ~H"""
@@ -141,7 +179,8 @@ defmodule GamendWeb.GroupIconUpload do
         <.live_img_preview
           :for={entry <- @uploads.group_icon.entries}
           entry={entry}
-          class="size-16 shrink-0 rounded-field object-cover"
+          data-icon-backdrop
+          class="size-16 shrink-0 rounded-field bg-base-300 object-cover"
         />
       <% end %>
       <div class="min-w-0 space-y-2">

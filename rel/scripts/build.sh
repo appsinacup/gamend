@@ -44,6 +44,8 @@ export PKG_CONFIG_PATH="$build_root/deps/lib/pkgconfig"
 
 cd "$repo"
 mix deps.get --only prod
+# A precompiled NIF GitHub will not serve builds from source on the second pass.
+mix deps.compile --skip-local-deps || RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps
 mix compile
 mix assets.deploy
 mix release --overwrite

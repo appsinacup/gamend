@@ -395,7 +395,8 @@ defmodule Gamend.Content do
               collapsed: false,
               category: nil,
               index: nil,
-              children: Enum.map(category.guides, &Map.put(&1, :type, :doc))
+              children:
+                Enum.map(category.guides, &Map.merge(&1, %{type: :doc, color: category.color}))
             }
           end)
       end

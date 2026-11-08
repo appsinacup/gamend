@@ -68,7 +68,6 @@ defmodule Gamend.Content.Offline do
   th, td { border: 1px solid var(--line); padding: .4rem .6rem; text-align: left; vertical-align: top; }
   .admonition { background: var(--code); border-left: 4px solid var(--accent); border-radius: 4px; margin: 1rem 0; padding: .5rem 1rem; }
   .admonition-title { font-weight: 600; margin: 0 0 .25rem; }
-  .l-line { display: block; min-height: 1lh; }
   [class*="l-comment"] { color: var(--muted); font-style: italic; }
   [class*="l-keyword"] { color: var(--keyword); }
   [class*="l-string"] { color: var(--string); }

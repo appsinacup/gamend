@@ -15,6 +15,7 @@ defmodule Gamend.Export do
   this for the rest. `Gamend.Release.export/2` is the way in from a shell.
   """
 
+  alias Gamend.Repo.AdvisoryLock
   alias Gamend.Storage
 
   @database "gamend.db"
@@ -39,7 +40,7 @@ defmodule Gamend.Export do
 
   @doc "Whether this host's database is one `write/2` copies: SQLite."
   @spec database?() :: boolean()
-  def database?, do: not Gamend.Repo.AdvisoryLock.postgres?()
+  def database?, do: not AdvisoryLock.postgres?()
 
   defp database(dir) do
     if database?(), do: vacuum_into(Path.join(dir, @database)), else: {:ok, []}

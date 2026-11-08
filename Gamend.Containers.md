@@ -314,6 +314,14 @@ it, which is how a host stops a job past its time.
 Every container carrying `label` (`key=value`), any state, by name: one
 call for a whole machine, where `state/1` per container would be one each.
 
+# `load_image`
+
+```elixir
+@spec load_image(Path.t()) :: :ok | {:error, term()}
+```
+
+Load into the image store what `save_image/2` wrote, under the names it had.
+
 # `logs`
 
 ```elixir
@@ -401,6 +409,16 @@ a container is still on is a `:podman_failed` error.
 ```
 
 Remove a named volume and everything in it.
+
+# `save_image`
+
+```elixir
+@spec save_image(String.t(), Path.t()) :: :ok | {:error, term()}
+```
+
+Write `image`, with its names, to the file `path` on this machine: how an
+image goes from one podman service to another, each call inside `on/2`, with
+`load_image/1` on the other.
 
 # `start`
 

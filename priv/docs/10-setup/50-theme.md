@@ -235,6 +235,8 @@ With `base_path: "/docs"`, a link to a neighbouring file — `[Scenes](./scenes.
 
 `use GamendWeb.DocsLive, layout: :sidebar` renders such a collection with the tree beside every page, a table of contents, breadcrumbs, a landing page per category and an "Edit this page" link (`edit_url:`); route it as `live "/docs/*path"`. The default `:cards` layout is the one-level index gamend's own guides use.
 
+Either layout can offer the whole collection as one HTML file for reading offline: give `use GamendWeb.DocsLive` a `download_path:` for the button on its index, and route it beside the pages, in the same pipeline, as `get "/guide/download", GuideLive, :download`, before any `/guide/:slug`. `/docs/download` is already routed for the host's `docs:` module.
+
 #### Blog
 
 A post's frontmatter may give `title`, `slug`, `date`, `description`, `authors`, `image`, `keywords` and `tags`; without it, the first `# ` heading and the `YYYY-MM-DD-slug.md` filename still work. `authors: [dragos]` is resolved from `blog/_authors/dragos.md` (`name`, `title`, `url`, `image`). `<!-- truncate -->` marks where the excerpt ends. Feeds are at `/blog/rss.xml` and `/blog/atom.xml`.

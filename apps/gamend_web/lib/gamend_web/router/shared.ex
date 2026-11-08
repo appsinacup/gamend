@@ -1116,6 +1116,9 @@ defmodule GamendWeb.Router.Shared do
           # captured by `:slug`. No guide may be slugged "setup"; one would be
           # unreachable, which `GamendWeb.HostPublicDocs` guards against.
           live "/docs/setup", unquote(docs), :index
+          # The offline file (`GamendWeb.DocsLive`), before `:slug` for the
+          # same reason.
+          get "/docs/download", unquote(docs), :download
           live "/docs/:slug", unquote(docs), :show
         end
       end

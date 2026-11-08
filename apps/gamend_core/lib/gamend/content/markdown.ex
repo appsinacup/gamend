@@ -663,7 +663,8 @@ defmodule Gamend.Content.Markdown do
 
   # Core does not depend on Phoenix.HTML; the five characters an attribute
   # value or a text node has to escape are these.
-  defp escape(text) do
+  @doc false
+  def escape(text) do
     text
     |> String.replace("&", "&amp;")
     |> String.replace("<", "&lt;")

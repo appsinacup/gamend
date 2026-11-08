@@ -51,6 +51,21 @@ defmodule GamendWeb.DocsLive do
       `live "/docs/*path"`, so a nested slug reaches `handle_params/3` whole.
     * `:edit_url` — a URL prefix the guide's path inside the collection is
       appended to, for an "Edit this page" link. `nil` shows none.
+    * `:download_path` — where the collection's offline file is routed, for a
+      Download button on the index. `nil` shows none.
+
+  ## The offline file
+
+  The whole collection as one HTML file (`Gamend.Content.Offline`). Every
+  module that uses this one answers it, so a host routes that module once more:
+
+      get "/guide/download", GuideLive, :download
+
+  A plug on the LiveView rather than a controller given the collection, so the
+  route says nothing the module does not already know, and sits in whichever
+  pipeline guards the pages: an admin collection's file goes under
+  `:require_admin_user` and is as private as its guides. List it before a
+  `/guide/:slug`, which would take the path for a guide's.
 
   ## Navigation carries both shapes
 
@@ -64,7 +79,9 @@ defmodule GamendWeb.DocsLive do
   use GamendWeb, :html
 
   alias Gamend.Content
+  alias Gamend.Content.Offline
   alias Gamend.Content.Tree
+  alias Gamend.Theme.JSONConfig
 
   @doc "The heading and `<title>` of the index page."
   @callback index_title() :: String.t()
@@ -82,6 +99,7 @@ defmodule GamendWeb.DocsLive do
     item_path = Keyword.get(opts, :item_path, "/docs")
     layout = Keyword.get(opts, :layout, :cards)
     edit_url = Keyword.get(opts, :edit_url)
+    download_path = Keyword.get(opts, :download_path)
 
     if layout not in [:cards, :sidebar] do
       raise ArgumentError,
@@ -135,6 +153,7 @@ defmodule GamendWeb.DocsLive do
       use GamendWeb, :live_view
 
       @behaviour GamendWeb.DocsLive
+      @behaviour Plug
 
       alias Gamend.Content
       alias GamendWeb.OnMount.SeoTitle
@@ -143,6 +162,20 @@ defmodule GamendWeb.DocsLive do
       @doc_index_path unquote(index_path)
       @doc_item_path unquote(item_path)
       @doc_edit_url unquote(edit_url)
+      @doc_download_path unquote(download_path)
+
+      @impl Plug
+      def init(action), do: action
+
+      @impl Plug
+      def call(conn, :download) do
+        GamendWeb.DocsLive.send_offline_file(conn, %{
+          collection: @doc_collection,
+          index_path: @doc_index_path,
+          item_path: @doc_item_path,
+          title: index_title()
+        })
+      end
 
       @impl GamendWeb.DocsLive
       def index_title, do: gettext("Documentation")
@@ -175,6 +208,7 @@ defmodule GamendWeb.DocsLive do
           |> assign(
             index_path: @doc_index_path,
             item_path: @doc_item_path,
+            download_path: @doc_download_path,
             title: index_title(),
             subtitle: index_subtitle(),
             empty_message: empty_message()
@@ -293,6 +327,55 @@ defmodule GamendWeb.DocsLive do
     end
   end
 
+  @doc """
+  Sends a collection's offline file, as a download named after the site and
+  the collection. A collection with no guides is a 404.
+
+  `noindex` because the file is every guide's text on one URL, which search
+  engines would otherwise weigh against the guides' own pages.
+  """
+  @spec send_offline_file(Plug.Conn.t(), map()) :: Plug.Conn.t()
+  def send_offline_file(conn, source) do
+    site = JSONConfig.get_setting(:title) || "Gamend"
+
+    html =
+      Offline.html(source.collection,
+        title: "#{source.title} - #{site}",
+        index_path: source.index_path,
+        item_path: source.item_path,
+        origin: GamendWeb.Endpoint.url()
+      )
+
+    case html do
+      nil ->
+        raise GamendWeb.NotFoundError
+
+      html ->
+        name = "#{site} #{source.collection}" |> String.downcase() |> String.replace(" ", "-")
+
+        conn
+        |> Plug.Conn.put_resp_header("x-robots-tag", "noindex")
+        |> Phoenix.Controller.send_download({:binary, html},
+          filename: name <> ".html",
+          content_type: "text/html",
+          charset: "utf-8"
+        )
+    end
+  end
+
+  attr :path, :string, required: true
+
+  # `download` is also what keeps `live_nav.js` off this link: the route table
+  # would take the path for a guide's.
+  defp download_link(assigns) do
+    ~H"""
+    <a id="docs-download" href={@path} download class="btn btn-surface btn-sm">
+      <.icon name="hero-arrow-down-tray" class="size-4" />
+      {gettext("Download for offline")}
+    </a>
+    """
+  end
+
   attr :flash, :map, required: true
   attr :current_scope, :any, default: nil
   attr :current_path, :string, default: nil
@@ -301,6 +384,7 @@ defmodule GamendWeb.DocsLive do
   attr :title, :string, required: true
   attr :subtitle, :string, default: nil
   attr :empty_message, :string, required: true
+  attr :download_path, :string, default: nil
 
   @doc """
   The index: every category, every guide's title and summary.
@@ -316,6 +400,7 @@ defmodule GamendWeb.DocsLive do
         <.header>
           {@title}
           <:subtitle :if={@subtitle}>{@subtitle}</:subtitle>
+          <:actions :if={@download_path}><.download_link path={@download_path} /></:actions>
         </.header>
 
         <p :if={@categories == []} class="text-muted">{@empty_message}</p>
@@ -420,6 +505,7 @@ defmodule GamendWeb.DocsLive do
   attr :subtitle, :string, default: nil
   attr :empty_message, :string, required: true
   attr :current_slug, :string, default: nil
+  attr :download_path, :string, default: nil
 
   @doc "The collection's landing page, beside the tree: a card per top-level entry."
   def sidebar_index(assigns) do
@@ -429,6 +515,7 @@ defmodule GamendWeb.DocsLive do
         <.header>
           {@title}
           <:subtitle :if={@subtitle}>{@subtitle}</:subtitle>
+          <:actions :if={@download_path}><.download_link path={@download_path} /></:actions>
         </.header>
 
         <p :if={@tree == []} class="text-muted">{@empty_message}</p>

@@ -128,6 +128,32 @@ defmodule GamendHost.PagesSmokeTest do
            "#{guide.slug} has no meta description"
   end
 
+  # The real guides, through the real router: `/docs/:slug` would answer this
+  # path if the route were listed after it, and two guides sharing a heading
+  # would leave a `#section` link landing in the wrong one.
+  test "the guides download as one page, every guide in it" do
+    conn = get(build_conn(), "/docs/download")
+    body = response(conn, 200)
+
+    assert [disposition] = Plug.Conn.get_resp_header(conn, "content-disposition")
+    assert disposition =~ "attachment"
+
+    for guide <- Gamend.Content.list_docs() do
+      assert body =~ ~s(<article id="doc-#{guide.slug}">), "#{guide.slug} is not in the file"
+    end
+
+    ids =
+      ~r/<[a-zA-Z][^<>]*\sid="([^"]*)"/
+      |> Regex.scan(body, capture: :all_but_first)
+      |> List.flatten()
+
+    assert ids == Enum.uniq(ids)
+  end
+
+  test "the guides' index offers the download" do
+    assert html_response(get(build_conn(), "/docs/setup"), 200) =~ ~s(href="/docs/download")
+  end
+
   test "an unknown guide is a 404, not a blank page" do
     assert_error_sent 404, fn -> get(build_conn(), "/docs/no-such-guide") end
   end

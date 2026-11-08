@@ -24,7 +24,8 @@ defmodule GamendWeb.HostPublicDocs do
   use GamendWeb.DocsLive,
     collection: :docs,
     index_path: "/docs/setup",
-    item_path: "/docs"
+    item_path: "/docs",
+    download_path: "/docs/download"
 
   @impl GamendWeb.DocsLive
   def index_title, do: gettext("Setup & Guides")

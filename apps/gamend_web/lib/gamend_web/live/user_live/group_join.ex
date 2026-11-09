@@ -8,8 +8,8 @@ defmodule GamendWeb.UserLive.GroupJoin do
   back here. A link that no longer works says so, and never which group it
   was for. Routed by `gamend_authenticated_live_routes/2` beside the groups
   page, at `/users/groups/join/:token` on a host whose groups are at
-  `/users/groups`;
-  closed with the rest of the groups pages, by `web_groups`.
+  `/users/groups`; left out with the rest of the groups pages, by
+  `except: [:groups]`.
   """
   use GamendWeb, :live_view
 
@@ -20,8 +20,6 @@ defmodule GamendWeb.UserLive.GroupJoin do
 
   @impl true
   def mount(%{"token" => token}, _session, socket) do
-    unless GamendWeb.Features.enabled?(:web_groups), do: raise(GamendWeb.NotFoundError)
-
     user = Scope.user(socket.assigns.current_scope)
     link = Groups.get_invite_link_by_token(token)
 

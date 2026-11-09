@@ -41,7 +41,25 @@ defmodule GamendWeb.Router.Shared do
   `gamend_quest_api_routes/0` and so on) are the pieces the aggregate
   macros above are built from; call them directly when you want one subsystem
   without its neighbours.
+
+  ## Leaving out one page
+
+  Three macros take `except:`, a literal list, for a page or route a product
+  does not have. The link to it goes with it (`GamendWeb.MountedRoutes`).
+
+      gamend_api_routes(except: [:payments_catalog, :stripe_checkout, :report])
+      gamend_authenticated_live_routes(on_mount, except: [:chat, :store, :groups, :friends])
+      gamend_current_user_routes(on_mount, except: [:groups, :tournaments, :redeem, :report, :play])
+
+  Each names only what its own macro mounts, so a feature with pages in two
+  macros (`:groups`, `:report`) is left out of both. `:friends` and `:groups`
+  on the authenticated macro also drop those tabs from account settings. To
+  have your own page instead, leave core's out and route yours at the same
+  path in the macro's `do` block.
   """
+
+  @moved_to_router ~w(web_chat web_friends web_groups web_tournaments web_store web_redeem play
+                      stripe_checkout_api list_payments_catalog)a
 
   @browser_csp "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' wss:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'"
   @swagger_csp "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: https:; connect-src 'self' wss:; font-src 'self' data:; frame-src 'self' blob:; frame-ancestors 'self'"
@@ -84,7 +102,43 @@ defmodule GamendWeb.Router.Shared do
     ]
   end
 
+  # These flags closed a page or route. Ignored, each would silently reopen
+  # what a host closed, a payment route among them, so a build still setting
+  # one fails with what to write instead.
+  @doc false
+  @spec refuse_moved_flags!() :: :ok
+  def refuse_moved_flags! do
+    moved =
+      for {key, false} <- Application.get_env(:gamend_web, GamendWeb.Features, []),
+          key in @moved_to_router,
+          do: key
+
+    if moved != [] do
+      raise ArgumentError, """
+      `config :gamend_web, GamendWeb.Features` sets #{inspect(moved)} to false, which no \
+      longer closes anything. Remove those keys and leave the pages out of your router \
+      instead, with `except:` on its macros (see `GamendWeb.Router.Shared`).
+      """
+    end
+
+    :ok
+  end
+
+  # `except:` read at compile time, so a typo fails the build.
+  defp except!(opts, known) do
+    except = Keyword.get(opts, :except, [])
+
+    unless is_list(except) and Enum.all?(except, &(&1 in known)) do
+      raise ArgumentError,
+            "except: takes a literal list of #{inspect(known)}, got: #{Macro.to_string(except)}"
+    end
+
+    except
+  end
+
   defmacro gamend_pipelines do
+    refuse_moved_flags!()
+
     quote do
       alias GamendWeb.Router.Shared, as: RouterShared
 
@@ -203,14 +257,6 @@ defmodule GamendWeb.Router.Shared do
         plug GamendWeb.Plugs.FeatureGate, feature: :public_stats
       end
 
-      pipeline :list_payments_catalog_gate do
-        plug GamendWeb.Plugs.FeatureGate, feature: :list_payments_catalog
-      end
-
-      pipeline :stripe_checkout_api_gate do
-        plug GamendWeb.Plugs.FeatureGate, feature: :stripe_checkout_api
-      end
-
       pipeline :metrics_auth do
         plug GamendWeb.Plugs.MetricsAuth
       end
@@ -317,23 +363,37 @@ defmodule GamendWeb.Router.Shared do
   @doc """
   Every core API route. `:chat_update` swaps the controller behind
   `PATCH /api/v1/chat/messages/:id` for a host that moderates its own edits.
+
+  `except:` leaves out `:payments_catalog` and `:stripe_checkout`, for a host
+  that sells through its own page and picks the row itself, and `:report`.
   """
   defmacro gamend_api_routes(opts \\ []) do
     chat_update = Keyword.get(opts, :chat_update, quote(do: ChatController))
+    except = except!(opts, [:payments_catalog, :stripe_checkout, :report])
+
+    payments_catalog_routes =
+      if :payments_catalog not in except, do: quote(do: gamend_payments_catalog_api_routes())
+
+    stripe_checkout_routes =
+      if :stripe_checkout not in except, do: quote(do: gamend_stripe_checkout_api_routes())
+
+    report_routes = if :report not in except, do: quote(do: gamend_report_api_routes())
 
     quote do
       gamend_api_docs_routes()
       gamend_public_api_routes()
+      unquote(payments_catalog_routes)
       gamend_quest_api_routes()
       gamend_group_api_routes()
       gamend_kv_api_routes()
+      unquote(stripe_checkout_routes)
       gamend_account_lobby_api_routes()
       gamend_friend_notification_api_routes()
       gamend_group_mutation_api_routes()
       gamend_hook_leaderboard_party_api_routes()
       gamend_tournament_api_routes()
       gamend_matchmaking_api_routes()
-      gamend_report_api_routes()
+      unquote(report_routes)
       gamend_chat_api_routes(update: unquote(chat_update))
       gamend_admin_api_routes()
       gamend_api_auth_routes()
@@ -380,12 +440,6 @@ defmodule GamendWeb.Router.Shared do
         post "/refresh", SessionController, :refresh
       end
 
-      scope "/api/v1", GamendWeb.Api.V1, as: :api_v1 do
-        pipe_through [:api, :list_payments_catalog_gate]
-
-        get "/payments/catalog", PaymentController, :catalog
-      end
-
       # Before the listing scopes: "/users/stats" would otherwise be captured
       # by "/users/:id", and "/quests/stats" by "/quests/:key".
       scope "/api/v1", GamendWeb.Api.V1, as: :api_v1 do
@@ -429,6 +483,36 @@ defmodule GamendWeb.Router.Shared do
         get "/leaderboards/:id/records/around/:user_id", LeaderboardController, :around
         get "/leaderboards/:id/records/above", LeaderboardController, :above
         get "/leaderboards/:id/keys", LeaderboardController, :keys
+      end
+    end
+  end
+
+  @doc """
+  The public price list: every active product with its provider row, id and
+  price. Left out by a host whose price depends on who asks, since the listing
+  names every row, cheaper ones included.
+  """
+  defmacro gamend_payments_catalog_api_routes do
+    quote do
+      scope "/api/v1", GamendWeb.Api.V1, as: :api_v1 do
+        pipe_through :api
+
+        get "/payments/catalog", PaymentController, :catalog
+      end
+    end
+  end
+
+  @doc """
+  A signed-in client opens a Stripe Checkout for any active Stripe row it
+  names. Left out by a host that sells only through its own page, which calls
+  `Gamend.Payments.create_stripe_checkout/3` and picks the row itself.
+  """
+  defmacro gamend_stripe_checkout_api_routes do
+    quote do
+      scope "/api/v1", GamendWeb.Api.V1, as: :api_v1 do
+        pipe_through [:api, :api_auth]
+
+        post "/payments/checkout/stripe", PaymentController, :stripe_checkout
       end
     end
   end
@@ -559,16 +643,6 @@ defmodule GamendWeb.Router.Shared do
 
   defmacro gamend_account_lobby_api_routes do
     quote do
-      # Its own scope for its own flag: a host that sells through its own
-      # page (and decides the price there) turns the API way in off. The gate
-      # before the auth, so a switched-off route is a 404 to everyone, never a
-      # 401 that says it exists.
-      scope "/api/v1", GamendWeb.Api.V1, as: :api_v1 do
-        pipe_through [:api, :stripe_checkout_api_gate, :api_auth]
-
-        post "/payments/checkout/stripe", PaymentController, :stripe_checkout
-      end
-
       # A banned account reads itself (the ban is in the answer) and may delete
       # itself; every other authenticated route refuses it.
       scope "/api/v1", GamendWeb.Api.V1, as: :api_v1 do
@@ -1042,12 +1116,16 @@ defmodule GamendWeb.Router.Shared do
   group's invite link opens `<groups>/join/:token`
   (`GamendWeb.UserLive.GroupJoin`), and `/users/groups/join/:token` without
   one; it comes first, so an owner named `join` is the link's.
+
+  `except:` leaves out `:chat`, `:store`, `:groups` (these pages, the join
+  link and the Groups tab) and `:friends` (the Friends tab).
   """
   defmacro gamend_authenticated_live_routes(on_mount, opts \\ []) do
     host_routes = Keyword.get(opts, :do)
     chat = Keyword.get(opts, :chat, quote(do: ChatLive))
+    except = except!(opts, [:chat, :store, :groups, :friends])
 
-    groups = Keyword.get(opts, :groups)
+    groups = if :groups not in except, do: Keyword.get(opts, :groups)
 
     groups_route =
       if groups do
@@ -1061,6 +1139,29 @@ defmodule GamendWeb.Router.Shared do
 
     join_path = (groups || "/users/groups") <> "/join/:token"
 
+    join_route =
+      if :groups not in except do
+        quote(do: live(unquote(join_path), UserLive.GroupJoin, :show))
+      end
+
+    store_routes =
+      if :store not in except do
+        quote do
+          live "/store", StoreLive.Index, :index
+          live "/store/success", StoreLive.Index, :success
+          live "/store/cancel", StoreLive.Index, :cancel
+        end
+      end
+
+    chat_route =
+      if :chat not in except do
+        quote(do: live("/chat", unquote(chat), :index))
+      end
+
+    # A tab has no route of its own to leave out, so `MountedRoutes` reads
+    # these from the settings page's route.
+    closed_tabs = for key <- except, key in [:friends, :groups], do: Atom.to_string(key)
+
     quote do
       scope "/", GamendWeb do
         pipe_through [:browser, :require_authenticated_user]
@@ -1069,16 +1170,16 @@ defmodule GamendWeb.Router.Shared do
           on_mount: unquote(on_mount) do
           unquote(host_routes)
 
-          live "/users/settings", UserLive.Settings, :edit
+          live "/users/settings", UserLive.Settings, :edit,
+            metadata: %{closed_tabs: unquote(closed_tabs)}
+
           live "/users/settings/confirm_email/:token", UserLive.Settings, :confirm_email
           live "/suspended", SuspendedLive, :index
-          live "/store", StoreLive.Index, :index
-          live "/store/success", StoreLive.Index, :success
-          live "/store/cancel", StoreLive.Index, :cancel
+          unquote(store_routes)
           live "/notifications", NotificationsLive, :index
-          live "/chat", unquote(chat), :index
+          unquote(chat_route)
           unquote(groups_route)
-          live unquote(join_path), UserLive.GroupJoin, :show
+          unquote(join_route)
           unquote(group_route)
         end
 
@@ -1098,6 +1199,9 @@ defmodule GamendWeb.Router.Shared do
   `:extra_pipelines` adds host pipelines on top of `:browser` for the whole
   scope — for a plug a host's public pages need and core's crawlable ones should
   not have, such as `GamendWeb.Plugs.VisitorId`.
+
+  `except:` leaves out `:groups`, `:tournaments`, `:redeem`, `:report` and
+  `:play`.
   """
   # `opts` and `do_block` are separate because Elixir appends a `do` block as a
   # final argument: `f(a) do .. end` arrives as arity 2, and `f(a, opt: x) do ..
@@ -1116,6 +1220,43 @@ defmodule GamendWeb.Router.Shared do
     # to count a free tier against, say — had no way to add one short of
     # forking this macro or widening `:browser` for every crawlable page too.
     extra_pipelines = Keyword.get(opts, :extra_pipelines, [])
+    except = except!(opts, [:groups, :tournaments, :redeem, :report, :play])
+
+    groups_routes =
+      if :groups not in except do
+        quote do
+          live "/groups", GroupsLive, :index
+          live "/groups/:id", GroupsLive, :show
+        end
+      end
+
+    redeem_route =
+      if :redeem not in except do
+        quote(do: live("/redeem", RedeemLive, :index))
+      end
+
+    report_route =
+      if :report not in except do
+        quote(do: live("/report", ReportLive, :index))
+      end
+
+    tournaments_routes =
+      if :tournaments not in except do
+        quote do
+          live "/tournaments", TournamentsLive, :index
+          # Slug-first for SEO; older editions get a stable 1-based number.
+          # A UUID still resolves in the :slug position, so old links keep working.
+          live "/tournaments/:slug", TournamentsLive, :show
+          live "/tournaments/:slug/brackets/:index", TournamentsLive, :bracket
+          live "/tournaments/:slug/:edition", TournamentsLive, :show
+          live "/tournaments/:slug/:edition/brackets/:index", TournamentsLive, :bracket
+        end
+      end
+
+    play_route =
+      if :play not in except do
+        quote(do: live("/play", PlayLive, :index))
+      end
 
     docs_route =
       if docs do
@@ -1165,19 +1306,12 @@ defmodule GamendWeb.Router.Shared do
           unquote(host_routes)
 
           live "/users/register", UserLive.Registration, :new
-          live "/groups", GroupsLive, :index
-          live "/groups/:id", GroupsLive, :show
+          unquote(groups_routes)
           live "/quests", QuestsLive, :index
-          live "/redeem", RedeemLive, :index
-          live "/report", ReportLive, :index
+          unquote(redeem_route)
+          unquote(report_route)
           live "/stats", StatsLive, :index
-          live "/tournaments", TournamentsLive, :index
-          # Slug-first for SEO; older editions get a stable 1-based number.
-          # A UUID still resolves in the :slug position, so old links keep working.
-          live "/tournaments/:slug", TournamentsLive, :show
-          live "/tournaments/:slug/brackets/:index", TournamentsLive, :bracket
-          live "/tournaments/:slug/:edition", TournamentsLive, :show
-          live "/tournaments/:slug/:edition/brackets/:index", TournamentsLive, :bracket
+          unquote(tournaments_routes)
           live "/leaderboards", LeaderboardsLive, :index
           live "/leaderboards/:slug/:id", LeaderboardsLive, :show
           live "/leaderboards/:slug", LeaderboardsLive, :show_active
@@ -1191,7 +1325,7 @@ defmodule GamendWeb.Router.Shared do
           unquote(roadmap_route)
           unquote(blog_routes)
           live "/auth/success", AuthSuccessLive, :index
-          live "/play", PlayLive, :index
+          unquote(play_route)
         end
 
         post "/users/log_in", UserSessionController, :create

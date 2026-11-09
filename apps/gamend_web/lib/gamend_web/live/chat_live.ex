@@ -20,10 +20,6 @@ defmodule GamendWeb.ChatLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    unless GamendWeb.Features.enabled?(:web_chat) do
-      raise GamendWeb.NotFoundError
-    end
-
     user = Scope.user(socket.assigns.current_scope)
 
     friends = Friends.list_friends_for_user(user.id)

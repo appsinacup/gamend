@@ -94,7 +94,7 @@ Adding one callback touches six places — miss one and plugins break in confusi
 ## Web
 
 - API controller in `apps/gamend_web/.../controllers/api/v1/` with OpenAPI schemas (ids are `type: :string, format: :uuid`). List endpoints return `data` plus the six-key `meta` block (`page`, `page_size`, `count`, `total_count`, `total_pages`, `has_more`) built by `GamendWeb.Pagination`. Answer through `GamendWeb.Reply` in one of the four shapes of api-conventions.md (R15), document each response as a named `GamendWeb.Schemas.*` module (a `*Response` or `*Page` envelope, `OkResponse`, errors via `Schemas.error/1`), and add the controller's tag to `GamendWeb.ResponseContract` while the migration list exists.
-- Routes in `apps/gamend_web/lib/gamend_web/router/shared.ex`. Public listing endpoints get a `GAMEND_FEATURES_LIST_*` feature gate (a `setting` in `GamendWeb.Features`).
+- Routes in `apps/gamend_web/lib/gamend_web/router/shared.ex`. Public listing endpoints get a `GAMEND_FEATURES_LIST_*` feature gate (a `setting` in `GamendWeb.Features`). A page or route a product may not have is an `except:` key on its route macro, never a setting, and links to it ask `GamendWeb.MountedRoutes` first.
 - Server-authoritative actions get **no public endpoint** — expose them through hooks.
 - Realtime events via channel/PubSub if clients need pushes; forward them in `UserChannel` and subscribe/unsubscribe on join/terminate.
 - Public LiveView: copy the layout of an existing page (leaderboards is the reference) rather than inventing one — same heading sizes, card grid, badges and `<.pagination>` component.

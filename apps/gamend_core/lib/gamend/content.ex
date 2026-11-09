@@ -63,8 +63,7 @@ defmodule Gamend.Content do
       listing and lookup (index, tree, previous/next, `get_doc/2`), so its
       URL is a 404. Run on every call, outside the cache, so a switch that
       changes at runtime takes effect at once. A category left with no guide
-      goes too. `GamendWeb.Features.doc_visible?/1` hides a guide whose front
-      matter names a switched-off feature (`feature: play`)
+      goes too
     * `:nesting` - `:flat` (the default: one folder level, slugs are file
       names) or `:tree` (any depth, slugs are paths; see `Gamend.Content.Tree`)
     * `:base_path` - the route prefix guides are served under, such as

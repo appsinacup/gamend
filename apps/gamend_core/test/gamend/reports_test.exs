@@ -198,11 +198,6 @@ defmodule Gamend.ReportsTest do
       assert {:ok, _} = Reports.create(page())
       assert {:error, :daily_limit} = Reports.create(page())
     end
-
-    test "switched off, nothing is filed" do
-      SettingsHelpers.put(:gamend_core, Reports, :enabled, false)
-      assert {:error, :disabled} = Reports.create(page())
-    end
   end
 
   describe "attachments" do

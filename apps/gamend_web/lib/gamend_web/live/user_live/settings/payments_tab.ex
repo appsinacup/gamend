@@ -55,7 +55,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
               {gettext("Manage billing")}
             </button>
             <.link
-              :if={GamendWeb.Features.enabled?(:web_store)}
+              :if={GamendWeb.MountedRoutes.mounted?(~p"/store")}
               navigate={~p"/store"}
               class="btn btn-sm btn-primary"
             >

@@ -257,13 +257,14 @@ Use the navigation object to move nav structure into config. Each section accept
 
 The bar measures what it has room for. Where the links do not fit spelled out they show as icons, the label as the tooltip (give each link an `icon`); then the account button drops the reader's name; then the whole nav becomes the menu. No breakpoint to set: it follows your links, the reader's language and what the bar shows.
 
-Two settings on the navigation object itself change its shape:
+Settings on the navigation object itself change its shape:
 
 | Setting | Value | Effect |
 |---|---|---|
 | `layout` | `"sidebar"` | The plain `primary_links` go down the page's start edge from `md` up, each its icon and its label: open (14rem) from `xl`, a rail (6rem, the label under the icon) below it and on a full-screen page. Collapse at its foot folds it to the rail, and the browser remembers it, as it does the theme. Below `md` the same links are a tab bar along the bottom of the screen, and the top bar keeps the logo, what is pinned that is not one of them, the language and the menu. Groups, `render` entries and `readonly` badges stay in the bar. |
 | `layout` | `"auto"` | The bar with every link wherever one of its stages fits the window, and the sidebar (the tab bar on a phone) only where none does: the bar then keeps the rest, as with `"sidebar"`. `<html data-nav>` holds `side` while the sidebar shows. |
 | `menu_button` | `"account"` | The menu opens from the reader's avatar (a person for a visitor) instead of the three lines. |
+| `locale_flags` | `false` | The language switcher shows a language icon and lists languages by name, with no national flags. Your own pages that draw `<.flag>` are untouched. |
 
 | Section | Description |
 |---|---|

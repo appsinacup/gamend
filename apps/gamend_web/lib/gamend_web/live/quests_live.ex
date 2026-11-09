@@ -233,7 +233,10 @@ defmodule GamendWeb.QuestsLive do
     |> assign(:total_pages, max(ceil(total_count / page_size), 1))
     |> assign(:claimable_count, claimable - locked_claimable(entries))
     |> assign(:must_register, user != nil and not AccountRequired.allowed?(user, :quest_claims))
-    |> assign(:redeem?, FeatureGate.enabled?(:web_redeem) and Quests.any_redeemable?())
+    |> assign(
+      :redeem?,
+      GamendWeb.MountedRoutes.mounted?(~p"/redeem") and Quests.any_redeemable?()
+    )
     |> assign(:now, DateTime.utc_now(:second))
     |> load_group()
   end

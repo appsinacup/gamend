@@ -469,7 +469,10 @@ defmodule GamendWeb.HostLayoutShell do
               role="option"
               class="flex w-full min-w-0 items-center justify-between gap-3 rounded-lg px-3 py-2"
             >
-              <span data-row-title class="min-w-0 truncate font-semibold"></span>
+              <%!-- The title keeps its whole width, up to the row's, and the
+                    subtitle takes what is left. Shrinking both cut a short
+                    title to a few letters beside a long sentence. --%>
+              <span data-row-title class="max-w-full shrink-0 truncate font-semibold"></span>
               <span data-row-subtitle class="min-w-0 truncate text-xs text-muted"></span>
             </a>
           </li>

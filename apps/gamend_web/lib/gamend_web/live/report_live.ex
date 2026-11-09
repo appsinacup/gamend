@@ -315,9 +315,6 @@ defmodule GamendWeb.ReportLive do
     KindUI.error_message(socket.assigns[:ui], reason) || generic_error(reason)
   end
 
-  defp generic_error(:disabled),
-    do: gettext("Reports are switched off right now. Try again later.")
-
   defp generic_error(reason) when reason in [:rate_limited, :daily_limit, :user_daily_limit],
     do: gettext("You have sent a lot of reports. Try again in an hour.")
 

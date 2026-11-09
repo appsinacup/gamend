@@ -743,6 +743,7 @@ defmodule Gamend.GDScript.API do
       "groups" => [1, 2],
       "host_action" => [2],
       "host_lock_label" => [2],
+      "host_note" => [2],
       "host_visible" => [2],
       "list_codes" => [1, 2],
       "list_progress" => [0, 1],

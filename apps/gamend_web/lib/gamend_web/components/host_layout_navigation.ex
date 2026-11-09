@@ -218,7 +218,7 @@ defmodule GamendWeb.HostLayoutNavigation do
             <.count_pill count={@notif_unread_count} />
           </.link>
         </li>
-        <li :if={GamendWeb.Features.enabled?(:web_chat)}>
+        <li :if={GamendWeb.MountedRoutes.mounted?(~p"/chat")}>
           <.link
             href={lp(~p"/chat")}
             class={[if(here?(@current_path, "/chat"), do: "menu-active", else: "")]}
@@ -926,8 +926,8 @@ defmodule GamendWeb.HostLayoutNavigation do
   attr :account_links, :list, default: []
 
   # Mobile account section: collapsible group headed by the user's name (like
-  # the desktop user menu). Holds Account, Notifications, Chat (unless
-  # `web_chat` is off), then the config account_links (admin items) last,
+  # the desktop user menu). Holds Account, Notifications, Chat (where the
+  # host routes it), then the config account_links (admin items) last,
   # then Log out.
   defp mobile_account_menu(assigns) do
     active? =
@@ -983,7 +983,7 @@ defmodule GamendWeb.HostLayoutNavigation do
               <.count_pill count={@notif_unread_count} class="ms-0.5" />
             </a>
           </li>
-          <li :if={GamendWeb.Features.enabled?(:web_chat)} class="w-full">
+          <li :if={GamendWeb.MountedRoutes.mounted?(~p"/chat")} class="w-full">
             <a
               href={lp(~p"/chat")}
               class={["btn w-full justify-start", account_item_class(@current_path, "/chat")]}
@@ -1833,7 +1833,7 @@ defmodule GamendWeb.HostLayoutNavigation do
   attr :label, :string, default: nil, doc: "for a screen reader, where the mark stands alone"
 
   # The switcher's button mark: the current language's flag, or a language
-  # icon when flags are switched off (`GamendWeb.Features`, `locale_flags`).
+  # icon when the theme says `"locale_flags": false`.
   defp locale_mark(%{flag_code: nil} = assigns) do
     ~H"""
     <.icon name="hero-language-solid" class="size-5" />
@@ -1848,9 +1848,14 @@ defmodule GamendWeb.HostLayoutNavigation do
     """
   end
 
-  defp locale_flags?, do: GamendWeb.Features.enabled?(:locale_flags)
+  # A setting, not a word: from the English theme, as `"layout"` is.
+  defp locale_flags? do
+    GamendWeb.HostLayouts.resolve_theme(LocaleCode.en())
+    |> get_in(["navigation", "locale_flags"])
+    |> Kernel.!=(false)
+  end
 
-  # The flag drawn for `locale`, or nil when the host switched flags off.
+  # The flag drawn for `locale`, or nil when the theme turned flags off.
   defp locale_flag(_locale, false), do: nil
   defp locale_flag(locale, true), do: locale_flag_code(locale)
 

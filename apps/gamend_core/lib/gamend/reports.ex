@@ -68,11 +68,6 @@ defmodule Gamend.Reports do
 
   @client_context_keys ~w(user_agent viewport screen platform app_version)
 
-  setting(:enabled, :boolean,
-    default: true,
-    doc: "Accept reports from /report and POST /api/v1/reports."
-  )
-
   setting(:daily_limit, :integer,
     default: 500,
     doc: "Most reports accepted in 24 hours across everyone. 0 means no cap."
@@ -102,10 +97,6 @@ defmodule Gamend.Reports do
   @image_types ~w(image/png image/jpeg image/webp)
 
   # ── kinds ────────────────────────────────────────────────────────────────
-
-  @doc "Whether reports are being accepted."
-  @spec enabled?() :: boolean()
-  def enabled?, do: config(:enabled) == true
 
   @doc "Every kind, configured ones first, core's `page` last unless replaced."
   @spec kinds() :: [module()]
@@ -174,7 +165,7 @@ defmodule Gamend.Reports do
   `"api"`), `:client` (a small map of browser facts), `:attachments` (a list
   of image binaries).
 
-  Errors: `:disabled`, `:unknown_kind`, `:invalid_topic`,
+  Errors: `:unknown_kind`, `:invalid_topic`,
   `:description_required`, `:too_many_attachments`, `:attachment_too_large`,
   `:attachment_type`, `:daily_limit`, `:user_daily_limit`,
   `:already_reported`, a kind's own `cast/2` reason, a hook's refusal, or a
@@ -186,8 +177,7 @@ defmodule Gamend.Reports do
     user_id = context[:user_id]
     topic = blank(params["topic"])
 
-    with :ok <- check_enabled(),
-         {:ok, kind} <- fetch_kind(params["kind"]),
+    with {:ok, kind} <- fetch_kind(params["kind"]),
          :ok <- check_topic(kind, topic),
          {:ok, cast} <- cast_subject(kind, params, context),
          :ok <- check_description(kind, topic, params["description"]),
@@ -203,8 +193,6 @@ defmodule Gamend.Reports do
       {:ok, report}
     end
   end
-
-  defp check_enabled, do: if(enabled?(), do: :ok, else: {:error, :disabled})
 
   defp fetch_kind(key) do
     case kind(key) do

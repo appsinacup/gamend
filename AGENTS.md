@@ -49,7 +49,9 @@ runnable host app at the repository root.
 Fork guidance:
 
 - Leave a macro out of your router to drop that surface entirely; don't delete files from the dependency.
-- If you *remove* upstream routes but the upstream UI still uses route helpers (`~p"..."`) pointing at `GamendWeb.Router`, you can end up generating links for routes that the host no longer serves. If you want strict route removal, forks should adjust the UI accordingly (or provide replacement routes that match the UI’s expectations).
+- To drop one page or route, `except:` on the macro that mounts it (the list is in `GamendWeb.Router.Shared`'s moduledoc). To replace one, leave it out and route yours at the same path in the macro's `do` block.
+- A core link to a page a host can leave out asks `GamendWeb.MountedRoutes.mounted?(~p"/chat")` first; an account settings tab asks `settings_tab?/1`.
+- **Composition over settings.** What differs between products (which pages exist, what the site shows) is the host's router, theme or a hook. A `setting` is for what differs between deployments of one build: secrets, infrastructure, tuning, caps, kill switches. Never add a flag that hides a page.
 
 ### Stack
 

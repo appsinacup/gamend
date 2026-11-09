@@ -58,6 +58,7 @@ const TOOLTIP: str = "tooltip";
 const TRUNCATE: str = "truncate";
 const UNKNOWN: str = "unknown";
 const URL: str = "url";
+const USER: str = "user";
 const USERNAME: str = "username";
 const VIEWS: str = "views";
 
@@ -282,7 +283,7 @@ impl Gamend {
         out.push(field(HEALTH, brief(self.fetch(HEALTH, "/api/v1/health")), {}));
         out.push(field("addon", addon_version(), {}));
         out.push(heading("Player"));
-        out.push(field("user", if link.username != nil { link.username.unwrap() } else { "not signed in" }, {}));
+        out.push(field(USER, if link.username != nil { link.username.unwrap() } else { "not signed in" }, {}));
         for socket in link.sockets {
             let state = if socket.open { OPEN } else { "closed" };
             out.push(field("socket {socket.socket}", state + ": " + listed(socket.topics), {}));
@@ -513,7 +514,7 @@ impl Gamend {
 
     fn activity() -> [any] {
         let chips: [any] = [];
-        for name in [ALL, "calls", "messages", "errors"] {
+        for name in [ALL, CALLS, MESSAGES, ERRORS] {
             let chip = button(self.node, name, "filter_by", { FILTER: name });
             chip[CHECKED] = self.filter == name;
             chips.push(chip);

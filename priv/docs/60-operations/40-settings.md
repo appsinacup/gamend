@@ -7,7 +7,7 @@ generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
 # Settings
 
 Every setting the server has, with the environment variable that sets it.
-341 settings across 31 groups.
+330 settings across 31 groups.
 
 A setting is declared in the module that owns it, so this page and
 `.env.example` are generated from the same source the server reads. The
@@ -416,24 +416,14 @@ That declares `GAMEND_UGC_MAX_UPLOADS`, read with
 | `GAMEND_FEATURES_LIST_LEADERBOARDS` | boolean | `true` | Public GET/resolve /api/v1/leaderboards* and the /leaderboards pages. |
 | `GAMEND_FEATURES_LIST_LOBBIES` | boolean | `true` | GET /api/v1/lobbies and the "lobbies" channel. |
 | `GAMEND_FEATURES_LIST_MATCHMAKING` | boolean | `true` | GET /api/v1/matchmaking/stats. Own-ticket endpoints stay. |
-| `GAMEND_FEATURES_LIST_PAYMENTS_CATALOG` | boolean | `true` | Public GET /api/v1/payments/catalog: every active product with its provider row, id and price. Off for a host that sells through its own page, where the price shown depends on who asks (a country band) — the listing names every row, cheaper ones included. |
 | `GAMEND_FEATURES_LIST_QUESTS` | boolean | `true` | Public GET /api/v1/quests*, the /quests page and the "Quests and rewards" row on the Notifications tab. Achievements are quests of kind `achievement`, so this is them too. |
 | `GAMEND_FEATURES_LIST_TOURNAMENTS` | boolean | `true` | Public GET /api/v1/tournaments* and the /tournaments pages. |
 | `GAMEND_FEATURES_LIST_USERS` | boolean | `true` | GET /api/v1/users and /users/:id. |
-| `GAMEND_FEATURES_LOCALE_FLAGS` | boolean | `true` | National flags in the site-language switcher (the navbar button and each language in its menu). Off, the button shows a language icon and the menu lists the languages by name only — for a host that must not show a flag, a sensitive one or any. Only the switcher: a host's own pages that draw `<.flag>` are untouched. |
 | `GAMEND_FEATURES_MAILBOX_PREVIEW` | boolean | `false` | Serve the in-browser mailbox at /dev/mailbox outside dev. Every sent email is readable there. |
 | `GAMEND_FEATURES_OPENAPI` | boolean | `true` | OpenAPI spec + Swagger UI. A complete map of your API — consider off in production. |
-| `GAMEND_FEATURES_PLAY` | boolean | `true` | The /play page, which hands a signed-in player a token for the game client. Off, it also closes every theme page and link marked `"feature": "play"` and every guide whose front matter says `feature: play` (a collection registered with `visible: {GamendWeb.Features, :doc_visible?}`): a host whose game is not out yet hides it from the site in one switch. The game client's API is untouched. |
 | `GAMEND_FEATURES_PUBLIC_STATS` | boolean | `true` | The unauthenticated stats endpoints: GET /api/v1/stats, /api/v1/users/stats, /api/v1/lobbies/stats, /api/v1/parties/stats, /api/v1/quests/stats, /api/v1/signaling/stats and /api/v1/matchmaking/stats, plus the /stats page. Aggregate counts only, never per-row data — but they do reveal how busy the server is. |
 | `GAMEND_FEATURES_PUBLIC_USER_METADATA_KEYS` | list | - | Top-level `user.metadata` keys GET /api/v1/users and /users/:id may return. Empty means none. Those endpoints are unauthenticated, so anything named here is world-readable and findable by name prefix — never list a key holding position, routing or contact data. |
-| `GAMEND_FEATURES_STRIPE_CHECKOUT_API` | boolean | `true` | POST /api/v1/payments/checkout/stripe: a signed-in client opens a Stripe Checkout for any active Stripe row it names. Off for a host that sells only through its own page (which calls `Gamend.Payments.create_stripe_checkout/3` itself and picks the row), so a client cannot pick a row the page would not offer. Webhooks, the store page (`web_store`) and the other providers are untouched. |
 | `GAMEND_FEATURES_USER_IMAGE_UPLOADS` | boolean | `true` | Player-supplied images: avatars (POST /api/v1/me/avatar*, the upload form on the account tab, and the copy of a sign-in provider's picture made by `Gamend.Accounts.AvatarMirror`) and group icons (POST /api/v1/groups/:id/icon*). The site's icons, to pick instead (`Gamend.Icons`), stay. Objects land in public storage and are served without authentication, so on a service children can reach this is an unscreened image surface — turn it off unless the game actually uses it and you have a way to screen what arrives. |
-| `GAMEND_FEATURES_WEB_CHAT` | boolean | `true` | Chat on the website: the /chat page, its link in the account menu, the Open links on chat notifications, and every link marked `"feature": "web_chat"`. The chat API and the game client are untouched. |
-| `GAMEND_FEATURES_WEB_FRIENDS` | boolean | `true` | Friends on the website: the Friends tab in account settings, the View link on friend-request notifications, and the "Friends and groups" row on the Notifications tab (shown while `web_friends` or `web_groups` is on). The friends API and the game client are untouched. |
-| `GAMEND_FEATURES_WEB_GROUPS` | boolean | `true` | Groups on the website: the /groups pages, the Groups tab in account settings, and every nav, footer or page link marked `"feature": "web_groups"`. The groups API and the game client are untouched — `list_groups` gates the public listing. |
-| `GAMEND_FEATURES_WEB_REDEEM` | boolean | `true` | Redemption codes on the website: the /redeem page and the link to it on /quests. The redeem API and the game client are untouched — `list_quests` gates the public listing. |
-| `GAMEND_FEATURES_WEB_STORE` | boolean | `true` | The store on the website: the /store pages (every active product, any provider row), the Open Store button in account settings, and every link marked `"feature": "web_store"`. Off for a host that sells through its own page instead. The payments API and the game client are untouched. |
-| `GAMEND_FEATURES_WEB_TOURNAMENTS` | boolean | `true` | Tournaments on the website: the /tournaments pages and every nav, footer or page link marked `"feature": "web_tournaments"`. The tournaments API and the game client are untouched — `list_tournaments` gates the public listing. |
 
 
 ## Push notifications
@@ -494,7 +484,6 @@ That declares `GAMEND_UGC_MAX_UPLOADS`, read with
 | Variable | Type | Default | Notes |
 |---|---|---|---|
 | `GAMEND_REPORTS_DAILY_LIMIT` | integer | `500` | Most reports accepted in 24 hours across everyone. 0 means no cap. |
-| `GAMEND_REPORTS_ENABLED` | boolean | `true` | Accept reports from /report and POST /api/v1/reports. |
 | `GAMEND_REPORTS_IP_HOURLY_LIMIT` | integer | `10` | Most reports one IP address may file in an hour (counted in memory). 0 means no cap. |
 | `GAMEND_REPORTS_MAX_ATTACHMENT_BYTES` | integer | `2000000` | Largest image a report may carry, in bytes. |
 | `GAMEND_REPORTS_RETENTION_DAYS` | integer | `180` | Delete a closed report, and its images, N days after it was closed. Open reports are kept. 0 keeps everything. |

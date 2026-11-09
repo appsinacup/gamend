@@ -20,8 +20,7 @@ defmodule GamendWeb.GroupsLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    if socket.assigns.live_action == :index and Groups.types() == [GroupType.hidden()] and
-         FeatureGate.enabled?(:web_groups) do
+    if socket.assigns.live_action == :index and Groups.types() == [GroupType.hidden()] do
       mount_intro(socket)
     else
       mount_directory(socket)
@@ -40,7 +39,7 @@ defmodule GamendWeb.GroupsLive do
   end
 
   defp mount_directory(socket) do
-    unless FeatureGate.enabled?(:list_groups) and FeatureGate.enabled?(:web_groups) do
+    unless FeatureGate.enabled?(:list_groups) do
       raise GamendWeb.NotFoundError
     end
 

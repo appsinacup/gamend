@@ -86,16 +86,14 @@
         "href": "/tournaments",
         "icon": "hero-bolt-solid",
         "tone": "tournaments",
-        "match": "prefix",
-        "feature": "web_tournaments"
+        "match": "prefix"
       },
       {
         "label": "Groups",
         "href": "/groups",
         "icon": "hero-user-group-solid",
         "tone": "groups",
-        "match": "prefix",
-        "feature": "web_groups"
+        "match": "prefix"
       },
       {
         "label": "Blog",

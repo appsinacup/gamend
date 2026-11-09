@@ -80,6 +80,10 @@ defmodule Gamend.Quests do
   The actual implementation runs on the Gamend.
   """
 
+  @type note() :: %{
+          label: String.t(),
+          items: [%{:name => String.t(), optional(:flag) => String.t() | nil}]
+        }
   @type user_id() :: Ecto.UUID.t()
 
   @doc ~S"""
@@ -802,6 +806,29 @@ defmodule Gamend.Quests do
 
       _ ->
         raise "Gamend.Quests.host_lock_label/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    A line about this viewer's own standing on this quest, drawn under its
+    description — or `nil`: a label (its own punctuation, a locale's) and the
+    things it names, each with a flag if it has one. Set `config :gamend_core,
+    :quest_note, {Module, :function}`; it is called as `function(user_id | nil,
+    Quest.t())`.
+    
+    A description is one text for everyone, translated once. A quest counted
+    across things the player chooses ("Pass every level of a language") says
+    what to do and cannot say which ones are done; only the host knows.
+    
+  """
+  @spec host_note(Gamend.Quests.Quest.t(), user_id() | nil) :: note() | nil
+  def host_note(_quest, _user_id) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Quests.host_note/2 is a stub - only available at runtime on Gamend"
     end
   end
 

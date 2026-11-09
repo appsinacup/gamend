@@ -60,8 +60,7 @@ defmodule GamendWeb.Api.V1.ReportController do
       created: {"Report filed", "application/json", ReportReceiptResponse},
       bad_request: Schemas.error("Unknown kind, bad topic, bad image (invalid_report)"),
       conflict: Schemas.error("The caller already has this report open (already_reported)"),
-      too_many_requests: Schemas.error("Over the hourly or daily cap (report_limit)"),
-      service_unavailable: Schemas.error("Reports are switched off (reports_disabled)")
+      too_many_requests: Schemas.error("Over the hourly or daily cap (report_limit)")
     ]
   )
 
@@ -80,9 +79,6 @@ defmodule GamendWeb.Api.V1.ReportController do
            }) do
       reply_data(conn, :created, %{id: report.id, kind: report.kind, status: report.status})
     else
-      {:error, :disabled} ->
-        reply_error(conn, :service_unavailable, "reports_disabled")
-
       {:error, reason} when reason in [:rate_limited, :daily_limit, :user_daily_limit] ->
         reply_error(conn, :too_many_requests, "report_limit")
 

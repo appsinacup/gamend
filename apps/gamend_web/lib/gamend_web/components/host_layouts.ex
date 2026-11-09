@@ -218,9 +218,7 @@ defmodule GamendWeb.HostLayouts do
   def resolve_theme(locale, assigned_theme) when map_size(assigned_theme) == 0 do
     base = fetch_theme(locale)
     settings = host_theme_settings()
-    # The flags are in the fingerprint because `build_theme/4` drops the
-    # links they close: flipping one must not keep serving the old nav.
-    fingerprint = :erlang.phash2({base, settings, GamendWeb.Features.configured()})
+    fingerprint = :erlang.phash2({base, settings})
     key = {__MODULE__, :resolved_theme, resolved_theme_locale(locale)}
 
     case :persistent_term.get(key, :miss) do
@@ -270,7 +268,6 @@ defmodule GamendWeb.HostLayouts do
         if(missing?, do: "Add host theme config or set GAMEND_CONTENT_THEME_CONFIG")
     )
     |> then(&Map.merge(host_theme_settings, &1))
-    |> GamendWeb.Features.drop_disabled()
     |> translate_theme(locale)
   end
 
@@ -850,8 +847,7 @@ defmodule GamendWeb.HostLayouts do
       %{
         "label" => translate("Play"),
         "href" => "/play",
-        "icon" => "hero-play-solid",
-        "feature" => "play"
+        "icon" => "hero-play-solid"
       },
       %{
         "label" => translate("Social"),
@@ -870,20 +866,32 @@ defmodule GamendWeb.HostLayouts do
           %{
             "label" => translate("Tournaments"),
             "href" => "/tournaments",
-            "icon" => "hero-bolt-solid",
-            "feature" => "web_tournaments"
+            "icon" => "hero-bolt-solid"
           },
           %{
             "label" => translate("Groups"),
             "href" => "/groups",
-            "icon" => "hero-user-group-solid",
-            "feature" => "web_groups"
+            "icon" => "hero-user-group-solid"
           }
         ]
       }
     ]
-    |> GamendWeb.Features.drop_disabled()
+    |> mounted_links()
   end
+
+  # Core's default links are to core's pages: one a host did not route goes.
+  # A theme's links are the host's own, and stay as written.
+  defp mounted_links(links) do
+    for link <- links, mounted_link?(link) do
+      case link do
+        %{"items" => items} -> %{link | "items" => mounted_links(items)}
+        link -> link
+      end
+    end
+  end
+
+  defp mounted_link?(%{"href" => href}), do: GamendWeb.MountedRoutes.mounted?(href)
+  defp mounted_link?(_group), do: true
 
   defp default_account_nav_links do
     [

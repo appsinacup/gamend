@@ -20,7 +20,6 @@ defmodule GamendWeb.RedeemLive do
   alias Gamend.Quests
   alias GamendWeb.ContentText
   alias GamendWeb.LiveHelpers
-  alias GamendWeb.Plugs.FeatureGate
   alias GamendWeb.RateLimit
   alias GamendWeb.UserAuth
 
@@ -32,10 +31,6 @@ defmodule GamendWeb.RedeemLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    unless FeatureGate.enabled?(:web_redeem) do
-      raise GamendWeb.NotFoundError
-    end
-
     user = get_user(socket)
 
     if connected?(socket) do

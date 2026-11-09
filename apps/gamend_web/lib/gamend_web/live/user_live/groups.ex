@@ -12,8 +12,8 @@ defmodule GamendWeb.UserLive.Groups do
   `/users/groups/<owner>/<slug>` (or `/users/groups/<id>`,
   `GamendWeb.GroupLinks.group_path/2`) opens one of the reader's groups, a
   page under the list, and `?create=1` the form, as on the tab, so a host's
-  page links straight to a team's members. Closed with the tab, by
-  `web_groups`.
+  page links straight to a team's members. Left out with the tab, by
+  `except: [:groups]`.
   """
   use GamendWeb, :live_view
 
@@ -30,8 +30,6 @@ defmodule GamendWeb.UserLive.Groups do
 
   @impl true
   def mount(_params, _session, socket) do
-    unless GamendWeb.Features.enabled?(:web_groups), do: raise(GamendWeb.NotFoundError)
-
     user = Scope.user(socket.assigns.current_scope)
 
     if connected?(socket) do

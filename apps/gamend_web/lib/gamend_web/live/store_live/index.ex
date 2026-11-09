@@ -13,10 +13,6 @@ defmodule GamendWeb.StoreLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    unless GamendWeb.Features.enabled?(:web_store) do
-      raise GamendWeb.NotFoundError
-    end
-
     user = Scope.user(socket.assigns.current_scope)
 
     {:ok,

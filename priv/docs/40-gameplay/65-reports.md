@@ -107,7 +107,6 @@ the reporter.
 
 | Setting | Default | |
 |---|---|---|
-| `GAMEND_REPORTS_ENABLED` | true | |
 | `GAMEND_REPORTS_IP_HOURLY_LIMIT` | 10 | per IP, in memory |
 | `GAMEND_REPORTS_USER_DAILY_LIMIT` | 20 | per account, counted on rows |
 | `GAMEND_REPORTS_DAILY_LIMIT` | 500 | across everyone |
@@ -178,4 +177,7 @@ Both need a token (a device token is enough). `kinds` answers
 The body of `POST` is the report's
 fields, with images as base64 strings in `attachments`. Answers `201` with
 `{id, kind, status}`; `400 invalid_report`, `409 already_reported`,
-`429 report_limit`, `503 reports_disabled`.
+`429 report_limit`.
+
+A host with no reports leaves them out of its router: `except: [:report]` on
+`gamend_api_routes` and on `gamend_current_user_routes`.

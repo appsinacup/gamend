@@ -88,46 +88,7 @@ to the group.
 
 ## Redemption codes
 
-A code is a way to finish a quest: reward codes for an event, invitation keys for a test server. Tick **Only by code** on a quest (`code_only: true`: no objectives, `reset: "never"`, no group or prerequisite), then press its **Codes** button on `/admin/quests` to generate a batch, or add one code with any text (`春节快乐`).
-
-| Uses on a code | Who can redeem it |
-|---|---|
-| `1` | One player |
-| `N` | The first N players |
-| blank | Every player, once each |
-
-A player types it at `/redeem`, or the game calls `POST /api/v1/me/quests/redeem` with `{"token": "ABCD-EFGH-JKMN-PQRS"}`. Spaces, dashes, letter case and full-width characters do not matter. It answers like a claim, `{progress, rewards}`, and pays at once.
-
-| Situation | API | |
-|---|---|---|
-| Unknown, expired, revoked, disabled, used up | 404 `code_not_found` | One answer for every miss |
-| This player has this quest, by any code | 409 `already_redeemed` | A player redeems a quest once |
-| A guest, where `:quest_claims` needs an account | 403 `account_required` | |
-| Too many tries | 429 `redeem_rate_limit` | `GAMEND_LIMITS_MAX_REDEEM_ATTEMPTS_PER_MIN` |
-| `before_quest_claim` refused | 403 `rejected` | The hook's words. The code is not spent |
-
-**`/redeem` lists every open code-only quest**, and `/redeem?quest=spring_gift` shows just that one, so an email can link to it. `GET /api/v1/quests/redeemable` is the same list. The link names the quest, never a code. A quest that is also `hidden` stays off the list until redeemed, while its codes work: a key you do not want advertised. `GAMEND_FEATURES_WEB_REDEEM=false` closes the page.
-
-**A key that unlocks a game mode** is a quest with no rewards. It has a progress row for a player only once they redeem, so the gate is one line in a hook:
-
-```elixir
-Gamend.Quests.get_progress(user_id, "beta_access") != nil
-```
-
-**Guests may redeem.** A signed-out visitor who submits a working code at `/redeem` gets a guest account. Because a guest's wallet moves into the account it signs in to, one person could redeem a shared code on several devices and sign each in. To stop that, refuse in the hook; `progress.code_id` says which code, and nothing is written yet:
-
-```elixir
-def before_quest_claim(user_id, %{code_only: true}, %{code_id: code_id}) do
-  guest? = user_id |> Gamend.Accounts.get_user() |> Gamend.Accounts.User.anonymous?()
-  shared? = Gamend.Quests.get_code(code_id).max_uses != 1
-
-  if guest? and shared?, do: {:error, "Register to redeem this code"}, else: :ok
-end
-
-def before_quest_claim(_user_id, _quest, _progress), do: :ok
-```
-
-To stop codes: **Revoke** one, untick **Active** on the quest for all of them, or set `ends_at`. A code's metadata is copied onto each player's progress row, where they can read it, so a hook can tell which channel a redemption came from; keep private notes out of it.
+A code is a way to finish a quest: reward codes for an event, invitation keys for a test server. Tick **Only by code** on a quest (`code_only: true`), and only a code finishes it. [Redemption codes](/docs/redemption-codes) has the steps.
 
 ## Progress is server-authoritative
 

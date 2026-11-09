@@ -13,7 +13,6 @@ defmodule GamendWeb.RedeemLiveTest do
   alias Gamend.Economy
   alias Gamend.Quests
   alias Gamend.Repo
-  alias GamendWeb.Features
 
   defp code_quest(attrs \\ %{}) do
     {:ok, quest} =
@@ -91,21 +90,6 @@ defmodule GamendWeb.RedeemLiveTest do
       {:ok, view, _html} = live(conn, "/redeem?quest=#{quest.key}")
 
       refute has_element?(view, "#redeem-card-#{quest.key}")
-    end
-
-    test "web_redeem off closes the page and the link on /quests", %{conn: conn} do
-      code_quest()
-      {:ok, view, _html} = live(conn, "/quests")
-      assert has_element?(view, "#quests-redeem-link")
-
-      previous = Application.get_env(:gamend_web, Features)
-      on_exit(fn -> Application.put_env(:gamend_web, Features, previous || []) end)
-      Application.put_env(:gamend_web, Features, Keyword.put(previous || [], :web_redeem, false))
-
-      assert_raise GamendWeb.NotFoundError, fn -> live(conn, "/redeem") end
-
-      {:ok, view, _html} = live(conn, "/quests")
-      refute has_element?(view, "#quests-redeem-link")
     end
 
     test "/quests has no link while there is nothing to redeem", %{conn: conn} do

@@ -33,10 +33,6 @@ defmodule GamendWeb.UserLive.Settings do
   @valid_tabs ~w(account notifications friends groups wallet items payments data devices
                  api_tokens)
 
-  # Tabs a feature flag can close. A closed tab is not drawn, not opened from
-  # `?tab=` and refuses its events, so it reads as absent rather than broken.
-  @feature_tabs %{"groups" => :web_groups, "friends" => :web_friends}
-
   @account_events ~w(validate_email update_email validate_display_name update_display_name
                      validate_username update_username validate_avatar cancel_avatar
                      pick_avatar_icon
@@ -328,12 +324,9 @@ defmodule GamendWeb.UserLive.Settings do
       else: socket
   end
 
-  defp tab_enabled?(tab) do
-    case Map.fetch(@feature_tabs, tab) do
-      {:ok, feature} -> GamendWeb.Features.enabled?(feature)
-      :error -> true
-    end
-  end
+  # A tab the host left out (`except: [:friends]`) is not drawn, not opened
+  # from `?tab=` and refuses its events, so it reads as absent, not broken.
+  defp tab_enabled?(tab), do: GamendWeb.MountedRoutes.settings_tab?(tab)
 
   # The open tab's data, read when it opens (and again on a patch within it):
   # every tab's template is behind `:if={@settings_tab == ...}`, so nothing

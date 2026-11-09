@@ -4,11 +4,13 @@ defmodule GamendWeb.NotificationsLive do
   alias Gamend.Accounts.Scope
   alias Gamend.Notifications
   alias GamendWeb.LiveHelpers
+  alias GamendWeb.MountedRoutes
 
   @page_size 25
 
   require Gamend.Notifications.NotificationType, as: NotificationType
   require GamendWeb.UrlParam, as: UrlParam
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
 
   use GamendWeb.UrlState,
     reload: :reload_notifications,
@@ -226,26 +228,26 @@ defmodule GamendWeb.NotificationsLive do
     end
   end
 
-  # A notification still arrives when its page is switched off on the site
-  # (the game sends chat, friend, group and cup traffic regardless), so its
-  # row leads nowhere.
+  # A notification still arrives when the site has no page for it (the game
+  # sends chat, friend, group and cup traffic regardless), so its row leads
+  # nowhere.
   defp page_open?(path) do
     cond do
       under?(path, "/chat") ->
-        GamendWeb.Features.enabled?(:web_chat)
+        MountedRoutes.mounted?(~p"/chat")
 
       under?(path, "/groups") ->
-        GamendWeb.Features.enabled?(:web_groups) and GamendWeb.Features.enabled?(:list_groups)
+        MountedRoutes.mounted?(~p"/groups") and GamendWeb.Features.enabled?(:list_groups)
 
       under?(path, "/tournaments") ->
-        GamendWeb.Features.enabled?(:web_tournaments) and
+        MountedRoutes.mounted?(~p"/tournaments") and
           GamendWeb.Features.enabled?(:list_tournaments)
 
       path == ~p"/users/settings?#{[tab: "friends"]}" ->
-        GamendWeb.Features.enabled?(:web_friends)
+        MountedRoutes.settings_tab?(SettingsTab.friends())
 
       under?(path, "/play") ->
-        GamendWeb.Features.enabled?(:play)
+        MountedRoutes.mounted?(~p"/play")
 
       true ->
         true

@@ -4,6 +4,7 @@ defmodule Gamend.PaymentsTest do
 
   alias Gamend.Accounts
   alias Gamend.AccountsFixtures
+  alias Gamend.Notifications.Preferences
   alias Gamend.Payments
   alias Gamend.Payments.Entitlement
   alias Gamend.Payments.ProviderEvent
@@ -675,7 +676,7 @@ defmodule Gamend.PaymentsTest do
 
     test "a user who turned the group's email off keeps the row and gets no email" do
       user = AccountsFixtures.user_fixture()
-      {:ok, user} = Gamend.Notifications.Preferences.put(user, "payments", "email", false)
+      {:ok, user} = Preferences.put(user, "payments", "email", false)
 
       {:ok, _e} = Payments.grant_entitlement(user.id, "k", expires_at: @ends, notify: true)
 

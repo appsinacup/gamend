@@ -95,17 +95,18 @@ defmodule GamendWeb.AdminLive.Pages do
     %{path: "/admin/logs", title: "Logs", icon: "hero-document-text", color: "orange"},
     %{path: "/admin/oban", title: "Jobs", icon: "hero-queue-list", color: "violet"},
     %{path: "/admin/system", title: "System", icon: "hero-cpu-chip", color: "cyan"},
-    %{path: "/admin/runtime", title: "Runtime", icon: "hero-command-line", color: "indigo"}
-  ]
-
-  @subpages [
-    %{path: "/admin/lobbies/live", title: "Live lobby", icon: "hero-eye", color: "violet"},
+    %{path: "/admin/runtime", title: "Runtime", icon: "hero-command-line", color: "indigo"},
+    %{path: "/admin/dashboard", title: "Live Dashboard", icon: "hero-chart-pie", color: "rose"},
     %{
       path: "/admin/github",
       title: "GitHub installations",
       icon: "hero-code-bracket",
       color: "slate"
     }
+  ]
+
+  @subpages [
+    %{path: "/admin/lobbies/live", title: "Live lobby", icon: "hero-eye", color: "violet"}
   ]
 
   @by_path Map.new(@dashboard ++ @subpages, &{&1.path, &1})

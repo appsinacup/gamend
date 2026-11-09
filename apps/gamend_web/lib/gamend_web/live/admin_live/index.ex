@@ -270,6 +270,10 @@ defmodule GamendWeb.AdminLive.Index do
             <div>Read-only; reflects the running node</div>
           </.admin_card>
 
+          <.admin_card page="/admin/dashboard">
+            <div>Processes, ports, ETS and metrics</div>
+          </.admin_card>
+
           <.admin_card page="/admin/config">
             <div>Limits, hooks and plugins</div>
           </.admin_card>
@@ -419,6 +423,10 @@ defmodule GamendWeb.AdminLive.Index do
             <div>What is kept, for how long, and the last sweep</div>
           </.admin_card>
 
+          <.admin_card page="/admin/github" value={@github_installations}>
+            <div>Every installation of the server's GitHub App</div>
+          </.admin_card>
+
           <.admin_card
             page="/admin/economy"
             value={@economy_stats.wallets}
@@ -554,6 +562,7 @@ defmodule GamendWeb.AdminLive.Index do
           open_reports: Task.async(fn -> Reports.count_open_reports() end),
           report_counts: Task.async(fn -> Gamend.Reports.count_by_status() end),
           host: Task.async(fn -> GamendWeb.AdminCard.load() end),
+          github_installations: Task.async(fn -> Gamend.GitHub.count_all_installations() end),
           active_mutes: Task.async(fn -> Gamend.Chat.count_mutes(%{"active" => true}) end),
           quest_stats: Task.async(fn -> Gamend.Quests.dashboard_stats() end),
           payments_stats: Task.async(fn -> Payments.admin_stats() end),
@@ -627,6 +636,7 @@ defmodule GamendWeb.AdminLive.Index do
        content_reports: Map.get(r.report_counts, "open", 0),
        report_counts: r.report_counts,
        host: r.host,
+       github_installations: r.github_installations,
        active_mutes: r.active_mutes,
        translation_stats: r.translation_stats,
        quest_stats: r.quest_stats,

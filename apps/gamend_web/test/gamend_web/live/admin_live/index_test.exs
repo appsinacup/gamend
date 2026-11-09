@@ -6,6 +6,7 @@ defmodule GamendWeb.AdminLive.IndexTest do
   alias Gamend.KV
   alias Gamend.Repo
   alias GamendWeb.AdminLive.Pages
+  alias GamendWeb.Gettext.Stats
 
   defp card(path), do: ~s|#admin-cards .card:has(a[href="#{path}"])|
 
@@ -37,7 +38,7 @@ defmodule GamendWeb.AdminLive.IndexTest do
 
     {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
 
-    hidden = length(GamendWeb.Gettext.Stats.all_completeness()) - 3
+    hidden = length(Stats.all_completeness()) - 3
 
     assert hidden > 0
     assert has_element?(view, card("/admin/translations"), "+#{hidden} more")

@@ -96,7 +96,7 @@ File a report.
 `"api"`), `:client` (a small map of browser facts), `:attachments` (a list
 of image binaries).
 
-Errors: `:disabled`, `:unknown_kind`, `:invalid_topic`,
+Errors: `:unknown_kind`, `:invalid_topic`,
 `:description_required`, `:too_many_attachments`, `:attachment_too_large`,
 `:attachment_type`, `:daily_limit`, `:user_daily_limit`,
 `:already_reported`, a kind's own `cast/2` reason, a hook's refusal, or a
@@ -118,14 +118,6 @@ Delete a report and its images.
 ```
 
 Whether a report of `kind` on `topic` must carry a description.
-
-# `enabled?`
-
-```elixir
-@spec enabled?() :: boolean()
-```
-
-Whether reports are being accepted.
 
 # `forget_user`
 

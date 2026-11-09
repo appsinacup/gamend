@@ -6,7 +6,18 @@ defmodule Mix.Tasks.Gen.SdkPlaceholderTest do
   """
   use ExUnit.Case, async: true
 
-  import Mix.Tasks.Gen.Sdk, only: [placeholder_expr_for_return_type: 1]
+  import Mix.Tasks.Gen.Sdk, only: [default_expr_for_arg: 1, placeholder_expr_for_return_type: 1]
+
+  test "a default naming a module only the engine has becomes nil" do
+    assert default_expr_for_arg(~S|reason \\ CheckReason.cancelled()|) == "nil"
+    assert default_expr_for_arg(~S|kind \\ Gamend.Quests.QuestStatus.active()|) == "nil"
+  end
+
+  test "a default the SDK can compile is copied as written" do
+    assert default_expr_for_arg(~S|now \\ DateTime.utc_now()|) == "DateTime.utc_now()"
+    assert default_expr_for_arg(~S|opts \\ []|) == "[]"
+    assert default_expr_for_arg("id") == nil
+  end
 
   test "a list answers a list, whatever it holds" do
     assert placeholder_expr_for_return_type("[map()]") == "[]"

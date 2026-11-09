@@ -3,9 +3,5 @@ defmodule Gamend.Quests.QuestCategory do
   A quest category with a meaning of its own.
   """
 
-  @all ~w(achievement)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(achievement)
 end

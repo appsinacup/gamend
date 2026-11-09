@@ -30,6 +30,7 @@ defmodule GamendWeb.NotificationEmail do
   def group_label(%{key: PreferenceGroup.chat()}), do: gettext("Chat messages")
   def group_label(%{key: PreferenceGroup.quests()}), do: gettext("Quests and rewards")
   def group_label(%{key: PreferenceGroup.reports()}), do: gettext("Your reports")
+  def group_label(%{key: PreferenceGroup.payments()}), do: gettext("Payments")
   def group_label(%{label: label}), do: GamendWeb.HostLayouts.translate(label)
 
   @doc "A channel's name."

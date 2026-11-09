@@ -3,15 +3,7 @@ defmodule Gamend.Chat.FilterSeverity do
   What the word filter does with a match.
   """
 
-  @all ~w(block mask flag)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(block mask flag)
 
   defmacro allow, do: "allow"
-
-  @doc "Every value."
-  @spec all() :: [String.t()]
-  def all, do: @all
 end

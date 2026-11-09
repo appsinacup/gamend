@@ -43,7 +43,7 @@ defmodule GamendWeb.RealtimeEventsDriftTest do
           source
         )
 
-      # A macro of `Gamend.RealtimeEvent` is named after its value.
+      # A macro of `Gamend.Realtime.RealtimeEvent` is named after its value.
       Enum.map(direct ++ member_updated, fn [_ | events] ->
         Enum.find(events, &(&1 != ""))
       end)

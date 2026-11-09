@@ -1,5 +1,5 @@
 ---
-icon: hero-cpu-chip
+icon: hero-cpu-chip-solid
 ---
 
 # C++ Client SDK

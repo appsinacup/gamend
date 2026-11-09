@@ -61,9 +61,9 @@ defmodule GamendWeb.ContentPages do
         icon="hero-document-text-solid"
         html={@html}
         sibling_path={@roadmap_available? && ~p"/roadmap"}
-        sibling_icon="hero-map"
+        sibling_icon="hero-map-solid"
         sibling_label={gettext("Roadmap")}
-        empty_icon="hero-document-text"
+        empty_icon="hero-document-text-solid"
         empty_text={gettext("Add a changelog file at CHANGELOG.md to display it here.")}
       />
     </Layouts.app>
@@ -85,9 +85,9 @@ defmodule GamendWeb.ContentPages do
         icon="hero-map-solid"
         html={@html}
         sibling_path={@changelog_available? && ~p"/changelog"}
-        sibling_icon="hero-document-text"
+        sibling_icon="hero-document-text-solid"
         sibling_label={gettext("Changelog")}
-        empty_icon="hero-map"
+        empty_icon="hero-map-solid"
         empty_text={gettext("Add a roadmap file at ROADMAP.md to display it here.")}
       />
     </Layouts.app>
@@ -165,7 +165,7 @@ defmodule GamendWeb.ContentPages do
       <div class="py-8">
         <.empty_state
           :if={!@blog_available?}
-          icon="hero-newspaper"
+          icon="hero-newspaper-solid"
           title={gettext("No results.")}
           text={gettext("Register a blog directory to display posts here.")}
         />
@@ -190,7 +190,7 @@ defmodule GamendWeb.ContentPages do
                 title={gettext("Roadmap")}
                 class="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-primary"
               >
-                <.icon name="hero-map" class="size-4" />
+                <.icon name="hero-map-solid" class="size-4" />
                 <span class="fit-menus:sr-only">{gettext("Roadmap")}</span>
               </.link>
               <.link
@@ -199,7 +199,7 @@ defmodule GamendWeb.ContentPages do
                 title={gettext("Changelog")}
                 class="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-primary"
               >
-                <.icon name="hero-document-text" class="size-4" />
+                <.icon name="hero-document-text-solid" class="size-4" />
                 <span class="fit-menus:sr-only">{gettext("Changelog")}</span>
               </.link>
             </div>
@@ -207,7 +207,7 @@ defmodule GamendWeb.ContentPages do
 
           <.empty_state
             :if={@grouped_posts == []}
-            icon="hero-pencil-square"
+            icon="hero-pencil-square-solid"
             title={gettext("No results.")}
           />
 

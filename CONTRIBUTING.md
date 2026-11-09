@@ -37,17 +37,11 @@ zone is only known in their browser. So:
 A string the code compares, matches or stores as a name (a status, a job's action, a kind, a file in a bucket) is typed once. `"creat"` compiles, and whatever reads it simply never matches.
 
 - **One module uses it:** `@failed "failed"`.
-- **Another module reads it:** the module that owns the value names it, as a macro, so a pattern or a guard can use it and a typo is a compile error. The same list feeds `validate_inclusion/3`:
+- **Another module reads it:** the module that owns the value names it, as a macro, so a pattern or a guard can use it and a typo fails the build: a compile error in a pattern, elsewhere a warning that `--warnings-as-errors` makes fatal. `use Gamend.Names` writes them, and `all/0` for `validate_inclusion/3`. `@all` stays set, for a macro that names part of the list:
 
   ```elixir
   defmodule MyApp.Servers.Status do
-    @all ~w(creating running failed)
-
-    for name <- @all do
-      defmacro unquote(String.to_atom(name))(), do: unquote(name)
-    end
-
-    def all, do: @all
+    use Gamend.Names, ~w(creating running failed)
   end
 
   require MyApp.Servers.Status, as: Status
@@ -56,9 +50,11 @@ A string the code compares, matches or stores as a name (a status, a job's actio
   def busy?(status) when status in [Status.creating(), Status.failed()], do: true
   ```
 
+- **Where the owner lives:** one small module per set of values, beside its feature: `Gamend.Lobbies.LobbyState` in `lobbies/`, `GamendWeb.AdminLive.BanDuration` in `live/admin_live/`. The top level is for a name several features share, like `Gamend.SortKey`.
 - **Where a macro cannot go:** inside an Ecto query `Status.running()` is read as a field, so pin it (`^Status.running()`). In HEEx `@name` is an assign, so a template calls the macro, never a module attribute. `require` comes before any attribute that uses one. A file `gen.sdk.ex` copies into the SDK whole (`@copied_sources`) may use nothing but the standard library, so it keeps a module attribute.
 - **Not names:** a map's keys (the shape of a document), anything shown or logged, a LiveView event, an API error's code in `reply_error/3` (`mix gamend.api.lint` reads it as a literal). Tests may spell a value out, and reuse the name where it reads as well.
-- `mix gamend.literal.lint` (in `precommit`) fails on a name typed out in two or more modules, or five or more times in one. A string that is someone else's (a provider's one-off token) is marked `# literal-ok: <why>`. HEEx templates are not read. A host still part way through may keep `.literal-lint-baseline`, whose counts only go down: `--all` lists every offender, and `--update-baseline` records the new counts. Gamend has none.
+- `mix gamend.literal.lint` (in `precommit` and CI) fails on a name typed out in two or more modules, or five or more times in one. In a template a comparison counts (`@s == "failed"`), so a template asks the owner too. A module attribute or a private function that is only its value counts once a second module of the same context gives the same string the same name: `@ebin "ebin"` in two `Gamend.Hooks` modules. A string that is someone else's, or a word two modules share by coincidence, is marked `# literal-ok: <why>`, or `<%!-- literal-ok: <why> --%>` in a template. There is no baseline: fix what it finds, then add it.
+- A host runs these in CI by calling `.github/workflows/host-checks.yml` from a workflow of its own: `compile --warnings-as-errors`, `gamend.api.lint` and `gamend.literal.lint`, against the published Gamend.
 
 ## Errors
 
@@ -106,7 +102,7 @@ Adding one callback touches six places — miss one and plugins break in confusi
 
 ## Admin
 
-- Admin LiveView page in `apps/gamend_web/lib/gamend_web/live/admin_live/`, opening with `<.admin_header page="/admin/thing" />`, plus its route, its title, icon and colour in `GamendWeb.AdminLive.Pages`, an `<.admin_card>` on `/admin` (a test fails a listed page with none), and an entry in `admin_pages_render_test`.
+- Admin LiveView page in `apps/gamend_web/lib/gamend_web/live/admin_live/`, opening with `<.admin_header page="/admin/thing" />`, plus its route, its title, icon and colour in `GamendWeb.AdminLive.Pages`, an `<.admin_card>` in its `<.admin_section>` on `/admin` (a test fails a listed page with none), and an entry in `admin_pages_render_test`.
 - Show names, not raw UUIDs, and paginate every table.
 - Admin API controller under `controllers/api/v1/admin/` with **parity for every admin UI action** — anything an admin can click, a script can call.
 

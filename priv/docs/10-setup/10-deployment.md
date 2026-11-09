@@ -1,5 +1,5 @@
 ---
-icon: hero-cloud-arrow-up
+icon: hero-cloud-arrow-up-solid
 ---
 
 # Deployment

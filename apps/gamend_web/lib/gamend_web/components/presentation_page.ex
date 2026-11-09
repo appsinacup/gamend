@@ -924,8 +924,8 @@ defmodule GamendWeb.PresentationPage do
       alt={@image.alt}
       width={@image.width}
       height={@image.height}
-      loading={if(@variant == "hero", do: "eager", else: "lazy")}
-      fetchpriority={if(@variant == "hero", do: "high", else: nil)}
+      loading={if(hero?(@variant), do: "eager", else: "lazy")}
+      fetchpriority={if(hero?(@variant), do: "high", else: nil)}
       decoding="async"
       data-lightbox
       class={media_class(@size, @image)}
@@ -938,8 +938,8 @@ defmodule GamendWeb.PresentationPage do
         alt={@image.alt}
         width={@image.width}
         height={@image.height}
-        loading={if(@variant == "hero", do: "eager", else: "lazy")}
-        fetchpriority={if(@variant == "hero", do: "high", else: nil)}
+        loading={if(hero?(@variant), do: "eager", else: "lazy")}
+        fetchpriority={if(hero?(@variant), do: "high", else: nil)}
         decoding="async"
         data-lightbox
         class={[media_class(@size, @image), "[[data-theme=dark]_&]:hidden"]}
@@ -951,8 +951,8 @@ defmodule GamendWeb.PresentationPage do
         alt={@image.alt}
         width={@image.width}
         height={@image.height}
-        loading={if(@variant == "hero", do: "eager", else: "lazy")}
-        fetchpriority={if(@variant == "hero", do: "high", else: nil)}
+        loading={if(hero?(@variant), do: "eager", else: "lazy")}
+        fetchpriority={if(hero?(@variant), do: "high", else: nil)}
         decoding="async"
         data-lightbox
         class={[media_class(@size, @image), "hidden [[data-theme=dark]_&]:block"]}
@@ -1758,4 +1758,6 @@ defmodule GamendWeb.PresentationPage do
   end
 
   defp safe_href?(_href), do: false
+
+  defp hero?(variant), do: variant == @hero
 end

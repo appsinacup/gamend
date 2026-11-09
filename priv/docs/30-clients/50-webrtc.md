@@ -1,5 +1,5 @@
 ---
-icon: hero-video-camera
+icon: hero-video-camera-solid
 ---
 
 # WebRTC

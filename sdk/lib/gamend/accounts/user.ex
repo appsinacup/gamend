@@ -75,4 +75,14 @@ defmodule Gamend.Accounts.User do
   def password_changeset(_user, _attrs, _opts) do
     raise "#{__MODULE__}.password_changeset/3 is a stub - only available at runtime on Gamend"
   end
+
+  @doc """
+  Whether this is a guest: an account with no email and no sign-in provider,
+  only a device or a browser.
+
+  This function exists in the real Gamend implementation.
+  In the SDK it is a stub, so a plugin compiles against it.
+  """
+  @spec anonymous?(t()) :: boolean()
+  def anonymous?(%__MODULE__{}), do: :erlang.phash2(make_ref(), 2) == 0
 end

@@ -1,7 +1,7 @@
 defmodule GamendWeb.AdminComponents do
   @moduledoc """
-  The admin console's page furniture: a heading, a coloured icon and a
-  dashboard card. Imported wherever `use GamendWeb, :live_view` is, so core's
+  The admin console's page furniture: a heading, a coloured icon, and a
+  dashboard card and the section it sits in. Imported wherever `use GamendWeb, :live_view` is, so core's
   pages and a host's (Forge, Polyglot, a fork) are the same shapes without
   restating a class. There is nothing to configure: a page says what it is
   where it draws itself.
@@ -14,7 +14,7 @@ defmodule GamendWeb.AdminComponents do
 
   A host's page says the same three things itself:
 
-      <.admin_header title="Builds" icon="hero-cube" color="violet" />
+      <.admin_header title="Builds" icon="hero-cube-solid" color="violet" />
 
   and lists the page on `/admin` from its `GamendWeb.AdminCard` module, with
   the same `icon` and `color`.
@@ -33,7 +33,7 @@ defmodule GamendWeb.AdminComponents do
 
   @md "md"
 
-  @default_icon "hero-squares-2x2"
+  @default_icon "hero-squares-2x2-solid"
   @default_color "slate"
 
   # Icons carry meaning, so they hold 3:1 against the tile in both themes
@@ -139,6 +139,23 @@ defmodule GamendWeb.AdminComponents do
         {render_slot(@actions)}
       </div>
     </header>
+    """
+  end
+
+  attr :title, :string, required: true
+  slot :inner_block, required: true, doc: "the section's `admin_card/1`s"
+
+  @doc """
+  A named group of cards on `/admin`: a heading over the card grid.
+  """
+  def admin_section(assigns) do
+    ~H"""
+    <section>
+      <h2 class="mb-3 text-lg font-semibold">{@title}</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {render_slot(@inner_block)}
+      </div>
+    </section>
     """
   end
 

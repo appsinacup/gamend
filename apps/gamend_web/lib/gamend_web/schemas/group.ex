@@ -225,7 +225,7 @@ defmodule GamendWeb.Schemas.GroupInviteOutcome do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
-  require GamendWeb.JoinOutcome, as: JoinOutcome
+  require Gamend.Groups.JoinOutcome, as: JoinOutcome
 
   OpenApiSpex.schema(%{
     title: "GroupInviteOutcome",

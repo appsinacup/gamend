@@ -1,5 +1,5 @@
 ---
-icon: hero-bell-alert
+icon: hero-bell-alert-solid
 ---
 
 # Push notifications

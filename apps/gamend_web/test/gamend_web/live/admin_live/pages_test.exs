@@ -36,13 +36,15 @@ defmodule GamendWeb.AdminLive.PagesTest do
     end
   end
 
-  test "every icon is a heroicon" do
+  test "every icon is a solid heroicon" do
     # The dependency is `sparse: "optimized"`, so its path already ends there.
     optimized = Mix.Project.deps_paths()[:heroicons]
 
     for %{icon: "hero-" <> name} <- Pages.all() do
-      assert File.exists?(Path.join([optimized, "24/outline", name <> ".svg"])),
-             "no heroicon named #{name}"
+      file = String.replace_suffix(name, "-solid", ".svg")
+
+      assert String.ends_with?(file, ".svg"), "#{name} is not the solid variant"
+      assert File.exists?(Path.join([optimized, "24/solid", file])), "no heroicon named #{name}"
     end
   end
 

@@ -124,6 +124,7 @@ defmodule GamendWeb.Schemas.AdminQuest do
       objectives: %Schema{type: :array, items: QuestObjective},
       rewards: %Schema{type: :array, items: QuestReward},
       auto_claim: %Schema{type: :boolean},
+      code_only: %Schema{type: :boolean, description: "Only a redemption code finishes it"},
       prerequisite_quest_key: %Schema{type: :string},
       starts_at: %Schema{type: :string, format: :"date-time", nullable: true},
       ends_at: %Schema{type: :string, format: :"date-time", nullable: true},
@@ -148,6 +149,7 @@ defmodule GamendWeb.Schemas.AdminQuest do
       :objectives,
       :rewards,
       :auto_claim,
+      :code_only,
       :prerequisite_quest_key,
       :starts_at,
       :ends_at,
@@ -361,6 +363,77 @@ end
 defmodule GamendWeb.Schemas.AdminQuestResponse do
   @moduledoc "One quest definition under `data`."
   use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.AdminQuest
+end
+
+defmodule GamendWeb.Schemas.AdminQuestCode do
+  @moduledoc "One redemption code of a code-only quest."
+  require OpenApiSpex
+  alias Gamend.Quests.QuestCodeStatus
+  alias OpenApiSpex.Schema
+
+  OpenApiSpex.schema(%{
+    title: "AdminQuestCode",
+    description: "A redemption code",
+    type: :object,
+    properties: %{
+      id: %Schema{type: :string, format: :uuid},
+      quest_key: %Schema{type: :string},
+      token: %Schema{type: :string, description: "The code as people see it"},
+      max_uses: %Schema{
+        type: :integer,
+        nullable: true,
+        description: "1 is single-use, N the first N players, null every player once"
+      },
+      uses: %Schema{type: :integer, description: "How many players redeemed it"},
+      status: %Schema{type: :string, enum: QuestCodeStatus.all()},
+      metadata: %Schema{
+        type: :object,
+        description: "Copied onto each player's progress row, where they can read it"
+      },
+      inserted_at: %Schema{type: :string, format: :"date-time"},
+      updated_at: %Schema{type: :string, format: :"date-time"}
+    },
+    required: [
+      :id,
+      :quest_key,
+      :token,
+      :max_uses,
+      :uses,
+      :status,
+      :metadata,
+      :inserted_at,
+      :updated_at
+    ]
+  })
+end
+
+defmodule GamendWeb.Schemas.AdminQuestCodeBatch do
+  @moduledoc "How many redemption codes one generate made."
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  OpenApiSpex.schema(%{
+    title: "AdminQuestCodeBatch",
+    description: "The result of generating codes; read them with the codes list",
+    type: :object,
+    properties: %{created: %Schema{type: :integer}},
+    required: [:created]
+  })
+end
+
+defmodule GamendWeb.Schemas.AdminQuestCodePage do
+  @moduledoc "A page of redemption codes."
+  use GamendWeb.Schemas.Envelope, page: GamendWeb.Schemas.AdminQuestCode
+end
+
+defmodule GamendWeb.Schemas.AdminQuestCodeResponse do
+  @moduledoc "One redemption code under `data`."
+  use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.AdminQuestCode
+end
+
+defmodule GamendWeb.Schemas.AdminQuestCodeBatchResponse do
+  @moduledoc "A generate's result under `data`."
+  use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.AdminQuestCodeBatch
 end
 
 defmodule GamendWeb.Schemas.AdminQuestProgressPage do

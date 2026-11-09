@@ -13,6 +13,8 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
   alias Gamend.Hooks.PluginBuilder
   alias Gamend.Hooks.PluginManager
 
+  require GamendWeb.AdminLive.BuildEnv, as: BuildEnv
+
   @doc "The hook plugins: what loaded, and building a bundle."
   attr :plugin_build_available, :any, required: true
   attr :plugin_build_mode, :atom, default: nil, doc: "`PluginBuilder.mode/0`"
@@ -931,7 +933,7 @@ defmodule GamendWeb.AdminLive.ConfigSystemSections do
             </svg>
             Live Dashboard
           </a>
-          <%= if @config.env == "dev" do %>
+          <%= if @config.env == BuildEnv.dev() do %>
             <a href="/dev/mailbox" class="btn btn-outline btn-secondary">
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path

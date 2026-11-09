@@ -5,6 +5,7 @@ defmodule GamendWeb.AdminLive.Groups do
   alias GamendWeb.AdminLive.Shared
   alias GamendWeb.LiveHelpers
 
+  require Gamend.Groups.GroupType, as: GroupType
   require GamendWeb.FormName, as: FormName
   require Gamend.SortKey, as: SortKey
   require GamendWeb.UrlParam, as: UrlParam
@@ -79,16 +80,22 @@ defmodule GamendWeb.AdminLive.Groups do
                   class="select select-bordered select-sm"
                   phx-change="sort"
                 >
-                  <option value="updated_at" selected={@sort_by == "updated_at"}>
+                  <option value={SortKey.updated_at()} selected={@sort_by == SortKey.updated_at()}>
                     Updated (newest)
                   </option>
-                  <option value="updated_at_asc" selected={@sort_by == "updated_at_asc"}>
+                  <option
+                    value={SortKey.updated_at_asc()}
+                    selected={@sort_by == SortKey.updated_at_asc()}
+                  >
                     Updated (oldest)
                   </option>
-                  <option value="inserted_at" selected={@sort_by == "inserted_at"}>
+                  <option value={SortKey.inserted_at()} selected={@sort_by == SortKey.inserted_at()}>
                     Created (newest)
                   </option>
-                  <option value="inserted_at_asc" selected={@sort_by == "inserted_at_asc"}>
+                  <option
+                    value={SortKey.inserted_at_asc()}
+                    selected={@sort_by == SortKey.inserted_at_asc()}
+                  >
                     Created (oldest)
                   </option>
                   <option value="title" selected={@sort_by == "title"}>Title (A-Z)</option>
@@ -141,13 +148,22 @@ defmodule GamendWeb.AdminLive.Groups do
                       <th>
                         <select name="type" class="select select-bordered select-xs w-full">
                           <option value="" selected={@filters["type"] == ""}>All</option>
-                          <option value="public" selected={@filters["type"] == "public"}>
+                          <option
+                            value={GroupType.public()}
+                            selected={@filters["type"] == GroupType.public()}
+                          >
                             Public
                           </option>
-                          <option value="private" selected={@filters["type"] == "private"}>
+                          <option
+                            value={GroupType.private()}
+                            selected={@filters["type"] == GroupType.private()}
+                          >
                             Private
                           </option>
-                          <option value="hidden" selected={@filters["type"] == "hidden"}>
+                          <option
+                            value={GroupType.hidden()}
+                            selected={@filters["type"] == GroupType.hidden()}
+                          >
                             Hidden
                           </option>
                         </select>
@@ -206,9 +222,9 @@ defmodule GamendWeb.AdminLive.Groups do
                       </td>
                       <td class="text-sm">
                         <%= cond do %>
-                          <% g.type == "public" -> %>
+                          <% g.type == GroupType.public() -> %>
                             <span class="badge badge-success badge-sm">Public</span>
-                          <% g.type == "private" -> %>
+                          <% g.type == GroupType.private() -> %>
                             <span class="badge badge-warning badge-sm">Private</span>
                           <% true -> %>
                             <span class="badge badge-info badge-sm">Hidden</span>
@@ -352,7 +368,7 @@ defmodule GamendWeb.AdminLive.Groups do
                     />
                   </td>
                   <td class="text-sm">
-                    <%= if m.role == "admin" do %>
+                    <%= if m.role == GroupRole.admin() do %>
                       <span class="badge badge-primary badge-sm">Admin</span>
                     <% else %>
                       <span class="badge badge-ghost badge-sm">Member</span>
@@ -363,7 +379,7 @@ defmodule GamendWeb.AdminLive.Groups do
                   </td>
                   <td class="text-sm">
                     <div class="flex flex-wrap gap-1">
-                      <%= if m.role == "member" do %>
+                      <%= if m.role == GroupRole.member() do %>
                         <button
                           type="button"
                           phx-click="promote_member"

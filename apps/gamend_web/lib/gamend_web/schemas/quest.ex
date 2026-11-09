@@ -130,6 +130,10 @@ defmodule GamendWeb.Schemas.Quest do
       objectives: %Schema{type: :array, items: QuestObjective},
       rewards: %Schema{type: :array, items: QuestReward},
       auto_claim: %Schema{type: :boolean, description: "Rewards grant on completion"},
+      code_only: %Schema{
+        type: :boolean,
+        description: "Only a redemption code finishes it (POST /me/quests/redeem)"
+      },
       prerequisite_quest_key: %Schema{
         type: :string,
         description: "Quest that must be completed first; empty when none"
@@ -161,6 +165,7 @@ defmodule GamendWeb.Schemas.Quest do
       :objectives,
       :rewards,
       :auto_claim,
+      :code_only,
       :prerequisite_quest_key,
       :starts_at,
       :ends_at,

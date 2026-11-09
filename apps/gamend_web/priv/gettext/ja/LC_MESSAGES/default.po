@@ -4116,3 +4116,55 @@ msgstr "色 %{number}"
 #, elixir-autogen, elixir-format
 msgid "Download for offline"
 msgstr "オフライン用にダウンロード"
+
+#: lib/gamend_web/live/quests_live.ex:544
+#: lib/gamend_web/live/redeem_live.ex:47
+#: lib/gamend_web/live/redeem_live.ex:226
+#, elixir-autogen, elixir-format
+msgid "Redeem a code"
+msgstr "コードを引き換える"
+
+#: lib/gamend_web/live/redeem_live.ex:247
+#, elixir-autogen, elixir-format
+msgid "Code"
+msgstr "コード"
+
+#: lib/gamend_web/live/redeem_live.ex:255
+#, elixir-autogen, elixir-format
+msgid "Redeem"
+msgstr "引き換える"
+
+#: lib/gamend_web/live/redeem_live.ex:327
+#, elixir-autogen, elixir-format
+msgid "Redeemed"
+msgstr "引き換え済み"
+
+#: lib/gamend_web/live/redeem_live.ex:176
+#, elixir-autogen, elixir-format
+msgid "Code redeemed: %{title}"
+msgstr "コードを引き換えました: %{title}"
+
+#: lib/gamend_web/live/redeem_live.ex:160
+#, elixir-autogen, elixir-format
+msgid "That code is not valid."
+msgstr "このコードは無効です。"
+
+#: lib/gamend_web/live/redeem_live.ex:161
+#, elixir-autogen, elixir-format
+msgid "You already redeemed this."
+msgstr "すでに引き換え済みです。"
+
+#: lib/gamend_web/live/redeem_live.ex:162
+#, elixir-autogen, elixir-format
+msgid "Register to redeem this code."
+msgstr "登録してこのコードを引き換えよう。"
+
+#: lib/gamend_web/live/redeem_live.ex:163
+#, elixir-autogen, elixir-format
+msgid "Too many tries. Wait a minute."
+msgstr "試行回数が多すぎます。1分待ってください。"
+
+#: lib/gamend_web/live/redeem_live.ex:165
+#, elixir-autogen, elixir-format
+msgid "Could not redeem this code."
+msgstr "このコードを引き換えられませんでした。"

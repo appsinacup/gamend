@@ -406,6 +406,27 @@ defmodule GamendWeb.AdminLive.PaymentsTest do
     assert html =~ "trial_key now ends"
   end
 
+  test "admin tells the user only when the box is ticked", %{conn: conn, admin: admin} do
+    user = AccountsFixtures.user_fixture()
+    ends = DateTime.add(DateTime.utc_now(:second), 10, :day)
+    {:ok, quiet} = Payments.grant_entitlement(user.id, "quiet_key", expires_at: ends)
+    {:ok, told} = Payments.grant_entitlement(user.id, "told_key", expires_at: ends)
+
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin/payments")
+
+    view
+    |> form("#admin-entitlement-extend-#{quiet.id}", %{"days" => "30"})
+    |> render_submit()
+
+    assert Gamend.Notifications.list_notifications(user.id) == []
+
+    view
+    |> form("#admin-entitlement-extend-#{told.id}", %{"days" => "30", "notify" => "true"})
+    |> render_submit()
+
+    assert [%{title: "told_key is yours"}] = Gamend.Notifications.list_notifications(user.id)
+  end
+
   test "an entitlement with no end has nothing to extend", %{conn: conn, admin: admin} do
     {:ok, granted} = Payments.grant_entitlement(admin.id, "lifetime_key", expires_at: nil)
 

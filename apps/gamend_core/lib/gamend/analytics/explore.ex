@@ -27,7 +27,9 @@ defmodule Gamend.Analytics.Explore do
   alias Gamend.Analytics.Segment
   alias Gamend.Repo
 
-  @none "none"
+  require Gamend.Placeholder, as: Placeholder
+
+  @none Placeholder.none()
 
   @type filter :: %{
           names: [String.t()] | :all,

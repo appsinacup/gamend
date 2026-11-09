@@ -4,11 +4,16 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
 
   alias Gamend.Quests
   alias Gamend.Quests.Quest
+  alias Gamend.Quests.QuestCode
+  alias Gamend.Quests.QuestCodeStatus
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
 
   alias GamendWeb.Schemas.{
     AdminQuestClaimResponse,
+    AdminQuestCodeBatchResponse,
+    AdminQuestCodePage,
+    AdminQuestCodeResponse,
     AdminQuestPage,
     AdminQuestProgressPage,
     AdminQuestProgressResponse,
@@ -65,12 +70,29 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
         }
       },
       auto_claim: %Schema{type: :boolean},
+      code_only: %Schema{
+        type: :boolean,
+        description:
+          "Only a redemption code finishes it. Needs empty objectives, reset \"never\", " <>
+            "and no group or prerequisite."
+      },
       prerequisite_quest_key: %Schema{type: :string},
       starts_at: %Schema{type: :string, format: "date-time", nullable: true},
       ends_at: %Schema{type: :string, format: "date-time", nullable: true},
       active: %Schema{type: :boolean},
       metadata: %Schema{type: :object}
     }
+  }
+
+  @max_uses_schema %Schema{
+    type: :integer,
+    nullable: true,
+    description: "1 is single-use, N the first N players, null every player once"
+  }
+
+  @code_metadata_schema %Schema{
+    type: :object,
+    description: "Copied onto each player's progress row, where they can read it"
   }
 
   @user_quest_body %Schema{
@@ -443,6 +465,165 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
     reply_data(conn, Quests.funnel(key))
   end
 
+  # ---------------------------------------------------------------------------
+  # REDEMPTION CODES
+  # ---------------------------------------------------------------------------
+
+  operation(:codes,
+    operation_id: "admin_list_quest_codes",
+    summary: "List a quest's redemption codes (admin)",
+    security: [%{"authorization" => []}],
+    parameters: [
+      id: [in: :path, schema: %Schema{type: :string, format: :uuid}, required: true],
+      search: [
+        in: :query,
+        schema: %Schema{type: :string},
+        required: false,
+        description: "The exact code, typed any way a player could type it"
+      ],
+      page: [in: :query, schema: %Schema{type: :integer}, required: false],
+      page_size: [in: :query, schema: %Schema{type: :integer}, required: false]
+    ],
+    responses: [
+      ok: {"Codes", "application/json", AdminQuestCodePage},
+      not_found: Schemas.error("Not found")
+    ]
+  )
+
+  def codes(conn, %{"id" => id} = params) do
+    with_quest(conn, id, fn quest ->
+      {page, page_size} = Pagination.params(params)
+      search = params["search"]
+
+      rows = Quests.list_codes(quest.key, page: page, page_size: page_size, search: search)
+      total_count = Quests.count_codes(quest.key, search: search)
+
+      reply_page(conn, Enum.map(rows, &serialize_code/1), page, page_size, total_count)
+    end)
+  end
+
+  operation(:create_code,
+    operation_id: "admin_create_quest_code",
+    summary: "Add one redemption code with a chosen token (admin)",
+    security: [%{"authorization" => []}],
+    parameters: [
+      id: [in: :path, schema: %Schema{type: :string, format: :uuid}, required: true]
+    ],
+    request_body:
+      {"Code", "application/json",
+       %Schema{
+         type: :object,
+         properties: %{
+           token: %Schema{type: :string, description: "Any UTF-8 text"},
+           max_uses: @max_uses_schema,
+           metadata: @code_metadata_schema
+         },
+         required: [:token]
+       }},
+    responses: [
+      created: {"Created", "application/json", AdminQuestCodeResponse},
+      not_found: Schemas.error("Not found"),
+      conflict: Schemas.error("A code with this token exists, on any quest"),
+      unprocessable_entity: Schemas.error("Validation failed, or the quest is not code-only")
+    ]
+  )
+
+  def create_code(conn, %{"id" => id} = params) do
+    with_quest(conn, id, fn quest ->
+      case Quests.create_code(quest, Map.take(params, ~w(token max_uses metadata))) do
+        {:ok, code} -> reply_data(conn, :created, serialize_code(code))
+        {:error, reason} -> reply_reason(conn, reason)
+      end
+    end)
+  end
+
+  operation(:generate_codes,
+    operation_id: "admin_generate_quest_codes",
+    summary: "Generate random redemption codes (admin)",
+    description:
+      "Capped at `max_codes_per_generate`; run it again for more. Answers how many it " <>
+        "made: read them with the codes list.",
+    security: [%{"authorization" => []}],
+    parameters: [
+      id: [in: :path, schema: %Schema{type: :string, format: :uuid}, required: true]
+    ],
+    request_body:
+      {"What to generate", "application/json",
+       %Schema{
+         type: :object,
+         properties: %{
+           count: %Schema{type: :integer},
+           max_uses: @max_uses_schema,
+           metadata: @code_metadata_schema
+         },
+         required: [:count]
+       }},
+    responses: [
+      created: {"Generated", "application/json", AdminQuestCodeBatchResponse},
+      bad_request: Schemas.error("count is missing or below 1 (invalid_count)"),
+      forbidden: Schemas.error("Past max_codes_per_generate (too_many_codes)"),
+      not_found: Schemas.error("Not found"),
+      unprocessable_entity: Schemas.error("Validation failed, or the quest is not code-only")
+    ]
+  )
+
+  def generate_codes(conn, %{"id" => id} = params) do
+    with_quest(conn, id, fn quest ->
+      opts = [max_uses: Map.get(params, "max_uses", 1), metadata: params["metadata"] || %{}]
+
+      case Quests.generate_codes(quest, generate_count(params), opts) do
+        {:ok, created} -> reply_data(conn, :created, %{created: created})
+        {:error, reason} -> reply_reason(conn, reason)
+      end
+    end)
+  end
+
+  # Anything but a whole number reads as 0, which `generate_codes/3` refuses.
+  defp generate_count(%{"count" => count}) when is_integer(count), do: count
+  defp generate_count(_params), do: 0
+
+  operation(:update_code,
+    operation_id: "admin_update_quest_code",
+    summary: "Revoke or restore a redemption code (admin)",
+    security: [%{"authorization" => []}],
+    parameters: [
+      id: [in: :path, schema: %Schema{type: :string, format: :uuid}, required: true]
+    ],
+    request_body:
+      {"New status", "application/json",
+       %Schema{
+         type: :object,
+         properties: %{status: %Schema{type: :string, enum: QuestCodeStatus.all()}},
+         required: [:status]
+       }},
+    responses: [
+      ok: {"Updated", "application/json", AdminQuestCodeResponse},
+      not_found: Schemas.error("No such code (code_not_found)"),
+      unprocessable_entity: Schemas.error("Not a status (invalid_state)")
+    ]
+  )
+
+  def update_code(conn, %{"id" => id} = params) do
+    case Quests.set_code_status(id, params["status"]) do
+      {:ok, code} -> reply_data(conn, serialize_code(code))
+      {:error, reason} -> reply_reason(conn, reason)
+    end
+  end
+
+  defp serialize_code(%QuestCode{} = code) do
+    %{
+      id: code.id,
+      quest_key: code.quest_key,
+      token: code.token,
+      max_uses: code.max_uses,
+      uses: code.uses,
+      status: code.status,
+      metadata: code.metadata || %{},
+      inserted_at: code.inserted_at,
+      updated_at: code.updated_at
+    }
+  end
+
   defp with_quest(conn, id, fun) do
     case Quests.get_quest(id) do
       nil -> reply_error(conn, :not_found, "not_found")
@@ -478,6 +659,7 @@ defmodule GamendWeb.Api.V1.Admin.QuestController do
       objectives: Enum.map(quest.objectives || [], &serialize_objective/1),
       rewards: Enum.map(quest.rewards || [], &serialize_reward/1),
       auto_claim: quest.auto_claim,
+      code_only: quest.code_only,
       prerequisite_quest_key: quest.prerequisite_quest_key || "",
       starts_at: quest.starts_at,
       ends_at: quest.ends_at,

@@ -4166,3 +4166,55 @@ msgstr "Farbe %{number}"
 #, elixir-autogen, elixir-format
 msgid "Download for offline"
 msgstr "Für die Offline-Nutzung herunterladen"
+
+#: lib/gamend_web/live/quests_live.ex:544
+#: lib/gamend_web/live/redeem_live.ex:47
+#: lib/gamend_web/live/redeem_live.ex:226
+#, elixir-autogen, elixir-format
+msgid "Redeem a code"
+msgstr "Code einlösen"
+
+#: lib/gamend_web/live/redeem_live.ex:247
+#, elixir-autogen, elixir-format
+msgid "Code"
+msgstr "Code"
+
+#: lib/gamend_web/live/redeem_live.ex:255
+#, elixir-autogen, elixir-format
+msgid "Redeem"
+msgstr "Einlösen"
+
+#: lib/gamend_web/live/redeem_live.ex:327
+#, elixir-autogen, elixir-format
+msgid "Redeemed"
+msgstr "Eingelöst"
+
+#: lib/gamend_web/live/redeem_live.ex:176
+#, elixir-autogen, elixir-format
+msgid "Code redeemed: %{title}"
+msgstr "Code eingelöst: %{title}"
+
+#: lib/gamend_web/live/redeem_live.ex:160
+#, elixir-autogen, elixir-format
+msgid "That code is not valid."
+msgstr "Dieser Code ist ungültig."
+
+#: lib/gamend_web/live/redeem_live.ex:161
+#, elixir-autogen, elixir-format
+msgid "You already redeemed this."
+msgstr "Das hast du bereits eingelöst."
+
+#: lib/gamend_web/live/redeem_live.ex:162
+#, elixir-autogen, elixir-format
+msgid "Register to redeem this code."
+msgstr "Registriere dich, um diesen Code einzulösen."
+
+#: lib/gamend_web/live/redeem_live.ex:163
+#, elixir-autogen, elixir-format
+msgid "Too many tries. Wait a minute."
+msgstr "Zu viele Versuche. Warte eine Minute."
+
+#: lib/gamend_web/live/redeem_live.ex:165
+#, elixir-autogen, elixir-format
+msgid "Could not redeem this code."
+msgstr "Dieser Code konnte nicht eingelöst werden."

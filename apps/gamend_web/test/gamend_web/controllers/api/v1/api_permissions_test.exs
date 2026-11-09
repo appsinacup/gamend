@@ -163,7 +163,11 @@ defmodule GamendWeb.Api.V1.ApiPermissionsTest do
       {:delete, "/api/v1/admin/ready_checks/1"},
       # Achievements Admin
       {:get, "/api/v1/admin/quests"},
-      {:post, "/api/v1/admin/quests"}
+      {:post, "/api/v1/admin/quests"},
+      {:get, "/api/v1/admin/quests/1/codes"},
+      {:post, "/api/v1/admin/quests/1/codes"},
+      {:post, "/api/v1/admin/quests/1/codes/generate"},
+      {:patch, "/api/v1/admin/quest_codes/1"}
     ]
 
     for {method, path} <- @admin_endpoints do

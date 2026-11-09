@@ -1,5 +1,5 @@
 ---
-icon: hero-cube-transparent
+icon: hero-cube-transparent-solid
 ---
 
 # Architecture

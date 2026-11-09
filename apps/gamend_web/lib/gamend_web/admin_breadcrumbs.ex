@@ -8,7 +8,8 @@ defmodule GamendWeb.AdminBreadcrumbs do
   else the segment with its underscores as spaces and a capital first letter
   (`rate_limiting` is "Rate limiting"). Every crumb but the page's own links
   to its path, since each step of an admin page's path is an admin page too
-  (`/admin/chat` above `/admin/chat/reports`). A host's own admin pages get a
+  (`/admin/chat` above `/admin/chat/reports`), and a step that is not one
+  (a record's key in the path) is left out. A host's own admin pages get a
   trail the same way; its provider answers first, for one whose last step
   deserves a better name than its slug.
   """
@@ -39,7 +40,7 @@ defmodule GamendWeb.AdminBreadcrumbs do
           end)
 
         {page, _path} = List.last(crumbs, {"Admin", "/admin"})
-        steps = [{"Admin", "/admin"} | crumbs] |> Enum.drop(-1)
+        steps = [{"Admin", "/admin"} | crumbs] |> Enum.drop(-1) |> Enum.filter(&page?/1)
 
         [{"Home", "/"} | steps] ++ [{page, nil}]
 
@@ -49,6 +50,20 @@ defmodule GamendWeb.AdminBreadcrumbs do
   end
 
   def trail(_path), do: []
+
+  # A record's key on the way to a page of it (`/admin/quests/:key/codes`) is
+  # no admin page of its own, and its crumb would be a link to nothing. A
+  # host's catch-all for its configured pages matches every path, so that does
+  # not count as a page here.
+  defp page?({_label, path}) do
+    router = Application.get_env(:gamend_web, :router, GamendWeb.Router)
+
+    case Phoenix.Router.route_info(router, "GET", path, "") do
+      %{plug: GamendWeb.PageController, plug_opts: :configured_page} -> false
+      %{} -> true
+      :error -> false
+    end
+  end
 
   @doc "The crumb for one admin path segment."
   @spec name(String.t()) :: String.t()

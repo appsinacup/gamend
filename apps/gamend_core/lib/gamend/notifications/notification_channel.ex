@@ -3,13 +3,5 @@ defmodule Gamend.Notifications.NotificationChannel do
   The channels a notification can be sent on.
   """
 
-  @all ~w(in_app email push)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
-
-  @doc "Every value."
-  @spec all() :: [String.t()]
-  def all, do: @all
+  use Gamend.Names, ~w(in_app email push)
 end

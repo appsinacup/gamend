@@ -4166,3 +4166,55 @@ msgstr "Väri %{number}"
 #, elixir-autogen, elixir-format
 msgid "Download for offline"
 msgstr "Lataa offline-käyttöön"
+
+#: lib/gamend_web/live/quests_live.ex:544
+#: lib/gamend_web/live/redeem_live.ex:47
+#: lib/gamend_web/live/redeem_live.ex:226
+#, elixir-autogen, elixir-format
+msgid "Redeem a code"
+msgstr "Lunasta koodi"
+
+#: lib/gamend_web/live/redeem_live.ex:247
+#, elixir-autogen, elixir-format
+msgid "Code"
+msgstr "Koodi"
+
+#: lib/gamend_web/live/redeem_live.ex:255
+#, elixir-autogen, elixir-format
+msgid "Redeem"
+msgstr "Lunasta"
+
+#: lib/gamend_web/live/redeem_live.ex:327
+#, elixir-autogen, elixir-format
+msgid "Redeemed"
+msgstr "Lunastettu"
+
+#: lib/gamend_web/live/redeem_live.ex:176
+#, elixir-autogen, elixir-format
+msgid "Code redeemed: %{title}"
+msgstr "Koodi lunastettu: %{title}"
+
+#: lib/gamend_web/live/redeem_live.ex:160
+#, elixir-autogen, elixir-format
+msgid "That code is not valid."
+msgstr "Koodi ei kelpaa."
+
+#: lib/gamend_web/live/redeem_live.ex:161
+#, elixir-autogen, elixir-format
+msgid "You already redeemed this."
+msgstr "Olet jo lunastanut tämän."
+
+#: lib/gamend_web/live/redeem_live.ex:162
+#, elixir-autogen, elixir-format
+msgid "Register to redeem this code."
+msgstr "Rekisteröidy lunastaaksesi tämän koodin."
+
+#: lib/gamend_web/live/redeem_live.ex:163
+#, elixir-autogen, elixir-format
+msgid "Too many tries. Wait a minute."
+msgstr "Liian monta yritystä. Odota minuutti."
+
+#: lib/gamend_web/live/redeem_live.ex:165
+#, elixir-autogen, elixir-format
+msgid "Could not redeem this code."
+msgstr "Koodia ei voitu lunastaa."

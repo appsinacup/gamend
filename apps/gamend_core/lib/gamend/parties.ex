@@ -2138,7 +2138,7 @@ defmodule Gamend.Parties do
     do: order_by(query, [p], asc: p.inserted_at)
 
   defp apply_party_sort(query, SortKey.max_size()), do: order_by(query, [p], desc: p.max_size)
-  defp apply_party_sort(query, "max_size_asc"), do: order_by(query, [p], asc: p.max_size)
+  defp apply_party_sort(query, SortKey.max_size_asc()), do: order_by(query, [p], asc: p.max_size)
   defp apply_party_sort(query, _), do: order_by(query, [p], desc: p.updated_at)
 
   # `String.to_integer/1` raises on anything non-numeric, and these values come

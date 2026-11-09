@@ -3,11 +3,7 @@ defmodule Gamend.HttpHeader do
   The header names core and its HTTP clients send.
   """
 
-  @all ~w(accept authorization)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(accept authorization)
 
   defmacro content_type, do: "content-type"
 

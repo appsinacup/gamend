@@ -4116,3 +4116,55 @@ msgstr "顏色 %{number}"
 #, elixir-autogen, elixir-format
 msgid "Download for offline"
 msgstr "下載以供離線使用"
+
+#: lib/gamend_web/live/quests_live.ex:544
+#: lib/gamend_web/live/redeem_live.ex:47
+#: lib/gamend_web/live/redeem_live.ex:226
+#, elixir-autogen, elixir-format
+msgid "Redeem a code"
+msgstr "使用兌換碼"
+
+#: lib/gamend_web/live/redeem_live.ex:247
+#, elixir-autogen, elixir-format
+msgid "Code"
+msgstr "兌換碼"
+
+#: lib/gamend_web/live/redeem_live.ex:255
+#, elixir-autogen, elixir-format
+msgid "Redeem"
+msgstr "兌換"
+
+#: lib/gamend_web/live/redeem_live.ex:327
+#, elixir-autogen, elixir-format
+msgid "Redeemed"
+msgstr "已兌換"
+
+#: lib/gamend_web/live/redeem_live.ex:176
+#, elixir-autogen, elixir-format
+msgid "Code redeemed: %{title}"
+msgstr "兌換成功：%{title}"
+
+#: lib/gamend_web/live/redeem_live.ex:160
+#, elixir-autogen, elixir-format
+msgid "That code is not valid."
+msgstr "此兌換碼無效。"
+
+#: lib/gamend_web/live/redeem_live.ex:161
+#, elixir-autogen, elixir-format
+msgid "You already redeemed this."
+msgstr "你已經兌換過了。"
+
+#: lib/gamend_web/live/redeem_live.ex:162
+#, elixir-autogen, elixir-format
+msgid "Register to redeem this code."
+msgstr "註冊後即可兌換。"
+
+#: lib/gamend_web/live/redeem_live.ex:163
+#, elixir-autogen, elixir-format
+msgid "Too many tries. Wait a minute."
+msgstr "嘗試次數過多，請等待一分鐘。"
+
+#: lib/gamend_web/live/redeem_live.ex:165
+#, elixir-autogen, elixir-format
+msgid "Could not redeem this code."
+msgstr "無法兌換此兌換碼。"

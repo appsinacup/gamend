@@ -26,11 +26,13 @@ defmodule Mix.Tasks.Gettext.ImportCsv do
   """
   use Mix.Task
 
-  @source "source"
-  @translation "translation"
-  @msgid "msgid"
-  @domain "domain"
-  @fuzzy "fuzzy"
+  require GamendWeb.Gettext.CsvColumn, as: CsvColumn
+
+  @source CsvColumn.source()
+  @translation CsvColumn.translation()
+  @msgid CsvColumn.msgid()
+  @domain CsvColumn.domain()
+  @fuzzy CsvColumn.fuzzy()
 
   @shortdoc "Import reviewed translations from CSV into PO files"
 

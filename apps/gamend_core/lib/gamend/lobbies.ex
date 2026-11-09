@@ -44,6 +44,7 @@ defmodule Gamend.Lobbies do
   import Ecto.Query, warn: false
   use Nebulex.Caching, cache: Gamend.Cache
 
+  require Gamend.Placeholder, as: Placeholder
   require Logger
 
   alias Bcrypt
@@ -65,7 +66,7 @@ defmodule Gamend.Lobbies do
   require Gamend.Notifications.NotificationType, as: NotificationType
   require Gamend.SortKey, as: SortKey
 
-  @unknown "unknown"
+  @unknown Placeholder.unknown()
 
   # A state is a game-chosen word (see Gamend.Lobbies.States); core only
   # keeps it a sane string, since a host can set it over the API.
@@ -516,7 +517,7 @@ defmodule Gamend.Lobbies do
   defp apply_admin_sort(q, SortKey.inserted_at()), do: order_by(q, [l], desc: l.inserted_at)
   defp apply_admin_sort(q, SortKey.inserted_at_asc()), do: order_by(q, [l], asc: l.inserted_at)
   defp apply_admin_sort(q, SortKey.max_users()), do: order_by(q, [l], desc: l.max_users)
-  defp apply_admin_sort(q, "max_users_asc"), do: order_by(q, [l], asc: l.max_users)
+  defp apply_admin_sort(q, SortKey.max_users_asc()), do: order_by(q, [l], asc: l.max_users)
   defp apply_admin_sort(q, _), do: order_by(q, [l], desc: l.updated_at)
 
   @doc """

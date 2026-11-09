@@ -26,7 +26,9 @@ defmodule GamendWeb.RateLimit do
 
   import Bitwise
 
-  @unknown "unknown"
+  require Gamend.Placeholder, as: Placeholder
+
+  @unknown Placeholder.unknown()
 
   @doc """
   The bucket a client address is limited under: the address itself for IPv4,
@@ -87,6 +89,29 @@ defmodule GamendWeb.RateLimit do
       case hit("chatd:#{user_id}", :timer.hours(24), limit) do
         {:allow, _count} -> :ok
         {:deny, _retry_after} -> {:error, :chat_daily_limit}
+      end
+    else
+      :ok
+    end
+  end
+
+  @doc """
+  Redemption code tries for one caller (`Gamend.Limits`
+  `:max_redeem_attempts_per_min`, rolling minute). Returns `:ok` or
+  `{:error, :redeem_rate_limit}`. Generated codes cannot be guessed; this
+  protects the database and codes a person chose.
+
+  Skipped when rate limiting is disabled or the limit is 0.
+  """
+  @spec check_redeem(term()) :: :ok | {:error, :redeem_rate_limit}
+  def check_redeem(caller) do
+    limit = Gamend.Limits.get(:max_redeem_attempts_per_min)
+
+    if Gamend.Settings.get(GamendWeb.Plugs.RateLimiter, :enabled) and
+         is_integer(limit) and limit > 0 do
+      case hit("redeem:#{caller}", :timer.minutes(1), limit) do
+        {:allow, _count} -> :ok
+        {:deny, _retry_after} -> {:error, :redeem_rate_limit}
       end
     else
       :ok

@@ -570,6 +570,8 @@ defmodule Mix.Tasks.Gen.Sdk do
        "{:ok, #{quest_placeholder_expr()}}"},
       {fn rt -> String.contains?(rt, "{:ok, Gamend.Quests.QuestProgress.t()}") end,
        "{:ok, #{quest_progress_placeholder_expr()}}"},
+      {fn rt -> String.contains?(rt, "{:ok, Gamend.Quests.QuestCode.t()}") end,
+       "{:ok, #{quest_code_placeholder_expr()}}"},
       {fn rt -> String.contains?(rt, "{:ok, [Gamend.Quests.QuestProgress.t()]}") end,
        "{:ok, []}"},
       {fn rt -> String.contains?(rt, "%{progress: Gamend.Quests.QuestProgress.t()") end,
@@ -638,6 +640,10 @@ defmodule Mix.Tasks.Gen.Sdk do
            String.contains?(rt, "| nil")
        end,
        "if :erlang.phash2(make_ref(), 2) == 0, do: nil, else: #{quest_progress_placeholder_expr()}"},
+      {fn rt ->
+         String.contains?(rt, "Gamend.Quests.QuestCode.t()") and String.contains?(rt, "| nil")
+       end,
+       "if :erlang.phash2(make_ref(), 2) == 0, do: nil, else: #{quest_code_placeholder_expr()}"},
       {fn rt -> friendship_struct_return?(rt) end, friendship_placeholder_expr()},
 
       # Fallback: if the return type allows nil and we can't infer a better placeholder, use nil.
@@ -826,13 +832,19 @@ defmodule Mix.Tasks.Gen.Sdk do
   defp quest_placeholder_expr do
     dt = dt_placeholder_expr()
 
-    "%Gamend.Quests.Quest{id: \"\", key: \"\", title: \"\", description: \"\", icon_url: nil, sort_order: 0, hidden: false, kind: \"achievement\", objectives: [], rewards: [], auto_claim: false, prerequisite_quest_key: nil, starts_at: nil, ends_at: nil, active: true, metadata: %{}, inserted_at: #{dt}, updated_at: #{dt}}"
+    "%Gamend.Quests.Quest{id: \"\", key: \"\", title: \"\", description: \"\", icon_url: nil, sort_order: 0, hidden: false, kind: \"achievement\", objectives: [], rewards: [], auto_claim: false, prerequisite_quest_key: nil, starts_at: nil, ends_at: nil, active: true, code_only: false, metadata: %{}, inserted_at: #{dt}, updated_at: #{dt}}"
+  end
+
+  defp quest_code_placeholder_expr do
+    dt = dt_placeholder_expr()
+
+    "%Gamend.Quests.QuestCode{id: \"\", quest_key: \"\", token: \"\", lookup: \"\", max_uses: nil, uses: 0, status: \"active\", metadata: %{}, inserted_at: #{dt}, updated_at: #{dt}}"
   end
 
   defp quest_progress_placeholder_expr do
     dt = dt_placeholder_expr()
 
-    "%Gamend.Quests.QuestProgress{id: \"\", user_id: \"\", quest_key: \"\", period_key: \"static\", objective_progress: %{}, status: \"active\", completed_at: nil, claimed_at: nil, rewards_granted_at: nil, metadata: %{}, inserted_at: #{dt}, updated_at: #{dt}}"
+    "%Gamend.Quests.QuestProgress{id: \"\", user_id: \"\", quest_key: \"\", period_key: \"static\", objective_progress: %{}, status: \"active\", completed_at: nil, claimed_at: nil, rewards_granted_at: nil, code_id: nil, metadata: %{}, inserted_at: #{dt}, updated_at: #{dt}}"
   end
 
   defp record_placeholder_expr do
@@ -950,7 +962,7 @@ defmodule Mix.Tasks.Gen.Sdk do
   defp defaults_from_signature([sig | _], arity) when is_binary(sig) do
     sig
     |> signature_args()
-    |> Enum.map(&extract_arg_default/1)
+    |> Enum.map(&default_expr_for_arg/1)
     |> Enum.take(arity)
     |> pad_to(arity)
   end
@@ -1020,16 +1032,37 @@ defmodule Mix.Tasks.Gen.Sdk do
   end
 
   # A default that does not parse is dropped rather than emitted: a narrower
-  # stub is a warning, a broken one is a build failure.
-  defp extract_arg_default(arg_str) do
+  # stub is a warning, a broken one is a build failure. One that names a module
+  # only the engine has (`CheckReason.cancelled()`, an alias in the source)
+  # becomes `nil`: the SDK has no such module, a stub never reads its default,
+  # and the shorter arity stays callable.
+  @doc false
+  def default_expr_for_arg(arg_str) do
     case String.split(arg_str, "\\\\", parts: 2) do
       [_name, default] ->
         default = String.trim(default)
-        if match?({:ok, _}, Code.string_to_quoted(default)), do: default, else: nil
+
+        case Code.string_to_quoted(default) do
+          {:ok, quoted} -> if names_engine_module?(quoted), do: "nil", else: default
+          {:error, _} -> nil
+        end
 
       _ ->
         nil
     end
+  end
+
+  defp names_engine_module?(quoted) do
+    {_quoted, found?} =
+      Macro.prewalk(quoted, false, fn
+        {:__aliases__, _meta, parts} = node, found? ->
+          {node, found? or hd(parts) == :Gamend or not Code.ensure_loaded?(Module.concat(parts))}
+
+        node, found? ->
+          {node, found?}
+      end)
+
+    found?
   end
 
   defp arg_names_from_signature(signatures, arity) when is_list(signatures) do

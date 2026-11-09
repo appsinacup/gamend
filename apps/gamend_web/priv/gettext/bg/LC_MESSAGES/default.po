@@ -4166,3 +4166,55 @@ msgstr "Цвят %{number}"
 #, elixir-autogen, elixir-format
 msgid "Download for offline"
 msgstr "Изтегляне за офлайн ползване"
+
+#: lib/gamend_web/live/quests_live.ex:544
+#: lib/gamend_web/live/redeem_live.ex:47
+#: lib/gamend_web/live/redeem_live.ex:226
+#, elixir-autogen, elixir-format
+msgid "Redeem a code"
+msgstr "Активирай код"
+
+#: lib/gamend_web/live/redeem_live.ex:247
+#, elixir-autogen, elixir-format
+msgid "Code"
+msgstr "Код"
+
+#: lib/gamend_web/live/redeem_live.ex:255
+#, elixir-autogen, elixir-format
+msgid "Redeem"
+msgstr "Активирай"
+
+#: lib/gamend_web/live/redeem_live.ex:327
+#, elixir-autogen, elixir-format
+msgid "Redeemed"
+msgstr "Активирано"
+
+#: lib/gamend_web/live/redeem_live.ex:176
+#, elixir-autogen, elixir-format
+msgid "Code redeemed: %{title}"
+msgstr "Кодът е активиран: %{title}"
+
+#: lib/gamend_web/live/redeem_live.ex:160
+#, elixir-autogen, elixir-format
+msgid "That code is not valid."
+msgstr "Този код не е валиден."
+
+#: lib/gamend_web/live/redeem_live.ex:161
+#, elixir-autogen, elixir-format
+msgid "You already redeemed this."
+msgstr "Това вече е активирано от теб."
+
+#: lib/gamend_web/live/redeem_live.ex:162
+#, elixir-autogen, elixir-format
+msgid "Register to redeem this code."
+msgstr "Регистрирай се, за да активираш този код."
+
+#: lib/gamend_web/live/redeem_live.ex:163
+#, elixir-autogen, elixir-format
+msgid "Too many tries. Wait a minute."
+msgstr "Твърде много опити. Изчакай минута."
+
+#: lib/gamend_web/live/redeem_live.ex:165
+#, elixir-autogen, elixir-format
+msgid "Could not redeem this code."
+msgstr "Кодът не можа да бъде активиран."

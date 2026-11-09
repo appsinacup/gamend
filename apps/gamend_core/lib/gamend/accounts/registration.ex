@@ -8,6 +8,7 @@ defmodule Gamend.Accounts.Registration do
   """
 
   import Ecto.Query, warn: false
+  require Gamend.Accounts.IntervalUnit, as: IntervalUnit
   require Logger
   alias Gamend.Accounts.ConfirmationMailer
   alias Gamend.Accounts.LoginLockouts
@@ -25,7 +26,7 @@ defmodule Gamend.Accounts.Registration do
 
   require Gamend.Accounts.TokenContext, as: TokenContext
 
-  @day "day"
+  @day IntervalUnit.day()
 
   @username_insert_attempts 4
 

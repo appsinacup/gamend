@@ -3,13 +3,5 @@ defmodule Gamend.Parties.PartyInviteStatus do
   The states of an invitation to a party.
   """
 
-  @all ~w(pending accepted declined cancelled)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
-
-  @doc "Every value."
-  @spec all() :: [String.t()]
-  def all, do: @all
+  use Gamend.Names, ~w(pending accepted declined cancelled)
 end

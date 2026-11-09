@@ -26,7 +26,9 @@ defmodule Mix.Tasks.Gettext.ExportCsv do
   """
   use Mix.Task
 
-  @source "source"
+  require GamendWeb.Gettext.CsvColumn, as: CsvColumn
+
+  @source CsvColumn.source()
 
   @yes "yes"
 

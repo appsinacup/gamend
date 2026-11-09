@@ -1,5 +1,5 @@
 ---
-icon: hero-code-bracket
+icon: hero-code-bracket-solid
 ---
 
 # JavaScript Client SDK

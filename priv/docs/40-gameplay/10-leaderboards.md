@@ -1,5 +1,5 @@
 ---
-icon: hero-chart-bar
+icon: hero-chart-bar-solid
 ---
 
 # Leaderboards

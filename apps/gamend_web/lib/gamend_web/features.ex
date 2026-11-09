@@ -8,8 +8,8 @@ defmodule GamendWeb.Features do
   want third parties browsing or scraping its data turns off what it does not
   need.
 
-  `web_groups`, `web_friends`, `web_chat`, `web_tournaments` and `web_store`
-  are website-only: they close a page and every link to it (`drop_disabled/1`)
+  `web_groups`, `web_friends`, `web_chat`, `web_tournaments`, `web_store` and
+  `web_redeem` are website-only: they close a page and every link to it (`drop_disabled/1`)
   and leave the API to the game client, so a host can park a feature on the
   site without breaking the game.
 
@@ -99,6 +99,12 @@ defmodule GamendWeb.Features do
     default: true,
     doc:
       "Public GET /api/v1/quests*, the /quests page and the \"Quests and rewards\" row on the Notifications tab. Achievements are quests of kind `achievement`, so this is them too."
+  )
+
+  setting(:web_redeem, :boolean,
+    default: true,
+    doc:
+      "Redemption codes on the website: the /redeem page and the link to it on /quests. The redeem API and the game client are untouched — `list_quests` gates the public listing."
   )
 
   setting(:list_tournaments, :boolean,

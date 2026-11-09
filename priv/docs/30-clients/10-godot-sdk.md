@@ -1,5 +1,5 @@
 ---
-icon: hero-cube
+icon: hero-cube-solid
 ---
 
 # Godot Client SDK

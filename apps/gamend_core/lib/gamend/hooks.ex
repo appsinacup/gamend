@@ -288,10 +288,22 @@ defmodule Gamend.Hooks do
   @callback after_purchase_fulfilled(Purchase.t()) :: any()
   @callback after_purchase_revoked(Purchase.t()) :: any()
   @callback after_entitlement_changed(Entitlement.t()) :: any()
+
+  @doc """
+  What to tell a user about an entitlement given with `notify: true`
+  (`Gamend.Payments.Notices`), and only then: not for a renewal, or any other
+  write of the row.
+
+  `notice` is a map with `"group"` (a notification group) and the attrs of
+  `Gamend.Notifications.notify/3`. Return `{:ok, notice}`, changed as you like,
+  or `{:error, reason}` to send nothing.
+  """
+  @callback before_entitlement_notice(Entitlement.t(), notice :: map()) :: hook_result(map())
   @optional_callbacks before_purchase: 2,
                       after_purchase_fulfilled: 1,
                       after_purchase_revoked: 1,
-                      after_entitlement_changed: 1
+                      after_entitlement_changed: 1,
+                      before_entitlement_notice: 2
 
   # Economy lifecycle hooks. The change map carries the user, the currency/item,
   # the new balance/quantity, and the signed delta (+grant / -spend).
@@ -752,6 +764,7 @@ defmodule Gamend.Hooks do
       :after_purchase_fulfilled,
       :after_purchase_revoked,
       :after_entitlement_changed,
+      :before_entitlement_notice,
       :on_custom_hook,
       :before_kv_get,
       # Plugin declaration/metadata functions. The host calls these to discover a
@@ -859,6 +872,7 @@ defmodule Gamend.Hooks do
       :before_party_kick,
       :before_matchmaking_join,
       :before_purchase,
+      :before_entitlement_notice,
       :before_tournament_register,
       :before_tournament_leave,
       :before_tournament_result,
@@ -959,6 +973,14 @@ defmodule Gamend.Hooks do
     end
   end
 
+  defp normalize_pipeline_args(:before_entitlement_notice, value, current_args)
+       when is_list(current_args) and length(current_args) == 2 do
+    case value do
+      tuple when is_tuple(tuple) and tuple_size(tuple) == 2 -> {:ok, Tuple.to_list(tuple)}
+      notice -> {:ok, [Enum.at(current_args, 0), notice]}
+    end
+  end
+
   defp normalize_pipeline_args(:before_party_create, value, current_args)
        when is_list(current_args) and length(current_args) == 2 do
     case value do
@@ -1053,6 +1075,11 @@ defmodule Gamend.Hooks do
   end
 
   defp finalize_pipeline_value(:before_push_send, args)
+       when is_list(args) and length(args) == 2 do
+    Enum.at(args, 1)
+  end
+
+  defp finalize_pipeline_value(:before_entitlement_notice, args)
        when is_list(args) and length(args) == 2 do
     Enum.at(args, 1)
   end

@@ -39,6 +39,7 @@ defmodule GamendWeb.AdminLive.Runtime do
   use GamendWeb.UrlState,
     keys: [:search, :facet, :page, :page_size, :expanded, :show_diagram]
 
+  require GamendWeb.AdminLive.RuntimeRow, as: RuntimeRow
   require GamendWeb.FilterValue, as: FilterValue
 
   @migrations "migrations"
@@ -240,7 +241,9 @@ defmodule GamendWeb.AdminLive.Runtime do
               id={"facet-#{@tab}"}
             >
               <select name="value" class="select select-sm w-48">
-                <option value="all" selected={@facet == "all"}>{facet_label(assigns)}</option>
+                <option value={FilterValue.everything()} selected={@facet == FilterValue.everything()}>
+                  {facet_label(assigns)}
+                </option>
                 <option
                   :for={option <- facet_options(assigns)}
                   value={option}
@@ -338,7 +341,7 @@ defmodule GamendWeb.AdminLive.Runtime do
           >
             <td class="font-mono text-xs whitespace-nowrap">{row.name}/{row.arity}</td>
             <td>
-              <span class={["badge badge-sm", row.kind == "pipeline" && "badge-info"]}>
+              <span class={["badge badge-sm", row.kind == RuntimeRow.pipeline() && "badge-info"]}>
                 {row.kind}
               </span>
             </td>
@@ -415,7 +418,7 @@ defmodule GamendWeb.AdminLive.Runtime do
           >
             <td class="font-mono text-xs">{row.full_name}</td>
             <td>
-              <span class={["badge badge-sm", row.source == "plugin" && "badge-warning"]}>
+              <span class={["badge badge-sm", row.source == RuntimeRow.plugin() && "badge-warning"]}>
                 {row.source}
               </span>
             </td>
@@ -493,7 +496,7 @@ defmodule GamendWeb.AdminLive.Runtime do
           <td class="font-mono text-xs">{row.topic}</td>
           <td class="font-mono text-xs">{row.event}</td>
           <td>
-            <span class={["badge badge-sm", row.source != "server" && "badge-warning"]}>
+            <span class={["badge badge-sm", row.source != RuntimeRow.server() && "badge-warning"]}>
               {row.source}
             </span>
           </td>
@@ -524,7 +527,7 @@ defmodule GamendWeb.AdminLive.Runtime do
         <tr :for={row <- @rows}>
           <td class="font-mono text-xs">{row.code}</td>
           <td>
-            <span class={["badge badge-sm", row.source != "server" && "badge-warning"]}>
+            <span class={["badge badge-sm", row.source != RuntimeRow.server() && "badge-warning"]}>
               {row.source}
             </span>
           </td>
@@ -556,7 +559,7 @@ defmodule GamendWeb.AdminLive.Runtime do
           >
             <td class="font-mono text-xs">{row.table}</td>
             <td>
-              <span class={["badge badge-sm", row.source != "server" && "badge-warning"]}>
+              <span class={["badge badge-sm", row.source != RuntimeRow.server() && "badge-warning"]}>
                 {row.source}
               </span>
             </td>
@@ -602,8 +605,8 @@ defmodule GamendWeb.AdminLive.Runtime do
                           :if={a.on_delete}
                           class={[
                             "badge badge-xs",
-                            a.on_delete == "cascade" && "badge-error",
-                            a.on_delete == "nilify" && "badge-warning"
+                            a.on_delete == RuntimeRow.cascade() && "badge-error",
+                            a.on_delete == RuntimeRow.nilify() && "badge-warning"
                           ]}
                           title="What happens to this row when the referenced row is deleted"
                         >
@@ -697,10 +700,13 @@ defmodule GamendWeb.AdminLive.Runtime do
           <td class="font-mono text-xs">{row.name}</td>
           <td class="font-mono text-xs">{row.schedule}</td>
           <td>
-            <span class={[
-              "badge badge-sm",
-              (row.state == "active" && "badge-success") || "badge-ghost"
-            ]}>
+            <span class={
+              [
+                "badge badge-sm",
+                # literal-ok: the scheduler's word
+                (row.state == "active" && "badge-success") || "badge-ghost"
+              ]
+            }>
               {row.state}
             </span>
           </td>

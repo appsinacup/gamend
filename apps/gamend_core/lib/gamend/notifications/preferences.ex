@@ -98,6 +98,16 @@ defmodule Gamend.Notifications.Preferences do
       types: ~w(report chat_report),
       admin: true
     },
+    # What someone gave the user on purpose (`Gamend.Payments.Notices`): more
+    # time on a trial, a reward. Rare, and often what they were waiting for.
+    %{
+      key: "payments",
+      label: "Payments",
+      defaults: %{"in_app" => true, "email" => true, "push" => false},
+      configurable: ~w(email push),
+      types: [],
+      admin: false
+    },
     %{
       key: "social",
       label: "Friends and groups",

@@ -18,7 +18,9 @@ defmodule Gamend.Cache.Stats do
 
   use GenServer
 
-  @unknown "unknown"
+  require Gamend.Placeholder, as: Placeholder
+
+  @unknown Placeholder.unknown()
 
   @table __MODULE__
 

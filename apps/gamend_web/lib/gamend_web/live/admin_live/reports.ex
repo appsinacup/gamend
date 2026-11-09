@@ -235,7 +235,7 @@ defmodule GamendWeb.AdminLive.Reports do
                 href={export_path(@filters)}
                 class="btn btn-surface btn-sm"
               >
-                <.icon name="hero-arrow-down-tray" class="size-4" /> {gettext("Export")}
+                <.icon name="hero-arrow-down-tray-solid" class="size-4" /> {gettext("Export")}
               </.link>
               <button phx-click="refresh" class="btn btn-ghost btn-sm">{gettext("Refresh")}</button>
             </div>
@@ -305,7 +305,7 @@ defmodule GamendWeb.AdminLive.Reports do
               phx-value-status={@filters["status"]}
               class="btn btn-ghost btn-sm"
             >
-              {@filters["subject_ref"]} <.icon name="hero-x-mark" class="size-4" />
+              {@filters["subject_ref"]} <.icon name="hero-x-mark-solid" class="size-4" />
             </button>
           </form>
 
@@ -399,7 +399,7 @@ defmodule GamendWeb.AdminLive.Reports do
                 </span>
               </div>
 
-              <div :if={report.status != "open"} class="text-xs text-muted">
+              <div :if={report.status != ReportStatus.open()} class="text-xs text-muted">
                 {gettext("Closed")}
                 <span :if={report.resolved_by_user} class="inline-flex items-center gap-1">
                   {gettext("by")}
@@ -410,7 +410,7 @@ defmodule GamendWeb.AdminLive.Reports do
               </div>
 
               <div class="flex flex-wrap justify-end gap-1">
-                <%= if report.status == "open" do %>
+                <%= if report.status == ReportStatus.open() do %>
                   <button
                     phx-click="open_close"
                     phx-value-id={report.id}

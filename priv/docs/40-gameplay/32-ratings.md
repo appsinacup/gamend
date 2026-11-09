@@ -1,5 +1,5 @@
 ---
-icon: hero-scale
+icon: hero-scale-solid
 ---
 
 # Ratings

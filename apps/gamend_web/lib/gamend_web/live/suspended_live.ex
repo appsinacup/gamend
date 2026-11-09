@@ -30,7 +30,7 @@ defmodule GamendWeb.SuspendedLive do
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
-      <.page_title icon="hero-no-symbol">{gettext("Account suspended")}</.page_title>
+      <.page_title icon="hero-no-symbol-solid">{gettext("Account suspended")}</.page_title>
 
       <.panel class="space-y-4">
         <dl class="grid gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">

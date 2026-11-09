@@ -11,6 +11,8 @@ defmodule GamendWeb.UserLive.Settings.DevicesTab do
   alias Gamend.Push
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
+
   @page_size 25
 
   def assign_defaults(socket) do
@@ -22,7 +24,7 @@ defmodule GamendWeb.UserLive.Settings.DevicesTab do
 
   def tab(assigns) do
     ~H"""
-    <div :if={@settings_tab == "devices"}>
+    <div :if={@settings_tab == SettingsTab.devices()}>
       <div class="card bg-base-200 p-4 rounded-lg mt-6">
         <div class="flex items-center justify-between">
           <div>

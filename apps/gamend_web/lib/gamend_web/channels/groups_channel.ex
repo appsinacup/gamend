@@ -26,7 +26,7 @@ defmodule GamendWeb.GroupsChannel do
   require Gamend.Groups.GroupType, as: GroupType
   require GamendWeb.ChannelError, as: ChannelError
   require GamendWeb.ChannelTopic, as: ChannelTopic
-  require Gamend.RealtimeEvent, as: RealtimeEvent
+  require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
 
   # A banned account joins no channel but its own user channel.
   @impl true

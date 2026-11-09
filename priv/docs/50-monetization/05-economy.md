@@ -1,5 +1,5 @@
 ---
-icon: hero-banknotes
+icon: hero-banknotes-solid
 ---
 
 # Economy & Inventory

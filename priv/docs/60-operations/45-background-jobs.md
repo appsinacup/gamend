@@ -1,5 +1,5 @@
 ---
-icon: hero-queue-list
+icon: hero-queue-list-solid
 ---
 
 # Background & Scheduled Jobs

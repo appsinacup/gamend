@@ -52,7 +52,7 @@ defmodule GamendWeb.SignalingChannel do
   alias GamendWeb.ChannelEvents
 
   require GamendWeb.ChannelError, as: ChannelError
-  require Gamend.RealtimeEvent, as: RealtimeEvent
+  require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
 
   # Per-user message and ICE budgets are the `signaling_*` settings on
   # GamendWeb.Plugs.RateLimiter. ICE has its own so a flood of candidates cannot

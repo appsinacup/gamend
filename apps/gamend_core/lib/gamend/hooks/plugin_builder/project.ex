@@ -17,7 +17,9 @@ defmodule Gamend.Hooks.PluginBuilder.Project do
   app = the directory name, version `"0.0.0"`, elixirc_paths `["lib"]`.
   """
 
-  @mix_exs "mix.exs"
+  require Gamend.Hooks.PluginFile, as: PluginFile
+
+  @mix_exs PluginFile.mix_exs()
 
   @type dep :: %{
           name: atom(),

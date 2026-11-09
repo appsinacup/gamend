@@ -64,8 +64,8 @@ defmodule GamendWeb.AdminLive.Leaderboards do
             <div class="flex gap-2 mt-4">
               <button
                 phx-click="set_filter"
-                phx-value-filter="all"
-                class={["btn btn-sm", @filter == "all" && "btn-active"]}
+                phx-value-filter={FilterValue.everything()}
+                class={["btn btn-sm", @filter == FilterValue.everything() && "btn-active"]}
               >
                 All
               </button>

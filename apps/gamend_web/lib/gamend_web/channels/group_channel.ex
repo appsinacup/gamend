@@ -35,7 +35,7 @@ defmodule GamendWeb.GroupChannel do
   alias GamendWeb.ChannelUpdates
   alias GamendWeb.Serializers
 
-  require Gamend.RealtimeEvent, as: RealtimeEvent
+  require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
 
   # A banned account joins no channel but its own user channel.
   @impl true

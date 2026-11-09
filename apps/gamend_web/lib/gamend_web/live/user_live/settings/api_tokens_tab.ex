@@ -14,6 +14,8 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
   alias Gamend.Accounts.ApiTokens
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
+
   @never "never"
 
   @page_size 25
@@ -27,7 +29,7 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
 
   def tab(assigns) do
     ~H"""
-    <div :if={@settings_tab == "api_tokens"}>
+    <div :if={@settings_tab == SettingsTab.api_tokens()}>
       <div class="card bg-base-200 p-4 rounded-lg mt-6 space-y-4">
         <div>
           <div class="font-semibold text-lg">{gettext("API tokens")}</div>

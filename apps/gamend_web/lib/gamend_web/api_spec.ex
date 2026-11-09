@@ -154,7 +154,8 @@ defmodule GamendWeb.ApiSpec do
         - **My quests**: `GET /me/quests` returns active quests, per-period progress, and a claimable flag; hidden quests appear once completed
         - **Groups**: quests sharing a `group_key` collapse to one entry carrying `group_size`; `?group=<key>` lists that group's members in full
         - **Catalog**: `GET /quests` and per-user completions `GET /quests/user/:user_id` (gated by `GAMEND_FEATURES_LIST_QUESTS`)
-        - **Admin management**: definitions CRUD plus per-user grant/reset/force-claim under `/api/v1/admin/quests`
+        - **Redemption codes**: `POST /me/quests/redeem` finishes a `code_only` quest with a code the server issued and pays at once; `GET /quests/redeemable` lists what codes can finish
+        - **Admin management**: definitions CRUD plus per-user grant/reset/force-claim under `/api/v1/admin/quests`, and redemption codes under `/api/v1/admin/quests/:id/codes`
 
         ## **12. Tournaments**
         Single-elimination bracket tournaments, server-structured and game-judged:

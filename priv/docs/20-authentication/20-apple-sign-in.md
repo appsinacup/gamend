@@ -1,5 +1,5 @@
 ---
-icon: hero-device-phone-mobile
+icon: hero-device-phone-mobile-solid
 ---
 
 # Apple Sign In Setup

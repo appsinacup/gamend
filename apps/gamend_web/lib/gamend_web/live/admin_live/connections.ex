@@ -5,11 +5,12 @@ defmodule GamendWeb.AdminLive.Connections do
   alias GamendWeb.ConnectionTracker
   alias GamendWeb.LiveHelpers
 
+  require Gamend.Placeholder, as: Placeholder
   require GamendWeb.ChannelTopic, as: ChannelTopic
   require GamendWeb.FilterValue, as: FilterValue
   require GamendWeb.UrlParam, as: UrlParam
 
-  @unknown "unknown"
+  @unknown Placeholder.unknown()
   @websocket "websocket"
 
   @refresh_interval 3_000
@@ -53,7 +54,7 @@ defmodule GamendWeb.AdminLive.Connections do
 
         <%!-- How it works callout --%>
         <div class="alert shadow-sm">
-          <.icon name="hero-information-circle" class="w-5 h-5" />
+          <.icon name="hero-information-circle-solid" class="w-5 h-5" />
           <div>
             <p class="text-sm">
               <strong>1 WebSocket = multiple channels.</strong>

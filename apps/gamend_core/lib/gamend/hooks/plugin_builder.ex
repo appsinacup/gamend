@@ -23,7 +23,9 @@ defmodule Gamend.Hooks.PluginBuilder do
 
   alias Gamend.Hooks.PluginBuilder.InProcess
 
-  @mix_exs "mix.exs"
+  require Gamend.Hooks.PluginFile, as: PluginFile
+
+  @mix_exs PluginFile.mix_exs()
 
   @type step_result :: %{
           cmd: String.t(),

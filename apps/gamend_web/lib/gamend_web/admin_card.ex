@@ -4,7 +4,8 @@ defmodule GamendWeb.AdminCard do
 
   Core draws a card for each of its own admin pages. A host's admin pages (its
   traffic, its tools) are the host's to describe, so it lists modules that
-  answer `cards/0`, and the dashboard draws them after core's:
+  answer `cards/0`, and the dashboard draws them in a section of their own,
+  after core's:
 
       # config/config.exs
       config :gamend_web, :admin_cards, [GamendHost.AdminCards]
@@ -18,7 +19,7 @@ defmodule GamendWeb.AdminCard do
             %{
               title: "Traffic",
               path: "/admin/traffic",
-              icon: "hero-chart-bar",
+              icon: "hero-chart-bar-solid",
               color: "cyan",
               value: 120,
               lines: ["Visits today", {"Humans", 80}, {"Docs", nil, "/admin/docs"}]
@@ -33,7 +34,7 @@ defmodule GamendWeb.AdminCard do
   `{label, value}` for a figure, `{label, value, path}` for a figure or a bare
   label (`value` nil) that links somewhere.
 
-  The page itself opens with `<.admin_header title="Traffic" icon="hero-chart-bar"
+  The page itself opens with `<.admin_header title="Traffic" icon="hero-chart-bar-solid"
   color="cyan" />` (`GamendWeb.AdminComponents`).
 
   `cards/0` runs on every dashboard mount, beside core's own queries, so keep

@@ -65,9 +65,6 @@ Not a plan; a living reference.
   transports and a per-frame `poll()`, the base the Unreal plugin wraps. Built
   and released as `gamend-cpp-sdk.tar.gz`; open until CI has built it on
   Windows.
-- [redemption-codes.md](redemption-codes.md) — **Redemption codes.** Reward
-  codes and activation keys as a way to finish a quest: single-use or public,
-  bulk generated, paid by the existing claim.
 
 ## Resolved — shipped
 
@@ -85,6 +82,7 @@ Spec deleted; the code, its moduledocs and the CHANGELOG are the record.
 | i18n | one theme config plus a `theme` PO domain; content translated at render |
 | Locking on SQLite | `Lock.serialize/3` per-key on both adapters, via a keyed mutex whose waiters queue in order (`Gamend.Lock.Local`) |
 | Chat moderation | word filter, report queue and mutes in `before_chat_message`; three admin pages |
+| Redemption codes | a way to finish a `code_only` quest (`Gamend.Quests.redeem_code/2`), `/redeem`, `/admin/quests/:id/codes` |
 
 ## Resolved — rejected
 

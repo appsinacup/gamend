@@ -142,7 +142,7 @@ defmodule GamendWeb.StoreLive.Index do
                   <div :if={detail = product_detail(provider_product.product)} class="space-y-1">
                     <ul class="text-sm space-y-0.5">
                       <li :for={line <- detail.lines} class="flex items-center gap-1.5">
-                        <.icon name="hero-check" class="size-3.5 text-success" />
+                        <.icon name="hero-check-solid" class="size-3.5 text-success" />
                         {line}
                       </li>
                     </ul>
@@ -187,7 +187,7 @@ defmodule GamendWeb.StoreLive.Index do
                     </button>
                     <button
                       :if={
-                        provider_product.provider == "stripe" and
+                        provider_product.provider == ProviderId.stripe() and
                           not owned?(provider_product, @owned_entitlement_keys) and
                           not closed?(provider_product.product)
                       }
@@ -209,7 +209,7 @@ defmodule GamendWeb.StoreLive.Index do
                     </button>
                     <button
                       :if={
-                        provider_product.provider != "stripe" and
+                        provider_product.provider != ProviderId.stripe() and
                           not owned?(provider_product, @owned_entitlement_keys)
                       }
                       class="btn btn-sm btn-disabled"

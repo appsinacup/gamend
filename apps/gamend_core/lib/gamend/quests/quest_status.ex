@@ -3,13 +3,5 @@ defmodule Gamend.Quests.QuestStatus do
   A player's progress on a quest: `quest_progress.status`.
   """
 
-  @all ~w(active completed claimed)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
-
-  @doc "Every value."
-  @spec all() :: [String.t()]
-  def all, do: @all
+  use Gamend.Names, ~w(active completed claimed)
 end

@@ -1,5 +1,5 @@
 ---
-icon: hero-arrow-trending-down
+icon: hero-arrow-trending-down-solid
 ---
 
 # Realtime Update Efficiency

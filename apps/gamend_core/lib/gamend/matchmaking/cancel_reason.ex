@@ -3,9 +3,5 @@ defmodule Gamend.Matchmaking.CancelReason do
   Why a matchmaking ticket was cancelled, as broadcast to the player.
   """
 
-  @all ~w(left admin offline)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(left admin offline)
 end

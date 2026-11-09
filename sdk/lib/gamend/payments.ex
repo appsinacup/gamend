@@ -372,7 +372,8 @@ defmodule Gamend.Payments do
     would set the end back; a row with no end, `{:error, :no_end}`; no row,
     `{:error, :entitlement_not_found}`.
     
-    Options: `:metadata`, a map merged into the row's (`%{"extended_by" => id}`).
+    Options: `:metadata`, a map merged into the row's (`%{"extended_by" => id}`);
+    `:notify`, as for `grant_entitlement/3`.
     
   """
   @spec extend_entitlement(Ecto.UUID.t(), pos_integer(), keyword()) ::
@@ -569,7 +570,8 @@ defmodule Gamend.Payments do
     Options: `:expires_at` (a `DateTime`, `nil` for no end), `:metadata` (a map
     merged into the row's, e.g. `%{"source" => "trial", "granted_by" => id}`).
     A `"title"` in it names the grant on the owner's Payments tab, which has
-    no product's title to show.
+    no product's title to show. `notify: true` tells the owner
+    (`Gamend.Payments.Notices`); by default a grant says nothing.
     
   """
   @spec grant_entitlement(Ecto.UUID.t(), String.t(), keyword()) ::

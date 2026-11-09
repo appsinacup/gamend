@@ -256,7 +256,7 @@ defmodule Gamend.Accounts.Search do
     field =
       case Keyword.get(opts, :sort_field) do
         SortKey.updated_at() -> :updated_at
-        "last_seen_at" -> :last_seen_at
+        SortKey.last_seen_at() -> :last_seen_at
         _ -> :inserted_at
       end
 

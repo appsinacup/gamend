@@ -12,6 +12,8 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.Shared
 
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
+
   @page_size 25
 
   def assign_defaults(socket) do
@@ -36,7 +38,7 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
 
   def tab(assigns) do
     ~H"""
-    <div :if={@settings_tab == "friends"}>
+    <div :if={@settings_tab == SettingsTab.friends()}>
       <!-- Friends panel (embedded) -->
       <div class="card bg-base-200 p-4 rounded-lg mt-6">
         <div class="flex items-center justify-between">

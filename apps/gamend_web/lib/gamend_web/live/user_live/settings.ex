@@ -28,7 +28,7 @@ defmodule GamendWeb.UserLive.Settings do
   use GamendWeb.UrlState,
     keys: [:ledger_page, :items_page, :devices_page, :api_tokens_page, :kv_page, :kv_key_filter]
 
-  require GamendWeb.SettingsTab, as: SettingsTab
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
 
   @valid_tabs ~w(account notifications friends groups wallet items payments data devices
                  api_tokens)
@@ -215,7 +215,7 @@ defmodule GamendWeb.UserLive.Settings do
     do: NotificationsTab.handle_event(event, params, socket)
 
   def handle_event(event, params, socket) when event in @friends_events do
-    if tab_enabled?("friends"),
+    if tab_enabled?(SettingsTab.friends()),
       do: FriendsTab.handle_event(event, params, socket),
       else: {:noreply, socket}
   end
@@ -259,13 +259,13 @@ defmodule GamendWeb.UserLive.Settings do
              :friend_removed,
              :friend_unblocked
            ] do
-    {:noreply, reload_if_open(socket, "friends")}
+    {:noreply, reload_if_open(socket, SettingsTab.friends())}
   end
 
   # Online status change broadcast from UserChannel (via PubSub on "user:<id>")
   def handle_info(%Phoenix.Socket.Broadcast{event: event}, socket)
       when event in ["friend_online", "friend_offline"] do
-    {:noreply, reload_if_open(socket, "friends")}
+    {:noreply, reload_if_open(socket, SettingsTab.friends())}
   end
 
   # Ignore other broadcasts on the user topic (e.g. "updated" events from channel)
@@ -339,15 +339,15 @@ defmodule GamendWeb.UserLive.Settings do
   # every tab's template is behind `:if={@settings_tab == ...}`, so nothing
   # else is drawn. Streams are re-sent here too, since an insert is consumed
   # on the next render even while its container is hidden.
-  defp load_tab(socket, "friends"),
+  defp load_tab(socket, SettingsTab.friends()),
     do: FriendsTab.refresh_friend_lists(socket, Shared.current_user(socket))
 
   defp load_tab(socket, SettingsTab.data()), do: DataTab.reload_kv_entries(socket)
   defp load_tab(socket, SettingsTab.wallet()), do: WalletTab.load_wallet(socket)
-  defp load_tab(socket, "items"), do: ItemsTab.reload_items(socket)
+  defp load_tab(socket, SettingsTab.items()), do: ItemsTab.reload_items(socket)
   defp load_tab(socket, SettingsTab.groups()), do: GroupsTab.reload_groups(socket)
-  defp load_tab(socket, "payments"), do: PaymentsTab.assign_payment_data(socket)
-  defp load_tab(socket, "devices"), do: DevicesTab.reload_devices(socket)
+  defp load_tab(socket, SettingsTab.payments()), do: PaymentsTab.assign_payment_data(socket)
+  defp load_tab(socket, SettingsTab.devices()), do: DevicesTab.reload_devices(socket)
   defp load_tab(socket, SettingsTab.api_tokens()), do: ApiTokensTab.reload_api_tokens(socket)
   defp load_tab(socket, _tab), do: socket
 

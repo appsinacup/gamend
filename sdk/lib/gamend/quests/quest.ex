@@ -21,6 +21,7 @@ defmodule Gamend.Quests.Quest do
   - `prerequisite_quest_key` - Key of the quest gating this one (string or nil)
   - `starts_at` / `ends_at` - Event-quest window (DateTime or nil)
   - `active` - Inactive quests never advance and are not listed (boolean)
+  - `code_only` - Only a redemption code finishes it (boolean)
   - `metadata` - Arbitrary metadata (map)
   - `inserted_at` - Creation timestamp
   - `updated_at` - Last update timestamp
@@ -42,6 +43,7 @@ defmodule Gamend.Quests.Quest do
           starts_at: DateTime.t() | nil,
           ends_at: DateTime.t() | nil,
           active: boolean(),
+          code_only: boolean(),
           metadata: map(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
@@ -63,6 +65,7 @@ defmodule Gamend.Quests.Quest do
     :starts_at,
     :ends_at,
     :active,
+    :code_only,
     :metadata,
     :inserted_at,
     :updated_at

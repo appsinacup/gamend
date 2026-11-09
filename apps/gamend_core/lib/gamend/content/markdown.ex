@@ -39,9 +39,10 @@ defmodule Gamend.Content.Markdown do
 
   alias Gamend.Content.Frontmatter
 
+  require Gamend.Content.PageName, as: ContentPage
   require Gamend.UrlScheme, as: UrlScheme
 
-  @index "index"
+  @index ContentPage.index()
   @details_attrs ~w(open)
 
   @lazy "lazy"

@@ -13,6 +13,8 @@ defmodule Gamend.Quests.QuestProgress do
   - `status` — `"active"` → `"completed"` (all targets met) → `"claimed"`
   - `rewards_granted_at` — set once every reward entry has been applied;
     `claimed` rows without it are retried by the reward-recovery sweep
+  - `code_id` — the redemption code that finished it, if one did. Written with
+    the struct, never cast
   """
 
   use Gamend.Schema
@@ -47,6 +49,8 @@ defmodule Gamend.Quests.QuestProgress do
       foreign_key: :quest_key,
       references: :key,
       type: :string
+
+    belongs_to :code, Gamend.Quests.QuestCode
 
     field :period_key, :string, default: PeriodKey.static()
     field :objective_progress, :map, default: %{}
@@ -88,6 +92,7 @@ defmodule Gamend.Quests.QuestProgress do
     |> validate_inclusion(:status, @statuses)
     |> foreign_key_constraint(:user_id)
     |> foreign_key_constraint(:quest_key)
+    |> foreign_key_constraint(:code_id)
     |> unique_constraint([:user_id, :quest_key, :period_key])
   end
 end

@@ -11,7 +11,7 @@ defmodule GamendWeb.GroupLinks do
 
   alias GamendWeb.UserLive
 
-  require GamendWeb.SettingsTab, as: SettingsTab
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
 
   @doc """
   The full URL of an invite link's token, for an admin to copy: from a

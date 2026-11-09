@@ -53,7 +53,7 @@ defmodule GamendWeb.Reports.KindUI do
   @doc "The card's line under the title, in the reader's language."
   @callback description() :: String.t()
 
-  @doc "The card's icon, a heroicon name (`\"hero-language\"`)."
+  @doc "The card's icon, a heroicon name (`\"hero-language-solid\"`)."
   @callback icon() :: String.t()
 
   @doc "A topic's chip label, in the reader's language."

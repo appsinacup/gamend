@@ -1,5 +1,6 @@
 defmodule Gamend.PaymentsTest do
   use Gamend.DataCase
+  use Oban.Testing, repo: Gamend.Repo
 
   alias Gamend.Accounts
   alias Gamend.AccountsFixtures
@@ -611,6 +612,99 @@ defmodule Gamend.PaymentsTest do
       {:ok, e} = Payments.grant_entitlement(user.id, "k2", expires_at: DateTime.add(now, 7, :day))
       assert Payments.has_entitlement?(user.id, "k2")
       assert DateTime.compare(e.expires_at, now) == :gt
+    end
+  end
+
+  describe "a grant's notice" do
+    defmodule NoticeHooks do
+      def before_entitlement_notice(%{key: "quiet"}, _notice), do: {:error, :quiet}
+
+      def before_entitlement_notice(%{key: "typo"}, notice),
+        do: {:ok, Map.put(notice, "group", "no_such_group")}
+
+      def before_entitlement_notice(_entitlement, notice),
+        do: {:ok, Map.merge(notice, %{"group" => "quests", "title" => "From the hook"})}
+    end
+
+    @ends ~U[2030-01-15 10:00:00Z]
+
+    defp notices(user), do: Gamend.Notifications.list_notifications(user.id)
+
+    defp use_notice_hooks do
+      previous = Application.get_env(:gamend_core, :host_hook_modules, [])
+      Application.put_env(:gamend_core, :host_hook_modules, [NoticeHooks])
+      on_exit(fn -> Application.put_env(:gamend_core, :host_hook_modules, previous) end)
+    end
+
+    test "nothing is said unless the grant asks" do
+      user = AccountsFixtures.user_fixture()
+      {:ok, e} = Payments.grant_entitlement(user.id, "k", expires_at: @ends)
+      {:ok, _extended} = Payments.extend_entitlement(e.id, 30)
+
+      assert notices(user) == []
+    end
+
+    test "goes out in the payments group, naming the grant and its end" do
+      user = AccountsFixtures.user_fixture()
+
+      {:ok, _e} =
+        Payments.grant_entitlement(user.id, "k",
+          expires_at: @ends,
+          metadata: %{"title" => "VIP pass"},
+          notify: true
+        )
+
+      assert [row] = notices(user)
+      assert row.title == "VIP pass is yours"
+      assert row.content == "You have it until January 15, 2030."
+      assert row.metadata["group"] == "payments"
+      assert row.metadata["url"] == "/users/settings?tab=payments"
+    end
+
+    test "extending twice leaves one row, with the last end, and one email" do
+      user = AccountsFixtures.user_fixture()
+      {:ok, e} = Payments.grant_entitlement(user.id, "k", expires_at: @ends, notify: true)
+
+      {:ok, _} = Payments.extend_entitlement(e.id, 1, notify: true)
+      {:ok, _} = Payments.extend_entitlement(e.id, 1, notify: true)
+
+      assert [row] = notices(user)
+      assert row.content == "You have it until January 17, 2030."
+      assert [_one_email] = all_enqueued(queue: :mailers)
+    end
+
+    test "a user who turned the group's email off keeps the row and gets no email" do
+      user = AccountsFixtures.user_fixture()
+      {:ok, user} = Gamend.Notifications.Preferences.put(user, "payments", "email", false)
+
+      {:ok, _e} = Payments.grant_entitlement(user.id, "k", expires_at: @ends, notify: true)
+
+      assert [_row] = notices(user)
+      assert all_enqueued(queue: :mailers) == []
+    end
+
+    test "the hook changes what is sent" do
+      use_notice_hooks()
+      user = AccountsFixtures.user_fixture()
+
+      {:ok, _e} = Payments.grant_entitlement(user.id, "k", expires_at: @ends, notify: true)
+
+      assert [row] = notices(user)
+      assert row.title == "From the hook"
+      assert row.metadata["group"] == "quests"
+    end
+
+    test "the hook can refuse, and a group that does not exist sends nothing" do
+      use_notice_hooks()
+      user = AccountsFixtures.user_fixture()
+
+      assert {:ok, _e} =
+               Payments.grant_entitlement(user.id, "quiet", expires_at: @ends, notify: true)
+
+      assert {:ok, _e} =
+               Payments.grant_entitlement(user.id, "typo", expires_at: @ends, notify: true)
+
+      assert notices(user) == []
     end
   end
 

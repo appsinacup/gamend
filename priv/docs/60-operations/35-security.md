@@ -1,5 +1,5 @@
 ---
-icon: hero-shield-check
+icon: hero-shield-check-solid
 ---
 
 # Security & Rate Limiting

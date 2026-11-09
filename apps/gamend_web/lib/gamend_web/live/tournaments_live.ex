@@ -641,19 +641,33 @@ defmodule GamendWeb.TournamentsLive do
           <div class="flex flex-col sm:flex-row gap-2">
             <form phx-change="filter_state" phx-no-unused-field id="players-state-form">
               <select name="state" class="select select-bordered w-full sm:w-44">
-                <option value="all" selected={@state_filter == "all"}>
+                <option
+                  value={FilterValue.everything()}
+                  selected={@state_filter == FilterValue.everything()}
+                >
                   {gettext("All results")}
                 </option>
-                <option :if={@drawn?} value="winner" selected={@state_filter == "winner"}>
+                <option
+                  :if={@drawn?}
+                  value={EntryState.winner()}
+                  selected={@state_filter == EntryState.winner()}
+                >
                   {gettext("Champion")}
                 </option>
-                <option :if={@drawn?} value="active" selected={@state_filter == "active"}>
+                <option
+                  :if={@drawn?}
+                  value={EntryState.active()}
+                  selected={@state_filter == EntryState.active()}
+                >
                   {gettext("Playing")}
                 </option>
                 <option :if={@drawn?} value="eliminated" selected={@state_filter == "eliminated"}>
                   {gettext("Eliminated")}
                 </option>
-                <option value="registered" selected={@state_filter == "registered"}>
+                <option
+                  value={EntryState.registered()}
+                  selected={@state_filter == EntryState.registered()}
+                >
                   {gettext("Registered")}
                 </option>
               </select>
@@ -753,7 +767,7 @@ defmodule GamendWeb.TournamentsLive do
   defp join_action(assigns) do
     ~H"""
     <%= cond do %>
-      <% not @signed_in? and @tournament.state == "registration" -> %>
+      <% not @signed_in? and @tournament.state == TournamentState.registration() -> %>
         <.link navigate={~p"/users/log_in"} class="btn btn-surface btn-sm">
           {gettext("Log in")}
         </.link>
@@ -765,7 +779,7 @@ defmodule GamendWeb.TournamentsLive do
         </button>
       <% @joined? -> %>
         <span class="badge badge-primary">{gettext("You")}</span>
-      <% @tournament.state == "registration" -> %>
+      <% @tournament.state == TournamentState.registration() -> %>
         <button phx-click="join_tournament" class="btn btn-primary btn-sm" id="join-btn">
           {gettext("Join")}
         </button>

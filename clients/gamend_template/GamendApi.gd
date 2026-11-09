@@ -1405,6 +1405,14 @@ func quests_list_quests(kind = "", page = 1, page_size = 25) -> GamendResult:
 func quests_user_quests(user_id: String, kind = "achievement", page = 1, page_size = 25) -> GamendResult:
 	return await _call_api(QuestsApi.new(_config), "user_quests", [user_id, kind, page, page_size])
 
+## Redeem a code: finishes its quest and pays at once (auth required)
+func quests_redeem_quest_code(request: GamendRedeemQuestCodeRequest) -> GamendResult:
+	return await _call_api(QuestsApi.new(_config), "redeem_quest_code", [request])
+
+## List the quests a code can finish (includes user progress if authenticated)
+func quests_list_redeemable_quests(quest = "", page = 1, page_size = 25) -> GamendResult:
+	return await _call_api(QuestsApi.new(_config), "list_redeemable_quests", [quest, page, page_size])
+
 ## CHAT
 
 ## List messages in a lobby, group, party, or friend conversation
@@ -1960,6 +1968,22 @@ func admin_quests_admin_claim_quest(request: GamendAdminClaimQuestRequest) -> Ga
 ## Per-status progress counts for one quest (admin)
 func admin_quests_admin_quest_funnel(key: String) -> GamendResult:
 	return await _call_api(AdminQuestsApi.new(_config), "admin_quest_funnel", [key])
+
+## List a quest's redemption codes (admin)
+func admin_quests_admin_list_quest_codes(id: String, search = "", page = 1, page_size = 25) -> GamendResult:
+	return await _call_api(AdminQuestsApi.new(_config), "admin_list_quest_codes", [id, search, page, page_size])
+
+## Add one redemption code with a chosen token (admin)
+func admin_quests_admin_create_quest_code(id: String, request: GamendAdminCreateQuestCodeRequest) -> GamendResult:
+	return await _call_api(AdminQuestsApi.new(_config), "admin_create_quest_code", [id, request])
+
+## Generate random redemption codes (admin)
+func admin_quests_admin_generate_quest_codes(id: String, request: GamendAdminGenerateQuestCodesRequest) -> GamendResult:
+	return await _call_api(AdminQuestsApi.new(_config), "admin_generate_quest_codes", [id, request])
+
+## Revoke or restore a redemption code (admin)
+func admin_quests_admin_update_quest_code(id: String, request: GamendAdminUpdateQuestCodeRequest) -> GamendResult:
+	return await _call_api(AdminQuestsApi.new(_config), "admin_update_quest_code", [id, request])
 
 # --- Matchmaking ---------------------------------------------------------------
 

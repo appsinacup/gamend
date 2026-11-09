@@ -7,6 +7,7 @@ defmodule GamendWeb.Schemas.Session do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  # literal-ok: an example, not a value
   @coolplayer_1234 "coolplayer-1234"
 
   OpenApiSpex.schema(%{

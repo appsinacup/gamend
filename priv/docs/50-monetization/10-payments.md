@@ -1,5 +1,5 @@
 ---
-icon: hero-credit-card
+icon: hero-credit-card-solid
 ---
 
 # Payments
@@ -275,7 +275,10 @@ Stripe purchases with a Checkout Session ID show a Reconcile Stripe action while
 after_purchase_fulfilled(purchase)
 after_purchase_revoked(purchase)
 after_entitlement_changed(entitlement)
+before_entitlement_notice(entitlement, notice)
 ```
+
+`after_entitlement_changed` runs on every write of an entitlement, renewals included, so it is the wrong place to tell a player anything. A grant that should be announced asks for it: `notify: true` on `Payments.grant_entitlement/3` or `extend_entitlement/3`, or the Tell user box beside Add days on Admin > Payments. The notice goes through the player's choices for the "Payments" notification group, and repeats collapse: one row per title and one email per subject an hour. `before_entitlement_notice` changes its words, link or group, or returns `{:error, reason}` to send nothing.
 
 `after_purchase_revoked` runs once per purchase ending. One refund reaches the server as several events (`charge.refunded`, `refund.created`, `refund.updated`; a store notification and the client's revalidation), and only the one that ends the purchase runs it; the others are recorded in the purchase's `raw_provider_payload` and change nothing. A later event that ends it differently (a dispute's `revoked` becoming `refunded`) runs it again, with the new status. Deliveries of one webhook event take turns, so a retry arriving while the first is still running waits for it and is then answered as a duplicate.
 

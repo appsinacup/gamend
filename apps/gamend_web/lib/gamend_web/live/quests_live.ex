@@ -196,7 +196,7 @@ defmodule GamendWeb.QuestsLive do
     page_size = socket.assigns.page_size
     category = socket.assigns.category
     status = socket.assigns.status
-    active = Quests.active_quests()
+    active = Quests.catalog()
     selectable = selectable(Quests.groups(user && user.id, category))
     {selected, drop} = group_opts(socket.assigns.group_key, selectable)
     group_opts = [group: selected, drop_groups: drop]
@@ -219,7 +219,8 @@ defmodule GamendWeb.QuestsLive do
         {catalog_entries, total, 0, Quests.visible_categories(nil)}
       end
 
-    entries = entries |> ContentText.translate() |> lock_labels(user) |> actions(user)
+    entries =
+      entries |> ContentText.translate() |> lock_labels(user) |> actions(user) |> notes(user)
 
     socket
     |> assign(:groups, selectable)
@@ -232,6 +233,7 @@ defmodule GamendWeb.QuestsLive do
     |> assign(:total_pages, max(ceil(total_count / page_size), 1))
     |> assign(:claimable_count, claimable - locked_claimable(entries))
     |> assign(:must_register, user != nil and not AccountRequired.allowed?(user, :quest_claims))
+    |> assign(:redeem?, FeatureGate.enabled?(:web_redeem) and Quests.any_redeemable?())
     |> assign(:now, DateTime.utc_now(:second))
     |> load_group()
   end
@@ -315,6 +317,14 @@ defmodule GamendWeb.QuestsLive do
   defp actions(entries, user) do
     user_id = user && user.id
     Enum.map(entries, &Map.put(&1, :action, Quests.host_action(&1.quest, user_id)))
+  end
+
+  # The host's line about this viewer's own standing (`Quests.host_note/2`),
+  # under the description. Signed-in only, as a lock is.
+  defp notes(entries, nil), do: entries
+
+  defp notes(entries, user) do
+    Enum.map(entries, &Map.put(&1, :note, Quests.host_note(&1.quest, user.id)))
   end
 
   # The Claimable chip's N must mean N buttons: a locked quest is finished
@@ -440,10 +450,10 @@ defmodule GamendWeb.QuestsLive do
   defp status_label(QuestFilter.claimable()), do: gettext("Claimable")
   defp status_label(QuestFilter.done()), do: gettext("Completed")
 
-  defp status_icon(nil), do: "hero-squares-2x2"
-  defp status_icon(QuestFilter.in_progress()), do: "hero-clock"
-  defp status_icon(QuestFilter.claimable()), do: "hero-gift"
-  defp status_icon(QuestFilter.done()), do: "hero-check-circle"
+  defp status_icon(nil), do: "hero-squares-2x2-solid"
+  defp status_icon(QuestFilter.in_progress()), do: "hero-clock-solid"
+  defp status_icon(QuestFilter.claimable()), do: "hero-gift-solid"
+  defp status_icon(QuestFilter.done()), do: "hero-check-circle-solid"
 
   # Whichever comes first: the window closing, or the next reset — tagged, so
   # the card says "Resets in" when the reset is what it is counting down to.
@@ -486,12 +496,13 @@ defmodule GamendWeb.QuestsLive do
 
   defp interval_days_left(_quest, _date), do: 1
 
-  defp format_duration(seconds) when seconds >= 86_400, do: "#{div(seconds, 86_400)}d"
+  @doc false
+  def format_duration(seconds) when seconds >= 86_400, do: "#{div(seconds, 86_400)}d"
 
-  defp format_duration(seconds) when seconds >= 3_600,
+  def format_duration(seconds) when seconds >= 3_600,
     do: "#{div(seconds, 3_600)}h #{div(rem(seconds, 3_600), 60)}m"
 
-  defp format_duration(seconds), do: "#{div(seconds, 60)}m"
+  def format_duration(seconds), do: "#{div(seconds, 60)}m"
 
   defp objective_rows(quest, progress) do
     counts = (progress && progress.objective_progress) || %{}
@@ -531,8 +542,17 @@ defmodule GamendWeb.QuestsLive do
             </.page_title>
           </div>
 
-          <%= if @current_scope && Scope.user(@current_scope) do %>
-            <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-2">
+            <a
+              :if={@redeem?}
+              id="quests-redeem-link"
+              href={GamendWeb.HostLayouts.localized_href(~p"/redeem", @locale)}
+              class="btn btn-sm btn-surface"
+            >
+              <.icon name="hero-ticket-solid" class="size-4" />
+              {gettext("Redeem a code")}
+            </a>
+            <%= if @current_scope && Scope.user(@current_scope) do %>
               <button
                 :for={status <- [nil, "in_progress", "claimable", "done"]}
                 phx-click="status"
@@ -548,8 +568,8 @@ defmodule GamendWeb.QuestsLive do
                   {@claimable_count}
                 </span>
               </button>
-            </div>
-          <% end %>
+            <% end %>
+          </div>
         </div>
 
         <%!-- Kind tabs, and the group selector when this view has groups --%>
@@ -572,7 +592,7 @@ defmodule GamendWeb.QuestsLive do
         <%!-- Quest grid --%>
         <%= if @entries == [] do %>
           <div class="text-center py-16 text-muted">
-            <.icon name="hero-map" class="w-16 h-16 mx-auto mb-4 opacity-30" />
+            <.icon name="hero-map-solid" class="w-16 h-16 mx-auto mb-4 opacity-30" />
             <p class="text-lg">
               {gettext("No results.")}
             </p>
@@ -660,11 +680,11 @@ defmodule GamendWeb.QuestsLive do
         <div class="card-body p-5">
           <div class="flex items-center justify-between mb-2">
             <h2 class="font-bold text-lg flex items-center gap-2">
-              <.icon name="hero-rectangle-stack" class="w-5 h-5" />
+              <.icon name="hero-rectangle-stack-solid" class="w-5 h-5" />
               {group_modal_title(@group)}
             </h2>
             <button phx-click="close_group" class="btn btn-ghost btn-sm btn-circle" type="button">
-              <.icon name="hero-x-mark" class="w-4 h-4" />
+              <.icon name="hero-x-mark-solid" class="w-4 h-4" />
             </button>
           </div>
 
@@ -867,6 +887,7 @@ defmodule GamendWeb.QuestsLive do
       |> assign(:secret?, secret?)
       |> assign(:lock_label, lock_label)
       |> assign(:action, Map.get(assigns.entry, :action))
+      |> assign(:note, if(secret?, do: nil, else: Map.get(assigns.entry, :note)))
       |> assign(:objective_rows, if(secret?, do: [], else: objective_rows(quest, progress)))
       |> assign(:grouped?, grouped?)
       |> then(&assign(&1, :tint, progress_tint(&1)))
@@ -938,10 +959,18 @@ defmodule GamendWeb.QuestsLive do
           phx-value-group={@quest.group_key}
           title={gettext("View every quest in this group")}
         >
-          <.icon name="hero-rectangle-stack" class="w-3 h-3" />
+          <.icon name="hero-rectangle-stack-solid" class="w-3 h-3" />
           {@group_size}
         </.opener>
       </:badges>
+
+      <p :if={@note} class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
+        <span>{@note.label}</span>
+        <span :for={item <- @note.items} class="inline-flex items-center gap-1">
+          <.flag :if={item[:flag]} code={item.flag} square class="rounded-sm" />
+          {item.name}
+        </span>
+      </p>
 
       <%!-- Rewards --%>
       <%= if @quest.rewards != [] && not @secret? do %>
@@ -959,7 +988,7 @@ defmodule GamendWeb.QuestsLive do
       <%!-- Countdown --%>
       <%= if @left do %>
         <div class="flex items-center gap-1.5 text-muted">
-          <.icon name="hero-clock" class="w-3.5 h-3.5" />
+          <.icon name="hero-clock-solid" class="w-3.5 h-3.5" />
           <span class="text-xs">
             <%= case @left do %>
               <% {:ends, seconds} -> %>
@@ -987,7 +1016,7 @@ defmodule GamendWeb.QuestsLive do
                   the whole card leads to registration, which keeps the quest. --%>
             <% @claimable and @must_register -> %>
               <span class="btn btn-primary btn-sm w-full">
-                <.icon name="hero-user-plus" class="w-4 h-4" />
+                <.icon name="hero-user-plus-solid" class="w-4 h-4" />
                 {gettext("Register to claim")}
               </span>
             <% @claimable -> %>
@@ -996,7 +1025,7 @@ defmodule GamendWeb.QuestsLive do
                 phx-value-key={@quest.key}
                 class="btn btn-success btn-sm w-full"
               >
-                <.icon name="hero-gift" class="w-4 h-4" />
+                <.icon name="hero-gift-solid" class="w-4 h-4" />
                 {gettext("Claim")}
               </button>
             <% @claimed? -> %>

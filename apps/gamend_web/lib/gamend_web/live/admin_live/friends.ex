@@ -126,8 +126,18 @@ defmodule GamendWeb.AdminLive.Friends do
             class="flex flex-wrap gap-2 my-2"
           >
             <select name="status" class="select select-sm w-40">
-              <option value="all" selected={@status_filter == "all"}>All statuses</option>
-              <option value="pending" selected={@status_filter == "pending"}>Pending</option>
+              <option
+                value={FilterValue.everything()}
+                selected={@status_filter == FilterValue.everything()}
+              >
+                All statuses
+              </option>
+              <option
+                value={FriendshipStatus.pending()}
+                selected={@status_filter == FriendshipStatus.pending()}
+              >
+                Pending
+              </option>
               <option value="accepted" selected={@status_filter == "accepted"}>Accepted</option>
               <option value="rejected" selected={@status_filter == "rejected"}>Rejected</option>
             </select>

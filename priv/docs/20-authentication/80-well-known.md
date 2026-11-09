@@ -1,5 +1,5 @@
 ---
-icon: hero-link
+icon: hero-link-solid
 ---
 
 # Mobile app links / .well-known

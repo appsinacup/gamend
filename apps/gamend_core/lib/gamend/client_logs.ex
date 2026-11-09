@@ -60,6 +60,7 @@ defmodule Gamend.ClientLogs do
 
   import Ecto.Query
 
+  require Gamend.Placeholder, as: Placeholder
   require Logger
 
   alias Gamend.ClientLogs.Session
@@ -70,7 +71,7 @@ defmodule Gamend.ClientLogs do
   require Gamend.ClientLogs.LogLevel, as: LogLevel
 
   @build "build"
-  @unknown "unknown"
+  @unknown Placeholder.unknown()
   @platform "platform"
   @screen "screen"
   @lobby "lobby"

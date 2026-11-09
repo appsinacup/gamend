@@ -19,6 +19,7 @@ defmodule GamendWeb.AdminLive.Config do
   alias GamendWeb.AdminLive.ConfigDiagnostics
   alias GamendWeb.Plugs.GeoCountry
 
+  require GamendWeb.AdminLive.BuildEnv, as: BuildEnv
   require GamendWeb.WsFormat, as: WsFormat
 
   @partitioned "partitioned"
@@ -480,7 +481,7 @@ defmodule GamendWeb.AdminLive.Config do
 
             # Surface useful error detail in development so admins can debug
             debug_msg =
-              if socket.assigns.config && socket.assigns.config.env == "dev" do
+              if socket.assigns.config && socket.assigns.config.env == BuildEnv.dev() do
                 " (details: #{inspect(other) |> to_string() |> String.slice(0, 512)})"
               else
                 ""

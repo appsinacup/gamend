@@ -7,7 +7,7 @@ defmodule Gamend.Economy.LedgerEntry do
   use Gamend.Schema
   import Ecto.Changeset
 
-  require Gamend.LedgerReason, as: LedgerReason
+  require Gamend.Ledger.LedgerReason, as: LedgerReason
 
   @type t :: %__MODULE__{}
 

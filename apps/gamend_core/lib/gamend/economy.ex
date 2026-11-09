@@ -38,7 +38,7 @@ defmodule Gamend.Economy do
   alias Gamend.Economy.Wallet
   alias Gamend.Repo
 
-  require Gamend.LedgerReason, as: LedgerReason
+  require Gamend.Ledger.LedgerReason, as: LedgerReason
 
   @type user_id :: Ecto.UUID.t()
   @type currency :: String.t()

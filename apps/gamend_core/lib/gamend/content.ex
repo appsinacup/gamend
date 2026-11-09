@@ -25,8 +25,8 @@ defmodule Gamend.Content do
   @changelog "changelog"
 
   # Heroicon names; the docs page falls back to these when a file names none.
-  @default_doc_icon "hero-document-text"
-  @default_category_icon "hero-folder"
+  @default_doc_icon "hero-document-text-solid"
+  @default_category_icon "hero-folder-solid"
   # A Tailwind text colour class; Tailwind sees it because priv/docs is a
   # scanned source.
   @default_category_color "text-primary"

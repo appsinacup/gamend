@@ -23,7 +23,7 @@ defmodule GamendWeb.UserLive.Groups do
   alias GamendWeb.HostLayouts
   alias GamendWeb.UserLive.Settings.GroupsTab
 
-  require GamendWeb.SettingsTab, as: SettingsTab
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
 
   @events GroupsTab.events()
   @reloads GroupsTab.reloads()

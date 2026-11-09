@@ -1,5 +1,5 @@
 ---
-icon: hero-circle-stack
+icon: hero-circle-stack-solid
 ---
 
 # Data Schema
@@ -166,6 +166,21 @@ no separate achievements table.
 | `hidden` | boolean | Listed but obscured until completed |
 | `sort_order` | integer | Display order |
 | `active` | boolean | Soft disable |
+| `code_only` | boolean | Only a redemption code finishes it |
+
+## quest_codes
+
+Redemption codes of a `code_only` quest. Bounded by what admins generate, and they go with their quest.
+
+| Column | Type | Notes |
+|---|---|---|
+| `quest_key` | string | FK to `quests.key` |
+| `token` | text | The code as people see it |
+| `lookup` | text | Normalized token; unique across quests |
+| `max_uses` | integer | `1` single-use, `N` the first N players, null every player once |
+| `uses` | integer | How many players redeemed it |
+| `status` | string | `active` / `revoked` |
+| `metadata` | jsonb | Copied onto each player's progress row |
 
 ## quest_progress
 
@@ -179,6 +194,7 @@ no separate achievements table.
 | `completed_at` | utc_datetime | Null until every objective is met |
 | `claimed_at` | utc_datetime | Null until rewards are claimed |
 | `rewards_granted_at` | utc_datetime | Null until every reward applied |
+| `code_id` | FK quest_codes | The redemption code that finished it; nullable |
 
 Unique on `(user_id, quest_key, period_key)`. A new period is simply a new row
 on the next reported event; nothing fires at midnight, and period boundaries

@@ -1,5 +1,5 @@
 ---
-icon: hero-chat-bubble-left-right
+icon: hero-chat-bubble-left-right-solid
 ---
 
 # Discord OAuth Setup

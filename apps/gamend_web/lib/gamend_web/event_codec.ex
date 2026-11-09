@@ -20,7 +20,7 @@ defmodule GamendWeb.EventCodec do
   alias Gamend.Realtime.V1, as: PB
 
   require GamendWeb.ChannelTopic, as: ChannelTopic
-  require Gamend.RealtimeEvent, as: RealtimeEvent
+  require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
 
   @doc """
   Encodes `payload` for `event` pushed on `topic`.

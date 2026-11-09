@@ -1,5 +1,5 @@
 ---
 title: Guide
-icon: hero-book-open
+icon: hero-book-open-solid
 color: text-sky-400
 ---

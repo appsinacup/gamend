@@ -367,11 +367,16 @@ defmodule Gamend.Hooks do
   @callback after_purchase_fulfilled(Gamend.Payments.Purchase.t()) :: any()
   @callback after_purchase_revoked(Gamend.Payments.Purchase.t()) :: any()
   @callback after_entitlement_changed(Gamend.Payments.Entitlement.t()) :: any()
+  # Only for a grant made with `notify: true`: change what the owner is told, or
+  # return `{:error, reason}` to send nothing.
+  @callback before_entitlement_notice(Gamend.Payments.Entitlement.t(), notice :: map()) ::
+              hook_result(map())
 
   @optional_callbacks before_purchase: 2,
                       after_purchase_fulfilled: 1,
                       after_purchase_revoked: 1,
-                      after_entitlement_changed: 1
+                      after_entitlement_changed: 1,
+                      before_entitlement_notice: 2
 
   @callback after_score_submitted(Gamend.Leaderboards.Record.t()) :: any()
 

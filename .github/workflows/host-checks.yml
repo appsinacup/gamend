@@ -1,0 +1,78 @@
+name: Host checks
+
+# The checks every app built on Gamend shares, called from its own workflow:
+#
+#   jobs:
+#     checks:
+#       uses: appsinacup/gamend/.github/workflows/host-checks.yml@main
+#
+# A runner has no sibling ../gamend, so gamend_core and gamend_web come from
+# Hex, at the newest version the host's `@gamend_min` allows.
+
+on:
+  workflow_call:
+    inputs:
+      elixir-image:
+        description: The Docker image to build in
+        type: string
+        default: elixir:1.20.4-otp-29
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Compile and lint
+    runs-on: ubuntu-latest
+
+    container:
+      image: ${{ inputs.elixir-image }}
+
+    env:
+      MIX_ENV: dev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y build-essential cmake curl git libsqlite3-dev libsrtp2-dev pkg-config
+
+      - name: Install Rust toolchain (native NIFs, e.g. mdex_native / ex_sctp)
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Set up mix
+        working-directory: /tmp
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
+
+      - name: Cache dependencies and their build
+        uses: actions/cache@v6
+        with:
+          path: |
+            deps
+            _build/dev
+          key: host-checks-${{ runner.os }}-${{ hashFiles('mix.exs', 'mix.lock') }}
+          restore-keys: |
+            host-checks-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Compile dependencies (from source if a NIF will not download)
+        run: mix deps.compile --skip-local-deps || { echo RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 >> "$GITHUB_ENV"; RUSTLER_PRECOMPILED_FORCE_BUILD_ALL=1 mix deps.compile --skip-local-deps; }
+
+      # A named string's typo in an expression is only a warning until this.
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: API conventions (docs/specs/api-conventions.md)
+        run: mix gamend.api.lint
+
+      - name: Named strings (CONTRIBUTING.md)
+        run: mix gamend.literal.lint

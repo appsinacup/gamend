@@ -1,5 +1,5 @@
 ---
-icon: hero-bell
+icon: hero-bell-solid
 ---
 
 # Notifications
@@ -158,6 +158,7 @@ A user chooses per **group** and per **channel** (`in_app`, `email`, `push`) on 
 | `quests` | `quest_completed` | in-app | push |
 | `reports` | `report_resolved`, `chat_report_resolved`, `chat_warning`, `chat_mute` | in-app + email + push, email weekly but for a warning or mute | email, push |
 | `moderation` | `report`, `chat_report` (admins only, chosen on `/admin/notifications`) | in-app + email + push | email, push |
+| `payments` | an entitlement granted with `notify: true` ([payments](../50-monetization/10-payments.md)) | in-app + email | email, push |
 
 A type in no group (a moderator's notice) is always pushed. A host adds its own groups in config:
 

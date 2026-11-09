@@ -21,7 +21,7 @@ defmodule GamendWeb.AuthController do
   alias GamendWeb.Schemas
   alias GamendWeb.UserAuth
 
-  require GamendWeb.AuthError, as: AuthError
+  require GamendWeb.Auth.AuthError, as: AuthError
   require Gamend.OAuth.AuthProvider, as: AuthProvider
   require Gamend.OAuth.SessionStatus, as: SessionStatus
 

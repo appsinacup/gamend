@@ -1,5 +1,5 @@
 ---
-icon: hero-command-line
+icon: hero-command-line-solid
 ---
 
 # Server-side scripting & hooks
@@ -117,7 +117,7 @@ Codes and event names are global: if two plugins declare the same one, the first
 
 ### Quest hooks
 
-before_quest_claim/3 can veto a player's claim (return an error tuple to reject; anything else allows; it never rewrites its args, and auto_claim quests skip it). after_quest_completed/1 and after_quest_claimed/1 observe the progress row asynchronously: chain the next quest, feed analytics, or push a custom notification. Report custom gameplay events from any hook with Gamend.Quests.report_event/4:
+before_quest_claim/3 can veto a player's claim (return an error tuple to reject; anything else allows; it never rewrites its args, and auto_claim quests skip it). It also runs before a redemption code is spent, with a progress row not yet written (`id` nil, `code_id` set), so a game can refuse a code: see the Quests guide. after_quest_completed/1 and after_quest_claimed/1 observe the progress row asynchronously: chain the next quest, feed analytics, or push a custom notification. Report custom gameplay events from any hook with Gamend.Quests.report_event/4:
 
 ```elixir
 @impl true
@@ -463,7 +463,7 @@ change is committed and its return value is ignored.
 | Wallets | — | `after_wallet_changed` |
 | Inventory | — | `after_inventory_changed` |
 | Purchases | `before_purchase` | `after_purchase_fulfilled` `after_purchase_revoked` |
-| Entitlements | — | `after_entitlement_changed` |
+| Entitlements | `before_entitlement_notice` | `after_entitlement_changed` |
 | Push | `before_push_send` | `after_push_sent` |
 
 Six more neither gate nor observe: `matchmaking_form_matches`,

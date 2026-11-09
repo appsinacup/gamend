@@ -3,9 +3,5 @@ defmodule Gamend.Quests.ReportedEvent do
   An event core reports to the quests of a player.
   """
 
-  @all ~w(login)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(login)
 end

@@ -7,6 +7,7 @@ defmodule Gamend.Payments do
   """
 
   import Ecto.Query, warn: false
+  require Gamend.Payments.ProviderErrorCode, as: ProviderErrorCode
   require Logger
 
   use Nebulex.Caching, cache: Gamend.Cache
@@ -16,6 +17,7 @@ defmodule Gamend.Payments do
   alias Gamend.Payments.Admin
   alias Gamend.Payments.Counters
   alias Gamend.Payments.Entitlement
+  alias Gamend.Payments.Notices
   alias Gamend.Payments.Params
   alias Gamend.Payments.Product
   alias Gamend.Payments.ProviderConfig
@@ -42,7 +44,7 @@ defmodule Gamend.Payments do
   @fulfilled "fulfilled"
   @provider "provider"
   @error "error"
-  @invalid "invalid"
+  @invalid ProviderErrorCode.invalid()
 
   @store_validation_providers ~w(apple google steam)
 
@@ -840,7 +842,8 @@ defmodule Gamend.Payments do
   Options: `:expires_at` (a `DateTime`, `nil` for no end), `:metadata` (a map
   merged into the row's, e.g. `%{"source" => "trial", "granted_by" => id}`).
   A `"title"` in it names the grant on the owner's Payments tab, which has
-  no product's title to show.
+  no product's title to show. `notify: true` tells the owner
+  (`Gamend.Payments.Notices`); by default a grant says nothing.
   """
   @spec grant_entitlement(Ecto.UUID.t(), String.t(), keyword()) ::
           {:ok, Entitlement.t()} | {:error, term()}
@@ -878,6 +881,7 @@ defmodule Gamend.Payments do
     |> case do
       {:ok, entitlement} ->
         after_entitlement_changed(entitlement)
+        if Keyword.get(opts, :notify, false), do: Notices.entitlement_given(entitlement)
         {:ok, entitlement}
 
       {:error, reason} ->
@@ -945,7 +949,8 @@ defmodule Gamend.Payments do
   would set the end back; a row with no end, `{:error, :no_end}`; no row,
   `{:error, :entitlement_not_found}`.
 
-  Options: `:metadata`, a map merged into the row's (`%{"extended_by" => id}`).
+  Options: `:metadata`, a map merged into the row's (`%{"extended_by" => id}`);
+  `:notify`, as for `grant_entitlement/3`.
   """
   @spec extend_entitlement(Ecto.UUID.t(), pos_integer(), keyword()) ::
           {:ok, Entitlement.t()} | {:error, term()}
@@ -968,7 +973,8 @@ defmodule Gamend.Payments do
 
         grant_entitlement(entitlement.user_id, entitlement.key,
           expires_at: DateTime.add(from, days, :day),
-          metadata: Keyword.get(opts, :metadata, %{})
+          metadata: Keyword.get(opts, :metadata, %{}),
+          notify: Keyword.get(opts, :notify, false)
         )
     end
   end

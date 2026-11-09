@@ -20,6 +20,7 @@ defmodule GamendWeb.Gettext.Stats do
       }
   """
 
+  require GamendWeb.Gettext.TranslationFilter, as: TranslationFilter
   require Gamend.LocaleCode, as: LocaleCode
 
   @priv_dir :code.priv_dir(:gamend_web) |> to_string()
@@ -204,10 +205,10 @@ defmodule GamendWeb.Gettext.Stats do
   defp maybe_filter_status(strings, nil), do: strings
   defp maybe_filter_status(strings, ""), do: strings
 
-  defp maybe_filter_status(strings, "translated"),
+  defp maybe_filter_status(strings, TranslationFilter.translated()),
     do: Enum.filter(strings, & &1.translated?)
 
-  defp maybe_filter_status(strings, "untranslated"),
+  defp maybe_filter_status(strings, TranslationFilter.untranslated()),
     do: Enum.reject(strings, & &1.translated?)
 
   defp maybe_filter_status(strings, _), do: strings

@@ -1026,9 +1026,9 @@ defmodule GamendWeb.HostLayouts do
         class="toast toast-top toast-center z-50 hidden [html[data-connection=offline]_&]:flex"
       >
         <div class="alert alert-warning">
-          <.icon name="hero-signal-slash" class="size-5 shrink-0" />
+          <.icon name="hero-signal-slash-solid" class="size-5 shrink-0" />
           <span>{translate("You're offline. Trying to reconnect...")}</span>
-          <.icon name="hero-arrow-path" class="size-4 shrink-0 motion-safe:animate-spin" />
+          <.icon name="hero-arrow-path-solid" class="size-4 shrink-0 motion-safe:animate-spin" />
         </div>
       </div>
     </div>

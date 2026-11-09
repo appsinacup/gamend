@@ -10,6 +10,24 @@ defmodule GamendWeb.AdminLive.IndexTest do
 
   defp card(path), do: ~s|#admin-cards .card:has(a[href="#{path}"])|
 
+  test "the cards sit in named sections, at least four to each", %{conn: conn} do
+    admin = AccountsFixtures.user_fixture()
+    {:ok, admin} = admin |> User.admin_changeset(%{"is_admin" => true}) |> Repo.update()
+
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
+
+    doc = view |> render() |> LazyHTML.from_fragment()
+    names = doc |> LazyHTML.query("#admin-cards > section > h2") |> Enum.map(&LazyHTML.text/1)
+
+    assert names == ~w(Players Gameplay Social Moderation Data Configuration Server)
+
+    for {name, nth} <- Enum.with_index(names, 1) do
+      cards = LazyHTML.query(doc, "#admin-cards > section:nth-child(#{nth}) .card")
+
+      assert Enum.count(cards) >= 4, "#{name} has fewer than four cards"
+    end
+  end
+
   test "every page in the table opens from a card on the dashboard", %{conn: conn} do
     admin = AccountsFixtures.user_fixture()
     {:ok, admin} = admin |> User.admin_changeset(%{"is_admin" => true}) |> Repo.update()

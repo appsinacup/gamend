@@ -324,7 +324,7 @@ defmodule GamendWeb.HostLayoutNavigation do
               user={Scope.user(@current_scope)}
               class="size-8"
             />
-            <.icon :if={!@current_scope} name="hero-user-circle" class="size-8" />
+            <.icon :if={!@current_scope} name="hero-user-circle-solid" class="size-8" />
           <% else %>
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -1836,7 +1836,7 @@ defmodule GamendWeb.HostLayoutNavigation do
   # icon when flags are switched off (`GamendWeb.Features`, `locale_flags`).
   defp locale_mark(%{flag_code: nil} = assigns) do
     ~H"""
-    <.icon name="hero-language" class="size-5" />
+    <.icon name="hero-language-solid" class="size-5" />
     <span :if={@label} class="sr-only">{@label}</span>
     """
   end

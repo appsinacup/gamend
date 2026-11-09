@@ -1,5 +1,5 @@
 ---
-icon: hero-adjustments-horizontal
+icon: hero-adjustments-horizontal-solid
 ---
 
 # API Conventions

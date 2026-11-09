@@ -20,6 +20,9 @@ defmodule Gamend.Quests do
   cannot advance their own quests. Core wires common events; games call it
   from their hooks for custom events.
 
+  The one exception is a code the server issued: a `code_only` quest is
+  finished and paid by `redeem_code/2`.
+
   ## Claiming
 
       {:ok, %{progress: progress, rewards: rewards}} = Quests.claim(user_id, "daily_win_3")
@@ -81,12 +84,16 @@ defmodule Gamend.Quests do
   alias Gamend.AccountRequired
   alias Gamend.Accounts
   alias Gamend.Accounts.TimeZone
+  alias Gamend.AfterCommit
+  alias Gamend.Quests.Codes
   alias Gamend.Quests.Quest
+  alias Gamend.Quests.QuestCode
   alias Gamend.Quests.QuestProgress
   alias Gamend.Repo
 
   require Gamend.Quests.PeriodKey, as: PeriodKey
   require Gamend.Quests.QuestCategory, as: QuestCategory
+  require Gamend.Quests.QuestCodeStatus, as: QuestCodeStatus
   require Gamend.Quests.QuestFilter, as: QuestFilter
   require Gamend.Quests.QuestReset, as: QuestReset
   require Gamend.Quests.QuestStatus, as: QuestStatus
@@ -173,9 +180,16 @@ defmodule Gamend.Quests do
   @doc "Creates a quest definition. Capped by the `max_quests` limit."
   @spec create_quest(map()) :: {:ok, Quest.t()} | {:error, term()}
   def create_quest(attrs) do
-    # An uncast embed inserts NULL (not []), so default rewards explicitly on
+    # An uncast embed inserts NULL (not []), so default the lists explicitly on
     # create. Updates must not do this — a missing key there means "keep".
-    attrs = attrs |> normalize_params() |> Map.put_new("rewards", [])
+    # `objectives` is required unless the quest is code-only, so [] only ever
+    # reaches the table for one of those.
+    attrs =
+      attrs
+      |> normalize_params()
+      |> Map.put_new("rewards", [])
+      |> Map.put_new("objectives", [])
+
     max = Gamend.Limits.get(:max_quests)
 
     result =
@@ -335,6 +349,13 @@ defmodule Gamend.Quests do
     from(q in Quest, where: q.active == true, order_by: [asc: q.sort_order, asc: q.key])
     |> Repo.all()
   end
+
+  @doc """
+  The active quests a reader who is not signed in may see: every one but those
+  only a code finishes, which list for a player once they redeem them.
+  """
+  @spec catalog() :: [Quest.t()]
+  def catalog, do: Enum.reject(active_quests(), & &1.code_only)
 
   @doc """
   The active quests with an objective listening to `event`.
@@ -862,13 +883,19 @@ defmodule Gamend.Quests do
   # Completion side effects
   # ---------------------------------------------------------------------------
 
-  defp on_completed(user_id, quest, progress) do
+  defp announce_completed(user_id, quest, progress) do
     broadcast_progress(:quest_completed, user_id, progress)
     send_completion_notification(user_id, quest, progress)
 
     Gamend.Async.run(fn ->
       Gamend.Hooks.internal_call(:after_quest_completed, [progress])
     end)
+
+    :ok
+  end
+
+  defp on_completed(user_id, quest, progress) do
+    announce_completed(user_id, quest, progress)
 
     # A run banked while the row is mid-claim is claimed by that claim's
     # re-arm (`do_claim/3`), not here. A guest's waits for registration when
@@ -947,6 +974,260 @@ defmodule Gamend.Quests do
           else: {:error, :account_required}
     end
   end
+
+  # ---------------------------------------------------------------------------
+  # Redemption codes
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Redeems a code for a player: finishes its `code_only` quest and pays it at
+  once, whatever the quest's `auto_claim` says. Spaces, dashes, letter case and
+  full-width characters in `token` do not matter.
+
+  `before_quest_claim` runs first, given a `%QuestProgress{}` not yet written
+  (no `id`, `code_id` set, the code's metadata on it), so a veto spends nothing.
+  It is where a game refuses what the code alone does not: a guest on a shared
+  code, a player below some level.
+
+  A guest may redeem any code unless the host requires an account to claim
+  (`Gamend.AccountRequired`, `:quest_claims`). Guests are not stopped from
+  redeeming a shared code on several devices and signing each in to one
+  account, since the wallet moves with a guest; veto it in the hook if a game's
+  currency needs that.
+
+  Answers what `claim/3` answers, or `{:error, reason}`: `:code_not_found`
+  (unknown, revoked, used up, disabled, out of its window: one answer for every
+  miss), `:already_redeemed` (this player has this quest, by any code),
+  `:account_required`, `{:hook_rejected, reason}`.
+  """
+  @spec redeem_code(user_id(), String.t()) ::
+          {:ok, %{progress: QuestProgress.t(), rewards: [map()]}}
+          | {:error,
+             :code_not_found | :already_redeemed | :account_required | {:hook_rejected, term()}}
+  def redeem_code(user_id, token) when is_binary(user_id) and is_binary(token) do
+    # race-safe: everything before the write only refuses early. One per player
+    # is the unique index on `quest_progress`, capacity the conditional update
+    # in `take_code_use/2`, both in `write_redemption/4`.
+    now = DateTime.utc_now(:second)
+
+    with {:ok, code, quest} <- open_code(token, now),
+         :ok <- not_redeemed(user_id, quest),
+         :ok <- has_uses_left(code),
+         :ok <- account_allows_redeem(user_id),
+         :ok <- run_before_redeem(user_id, quest, code),
+         {:ok, progress} <- write_redemption(user_id, quest, code, now) do
+      announce_completed(user_id, quest, progress)
+      pay_redemption(user_id, quest)
+    end
+  end
+
+  @doc """
+  Whether a code would be accepted from someone who has no quests yet: it
+  exists, is not revoked or used up, and its quest is open. What a page checks
+  before it makes a guest account for a visitor, so a typo makes no account.
+  """
+  @spec code_open?(String.t()) :: boolean()
+  def code_open?(token) when is_binary(token) do
+    case open_code(token, DateTime.utc_now(:second)) do
+      {:ok, code, _quest} -> has_uses_left(code) == :ok
+      {:error, :code_not_found} -> false
+    end
+  end
+
+  @doc """
+  What a redeem page lists: the quests codes can finish now, each with this
+  viewer's row if they have redeemed it. `user_id` may be nil. A `hidden` quest
+  stays off the list until redeemed, while its codes work as usual: a key the
+  admin does not want advertised.
+
+  ## Options
+  - `:quest` — just this quest key, what a link to one uses
+  - `:page` / `:page_size`
+  """
+  @spec redeemable(user_id() | nil, keyword()) :: %{
+          entries: [%{quest: Quest.t(), progress: QuestProgress.t() | nil, claimable: boolean()}],
+          total: non_neg_integer()
+        }
+  def redeemable(user_id, opts \\ []) do
+    now = DateTime.utc_now(:second)
+    only = Keyword.get(opts, :quest)
+
+    quests =
+      active_quests()
+      |> Enum.filter(&(&1.code_only and within_window?(&1, now) and only in [nil, &1.key]))
+      |> host_visible(user_id)
+
+    rows = redeemed_rows(user_id, quests)
+
+    entries =
+      quests
+      |> Enum.reject(&(&1.hidden and not Map.has_key?(rows, &1.key)))
+      |> Enum.map(fn quest ->
+        progress = Map.get(rows, quest.key)
+
+        %{
+          quest: quest,
+          progress: progress,
+          claimable: progress != nil and progress.status == QuestStatus.completed()
+        }
+      end)
+
+    %{entries: page_slice(entries, opts), total: length(entries)}
+  end
+
+  @doc "Whether a redeem page has anything to offer: a listed code-only quest is open."
+  @spec any_redeemable?() :: boolean()
+  def any_redeemable? do
+    now = DateTime.utc_now(:second)
+    Enum.any?(active_quests(), &(&1.code_only and not &1.hidden and within_window?(&1, now)))
+  end
+
+  defp redeemed_rows(nil, _quests), do: %{}
+
+  defp redeemed_rows(user_id, quests) do
+    keys = Enum.map(quests, & &1.key)
+
+    from(p in QuestProgress, where: p.user_id == ^user_id and p.quest_key in ^keys)
+    |> Repo.all()
+    |> Map.new(&{&1.quest_key, &1})
+  end
+
+  defp open_code(token, now) do
+    with %QuestCode{status: QuestCodeStatus.active(), quest: %Quest{} = quest} = code <-
+           Codes.find(token),
+         true <- quest.code_only and quest.active and within_window?(quest, now) do
+      {:ok, code, quest}
+    else
+      _ -> {:error, :code_not_found}
+    end
+  end
+
+  defp not_redeemed(user_id, quest) do
+    redeemed? =
+      Repo.exists?(
+        from p in QuestProgress, where: p.user_id == ^user_id and p.quest_key == ^quest.key
+      )
+
+    if redeemed?, do: {:error, :already_redeemed}, else: :ok
+  end
+
+  defp has_uses_left(%QuestCode{max_uses: max, uses: uses}) when is_integer(max) and uses >= max,
+    do: {:error, :code_not_found}
+
+  defp has_uses_left(%QuestCode{}), do: :ok
+
+  defp account_allows_redeem(user_id) do
+    if AccountRequired.allowed?(user_id, :quest_claims),
+      do: :ok,
+      else: {:error, :account_required}
+  end
+
+  defp run_before_redeem(user_id, quest, code) do
+    pending = %QuestProgress{
+      user_id: user_id,
+      quest_key: quest.key,
+      period_key: PeriodKey.static(),
+      status: QuestStatus.completed(),
+      code_id: code.id,
+      metadata: code.metadata
+    }
+
+    case Gamend.Hooks.internal_call(:before_quest_claim, [user_id, quest, pending]) do
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, {:hook_rejected, reason}}
+    end
+  end
+
+  # Each rule is held by a write. The conditional update goes last, so a
+  # popular code's row is locked only across the commit. The foreign key's
+  # `FOR KEY SHARE` from the insert does not conflict with that update's
+  # `FOR NO KEY UPDATE`.
+  defp write_redemption(user_id, quest, code, now) do
+    # The quest deleted since the read. SQLite names no constraint, so the
+    # changeset's `foreign_key_constraint` cannot answer it there.
+    Repo.rescue_foreign_key(:code_not_found, fn ->
+      AfterCommit.transaction(fn ->
+        progress = insert_redeemed(user_id, quest, code, now)
+        take_code_use(code, now)
+        progress
+      end)
+    end)
+  end
+
+  defp insert_redeemed(user_id, quest, code, now) do
+    %QuestProgress{code_id: code.id}
+    |> QuestProgress.changeset(%{
+      user_id: user_id,
+      quest_key: quest.key,
+      period_key: PeriodKey.static(),
+      status: QuestStatus.completed(),
+      completed_at: now,
+      metadata: code.metadata
+    })
+    |> Repo.insert()
+    |> case do
+      {:ok, progress} ->
+        progress
+
+      # A foreign key: the quest or the code went away since the read.
+      {:error, changeset} ->
+        Repo.rollback(
+          if unique_violation?(changeset), do: :already_redeemed, else: :code_not_found
+        )
+    end
+  end
+
+  defp take_code_use(code, now) do
+    from(c in QuestCode,
+      where:
+        c.id == ^code.id and c.status == ^QuestCodeStatus.active() and
+          (is_nil(c.max_uses) or c.uses < c.max_uses)
+    )
+    |> Repo.compare_and_set(set: [updated_at: now], inc: [uses: 1])
+    |> case do
+      {:ok, _code} -> :ok
+      {:error, :precondition_failed} -> Repo.rollback(:code_not_found)
+    end
+  end
+
+  # Paying is the quest claim, unchanged: `completed → claimed` is conditional,
+  # grants carry idempotency keys, and a crash here leaves a completed row that
+  # lists as claimable, so nothing is lost. The player pressing Claim on that
+  # row in the same instant is the one way to lose this flip.
+  defp pay_redemption(user_id, quest) do
+    case do_claim(user_id, quest, skip_hooks: true) do
+      {:error, :already_claimed} -> {:error, :already_redeemed}
+      result -> result
+    end
+  end
+
+  @doc "A redemption code by id, or nil."
+  @spec get_code(Ecto.UUID.t()) :: QuestCode.t() | nil
+  defdelegate get_code(id), to: Codes, as: :get
+
+  @doc "Makes one redemption code with a chosen token (see `Gamend.Quests.Codes.create/2`)."
+  @spec create_code(Quest.t(), map()) ::
+          {:ok, QuestCode.t()} | {:error, :not_code_only | Ecto.Changeset.t()}
+  defdelegate create_code(quest, attrs), to: Codes, as: :create
+
+  @doc "Makes `count` random redemption codes (see `Gamend.Quests.Codes.generate/3`)."
+  @spec generate_codes(Quest.t(), integer(), keyword()) ::
+          {:ok, non_neg_integer()}
+          | {:error, :not_code_only | :invalid_count | :too_many_codes | Ecto.Changeset.t()}
+  defdelegate generate_codes(quest, count, opts \\ []), to: Codes, as: :generate
+
+  @doc "One quest's redemption codes, newest first (see `Gamend.Quests.Codes.list/2`)."
+  @spec list_codes(String.t(), keyword()) :: [QuestCode.t()]
+  defdelegate list_codes(quest_key, opts \\ []), to: Codes, as: :list
+
+  @doc "How many redemption codes match (same filters as `list_codes/2`)."
+  @spec count_codes(String.t(), keyword()) :: non_neg_integer()
+  defdelegate count_codes(quest_key, opts \\ []), to: Codes, as: :count
+
+  @doc "Revokes a redemption code (status `revoked`) or restores it (`active`)."
+  @spec set_code_status(Ecto.UUID.t(), String.t()) ::
+          {:ok, QuestCode.t()} | {:error, :code_not_found | :invalid_state}
+  defdelegate set_code_status(code_id, status), to: Codes, as: :set_status
 
   defp do_claim(user_id, quest, opts) do
     now = DateTime.utc_now(:second)
@@ -1549,7 +1830,7 @@ defmodule Gamend.Quests do
   def visible_categories(nil) do
     now = DateTime.utc_now(:second)
 
-    active_quests()
+    catalog()
     |> Enum.filter(&(within_window?(&1, now) and is_nil(&1.prerequisite_quest_key)))
     |> host_visible(nil)
     |> category_names()
@@ -1642,6 +1923,38 @@ defmodule Gamend.Quests do
   end
 
   defp normalize_lock_label(_label), do: nil
+
+  @doc """
+  A line about this viewer's own standing on this quest, drawn under its
+  description — or `nil`: a label (its own punctuation, a locale's) and the
+  things it names, each with a flag if it has one. Set `config :gamend_core,
+  :quest_note, {Module, :function}`; it is called as `function(user_id | nil,
+  Quest.t())`.
+
+  A description is one text for everyone, translated once. A quest counted
+  across things the player chooses ("Pass every level of a language") says
+  what to do and cannot say which ones are done; only the host knows.
+  """
+  @spec host_note(Quest.t(), user_id() | nil) :: note() | nil
+  def host_note(quest, user_id) do
+    case Application.get_env(:gamend_core, :quest_note) do
+      {mod, fun} when is_atom(mod) and is_atom(fun) ->
+        normalize_note(apply(mod, fun, [user_id, quest]))
+
+      _ ->
+        nil
+    end
+  end
+
+  @typedoc "A host's line under a quest's description (`host_note/2`)."
+  @type note :: %{
+          label: String.t(),
+          items: [%{required(:name) => String.t(), optional(:flag) => String.t() | nil}]
+        }
+
+  # A note naming nothing is no note.
+  defp normalize_note(%{label: label, items: [_ | _]} = note) when is_binary(label), do: note
+  defp normalize_note(_note), do: nil
 
   @doc """
   Where this viewer goes to work on this quest, as a path on this site — or
@@ -1881,7 +2194,10 @@ defmodule Gamend.Quests do
 
   # Hidden quests are listed but obscured by the serializer until earned (the
   # same teaser behavior achievements had) — a locked prerequisite, by
-  # contrast, hides the quest outright.
+  # contrast, hides the quest outright, and so does a code-only quest with no
+  # row: only a code can start it, so the list has nothing to offer until then.
+  defp visible_to_user?(%Quest{code_only: true}, nil, _done_prereqs), do: false
+
   defp visible_to_user?(quest, _progress, done_prereqs) do
     is_nil(quest.prerequisite_quest_key) or quest.prerequisite_quest_key in done_prereqs
   end

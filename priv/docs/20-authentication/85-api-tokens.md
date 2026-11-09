@@ -1,5 +1,5 @@
 ---
-icon: hero-key
+icon: hero-key-solid
 ---
 
 # Personal API tokens

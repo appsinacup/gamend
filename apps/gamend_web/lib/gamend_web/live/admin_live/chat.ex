@@ -4,6 +4,8 @@ defmodule GamendWeb.AdminLive.Chat do
   alias Gamend.Chat
   alias GamendWeb.LiveHelpers
 
+  require Gamend.Chat.ChatType, as: ChatType
+
   @filter_keys ~w(chat_ref_id chat_type content sender_id)
 
   use GamendWeb.UrlState,
@@ -89,16 +91,28 @@ defmodule GamendWeb.AdminLive.Chat do
                           class="select select-bordered select-xs w-full"
                         >
                           <option value="">All</option>
-                          <option value="lobby" selected={@filters["chat_type"] == "lobby"}>
+                          <option
+                            value={ChatType.lobby()}
+                            selected={@filters["chat_type"] == ChatType.lobby()}
+                          >
                             Lobby
                           </option>
-                          <option value="group" selected={@filters["chat_type"] == "group"}>
+                          <option
+                            value={ChatType.group()}
+                            selected={@filters["chat_type"] == ChatType.group()}
+                          >
                             Group
                           </option>
-                          <option value="friend" selected={@filters["chat_type"] == "friend"}>
+                          <option
+                            value={ChatType.friend()}
+                            selected={@filters["chat_type"] == ChatType.friend()}
+                          >
                             Friend
                           </option>
-                          <option value="party" selected={@filters["chat_type"] == "party"}>
+                          <option
+                            value={ChatType.party()}
+                            selected={@filters["chat_type"] == ChatType.party()}
+                          >
                             Party
                           </option>
                         </select>
@@ -156,10 +170,10 @@ defmodule GamendWeb.AdminLive.Chat do
                       <td>
                         <span class={[
                           "badge badge-sm",
-                          m.chat_type == "lobby" && "badge-primary",
-                          m.chat_type == "group" && "badge-secondary",
-                          m.chat_type == "friend" && "badge-accent",
-                          m.chat_type == "party" && "badge-info"
+                          m.chat_type == ChatType.lobby() && "badge-primary",
+                          m.chat_type == ChatType.group() && "badge-secondary",
+                          m.chat_type == ChatType.friend() && "badge-accent",
+                          m.chat_type == ChatType.party() && "badge-info"
                         ]}>
                           {m.chat_type}
                         </span>

@@ -3,9 +3,5 @@ defmodule Gamend.Reports.ReportSource do
   Where a report was filed from.
   """
 
-  @all ~w(web)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(web)
 end

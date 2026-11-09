@@ -12,7 +12,7 @@ defmodule GamendWeb.ChatLive do
   alias GamendWeb.LiveHelpers
 
   require Gamend.Chat.ChatType, as: ChatType
-  require Gamend.RealtimeEvent, as: RealtimeEvent
+  require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
 
   @page_size 25
   # `reload_messages/1` never loads more than 500.
@@ -133,7 +133,7 @@ defmodule GamendWeb.ChatLive do
                 phx-value-id={f.id}
                 class={[
                   "btn btn-sm w-full justify-start gap-2 text-start",
-                  if(@chat_type == "friend" && @chat_target == f.id,
+                  if(@chat_type == ChatType.friend() && @chat_target == f.id,
                     do: "btn-primary",
                     else: "btn-ghost"
                   )
@@ -164,7 +164,7 @@ defmodule GamendWeb.ChatLive do
                 phx-value-id={group.id}
                 class={[
                   "btn btn-sm w-full justify-start gap-2 text-start",
-                  if(@chat_type == "group" && @chat_target == group.id,
+                  if(@chat_type == ChatType.group() && @chat_target == group.id,
                     do: "btn-primary",
                     else: "btn-ghost"
                   )
@@ -191,9 +191,13 @@ defmodule GamendWeb.ChatLive do
               <button phx-click="close_chat" class="btn btn-xs btn-ghost md:hidden">
                 ←
               </button>
-              <.user_avatar :if={@chat_type == "friend"} user={@chat_target_user} class="w-7 h-7" />
+              <.user_avatar
+                :if={@chat_type == ChatType.friend()}
+                user={@chat_target_user}
+                class="w-7 h-7"
+              />
               <.entity_icon
-                :if={@chat_type == "group"}
+                :if={@chat_type == ChatType.group()}
                 icon_url={@chat_target_icon}
                 type={:group}
                 class="w-7 h-7 text-muted"

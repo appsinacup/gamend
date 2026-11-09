@@ -39,7 +39,7 @@ defmodule GamendWeb.AdminLive.ConfigDiagnostics do
     "Results" => ~w(max_result_events)a,
     "Leaderboards" => ~w(max_leaderboard_title max_leaderboard_description max_leaderboard_slug)a,
     "Quests" =>
-      ~w(max_quests max_quest_key max_quest_title max_quest_category max_quest_description max_objectives_per_quest max_quest_reward_entries max_active_quests_per_user max_quest_period_history)a,
+      ~w(max_quests max_quest_key max_quest_title max_quest_category max_quest_description max_objectives_per_quest max_quest_reward_entries max_active_quests_per_user max_quest_period_history max_quest_code_token max_codes_per_generate max_redeem_attempts_per_min)a,
     "Tournaments" =>
       ~w(max_tournament_title max_tournament_description max_tournament_slug max_tournament_entries max_tournament_bracket_size)a,
     "Matchmaking" =>

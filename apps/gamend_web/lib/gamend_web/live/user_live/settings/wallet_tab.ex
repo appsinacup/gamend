@@ -11,6 +11,8 @@ defmodule GamendWeb.UserLive.Settings.WalletTab do
   alias Gamend.Economy
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
+
   @page_size 50
 
   def assign_defaults(socket) do
@@ -24,7 +26,7 @@ defmodule GamendWeb.UserLive.Settings.WalletTab do
 
   def tab(assigns) do
     ~H"""
-    <div :if={@settings_tab == "wallet"}>
+    <div :if={@settings_tab == SettingsTab.wallet()}>
       <div class="card bg-base-200 p-4 rounded-lg mt-6">
         <div class="font-semibold text-lg">{gettext("Wallet")}</div>
 

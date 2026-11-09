@@ -1,5 +1,5 @@
 ---
-icon: hero-bolt
+icon: hero-bolt-solid
 ---
 
 # Load Testing

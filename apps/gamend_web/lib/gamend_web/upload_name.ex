@@ -3,9 +3,5 @@ defmodule GamendWeb.UploadName do
   The stem of an uploaded file's key.
   """
 
-  @all ~w(icon)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(icon)
 end

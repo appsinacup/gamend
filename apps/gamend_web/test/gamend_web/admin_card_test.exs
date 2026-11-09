@@ -2,10 +2,14 @@ defmodule GamendWeb.AdminCardTest do
   @moduledoc """
   What a host's `GamendWeb.AdminCard` modules add to `/admin`: their cards.
   """
-  use ExUnit.Case, async: false
+  use GamendWeb.ConnCase, async: false
 
   import ExUnit.CaptureLog
+  import Phoenix.LiveViewTest
 
+  alias Gamend.Accounts.User
+  alias Gamend.AccountsFixtures
+  alias Gamend.Repo
   alias GamendWeb.AdminCard
 
   defmodule CardsOnly do
@@ -65,5 +69,33 @@ defmodule GamendWeb.AdminCardTest do
 
   test "no modules, nothing added" do
     assert load([]) == []
+  end
+
+  defp dashboard(conn, modules) do
+    Application.put_env(:gamend_web, :admin_cards, modules)
+
+    # The dashboard caches its figures, a host's cards among them, for half a minute.
+    Gamend.Cache.invalidate({:admin_dashboard_stats})
+    on_exit(fn -> Gamend.Cache.invalidate({:admin_dashboard_stats}) end)
+
+    admin = AccountsFixtures.user_fixture()
+    {:ok, admin} = admin |> User.admin_changeset(%{"is_admin" => true}) |> Repo.update()
+
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
+    view
+  end
+
+  test "a host's cards sit in a section of their own, after core's", %{conn: conn} do
+    view = dashboard(conn, [CardsOnly])
+
+    assert has_element?(view, "#admin-cards > section:last-child h2", "This site")
+    assert has_element?(view, ~s|#admin-cards > section:last-child a[href="/admin/builds"]|)
+  end
+
+  test "with no host cards there is no section for them", %{conn: conn} do
+    view = dashboard(conn, [])
+
+    assert has_element?(view, "#admin-cards h2", "Players")
+    refute has_element?(view, "#admin-cards h2", "This site")
   end
 end

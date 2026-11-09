@@ -10,6 +10,7 @@ defmodule GamendWeb.AdminLive.Shared do
 
   use Gettext, backend: GamendWeb.Gettext
 
+  require GamendWeb.AdminLive.BanDuration, as: BanDuration
   require GamendWeb.FilterValue, as: FilterValue
 
   @durations %{
@@ -35,7 +36,7 @@ defmodule GamendWeb.AdminLive.Shared do
       {"24h", gettext("24 hours")},
       {"7d", gettext("7 days")},
       {"30d", gettext("30 days")},
-      {"permanent", gettext("Permanent")}
+      {BanDuration.permanent(), gettext("Permanent")}
     ]
   end
 

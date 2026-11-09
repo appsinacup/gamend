@@ -17,6 +17,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.Shared
 
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
   require Gamend.Storage.StoragePrefix, as: StoragePrefix
 
   def assign_defaults(socket, user) do
@@ -57,7 +58,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
   def tab(assigns) do
     ~H"""
     <%!-- Account tab --%>
-    <div :if={@settings_tab == "account"}>
+    <div :if={@settings_tab == SettingsTab.account()}>
       <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="card bg-base-200 p-4 rounded-lg">
           <div class="font-semibold">{gettext("Account")}</div>

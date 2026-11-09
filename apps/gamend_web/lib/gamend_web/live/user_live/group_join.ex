@@ -66,7 +66,7 @@ defmodule GamendWeb.UserLive.GroupJoin do
       <div class="mx-auto mt-8 max-w-narrow">
         <div id="group-join" class="card border border-base-300 bg-base-100">
           <div :if={@link == nil} class="card-body items-center text-center">
-            <.icon name="hero-link-slash" class="size-10 text-muted" />
+            <.icon name="hero-link-slash-solid" class="size-10 text-muted" />
             <h1 class="text-lg font-semibold">{gettext("This invite link no longer works")}</h1>
             <p class="text-sm text-muted">
               {gettext("It expired, or an admin made a new one. Ask them for the new link.")}
@@ -74,7 +74,7 @@ defmodule GamendWeb.UserLive.GroupJoin do
           </div>
 
           <div :if={@link} class="card-body items-center text-center">
-            <.icon name="hero-user-group" class="size-10 text-primary" />
+            <.icon name="hero-user-group-solid" class="size-10 text-primary" />
             <h1 class="text-xl font-semibold">{@link.group.title}</h1>
             <p
               :if={@link.created_by}

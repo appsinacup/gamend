@@ -4,6 +4,7 @@ defmodule GamendWeb.Api.V1.QuestController do
 
   alias Gamend.Quests
   alias GamendWeb.Pagination
+  alias GamendWeb.RateLimit
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.{QuestClaimResponse, QuestPage, QuestStatsResponse}
   alias OpenApiSpex.Schema
@@ -119,6 +120,103 @@ defmodule GamendWeb.Api.V1.QuestController do
   end
 
   # ---------------------------------------------------------------------------
+  # POST /api/v1/me/quests/redeem
+  # ---------------------------------------------------------------------------
+
+  operation(:redeem,
+    operation_id: "redeem_quest_code",
+    security: [%{"authorization" => []}],
+    summary: "Redeem a code",
+    description:
+      "Finishes the code's quest for the caller and pays it at once. Spaces, dashes, " <>
+        "letter case and full-width characters in `token` do not matter. The token " <>
+        "goes in the body, never a path or query. An unknown, expired, revoked or " <>
+        "used-up code answers 404 `code_not_found`, one answer for every miss; a " <>
+        "quest the caller already has 409 `already_redeemed`; a guest, where the " <>
+        "server requires an account to claim, 403 `account_required`; a " <>
+        "`before_quest_claim` hook's veto 403 `rejected`, its reason in `message`, " <>
+        "and the code is not spent.",
+    request_body:
+      {"The code", "application/json",
+       %Schema{
+         type: :object,
+         properties: %{token: %Schema{type: :string, description: "What the player typed"}},
+         required: [:token]
+       }},
+    responses: [
+      ok: {"Redeemed", "application/json", QuestClaimResponse},
+      bad_request: Schemas.error("token is required (missing_param)"),
+      forbidden: Schemas.error("A guest that must register, or vetoed by a hook"),
+      not_found: Schemas.error("Not a code that works (code_not_found)"),
+      conflict: Schemas.error("The caller already has this quest (already_redeemed)"),
+      too_many_requests: Schemas.error("Too many tries (redeem_rate_limit)"),
+      unauthorized: Schemas.error("Not authenticated")
+    ]
+  )
+
+  def redeem(conn, %{"token" => token}) when is_binary(token) do
+    case conn.assigns[:current_scope] do
+      %{user_id: user_id} ->
+        with :ok <- RateLimit.check_redeem(user_id),
+             {:ok, %{progress: progress, rewards: rewards}} <-
+               Quests.redeem_code(user_id, token) do
+          reply_data(conn, %{
+            progress: serialize_progress(progress),
+            rewards: Enum.map(rewards, &serialize_reward/1)
+          })
+        else
+          {:error, reason} -> reply_reason(conn, reason)
+        end
+
+      _ ->
+        reply_error(conn, :unauthorized, "not_authenticated")
+    end
+  end
+
+  def redeem(conn, _params) do
+    reply_error(conn, :bad_request, "missing_param", "token is required")
+  end
+
+  # ---------------------------------------------------------------------------
+  # GET /api/v1/quests/redeemable
+  # ---------------------------------------------------------------------------
+
+  operation(:redeemable,
+    operation_id: "list_redeemable_quests",
+    security: [%{}, %{"authorization" => []}],
+    summary: "List quests a code can finish",
+    description:
+      "The open code-only quests, what a redeem screen lists, each with the caller's " <>
+        "progress when they have redeemed it. A hidden quest stays off the list until " <>
+        "redeemed. Pass ?quest=<key> for just that one.",
+    parameters: [
+      quest: [in: :query, schema: %Schema{type: :string}, required: false],
+      page: [in: :query, schema: %Schema{type: :integer}, required: false],
+      page_size: [in: :query, schema: %Schema{type: :integer}, required: false]
+    ],
+    responses: [ok: {"Quest list", "application/json", QuestPage}]
+  )
+
+  def redeemable(conn, params) do
+    {page, page_size} = Pagination.params(params)
+
+    user_id =
+      case conn.assigns[:current_scope] do
+        %{user_id: user_id} -> user_id
+        _ -> nil
+      end
+
+    %{entries: entries, total: total_count} =
+      Quests.redeemable(user_id,
+        quest: blank_filter(params, UrlParam.quest()),
+        page: page,
+        page_size: page_size
+      )
+
+    reply_page(conn, Enum.map(entries, &serialize_entry/1), page, page_size, total_count)
+  end
+
+  # ---------------------------------------------------------------------------
   # GET /api/v1/quests (catalog, gated)
   # ---------------------------------------------------------------------------
 
@@ -159,7 +257,7 @@ defmodule GamendWeb.Api.V1.QuestController do
         category = category_filter(params)
 
         visible =
-          Quests.active_quests()
+          Quests.catalog()
           |> Enum.filter(fn q ->
             within_window?(q, now) and category in [nil, q.category]
           end)
@@ -279,6 +377,7 @@ defmodule GamendWeb.Api.V1.QuestController do
           objectives: [],
           rewards: [],
           auto_claim: quest.auto_claim,
+          code_only: quest.code_only,
           prerequisite_quest_key: quest.prerequisite_quest_key || "",
           starts_at: quest.starts_at,
           ends_at: quest.ends_at,
@@ -299,6 +398,7 @@ defmodule GamendWeb.Api.V1.QuestController do
           objectives: Enum.map(quest.objectives, &serialize_objective/1),
           rewards: Enum.map(quest.rewards, &serialize_reward/1),
           auto_claim: quest.auto_claim,
+          code_only: quest.code_only,
           prerequisite_quest_key: quest.prerequisite_quest_key || "",
           starts_at: quest.starts_at,
           ends_at: quest.ends_at,

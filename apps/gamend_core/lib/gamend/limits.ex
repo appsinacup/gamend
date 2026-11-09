@@ -210,6 +210,22 @@ defmodule Gamend.Limits do
     doc: "Days of daily/weekly period history kept before the retention prune."
   )
 
+  setting(:max_quest_code_token, :integer,
+    default: 128,
+    doc:
+      "Longest redemption code, in characters once spaces and dashes are gone. Up to 512 takes effect; past that is a Postgres index entry too big to store."
+  )
+
+  setting(:max_codes_per_generate, :integer,
+    default: 10_000,
+    doc: "Redemption codes one Generate makes. To have more, run it again."
+  )
+
+  setting(:max_redeem_attempts_per_min, :integer,
+    default: 10,
+    doc: "Redemption code tries per player per minute. 0 disables."
+  )
+
   # ── Matchmaking ─────────────────────────────────────────
   setting(:max_matchmaking_players, :integer,
     default: 64,

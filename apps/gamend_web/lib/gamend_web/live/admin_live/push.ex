@@ -4,6 +4,8 @@ defmodule GamendWeb.AdminLive.Push do
   alias Gamend.Push
   alias GamendWeb.LiveHelpers
 
+  require Gamend.Push.TokenFilter, as: TokenFilter
+
   @filter_keys ~w(platform provider status user_id)
 
   use GamendWeb.UrlState,
@@ -148,8 +150,16 @@ defmodule GamendWeb.AdminLive.Push do
                       <th>
                         <select name="status" class="select select-bordered select-xs w-full">
                           <option value="">All</option>
-                          <option value="live" selected={@filters["status"] == "live"}>live</option>
-                          <option value="disabled" selected={@filters["status"] == "disabled"}>
+                          <option
+                            value={TokenFilter.live()}
+                            selected={@filters["status"] == TokenFilter.live()}
+                          >
+                            live
+                          </option>
+                          <option
+                            value={TokenFilter.disabled()}
+                            selected={@filters["status"] == TokenFilter.disabled()}
+                          >
                             disabled
                           </option>
                         </select>

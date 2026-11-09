@@ -3,9 +3,5 @@ defmodule Gamend.Quests.QuestFilter do
   The status filters of a quest list (not stored values).
   """
 
-  @all ~w(in_progress claimable done)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(in_progress claimable done)
 end

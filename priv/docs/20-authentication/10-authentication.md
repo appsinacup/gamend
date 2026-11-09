@@ -1,5 +1,5 @@
 ---
-icon: hero-finger-print
+icon: hero-finger-print-solid
 ---
 
 # Authentication

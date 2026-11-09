@@ -31,7 +31,9 @@ defmodule Gamend.Content.Tree do
   alias Gamend.Content.Frontmatter
   alias Gamend.Content.Markdown
 
-  @index "index"
+  require Gamend.Content.PageName, as: ContentPage
+
+  @index ContentPage.index()
 
   @type doc :: %{
           type: :doc,
@@ -207,7 +209,7 @@ defmodule Gamend.Content.Tree do
       dir: dir,
       title: title,
       label: string(meta["label"]) || title,
-      icon: string(meta["icon"]) || Keyword.get(opts, :category_icon, "hero-folder"),
+      icon: string(meta["icon"]) || Keyword.get(opts, :category_icon, "hero-folder-solid"),
       color: color,
       description: string(meta["description"]) || (index && index.description),
       position: position(meta, name),
@@ -244,7 +246,7 @@ defmodule Gamend.Content.Tree do
       description: description,
       image: string(meta["image"]),
       keywords: Frontmatter.list(meta["keywords"]),
-      icon: string(meta["icon"]) || Keyword.get(opts, :doc_icon, "hero-document-text"),
+      icon: string(meta["icon"]) || Keyword.get(opts, :doc_icon, "hero-document-text-solid"),
       color: Keyword.get(opts, :category_color, "text-primary"),
       position: position(meta, Path.basename(relative)),
       category: parent_slug,

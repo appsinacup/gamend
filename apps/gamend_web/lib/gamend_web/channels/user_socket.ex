@@ -7,7 +7,7 @@ defmodule GamendWeb.UserSocket do
   alias GamendWeb.Auth.Guardian
   alias GamendWeb.Plugs.ClientSession
 
-  require Gamend.RealtimeEvent, as: RealtimeEvent
+  require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
   require GamendWeb.Auth.TokenType, as: TokenType
   require GamendWeb.WsFormat, as: WsFormat
 

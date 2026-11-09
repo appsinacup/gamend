@@ -13,6 +13,7 @@ defmodule GamendWeb.AdminLive.ConfigSections do
 
   import GamendWeb.AdminLive.ConfigDiagnostics, only: [mask_secret: 1, display_value: 1]
 
+  require GamendWeb.AdminLive.BuildEnv, as: BuildEnv
   require GamendWeb.NavAuth, as: NavAuth
 
   @doc "Device login, account activation and the password policy."
@@ -696,7 +697,7 @@ defmodule GamendWeb.AdminLive.ConfigSections do
           SMTP configured - emails are sent via {@config.smtp_relay ||
             "configured relay"}
         <% else %>
-          <%= if @config.env == "dev" do %>
+          <%= if @config.env == BuildEnv.dev() do %>
             Using local delivery - emails are not sent (<a
               href="/dev/mailbox"
               class="link link-primary"

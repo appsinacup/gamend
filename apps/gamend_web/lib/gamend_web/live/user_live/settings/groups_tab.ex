@@ -32,6 +32,9 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.Shared
 
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
+  require Gamend.Groups.JoinRequestStatus, as: JoinRequestStatus
+  require GamendWeb.UserLive.Settings.GroupsListTab, as: GroupsListTab
   require Gamend.Groups.GroupRole, as: GroupRole
   require Gamend.Groups.GroupType, as: GroupType
 
@@ -96,7 +99,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     |> assign(:group_invite_link, nil)
     |> assign(:group_invite_link_url, nil)
     |> assign(:group_pending_invites, [])
-    |> assign(:groups_tab, "my_groups")
+    |> assign(:groups_tab, GroupsListTab.my_groups())
     |> assign(:groups_tab_picked?, false)
     |> assign(:my_groups, [])
     |> assign(:groups_count, 0)
@@ -134,7 +137,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
   def tab(assigns) do
     ~H"""
-    <div :if={@settings_tab == "groups"}>
+    <div :if={@settings_tab == SettingsTab.groups()}>
       <%!-- Groups section --%>
       <div class="card bg-base-200 p-4 rounded-lg mt-6">
         <div class="flex items-center justify-between">
@@ -175,7 +178,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
             >
               {gettext("Create")}
             </button>
-            <%= if @group_editing && @group_detail_role == "admin" && !@groups_show_create do %>
+            <%= if @group_editing && @group_detail_role == GroupRole.admin() && !@groups_show_create do %>
               <button
                 id="group-edit-cancel"
                 type="button"
@@ -266,7 +269,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
         <%= if @group_detail && !@groups_show_create do %>
           <div class="mt-4">
             <%!-- Edit form (admin only) --%>
-            <%= if @group_editing && @group_detail_role == "admin" do %>
+            <%= if @group_editing && @group_detail_role == GroupRole.admin() do %>
               <.form
                 for={@group_edit_form}
                 id="group-edit-form"
@@ -325,8 +328,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     <span class={[
                       "badge badge-sm",
                       cond do
-                        @group_detail.type == "public" -> "badge-success"
-                        @group_detail.type == "private" -> "badge-warning"
+                        @group_detail.type == GroupType.public() -> "badge-success"
+                        @group_detail.type == GroupType.private() -> "badge-warning"
                         true -> "badge-error"
                       end
                     ]}>
@@ -345,14 +348,17 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     <strong>{gettext("Role")}:</strong>
                     <span class={[
                       "badge badge-sm",
-                      if(@group_detail_role == "admin", do: "badge-info", else: "badge-ghost")
+                      if(@group_detail_role == GroupRole.admin(),
+                        do: "badge-info",
+                        else: "badge-ghost"
+                      )
                     ]}>
                       {group_role_label(@group_detail_role)}
                     </span>
                   </div>
                   <div class="flex gap-2">
                     <button
-                      :if={@group_detail_role == "admin"}
+                      :if={@group_detail_role == GroupRole.admin()}
                       phx-click="group_toggle_edit"
                       class="btn btn-sm btn-outline btn-info"
                     >
@@ -382,7 +388,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       <th>{gettext("Name")}</th>
                       <th>{gettext("Role")}</th>
                       <th>{gettext("Joined")}</th>
-                      <%= if @group_detail_role == "admin" do %>
+                      <%= if @group_detail_role == GroupRole.admin() do %>
                         <th>{gettext("Actions")}</th>
                       <% end %>
                     </tr>
@@ -415,7 +421,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       <td>
                         <span class={[
                           "badge badge-sm",
-                          if(m.role == "admin", do: "badge-info", else: "badge-ghost")
+                          if(m.role == GroupRole.admin(), do: "badge-info", else: "badge-ghost")
                         ]}>
                           {group_role_label(m.role)}
                         </span>
@@ -423,10 +429,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       <td class="text-sm whitespace-nowrap">
                         <.timestamp at={m.inserted_at} />
                       </td>
-                      <%= if @group_detail_role == "admin" do %>
+                      <%= if @group_detail_role == GroupRole.admin() do %>
                         <td class="flex gap-1">
                           <%= if m.user_id != @user.id do %>
-                            <%= if m.role == "member" do %>
+                            <%= if m.role == GroupRole.member() do %>
                               <button
                                 phx-click="group_promote"
                                 phx-value-group_id={@group_detail.id}
@@ -474,7 +480,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
             </div>
 
             <%!-- Incoming Join Requests (admin only) --%>
-            <div :if={@group_detail_role == "admin" && @group_join_requests != []} class="mt-6">
+            <div
+              :if={@group_detail_role == GroupRole.admin() && @group_join_requests != []}
+              class="mt-6"
+            >
               <h4 class="font-semibold text-base mb-3">
                 {gettext("Join requests")} ({length(@group_join_requests)})
               </h4>
@@ -518,7 +527,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
             </div>
 
             <%!-- Invite Members (admin only) --%>
-            <div :if={@group_detail_role == "admin"} class="mt-6">
+            <div :if={@group_detail_role == GroupRole.admin()} class="mt-6">
               <h4 class="font-semibold text-base mb-3">{gettext("Invite")}</h4>
 
               <%!-- Invite link: anyone signed in who opens it joins --%>
@@ -766,7 +775,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           </div>
 
           <%!-- My Groups tab --%>
-          <%= if @groups_tab == "my_groups" do %>
+          <%= if @groups_tab == GroupsListTab.my_groups() do %>
             <%= if @groups_count == 0 do %>
               <div class="mt-4 text-sm text-muted">
                 {gettext("No results.")}
@@ -812,8 +821,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                         <span class={[
                           "badge badge-sm",
                           cond do
-                            group.type == "public" -> "badge-success"
-                            group.type == "private" -> "badge-warning"
+                            group.type == GroupType.public() -> "badge-success"
+                            group.type == GroupType.private() -> "badge-warning"
                             true -> "badge-error"
                           end
                         ]}>
@@ -824,7 +833,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       <td>
                         <span class={[
                           "badge badge-sm",
-                          if(role == "admin", do: "badge-info", else: "badge-ghost")
+                          if(role == GroupRole.admin(), do: "badge-info", else: "badge-ghost")
                         ]}>
                           {group_role_label(role)}
                         </span>
@@ -837,7 +846,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           <% end %>
 
           <%!-- Browse Groups tab --%>
-          <%= if @groups_tab == "browse" do %>
+          <%= if @groups_tab == GroupsListTab.browse() do %>
             <div class="mt-4">
               <.form
                 for={@browse_groups_form}
@@ -919,7 +928,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     <td>
                       <span class={[
                         "badge badge-sm",
-                        if(group.type == "public", do: "badge-success", else: "badge-warning")
+                        if(group.type == GroupType.public(),
+                          do: "badge-success",
+                          else: "badge-warning"
+                        )
                       ]}>
                         {GroupLabels.type(group.type)}
                       </span>
@@ -935,7 +947,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           <span class="badge badge-sm badge-warning">
                             {gettext("Pending")}
                           </span>
-                        <% group.type == "public" -> %>
+                        <% group.type == GroupType.public() -> %>
                           <button
                             phx-click="group_join"
                             phx-value-group_id={group.id}
@@ -943,7 +955,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           >
                             {gettext("Join")}
                           </button>
-                        <% group.type == "private" -> %>
+                        <% group.type == GroupType.private() -> %>
                           <button
                             phx-click="group_request_join"
                             phx-value-group_id={group.id}
@@ -972,7 +984,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           <% end %>
 
           <%!-- Invitations tab --%>
-          <%= if @groups_tab == "invitations" do %>
+          <%= if @groups_tab == GroupsListTab.invitations() do %>
             <%= if length(@group_invitations) == 0 do %>
               <div class="mt-4 text-sm text-muted">
                 {gettext("No results.")}
@@ -1029,7 +1041,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           <% end %>
 
           <%!-- My Pending Requests tab --%>
-          <%= if @groups_tab == "requests" do %>
+          <%= if @groups_tab == GroupsListTab.requests() do %>
             <%= if length(@group_pending_requests) == 0 do %>
               <div class="mt-4 text-sm text-muted">
                 {gettext("No results.")}
@@ -1053,7 +1065,9 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       <td class="text-sm font-mono">{req.group.title}</td>
                       <td>
                         <span class="badge badge-sm badge-warning">
-                          {if req.status == "pending", do: gettext("Pending"), else: req.status}
+                          {if req.status == JoinRequestStatus.pending(),
+                            do: gettext("Pending"),
+                            else: req.status}
                         </span>
                       </td>
                       <td class="text-sm whitespace-nowrap">
@@ -1077,7 +1091,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           <% end %>
 
           <%!-- Sent Invitations tab --%>
-          <%= if @groups_tab == "sent_invitations" do %>
+          <%= if @groups_tab == GroupsListTab.sent_invitations() do %>
             <%= if @group_sent_invitations == [] do %>
               <div class="mt-4 text-sm text-muted">{gettext("No results.")}</div>
             <% else %>
@@ -1140,7 +1154,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
     # Stream inserts are consumed by renders even while the browse table is
     # hidden, so refill it when the sub-tab becomes visible.
-    socket = if tab == "browse", do: reload_browse_groups(socket), else: socket
+    socket = if tab == GroupsListTab.browse(), do: reload_browse_groups(socket), else: socket
 
     {:noreply, socket}
   end
@@ -1195,7 +1209,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
          |> assign(:groups_show_create, false)
          |> assign(:create_slug_auto, "")
          |> assign(:create_group_form, to_form(Groups.change_group(%Group{}), as: :group))
-         |> assign(:groups_tab, "my_groups")
+         |> assign(:groups_tab, GroupsListTab.my_groups())
          |> reload_groups()
          |> patch_groups(create: false)}
 
@@ -1583,9 +1597,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   # without a private one (unless some are still pending from before).
   defp sub_tabs(assigns) do
     [
-      {"my_groups", gettext("Groups") <> " (#{assigns.groups_count})"},
+      {GroupsListTab.my_groups(), gettext("Groups") <> " (#{assigns.groups_count})"},
       assigns.groups_browse? && {"browse", gettext("Find groups")},
-      {"invitations", gettext("Invitations") <> " (#{length(assigns.group_invitations)})"},
+      {GroupsListTab.invitations(),
+       gettext("Invitations") <> " (#{length(assigns.group_invitations)})"},
       (assigns.group_requests? or assigns.group_pending_requests != []) &&
         {"requests", gettext("My requests") <> " (#{length(assigns.group_pending_requests)})"},
       {"sent_invitations",
@@ -1874,7 +1889,11 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   defp follow_invitations(%{assigns: %{groups_tab_picked?: true}} = socket), do: socket
 
   defp follow_invitations(socket) do
-    tab = if socket.assigns.group_invitations != [], do: "invitations", else: "my_groups"
+    tab =
+      if socket.assigns.group_invitations != [],
+        do: GroupsListTab.invitations(),
+        else: GroupsListTab.my_groups()
+
     assign(socket, :groups_tab, tab)
   end
 

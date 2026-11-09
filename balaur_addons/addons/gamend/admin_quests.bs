@@ -33,6 +33,18 @@ pub fn create_quest(params: any) -> int {
     gamend::rest("POST", "/api/v1/admin/quests", params)
 }
 
+/// Add one redemption code with a chosen token (admin)
+/// `POST /api/v1/admin/quests/{id}/codes`
+pub fn create_quest_code(id: str, params: any) -> int {
+    if id == "" {
+        return core::missing("gamend::admin_quests::create_quest_code", "id");
+    }
+    if !core::given(params, "token") {
+        return core::missing("gamend::admin_quests::create_quest_code", "token");
+    }
+    gamend::rest("POST", "/api/v1/admin/quests/{id}/codes", params)
+}
+
 /// Delete quest and all user progress (admin)
 /// `DELETE /api/v1/admin/quests/{id}`
 pub fn delete_quest(id: str) -> int {
@@ -40,6 +52,18 @@ pub fn delete_quest(id: str) -> int {
         return core::missing("gamend::admin_quests::delete_quest", "id");
     }
     gamend::rest("DELETE", "/api/v1/admin/quests/{id}")
+}
+
+/// Generate random redemption codes (admin)
+/// `POST /api/v1/admin/quests/{id}/codes/generate`
+pub fn generate_quest_codes(id: str, params: any) -> int {
+    if id == "" {
+        return core::missing("gamend::admin_quests::generate_quest_codes", "id");
+    }
+    if !core::given(params, "count") {
+        return core::missing("gamend::admin_quests::generate_quest_codes", "count");
+    }
+    gamend::rest("POST", "/api/v1/admin/quests/{id}/codes/generate", params)
 }
 
 /// Force-complete a quest for a user (admin)
@@ -52,6 +76,16 @@ pub fn grant_quest(params: any) -> int {
         return core::missing("gamend::admin_quests::grant_quest", "key");
     }
     gamend::rest("POST", "/api/v1/admin/quests/grant", params)
+}
+
+/// List a quest's redemption codes (admin)
+/// `GET /api/v1/admin/quests/{id}/codes`
+pub fn list_quest_codes(id: str, options: any) -> int {
+    if id == "" {
+        return core::missing("gamend::admin_quests::list_quest_codes", "id");
+    }
+    let query = core::query(options, ["search", "page", "page_size"]);
+    gamend::rest("GET", "/api/v1/admin/quests/{id}/codes{query}")
 }
 
 /// List quest progress rows (admin)
@@ -120,4 +154,16 @@ pub fn update_quest(id: str, params: any) -> int {
         return core::missing("gamend::admin_quests::update_quest", "id");
     }
     gamend::rest("PATCH", "/api/v1/admin/quests/{id}", params)
+}
+
+/// Revoke or restore a redemption code (admin)
+/// `PATCH /api/v1/admin/quest_codes/{id}`
+pub fn update_quest_code(id: str, params: any) -> int {
+    if id == "" {
+        return core::missing("gamend::admin_quests::update_quest_code", "id");
+    }
+    if !core::given(params, "status") {
+        return core::missing("gamend::admin_quests::update_quest_code", "status");
+    }
+    gamend::rest("PATCH", "/api/v1/admin/quest_codes/{id}", params)
 }

@@ -1,5 +1,5 @@
 ---
-icon: hero-wrench-screwdriver
+icon: hero-wrench-screwdriver-solid
 ---
 
 # Admin Console

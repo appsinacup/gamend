@@ -13,7 +13,7 @@ let reply = await task::wait(lobbies::quick_join({ "title": "duel", "max_users":
 if e["kind"].as_str() == lobby::MEMBER_JOINED { }
 ```
 
-279 operations in 44 modules, and 100 realtime events, 15 socket commands.
+285 operations in 44 modules, and 100 realtime events, 15 socket commands.
 
 Beside the generated modules and `events.bs`, written by hand:
 
@@ -173,8 +173,11 @@ Admin – Quests.
 | --- | --- | --- |
 | `claim_quest(params)` | `POST /api/v1/admin/quests/claim` | Claim a completed quest on a user's behalf (admin) |
 | `create_quest(params)` | `POST /api/v1/admin/quests` | Create quest (admin) |
+| `create_quest_code(id, params)` | `POST /api/v1/admin/quests/{id}/codes` | Add one redemption code with a chosen token (admin) |
 | `delete_quest(id)` | `DELETE /api/v1/admin/quests/{id}` | Delete quest and all user progress (admin) |
+| `generate_quest_codes(id, params)` | `POST /api/v1/admin/quests/{id}/codes/generate` | Generate random redemption codes (admin) |
 | `grant_quest(params)` | `POST /api/v1/admin/quests/grant` | Force-complete a quest for a user (admin) |
+| `list_quest_codes(id, options)` | `GET /api/v1/admin/quests/{id}/codes` | List a quest's redemption codes (admin) |
 | `list_quest_progress(options)` | `GET /api/v1/admin/quests/progress` | List quest progress rows (admin) |
 | `list_quests(options)` | `GET /api/v1/admin/quests` | List all quest definitions (admin, includes inactive/hidden) |
 | `quest_funnel(key)` | `GET /api/v1/admin/quests/{key}/funnel` | Per-status progress counts for one quest (admin) |
@@ -182,6 +185,7 @@ Admin – Quests.
 | `reset_quest(params)` | `POST /api/v1/admin/quests/reset` | Reset a user's current-period quest progress (admin) |
 | `set_quest_icon(id, params)` | `POST /api/v1/admin/quests/{id}/icon` | Confirm an uploaded quest icon (admin) |
 | `update_quest(id, params)` | `PATCH /api/v1/admin/quests/{id}` | Update quest (admin) |
+| `update_quest_code(id, params)` | `PATCH /api/v1/admin/quest_codes/{id}` | Revoke or restore a redemption code (admin) |
 
 ## admin_ready_checks
 
@@ -523,8 +527,10 @@ Quests.
 | --- | --- | --- |
 | `claim_quest(key)` | `POST /api/v1/me/quests/{key}/claim` | Claim a completed quest |
 | `list_quests(options)` | `GET /api/v1/quests` | List quests |
+| `list_redeemable_quests(options)` | `GET /api/v1/quests/redeemable` | List quests a code can finish |
 | `my_quests(options)` | `GET /api/v1/me/quests` | List my quests |
 | `quest_stats()` | `GET /api/v1/quests/stats` | Quest progress counts |
+| `redeem_quest_code(params)` | `POST /api/v1/me/quests/redeem` | Redeem a code |
 | `user_quests(user_id, options)` | `GET /api/v1/quests/user/{user_id}` | List a user's completed quests |
 
 ## ready_checks

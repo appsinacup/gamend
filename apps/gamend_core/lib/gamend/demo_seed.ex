@@ -27,7 +27,8 @@ defmodule Gamend.DemoSeed do
       about having something to read, not volume)
     * `quest` — a daily, an auto-claim achievement, a chained follow-up and a
       twelve-member group that lists as one card, with per-user progress in
-      every state (including claimable rows)
+      every state (including claimable rows), and a code-only quest with a
+      page of generated codes and the shared code `SPRING-GIFT`
     * `ready_check` — one check per seeded lobby in every outcome (open,
       passed, timed out, declined), also capped at 12
     * `chat_moderation` — a blocklist across every severity and match mode, a
@@ -724,6 +725,8 @@ defmodule Gamend.DemoSeed do
         })
       end
 
+    seed_quest_codes()
+
     now = DateTime.utc_now(:second)
     today = Gamend.Quests.period_key(QuestReset.daily(), now)
 
@@ -837,6 +840,29 @@ defmodule Gamend.DemoSeed do
   end
 
   # Definitions go through the context (embeds can't be bulk-inserted).
+  # Enough to page through on `/admin/quests/:id/codes`, and one shared code to
+  # try at `/redeem`. Generated once: running the seed again keeps what is there.
+  defp seed_quest_codes do
+    quest =
+      upsert_quest(%{
+        key: @quest_key_prefix <> "spring-gift",
+        title: "Spring gift",
+        description: "For everyone who has the code.",
+        code_only: true,
+        category: "Events",
+        rewards: [%{type: RewardType.currency(), code: @gold, amount: 100}],
+        active: true,
+        metadata: %{}
+      })
+
+    if Gamend.Quests.count_codes(quest.key) == 0 do
+      {:ok, _} = Gamend.Quests.generate_codes(quest, 120)
+      {:ok, _} = Gamend.Quests.create_code(quest, %{token: "SPRING-GIFT", max_uses: nil})
+    end
+
+    :ok
+  end
+
   defp upsert_quest(attrs) do
     case Repo.get_by(Quest, key: attrs.key) do
       nil ->

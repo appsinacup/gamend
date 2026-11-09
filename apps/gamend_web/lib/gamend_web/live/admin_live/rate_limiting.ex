@@ -6,9 +6,10 @@ defmodule GamendWeb.AdminLive.RateLimiting do
   alias GamendWeb.AdminLive.BanForm
   alias GamendWeb.Plugs.IpBan
 
+  require GamendWeb.AdminLive.BanDuration, as: BanDuration
   require GamendWeb.Plugs.RateLimitBucket, as: RateLimitBucket
 
-  @permanent "permanent"
+  @permanent BanDuration.permanent()
   @ice "ice"
 
   @refresh_interval 5_000
@@ -260,7 +261,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
                 </div>
                 <BanForm.fields form={Map.put(BanForm.empty(), "duration", "permanent")} />
                 <button type="submit" class="btn btn-warning btn-sm">
-                  <.icon name="hero-no-symbol" class="w-4 h-4" /> Ban IP
+                  <.icon name="hero-no-symbol-solid" class="w-4 h-4" /> Ban IP
                 </button>
               </form>
 

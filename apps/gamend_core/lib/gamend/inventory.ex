@@ -36,7 +36,7 @@ defmodule Gamend.Inventory do
   alias Gamend.Inventory.LedgerEntry
   alias Gamend.Repo
 
-  require Gamend.LedgerReason, as: LedgerReason
+  require Gamend.Ledger.LedgerReason, as: LedgerReason
 
   @type user_id :: Ecto.UUID.t()
   @type item :: String.t()

@@ -501,6 +501,7 @@ defmodule GamendWeb.Router.Shared do
         pipe_through [:api, :api_auth]
 
         get "/me/quests", QuestController, :me
+        post "/me/quests/redeem", QuestController, :redeem
         post "/me/quests/:key/claim", QuestController, :claim
       end
 
@@ -508,6 +509,7 @@ defmodule GamendWeb.Router.Shared do
         pipe_through [:api, :api_optional_auth, :list_quests_gate]
 
         get "/quests", QuestController, :index
+        get "/quests/redeemable", QuestController, :redeemable
         get "/quests/user/:user_id", QuestController, :user_quests
       end
     end
@@ -884,6 +886,10 @@ defmodule GamendWeb.Router.Shared do
         post "/quests/reset", QuestController, :reset
         post "/quests/claim", QuestController, :claim
         get "/quests/:key/funnel", QuestController, :funnel
+        get "/quests/:id/codes", QuestController, :codes
+        post "/quests/:id/codes", QuestController, :create_code
+        post "/quests/:id/codes/generate", QuestController, :generate_codes
+        patch "/quest_codes/:id", QuestController, :update_code
       end
     end
   end
@@ -921,6 +927,7 @@ defmodule GamendWeb.Router.Shared do
         # reads them, through here.
         get "/admin/reports/:id/attachments/:index", GamendWeb.AdminReportController, :attachment
         get "/admin/reports/export/:kind", GamendWeb.AdminReportController, :export
+        get "/admin/quests/:key/codes/export", GamendWeb.AdminQuestCodeController, :export
       end
 
       scope "/" do
@@ -988,6 +995,7 @@ defmodule GamendWeb.Router.Shared do
           live "/admin/chat/filter", AdminLive.ChatFilter, :index
           live "/admin/reports", AdminLive.Reports, :index
           live "/admin/quests", AdminLive.Quests, :index
+          live "/admin/quests/:key/codes", AdminLive.QuestCodes, :index
           live "/admin/payments", AdminLive.Payments, :index
           live "/admin/translations", AdminLive.Translations, :index
           live "/admin/connections", AdminLive.Connections, :index
@@ -1160,6 +1168,7 @@ defmodule GamendWeb.Router.Shared do
           live "/groups", GroupsLive, :index
           live "/groups/:id", GroupsLive, :show
           live "/quests", QuestsLive, :index
+          live "/redeem", RedeemLive, :index
           live "/report", ReportLive, :index
           live "/stats", StatsLive, :index
           live "/tournaments", TournamentsLive, :index

@@ -32,7 +32,7 @@ defmodule GamendWeb.Api.V1.GroupController do
   require Gamend.Groups.GroupType, as: GroupType
   require GamendWeb.UploadName, as: UploadName
   require GamendWeb.UrlParam, as: UrlParam
-  require GamendWeb.JoinOutcome, as: JoinOutcome
+  require Gamend.Groups.JoinOutcome, as: JoinOutcome
 
   tags(["Groups"])
 

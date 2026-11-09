@@ -19,6 +19,8 @@ defmodule GamendWeb.AdminLive.ChatReports do
   @form_keys ~w(duration scope scope_ref_id reason message notify_user notify_reporter
                 reporter_message)
 
+  require GamendWeb.AdminLive.ChatReportAction, as: ChatReportAction
+  require GamendWeb.AdminLive.BanDuration, as: BanDuration
   require GamendWeb.UrlParam, as: UrlParam
 
   use GamendWeb.UrlState,
@@ -33,8 +35,8 @@ defmodule GamendWeb.AdminLive.ChatReports do
   require Gamend.Bans.BanScope, as: BanScope
   require Gamend.Chat.ChatReportStatus, as: ChatReportStatus
 
-  @warn "warn"
-  @permanent "permanent"
+  @warn ChatReportAction.warn()
+  @permanent BanDuration.permanent()
 
   @impl true
   def mount(_params, _session, socket) do
@@ -136,7 +138,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
     |> assign(:form_error, nil)
   end
 
-  defp apply_action(socket, "dismiss", report, form) do
+  defp apply_action(socket, ChatReportAction.dismiss(), report, form) do
     finish(
       socket,
       report,
@@ -147,7 +149,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
     )
   end
 
-  defp apply_action(socket, "delete_message", report, form) do
+  defp apply_action(socket, ChatReportAction.delete_message(), report, form) do
     case delete_message(report.message_id) do
       {:error, reason} when reason != :not_found ->
         put_flash(socket, :error, gettext("Could not delete the message"))
@@ -178,7 +180,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
     )
   end
 
-  defp apply_action(socket, "mute", report, form) do
+  defp apply_action(socket, ChatReportAction.mute(), report, form) do
     scope = form["scope"] || BanScope.global()
     scope_ref_id = Gamend.Parse.blank_to_nil(String.trim(form["scope_ref_id"] || ""))
 
@@ -245,7 +247,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
 
   # ── form ──────────────────────────────────────────────────────────────────
 
-  defp new_form("mute", report) do
+  defp new_form(ChatReportAction.mute(), report) do
     %{
       "duration" => @permanent,
       "scope" => BanScope.global(),
@@ -262,7 +264,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
     |> reporter_defaults(report, ChatReportStatus.actioned())
   end
 
-  defp new_form("dismiss", report),
+  defp new_form(ChatReportAction.dismiss(), report),
     do: reporter_defaults(%{}, report, ChatReportStatus.dismissed())
 
   defp new_form(_delete_message, report),
@@ -285,9 +287,9 @@ defmodule GamendWeb.AdminLive.ChatReports do
     |> assign(:form_error, nil)
   end
 
-  defp action_title("mute"), do: gettext("Mute player")
+  defp action_title(ChatReportAction.mute()), do: gettext("Mute player")
   defp action_title(@warn), do: gettext("Warn player")
-  defp action_title("dismiss"), do: gettext("Dismiss report")
+  defp action_title(ChatReportAction.dismiss()), do: gettext("Dismiss report")
   defp action_title(_delete_message), do: gettext("Delete message")
 
   # ── data ──────────────────────────────────────────────────────────────────
@@ -460,7 +462,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                   <td class="text-right whitespace-nowrap">
                     <div :if={report.status in ~w(open reviewing)} class="flex justify-end gap-1">
                       <button
-                        :if={report.status == "open"}
+                        :if={report.status == ChatReportStatus.open()}
                         phx-click="review"
                         phx-value-id={report.id}
                         class="btn btn-ghost btn-xs"
@@ -469,7 +471,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                       </button>
                       <button
                         phx-click="open_action"
-                        phx-value-action="dismiss"
+                        phx-value-action={ChatReportAction.dismiss()}
                         phx-value-id={report.id}
                         class="btn btn-ghost btn-xs"
                       >
@@ -477,7 +479,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                       </button>
                       <button
                         phx-click="open_action"
-                        phx-value-action="warn"
+                        phx-value-action={ChatReportAction.warn()}
                         phx-value-id={report.id}
                         class="btn btn-surface btn-xs"
                       >
@@ -486,7 +488,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                       <%!-- With a reporter to answer, the modal is the confirm step. --%>
                       <button
                         phx-click="open_action"
-                        phx-value-action="delete_message"
+                        phx-value-action={ChatReportAction.delete_message()}
                         phx-value-id={report.id}
                         data-confirm={is_nil(report.reporter_id)}
                         class="btn btn-outline btn-error btn-xs"
@@ -495,7 +497,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                       </button>
                       <button
                         phx-click="open_action"
-                        phx-value-action="mute"
+                        phx-value-action={ChatReportAction.mute()}
                         phx-value-id={report.id}
                         class="btn btn-outline btn-warning btn-xs"
                       >
@@ -541,7 +543,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
             id="chat-report-action-form"
             class="mt-3 space-y-3"
           >
-            <div :if={@action == "mute"} class="flex flex-wrap gap-2">
+            <div :if={@action == ChatReportAction.mute()} class="flex flex-wrap gap-2">
               <div>
                 <label class="label text-xs">{gettext("Duration")}</label>
                 <select name="duration" class="select select-bordered select-sm">
@@ -568,7 +570,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
               </div>
             </div>
 
-            <div :if={@action == "mute" and @form["scope"] != "global"}>
+            <div :if={@action == ChatReportAction.mute() and @form["scope"] != BanScope.global()}>
               <label class="label text-xs">{gettext("Lobby / group / party id")}</label>
               <input
                 type="text"
@@ -579,7 +581,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
               />
             </div>
 
-            <div :if={@action == "mute"}>
+            <div :if={@action == ChatReportAction.mute()}>
               <label class="label text-xs">{gettext("Reason")}</label>
               <input
                 type="text"
@@ -589,7 +591,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
               />
             </div>
 
-            <div :if={@action == "mute"}>
+            <div :if={@action == ChatReportAction.mute()}>
               <label class="label cursor-pointer justify-start gap-2 text-sm">
                 <input
                   type="checkbox"
@@ -602,7 +604,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
               </label>
             </div>
 
-            <div :if={@action in ~w(mute warn)}>
+            <div :if={@action in [ChatReportAction.mute(), ChatReportAction.warn()]}>
               <label class="label text-xs">{gettext("Message to the player")}</label>
               <textarea
                 name="message"

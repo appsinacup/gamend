@@ -61,7 +61,7 @@ defmodule Gamend.ReadyChecks do
   require Gamend.ReadyChecks.CheckReason, as: CheckReason
   require Gamend.ReadyChecks.CheckStatus, as: CheckStatus
   require Gamend.ReadyChecks.ParticipantState, as: ParticipantState
-  require Gamend.RealtimeEvent, as: RealtimeEvent
+  require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
 
   @type subject :: Lobby.t() | Party.t() | :matchmaking
   @type scope :: :match | :party

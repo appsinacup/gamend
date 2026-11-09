@@ -1,5 +1,5 @@
 ---
-icon: hero-swatch
+icon: hero-swatch-solid
 ---
 
 # Configure Theme

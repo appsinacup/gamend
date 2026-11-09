@@ -1,5 +1,5 @@
 ---
-icon: hero-play-circle
+icon: hero-play-circle-solid
 ---
 
 # Steam OpenID Setup

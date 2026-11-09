@@ -20,6 +20,9 @@ defmodule Gamend.Quests do
   cannot advance their own quests. Core wires common events; games call it
   from their hooks for custom events.
 
+  The one exception is a code the server issued: a `code_only` quest is
+  finished and paid by `redeem_code/2`.
+
   ## Claiming
 
       {:ok, %{progress: progress, rewards: rewards}} = Quests.claim(user_id, "daily_win_3")
@@ -141,6 +144,7 @@ defmodule Gamend.Quests do
              completed_at: nil,
              claimed_at: nil,
              rewards_granted_at: nil,
+             code_id: nil,
              metadata: %{},
              inserted_at: ~U[1970-01-01 00:00:00Z],
              updated_at: ~U[1970-01-01 00:00:00Z]
@@ -174,6 +178,7 @@ defmodule Gamend.Quests do
            completed_at: nil,
            claimed_at: nil,
            rewards_granted_at: nil,
+           code_id: nil,
            metadata: %{},
            inserted_at: ~U[1970-01-01 00:00:00Z],
            updated_at: ~U[1970-01-01 00:00:00Z]
@@ -196,6 +201,36 @@ defmodule Gamend.Quests do
 
       _ ->
         raise "Gamend.Quests.admin_reset/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Whether a redeem page has anything to offer: a listed code-only quest is open.
+  """
+  @spec any_redeemable?() :: boolean()
+  def any_redeemable?() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :erlang.phash2(make_ref(), 2) == 0
+
+      _ ->
+        raise "Gamend.Quests.any_redeemable?/0 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    The active quests a reader who is not signed in may see: every one but those
+    only a code finishes, which list for a player once they redeem them.
+    
+  """
+  @spec catalog() :: [Gamend.Quests.Quest.t()]
+  def catalog() do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        []
+
+      _ ->
+        raise "Gamend.Quests.catalog/0 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -246,6 +281,7 @@ defmodule Gamend.Quests do
              completed_at: nil,
              claimed_at: nil,
              rewards_granted_at: nil,
+             code_id: nil,
              metadata: %{},
              inserted_at: ~U[1970-01-01 00:00:00Z],
              updated_at: ~U[1970-01-01 00:00:00Z]
@@ -272,6 +308,40 @@ defmodule Gamend.Quests do
 
       _ ->
         raise "Gamend.Quests.claimable_count/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Whether a code would be accepted from someone who has no quests yet: it
+    exists, is not revoked or used up, and its quest is open. What a page checks
+    before it makes a guest account for a visitor, so a typo makes no account.
+    
+  """
+  @spec code_open?(String.t()) :: boolean()
+  def code_open?(_token) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :erlang.phash2(make_ref(), 2) == 0
+
+      _ ->
+        raise "Gamend.Quests.code_open?/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    How many codes match (same filters as `list/2`).
+  """
+  @spec count_codes(
+          String.t(),
+          keyword()
+        ) :: non_neg_integer()
+  def count_codes(_quest_key, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.Quests.count_codes/2 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -355,6 +425,35 @@ defmodule Gamend.Quests do
   end
 
   @doc ~S"""
+    Makes one code with a chosen token. A token another code already has, even
+    on another quest, fails on `:token`.
+    
+  """
+  @spec create_code(Gamend.Quests.Quest.t(), map()) ::
+          {:ok, Gamend.Quests.QuestCode.t()} | {:error, :not_code_only | Ecto.Changeset.t()}
+  def create_code(_quest, _attrs) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok,
+         %Gamend.Quests.QuestCode{
+           id: "",
+           quest_key: "",
+           token: "",
+           lookup: "",
+           max_uses: nil,
+           uses: 0,
+           status: "active",
+           metadata: %{},
+           inserted_at: ~U[1970-01-01 00:00:00Z],
+           updated_at: ~U[1970-01-01 00:00:00Z]
+         }}
+
+      _ ->
+        raise "Gamend.Quests.create_code/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Creates a quest definition. Capped by the `max_quests` limit.
   """
   @spec create_quest(map()) :: {:ok, Gamend.Quests.Quest.t()} | {:error, term()}
@@ -378,6 +477,7 @@ defmodule Gamend.Quests do
            starts_at: nil,
            ends_at: nil,
            active: true,
+           code_only: false,
            metadata: %{},
            inserted_at: ~U[1970-01-01 00:00:00Z],
            updated_at: ~U[1970-01-01 00:00:00Z]
@@ -427,6 +527,7 @@ defmodule Gamend.Quests do
            starts_at: nil,
            ends_at: nil,
            active: true,
+           code_only: false,
            metadata: %{},
            inserted_at: ~U[1970-01-01 00:00:00Z],
            updated_at: ~U[1970-01-01 00:00:00Z]
@@ -452,6 +553,56 @@ defmodule Gamend.Quests do
   end
 
   @doc ~S"""
+    Makes `count` random codes, shown as `XXXX-XXXX-XXXX-XXXX`, and answers how
+    many it made. Capped at `max_codes_per_generate`, so a run finishes inside
+    one request; to have more, run it again.
+    
+    ## Options
+    - `:max_uses` — default `1`, `nil` for every player once
+    - `:metadata` — copied onto each player's progress row
+    
+  """
+  @spec generate_codes(Gamend.Quests.Quest.t(), integer(), keyword()) ::
+          {:ok, non_neg_integer()}
+          | {:error, :not_code_only | :invalid_count | :too_many_codes | Ecto.Changeset.t()}
+  def generate_codes(_quest, _count, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Quests.generate_codes/3 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    A code by id, or nil.
+  """
+  @spec get_code(Ecto.UUID.t()) :: Gamend.Quests.QuestCode.t() | nil
+  def get_code(_id) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        if :erlang.phash2(make_ref(), 2) == 0,
+          do: nil,
+          else: %Gamend.Quests.QuestCode{
+            id: "",
+            quest_key: "",
+            token: "",
+            lookup: "",
+            max_uses: nil,
+            uses: 0,
+            status: "active",
+            metadata: %{},
+            inserted_at: ~U[1970-01-01 00:00:00Z],
+            updated_at: ~U[1970-01-01 00:00:00Z]
+          }
+
+      _ ->
+        raise "Gamend.Quests.get_code/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Get a user's progress row for a quest's current period.
   """
   @spec get_progress(user_id(), String.t()) :: Gamend.Quests.QuestProgress.t() | nil
@@ -470,6 +621,7 @@ defmodule Gamend.Quests do
             completed_at: nil,
             claimed_at: nil,
             rewards_granted_at: nil,
+            code_id: nil,
             metadata: %{},
             inserted_at: ~U[1970-01-01 00:00:00Z],
             updated_at: ~U[1970-01-01 00:00:00Z]
@@ -505,6 +657,7 @@ defmodule Gamend.Quests do
             starts_at: nil,
             ends_at: nil,
             active: true,
+            code_only: false,
             metadata: %{},
             inserted_at: ~U[1970-01-01 00:00:00Z],
             updated_at: ~U[1970-01-01 00:00:00Z]
@@ -540,6 +693,7 @@ defmodule Gamend.Quests do
             starts_at: nil,
             ends_at: nil,
             active: true,
+            code_only: false,
             metadata: %{},
             inserted_at: ~U[1970-01-01 00:00:00Z],
             updated_at: ~U[1970-01-01 00:00:00Z]
@@ -671,6 +825,28 @@ defmodule Gamend.Quests do
 
       _ ->
         raise "Gamend.Quests.host_visible/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    One quest's codes, newest first.
+    
+    ## Options
+    - `:search` — the exact code, typed any way a player could type it
+    - `:page` / `:page_size`
+    
+  """
+  @spec list_codes(
+          String.t(),
+          keyword()
+        ) :: [Gamend.Quests.QuestCode.t()]
+  def list_codes(_quest_key, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        []
+
+      _ ->
+        raise "Gamend.Quests.list_codes/2 is a stub - only available at runtime on Gamend"
     end
   end
 
@@ -887,6 +1063,76 @@ defmodule Gamend.Quests do
   end
 
   @doc ~S"""
+    Redeems a code for a player: finishes its `code_only` quest and pays it at
+    once, whatever the quest's `auto_claim` says. Spaces, dashes, letter case and
+    full-width characters in `token` do not matter.
+    
+    `before_quest_claim` runs first, given a `%QuestProgress{}` not yet written
+    (no `id`, `code_id` set, the code's metadata on it), so a veto spends nothing.
+    It is where a game refuses what the code alone does not: a guest on a shared
+    code, a player below some level.
+    
+    A guest may redeem any code unless the host requires an account to claim
+    (`Gamend.AccountRequired`, `:quest_claims`). Guests are not stopped from
+    redeeming a shared code on several devices and signing each in to one
+    account, since the wallet moves with a guest; veto it in the hook if a game's
+    currency needs that.
+    
+    Answers what `claim/3` answers, or `{:error, reason}`: `:code_not_found`
+    (unknown, revoked, used up, disabled, out of its window: one answer for every
+    miss), `:already_redeemed` (this player has this quest, by any code),
+    `:account_required`, `{:hook_rejected, reason}`.
+    
+  """
+  @spec redeem_code(user_id(), String.t()) ::
+          {:ok, %{progress: Gamend.Quests.QuestProgress.t(), rewards: [map()]}}
+          | {:error,
+             :code_not_found | :already_redeemed | :account_required | {:hook_rejected, term()}}
+  def redeem_code(_user_id, _token) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Quests.redeem_code/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    What a redeem page lists: the quests codes can finish now, each with this
+    viewer's row if they have redeemed it. `user_id` may be nil. A `hidden` quest
+    stays off the list until redeemed, while its codes work as usual: a key the
+    admin does not want advertised.
+    
+    ## Options
+    - `:quest` — just this quest key, what a link to one uses
+    - `:page` / `:page_size`
+    
+  """
+  @spec redeemable(
+          user_id() | nil,
+          keyword()
+        ) :: %{
+          entries: [
+            %{
+              quest: Gamend.Quests.Quest.t(),
+              progress: Gamend.Quests.QuestProgress.t() | nil,
+              claimable: boolean()
+            }
+          ],
+          total: non_neg_integer()
+        }
+  def redeemable(_user_id, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Quests.redeemable/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     The quest with `%{n}` replaced by its resolved counter, untranslated.
     
     For consumers that emit the stored string as-is. Anything that translates
@@ -973,6 +1219,35 @@ defmodule Gamend.Quests do
   end
 
   @doc ~S"""
+    Revokes a code or restores it. Stopping every code of a quest at once is
+    unticking the quest's `active`.
+    
+  """
+  @spec set_code_status(Ecto.UUID.t(), String.t()) ::
+          {:ok, Gamend.Quests.QuestCode.t()} | {:error, :code_not_found | :invalid_state}
+  def set_code_status(_code_id, _status) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        {:ok,
+         %Gamend.Quests.QuestCode{
+           id: "",
+           quest_key: "",
+           token: "",
+           lookup: "",
+           max_uses: nil,
+           uses: 0,
+           status: "active",
+           metadata: %{},
+           inserted_at: ~U[1970-01-01 00:00:00Z],
+           updated_at: ~U[1970-01-01 00:00:00Z]
+         }}
+
+      _ ->
+        raise "Gamend.Quests.set_code_status/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Aggregate quest progress counts for the public stats endpoint.
     
     Grouped by status in one query — `quest_progress` carries a partial index on
@@ -1033,6 +1308,7 @@ defmodule Gamend.Quests do
            starts_at: nil,
            ends_at: nil,
            active: true,
+           code_only: false,
            metadata: %{},
            inserted_at: ~U[1970-01-01 00:00:00Z],
            updated_at: ~U[1970-01-01 00:00:00Z]

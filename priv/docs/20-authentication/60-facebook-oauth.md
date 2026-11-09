@@ -1,5 +1,5 @@
 ---
-icon: hero-user-group
+icon: hero-user-group-solid
 ---
 
 # Facebook OAuth Setup

@@ -20,6 +20,10 @@ defmodule Gamend.Quests.Quest do
   - `auto_claim` — grant rewards on completion without a claim step
   - `hidden` — details withheld until earned (a teaser); the row still lists
   - `active` — inactive quests never advance and are not listed
+  - `code_only` — nothing but a redemption code finishes it
+    (`Gamend.Quests.redeem_code/2`). It has no objectives, never resets, and
+    sits in no group or chain, which keeps the event engine, periods and
+    collapsing out of it. It lists for a player only once they redeem it
 
   ## Grouping, which has three unrelated forms
 
@@ -75,6 +79,7 @@ defmodule Gamend.Quests.Quest do
     field :starts_at, :utc_datetime
     field :ends_at, :utc_datetime
     field :active, :boolean, default: true
+    field :code_only, :boolean, default: false
     field :metadata, :map, default: %{}
 
     # Which run of a `repeat` quest the player is on, for the `%{n}` in the
@@ -95,18 +100,19 @@ defmodule Gamend.Quests.Quest do
   @required_fields ~w(key title)a
   @optional_fields ~w(description icon_url sort_order hidden group_key group_title
                       reset reset_interval_days category auto_claim
-                      prerequisite_quest_key starts_at ends_at active metadata)a
+                      prerequisite_quest_key starts_at ends_at active code_only metadata)a
 
   @doc "The valid reset cycles."
   def resets, do: @resets
 
   @doc false
   def changeset(quest, attrs) do
-    quest
-    |> cast(attrs, @required_fields ++ @optional_fields)
-    |> cast_embed(:objectives, required: true)
+    changeset = cast(quest, attrs, @required_fields ++ @optional_fields)
+
+    changeset
+    |> cast_embed(:objectives, required: get_field(changeset, :code_only) != true)
     |> cast_embed(:rewards)
-    |> validate_required(@required_fields)
+    |> validate_required([:code_only | @required_fields])
     |> validate_length(:key, min: 1, max: Gamend.Limits.get(:max_quest_key))
     |> validate_format(:key, ~r/^[a-z0-9][a-z0-9_-]*$/,
       message: "must be lowercase letters, digits, _ or -"
@@ -122,8 +128,41 @@ defmodule Gamend.Quests.Quest do
     |> validate_reward_count()
     |> validate_window()
     |> validate_no_self_prerequisite()
+    |> validate_code_only()
     |> validate_metadata_size(:metadata)
     |> unique_constraint(:key)
+  end
+
+  # What keeps a code-only quest out of the event engine, periods, chains and
+  # groups: no event can touch it and its only possible row is the "static" one.
+  defp validate_code_only(changeset) do
+    if get_field(changeset, :code_only) do
+      changeset
+      |> validate_code_only_reset()
+      |> validate_code_only_objectives()
+      |> validate_code_only_unset(:group_key)
+      |> validate_code_only_unset(:prerequisite_quest_key)
+    else
+      changeset
+    end
+  end
+
+  defp validate_code_only_reset(changeset) do
+    if get_field(changeset, :reset) == QuestReset.never(),
+      do: changeset,
+      else: add_error(changeset, :reset, "must be \"never\" on a code-only quest")
+  end
+
+  defp validate_code_only_objectives(changeset) do
+    if get_field(changeset, :objectives, []) == [],
+      do: changeset,
+      else: add_error(changeset, :objectives, "must be empty on a code-only quest")
+  end
+
+  defp validate_code_only_unset(changeset, field) do
+    if get_field(changeset, field) in [nil, ""],
+      do: changeset,
+      else: add_error(changeset, field, "must be empty on a code-only quest")
   end
 
   # An "interval" reset is meaningless without its cadence; other resets must
@@ -210,6 +249,7 @@ defimpl Jason.Encoder, for: Gamend.Quests.Quest do
         :starts_at,
         :ends_at,
         :active,
+        :code_only,
         :metadata,
         :inserted_at,
         :updated_at

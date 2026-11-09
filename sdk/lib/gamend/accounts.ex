@@ -1871,12 +1871,7 @@ defmodule Gamend.Accounts do
           (String.t() -> String.t()),
           module()
         ) :: :ok
-  def notify_existing_account(
-        _email,
-        _confirmation_url_fun,
-        _login_url_fun,
-        _notifier \\ Gamend.Accounts.UserNotifier
-      ) do
+  def notify_existing_account(_email, _confirmation_url_fun, _login_url_fun, _notifier \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
         :ok
@@ -1976,11 +1971,7 @@ defmodule Gamend.Accounts do
           (String.t() -> String.t()),
           module()
         ) :: {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t() | term()}
-  def register_unconfirmed_user_and_deliver(
-        _attrs,
-        _confirmation_url_fun,
-        _notifier \\ Gamend.Accounts.UserNotifier
-      ) do
+  def register_unconfirmed_user_and_deliver(_attrs, _confirmation_url_fun, _notifier \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
         {:ok,
@@ -2176,11 +2167,7 @@ defmodule Gamend.Accounts do
     
   """
   @spec resend_confirmation(String.t(), (String.t() -> String.t()), module()) :: :ok
-  def resend_confirmation(
-        _email,
-        _confirmation_url_fun,
-        _notifier \\ Gamend.Accounts.UserNotifier
-      ) do
+  def resend_confirmation(_email, _confirmation_url_fun, _notifier \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
         :ok
@@ -2773,12 +2760,7 @@ defmodule Gamend.Accounts do
           (String.t() -> String.t()),
           module()
         ) :: {:ok, Gamend.Accounts.User.t()} | {:error, Ecto.Changeset.t() | term()}
-  def upgrade_anonymous_user_and_deliver(
-        _user,
-        _attrs,
-        _confirmation_url_fun,
-        _notifier \\ Gamend.Accounts.UserNotifier
-      ) do
+  def upgrade_anonymous_user_and_deliver(_user, _attrs, _confirmation_url_fun, _notifier \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
         {:ok,

@@ -3,9 +3,5 @@ defmodule Gamend.Payments.StripeKeyMode do
   What a Stripe API key is for, read from its prefix.
   """
 
-  @all ~w(test live unknown)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(test live unknown)
 end

@@ -11,9 +11,10 @@ defmodule Gamend.Accounts.UserToken do
   import Ecto.Query
   alias Gamend.Accounts.UserToken
 
+  require Gamend.Accounts.IntervalUnit, as: IntervalUnit
   require Gamend.Accounts.TokenContext, as: TokenContext
 
-  @day "day"
+  @day IntervalUnit.day()
 
   @hash_algorithm :sha256
   @rand_size 32

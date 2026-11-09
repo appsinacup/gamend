@@ -42,7 +42,7 @@ defmodule GamendWeb.LobbyChannel do
   alias GamendWeb.Serializers
 
   require GamendWeb.ChannelError, as: ChannelError
-  require Gamend.RealtimeEvent, as: RealtimeEvent
+  require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
 
   # A banned account joins no channel but its own user channel.
   @impl true

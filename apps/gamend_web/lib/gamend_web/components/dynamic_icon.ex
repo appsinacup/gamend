@@ -5,7 +5,7 @@ defmodule GamendWeb.Components.DynamicIcon do
 
   Usage:
 
-      <.dynamic_icon name={"hero-book-open"} class="w-5 h-5" />
+      <.dynamic_icon name={"hero-book-open-solid"} class="w-5 h-5" />
 
   Behavior:
   - Loads the raw SVG at runtime from priv/static/heroicons/<name>.svg
@@ -95,7 +95,7 @@ defmodule GamendWeb.Components.DynamicIcon do
   defp cache_key(name), do: {__MODULE__, name}
 
   defp read_svg_from_priv(name) do
-    # Map name like 'hero-book-open' to a file path under priv/static/heroicons
+    # Map name like 'hero-book-open-solid' to a file path under priv/static/heroicons
     path = Path.join(:code.priv_dir(:gamend_web), "static/heroicons/#{name}.svg")
 
     case File.read(path) do

@@ -1,5 +1,5 @@
 ---
-icon: hero-rocket-launch
+icon: hero-rocket-launch-solid
 ---
 
 # Getting started

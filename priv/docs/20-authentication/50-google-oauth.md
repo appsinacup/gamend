@@ -1,5 +1,5 @@
 ---
-icon: hero-globe-alt
+icon: hero-globe-alt-solid
 ---
 
 # Google OAuth Setup

@@ -1,5 +1,5 @@
 ---
-icon: hero-language
+icon: hero-language-solid
 ---
 
 # Localization

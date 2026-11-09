@@ -42,7 +42,7 @@ defmodule GamendWeb.UserChannel do
   import GamendWeb.ChannelPush
   require Logger
 
-  require Gamend.RealtimeEvent, as: RealtimeEvent
+  require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
 
   intercept [RealtimeEvent.updated(), RealtimeEvent.friend_updated()]
 

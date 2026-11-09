@@ -11,6 +11,7 @@ defmodule GamendWeb.GroupsLive do
   alias GamendWeb.OnMount.SeoTitle
   alias GamendWeb.Plugs.FeatureGate
 
+  require Gamend.Groups.GroupRole, as: GroupRole
   require Gamend.Groups.GroupType, as: GroupType
   require GamendWeb.FilterValue, as: FilterValue
   require Gamend.SortKey, as: SortKey
@@ -591,7 +592,7 @@ defmodule GamendWeb.GroupsLive do
         phx-value-id={group.id}
       >
         <:badges>
-          <%= if group.type == "public" do %>
+          <%= if group.type == GroupType.public() do %>
             <span class="badge badge-success">{gettext("Public")}</span>
           <% else %>
             <span class="badge badge-warning">{gettext("Private")}</span>
@@ -638,7 +639,7 @@ defmodule GamendWeb.GroupsLive do
           <span class="badge badge-success badge-sm">{gettext("Member")}</span>
         <% MapSet.member?(@pending_request_ids, @group.id) -> %>
           <span class="badge badge-warning badge-sm">{gettext("Pending")}</span>
-        <% @group.type == "public" -> %>
+        <% @group.type == GroupType.public() -> %>
           <button
             phx-click="join_group"
             phx-value-id={@group.id}
@@ -646,7 +647,7 @@ defmodule GamendWeb.GroupsLive do
           >
             {gettext("Join")}
           </button>
-        <% @group.type == "private" -> %>
+        <% @group.type == GroupType.private() -> %>
           <button
             phx-click="request_join"
             phx-value-id={@group.id}
@@ -668,7 +669,7 @@ defmodule GamendWeb.GroupsLive do
     ~H"""
     <%!-- The title row (Back, icon, name) is the page's; this is the group's state. --%>
     <div class="flex flex-wrap items-center gap-2 mb-6">
-      <%= if @selected_group.type == "public" do %>
+      <%= if @selected_group.type == GroupType.public() do %>
         <span class="badge badge-success">{gettext("Public")}</span>
       <% else %>
         <span class="badge badge-warning">{gettext("Private")}</span>
@@ -743,7 +744,7 @@ defmodule GamendWeb.GroupsLive do
                   </div>
                 </td>
                 <td class="text-end">
-                  <%= if member.role == "admin" do %>
+                  <%= if member.role == GroupRole.admin() do %>
                     <span class="badge badge-primary badge-sm">{gettext("Admin")}</span>
                   <% else %>
                     <span class="badge badge-ghost badge-sm">{gettext("Member")}</span>
@@ -796,7 +797,7 @@ defmodule GamendWeb.GroupsLive do
           </button>
         <% MapSet.member?(@pending_request_ids, @selected_group.id) -> %>
           <span class="badge badge-warning">{gettext("Pending")}</span>
-        <% @selected_group.type == "public" -> %>
+        <% @selected_group.type == GroupType.public() -> %>
           <button
             phx-click="join_group"
             phx-value-id={@selected_group.id}
@@ -805,7 +806,7 @@ defmodule GamendWeb.GroupsLive do
           >
             {gettext("Join")}
           </button>
-        <% @selected_group.type == "private" -> %>
+        <% @selected_group.type == GroupType.private() -> %>
           <button
             phx-click="request_join"
             phx-value-id={@selected_group.id}

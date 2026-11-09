@@ -15,7 +15,7 @@ defmodule GamendWeb.Reports.PageKind do
   def description, do: gettext("Something broke or looks wrong")
 
   @impl true
-  def icon, do: "hero-bug-ant"
+  def icon, do: "hero-bug-ant-solid"
 
   @impl true
   def subject_component, do: GamendWeb.Reports.PageSubject

@@ -20,6 +20,7 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
   alias Gamend.Notifications.Preferences
   alias GamendWeb.NotificationEmail
 
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
   require Gamend.Notifications.PreferenceGroup, as: PreferenceGroup
   require Gamend.Notifications.PreferenceSwitch, as: PreferenceSwitch
 
@@ -49,7 +50,7 @@ defmodule GamendWeb.UserLive.Settings.NotificationsTab do
 
   def tab(assigns) do
     ~H"""
-    <div :if={@settings_tab == "notifications"} id="notifications-settings">
+    <div :if={@settings_tab == SettingsTab.notifications()} id="notifications-settings">
       <div class="card bg-base-200 p-4 rounded-lg mt-6 space-y-4">
         <div>
           <div class="font-semibold text-lg">{gettext("Notifications")}</div>

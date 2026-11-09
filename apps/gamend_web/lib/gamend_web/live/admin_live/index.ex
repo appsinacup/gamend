@@ -29,477 +29,498 @@ defmodule GamendWeb.AdminLive.Index do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.admin_header title="Admin Dashboard" icon="hero-squares-2x2" color="primary" back={nil}>
+        <.admin_header
+          title="Admin Dashboard"
+          icon="hero-squares-2x2-solid"
+          color="primary"
+          back={nil}
+        >
           <:subtitle>System administration</:subtitle>
         </.admin_header>
 
-        <div
-          id="admin-cards"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-        >
-          <.admin_card page="/admin/users" value={@users_count}>
-            <div>With password: {@users_password}</div>
-            <div>Google: {@users_google}</div>
-            <div>Facebook: {@users_facebook}</div>
-            <div>GitHub: {@users_github}</div>
-            <div>Discord: {@users_discord}</div>
-            <div>Apple: {@users_apple}</div>
-            <div>Steam: {@users_steam}</div>
-            <div>Device-linked: {@users_device}</div>
-          </.admin_card>
+        <div id="admin-cards" class="space-y-8">
+          <.admin_section title="Players">
+            <.admin_card page="/admin/users" value={@users_count}>
+              <div>With password: {@users_password}</div>
+              <div>Google: {@users_google}</div>
+              <div>Facebook: {@users_facebook}</div>
+              <div>GitHub: {@users_github}</div>
+              <div>Discord: {@users_discord}</div>
+              <div>Apple: {@users_apple}</div>
+              <div>Steam: {@users_steam}</div>
+              <div>Device-linked: {@users_device}</div>
+            </.admin_card>
 
-          <.admin_card
-            page="/admin/users"
-            title="Registration"
-            icon="hero-user-plus"
-            color="emerald"
-          >
-            <div class="font-semibold">Today: {@snapshot.activity.new_users_1d}</div>
-            <div class="font-semibold mt-2">
-              Last 7 days: {@snapshot.activity.new_users_7d}
-            </div>
-            <div class="font-semibold mt-2">
-              Last 30 days: {@snapshot.activity.new_users_30d}
-            </div>
-            <%= if @users_unactivated > 0 do %>
-              <div class="mt-3 pt-2 border-t border-base-300">
-                <.link
-                  navigate={~p"/admin/users?filter=unactivated"}
-                  class="inline-flex items-center gap-1.5 text-warning font-semibold hover:underline"
-                >
-                  <.icon name="hero-exclamation-triangle" class="w-4 h-4" />
-                  Pending activation: {@users_unactivated}
-                </.link>
-              </div>
-            <% end %>
-          </.admin_card>
-
-          <.admin_card page="/admin/sessions" value={@sessions_count}>
-            <div>Signed-in browser sessions</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/analytics" title="Activity" icon="hero-bolt">
-            <div class="font-semibold">Today (DAU): {@snapshot.activity.dau}</div>
-            <div class="font-semibold mt-2">Last 7 days (WAU): {@snapshot.activity.wau}</div>
-            <div class="font-semibold mt-2">Last 30 days (MAU): {@snapshot.activity.mau}</div>
-            <div class="mt-3 pt-2 border-t border-base-300">
-              Stickiness: {pct(@analytics_stats.stickiness)}
-            </div>
-            <div>
-              D1 / D7 / D30: {pct(@analytics_stats.d1)} / {pct(@analytics_stats.d7)} / {pct(
-                @analytics_stats.d30
-              )}
-            </div>
-            <div>Payer conversion (30d): {pct(@analytics_stats.conversion_30d)}</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/lobbies" value={@lobbies_count}>
-            <div>Hostless: {@lobbies_hostless}</div>
-            <div>Hidden: {@lobbies_hidden}</div>
-            <div>Locked: {@lobbies_locked}</div>
-            <div>With password: {@lobbies_passworded}</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/leaderboards" value={@leaderboards_count}>
-            <div>Scores total: {@leaderboard_records}</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/tournaments" value={@tournaments_count}>
-            <div>
-              Running: {state_count(@tournament_stats.tournaments, "running")} · Registration: {state_count(
-                @tournament_stats.tournaments,
-                "registration"
-              )}
-            </div>
-            <div>
-              Scheduled: {state_count(@tournament_stats.tournaments, "scheduled")} · Finished: {state_count(
-                @tournament_stats.tournaments,
-                "finished"
-              )}
-            </div>
-            <div>Participants: {entries_total(@tournament_stats.entries)}</div>
-            <div>
-              Still in: {state_count(@tournament_stats.entries, "active")} · Eliminated: {state_count(
-                @tournament_stats.entries,
-                "eliminated"
-              )}
-            </div>
-            <div>
-              Champions: {state_count(@tournament_stats.entries, "winner")} · Awaiting draw: {state_count(
-                @tournament_stats.entries,
-                "registered"
-              )}
-            </div>
-            <div>
-              Matches: {@tournament_stats.matches.open} open / {@tournament_stats.matches.total}
-            </div>
-            <div :if={@tournament_stats.matches.overdue > 0} class="text-warning">
-              Past deadline: {@tournament_stats.matches.overdue}
-            </div>
-          </.admin_card>
-
-          <.admin_card page="/admin/matchmaking" value={@matchmaking_stats.queued}>
-            <div>In queue now: {@matchmaking_stats.queued}</div>
-            <div>
-              Matched: {@matchmaking_stats.matched} · Cancelled: {@matchmaking_stats.cancelled}
-            </div>
-            <div>Active queues: {length(@matchmaking_stats.queues)}</div>
-            <div>
-              Ready checks 24h: {Map.get(@ready_check_stats, "passed", 0)} passed · {Map.get(
-                @ready_check_stats,
-                "failed",
-                0
-              )} failed
-            </div>
-          </.admin_card>
-
-          <.admin_card page="/admin/groups" value={@groups_count}>
-            <div>Public: {@groups_public}</div>
-            <div>Private: {@groups_private}</div>
-            <div>Hidden: {@groups_hidden}</div>
-            <div>Total members: {@groups_members}</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/parties" value={@parties_count}>
-            <div>Total members: {@parties_members}</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/friends" value={@friends_count}>
-            <div>Friendships</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/blacklist" value={@blacklist_count}>
-            <div>Blocks between players</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/chat" value={@chat_count}>
-            <div>Users who wrote: {@chat_senders}</div>
-            <div>Users who never wrote: {@chat_silent}</div>
-            <div>In lobbies: {@chat_by_lobby}</div>
-            <div>In groups: {@chat_by_group}</div>
-            <div>Friend DMs: {@chat_by_friend}</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/chat/reports" title="Chat moderation" value={@open_reports}>
-            <div>Open reports</div>
-            <div>
-              Active mutes:
-              <.link navigate={~p"/admin/bans?kind=chat"} class="link">{@active_mutes}</.link>
-            </div>
-          </.admin_card>
-
-          <.admin_card page="/admin/chat/filter">
-            <div>Blocked words, and a box to test a phrase</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/reports" value={@content_reports}>
-            <div>Open reports</div>
-            <div>Fixed: {Map.get(@report_counts, "fixed", 0)}</div>
-            <div>Won't fix: {Map.get(@report_counts, "wontfix", 0)}</div>
-            <div>Duplicate: {Map.get(@report_counts, "duplicate", 0)}</div>
-          </.admin_card>
-
-          <.admin_card
-            page="/admin/translations"
-            value={ngettext("%{count} language", "%{count} languages", length(@translation_stats))}
-          >
-            <div :for={stats <- least_translated(@translation_stats)} class="flex items-center gap-2">
-              <span class="font-mono font-semibold w-12">{String.upcase(stats.locale)}</span>
-              <div class="flex-1 bg-base-300 rounded-full h-1.5">
-                <div
-                  class={[
-                    "h-1.5 rounded-full transition-all",
-                    if(stats.percent == 100.0, do: "bg-success", else: "bg-warning")
-                  ]}
-                  style={"width: #{stats.percent}%"}
-                >
-                </div>
-              </div>
-              <span class="font-mono text-xs w-10 text-right">{stats.percent}%</span>
-            </div>
-            <div :if={translations_hidden(@translation_stats) > 0}>
-              +{translations_hidden(@translation_stats)} more
-            </div>
-          </.admin_card>
-
-          <.admin_card page="/admin/kv" value={@kv_count}>
-            <div>Global entries: {@kv_global}</div>
-            <div>User entries: {@kv_user}</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/quests" value={@quest_stats.definitions}>
-            <div>Active: {@quest_stats.active_definitions}</div>
-            <div>Completions today: {@quest_stats.completions_today}</div>
-            <div>Claims today: {@quest_stats.claims_today}</div>
-            <div>Claimable now: {@quest_stats.claimable_now}</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/notifications" value={@notifications_count}>
-            <div>In-app notifications stored</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/push" value={@push_stats.live}>
-            <div>Disabled: {@push_stats.disabled}</div>
-            <div :for={{platform, n} <- @push_stats.by_platform}>{platform}: {n}</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/connections" value={@conn_stats.total_connections}>
-            <div>WS sockets: {@conn_stats.ws_sockets}</div>
-            <div>WS channels: {@conn_stats.total_channels}</div>
-            <div>LiveViews: {@conn_stats.live_views}</div>
-            <div>WebRTC: {@conn_stats.webrtc_peers}</div>
-          </.admin_card>
-
-          <.admin_card
-            page="/admin/system"
-            value={GamendWeb.ConnectionTracker.format_uptime(@sys_stats.uptime_seconds)}
-          >
-            <div>OTP: {@sys_stats.otp_release}</div>
-            <div>Schedulers: {@sys_stats.schedulers}</div>
-            <div>Node: {@sys_stats.node}</div>
-            <div>
-              Cluster: {ngettext("%{count} node", "%{count} nodes", @sys_stats.cluster_size)}
-            </div>
-            <div>Memory: {@sys_stats.memory_total_mb} MB</div>
-            <div>
-              Processes: {@sys_stats.process_count} / {format_number(@sys_stats.process_limit)}
-            </div>
-          </.admin_card>
-
-          <.admin_card page="/admin/runtime">
-            <div>Read-only; reflects the running node</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/dashboard">
-            <div>Processes, ports, ETS and metrics</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/config">
-            <div>Limits, hooks and plugins</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/settings">
-            <div>Every setting the server declares</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/rate_limiting">
-            <div class="flex justify-between items-center">
-              <span>Active IP bans</span>
-              <span class={[
-                "badge badge-sm font-mono",
-                if(@ip_ban_count > 0, do: "badge-error", else: "badge-ghost opacity-50")
-              ]}>
-                {@ip_ban_count}
-              </span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span>Rate Limited (1m)</span>
-              <span class={[
-                "badge badge-sm font-mono",
-                if(@rate_stats.limited > 0, do: "badge-warning", else: "badge-ghost opacity-50")
-              ]}>
-                {@rate_stats.limited}
-              </span>
-            </div>
-          </.admin_card>
-
-          <.admin_card page="/admin/bans">
-            <div class="flex justify-between items-center">
-              <span>Banned accounts</span>
-              <span class={[
-                "badge badge-sm font-mono",
-                if(@account_ban_count > 0, do: "badge-error", else: "badge-ghost opacity-50")
-              ]}>
-                {@account_ban_count}
-              </span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span>Banned IPs</span>
-              <span class={[
-                "badge badge-sm font-mono",
-                if(@ip_ban_count > 0, do: "badge-error", else: "badge-ghost opacity-50")
-              ]}>
-                {@ip_ban_count}
-              </span>
-            </div>
-          </.admin_card>
-
-          <.admin_card page="/admin/geo" value={format_number(@geo_total)}>
-            <div>
-              {countries_label(length(@geo_stats))} &middot; {if(@geoip_available?,
-                do: "MMDB",
-                else: "CF header"
-              )}
-            </div>
-            <div class="flex justify-between items-center">
-              <span>Last hour</span>
-              <span class="font-mono font-semibold">
-                {format_number(@geo_total_1h)} reqs &middot; {countries_label(length(@geo_stats_1h))}
-              </span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span>Crawlers, last hour</span>
-              <span class="font-mono font-semibold">
-                {format_number(@geo_crawlers_1h)} &middot; {if(@geo_total_1h > 0,
-                  do: round(@geo_crawlers_1h / @geo_total_1h * 100),
-                  else: 0
-                )}%
-              </span>
-            </div>
-            <%= for {country, count} <- Enum.take(@geo_stats_1h, 3) do %>
-              <div class="flex justify-between items-center">
-                <span class="font-mono">{GamendWeb.AdminLive.Shared.country_flag(country)} {country}</span>
-                <span class="font-mono">{format_number(count)} (1h)</span>
-              </div>
-            <% end %>
-            <div :if={length(@geo_stats_1h) > 3} class="text-center opacity-50">
-              +{length(@geo_stats_1h) - 3} more
-            </div>
-          </.admin_card>
-
-          <.admin_card page="/admin/results" value={@result_counts.total} unit="plays">
-            <div class="flex justify-between">
-              <span>Open</span>
-              <span class="font-mono">{@result_counts.open}</span>
-            </div>
-          </.admin_card>
-
-          <.admin_card
-            page="/admin/logs"
-            value={@log_recent_errors}
-            unit="errors (1h)"
-            value_class={if(@log_recent_errors > 0, do: "text-error", else: "text-success")}
-          >
-            <div class="flex justify-between">
-              <span>Buffered</span>
-              <span class="font-mono">{@log_total_buffered}</span>
-            </div>
-            <div :for={{level, count} <- @log_level_counts} class="flex justify-between">
-              <span>{level}</span>
-              <span class={[
-                "font-mono",
-                level == :error && "text-error",
-                level == :warning && "text-warning"
-              ]}>
-                {count}
-              </span>
-            </div>
-          </.admin_card>
-
-          <.admin_card
-            page="/admin/oban"
-            title="Background jobs"
-            value={@oban_stats.total}
-            unit="jobs"
-          >
-            <div class="flex justify-between">
-              <span>Executing</span>
-              <span class="font-mono">{@oban_stats.executing}</span>
-            </div>
-            <div class="flex justify-between">
-              <span>Available</span>
-              <span class="font-mono">{@oban_stats.available}</span>
-            </div>
-            <div class="flex justify-between">
-              <span>Scheduled</span>
-              <span class="font-mono">{@oban_stats.scheduled}</span>
-            </div>
-            <div class="flex justify-between">
-              <span>Retryable</span>
-              <span class={["font-mono", @oban_stats.retryable > 0 && "text-warning"]}>
-                {@oban_stats.retryable}
-              </span>
-            </div>
-          </.admin_card>
-
-          <.admin_card page="/admin/storage" value={@storage_info.adapter}>
-            <div class="flex justify-between">
-              <span>Target</span>
-              <span class="font-mono truncate ml-2">{@storage_info.detail}</span>
-            </div>
-          </.admin_card>
-
-          <.admin_card page="/admin/retention">
-            <div>What is kept, for how long, and the last sweep</div>
-          </.admin_card>
-
-          <.admin_card page="/admin/github" value={@github_installations}>
-            <div>Every installation of the server's GitHub App</div>
-          </.admin_card>
-
-          <.admin_card
-            page="/admin/economy"
-            value={@economy_stats.wallets}
-            unit="wallets"
-          >
-            <div class="flex justify-between">
-              <span>Ledger entries</span>
-              <span class="font-mono">{@economy_stats.ledger}</span>
-            </div>
-          </.admin_card>
-
-          <.admin_card page="/admin/payments" value={@payments_stats.purchases}>
-            <div>Completed: {@payments_stats.completed_purchases}</div>
-            <div>Products: {@payments_stats.products}</div>
-            <div>Provider SKUs: {@payments_stats.provider_products}</div>
-            <div>Active entitlements: {@payments_stats.active_entitlements}</div>
-          </.admin_card>
-
-          <.admin_card
-            page="/admin/rate_limiting"
-            title="Cache & limits"
-            icon="hero-bolt"
-            color="lime"
-            value={cache_hit_rate_label(@cache_stats)}
-            unit="hit rate since boot"
-          >
-            <div
-              :for={row <- Enum.take(@cache_stats.cache, 6)}
-              class="flex justify-between"
+            <.admin_card
+              page="/admin/users"
+              title="Registration"
+              icon="hero-user-plus-solid"
+              color="emerald"
             >
-              <span>{row.prefix}</span>
-              <span class="font-mono">
-                {row.hits}/{row.hits + row.misses} ({round(row.hit_rate * 100)}%)
-              </span>
-            </div>
-            <div class="flex justify-between border-t border-base-300 pt-1 mt-1">
-              <span>Rate-limit denials</span>
-              <span class="font-mono">
-                {@cache_stats.rate_limit_denies |> Map.values() |> Enum.sum()}
-              </span>
-            </div>
-            <div class="flex justify-between">
-              <span>Async overloads</span>
-              <span class={[
-                "font-mono",
-                @cache_stats.async_overloads > 0 && "text-warning"
-              ]}>
-                {@cache_stats.async_overloads}
-              </span>
-            </div>
-          </.admin_card>
-
-          <.admin_card
-            :for={card <- @host}
-            title={card.title}
-            path={card.path}
-            icon={card[:icon]}
-            color={card[:color]}
-            value={card[:value]}
-          >
-            <div :for={line <- card[:lines] || []}>
-              <%= case line do %>
-                <% text when is_binary(text) -> %>
-                  {text}
-                <% {label, nil, path} -> %>
-                  <.link navigate={path} class="link">{label}</.link>
-                <% {label, value, path} -> %>
-                  {label}: <.link navigate={path} class="link">{value}</.link>
-                <% {label, value} -> %>
-                  {label}: {value}
+              <div class="font-semibold">Today: {@snapshot.activity.new_users_1d}</div>
+              <div class="font-semibold mt-2">
+                Last 7 days: {@snapshot.activity.new_users_7d}
+              </div>
+              <div class="font-semibold mt-2">
+                Last 30 days: {@snapshot.activity.new_users_30d}
+              </div>
+              <%= if @users_unactivated > 0 do %>
+                <div class="mt-3 pt-2 border-t border-base-300">
+                  <.link
+                    navigate={~p"/admin/users?filter=unactivated"}
+                    class="inline-flex items-center gap-1.5 text-warning font-semibold hover:underline"
+                  >
+                    <.icon name="hero-exclamation-triangle-solid" class="w-4 h-4" />
+                    Pending activation: {@users_unactivated}
+                  </.link>
+                </div>
               <% end %>
-            </div>
-          </.admin_card>
+            </.admin_card>
+
+            <.admin_card page="/admin/sessions" value={@sessions_count}>
+              <div>Signed-in browser sessions</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/analytics" title="Activity" icon="hero-bolt-solid">
+              <div class="font-semibold">Today (DAU): {@snapshot.activity.dau}</div>
+              <div class="font-semibold mt-2">Last 7 days (WAU): {@snapshot.activity.wau}</div>
+              <div class="font-semibold mt-2">Last 30 days (MAU): {@snapshot.activity.mau}</div>
+              <div class="mt-3 pt-2 border-t border-base-300">
+                Stickiness: {pct(@analytics_stats.stickiness)}
+              </div>
+              <div>
+                D1 / D7 / D30: {pct(@analytics_stats.d1)} / {pct(@analytics_stats.d7)} / {pct(
+                  @analytics_stats.d30
+                )}
+              </div>
+              <div>Payer conversion (30d): {pct(@analytics_stats.conversion_30d)}</div>
+            </.admin_card>
+          </.admin_section>
+
+          <.admin_section title="Gameplay">
+            <.admin_card page="/admin/lobbies" value={@lobbies_count}>
+              <div>Hostless: {@lobbies_hostless}</div>
+              <div>Hidden: {@lobbies_hidden}</div>
+              <div>Locked: {@lobbies_locked}</div>
+              <div>With password: {@lobbies_passworded}</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/matchmaking" value={@matchmaking_stats.queued}>
+              <div>In queue now: {@matchmaking_stats.queued}</div>
+              <div>
+                Matched: {@matchmaking_stats.matched} · Cancelled: {@matchmaking_stats.cancelled}
+              </div>
+              <div>Active queues: {length(@matchmaking_stats.queues)}</div>
+              <div>
+                Ready checks 24h: {Map.get(@ready_check_stats, "passed", 0)} passed · {Map.get(
+                  @ready_check_stats,
+                  "failed",
+                  0
+                )} failed
+              </div>
+            </.admin_card>
+
+            <.admin_card page="/admin/tournaments" value={@tournaments_count}>
+              <div>
+                Running: {state_count(@tournament_stats.tournaments, "running")} · Registration: {state_count(
+                  @tournament_stats.tournaments,
+                  "registration"
+                )}
+              </div>
+              <div>
+                Scheduled: {state_count(@tournament_stats.tournaments, "scheduled")} · Finished: {state_count(
+                  @tournament_stats.tournaments,
+                  "finished"
+                )}
+              </div>
+              <div>Participants: {entries_total(@tournament_stats.entries)}</div>
+              <div>
+                Still in: {state_count(@tournament_stats.entries, "active")} · Eliminated: {state_count(
+                  @tournament_stats.entries,
+                  "eliminated"
+                )}
+              </div>
+              <div>
+                Champions: {state_count(@tournament_stats.entries, "winner")} · Awaiting draw: {state_count(
+                  @tournament_stats.entries,
+                  "registered"
+                )}
+              </div>
+              <div>
+                Matches: {@tournament_stats.matches.open} open / {@tournament_stats.matches.total}
+              </div>
+              <div :if={@tournament_stats.matches.overdue > 0} class="text-warning">
+                Past deadline: {@tournament_stats.matches.overdue}
+              </div>
+            </.admin_card>
+
+            <.admin_card page="/admin/leaderboards" value={@leaderboards_count}>
+              <div>Scores total: {@leaderboard_records}</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/quests" value={@quest_stats.definitions}>
+              <div>Active: {@quest_stats.active_definitions}</div>
+              <div>Completions today: {@quest_stats.completions_today}</div>
+              <div>Claims today: {@quest_stats.claims_today}</div>
+              <div>Claimable now: {@quest_stats.claimable_now}</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/results" value={@result_counts.total} unit="plays">
+              <div class="flex justify-between">
+                <span>Open</span>
+                <span class="font-mono">{@result_counts.open}</span>
+              </div>
+            </.admin_card>
+
+            <.admin_card
+              page="/admin/economy"
+              value={@economy_stats.wallets}
+              unit="wallets"
+            >
+              <div class="flex justify-between">
+                <span>Ledger entries</span>
+                <span class="font-mono">{@economy_stats.ledger}</span>
+              </div>
+            </.admin_card>
+
+            <.admin_card page="/admin/payments" value={@payments_stats.purchases}>
+              <div>Completed: {@payments_stats.completed_purchases}</div>
+              <div>Products: {@payments_stats.products}</div>
+              <div>Provider SKUs: {@payments_stats.provider_products}</div>
+              <div>Active entitlements: {@payments_stats.active_entitlements}</div>
+            </.admin_card>
+          </.admin_section>
+
+          <.admin_section title="Social">
+            <.admin_card page="/admin/groups" value={@groups_count}>
+              <div>Public: {@groups_public}</div>
+              <div>Private: {@groups_private}</div>
+              <div>Hidden: {@groups_hidden}</div>
+              <div>Total members: {@groups_members}</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/parties" value={@parties_count}>
+              <div>Total members: {@parties_members}</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/friends" value={@friends_count}>
+              <div>Friendships</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/blacklist" value={@blacklist_count}>
+              <div>Blocks between players</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/chat" value={@chat_count}>
+              <div>Users who wrote: {@chat_senders}</div>
+              <div>Users who never wrote: {@chat_silent}</div>
+              <div>In lobbies: {@chat_by_lobby}</div>
+              <div>In groups: {@chat_by_group}</div>
+              <div>Friend DMs: {@chat_by_friend}</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/notifications" value={@notifications_count}>
+              <div>In-app notifications stored</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/push" value={@push_stats.live}>
+              <div>Disabled: {@push_stats.disabled}</div>
+              <div :for={{platform, n} <- @push_stats.by_platform}>{platform}: {n}</div>
+            </.admin_card>
+          </.admin_section>
+
+          <.admin_section title="Moderation">
+            <.admin_card page="/admin/chat/reports" title="Chat moderation" value={@open_reports}>
+              <div>Open reports</div>
+              <div>
+                Active mutes:
+                <.link navigate={~p"/admin/bans?kind=chat"} class="link">{@active_mutes}</.link>
+              </div>
+            </.admin_card>
+
+            <.admin_card page="/admin/chat/filter">
+              <div>Blocked words, and a box to test a phrase</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/reports" value={@content_reports}>
+              <div>Open reports</div>
+              <div>Fixed: {Map.get(@report_counts, "fixed", 0)}</div>
+              <div>Won't fix: {Map.get(@report_counts, "wontfix", 0)}</div>
+              <div>Duplicate: {Map.get(@report_counts, "duplicate", 0)}</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/bans">
+              <div class="flex justify-between items-center">
+                <span>Banned accounts</span>
+                <span class={[
+                  "badge badge-sm font-mono",
+                  if(@account_ban_count > 0, do: "badge-error", else: "badge-ghost opacity-50")
+                ]}>
+                  {@account_ban_count}
+                </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span>Banned IPs</span>
+                <span class={[
+                  "badge badge-sm font-mono",
+                  if(@ip_ban_count > 0, do: "badge-error", else: "badge-ghost opacity-50")
+                ]}>
+                  {@ip_ban_count}
+                </span>
+              </div>
+            </.admin_card>
+          </.admin_section>
+
+          <.admin_section title="Data">
+            <.admin_card
+              page="/admin/translations"
+              value={ngettext("%{count} language", "%{count} languages", length(@translation_stats))}
+            >
+              <div
+                :for={stats <- least_translated(@translation_stats)}
+                class="flex items-center gap-2"
+              >
+                <span class="font-mono font-semibold w-12">{String.upcase(stats.locale)}</span>
+                <div class="flex-1 bg-base-300 rounded-full h-1.5">
+                  <div
+                    class={[
+                      "h-1.5 rounded-full transition-all",
+                      if(stats.percent == 100.0, do: "bg-success", else: "bg-warning")
+                    ]}
+                    style={"width: #{stats.percent}%"}
+                  >
+                  </div>
+                </div>
+                <span class="font-mono text-xs w-10 text-right">{stats.percent}%</span>
+              </div>
+              <div :if={translations_hidden(@translation_stats) > 0}>
+                +{translations_hidden(@translation_stats)} more
+              </div>
+            </.admin_card>
+
+            <.admin_card page="/admin/kv" value={@kv_count}>
+              <div>Global entries: {@kv_global}</div>
+              <div>User entries: {@kv_user}</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/storage" value={@storage_info.adapter}>
+              <div class="flex justify-between">
+                <span>Target</span>
+                <span class="font-mono truncate ml-2">{@storage_info.detail}</span>
+              </div>
+            </.admin_card>
+
+            <.admin_card page="/admin/retention">
+              <div>What is kept, for how long, and the last sweep</div>
+            </.admin_card>
+          </.admin_section>
+
+          <.admin_section title="Configuration">
+            <.admin_card page="/admin/config">
+              <div>Limits, hooks and plugins</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/settings">
+              <div>Every setting the server declares</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/rate_limiting">
+              <div class="flex justify-between items-center">
+                <span>Active IP bans</span>
+                <span class={[
+                  "badge badge-sm font-mono",
+                  if(@ip_ban_count > 0, do: "badge-error", else: "badge-ghost opacity-50")
+                ]}>
+                  {@ip_ban_count}
+                </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span>Rate Limited (1m)</span>
+                <span class={[
+                  "badge badge-sm font-mono",
+                  if(@rate_stats.limited > 0, do: "badge-warning", else: "badge-ghost opacity-50")
+                ]}>
+                  {@rate_stats.limited}
+                </span>
+              </div>
+            </.admin_card>
+
+            <.admin_card
+              page="/admin/rate_limiting"
+              title="Cache & limits"
+              icon="hero-bolt-solid"
+              color="lime"
+              value={cache_hit_rate_label(@cache_stats)}
+              unit="hit rate since boot"
+            >
+              <div
+                :for={row <- Enum.take(@cache_stats.cache, 6)}
+                class="flex justify-between"
+              >
+                <span>{row.prefix}</span>
+                <span class="font-mono">
+                  {row.hits}/{row.hits + row.misses} ({round(row.hit_rate * 100)}%)
+                </span>
+              </div>
+              <div class="flex justify-between border-t border-base-300 pt-1 mt-1">
+                <span>Rate-limit denials</span>
+                <span class="font-mono">
+                  {@cache_stats.rate_limit_denies |> Map.values() |> Enum.sum()}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span>Async overloads</span>
+                <span class={[
+                  "font-mono",
+                  @cache_stats.async_overloads > 0 && "text-warning"
+                ]}>
+                  {@cache_stats.async_overloads}
+                </span>
+              </div>
+            </.admin_card>
+          </.admin_section>
+
+          <.admin_section title="Server">
+            <.admin_card
+              page="/admin/system"
+              value={GamendWeb.ConnectionTracker.format_uptime(@sys_stats.uptime_seconds)}
+            >
+              <div>OTP: {@sys_stats.otp_release}</div>
+              <div>Schedulers: {@sys_stats.schedulers}</div>
+              <div>Node: {@sys_stats.node}</div>
+              <div>
+                Cluster: {ngettext("%{count} node", "%{count} nodes", @sys_stats.cluster_size)}
+              </div>
+              <div>Memory: {@sys_stats.memory_total_mb} MB</div>
+              <div>
+                Processes: {@sys_stats.process_count} / {format_number(@sys_stats.process_limit)}
+              </div>
+            </.admin_card>
+
+            <.admin_card page="/admin/runtime">
+              <div>Read-only; reflects the running node</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/connections" value={@conn_stats.total_connections}>
+              <div>WS sockets: {@conn_stats.ws_sockets}</div>
+              <div>WS channels: {@conn_stats.total_channels}</div>
+              <div>LiveViews: {@conn_stats.live_views}</div>
+              <div>WebRTC: {@conn_stats.webrtc_peers}</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/dashboard">
+              <div>Processes, ports, ETS and metrics</div>
+            </.admin_card>
+
+            <.admin_card
+              page="/admin/logs"
+              value={@log_recent_errors}
+              unit="errors (1h)"
+              value_class={if(@log_recent_errors > 0, do: "text-error", else: "text-success")}
+            >
+              <div class="flex justify-between">
+                <span>Buffered</span>
+                <span class="font-mono">{@log_total_buffered}</span>
+              </div>
+              <div :for={{level, count} <- @log_level_counts} class="flex justify-between">
+                <span>{level}</span>
+                <span class={[
+                  "font-mono",
+                  level == :error && "text-error",
+                  level == :warning && "text-warning"
+                ]}>
+                  {count}
+                </span>
+              </div>
+            </.admin_card>
+
+            <.admin_card
+              page="/admin/oban"
+              title="Background jobs"
+              value={@oban_stats.total}
+              unit="jobs"
+            >
+              <div class="flex justify-between">
+                <span>Executing</span>
+                <span class="font-mono">{@oban_stats.executing}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Available</span>
+                <span class="font-mono">{@oban_stats.available}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Scheduled</span>
+                <span class="font-mono">{@oban_stats.scheduled}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Retryable</span>
+                <span class={["font-mono", @oban_stats.retryable > 0 && "text-warning"]}>
+                  {@oban_stats.retryable}
+                </span>
+              </div>
+            </.admin_card>
+
+            <.admin_card page="/admin/geo" value={format_number(@geo_total)}>
+              <div>
+                {countries_label(length(@geo_stats))} &middot; {if(@geoip_available?,
+                  do: "MMDB",
+                  else: "CF header"
+                )}
+              </div>
+              <div class="flex justify-between items-center">
+                <span>Last hour</span>
+                <span class="font-mono font-semibold">
+                  {format_number(@geo_total_1h)} reqs &middot; {countries_label(length(@geo_stats_1h))}
+                </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span>Crawlers, last hour</span>
+                <span class="font-mono font-semibold">
+                  {format_number(@geo_crawlers_1h)} &middot; {if(@geo_total_1h > 0,
+                    do: round(@geo_crawlers_1h / @geo_total_1h * 100),
+                    else: 0
+                  )}%
+                </span>
+              </div>
+              <%= for {country, count} <- Enum.take(@geo_stats_1h, 3) do %>
+                <div class="flex justify-between items-center">
+                  <span class="font-mono">{GamendWeb.AdminLive.Shared.country_flag(country)} {country}</span>
+                  <span class="font-mono">{format_number(count)} (1h)</span>
+                </div>
+              <% end %>
+              <div :if={length(@geo_stats_1h) > 3} class="text-center opacity-50">
+                +{length(@geo_stats_1h) - 3} more
+              </div>
+            </.admin_card>
+
+            <.admin_card page="/admin/github" value={@github_installations}>
+              <div>Every installation of the server's GitHub App</div>
+            </.admin_card>
+          </.admin_section>
+
+          <.admin_section :if={@host != []} title="This site">
+            <.admin_card
+              :for={card <- @host}
+              title={card.title}
+              path={card.path}
+              icon={card[:icon]}
+              color={card[:color]}
+              value={card[:value]}
+            >
+              <div :for={line <- card[:lines] || []}>
+                <%= case line do %>
+                  <% text when is_binary(text) -> %>
+                    {text}
+                  <% {label, nil, path} -> %>
+                    <.link navigate={path} class="link">{label}</.link>
+                  <% {label, value, path} -> %>
+                    {label}: <.link navigate={path} class="link">{value}</.link>
+                  <% {label, value} -> %>
+                    {label}: {value}
+                <% end %>
+              </div>
+            </.admin_card>
+          </.admin_section>
         </div>
       </div>
     </Layouts.app>

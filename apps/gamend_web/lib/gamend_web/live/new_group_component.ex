@@ -118,6 +118,11 @@ defmodule GamendWeb.NewGroupComponent do
 
   defp assign_form(socket, changeset), do: assign(socket, :form, to_form(changeset, as: :group))
 
+  # Not `@form[:icon_url]` in the template: LiveView redraws that only when the
+  # icon itself changes, and the colour chosen with no icon picked is a field
+  # of its own, so the picker would go on drawing the old one.
+  defp icon_field(form), do: form[:icon_url]
+
   # The name the slug follows: the maker's username, when the page gave it.
   defp owner(user) do
     case Map.get(user, :username) do
@@ -185,7 +190,7 @@ defmodule GamendWeb.NewGroupComponent do
             </div>
             <GroupIconUpload.field
               id={"#{@id}-icon"}
-              field={@form[:icon_url]}
+              field={icon_field(@form)}
               uploads={@group_icon_upload? && @uploads}
               cancel="cancel_icon"
               target={@myself}
@@ -227,7 +232,7 @@ defmodule GamendWeb.NewGroupComponent do
   def open_button(assigns) do
     ~H"""
     <button type="button" id={@id} class={@class} phx-click="open" phx-target={@target}>
-      <.icon name="hero-plus" class="size-4" />
+      <.icon name="hero-plus-solid" class="size-4" />
       {gettext("New group")}
     </button>
     """

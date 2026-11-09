@@ -113,7 +113,7 @@ defmodule GamendWeb.AdminLive.Geo do
 
         <%!-- MMDB status --%>
         <div :if={!@geoip_available?} class="alert alert-warning text-sm">
-          <.icon name="hero-exclamation-triangle" class="w-5 h-5" />
+          <.icon name="hero-exclamation-triangle-solid" class="w-5 h-5" />
           <div>
             <div class="font-semibold">No GeoIP database loaded</div>
             <div class="text-xs opacity-80">

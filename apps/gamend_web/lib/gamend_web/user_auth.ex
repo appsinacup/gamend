@@ -17,11 +17,12 @@ defmodule GamendWeb.UserAuth do
   alias Gamend.Accounts.Scope
   alias Gamend.Accounts.UserToken
 
+  require Gamend.Placeholder, as: Placeholder
   require Logger
   require Gamend.Quests.ReportedEvent, as: ReportedEvent
   require GamendWeb.ApiSegment, as: ApiSegment
 
-  @unknown "unknown"
+  @unknown Placeholder.unknown()
 
   # The remember-me cookie lives exactly as long as the session token it holds:
   # both come from `auth.session_days` (`UserToken.session_validity_in_days/0`).

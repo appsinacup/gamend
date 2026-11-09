@@ -31,8 +31,10 @@ defmodule Gamend.Payments.Counters do
 
   alias Gamend.Analytics
 
+  require Gamend.Payments.ProviderErrorCode, as: ProviderErrorCode
+
   @other "other"
-  @invalid "invalid"
+  @invalid ProviderErrorCode.invalid()
 
   @doc "Adds one to `payments.<event>` and to each `payments.<event>.<dim>:<value>`."
   @spec count(String.t(), keyword()) :: :ok

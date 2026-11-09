@@ -19,6 +19,7 @@ defmodule Gamend.Payments.Providers.Steam do
   @type_param "type"
   @time "time"
   @key "key"
+  # literal-ok: the field of Steam's own API
   @currency "currency"
 
   @production_base_url "https://partner.steam-api.com/ISteamMicroTxn"

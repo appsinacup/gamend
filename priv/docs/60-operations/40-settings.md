@@ -1,5 +1,5 @@
 ---
-icon: hero-adjustments-horizontal
+icon: hero-adjustments-horizontal-solid
 generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
   declaration in the module that owns the setting
 ---
@@ -7,7 +7,7 @@ generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
 # Settings
 
 Every setting the server has, with the environment variable that sets it.
-337 settings across 31 groups.
+341 settings across 31 groups.
 
 A setting is declared in the module that owns it, so this page and
 `.env.example` are generated from the same source the server reads. The
@@ -264,6 +264,7 @@ That declares `GAMEND_UGC_MAX_UPLOADS`, read with
 | `GAMEND_LIMITS_MAX_CHAT_FILTER_WORD_LEN` | integer | `64` |  |
 | `GAMEND_LIMITS_MAX_CHAT_MESSAGES_PER_DAY` | integer | `5000` | Rolling 24h; 0 disables. Needs rate limiting on; ETS backend counts per instance. |
 | `GAMEND_LIMITS_MAX_CHAT_REPORTS_PER_USER_PER_DAY` | integer | `50` | Rolling 24h; 0 disables. Needs rate limiting on; ETS backend counts per instance. |
+| `GAMEND_LIMITS_MAX_CODES_PER_GENERATE` | integer | `10000` | Redemption codes one Generate makes. To have more, run it again. |
 | `GAMEND_LIMITS_MAX_DEVICE_ID` | integer | `256` |  |
 | `GAMEND_LIMITS_MAX_DISPLAY_NAME` | integer | `255` | Max display-name length in codepoints. 255 is the users.display_name column's own limit on Postgres (varchar(255)); higher fails the insert there. |
 | `GAMEND_LIMITS_MAX_EMAIL` | integer | `160` |  |
@@ -304,12 +305,14 @@ That declares `GAMEND_UGC_MAX_UPLOADS`, read with
 | `GAMEND_LIMITS_MAX_PUSH_TOKENS_PER_USER` | integer | `20` | Live (non-disabled) device tokens per user. |
 | `GAMEND_LIMITS_MAX_QUESTS` | integer | `500` |  |
 | `GAMEND_LIMITS_MAX_QUEST_CATEGORY` | integer | `64` |  |
+| `GAMEND_LIMITS_MAX_QUEST_CODE_TOKEN` | integer | `128` | Longest redemption code, in characters once spaces and dashes are gone. Up to 512 takes effect; past that is a Postgres index entry too big to store. |
 | `GAMEND_LIMITS_MAX_QUEST_DESCRIPTION` | integer | `1000` |  |
 | `GAMEND_LIMITS_MAX_QUEST_KEY` | integer | `100` |  |
 | `GAMEND_LIMITS_MAX_QUEST_PERIOD_HISTORY` | integer | `90` | Days of daily/weekly period history kept before the retention prune. |
 | `GAMEND_LIMITS_MAX_QUEST_REWARD_ENTRIES` | integer | `10` |  |
 | `GAMEND_LIMITS_MAX_QUEST_TITLE` | integer | `255` |  |
 | `GAMEND_LIMITS_MAX_READY_CHECK_PARTICIPANTS` | integer | `64` | Hard cap on participants in one check. |
+| `GAMEND_LIMITS_MAX_REDEEM_ATTEMPTS_PER_MIN` | integer | `10` | Redemption code tries per player per minute. 0 disables. |
 | `GAMEND_LIMITS_MAX_REPORT_REASON` | integer | `500` |  |
 | `GAMEND_LIMITS_MAX_RESULT_EVENTS` | integer | `10000` |  |
 | `GAMEND_LIMITS_MAX_SOCKETS` | integer | `0` | Concurrent sockets on this app instance, every user's together: a server's player cap. 0 disables. |
@@ -428,6 +431,7 @@ That declares `GAMEND_UGC_MAX_UPLOADS`, read with
 | `GAMEND_FEATURES_WEB_CHAT` | boolean | `true` | Chat on the website: the /chat page, its link in the account menu, the Open links on chat notifications, and every link marked `"feature": "web_chat"`. The chat API and the game client are untouched. |
 | `GAMEND_FEATURES_WEB_FRIENDS` | boolean | `true` | Friends on the website: the Friends tab in account settings, the View link on friend-request notifications, and the "Friends and groups" row on the Notifications tab (shown while `web_friends` or `web_groups` is on). The friends API and the game client are untouched. |
 | `GAMEND_FEATURES_WEB_GROUPS` | boolean | `true` | Groups on the website: the /groups pages, the Groups tab in account settings, and every nav, footer or page link marked `"feature": "web_groups"`. The groups API and the game client are untouched — `list_groups` gates the public listing. |
+| `GAMEND_FEATURES_WEB_REDEEM` | boolean | `true` | Redemption codes on the website: the /redeem page and the link to it on /quests. The redeem API and the game client are untouched — `list_quests` gates the public listing. |
 | `GAMEND_FEATURES_WEB_STORE` | boolean | `true` | The store on the website: the /store pages (every active product, any provider row), the Open Store button in account settings, and every link marked `"feature": "web_store"`. Off for a host that sells through its own page instead. The payments API and the game client are untouched. |
 | `GAMEND_FEATURES_WEB_TOURNAMENTS` | boolean | `true` | Tournaments on the website: the /tournaments pages and every nav, footer or page link marked `"feature": "web_tournaments"`. The tournaments API and the game client are untouched — `list_tournaments` gates the public listing. |
 

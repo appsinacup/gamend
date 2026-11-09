@@ -146,7 +146,7 @@ defmodule GamendWeb.AdminLive.AnalyticsPeople do
 
         <.empty_state
           :if={is_nil(@user)}
-          icon="hero-user-circle"
+          icon="hero-user-circle-solid"
           title="No account chosen"
           text="Search above, or open one from a row in Explore."
         />

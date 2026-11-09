@@ -89,7 +89,7 @@ defmodule GamendWeb.AdminLive.Payments do
                   </div>
                   <div class="flex flex-wrap justify-end gap-2">
                     <span
-                      :if={adapter.provider == "stripe"}
+                      :if={adapter.provider == ProviderId.stripe()}
                       class={["badge", mode_badge_class(adapter.status.mode)]}
                     >
                       {adapter.status.mode}
@@ -388,6 +388,14 @@ defmodule GamendWeb.AdminLive.Payments do
                           aria-label="Days to add"
                           class="input input-xs input-bordered w-16"
                         />
+                        <label class="flex items-center gap-1 text-xs whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            name="notify"
+                            value="true"
+                            class="checkbox checkbox-xs"
+                          /> Tell user
+                        </label>
                         <button type="submit" class="btn btn-xs btn-outline btn-primary">
                           Add days
                         </button>
@@ -791,12 +799,17 @@ defmodule GamendWeb.AdminLive.Payments do
     end
   end
 
-  def handle_event("extend_entitlement", %{"entitlement_id" => id, "days" => days}, socket) do
+  def handle_event(
+        "extend_entitlement",
+        %{"entitlement_id" => id, "days" => days} = params,
+        socket
+      ) do
     result =
       with id when is_binary(id) <- parse_id(id),
            days when is_integer(days) and days > 0 and days <= @max_extend_days <- parse_int(days) do
         Payments.extend_entitlement(id, days,
-          metadata: %{"extended_by" => socket.assigns.current_scope.user_id}
+          metadata: %{"extended_by" => socket.assigns.current_scope.user_id},
+          notify: params["notify"] == "true"
         )
       else
         _ -> {:error, :invalid_days}

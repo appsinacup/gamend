@@ -3,9 +3,5 @@ defmodule GamendWeb.CheckboxValue do
   The value a checkbox posts when ticked.
   """
 
-  @all ~w(on)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(on)
 end

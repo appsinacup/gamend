@@ -3,9 +3,5 @@ defmodule Gamend.Payments.GrantKey do
   Keys of a product's grant config that core and the store read.
   """
 
-  @all ~w(download)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(download)
 end

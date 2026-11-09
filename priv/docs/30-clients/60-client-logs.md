@@ -1,5 +1,5 @@
 ---
-icon: hero-document-text
+icon: hero-document-text-solid
 ---
 
 # Client Logs & Sessions

@@ -16,6 +16,7 @@ defmodule Gamend.Quests.QuestProgress do
   - `completed_at` - When every objective met its target (DateTime or nil)
   - `claimed_at` - When rewards were claimed (DateTime or nil)
   - `rewards_granted_at` - When every reward entry finished granting (DateTime or nil)
+  - `code_id` - The redemption code that finished it (UUID string or nil)
   - `metadata` - Arbitrary metadata (map)
   - `inserted_at` - Creation timestamp
   - `updated_at` - Last update timestamp
@@ -31,6 +32,7 @@ defmodule Gamend.Quests.QuestProgress do
           completed_at: DateTime.t() | nil,
           claimed_at: DateTime.t() | nil,
           rewards_granted_at: DateTime.t() | nil,
+          code_id: String.t() | nil,
           metadata: map(),
           inserted_at: DateTime.t(),
           updated_at: DateTime.t()
@@ -46,6 +48,7 @@ defmodule Gamend.Quests.QuestProgress do
     :completed_at,
     :claimed_at,
     :rewards_granted_at,
+    :code_id,
     :metadata,
     :inserted_at,
     :updated_at

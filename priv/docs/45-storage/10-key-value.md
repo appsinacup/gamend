@@ -1,5 +1,5 @@
 ---
-icon: hero-table-cells
+icon: hero-table-cells-solid
 ---
 
 # Key-Value Store

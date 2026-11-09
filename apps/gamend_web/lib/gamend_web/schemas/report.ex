@@ -3,6 +3,7 @@ defmodule GamendWeb.Schemas.ReportKind do
   require OpenApiSpex
   alias OpenApiSpex.Schema
 
+  # literal-ok: an example, not a value
   @page "page"
 
   OpenApiSpex.schema(%{

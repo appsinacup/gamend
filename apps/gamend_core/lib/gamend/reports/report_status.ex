@@ -3,11 +3,7 @@ defmodule Gamend.Reports.ReportStatus do
   A report's status before anyone answers it. The other statuses come from the kind.
   """
 
-  @all ~w(open)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(open)
 
   defmacro fixed, do: "fixed"
 

@@ -11,6 +11,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.Shared
 
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
   require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
   require Gamend.Payments.ProductKind, as: ProductKind
   require Gamend.Payments.ProviderId, as: ProviderId
@@ -36,7 +37,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
 
   def tab(assigns) do
     ~H"""
-    <div :if={@settings_tab == "payments"} class="mt-6 space-y-6">
+    <div :if={@settings_tab == SettingsTab.payments()} class="mt-6 space-y-6">
       <div class="card bg-base-200 p-4 rounded-lg">
         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>

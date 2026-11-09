@@ -3,13 +3,5 @@ defmodule Gamend.Payments.ProviderId do
   The payment providers core knows, as stored in `purchases.provider`.
   """
 
-  @all ~w(stripe apple google steam)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
-
-  @doc "Every value."
-  @spec all() :: [String.t()]
-  def all, do: @all
+  use Gamend.Names, ~w(stripe apple google steam)
 end

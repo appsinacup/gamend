@@ -122,6 +122,7 @@ defmodule GamendWeb.AdminLive.Quests do
                       <span class={["badge badge-sm", reset_badge(q.reset)]}>{reset_text(q)}</span>
                       <span :if={q.hidden} class="badge badge-warning badge-sm ml-1">hidden</span>
                       <span :if={q.auto_claim} class="badge badge-ghost badge-sm ml-1">auto</span>
+                      <span :if={q.code_only} class="badge badge-accent badge-sm ml-1">code</span>
                       <span :if={q.prerequisite_quest_key} class="badge badge-ghost badge-sm ml-1">
                         chained
                       </span>
@@ -142,6 +143,15 @@ defmodule GamendWeb.AdminLive.Quests do
                     <td class="text-xs font-mono">{funnel_summary(@funnels[q.key])}</td>
                     <td class="text-sm">
                       <div class="flex flex-wrap gap-1">
+                        <button
+                          :if={q.code_only}
+                          id={"admin-quest-codes-#{q.id}"}
+                          phx-click="open_codes"
+                          phx-value-key={q.key}
+                          class="btn btn-xs btn-outline btn-primary"
+                        >
+                          Codes
+                        </button>
                         <button
                           phx-click="grant_form"
                           phx-value-id={q.id}
@@ -247,7 +257,7 @@ defmodule GamendWeb.AdminLive.Quests do
                     <td class="text-sm">
                       <div class="flex flex-wrap gap-1">
                         <button
-                          :if={p.status == "active"}
+                          :if={p.status == QuestStatus.active()}
                           phx-click="force_complete"
                           phx-value-user={p.user_id}
                           phx-value-key={p.quest_key}
@@ -400,6 +410,11 @@ defmodule GamendWeb.AdminLive.Quests do
                 type="checkbox"
                 label="Auto-claim rewards on completion"
               />
+              <.input
+                field={@form[:code_only]}
+                type="checkbox"
+                label="Only by code (objectives are dropped; reset must be never; no group or prerequisite)"
+              />
               <.input field={@form[:active]} type="checkbox" label="Active" />
 
               <div class="form-control">
@@ -503,6 +518,7 @@ defmodule GamendWeb.AdminLive.Quests do
       |> parse_metadata()
       |> put_json_list(all_params, "objectives_json", "objectives")
       |> put_json_list(all_params, "rewards_json", "rewards")
+      |> drop_objectives_if_code_only()
 
     result =
       if socket.assigns.selected_quest do
@@ -549,6 +565,10 @@ defmodule GamendWeb.AdminLive.Quests do
             {:noreply, put_flash(socket, :error, "Failed to delete quest")}
         end
     end
+  end
+
+  def handle_event("open_codes", %{"key" => key}, socket) do
+    {:noreply, push_navigate(socket, to: ~p"/admin/quests/#{key}/codes")}
   end
 
   def handle_event("grant_form", %{"id" => id}, socket) do
@@ -801,6 +821,12 @@ defmodule GamendWeb.AdminLive.Quests do
         params
     end
   end
+
+  # The form starts with an example objective, which a code-only quest refuses.
+  defp drop_objectives_if_code_only(%{"code_only" => "true"} = params),
+    do: Map.put(params, "objectives", [])
+
+  defp drop_objectives_if_code_only(params), do: params
 
   defp put_json_list(params, all_params, source_key, target_key) do
     case Jason.decode(Map.get(all_params, source_key, "")) do

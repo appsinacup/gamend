@@ -3,9 +3,5 @@ defmodule Gamend.LocalHost do
   The name a server uses for itself when no host is set.
   """
 
-  @all ~w(localhost)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(localhost)
 end

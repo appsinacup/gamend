@@ -3,9 +3,5 @@ defmodule Gamend.Lobbies.LobbyState do
   A lobby's initial state.
   """
 
-  @all ~w(created)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(created)
 end

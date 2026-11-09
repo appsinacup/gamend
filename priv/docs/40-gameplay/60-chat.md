@@ -1,5 +1,5 @@
 ---
-icon: hero-chat-bubble-oval-left-ellipsis
+icon: hero-chat-bubble-oval-left-ellipsis-solid
 ---
 
 # Chat

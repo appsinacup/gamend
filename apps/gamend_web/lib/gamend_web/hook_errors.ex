@@ -12,7 +12,7 @@ defmodule GamendWeb.HookErrors do
   `hook_error`, or its kind, with the detail as the message.
   """
 
-  require GamendWeb.HookErrorCode, as: HookErrorCode
+  require GamendWeb.HookErrors.HookErrorCode, as: HookErrorCode
 
   @doc "The error code, and the message when there is one, for a hook's error reason."
   @spec describe(term()) :: {String.t(), String.t() | nil}

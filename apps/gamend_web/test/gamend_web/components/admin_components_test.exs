@@ -17,7 +17,7 @@ defmodule GamendWeb.AdminComponentsTest do
 
     assert html |> LazyHTML.query("h1") |> LazyHTML.text() |> String.trim() == "Users"
     assert LazyHTML.query(html, ~s|a[href="/admin"][data-back]|) |> Enum.count() == 1
-    assert LazyHTML.query(html, ~s|span.hero-users|) |> Enum.count() == 1
+    assert LazyHTML.query(html, ~s|span.hero-users-solid|) |> Enum.count() == 1
   end
 
   test "a page's own title wins over its table entry" do

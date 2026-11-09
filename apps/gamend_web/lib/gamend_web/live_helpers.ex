@@ -7,12 +7,13 @@ defmodule GamendWeb.LiveHelpers do
 
   alias Gamend.Captcha
 
+  require Gamend.Placeholder, as: Placeholder
   require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
   require Gamend.Payments.ProductKind, as: ProductKind
   require Gamend.Payments.ProviderId, as: ProviderId
   require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
 
-  @unknown "unknown"
+  @unknown Placeholder.unknown()
 
   # ── Pagination ──────────────────────────────────────────────────────────
   #

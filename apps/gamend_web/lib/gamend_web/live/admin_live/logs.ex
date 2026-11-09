@@ -27,11 +27,12 @@ defmodule GamendWeb.AdminLive.Logs do
   alias GamendWeb.AdminLogBuffer
   alias GamendWeb.LiveHelpers
 
-  require GamendWeb.AdminLogSource, as: AdminLogSource
+  require Gamend.Placeholder, as: Placeholder
+  require GamendWeb.AdminLive.LogSource, as: LogSource
   require GamendWeb.FilterValue, as: FilterValue
   require GamendWeb.UrlParam, as: UrlParam
 
-  @unknown "unknown"
+  @unknown Placeholder.unknown()
 
   @refresh_interval 3_000
   @page_size 200
@@ -60,7 +61,12 @@ defmodule GamendWeb.AdminLive.Logs do
         <%!-- Tabs --%>
         <div role="tablist" class="tabs tabs-box w-fit">
           <button
-            :for={{tab, label} <- [{"server", "Server"}, {"client", "Client sessions"}]}
+            :for={
+              {tab, label} <- [
+                {LogSource.server(), "Server"},
+                {LogSource.client(), "Client sessions"}
+              ]
+            }
             role="tab"
             phx-click="switch_tab"
             phx-value-tab={tab}
@@ -85,8 +91,8 @@ defmodule GamendWeb.AdminLive.Logs do
           </div>
         </div>
 
-        <.server_tab :if={@tab == "server"} {assigns} />
-        <.client_tab :if={@tab == "client"} {assigns} />
+        <.server_tab :if={@tab == LogSource.server()} {assigns} />
+        <.client_tab :if={@tab == LogSource.client()} {assigns} />
       </div>
     </Layouts.app>
     """
@@ -117,10 +123,10 @@ defmodule GamendWeb.AdminLive.Logs do
           ]}
         >
           {level}
-          <span :if={level != "all"} class="ml-1 opacity-70">
+          <span :if={level != FilterValue.everything()} class="ml-1 opacity-70">
             ({Map.get(@level_counts, String.to_existing_atom(level), 0)})
           </span>
-          <span :if={level == "all"} class="ml-1 opacity-70">({@facet_total})</span>
+          <span :if={level == FilterValue.everything()} class="ml-1 opacity-70">({@facet_total})</span>
         </button>
       </div>
 
@@ -135,8 +141,8 @@ defmodule GamendWeb.AdminLive.Logs do
           <option
             :for={
               {value, label} <- [
-                {"server", "Server only"},
-                {"client", "Client only"},
+                {LogSource.server(), "Server only"},
+                {LogSource.client(), "Client only"},
                 {"all", "Both"}
               ]
             }
@@ -544,7 +550,7 @@ defmodule GamendWeb.AdminLive.Logs do
     reload: :reload_view,
     drop: ~w(lobby_id),
     keys: [
-      tab: [in: [AdminLogSource.server(), AdminLogSource.client()]],
+      tab: [in: [LogSource.server(), LogSource.client()]],
       level_filter: [param: "level"],
       module_filter: [param: "module"],
       search_query: [param: "q"],
@@ -569,7 +575,7 @@ defmodule GamendWeb.AdminLive.Logs do
     {:ok,
      socket
      |> assign(
-       tab: AdminLogSource.server(),
+       tab: LogSource.server(),
        level_filter: FilterValue.everything(),
        module_filter: "",
        search_query: "",
@@ -577,7 +583,7 @@ defmodule GamendWeb.AdminLive.Logs do
        user_filter: "",
        # Client entries share this buffer; showing them by default would bury
        # the server's own tail.
-       source_filter: AdminLogSource.server(),
+       source_filter: LogSource.server(),
        auto_scroll: true,
        selected: nil,
        open_session: nil,
@@ -603,7 +609,7 @@ defmodule GamendWeb.AdminLive.Logs do
 
         {:noreply,
          socket
-         |> assign(tab: AdminLogSource.client(), session_filters: filters, session_page: 1)
+         |> assign(tab: LogSource.client(), session_filters: filters, session_page: 1)
          |> load_sessions()}
 
       _ ->
@@ -614,7 +620,7 @@ defmodule GamendWeb.AdminLive.Logs do
   @impl true
   def handle_info({:admin_log, entry}, socket) do
     socket =
-      if socket.assigns.tab == AdminLogSource.server() and matches_filters?(entry, socket.assigns) do
+      if socket.assigns.tab == LogSource.server() and matches_filters?(entry, socket.assigns) do
         assign(socket, logs: Enum.take([entry | socket.assigns.logs], @page_size))
       else
         socket
@@ -639,7 +645,7 @@ defmodule GamendWeb.AdminLive.Logs do
     schedule_refresh()
 
     socket =
-      if socket.assigns.tab == AdminLogSource.client(), do: load_sessions(socket), else: socket
+      if socket.assigns.tab == LogSource.client(), do: load_sessions(socket), else: socket
 
     {:noreply, refresh_counts(socket)}
   end
@@ -650,9 +656,9 @@ defmodule GamendWeb.AdminLive.Logs do
 
   @impl true
   def handle_event("switch_tab", %{"tab" => tab}, socket)
-      when tab in [AdminLogSource.server(), AdminLogSource.client()] do
+      when tab in [LogSource.server(), LogSource.client()] do
     socket = assign(socket, tab: tab)
-    {:noreply, if(tab == AdminLogSource.client(), do: load_sessions(socket), else: socket)}
+    {:noreply, if(tab == LogSource.client(), do: load_sessions(socket), else: socket)}
   end
 
   def handle_event("filter_level", %{"level" => level}, socket) do
@@ -667,7 +673,7 @@ defmodule GamendWeb.AdminLive.Logs do
        search_query: Map.get(params, "query", ""),
        session_filter: Map.get(params, "session", ""),
        user_filter: Map.get(params, "user", ""),
-       source_filter: Map.get(params, "source", AdminLogSource.server()),
+       source_filter: Map.get(params, "source", LogSource.server()),
        auto_scroll: Map.get(params, "auto_scroll") == "true"
      )
      |> refresh_logs()}
@@ -682,7 +688,7 @@ defmodule GamendWeb.AdminLive.Logs do
        session_filter: "",
        user_filter: "",
        level_filter: FilterValue.everything(),
-       source_filter: AdminLogSource.server()
+       source_filter: LogSource.server()
      )
      |> refresh_logs()}
   end
@@ -905,8 +911,8 @@ defmodule GamendWeb.AdminLive.Logs do
   defp matches_filters?(entry, assigns) do
     source_ok? =
       case assigns.source_filter do
-        AdminLogSource.client() -> client_entry?(entry)
-        AdminLogSource.server() -> not client_entry?(entry)
+        LogSource.client() -> client_entry?(entry)
+        LogSource.server() -> not client_entry?(entry)
         _ -> true
       end
 

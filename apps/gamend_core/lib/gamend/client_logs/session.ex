@@ -15,9 +15,10 @@ defmodule Gamend.ClientLogs.Session do
   use Gamend.Schema
   import Ecto.Changeset
 
+  require Gamend.Placeholder, as: Placeholder
   require Gamend.ClientLogs.BuildKind, as: BuildKind
 
-  @unknown "unknown"
+  @unknown Placeholder.unknown()
 
   @type t :: %__MODULE__{}
 

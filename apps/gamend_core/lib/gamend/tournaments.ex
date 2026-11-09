@@ -36,7 +36,7 @@ defmodule Gamend.Tournaments do
   require Gamend.Tournaments.DeadlinePolicy, as: DeadlinePolicy
   require Gamend.Tournaments.EntryState, as: EntryState
   require Gamend.Tournaments.TournamentState, as: TournamentState
-  require Gamend.RealtimeEvent, as: RealtimeEvent
+  require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
 
   @global "global"
 

@@ -1,5 +1,5 @@
 ---
-icon: hero-archive-box
+icon: hero-archive-box-solid
 ---
 
 # Object Storage & Uploads

@@ -640,7 +640,7 @@ defmodule GamendWeb.HostLayoutShell do
   defp suspended_notice(assigns) do
     ~H"""
     <.link href={~p"/suspended"} id="suspended-notice" class="alert alert-warning" role="status">
-      <.icon name="hero-no-symbol" class="size-5" />
+      <.icon name="hero-no-symbol-solid" class="size-5" />
       <span>{GamendWeb.HostLayouts.translate("Account suspended")}</span>
     </.link>
     """

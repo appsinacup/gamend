@@ -3,15 +3,7 @@ defmodule Gamend.ClientLogs.LogLevel do
   The levels of a client log.
   """
 
-  @all ~w(trace debug info warn error)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(trace debug info warn error)
 
   defmacro off, do: "off"
-
-  @doc "Every value."
-  @spec all() :: [String.t()]
-  def all, do: @all
 end

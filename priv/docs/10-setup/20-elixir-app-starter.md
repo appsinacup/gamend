@@ -1,5 +1,5 @@
 ---
-icon: hero-square-3-stack-3d
+icon: hero-square-3-stack-3d-solid
 ---
 
 # Elixir App Starter

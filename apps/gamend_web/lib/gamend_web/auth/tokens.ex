@@ -10,7 +10,7 @@ defmodule GamendWeb.Auth.Tokens do
   alias GamendWeb.Auth.Guardian
 
   require Gamend.Quests.ReportedEvent, as: ReportedEvent
-  require GamendWeb.AuthError, as: AuthError
+  require GamendWeb.Auth.AuthError, as: AuthError
   require GamendWeb.Auth.TokenType, as: TokenType
 
   @doc """

@@ -1,5 +1,5 @@
 ---
-icon: hero-circle-stack
+icon: hero-circle-stack-solid
 ---
 
 # PostgreSQL Setup

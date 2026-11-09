@@ -13,7 +13,7 @@ defmodule GamendWeb.Api.V1.HookController do
   alias OpenApiSpex.Schema
   require Logger
   require GamendWeb.ChannelError, as: ChannelError
-  require GamendWeb.HookErrorCode, as: HookErrorCode
+  require GamendWeb.HookErrors.HookErrorCode, as: HookErrorCode
 
   @call_hook "call_hook"
 

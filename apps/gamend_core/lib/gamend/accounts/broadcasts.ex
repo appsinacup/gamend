@@ -14,7 +14,7 @@ defmodule Gamend.Accounts.Broadcasts do
   alias Gamend.Accounts
   alias Gamend.Accounts.User
 
-  require Gamend.RealtimeEvent, as: RealtimeEvent
+  require Gamend.Realtime.RealtimeEvent, as: RealtimeEvent
 
   @doc """
   Broadcast that the given user has been updated.

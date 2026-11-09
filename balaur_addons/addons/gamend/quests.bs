@@ -31,6 +31,13 @@ pub fn list_quests(options: any) -> int {
     gamend::rest("GET", "/api/v1/quests{query}")
 }
 
+/// List quests a code can finish
+/// `GET /api/v1/quests/redeemable`
+pub fn list_redeemable_quests(options: any) -> int {
+    let query = core::query(options, ["quest", "page", "page_size"]);
+    gamend::rest("GET", "/api/v1/quests/redeemable{query}")
+}
+
 /// List my quests
 /// `GET /api/v1/me/quests`
 pub fn my_quests(options: any) -> int {
@@ -42,6 +49,15 @@ pub fn my_quests(options: any) -> int {
 /// `GET /api/v1/quests/stats`
 pub fn quest_stats() -> int {
     gamend::rest("GET", "/api/v1/quests/stats")
+}
+
+/// Redeem a code
+/// `POST /api/v1/me/quests/redeem`
+pub fn redeem_quest_code(params: any) -> int {
+    if !core::given(params, "token") {
+        return core::missing("gamend::quests::redeem_quest_code", "token");
+    }
+    gamend::rest("POST", "/api/v1/me/quests/redeem", params)
 }
 
 /// List a user's completed quests

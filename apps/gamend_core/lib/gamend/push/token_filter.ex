@@ -3,9 +3,5 @@ defmodule Gamend.Push.TokenFilter do
   The status filters of the push tokens list.
   """
 
-  @all ~w(live disabled)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(live disabled)
 end

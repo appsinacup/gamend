@@ -127,6 +127,9 @@ defmodule Gamend.Hooks.Defaults do
       def after_entitlement_changed(_entitlement), do: :ok
 
       @impl true
+      def before_entitlement_notice(_entitlement, notice), do: {:ok, notice}
+
+      @impl true
       def after_score_submitted(_record), do: :ok
 
       @impl true
@@ -307,6 +310,7 @@ defmodule Gamend.Hooks.Defaults do
                      after_purchase_fulfilled: 1,
                      after_purchase_revoked: 1,
                      after_entitlement_changed: 1,
+                     before_entitlement_notice: 2,
                      after_score_submitted: 1,
                      before_user_register: 2,
                      after_user_register: 1,

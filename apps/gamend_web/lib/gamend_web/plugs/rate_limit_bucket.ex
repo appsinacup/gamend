@@ -3,9 +3,5 @@ defmodule GamendWeb.Plugs.RateLimitBucket do
   The rate limit buckets the admin page shows by name.
   """
 
-  @all ~w(auth general client_logs)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(auth general client_logs)
 end

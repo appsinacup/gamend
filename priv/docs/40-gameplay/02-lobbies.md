@@ -1,5 +1,5 @@
 ---
-icon: hero-home-modern
+icon: hero-home-modern-solid
 ---
 
 # Lobbies

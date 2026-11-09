@@ -228,7 +228,7 @@ defmodule GamendWeb.AdminLive.Matchmaking do
                   <td class="text-xs"><.timestamp at={check.inserted_at} format="full" /></td>
                   <td class="text-right">
                     <button
-                      :if={check.status == "pending"}
+                      :if={check.status == CheckStatus.pending()}
                       phx-click="cancel_ready_check"
                       phx-value-id={check.id}
                       class="btn btn-ghost btn-xs"
@@ -262,10 +262,27 @@ defmodule GamendWeb.AdminLive.Matchmaking do
             class="flex flex-wrap gap-2 my-2"
           >
             <select name="status" class="select select-sm w-40">
-              <option value="all" selected={@status_filter == "all"}>All statuses</option>
-              <option value="queued" selected={@status_filter == "queued"}>Queued</option>
-              <option value="matched" selected={@status_filter == "matched"}>Matched</option>
-              <option value="cancelled" selected={@status_filter == "cancelled"}>Cancelled</option>
+              <option
+                value={FilterValue.everything()}
+                selected={@status_filter == FilterValue.everything()}
+              >
+                All statuses
+              </option>
+              <option value={TicketStatus.queued()} selected={@status_filter == TicketStatus.queued()}>
+                Queued
+              </option>
+              <option
+                value={TicketStatus.matched()}
+                selected={@status_filter == TicketStatus.matched()}
+              >
+                Matched
+              </option>
+              <option
+                value={TicketStatus.cancelled()}
+                selected={@status_filter == TicketStatus.cancelled()}
+              >
+                Cancelled
+              </option>
             </select>
             <input
               type="text"
@@ -319,7 +336,7 @@ defmodule GamendWeb.AdminLive.Matchmaking do
                   </td>
                   <td class="text-right">
                     <button
-                      :if={ticket.status == "queued"}
+                      :if={ticket.status == TicketStatus.queued()}
                       phx-click="cancel_ticket"
                       phx-value-id={ticket.id}
                       class="btn btn-outline btn-error btn-xs"

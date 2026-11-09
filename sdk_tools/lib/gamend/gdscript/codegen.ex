@@ -24,12 +24,13 @@ defmodule Gamend.GDScript.Codegen do
 
   alias Gamend.GDScript.API
   alias Gamend.GDScript.CompileError
+  require Gamend.GDScript.Word, as: Word
 
   @new "new"
   @duplicate "duplicate"
-  @continue "continue"
-  @break "break"
-  @nofile "nofile"
+  @continue Word.continue()
+  @break Word.break()
+  @nofile Word.nofile()
 
   # `@GlobalScope` functions, as `{helper, arity}`. Engine-only ones
   # (`instance_from_id`, the `rid_*` family, `bytes_to_var`) are left out;

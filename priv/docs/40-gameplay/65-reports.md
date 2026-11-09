@@ -1,5 +1,5 @@
 ---
-icon: hero-flag
+icon: hero-flag-solid
 ---
 
 # Reports

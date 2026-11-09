@@ -3,11 +3,7 @@ defmodule Gamend.Analytics.SegmentName do
   The analytics segments that are not everyone.
   """
 
-  @all ~w(registered guest)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(registered guest)
 
   defmacro all_users, do: "all"
 end

@@ -1,5 +1,5 @@
 ---
-icon: hero-trophy
+icon: hero-trophy-solid
 ---
 
 # Tournaments

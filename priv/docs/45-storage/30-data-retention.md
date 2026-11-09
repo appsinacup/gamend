@@ -1,5 +1,5 @@
 ---
-icon: hero-clock
+icon: hero-clock-solid
 ---
 
 # Data Retention

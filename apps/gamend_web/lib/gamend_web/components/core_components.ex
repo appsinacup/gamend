@@ -37,6 +37,8 @@ defmodule GamendWeb.CoreComponents do
   alias Phoenix.HTML.Form
   alias Phoenix.LiveView.JS
 
+  require Gamend.Quests.RewardType, as: RewardType
+
   @div "div"
 
   attr :name, :string, required: true
@@ -233,15 +235,15 @@ defmodule GamendWeb.CoreComponents do
         @kind == :info && "alert-info",
         @kind == :error && "alert-error"
       ]}>
-        <.icon :if={@kind == :info} name="hero-information-circle" class="size-5 shrink-0" />
-        <.icon :if={@kind == :error} name="hero-exclamation-circle" class="size-5 shrink-0" />
+        <.icon :if={@kind == :info} name="hero-information-circle-solid" class="size-5 shrink-0" />
+        <.icon :if={@kind == :error} name="hero-exclamation-circle-solid" class="size-5 shrink-0" />
         <div>
           <p :if={@title} class="font-semibold">{@title}</p>
           <p>{msg}</p>
         </div>
         <div class="flex-1" />
         <button type="button" class="group self-start cursor-pointer" aria-label={gettext("Close")}>
-          <.icon name="hero-x-mark" class="size-5 opacity-40 group-hover:opacity-70" />
+          <.icon name="hero-x-mark-solid" class="size-5 opacity-40 group-hover:opacity-70" />
         </button>
       </div>
     </div>
@@ -325,6 +327,7 @@ defmodule GamendWeb.CoreComponents do
     """
   end
 
+  # literal-ok: an HTML tag
   attr :tag, :string, default: "h1"
   attr :class, :any, default: nil, doc: "layout only (`flex items-center gap-3`), never a size"
 
@@ -677,7 +680,7 @@ defmodule GamendWeb.CoreComponents do
   defp error(assigns) do
     ~H"""
     <p class="mt-1.5 flex gap-2 items-center text-sm text-error">
-      <.icon name="hero-exclamation-circle" class="size-5" />
+      <.icon name="hero-exclamation-circle-solid" class="size-5" />
       {render_slot(@inner_block)}
     </p>
     """
@@ -1100,8 +1103,8 @@ defmodule GamendWeb.CoreComponents do
 
   ## Examples
 
-      <.icon name="hero-x-mark" />
-      <.icon name="hero-arrow-path" class="ms-1 size-3 motion-safe:animate-spin" />
+      <.icon name="hero-x-mark-solid" />
+      <.icon name="hero-arrow-path-solid" class="ms-1 size-3 motion-safe:animate-spin" />
   """
   attr :name, :string, required: true
   attr :class, :string, default: "size-4"
@@ -1273,7 +1276,9 @@ defmodule GamendWeb.CoreComponents do
         ~H"""
         <span class="badge badge-sm badge-ghost gap-1">
           <.icon
-            name={if @type == "currency", do: "hero-currency-dollar", else: "hero-cube"}
+            name={
+              if @type == RewardType.currency(), do: "hero-currency-dollar-solid", else: "hero-cube-solid"
+            }
             class="w-3 h-3"
           />
           {reward_text(@amount, @name || @code, @name)}
@@ -1479,7 +1484,7 @@ defmodule GamendWeb.CoreComponents do
             "peer-checked:ring-2 peer-checked:ring-base-content peer-checked:ring-offset-2 peer-checked:ring-offset-base-100",
             "peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary"
           ]}>
-            <.icon name="hero-no-symbol" class="size-4" />
+            <.icon name="hero-no-symbol-solid" class="size-4" />
           </span>
         </label>
         <label
@@ -1545,7 +1550,7 @@ defmodule GamendWeb.CoreComponents do
   ## Example
 
       <.empty_state
-        icon="hero-document-text"
+        icon="hero-document-text-solid"
         title={gettext("No results.")}
         text={gettext("Add a changelog file at CHANGELOG.md to display it here.")}
       />

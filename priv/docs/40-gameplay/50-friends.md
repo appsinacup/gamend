@@ -1,5 +1,5 @@
 ---
-icon: hero-heart
+icon: hero-heart-solid
 ---
 
 # Friends & Blacklist

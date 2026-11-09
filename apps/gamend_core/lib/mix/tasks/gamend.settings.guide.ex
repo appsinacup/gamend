@@ -63,7 +63,7 @@ defmodule Mix.Tasks.Gamend.Settings.Guide do
 
     """
     ---
-    icon: hero-adjustments-horizontal
+    icon: hero-adjustments-horizontal-solid
     generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
       declaration in the module that owns the setting
     ---

@@ -38,6 +38,7 @@ defmodule GamendWeb.WebRTCPeer do
   """
 
   use GenServer
+  require Gamend.Placeholder, as: Placeholder
   require Logger
 
   alias ExWebRTC.{
@@ -49,11 +50,11 @@ defmodule GamendWeb.WebRTCPeer do
   alias Gamend.Accounts
   alias Gamend.Hooks.HookSchemas
 
-  require GamendWeb.HookErrorCode, as: HookErrorCode
+  require GamendWeb.HookErrors.HookErrorCode, as: HookErrorCode
   require GamendWeb.WsFormat, as: WsFormat
 
   @call_hook "call_hook"
-  @unknown "unknown"
+  @unknown Placeholder.unknown()
 
   @events_channel "events"
 

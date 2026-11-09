@@ -396,7 +396,7 @@ defmodule GamendWeb.DocsLive do
   defp download_link(assigns) do
     ~H"""
     <a id="docs-download" href={@path} download class="btn btn-surface btn-sm">
-      <.icon name="hero-arrow-down-tray" class="size-4" />
+      <.icon name="hero-arrow-down-tray-solid" class="size-4" />
       {gettext("Download for offline")}
     </a>
     """
@@ -450,7 +450,7 @@ defmodule GamendWeb.DocsLive do
               <span class="hidden min-w-0 flex-1 basis-0 text-sm text-muted sm:line-clamp-1">
                 {guide.summary}
               </span>
-              <.icon name="hero-chevron-right" class="ms-auto size-4 shrink-0" />
+              <.icon name="hero-chevron-right-solid" class="ms-auto size-4 shrink-0" />
             </div>
           </.link>
         </section>
@@ -679,7 +679,7 @@ defmodule GamendWeb.DocsLive do
             rel="noopener"
             target="_blank"
           >
-            <.icon name="hero-pencil-square" class="size-4" />
+            <.icon name="hero-pencil-square-solid" class="size-4" />
             {gettext("Edit this page")}
           </a>
           <span :if={!@edit_url}></span>
@@ -804,7 +804,7 @@ defmodule GamendWeb.DocsLive do
           <details open={open?(entry, @current_slug)}>
             <summary class="flex cursor-pointer items-center gap-1 rounded-field px-2 py-1 font-medium hover:bg-base-200">
               <.icon
-                name="hero-chevron-right"
+                name="hero-chevron-right-solid"
                 class="size-3 shrink-0 transition-transform [details[open]>summary>&]:rotate-90"
               />
               <.icon name={entry.icon} class={"size-4 shrink-0 #{entry.color}"} />
@@ -880,7 +880,7 @@ defmodule GamendWeb.DocsLive do
           <.link navigate={@index_path} class="link link-hover">{@title}</.link>
         </li>
         <li :for={{crumb, last?} <- with_last(@breadcrumbs)} class="flex items-center gap-1">
-          <.icon name="hero-chevron-right" class="size-3" />
+          <.icon name="hero-chevron-right-solid" class="size-3" />
           <.link :if={!last?} navigate={"#{@item_path}/#{crumb.slug}"} class="link link-hover">
             {crumb.label}
           </.link>
@@ -947,13 +947,13 @@ defmodule GamendWeb.DocsLive do
       <%!-- The empty span keeps `justify-between` pushing a lone "next"
             to the right on the first page. --%>
       <.link :if={@prev} navigate={"#{@item_path}/#{@prev.slug}"} class="btn btn-surface btn-sm">
-        <.icon name="hero-chevron-left" class="size-4" />
+        <.icon name="hero-chevron-left-solid" class="size-4" />
         {@prev.title}
       </.link>
       <span :if={!@prev}></span>
       <.link :if={@next} navigate={"#{@item_path}/#{@next.slug}"} class="btn btn-surface btn-sm">
         {@next.title}
-        <.icon name="hero-chevron-right" class="size-4" />
+        <.icon name="hero-chevron-right-solid" class="size-4" />
       </.link>
     </nav>
     """

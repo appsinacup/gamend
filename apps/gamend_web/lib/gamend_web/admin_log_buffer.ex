@@ -10,7 +10,7 @@ defmodule GamendWeb.AdminLogBuffer do
 
   use GenServer
 
-  require GamendWeb.AdminLogSource, as: AdminLogSource
+  require GamendWeb.AdminLive.LogSource, as: LogSource
   require GamendWeb.FilterValue, as: FilterValue
 
   @name __MODULE__
@@ -168,10 +168,10 @@ defmodule GamendWeb.AdminLogBuffer do
   defp maybe_filter_source(entries, source) when source in [nil, "", FilterValue.everything()],
     do: entries
 
-  defp maybe_filter_source(entries, AdminLogSource.client()),
+  defp maybe_filter_source(entries, LogSource.client()),
     do: Enum.filter(entries, &client_entry?/1)
 
-  defp maybe_filter_source(entries, AdminLogSource.server()),
+  defp maybe_filter_source(entries, LogSource.server()),
     do: Enum.reject(entries, &client_entry?/1)
 
   defp maybe_filter_source(entries, _), do: entries

@@ -3,11 +3,7 @@ defmodule Gamend.Payments.CounterName do
   The counters of payments in `Gamend.Payments.Counters`.
   """
 
-  @all ~w(webhook)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(webhook)
 
   defmacro checkout_opened, do: "checkout.opened"
 end

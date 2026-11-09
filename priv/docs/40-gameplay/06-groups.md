@@ -1,5 +1,5 @@
 ---
-icon: hero-building-library
+icon: hero-building-library-solid
 ---
 
 # Groups

@@ -7,7 +7,9 @@ defmodule Gamend.LiteralLintTest do
     source |> LiteralLint.occurrences_in("x.ex") |> Enum.map(& &1.literal) |> Enum.sort()
   end
 
-  defp at(literal, module), do: %{literal: literal, file: "x.ex", line: 1, module: module}
+  defp at(literal, module, as \\ nil) do
+    %{literal: literal, file: "x.ex", line: 1, module: module, as: as}
+  end
 
   describe "what counts" do
     test "a name in a function head, a comparison, a value and a call" do
@@ -40,20 +42,61 @@ defmodule Gamend.LiteralLintTest do
                  "x.ex"
                )
     end
+
+    test "an attribute and a private function: each names it for one module" do
+      assert literals("""
+             defmodule M do
+               @failed "failed"
+               defp running, do: "running"
+               defmacrop creating, do: "creating"
+             end
+             """) == ["creating", "failed", "running"]
+    end
+
+    test "a comparison in a template, either way round" do
+      assert literals(~S|
+             defmodule M do
+               def a(assigns), do: ~H'<b :if={@s == "failed"} class={"gone" != @t}>x</b>'
+             end
+             |) == ["failed", "gone"]
+    end
+
+    test "where a template's comparison stands" do
+      source = ~S|
+             defmodule M do
+               def a(assigns) do
+                 ~H"""
+                 <i>x</i>
+                 <b :if={@s == "failed"}>x</b>
+                 """
+               end
+             end
+             |
+
+      assert [%{literal: "failed", line: 6}] = LiteralLint.occurrences_in(source, "x.ex")
+    end
+
+    test "a .heex file is a template, and its own module" do
+      assert [%{literal: "failed", line: 2, module: "a/x.heex"}] =
+               LiteralLint.occurrences_in(
+                 ~s|<i>x</i>\n<b :if={@s == "failed"}>x</b>\n|,
+                 "a/x.heex"
+               )
+    end
   end
 
   describe "what does not" do
-    test "the value of an attribute, documentation included" do
+    test "documentation" do
       assert literals("""
              defmodule M do
                @moduledoc "failed"
-               @failed "failed"
-               def a, do: @failed
+               @doc "failed"
+               def a, do: 1
              end
              """) == []
     end
 
-    test "a function that is nothing but its value, and only that" do
+    test "a public function that is nothing but its value, and only that" do
       assert literals("""
              defmodule M do
                defmacro failed, do: "failed"
@@ -61,6 +104,14 @@ defmodule Gamend.LiteralLintTest do
                def with_arg(_x), do: "creating"
              end
              """) == ["creating"]
+    end
+
+    test "what an owner declares" do
+      assert literals(~S|
+             defmodule M do
+               use Gamend.Names, ~w(running failed)
+             end
+             |) == []
     end
 
     test "text: gettext, Logger, raise, and anything with a space" do
@@ -74,10 +125,10 @@ defmodule Gamend.LiteralLintTest do
              """) == []
     end
 
-    test "a template, and any sigil but a string ~w" do
+    test "a template's markup, and any other sigil but a string ~w" do
       assert literals(~S|
              defmodule M do
-               def a(assigns), do: ~H"<b :if={@s == "failed"}>x</b>"
+               def a(assigns), do: ~H'<b class="failed" id={"gone"}>x</b>'
                def b, do: ~r/failed/
              end
              |) == []
@@ -131,6 +182,11 @@ defmodule Gamend.LiteralLintTest do
              end
              """) == ["failed"]
     end
+
+    test "in a template, as a HEEx comment" do
+      source = ~s|<%!-- literal-ok: the browser's --%>\n<b :if={@s == "submit"}>x</b>\n|
+      assert LiteralLint.occurrences_in(source, "x.heex") == []
+    end
   end
 
   describe "offenders/1" do
@@ -152,30 +208,33 @@ defmodule Gamend.LiteralLintTest do
       found = [at("a1", "A"), at("a1", "B"), at("b1", "A"), at("b1", "B"), at("b1", "C")]
       assert [%{literal: "b1"}, %{literal: "a1"}] = LiteralLint.offenders(found)
     end
-  end
 
-  describe "the baseline" do
-    setup do
-      found =
-        for literal <- ["failed", "gamend.db"], module <- ["A", "B"], do: at(literal, module)
-
-      {:ok, offenders: LiteralLint.offenders(found)}
+    test "an attribute is its module's own name" do
+      assert LiteralLint.offenders([at("ebin", "Gamend.Hooks.A", :ebin)]) == []
     end
 
-    test "a count within it passes, and one past it does not", %{offenders: offenders} do
-      assert LiteralLint.new_offenders(offenders, %{"failed" => 2, "gamend.db" => 2}) == []
-
-      assert [%{literal: "failed"}] =
-               LiteralLint.new_offenders(offenders, %{"failed" => 1, "gamend.db" => 2})
+    test "the same name twice in one context has two homes" do
+      assert [%{literal: "ebin", count: 2, modules: 2}] =
+               LiteralLint.offenders([
+                 at("ebin", "Gamend.Hooks.A", :ebin),
+                 at("ebin", "Gamend.Hooks.B", :ebin)
+               ])
     end
 
-    test "a string it does not know is new", %{offenders: offenders} do
-      assert [_, _] = LiteralLint.new_offenders(offenders, %{})
+    test "across contexts it is a coincidence, and so is another name" do
+      assert LiteralLint.offenders([
+               at("page", "Gamend.Accounts.A", :page),
+               at("page", "GamendWeb.Schemas.B", :page)
+             ]) == []
+
+      assert LiteralLint.offenders([
+               at("page", "Gamend.Hooks.A", :page),
+               at("page", "Gamend.Hooks.B", :seed)
+             ]) == []
     end
 
-    test "reads back what it wrote, comments aside", %{offenders: offenders} do
-      assert offenders |> LiteralLint.format_baseline() |> LiteralLint.parse_baseline() ==
-               %{"failed" => 2, "gamend.db" => 2}
+    test "a local name does not add to a string typed out elsewhere" do
+      assert LiteralLint.offenders([at("failed", "A"), at("failed", "B.C", :failed)]) == []
     end
   end
 end

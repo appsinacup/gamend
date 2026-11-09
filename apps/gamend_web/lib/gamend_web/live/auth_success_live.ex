@@ -1,7 +1,7 @@
 defmodule GamendWeb.AuthSuccessLive do
   use GamendWeb, :live_view
   require Logger
-  require GamendWeb.AuthError, as: AuthError
+  require GamendWeb.Auth.AuthError, as: AuthError
   require Gamend.OAuth.SessionStatus, as: SessionStatus
 
   @not_found "not_found"

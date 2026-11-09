@@ -287,7 +287,7 @@ defmodule GamendWeb.LeaderboardsLive do
             title={gettext("Older")}
             aria-label={gettext("Older")}
           >
-            <.icon name="hero-chevron-left" class="size-4 rtl:-scale-x-100" />
+            <.icon name="hero-chevron-left-solid" class="size-4 rtl:-scale-x-100" />
           </button>
           <div class="px-1 text-sm">
             <span class="font-medium">
@@ -304,7 +304,7 @@ defmodule GamendWeb.LeaderboardsLive do
             title={gettext("Newer")}
             aria-label={gettext("Newer")}
           >
-            <.icon name="hero-chevron-right" class="size-4 rtl:-scale-x-100" />
+            <.icon name="hero-chevron-right-solid" class="size-4 rtl:-scale-x-100" />
           </button>
         </div>
         <span
@@ -368,7 +368,7 @@ defmodule GamendWeb.LeaderboardsLive do
               {gettext("Only you see this rank. Register to appear on the board.")}
             </p>
             <.link href={register_href(@locale)} class="btn btn-primary btn-sm">
-              <.icon name="hero-user-plus" class="size-4" />
+              <.icon name="hero-user-plus-solid" class="size-4" />
               {gettext("Register")}
             </.link>
           </div>

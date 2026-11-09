@@ -31,8 +31,9 @@ defmodule Gamend.GDScript do
   alias Gamend.GDScript.Lexer
   alias Gamend.GDScript.Parser
   alias Gamend.GDScript.Registry
+  require Gamend.GDScript.Word, as: Word
 
-  @nofile "nofile"
+  @nofile Word.nofile()
 
   @doc """
   Compile GDScript source into Elixir source for `module`.

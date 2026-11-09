@@ -3,9 +3,5 @@ defmodule Gamend.ReadyChecks.CheckScope do
   What a ready check runs on.
   """
 
-  @all ~w(lobby party)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(lobby party)
 end

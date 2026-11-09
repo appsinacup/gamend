@@ -1,5 +1,5 @@
 ---
-icon: hero-arrows-pointing-out
+icon: hero-arrows-pointing-out-solid
 ---
 
 # Scaling

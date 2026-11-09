@@ -11,6 +11,8 @@ defmodule GamendWeb.UserLive.Settings.ItemsTab do
   alias Gamend.Inventory
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
+
   @page_size 50
 
   def assign_defaults(socket) do
@@ -23,7 +25,7 @@ defmodule GamendWeb.UserLive.Settings.ItemsTab do
 
   def tab(assigns) do
     ~H"""
-    <div :if={@settings_tab == "items"}>
+    <div :if={@settings_tab == SettingsTab.items()}>
       <div class="card bg-base-200 p-4 rounded-lg mt-6">
         <div class="font-semibold text-lg">{gettext("Items")}</div>
 

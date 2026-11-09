@@ -1,5 +1,5 @@
 ---
-icon: hero-list-bullet
+icon: hero-list-bullet-solid
 ---
 
 # Results

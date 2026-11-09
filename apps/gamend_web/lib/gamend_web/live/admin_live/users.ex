@@ -65,40 +65,40 @@ defmodule GamendWeb.AdminLive.Users do
               <div class="flex flex-wrap items-center gap-2">
                 <button
                   phx-click="sort_users"
-                  phx-value-field="inserted_at"
+                  phx-value-field={SortKey.inserted_at()}
                   class={[
                     "btn btn-xs",
-                    if(@sort_field == "inserted_at", do: "btn-primary", else: "btn-surface")
+                    if(@sort_field == SortKey.inserted_at(), do: "btn-primary", else: "btn-surface")
                   ]}
                 >
                   Created
-                  <%= if @sort_field == "inserted_at" do %>
+                  <%= if @sort_field == SortKey.inserted_at() do %>
                     {if(@sort_dir == "desc", do: "\u25BC", else: "\u25B2")}
                   <% end %>
                 </button>
                 <button
                   phx-click="sort_users"
-                  phx-value-field="updated_at"
+                  phx-value-field={SortKey.updated_at()}
                   class={[
                     "btn btn-xs",
-                    if(@sort_field == "updated_at", do: "btn-primary", else: "btn-surface")
+                    if(@sort_field == SortKey.updated_at(), do: "btn-primary", else: "btn-surface")
                   ]}
                 >
                   Updated
-                  <%= if @sort_field == "updated_at" do %>
+                  <%= if @sort_field == SortKey.updated_at() do %>
                     {if(@sort_dir == "desc", do: "\u25BC", else: "\u25B2")}
                   <% end %>
                 </button>
                 <button
                   phx-click="sort_users"
-                  phx-value-field="last_seen_at"
+                  phx-value-field={SortKey.last_seen_at()}
                   class={[
                     "btn btn-xs",
-                    if(@sort_field == "last_seen_at", do: "btn-primary", else: "btn-surface")
+                    if(@sort_field == SortKey.last_seen_at(), do: "btn-primary", else: "btn-surface")
                   ]}
                 >
                   Last Seen
-                  <%= if @sort_field == "last_seen_at" do %>
+                  <%= if @sort_field == SortKey.last_seen_at() do %>
                     {if(@sort_dir == "desc", do: "\u25BC", else: "\u25B2")}
                   <% end %>
                 </button>
@@ -649,7 +649,7 @@ defmodule GamendWeb.AdminLive.Users do
                   >
                     <BanForm.fields form={@ban_form} />
                     <button type="submit" class="btn btn-warning btn-sm">
-                      <.icon name="hero-no-symbol" class="w-4 h-4" /> Ban
+                      <.icon name="hero-no-symbol-solid" class="w-4 h-4" /> Ban
                     </button>
                   </form>
                   <p class="text-xs text-muted">
@@ -702,8 +702,8 @@ defmodule GamendWeb.AdminLive.Users do
                       <td>
                         <span class={[
                           "badge badge-xs",
-                          token.context == "session" && "badge-primary",
-                          token.context == "login" && "badge-accent",
+                          token.context == TokenContext.session() && "badge-primary",
+                          token.context == TokenContext.login() && "badge-accent",
                           token.context == "confirm" && "badge-info",
                           String.starts_with?(token.context || "", "change:") && "badge-warning"
                         ]}>

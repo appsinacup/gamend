@@ -39,6 +39,7 @@ defmodule Gamend.Analytics do
 
   import Ecto.Query
 
+  require Gamend.Placeholder, as: Placeholder
   require Logger
 
   alias Gamend.Accounts
@@ -60,7 +61,7 @@ defmodule Gamend.Analytics do
   require Gamend.Payments.PaymentEnvironment, as: PaymentEnvironment
   require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
 
-  @none "none"
+  @none Placeholder.none()
 
   @stats_cache_ttl_ms :timer.minutes(5)
   @snapshot_cache_ttl_ms :timer.minutes(1)

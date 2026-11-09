@@ -89,22 +89,28 @@ defmodule GamendWeb.AdminLive.Parties do
                   class="select select-bordered select-sm"
                   phx-change="sort"
                 >
-                  <option value="updated_at" selected={@sort_by == "updated_at"}>
+                  <option value={SortKey.updated_at()} selected={@sort_by == SortKey.updated_at()}>
                     Updated (newest)
                   </option>
-                  <option value="updated_at_asc" selected={@sort_by == "updated_at_asc"}>
+                  <option
+                    value={SortKey.updated_at_asc()}
+                    selected={@sort_by == SortKey.updated_at_asc()}
+                  >
                     Updated (oldest)
                   </option>
-                  <option value="inserted_at" selected={@sort_by == "inserted_at"}>
+                  <option value={SortKey.inserted_at()} selected={@sort_by == SortKey.inserted_at()}>
                     Created (newest)
                   </option>
-                  <option value="inserted_at_asc" selected={@sort_by == "inserted_at_asc"}>
+                  <option
+                    value={SortKey.inserted_at_asc()}
+                    selected={@sort_by == SortKey.inserted_at_asc()}
+                  >
                     Created (oldest)
                   </option>
                   <option value="max_size" selected={@sort_by == "max_size"}>
                     Max size (desc)
                   </option>
-                  <option value="max_size_asc" selected={@sort_by == "max_size_asc"}>
+                  <option value={SortKey.max_size_asc()} selected={@sort_by == SortKey.max_size_asc()}>
                     Max size (asc)
                   </option>
                 </select>

@@ -1,5 +1,5 @@
 ---
-icon: hero-envelope
+icon: hero-envelope-solid
 ---
 
 # Email Setup

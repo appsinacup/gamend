@@ -24,11 +24,13 @@ defmodule GamendWeb.RuntimeIntrospection do
   alias Gamend.Repo.MigrationPaths
   alias Gamend.Schedule
 
+  require GamendWeb.AdminLive.RuntimeRow, as: RuntimeRow
+
   @json "json"
   @set "set"
 
-  @server_source "server"
-  @plugin_source "plugin"
+  @server_source RuntimeRow.server()
+  @plugin_source RuntimeRow.plugin()
 
   # ── Compile-time sources ────────────────────────────────────────────────
   # Both files live at the repo root; when this app is consumed as a bare dep
@@ -79,6 +81,7 @@ defmodule GamendWeb.RuntimeIntrospection do
       String.contains?(name, "purchase") or String.contains?(name, "entitlement") -> "Payments"
       String.contains?(name, "wallet") or String.contains?(name, "inventory") -> "Economy"
       String.contains?(name, "party") -> "Party"
+      # literal-ok: a word inside a table's name
       String.contains?(name, "group") -> "Group"
       String.contains?(name, "lobby") -> "Lobby"
       String.contains?(name, "user") -> "User"
@@ -113,7 +116,10 @@ defmodule GamendWeb.RuntimeIntrospection do
             Code.ensure_loaded?(mod) and function_exported?(mod, name, arity),
             do: plugin
 
-      kind = if Gamend.Hooks.pipeline_hook?(name, arity), do: "pipeline", else: "fanout"
+      kind =
+        if Gamend.Hooks.pipeline_hook?(name, arity),
+          do: RuntimeRow.pipeline(),
+          else: RuntimeRow.fanout()
 
       %{
         id: "#{name}/#{arity}",
@@ -469,8 +475,8 @@ defmodule GamendWeb.RuntimeIntrospection do
 
   defp normalize_delete_rule(rule) do
     case String.upcase(to_string(rule)) do
-      "CASCADE" -> "cascade"
-      "SET NULL" -> "nilify"
+      "CASCADE" -> RuntimeRow.cascade()
+      "SET NULL" -> RuntimeRow.nilify()
       "SET DEFAULT" -> "set default"
       "RESTRICT" -> "restrict"
       _ -> "no action"

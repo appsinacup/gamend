@@ -54,7 +54,12 @@ defmodule GamendWeb.AdminLive.Tournaments do
                 <%!-- LiveView only sends change events from inputs inside a form. --%>
                 <form id="tournaments-state-filter-form" phx-change="filter_state" phx-no-unused-field>
                   <select class="select select-sm" name="state">
-                    <option value="all" selected={@state_filter == "all"}>All states</option>
+                    <option
+                      value={FilterValue.everything()}
+                      selected={@state_filter == FilterValue.everything()}
+                    >
+                      All states
+                    </option>
                     <option
                       :for={state <- Tournament.states()}
                       value={state}
@@ -205,7 +210,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                   Open registration
                 </button>
                 <button
-                  :if={@detail.tournament.state == "registration"}
+                  :if={@detail.tournament.state == TournamentState.registration()}
                   phx-click="force_draw"
                   data-confirm
                   class="btn btn-surface btn-sm"
@@ -229,7 +234,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                   Cancel tournament
                 </button>
                 <button
-                  :if={@detail.tournament.state == "cancelled"}
+                  :if={@detail.tournament.state == TournamentState.cancelled()}
                   phx-click="force_reopen"
                   class="btn btn-surface btn-sm"
                 >

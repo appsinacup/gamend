@@ -39,6 +39,7 @@ defmodule Mix.Tasks.Host.Proto.Gen do
 
   @proto "proto"
   @clients "clients"
+  # literal-ok: a folder of a different tree
   @lib "lib"
 
   @shortdoc "Generate protobuf bindings (Elixir, JS, Godot) from .proto files"

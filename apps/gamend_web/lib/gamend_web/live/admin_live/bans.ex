@@ -194,9 +194,13 @@ defmodule GamendWeb.AdminLive.Bans do
             <div>
               <label class="label text-xs">Kind</label>
               <select name="kind" class="select select-bordered select-sm">
-                <option value="account" selected={@form["kind"] == "account"}>Account</option>
+                <option value={BanKind.account()} selected={@form["kind"] == BanKind.account()}>
+                  Account
+                </option>
                 <option value="ip" selected={@form["kind"] == "ip"}>IP address</option>
-                <option value="chat" selected={@form["kind"] == "chat"}>Chat (mute)</option>
+                <option value={BanKind.chat()} selected={@form["kind"] == BanKind.chat()}>
+                  Chat (mute)
+                </option>
               </select>
             </div>
             <div>
@@ -211,9 +215,9 @@ defmodule GamendWeb.AdminLive.Bans do
               />
             </div>
             <BanForm.fields form={@form} />
-            <BanForm.chat_fields :if={@form["kind"] == "chat"} form={@form} />
+            <BanForm.chat_fields :if={@form["kind"] == BanKind.chat()} form={@form} />
             <button type="submit" class="btn btn-warning btn-sm">
-              <.icon name="hero-no-symbol" class="w-4 h-4" /> Ban
+              <.icon name="hero-no-symbol-solid" class="w-4 h-4" /> Ban
             </button>
           </form>
 
@@ -227,9 +231,13 @@ defmodule GamendWeb.AdminLive.Bans do
           >
             <select name="kind" class="select select-sm">
               <option value="" selected={@kind_filter == ""}>All kinds</option>
-              <option value="account" selected={@kind_filter == "account"}>Accounts</option>
+              <option value={BanKind.account()} selected={@kind_filter == BanKind.account()}>
+                Accounts
+              </option>
               <option value="ip" selected={@kind_filter == "ip"}>IP addresses</option>
-              <option value="chat" selected={@kind_filter == "chat"}>Chat mutes</option>
+              <option value={BanKind.chat()} selected={@kind_filter == BanKind.chat()}>
+                Chat mutes
+              </option>
             </select>
             <input
               type="text"

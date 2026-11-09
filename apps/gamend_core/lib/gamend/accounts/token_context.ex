@@ -3,9 +3,5 @@ defmodule Gamend.Accounts.TokenContext do
   The `user_tokens.context` values that name what a token is for.
   """
 
-  @all ~w(session login confirm confirm_code)
-
-  for name <- @all do
-    defmacro unquote(String.to_atom(name))(), do: unquote(name)
-  end
+  use Gamend.Names, ~w(session login confirm confirm_code)
 end

@@ -382,14 +382,14 @@ defmodule GamendWeb.ReportLive do
         </div>
 
         <.panel :if={@sent} class="space-y-4 text-center" id="report-sent">
-          <.icon name="hero-check-circle" class="mx-auto size-12 text-success" />
+          <.icon name="hero-check-circle-solid" class="mx-auto size-12 text-success" />
           <p class="text-lg font-semibold">{gettext("Thanks. We read every report.")}</p>
           <p :if={user_id_present?(@current_scope)} class="text-muted">
             {gettext("We will tell you in your notifications when it is fixed.")}
           </p>
           <div class="flex flex-wrap justify-center gap-2">
             <button type="button" class="btn btn-surface" phx-click="edit">
-              <.icon name="hero-pencil-square" class="size-4" /> {gettext("Edit this report")}
+              <.icon name="hero-pencil-square-solid" class="size-4" /> {gettext("Edit this report")}
             </button>
             <button type="button" class="btn btn-surface" phx-click="again">
               {gettext("Report something else")}
@@ -494,7 +494,7 @@ defmodule GamendWeb.ReportLive do
                 data-report-drop
                 class="flex cursor-pointer flex-col items-center gap-1 rounded-box border border-dashed border-base-content/30 p-5 text-center text-sm text-muted hover:border-base-content/60"
               >
-                <.icon name="hero-photo" class="size-6" />
+                <.icon name="hero-photo-solid" class="size-6" />
                 <span>{gettext("Choose, drop or paste an image")}</span>
                 <span class="text-xs">
                   {ngettext("Up to %{count} image", "Up to %{count} images", @kind.max_attachments())}
@@ -510,7 +510,7 @@ defmodule GamendWeb.ReportLive do
                     class="btn btn-circle btn-xs absolute -end-2 -top-2"
                     aria-label={gettext("Remove image")}
                   >
-                    <.icon name="hero-x-mark" class="size-3" />
+                    <.icon name="hero-x-mark-solid" class="size-3" />
                   </button>
                   <p
                     :for={err <- upload_errors(@uploads.attachments, entry)}
@@ -533,7 +533,7 @@ defmodule GamendWeb.ReportLive do
             <p :if={@error} class="text-error" role="alert" id="report-error">{@error}</p>
 
             <button type="submit" class="btn btn-primary" phx-disable-with={gettext("Sending…")}>
-              <.icon name="hero-paper-airplane" class="size-4" /> {gettext("Send report")}
+              <.icon name="hero-paper-airplane-solid" class="size-4" /> {gettext("Send report")}
             </button>
           </form>
         </.panel>

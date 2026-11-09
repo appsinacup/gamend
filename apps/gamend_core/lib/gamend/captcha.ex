@@ -40,9 +40,10 @@ defmodule Gamend.Captcha do
     group: :captcha,
     label: "Captcha"
 
+  require Gamend.Placeholder, as: Placeholder
   require Logger
 
-  @unknown "unknown"
+  @unknown Placeholder.unknown()
 
   setting(:enabled, :boolean,
     default: false,

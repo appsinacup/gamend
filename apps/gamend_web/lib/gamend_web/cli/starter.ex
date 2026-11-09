@@ -20,6 +20,7 @@ defmodule GamendWeb.CLI.Starter do
 
   require Gamend.UrlScheme, as: UrlScheme
 
+  # literal-ok: the folder's name, not the command's
   @starter "starter"
   @default "default"
 

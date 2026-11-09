@@ -1,5 +1,5 @@
 ---
-icon: hero-users
+icon: hero-users-solid
 ---
 
 # Matchmaking

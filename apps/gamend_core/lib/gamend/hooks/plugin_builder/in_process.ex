@@ -39,7 +39,9 @@ defmodule Gamend.Hooks.PluginBuilder.InProcess do
   alias Gamend.Hooks.PluginBuilder.Project
   alias Gamend.Hooks.PluginManager
 
-  @ebin "ebin"
+  require Gamend.Hooks.PluginFile, as: PluginFile
+
+  @ebin PluginFile.ebin()
   @deps "deps"
   @gen "gen"
 

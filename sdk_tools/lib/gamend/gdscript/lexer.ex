@@ -19,8 +19,9 @@ defmodule Gamend.GDScript.Lexer do
   """
 
   alias Gamend.GDScript.CompileError
+  require Gamend.GDScript.Word, as: Word
 
-  @nofile "nofile"
+  @nofile Word.nofile()
 
   # Unsupported constructs are keywords too. Lexing `for` as an identifier
   # would produce "expected end of line, got `x`"; as a keyword the parser can

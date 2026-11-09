@@ -43,16 +43,17 @@ defmodule Gamend.GDScript.Parser do
   """
 
   alias Gamend.GDScript.CompileError
+  require Gamend.GDScript.Word, as: Word
 
   @match "match"
-  @break "break"
-  @continue "continue"
+  @break Word.break()
+  @continue Word.continue()
   @class "class"
   @static "static"
 
   @doc "Parse tokens into a list of top-level statements."
   @spec parse([tuple()], String.t()) :: [tuple()]
-  def parse(tokens, file \\ "nofile") do
+  def parse(tokens, file \\ Word.nofile()) do
     {statements, rest} = parse_statements(tokens, %{file: file, top_level?: true})
 
     case rest do

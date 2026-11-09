@@ -89,7 +89,7 @@ defmodule GamendWeb.AdminLive.Sessions do
                       <% end %>
                     </td>
                     <td class="text-sm">
-                      <%= if session.context == "session" do %>
+                      <%= if session.context == TokenContext.session() do %>
                         <.timestamp at={DateTime.add(session.inserted_at, 14, :day)} />
                       <% else %>
                         <span class="text-gray-500">-</span>

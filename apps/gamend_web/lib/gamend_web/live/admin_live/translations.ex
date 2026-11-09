@@ -4,6 +4,7 @@ defmodule GamendWeb.AdminLive.Translations do
   alias GamendWeb.Gettext.Stats, as: TranslationStats
   alias GamendWeb.LiveHelpers
 
+  require GamendWeb.Gettext.TranslationFilter, as: TranslationFilter
   require GamendWeb.UrlParam, as: UrlParam
 
   use GamendWeb.UrlState,
@@ -143,10 +144,16 @@ defmodule GamendWeb.AdminLive.Translations do
                     id="translations-status-filter"
                   >
                     <option value="" selected={@selected_status == ""}>All</option>
-                    <option value="translated" selected={@selected_status == "translated"}>
+                    <option
+                      value={TranslationFilter.translated()}
+                      selected={@selected_status == TranslationFilter.translated()}
+                    >
                       Translated
                     </option>
-                    <option value="untranslated" selected={@selected_status == "untranslated"}>
+                    <option
+                      value={TranslationFilter.untranslated()}
+                      selected={@selected_status == TranslationFilter.untranslated()}
+                    >
                       Untranslated
                     </option>
                   </select>

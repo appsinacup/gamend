@@ -1,5 +1,5 @@
 ---
 title: Operations
-icon: hero-server-stack
+icon: hero-server-stack-solid
 color: text-slate-400
 ---

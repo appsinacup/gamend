@@ -1,5 +1,5 @@
 ---
-icon: hero-arrow-down-tray
+icon: hero-arrow-down-tray-solid
 ---
 
 # Download and run

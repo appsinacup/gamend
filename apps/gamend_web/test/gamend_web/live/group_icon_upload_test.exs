@@ -122,6 +122,25 @@ defmodule GamendWeb.GroupIconUploadTest do
     assert group.icon_url == "/icons/star.svg?color=info"
   end
 
+  # Every colour in turn: after the first, nothing but the colour changes.
+  test "the dialog draws the colour chosen with no icon picked", %{conn: conn, user: user} do
+    {:ok, view, _html} =
+      live_isolated(conn, __MODULE__.Host, session: %{"user_id" => user.id})
+
+    view |> element("#open-new-team") |> render_click()
+
+    for color <- Gamend.Icons.colors() do
+      view
+      |> element("#new-team-form")
+      |> render_change(%{"group" => %{"icon_url" => "", "icon_url_color" => color}})
+
+      assert has_element?(
+               view,
+               "#new-team-form input[name='group[icon_url_color]'][value='#{color}'][checked]"
+             )
+    end
+  end
+
   test "closing the dialog drops the picked image", %{conn: conn, user: user} do
     {:ok, view, _html} =
       live_isolated(conn, __MODULE__.Host, session: %{"user_id" => user.id})

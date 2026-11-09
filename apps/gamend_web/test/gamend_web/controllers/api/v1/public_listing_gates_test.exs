@@ -189,6 +189,7 @@ defmodule GamendWeb.Api.V1.PublicListingGatesTest do
       disable(:list_quests)
 
       assert conn |> get("/api/v1/quests") |> response(404)
+      assert conn |> get("/api/v1/quests/redeemable") |> response(404)
       assert conn |> get("/api/v1/quests/user/#{Ecto.UUID.generate()}") |> response(404)
     end
   end

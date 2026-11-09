@@ -173,8 +173,8 @@ defmodule GamendWeb.DocsSidebarLiveTest do
     assert html =~ ~s(href="/docs/manual/scripting")
 
     # The page's icon and its category in the tree wear the category's colour.
-    assert html =~ "hero-document-text size-8 shrink-0 opacity-80 text-rose-400"
-    assert html =~ "hero-folder size-4 shrink-0 text-rose-400"
+    assert html =~ "hero-document-text-solid size-8 shrink-0 opacity-80 text-rose-400"
+    assert html =~ "hero-folder-solid size-4 shrink-0 text-rose-400"
   end
 
   test "a category without an index gets a landing page of its children" do

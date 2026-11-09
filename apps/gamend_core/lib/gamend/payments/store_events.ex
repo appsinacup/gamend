@@ -13,11 +13,12 @@ defmodule Gamend.Payments.StoreEvents do
   alias Gamend.Payments.ProviderConfig
   alias Gamend.Payments.Purchase
 
+  require Gamend.Placeholder, as: Placeholder
   require Gamend.Payments.PaymentEnvironment, as: PaymentEnvironment
   require Gamend.Payments.ProviderId, as: ProviderId
   require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
 
-  @unknown "unknown"
+  @unknown Placeholder.unknown()
 
   @apple_reversal_notifications ~w(REFUND REVOKE EXPIRED)
 

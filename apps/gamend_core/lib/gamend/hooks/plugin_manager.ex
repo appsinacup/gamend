@@ -21,6 +21,7 @@ defmodule Gamend.Hooks.PluginManager do
 
   use GenServer
 
+  require Gamend.Hooks.PluginFile, as: PluginFile
   require Logger
 
   alias Gamend.Hooks.Declarations
@@ -46,7 +47,7 @@ defmodule Gamend.Hooks.PluginManager do
   @ok "ok"
   @user_id "user_id"
 
-  @ebin "ebin"
+  @ebin PluginFile.ebin()
 
   setting(:call_timeout_ms, :integer,
     default: 60_000,

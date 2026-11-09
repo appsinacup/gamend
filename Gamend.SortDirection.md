@@ -3,10 +3,16 @@
 
 The direction of a sorted list.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `all`
 
 ```elixir
-@spec all() :: [String.t()]
+@spec all() :: [t()]
 ```
 
 Every value.

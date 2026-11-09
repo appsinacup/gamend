@@ -3,6 +3,20 @@
 
 What happens to a match past its deadline.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `forfeit_both`
 *macro* 
 

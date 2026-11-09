@@ -3,10 +3,27 @@
 
 The groups a player's notification choices are made per.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `account`
 *macro* 
 
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `chat`
+*macro* 
+
+# `payments`
 *macro* 
 
 # `quests`

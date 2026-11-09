@@ -3,13 +3,19 @@
 
 A player's progress on a quest: `quest_progress.status`.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `active`
 *macro* 
 
 # `all`
 
 ```elixir
-@spec all() :: [String.t()]
+@spec all() :: [t()]
 ```
 
 Every value.

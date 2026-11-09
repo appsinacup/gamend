@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1410">
+    <meta name="project" content="gamend_core v1.1.1412">
 
 
-    <title>Gamend.Quests.Quest — gamend_core v1.1.1410</title>
+    <title>Gamend.Quests.Quest — gamend_core v1.1.1412</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-5F62CD45.js"></script>
+    <script defer src="dist/sidebar_items-4D32F96B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1410
+          v1.1.1412
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Quests.<wbr />Quest</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1410)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1412)</small>
 
     </h1>
 
@@ -118,7 +118,10 @@ gamend_core
 achievement), <code class="inline">&quot;daily&quot;</code>, <code class="inline">&quot;weekly&quot;</code>, <code class="inline">&quot;monthly&quot;</code>, or <code class="inline">&quot;interval&quot;</code> with
 <code class="inline">reset_interval_days</code> (biweekly = 14, or any cadence).</li><li><strong><code class="inline">starts_at</code>/<code class="inline">ends_at</code></strong> — an availability window (&quot;event&quot; quests). Works
 with any reset, so a daily can run only during a seasonal window.</li><li><strong><code class="inline">prerequisite_quest_key</code></strong> — must be completed first (&quot;chains&quot;). Works
-with any reset, so dailies and events can chain too.</li></ul><h2 id="module-fields" class="section-heading"><a href="#module-fields" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Fields</span></h2><ul><li><code class="inline">key</code> — unique slug (e.g. &quot;daily_win_3&quot;); progress rows reference it</li><li><code class="inline">objectives</code> — list of <a href="Gamend.Quests.Objective.html"><code class="inline">Gamend.Quests.Objective</code></a> (event/target/params)</li><li><code class="inline">rewards</code> — list of <a href="Gamend.Quests.Reward.html"><code class="inline">Gamend.Quests.Reward</code></a>, paid exactly-once</li><li><code class="inline">auto_claim</code> — grant rewards on completion without a claim step</li><li><code class="inline">hidden</code> — details withheld until earned (a teaser); the row still lists</li><li><code class="inline">active</code> — inactive quests never advance and are not listed</li></ul><h2 id="module-grouping-which-has-three-unrelated-forms" class="section-heading"><a href="#module-grouping-which-has-three-unrelated-forms" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Grouping, which has three unrelated forms</span></h2><ul><li><strong><code class="inline">category</code></strong> — a label your UI filters or tabs by. No engine behavior;
+with any reset, so dailies and events can chain too.</li></ul><h2 id="module-fields" class="section-heading"><a href="#module-fields" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Fields</span></h2><ul><li><code class="inline">key</code> — unique slug (e.g. &quot;daily_win_3&quot;); progress rows reference it</li><li><code class="inline">objectives</code> — list of <a href="Gamend.Quests.Objective.html"><code class="inline">Gamend.Quests.Objective</code></a> (event/target/params)</li><li><code class="inline">rewards</code> — list of <a href="Gamend.Quests.Reward.html"><code class="inline">Gamend.Quests.Reward</code></a>, paid exactly-once</li><li><code class="inline">auto_claim</code> — grant rewards on completion without a claim step</li><li><code class="inline">hidden</code> — details withheld until earned (a teaser); the row still lists</li><li><code class="inline">active</code> — inactive quests never advance and are not listed</li><li><code class="inline">code_only</code> — nothing but a redemption code finishes it
+(<a href="Gamend.Quests.html#redeem_code/2"><code class="inline">Gamend.Quests.redeem_code/2</code></a>). It has no objectives, never resets, and
+sits in no group or chain, which keeps the event engine, periods and
+collapsing out of it. It lists for a player only once they redeem it</li></ul><h2 id="module-grouping-which-has-three-unrelated-forms" class="section-heading"><a href="#module-grouping-which-has-three-unrelated-forms" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Grouping, which has three unrelated forms</span></h2><ul><li><strong><code class="inline">category</code></strong> — a label your UI filters or tabs by. No engine behavior;
 every quest in a category still lists as its own row.</li><li><strong><code class="inline">group_key</code></strong> (+ <code class="inline">group_title</code>, naming the collapsed entry) — many quests,
 one list entry the player opens. Unordered: every member is live at once and
 the entry stands for whichever is most worth acting on (52 countries to
@@ -189,7 +192,7 @@ collapses as a chain first, then contributes its surviving entry to the group.</
       <h1 class="signature" translate="no">t()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest.ex#L48" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest.ex#L52" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -205,6 +208,7 @@ collapses as a chain first, then contributes its surviving entry to the group.</
   active: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   auto_claim: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   category: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
+  code_only: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   counter: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   description: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
   ends_at: <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(),
@@ -256,7 +260,7 @@ collapses as a chain first, then contributes its surviving entry to the group.</
       <h1 class="signature" translate="no">resets()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest.ex#L106" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -277,9 +281,9 @@ collapses as a chain first, then contributes its surviving entry to the group.</
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1410">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1412">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1410">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1412">Hex Preview</a>
 
             </span>
 

@@ -1,10 +1,24 @@
-# `Gamend.RealtimeEvent`
-[🔗](https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/realtime_event.ex#L1)
+# `Gamend.Realtime.RealtimeEvent`
+[🔗](https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/realtime/realtime_event.ex#L1)
 
 The names of the server-to-client channel events core and the channels both spell. The registry that lists them with their payloads is `GamendWeb.RealtimeEvents`.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `account_banned`
 *macro* 
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
 
 # `chat_message_created`
 *macro* 

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1410">
+    <meta name="project" content="gamend_core v1.1.1412">
 
 
-    <title>Gamend.DemoSeed — gamend_core v1.1.1410</title>
+    <title>Gamend.DemoSeed — gamend_core v1.1.1412</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-5F62CD45.js"></script>
+    <script defer src="dist/sidebar_items-4D32F96B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1410
+          v1.1.1412
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />DemoSeed</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1410)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1412)</small>
 
     </h1>
 
@@ -125,7 +125,8 @@ same arguments:</p><pre><code class="makeup elixir" translate="no"><span class="
 player for the first 12 players, regardless of <code class="inline">--count</code> (this set is
 about having something to read, not volume)</li><li><code class="inline">quest</code> — a daily, an auto-claim achievement, a chained follow-up and a
 twelve-member group that lists as one card, with per-user progress in
-every state (including claimable rows)</li><li><code class="inline">ready_check</code> — one check per seeded lobby in every outcome (open,
+every state (including claimable rows), and a code-only quest with a
+page of generated codes and the shared code <code class="inline">SPRING-GIFT</code></li><li><code class="inline">ready_check</code> — one check per seeded lobby in every outcome (open,
 passed, timed out, declined), also capped at 12</li><li><code class="inline">chat_moderation</code> — a blocklist across every severity and match mode, a
 report queue deep enough to page through (every status, some filter-filed,
 some resolved) and mutes in every scope, including expired ones</li></ul><p>The volume sets, one per admin list, sized from N:</p><ul><li><code class="inline">kv</code> — a profile row per player plus N/10 global keys (<code class="inline">/admin/kv</code>)</li><li><code class="inline">notification</code> — one per player, and N/10 more for the first player
@@ -243,7 +244,7 @@ before <code class="inline">demo.seed</code> has run.</p></div>
       <h1 class="signature" translate="no">analyze_tables()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/demo_seed.ex#L370" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/demo_seed.ex#L371" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -271,7 +272,7 @@ before <code class="inline">demo.seed</code> has run.</p></div>
       <h1 class="signature" translate="no">bench_context()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/demo_seed.ex#L298" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/demo_seed.ex#L299" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -306,7 +307,7 @@ plus the ids of the seeded pages. Raises <a href="https://elixir.hexdocs.pm/Argu
       <h1 class="signature" translate="no">insert_rows(rows, schema)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/demo_seed.ex#L366" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/demo_seed.ex#L367" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -338,7 +339,7 @@ Postgres) and answers how many went in. <code class="inline">analyze/0</code> af
       <h1 class="signature" translate="no">player_ids(count \\ nil)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/demo_seed.ex#L350" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/demo_seed.ex#L351" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -368,7 +369,7 @@ before <code class="inline">demo.seed</code> has run.</p>
       <h1 class="signature" translate="no">run(args)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/demo_seed.ex#L248" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/demo_seed.ex#L249" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -397,9 +398,9 @@ before <code class="inline">demo.seed</code> has run.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1410">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1412">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1410">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1412">Hex Preview</a>
 
             </span>
 

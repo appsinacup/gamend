@@ -3,10 +3,16 @@
 
 The channels a notification can be sent on.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `all`
 
 ```elixir
-@spec all() :: [String.t()]
+@spec all() :: [t()]
 ```
 
 Every value.

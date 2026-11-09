@@ -3,6 +3,20 @@
 
 The status filters of a quest list (not stored values).
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `claimable`
 *macro* 
 

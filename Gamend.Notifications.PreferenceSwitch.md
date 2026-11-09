@@ -3,10 +3,16 @@
 
 The switches that turn a channel off for every group.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `all`
 
 ```elixir
-@spec all() :: [String.t()]
+@spec all() :: [t()]
 ```
 
 Every value.

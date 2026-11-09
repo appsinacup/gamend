@@ -3,13 +3,19 @@
 
 The states of a friendship row.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `accepted`
 *macro* 
 
 # `all`
 
 ```elixir
-@spec all() :: [String.t()]
+@spec all() :: [t()]
 ```
 
 Every value.

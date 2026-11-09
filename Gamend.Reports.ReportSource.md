@@ -3,6 +3,20 @@
 
 Where a report was filed from.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `web`
 *macro* 
 

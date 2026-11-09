@@ -3,8 +3,22 @@
 
 Stripe's own statuses, read off its objects (not the rows it updates).
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `active`
 *macro* 
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
 
 # `canceled`
 *macro* 

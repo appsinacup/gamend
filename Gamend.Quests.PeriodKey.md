@@ -3,6 +3,20 @@
 
 The period key of a quest that never resets.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `static`
 *macro* 
 

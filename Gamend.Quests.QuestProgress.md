@@ -14,6 +14,8 @@ reset period.
 - `status` — `"active"` → `"completed"` (all targets met) → `"claimed"`
 - `rewards_granted_at` — set once every reward entry has been applied;
   `claimed` rows without it are retried by the reward-recovery sweep
+- `code_id` — the redemption code that finished it, if one did. Written with
+  the struct, never cast
 
 # `t`
 
@@ -22,6 +24,8 @@ reset period.
   __meta__: term(),
   claim_count: term(),
   claimed_at: term(),
+  code: term(),
+  code_id: term(),
   completed_at: term(),
   id: term(),
   inserted_at: term(),

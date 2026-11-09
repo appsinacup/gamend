@@ -3,6 +3,20 @@
 
 An event core reports to the quests of a player.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `login`
 *macro* 
 

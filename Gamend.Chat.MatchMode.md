@@ -3,10 +3,16 @@
 
 How the word filter matches a word.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `all`
 
 ```elixir
-@spec all() :: [String.t()]
+@spec all() :: [t()]
 ```
 
 Every value.

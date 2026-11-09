@@ -3,6 +3,20 @@
 
 A user's theme preference.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `dark`
 *macro* 
 

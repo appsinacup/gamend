@@ -3,6 +3,20 @@
 
 A report's status before anyone answers it. The other statuses come from the kind.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `duplicate`
 *macro* 
 

@@ -3,6 +3,20 @@
 
 What a Stripe API key is for, read from its prefix.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `live`
 *macro* 
 

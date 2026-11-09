@@ -3,6 +3,20 @@
 
 The analytics segments that are not everyone.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `all_users`
 *macro* 
 

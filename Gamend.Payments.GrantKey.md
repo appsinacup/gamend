@@ -3,6 +3,20 @@
 
 Keys of a product's grant config that core and the store read.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `download`
 *macro* 
 

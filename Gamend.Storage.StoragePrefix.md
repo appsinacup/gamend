@@ -3,6 +3,20 @@
 
 The first segment of an object's key.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `avatars`
 *macro* 
 

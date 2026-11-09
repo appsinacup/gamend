@@ -3,6 +3,20 @@
 
 Why a ready check ended without passing.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `cancelled`
 *macro* 
 

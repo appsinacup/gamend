@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1410">
+    <meta name="project" content="gamend_core v1.1.1412">
 
 
-    <title>Gamend.LiteralLint — gamend_core v1.1.1410</title>
+    <title>Gamend.LiteralLint — gamend_core v1.1.1412</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-5F62CD45.js"></script>
+    <script defer src="dist/sidebar_items-4D32F96B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1410
+          v1.1.1412
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />LiteralLint</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1410)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1412)</small>
 
     </h1>
 
@@ -119,16 +119,21 @@ out wherever it is used. <a href="Mix.Tasks.Gamend.Literal.Lint.html"><code clas
 name that one module writes and another reads belongs to a module that owns
 it, and everyone else asks that module (CONTRIBUTING.md, &quot;Named strings&quot;).</p><p>A string counts when it is shaped like a name (<code class="inline">&quot;failed&quot;</code>, <code class="inline">&quot;move_in&quot;</code>,
 <code class="inline">&quot;gamend.db&quot;</code>, no spaces) and stands in code, and it is reported when it
-stands in two or more modules, or five or more times in one. These do not
-count, because a name for them would say less than they do:</p><ul><li>the value of a module attribute, or a function that is nothing but its
-value: <code class="inline">@failed &quot;failed&quot;</code> and <code class="inline">defmacro failed, do: &quot;failed&quot;</code> are the cure</li><li>a key: <code class="inline">%{&quot;id&quot; =&gt; id}</code>, <code class="inline">params[&quot;id&quot;]</code>, <code class="inline">Map.get(params, &quot;id&quot;)</code>, <a href="https://elixir.hexdocs.pm/Map.html#take/2"><code class="inline">Map.take/2</code></a>,
+stands in two or more modules, or five or more times in one. In a template
+(<code class="inline">~H</code>, <code class="inline">.heex</code>) only a comparison counts: <code class="inline">@s == &quot;failed&quot;</code>.</p><p><code class="inline">@failed &quot;failed&quot;</code> and <code class="inline">defp failed, do: &quot;failed&quot;</code> name a string for their
+own module, which is fine, until a second module of the same context gives
+the same string the same name. Then the name has two homes, and needs an
+owner. Across contexts the same word is nearly always a different thing
+(<code class="inline">@page</code> in a schema, <code class="inline">@page</code> in a presence record).</p><p>These do not count, because a name for them would say less than they do:</p><ul><li>what an owner declares: <code class="inline">use Gamend.Names</code>, and a public function that
+is nothing but its value (<code class="inline">defmacro failed, do: &quot;failed&quot;</code>)</li><li>documentation attributes</li><li>a key: <code class="inline">%{&quot;id&quot; =&gt; id}</code>, <code class="inline">params[&quot;id&quot;]</code>, <code class="inline">Map.get(params, &quot;id&quot;)</code>, <a href="https://elixir.hexdocs.pm/Map.html#take/2"><code class="inline">Map.take/2</code></a>,
 <a href="https://elixir.hexdocs.pm/Kernel.html#get_in/2"><code class="inline">get_in/2</code></a>. Keys are the shape of a document, not a closed set of values</li><li>text: gettext, <a href="https://logger.hexdocs.pm/Logger.html"><code class="inline">Logger</code></a>, <code class="inline">raise</code>, <a href="https://elixir.hexdocs.pm/IO.html"><code class="inline">IO</code></a>, <a href="https://mix.hexdocs.pm/Mix.html"><code class="inline">Mix</code></a>, <a href="https://elixir.hexdocs.pm/System.html"><code class="inline">System</code></a>, and any sigil
-other than a string <code class="inline">~w</code>, so a HEEx template is not read</li><li>a LiveView event's name in <code class="inline">handle_event/3</code>, and HTTP header names</li><li>an API error's code in <code class="inline">reply_error/3</code>, which has to be a literal:
+other than a string <code class="inline">~w</code> or a template</li><li>a LiveView event's name in <code class="inline">handle_event/3</code>, and HTTP header names</li><li>an API error's code in <code class="inline">reply_error/3</code>, which has to be a literal:
 <a href="Mix.Tasks.Gamend.Api.Lint.html"><code class="inline">mix gamend.api.lint</code></a> (R18) holds it to <code class="inline">GamendWeb.ErrorStatus</code></li><li>a CSS class of the shared vocabulary (<code class="inline">&quot;badge-error&quot;</code>), and <code class="inline">&quot;true&quot;</code></li></ul><p>It is a heuristic, and says so. A use it is wrong about is marked with the
 reason, on its line or the line above:</p><pre><code class="makeup elixir" translate="no"><span class="c1"># literal-ok: Stripe&#39;s event name</span><span class="w">
-</span><span class="s">&quot;invoice.paid&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">paid</span><span class="p" data-group-id="group-1">(</span><span class="n">event</span><span class="p" data-group-id="group-1">)</span></code></pre><p>What was already there when the check arrived is counted in
-<code class="inline">.literal-lint-baseline</code>. A string there may appear that many times and no
-more, so the count only goes down.</p>
+</span><span class="s">&quot;invoice.paid&quot;</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">paid</span><span class="p" data-group-id="group-1">(</span><span class="n">event</span><span class="p" data-group-id="group-1">)</span><span class="w">
+
+</span><span class="o">&lt;</span><span class="p">%</span><span class="o">!</span><span class="o">--</span><span class="w"> </span><span class="n">literal</span><span class="o">-</span><span class="ss">ok</span><span class="p">:</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">browser</span><span class="err">&#39;</span><span class="n">s</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">--</span><span class="p">%</span><span class="o">&gt;</span><span class="w">
+</span><span class="o">&lt;</span><span class="n">b</span><span class="w"> </span><span class="ss">:if</span><span class="o">=</span><span class="p" data-group-id="group-2">{</span><span class="na">@kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;submit&quot;</span><span class="p" data-group-id="group-2">}</span><span class="o">&gt;</span><span class="n">x</span><span class="o">&lt;</span><span class="o">/</span><span class="n">b</span><span class="o">&gt;</span></code></pre>
     </section>
 
 </div>
@@ -144,14 +149,6 @@ more, so the count only goes down.</p>
   <h3>
     <a href="#types">Types</a>
   </h3>
-
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#t:baseline/0" data-no-tooltip="" translate="no">baseline()</a>
-
-      </div>
-
-    </div>
 
     <div class="summary-row">
       <div class="summary-signature">
@@ -174,36 +171,6 @@ more, so the count only goes down.</p>
   <h3>
     <a href="#functions">Functions</a>
   </h3>
-
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#baseline_file/0" data-no-tooltip="" translate="no">baseline_file()</a>
-
-      </div>
-
-        <div class="summary-synopsis"><p>Where the counts of what was already there are kept.</p></div>
-
-    </div>
-
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#format_baseline/1" data-no-tooltip="" translate="no">format_baseline(offenders)</a>
-
-      </div>
-
-        <div class="summary-synopsis"><p>The text of a baseline holding these offenders.</p></div>
-
-    </div>
-
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#new_offenders/2" data-no-tooltip="" translate="no">new_offenders(offenders, baseline)</a>
-
-      </div>
-
-        <div class="summary-synopsis"><p>The offenders beyond what the baseline allows.</p></div>
-
-    </div>
 
     <div class="summary-row">
       <div class="summary-signature">
@@ -235,26 +202,6 @@ more, so the count only goes down.</p>
 
     </div>
 
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#parse_baseline/1" data-no-tooltip="" translate="no">parse_baseline(text)</a>
-
-      </div>
-
-        <div class="summary-synopsis"><p>Reads a baseline's text: <code class="inline">&lt;count&gt; &lt;string&gt;</code>, a line each, <code class="inline">#</code> for a comment.</p></div>
-
-    </div>
-
-    <div class="summary-row">
-      <div class="summary-signature">
-        <a href="#read_baseline/1" data-no-tooltip="" translate="no">read_baseline(path \\ &quot;.literal-lint-baseline&quot;)</a>
-
-      </div>
-
-        <div class="summary-synopsis"><p>The baseline in the working directory, empty if there is none.</p></div>
-
-    </div>
-
 </div>
 
   </section>
@@ -269,34 +216,6 @@ more, so the count only goes down.</p>
     </h2>
 
     <div class="types-list">
-<section class="detail" id="t:baseline/0">
-
-  <div class="detail-header">
-    <a href="#t:baseline/0" class="detail-link" data-no-tooltip="" aria-label="Link to this type">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <div class="heading-with-actions">
-      <h1 class="signature" translate="no">baseline()</h1>
-
-
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L51" class="icon-action" rel="help nofollow" aria-label="View Source">
-          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-        </a>
-
-    </div>
-  </div>
-
-  <section class="docstring">
-
-      <div class="specs">
-
-          <pre translate="no"><span class="attribute">@type</span> baseline() :: %{optional(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) =&gt; <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()}</pre>
-
-      </div>
-
-
-  </section>
-</section>
 <section class="detail" id="t:occurrence/0">
 
   <div class="detail-header">
@@ -307,7 +226,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">occurrence()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L37" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L45" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -322,7 +241,8 @@ more, so the count only goes down.</p>
   literal: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(),
   file: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(),
   line: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>() | nil,
-  module: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil
+  module: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil,
+  as: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">atom</a>()
 }</pre>
 
       </div>
@@ -340,7 +260,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">offender()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L44" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L53" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -376,90 +296,6 @@ more, so the count only goes down.</p>
     </h2>
 
     <div class="functions-list">
-<section class="detail" id="baseline_file/0">
-
-  <div class="detail-header">
-    <a href="#baseline_file/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <div class="heading-with-actions">
-      <h1 class="signature" translate="no">baseline_file()</h1>
-
-
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
-          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-        </a>
-
-    </div>
-  </div>
-
-  <section class="docstring">
-
-      <div class="specs">
-
-          <pre translate="no"><span class="attribute">@spec</span> baseline_file() :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
-
-      </div>
-
-<p>Where the counts of what was already there are kept.</p>
-  </section>
-</section>
-<section class="detail" id="format_baseline/1">
-
-  <div class="detail-header">
-    <a href="#format_baseline/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <div class="heading-with-actions">
-      <h1 class="signature" translate="no">format_baseline(offenders)</h1>
-
-
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L147" class="icon-action" rel="help nofollow" aria-label="View Source">
-          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-        </a>
-
-    </div>
-  </div>
-
-  <section class="docstring">
-
-      <div class="specs">
-
-          <pre translate="no"><span class="attribute">@spec</span> format_baseline([<a href="#t:offender/0">offender</a>()]) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()</pre>
-
-      </div>
-
-<p>The text of a baseline holding these offenders.</p>
-  </section>
-</section>
-<section class="detail" id="new_offenders/2">
-
-  <div class="detail-header">
-    <a href="#new_offenders/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <div class="heading-with-actions">
-      <h1 class="signature" translate="no">new_offenders(offenders, baseline)</h1>
-
-
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L122" class="icon-action" rel="help nofollow" aria-label="View Source">
-          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-        </a>
-
-    </div>
-  </div>
-
-  <section class="docstring">
-
-      <div class="specs">
-
-          <pre translate="no"><span class="attribute">@spec</span> new_offenders([<a href="#t:offender/0">offender</a>()], <a href="#t:baseline/0">baseline</a>()) :: [<a href="#t:offender/0">offender</a>()]</pre>
-
-      </div>
-
-<p>The offenders beyond what the baseline allows.</p>
-  </section>
-</section>
 <section class="detail" id="occurrences_in/2">
 
   <div class="detail-header">
@@ -470,7 +306,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">occurrences_in(source, path)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L160" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L149" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -498,7 +334,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">offenders()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L85" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L90" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -526,7 +362,7 @@ more, so the count only goes down.</p>
       <h1 class="signature" translate="no">offenders(occurrences)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L106" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -544,64 +380,6 @@ more, so the count only goes down.</p>
 <p>Groups occurrences into the strings that should be named, most used first.</p>
   </section>
 </section>
-<section class="detail" id="parse_baseline/1">
-
-  <div class="detail-header">
-    <a href="#parse_baseline/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <div class="heading-with-actions">
-      <h1 class="signature" translate="no">parse_baseline(text)</h1>
-
-
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L137" class="icon-action" rel="help nofollow" aria-label="View Source">
-          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-        </a>
-
-    </div>
-  </div>
-
-  <section class="docstring">
-
-      <div class="specs">
-
-          <pre translate="no"><span class="attribute">@spec</span> parse_baseline(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="#t:baseline/0">baseline</a>()</pre>
-
-      </div>
-
-<p>Reads a baseline's text: <code class="inline">&lt;count&gt; &lt;string&gt;</code>, a line each, <code class="inline">#</code> for a comment.</p>
-  </section>
-</section>
-<section class="detail" id="read_baseline/1">
-
-    <span id="read_baseline/0"></span>
-
-  <div class="detail-header">
-    <a href="#read_baseline/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-    </a>
-    <div class="heading-with-actions">
-      <h1 class="signature" translate="no">read_baseline(path \\ &quot;.literal-lint-baseline&quot;)</h1>
-
-
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/literal_lint.ex#L128" class="icon-action" rel="help nofollow" aria-label="View Source">
-          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-        </a>
-
-    </div>
-  </div>
-
-  <section class="docstring">
-
-      <div class="specs">
-
-          <pre translate="no"><span class="attribute">@spec</span> read_baseline(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: <a href="#t:baseline/0">baseline</a>()</pre>
-
-      </div>
-
-<p>The baseline in the working directory, empty if there is none.</p>
-  </section>
-</section>
 
     </div>
   </section>
@@ -611,9 +389,9 @@ more, so the count only goes down.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1410">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1412">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1410">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1412">Hex Preview</a>
 
             </span>
 

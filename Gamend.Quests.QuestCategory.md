@@ -3,8 +3,22 @@
 
 A quest category with a meaning of its own.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `achievement`
 *macro* 
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
 
 ---
 

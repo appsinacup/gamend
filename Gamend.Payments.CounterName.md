@@ -3,6 +3,20 @@
 
 The counters of payments in `Gamend.Payments.Counters`.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `checkout_opened`
 *macro* 
 

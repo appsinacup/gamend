@@ -3,6 +3,20 @@
 
 A lobby's initial state.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `created`
 *macro* 
 

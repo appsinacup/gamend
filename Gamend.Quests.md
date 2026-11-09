@@ -21,6 +21,9 @@ its target. There is deliberately **no public endpoint** for this — clients
 cannot advance their own quests. Core wires common events; games call it
 from their hooks for custom events.
 
+The one exception is a code the server issued: a `code_only` quest is
+finished and paid by `redeem_code/2`.
+
 ## Claiming
 
     {:ok, %{progress: progress, rewards: rewards}} = Quests.claim(user_id, "daily_win_3")
@@ -72,6 +75,17 @@ their Monday's, from the time zone in their preferences
 (`Gamend.Accounts.TimeZone`; UTC when unknown). Only the period moves:
 windows and every timestamp stay UTC. A player whose zone changes mid-day
 may land on a period already played or one not yet started, once.
+
+# `note`
+
+```elixir
+@type note() :: %{
+  label: String.t(),
+  items: [%{:name =&gt; String.t(), optional(:flag) =&gt; String.t() | nil}]
+}
+```
+
+A host's line under a quest's description (`host_note/2`).
 
 # `user_id`
 
@@ -137,6 +151,23 @@ its target and the normal completion side effects fire (hooks, auto-claim).
 
 Delete a user's current-period progress row for a quest (admin reset).
 
+# `any_redeemable?`
+
+```elixir
+@spec any_redeemable?() :: boolean()
+```
+
+Whether a redeem page has anything to offer: a listed code-only quest is open.
+
+# `catalog`
+
+```elixir
+@spec catalog() :: [Gamend.Quests.Quest.t()]
+```
+
+The active quests a reader who is not signed in may see: every one but those
+only a code finishes, which list for a player once they redeem them.
+
 # `change_quest`
 
 ```elixir
@@ -176,6 +207,24 @@ Returns `{:ok, %{progress: progress, rewards: rewards}}` or
 Claims waiting for a user (badge count): every finished run of an active
 quest not yet claimed, whatever period it finished in, and each run a
 `repeat` row banked.
+
+# `code_open?`
+
+```elixir
+@spec code_open?(String.t()) :: boolean()
+```
+
+Whether a code would be accepted from someone who has no quests yet: it
+exists, is not revoked or used up, and its quest is open. What a page checks
+before it makes a guest account for a visitor, so a typo makes no account.
+
+# `count_codes`
+
+```elixir
+@spec count_codes(String.t(), keyword()) :: non_neg_integer()
+```
+
+How many redemption codes match (same filters as `list_codes/2`).
 
 # `count_progress`
 
@@ -219,6 +268,16 @@ The number `%{n}` stands for: the resolved counter, else the first run's
 (`counter_start`, or 1). An unresolved counter is the anonymous catalog,
 which pairs no row: the run a visitor would start.
 
+# `create_code`
+
+```elixir
+@spec create_code(Gamend.Quests.Quest.t(), map()) ::
+  {:ok, Gamend.Quests.QuestCode.t()}
+  | {:error, :not_code_only | Ecto.Changeset.t()}
+```
+
+Makes one redemption code with a chosen token (see `Gamend.Quests.Codes.create/2`).
+
 # `create_quest`
 
 ```elixir
@@ -251,6 +310,25 @@ Deletes a quest definition and all related progress.
 ```
 
 Per-status progress counts for one quest (admin completion funnel).
+
+# `generate_codes`
+
+```elixir
+@spec generate_codes(Gamend.Quests.Quest.t(), integer(), keyword()) ::
+  {:ok, non_neg_integer()}
+  | {:error,
+     :not_code_only | :invalid_count | :too_many_codes | Ecto.Changeset.t()}
+```
+
+Makes `count` random redemption codes (see `Gamend.Quests.Codes.generate/3`).
+
+# `get_code`
+
+```elixir
+@spec get_code(Ecto.UUID.t()) :: Gamend.Quests.QuestCode.t() | nil
+```
+
+A redemption code by id, or nil.
 
 # `get_progress`
 
@@ -351,6 +429,22 @@ A label here changes nothing about what pays: the veto in `before_quest_claim`
 is still the authority, and a lock filter that disagrees with it only makes
 the page lie. Return the reason from the same condition the veto tests.
 
+# `host_note`
+
+```elixir
+@spec host_note(Gamend.Quests.Quest.t(), user_id() | nil) :: note() | nil
+```
+
+A line about this viewer's own standing on this quest, drawn under its
+description — or `nil`: a label (its own punctuation, a locale's) and the
+things it names, each with a flag if it has one. Set `config :gamend_core,
+:quest_note, {Module, :function}`; it is called as `function(user_id | nil,
+Quest.t())`.
+
+A description is one text for everyone, translated once. A quest counted
+across things the player chooses ("Pass every level of a language") says
+what to do and cannot say which ones are done; only the host knows.
+
 # `host_visible`
 
 ```elixir
@@ -368,6 +462,14 @@ keep. Applied to every per-user listing (`list_user_quests/2`,
 with `nil`. Progress is NOT filtered: an event still advances a quest the
 viewer cannot see, so a player who gains access later finds it where they
 left it; veto the claim in `before_quest_claim` if that must not pay.
+
+# `list_codes`
+
+```elixir
+@spec list_codes(String.t(), keyword()) :: [Gamend.Quests.QuestCode.t()]
+```
+
+One quest's redemption codes, newest first (see `Gamend.Quests.Codes.list/2`).
 
 # `list_progress`
 
@@ -508,6 +610,62 @@ Re-runs reward grants for rows that claimed but never finished granting
 per-entry idempotency keys dedupe. Pass `:user_id` to heal one user (done
 lazily when they list their quests). Returns the number of rows retried.
 
+# `redeem_code`
+
+```elixir
+@spec redeem_code(user_id(), String.t()) ::
+  {:ok, %{progress: Gamend.Quests.QuestProgress.t(), rewards: [map()]}}
+  | {:error,
+     :code_not_found
+     | :already_redeemed
+     | :account_required
+     | {:hook_rejected, term()}}
+```
+
+Redeems a code for a player: finishes its `code_only` quest and pays it at
+once, whatever the quest's `auto_claim` says. Spaces, dashes, letter case and
+full-width characters in `token` do not matter.
+
+`before_quest_claim` runs first, given a `%QuestProgress{}` not yet written
+(no `id`, `code_id` set, the code's metadata on it), so a veto spends nothing.
+It is where a game refuses what the code alone does not: a guest on a shared
+code, a player below some level.
+
+A guest may redeem any code unless the host requires an account to claim
+(`Gamend.AccountRequired`, `:quest_claims`). Guests are not stopped from
+redeeming a shared code on several devices and signing each in to one
+account, since the wallet moves with a guest; veto it in the hook if a game's
+currency needs that.
+
+Answers what `claim/3` answers, or `{:error, reason}`: `:code_not_found`
+(unknown, revoked, used up, disabled, out of its window: one answer for every
+miss), `:already_redeemed` (this player has this quest, by any code),
+`:account_required`, `{:hook_rejected, reason}`.
+
+# `redeemable`
+
+```elixir
+@spec redeemable(user_id() | nil, keyword()) :: %{
+  entries: [
+    %{
+      quest: Gamend.Quests.Quest.t(),
+      progress: Gamend.Quests.QuestProgress.t() | nil,
+      claimable: boolean()
+    }
+  ],
+  total: non_neg_integer()
+}
+```
+
+What a redeem page lists: the quests codes can finish now, each with this
+viewer's row if they have redeemed it. `user_id` may be nil. A `hidden` quest
+stays off the list until redeemed, while its codes work as usual: a key the
+admin does not want advertised.
+
+## Options
+- `:quest` — just this quest key, what a link to one uses
+- `:page` / `:page_size`
+
 # `render_counter`
 
 ```elixir
@@ -572,6 +730,16 @@ ladder that pays every 50 wins after 100 says "Wins × 150", "Wins × 200"
 with `start: 150, step: 50`. A non-repeat quest has one run, so its `%{n}`
 is its `counter_start` (`counter/1`): every step of a chain can share one
 title, "Wins × %{n}", and one msgid with it.
+
+# `set_code_status`
+
+```elixir
+@spec set_code_status(Ecto.UUID.t(), String.t()) ::
+  {:ok, Gamend.Quests.QuestCode.t()}
+  | {:error, :code_not_found | :invalid_state}
+```
+
+Revokes a redemption code (status `revoked`) or restores it (`active`).
 
 # `stats`
 

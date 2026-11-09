@@ -3,6 +3,20 @@
 
 A locale spoken in code: the default language.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `en`
 *macro* 
 

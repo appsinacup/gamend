@@ -3,13 +3,19 @@
 
 The states of a report about a chat message.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `actioned`
 *macro* 
 
 # `all`
 
 ```elixir
-@spec all() :: [String.t()]
+@spec all() :: [t()]
 ```
 
 Every value.

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1410">
+    <meta name="project" content="gamend_core v1.1.1412">
 
 
-    <title>Gamend.Hooks — gamend_core v1.1.1410</title>
+    <title>Gamend.Hooks — gamend_core v1.1.1412</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-5F62CD45.js"></script>
+    <script defer src="dist/sidebar_items-4D32F96B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1410
+          v1.1.1412
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Hooks</span> <small>behaviour</small>
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1410)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1412)</small>
 
     </h1>
 
@@ -824,6 +824,18 @@ email, device, and all OAuth providers (which register mid-login).</p></div>
         <a href="#c:after_purchase_revoked/1" data-no-tooltip="" translate="no">after_purchase_revoked(t)</a>
 
       </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#c:before_entitlement_notice/2" data-no-tooltip="" translate="no">before_entitlement_notice(t, notice)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>What to tell a user about an entitlement given with <code class="inline">notify: true</code>
+(<a href="Gamend.Payments.Notices.html"><code class="inline">Gamend.Payments.Notices</code></a>), and only then: not for a renewal, or any other
+write of the row.</p></div>
 
     </div>
 
@@ -1603,7 +1615,7 @@ to the player:</p><pre><code class="makeup elixir" translate="no"><span class="k
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L328" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L340" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1718,7 +1730,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L366" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L378" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1748,7 +1760,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L415" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L427" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1808,7 +1820,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L378" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L390" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1843,7 +1855,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L360" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L372" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1873,7 +1885,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L373" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L385" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1904,7 +1916,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L363" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L375" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1964,7 +1976,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L365" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L377" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2026,7 +2038,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L376" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L388" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2064,7 +2076,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L357" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L369" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2094,7 +2106,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L372" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L384" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2125,7 +2137,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L362" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L374" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2841,7 +2853,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L304" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L316" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2871,7 +2883,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L310" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L322" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2901,7 +2913,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L303" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L315" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3556,7 +3568,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L390" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L402" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3587,7 +3599,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L389" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L401" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3617,7 +3629,7 @@ player out.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L384" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L396" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3743,6 +3755,41 @@ player out.</p>
 
   </section>
 </section>
+<section class="detail" id="c:before_entitlement_notice/2">
+
+  <div class="detail-header">
+    <a href="#c:before_entitlement_notice/2" class="detail-link" data-no-tooltip="" aria-label="Link to this callback">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">before_entitlement_notice(t, notice)</h1>
+
+        <span class="note">(optional)</span>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L301" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@callback</span> before_entitlement_notice(<a href="Gamend.Payments.Entitlement.html#t:t/0">Gamend.Payments.Entitlement.t</a>(), notice :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) ::
+  <a href="#t:hook_result/1">hook_result</a>(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>())</pre>
+
+      </div>
+
+<p>What to tell a user about an entitlement given with <code class="inline">notify: true</code>
+(<a href="Gamend.Payments.Notices.html"><code class="inline">Gamend.Payments.Notices</code></a>), and only then: not for a renewal, or any other
+write of the row.</p><p><code class="inline">notice</code> is a map with <code class="inline">&quot;group&quot;</code> (a notification group) and the attrs of
+<a href="Gamend.Notifications.html#notify/3"><code class="inline">Gamend.Notifications.notify/3</code></a>. Return <code class="inline">{:ok, notice}</code>, changed as you like,
+or <code class="inline">{:error, reason}</code> to send nothing.</p>
+  </section>
+</section>
 <section class="detail" id="c:before_purchase/2">
 
   <div class="detail-header">
@@ -3802,7 +3849,7 @@ on one device, a region it does not ship to, a player it has banned. Return
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L299" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L311" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3832,7 +3879,7 @@ on one device, a region it does not ship to, a player it has banned. Return
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L298" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L310" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3875,7 +3922,7 @@ on one device, a region it does not ship to, a player it has banned. Return
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L348" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L360" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3905,7 +3952,7 @@ on one device, a region it does not ship to, a player it has banned. Return
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L347" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L359" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -3948,7 +3995,7 @@ on one device, a region it does not ship to, a player it has banned. Return
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L413" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L425" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4155,7 +4202,7 @@ return never rewrites the args, so a bare <code class="inline">:ok</code> is the
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L319" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L331" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4185,7 +4232,7 @@ return never rewrites the args, so a bare <code class="inline">:ok</code> is the
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L320" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L332" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4215,7 +4262,7 @@ return never rewrites the args, so a bare <code class="inline">:ok</code> is the
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L338" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L350" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4245,7 +4292,7 @@ return never rewrites the args, so a bare <code class="inline">:ok</code> is the
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L339" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L351" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4309,7 +4356,7 @@ it) instead of the client calling to say it is there. Fire-and-forget.</p>
         <span class="note">(optional)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L337" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L349" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4352,7 +4399,7 @@ it) instead of the client calling to say it is there. Fire-and-forget.</p>
         <span class="note">(macro)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L437" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L449" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4389,7 +4436,7 @@ against the SDK (a Mix build) and against the engine (an in-process build,
       <h1 class="signature" translate="no">call(name, args \\ [], opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L460" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L472" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4413,7 +4460,7 @@ timeout to avoid long-running user code.</p><p>Returns {:ok, result} | {:error, 
       <h1 class="signature" translate="no">caller()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1614" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1641" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4445,7 +4492,7 @@ when the value is a user struct or map containing <code class="inline">:id</code
       <h1 class="signature" translate="no">caller_id()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1641" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1668" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4473,7 +4520,7 @@ when the value is a user struct or map containing <code class="inline">:id</code
       <h1 class="signature" translate="no">caller_pid()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1626" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1653" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4505,7 +4552,7 @@ this process, so it ends when the socket does, as the socket's own does.</p>
       <h1 class="signature" translate="no">caller_user()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1655" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1682" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4538,7 +4585,7 @@ this process, so it ends when the socket does, as the socket's own does.</p>
       <h1 class="signature" translate="no">exported_functions(mod \\ module())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1519" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L1546" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4565,7 +4612,7 @@ This is useful for tooling and admin UI to display what RPCs are available.</p>
       <h1 class="signature" translate="no">internal_call(name, args \\ [], opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L537" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L549" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4589,7 +4636,7 @@ This is useful for tooling and admin UI to display what RPCs are available.</p>
       <h1 class="signature" translate="no">internal_hooks()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L666" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L678" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4620,7 +4667,7 @@ This is useful for tooling and admin UI to display what RPCs are available.</p>
       <h1 class="signature" translate="no">invoke(name, args \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L568" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L580" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4645,7 +4692,7 @@ function doesn't exist.</p>
       <h1 class="signature" translate="no">module()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L440" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L452" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4667,7 +4714,7 @@ function doesn't exist.</p>
       <h1 class="signature" translate="no">pipeline_hook?(name, arity)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L790" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L803" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4690,7 +4737,7 @@ than fanning out notifications. Exposed for the admin runtime page.</p>
       <h1 class="signature" translate="no">pipeline_hooks()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L835" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L848" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4718,7 +4765,7 @@ than fanning out notifications. Exposed for the admin runtime page.</p>
       <h1 class="signature" translate="no">register_pipeline_hook(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L813" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L826" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4753,7 +4800,7 @@ effects happen even after the first blocked the operation.</p><pre><code class="
       <h1 class="signature" translate="no">unregister_pipeline_hook(name)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L826" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks.ex#L839" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -4780,9 +4827,9 @@ effects happen even after the first blocked the operation.</p><pre><code class="
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1410">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1412">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1410">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1412">Hex Preview</a>
 
             </span>
 

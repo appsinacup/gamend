@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1410">
+    <meta name="project" content="gamend_core v1.1.1412">
 
 
-    <title>API Reference — gamend_core v1.1.1410</title>
+    <title>API Reference — gamend_core v1.1.1412</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-5F62CD45.js"></script>
+    <script defer src="dist/sidebar_items-4D32F96B.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1410
+          v1.1.1412
         </div>
       </div>
     </div>
@@ -92,7 +92,7 @@ gamend_core
 
 <div id="top-content">
   <div class="heading-with-actions top-heading">
-    <h1>API Reference <small class="app-vsn">gamend_core v#1.1.1410</small></h1>
+    <h1>API Reference <small class="app-vsn">gamend_core v#1.1.1412</small></h1>
 <a href="api-reference.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
   <i class="ri-markdown-line" aria-hidden="true"></i>
   <span class="sr-only">Copy Markdown</span>
@@ -223,6 +223,15 @@ removing them from one.</p></div>
   </div>
 
     <div class="summary-synopsis"><p>Warns a user their account is about to be deleted for inactivity.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Accounts.IntervalUnit.html" translate="no">Gamend.<wbr />Accounts.<wbr />IntervalUnit</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The unit of the age limits on account tokens, as SQL's <code class="inline">ago/2</code> reads it.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1016,6 +1025,15 @@ L2 cache.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Content.PageName.html" translate="no">Gamend.<wbr />Content.<wbr />PageName</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The page a folder of content opens on.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Content.Tree.html" translate="no">Gamend.<wbr />Content.<wbr />Tree</a>
 
   </div>
@@ -1265,6 +1283,15 @@ listing/counting pending invites.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Groups.JoinOutcome.html" translate="no">Gamend.<wbr />Groups.<wbr />JoinOutcome</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>What a join request became: <code class="inline">POST /groups/:id/join</code>.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Groups.JoinRequestStatus.html" translate="no">Gamend.<wbr />Groups.<wbr />JoinRequestStatus</a>
 
   </div>
@@ -1385,6 +1412,15 @@ source code on disk, for the admin Config page and the command line.</p></div>
   </div>
 
     <div class="summary-synopsis"><p>What a plugin's <code class="inline">mix.exs</code> declares, read without evaluating it.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Hooks.PluginFile.html" translate="no">Gamend.<wbr />Hooks.<wbr />PluginFile</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The files and folders of a built plugin.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1522,7 +1558,7 @@ wallet) and <a href="Gamend.Inventory.html"><code class="inline">Gamend.Inventor
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="Gamend.LedgerReason.html" translate="no">Gamend.<wbr />LedgerReason</a>
+    <a href="Gamend.Ledger.LedgerReason.html" translate="no">Gamend.<wbr />Ledger.<wbr />LedgerReason</a>
 
   </div>
 
@@ -1748,6 +1784,16 @@ matched into a lobby.</p></div>
   </div>
 
     <div class="summary-synopsis"><p>Periodic driver for the matchmaking sweep.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Names.html" translate="no">Gamend.<wbr />Names</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Names a closed set of strings: a macro for each value, so a pattern or a
+guard can name one, and <code class="inline">all/0</code> for <code class="inline">validate_inclusion/3</code>.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2053,6 +2099,17 @@ the admin analytics page lists them under &quot;Counters&quot; with the game's o
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Payments.Notices.html" translate="no">Gamend.<wbr />Payments.<wbr />Notices</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Telling a user about an entitlement given to them on purpose: a trial
+lengthened by support, a reward. Only when the grant asks for it (<code class="inline">notify: true</code> on <a href="Gamend.Payments.html#grant_entitlement/3"><code class="inline">Gamend.Payments.grant_entitlement/3</code></a> or <code class="inline">extend_entitlement/3</code>, the
+&quot;Tell user&quot; box on Admin &gt; Payments).</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Payments.Params.html" translate="no">Gamend.<wbr />Payments.<wbr />Params</a>
 
   </div>
@@ -2103,6 +2160,15 @@ the admin analytics page lists them under &quot;Counters&quot; with the game's o
   </div>
 
     <div class="summary-synopsis"><p>Runtime payment-provider configuration helpers.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Payments.ProviderErrorCode.html" translate="no">Gamend.<wbr />Payments.<wbr />ProviderErrorCode</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The code of a provider failure that was our own input's fault.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2354,6 +2420,15 @@ purchase stands alone.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Placeholder.html" translate="no">Gamend.<wbr />Placeholder</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The words a field holds when it has no real value to show.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Policy.html" translate="no">Gamend.<wbr />Policy</a>
 
   </div>
@@ -2557,6 +2632,15 @@ two Pigeon dispatchers.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Gamend.Quests.Codes.html" translate="no">Gamend.<wbr />Quests.<wbr />Codes</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Redemption codes: making them, finding them, stopping them.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Gamend.Quests.Objective.html" translate="no">Gamend.<wbr />Quests.<wbr />Objective</a>
 
   </div>
@@ -2590,6 +2674,25 @@ two Pigeon dispatchers.</p></div>
   </div>
 
     <div class="summary-synopsis"><p>A quest category with a meaning of its own.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Quests.QuestCode.html" translate="no">Gamend.<wbr />Quests.<wbr />QuestCode</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Ecto schema for the <code class="inline">quest_codes</code> table: one redemption code of a
+<code class="inline">code_only</code> quest (<a href="Gamend.Quests.html#redeem_code/2"><code class="inline">Gamend.Quests.redeem_code/2</code></a>).</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Quests.QuestCodeStatus.html" translate="no">Gamend.<wbr />Quests.<wbr />QuestCodeStatus</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Whether a redemption code still works: <code class="inline">quest_codes.status</code>.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2764,7 +2867,7 @@ each answer before something proceeds.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="Gamend.RealtimeEvent.html" translate="no">Gamend.<wbr />RealtimeEvent</a>
+    <a href="Gamend.Realtime.RealtimeEvent.html" translate="no">Gamend.<wbr />Realtime.<wbr />RealtimeEvent</a>
 
   </div>
 
@@ -3437,9 +3540,9 @@ the production key, read from <code class="inline">.env</code> like the server r
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1410">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1412">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1410">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1412">Hex Preview</a>
 
             </span>
 

@@ -3,6 +3,20 @@
 
 The `metadata["type"]` codes core writes on a notification. The registry with their descriptions is `Gamend.Notifications.Types`.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `chat_friend`
 *macro* 
 

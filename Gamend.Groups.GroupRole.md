@@ -3,13 +3,19 @@
 
 A member's role in a group: `group_members.role`.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `admin`
 *macro* 
 
 # `all`
 
 ```elixir
-@spec all() :: [String.t()]
+@spec all() :: [t()]
 ```
 
 Every value.

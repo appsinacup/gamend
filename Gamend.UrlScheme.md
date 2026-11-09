@@ -3,6 +3,20 @@
 
 URL schemes.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `http`
 *macro* 
 

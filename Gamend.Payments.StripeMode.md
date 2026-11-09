@@ -3,6 +3,20 @@
 
 A Stripe Checkout session's `mode`.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `payment`
 *macro* 
 

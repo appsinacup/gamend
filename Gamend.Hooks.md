@@ -669,6 +669,22 @@ player out.
 @callback after_purchase_revoked(Gamend.Payments.Purchase.t()) :: any()
 ```
 
+# `before_entitlement_notice`
+*optional* 
+
+```elixir
+@callback before_entitlement_notice(Gamend.Payments.Entitlement.t(), notice :: map()) ::
+  hook_result(map())
+```
+
+What to tell a user about an entitlement given with `notify: true`
+(`Gamend.Payments.Notices`), and only then: not for a renewal, or any other
+write of the row.
+
+`notice` is a map with `"group"` (a notification group) and the attrs of
+`Gamend.Notifications.notify/3`. Return `{:ok, notice}`, changed as you like,
+or `{:error, reason}` to send nothing.
+
 # `before_purchase`
 *optional* 
 

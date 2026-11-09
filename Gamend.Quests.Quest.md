@@ -21,6 +21,10 @@ Three independent dimensions, so any combination is expressible:
 - `auto_claim` — grant rewards on completion without a claim step
 - `hidden` — details withheld until earned (a teaser); the row still lists
 - `active` — inactive quests never advance and are not listed
+- `code_only` — nothing but a redemption code finishes it
+  (`Gamend.Quests.redeem_code/2`). It has no objectives, never resets, and
+  sits in no group or chain, which keeps the event engine, periods and
+  collapsing out of it. It lists for a player only once they redeem it
 
 ## Grouping, which has three unrelated forms
 
@@ -44,6 +48,7 @@ collapses as a chain first, then contributes its surviving entry to the group.
   active: term(),
   auto_claim: term(),
   category: term(),
+  code_only: term(),
   counter: term(),
   description: term(),
   ends_at: term(),

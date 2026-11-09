@@ -3,6 +3,20 @@
 
 The type names shown for an argument in the runtime pages.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `boolean`
 *macro* 
 

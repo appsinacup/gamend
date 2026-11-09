@@ -3,6 +3,20 @@
 
 The `user_tokens.context` values that name what a token is for.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `confirm`
 *macro* 
 

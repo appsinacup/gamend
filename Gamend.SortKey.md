@@ -3,10 +3,27 @@
 
 The sort orders of the admin lists of rooms, shared across lobbies, groups, parties and chat.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `inserted_at`
 *macro* 
 
 # `inserted_at_asc`
+*macro* 
+
+# `last_seen_at`
 *macro* 
 
 # `max_members`
@@ -18,7 +35,13 @@ The sort orders of the admin lists of rooms, shared across lobbies, groups, part
 # `max_size`
 *macro* 
 
+# `max_size_asc`
+*macro* 
+
 # `max_users`
+*macro* 
+
+# `max_users_asc`
 *macro* 
 
 # `title`

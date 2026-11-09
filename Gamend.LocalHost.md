@@ -3,6 +3,20 @@
 
 The name a server uses for itself when no host is set.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `localhost`
 *macro* 
 

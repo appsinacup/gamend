@@ -3,13 +3,19 @@
 
 Which question a ready check asks.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `accept`
 *macro* 
 
 # `all`
 
 ```elixir
-@spec all() :: [String.t()]
+@spec all() :: [t()]
 ```
 
 Every value.

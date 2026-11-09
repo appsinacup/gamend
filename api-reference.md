@@ -1,4 +1,4 @@
-# gamend_core v1.1.1410 - API Reference
+# gamend_core v1.1.1412 - API Reference
 
 ## Modules
 
@@ -94,7 +94,7 @@ set, read from the host's `heroicons` dependency when this compiles, the same
 set the website draws (`GamendWeb.Icons`).
 - [Gamend.Ledger](Gamend.Ledger.md): The mechanics both ledgered balances share: `Gamend.Economy` (currency in a
 wallet) and `Gamend.Inventory` (quantity of an item).
-- [Gamend.LedgerReason](Gamend.LedgerReason.md): The ledger reason recorded when a caller gave none.
+- [Gamend.Ledger.LedgerReason](Gamend.Ledger.LedgerReason.md): The ledger reason recorded when a caller gave none.
 
 - [Gamend.LiteralLint](Gamend.LiteralLint.md): Finds the strings that are really names: a status, an action, a kind, typed
 out wherever it is used. `mix gamend.literal.lint` runs it.
@@ -105,10 +105,14 @@ out wherever it is used. `mix gamend.literal.lint` runs it.
 - [Gamend.Mail](Gamend.Mail.md): Outbound email transport.
 - [Gamend.MatchSeating](Gamend.MatchSeating.md): What a game decides for a formed match: where its players sit, and whether
 they are asked first. `matchmaking_seat_match/1` answers with one
+- [Gamend.Names](Gamend.Names.md): Names a closed set of strings: a macro for each value, so a pattern or a
+guard can name one, and `all/0` for `validate_inclusion/3`.
 - [Gamend.ParamType](Gamend.ParamType.md): The type names shown for an argument in the runtime pages.
 
 - [Gamend.Parse](Gamend.Parse.md): Parsing and normalizing values that arrive from outside: request bodies, form
 params, hook arguments, JSON.
+- [Gamend.Placeholder](Gamend.Placeholder.md): The words a field holds when it has no real value to show.
+
 - [Gamend.Policy](Gamend.Policy.md): One question — "may this user do this to this thing?" — asked the same way
 everywhere.
 - [Gamend.Presence](Gamend.Presence.md): Cluster-wide tracking of who is connected where.
@@ -167,6 +171,8 @@ member and friend topics that show that user to others.
 GitHub, Steam or a device id — and linking those identities to an existing account or
 removing them from one.
   - [Gamend.Accounts.InactivityNotifier](Gamend.Accounts.InactivityNotifier.md): Warns a user their account is about to be deleted for inactivity.
+  - [Gamend.Accounts.IntervalUnit](Gamend.Accounts.IntervalUnit.md): The unit of the age limits on account tokens, as SQL's `ago/2` reads it.
+
   - [Gamend.Accounts.LoginLockout](Gamend.Accounts.LoginLockout.md): Failed password sign-ins for one email address, and the lock they set.
   - [Gamend.Accounts.LoginLockouts](Gamend.Accounts.LoginLockouts.md): Per-account lockout after repeated failed password sign-ins.
   - [Gamend.Accounts.Online](Gamend.Accounts.Online.md): A player online, one way for every client. The SDK's game socket
@@ -313,6 +319,8 @@ ones too, and is a pull, like a class code: the person chooses to join,
 nobody is added to anything.
   - [Gamend.Groups.Invites](Gamend.Groups.Invites.md): Group invitations: creating, accepting, declining, cancelling, and
 listing/counting pending invites.
+  - [Gamend.Groups.JoinOutcome](Gamend.Groups.JoinOutcome.md): What a join request became: `POST /groups/:id/join`.
+
   - [Gamend.Groups.JoinRequestStatus](Gamend.Groups.JoinRequestStatus.md): The states of a request to join a group.
 
   - [Gamend.Groups.JoinRequests](Gamend.Groups.JoinRequests.md): Join requests for private groups: requesting, listing, approving,
@@ -329,12 +337,17 @@ rejecting, and cancelling.
   - [Gamend.Leaderboards.ScoreOperator](Gamend.Leaderboards.ScoreOperator.md): How a leaderboard's records combine a new score.
 
   - [Gamend.Quests](Gamend.Quests.md): Event-driven quest/progression engine.
+  - [Gamend.Quests.Codes](Gamend.Quests.Codes.md): Redemption codes: making them, finding them, stopping them.
   - [Gamend.Quests.Objective](Gamend.Quests.Objective.md): One objective inside a quest definition: reach `target` occurrences of
 `event` (as reported through `Gamend.Quests.report_event/4`).
   - [Gamend.Quests.PeriodKey](Gamend.Quests.PeriodKey.md): The period key of a quest that never resets.
 
   - [Gamend.Quests.Quest](Gamend.Quests.Quest.md): Ecto schema for the `quests` table.
   - [Gamend.Quests.QuestCategory](Gamend.Quests.QuestCategory.md): A quest category with a meaning of its own.
+
+  - [Gamend.Quests.QuestCode](Gamend.Quests.QuestCode.md): Ecto schema for the `quest_codes` table: one redemption code of a
+`code_only` quest (`Gamend.Quests.redeem_code/2`).
+  - [Gamend.Quests.QuestCodeStatus](Gamend.Quests.QuestCodeStatus.md): Whether a redemption code still works: `quest_codes.status`.
 
   - [Gamend.Quests.QuestFilter](Gamend.Quests.QuestFilter.md): The status filters of a quest list (not stored values).
 
@@ -400,6 +413,10 @@ the admin analytics page lists them under "Counters" with the game's own.
 
   - [Gamend.Payments.GrantKey](Gamend.Payments.GrantKey.md): Keys of a product's grant config that core and the store read.
 
+  - [Gamend.Payments.Notices](Gamend.Payments.Notices.md): Telling a user about an entitlement given to them on purpose: a trial
+lengthened by support, a reward. Only when the grant asks for it (`notify:
+true` on `Gamend.Payments.grant_entitlement/3` or `extend_entitlement/3`, the
+"Tell user" box on Admin > Payments).
   - [Gamend.Payments.Params](Gamend.Payments.Params.md): Shape-wrangling shared by `Gamend.Payments` and its provider adapters.
   - [Gamend.Payments.PaymentEnvironment](Gamend.Payments.PaymentEnvironment.md): Where a purchase was made: `purchases.environment`.
 
@@ -409,6 +426,8 @@ the admin analytics page lists them under "Counters" with the game's own.
 
   - [Gamend.Payments.Provider](Gamend.Payments.Provider.md): Behaviour for a store adapter — Apple, Google, Steam, or a host's own.
   - [Gamend.Payments.ProviderConfig](Gamend.Payments.ProviderConfig.md): Runtime payment-provider configuration helpers.
+  - [Gamend.Payments.ProviderErrorCode](Gamend.Payments.ProviderErrorCode.md): The code of a provider failure that was our own input's fault.
+
   - [Gamend.Payments.ProviderEvent](Gamend.Payments.ProviderEvent.md): Dedupe record for webhook and store notification events.
 
   - [Gamend.Payments.ProviderId](Gamend.Payments.ProviderId.md): The payment providers core knows, as stored in `purchases.provider`.
@@ -468,6 +487,8 @@ purchase stands alone.
   - [Gamend.Content.Frontmatter](Gamend.Content.Frontmatter.md): The `---` block at the top of a markdown file.
   - [Gamend.Content.Markdown](Gamend.Content.Markdown.md): Markdown to HTML, the way every collection renders it.
   - [Gamend.Content.Offline](Gamend.Content.Offline.md): A guide collection as one HTML file that needs no server.
+  - [Gamend.Content.PageName](Gamend.Content.PageName.md): The page a folder of content opens on.
+
   - [Gamend.Content.Tree](Gamend.Content.Tree.md): A guide collection read as a tree: folders are categories, at any depth.
   - [Gamend.ContentSettings](Gamend.ContentSettings.md): Where the server finds host-supplied content: the theme config, hook plugins,
 project static files, and the GeoIP database.
@@ -562,7 +583,7 @@ two Pigeon dispatchers.
   - [Gamend.Push.TokenFilter](Gamend.Push.TokenFilter.md): The status filters of the push tokens list.
 
   - [Gamend.Realtime](Gamend.Realtime.md): Pushing game-defined realtime events to a player's socket.
-  - [Gamend.RealtimeEvent](Gamend.RealtimeEvent.md): The names of the server-to-client channel events core and the channels both spell. The registry that lists them with their payloads is `GamendWeb.RealtimeEvents`.
+  - [Gamend.Realtime.RealtimeEvent](Gamend.Realtime.RealtimeEvent.md): The names of the server-to-client channel events core and the channels both spell. The registry that lists them with their payloads is `GamendWeb.RealtimeEvents`.
 
 - Plugins
   - [Gamend.Hooks](Gamend.Hooks.md): Behaviour for application-level hooks / callbacks.
@@ -579,6 +600,8 @@ transport and payload format.
 source code on disk, for the admin Config page and the command line.
   - [Gamend.Hooks.PluginBuilder.InProcess](Gamend.Hooks.PluginBuilder.InProcess.md): Builds a plugin bundle inside the running VM, without Mix.
   - [Gamend.Hooks.PluginBuilder.Project](Gamend.Hooks.PluginBuilder.Project.md): What a plugin's `mix.exs` declares, read without evaluating it.
+  - [Gamend.Hooks.PluginFile](Gamend.Hooks.PluginFile.md): The files and folders of a built plugin.
+
   - [Gamend.Hooks.PluginManager](Gamend.Hooks.PluginManager.md): Loads and manages hook plugins shipped as OTP applications under `modules/plugins/*`.
   - [Gamend.Hooks.PluginManager.Plugin](Gamend.Hooks.PluginManager.Plugin.md): A loaded plugin descriptor.
 

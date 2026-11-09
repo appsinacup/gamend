@@ -3,8 +3,22 @@
 
 The header names core and its HTTP clients send.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `accept`
 *macro* 
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
 
 # `authorization`
 *macro* 

@@ -28,7 +28,8 @@ same arguments:
     about having something to read, not volume)
   * `quest` — a daily, an auto-claim achievement, a chained follow-up and a
     twelve-member group that lists as one card, with per-user progress in
-    every state (including claimable rows)
+    every state (including claimable rows), and a code-only quest with a
+    page of generated codes and the shared code `SPRING-GIFT`
   * `ready_check` — one check per seeded lobby in every outcome (open,
     passed, timed out, declined), also capped at 12
   * `chat_moderation` — a blocklist across every severity and match mode, a

@@ -3,6 +3,20 @@
 
 What a ready check runs on.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `lobby`
 *macro* 
 

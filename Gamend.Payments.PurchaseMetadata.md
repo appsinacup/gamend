@@ -3,6 +3,20 @@
 
 Keys payments keeps in a purchase's metadata.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `paid_through`
 *macro* 
 

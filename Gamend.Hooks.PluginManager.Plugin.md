@@ -1,5 +1,5 @@
 # `Gamend.Hooks.PluginManager.Plugin`
-[🔗](https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L84)
+[🔗](https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/hooks/plugin_manager.ex#L85)
 
 A loaded plugin descriptor.
 

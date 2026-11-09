@@ -3,6 +3,20 @@
 
 The status filters of the push tokens list.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
+# `all`
+
+```elixir
+@spec all() :: [t()]
+```
+
+Every value.
+
 # `disabled`
 *macro* 
 

@@ -3,13 +3,19 @@
 
 What a ban is against.
 
+# `t`
+
+```elixir
+@type t() :: String.t()
+```
+
 # `account`
 *macro* 
 
 # `all`
 
 ```elixir
-@spec all() :: [String.t()]
+@spec all() :: [t()]
 ```
 
 Every value.

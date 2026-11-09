@@ -52,7 +52,7 @@ defmodule Gamend.Lobbies do
   def broadcast_member_presence(_lobby_id, _event) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Lobbies.broadcast_member_presence/2 is a stub - only available at runtime on Gamend"
@@ -266,19 +266,22 @@ defmodule Gamend.Lobbies do
   def create_lobby() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.create_lobby/0 is a stub - only available at runtime on Gamend"
@@ -298,19 +301,22 @@ defmodule Gamend.Lobbies do
   def create_lobby(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.create_lobby/1 is a stub - only available at runtime on Gamend"
@@ -324,7 +330,19 @@ defmodule Gamend.Lobbies do
   def create_membership(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.create_membership/1 is a stub - only available at runtime on Gamend"
@@ -337,19 +355,22 @@ defmodule Gamend.Lobbies do
   def delete_lobby(_lobby) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.delete_lobby/1 is a stub - only available at runtime on Gamend"
@@ -362,16 +383,19 @@ defmodule Gamend.Lobbies do
   def delete_membership(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.delete_membership/1 is a stub - only available at runtime on Gamend"
@@ -464,16 +488,19 @@ defmodule Gamend.Lobbies do
   def join_lobby(_user, _lobby_arg) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.join_lobby/2 is a stub - only available at runtime on Gamend"
@@ -507,16 +534,19 @@ defmodule Gamend.Lobbies do
   def join_lobby(_user, _lobby_arg, _opts) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.join_lobby/3 is a stub - only available at runtime on Gamend"
@@ -535,16 +565,19 @@ defmodule Gamend.Lobbies do
   def kick_user(_host, _lobby, _target) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.kick_user/3 is a stub - only available at runtime on Gamend"
@@ -556,7 +589,9 @@ defmodule Gamend.Lobbies do
   def leave_lobby(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Lobbies.leave_lobby/1 is a stub - only available at runtime on Gamend"
@@ -807,19 +842,22 @@ defmodule Gamend.Lobbies do
   def merge_metadata(_lobby, _patch) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.merge_metadata/2 is a stub - only available at runtime on Gamend"
@@ -843,19 +881,22 @@ defmodule Gamend.Lobbies do
   def quick_join(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.quick_join/1 is a stub - only available at runtime on Gamend"
@@ -879,19 +920,22 @@ defmodule Gamend.Lobbies do
   def quick_join(_user, _title) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.quick_join/2 is a stub - only available at runtime on Gamend"
@@ -915,19 +959,22 @@ defmodule Gamend.Lobbies do
   def quick_join(_user, _title, _max_users) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.quick_join/3 is a stub - only available at runtime on Gamend"
@@ -951,19 +998,22 @@ defmodule Gamend.Lobbies do
   def quick_join(_user, _title, _max_users, _metadata) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.quick_join/4 is a stub - only available at runtime on Gamend"
@@ -1011,7 +1061,7 @@ defmodule Gamend.Lobbies do
   def stats() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        %{}
 
       _ ->
         raise "Gamend.Lobbies.stats/0 is a stub - only available at runtime on Gamend"
@@ -1026,7 +1076,7 @@ defmodule Gamend.Lobbies do
   def subscribe_lobbies() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Lobbies.subscribe_lobbies/0 is a stub - only available at runtime on Gamend"
@@ -1041,7 +1091,7 @@ defmodule Gamend.Lobbies do
   def subscribe_lobby(_lobby_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Lobbies.subscribe_lobby/1 is a stub - only available at runtime on Gamend"
@@ -1073,7 +1123,22 @@ defmodule Gamend.Lobbies do
   def transition_state(_lobby, _state, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.transition_state/3 is a stub - only available at runtime on Gamend"
@@ -1095,19 +1160,22 @@ defmodule Gamend.Lobbies do
   def transition_state_by_host(_user, _lobby, _state) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.transition_state_by_host/3 is a stub - only available at runtime on Gamend"
@@ -1142,19 +1210,22 @@ defmodule Gamend.Lobbies do
   def update_lobby(_lobby, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.update_lobby/2 is a stub - only available at runtime on Gamend"
@@ -1181,19 +1252,22 @@ defmodule Gamend.Lobbies do
   def update_lobby_by_host(_user, _lobby, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.update_lobby_by_host/3 is a stub - only available at runtime on Gamend"
@@ -1226,19 +1300,22 @@ defmodule Gamend.Lobbies do
   def write_webrtc_config(_lobby, _changes) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Lobbies.write_webrtc_config/2 is a stub - only available at runtime on Gamend"

@@ -83,7 +83,9 @@ defmodule Gamend.Groups do
   def accept_invite(_user_id, _invite_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.accept_invite/2 is a stub - only available at runtime on Gamend"
@@ -99,7 +101,9 @@ defmodule Gamend.Groups do
   def admin_delete_group(_group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.admin_delete_group/1 is a stub - only available at runtime on Gamend"
@@ -115,7 +119,9 @@ defmodule Gamend.Groups do
   def admin_update_group(_group, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.admin_update_group/2 is a stub - only available at runtime on Gamend"
@@ -131,7 +137,9 @@ defmodule Gamend.Groups do
   def approve_join_request(_admin_id, _request_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.approve_join_request/2 is a stub - only available at runtime on Gamend"
@@ -159,7 +167,7 @@ defmodule Gamend.Groups do
   def broadcast_member_presence(_group_id, _event) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Groups.broadcast_member_presence/2 is a stub - only available at runtime on Gamend"
@@ -197,7 +205,7 @@ defmodule Gamend.Groups do
   def cancel_invite(_user_id, _invite_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Groups.cancel_invite/2 is a stub - only available at runtime on Gamend"
@@ -212,7 +220,9 @@ defmodule Gamend.Groups do
   def cancel_join_request(_user_id, _request_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.cancel_join_request/2 is a stub - only available at runtime on Gamend"
@@ -446,7 +456,9 @@ defmodule Gamend.Groups do
   def create_group(_user_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.create_group/2 is a stub - only available at runtime on Gamend"
@@ -464,7 +476,9 @@ defmodule Gamend.Groups do
   def create_invite_link(_admin_id, _group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.create_invite_link/2 is a stub - only available at runtime on Gamend"
@@ -481,7 +495,7 @@ defmodule Gamend.Groups do
   def decline_invite(_user_id, _invite_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Groups.decline_invite/2 is a stub - only available at runtime on Gamend"
@@ -499,7 +513,9 @@ defmodule Gamend.Groups do
   def delete_group(_user_id, _group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.delete_group/2 is a stub - only available at runtime on Gamend"
@@ -514,7 +530,7 @@ defmodule Gamend.Groups do
   def delete_invite_link(_admin_id, _group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Groups.delete_invite_link/2 is a stub - only available at runtime on Gamend"
@@ -529,7 +545,9 @@ defmodule Gamend.Groups do
   def demote_member(_admin_id, _group_id, _target_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.demote_member/3 is a stub - only available at runtime on Gamend"
@@ -891,7 +909,9 @@ defmodule Gamend.Groups do
   def invite_to_group(_admin_id, _group_id, _target_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.invite_to_group/3 is a stub - only available at runtime on Gamend"
@@ -912,7 +932,9 @@ defmodule Gamend.Groups do
   def join_by_invite_link(_user_id, _token) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.join_by_invite_link/2 is a stub - only available at runtime on Gamend"
@@ -929,7 +951,9 @@ defmodule Gamend.Groups do
   def join_group(_user_id, _group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.join_group/2 is a stub - only available at runtime on Gamend"
@@ -951,7 +975,9 @@ defmodule Gamend.Groups do
   def kick_member(_admin_id, _group_id, _target_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.kick_member/3 is a stub - only available at runtime on Gamend"
@@ -966,7 +992,9 @@ defmodule Gamend.Groups do
   def leave_group(_user_id, _group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.leave_group/2 is a stub - only available at runtime on Gamend"
@@ -1002,7 +1030,9 @@ defmodule Gamend.Groups do
   def list_group_invites(_admin_id, _group_id, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.list_group_invites/3 is a stub - only available at runtime on Gamend"
@@ -1066,7 +1096,9 @@ defmodule Gamend.Groups do
   def list_join_requests(_admin_id, _group_id, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.list_join_requests/3 is a stub - only available at runtime on Gamend"
@@ -1184,7 +1216,9 @@ defmodule Gamend.Groups do
   def notify_group(_sender_id, _group_id, _content, _metadata \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.notify_group/4 is a stub - only available at runtime on Gamend"
@@ -1199,7 +1233,9 @@ defmodule Gamend.Groups do
   def promote_member(_admin_id, _group_id, _target_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.promote_member/3 is a stub - only available at runtime on Gamend"
@@ -1228,7 +1264,9 @@ defmodule Gamend.Groups do
   def reject_join_request(_admin_id, _request_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.reject_join_request/2 is a stub - only available at runtime on Gamend"
@@ -1244,7 +1282,9 @@ defmodule Gamend.Groups do
   def request_join(_user_id, _group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.request_join/2 is a stub - only available at runtime on Gamend"
@@ -1268,7 +1308,9 @@ defmodule Gamend.Groups do
   def set_icon_url(_user_id, _group_id, _url) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.set_icon_url/3 is a stub - only available at runtime on Gamend"
@@ -1296,7 +1338,7 @@ defmodule Gamend.Groups do
   def subscribe_group(_group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Groups.subscribe_group/1 is a stub - only available at runtime on Gamend"
@@ -1310,7 +1352,7 @@ defmodule Gamend.Groups do
   def subscribe_groups() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Groups.subscribe_groups/0 is a stub - only available at runtime on Gamend"
@@ -1364,7 +1406,9 @@ defmodule Gamend.Groups do
   def update_group(_user_id, _group_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Groups.update_group/3 is a stub - only available at runtime on Gamend"

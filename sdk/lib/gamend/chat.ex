@@ -51,7 +51,9 @@ defmodule Gamend.Chat do
   def admin_delete_message(_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Chat.admin_delete_message/1 is a stub - only available at runtime on Gamend"
@@ -66,7 +68,7 @@ defmodule Gamend.Chat do
   def authorize_access(_user_id, _chat_type, _chat_ref_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Chat.authorize_access/3 is a stub - only available at runtime on Gamend"
@@ -252,7 +254,7 @@ defmodule Gamend.Chat do
   def count_unread_friends_batch(_user_id, _friend_ids) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        0
+        %{}
 
       _ ->
         raise "Gamend.Chat.count_unread_friends_batch/2 is a stub - only available at runtime on Gamend"
@@ -271,7 +273,7 @@ defmodule Gamend.Chat do
   def count_unread_groups_batch(_user_id, _group_ids) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        0
+        %{}
 
       _ ->
         raise "Gamend.Chat.count_unread_groups_batch/2 is a stub - only available at runtime on Gamend"
@@ -304,7 +306,9 @@ defmodule Gamend.Chat do
   def delete_own_message(_user_id, _message_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Chat.delete_own_message/2 is a stub - only available at runtime on Gamend"
@@ -495,7 +499,9 @@ defmodule Gamend.Chat do
   def mark_read(_user_id, _chat_type, _chat_ref_id, _message_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Chat.mark_read/4 is a stub - only available at runtime on Gamend"
@@ -520,23 +526,26 @@ defmodule Gamend.Chat do
   def mute_user(_user_id, _scope, _scope_ref_id, _attrs \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Bans.Ban{
-           id: "",
-           kind: :account,
-           subject: "",
-           user_id: nil,
-           expires_at: nil,
-           reason: nil,
-           source: :plugin,
-           scope: nil,
-           scope_ref_id: nil,
-           banned_by: nil,
-           lifted_at: nil,
-           lifted_by: nil,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Bans.Ban{
+               id: "",
+               kind: :account,
+               subject: "",
+               user_id: nil,
+               expires_at: nil,
+               reason: nil,
+               source: :plugin,
+               scope: nil,
+               scope_ref_id: nil,
+               banned_by: nil,
+               lifted_at: nil,
+               lifted_by: nil,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Chat.mute_user/4 is a stub - only available at runtime on Gamend"
@@ -577,21 +586,24 @@ defmodule Gamend.Chat do
   def report_message(_reporter_id, _message_id, _reason \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Chat.Report{
-           id: "",
-           reporter_id: nil,
-           message_id: nil,
-           reported_user_id: "",
-           content_snapshot: nil,
-           reason: nil,
-           status: "open",
-           resolved_by: nil,
-           resolution_note: nil,
-           resolved_at: nil,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Chat.Report{
+               id: "",
+               reporter_id: nil,
+               message_id: nil,
+               reported_user_id: "",
+               content_snapshot: nil,
+               reason: nil,
+               status: "open",
+               resolved_by: nil,
+               resolution_note: nil,
+               resolved_at: nil,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Chat.report_message/3 is a stub - only available at runtime on Gamend"
@@ -609,21 +621,24 @@ defmodule Gamend.Chat do
   def resolve_report(_report, _status, _attrs \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Chat.Report{
-           id: "",
-           reporter_id: nil,
-           message_id: nil,
-           reported_user_id: "",
-           content_snapshot: nil,
-           reason: nil,
-           status: "open",
-           resolved_by: nil,
-           resolution_note: nil,
-           resolved_at: nil,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Chat.Report{
+               id: "",
+               reporter_id: nil,
+               message_id: nil,
+               reported_user_id: "",
+               content_snapshot: nil,
+               reason: nil,
+               status: "open",
+               resolved_by: nil,
+               resolution_note: nil,
+               resolved_at: nil,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Chat.resolve_report/3 is a stub - only available at runtime on Gamend"
@@ -643,21 +658,24 @@ defmodule Gamend.Chat do
   def review_report(_report) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Chat.Report{
-           id: "",
-           reporter_id: nil,
-           message_id: nil,
-           reported_user_id: "",
-           content_snapshot: nil,
-           reason: nil,
-           status: "open",
-           resolved_by: nil,
-           resolution_note: nil,
-           resolved_at: nil,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Chat.Report{
+               id: "",
+               reporter_id: nil,
+               message_id: nil,
+               reported_user_id: "",
+               content_snapshot: nil,
+               reason: nil,
+               status: "open",
+               resolved_by: nil,
+               resolution_note: nil,
+               resolved_at: nil,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Chat.review_report/1 is a stub - only available at runtime on Gamend"
@@ -689,7 +707,9 @@ defmodule Gamend.Chat do
   def send_message(_map, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Chat.send_message/2 is a stub - only available at runtime on Gamend"
@@ -703,7 +723,7 @@ defmodule Gamend.Chat do
   def subscribe_friend_chat(_user_a_id, _user_b_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Chat.subscribe_friend_chat/2 is a stub - only available at runtime on Gamend"
@@ -717,7 +737,7 @@ defmodule Gamend.Chat do
   def subscribe_group_chat(_group_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Chat.subscribe_group_chat/1 is a stub - only available at runtime on Gamend"
@@ -731,7 +751,7 @@ defmodule Gamend.Chat do
   def subscribe_lobby_chat(_lobby_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Chat.subscribe_lobby_chat/1 is a stub - only available at runtime on Gamend"
@@ -745,7 +765,7 @@ defmodule Gamend.Chat do
   def subscribe_party_chat(_party_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Chat.subscribe_party_chat/1 is a stub - only available at runtime on Gamend"
@@ -836,7 +856,9 @@ defmodule Gamend.Chat do
   def update_message(_user_id, _message_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Chat.update_message/3 is a stub - only available at runtime on Gamend"

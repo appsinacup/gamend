@@ -99,21 +99,24 @@ defmodule Gamend.ReadyChecks do
   def answer_for(_check, _user_id, _ready?) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.ReadyChecks.Check{
-           id: "",
-           kind: "ready",
-           status: "pending",
-           lobby_id: nil,
-           deadline_at: nil,
-           opened_by: nil,
-           reason: nil,
-           resolved_at: nil,
-           metadata: %{},
-           participants: [],
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.ReadyChecks.Check{
+               id: "",
+               kind: "ready",
+               status: "pending",
+               lobby_id: nil,
+               deadline_at: nil,
+               opened_by: nil,
+               reason: nil,
+               resolved_at: nil,
+               metadata: %{},
+               participants: [],
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.ReadyChecks.answer_for/3 is a stub - only available at runtime on Gamend"
@@ -128,21 +131,24 @@ defmodule Gamend.ReadyChecks do
   def cancel(_check, _reason \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.ReadyChecks.Check{
-           id: "",
-           kind: "ready",
-           status: "pending",
-           lobby_id: nil,
-           deadline_at: nil,
-           opened_by: nil,
-           reason: nil,
-           resolved_at: nil,
-           metadata: %{},
-           participants: [],
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.ReadyChecks.Check{
+               id: "",
+               kind: "ready",
+               status: "pending",
+               lobby_id: nil,
+               deadline_at: nil,
+               opened_by: nil,
+               reason: nil,
+               resolved_at: nil,
+               metadata: %{},
+               participants: [],
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.ReadyChecks.cancel/2 is a stub - only available at runtime on Gamend"
@@ -161,7 +167,7 @@ defmodule Gamend.ReadyChecks do
   def cancel_for_lobby(_lobby_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.ReadyChecks.cancel_for_lobby/1 is a stub - only available at runtime on Gamend"
@@ -175,7 +181,7 @@ defmodule Gamend.ReadyChecks do
   def cancel_for_party(_party_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.ReadyChecks.cancel_for_party/1 is a stub - only available at runtime on Gamend"
@@ -358,21 +364,24 @@ defmodule Gamend.ReadyChecks do
   def open(_subject, _user_ids, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.ReadyChecks.Check{
-           id: "",
-           kind: "ready",
-           status: "pending",
-           lobby_id: nil,
-           deadline_at: nil,
-           opened_by: nil,
-           reason: nil,
-           resolved_at: nil,
-           metadata: %{},
-           participants: [],
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.ReadyChecks.Check{
+               id: "",
+               kind: "ready",
+               status: "pending",
+               lobby_id: nil,
+               deadline_at: nil,
+               opened_by: nil,
+               reason: nil,
+               resolved_at: nil,
+               metadata: %{},
+               participants: [],
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.ReadyChecks.open/3 is a stub - only available at runtime on Gamend"
@@ -504,21 +513,24 @@ defmodule Gamend.ReadyChecks do
   def reset(_subject, _user_ids, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.ReadyChecks.Check{
-           id: "",
-           kind: "ready",
-           status: "pending",
-           lobby_id: nil,
-           deadline_at: nil,
-           opened_by: nil,
-           reason: nil,
-           resolved_at: nil,
-           metadata: %{},
-           participants: [],
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.ReadyChecks.Check{
+               id: "",
+               kind: "ready",
+               status: "pending",
+               lobby_id: nil,
+               deadline_at: nil,
+               opened_by: nil,
+               reason: nil,
+               resolved_at: nil,
+               metadata: %{},
+               participants: [],
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.ReadyChecks.reset/3 is a stub - only available at runtime on Gamend"
@@ -553,21 +565,24 @@ defmodule Gamend.ReadyChecks do
   def respond(_user, _ready?, _scope \\ :match) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.ReadyChecks.Check{
-           id: "",
-           kind: "ready",
-           status: "pending",
-           lobby_id: nil,
-           deadline_at: nil,
-           opened_by: nil,
-           reason: nil,
-           resolved_at: nil,
-           metadata: %{},
-           participants: [],
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.ReadyChecks.Check{
+               id: "",
+               kind: "ready",
+               status: "pending",
+               lobby_id: nil,
+               deadline_at: nil,
+               opened_by: nil,
+               reason: nil,
+               resolved_at: nil,
+               metadata: %{},
+               participants: [],
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.ReadyChecks.respond/3 is a stub - only available at runtime on Gamend"

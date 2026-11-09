@@ -90,7 +90,7 @@ defmodule Gamend.Schedule do
   def cron(_name, _cron_expr, _hook_fn) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Schedule.cron/3 is a stub - only available at runtime on Gamend"
@@ -116,7 +116,7 @@ defmodule Gamend.Schedule do
   def daily(_hook_fn) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Schedule.daily/1 is a stub - only available at runtime on Gamend"
@@ -142,7 +142,7 @@ defmodule Gamend.Schedule do
   def daily(_hook_fn, _opts) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Schedule.daily/2 is a stub - only available at runtime on Gamend"
@@ -162,7 +162,7 @@ defmodule Gamend.Schedule do
   def every_minutes(_n, _hook_fn) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Schedule.every_minutes/2 is a stub - only available at runtime on Gamend"
@@ -186,7 +186,7 @@ defmodule Gamend.Schedule do
   def hourly(_hook_fn) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Schedule.hourly/1 is a stub - only available at runtime on Gamend"
@@ -210,7 +210,7 @@ defmodule Gamend.Schedule do
   def hourly(_hook_fn, _opts) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Schedule.hourly/2 is a stub - only available at runtime on Gamend"
@@ -273,7 +273,7 @@ defmodule Gamend.Schedule do
   def weekly(_hook_fn) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Schedule.weekly/1 is a stub - only available at runtime on Gamend"
@@ -299,7 +299,7 @@ defmodule Gamend.Schedule do
   def weekly(_hook_fn, _opts) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Schedule.weekly/2 is a stub - only available at runtime on Gamend"

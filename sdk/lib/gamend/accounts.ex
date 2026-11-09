@@ -33,16 +33,19 @@ defmodule Gamend.Accounts do
   def attach_device_to_user(_user, _device_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.attach_device_to_user/2 is a stub - only available at runtime on Gamend"
@@ -69,16 +72,19 @@ defmodule Gamend.Accounts do
   def authenticate_by_password(_email, _password) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.authenticate_by_password/2 is a stub - only available at runtime on Gamend"
@@ -184,16 +190,19 @@ defmodule Gamend.Accounts do
   def cancel_deletion(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.cancel_deletion/1 is a stub - only available at runtime on Gamend"
@@ -458,16 +467,19 @@ defmodule Gamend.Accounts do
   def confirm_user(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.confirm_user/1 is a stub - only available at runtime on Gamend"
@@ -503,7 +515,9 @@ defmodule Gamend.Accounts do
   def confirm_user_by_code(_email, _code, _password) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Accounts.confirm_user_by_code/3 is a stub - only available at runtime on Gamend"
@@ -529,16 +543,19 @@ defmodule Gamend.Accounts do
   def confirm_user_by_token(_token) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.confirm_user_by_token/1 is a stub - only available at runtime on Gamend"
@@ -723,16 +740,19 @@ defmodule Gamend.Accounts do
   def delete_user(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.delete_user/1 is a stub - only available at runtime on Gamend"
@@ -809,7 +829,9 @@ defmodule Gamend.Accounts do
   def deliver_login_instructions(_user, _magic_link_url_fun) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Accounts.deliver_login_instructions/2 is a stub - only available at runtime on Gamend"
@@ -823,7 +845,9 @@ defmodule Gamend.Accounts do
   def deliver_user_confirmation_instructions(_user, _confirmation_url_fun) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Accounts.deliver_user_confirmation_instructions/2 is a stub - only available at runtime on Gamend"
@@ -848,7 +872,9 @@ defmodule Gamend.Accounts do
   def deliver_user_update_email_instructions(_user, _current_email, _update_email_url_fun) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Accounts.deliver_user_update_email_instructions/3 is a stub - only available at runtime on Gamend"
@@ -978,16 +1004,19 @@ defmodule Gamend.Accounts do
   def find_or_create_from_apple(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.find_or_create_from_apple/1 is a stub - only available at runtime on Gamend"
@@ -1006,16 +1035,19 @@ defmodule Gamend.Accounts do
   def find_or_create_from_device(_device_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.find_or_create_from_device/1 is a stub - only available at runtime on Gamend"
@@ -1034,16 +1066,19 @@ defmodule Gamend.Accounts do
   def find_or_create_from_device(_device_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.find_or_create_from_device/2 is a stub - only available at runtime on Gamend"
@@ -1065,16 +1100,19 @@ defmodule Gamend.Accounts do
   def find_or_create_from_discord(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.find_or_create_from_discord/1 is a stub - only available at runtime on Gamend"
@@ -1096,16 +1134,19 @@ defmodule Gamend.Accounts do
   def find_or_create_from_facebook(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.find_or_create_from_facebook/1 is a stub - only available at runtime on Gamend"
@@ -1127,16 +1168,19 @@ defmodule Gamend.Accounts do
   def find_or_create_from_github(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.find_or_create_from_github/1 is a stub - only available at runtime on Gamend"
@@ -1158,16 +1202,19 @@ defmodule Gamend.Accounts do
   def find_or_create_from_google(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.find_or_create_from_google/1 is a stub - only available at runtime on Gamend"
@@ -1189,16 +1236,19 @@ defmodule Gamend.Accounts do
   def find_or_create_from_steam(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.find_or_create_from_steam/1 is a stub - only available at runtime on Gamend"
@@ -1238,7 +1288,7 @@ defmodule Gamend.Accounts do
   def get_linked_providers(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        %{}
 
       _ ->
         raise "Gamend.Accounts.get_linked_providers/1 is a stub - only available at runtime on Gamend"
@@ -1692,7 +1742,19 @@ defmodule Gamend.Accounts do
   def link_account(_user, _attrs, _provider_id_field, _changeset_fn) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.link_account/4 is a stub - only available at runtime on Gamend"
@@ -1712,16 +1774,19 @@ defmodule Gamend.Accounts do
   def link_device_id(_user, _device_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.link_device_id/2 is a stub - only available at runtime on Gamend"
@@ -1821,7 +1886,9 @@ defmodule Gamend.Accounts do
   def login_user_by_magic_link(_token) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Accounts.login_user_by_magic_link/1 is a stub - only available at runtime on Gamend"
@@ -1843,16 +1910,19 @@ defmodule Gamend.Accounts do
   def merge_metadata(_user, _patch) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.merge_metadata/2 is a stub - only available at runtime on Gamend"
@@ -1901,7 +1971,7 @@ defmodule Gamend.Accounts do
   def player_stats() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        %{}
 
       _ ->
         raise "Gamend.Accounts.player_stats/0 is a stub - only available at runtime on Gamend"
@@ -1942,16 +2012,19 @@ defmodule Gamend.Accounts do
   def refresh_account_class(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.refresh_account_class/1 is a stub - only available at runtime on Gamend"
@@ -1974,16 +2047,19 @@ defmodule Gamend.Accounts do
   def register_unconfirmed_user_and_deliver(_attrs, _confirmation_url_fun, _notifier \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.register_unconfirmed_user_and_deliver/3 is a stub - only available at runtime on Gamend"
@@ -2012,16 +2088,19 @@ defmodule Gamend.Accounts do
   def register_user(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.register_user/1 is a stub - only available at runtime on Gamend"
@@ -2053,16 +2132,19 @@ defmodule Gamend.Accounts do
   def register_user_and_deliver(_attrs, _confirmation_url_fun) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.register_user_and_deliver/2 is a stub - only available at runtime on Gamend"
@@ -2096,16 +2178,19 @@ defmodule Gamend.Accounts do
   def register_user_and_deliver(_attrs, _confirmation_url_fun, _notifier) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.register_user_and_deliver/3 is a stub - only available at runtime on Gamend"
@@ -2134,7 +2219,9 @@ defmodule Gamend.Accounts do
   def request_deletion(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Accounts.request_deletion/1 is a stub - only available at runtime on Gamend"
@@ -2191,7 +2278,9 @@ defmodule Gamend.Accounts do
   def revoke_all_tokens(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Accounts.revoke_all_tokens/1 is a stub - only available at runtime on Gamend"
@@ -2294,16 +2383,19 @@ defmodule Gamend.Accounts do
   def set_user_age(_user, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.set_user_age/2 is a stub - only available at runtime on Gamend"
@@ -2322,16 +2414,19 @@ defmodule Gamend.Accounts do
   def set_user_offline(_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.set_user_offline/1 is a stub - only available at runtime on Gamend"
@@ -2353,16 +2448,19 @@ defmodule Gamend.Accounts do
   def set_user_online(_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.set_user_online/1 is a stub - only available at runtime on Gamend"
@@ -2464,16 +2562,19 @@ defmodule Gamend.Accounts do
   def unlink_device_id(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.unlink_device_id/1 is a stub - only available at runtime on Gamend"
@@ -2498,16 +2599,19 @@ defmodule Gamend.Accounts do
   def unlink_provider(_user, _provider) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.unlink_provider/2 is a stub - only available at runtime on Gamend"
@@ -2546,16 +2650,19 @@ defmodule Gamend.Accounts do
   def update_user(_user, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.update_user/2 is a stub - only available at runtime on Gamend"
@@ -2572,16 +2679,19 @@ defmodule Gamend.Accounts do
   def update_user_avatar(_user, _url) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.update_user_avatar/2 is a stub - only available at runtime on Gamend"
@@ -2600,16 +2710,19 @@ defmodule Gamend.Accounts do
   def update_user_display_name(_user, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.update_user_display_name/2 is a stub - only available at runtime on Gamend"
@@ -2627,16 +2740,19 @@ defmodule Gamend.Accounts do
   def update_user_email(_user, _token) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.update_user_email/2 is a stub - only available at runtime on Gamend"
@@ -2669,16 +2785,19 @@ defmodule Gamend.Accounts do
   def update_user_metadata(_user_id, _fun) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.update_user_metadata/2 is a stub - only available at runtime on Gamend"
@@ -2706,7 +2825,9 @@ defmodule Gamend.Accounts do
   def update_user_password(_user, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Accounts.update_user_password/2 is a stub - only available at runtime on Gamend"
@@ -2729,16 +2850,19 @@ defmodule Gamend.Accounts do
   def update_username(_user, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.update_username/2 is a stub - only available at runtime on Gamend"
@@ -2763,16 +2887,19 @@ defmodule Gamend.Accounts do
   def upgrade_anonymous_user_and_deliver(_user, _attrs, _confirmation_url_fun, _notifier \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Accounts.upgrade_anonymous_user_and_deliver/4 is a stub - only available at runtime on Gamend"

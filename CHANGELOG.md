@@ -1,5 +1,6 @@
 # November 2026
 
+- [fixed] **Plugin SDK: an `{:error, reason}` clause no longer "will never match".** Every stub whose `@spec` allows `{:error, _}` can now answer it, so a plugin compiles clean under `--warnings-as-errors`.
 - [breaking] **A page or route a product does not have is left out of the router, not switched off.** `except:` on `gamend_api_routes`, `gamend_authenticated_live_routes` and `gamend_current_user_routes` replaces `GAMEND_FEATURES_WEB_{CHAT,FRIENDS,GROUPS,TOURNAMENTS,STORE,REDEEM}`, `_PLAY`, `_STRIPE_CHECKOUT_API`, `_LIST_PAYMENTS_CATALOG` and `GAMEND_REPORTS_ENABLED`, and a link goes with its page (`GamendWeb.MountedRoutes`). **Hosts:** a build that still sets one of those `GamendWeb.Features` keys to false fails and says what to write; `GamendWeb.Features.doc_visible?/1` and a theme link's `"feature"` key are gone; `POST /api/v1/reports` no longer answers 503.
 - [breaking] **`"locale_flags": false` on the theme's navigation** replaces `GAMEND_FEATURES_LOCALE_FLAGS`.
 - [fixed] **A search result keeps its whole title.** A long subtitle beside it cut the title to a few letters. The subtitle now takes what is left.

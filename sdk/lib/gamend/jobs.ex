@@ -72,7 +72,9 @@ defmodule Gamend.Jobs do
   def enqueue_hook(_hook_fn, _args \\ %{}, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Jobs.enqueue_hook/3 is a stub - only available at runtime on Gamend"
@@ -90,7 +92,9 @@ defmodule Gamend.Jobs do
   def enqueue_in(_seconds, _hook_fn, _args \\ %{}, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Jobs.enqueue_in/4 is a stub - only available at runtime on Gamend"

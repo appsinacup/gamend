@@ -72,7 +72,7 @@ defmodule Gamend.Matchmaking do
   def assign_lobby(_tickets, _lobby_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Matchmaking.assign_lobby/2 is a stub - only available at runtime on Gamend"
@@ -112,7 +112,9 @@ defmodule Gamend.Matchmaking do
   def cancel_ticket(_ticket_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Matchmaking.cancel_ticket/1 is a stub - only available at runtime on Gamend"
@@ -236,7 +238,9 @@ defmodule Gamend.Matchmaking do
   def join(_user, _match_params, _min_players \\ nil, _max_players \\ nil) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Matchmaking.join/4 is a stub - only available at runtime on Gamend"
@@ -362,7 +366,7 @@ defmodule Gamend.Matchmaking do
   def stats() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        %{}
 
       _ ->
         raise "Gamend.Matchmaking.stats/0 is a stub - only available at runtime on Gamend"

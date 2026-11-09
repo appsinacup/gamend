@@ -73,26 +73,29 @@ defmodule Gamend.Tournaments do
   def cancel_tournament(_tournament) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Tournaments.Tournament{
-           id: "",
-           slug: "",
-           title: "",
-           description: "",
-           state: "scheduled",
-           registration_opens_at: nil,
-           starts_at: nil,
-           ends_at: nil,
-           recur: nil,
-           max_entries: nil,
-           team_size: 1,
-           bracket_size: 8,
-           round_window_sec: 3600,
-           deadline_policy: "forfeit_both",
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Tournaments.Tournament{
+               id: "",
+               slug: "",
+               title: "",
+               description: "",
+               state: "scheduled",
+               registration_opens_at: nil,
+               starts_at: nil,
+               ends_at: nil,
+               recur: nil,
+               max_entries: nil,
+               team_size: 1,
+               bracket_size: 8,
+               round_window_sec: 3600,
+               deadline_policy: "forfeit_both",
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Tournaments.cancel_tournament/1 is a stub - only available at runtime on Gamend"
@@ -172,26 +175,29 @@ defmodule Gamend.Tournaments do
   def create_tournament(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Tournaments.Tournament{
-           id: "",
-           slug: "",
-           title: "",
-           description: "",
-           state: "scheduled",
-           registration_opens_at: nil,
-           starts_at: nil,
-           ends_at: nil,
-           recur: nil,
-           max_entries: nil,
-           team_size: 1,
-           bracket_size: 8,
-           round_window_sec: 3600,
-           deadline_policy: "forfeit_both",
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Tournaments.Tournament{
+               id: "",
+               slug: "",
+               title: "",
+               description: "",
+               state: "scheduled",
+               registration_opens_at: nil,
+               starts_at: nil,
+               ends_at: nil,
+               recur: nil,
+               max_entries: nil,
+               team_size: 1,
+               bracket_size: 8,
+               round_window_sec: 3600,
+               deadline_policy: "forfeit_both",
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Tournaments.create_tournament/1 is a stub - only available at runtime on Gamend"
@@ -204,26 +210,29 @@ defmodule Gamend.Tournaments do
   def delete_tournament(_tournament) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Tournaments.Tournament{
-           id: "",
-           slug: "",
-           title: "",
-           description: "",
-           state: "scheduled",
-           registration_opens_at: nil,
-           starts_at: nil,
-           ends_at: nil,
-           recur: nil,
-           max_entries: nil,
-           team_size: 1,
-           bracket_size: 8,
-           round_window_sec: 3600,
-           deadline_policy: "forfeit_both",
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Tournaments.Tournament{
+               id: "",
+               slug: "",
+               title: "",
+               description: "",
+               state: "scheduled",
+               registration_opens_at: nil,
+               starts_at: nil,
+               ends_at: nil,
+               recur: nil,
+               max_entries: nil,
+               team_size: 1,
+               bracket_size: 8,
+               round_window_sec: 3600,
+               deadline_policy: "forfeit_both",
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Tournaments.delete_tournament/1 is a stub - only available at runtime on Gamend"
@@ -239,7 +248,7 @@ defmodule Gamend.Tournaments do
   def entries_by_id(_tournament_id, _entry_ids) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        %{}
 
       _ ->
         raise "Gamend.Tournaments.entries_by_id/2 is a stub - only available at runtime on Gamend"
@@ -431,7 +440,22 @@ defmodule Gamend.Tournaments do
   def join_tournament(_user, _tournament) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Tournaments.Entry{
+               id: "",
+               tournament_id: "",
+               leader_id: "",
+               seed: nil,
+               bracket_index: nil,
+               wins: 0,
+               state: "registered",
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Tournaments.join_tournament/2 is a stub - only available at runtime on Gamend"
@@ -449,7 +473,29 @@ defmodule Gamend.Tournaments do
   def leave_tournament(_user, _tournament) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Tournaments.Tournament{
+               id: "",
+               slug: "",
+               title: "",
+               description: "",
+               state: "scheduled",
+               registration_opens_at: nil,
+               starts_at: nil,
+               ends_at: nil,
+               recur: nil,
+               max_entries: nil,
+               team_size: 1,
+               bracket_size: 8,
+               round_window_sec: 3600,
+               deadline_policy: "forfeit_both",
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Tournaments.leave_tournament/2 is a stub - only available at runtime on Gamend"
@@ -639,26 +685,29 @@ defmodule Gamend.Tournaments do
   def reopen_tournament(_tournament) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Tournaments.Tournament{
-           id: "",
-           slug: "",
-           title: "",
-           description: "",
-           state: "scheduled",
-           registration_opens_at: nil,
-           starts_at: nil,
-           ends_at: nil,
-           recur: nil,
-           max_entries: nil,
-           team_size: 1,
-           bracket_size: 8,
-           round_window_sec: 3600,
-           deadline_policy: "forfeit_both",
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Tournaments.Tournament{
+               id: "",
+               slug: "",
+               title: "",
+               description: "",
+               state: "scheduled",
+               registration_opens_at: nil,
+               starts_at: nil,
+               ends_at: nil,
+               recur: nil,
+               max_entries: nil,
+               team_size: 1,
+               bracket_size: 8,
+               round_window_sec: 3600,
+               deadline_policy: "forfeit_both",
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Tournaments.reopen_tournament/1 is a stub - only available at runtime on Gamend"
@@ -680,7 +729,27 @@ defmodule Gamend.Tournaments do
   def resolve_match(_match_id, _winner) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Tournaments.Match{
+               id: "",
+               tournament_id: "",
+               bracket_index: 0,
+               round: 1,
+               slot: 0,
+               a_entry_id: nil,
+               b_entry_id: nil,
+               winner_entry_id: nil,
+               ready_at: nil,
+               expired_at: nil,
+               resolved_at: nil,
+               deadline_at: ~U[1970-01-01 00:00:00Z],
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Tournaments.resolve_match/2 is a stub - only available at runtime on Gamend"
@@ -779,7 +848,7 @@ defmodule Gamend.Tournaments do
   def stats() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        %{}
 
       _ ->
         raise "Gamend.Tournaments.stats/0 is a stub - only available at runtime on Gamend"
@@ -816,24 +885,27 @@ defmodule Gamend.Tournaments do
   def update_match_metadata(_match_id, _map) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Tournaments.Match{
-           id: "",
-           tournament_id: "",
-           bracket_index: 0,
-           round: 1,
-           slot: 0,
-           a_entry_id: nil,
-           b_entry_id: nil,
-           winner_entry_id: nil,
-           ready_at: nil,
-           expired_at: nil,
-           resolved_at: nil,
-           deadline_at: ~U[1970-01-01 00:00:00Z],
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Tournaments.Match{
+               id: "",
+               tournament_id: "",
+               bracket_index: 0,
+               round: 1,
+               slot: 0,
+               a_entry_id: nil,
+               b_entry_id: nil,
+               winner_entry_id: nil,
+               ready_at: nil,
+               expired_at: nil,
+               resolved_at: nil,
+               deadline_at: ~U[1970-01-01 00:00:00Z],
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Tournaments.update_match_metadata/2 is a stub - only available at runtime on Gamend"
@@ -846,26 +918,29 @@ defmodule Gamend.Tournaments do
   def update_tournament(_tournament, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Tournaments.Tournament{
-           id: "",
-           slug: "",
-           title: "",
-           description: "",
-           state: "scheduled",
-           registration_opens_at: nil,
-           starts_at: nil,
-           ends_at: nil,
-           recur: nil,
-           max_entries: nil,
-           team_size: 1,
-           bracket_size: 8,
-           round_window_sec: 3600,
-           deadline_policy: "forfeit_both",
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Tournaments.Tournament{
+               id: "",
+               slug: "",
+               title: "",
+               description: "",
+               state: "scheduled",
+               registration_opens_at: nil,
+               starts_at: nil,
+               ends_at: nil,
+               recur: nil,
+               max_entries: nil,
+               team_size: 1,
+               bracket_size: 8,
+               round_window_sec: 3600,
+               deadline_policy: "forfeit_both",
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Tournaments.update_tournament/2 is a stub - only available at runtime on Gamend"

@@ -59,7 +59,9 @@ defmodule Gamend.Parties do
   def accept_party_invite(_user, _party_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Parties.accept_party_invite/2 is a stub - only available at runtime on Gamend"
@@ -78,7 +80,19 @@ defmodule Gamend.Parties do
   def admin_add_member(_party, _user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Parties.admin_add_member/2 is a stub - only available at runtime on Gamend"
@@ -92,7 +106,9 @@ defmodule Gamend.Parties do
   def admin_delete_party(_party_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Parties.admin_delete_party/1 is a stub - only available at runtime on Gamend"
@@ -107,7 +123,9 @@ defmodule Gamend.Parties do
   def admin_update_party(_party, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Parties.admin_update_party/2 is a stub - only available at runtime on Gamend"
@@ -121,7 +139,7 @@ defmodule Gamend.Parties do
   def broadcast_member_presence(_party_id, _event) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Parties.broadcast_member_presence/2 is a stub - only available at runtime on Gamend"
@@ -159,7 +177,7 @@ defmodule Gamend.Parties do
   def cancel_party_invite(_leader, _target_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Parties.cancel_party_invite/2 is a stub - only available at runtime on Gamend"
@@ -262,7 +280,9 @@ defmodule Gamend.Parties do
   def create_lobby_with_party(_user, _lobby_attrs \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Parties.create_lobby_with_party/2 is a stub - only available at runtime on Gamend"
@@ -280,7 +300,9 @@ defmodule Gamend.Parties do
   def create_party(_user, _attrs \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Parties.create_party/2 is a stub - only available at runtime on Gamend"
@@ -295,7 +317,7 @@ defmodule Gamend.Parties do
   def decline_party_invite(_user, _party_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Parties.decline_party_invite/2 is a stub - only available at runtime on Gamend"
@@ -315,7 +337,9 @@ defmodule Gamend.Parties do
   def disband(_party) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Parties.disband/1 is a stub - only available at runtime on Gamend"
@@ -336,7 +360,9 @@ defmodule Gamend.Parties do
   def disband(_party, _user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Parties.disband/2 is a stub - only available at runtime on Gamend"
@@ -418,7 +444,9 @@ defmodule Gamend.Parties do
   def invite_to_party(_leader, _target_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Parties.invite_to_party/2 is a stub - only available at runtime on Gamend"
@@ -444,7 +472,9 @@ defmodule Gamend.Parties do
   def join_lobby_with_party(_user, _lobby_id, _opts \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Parties.join_lobby_with_party/3 is a stub - only available at runtime on Gamend"
@@ -462,16 +492,19 @@ defmodule Gamend.Parties do
   def kick_member(_leader, _target_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Accounts.User{
-           id: 0,
-           email: "",
-           display_name: nil,
-           metadata: %{},
-           is_admin: false,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Accounts.User{
+               id: 0,
+               email: "",
+               display_name: nil,
+               metadata: %{},
+               is_admin: false,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Parties.kick_member/2 is a stub - only available at runtime on Gamend"
@@ -493,7 +526,9 @@ defmodule Gamend.Parties do
   def leave_party(_user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Parties.leave_party/1 is a stub - only available at runtime on Gamend"
@@ -571,19 +606,22 @@ defmodule Gamend.Parties do
   def quick_join_with_party(_user, _params \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Parties.quick_join_with_party/2 is a stub - only available at runtime on Gamend"
@@ -615,7 +653,7 @@ defmodule Gamend.Parties do
   def subscribe_parties() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Parties.subscribe_parties/0 is a stub - only available at runtime on Gamend"
@@ -629,7 +667,7 @@ defmodule Gamend.Parties do
   def subscribe_party(_party_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Parties.subscribe_party/1 is a stub - only available at runtime on Gamend"
@@ -662,7 +700,9 @@ defmodule Gamend.Parties do
   def update_party(_user, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Parties.update_party/2 is a stub - only available at runtime on Gamend"

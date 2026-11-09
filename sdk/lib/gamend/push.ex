@@ -41,20 +41,23 @@ defmodule Gamend.Push do
   def admin_delete_token(_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Push.PushToken{
-           id: "",
-           user_id: "",
-           token: "",
-           platform: "android",
-           provider: "fcm",
-           device_id: nil,
-           disabled_at: nil,
-           last_used_at: nil,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Push.PushToken{
+               id: "",
+               user_id: "",
+               token: "",
+               platform: "android",
+               provider: "fcm",
+               device_id: nil,
+               disabled_at: nil,
+               last_used_at: nil,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Push.admin_delete_token/1 is a stub - only available at runtime on Gamend"
@@ -99,20 +102,23 @@ defmodule Gamend.Push do
   def delete_token(_user_id, _id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Push.PushToken{
-           id: "",
-           user_id: "",
-           token: "",
-           platform: "android",
-           provider: "fcm",
-           device_id: nil,
-           disabled_at: nil,
-           last_used_at: nil,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Push.PushToken{
+               id: "",
+               user_id: "",
+               token: "",
+               platform: "android",
+               provider: "fcm",
+               device_id: nil,
+               disabled_at: nil,
+               last_used_at: nil,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Push.delete_token/2 is a stub - only available at runtime on Gamend"
@@ -265,20 +271,23 @@ defmodule Gamend.Push do
   def register_token(_user_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Push.PushToken{
-           id: "",
-           user_id: "",
-           token: "",
-           platform: "android",
-           provider: "fcm",
-           device_id: nil,
-           disabled_at: nil,
-           last_used_at: nil,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Push.PushToken{
+               id: "",
+               user_id: "",
+               token: "",
+               platform: "android",
+               provider: "fcm",
+               device_id: nil,
+               disabled_at: nil,
+               last_used_at: nil,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Push.register_token/2 is a stub - only available at runtime on Gamend"
@@ -300,7 +309,7 @@ defmodule Gamend.Push do
   def send_to_user(_user_id, _message_attrs, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Push.send_to_user/3 is a stub - only available at runtime on Gamend"
@@ -319,7 +328,7 @@ defmodule Gamend.Push do
   def send_to_users(_user_ids, _message_attrs, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Push.send_to_users/3 is a stub - only available at runtime on Gamend"
@@ -354,20 +363,23 @@ defmodule Gamend.Push do
   def unregister_token(_user_id, _token) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Push.PushToken{
-           id: "",
-           user_id: "",
-           token: "",
-           platform: "android",
-           provider: "fcm",
-           device_id: nil,
-           disabled_at: nil,
-           last_used_at: nil,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Push.PushToken{
+               id: "",
+               user_id: "",
+               token: "",
+               platform: "android",
+               provider: "fcm",
+               device_id: nil,
+               disabled_at: nil,
+               last_used_at: nil,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Push.unregister_token/2 is a stub - only available at runtime on Gamend"

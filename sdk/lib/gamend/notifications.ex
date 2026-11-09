@@ -49,7 +49,9 @@ defmodule Gamend.Notifications do
   def admin_create_notification(_sender_id, _recipient_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Notifications.admin_create_notification/3 is a stub - only available at runtime on Gamend"
@@ -64,7 +66,9 @@ defmodule Gamend.Notifications do
   def admin_delete_notification(_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Notifications.admin_delete_notification/1 is a stub - only available at runtime on Gamend"
@@ -129,7 +133,9 @@ defmodule Gamend.Notifications do
   def create_chat_notification(_sender_id, _recipient_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Notifications.create_chat_notification/3 is a stub - only available at runtime on Gamend"
@@ -329,7 +335,9 @@ defmodule Gamend.Notifications do
   def mark_notification_read(_user_id, _notification_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Notifications.mark_notification_read/2 is a stub - only available at runtime on Gamend"
@@ -357,7 +365,9 @@ defmodule Gamend.Notifications do
   def notify(_user_id, _group, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Notifications.notify/3 is a stub - only available at runtime on Gamend"
@@ -390,7 +400,9 @@ defmodule Gamend.Notifications do
   def send_notification(_sender_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Notifications.send_notification/2 is a stub - only available at runtime on Gamend"
@@ -404,7 +416,7 @@ defmodule Gamend.Notifications do
   def subscribe(_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Notifications.subscribe/1 is a stub - only available at runtime on Gamend"

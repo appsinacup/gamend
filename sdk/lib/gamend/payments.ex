@@ -18,7 +18,9 @@ defmodule Gamend.Payments do
   def admin_refund_stripe_purchase(_purchase_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.admin_refund_stripe_purchase/1 is a stub - only available at runtime on Gamend"
@@ -63,7 +65,9 @@ defmodule Gamend.Payments do
   def cancel_stripe_subscription_at_period_end(_user, _entitlement_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.cancel_stripe_subscription_at_period_end/2 is a stub - only available at runtime on Gamend"
@@ -98,7 +102,9 @@ defmodule Gamend.Payments do
   def change_stripe_subscription(_user, _entitlement_id, _target, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.change_stripe_subscription/4 is a stub - only available at runtime on Gamend"
@@ -213,7 +219,9 @@ defmodule Gamend.Payments do
   def create_product(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.create_product/1 is a stub - only available at runtime on Gamend"
@@ -226,7 +234,9 @@ defmodule Gamend.Payments do
   def create_provider_product(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.create_provider_product/1 is a stub - only available at runtime on Gamend"
@@ -239,7 +249,9 @@ defmodule Gamend.Payments do
   def create_purchase(_user, _provider_product, _attrs \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.create_purchase/3 is a stub - only available at runtime on Gamend"
@@ -258,7 +270,7 @@ defmodule Gamend.Payments do
   def create_steam_checkout(_user, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: nil
 
       _ ->
         raise "Gamend.Payments.create_steam_checkout/2 is a stub - only available at runtime on Gamend"
@@ -276,7 +288,9 @@ defmodule Gamend.Payments do
   def create_stripe_billing_portal(_user, _return_url) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.create_stripe_billing_portal/2 is a stub - only available at runtime on Gamend"
@@ -309,7 +323,7 @@ defmodule Gamend.Payments do
   def create_stripe_checkout(_user, _attrs, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: nil
 
       _ ->
         raise "Gamend.Payments.create_stripe_checkout/3 is a stub - only available at runtime on Gamend"
@@ -381,7 +395,9 @@ defmodule Gamend.Payments do
   def extend_entitlement(_id, _days, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.extend_entitlement/3 is a stub - only available at runtime on Gamend"
@@ -394,7 +410,9 @@ defmodule Gamend.Payments do
   def finalize_steam_purchase(_user, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.finalize_steam_purchase/2 is a stub - only available at runtime on Gamend"
@@ -407,7 +425,9 @@ defmodule Gamend.Payments do
   def fulfill_purchase(_purchase, _provider_payload \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.fulfill_purchase/2 is a stub - only available at runtime on Gamend"
@@ -579,7 +599,9 @@ defmodule Gamend.Payments do
   def grant_entitlement(_user_id, _key, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.grant_entitlement/3 is a stub - only available at runtime on Gamend"
@@ -591,7 +613,9 @@ defmodule Gamend.Payments do
   def handle_apple_webhook(_raw_body) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.handle_apple_webhook/1 is a stub - only available at runtime on Gamend"
@@ -603,7 +627,9 @@ defmodule Gamend.Payments do
   def handle_google_webhook(_raw_body, _authorization_header) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.handle_google_webhook/2 is a stub - only available at runtime on Gamend"
@@ -624,7 +650,9 @@ defmodule Gamend.Payments do
   def handle_stripe_webhook(_raw_body, _signature) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.handle_stripe_webhook/2 is a stub - only available at runtime on Gamend"
@@ -797,7 +825,9 @@ defmodule Gamend.Payments do
   def mark_event_processed(_event) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.mark_event_processed/1 is a stub - only available at runtime on Gamend"
@@ -885,7 +915,9 @@ defmodule Gamend.Payments do
   def reconcile_stripe_purchase(_purchase) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.reconcile_stripe_purchase/1 is a stub - only available at runtime on Gamend"
@@ -898,7 +930,9 @@ defmodule Gamend.Payments do
   def record_provider_event(_provider, _event_id, _event_type, _payload, _metadata \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.record_provider_event/5 is a stub - only available at runtime on Gamend"
@@ -915,7 +949,9 @@ defmodule Gamend.Payments do
   def refund_stripe_purchase(_user, _purchase_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.refund_stripe_purchase/2 is a stub - only available at runtime on Gamend"
@@ -949,7 +985,9 @@ defmodule Gamend.Payments do
   def restore_purchase(_purchase, _payload \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.restore_purchase/2 is a stub - only available at runtime on Gamend"
@@ -972,7 +1010,9 @@ defmodule Gamend.Payments do
   def resume_stripe_subscription(_user, _entitlement_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.resume_stripe_subscription/2 is a stub - only available at runtime on Gamend"
@@ -996,7 +1036,9 @@ defmodule Gamend.Payments do
   def revoke_entitlement(_user_id, _key, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.revoke_entitlement/3 is a stub - only available at runtime on Gamend"
@@ -1009,7 +1051,9 @@ defmodule Gamend.Payments do
   def revoke_purchase(_purchase, _attrs \\ %{}) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.revoke_purchase/2 is a stub - only available at runtime on Gamend"
@@ -1088,7 +1132,9 @@ defmodule Gamend.Payments do
   def update_product(_product, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.update_product/2 is a stub - only available at runtime on Gamend"
@@ -1101,7 +1147,9 @@ defmodule Gamend.Payments do
   def update_provider_product(_provider_product, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.update_provider_product/2 is a stub - only available at runtime on Gamend"
@@ -1115,7 +1163,9 @@ defmodule Gamend.Payments do
   def validate_store_purchase(_user, _provider, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Payments.validate_store_purchase/3 is a stub - only available at runtime on Gamend"

@@ -85,7 +85,9 @@ defmodule Gamend.KV do
   def create_entry(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.KV.create_entry/1 is a stub - only available at runtime on Gamend"
@@ -329,7 +331,9 @@ defmodule Gamend.KV do
   def put(_key, _value) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.KV.put/2 is a stub - only available at runtime on Gamend"
@@ -342,7 +346,9 @@ defmodule Gamend.KV do
   def put(_key, _value, _metadata) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.KV.put/3 is a stub - only available at runtime on Gamend"
@@ -362,7 +368,9 @@ defmodule Gamend.KV do
   def put(_key, _value, _metadata, _opts) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.KV.put/4 is a stub - only available at runtime on Gamend"
@@ -419,7 +427,7 @@ defmodule Gamend.KV do
   def subscribe(_key, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.KV.subscribe/2 is a stub - only available at runtime on Gamend"
@@ -437,7 +445,7 @@ defmodule Gamend.KV do
   def unsubscribe(_key, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.KV.unsubscribe/2 is a stub - only available at runtime on Gamend"
@@ -454,7 +462,9 @@ defmodule Gamend.KV do
   def update_entry(_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.KV.update_entry/2 is a stub - only available at runtime on Gamend"

@@ -52,17 +52,20 @@ defmodule Gamend.Friends do
   def accept_friend_request(_friendship_id, _user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Friends.Friendship{
-           id: 0,
-           requester_id: 0,
-           target_id: 0,
-           requester: nil,
-           target: nil,
-           status: "pending",
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Friends.Friendship{
+               id: 0,
+               requester_id: 0,
+               target_id: 0,
+               requester: nil,
+               target: nil,
+               status: "pending",
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Friends.accept_friend_request/2 is a stub - only available at runtime on Gamend"
@@ -114,17 +117,20 @@ defmodule Gamend.Friends do
   def block_friend_request(_friendship_id, _user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Friends.Friendship{
-           id: 0,
-           requester_id: 0,
-           target_id: 0,
-           requester: nil,
-           target: nil,
-           status: "pending",
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Friends.Friendship{
+               id: 0,
+               requester_id: 0,
+               target_id: 0,
+               requester: nil,
+               target: nil,
+               status: "pending",
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Friends.block_friend_request/2 is a stub - only available at runtime on Gamend"
@@ -147,17 +153,20 @@ defmodule Gamend.Friends do
   def block_user(_user, _blocked_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Friends.Friendship{
-           id: 0,
-           requester_id: 0,
-           target_id: 0,
-           requester: nil,
-           target: nil,
-           status: "pending",
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Friends.Friendship{
+               id: 0,
+               requester_id: 0,
+               target_id: 0,
+               requester: nil,
+               target: nil,
+               status: "pending",
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Friends.block_user/2 is a stub - only available at runtime on Gamend"
@@ -212,7 +221,9 @@ defmodule Gamend.Friends do
   def cancel_request(_friendship_id, _user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Friends.cancel_request/2 is a stub - only available at runtime on Gamend"
@@ -337,7 +348,20 @@ defmodule Gamend.Friends do
   def create_request(_requester_id, _target_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Friends.Friendship{
+               id: 0,
+               requester_id: 0,
+               target_id: 0,
+               requester: nil,
+               target: nil,
+               status: "pending",
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Friends.create_request/2 is a stub - only available at runtime on Gamend"
@@ -355,7 +379,9 @@ defmodule Gamend.Friends do
   def delete_block(_friendship_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Friends.delete_block/1 is a stub - only available at runtime on Gamend"
@@ -374,7 +400,9 @@ defmodule Gamend.Friends do
   def delete_friendship(_friendship_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Friends.delete_friendship/1 is a stub - only available at runtime on Gamend"
@@ -786,17 +814,20 @@ defmodule Gamend.Friends do
   def reject_friend_request(_friendship_id, _user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Friends.Friendship{
-           id: 0,
-           requester_id: 0,
-           target_id: 0,
-           requester: nil,
-           target: nil,
-           status: "pending",
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Friends.Friendship{
+               id: 0,
+               requester_id: 0,
+               target_id: 0,
+               requester: nil,
+               target: nil,
+               status: "pending",
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Friends.reject_friend_request/2 is a stub - only available at runtime on Gamend"
@@ -814,17 +845,20 @@ defmodule Gamend.Friends do
   def remove_friend(_user_id, _friend_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Friends.Friendship{
-           id: 0,
-           requester_id: 0,
-           target_id: 0,
-           requester: nil,
-           target: nil,
-           status: "pending",
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Friends.Friendship{
+               id: 0,
+               requester_id: 0,
+               target_id: 0,
+               requester: nil,
+               target: nil,
+               status: "pending",
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Friends.remove_friend/2 is a stub - only available at runtime on Gamend"
@@ -851,7 +885,9 @@ defmodule Gamend.Friends do
   def unblock_friendship(_friendship_id, _user) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Friends.unblock_friendship/2 is a stub - only available at runtime on Gamend"
@@ -869,7 +905,9 @@ defmodule Gamend.Friends do
   def unblock_user(_user, _blocked_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Friends.unblock_user/2 is a stub - only available at runtime on Gamend"

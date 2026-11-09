@@ -153,7 +153,7 @@ defmodule Gamend.Analytics do
   def counts(_key, _days \\ 7, _today \\ Date.utc_today()) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        %{}
 
       _ ->
         raise "Gamend.Analytics.counts/3 is a stub - only available at runtime on Gamend"

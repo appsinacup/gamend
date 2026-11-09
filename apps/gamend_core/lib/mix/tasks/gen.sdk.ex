@@ -488,8 +488,45 @@ defmodule Mix.Tasks.Gen.Sdk do
   defp stub_return_expression(function_name, spec_text)
        when is_atom(function_name) and is_binary(spec_text) do
     return_type = extract_spec_return_type(spec_text)
-    placeholder_expr_for_return_type(return_type) || fallback_placeholder_by_name(function_name)
+
+    expr =
+      placeholder_expr_for_return_type(return_type) ||
+        fallback_placeholder_by_name(function_name)
+
+    with_error_branch(expr, return_type)
   end
+
+  @doc false
+  # Public for `Mix.Tasks.Gen.SdkPlaceholderTest`.
+  #
+  # A stub whose `@spec` allows `{:error, _}` has to be able to answer it: the
+  # type checker reads the stub's body, and a body with only `{:ok, _}` makes
+  # the `{:error, reason}` clause a plugin must write "never match". The reason
+  # comes from the application environment so that its type is unknown, which
+  # lets a clause on any reason match, and so that a plugin's test in
+  # `:placeholder` mode gets the same answer every time.
+  def with_error_branch(expr, return_type) when is_binary(expr) and is_binary(return_type) do
+    if returns_error_tuple?(return_type) and not String.contains?(expr, "{:error") do
+      "if reason = Application.get_env(:gamend_sdk, :stub_error), " <>
+        "do: {:error, reason}, else: #{expr}"
+    else
+      expr
+    end
+  end
+
+  def with_error_branch(expr, _return_type), do: expr
+
+  # Only the outermost union counts: `[{:ok, t} | {:error, e}]` is a list.
+  defp returns_error_tuple?(return_type) do
+    case Code.string_to_quoted(return_type) do
+      {:ok, quoted} -> quoted |> union_members() |> Enum.any?(&match?({:error, _}, &1))
+      {:error, _} -> false
+    end
+  end
+
+  defp union_members({:when, _, [type, _]}), do: union_members(type)
+  defp union_members({:|, _, [left, right]}), do: union_members(left) ++ union_members(right)
+  defp union_members(type), do: [type]
 
   @doc false
   # Public for `Mix.Tasks.Gen.SdkPlaceholderTest`.
@@ -706,10 +743,11 @@ defmodule Mix.Tasks.Gen.Sdk do
   end
 
   defp extract_spec_return_type(spec_text) when is_binary(spec_text) do
-    # spec_text is formatted like "  @spec foo(arg) :: return\n".
-    # Extract the return portion after "::".
-    case Regex.run(~r/::\s*(.+)\n\z/, spec_text) do
-      [_, return_type] -> String.trim(return_type)
+    # spec_text is formatted like "  @spec foo(arg) :: return\n", and a long
+    # return type runs over several lines. Extract the part after "::" on one
+    # line, because the placeholder rules look for substrings of it.
+    case Regex.run(~r/::\s*(.+)\n\z/s, spec_text) do
+      [_, return_type] -> return_type |> String.replace(~r/\s+/, " ") |> String.trim()
       _ -> nil
     end
   end

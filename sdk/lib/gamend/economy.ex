@@ -79,7 +79,9 @@ defmodule Gamend.Economy do
   def grant(_user_id, _currency, _amount, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Economy.grant/4 is a stub - only available at runtime on Gamend"
@@ -98,7 +100,9 @@ defmodule Gamend.Economy do
   def spend(_user_id, _currency, _amount, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Economy.spend/4 is a stub - only available at runtime on Gamend"
@@ -112,7 +116,7 @@ defmodule Gamend.Economy do
   def subscribe(_user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Economy.subscribe/1 is a stub - only available at runtime on Gamend"

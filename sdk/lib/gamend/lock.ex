@@ -113,7 +113,9 @@ defmodule Gamend.Lock do
   def exclusive(_namespace, _resource_id, _fun) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Lock.exclusive/3 is a stub - only available at runtime on Gamend"
@@ -141,7 +143,9 @@ defmodule Gamend.Lock do
   def serialize(_namespace, _resource_id, _fun) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Lock.serialize/3 is a stub - only available at runtime on Gamend"

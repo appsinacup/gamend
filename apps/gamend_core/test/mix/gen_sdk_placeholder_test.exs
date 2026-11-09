@@ -6,7 +6,38 @@ defmodule Mix.Tasks.Gen.SdkPlaceholderTest do
   """
   use ExUnit.Case, async: true
 
-  import Mix.Tasks.Gen.Sdk, only: [default_expr_for_arg: 1, placeholder_expr_for_return_type: 1]
+  import Mix.Tasks.Gen.Sdk,
+    only: [
+      default_expr_for_arg: 1,
+      placeholder_expr_for_return_type: 1,
+      with_error_branch: 2
+    ]
+
+  describe "a stub whose @spec allows {:error, _}" do
+    setup do
+      on_exit(fn -> Application.delete_env(:gamend_sdk, :stub_error) end)
+    end
+
+    test "answers its placeholder unless told to fail" do
+      expr = with_error_branch("{:ok, nil}", "{:ok, map()} | {:error, term()}")
+
+      assert {{:ok, nil}, _} = Code.eval_string(expr)
+
+      Application.put_env(:gamend_sdk, :stub_error, :nope)
+      assert {{:error, :nope}, _} = Code.eval_string(expr)
+    end
+
+    test "reads the outermost union only" do
+      assert with_error_branch("[]", "[{:ok, map()} | {:error, term()}]") == "[]"
+      assert with_error_branch("{:ok, nil}", "{:ok, map()}") == "{:ok, nil}"
+    end
+
+    test "keeps an error branch it already has" do
+      expr = "if x(), do: {:error, :not_found}, else: {:ok, nil}"
+
+      assert with_error_branch(expr, "{:ok, map()} | {:error, :not_found}") == expr
+    end
+  end
 
   test "a default naming a module only the engine has becomes nil" do
     assert default_expr_for_arg(~S|reason \\ CheckReason.cancelled()|) == "nil"

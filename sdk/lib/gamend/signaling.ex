@@ -63,7 +63,9 @@ defmodule Gamend.Signaling do
   def authorize(_room_id, _user_id) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Signaling.authorize/2 is a stub - only available at runtime on Gamend"
@@ -81,7 +83,7 @@ defmodule Gamend.Signaling do
   def broadcast(_room_id, _from, _type, _payload) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Signaling.broadcast/4 is a stub - only available at runtime on Gamend"
@@ -150,19 +152,22 @@ defmodule Gamend.Signaling do
   def configure(_room_id, _opts) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Lobbies.Lobby{
-           id: 0,
-           title: "",
-           host_id: nil,
-           hostless: false,
-           max_users: 0,
-           is_hidden: false,
-           is_locked: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Lobbies.Lobby{
+               id: 0,
+               title: "",
+               host_id: nil,
+               hostless: false,
+               max_users: 0,
+               is_hidden: false,
+               is_locked: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Signaling.configure/2 is a stub - only available at runtime on Gamend"
@@ -243,7 +248,7 @@ defmodule Gamend.Signaling do
   def relay(_room_id, _from, _to, _type, _payload) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Signaling.relay/5 is a stub - only available at runtime on Gamend"
@@ -266,7 +271,7 @@ defmodule Gamend.Signaling do
   def stats() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        %{}
 
       _ ->
         raise "Gamend.Signaling.stats/0 is a stub - only available at runtime on Gamend"

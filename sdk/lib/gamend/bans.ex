@@ -120,23 +120,26 @@ defmodule Gamend.Bans do
   def ban(_kind, _subject, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Bans.Ban{
-           id: "",
-           kind: :account,
-           subject: "",
-           user_id: nil,
-           expires_at: nil,
-           reason: nil,
-           source: :plugin,
-           scope: nil,
-           scope_ref_id: nil,
-           banned_by: nil,
-           lifted_at: nil,
-           lifted_by: nil,
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Bans.Ban{
+               id: "",
+               kind: :account,
+               subject: "",
+               user_id: nil,
+               expires_at: nil,
+               reason: nil,
+               source: :plugin,
+               scope: nil,
+               scope_ref_id: nil,
+               banned_by: nil,
+               lifted_at: nil,
+               lifted_by: nil,
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Bans.ban/3 is a stub - only available at runtime on Gamend"

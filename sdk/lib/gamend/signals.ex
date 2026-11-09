@@ -37,9 +37,13 @@ defmodule Gamend.Signals do
   def await(_plugin, _name, _timeout \\ 30000) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        if :erlang.phash2(make_ref(), 2) == 0,
-          do: :error,
-          else: {:ok, %{value: %{}, metadata: %{}}}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            if(:erlang.phash2(make_ref(), 2) == 0,
+              do: :error,
+              else: {:ok, %{value: %{}, metadata: %{}}}
+            )
 
       _ ->
         raise "Gamend.Signals.await/3 is a stub - only available at runtime on Gamend"

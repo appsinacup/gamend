@@ -136,25 +136,28 @@ defmodule Gamend.Quests do
   def admin_claim(_user_id, _quest_key) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %{
-           progress: %Gamend.Quests.QuestProgress{
-             id: "",
-             user_id: "",
-             quest_key: "",
-             period_key: "static",
-             objective_progress: %{},
-             status: "active",
-             completed_at: nil,
-             claimed_at: nil,
-             rewards_granted_at: nil,
-             code_id: nil,
-             metadata: %{},
-             inserted_at: ~U[1970-01-01 00:00:00Z],
-             updated_at: ~U[1970-01-01 00:00:00Z]
-           },
-           rewards: []
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %{
+               progress: %Gamend.Quests.QuestProgress{
+                 id: "",
+                 user_id: "",
+                 quest_key: "",
+                 period_key: "static",
+                 objective_progress: %{},
+                 status: "active",
+                 completed_at: nil,
+                 claimed_at: nil,
+                 rewards_granted_at: nil,
+                 code_id: nil,
+                 metadata: %{},
+                 inserted_at: ~U[1970-01-01 00:00:00Z],
+                 updated_at: ~U[1970-01-01 00:00:00Z]
+               },
+               rewards: []
+             }}
 
       _ ->
         raise "Gamend.Quests.admin_claim/2 is a stub - only available at runtime on Gamend"
@@ -171,22 +174,25 @@ defmodule Gamend.Quests do
   def admin_complete(_user_id, _quest_key) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Quests.QuestProgress{
-           id: "",
-           user_id: "",
-           quest_key: "",
-           period_key: "static",
-           objective_progress: %{},
-           status: "active",
-           completed_at: nil,
-           claimed_at: nil,
-           rewards_granted_at: nil,
-           code_id: nil,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Quests.QuestProgress{
+               id: "",
+               user_id: "",
+               quest_key: "",
+               period_key: "static",
+               objective_progress: %{},
+               status: "active",
+               completed_at: nil,
+               claimed_at: nil,
+               rewards_granted_at: nil,
+               code_id: nil,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Quests.admin_complete/2 is a stub - only available at runtime on Gamend"
@@ -201,7 +207,9 @@ defmodule Gamend.Quests do
   def admin_reset(_user_id, _quest_key) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok, nil}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Quests.admin_reset/2 is a stub - only available at runtime on Gamend"
@@ -273,25 +281,28 @@ defmodule Gamend.Quests do
   def claim(_user_id, _quest_key, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %{
-           progress: %Gamend.Quests.QuestProgress{
-             id: "",
-             user_id: "",
-             quest_key: "",
-             period_key: "static",
-             objective_progress: %{},
-             status: "active",
-             completed_at: nil,
-             claimed_at: nil,
-             rewards_granted_at: nil,
-             code_id: nil,
-             metadata: %{},
-             inserted_at: ~U[1970-01-01 00:00:00Z],
-             updated_at: ~U[1970-01-01 00:00:00Z]
-           },
-           rewards: []
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %{
+               progress: %Gamend.Quests.QuestProgress{
+                 id: "",
+                 user_id: "",
+                 quest_key: "",
+                 period_key: "static",
+                 objective_progress: %{},
+                 status: "active",
+                 completed_at: nil,
+                 claimed_at: nil,
+                 rewards_granted_at: nil,
+                 code_id: nil,
+                 metadata: %{},
+                 inserted_at: ~U[1970-01-01 00:00:00Z],
+                 updated_at: ~U[1970-01-01 00:00:00Z]
+               },
+               rewards: []
+             }}
 
       _ ->
         raise "Gamend.Quests.claim/3 is a stub - only available at runtime on Gamend"
@@ -438,19 +449,22 @@ defmodule Gamend.Quests do
   def create_code(_quest, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Quests.QuestCode{
-           id: "",
-           quest_key: "",
-           token: "",
-           lookup: "",
-           max_uses: nil,
-           uses: 0,
-           status: "active",
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Quests.QuestCode{
+               id: "",
+               quest_key: "",
+               token: "",
+               lookup: "",
+               max_uses: nil,
+               uses: 0,
+               status: "active",
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Quests.create_code/2 is a stub - only available at runtime on Gamend"
@@ -464,28 +478,31 @@ defmodule Gamend.Quests do
   def create_quest(_attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Quests.Quest{
-           id: "",
-           key: "",
-           title: "",
-           description: "",
-           icon_url: nil,
-           sort_order: 0,
-           hidden: false,
-           kind: "achievement",
-           objectives: [],
-           rewards: [],
-           auto_claim: false,
-           prerequisite_quest_key: nil,
-           starts_at: nil,
-           ends_at: nil,
-           active: true,
-           code_only: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Quests.Quest{
+               id: "",
+               key: "",
+               title: "",
+               description: "",
+               icon_url: nil,
+               sort_order: 0,
+               hidden: false,
+               kind: "achievement",
+               objectives: [],
+               rewards: [],
+               auto_claim: false,
+               prerequisite_quest_key: nil,
+               starts_at: nil,
+               ends_at: nil,
+               active: true,
+               code_only: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Quests.create_quest/1 is a stub - only available at runtime on Gamend"
@@ -514,28 +531,31 @@ defmodule Gamend.Quests do
   def delete_quest(_quest) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Quests.Quest{
-           id: "",
-           key: "",
-           title: "",
-           description: "",
-           icon_url: nil,
-           sort_order: 0,
-           hidden: false,
-           kind: "achievement",
-           objectives: [],
-           rewards: [],
-           auto_claim: false,
-           prerequisite_quest_key: nil,
-           starts_at: nil,
-           ends_at: nil,
-           active: true,
-           code_only: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Quests.Quest{
+               id: "",
+               key: "",
+               title: "",
+               description: "",
+               icon_url: nil,
+               sort_order: 0,
+               hidden: false,
+               kind: "achievement",
+               objectives: [],
+               rewards: [],
+               auto_claim: false,
+               prerequisite_quest_key: nil,
+               starts_at: nil,
+               ends_at: nil,
+               active: true,
+               code_only: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Quests.delete_quest/1 is a stub - only available at runtime on Gamend"
@@ -572,7 +592,9 @@ defmodule Gamend.Quests do
   def generate_codes(_quest, _count, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
 
       _ ->
         raise "Gamend.Quests.generate_codes/3 is a stub - only available at runtime on Gamend"
@@ -730,7 +752,29 @@ defmodule Gamend.Quests do
   def group(_user_id, _group_key) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if :erlang.phash2(make_ref(), 2) == 0,
+          do: nil,
+          else: %Gamend.Quests.Quest{
+            id: "",
+            key: "",
+            title: "",
+            description: "",
+            icon_url: nil,
+            sort_order: 0,
+            hidden: false,
+            kind: "achievement",
+            objectives: [],
+            rewards: [],
+            auto_claim: false,
+            prerequisite_quest_key: nil,
+            starts_at: nil,
+            ends_at: nil,
+            active: true,
+            code_only: false,
+            metadata: %{},
+            inserted_at: ~U[1970-01-01 00:00:00Z],
+            updated_at: ~U[1970-01-01 00:00:00Z]
+          }
 
       _ ->
         raise "Gamend.Quests.group/2 is a stub - only available at runtime on Gamend"
@@ -974,7 +1018,29 @@ defmodule Gamend.Quests do
   def list_user_quests(_user_id, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        []
+        if :erlang.phash2(make_ref(), 2) == 0,
+          do: nil,
+          else: %Gamend.Quests.Quest{
+            id: "",
+            key: "",
+            title: "",
+            description: "",
+            icon_url: nil,
+            sort_order: 0,
+            hidden: false,
+            kind: "achievement",
+            objectives: [],
+            rewards: [],
+            auto_claim: false,
+            prerequisite_quest_key: nil,
+            starts_at: nil,
+            ends_at: nil,
+            active: true,
+            code_only: false,
+            metadata: %{},
+            inserted_at: ~U[1970-01-01 00:00:00Z],
+            updated_at: ~U[1970-01-01 00:00:00Z]
+          }
 
       _ ->
         raise "Gamend.Quests.list_user_quests/2 is a stub - only available at runtime on Gamend"
@@ -1118,7 +1184,28 @@ defmodule Gamend.Quests do
   def redeem_code(_user_id, _token) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %{
+               progress: %Gamend.Quests.QuestProgress{
+                 id: "",
+                 user_id: "",
+                 quest_key: "",
+                 period_key: "static",
+                 objective_progress: %{},
+                 status: "active",
+                 completed_at: nil,
+                 claimed_at: nil,
+                 rewards_granted_at: nil,
+                 code_id: nil,
+                 metadata: %{},
+                 inserted_at: ~U[1970-01-01 00:00:00Z],
+                 updated_at: ~U[1970-01-01 00:00:00Z]
+               },
+               rewards: []
+             }}
 
       _ ->
         raise "Gamend.Quests.redeem_code/2 is a stub - only available at runtime on Gamend"
@@ -1152,7 +1239,29 @@ defmodule Gamend.Quests do
   def redeemable(_user_id, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if :erlang.phash2(make_ref(), 2) == 0,
+          do: nil,
+          else: %Gamend.Quests.Quest{
+            id: "",
+            key: "",
+            title: "",
+            description: "",
+            icon_url: nil,
+            sort_order: 0,
+            hidden: false,
+            kind: "achievement",
+            objectives: [],
+            rewards: [],
+            auto_claim: false,
+            prerequisite_quest_key: nil,
+            starts_at: nil,
+            ends_at: nil,
+            active: true,
+            code_only: false,
+            metadata: %{},
+            inserted_at: ~U[1970-01-01 00:00:00Z],
+            updated_at: ~U[1970-01-01 00:00:00Z]
+          }
 
       _ ->
         raise "Gamend.Quests.redeemable/2 is a stub - only available at runtime on Gamend"
@@ -1255,19 +1364,22 @@ defmodule Gamend.Quests do
   def set_code_status(_code_id, _status) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Quests.QuestCode{
-           id: "",
-           quest_key: "",
-           token: "",
-           lookup: "",
-           max_uses: nil,
-           uses: 0,
-           status: "active",
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Quests.QuestCode{
+               id: "",
+               quest_key: "",
+               token: "",
+               lookup: "",
+               max_uses: nil,
+               uses: 0,
+               status: "active",
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Quests.set_code_status/2 is a stub - only available at runtime on Gamend"
@@ -1289,7 +1401,7 @@ defmodule Gamend.Quests do
   def stats() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        %{}
 
       _ ->
         raise "Gamend.Quests.stats/0 is a stub - only available at runtime on Gamend"
@@ -1303,7 +1415,7 @@ defmodule Gamend.Quests do
   def subscribe_quests() do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        :ok
+        if reason = Application.get_env(:gamend_sdk, :stub_error), do: {:error, reason}, else: :ok
 
       _ ->
         raise "Gamend.Quests.subscribe_quests/0 is a stub - only available at runtime on Gamend"
@@ -1318,28 +1430,31 @@ defmodule Gamend.Quests do
   def update_quest(_quest, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        {:ok,
-         %Gamend.Quests.Quest{
-           id: "",
-           key: "",
-           title: "",
-           description: "",
-           icon_url: nil,
-           sort_order: 0,
-           hidden: false,
-           kind: "achievement",
-           objectives: [],
-           rewards: [],
-           auto_claim: false,
-           prerequisite_quest_key: nil,
-           starts_at: nil,
-           ends_at: nil,
-           active: true,
-           code_only: false,
-           metadata: %{},
-           inserted_at: ~U[1970-01-01 00:00:00Z],
-           updated_at: ~U[1970-01-01 00:00:00Z]
-         }}
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else:
+            {:ok,
+             %Gamend.Quests.Quest{
+               id: "",
+               key: "",
+               title: "",
+               description: "",
+               icon_url: nil,
+               sort_order: 0,
+               hidden: false,
+               kind: "achievement",
+               objectives: [],
+               rewards: [],
+               auto_claim: false,
+               prerequisite_quest_key: nil,
+               starts_at: nil,
+               ends_at: nil,
+               active: true,
+               code_only: false,
+               metadata: %{},
+               inserted_at: ~U[1970-01-01 00:00:00Z],
+               updated_at: ~U[1970-01-01 00:00:00Z]
+             }}
 
       _ ->
         raise "Gamend.Quests.update_quest/2 is a stub - only available at runtime on Gamend"
@@ -1371,7 +1486,29 @@ defmodule Gamend.Quests do
   def user_quest_page(_user_id, _opts \\ []) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
-        nil
+        if :erlang.phash2(make_ref(), 2) == 0,
+          do: nil,
+          else: %Gamend.Quests.Quest{
+            id: "",
+            key: "",
+            title: "",
+            description: "",
+            icon_url: nil,
+            sort_order: 0,
+            hidden: false,
+            kind: "achievement",
+            objectives: [],
+            rewards: [],
+            auto_claim: false,
+            prerequisite_quest_key: nil,
+            starts_at: nil,
+            ends_at: nil,
+            active: true,
+            code_only: false,
+            metadata: %{},
+            inserted_at: ~U[1970-01-01 00:00:00Z],
+            updated_at: ~U[1970-01-01 00:00:00Z]
+          }
 
       _ ->
         raise "Gamend.Quests.user_quest_page/2 is a stub - only available at runtime on Gamend"

@@ -1659,13 +1659,16 @@ defmodule GamendWeb.CoreComponents do
   the viewer's own zone and locale once it runs. Without JS the UTC text stands,
   which is why it is labelled rather than left to look local.
 
-  `format` is `"datetime"` (default), `"date"`, `"time"` or `"full"`.
+  `format` is `"datetime"` (default), `"date"`, `"time"`, `"full"`, or
+  `"relative"` for something in the past: "3m ago", "1 day ago", kept current
+  while the page is open, with the exact time on hover.
 
       <.timestamp at={@user.inserted_at} />
       <.timestamp at={@message.inserted_at} format="time" class="text-xs" />
+      <.timestamp at={@notification.inserted_at} format="relative" />
   """
   attr :at, :any, required: true, doc: "a DateTime, or nil to render the dash"
-  attr :format, :string, default: "datetime", values: ~w(datetime date time full)
+  attr :format, :string, default: "datetime", values: ~w(datetime date time full relative)
   attr :class, :string, default: nil
   attr :empty, :string, default: "-", doc: "text shown when `at` is nil"
 
@@ -1696,7 +1699,12 @@ defmodule GamendWeb.CoreComponents do
 
   def timestamp(assigns) do
     ~H"""
-    <time datetime={DateTime.to_iso8601(@at)} data-local-time={@format} class={@class}>
+    <time
+      datetime={DateTime.to_iso8601(@at)}
+      data-local-time={@format}
+      title={@format == "relative" && utc_text(@at, "full")}
+      class={@class}
+    >
       {utc_text(@at, @format)}
     </time>
     """
@@ -1710,7 +1718,20 @@ defmodule GamendWeb.CoreComponents do
   defp utc_text(at, "date"), do: Calendar.strftime(at, "%b %-d, %Y")
   defp utc_text(at, "time"), do: Calendar.strftime(at, "%H:%M UTC")
   defp utc_text(at, "full"), do: Calendar.strftime(at, "%Y-%m-%d %H:%M:%S UTC")
+  # The first paint, in English; `local_time.js` counts the same way and says it
+  # in the reader's language.
+  defp utc_text(at, "relative"), do: ago(max(DateTime.diff(DateTime.utc_now(), at), 1))
   defp utc_text(at, _datetime), do: Calendar.strftime(at, "%Y-%m-%d %H:%M UTC")
+
+  defp ago(seconds) when seconds < 60, do: "#{seconds}s ago"
+  defp ago(seconds) when seconds < 3_600, do: "#{div(seconds, 60)}m ago"
+  defp ago(seconds) when seconds < 86_400, do: "#{div(seconds, 3_600)}h ago"
+  defp ago(seconds) when seconds < 2_592_000, do: ago_spelled(div(seconds, 86_400), "day")
+  defp ago(seconds) when seconds < 31_536_000, do: ago_spelled(div(seconds, 2_592_000), "month")
+  defp ago(seconds), do: ago_spelled(div(seconds, 31_536_000), "year")
+
+  defp ago_spelled(1, unit), do: "1 #{unit} ago"
+  defp ago_spelled(count, unit), do: "#{count} #{unit}s ago"
 
   # ---------------------------------------------------------------------------
   # Pagination

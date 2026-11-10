@@ -11,28 +11,178 @@ msgstr ""
 "Language: ar\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5);\n"
 
-#: lib/gamend_web/live/notifications_live.ex:324
+#: lib/gamend_web/live/notifications_live.ex:538
 #, elixir-autogen, elixir-format
 msgid "New message in party"
 msgstr "رسالة جديدة في المجموعة"
 
-#: lib/gamend_web/live/notifications_live.ex:338
-#: lib/gamend_web/live/notifications_live.ex:343
+#: lib/gamend_web/live/notifications_live.ex:552
+#: lib/gamend_web/live/notifications_live.ex:557
 #, elixir-autogen, elixir-format
 msgid "New messages from %{name}"
 msgstr "رسائل جديدة من %{name}"
 
-#: lib/gamend_web/live/notifications_live.ex:322
+#: lib/gamend_web/live/notifications_live.ex:536
 #, elixir-autogen, elixir-format
 msgid "New messages from friends"
 msgstr "رسائل جديدة من الأصدقاء"
 
-#: lib/gamend_web/live/notifications_live.ex:332
+#: lib/gamend_web/live/notifications_live.ex:546
 #, elixir-autogen, elixir-format
 msgid "Quest completed: %{name}"
 msgstr "اكتملت المهمة: %{name}"
 
-#: lib/gamend_web/live/notifications_live.ex:330
+#: lib/gamend_web/live/notifications_live.ex:544
 #, elixir-autogen, elixir-format
 msgid "Achievement unlocked: %{name}"
 msgstr "تم فتح إنجاز: %{name}"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:35
+#, elixir-autogen, elixir-format
+msgid "A chat report is waiting for a moderator"
+msgstr "بلاغ دردشة بانتظار مشرف"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:14
+#, elixir-autogen, elixir-format
+msgid "A friend request was accepted"
+msgstr "تم قبول طلب صداقة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:15
+#, elixir-autogen, elixir-format
+msgid "A friend request was rejected"
+msgstr "تم رفض طلب صداقة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:17
+#, elixir-autogen, elixir-format
+msgid "A group invite was accepted"
+msgstr "تم قبول دعوة مجموعة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:18
+#, elixir-autogen, elixir-format
+msgid "A group invite was declined"
+msgstr "تم رفض دعوة مجموعة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:20
+#, elixir-autogen, elixir-format
+msgid "A group join request was approved"
+msgstr "تمت الموافقة على طلب انضمام إلى مجموعة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:21
+#, elixir-autogen, elixir-format
+msgid "A group join request was rejected"
+msgstr "تم رفض طلب انضمام إلى مجموعة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:23
+#, elixir-autogen, elixir-format
+msgid "A group you were in was deleted"
+msgstr "حُذفت مجموعة كنت فيها"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:37
+#, elixir-autogen, elixir-format
+msgid "A moderator sent a warning"
+msgstr "أرسل مشرف تحذيرًا"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:27
+#, elixir-autogen, elixir-format
+msgid "A party invite was accepted"
+msgstr "تم قبول دعوة فريق"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:28
+#, elixir-autogen, elixir-format
+msgid "A party invite was declined"
+msgstr "تم رفض دعوة فريق"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:39
+#, elixir-autogen, elixir-format
+msgid "A quest or achievement was completed"
+msgstr "اكتملت مهمة أو إنجاز"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:40
+#, elixir-autogen, elixir-format
+msgid "A report is waiting for review"
+msgstr "بلاغ بانتظار المراجعة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:36
+#, elixir-autogen, elixir-format
+msgid "A report you filed was reviewed"
+msgstr "تمت مراجعة بلاغ قدمته"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:25
+#, elixir-autogen, elixir-format
+msgid "Demoted within a group"
+msgstr "خفض رتبة داخل مجموعة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:16
+#, elixir-autogen, elixir-format
+msgid "Invited to a group"
+msgstr "دعوة إلى مجموعة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:26
+#, elixir-autogen, elixir-format
+msgid "Invited to a party"
+msgstr "دعوة إلى فريق"
+
+#: lib/gamend_web/live/notifications_live.ex:83
+#, elixir-autogen, elixir-format
+msgid "Load more"
+msgstr "تحميل المزيد"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:38
+#, elixir-autogen, elixir-format
+msgid "Muted in chat"
+msgstr "كتم في الدردشة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:31
+#, elixir-autogen, elixir-format
+msgid "New direct messages from friends"
+msgstr "رسائل مباشرة جديدة من الأصدقاء"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:32
+#, elixir-autogen, elixir-format
+msgid "New messages in a group chat"
+msgstr "رسائل جديدة في دردشة المجموعة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:33
+#, elixir-autogen, elixir-format
+msgid "New messages in your lobby chat"
+msgstr "رسائل جديدة في دردشة الردهة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:34
+#, elixir-autogen, elixir-format
+msgid "New messages in your party chat"
+msgstr "رسائل جديدة في دردشة الفريق"
+
+#: lib/gamend_web/live/notifications_live.ex:488
+#, elixir-autogen, elixir-format
+msgid "Other"
+msgstr "أخرى"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:24
+#, elixir-autogen, elixir-format
+msgid "Promoted within a group"
+msgstr "ترقية داخل مجموعة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:22
+#, elixir-autogen, elixir-format
+msgid "Removed from a group"
+msgstr "إزالة من مجموعة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:30
+#, elixir-autogen, elixir-format
+msgid "Removed from a lobby"
+msgstr "إزالة من ردهة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:29
+#, elixir-autogen, elixir-format
+msgid "Removed from a party"
+msgstr "إزالة من فريق"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:19
+#, elixir-autogen, elixir-format
+msgid "Someone asked to join a group you administer"
+msgstr "طلب انضمام إلى مجموعة تديرها"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:13
+#, elixir-autogen, elixir-format
+msgid "Someone sent a friend request"
+msgstr "وصل طلب صداقة"

@@ -182,6 +182,24 @@ defmodule GamendWeb.Api.V1.NotificationControllerTest do
     assert titles == ["Notif 1", "Notif 2", "Notif 3"]
   end
 
+  test "GET /api/v1/notifications says each notification's group", %{conn: conn} do
+    {a, b} = make_friends()
+    admin_send = &Notifications.admin_create_notification(a.id, b.id, &1)
+
+    {:ok, _} = admin_send.(%{"title" => "Invite", "metadata" => %{"type" => "group_invite"}})
+    {:ok, _} = admin_send.(%{"title" => "Plain"})
+
+    groups =
+      conn
+      |> auth_conn(b)
+      |> get("/api/v1/notifications")
+      |> json_response(200)
+      |> Map.fetch!("data")
+      |> Map.new(&{&1["title"], &1["group"]})
+
+    assert groups == %{"Invite" => "social", "Plain" => ""}
+  end
+
   test "GET /api/v1/notifications returns empty for new user", %{conn: conn} do
     user = AccountsFixtures.user_fixture()
 

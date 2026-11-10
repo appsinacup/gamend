@@ -15,6 +15,10 @@ defmodule GamendWeb.Schemas.Notification do
       title: %Schema{type: :string},
       content: %Schema{type: :string},
       icon_url: %Schema{type: :string, description: "Empty when unset"},
+      group: %Schema{
+        type: :string,
+        description: "The notification group it belongs to (`social`, `chat`, …). Empty for none"
+      },
       metadata: %Schema{type: :object},
       inserted_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -26,6 +30,7 @@ defmodule GamendWeb.Schemas.Notification do
       :title,
       :content,
       :icon_url,
+      :group,
       :metadata,
       :inserted_at
     ]

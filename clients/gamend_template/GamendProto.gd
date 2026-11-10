@@ -344,6 +344,7 @@ static func _notification_payload(data: PackedByteArray) -> Variant:
 		"title": m.get_title(),
 		"content": m.get_content(),
 		"icon_url": m.get_icon_url(),
+		"group": m.get_group(),
 		"metadata": _json_bytes(m.get_metadata_json(), {}),
 		"inserted_at_ms": m.get_inserted_at_ms(),
 	})

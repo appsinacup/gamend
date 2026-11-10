@@ -106,7 +106,7 @@ Detailed payload shapes for every event pushed from the server to the client, gr
 | Event | When | Payload |
 |---|---|---|
 | updated | Profile changes, on join | {id, email, profile_url, metadata, username, display_name, lobby_id, party_id, is_online, last_seen_at, linked_providers, has_password} |
-| notification_created | New notification / all on join | {id, sender_id, sender_name, recipient_id, title, content, metadata, inserted_at} |
+| notification_created | New notification / all on join | {id, sender_id, sender_name, recipient_id, title, content, group, metadata, inserted_at} |
 | friend_updated | Friend presence/profile changes; full list on join | {friends: {"<user_id>": {user_id, friendship_id, id, username, display_name, profile_url, metadata, is_online, is_activated, last_seen_at}}} |
 | kv_updated / kv_deleted | Subscribed KV entry changed (see kv:subscribe) | {key, user_id, lobby_id, data, metadata} / {key, user_id, lobby_id} |
 | match_found | The user's matchmaking ticket matched into a lobby | {lobby_id, match_params} |

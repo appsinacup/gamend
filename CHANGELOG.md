@@ -1,5 +1,8 @@
 # November 2026
 
+- [added] **A notification says which group it is in.** `group` on every notification in the API and the realtime event (empty for none), so a game client can show the same sections. **Hosts:** regenerate clients.
+- [added] **`"site_only" => true` on `Notifications.notify/3`** writes the row in its group and sends no push or email.
+- [changed] **`/notifications` sorts into sections and stacks.** One section per notification group with its count, notifications of one type stacked, and a section or stack deletes as a whole. Dates read `3m ago` (`<.timestamp format="relative">`), and Load more replaces the pager.
 - [changed] **An avatar or a group's icon waits for Save.** A file or one of the site's icons is shown as it will be, and nothing is stored or replaced until Save, so a mistake costs nothing. An icon clicked with a file picked drops the file. **Hosts:** `GroupIconUpload.allow/3` is `allow/2`: no `auto_upload:`.
 - [added] **Leaving a form not saved asks first.** `data-unsaved={unsaved?(@form, @uploads.picture)}` on a form (`CoreComponents.unsaved?/2`, a changeset's changes or a picked file) asks in the page's popup on a link, and in the browser's own on a reload or a closed tab. A button that leaves with no link says `data-leaves-form`. On the account tab and a group's edit form.
 - [changed] **The admin Configuration page is gone; each part moved to where it is used.** `/admin/plugins` lists, reloads, builds and calls plugins (pick one, pick a function, give it arguments). `/admin/theme` shows the resolved theme. Provider variables are on Payments, and the database, cache, cluster, TLS and test email are under Services on System.

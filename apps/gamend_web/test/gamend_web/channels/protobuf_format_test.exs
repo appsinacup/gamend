@@ -72,6 +72,7 @@ defmodule GamendWeb.ProtobufFormatTest do
       recipient_id: "3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f",
       title: "Friend request",
       content: "Alice sent you a friend request",
+      group: "social",
       metadata: %{"kind" => "friend_request"},
       inserted_at: ts
     }
@@ -80,6 +81,7 @@ defmodule GamendWeb.ProtobufFormatTest do
     decoded = PB.Notification.decode(IO.iodata_to_binary(bin))
 
     assert decoded.id == payload.id
+    assert decoded.group == "social"
     assert decoded.title == payload.title
     assert decoded.inserted_at_ms == DateTime.to_unix(ts, :millisecond)
     assert Jason.decode!(decoded.metadata_json) == %{"kind" => "friend_request"}

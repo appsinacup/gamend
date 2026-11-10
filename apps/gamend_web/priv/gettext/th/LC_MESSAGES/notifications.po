@@ -11,28 +11,178 @@ msgstr ""
 "Language: th\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: lib/gamend_web/live/notifications_live.ex:324
+#: lib/gamend_web/live/notifications_live.ex:538
 #, elixir-autogen, elixir-format
 msgid "New message in party"
 msgstr "ข้อความใหม่ในปาร์ตี้"
 
-#: lib/gamend_web/live/notifications_live.ex:338
-#: lib/gamend_web/live/notifications_live.ex:343
+#: lib/gamend_web/live/notifications_live.ex:552
+#: lib/gamend_web/live/notifications_live.ex:557
 #, elixir-autogen, elixir-format
 msgid "New messages from %{name}"
 msgstr "ข้อความใหม่จาก %{name}"
 
-#: lib/gamend_web/live/notifications_live.ex:322
+#: lib/gamend_web/live/notifications_live.ex:536
 #, elixir-autogen, elixir-format
 msgid "New messages from friends"
 msgstr "ข้อความใหม่จากเพื่อน"
 
-#: lib/gamend_web/live/notifications_live.ex:332
+#: lib/gamend_web/live/notifications_live.ex:546
 #, elixir-autogen, elixir-format
 msgid "Quest completed: %{name}"
 msgstr "เควสต์เสร็จสิ้น: %{name}"
 
-#: lib/gamend_web/live/notifications_live.ex:330
+#: lib/gamend_web/live/notifications_live.ex:544
 #, elixir-autogen, elixir-format
 msgid "Achievement unlocked: %{name}"
 msgstr "ปลดล็อกความสำเร็จ: %{name}"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:35
+#, elixir-autogen, elixir-format
+msgid "A chat report is waiting for a moderator"
+msgstr "รายงานแชทรอผู้ดูแล"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:14
+#, elixir-autogen, elixir-format
+msgid "A friend request was accepted"
+msgstr "คำขอเป็นเพื่อนได้รับการยอมรับ"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:15
+#, elixir-autogen, elixir-format
+msgid "A friend request was rejected"
+msgstr "คำขอเป็นเพื่อนถูกปฏิเสธ"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:17
+#, elixir-autogen, elixir-format
+msgid "A group invite was accepted"
+msgstr "คำเชิญเข้ากลุ่มได้รับการยอมรับ"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:18
+#, elixir-autogen, elixir-format
+msgid "A group invite was declined"
+msgstr "คำเชิญเข้ากลุ่มถูกปฏิเสธ"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:20
+#, elixir-autogen, elixir-format
+msgid "A group join request was approved"
+msgstr "คำขอเข้าร่วมกลุ่มได้รับการอนุมัติ"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:21
+#, elixir-autogen, elixir-format
+msgid "A group join request was rejected"
+msgstr "คำขอเข้าร่วมกลุ่มถูกปฏิเสธ"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:23
+#, elixir-autogen, elixir-format
+msgid "A group you were in was deleted"
+msgstr "กลุ่มที่คุณอยู่ถูกลบแล้ว"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:37
+#, elixir-autogen, elixir-format
+msgid "A moderator sent a warning"
+msgstr "ผู้ดูแลส่งคำเตือน"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:27
+#, elixir-autogen, elixir-format
+msgid "A party invite was accepted"
+msgstr "คำเชิญเข้าปาร์ตี้ได้รับการยอมรับ"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:28
+#, elixir-autogen, elixir-format
+msgid "A party invite was declined"
+msgstr "คำเชิญเข้าปาร์ตี้ถูกปฏิเสธ"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:39
+#, elixir-autogen, elixir-format
+msgid "A quest or achievement was completed"
+msgstr "ทำเควสต์หรือความสำเร็จสำเร็จแล้ว"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:40
+#, elixir-autogen, elixir-format
+msgid "A report is waiting for review"
+msgstr "รายงานรอการตรวจสอบ"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:36
+#, elixir-autogen, elixir-format
+msgid "A report you filed was reviewed"
+msgstr "รายงานที่คุณส่งได้รับการตรวจสอบแล้ว"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:25
+#, elixir-autogen, elixir-format
+msgid "Demoted within a group"
+msgstr "ถูกลดตำแหน่งในกลุ่ม"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:16
+#, elixir-autogen, elixir-format
+msgid "Invited to a group"
+msgstr "ได้รับเชิญเข้ากลุ่ม"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:26
+#, elixir-autogen, elixir-format
+msgid "Invited to a party"
+msgstr "ได้รับเชิญเข้าปาร์ตี้"
+
+#: lib/gamend_web/live/notifications_live.ex:83
+#, elixir-autogen, elixir-format
+msgid "Load more"
+msgstr "โหลดเพิ่มเติม"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:38
+#, elixir-autogen, elixir-format
+msgid "Muted in chat"
+msgstr "ถูกปิดเสียงในแชท"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:31
+#, elixir-autogen, elixir-format
+msgid "New direct messages from friends"
+msgstr "ข้อความส่วนตัวใหม่จากเพื่อน"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:32
+#, elixir-autogen, elixir-format
+msgid "New messages in a group chat"
+msgstr "ข้อความใหม่ในแชทกลุ่ม"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:33
+#, elixir-autogen, elixir-format
+msgid "New messages in your lobby chat"
+msgstr "ข้อความใหม่ในแชทล็อบบี้ของคุณ"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:34
+#, elixir-autogen, elixir-format
+msgid "New messages in your party chat"
+msgstr "ข้อความใหม่ในแชทปาร์ตี้ของคุณ"
+
+#: lib/gamend_web/live/notifications_live.ex:488
+#, elixir-autogen, elixir-format
+msgid "Other"
+msgstr "อื่น ๆ"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:24
+#, elixir-autogen, elixir-format
+msgid "Promoted within a group"
+msgstr "ได้เลื่อนตำแหน่งในกลุ่ม"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:22
+#, elixir-autogen, elixir-format
+msgid "Removed from a group"
+msgstr "ถูกนำออกจากกลุ่ม"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:30
+#, elixir-autogen, elixir-format
+msgid "Removed from a lobby"
+msgstr "ถูกนำออกจากล็อบบี้"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:29
+#, elixir-autogen, elixir-format
+msgid "Removed from a party"
+msgstr "ถูกนำออกจากปาร์ตี้"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:19
+#, elixir-autogen, elixir-format
+msgid "Someone asked to join a group you administer"
+msgstr "มีคนขอเข้าร่วมกลุ่มที่คุณดูแล"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:13
+#, elixir-autogen, elixir-format
+msgid "Someone sent a friend request"
+msgstr "มีคนส่งคำขอเป็นเพื่อน"

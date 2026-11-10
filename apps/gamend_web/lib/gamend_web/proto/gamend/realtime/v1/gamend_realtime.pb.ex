@@ -103,6 +103,7 @@ defmodule Gamend.Realtime.V1.Notification do
   field :metadata_json, 7, type: :bytes, json_name: "metadataJson"
   field :inserted_at_ms, 8, type: :int64, json_name: "insertedAtMs"
   field :icon_url, 9, type: :string, json_name: "iconUrl"
+  field :group, 10, type: :string
 end
 
 defmodule Gamend.Realtime.V1.ChatMessage do

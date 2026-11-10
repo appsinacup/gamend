@@ -11,28 +11,178 @@ msgstr ""
 "Language: no\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: lib/gamend_web/live/notifications_live.ex:324
+#: lib/gamend_web/live/notifications_live.ex:538
 #, elixir-autogen, elixir-format
 msgid "New message in party"
 msgstr "Ny melding i partyet"
 
-#: lib/gamend_web/live/notifications_live.ex:338
-#: lib/gamend_web/live/notifications_live.ex:343
+#: lib/gamend_web/live/notifications_live.ex:552
+#: lib/gamend_web/live/notifications_live.ex:557
 #, elixir-autogen, elixir-format
 msgid "New messages from %{name}"
 msgstr "Nye meldinger fra %{name}"
 
-#: lib/gamend_web/live/notifications_live.ex:322
+#: lib/gamend_web/live/notifications_live.ex:536
 #, elixir-autogen, elixir-format
 msgid "New messages from friends"
 msgstr "Nye meldinger fra venner"
 
-#: lib/gamend_web/live/notifications_live.ex:332
+#: lib/gamend_web/live/notifications_live.ex:546
 #, elixir-autogen, elixir-format
 msgid "Quest completed: %{name}"
 msgstr "Oppdrag fullført: %{name}"
 
-#: lib/gamend_web/live/notifications_live.ex:330
+#: lib/gamend_web/live/notifications_live.ex:544
 #, elixir-autogen, elixir-format
 msgid "Achievement unlocked: %{name}"
 msgstr "Prestasjon låst opp: %{name}"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:35
+#, elixir-autogen, elixir-format
+msgid "A chat report is waiting for a moderator"
+msgstr "En chatrapport venter på en moderator"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:14
+#, elixir-autogen, elixir-format
+msgid "A friend request was accepted"
+msgstr "En venneforespørsel ble godtatt"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:15
+#, elixir-autogen, elixir-format
+msgid "A friend request was rejected"
+msgstr "En venneforespørsel ble avslått"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:17
+#, elixir-autogen, elixir-format
+msgid "A group invite was accepted"
+msgstr "En gruppeinvitasjon ble godtatt"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:18
+#, elixir-autogen, elixir-format
+msgid "A group invite was declined"
+msgstr "En gruppeinvitasjon ble avslått"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:20
+#, elixir-autogen, elixir-format
+msgid "A group join request was approved"
+msgstr "En forespørsel om å bli med i en gruppe ble godkjent"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:21
+#, elixir-autogen, elixir-format
+msgid "A group join request was rejected"
+msgstr "En forespørsel om å bli med i en gruppe ble avslått"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:23
+#, elixir-autogen, elixir-format
+msgid "A group you were in was deleted"
+msgstr "En gruppe du var med i, ble slettet"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:37
+#, elixir-autogen, elixir-format
+msgid "A moderator sent a warning"
+msgstr "En moderator har sendt en advarsel"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:27
+#, elixir-autogen, elixir-format
+msgid "A party invite was accepted"
+msgstr "En party-invitasjon ble godtatt"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:28
+#, elixir-autogen, elixir-format
+msgid "A party invite was declined"
+msgstr "En party-invitasjon ble avslått"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:39
+#, elixir-autogen, elixir-format
+msgid "A quest or achievement was completed"
+msgstr "Et oppdrag eller en prestasjon ble fullført"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:40
+#, elixir-autogen, elixir-format
+msgid "A report is waiting for review"
+msgstr "En rapport venter på gjennomgang"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:36
+#, elixir-autogen, elixir-format
+msgid "A report you filed was reviewed"
+msgstr "En rapport du har sendt inn, er gjennomgått"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:25
+#, elixir-autogen, elixir-format
+msgid "Demoted within a group"
+msgstr "Degradert i en gruppe"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:16
+#, elixir-autogen, elixir-format
+msgid "Invited to a group"
+msgstr "Invitert til en gruppe"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:26
+#, elixir-autogen, elixir-format
+msgid "Invited to a party"
+msgstr "Invitert til et party"
+
+#: lib/gamend_web/live/notifications_live.ex:83
+#, elixir-autogen, elixir-format
+msgid "Load more"
+msgstr "Last inn flere"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:38
+#, elixir-autogen, elixir-format
+msgid "Muted in chat"
+msgstr "Dempet i chatten"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:31
+#, elixir-autogen, elixir-format
+msgid "New direct messages from friends"
+msgstr "Nye direktemeldinger fra venner"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:32
+#, elixir-autogen, elixir-format
+msgid "New messages in a group chat"
+msgstr "Nye meldinger i en gruppechat"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:33
+#, elixir-autogen, elixir-format
+msgid "New messages in your lobby chat"
+msgstr "Nye meldinger i lobbychatten din"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:34
+#, elixir-autogen, elixir-format
+msgid "New messages in your party chat"
+msgstr "Nye meldinger i party-chatten din"
+
+#: lib/gamend_web/live/notifications_live.ex:488
+#, elixir-autogen, elixir-format
+msgid "Other"
+msgstr "Annet"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:24
+#, elixir-autogen, elixir-format
+msgid "Promoted within a group"
+msgstr "Forfremmet i en gruppe"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:22
+#, elixir-autogen, elixir-format
+msgid "Removed from a group"
+msgstr "Fjernet fra en gruppe"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:30
+#, elixir-autogen, elixir-format
+msgid "Removed from a lobby"
+msgstr "Fjernet fra en lobby"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:29
+#, elixir-autogen, elixir-format
+msgid "Removed from a party"
+msgstr "Fjernet fra et party"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:19
+#, elixir-autogen, elixir-format
+msgid "Someone asked to join a group you administer"
+msgstr "Noen har bedt om å bli med i en gruppe du administrerer"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:13
+#, elixir-autogen, elixir-format
+msgid "Someone sent a friend request"
+msgstr "Noen har sendt en venneforespørsel"

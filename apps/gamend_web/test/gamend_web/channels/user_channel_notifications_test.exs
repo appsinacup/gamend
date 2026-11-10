@@ -68,6 +68,7 @@ defmodule GamendWeb.UserChannelNotificationsTest do
     assert payload.title == "Live!"
     assert payload.sender_id == a.id
     assert Map.has_key?(payload, :sender_name)
+    assert payload.group == ""
   end
 
   test "notifications persist across sessions (reconnect)" do

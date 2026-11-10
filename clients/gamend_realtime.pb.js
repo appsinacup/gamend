@@ -1696,6 +1696,7 @@ export const gamend = $root.gamend = (() => {
                  * @property {Uint8Array|null} [metadata_json] Notification metadata_json
                  * @property {number|Long|null} [inserted_at_ms] Notification inserted_at_ms
                  * @property {string|null} [icon_url] Notification icon_url
+                 * @property {string|null} [group] Notification group
                  * @property {Array.<Uint8Array>} [$unknowns] Unknown fields preserved while decoding when enabled
                  */
 
@@ -1800,6 +1801,14 @@ export const gamend = $root.gamend = (() => {
                 Notification.prototype.icon_url = "";
 
                 /**
+                 * Notification group.
+                 * @member {string} group
+                 * @memberof gamend.realtime.v1.Notification
+                 * @instance
+                 */
+                Notification.prototype.group = "";
+
+                /**
                  * Encodes the specified Notification message. Does not implicitly {@link gamend.realtime.v1.Notification.verify|verify} messages.
                  * @function encode
                  * @memberof gamend.realtime.v1.Notification
@@ -1833,6 +1842,8 @@ export const gamend = $root.gamend = (() => {
                         writer.uint32(/* id 8, wireType 0 =*/64).int64(message.inserted_at_ms);
                     if (message.icon_url != null && $Object.hasOwnProperty.call(message, "icon_url") && message.icon_url !== "")
                         writer.uint32(/* id 9, wireType 2 =*/74).string(message.icon_url);
+                    if (message.group != null && $Object.hasOwnProperty.call(message, "group") && message.group !== "")
+                        writer.uint32(/* id 10, wireType 2 =*/82).string(message.group);
                     if (message.$unknowns != null && $Object.hasOwnProperty.call(message, "$unknowns"))
                         for (let i = 0; i < message.$unknowns.length; ++i)
                             writer.raw(message.$unknowns[i]);
@@ -1958,6 +1969,15 @@ export const gamend = $root.gamend = (() => {
                                     delete message.icon_url;
                                 continue;
                             }
+                        case 10: {
+                                if (wireType !== 2)
+                                    break;
+                                if ((value = reader.stringVerify()).length)
+                                    message.group = value;
+                                else
+                                    delete message.group;
+                                continue;
+                            }
                         }
                         reader.skipType(wireType, _depth, tag);
                         if (!reader.discardUnknown) {
@@ -2030,6 +2050,9 @@ export const gamend = $root.gamend = (() => {
                     if (object.icon_url != null)
                         if (typeof object.icon_url !== "string" || object.icon_url.length)
                             message.icon_url = $String(object.icon_url);
+                    if (object.group != null)
+                        if (typeof object.group !== "string" || object.group.length)
+                            message.group = $String(object.group);
                     return message;
                 };
 
@@ -2070,6 +2093,7 @@ export const gamend = $root.gamend = (() => {
                         } else
                             object.inserted_at_ms = options.longs === $String ? "0" : typeof $BigInt !== "undefined" && options.longs === $BigInt ? $BigInt("0") : 0;
                         object.icon_url = "";
+                        object.group = "";
                     }
                     if (message.id != null && $Object.hasOwnProperty.call(message, "id"))
                         object.id = message.id;
@@ -2094,6 +2118,8 @@ export const gamend = $root.gamend = (() => {
                             object.inserted_at_ms = options.longs === $String ? $util.Long.prototype.toString.call(message.inserted_at_ms) : options.longs === $Number ? new $util.LongBits(message.inserted_at_ms.low >>> 0, message.inserted_at_ms.high >>> 0).toNumber() : message.inserted_at_ms;
                     if (message.icon_url != null && $Object.hasOwnProperty.call(message, "icon_url"))
                         object.icon_url = message.icon_url;
+                    if (message.group != null && $Object.hasOwnProperty.call(message, "group"))
+                        object.group = message.group;
                     return object;
                 };
 

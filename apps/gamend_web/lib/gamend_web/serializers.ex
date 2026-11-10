@@ -17,6 +17,7 @@ defmodule GamendWeb.Serializers do
   alias Gamend.Leaderboards.Leaderboard
   alias Gamend.Lobbies
   alias Gamend.Lobbies.SpectatorTracker
+  alias Gamend.Notifications
   alias Gamend.Parties
   alias GamendWeb.Features
 
@@ -133,6 +134,7 @@ defmodule GamendWeb.Serializers do
       title: notification.title,
       content: notification.content || "",
       icon_url: notification.icon_url || "",
+      group: Notifications.group_of(notification) || "",
       metadata: notification.metadata || %{},
       inserted_at: notification.inserted_at
     }

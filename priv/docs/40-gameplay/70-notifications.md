@@ -14,6 +14,10 @@ There is deliberately **no** "mark as read" endpoint. Reading is server-side:
 the web UI and `Notifications.mark_all_notifications_read/1` set the flag, so a
 game client tracks its own seen state or deletes what it has handled.
 
+## The notifications page
+
+`/notifications` shows one section per notification group, the one with the newest notice first, and stacks those of one `metadata.type`. A notice in no group goes under Other. A plugin type's description (`notification_types/0`) is its stack's heading. A section or a stack deletes as a whole. The API answers a flat list, each notification with its `group` (empty for none), so a game client arranges them the same way: sections by `group`, stacks by `metadata.type`.
+
 ## Notification schema
 
 ```json
@@ -25,6 +29,7 @@ game client tracks its own seen state or deletes what it has handled.
   "title": "New Group Invite",
   "content": "You've been invited to join Cool Guild",
   "icon_url": "",
+  "group": "social",
   "metadata": {"type": "group_invite", "group_id": "01977f5a-0005-7000-8000-3f6a2d8c0a05"},
   "inserted_at": "2026-02-22T12:00:00Z"
 }

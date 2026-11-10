@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1418">
+    <meta name="project" content="gamend_core v1.1.1424">
 
 
-    <title>Gamend.Notifications — gamend_core v1.1.1418</title>
+    <title>Gamend.Notifications — gamend_core v1.1.1424</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-593FF152.js"></script>
+    <script defer src="dist/sidebar_items-090D9535.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1418
+          v1.1.1424
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Notifications</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1418)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1424)</small>
 
     </h1>
 
@@ -262,6 +262,17 @@ Used internally to retract system-generated notifications (e.g. friend request c
       </div>
 
         <div class="summary-synopsis"><p>Get a single notification by ID (raises if not found).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#group_of/1" data-no-tooltip="" translate="no">group_of(map)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The notification group (<a href="Gamend.Notifications.Preferences.html"><code class="inline">Gamend.Notifications.Preferences</code></a>) a notification
+belongs to: the one <a href="#notify/3"><code class="inline">notify/3</code></a> named, else its type's. nil for one in no group.</p></div>
 
     </div>
 
@@ -475,7 +486,7 @@ devices, an email. A channel they turned off is skipped.</p></div>
       <h1 class="signature" translate="no">admin_delete_notification(id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L469" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L483" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -591,7 +602,7 @@ devices, an email. A channel they turned off is skipped.</p></div>
       <h1 class="signature" translate="no">create_chat_notification(sender_id, recipient_id, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L693" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L707" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -623,7 +634,7 @@ are updated (so the user sees the latest message preview).</p>
       <h1 class="signature" translate="no">delete_notification_by(sender_id, recipient_id, title)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L560" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L574" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -653,7 +664,7 @@ Used internally to retract system-generated notifications (e.g. friend request c
       <h1 class="signature" translate="no">delete_notifications(user_id, ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L543" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L557" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -726,6 +737,35 @@ Returns <code class="inline">{deleted_count, nil}</code>.</p>
       </div>
 
 <p>Get a single notification by ID (raises if not found).</p>
+  </section>
+</section>
+<section class="detail" id="group_of/1">
+
+  <div class="detail-header">
+    <a href="#group_of/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">group_of(map)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L371" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> group_of(<a href="Gamend.Notifications.Notification.html#t:t/0">Gamend.Notifications.Notification.t</a>()) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil</pre>
+
+      </div>
+
+<p>The notification group (<a href="Gamend.Notifications.Preferences.html"><code class="inline">Gamend.Notifications.Preferences</code></a>) a notification
+belongs to: the one <a href="#notify/3"><code class="inline">notify/3</code></a> named, else its type's. nil for one in no group.</p>
   </section>
 </section>
 <section class="detail" id="list_all_notifications/2">
@@ -956,7 +996,7 @@ Results are ordered newest-first and cached with the same version-based TTL.</p>
       <h1 class="signature" translate="no">notify(user_id, group, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L383" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L395" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -979,7 +1019,9 @@ devices, an email. A channel they turned off is skipped.</p><p><code class="inli
 <a href="Gamend.Notifications.Types.html"><code class="inline">Gamend.Notifications.Types</code></a>), <code class="inline">&quot;url&quot;</code> (a path on this site the
 notification leads to), and for the email <code class="inline">&quot;subject&quot;</code> and <code class="inline">&quot;text&quot;</code>
 (default: the title and the content). <code class="inline">&quot;email_now&quot; =&gt; true</code> sends the email
-at once in a group that sends digests (<a href="Gamend.Notifications.Digest.html"><code class="inline">Gamend.Notifications.Digest</code></a>).</p><p>The in-app row is the user's own (sender = recipient), so repeating a title
+at once in a group that sends digests (<a href="Gamend.Notifications.Digest.html"><code class="inline">Gamend.Notifications.Digest</code></a>).
+<code class="inline">&quot;site_only&quot; =&gt; true</code> writes the row and sends nothing else: no push and no
+email, for what the reader only likes to know (a build done).</p><p>The in-app row is the user's own (sender = recipient), so repeating a title
 refreshes the one row rather than stacking. Returns the channels it went
 out on.</p>
   </section>
@@ -994,7 +1036,7 @@ out on.</p>
       <h1 class="signature" translate="no">send_notification(sender_id, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L512" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications.ex#L526" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1087,9 +1129,9 @@ themselves, <code class="inline">:too_many_notifications</code> when the recipie
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1418">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1424">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1418">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1424">Hex Preview</a>
 
             </span>
 

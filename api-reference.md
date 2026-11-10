@@ -1,4 +1,4 @@
-# gamend_core v1.1.1418 - API Reference
+# gamend_core v1.1.1424 - API Reference
 
 ## Modules
 
@@ -497,6 +497,9 @@ project static files, and the GeoIP database.
   - [Gamend.Settings](Gamend.Settings.md): The declared configuration surface: every setting core, the host and its
 plugins expose, with its type, default, group, env var name and required
 level.
+  - [Gamend.Settings.EnvFile](Gamend.Settings.EnvFile.md): Every declared setting and plugin variable as a `.env` file, with the values
+this server runs on: what `/admin/settings` hands an admin to move a
+deployment or compare two.
   - [Gamend.Settings.Provider](Gamend.Settings.Provider.md): Declares a group of settings on a module.
   - [Gamend.Storage](Gamend.Storage.md): Object storage for user uploads (avatars, and future user-generated content).
   - [Gamend.Storage.Adapter](Gamend.Storage.Adapter.md): Behaviour for object-storage backends.

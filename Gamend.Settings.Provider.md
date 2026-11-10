@@ -48,6 +48,13 @@ host configures them the ordinary Elixir way and never needs an env var:
 
 Setting keys follow the same rule as `:group`.
 
+## Sections
+
+`section "Chat"` puts every setting declared after it, until the next
+`section`, under that heading in the admin viewer. It changes nothing else:
+not the env name, not the group. A group too long to read as one list
+(`Gamend.Limits`) uses it; most have none.
+
 ## Options for `setting/3`
 
 - `:default` — the compiled default. Defaults to `nil`.
@@ -77,6 +84,11 @@ Setting keys follow the same rule as `:group`.
 The environment variable name for a group and key: `<ROOT>_<GROUP>_<KEY>`.
 
 The only way a setting gets a name. There is no override.
+
+# `section`
+*macro* 
+
+Starts a heading for the settings declared after it. See the module doc.
 
 # `setting`
 *macro* 

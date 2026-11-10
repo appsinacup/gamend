@@ -35,6 +35,7 @@ and cached in `:persistent_term`. Plugins load after config is resolved, so
   app: atom(),
   group: atom(),
   label: String.t(),
+  section: String.t() | nil,
   type: atom(),
   default: term(),
   env: String.t(),

@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1418">
+    <meta name="project" content="gamend_core v1.1.1424">
 
 
-    <title>Gamend.Settings.Provider — gamend_core v1.1.1418</title>
+    <title>Gamend.Settings.Provider — gamend_core v1.1.1424</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-593FF152.js"></script>
+    <script defer src="dist/sidebar_items-090D9535.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1418
+          v1.1.1424
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Settings.<wbr />Provider</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1418)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1424)</small>
 
     </h1>
 
@@ -139,7 +139,10 @@ env name it would derive could not be set from a shell. Put the display
 name in <code class="inline">:label</code>.</li><li><code class="inline">:root</code> — first segment of the env name. Defaults to <code class="inline">&quot;GAMEND&quot;</code>; a plugin
 passes its own (<code class="inline">root: &quot;MY_GAME&quot;</code>). Letters, digits and underscores only.
 Each definition carries it back, so tooling can check the naming
-convention without knowing which hosts exist.</li><li><code class="inline">:label</code> — display name for the group, free text (<code class="inline">&quot;User-generated content&quot;</code>). Defaults to a capitalised <code class="inline">:group</code>.</li></ul><p>Setting keys follow the same rule as <code class="inline">:group</code>.</p><h2 id="module-options-for-setting-3" class="section-heading"><a href="#module-options-for-setting-3" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Options for <a href="#setting/3"><code class="inline">setting/3</code></a></span></h2><ul><li><code class="inline">:default</code> — the compiled default. Defaults to <code class="inline">nil</code>.</li><li><code class="inline">:doc</code> — one-line description, shown in the admin viewer and generated docs.</li><li><code class="inline">:secret</code> — mask the value everywhere it is displayed.</li><li><code class="inline">:required</code> — <code class="inline">:prod</code> (boot fails in prod, warns in dev) or <code class="inline">:warn</code> (logs in
+convention without knowing which hosts exist.</li><li><code class="inline">:label</code> — display name for the group, free text (<code class="inline">&quot;User-generated content&quot;</code>). Defaults to a capitalised <code class="inline">:group</code>.</li></ul><p>Setting keys follow the same rule as <code class="inline">:group</code>.</p><h2 id="module-sections" class="section-heading"><a href="#module-sections" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Sections</span></h2><p><code class="inline">section &quot;Chat&quot;</code> puts every setting declared after it, until the next
+<code class="inline">section</code>, under that heading in the admin viewer. It changes nothing else:
+not the env name, not the group. A group too long to read as one list
+(<a href="Gamend.Limits.html"><code class="inline">Gamend.Limits</code></a>) uses it; most have none.</p><h2 id="module-options-for-setting-3" class="section-heading"><a href="#module-options-for-setting-3" class="hover-link"><i class="ri-link-m" aria-hidden="true"></i></a><span class="text">Options for <a href="#setting/3"><code class="inline">setting/3</code></a></span></h2><ul><li><code class="inline">:default</code> — the compiled default. Defaults to <code class="inline">nil</code>.</li><li><code class="inline">:doc</code> — one-line description, shown in the admin viewer and generated docs.</li><li><code class="inline">:secret</code> — mask the value everywhere it is displayed.</li><li><code class="inline">:required</code> — <code class="inline">:prod</code> (boot fails in prod, warns in dev) or <code class="inline">:warn</code> (logs in
 prod). Omit for optional. Never enforced in test.</li><li><code class="inline">:when</code> — <code class="inline">{path, value}</code> gating the requirement on another setting, e.g.
 <code class="inline">when: {[:storage, :adapter], :s3}</code>. A list of such tuples requires all of
 them to hold.</li><li><code class="inline">:with</code> — sibling keys forming a complete-or-empty group. All unset is
@@ -178,6 +181,16 @@ directly, so the declaration is the only thing that decides what is legal.</li><
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#section/1" data-no-tooltip="" translate="no">section(name)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Starts a heading for the settings declared after it. See the module doc.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#setting/3" data-no-tooltip="" translate="no">setting(key, type, opts \\ [])</a>
 
       </div>
@@ -210,7 +223,7 @@ directly, so the declaration is the only thing that decides what is legal.</li><
       <h1 class="signature" translate="no">derive_env(root, group, key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings/provider.ex#L240" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings/provider.ex#L258" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -228,6 +241,30 @@ directly, so the declaration is the only thing that decides what is legal.</li><
 <p>The environment variable name for a group and key: <code class="inline">&lt;ROOT&gt;_&lt;GROUP&gt;_&lt;KEY&gt;</code>.</p><p>The only way a setting gets a name. There is no override.</p>
   </section>
 </section>
+<section class="detail" id="section/1">
+
+  <div class="detail-header">
+    <a href="#section/1" class="detail-link" data-no-tooltip="" aria-label="Link to this macro">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">section(name)</h1>
+
+        <span class="note">(macro)</span>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings/provider.ex#L109" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+<p>Starts a heading for the settings declared after it. See the module doc.</p>
+  </section>
+</section>
 <section class="detail" id="setting/3">
 
     <span id="setting/2"></span>
@@ -242,7 +279,7 @@ directly, so the declaration is the only thing that decides what is legal.</li><
         <span class="note">(macro)</span>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings/provider.ex#L101" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/settings/provider.ex#L118" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -263,9 +300,9 @@ directly, so the declaration is the only thing that decides what is legal.</li><
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1418">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1424">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1418">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1424">Hex Preview</a>
 
             </span>
 

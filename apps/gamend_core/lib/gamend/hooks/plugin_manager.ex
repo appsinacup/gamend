@@ -526,7 +526,9 @@ defmodule Gamend.Hooks.PluginManager do
 
   defp format_rpc_context(plugin, fn_name, args, opts) do
     [
+      # literal-ok: a field of the log line
       {"plugin", plugin},
+      # literal-ok: a field of the log line
       {"fn", fn_name},
       {@user_id, opts |> Keyword.get(:caller) |> user_id()},
       {"args_count", length(args)},

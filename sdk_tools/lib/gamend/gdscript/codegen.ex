@@ -2260,6 +2260,7 @@ defmodule Gamend.GDScript.Codegen do
     "Gamend.Signals.emit(\"#{signal_scope(state)}\", \"#{name}\", #{payload})"
   end
 
+  # literal-ok: GDScript's Callable.call
   defp gen_callable_call(object, "call", args, _line, state),
     do: "#{gen_expression(object, state)}.(#{gen_args(args, state)})"
 

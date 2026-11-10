@@ -330,18 +330,18 @@ defmodule GamendWeb.TournamentsLiveTest do
 
     test "a signed-in visitor can join, then leave", %{conn: conn} do
       tournament = create_tournament()
-      {:ok, view, html} = live(conn, ~p"/tournaments/#{tournament.slug}")
+      {:ok, view, _html} = live(conn, ~p"/tournaments/#{tournament.slug}")
 
-      assert html =~ "Join"
-      refute html =~ "Leave"
+      assert has_element?(view, "#join-btn")
+      refute has_element?(view, "#leave-btn")
 
-      html = view |> element("#join-btn") |> render_click()
-      assert html =~ "Leave"
-      refute html =~ ~r/id="join-btn"/
+      view |> element("#join-btn") |> render_click()
+      assert has_element?(view, "#leave-btn")
+      refute has_element?(view, "#join-btn")
       assert Tournaments.count_entries(tournament.id) == 1
 
-      html = view |> element("#leave-btn") |> render_click()
-      assert html =~ "Join"
+      view |> element("#leave-btn") |> render_click()
+      assert has_element?(view, "#join-btn")
       assert Tournaments.count_entries(tournament.id) == 0
     end
 

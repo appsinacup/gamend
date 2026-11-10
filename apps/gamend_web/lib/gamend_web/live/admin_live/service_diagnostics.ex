@@ -64,6 +64,7 @@ defmodule GamendWeb.AdminLive.ServiceDiagnostics do
       enabled?: Node.alive?(),
       node: node(),
       variables: [
+        # literal-ok: the value RELEASE_DISTRIBUTION takes
         {"RELEASE_DISTRIBUTION", recommended(cluster_env("RELEASE_DISTRIBUTION"), "name")},
         {"RELEASE_NODE",
          recommended(cluster_env("RELEASE_NODE"), release_node_recommended(fly?))},

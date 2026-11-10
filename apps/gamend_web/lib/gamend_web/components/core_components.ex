@@ -1726,6 +1726,7 @@ defmodule GamendWeb.CoreComponents do
   defp ago(seconds) when seconds < 60, do: "#{seconds}s ago"
   defp ago(seconds) when seconds < 3_600, do: "#{div(seconds, 60)}m ago"
   defp ago(seconds) when seconds < 86_400, do: "#{div(seconds, 3_600)}h ago"
+  # literal-ok: the English word for the unit
   defp ago(seconds) when seconds < 2_592_000, do: ago_spelled(div(seconds, 86_400), "day")
   defp ago(seconds) when seconds < 31_536_000, do: ago_spelled(div(seconds, 2_592_000), "month")
   defp ago(seconds), do: ago_spelled(div(seconds, 31_536_000), "year")

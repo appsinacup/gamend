@@ -68,7 +68,10 @@ defmodule GamendWeb.Plugs.IpBanTest do
 
       assert IpBan.banned?("2001:db8:5:6:ffff::2")
       refute IpBan.banned?("2001:db8:5:7::1")
-      assert [{:ip, "2001:db8:5:6::/64", :infinity}] = Cache.list()
+      # Account bans other tests leave in the shared cache are not this test's.
+      assert [{:ip, "2001:db8:5:6::/64", :infinity}] =
+               Enum.filter(Cache.list(), &match?({:ip, _, _}, &1))
+
       assert [%{subject: "2001:db8:5:6::/64"}] = Bans.list_active(:ip)
 
       :ok = IpBan.unban("2001:db8:5:6::abcd")

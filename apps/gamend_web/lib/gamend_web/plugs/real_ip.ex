@@ -13,6 +13,13 @@ defmodule GamendWeb.Plugs.RealIp do
   comes directly from the internet (remote_ip is not a proxy), the headers
   are ignored to prevent spoofing.
 
+  The endpoint listens on `::`, so a proxy reaching it over IPv4 arrives as
+  `::ffff:a.b.c.d` and is judged as the IPv4 address it carries. From such a
+  peer only `X-Forwarded-For` is read: Caddy, nginx and Gamend Cloud's edge
+  write their own entry there, and the walk can only end on an untrusted
+  address. They pass `CF-Connecting-IP` and `Fly-Client-IP` on as the client
+  sent them, and `CF-Connecting-IP: 127.0.0.1` would pass for loopback.
+
   ## Configuration
 
       config :gamend_web, GamendWeb.Plugs.RealIp,
@@ -46,8 +53,10 @@ defmodule GamendWeb.Plugs.RealIp do
 
   @impl true
   def call(conn, _opts) do
-    if trusted_proxy?(conn.remote_ip) do
-      case extract_real_ip(conn) do
+    peer = unmapped(conn.remote_ip)
+
+    if trusted_proxy?(peer) do
+      case extract_real_ip(conn, peer == conn.remote_ip) do
         {:ok, ip} -> %{conn | remote_ip: ip}
         :error -> conn
       end
@@ -56,15 +65,12 @@ defmodule GamendWeb.Plugs.RealIp do
     end
   end
 
-  defp extract_real_ip(conn) do
-    cond do
-      # Cloudflare sets a single, verified IP
-      cf = get_req_header(conn, "cf-connecting-ip") |> List.first() ->
-        parse_ip(String.trim(cf))
+  defp extract_real_ip(conn, platform_headers?) do
+    platform = if platform_headers?, do: platform_ip(conn)
 
-      # Fly.io sets a single, verified IP
-      fly = get_req_header(conn, "fly-client-ip") |> List.first() ->
-        parse_ip(String.trim(fly))
+    cond do
+      platform ->
+        parse_ip(String.trim(platform))
 
       # X-Forwarded-For: client, proxy1, proxy2
       # The leftmost non-trusted IP is the real client.
@@ -80,12 +86,22 @@ defmodule GamendWeb.Plugs.RealIp do
     end
   end
 
+  # Cloudflare and Fly.io each set a single, verified IP.
+  defp platform_ip(conn) do
+    Enum.find_value(["cf-connecting-ip", "fly-client-ip"], fn header ->
+      conn |> get_req_header(header) |> List.first()
+    end)
+  end
+
   defp parse_ip(raw) do
     case :inet.parse_address(String.to_charlist(raw)) do
-      {:ok, ip} -> {:ok, ip}
+      {:ok, ip} -> {:ok, unmapped(ip)}
       _ -> :error
     end
   end
+
+  defp unmapped({0, 0, 0, 0, 0, 0xFFFF, _hi, _lo} = ip), do: :inet.ipv4_mapped_ipv6_address(ip)
+  defp unmapped(ip), do: ip
 
   # Walk the reversed XFF list (rightmost first) and return the first
   # IP that isn't a trusted proxy. If all are trusted, return :error.

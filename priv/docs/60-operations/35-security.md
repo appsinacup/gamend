@@ -12,6 +12,8 @@ Everything downstream (bans, rate limits, geo stats) keys on `conn.remote_ip`, s
 
 The headers are only parsed when the connecting peer *is* a trusted proxy (loopback and private ranges by default, extendable via the `trusted_proxies` config for `GamendWeb.Plugs.RealIp`). A request straight from the internet has its forwarding headers ignored entirely, so spoofing them buys nothing.
 
+The server listens on `::`, so a proxy reaching it over IPv4 connects as `::ffff:a.b.c.d` and is judged as that IPv4 address. From such a proxy only `X-Forwarded-For` is read: Caddy and nginx pass `CF-Connecting-IP` and `Fly-Client-IP` on as the client sent them.
+
 ## IP bans
 
 An IP ban is checked in ETS on every request that reaches it: a banned address gets a bare `403` before any routing happens. An IPv6 address is banned by its /64 network, since one subscriber is usually given a whole /64 and can move around inside it; `ban("2001:db8::1")` is listed as `2001:db8::/64`. An IPv4 address is banned as itself. Static files are served earlier in the chain, so a ban does not cover them.

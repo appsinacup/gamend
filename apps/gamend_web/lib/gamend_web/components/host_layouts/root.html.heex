@@ -26,7 +26,12 @@ reload — the page painted at the top and glided down to where it had been. --%
     page's `live_session`, so a plain link to another LiveView page of the
     same session moves over the open socket (`GamendWeb.LiveNav`). --%>
     <%= if live_nav = GamendWeb.LiveNav.meta(assigns) do %>
-      <meta name="gamend-live-nav" content={live_nav.url} data-session={live_nav.session} />
+      <meta
+        name="gamend-live-nav"
+        content={live_nav.url}
+        data-session={live_nav.session}
+        data-signed-in={live_nav.signed_in}
+      />
     <% end %>
     <%!--
     Minting a CSRF token dirties the session, and a dirty session means a

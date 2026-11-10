@@ -59,6 +59,7 @@ defmodule GamendWeb.ContentPages do
       <.content_page
         title={gettext("Changelog")}
         icon="hero-document-text-solid"
+        tone={GamendWeb.HostLayouts.nav_tone("/changelog")}
         html={@html}
         sibling_path={@roadmap_available? && ~p"/roadmap"}
         sibling_icon="hero-map-solid"
@@ -83,6 +84,7 @@ defmodule GamendWeb.ContentPages do
       <.content_page
         title={gettext("Roadmap")}
         icon="hero-map-solid"
+        tone={GamendWeb.HostLayouts.nav_tone("/roadmap")}
         html={@html}
         sibling_path={@changelog_available? && ~p"/changelog"}
         sibling_icon="hero-document-text-solid"
@@ -96,6 +98,7 @@ defmodule GamendWeb.ContentPages do
 
   attr :title, :string, required: true
   attr :icon, :string, required: true, doc: "the title's mark"
+  attr :tone, :string, default: nil, doc: "the mark's colour (`page_title/1`'s `tone`)"
   attr :html, :string, default: nil
   attr :sibling_path, :any, default: nil
   attr :sibling_icon, :string, required: true
@@ -114,7 +117,7 @@ defmodule GamendWeb.ContentPages do
             for its name. --%>
       <div data-heading-fit class="flex flex-row items-center justify-between gap-3">
         <div class="flex min-w-0 items-center gap-3">
-          <.page_title icon={@icon}>{@title}</.page_title>
+          <.page_title icon={@icon} tone={@tone}>{@title}</.page_title>
         </div>
 
         <.link
@@ -180,7 +183,12 @@ defmodule GamendWeb.ContentPages do
             class="mb-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-3"
           >
             <div class="flex min-w-0 items-center gap-3">
-              <.page_title icon="hero-newspaper-solid">{gettext("Blog")}</.page_title>
+              <.page_title
+                icon="hero-newspaper-solid"
+                tone={GamendWeb.HostLayouts.nav_tone("/blog")}
+              >
+                {gettext("Blog")}
+              </.page_title>
             </div>
 
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 whitespace-nowrap">

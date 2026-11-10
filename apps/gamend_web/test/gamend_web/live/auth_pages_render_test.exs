@@ -1,7 +1,7 @@
 defmodule GamendWeb.AuthPagesRenderTest do
   @moduledoc """
   Permission + render tests for pages that require authentication
-  (live_session :require_authenticated_user).
+  (`gamend_signed_in_routes/2`).
   Ensures unauthenticated users are redirected and authenticated users can render.
   """
   use GamendWeb.ConnCase, async: true

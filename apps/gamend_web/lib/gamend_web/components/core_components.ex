@@ -848,6 +848,7 @@ defmodule GamendWeb.CoreComponents do
   """
   attr :class, :any, default: nil, doc: "extra classes on the <h1>"
   attr :icon, :string, default: nil, doc: "the title's mark (`page_title/1`'s `icon`)"
+  attr :tone, :string, default: nil, doc: "the mark's colour (`page_title/1`'s `tone`)"
 
   attr :back, :string,
     default: nil,
@@ -870,9 +871,11 @@ defmodule GamendWeb.CoreComponents do
               text link: one place, one shape, on every page that has a parent. --%>
         <div :if={@back || @back_href} class="flex flex-wrap items-center gap-3">
           <.back_link navigate={@back} href={@back_href} label={@back_label} />
-          <.page_title class={@class} icon={@icon}>{render_slot(@inner_block)}</.page_title>
+          <.page_title class={@class} icon={@icon} tone={@tone}>
+            {render_slot(@inner_block)}
+          </.page_title>
         </div>
-        <.page_title :if={!(@back || @back_href)} class={@class} icon={@icon}>
+        <.page_title :if={!(@back || @back_href)} class={@class} icon={@icon} tone={@tone}>
           {render_slot(@inner_block)}
         </.page_title>
         <p :if={@subtitle != []} class="mt-1 text-sm text-muted">

@@ -106,7 +106,11 @@ defmodule GamendWeb.ChatLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div>
-        <.page_title class="mb-4" icon="hero-chat-bubble-left-right-solid">
+        <.page_title
+          class="mb-4"
+          icon="hero-chat-bubble-left-right-solid"
+          tone={GamendWeb.HostLayouts.nav_tone("/chat")}
+        >
           {gettext("Chat")}
         </.page_title>
       </div>

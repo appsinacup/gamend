@@ -29,7 +29,12 @@ defmodule GamendWeb.NotificationsLive do
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div data-heading-fit class="flex items-center gap-3">
-              <.page_title icon="hero-bell-solid">{gettext("Notifications")}</.page_title>
+              <.page_title
+                icon="hero-bell-solid"
+                tone={GamendWeb.HostLayouts.nav_tone("/notifications")}
+              >
+                {gettext("Notifications")}
+              </.page_title>
             </div>
             <p class="text-muted mt-1">
               {@notif_count} / {@notif_unread_count}

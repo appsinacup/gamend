@@ -201,6 +201,7 @@ defmodule GamendWeb.DocsSidebarLiveTest do
         flash: %{},
         categories: Content.list_doc_categories(@collection),
         item_path: "/docs",
+        index_path: "/docs/setup",
         title: "Manual",
         subtitle: nil,
         empty_message: "None"

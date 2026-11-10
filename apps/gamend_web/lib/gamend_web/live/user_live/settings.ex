@@ -62,7 +62,12 @@ defmodule GamendWeb.UserLive.Settings do
       nav_key={@user.profile_url}
     >
       <div data-heading-fit class="flex items-center gap-3">
-        <.page_title icon="hero-user-circle-solid">{gettext("Account")}</.page_title>
+        <.page_title
+          icon="hero-user-circle-solid"
+          tone={GamendWeb.HostLayouts.nav_tone("/users/settings")}
+        >
+          {gettext("Account")}
+        </.page_title>
       </div>
 
       <div class="text-center">

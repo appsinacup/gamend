@@ -14,7 +14,9 @@ defmodule GamendWeb.Router.Shared do
 
         gamend_api_routes()
         gamend_public_api_routes()
-        gamend_authenticated_live_routes()
+        gamend_current_user_routes(GamendWeb.Router.Shared.current_user_on_mount(),
+          do: gamend_signed_in_routes()
+        )
         gamend_admin_live_routes(GamendWeb.Router.Shared.require_admin_on_mount())
       end
 
@@ -30,7 +32,8 @@ defmodule GamendWeb.Router.Shared do
   | `gamend_public_api_routes/0` | Unauthenticated listings, each behind its own `LIST_*_ENABLED` flag. |
   | `gamend_api_auth_routes/0`, `gamend_oauth_routes/0` | Login, registration and the OAuth provider flows. |
   | `gamend_api_docs_routes/0` | The OpenAPI spec and Swagger UI at `/api/docs`. |
-  | `gamend_authenticated_live_routes/0` | Player-facing LiveViews (lobbies, chat, quests, settings). |
+  | `gamend_current_user_routes/3` | The public LiveViews. Takes the `on_mount` hooks from `current_user_on_mount/0`. |
+  | `gamend_signed_in_routes/2` | The signed-in LiveViews (chat, settings, notifications), in the `do` of `gamend_current_user_routes/3`, so moving between them and the public pages keeps the socket. |
   | `gamend_admin_live_routes/1` | The `/admin` console. Takes the `on_mount` hook from `require_admin_on_mount/0`. |
   | `gamend_admin_api_routes/0` | Admin HTTP mirrors of every console action. |
   | `gamend_static_page_routes/0`, `gamend_support_routes/0` | Host pages and support endpoints. |
@@ -48,7 +51,7 @@ defmodule GamendWeb.Router.Shared do
   does not have. The link to it goes with it (`GamendWeb.MountedRoutes`).
 
       gamend_api_routes(except: [:payments_catalog, :stripe_checkout, :report])
-      gamend_authenticated_live_routes(on_mount, except: [:chat, :store, :groups, :friends])
+      gamend_signed_in_routes(except: [:chat, :store, :groups, :friends])
       gamend_current_user_routes(on_mount, except: [:groups, :tournaments, :redeem, :report, :play])
 
   Each names only what its own macro mounts, so a feature with pages in two
@@ -95,7 +98,7 @@ defmodule GamendWeb.Router.Shared do
   def current_user_on_mount do
     [
       {GamendWeb.OnMount.Locale, :default},
-      {GamendWeb.UserAuth, :mount_current_scope},
+      {GamendWeb.UserAuth, :mount_route_scope},
       {GamendWeb.OnMount.Theme, :mount_theme},
       {GamendWeb.OnMount.TrackConnection, :default},
       {GamendWeb.OnMount.SeoTitle, :default}
@@ -1097,12 +1100,41 @@ defmodule GamendWeb.Router.Shared do
   end
 
   @doc """
-  Core's authenticated LiveView routes, extendable the same way as the admin ones.
+  `gamend_signed_in_routes/2` in a `live_session` of their own, for a host that
+  has not moved them: a link from a public page to one of these loads the page
+  and opens a new socket. The session name is fixed, so a host cannot declare a
+  second `live_session :require_authenticated_user` of its own.
+  """
+  defmacro gamend_authenticated_live_routes(on_mount, opts \\ []) do
+    quote do
+      scope "/", GamendWeb do
+        pipe_through :browser
 
-  `:do` splices host routes into the same `live_session`; `:chat` swaps the chat
-  LiveView for a host's own. The session name is fixed, so a host cannot declare
-  a second `live_session :require_authenticated_user` of its own — it extends
-  this one or forks the lot.
+        live_session :require_authenticated_user,
+          on_mount: unquote(on_mount) do
+          gamend_signed_in_routes(unquote(opts))
+        end
+      end
+    end
+  end
+
+  @doc """
+  Core's signed-in LiveView routes, for the `do` of
+  `gamend_current_user_routes/3`, extendable the same way as the admin ones:
+
+      gamend_current_user_routes on_mount do
+        gamend_signed_in_routes(groups: "/users/groups", do: live("/mine", MineLive, :index))
+      end
+
+  They share the public pages' `live_session` because a link between two
+  sessions loads the page and opens a new socket, and a reader goes between
+  these and the public pages all the time (`GamendWeb.LiveNav`). The scope
+  pipes through `:require_authenticated_user`, which refuses a request;
+  `GamendWeb.UserAuth`'s `:mount_route_scope` reads that off the route and
+  refuses a move over the socket.
+
+  `:do` splices host routes into the same scope; `:chat` swaps the chat
+  LiveView for a host's own.
 
   `:groups` is a path for the reader's groups as a page of their own
   (`GamendWeb.UserLive.Groups`, the settings page's Groups tab), for a host
@@ -1120,7 +1152,8 @@ defmodule GamendWeb.Router.Shared do
   `except:` leaves out `:chat`, `:store`, `:groups` (these pages, the join
   link and the Groups tab) and `:friends` (the Friends tab).
   """
-  defmacro gamend_authenticated_live_routes(on_mount, opts \\ []) do
+  defmacro gamend_signed_in_routes(opts \\ [], do_block \\ []) do
+    opts = Keyword.merge(opts, do_block)
     host_routes = Keyword.get(opts, :do)
     chat = Keyword.get(opts, :chat, quote(do: ChatLive))
     except = except!(opts, [:chat, :store, :groups, :friends])
@@ -1163,25 +1196,23 @@ defmodule GamendWeb.Router.Shared do
     closed_tabs = for key <- except, key in [:friends, :groups], do: Atom.to_string(key)
 
     quote do
-      scope "/", GamendWeb do
-        pipe_through [:browser, :require_authenticated_user]
+      # Inside a scope that pipes through `:browser` and aliases `GamendWeb`.
+      scope "/" do
+        pipe_through :require_authenticated_user
 
-        live_session :require_authenticated_user,
-          on_mount: unquote(on_mount) do
-          unquote(host_routes)
+        unquote(host_routes)
 
-          live "/users/settings", UserLive.Settings, :edit,
-            metadata: %{closed_tabs: unquote(closed_tabs)}
+        live "/users/settings", UserLive.Settings, :edit,
+          metadata: %{closed_tabs: unquote(closed_tabs)}
 
-          live "/users/settings/confirm_email/:token", UserLive.Settings, :confirm_email
-          live "/suspended", SuspendedLive, :index
-          unquote(store_routes)
-          live "/notifications", NotificationsLive, :index
-          unquote(chat_route)
-          unquote(groups_route)
-          unquote(join_route)
-          unquote(group_route)
-        end
+        live "/users/settings/confirm_email/:token", UserLive.Settings, :confirm_email
+        live "/suspended", SuspendedLive, :index
+        unquote(store_routes)
+        live "/notifications", NotificationsLive, :index
+        unquote(chat_route)
+        unquote(groups_route)
+        unquote(join_route)
+        unquote(group_route)
 
         post "/users/update_password", UserSessionController, :update_password
         get "/payments/downloads/:id", PaymentDownloadController, :show

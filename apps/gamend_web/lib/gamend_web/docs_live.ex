@@ -407,6 +407,7 @@ defmodule GamendWeb.DocsLive do
   attr :current_path, :string, default: nil
   attr :categories, :list, required: true
   attr :item_path, :string, required: true
+  attr :index_path, :string, required: true
   attr :title, :string, required: true
   attr :subtitle, :string, default: nil
   attr :empty_message, :string, required: true
@@ -423,7 +424,10 @@ defmodule GamendWeb.DocsLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={@current_path}>
       <div class="space-y-6">
-        <.header>
+        <.header
+          icon={GamendWeb.HostLayouts.nav_icon(@index_path, "hero-book-open-solid")}
+          tone={GamendWeb.HostLayouts.nav_tone(@index_path)}
+        >
           {@title}
           <:subtitle :if={@subtitle}>{@subtitle}</:subtitle>
           <:actions :if={@download_path}><.download_link path={@download_path} /></:actions>
@@ -538,7 +542,10 @@ defmodule GamendWeb.DocsLive do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={@current_path} wide>
       <.sidebar_frame tree={@tree} item_path={@item_path} index_path={@index_path} title={@title}>
-        <.header>
+        <.header
+          icon={GamendWeb.HostLayouts.nav_icon(@index_path, "hero-book-open-solid")}
+          tone={GamendWeb.HostLayouts.nav_tone(@index_path)}
+        >
           {@title}
           <:subtitle :if={@subtitle}>{@subtitle}</:subtitle>
           <:actions :if={@download_path}><.download_link path={@download_path} /></:actions>

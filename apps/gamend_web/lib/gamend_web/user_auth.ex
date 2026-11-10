@@ -445,6 +445,9 @@ defmodule GamendWeb.UserAuth do
       on user_token.
       Redirects to login page if there's no logged user.
 
+    * `:mount_route_scope` - `:require_authenticated` for a route piped
+      through `:require_authenticated_user`, else `:mount_current_scope`.
+
   ## Examples
 
   Use the `on_mount` lifecycle macro in LiveViews to mount or authenticate
@@ -467,6 +470,18 @@ defmodule GamendWeb.UserAuth do
     socket |> mount_current_scope(session) |> refuse_banned()
   end
 
+  # The public pages' `live_session` holds the signed-in pages too, so a move
+  # between them keeps the socket. A move runs no plugs, so the route's own
+  # `:require_authenticated_user` is checked here.
+  def on_mount(:mount_route_scope, params, session, socket) do
+    hook =
+      if GamendWeb.LiveNav.signed_in_only?(socket),
+        do: :require_authenticated,
+        else: :mount_current_scope
+
+    on_mount(hook, params, session, socket)
+  end
+
   def on_mount(:require_authenticated, _params, session, socket) do
     socket = mount_current_scope(socket, session)
 
@@ -474,10 +489,8 @@ defmodule GamendWeb.UserAuth do
       refuse_banned(socket)
     else
       # No flash: the sign-in page is the message (`require_authenticated_user/2`).
-      # This on_mount runs under the :require_authenticated_user live_session,
-      # while the log-in LiveView lives under the :current_user live_session.
-      # Forcing an external redirect avoids the client-side "unauthorized live_redirect"
-      # warning and performs a clean full page navigation.
+      # An external redirect: a sign-in page is always loaded by a request
+      # (`store_return_to/2`).
       {:halt, Phoenix.LiveView.redirect(socket, external: ~p"/users/log_in")}
     end
   end

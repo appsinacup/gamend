@@ -13,7 +13,12 @@ defmodule GamendWeb.UserLive.Login do
       <div class="mx-auto max-w-narrow space-y-4">
         <div class="text-center">
           <div data-heading-fit class="flex items-center justify-center gap-3">
-            <.page_title icon="hero-arrow-right-on-rectangle-solid">{gettext("Log in")}</.page_title>
+            <.page_title
+              icon="hero-arrow-right-on-rectangle-solid"
+              tone={GamendWeb.HostLayouts.nav_tone("/users/log_in")}
+            >
+              {gettext("Log in")}
+            </.page_title>
           </div>
           <p class="text-sm text-muted mt-2">
             <%= if @reauth? do %>

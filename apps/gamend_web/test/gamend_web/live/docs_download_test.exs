@@ -88,6 +88,7 @@ defmodule GamendWeb.DocsDownloadTest do
         flash: %{},
         categories: Content.list_doc_categories(@collection),
         item_path: "/guide",
+        index_path: "/guide",
         title: "Player guide",
         empty_message: "None"
       ] ++ assigns

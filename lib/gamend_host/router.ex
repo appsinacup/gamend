@@ -15,7 +15,6 @@ defmodule GamendHost.Router do
   gamend_pipelines()
 
   @require_admin_on_mount GamendWeb.Router.Shared.require_admin_on_mount()
-  @require_authenticated_on_mount GamendWeb.Router.Shared.require_authenticated_on_mount()
   @current_user_on_mount GamendWeb.Router.Shared.current_user_on_mount()
 
   scope "/content", GamendWeb do
@@ -33,7 +32,6 @@ defmodule GamendHost.Router do
   gamend_api_routes()
   gamend_support_routes()
   gamend_admin_live_routes(@require_admin_on_mount)
-  gamend_authenticated_live_routes(@require_authenticated_on_mount)
 
   # `HostPublicDocs` is this host's; the changelog, roadmap and blog pages are
   # core's now — see `GamendWeb.ContentPages`.
@@ -41,7 +39,8 @@ defmodule GamendHost.Router do
     docs: HostPublicDocs,
     changelog: ChangelogLive,
     roadmap: RoadmapLive,
-    blog: BlogLive
+    blog: BlogLive,
+    do: gamend_signed_in_routes()
   )
 
   gamend_oauth_routes()

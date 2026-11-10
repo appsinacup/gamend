@@ -15,7 +15,12 @@ defmodule GamendWeb.UserLive.Registration do
       <div class="mx-auto max-w-narrow space-y-4">
         <div class="text-center">
           <div data-heading-fit class="flex items-center justify-center gap-3">
-            <.page_title icon="hero-user-plus-solid">{gettext("Register")}</.page_title>
+            <.page_title
+              icon="hero-user-plus-solid"
+              tone={GamendWeb.HostLayouts.nav_tone("/users/register")}
+            >
+              {gettext("Register")}
+            </.page_title>
           </div>
           <p class="text-sm text-muted mt-2">
             <.link navigate={~p"/users/log_in"} class="font-semibold text-brand hover:underline">

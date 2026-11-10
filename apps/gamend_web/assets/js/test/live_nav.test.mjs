@@ -17,6 +17,7 @@ const table = compileTable({
     ["/games/:lang", null, false],
     ["/games/:lang/hangman", "current_user", true],
     ["/users/settings", "require_authenticated_user", true],
+    ["/notifications", "current_user", true, true],
     ["/guide/:slug", "current_user", false],
     ["/*path", null, false],
   ],
@@ -35,6 +36,14 @@ test("a controller route, also one declared before a LiveView pattern, loads", (
   assert.equal(go("/tests/spanish", "/games/spanish"), false)
   assert.equal(go("/tests/spanish", "/tests/download"), false)
   assert.equal(go("/tests/spanish", "/about"), false)
+})
+
+test("a signed-in page of the session moves for a signed-in reader, and loads for a signed-out one", () => {
+  const signedIn = (from, to) => liveTarget(table, "current_user", from, new URL(to, origin + from), origin, true)
+
+  assert.equal(signedIn("/tests/spanish", "/notifications"), true)
+  assert.equal(signedIn("/ro/tests/spanish", "/ro/notifications"), true)
+  assert.equal(go("/tests/spanish", "/notifications"), false)
 })
 
 test("another live_session and another origin load", () => {

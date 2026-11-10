@@ -41,7 +41,7 @@ defmodule Gamend.ThemeI18nTest do
 
   describe "what counts as text" do
     test "text keys are translatable" do
-      for key <- ~w(label title text tagline description alt cta subtitle) do
+      for key <- ~w(label title text tagline description alt cta subtitle question answer) do
         assert Translatable.text?(key), "#{key} should be translatable"
       end
     end

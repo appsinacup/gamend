@@ -10,15 +10,16 @@
 // guess costs one round trip: LiveView answers a live redirect it cannot mount
 // by loading the page.
 
-// `[[path, session, hasLocaleCopies], ...]` -> matchers, order kept.
+// `[[path, session, hasLocaleCopies, signedInOnly], ...]` -> matchers, order kept.
 export function compileTable(json) {
   const routes = Array.isArray(json?.routes) ? json.routes : []
   return {
     prefixes: new Set(Array.isArray(json?.prefixes) ? json.prefixes : []),
-    routes: routes.map(([path, session, prefixed]) => ({
+    routes: routes.map(([path, session, prefixed, signedInOnly]) => ({
       segments: String(path).split("/").filter(Boolean),
       session: session || null,
       prefixed: prefixed === true,
+      signedInOnly: signedInOnly === true,
     })),
   }
 }
@@ -51,7 +52,7 @@ export function matches(segments, parts) {
 
 // Whether a click from `fromPath` to `url` (a URL object) can move over the
 // socket of a page in `session`.
-export function liveTarget(table, session, fromPath, url, origin) {
+export function liveTarget(table, session, fromPath, url, origin, signedIn = false) {
   if (!table || !session || !url || url.origin !== origin) return false
 
   const from = splitPath(table, fromPath)
@@ -62,6 +63,9 @@ export function liveTarget(table, session, fromPath, url, origin) {
 
   const route = table.routes.find((r) => matches(r.segments, to.parts))
   if (!route || route.session !== session) return false
+  // A signed-out reader is sent to sign in, and only a request keeps the page
+  // to come back to.
+  if (route.signedInOnly && !signedIn) return false
   return to.prefix === null || route.prefixed
 }
 
@@ -84,6 +88,7 @@ export function startLiveNav(liveSocket, doc = document, win = window) {
   if (!meta || !liveSocket) return
 
   const session = meta.getAttribute("data-session")
+  const signedIn = meta.hasAttribute("data-signed-in")
   const url = meta.getAttribute("content")
   let table = null
 
@@ -116,7 +121,7 @@ export function startLiveNav(liveSocket, doc = document, win = window) {
       // The same page with only a new hash is the browser's to scroll.
       if (target.pathname === win.location.pathname && target.search === win.location.search) return
 
-      if (liveTarget(table, session, win.location.pathname, target, win.location.origin)) {
+      if (liveTarget(table, session, win.location.pathname, target, win.location.origin, signedIn)) {
         link.setAttribute("data-phx-link", "redirect")
         link.setAttribute("data-phx-link-state", "push")
       }

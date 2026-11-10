@@ -14,7 +14,7 @@ defmodule Gamend.Theme.Translatable do
   translated, and cannot vary by locale.
   """
 
-  @keys ~w(label title text tagline description alt cta subtitle)
+  @keys ~w(label title text tagline description alt cta subtitle question answer)
 
   @doc "Keys whose string values are user-facing text."
   @spec keys() :: [String.t()]

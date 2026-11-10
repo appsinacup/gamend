@@ -1,5 +1,6 @@
 # November 2026
 
+- [added] **`/admin/settings` downloads the server's settings as a `.env` file**, after a recent sign-in. Every setting's and plugin variable's running value, secrets in the clear; one on its default is commented out. A `.env` now reads `\\n` as a backslash and an n, so a JSON key file survives the trip.
 - [removed] **`GamendWeb.Plugs.CanonicalHost` and `config :gamend_web, :canonical_host`.** Redirecting `www` to the apex is a rule where the name is served (a CDN or proxy); set in the app, it also sent a hosted server's own address away.
 - [fixed] **Bans, rate limits and geo see the client behind a proxy on IPv4, not the proxy.** The `::` listener reports that proxy as `::ffff:a.b.c.d`, which `GamendWeb.Plugs.RealIp` now trusts for `X-Forwarded-For` only.
 - [fixed] **A theme's `"faq"` questions and answers are translated like its other text.** `mix gamend.theme.extract` left them out of `theme.pot`, so only a host that also had them in its `default` catalogue could translate them.

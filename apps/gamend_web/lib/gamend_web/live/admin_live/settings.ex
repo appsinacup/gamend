@@ -10,6 +10,10 @@ defmodule GamendWeb.AdminLive.Settings do
   the same declaration that generates `.env.example` and derives every
   environment variable name — every one of them, without exception.
 
+  The page masks secrets; the `.env` it links to does not
+  (`GamendWeb.AdminSettingsController`), since that file is for restoring a
+  server.
+
   Variables that other software reads (`RELEASE_COOKIE`, `FLY_REGION`) are not
   settings and are deliberately absent; the Config page reports those.
   """
@@ -132,7 +136,13 @@ defmodule GamendWeb.AdminLive.Settings do
           <:subtitle>
             Every setting the server declares — {length(Settings.all())} across {length(@groups)} groups.
             Values resolve once at boot; change one in your config or environment and restart.
+            The download holds real secrets.
           </:subtitle>
+          <:actions>
+            <a id="settings-export" href={~p"/admin/settings/export"} class="btn btn-sm btn-outline">
+              <.icon name="hero-arrow-down-tray-solid" class="w-4 h-4" /> Download .env
+            </a>
+          </:actions>
         </.admin_header>
 
         <div :if={@failures != []} class="alert alert-error">

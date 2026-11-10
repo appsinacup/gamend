@@ -14,7 +14,7 @@ defmodule GamendWeb.AdminLive.SettingsTest do
       |> User.admin_changeset(%{"is_admin" => true})
       |> Repo.update!()
 
-    %{conn: log_in_user(conn, admin)}
+    %{conn: log_in_user(conn, admin), admin: admin}
   end
 
   test "lists every declared group and setting", %{conn: conn} do
@@ -49,6 +49,63 @@ defmodule GamendWeb.AdminLive.SettingsTest do
 
     refute html =~ "super-secret-value"
     assert html =~ "••••••••"
+  end
+
+  describe "the .env download" do
+    setup do
+      previous = Application.get_env(:gamend_core, Gamend.Accounts)
+
+      on_exit(fn ->
+        if previous,
+          do: Application.put_env(:gamend_core, Gamend.Accounts, previous),
+          else: Application.delete_env(:gamend_core, Gamend.Accounts)
+      end)
+
+      Application.put_env(
+        :gamend_core,
+        Gamend.Accounts,
+        Keyword.put(previous || [], :guardian_secret_key, "super-secret-value")
+      )
+
+      :ok
+    end
+
+    test "the page links to it", %{conn: conn} do
+      {:ok, view, _html} = live(conn, ~p"/admin/settings")
+
+      assert has_element?(view, ~s(#settings-export[href="/admin/settings/export"]))
+    end
+
+    test "an admin gets real values, uncached", %{conn: conn} do
+      conn = get(conn, ~p"/admin/settings/export")
+
+      assert response(conn, 200) =~ "=super-secret-value\n"
+      assert [disposition] = get_resp_header(conn, "content-disposition")
+      assert disposition =~ "attachment"
+      assert get_resp_header(conn, "cache-control") == ["private, no-store"]
+    end
+
+    test "an admin who signed in long ago signs in again, back to the page", %{admin: admin} do
+      long_ago = DateTime.add(DateTime.utc_now(:second), -1, :day)
+      conn = build_conn() |> log_in_user(admin, token_authenticated_at: long_ago)
+
+      conn = get(conn, ~p"/admin/settings/export")
+
+      assert redirected_to(conn) == ~p"/users/log_in"
+      assert get_session(conn, :user_return_to) == ~p"/admin/settings"
+      refute response(conn, 302) =~ "super-secret-value"
+    end
+
+    test "nobody else does" do
+      player = log_in_user(build_conn(), AccountsFixtures.user_fixture())
+
+      for conn <- [build_conn(), player] do
+        conn = get(conn, ~p"/admin/settings/export")
+
+        assert conn.status == 302
+        refute response(conn, 302) =~ "super-secret-value"
+      end
+    end
   end
 
   test "filtering narrows to matching settings", %{conn: conn} do

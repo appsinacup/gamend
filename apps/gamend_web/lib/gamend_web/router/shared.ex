@@ -1005,6 +1005,7 @@ defmodule GamendWeb.Router.Shared do
         get "/admin/reports/:id/attachments/:index", GamendWeb.AdminReportController, :attachment
         get "/admin/reports/export/:kind", GamendWeb.AdminReportController, :export
         get "/admin/quests/:key/codes/export", GamendWeb.AdminQuestCodeController, :export
+        get "/admin/settings/export", GamendWeb.AdminSettingsController, :export
       end
 
       scope "/" do

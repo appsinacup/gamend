@@ -38,7 +38,8 @@ end
 ```
 
 Live values, and where each one came from, are on the
-[admin settings page](/admin/settings).
+[admin settings page](/admin/settings), which also downloads them as a
+`.env` file with the secrets in the clear.
 
 ## Your own settings
 

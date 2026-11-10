@@ -6,7 +6,7 @@ defmodule Gamend.Dotenv do
   @moduledoc false
 
   # Parses KEY=VALUE lines — comments, "quoted values", multiline quoted
-  # values, and \n escapes — and puts them into the System environment.
+  # values, and \n and \\n escapes — and puts them into the System environment.
   # Real environment variables always win over .env entries.
   def load(env_path) do
     if File.exists?(env_path) do
@@ -69,9 +69,18 @@ defmodule Gamend.Dotenv do
         value
         |> String.trim_leading("\"")
         |> String.trim_trailing("\"")
-        |> String.replace("\\n", "\n")
+        |> unescape()
 
       {nil, [{key, value} | entries]}
     end
+  end
+
+  # `\n` is a line break. `\\n` keeps a backslash and an n, which a JSON key
+  # file's `private_key` needs: a real line break inside a JSON string is invalid.
+  defp unescape(value) do
+    String.replace(value, ["\\\\n", "\\n"], fn
+      "\\n" -> "\n"
+      "\\\\n" -> "\\n"
+    end)
   end
 end

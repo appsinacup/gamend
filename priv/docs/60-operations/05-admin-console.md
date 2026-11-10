@@ -68,7 +68,7 @@ A user with `is_admin` set can open the console; everyone else gets redirected. 
 Two pages that look similar and are deliberately not:
 
 - [/admin/config](/admin/config) is the *operable* one — configuration status with masked provider variables, hook invocation with prefilled arguments, plugin reload and bundle build, and a test-email button.
-- [/admin/settings](/admin/settings) is *read-only by design*: every declared setting with its effective value and where that value came from. Settings resolve once at boot, so an editable field here would promise a change it could not deliver.
+- [/admin/settings](/admin/settings) is *read-only by design*: every declared setting with its effective value and where that value came from. Settings resolve once at boot, so an editable field here would promise a change it could not deliver. **Download .env** writes them all to a file, secrets in the clear, after a recent sign-in.
 
 | Page | What it does |
 |---|---|

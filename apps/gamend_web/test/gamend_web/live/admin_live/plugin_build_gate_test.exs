@@ -1,6 +1,6 @@
 defmodule GamendWeb.AdminLive.PluginBuildGateTest do
   @moduledoc """
-  The admin Config page offers a "Build bundle" control. With `mix` on the
+  The admin Plugins page offers a "Build bundle" control. With `mix` on the
   PATH it shells out to it; an image built from the Dockerfile's `release`
   target ships no `mix`, and builds in-process with the Elixir compiler the
   release carries instead. The page says which it will do.
@@ -42,7 +42,7 @@ defmodule GamendWeb.AdminLive.PluginBuildGateTest do
     conn = admin_conn(conn)
 
     without_mix_on_path(fn ->
-      {:ok, lv, _html} = live(conn, ~p"/admin/config")
+      {:ok, lv, _html} = live(conn, ~p"/admin/plugins")
 
       assert has_element?(lv, "#plugins-build-mode", "BUILD: in-process")
       assert has_element?(lv, "#plugins-build-in-process")
@@ -51,7 +51,7 @@ defmodule GamendWeb.AdminLive.PluginBuildGateTest do
   end
 
   test "with mix, says it builds with mix", %{conn: conn} do
-    {:ok, lv, _html} = live(admin_conn(conn), ~p"/admin/config")
+    {:ok, lv, _html} = live(admin_conn(conn), ~p"/admin/plugins")
 
     assert has_element?(lv, "#plugins-build-mode", "BUILD: mix")
     refute has_element?(lv, "#plugins-build-in-process")
@@ -61,7 +61,7 @@ defmodule GamendWeb.AdminLive.PluginBuildGateTest do
     conn = admin_conn(conn)
 
     without_mix_on_path(fn ->
-      {:ok, lv, _html} = live(conn, ~p"/admin/config")
+      {:ok, lv, _html} = live(conn, ~p"/admin/plugins")
 
       render =
         lv

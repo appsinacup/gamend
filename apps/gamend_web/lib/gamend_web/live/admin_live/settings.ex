@@ -8,25 +8,27 @@ defmodule GamendWeb.AdminLive.Settings do
   here would promise a change it could not deliver. What this page does
   guarantee is that the list is complete: it renders `Gamend.Settings.all/0`,
   the same declaration that generates `.env.example` and derives every
-  environment variable name — every one of them, without exception.
+  environment variable name — every one of them, without exception — and the
+  variables loaded plugins declare (`Gamend.Hooks.Declarations`).
 
   The page masks secrets; the `.env` it links to does not
   (`GamendWeb.AdminSettingsController`), since that file is for restoring a
   server.
 
   Variables that other software reads (`RELEASE_COOKIE`, `FLY_REGION`) are not
-  settings and are deliberately absent; the Config page reports those.
+  settings and are deliberately absent; `/admin/system` reports those.
   """
 
   use GamendWeb, :live_view
 
   alias Gamend.Settings
+  alias GamendWeb.RuntimeIntrospection, as: Introspection
 
   require GamendWeb.UrlParam, as: UrlParam
 
   use GamendWeb.UrlState,
     reload: :assign_rows,
-    keys: [:filter, group_filter: [param: UrlParam.group(), type: :atom]]
+    keys: [:filter, :changed_only, group_filter: [param: UrlParam.group(), type: :atom]]
 
   @required "required"
   @default "default"
@@ -39,11 +41,17 @@ defmodule GamendWeb.AdminLive.Settings do
      socket
      |> assign(:filter, "")
      |> assign(:group_filter, nil)
+     |> assign(:changed_only, false)
      |> assign(:failures, failures)
      |> assign(:warnings, warnings)
-     |> assign(:groups, Settings.groups())
+     |> assign(:groups, groups())
      |> assign_rows()}
   end
+
+  defp groups, do: Settings.groups() ++ plugin_groups(Introspection.plugin_env_vars())
+
+  defp plugin_groups([]), do: []
+  defp plugin_groups(_vars), do: [{Introspection.plugin_env_group(), "Plugin variables"}]
 
   @impl true
   def handle_event("filter", %{"value" => value}, socket) do
@@ -58,21 +66,31 @@ defmodule GamendWeb.AdminLive.Settings do
     {:noreply, socket |> assign(:group_filter, String.to_existing_atom(group)) |> assign_rows()}
   end
 
+  def handle_event("toggle_changed", _params, socket) do
+    {:noreply, socket |> update(:changed_only, &(not &1)) |> assign_rows()}
+  end
+
   defp assign_rows(socket) do
     filter = String.downcase(socket.assigns.filter)
-    group_filter = socket.assigns.group_filter
+    %{group_filter: group_filter, changed_only: changed_only} = socket.assigns
 
     rows =
-      Settings.all()
-      |> Enum.map(&Settings.describe/1)
+      (Enum.map(Settings.all(), &Settings.describe/1) ++ Introspection.plugin_env_vars())
       |> Enum.filter(fn row ->
-        (is_nil(group_filter) or row.group == group_filter) and matches?(row, filter)
+        (is_nil(group_filter) or row.group == group_filter) and matches?(row, filter) and
+          (not changed_only or changed?(row))
       end)
       |> Enum.group_by(& &1.label)
       |> Enum.sort_by(&elem(&1, 0))
 
     assign(socket, :rows, rows)
   end
+
+  defp changed?(row), do: row.value != row.default
+
+  # One card's rows under their `section` headings; a group with none is one
+  # unnamed run.
+  defp sections(rows), do: rows |> Enum.group_by(& &1.section) |> Enum.sort_by(&elem(&1, 0))
 
   defp matches?(_row, ""), do: true
 
@@ -190,6 +208,15 @@ defmodule GamendWeb.AdminLive.Settings do
               </option>
             </select>
           </form>
+          <label class="label cursor-pointer gap-2 text-sm">
+            <input
+              id="settings-changed-only"
+              type="checkbox"
+              class="checkbox checkbox-sm"
+              checked={@changed_only}
+              phx-click="toggle_changed"
+            /> Changed from default
+          </label>
         </div>
 
         <p :if={@rows == []} class="text-sm text-muted">No settings match that filter.</p>
@@ -207,8 +234,13 @@ defmodule GamendWeb.AdminLive.Settings do
                     <th class="w-40">Source</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr :for={row <- rows}>
+                <tbody :for={{section, section_rows} <- sections(rows)}>
+                  <tr :if={section}>
+                    <th colspan="4" scope="colgroup" class="bg-base-200 text-sm font-semibold">
+                      {section}
+                    </th>
+                  </tr>
+                  <tr :for={row <- section_rows}>
                     <td class="align-top">
                       <div class="font-mono text-sm">{row.key}</div>
                       <div :if={row.doc != ""} class="text-xs text-muted mt-1">
@@ -231,6 +263,7 @@ defmodule GamendWeb.AdminLive.Settings do
                     <td class="align-top">
                       <% {class, text} = source_badge(row.source) %>
                       <span class={"badge #{class}"}>{text}</span>
+                      <span :if={changed?(row)} class="badge badge-warning ml-1">changed</span>
                       <% level = level_badge(row) %>
                       <span :if={level} class={"badge #{elem(level, 0)} ml-1"}>
                         {elem(level, 1)}

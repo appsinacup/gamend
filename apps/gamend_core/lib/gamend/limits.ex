@@ -36,7 +36,7 @@ defmodule Gamend.Limits do
     group: :limits,
     label: "Limits"
 
-  # ── Global ──────────────────────────────────────────────
+  section("Global")
   setting(:max_metadata_size, :integer, default: 16_384)
   setting(:max_page_size, :integer, default: 100)
 
@@ -52,7 +52,8 @@ defmodule Gamend.Limits do
         "Caps the orphans left by tickets a client requests but never confirms. 50 MiB."
   )
 
-  # ── User ────────────────────────────────────────────────
+  section("User")
+
   setting(:max_display_name, :integer,
     default: 255,
     doc:
@@ -90,7 +91,7 @@ defmodule Gamend.Limits do
   setting(:max_profile_url, :integer, default: 2048)
   setting(:max_device_id, :integer, default: 256)
 
-  # ── Groups ──────────────────────────────────────────────
+  section("Groups")
   setting(:max_group_title, :integer, default: 80)
   setting(:max_group_description, :integer, default: 500)
   setting(:max_group_members, :integer, default: 10_000)
@@ -98,16 +99,16 @@ defmodule Gamend.Limits do
   setting(:max_groups_created_per_user, :integer, default: 20)
   setting(:max_group_pending_invites, :integer, default: 100)
 
-  # ── Lobbies ─────────────────────────────────────────────
+  section("Lobbies")
   setting(:max_lobby_title, :integer, default: 80)
   setting(:max_lobby_users, :integer, default: 128)
   setting(:max_lobby_password, :integer, default: 128)
 
-  # ── Parties ─────────────────────────────────────────────
+  section("Parties")
   setting(:max_party_size, :integer, default: 32)
   setting(:max_party_pending_invites, :integer, default: 20)
 
-  # ── Chat ────────────────────────────────────────────────
+  section("Chat")
   setting(:max_chat_content, :integer, default: 4_096)
 
   setting(:max_chat_messages_per_day, :integer,
@@ -129,18 +130,20 @@ defmodule Gamend.Limits do
     doc: "Rolling 24h; 0 disables. Needs rate limiting on; ETS backend counts per instance."
   )
 
-  # ── Notifications ───────────────────────────────────────
+  section("Notifications")
   setting(:max_notification_title, :integer, default: 255)
   setting(:max_notification_content, :integer, default: 10_000)
   setting(:max_notifications_per_user, :integer, default: 500)
 
-  # ── Push ────────────────────────────────────────────────
+  section("Push")
+
   setting(:max_push_tokens_per_user, :integer,
     default: 20,
     doc: "Live (non-disabled) device tokens per user."
   )
 
-  # ── API tokens ──────────────────────────────────────────
+  section("API tokens")
+
   setting(:max_api_tokens_per_user, :integer,
     default: 10,
     doc: "Personal API tokens one user may hold, revoked ones not counted."
@@ -148,6 +151,7 @@ defmodule Gamend.Limits do
 
   # Byte caps (not characters): FCM and APNs limit the wire payload to 4096
   # bytes, so only byte caps can guarantee deliverability.
+  section("Push")
   setting(:max_push_title, :integer, default: 255)
   setting(:max_push_body, :integer, default: 4_000)
 
@@ -156,30 +160,30 @@ defmodule Gamend.Limits do
     doc: "Serialized byte size of a push message's custom data map."
   )
 
-  # ── Friends ─────────────────────────────────────────────
+  section("Friends")
   setting(:max_friends_per_user, :integer, default: 500)
   setting(:max_pending_friend_requests, :integer, default: 100)
 
-  # ── Hooks ───────────────────────────────────────────────
+  section("Hooks")
   setting(:max_hook_args_size, :integer, default: 65_536)
   setting(:max_hook_args_count, :integer, default: 32)
 
-  # ── KV ──────────────────────────────────────────────────
+  section("KV")
   setting(:max_kv_key, :integer, default: 512)
   setting(:max_kv_value_size, :integer, default: 65_536)
   setting(:max_kv_entries_per_user, :integer, default: 1_000)
 
-  # ── Results ─────────────────────────────────────────────
+  section("Results")
   # The events one result may hold (`Gamend.Results.record/4`): a play
   # records what a player did, never a simulation's ticks.
   setting(:max_result_events, :integer, default: 10_000)
 
-  # ── Leaderboards ────────────────────────────────────────
+  section("Leaderboards")
   setting(:max_leaderboard_title, :integer, default: 255)
   setting(:max_leaderboard_description, :integer, default: 1_000)
   setting(:max_leaderboard_slug, :integer, default: 100)
 
-  # ── Tournaments ─────────────────────────────────────────
+  section("Tournaments")
   setting(:max_tournament_title, :integer, default: 255)
   setting(:max_tournament_description, :integer, default: 1_000)
   setting(:max_tournament_slug, :integer, default: 100)
@@ -191,7 +195,7 @@ defmodule Gamend.Limits do
 
   setting(:max_tournament_bracket_size, :integer, default: 256)
 
-  # ── Quests ──────────────────────────────────────────────
+  section("Quests")
   setting(:max_quests, :integer, default: 500)
   setting(:max_quest_key, :integer, default: 100)
   setting(:max_quest_title, :integer, default: 255)
@@ -226,7 +230,8 @@ defmodule Gamend.Limits do
     doc: "Redemption code tries per player per minute. 0 disables."
   )
 
-  # ── Matchmaking ─────────────────────────────────────────
+  section("Matchmaking")
+
   setting(:max_matchmaking_players, :integer,
     default: 64,
     doc: "Hard cap on a ticket's own max_players setting."
@@ -263,7 +268,8 @@ defmodule Gamend.Limits do
       "Grace before an offline player's ticket is pruned; long enough that a brief disconnect keeps its queue position."
   )
 
-  # ── Ready checks ────────────────────────────────────────
+  section("Ready checks")
+
   setting(:ready_check_timeout_ms, :integer,
     default: 15_000,
     doc: "Default answering window. Overridable per check by the caller."

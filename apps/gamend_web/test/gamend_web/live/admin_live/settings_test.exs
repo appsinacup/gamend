@@ -5,6 +5,7 @@ defmodule GamendWeb.AdminLive.SettingsTest do
 
   alias Gamend.Accounts.User
   alias Gamend.AccountsFixtures
+  alias Gamend.Hooks.Declarations
   alias Gamend.Repo
   alias Gamend.Settings
 
@@ -159,5 +160,75 @@ defmodule GamendWeb.AdminLive.SettingsTest do
     end
 
     refute html =~ "inherited"
+  end
+
+  test "the limits are one group, under their sections", %{conn: conn} do
+    {:ok, view, html} = live(conn, ~p"/admin/settings?group=limits")
+
+    assert html =~ "GAMEND_LIMITS_MAX_METADATA_SIZE"
+    refute html =~ "GAMEND_RETENTION_CHAT_MESSAGES_DAYS"
+    assert has_element?(view, "th[scope=colgroup]", "Matchmaking")
+    assert has_element?(view, "th[scope=colgroup]", "Quests")
+  end
+
+  test "every limit has a section", %{conn: _conn} do
+    for definition <- Settings.group(:limits) do
+      assert is_binary(definition.section), "#{definition.key} is under no heading"
+    end
+  end
+
+  test "changed from default narrows to what differs and marks it", %{conn: conn} do
+    previous = Application.get_env(:gamend_core, Gamend.Limits)
+
+    on_exit(fn ->
+      if previous,
+        do: Application.put_env(:gamend_core, Gamend.Limits, previous),
+        else: Application.delete_env(:gamend_core, Gamend.Limits)
+    end)
+
+    Application.put_env(
+      :gamend_core,
+      Gamend.Limits,
+      Keyword.put(previous || [], :max_metadata_size, 32_768)
+    )
+
+    {:ok, view, html} = live(conn, ~p"/admin/settings?group=limits")
+
+    assert html =~ "GAMEND_LIMITS_MAX_PAGE_SIZE"
+
+    narrowed = view |> element("#settings-changed-only") |> render_click()
+
+    assert narrowed =~ "GAMEND_LIMITS_MAX_METADATA_SIZE"
+    assert narrowed =~ "changed"
+    refute narrowed =~ "GAMEND_LIMITS_MAX_LOBBY_TITLE"
+  end
+
+  describe "a plugin's variables" do
+    defmodule VarsPlugin do
+      def env_vars, do: [%{name: "MYGAME_MAX_BOTS", default: 8, description: "Bots per match"}]
+    end
+
+    setup do
+      Declarations.refresh([
+        %{name: "my_game", status: :ok, hooks_module: VarsPlugin, modules: []}
+      ])
+
+      on_exit(fn -> Declarations.refresh([]) end)
+    end
+
+    test "are listed under the plugin and offered as a group", %{conn: conn} do
+      {:ok, view, html} = live(conn, ~p"/admin/settings")
+
+      assert html =~ "MYGAME_MAX_BOTS"
+      assert html =~ "Plugin: my_game"
+
+      filtered =
+        view
+        |> element("form[phx-change=group]")
+        |> render_change(%{"group" => "plugin_env"})
+
+      assert filtered =~ "MYGAME_MAX_BOTS"
+      refute filtered =~ "GAMEND_RETENTION_CHAT_MESSAGES_DAYS"
+    end
   end
 end

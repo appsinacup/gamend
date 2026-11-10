@@ -434,4 +434,28 @@ defmodule GamendWeb.AdminLive.PaymentsTest do
 
     refute has_element?(view, "#admin-entitlement-extend-#{granted.id}")
   end
+
+  test "lists what each provider reads, with secrets masked", %{conn: conn} do
+    Gamend.SettingsHelpers.put(
+      :gamend_core,
+      Gamend.Payments.Settings,
+      :stripe_sandbox_secret_key,
+      "sk_test_config_123456"
+    )
+
+    Gamend.SettingsHelpers.put(:gamend_core, Gamend.Payments.Settings, :environment, :sandbox)
+
+    {:ok, admin} =
+      AccountsFixtures.user_fixture()
+      |> User.admin_changeset(%{"is_admin" => true})
+      |> Repo.update()
+
+    {:ok, view, html} = conn |> log_in_user(admin) |> live(~p"/admin/payments")
+
+    assert has_element?(view, "#payment-provider-variables", "Google Play")
+    assert html =~ "GAMEND_PAYMENTS_STRIPE_SANDBOX_SECRET_KEY"
+    assert html =~ "GAMEND_PAYMENTS_APPLE_BUNDLE_ID"
+    assert html =~ "••••••••3456"
+    refute html =~ "sk_test_config_123456"
+  end
 end

@@ -119,11 +119,12 @@ defmodule GamendWeb.AdminLive.Pages do
     %{path: "/admin/storage", title: "Storage", icon: "hero-archive-box-solid", color: "amber"},
     %{path: "/admin/retention", title: "Retention", icon: "hero-clock-solid", color: "slate"},
     %{
-      path: "/admin/config",
-      title: "Configuration",
-      icon: "hero-wrench-screwdriver-solid",
-      color: "slate"
+      path: "/admin/plugins",
+      title: "Plugins",
+      icon: "hero-puzzle-piece-solid",
+      color: "violet"
     },
+    %{path: "/admin/theme", title: "Theme", icon: "hero-paint-brush-solid", color: "pink"},
     %{
       path: "/admin/settings",
       title: "Settings",

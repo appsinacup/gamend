@@ -16,7 +16,8 @@ defmodule GamendWeb.AdminPagesRenderTest do
 
   @admin_routes [
     {"/admin", "Admin"},
-    {"/admin/config", "Config"},
+    {"/admin/plugins", "Plugins"},
+    {"/admin/theme", "Theme"},
     {"/admin/runtime", "Runtime"},
     {"/admin/kv", "KV"},
     {"/admin/lobbies", "Lobbies"},

@@ -29,8 +29,8 @@ The `priv/` copy is important for dependencies that ship NIFs or other runtime a
 ## Run locally
 
 - Set `GAMEND_CONTENT_PLUGINS_DIR=modules/plugins_examples` (or copy the built bundle into `modules/plugins/example_hook`)
-- Open the Admin Config page and click **Reload plugins**
-- Call a function via the “Hooks - Test RPC” form using:
+- Open the Admin Plugins page and click **Reload plugins**
+- Call a function via the **Call a function** form using:
   - `plugin`: `example_hook`
   - `fn`: `hello` (or `set_current_user_meta`)
 

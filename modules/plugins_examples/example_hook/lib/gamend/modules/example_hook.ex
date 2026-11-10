@@ -9,7 +9,7 @@ defmodule Gamend.Modules.ExampleHook do
 
       export GAMEND_CONTENT_PLUGINS_DIR=modules/plugins_examples
 
-  Then restart the server and use the Admin Config page to reload plugins.
+  Then restart the server and use the Admin Plugins page to reload plugins.
   """
 
   # `use` (not `@behaviour`) so the SDK supplies overridable defaults for every

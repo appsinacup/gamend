@@ -6,6 +6,7 @@ defmodule GamendWeb.RuntimeIntrospectionTest do
   """
   use Gamend.DataCase, async: false
 
+  alias Gamend.Hooks.Declarations
   alias GamendWeb.RuntimeIntrospection, as: Introspection
 
   test "hooks cover every declared callback, with kind and searchable docs" do
@@ -22,32 +23,55 @@ defmodule GamendWeb.RuntimeIntrospectionTest do
     assert cancel.kind == "fanout"
   end
 
-  test "env vars include every limit, and unset rows carry their default" do
-    rows = Introspection.env_vars()
-    by_name = Map.new(rows, &{&1.name, &1})
-
-    for key <- Map.keys(Gamend.Limits.defaults()) do
-      name = "GAMEND_LIMITS_#{key |> Atom.to_string() |> String.upcase()}"
-      assert Map.has_key?(by_name, name), "limit #{name} missing from env grid"
+  describe "plugin_env_vars/0" do
+    defmodule VarsPlugin do
+      def env_vars do
+        [
+          %{name: "MYGAME_MAX_BOTS", default: 8, description: "Bots per match"},
+          %{name: "MYGAME_REGION", default: "eu", description: "Region"},
+          %{name: "MYGAME_API_TOKEN", default: "", description: "Named like a secret"},
+          %{name: "MYGAME_HIDDEN", default: "", description: "Declared one", secret: true},
+          %{name: "GAMEND_LIMITS_MAX_PAGE_SIZE", default: 3, description: "Already a setting"}
+        ]
+      end
     end
 
-    # A limit nobody sets in tests shows its compiled default.
-    row = by_name["GAMEND_LIMITS_MAX_MATCHMAKING_PLAYERS"]
-    refute row.set
-    assert row.default == "64"
-  end
+    setup do
+      Declarations.refresh([
+        %{name: "my_game", status: :ok, hooks_module: VarsPlugin, modules: []}
+      ])
 
-  test "env vars mask secret-looking values" do
-    System.put_env("GAMEND_AUTH_SECRET_KEY_BASE", "super-sensitive")
-
-    row = Introspection.env_vars() |> Enum.find(&(&1.name == "GAMEND_AUTH_SECRET_KEY_BASE"))
-
-    if row do
-      assert row.value == "••••••••"
-      refute row.search =~ "sensitive"
+      on_exit(fn ->
+        Declarations.refresh([])
+        Enum.each(~w(MYGAME_REGION MYGAME_API_TOKEN MYGAME_HIDDEN), &System.delete_env/1)
+      end)
     end
-  after
-    System.delete_env("GAMEND_AUTH_SECRET_KEY_BASE")
+
+    defp plugin_var(name), do: Enum.find(Introspection.plugin_env_vars(), &(&1.env == name))
+
+    test "an unset variable carries its default, and comes from it" do
+      assert %{value: 8, default: 8, source: :default, label: "Plugin: my_game"} =
+               plugin_var("MYGAME_MAX_BOTS")
+    end
+
+    test "a set one carries what the environment holds" do
+      System.put_env("MYGAME_REGION", "us")
+
+      assert %{value: "us", default: "eu", source: :config, secret: false} =
+               plugin_var("MYGAME_REGION")
+    end
+
+    test "a value is masked when declared secret or named like one" do
+      System.put_env("MYGAME_API_TOKEN", "super-sensitive")
+      System.put_env("MYGAME_HIDDEN", "also-sensitive")
+
+      assert %{value: "••••••••", secret: true} = plugin_var("MYGAME_API_TOKEN")
+      assert %{value: "••••••••", secret: true} = plugin_var("MYGAME_HIDDEN")
+    end
+
+    test "a variable that is a setting is left to the setting" do
+      refute plugin_var("GAMEND_LIMITS_MAX_PAGE_SIZE")
+    end
   end
 
   test "protobuf and data model attribute rows to the plugin that owns them" do
@@ -146,12 +170,10 @@ defmodule GamendWeb.RuntimeIntrospectionTest do
     for row <- Introspection.hooks(),
         do: assert(row.implemented in ["implemented", "not implemented"])
 
-    for row <- Introspection.env_vars(), do: assert(row.state in ["set", "unset"])
     for row <- Introspection.protobuf_messages(), do: assert(is_binary(row.source))
     for row <- Introspection.events(), do: assert(is_binary(row.source))
     for row <- Introspection.notification_types(), do: assert(is_binary(row.source))
     for row <- Introspection.data_model(), do: assert(is_binary(row.source))
-    for row <- Introspection.dynamic_rpcs(), do: assert(is_binary(row.plugin))
     for row <- Introspection.migrations(), do: assert(is_binary(row.status))
   end
 
@@ -165,13 +187,10 @@ defmodule GamendWeb.RuntimeIntrospectionTest do
   test "every provider row has the search blob the grid filters on" do
     providers = [
       Introspection.hooks(),
-      Introspection.env_vars(),
       Introspection.protobuf_messages(),
       Introspection.channels(),
       Introspection.events(),
       Introspection.data_model(),
-      Introspection.plugins(),
-      Introspection.dynamic_rpcs(),
       Introspection.scheduled_jobs(),
       Introspection.advisory_locks(),
       Introspection.migrations()

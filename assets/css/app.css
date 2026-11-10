@@ -258,18 +258,6 @@
 
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
-.card.collapsed .card-body > :not(.card-title):not(.card-actions) {
-  display: none;
-}
-
-.card .card-title [data-action="toggle-card"] svg {
-  transition: transform 0.18s ease;
-}
-
-.card.collapsed .card-title [data-action="toggle-card"] svg {
-  transform: rotate(180deg);
-}
-
 .summary-no-marker {
   list-style: none;
 }

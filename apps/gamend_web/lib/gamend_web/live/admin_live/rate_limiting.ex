@@ -1,15 +1,10 @@
 defmodule GamendWeb.AdminLive.RateLimiting do
   use GamendWeb, :live_view
 
-  alias Gamend.Accounts.Scope
   alias Gamend.Bans
-  alias GamendWeb.AdminLive.BanForm
-  alias GamendWeb.Plugs.IpBan
 
-  require GamendWeb.AdminLive.BanDuration, as: BanDuration
   require GamendWeb.Plugs.RateLimitBucket, as: RateLimitBucket
 
-  @permanent BanDuration.permanent()
   @ice "ice"
 
   @refresh_interval 5_000
@@ -19,18 +14,21 @@ defmodule GamendWeb.AdminLive.RateLimiting do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope} current_path={assigns[:current_path]}>
       <div class="space-y-6">
-        <.admin_header page="/admin/rate_limiting" title="Rate Limiting & IP Bans">
+        <.admin_header page="/admin/rate_limiting">
           <:subtitle>
-            Manage IP bans and monitor rate limiting across HTTP, Auth, WebSocket, and WebRTC.
+            Monitor rate limiting across HTTP, Auth, WebSocket, and WebRTC.
           </:subtitle>
+          <:actions>
+            <.link navigate={~p"/admin/bans?kind=ip"} class="btn btn-surface btn-sm">IP bans</.link>
+          </:actions>
         </.admin_header>
 
         <%!-- Summary cards. There is no "Hammer banned" count: Hammer only
               counts, and bans live in IpBan's own table — the first card. --%>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
           <div class="card bg-base-200 p-4">
             <div class="text-xs text-muted">Active IP Bans</div>
-            <div class="text-2xl font-bold">{length(@ip_bans)}</div>
+            <div id="rate-limiting-ip-bans" class="text-2xl font-bold">{@ip_ban_count}</div>
           </div>
           <div class="card bg-base-200 p-4">
             <div class="text-xs text-muted">Rate Limited (now)</div>
@@ -44,10 +42,6 @@ defmodule GamendWeb.AdminLive.RateLimiting do
           <div class="card bg-base-200 p-4">
             <div class="text-xs text-muted">IPs Tracked</div>
             <div class="text-2xl font-bold">{length(@rate_stats.usage)}</div>
-          </div>
-          <div class="card bg-base-200 p-4">
-            <div class="text-xs text-muted">Ban Log Entries</div>
-            <div class="text-2xl font-bold">{length(@ban_log)}</div>
           </div>
         </div>
 
@@ -235,128 +229,6 @@ defmodule GamendWeb.AdminLive.RateLimiting do
             </div>
           </div>
         </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <%!-- IP Ban Management --%>
-          <div class="card bg-base-200 shadow">
-            <div class="card-body">
-              <div class="flex items-center justify-between">
-                <h2 class="card-title text-lg">IP Ban Management</h2>
-                <.link navigate={~p"/admin/bans"} class="link link-primary text-xs">
-                  All bans, accounts too →
-                </.link>
-              </div>
-
-              <%!-- Ban form --%>
-              <form phx-submit="ban_ip" class="flex flex-wrap items-end gap-2 mb-4" id="ban-ip-form">
-                <div>
-                  <label class="label text-xs">IP Address</label>
-                  <input
-                    type="text"
-                    name="ip"
-                    placeholder="e.g. 1.2.3.4"
-                    class="input input-bordered input-sm w-44"
-                    required
-                  />
-                </div>
-                <BanForm.fields form={Map.put(BanForm.empty(), "duration", "permanent")} />
-                <button type="submit" class="btn btn-warning btn-sm">
-                  <.icon name="hero-no-symbol-solid" class="w-4 h-4" /> Ban IP
-                </button>
-              </form>
-
-              <%!-- Active bans list --%>
-              <div class="overflow-x-auto">
-                <table class="table table-sm">
-                  <thead>
-                    <tr>
-                      <th>Banned IP</th>
-                      <th>Reason</th>
-                      <th class="text-right">Expires</th>
-                      <th class="text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr :for={ban <- @ip_bans} id={"ban-#{ban.id}"}>
-                      <td class="font-mono text-xs font-bold text-error">{ban.subject}</td>
-                      <td class="text-xs">{ban.reason}</td>
-                      <td class="text-right text-xs">
-                        <%= if is_nil(ban.expires_at) do %>
-                          <span class="badge badge-error badge-xs">Permanent</span>
-                        <% else %>
-                          <span class="font-mono">{format_ban_ttl(ban.expires_at)}</span>
-                        <% end %>
-                      </td>
-                      <td class="text-right">
-                        <button
-                          type="button"
-                          phx-click="unban_ip"
-                          phx-value-ip={ban.subject}
-                          class="btn btn-ghost btn-xs text-success"
-                        >
-                          Unban
-                        </button>
-                      </td>
-                    </tr>
-                    <tr :if={@ip_bans == []}>
-                      <td colspan="4" class="text-center text-xs text-muted py-4 italic">
-                        No active IP bans.
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <%!-- Ban History Log --%>
-          <div class="card bg-base-200 shadow">
-            <div class="card-body">
-              <h2 class="card-title text-lg">
-                Ban History <span class="text-xs font-normal text-muted">(last 100)</span>
-              </h2>
-
-              <div class="overflow-x-auto max-h-80 overflow-y-auto">
-                <table class="table table-sm table-pin-rows">
-                  <thead>
-                    <tr>
-                      <th>Placed</th>
-                      <th>IP</th>
-                      <th>Reason</th>
-                      <th class="text-right">Duration</th>
-                      <th class="text-right">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr :for={ban <- @ban_log} id={"log-#{ban.id}"}>
-                      <td class="text-xs whitespace-nowrap">
-                        {Calendar.strftime(ban.inserted_at, "%Y-%m-%d %H:%M")}
-                      </td>
-                      <td class="font-mono text-xs">{ban.subject}</td>
-                      <td class="text-xs">{ban.reason}</td>
-                      <td class="text-right text-xs">{format_ban_duration(ban)}</td>
-                      <td class="text-right">
-                        <%= cond do %>
-                          <% Bans.active?(ban) -> %>
-                            <span class="badge badge-error badge-xs">ACTIVE</span>
-                          <% ban.lifted_at -> %>
-                            <span class="badge badge-success badge-xs">LIFTED</span>
-                          <% true -> %>
-                            <span class="badge badge-ghost badge-xs">EXPIRED</span>
-                        <% end %>
-                      </td>
-                    </tr>
-                    <tr :if={@ban_log == []}>
-                      <td colspan="5" class="text-center text-xs text-muted py-4 italic">
-                        No ban history yet.
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </Layouts.app>
     """
@@ -391,8 +263,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
      assign(socket,
        config: config,
        ets_backend?: GamendWeb.RateLimit.backend() == GamendWeb.RateLimit.ETS,
-       ip_bans: Bans.list_active(:ip),
-       ban_log: Bans.list(%{kind: :ip}, page: 1, page_size: 100),
+       ip_ban_count: length(Bans.list_active(:ip)),
        rate_stats: build_rate_limit_stats()
      )}
   end
@@ -403,8 +274,7 @@ defmodule GamendWeb.AdminLive.RateLimiting do
 
     {:noreply,
      assign(socket,
-       ip_bans: Bans.list_active(:ip),
-       ban_log: Bans.list(%{kind: :ip}, page: 1, page_size: 100),
+       ip_ban_count: length(Bans.list_active(:ip)),
        rate_stats: build_rate_limit_stats()
      )}
   end
@@ -412,46 +282,9 @@ defmodule GamendWeb.AdminLive.RateLimiting do
   @impl true
   def handle_info(_msg, socket), do: {:noreply, socket}
 
-  @impl true
-  def handle_event("ban_ip", %{"ip" => ip_str} = params, socket) do
-    ip_str = String.trim(ip_str)
-
-    if ip_str == "" do
-      {:noreply, put_flash(socket, :error, "IP address is required")}
-    else
-      case BanForm.place(:ip, ip_str, params, Scope.user_id(socket.assigns.current_scope)) do
-        {:ok, ban} ->
-          {:noreply,
-           socket
-           |> reload_bans()
-           |> put_flash(:info, "Banned #{ban.subject}")}
-
-        {:error, message} ->
-          {:noreply, put_flash(socket, :error, "Could not ban: #{message}")}
-      end
-    end
-  end
-
-  @impl true
-  def handle_event("unban_ip", %{"ip" => ip_str}, socket) do
-    IpBan.unban(ip_str, by: Scope.user_id(socket.assigns.current_scope))
-
-    {:noreply,
-     socket
-     |> reload_bans()
-     |> put_flash(:info, "Unbanned IP #{ip_str}")}
-  end
-
   # ── Private helpers ─────────────────────────────────────────────────────
 
   defp schedule_refresh, do: Process.send_after(self(), :refresh, @refresh_interval)
-
-  defp reload_bans(socket) do
-    assign(socket,
-      ip_bans: Bans.list_active(:ip),
-      ban_log: Bans.list(%{kind: :ip}, page: 1, page_size: 100)
-    )
-  end
 
   @empty_stats %{limited: 0, usage: [], by_type: %{}}
 
@@ -588,24 +421,6 @@ defmodule GamendWeb.AdminLive.RateLimiting do
   defp type_label("chatd"), do: "Chat/day"
   defp type_label("chatrep"), do: "Reports/day"
   defp type_label(_), do: "HTTP"
-
-  defp format_ban_ttl(%DateTime{} = expires_at) do
-    expires_at |> DateTime.diff(DateTime.utc_now(), :millisecond) |> max(0) |> format_ms()
-  end
-
-  defp format_ban_duration(%{expires_at: nil}), do: @permanent
-
-  defp format_ban_duration(%{expires_at: expires_at, inserted_at: inserted_at}),
-    do: expires_at |> DateTime.diff(inserted_at, :millisecond) |> max(0) |> format_ms()
-
-  defp format_ms(ms) when is_integer(ms) do
-    cond do
-      ms >= 86_400_000 -> "#{div(ms, 86_400_000)}d"
-      ms >= 3_600_000 -> "#{div(ms, 3_600_000)}h"
-      ms >= 60_000 -> "#{div(ms, 60_000)}m"
-      true -> "#{div(ms, 1000)}s"
-    end
-  end
 
   defp format_bytes(bytes) when bytes >= 1_048_576, do: "#{Float.round(bytes / 1_048_576, 1)} MB"
   defp format_bytes(bytes) when bytes >= 1024, do: "#{Float.round(bytes / 1024, 1)} KB"

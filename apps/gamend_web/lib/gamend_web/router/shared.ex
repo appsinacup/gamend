@@ -1052,7 +1052,8 @@ defmodule GamendWeb.Router.Shared do
           unquote(host_routes)
 
           live "/admin", AdminLive.Index, :index
-          live "/admin/config", AdminLive.Config, :index
+          live "/admin/plugins", AdminLive.Plugins, :index
+          live "/admin/theme", AdminLive.Theme, :index
           live "/admin/settings", AdminLive.Settings, :index
           live "/admin/kv", AdminLive.KV, :index
           live "/admin/lobbies", AdminLive.Lobbies, :index

@@ -65,17 +65,15 @@ A user with `is_admin` set can open the console; everyone else gets redirected. 
 
 ## System
 
-Two pages that look similar and are deliberately not:
-
-- [/admin/config](/admin/config) is the *operable* one — configuration status with masked provider variables, hook invocation with prefilled arguments, plugin reload and bundle build, and a test-email button.
-- [/admin/settings](/admin/settings) is *read-only by design*: every declared setting with its effective value and where that value came from. Settings resolve once at boot, so an editable field here would promise a change it could not deliver. **Download .env** writes them all to a file, secrets in the clear, after a recent sign-in.
-
 | Page | What it does |
 |---|---|
-| [/admin/runtime](/admin/runtime) | Read-only introspection of what the code actually loaded: hooks, env vars, protobuf messages, channels and realtime events, an ER diagram of the data model, plugins and their RPCs, scheduled jobs, advisory locks, migration status. |
-| [/admin/system](/admin/system) | Node health: uptime, OTP release, scheduler utilisation, a BEAM memory breakdown, ETS tables and cluster size. |
+| [/admin/settings](/admin/settings) | Every declared setting and every variable a loaded plugin declares, with its effective value and where it came from. Read-only, since settings resolve once at boot. Limits are the Limits group, by area; **Changed from default** narrows to what this server overrides. **Download .env** writes them all to a file, secrets in the clear, after a recent sign-in. |
+| [/admin/plugins](/admin/plugins) | The loaded plugins and their status, reload, bundle build, protobuf schema coverage, and calling any exported function: pick a plugin and a function, give it arguments, see the answer and how long it took. |
+| [/admin/theme](/admin/theme) | The theme as resolved: branding images and their dark variants, copy, pages, navigation, footer, raw JSON. |
+| [/admin/runtime](/admin/runtime) | Read-only introspection of what the code actually loaded: hooks, protobuf messages, channels and realtime events, an ER diagram of the data model, scheduled jobs, advisory locks and migration status. |
+| [/admin/system](/admin/system) | Node health: uptime, OTP release, scheduler utilisation, a BEAM memory breakdown, ETS tables and cluster size. Under Services: the database adapter this build runs, the cache levels in force, the cluster and the variables the BEAM reads for it, the TLS certificate, and a test email. |
 | [/admin/connections](/admin/connections) | Live connection counts — WebSockets, LiveViews, WebRTC peers — per cluster node, with a filterable per-connection list. |
-| [/admin/rate_limiting](/admin/rate_limiting) | Rate-limiter status across the HTTP, auth, WebSocket and WebRTC buckets, plus IP bans: ban for a preset or a number of days with a reason, unban, and the ban history. See the [Security guide](/docs/security). |
+| [/admin/rate_limiting](/admin/rate_limiting) | Rate-limiter status and live load across the HTTP, auth, WebSocket and WebRTC buckets. See the [Security guide](/docs/security). |
 | [/admin/bans](/admin/bans) | Every ban, accounts, IP addresses and chat mutes, active and ended: place one (a preset or a number of days, a reason the player sees, and for a mute its scope and a notice to the player), lift one, filter by kind or target. The dashboard's active mutes link opens the mutes. A user's editor on [/admin/users](/admin/users) bans and lifts that account too, and the users list filters on Banned. See the [Security guide](/docs/security#account-bans). |
 | [/admin/geo](/admin/geo) | Traffic by country over 1h/24h/7d/all windows, with the active source shown (MaxMind database or the CF-IPCountry header) and a counter reset. |
 | [/admin/logs](/admin/logs) | The in-memory log ring buffer, filterable by level, module, text, source (server vs client) and session — including uploaded client-log sessions with per-session timelines and flagging. |

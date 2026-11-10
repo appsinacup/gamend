@@ -39,6 +39,6 @@ Many email providers require that the "From" address or sending domain be verifi
 
 If you're not sure what to use, set `GAMEND_MAIL_SMTP_FROM_EMAIL` to an address in a domain you control (e.g. `no-reply@yourdomain.com`) and verify that domain with your provider.
 
-Tip: the [Admin Configuration](/admin/config) page shows the current SMTP settings and has a "Send test email" button.
+Tip: [Admin > Settings](/admin/settings?group=mail) shows the current SMTP settings, and the Email card on [Admin > System](/admin/system) has a "Send test email" button.
 
 For other providers, adjust the SMTP settings accordingly. The app will automatically detect when email is configured.

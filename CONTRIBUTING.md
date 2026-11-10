@@ -7,7 +7,7 @@ Checklist for adding a feature. Keep PRs small; one feature at a time.
 - Schema in `apps/gamend_core/lib/gamend/<feature>/` using `use Gamend.Schema` (UUIDv7 ids).
 - Migration in `apps/gamend_core/priv/repo/migrations/`. Must work on **both SQLite and Postgres** — no `ALTER COLUMN` and no `DISTINCT ON` on SQLite (rebuild the table / group in Elixir instead), test with `GAMEND_DB_ADAPTER=postgres` too.
 - Index every column you filter, sort or count on. Use partial indexes for hot predicates (e.g. `create index(:t, [:deadline], where: "resolved_at IS NULL")`) — they serve sweeps and dashboard counters at once.
-- Size/count caps in `Gamend.Limits` (auto-exposed as `GAMEND_LIMITS_*` env vars), enforced in the changeset, and listed in `@limit_categories` on the admin Config page.
+- Size/count caps in `Gamend.Limits` (auto-exposed as `GAMEND_LIMITS_*` env vars), enforced in the changeset, and declared under a `section` of that module, which is its heading on `/admin/settings`.
 - `timestamps(type: :utc_datetime)`, never a bare `timestamps()` — the bare form stores naive values that lose the zone and cannot be rendered safely (see **Time**).
 - **Does the table grow without bound?** If rows accumulate per event, per session or per message, add a class to `Gamend.Retention` with a `GAMEND_RETENTION_*` window, or say in the PR why the table is bounded by its owner. Entity and balance state (users, wallets, inventories) is deliberately never pruned.
 - Document the tables in the [Data Schema](https://gamend.org/docs/data-schema) guide (`priv/docs/10-setup/40-data-schema.md`).

@@ -17,7 +17,7 @@ defmodule Gamend.Content.Offline do
     * Headings repeat between guides (every other one has an "Overview"), so
       every id is namespaced by its guide, and a `#fragment` link with it.
     * A link to another guide goes to that guide's section. Any other link to
-      this site (`/admin/config`) is made absolute, since the file has no site
+      this site (`/admin/settings`) is made absolute, since the file has no site
       of its own to be relative to.
     * An `<img>` on this site is written in as a `data:` URI, whether the
       collection serves it or, with `assets: :static`, the site's static files

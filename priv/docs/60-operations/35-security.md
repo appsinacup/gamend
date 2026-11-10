@@ -20,7 +20,7 @@ An IP ban is checked in ETS on every request that reaches it: a banned address g
 
 IP bans are `Gamend.Bans` rows of kind `:ip`, the table every ban lives in: each has an optional end, a reason, and who placed it. A ban is broadcast over PubSub so every instance in a cluster applies it within moments, and its row is kept after it ends (lifted or expired) as history, deleted by retention after `GAMEND_RETENTION_BANS_DAYS` (365). Banning an address that is already banned replaces its ban.
 
-Ban and unban from [/admin/rate_limiting](/admin/rate_limiting) or [/admin/bans](/admin/bans) (a preset from 10 minutes to permanent or a number of days, and a reason), from the admin API (`GET`/`POST /api/v1/admin/bans`, `DELETE /api/v1/admin/bans/:id`), or from server code:
+Ban and unban from [/admin/bans](/admin/bans) (a preset from 10 minutes to permanent or a number of days, and a reason), from the admin API (`GET`/`POST /api/v1/admin/bans`, `DELETE /api/v1/admin/bans/:id`), or from server code:
 
 ```elixir
 GamendWeb.Plugs.IpBan.ban("1.2.3.4")                    # permanent

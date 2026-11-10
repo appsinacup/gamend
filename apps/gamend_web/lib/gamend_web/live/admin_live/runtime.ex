@@ -1,14 +1,13 @@
 defmodule GamendWeb.AdminLive.Runtime do
   @moduledoc """
-  Read-only introspection of the running server: hooks, env vars, protobuf
-  messages, channels and realtime events, the data model (with an ER diagram),
-  plugins and their RPCs, scheduled jobs, advisory lock namespaces, and
-  migration status.
+  Read-only introspection of the running server: hooks, protobuf messages,
+  channels and realtime events, the data model (with an ER diagram), scheduled
+  jobs, advisory lock namespaces, and migration status. Settings have their own
+  page, `/admin/settings`, and plugins theirs, `/admin/plugins`.
 
-  Unlike `/admin/config`, nothing here can be changed — every tab reflects
-  what the code and the runtime actually loaded, so it cannot drift the way a
-  hand-written page can. All tabs share one search + pagination pipeline over
-  rows produced by `GamendWeb.RuntimeIntrospection`.
+  Every tab reflects what the code and the runtime actually loaded, so it
+  cannot drift the way a hand-written page can. All tabs share one search +
+  pagination pipeline over rows produced by `GamendWeb.RuntimeIntrospection`.
   """
   use GamendWeb, :live_view
 
@@ -20,15 +19,12 @@ defmodule GamendWeb.AdminLive.Runtime do
   # names appear without being hardcoded.
   @tabs [
     {"hooks", "Hooks", &Introspection.hooks/0, {:implemented, "All hooks"}},
-    {"env", "Env vars", &Introspection.env_vars/0, {:state, "All variables"}},
     {"proto", "Protobuf", &Introspection.protobuf_messages/0, {:source, "All sources"}},
     {"channels", "Channels", &Introspection.channels/0, nil},
     {"events", "Events", &Introspection.events/0, {:source, "All sources"}},
     {"notifications", "Notifications", &Introspection.notification_types/0,
      {:source, "All sources"}},
     {"model", "Data model", &Introspection.data_model/0, {:source, "All sources"}},
-    {"plugins", "Plugins", &Introspection.plugins/0, nil},
-    {"rpcs", "RPCs", &Introspection.dynamic_rpcs/0, {:plugin, "All plugins"}},
     {"jobs", "Jobs", &Introspection.scheduled_jobs/0, nil},
     {"locks", "Locks", &Introspection.advisory_locks/0, nil},
     {"migrations", "Migrations", &Introspection.migrations/0, {:status, "All statuses"}}
@@ -367,37 +363,6 @@ defmodule GamendWeb.AdminLive.Runtime do
     """
   end
 
-  defp tab_table(%{tab: "env"} = assigns) do
-    ~H"""
-    <table class="table table-sm">
-      <thead>
-        <tr>
-          <th>Variable</th>
-          <th>State</th>
-          <th>Type</th>
-          <th>Value</th>
-          <th>Default</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr :for={row <- @rows} class={!row.set && "opacity-50"}>
-          <td class="font-mono text-xs whitespace-nowrap">{row.name}</td>
-          <td>
-            <span class={["badge badge-sm", (row.set && "badge-success") || "badge-ghost"]}>
-              {if row.set, do: "set", else: "unset"}
-            </span>
-          </td>
-          <td class="font-mono text-xs text-muted">{row.type}</td>
-          <td class="font-mono text-xs">{row.value || "—"}</td>
-          <td class="font-mono text-xs">{row.default}</td>
-          <td class="text-xs text-muted">{row.description}</td>
-        </tr>
-      </tbody>
-    </table>
-    """
-  end
-
   defp tab_table(%{tab: @proto} = assigns) do
     ~H"""
     <table class="table table-sm">
@@ -621,63 +586,6 @@ defmodule GamendWeb.AdminLive.Runtime do
             </td>
           </tr>
         <% end %>
-      </tbody>
-    </table>
-    """
-  end
-
-  defp tab_table(%{tab: "plugins"} = assigns) do
-    ~H"""
-    <table class="table table-sm">
-      <thead>
-        <tr>
-          <th>Plugin</th>
-          <th>Hooks module</th>
-          <th class="text-right">RPCs</th>
-          <th class="text-right">Typed hooks</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr :for={row <- @rows}>
-          <td class="font-mono text-xs">{row.name}</td>
-          <td class="font-mono text-xs">{row.module}</td>
-          <td class="text-right font-mono text-xs">{row.rpcs}</td>
-          <td class="text-right font-mono text-xs">{row.typed_hooks}</td>
-        </tr>
-      </tbody>
-    </table>
-    """
-  end
-
-  defp tab_table(%{tab: "rpcs"} = assigns) do
-    ~H"""
-    <table class="table table-sm">
-      <thead>
-        <tr>
-          <th>Plugin</th>
-          <th>Function</th>
-          <th>Signature</th>
-          <th>Payload</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr :for={row <- @rows}>
-          <td class="font-mono text-xs">{row.plugin}</td>
-          <td class="font-mono text-xs whitespace-nowrap">{row.hook}</td>
-          <td class="font-mono text-xs max-w-xs truncate" title={row.signature}>{row.signature}</td>
-          <td>
-            <span class={[
-              "badge badge-sm",
-              (String.starts_with?(row.payload, "protobuf") && "badge-primary") || "badge-ghost"
-            ]}>
-              {row.payload}
-            </span>
-          </td>
-          <td class="text-xs text-muted max-w-md truncate" title={row.description}>
-            {row.description}
-          </td>
-        </tr>
       </tbody>
     </table>
     """

@@ -51,7 +51,7 @@ client.realtime().connect();
 
 ### Game-defined schemas: what to implement
 
-Free-form values (metadata, KV data, hook payloads) are JSON in the database and REST API, so on protobuf sockets they normally travel as JSON bytes. To make them compact binary, your plugin's proto file implements the following messages. Everything below is optional and independent, and anything you skip simply stays JSON. The admin Config page shows this coverage at a glance (Hooks section, "Protobuf schema coverage").
+Free-form values (metadata, KV data, hook payloads) are JSON in the database and REST API, so on protobuf sockets they normally travel as JSON bytes. To make them compact binary, your plugin's proto file implements the following messages. Everything below is optional and independent, and anything you skip simply stays JSON. The [admin Plugins page](/admin/plugins) shows this coverage at a glance ("Protobuf schema coverage").
 
 | You want binary… | Implement / register | Registration |
 |---|---|---|

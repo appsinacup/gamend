@@ -47,6 +47,13 @@ defmodule Gamend.Settings.Provider do
 
   Setting keys follow the same rule as `:group`.
 
+  ## Sections
+
+  `section "Chat"` puts every setting declared after it, until the next
+  `section`, under that heading in the admin viewer. It changes nothing else:
+  not the env name, not the group. A group too long to read as one list
+  (`Gamend.Limits`) uses it; most have none.
+
   ## Options for `setting/3`
 
   - `:default` — the compiled default. Defaults to `nil`.
@@ -82,7 +89,7 @@ defmodule Gamend.Settings.Provider do
     label = Keyword.get(opts, :label) || group |> to_string() |> String.capitalize()
 
     quote do
-      import Gamend.Settings.Provider, only: [setting: 2, setting: 3]
+      import Gamend.Settings.Provider, only: [section: 1, setting: 2, setting: 3]
 
       Module.register_attribute(__MODULE__, :gamend_settings, accumulate: true)
 
@@ -90,8 +97,18 @@ defmodule Gamend.Settings.Provider do
       @gamend_settings_group unquote(group)
       @gamend_settings_root unquote(root)
       @gamend_settings_label unquote(label)
+      @gamend_settings_section nil
 
       @before_compile Gamend.Settings.Provider
+    end
+  end
+
+  @doc """
+  Starts a heading for the settings declared after it. See the module doc.
+  """
+  defmacro section(name) do
+    quote do
+      @gamend_settings_section unquote(name)
     end
   end
 
@@ -100,7 +117,7 @@ defmodule Gamend.Settings.Provider do
   """
   defmacro setting(key, type, opts \\ []) do
     quote do
-      @gamend_settings {unquote(key), unquote(type), unquote(opts)}
+      @gamend_settings {unquote(key), unquote(type), unquote(opts), @gamend_settings_section}
     end
   end
 
@@ -129,7 +146,7 @@ defmodule Gamend.Settings.Provider do
     end
   end
 
-  defp build({key, type, opts}, context) do
+  defp build({key, type, opts, section}, context) do
     %{module: module, app: app, group: group, root: root, label: label} = context
 
     unless segment?(key) do
@@ -167,6 +184,7 @@ option(s) #{inspect(unknown)}; expected one of #{inspect(@setting_opts)}"
       app: app,
       group: group,
       label: label,
+      section: section,
       root: root,
       type: type,
       default: Keyword.get(opts, :default),

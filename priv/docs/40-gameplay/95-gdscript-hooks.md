@@ -495,6 +495,6 @@ actually did. `mix gamend.gdscript.compile --check` fails when it is stale.
 
 Rebuild with `mix bundle` after every script change, since the server loads the
 bundled `ebin/`, not your source. On the downloadable engine, which has no Elixir
-installed, the admin Config page's **Build bundle** does the same inside the
+installed, the admin Plugins page's **Build bundle** does the same inside the
 server: it regenerates `gen/` and compiles it (see
 [Building a plugin](/docs/server-scripting#building-a-plugin)).

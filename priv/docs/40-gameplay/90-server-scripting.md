@@ -84,7 +84,7 @@ Other "before" hooks follow the same pattern: `before_lobby_create/1`, `before_l
 
 ### Declaring what your plugin contributes
 
-Three optional callbacks tell the server what your game adds, so it shows up in the admin Runtime page next to the built-in surface instead of being invisible. Notification codes are enforced: the server never reads a notification's type, so an undeclared code would be delivered and silently ignored by every client. It is rejected at write time instead. Realtime events are enforced at the push site for the same reason. Env vars are declaration only, since a plugin can always read one directly.
+Three optional callbacks tell the server what your game adds, so it shows up in the admin Runtime and Settings pages next to the built-in surface instead of being invisible. Notification codes are enforced: the server never reads a notification's type, so an undeclared code would be delivered and silently ignored by every client. It is rejected at write time instead. Realtime events are enforced at the push site for the same reason. Env vars are declaration only, since a plugin can always read one directly.
 
 ```elixir
 def notification_types do

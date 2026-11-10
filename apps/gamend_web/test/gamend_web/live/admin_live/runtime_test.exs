@@ -21,7 +21,7 @@ defmodule GamendWeb.AdminLive.RuntimeTest do
     %{conn: log_in_user(conn, admin)}
   end
 
-  @tabs ~w(hooks env proto channels events notifications model plugins rpcs jobs locks migrations)
+  @tabs ~w(hooks proto channels events notifications model jobs locks migrations)
 
   test "every tab is linked from the tab bar", %{conn: conn} do
     {:ok, _view, html} = live(conn, ~p"/admin/runtime")
@@ -40,12 +40,12 @@ defmodule GamendWeb.AdminLive.RuntimeTest do
   end
 
   test "faceted tabs render a filter, unfaceted ones do not", %{conn: conn} do
-    for tab <- ~w(hooks env proto events notifications model rpcs migrations) do
+    for tab <- ~w(hooks proto events notifications model migrations) do
       {:ok, _view, html} = live(conn, ~p"/admin/runtime?tab=#{tab}")
       assert html =~ ~s(id="facet-#{tab}"), "tab #{tab} should have a facet filter"
     end
 
-    for tab <- ~w(channels plugins jobs locks) do
+    for tab <- ~w(channels jobs locks) do
       {:ok, _view, html} = live(conn, ~p"/admin/runtime?tab=#{tab}")
       refute html =~ ~s(id="facet-#{tab}"), "tab #{tab} should not have a facet filter"
     end

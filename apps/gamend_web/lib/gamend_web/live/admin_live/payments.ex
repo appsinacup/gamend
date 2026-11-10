@@ -4,6 +4,7 @@ defmodule GamendWeb.AdminLive.Payments do
   alias Gamend.Payments
   alias Gamend.Payments.Product
   alias Gamend.Payments.ProviderProduct
+  alias GamendWeb.AdminLive.PaymentProviderStatus
   alias GamendWeb.LiveHelpers
 
   @sections ~w(products provider_products purchases entitlements provider_events reconciliation_cursors)a
@@ -52,7 +53,6 @@ defmodule GamendWeb.AdminLive.Payments do
           </:subtitle>
           <:actions>
             <a href="/api/docs" class="btn btn-surface btn-sm">OpenAPI</a>
-            <a href="/admin/config" class="btn btn-surface btn-sm">Provider config</a>
             <a
               href="https://docs.stripe.com/keys"
               target="_blank"
@@ -102,9 +102,17 @@ defmodule GamendWeb.AdminLive.Payments do
                     </span>
                   </div>
                 </div>
-                <div class="text-xs text-muted">
-                  Provider secrets and exact environment variables live in Admin > Config.
-                </div>
+                <details id="payment-provider-variables" class="text-xs">
+                  <summary class="cursor-pointer text-muted">Environment variables</summary>
+                  <div class="mt-2 space-y-3">
+                    <div :for={provider <- @provider_status}>
+                      <div class="font-semibold">{provider.name}</div>
+                      <div class="font-mono space-y-1 break-words">
+                        <div :for={line <- provider.details}>{line}</div>
+                      </div>
+                    </div>
+                  </div>
+                </details>
               </div>
             </div>
           </div>
@@ -852,6 +860,7 @@ defmodule GamendWeb.AdminLive.Payments do
   defp reload_all(socket) do
     socket
     |> assign(:store_adapters, Payments.provider_adapter_statuses())
+    |> assign(:provider_status, PaymentProviderStatus.configs())
     |> assign(:stats, Payments.admin_stats())
     |> assign(:all_products, Payments.list_products(include_inactive: true))
     |> reload_section(:products)

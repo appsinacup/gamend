@@ -6,6 +6,7 @@ defmodule GamendWeb.AdminLive.Index do
   alias Gamend.Bans.Cache, as: BanCache
   alias Gamend.Chat.Reports
   alias Gamend.Groups
+  alias Gamend.Hooks.PluginManager
   alias Gamend.KV
   alias Gamend.Leaderboards.Leaderboard
   alias Gamend.Notifications
@@ -316,24 +317,32 @@ defmodule GamendWeb.AdminLive.Index do
           </.admin_section>
 
           <.admin_section title="Configuration">
-            <.admin_card page="/admin/config">
-              <div>Limits, hooks and plugins</div>
+            <.admin_card page="/admin/plugins" value={@plugin_count}>
+              <div :if={@plugin_errors > 0} class="text-error">
+                {ngettext("%{count} failed to load", "%{count} failed to load", @plugin_errors)}
+              </div>
+              <div>Reload, build and call</div>
+            </.admin_card>
+
+            <.admin_card page="/admin/theme">
+              <div>Branding, navigation and footer as resolved</div>
             </.admin_card>
 
             <.admin_card page="/admin/settings">
               <div>Every setting the server declares</div>
             </.admin_card>
 
+            <.admin_card
+              page="/admin/settings"
+              path="/admin/settings?group=limits"
+              title="Limits"
+              icon="hero-scale-solid"
+              color="amber"
+            >
+              <div>Size and count caps, by area</div>
+            </.admin_card>
+
             <.admin_card page="/admin/rate_limiting">
-              <div class="flex justify-between items-center">
-                <span>Active IP bans</span>
-                <span class={[
-                  "badge badge-sm font-mono",
-                  if(@ip_ban_count > 0, do: "badge-error", else: "badge-ghost opacity-50")
-                ]}>
-                  {@ip_ban_count}
-                </span>
-              </div>
               <div class="flex justify-between items-center">
                 <span>Rate Limited (1m)</span>
                 <span class={[
@@ -344,9 +353,11 @@ defmodule GamendWeb.AdminLive.Index do
                 </span>
               </div>
             </.admin_card>
+          </.admin_section>
 
+          <.admin_section title="Server">
             <.admin_card
-              page="/admin/rate_limiting"
+              page="/admin/system"
               title="Cache & limits"
               icon="hero-bolt-solid"
               color="lime"
@@ -378,9 +389,7 @@ defmodule GamendWeb.AdminLive.Index do
                 </span>
               </div>
             </.admin_card>
-          </.admin_section>
 
-          <.admin_section title="Server">
             <.admin_card
               page="/admin/system"
               value={GamendWeb.ConnectionTracker.format_uptime(@sys_stats.uptime_seconds)}
@@ -683,6 +692,8 @@ defmodule GamendWeb.AdminLive.Index do
        economy_stats: r.economy_stats,
        storage_info: safe_storage_info(),
        cache_stats: Gamend.Cache.Stats.snapshot(),
+       plugin_count: length(PluginManager.list()),
+       plugin_errors: Enum.count(PluginManager.list(), &match?({:error, _}, &1.status)),
        dev_routes?: @dev_routes?
      )}
   end

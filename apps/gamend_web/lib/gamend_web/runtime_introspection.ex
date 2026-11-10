@@ -15,7 +15,6 @@ defmodule GamendWeb.RuntimeIntrospection do
 
   alias Ecto.Adapters.SQL
   alias Gamend.Hooks.Declarations
-  alias Gamend.Hooks.DynamicRpcs
   alias Gamend.Hooks.HookSchemas
   alias Gamend.Hooks.KvSchemas
   alias Gamend.Hooks.PluginManager
@@ -25,9 +24,6 @@ defmodule GamendWeb.RuntimeIntrospection do
   alias Gamend.Schedule
 
   require GamendWeb.AdminLive.RuntimeRow, as: RuntimeRow
-
-  @json "json"
-  @set "set"
 
   @server_source RuntimeRow.server()
   @plugin_source RuntimeRow.plugin()
@@ -93,6 +89,8 @@ defmodule GamendWeb.RuntimeIntrospection do
   @spec hook_group_order() :: [String.t()]
   def hook_group_order, do: @hook_group_order
 
+  @plugin_env_group :plugin_env
+
   @secret_pattern ~r/SECRET|TOKEN|_KEY|PASSWORD|_PASS|DSN|PRIVATE|SALT|CREDENTIAL|SIGNING/
 
   # ── Hooks ───────────────────────────────────────────────────────────────
@@ -143,66 +141,39 @@ defmodule GamendWeb.RuntimeIntrospection do
   # ── Env vars ────────────────────────────────────────────────────────────
 
   @doc """
-  Every environment variable the server can read, with live set/unset state
-  (secret-like values masked).
-
-  Sourced from `Gamend.Settings.all/0` plus any variables a plugin declares
-  through `env_vars/0`. This used to be reconstructed by regex-scraping the
-  runtime config's source and parsing `.env.example` prose, because nothing
-  declared the settings; the declaration replaced both.
+  The variables loaded plugins declare (`env_vars/0`) that are not settings, as
+  rows `/admin/settings` renders beside `Gamend.Settings.describe/1`'s. Secret
+  values, declared or by name, are masked here and never leave.
   """
-  def env_vars do
-    declared =
-      for definition <- Gamend.Settings.all() do
-        env_row(
-          {definition.env, definition.default, definition.doc, definition.label, definition.type},
-          definition.secret
-        )
-      end
+  @spec plugin_env_vars() :: [map()]
+  def plugin_env_vars do
+    known = MapSet.new(Gamend.Settings.all(), & &1.env)
 
-    known = MapSet.new(declared, & &1.name)
+    for var <- Declarations.env_vars(), not MapSet.member?(known, var.name) do
+      value = System.get_env(var.name)
+      secret? = Map.get(var, :secret, false) or Regex.match?(@secret_pattern, var.name)
 
-    plugin =
-      for var <- Declarations.env_vars(), not MapSet.member?(known, var.name) do
-        env_row(
-          {var.name, var.default, var.description, "Plugin: #{var.plugin}", var.type},
-          Map.get(var, :secret, false)
-        )
-      end
-
-    Enum.sort_by(declared ++ plugin, & &1.name)
-  end
-
-  defp env_row({name, default, desc, section, type}, declared_secret?) do
-    value = System.get_env(name)
-
-    %{
-      id: name,
-      name: name,
-      set: value != nil,
-      state: if(value == nil, do: "unset", else: @set),
-      value: mask(name, value, declared_secret?),
-      default: to_string(default),
-      type: to_string(type || guess_type(default)),
-      description: desc,
-      section: section || "",
-      search: String.downcase("#{name} #{desc} #{section}")
-    }
-  end
-
-  # .env.example gives only a default string, so the type is read back off it —
-  # enough to render "true"/"3000" distinctly from free text.
-  defp guess_type(default) when is_binary(default) do
-    cond do
-      default in ~w(true false) -> :boolean
-      match?({_, ""}, Integer.parse(default)) -> :integer
-      true -> :string
+      %{
+        key: var.name,
+        env: var.name,
+        doc: var.description || "",
+        label: "Plugin: #{var.plugin}",
+        group: @plugin_env_group,
+        section: nil,
+        value: if(is_nil(value), do: var.default, else: mask(var.name, value, secret?)),
+        default: var.default,
+        source: if(is_nil(value), do: :default, else: :config),
+        secret: secret?,
+        required: nil,
+        when: nil,
+        with: []
+      }
     end
   end
 
-  defp guess_type(default), do: Gamend.Config.infer_type(default)
-
-  defp mask(_name, nil, _declared_secret?), do: nil
+  @doc "The group `plugin_env_vars/0` rows carry, for the page's group filter."
+  @spec plugin_env_group() :: atom()
+  def plugin_env_group, do: @plugin_env_group
 
   # `declared_secret?` comes from the setting's own `secret: true` flag, which is
   # authoritative; the name pattern stays only as a net for variables nothing
@@ -599,95 +570,6 @@ defmodule GamendWeb.RuntimeIntrospection do
       |> Enum.join("\n")
 
     "flowchart TB\n#{subgraphs}\n#{edges}\n"
-  end
-
-  # ── Plugins & dynamic RPCs ──────────────────────────────────────────────
-
-  @doc "Loaded plugins with their hook module and export counts."
-  def plugins do
-    typed = HookSchemas.all()
-    rpcs_by_plugin = DynamicRpcs.list_all()
-
-    for {name, mod} <- PluginManager.hook_modules() do
-      rpc_count = rpcs_by_plugin |> Map.get(name, []) |> length()
-      typed_count = Enum.count(typed, fn {{plugin, _fn}, _} -> plugin == name end)
-
-      %{
-        id: name,
-        name: name,
-        module: inspect(mod),
-        rpcs: rpc_count,
-        typed_hooks: typed_count,
-        search: String.downcase("#{name} #{inspect(mod)}")
-      }
-    end
-  end
-
-  @doc """
-  Every callable plugin function, on the same basis as the config page's
-  "Available functions": static module exports (signature + `@doc` from BEAM
-  metadata via `Gamend.Hooks.exported_functions/1`) unioned with
-  dynamically registered RPC exports. `payload` marks the typed-hook message
-  pair when one is registered.
-  """
-  def dynamic_rpcs do
-    typed = HookSchemas.all()
-    dynamic_by_plugin = DynamicRpcs.list_all()
-    plugins = PluginManager.hook_modules()
-
-    static =
-      for {plugin, mod} <- plugins,
-          f <- Gamend.Hooks.exported_functions(mod),
-          sig <- f.signatures do
-        rpc_row(
-          plugin,
-          "#{f.name}/#{sig.arity}",
-          f.name,
-          sig.signature || "#{f.name}/#{sig.arity}",
-          payload_for(typed, plugin, f.name),
-          sig.doc || ""
-        )
-      end
-
-    dynamic =
-      for {plugin, _mod} <- plugins,
-          export <- Map.get(dynamic_by_plugin, plugin, []) do
-        meta = export[:meta] || %{}
-
-        args =
-          (meta[:args] || [])
-          |> Enum.map_join(", ", fn a -> "#{a[:name]}: #{a[:type]}" end)
-
-        rpc_row(
-          plugin,
-          "#{export.hook} (dynamic)",
-          export.hook,
-          "#{export.hook}(#{args})",
-          payload_for(typed, plugin, export.hook),
-          meta[:description] || ""
-        )
-      end
-
-    Enum.sort_by(static ++ dynamic, & &1.id)
-  end
-
-  defp payload_for(typed, plugin, fn_name) do
-    case Map.get(typed, {plugin, to_string(fn_name)}) do
-      %{request: req, reply: rep} -> "protobuf (#{short_module(req)}/#{short_module(rep)})"
-      nil -> @json
-    end
-  end
-
-  defp rpc_row(plugin, id_suffix, hook, signature, payload, description) do
-    %{
-      id: "#{plugin}/#{id_suffix}",
-      plugin: plugin,
-      hook: to_string(hook),
-      signature: signature,
-      payload: payload,
-      description: description || "",
-      search: String.downcase("#{plugin} #{hook} #{signature} #{payload} #{description}")
-    }
   end
 
   # ── Ops: jobs, locks, migrations ────────────────────────────────────────

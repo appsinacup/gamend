@@ -76,7 +76,7 @@ stripe listen --forward-to localhost:4000/api/v1/payments/webhooks/stripe
 # Use printed whsec_... as GAMEND_PAYMENTS_STRIPE_SANDBOX_WEBHOOK_SECRET
 ```
 
-Detected Stripe mode and masked provider variables are visible in [Admin > Config](/admin/config).
+Detected Stripe mode and masked provider variables are visible in [Admin > Payments](/admin/payments), under the providers.
 
 Stripe docs: [API keys](https://docs.stripe.com/keys),
 [authentication](https://docs.stripe.com/api/authentication),
@@ -267,7 +267,7 @@ Steam docs: [ISteamMicroTxn](https://partner.steamgames.com/doc/webapi/isteammic
 
 ## Admin and hooks
 
-Use Admin > Payments to view provider status, products, provider SKUs, purchases, entitlements, webhook events, and reconciliation cursors. Use Admin > Config to view masked provider environment variables.
+Use Admin > Payments to view provider status and masked environment variables, products, provider SKUs, purchases, entitlements, webhook events, and reconciliation cursors.
 
 Stripe purchases with a Checkout Session ID show a Reconcile Stripe action while pending, stuck, or completed. It retrieves the session from Stripe and fulfills paid sessions, cancels expired sessions, leaves open/processing sessions pending, or backfills subscription period metadata on completed subscriptions.
 

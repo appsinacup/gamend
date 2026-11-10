@@ -1,7 +1,15 @@
 defmodule GamendWeb.AdminLive.System do
   use GamendWeb, :live_view
 
+  import GamendWeb.AdminLive.SystemServices, only: [services: 1]
+
+  alias Gamend.Accounts.Scope
+  alias Gamend.Accounts.UserNotifier
+  alias GamendWeb.AdminLive.ServiceDiagnostics
   alias GamendWeb.ConnectionTracker
+
+  require GamendWeb.AdminLive.BuildEnv, as: BuildEnv
+  require Logger
 
   @refresh_interval 5_000
 
@@ -51,6 +59,13 @@ defmodule GamendWeb.AdminLive.System do
                 <h2 class="card-title text-lg">Metrics</h2>
                 <p class="text-sm text-muted">
                   Grafana contains host, container, app, and log history.
+                </p>
+                <p class="text-xs text-muted mt-1">
+                  <code>/metrics</code>: {if @metrics_token?,
+                    do:
+                      "loopback always allowed; every other caller, private and Docker IPs included, must send the bearer token.",
+                    else:
+                      "no token set, so loopback and private or Docker IPs are allowed and every other caller is refused."}
                 </p>
               </div>
               <.link
@@ -258,22 +273,7 @@ defmodule GamendWeb.AdminLive.System do
           </div>
         </div>
 
-        <%!-- Data retention (own page) --%>
-        <div class="card bg-base-200 shadow">
-          <div class="card-body">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-                <h2 class="card-title text-lg">Data Retention</h2>
-                <p class="text-sm text-muted">
-                  Windows, last sweep and manual runs live on their own page.
-                </p>
-              </div>
-              <.link navigate={~p"/admin/retention"} class="btn btn-primary">
-                Open Retention
-              </.link>
-            </div>
-          </div>
-        </div>
+        <.services services={@services} can_send_test_email={test_email_address(assigns) != nil} />
 
         <%!-- Cluster nodes --%>
         <%= if @cluster_nodes != [] do %>
@@ -305,7 +305,22 @@ defmodule GamendWeb.AdminLive.System do
   def mount(_params, _session, socket) do
     if connected?(socket), do: schedule_refresh()
 
-    {:ok, assign_all_stats(socket)}
+    {:ok,
+     socket
+     |> assign(:services, ServiceDiagnostics.services())
+     |> assign(:metrics_token?, GamendWeb.Observability.get(:metrics_token) != nil)
+     |> assign_all_stats()}
+  end
+
+  @impl true
+  def handle_event("send_test_email", _params, socket) do
+    case test_email_address(socket.assigns) do
+      nil ->
+        {:noreply, put_flash(socket, :error, "Your admin account has no email address.")}
+
+      email ->
+        {:noreply, deliver_test_email(socket, email)}
+    end
   end
 
   @impl true
@@ -317,6 +332,35 @@ defmodule GamendWeb.AdminLive.System do
   def handle_info(_msg, socket), do: {:noreply, socket}
 
   defp schedule_refresh, do: Process.send_after(self(), :refresh, @refresh_interval)
+
+  defp test_email_address(%{current_scope: scope}) do
+    case Scope.user(scope) do
+      %{email: email} when is_binary(email) -> email
+      _no_address -> nil
+    end
+  end
+
+  defp deliver_test_email(socket, email) do
+    case UserNotifier.deliver_test_email(email) do
+      {:ok, _delivered} ->
+        put_flash(socket, :info, "Test email sent to #{email}")
+
+      other ->
+        Logger.error("send_test_email failed: #{inspect(other)}")
+
+        # The reason can name the relay and its credentials: only in development.
+        detail =
+          if socket.assigns.services.environment == BuildEnv.dev(),
+            do: " (details: #{other |> inspect() |> String.slice(0, 512)})",
+            else: ""
+
+        put_flash(
+          socket,
+          :error,
+          "Failed to send test email. Check the mailer logs and configuration." <> detail
+        )
+    end
+  end
 
   defp assign_all_stats(socket) do
     sys = ConnectionTracker.system_stats()

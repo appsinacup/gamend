@@ -47,6 +47,7 @@ defmodule Gamend.Settings do
           app: atom(),
           group: atom(),
           label: String.t(),
+          section: String.t() | nil,
           type: atom(),
           default: term(),
           env: String.t(),

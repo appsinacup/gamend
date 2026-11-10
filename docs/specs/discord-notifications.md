@@ -115,7 +115,7 @@ and last-known IP are both distinctive.
 
 ## Admin
 
-A card on `/admin/config`: configured or not, allow-listed events, last delivery
+A card on `/admin/notifications`: configured or not, allow-listed events, last delivery
 time, last error, count delivered/failed in 24 h, and a **Send test message**
 action (API parity). The test message is how a user verifies the URL without
 waiting for a real event, and it is the single most-used button on a feature

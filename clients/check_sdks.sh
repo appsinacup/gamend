@@ -78,8 +78,10 @@ build_godot() {
   clients/check_godot.sh
 }
 
+# Godot looks `localhost` up as IPv6 first and does not fall back, and a dev
+# server listens on 127.0.0.1, so the Godot run names the address.
 live_godot() {
-  clients/check_godot.sh "$URL"
+  clients/check_godot.sh "${URL/localhost/127.0.0.1}"
 }
 
 # The tool an SDK needs, and the file that says it has been generated.

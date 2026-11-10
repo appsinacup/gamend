@@ -36,6 +36,11 @@ model class (`Lobby`, `SessionResponse`, …):
 node check_js.js http://127.0.0.1:4000
 ```
 
+`npm run generate` ends by writing the package's TypeScript declarations,
+`javascript/dist/index.d.ts`, with `python3 sdkgen ts`. The realtime classes
+are declared by hand in `gamend_client.d.ts`. `npm run check:types` compiles
+`check_ts.ts` against them.
+
 ## One source for the realtime events
 
 Every server→client event is declared once, in `GamendWeb.RealtimeEvents`
@@ -65,6 +70,13 @@ the channels' `handle_in` clauses. `mix gamend.gen.events` writes it to
 `clients/commands.json`, and the C++ (`gamend::commands`) and Balaur
 (`commands.bs`) SDKs get one function per row from it. The Godot and
 JavaScript clients have theirs by hand.
+
+## Build and test them all
+
+`clients/check_sdks.sh` generates the C++, C# and Rust SDKs and builds and tests
+each of them at once, with the TypeScript and Godot checks, skipping any whose
+tool is not installed. With a server URL it then runs each one's live
+conformance, one at a time. CI does the same in separate jobs.
 
 ## Does every SDK have everything
 

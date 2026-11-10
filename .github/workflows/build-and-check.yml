@@ -760,7 +760,15 @@ jobs:
           cd clients
           npm ci
           npm run generate
-      
+
+      - name: Check the TypeScript declarations
+        # --generated compares every declared signature with the JavaScript
+        # just written; check_ts.ts compiles real calls against the types.
+        run: |
+          python3 clients/sdkgen lint --generated --spec clients/javascript/openapi.json
+          cd clients
+          npm run check:types
+
       - name: Stamp package metadata and runtime dependencies
         working-directory: clients/javascript
         run: |
@@ -843,7 +851,7 @@ jobs:
 
   build-godot-sdk:
     runs-on: ubuntu-latest
-    name: Generate the Godot, Balaur and C++ SDKs
+    name: Generate the SDKs
 
     steps:
       - name: Checkout repository
@@ -933,6 +941,28 @@ jobs:
           name: cpp_sdk
           path: cpp_sdk
 
+      - name: Generate the C# SDK
+        env:
+          APP_VERSION: ${{ env.APP_VERSION }}
+        run: clients/generate_csharp.sh
+
+      - name: Upload the C# SDK
+        uses: actions/upload-artifact@v7
+        with:
+          name: csharp_sdk
+          path: csharp_sdk
+
+      - name: Generate the Rust SDK
+        env:
+          APP_VERSION: ${{ env.APP_VERSION }}
+        run: clients/generate_rust.sh
+
+      - name: Upload the Rust SDK
+        uses: actions/upload-artifact@v7
+        with:
+          name: rust_sdk
+          path: rust_sdk
+
       - name: Upload addons zip
         uses: actions/upload-artifact@v7
         with:
@@ -965,6 +995,10 @@ jobs:
             - **Godot**: `godot_addons.zip`. Copy `addons/gamend` into your project, or install it from the [Godot Asset Library](https://godotengine.org/asset-library/asset/4510). [Guide](https://gamend.org/docs/godot-sdk)
             - **Balaur**: `balaur_addons.zip`, Balaur Script modules for the Balaur engine. Copy `addons/gamend` into your Balaur project; its `README.md` lists every module.
             - **C++**: `gamend-cpp-sdk.tar.gz`. Fetch it with CMake's `FetchContent`, or build it and `cmake --install` it for `find_package(gamend)`. [Guide](https://gamend.org/docs/cpp-sdk)
+
+            - **C#**: `gamend-csharp-sdk.tar.gz`. netstandard2.1, for .NET games and tools. [Guide](https://gamend.org/docs/csharp-sdk)
+
+            - **Rust**: `gamend-rust-sdk.tar.gz`. A crate for Bevy, Fyrox, macroquad and tools. [Guide](https://gamend.org/docs/rust-sdk)
 
             The JavaScript SDK is on npm: [`@ughuuu/gamend`](https://www.npmjs.com/package/@ughuuu/gamend).
           files: |
@@ -1023,8 +1057,68 @@ jobs:
             -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/gamend"
           cmake --build build-package --config Release --parallel
 
+  csharp-sdk:
+    name: C# SDK
+    needs: [build-godot-sdk]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download the C# SDK
+        uses: actions/download-artifact@v8
+        with:
+          name: csharp_sdk
+          path: csharp_sdk
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        working-directory: csharp_sdk
+        run: dotnet build -warnaserror
+
+      - name: Unit tests
+        working-directory: csharp_sdk
+        run: dotnet test --no-build
+
+  rust-sdk:
+    name: Rust SDK
+    needs: [build-godot-sdk]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download the Rust SDK
+        uses: actions/download-artifact@v8
+        with:
+          name: rust_sdk
+          path: rust_sdk
+
+      - name: Set up Rust
+        run: |
+          rustup update stable
+          rustup default stable
+          rustup component add clippy rustfmt
+          rustup target add wasm32-unknown-unknown
+
+      - name: Lint
+        working-directory: rust_sdk
+        run: |
+          cargo fmt --check
+          cargo clippy --all-targets -- -D warnings
+
+      - name: Unit tests
+        working-directory: rust_sdk
+        run: cargo test
+
+      # The core has no threads and no clock of its own, so it builds for a
+      # target with neither. Nothing else would notice one creeping in.
+      - name: Build the core without native transports
+        working-directory: rust_sdk
+        run: cargo check --no-default-features --target wasm32-unknown-unknown
+
   cpp-conformance:
-    name: C++ SDK conformance (live server)
+    name: SDK conformance (live server)
     needs: [build-godot-sdk]
     runs-on: ubuntu-latest
 
@@ -1139,13 +1233,78 @@ jobs:
           GAMEND_ADMIN_PASSWORD: conformance-password-1
         run: build/gamend_conformance http://127.0.0.1:4000 --protobuf
 
+      - name: Download the C# SDK
+        uses: actions/download-artifact@v8
+        with:
+          name: csharp_sdk
+          path: csharp_sdk
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: C# conformance (JSON)
+        env:
+          # The container has no ICU, and these checks need no culture data.
+          DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "1"
+          GAMEND_ADMIN_EMAIL: admin@example.com
+          GAMEND_ADMIN_PASSWORD: conformance-password-1
+        run: dotnet run --project csharp_sdk/examples/Conformance -- http://127.0.0.1:4000
+
+      - name: C# conformance (protobuf)
+        env:
+          DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "1"
+          GAMEND_ADMIN_EMAIL: admin@example.com
+          GAMEND_ADMIN_PASSWORD: conformance-password-1
+        run: dotnet run --project csharp_sdk/examples/Conformance -- http://127.0.0.1:4000 --protobuf
+
+      - name: Download the Rust SDK
+        uses: actions/download-artifact@v8
+        with:
+          name: rust_sdk
+          path: rust_sdk
+
+      - name: Rust conformance (JSON)
+        working-directory: rust_sdk
+        env:
+          GAMEND_ADMIN_EMAIL: admin@example.com
+          GAMEND_ADMIN_PASSWORD: conformance-password-1
+        run: cargo run --example conformance -- http://127.0.0.1:4000
+
+      - name: Rust conformance (protobuf)
+        working-directory: rust_sdk
+        env:
+          GAMEND_ADMIN_EMAIL: admin@example.com
+          GAMEND_ADMIN_PASSWORD: conformance-password-1
+        run: cargo run --example conformance -- http://127.0.0.1:4000 --protobuf
+
+      - name: Download the Godot addon
+        uses: actions/download-artifact@v8
+        with:
+          name: godot_addons
+          path: godot_addons
+
+      - name: Install Godot
+        run: |
+          apt-get update && apt-get install -y unzip libfontconfig1
+          curl -fsSL --retry 5 -o godot.zip https://github.com/godotengine/godot-builds/releases/download/4.7.2-stable/Godot_v4.7.2-stable_linux.x86_64.zip
+          unzip -q godot.zip
+
+      # Every addon script has to compile, which is what catches a generated
+      # model taking a hand-written class's name. Then live calls over REST and
+      # the socket. The timeout is for a hang: Godot has no failure to exit on.
+      - name: Godot addon (compile and live calls)
+        timeout-minutes: 10
+        run: GODOT_BIN="$GITHUB_WORKSPACE/Godot_v4.7.2-stable_linux.x86_64" clients/check_godot.sh http://127.0.0.1:4000
+
       - name: Server log
         if: failure()
         run: tail -200 server.log
 
   release-cpp-sdk:
-    name: Release the C++ SDK
-    needs: [build-godot-sdk, cpp-sdk, cpp-conformance]
+    name: Release the C++, C# and Rust SDKs
+    needs: [build-godot-sdk, cpp-sdk, csharp-sdk, rust-sdk, cpp-conformance]
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
@@ -1156,15 +1315,33 @@ jobs:
           name: cpp_sdk
           path: cpp_sdk
 
+      - name: Download the C# SDK
+        uses: actions/download-artifact@v8
+        with:
+          name: csharp_sdk
+          path: csharp_sdk
+
+      - name: Download the Rust SDK
+        uses: actions/download-artifact@v8
+        with:
+          name: rust_sdk
+          path: rust_sdk
+
       - name: Archive
-        run: tar -czf gamend-cpp-sdk.tar.gz cpp_sdk
+        run: |
+          tar -czf gamend-cpp-sdk.tar.gz cpp_sdk
+          tar -czf gamend-csharp-sdk.tar.gz csharp_sdk
+          tar -czf gamend-rust-sdk.tar.gz rust_sdk
 
       # Next to godot_addons.zip on the release build-godot-sdk made.
       - name: Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
-          files: gamend-cpp-sdk.tar.gz
+          files: |
+            gamend-cpp-sdk.tar.gz
+            gamend-csharp-sdk.tar.gz
+            gamend-rust-sdk.tar.gz
           fail_on_unmatched_files: true
 
   publish-hex:

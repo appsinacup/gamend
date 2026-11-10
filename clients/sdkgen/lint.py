@@ -20,13 +20,17 @@ from pathlib import Path
 
 import balaur
 import cpp
-from model import CLIENTS, Model
+import csharp
+import rust
+import ts
+from model import CLIENTS, Model, is_envelope
 
 GODOT = CLIENTS / "gamend_template"
 GODOT_OUT = CLIENTS / "godot"
 JS_OUT = CLIENTS / "javascript" / "src"
 
-SDKS = ("JavaScript", "Godot", "C++", "Balaur")
+SDKS = ("JavaScript", "TypeScript", "Godot", "C++", "C#", "Rust", "Balaur")
+PUBLIC_METHOD = re.compile(r"^  (?:async |get )?([a-zA-Z]\w*)\(.*\) \{$", re.MULTILINE)
 FACADE_CALL = re.compile(r'_call_api\(\s*\w+\.new\(_config\),\s*"(\w+)"')
 
 
@@ -72,8 +76,17 @@ def operations(report: Report, model: Model, generated: bool) -> None:
     if generated and JS_OUT.is_dir():
         api = text_of(sorted((JS_OUT / "api").glob("*.js")))
         report.need(surface, "JavaScript", ids, lambda i: f" {camel(i)}(" in api)
+        check_signatures(report, model, api)
     else:
         report.label(surface, "JavaScript", "generated")
+
+    declared = ts.emit(model)["index.d.ts"]
+    report.need(
+        surface,
+        "TypeScript",
+        ids,
+        lambda i: f" {camel(i)}(" in declared and f" {camel(i)}WithHttpInfo(" in declared,
+    )
 
     # What a game calls is the façade, written by hand, so it is what can lag.
     called = set(FACADE_CALL.findall((GODOT / "GamendApi.gd").read_text()))
@@ -92,12 +105,60 @@ def operations(report: Report, model: Model, generated: bool) -> None:
     header = cpp.emit(model)["include/gamend/api.hpp"]
     report.need(surface, "C++", [model.name(op) for op in model.ops], lambda n: f" {n}(" in header)
 
+    # A game SDK carries no admin API, so C# answers to the player operations.
+    api_cs = csharp_file(model, "Api.g.cs")
+    names = [name for _, name in csharp.names(model.player())]
+    report.need(surface, "C#", names, lambda n: f" {n}(" in api_cs)
+
+    api_rs = rust_file(model, "api.rs")
+    names = [name for _, name in rust.names(model.player())]
+    report.need(surface, "Rust", names, lambda n: f"fn {n}(" in api_rs)
+
     written = balaur.emit(model)
     report.need(
         surface,
         "Balaur",
         [f"{file}.bs::{name}" for file, ops in balaur.by_file(model).items() for name, _ in ops],
         lambda item: f"pub fn {item.split('::')[1]}(" in written[item.split("::")[0]],
+    )
+
+
+def csharp_file(model: Model, name: str) -> str:
+    return csharp.emit(model)[f"{csharp.GENERATED}/{name}"]
+
+
+def rust_file(model: Model, name: str) -> str:
+    return rust.emit(model)[f"{rust.GENERATED}/{name}"]
+
+
+def check_signatures(report: Report, model: Model, api: str) -> None:
+    """The declarations against what openapi-generator wrote: a parameter in the
+    wrong place or an `opts` key spelled otherwise type-checks and then fails."""
+    wrong = []
+    for op in model.ops:
+        name = camel(op["id"])
+        call = f"{name}WithHttpInfo({', '.join(ts.signature(model, op))}) {{"
+        if call not in api:
+            wrong.append(call)
+        start = api.find(call)
+        body = api[start : api.find("return this.apiClient.callApi", start)]
+        for key, _, _ in ts.opts_entries(ts.operation_of(model, op)):
+            if start >= 0 and f"opts['{key}']" not in body:
+                wrong.append(f"{name}: opts.{key}")
+    if wrong:
+        report.problems.append(f"TypeScript declarations differ from the JavaScript: {', '.join(wrong)}")
+
+
+def client_methods(report: Report) -> None:
+    """Every public method of the hand-written JavaScript has its declaration."""
+    source = text_of(CLIENTS / name for name in ("realtime.js", "session.js", "webrtc.js"))
+    names = sorted(set(PUBLIC_METHOD.findall(source)) - {"constructor"})
+    declared = ts.HAND_WRITTEN.read_text()
+    report.need(
+        f"client methods ({len(names)})",
+        "TypeScript",
+        names,
+        lambda n: re.search(rf"\b{n}\b", declared),
     )
 
 
@@ -117,6 +178,14 @@ def schemas(report: Report, model: Model, generated: bool) -> None:
         report.need(surface, "JavaScript", classes, lambda s: (JS_OUT / "model" / f"{s}.js").exists())
     else:
         report.label(surface, "JavaScript", "generated")
+
+    declared = ts.emit(model)["index.d.ts"]
+    report.need(
+        surface,
+        "TypeScript",
+        every,
+        lambda s: f"class {s} {{" in declared or f"type {s} =" in declared,
+    )
 
     # A generated model is `Gamend<Schema>`, and two scripts cannot share a
     # `class_name`: the clash fails the addon's compile, not the generator.
@@ -139,8 +208,13 @@ def schemas(report: Report, model: Model, generated: bool) -> None:
         surface,
         "C++",
         every,
-        lambda s: cpp.is_envelope(every[s]) or f"struct {s} {{" in models or f"using {s} =" in models,
+        lambda s: is_envelope(every[s]) or f"struct {s} {{" in models or f"using {s} =" in models,
     )
+    player = model.player().spec["components"]["schemas"]
+    classes_cs = set(re.findall(r"\bclass (\w+)", csharp_file(model, "Models.g.cs")))
+    report.need(surface, "C#", player, lambda s: is_envelope(player[s]) or s in classes_cs)
+    types_rs = set(re.findall(r"pub (?:struct|type) (\w+)", rust_file(model, "models.rs")))
+    report.need(surface, "Rust", player, lambda s: is_envelope(player[s]) or s in types_rs)
     report.label(surface, "Balaur", "untyped")
 
 
@@ -157,6 +231,9 @@ def server_events(report: Report, model: Model) -> None:
         lambda e: re.search(rf"^\s*['\"]?{re.escape(e)}['\"]?\s*:", decoders, re.MULTILINE),
     )
 
+    declared = ts.emit(model)["index.d.ts"]
+    report.need(surface, "TypeScript", [row["event"] for row in model.table], lambda e: f'"{e}"' in declared)
+
     routing = text_of(GODOT / name for name in ("GamendApi.gd", "GamendWebRTC.gd", "GamendSignalingClient.gd"))
     report.need(surface, "Godot", [row["event"] for row in model.table], lambda e: f'"{e}"' in routing)
 
@@ -167,6 +244,12 @@ def server_events(report: Report, model: Model) -> None:
         [row["event"] for row in model.table],
         lambda e: f', "{e}", ' in events,
     )
+
+    events_cs = csharp_file(model, "Events.g.cs")
+    report.need(surface, "C#", [row["event"] for row in model.table], lambda e: f', "{e}", ' in events_cs)
+
+    events_rs = rust_file(model, "events.rs")
+    report.need(surface, "Rust", [row["event"] for row in model.table], lambda e: f'event: "{e}"' in events_rs)
 
     table = balaur.emit(model)["events.bs"]
     report.need(
@@ -190,6 +273,12 @@ def commands(report: Report, model: Model) -> None:
     header = cpp.emit(model)["include/gamend/commands.hpp"]
     report.need(surface, "C++", events, lambda e: f'"{e}"' in header)
 
+    commands_cs = csharp_file(model, "Commands.g.cs")
+    report.need(surface, "C#", events, lambda e: f'"{e}"' in commands_cs)
+
+    commands_rs = rust_file(model, "commands.rs")
+    report.need(surface, "Rust", events, lambda e: f'"{e}"' in commands_rs)
+
     written = balaur.emit(model)["commands.bs"]
     report.need(surface, "Balaur", events, lambda e: f'"{e}"' in written)
 
@@ -200,5 +289,6 @@ def run(model: Model, generated: bool) -> int:
     schemas(report, model, generated)
     server_events(report, model)
     commands(report, model)
+    client_methods(report)
     report.print()
     return 1 if report.problems else 0

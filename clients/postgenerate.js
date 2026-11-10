@@ -46,6 +46,12 @@ export { GameWebRTC, GameWebRTC as default_GameWebRTC } from './webrtc';
 export { GamendSession, GamendSession as default_GamendSession } from './session';
 `
 
+// The declarations `sdkgen ts` writes next to the build.
+const packagePath = path.join(__dirname, 'javascript', 'package.json')
+const pkg = JSON.parse(fs.readFileSync(packagePath, 'utf8'))
+pkg.types = 'dist/index.d.ts'
+fs.writeFileSync(packagePath, JSON.stringify(pkg, null, 2) + '\n')
+
 let content = fs.readFileSync(indexPath, 'utf8')
 
 if (content.includes(MARKER)) {

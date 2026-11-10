@@ -58,13 +58,15 @@ Full per-size tables, the operations breakdown, and how to reproduce any of it:
 
 ## Client SDKs
 
-The Godot, Balaur and C++ SDKs are rebuilt on every change to `main` and
+The Godot, Balaur, C++, C# and Rust SDKs are rebuilt on every change to `main` and
 attached to the [`latest` release](https://github.com/appsinacup/gamend/releases/tag/latest).
 
 - [Godot SDK](https://gamend.org/docs/godot-sdk) — also on the [Godot Asset Library](https://godotengine.org/asset-library/asset/4510)
 - [Rune SDK (Balaur)](https://github.com/appsinacup/gamend/releases/download/latest/balaur_addons.zip) — Rune scripts for the Balaur engine, one module per API area
 - [C++ SDK](https://gamend.org/docs/cpp-sdk) — C++17, pluggable transports, no exceptions or RTTI required
-- [JavaScript SDK](https://www.npmjs.com/package/@ughuuu/gamend)
+- [C# SDK](https://gamend.org/docs/csharp-sdk) — netstandard2.1, pluggable transports, no threads or reflection
+- [Rust SDK](https://gamend.org/docs/rust-sdk) — stable Rust, pluggable transports, core builds for wasm32
+- [JavaScript SDK](https://www.npmjs.com/package/@ughuuu/gamend) — with TypeScript types
 - [Elixir SDK](sdk/) — Stub modules for IDE autocomplete in custom hooks
 
 ## Download and run

@@ -15,7 +15,20 @@ hand-written `clients/cpp_template/`, copied over the top.
 
 import re
 
-from model import CLIENTS, ROOT, Model, resolve, wrap
+from model import (
+    CLIENTS,
+    ROOT,
+    SCALARS,
+    SESSION_OPS,
+    Model,
+    body_fields,
+    body_kind,
+    is_envelope,
+    models_of,
+    proto_messages,
+    ref_name,
+    wrap,
+)
 
 TEMPLATE = CLIENTS / "cpp_template"
 OUT = ROOT / "cpp_sdk"
@@ -44,17 +57,6 @@ RESERVED = {
     "done", "options", "params", "bytes", "path", "rest_",
 }
 
-# Operations that answer a session. `Auth` makes these calls and keeps what
-# they answer; the generated method only makes the call. Not `register`: it
-# answers the new account, and signs nobody in. Its code does
-# (`confirm_registration`).
-SESSION_OPS = {
-    "device_login", "login", "refresh_token", "oauth_api_callback",
-    "oauth_google_id_token", "oauth_callback_api_apple_ios", "oauth_session_status",
-    "confirm_registration",
-}
-
-
 def safe(name: str) -> str:
     return f"{name}_" if name in RESERVED else name
 
@@ -66,13 +68,6 @@ def ascii_only(text: str) -> str:
                          "“": '"', "”": '"'}.items():
         text = text.replace(fancy, plain)
     return text.encode("ascii", "replace").decode("ascii")
-
-
-def body_kind(op: dict) -> str:
-    """`json`, `bytes`, or empty for an operation without a body."""
-    if not op["body"]:
-        return ""
-    return "json" if op["body"]["type"] == "application/json" else "bytes"
 
 
 def arguments(op: dict, with_options: bool) -> list[str]:
@@ -99,15 +94,6 @@ def fields_line(label: str, fields: list[tuple[str, bool]]) -> list[str]:
         return []
     listed = ", ".join(f"`{name}`{' (required)' if needed else ''}" for name, needed in fields)
     return wrap(f"`{label}`: {listed}.", 96, "  ///")
-
-
-def body_fields(model: Model, op: dict) -> list[tuple[str, bool]]:
-    if body_kind(op) != "json":
-        return []
-    schema = resolve(model.spec, op["body"]["schema"])
-    required = list(schema.get("required", []))
-    rest = [name for name in schema.get("properties", {}) if name not in required]
-    return [(name, True) for name in required] + [(name, False) for name in rest]
 
 
 def declaration(model: Model, op: dict, name: str) -> str:
@@ -413,48 +399,6 @@ def field_name(name: str) -> str:
     return f"{name}_" if name in KEYWORDS else name
 
 
-def ref_name(schema: dict) -> str | None:
-    """The component a property names, directly or as a nullable `allOf`."""
-    if "$ref" in schema:
-        return schema["$ref"].rsplit("/", 1)[-1]
-    parts = schema.get("allOf") or []
-    if len(parts) == 1 and "$ref" in parts[0]:
-        return parts[0]["$ref"].rsplit("/", 1)[-1]
-    return None
-
-
-def is_envelope(schema: dict) -> bool:
-    """`{data}` and `{data, meta}`: read through `Response::as` and `page`."""
-    props = set(schema.get("properties", {}))
-    return "data" in props and props <= {"data", "meta"}
-
-
-def models_of(model: Model) -> list[tuple[str, dict]]:
-    """The components worth a struct, each after those it contains."""
-    schemas = model.spec["components"]["schemas"]
-    kept = {name: s for name, s in schemas.items() if not is_envelope(s)}
-    order: list[str] = []
-    seen: set[str] = set()
-
-    def visit(name: str) -> None:
-        if name in seen or name not in kept:
-            return
-        seen.add(name)
-        schema = kept[name]
-        inners = [schema.get("additionalProperties") or {}]
-        for prop in schema.get("properties", {}).values():
-            inners += [prop, prop.get("items", {}), prop.get("additionalProperties") or {}]
-        for inner in inners:
-            ref = ref_name(inner) if isinstance(inner, dict) else None
-            if ref:
-                visit(ref)
-        order.append(name)
-
-    for name in sorted(kept):
-        visit(name)
-    return [(name, kept[name]) for name in order]
-
-
 def field_type(schema: dict) -> str:
     ref = ref_name(schema)
     nullable = bool(schema.get("nullable"))
@@ -590,63 +534,6 @@ def write_models_source(model: Model) -> str:
         + "\n\n".join(bodies)
         + "\n\n}  // namespace gamend\n"
     )
-
-
-PROTO = ROOT / "proto" / "gamend_realtime.proto"
-
-SCALARS = {
-    "bool": "Bool", "int32": "Int32", "int64": "Int64", "uint32": "Uint32",
-    "uint64": "Uint64", "sint32": "Sint32", "sint64": "Sint64", "string": "String",
-    "bytes": "Bytes",
-}
-
-FIELD = re.compile(
-    r"^(optional\s+|repeated\s+)?(map<\s*(\w+)\s*,\s*(\w+)\s*>|\w+)\s+(\w+)\s*=\s*(\d+)\s*;"
-)
-
-
-def proto_messages() -> list[tuple[str, list[dict]]]:
-    """The messages of the realtime `.proto`, each with its fields.
-
-    Enough of the language for this file: proto3 scalars, messages, `optional`,
-    `repeated`, `map<string, V>` and `oneof`, whose members are optional.
-    """
-    text = re.sub(r"//[^\n]*", "", PROTO.read_text())
-    messages = []
-    for match in re.finditer(r"message\s+(\w+)\s*\{", text):
-        depth, at = 1, match.end()
-        while depth:
-            depth += {"{": 1, "}": -1}.get(text[at], 0)
-            at += 1
-        body = text[match.end():at - 1]
-        fields = []
-        in_oneof = False
-        for line in (part.strip() for part in body.split("\n")):
-            if line.startswith("oneof "):
-                in_oneof = True
-                continue
-            if line == "}":
-                in_oneof = False
-                continue
-            field = FIELD.match(line)
-            if not field:
-                continue
-            label, kind, key, value, name, number = field.groups()
-            if kind.startswith("map<"):
-                if key != "string":
-                    raise SystemExit(f"{match.group(1)}.{name}: only map<string, V> is read")
-                fields.append({"name": name, "number": int(number), "label": "Map", "type": value})
-            else:
-                label = (label or "").strip()
-                fields.append({
-                    "name": name,
-                    "number": int(number),
-                    "label": "Repeated" if label == "repeated"
-                    else "Optional" if label == "optional" or in_oneof else "Singular",
-                    "type": kind,
-                })
-        messages.append((match.group(1), fields))
-    return messages
 
 
 def write_proto_schema(model: Model) -> str:

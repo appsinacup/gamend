@@ -1,0 +1,33 @@
+[package]
+name = "gamend"
+version = "0.1.0"
+edition = "2021"
+description = "Client SDK for Gamend, an open-source game backend"
+license = "MIT"
+homepage = "https://gamend.org"
+repository = "https://github.com/appsinacup/gamend"
+keywords = ["gamedev", "backend", "multiplayer", "websocket", "phoenix"]
+categories = ["game-development", "network-programming"]
+
+# A crate of its own, also when it is generated inside another workspace.
+[workspace]
+
+[features]
+default = ["native"]
+# What a desktop or server build needs: `UreqTransport`, `TungsteniteTransport`
+# and the default clock. Everything that needs a thread lives behind this, so
+# the core builds for targets that have none.
+native = ["dep:ureq", "dep:tungstenite"]
+
+[dependencies]
+serde_json = "1"
+ureq = { version = "3", optional = true }
+tungstenite = { version = "0.30", optional = true, features = ["rustls-tls-webpki-roots"] }
+
+[[example]]
+name = "conformance"
+required-features = ["native"]
+
+[[test]]
+name = "native"
+required-features = ["native"]

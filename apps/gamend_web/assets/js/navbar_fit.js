@@ -156,6 +156,17 @@ export function measure(header) {
   return needs
 }
 
+// What the last measure read. A page change draws the same header again, and
+// each stage restyles the whole page (`root.dataset.nav`): while its words and
+// the fonts are the same, so are its widths.
+let last = null
+
+function measured(header) {
+  const key = `${document.fonts?.status}|${header.textContent}`
+  if (last?.key !== key) last = {key, needs: measure(header)}
+  return last.needs
+}
+
 const fitted = new WeakMap()
 
 // Measures `header` now, again when its width, its fonts or its content
@@ -169,7 +180,7 @@ export function startNavbarFit(header) {
   let width = null
 
   const refit = () => {
-    needs = measure(header) || needs
+    needs = measured(header) || needs
     if (needs) save(lang, needs)
     width = roomOf(header)
     apply(stageFor(needs, width, sideRoom()))

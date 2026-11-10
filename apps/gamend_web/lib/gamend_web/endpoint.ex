@@ -62,12 +62,9 @@ defmodule GamendWeb.Endpoint do
   # costs one 301 and nothing more.
   plug GamendWeb.Plugs.ForceSSL
   # A host app's own plugs, ahead of everything that assumes the request is
-  # for this site: a second host name the app answers must not be sent to the
-  # canonical host, given a session, or have its trailing slash taken away.
+  # for this site: a second host name the app answers must not be given a
+  # session or have its trailing slash taken away.
   plug :host_plugs
-  # After ForceSSL so a plain-HTTP request to an alias costs one redirect to
-  # https on the canonical host rather than two hops.
-  plug GamendWeb.Plugs.CanonicalHost
   plug GamendWeb.Plugs.SecurityHeaders
   plug GamendWeb.Plugs.WellKnown
   # The LiveView route table `live_nav.js` reads (`GamendWeb.LiveNav`).

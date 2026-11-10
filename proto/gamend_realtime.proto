@@ -86,6 +86,7 @@ message Notification {
   bytes metadata_json = 7;
   int64 inserted_at_ms = 8;
   string icon_url = 9;
+  string group = 10;
 }
 
 message ChatMessage {

@@ -21,6 +21,11 @@ const FORMATS = {
   "calendar-month": {month: "long", timeZone: "UTC"},
 }
 
+// "3m ago": not a format of the instant but of its distance from now, so it is
+// said again as time passes (`startLocalTime`).
+const RELATIVE = "relative"
+const RELATIVE_TICK_MS = 10_000
+
 // Marks what a node was last rendered from, so re-running over a page that has
 // not changed is free and cannot loop against the MutationObserver below.
 const RENDERED = "localTimeRendered"
@@ -30,13 +35,39 @@ function pageLocale() {
   return lang && lang.trim() !== "" ? lang : undefined
 }
 
+// How long ago, in the largest unit that fits: [3, "minute"]. Counted as the
+// server counts for its first paint (`timestamp/1`). Never under a second: a
+// clock a little ahead of the server's would otherwise say "in 2s".
+export function agoParts(seconds) {
+  const s = Math.max(1, Math.floor(seconds))
+  if (s < 60) return [s, "second"]
+  if (s < 3600) return [Math.floor(s / 60), "minute"]
+  if (s < 86400) return [Math.floor(s / 3600), "hour"]
+  if (s < 2592000) return [Math.floor(s / 86400), "day"]
+  if (s < 31536000) return [Math.floor(s / 2592000), "month"]
+  return [Math.floor(s / 31536000), "year"]
+}
+
+// Terse up to the hour ("3m ago") and spelled out from a day ("1 day ago").
+// The words are the browser's, so all the site's languages come for free.
+export function agoText(date, locale, now = Date.now()) {
+  const [value, unit] = agoParts((now - date.getTime()) / 1000)
+  const say = style => new Intl.RelativeTimeFormat(locale, {style, numeric: "always"}).format(-value, unit)
+
+  if (!["second", "minute", "hour"].includes(unit)) return say("long")
+
+  // French, Russian, Swedish and others make the narrow form a bare "-3 min".
+  const narrow = say("narrow")
+  return /^[-−]/.test(narrow) ? say("short") : narrow
+}
+
 function localize(el) {
   const iso = el.getAttribute("datetime")
   const format = el.dataset.localTime
   if (!iso || !format) return
 
   const stamp = `${iso}|${format}`
-  if (el.dataset[RENDERED] === stamp) return
+  if (format !== RELATIVE && el.dataset[RENDERED] === stamp) return
 
   // `2026-09` is a valid HTML month string but not every engine parses it as a
   // date; anchoring it to the first keeps it on the calendar-month path.
@@ -44,7 +75,15 @@ function localize(el) {
   if (isNaN(date.getTime())) return
 
   try {
-    el.textContent = date.toLocaleString(pageLocale(), FORMATS[format] || FORMATS.datetime)
+    const text =
+      format === RELATIVE
+        ? agoText(date, pageLocale())
+        : date.toLocaleString(pageLocale(), FORMATS[format] || FORMATS.datetime)
+
+    // A relative time comes through here on every tick; rewriting the same
+    // words would only wake the observer.
+    if (el.textContent !== text) el.textContent = text
+    if (format === RELATIVE) el.title = date.toLocaleString(pageLocale(), FORMATS.full)
     el.dataset[RENDERED] = stamp
   } catch (_e) {
     // Leave the server's UTC text in place rather than showing nothing.
@@ -82,6 +121,10 @@ export function startLocalTime() {
   })
 
   window.addEventListener("phx:page-loading-stop", () => localizeTimes())
+
+  setInterval(() => {
+    document.querySelectorAll(`time[data-local-time="${RELATIVE}"]`).forEach(localize)
+  }, RELATIVE_TICK_MS)
 }
 
 // Pairs a hidden UTC field (what the form casts) with a visible datetime-local

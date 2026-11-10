@@ -5,16 +5,17 @@ defmodule GamendWeb.NotificationsLive do
   alias Gamend.Notifications
   alias GamendWeb.LiveHelpers
   alias GamendWeb.MountedRoutes
+  alias GamendWeb.NotificationEmail
+  alias GamendWeb.NotificationsLive.Sections
 
-  @page_size 25
+  # Pages of a fixed size would cut a stack in two, and neither a section (the
+  # group is decided in code) nor a stack (the type is in the JSON metadata) is
+  # something a query can page by. So the newest rows are arranged whole.
+  @load_step 200
 
   require Gamend.Notifications.NotificationType, as: NotificationType
-  require GamendWeb.UrlParam, as: UrlParam
+  require Gamend.Notifications.PreferenceGroup, as: PreferenceGroup
   require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
-
-  use GamendWeb.UrlState,
-    reload: :reload_notifications,
-    keys: [notif_page: [param: UrlParam.page()], notif_page_size: [param: UrlParam.page_size()]]
 
   require Gamend.Chat.ChatType, as: ChatType
   require Gamend.Quests.QuestCategory, as: QuestCategory
@@ -63,89 +64,233 @@ defmodule GamendWeb.NotificationsLive do
         </div>
 
         <%= if @notif_count > 0 do %>
-          <div class="card bg-base-200 p-4 rounded-lg">
-            <div class="overflow-x-auto">
-              <table id="notifications-table" class="table table-zebra w-full">
-                <thead>
-                  <tr>
-                    <th>{gettext("Title")}</th>
-                    <th>{gettext("From")}</th>
-                    <th>{gettext("Date")}</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    :for={{n, path} <- Enum.map(@notifications, &{&1, notification_path(&1)})}
-                    id={"notif-" <> to_string(n.id)}
-                    class={path && clickable_row()}
-                  >
-                    <td class="text-sm">
-                      <div class="flex items-center gap-2">
-                        <.entity_icon
-                          icon_url={n.icon_url}
-                          type={:notification}
-                          class="w-4 h-4 shrink-0 text-muted"
-                        />
-                        <%!-- `href`, not `navigate`: a notice leads anywhere
-                        (`/admin/reports` is another live_session), and
-                        `live_nav.js` makes a same-session link live. --%>
-                        <.row_link :if={path} href={path}>
-                          {translate_notification_title(n)}
-                        </.row_link>
-                        <span :if={!path}>{translate_notification_title(n)}</span>
-                      </div>
-                    </td>
-                    <td class="text-sm">
-                      <%= cond do %>
-                        <% n.metadata["chat_type"] != nil -> %>
-                          <span class="badge badge-sm badge-outline badge-info">
-                            {gettext("Chat")}
-                          </span>
-                        <% Ecto.assoc_loaded?(n.sender) && n.sender -> %>
-                          <.player_card
-                            user={n.sender}
-                            name={LiveHelpers.public_user_name(n.sender)}
-                            subtitle={nil}
-                            size="sm"
-                          />
-                        <% true -> %>
-                          <.player_name name={LiveHelpers.public_user_name(n.sender_id)} />
-                      <% end %>
-                    </td>
-                    <td class="text-sm whitespace-nowrap">
-                      <.timestamp at={n.inserted_at} />
-                    </td>
-                    <td class="text-end">
-                      <button
-                        type="button"
-                        phx-click="delete"
-                        phx-value-id={n.id}
-                        class={["btn btn-sm btn-outline btn-error", row_control()]}
-                      >
-                        {gettext("Delete")}
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <div id="notifications-sections" class="space-y-3">
+            <.notification_section
+              :for={section <- @sections}
+              section={section}
+              collapsed={MapSet.member?(@collapsed_sections, section.key)}
+              open_stacks={@open_stacks}
+            />
 
-            <div class="mt-4">
-              <.pagination
-                page={@notif_page}
-                total_pages={@notif_total_pages}
-                total_count={@notif_count}
-                page_size={@notif_page_size}
-                on_prev="prev_page"
-                on_next="next_page"
-                on_page_size="notif_page_size"
-              />
+            <div :if={@notif_count > @notif_limit} class="flex justify-center">
+              <button
+                id="notifications-load-more"
+                type="button"
+                phx-click="load_more"
+                class="btn btn-sm btn-surface"
+              >
+                {dgettext("notifications", "Load more")}
+              </button>
             </div>
           </div>
         <% end %>
       </div>
     </Layouts.app>
+    """
+  end
+
+  attr :section, :map, required: true
+  attr :collapsed, :boolean, required: true
+  attr :open_stacks, :any, required: true
+
+  defp notification_section(assigns) do
+    assigns = assign(assigns, :label, section_label(assigns.section.key))
+
+    ~H"""
+    <section id={"notif-section-" <> @section.key} class="card bg-base-200 p-4 rounded-lg">
+      <div class="flex items-center gap-2">
+        <h2 class="min-w-0 flex-1">
+          <button
+            id={"notif-section-toggle-" <> @section.key}
+            type="button"
+            phx-click="toggle_section"
+            phx-value-section={@section.key}
+            aria-expanded={to_string(!@collapsed)}
+            class="flex w-full cursor-pointer items-center gap-2 text-start font-semibold"
+          >
+            <.fold_chevron folded={@collapsed} />
+            <.icon name={section_icon(@section.key)} class="size-5 shrink-0 text-muted" />
+            <span class="truncate">{@label}</span>
+            <span class="badge badge-sm shrink-0">{@section.count}</span>
+          </button>
+        </h2>
+        <.delete_button
+          id={"notif-section-delete-" <> @section.key}
+          label={gettext("Delete") <> ": " <> @label}
+          phx-click="delete_section"
+          phx-value-section={@section.key}
+          data-confirm
+        />
+      </div>
+
+      <div :if={!@collapsed} class="mt-3 space-y-2">
+        <%= for stack <- @section.stacks do %>
+          <%= case stack.notifications do %>
+            <% [notification] -> %>
+              <.notification_row notification={notification} boxed />
+            <% _several -> %>
+              <.notification_stack stack={stack} open={MapSet.member?(@open_stacks, stack.key)} />
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+    """
+  end
+
+  attr :stack, :map, required: true
+  attr :open, :boolean, required: true
+
+  defp notification_stack(assigns) do
+    assigns =
+      assign(assigns,
+        title: stack_title(assigns.stack),
+        count: length(assigns.stack.notifications),
+        newest_at: hd(assigns.stack.notifications).inserted_at
+      )
+
+    ~H"""
+    <div id={"notif-stack-" <> @stack.key}>
+      <div class="flex items-center gap-2 rounded-lg border border-base-300 bg-base-100 ps-2 pe-1">
+        <button
+          id={"notif-stack-toggle-" <> @stack.key}
+          type="button"
+          phx-click="toggle_stack"
+          phx-value-stack={@stack.key}
+          aria-expanded={to_string(@open)}
+          class="flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-2 text-start text-sm"
+        >
+          <.fold_chevron folded={!@open} />
+          <span class="truncate font-medium">{@title}</span>
+          <.timestamp
+            at={@newest_at}
+            format="relative"
+            class="ms-auto shrink-0 whitespace-nowrap text-muted"
+          />
+        </button>
+        <.delete_button
+          id={"notif-stack-delete-" <> @stack.key}
+          label={gettext("Delete") <> ": " <> @title}
+          phx-click="delete_stack"
+          phx-value-stack={@stack.key}
+          data-confirm
+        />
+      </div>
+
+      <%!-- The cards under the top one: what makes a closed stack read as
+            several notices at a glance. --%>
+      <div :if={!@open} aria-hidden="true">
+        <div class="mx-2 h-1 rounded-b-lg border border-t-0 border-base-300 bg-base-100"></div>
+        <div
+          :if={@count > 2}
+          class="mx-4 h-1 rounded-b-lg border border-t-0 border-base-300 bg-base-100"
+        >
+        </div>
+      </div>
+
+      <div :if={@open} class="ms-4 mt-1 space-y-1 border-s border-base-300 ps-2">
+        <.notification_row :for={notification <- @stack.notifications} notification={notification} />
+      </div>
+    </div>
+    """
+  end
+
+  attr :notification, :map, required: true
+  attr :boxed, :boolean, default: false
+
+  defp notification_row(assigns) do
+    assigns = assign(assigns, :path, notification_path(assigns.notification))
+
+    ~H"""
+    <div
+      id={"notif-" <> to_string(@notification.id)}
+      class={[
+        "flex items-center gap-2 rounded-lg py-1.5 ps-2 pe-1",
+        @boxed && "border border-base-300 bg-base-100",
+        @path && clickable_row()
+      ]}
+    >
+      <.entity_icon
+        icon_url={@notification.icon_url}
+        type={:notification}
+        class="w-4 h-4 shrink-0 text-muted"
+      />
+      <%!-- Wraps: on a phone the sender and the date go under the title. --%>
+      <div class="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+        <div class="min-w-48 flex-1">
+          <%!-- `href`, not `navigate`: a notice leads anywhere
+                (`/admin/reports` is another live_session), and
+                `live_nav.js` makes a same-session link live. --%>
+          <.row_link :if={@path} href={@path}>
+            {translate_notification_title(@notification)}
+          </.row_link>
+          <span :if={!@path}>{translate_notification_title(@notification)}</span>
+        </div>
+        <.notification_sender notification={@notification} />
+        <.timestamp
+          at={@notification.inserted_at}
+          format="relative"
+          class="shrink-0 whitespace-nowrap text-muted"
+        />
+      </div>
+      <div class={row_control()}>
+        <.delete_button
+          id={"notif-delete-" <> to_string(@notification.id)}
+          label={gettext("Delete")}
+          phx-click="delete"
+          phx-value-id={@notification.id}
+        />
+      </div>
+    </div>
+    """
+  end
+
+  attr :notification, :map, required: true
+
+  defp notification_sender(assigns) do
+    ~H"""
+    <%= cond do %>
+      <% @notification.metadata["chat_type"] != nil -> %>
+        <span class="badge badge-sm badge-outline badge-info">{gettext("Chat")}</span>
+      <% Ecto.assoc_loaded?(@notification.sender) && @notification.sender -> %>
+        <.player_card
+          user={@notification.sender}
+          name={LiveHelpers.public_user_name(@notification.sender)}
+          subtitle={nil}
+          size="sm"
+        />
+      <% true -> %>
+        <.player_name name={LiveHelpers.public_user_name(@notification.sender_id)} />
+    <% end %>
+    """
+  end
+
+  attr :folded, :boolean, required: true
+
+  defp fold_chevron(assigns) do
+    ~H"""
+    <.icon
+      name="hero-chevron-down-solid"
+      class={"size-4 shrink-0 text-muted transition-transform" <> if(@folded, do: " -rotate-90", else: "")}
+    />
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :label, :string, required: true
+  attr :rest, :global
+
+  defp delete_button(assigns) do
+    ~H"""
+    <button
+      id={@id}
+      type="button"
+      aria-label={@label}
+      title={@label}
+      class="btn btn-ghost btn-sm btn-square shrink-0 text-error"
+      {@rest}
+    >
+      <.icon name="hero-trash-solid" class="size-4" />
+    </button>
     """
   end
 
@@ -162,42 +307,36 @@ defmodule GamendWeb.NotificationsLive do
     socket =
       socket
       |> assign(:page_title, gettext("Notifications"))
-      |> assign(:notif_page, 1)
-      |> assign(:notif_page_size, @page_size)
-      |> assign(:notifications, [])
+      |> assign(:notif_limit, @load_step)
+      |> assign(:sections, [])
+      |> assign(:collapsed_sections, MapSet.new())
+      |> assign(:open_stacks, MapSet.new())
       |> assign(:notif_count, 0)
       |> assign(:notif_unread_count, 0)
-      |> assign(:notif_total_pages, 0)
       |> reload_notifications()
 
     {:ok, socket}
   end
 
   @impl true
-  def handle_event("prev_page", _params, socket),
-    do: {:noreply, socket |> LiveHelpers.prev_page(:notif_page) |> reload_notifications()}
+  def handle_event("toggle_section", %{"section" => key}, socket),
+    do: {:noreply, update(socket, :collapsed_sections, &toggle(&1, key))}
 
-  def handle_event("next_page", _params, socket),
-    do:
-      {:noreply,
-       socket |> LiveHelpers.next_page(:notif_page, :notif_total_pages) |> reload_notifications()}
+  def handle_event("toggle_stack", %{"stack" => key}, socket),
+    do: {:noreply, update(socket, :open_stacks, &toggle(&1, key))}
 
-  def handle_event("notif_page_size", %{"size" => size}, socket),
-    do:
-      {:noreply,
-       socket
-       |> LiveHelpers.put_page_size(size, size_key: :notif_page_size, page_key: :notif_page)
-       |> reload_notifications()}
-
-  def handle_event("delete", %{"id" => id}, socket) do
-    user = Scope.user(socket.assigns.current_scope)
-    Notifications.delete_notifications(user.id, [id])
-
-    {:noreply,
-     socket
-     |> put_flash(:info, gettext("Success."))
-     |> reload_notifications()}
+  def handle_event("load_more", _params, socket) do
+    {:noreply, socket |> update(:notif_limit, &(&1 + @load_step)) |> reload_notifications()}
   end
+
+  def handle_event("delete", %{"id" => id}, socket),
+    do: {:noreply, delete_rows(socket, [id])}
+
+  def handle_event("delete_stack", %{"stack" => key}, socket),
+    do: {:noreply, delete_rows(socket, Sections.stack_ids(socket.assigns.sections, key))}
+
+  def handle_event("delete_section", %{"section" => key}, socket),
+    do: {:noreply, delete_rows(socket, Sections.section_ids(socket.assigns.sections, key))}
 
   def handle_event("delete_all", _params, socket) do
     user = Scope.user(socket.assigns.current_scope)
@@ -211,7 +350,7 @@ defmodule GamendWeb.NotificationsLive do
     {:noreply,
      socket
      |> put_flash(:info, gettext("Success."))
-     |> assign(:notif_page, 1)
+     |> assign(:notif_limit, @load_step)
      |> reload_notifications()}
   end
 
@@ -318,19 +457,57 @@ defmodule GamendWeb.NotificationsLive do
 
   defp reload_notifications(socket) do
     user = Scope.user(socket.assigns.current_scope)
-    page = socket.assigns.notif_page
-    page_size = socket.assigns.notif_page_size
 
-    notifications = Notifications.list_notifications(user.id, page: page, page_size: page_size)
-    count = Notifications.count_notifications(user.id)
-    unread_count = Notifications.count_unread_notifications(user.id)
-    total_pages = LiveHelpers.total_pages(count, page_size)
+    newest_first =
+      user.id
+      |> Notifications.list_recent_notifications(socket.assigns.notif_limit)
+      |> Enum.reverse()
 
     socket
-    |> assign(:notifications, notifications)
-    |> assign(:notif_count, count)
-    |> assign(:notif_unread_count, unread_count)
-    |> assign(:notif_total_pages, total_pages)
+    |> assign(:sections, Sections.build(newest_first))
+    |> assign(:notif_count, Notifications.count_notifications(user.id))
+    |> assign(:notif_unread_count, Notifications.count_unread_notifications(user.id))
+  end
+
+  defp delete_rows(socket, ids) do
+    user = Scope.user(socket.assigns.current_scope)
+    Notifications.delete_notifications(user.id, ids)
+
+    socket
+    |> put_flash(:info, gettext("Success."))
+    |> reload_notifications()
+  end
+
+  defp toggle(set, key) do
+    if MapSet.member?(set, key), do: MapSet.delete(set, key), else: MapSet.put(set, key)
+  end
+
+  defp section_label(key) do
+    if key == Sections.other(),
+      do: dgettext("notifications", "Other"),
+      else: NotificationEmail.group_label(key)
+  end
+
+  defp section_icon(PreferenceGroup.chat()), do: "hero-chat-bubble-left-right-solid"
+  defp section_icon(PreferenceGroup.social()), do: "hero-user-group-solid"
+  defp section_icon(PreferenceGroup.quests()), do: "hero-trophy-solid"
+  defp section_icon(PreferenceGroup.reports()), do: "hero-flag-solid"
+  defp section_icon(PreferenceGroup.payments()), do: "hero-credit-card-solid"
+  defp section_icon(PreferenceGroup.account()), do: "hero-shield-check-solid"
+  defp section_icon(_key), do: "hero-bell-solid"
+
+  # A plugin's type that is gone leaves rows with no description: the newest
+  # one's own title still says what they are.
+  defp stack_title(%{description: nil, notifications: [newest | _]}),
+    do: translate_notification_title(newest)
+
+  # Core's descriptions are in the catalogue (`I18n.NotificationTypesCatalog`),
+  # a plugin's through the host's own.
+  defp stack_title(%{description: description}) do
+    case Gettext.dgettext(GamendWeb.Gettext, "notifications", description) do
+      ^description -> GamendWeb.HostLayouts.translate(description)
+      translated -> translated
+    end
   end
 
   # ---------------------------------------------------------------------------

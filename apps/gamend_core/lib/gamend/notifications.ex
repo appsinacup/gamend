@@ -364,6 +364,16 @@ defmodule Gamend.Notifications do
   end
 
   @doc """
+  The notification group (`Gamend.Notifications.Preferences`) a notification
+  belongs to: the one `notify/3` named, else its type's. nil for one in no group.
+  """
+  @spec group_of(Notification.t()) :: String.t() | nil
+  def group_of(%{metadata: metadata}) do
+    metadata = metadata || %{}
+    metadata["group"] || Preferences.group_for_type(metadata["type"])
+  end
+
+  @doc """
   Tell a user something the SERVER has to say (a streak about to end, a class
   result), through the channels they chose for `group`
   (`Gamend.Notifications.Preferences`): the in-app row, a push to their
@@ -374,6 +384,8 @@ defmodule Gamend.Notifications do
   notification leads to), and for the email `"subject"` and `"text"`
   (default: the title and the content). `"email_now" => true` sends the email
   at once in a group that sends digests (`Gamend.Notifications.Digest`).
+  `"site_only" => true` writes the row and sends nothing else: no push and no
+  email, for what the reader only likes to know (a build done).
 
   The in-app row is the user's own (sender = recipient), so repeating a title
   refreshes the one row rather than stacking. Returns the channels it went
@@ -401,12 +413,14 @@ defmodule Gamend.Notifications do
           Preferences.enabled?(user, group, NotificationChannel.in_app()) and
             match?({:ok, _}, upsert_notification(user_id, user_id, row, fan_out: false))
 
+        site_only? = attrs["site_only"] == true
+
         push? =
-          Preferences.enabled?(user, group, NotificationChannel.push()) and
+          not site_only? and Preferences.enabled?(user, group, NotificationChannel.push()) and
             push_message(user_id, row, "notify-#{group}")
 
         email? =
-          Preferences.enabled?(user, group, NotificationChannel.email()) and
+          not site_only? and Preferences.enabled?(user, group, NotificationChannel.email()) and
             enqueue_email(user, group, attrs)
 
         {:ok,
@@ -624,7 +638,7 @@ defmodule Gamend.Notifications do
   # group (a moderator's notice) is pushed as it always was.
   defp push_notification(%Notification{recipient_id: recipient_id} = notification) do
     metadata = notification.metadata || %{}
-    group = metadata["group"] || Preferences.group_for_type(metadata["type"])
+    group = group_of(notification)
 
     row = %{
       "title" => notification.title,

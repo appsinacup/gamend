@@ -314,6 +314,7 @@ defmodule GamendWeb.EventCodec do
       title: get(p, :title),
       content: get(p, :content) || "",
       icon_url: get(p, :icon_url) || "",
+      group: get(p, :group) || "",
       metadata_json: json_bytes(p, :metadata) || "",
       inserted_at_ms: ms(p, :inserted_at) || 0
     }

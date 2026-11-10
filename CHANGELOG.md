@@ -1,5 +1,8 @@
 # November 2026
 
+- [added] **A notification says which group it is in.** `group` on every notification in the API and the realtime event (empty for none), so a game client can show the same sections. **Hosts:** regenerate clients.
+- [added] **`"site_only" => true` on `Notifications.notify/3`** writes the row in its group and sends no push or email.
+- [changed] **`/notifications` sorts into sections and stacks.** One section per notification group with its count, notifications of one type stacked, and a section or stack deletes as a whole. Dates read `3m ago` (`<.timestamp format="relative">`), and Load more replaces the pager.
 - [removed] **`GamendWeb.Plugs.CanonicalHost` and `config :gamend_web, :canonical_host`.** Redirecting `www` to the apex is a rule where the name is served (a CDN or proxy); set in the app, it also sent a hosted server's own address away.
 - [fixed] **Bans, rate limits and geo see the client behind a proxy on IPv4, not the proxy.** The `::` listener reports that proxy as `::ffff:a.b.c.d`, which `GamendWeb.Plugs.RealIp` now trusts for `X-Forwarded-For` only.
 - [fixed] **A theme's `"faq"` questions and answers are translated like its other text.** `mix gamend.theme.extract` left them out of `theme.pot`, so only a host that also had them in its `default` catalogue could translate them.

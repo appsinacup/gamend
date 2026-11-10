@@ -1408,6 +1408,11 @@ class Notification:
 		service.field = __icon_url
 		data[__icon_url.tag] = service
 		
+		__group = PBField.new("group", PB_DATA_TYPE.STRING, PB_RULE.OPTIONAL, 10, true, DEFAULT_VALUES_3[PB_DATA_TYPE.STRING])
+		service = PBServiceField.new()
+		service.field = __group
+		data[__group.tag] = service
+		
 	var data = {}
 	
 	var __id: PBField
@@ -1508,6 +1513,17 @@ class Notification:
 		__icon_url.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
 	func set_icon_url(value : String) -> void:
 		__icon_url.value = value
+	
+	var __group: PBField
+	func has_group() -> bool:
+		return data[10].state == PB_SERVICE_STATE.FILLED
+	func get_group() -> String:
+		return __group.value
+	func clear_group() -> void:
+		data[10].state = PB_SERVICE_STATE.UNFILLED
+		__group.value = DEFAULT_VALUES_3[PB_DATA_TYPE.STRING]
+	func set_group(value : String) -> void:
+		__group.value = value
 	
 	func _to_string() -> String:
 		return PBPacker.message_to_string(data)

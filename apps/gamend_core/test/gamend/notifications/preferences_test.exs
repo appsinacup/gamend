@@ -131,8 +131,44 @@ defmodule Gamend.Notifications.PreferencesTest do
       assert [_job] = all_enqueued(worker: DeliveryWorker)
     end
 
+    test "site_only writes the row in its group and sends nothing else", %{user: user} do
+      register_device!(user)
+      {:ok, _user} = Preferences.put(user, "streak", "email", true)
+      {:ok, _user} = Preferences.put(user, "streak", "push", true)
+
+      assert {:ok, ["in_app"]} =
+               Notifications.notify(user.id, "streak", %{
+                 "title" => "Build done",
+                 "site_only" => true
+               })
+
+      assert [row] = Notifications.list_notifications(user.id)
+      assert row.metadata["group"] == "streak"
+      refute Map.has_key?(row.metadata, "site_only")
+      assert all_enqueued(worker: DeliveryWorker) == []
+      assert all_enqueued(queue: :mailers) == []
+    end
+
     test "an unknown user is an error" do
       assert {:error, :not_found} = Notifications.notify(Ecto.UUID.generate(), "streak", %{})
+    end
+  end
+
+  describe "group_of/1" do
+    test "a group the notice names wins over its type's" do
+      notice = %Notifications.Notification{
+        metadata: %{"group" => "streak", "type" => "friend_request"}
+      }
+
+      assert Notifications.group_of(notice) == "streak"
+    end
+
+    test "otherwise the type's group, and nil for none" do
+      friend = %Notifications.Notification{metadata: %{"type" => "friend_request"}}
+
+      assert Notifications.group_of(friend) == "social"
+      assert Notifications.group_of(%Notifications.Notification{metadata: %{}}) == nil
+      assert Notifications.group_of(%Notifications.Notification{metadata: nil}) == nil
     end
   end
 

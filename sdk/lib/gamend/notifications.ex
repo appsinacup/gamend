@@ -205,6 +205,22 @@ defmodule Gamend.Notifications do
   end
 
   @doc ~S"""
+    The notification group (`Gamend.Notifications.Preferences`) a notification
+    belongs to: the one `notify/3` named, else its type's. nil for one in no group.
+    
+  """
+  @spec group_of(Gamend.Notifications.Notification.t()) :: String.t() | nil
+  def group_of(_map) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Notifications.group_of/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     List all notifications (admin), with optional filters.
     
     ## Filters (map with string keys)
@@ -355,6 +371,8 @@ defmodule Gamend.Notifications do
     notification leads to), and for the email `"subject"` and `"text"`
     (default: the title and the content). `"email_now" => true` sends the email
     at once in a group that sends digests (`Gamend.Notifications.Digest`).
+    `"site_only" => true` writes the row and sends nothing else: no push and no
+    email, for what the reader only likes to know (a build done).
     
     The in-app row is the user's own (sender = recipient), so repeating a title
     refreshes the one row rather than stacking. Returns the channels it went

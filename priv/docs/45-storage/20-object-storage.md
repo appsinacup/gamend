@@ -29,6 +29,8 @@ GAMEND_STORAGE_PUBLIC_URL="https://cdn.example.com"
 
 With the `s3` adapter selected, bucket and both credentials are required in production; a missing one fails the boot rather than warns.
 
+On Gamend Cloud, set these on the server's **Settings** tab under Storage, then restart it. `GAMEND_STORAGE_DIR` stays the server's own disk. Switching does not move files already stored: download **Stored files** from the **Backups** tab, unpack it and upload what is inside `storage/` to the bucket.
+
 ## The two-step upload
 
 ```text

@@ -178,9 +178,8 @@ database is. Objects on S3 are not copied, since they are already off the host.
 
 - **Restoring on your own host:**
   `docker compose exec -T db pg_restore --clean --if-exists --no-owner -U <user> -d <database> < gamend.dump`
-- **Restoring on Gamend Cloud:** an owner uploads the files on the server's
-  Backups tab. An operator copies the folder to
-  `GAMEND_CLOUD_IMPORTS_DIR/<slug>/` and uses *Import a server*.
+- **Restoring on Gamend Cloud:** see
+  [Moving to Gamend Cloud](/docs/moving-to-gamend-cloud).
 
 ## HTTPS
 

@@ -33,6 +33,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     |> assign(:trigger_submit, false)
     |> assign(:image_uploads, Features.enabled?(:user_image_uploads))
     |> assign(:can_upload_avatar, can_upload_avatar?(user))
+    |> assign(:avatar_form, avatar_form(user))
     |> allow_avatar_upload(user)
   end
 
@@ -42,9 +43,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
       allow_upload(socket, :avatar,
         accept: ~w(.png .jpg .jpeg .webp .gif),
         max_entries: 1,
-        max_file_size: Gamend.Limits.get(:max_upload_bytes),
-        auto_upload: true,
-        progress: &avatar_progress/3
+        max_file_size: Gamend.Limits.get(:max_upload_bytes)
       )
     else
       socket
@@ -63,56 +62,72 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
         <div class="card bg-base-200 p-4 rounded-lg">
           <div class="font-semibold">{gettext("Account")}</div>
 
-          <div class="flex items-center gap-4 mt-3">
-            <.user_avatar user={@user} class="w-16 h-16" />
-            <p :if={@image_uploads && !@can_upload_avatar} class="text-xs text-muted max-w-xs">
-              {gettext("Link an email or a sign-in provider to set a custom avatar.")}
-            </p>
-            <form
-              :if={@can_upload_avatar}
-              phx-change="validate_avatar"
-              phx-no-unused-field
-              id="avatar_form"
-              class="space-y-2"
-            >
-              <.live_file_input
-                upload={@uploads.avatar}
-                class="file-input file-input-sm file-input-bordered w-full max-w-xs"
-              />
-              <%!-- A picked file uploads at once and becomes the avatar beside
-                    this form. The native file input clears its label on
-                    re-render, so the file and how far it got show here. --%>
-              <div :for={entry <- @uploads.avatar.entries} class="flex items-center gap-2 text-xs">
-                <span class="truncate max-w-[10rem]">{entry.client_name}</span>
-                <span class="text-muted">{entry.progress}%</span>
-                <button
-                  type="button"
-                  phx-click="cancel_avatar"
-                  phx-value-ref={entry.ref}
-                  class="btn btn-ghost btn-xs"
-                  aria-label={gettext("Remove selected file")}
-                >
-                  <.icon name="hero-x-mark-solid" class="w-3 h-3" />
-                </button>
-                <span :if={upload_errors(@uploads.avatar, entry) != []} class="text-error">
-                  {gettext("File is too large or not a supported image.")}
-                </span>
-              </div>
-            </form>
-          </div>
-
-          <%!-- Or one of the site's icons for the avatar: its URL is the
-                avatar, as an upload's is, and shows at once. So a reconnect
-                has nothing to recover here, and with no icon lit it would send
-                an empty pick; a colour clicked before an icon stays as clicked. --%>
+          <%!-- A file or one of the site's icons, shown here as it will be and
+                kept by Save. --%>
           <.form
-            for={avatar_icon_form(@user)}
-            id="avatar_icon_form"
-            phx-change="pick_avatar_icon"
-            phx-auto-recover="ignore"
-            class="mt-3"
+            for={@avatar_form}
+            id="avatar_form"
+            phx-change="validate_avatar"
+            phx-submit="save_avatar"
+            data-unsaved={avatar_unsaved?(@user, @avatar_form, @can_upload_avatar && @uploads.avatar)}
+            class="mt-3 space-y-3"
           >
-            <.icon_picker field={avatar_icon_form(@user)[:profile_url]} label={gettext("Icon")} />
+            <div class="flex items-center gap-4">
+              <%= if @can_upload_avatar && @uploads.avatar.entries != [] do %>
+                <.live_img_preview
+                  :for={entry <- @uploads.avatar.entries}
+                  entry={entry}
+                  data-icon-backdrop
+                  class="w-16 h-16 shrink-0 rounded-full bg-base-300 object-cover"
+                />
+              <% else %>
+                <.user_avatar user={avatar_preview(@user, @avatar_form)} class="w-16 h-16" />
+              <% end %>
+              <p :if={@image_uploads && !@can_upload_avatar} class="text-xs text-muted max-w-xs">
+                {gettext("Link an email or a sign-in provider to set a custom avatar.")}
+              </p>
+              <div :if={@can_upload_avatar} class="min-w-0 space-y-2">
+                <.live_file_input
+                  upload={@uploads.avatar}
+                  class="file-input file-input-sm file-input-bordered w-full max-w-xs"
+                />
+                <%!-- The native file input clears its label on re-render, so
+                      the file shows here. --%>
+                <div
+                  :for={entry <- @uploads.avatar.entries}
+                  class="flex items-center gap-2 text-xs"
+                >
+                  <span class="truncate max-w-[10rem]">{entry.client_name}</span>
+                  <button
+                    type="button"
+                    phx-click="cancel_avatar"
+                    phx-value-ref={entry.ref}
+                    class="btn btn-ghost btn-xs"
+                    aria-label={gettext("Remove selected file")}
+                  >
+                    <.icon name="hero-x-mark-solid" class="w-3 h-3" />
+                  </button>
+                  <span :if={upload_errors(@uploads.avatar, entry) != []} class="text-error">
+                    {gettext("File is too large or not a supported image.")}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <.icon_picker
+              field={avatar_icon_field(@avatar_form)}
+              label={gettext("Icon")}
+              on_pick={@can_upload_avatar && drop_avatar_file(@uploads.avatar)}
+            />
+
+            <.button
+              id="avatar_save"
+              variant="primary"
+              disabled={!avatar_unsaved?(@user, @avatar_form, @can_upload_avatar && @uploads.avatar)}
+              phx-disable-with={gettext("Saving...")}
+            >
+              {gettext("Save")}
+            </.button>
           </.form>
 
           <div class="text-sm mt-2 space-y-1 text-muted">
@@ -124,6 +139,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
               id="username_form"
               phx-change="validate_username"
               phx-submit="update_username"
+              data-unsaved={unsaved?(@username_form)}
             >
               <.input
                 field={@username_form[:username]}
@@ -141,6 +157,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
               id="display_form"
               phx-change="validate_display_name"
               phx-submit="update_display_name"
+              data-unsaved={unsaved?(@display_form)}
             >
               <.input
                 field={@display_form[:display_name]}
@@ -158,6 +175,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
               id="email_form"
               phx-submit="update_email"
               phx-change="validate_email"
+              data-unsaved={unsaved?(@email_form)}
             >
               <.input
                 field={@email_form[:email]}
@@ -323,12 +341,12 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
           &url(~p"/users/settings/confirm_email/#{&1}")
         )
 
-        {:noreply, put_flash(socket, :info, sent)}
+        {:noreply, email_sent(socket, user, sent)}
 
       # The same answer, and no email: refusing would tell any account which
       # addresses have one.
       Accounts.email_taken?(changeset) and Accounts.drop_email_taken(changeset).valid? ->
-        {:noreply, put_flash(socket, :info, sent)}
+        {:noreply, email_sent(socket, user, sent)}
 
       true ->
         {:noreply, assign(socket, :email_form, to_form(changeset, action: :insert))}
@@ -358,7 +376,8 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
          socket
          |> put_flash(:info, gettext("Success."))
          |> assign(:user, updated_user)
-         |> assign(:current_scope, updated_scope)}
+         |> assign(:current_scope, updated_scope)
+         |> assign(:display_form, to_form(Accounts.change_user_display_name(updated_user)))}
 
       {:error, changeset} ->
         {:noreply, assign(socket, display_form: to_form(changeset, action: :insert))}
@@ -406,28 +425,25 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     end
   end
 
-  def handle_event("validate_avatar", _params, socket), do: {:noreply, socket}
+  # What is picked, drawn and not kept: Save keeps it. A reconnect sends this
+  # too, with no icon when none was lit.
+  def handle_event("validate_avatar", params, socket) do
+    form = avatar_form(Shared.current_user(socket), Map.get(params, "avatar_icon", %{}))
+    {:noreply, assign(socket, :avatar_form, form)}
+  end
 
   def handle_event("cancel_avatar", %{"ref" => ref}, socket) do
     {:noreply, cancel_upload(socket, :avatar, ref)}
   end
 
-  # One of the site's icons as the avatar: its URL in `profile_url`, as an
-  # upload's is, and the uploaded picture it replaces gone from storage.
-  def handle_event("pick_avatar_icon", %{"avatar" => params}, socket) do
+  # The file picked, which beats an icon; else the icon picked.
+  def handle_event("save_avatar", params, socket) do
     user = Shared.current_user(socket)
-    url = Gamend.Icons.put_color(params, "profile_url")["profile_url"]
 
-    case Gamend.Icons.name(url) && Accounts.update_user_avatar(user, url) do
-      nil ->
-        {:noreply, socket}
-
-      {:ok, updated} ->
-        _ = Accounts.prune_user_avatars(user.id, "")
-        {:noreply, assign(socket, :user, updated)}
-
-      _failed ->
-        {:noreply, put_flash(socket, :error, gettext("Failed"))}
+    case avatar_entries(socket) do
+      {[], []} -> save_avatar_icon(socket, user, Map.get(params, "avatar_icon", %{}))
+      {[entry], []} -> save_avatar_file(socket, user, entry)
+      {_done, _refused} -> {:noreply, put_flash(socket, :error, avatar_file_error())}
     end
   end
 
@@ -517,13 +533,41 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     end
   end
 
-  # Called for each chunk of an upload; the last one stores the picture.
-  defp avatar_progress(:avatar, %{done?: false}, socket), do: {:noreply, socket}
+  defp email_sent(socket, user, message) do
+    socket
+    |> put_flash(:info, message)
+    |> assign(:email_form, to_form(Accounts.change_user_email(user, %{}, validate_unique: false)))
+  end
 
-  defp avatar_progress(:avatar, entry, socket) do
-    user = Shared.current_user(socket)
+  defp avatar_entries(%{assigns: %{can_upload_avatar: true}} = socket),
+    do: uploaded_entries(socket, :avatar)
 
-    # Asked again: the switch may have closed since the page opened.
+  defp avatar_entries(_socket), do: {[], []}
+
+  defp avatar_file_error, do: gettext("File is too large or not a supported image.")
+
+  # One of the site's icons as the avatar: its URL in `profile_url`, as an
+  # upload's is, and the uploaded picture it replaces gone from storage. Only
+  # one of the site's, and only when it is another than the one shown.
+  defp save_avatar_icon(socket, user, picked) do
+    url = avatar_form(user, picked)[:profile_url].value
+
+    if Gamend.Icons.name(url) && url != User.public_avatar_url(user) do
+      case Accounts.update_user_avatar(user, url) do
+        {:ok, updated} ->
+          _ = Accounts.prune_user_avatars(user.id, "")
+          {:noreply, avatar_saved(socket, updated)}
+
+        _failed ->
+          {:noreply, put_flash(socket, :error, gettext("Failed"))}
+      end
+    else
+      {:noreply, socket}
+    end
+  end
+
+  # Asked again: the switch may have closed since the page opened.
+  defp save_avatar_file(socket, user, entry) do
     if can_upload_avatar?(user) do
       save_avatar(socket, user, entry)
     else
@@ -532,6 +576,16 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
        |> cancel_upload(:avatar, entry.ref)
        |> put_flash(:error, gettext("Avatar uploads are not available."))}
     end
+  end
+
+  # The navbar reads its user via `Scope.user/1`, which re-fetches by id;
+  # `update_user_avatar` invalidated the cache, and the page's `nav_key`
+  # moving with the avatar redraws it, without touching the scope.
+  defp avatar_saved(socket, updated) do
+    socket
+    |> put_flash(:info, gettext("Avatar updated."))
+    |> assign(:user, updated)
+    |> assign(:avatar_form, avatar_form(updated))
   end
 
   defp save_avatar(socket, user, entry) do
@@ -568,14 +622,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
           {:ok, updated} ->
             # Drop the previous avatar object(s) now that the new one is live.
             _ = Accounts.prune_user_avatars(user.id, key)
-
-            # The navbar reads its user via `Scope.user/1`, which re-fetches by id;
-            # `update_user_avatar` invalidated the cache, and the page's `nav_key`
-            # moving with the avatar redraws it, without touching the scope.
-            {:noreply,
-             socket
-             |> put_flash(:info, gettext("Avatar updated."))
-             |> assign(:user, updated)}
+            {:noreply, avatar_saved(socket, updated)}
 
           {:error, _} ->
             {:noreply, put_flash(socket, :error, gettext("Could not update avatar."))}
@@ -583,10 +630,30 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
     end
   end
 
-  # The avatar shown (`User.public_avatar_url/1`): an icon their id gave them
-  # is lit as if picked.
-  defp avatar_icon_form(user),
-    do: to_form(%{"profile_url" => User.public_avatar_url(user) || ""}, as: :avatar)
+  # What the avatar form holds: the icon picked, in its colour; none picked,
+  # the avatar shown (`User.public_avatar_url/1`), an icon their id gave them
+  # lit as if picked. A colour with no icon stays on the form for the next.
+  defp avatar_form(user, picked \\ %{}) do
+    url = Gamend.Icons.put_color(picked, "profile_url")["profile_url"]
+    shown = if Gamend.Icons.name(url), do: url, else: User.public_avatar_url(user) || ""
+    to_form(Map.put(picked, "profile_url", shown), as: :avatar_icon)
+  end
+
+  # Not `@avatar_form[:profile_url]` in the template: LiveView redraws that only
+  # when the icon itself changes, and the colour is a field of its own.
+  defp avatar_icon_field(form), do: form[:profile_url]
+
+  defp avatar_preview(user, form), do: %{user | profile_url: form[:profile_url].value}
+
+  defp avatar_unsaved?(user, form, upload) do
+    unsaved?(form, upload) or form[:profile_url].value != (User.public_avatar_url(user) || "")
+  end
+
+  # An icon clicked with a file picked means the icon: the file beats it at Save.
+  defp drop_avatar_file(%{entries: [%{ref: ref} | _]}),
+    do: JS.push("cancel_avatar", value: %{ref: ref})
+
+  defp drop_avatar_file(_upload), do: nil
 
   @doc """
   The pending OAuth link conflict for this session, as `{conflict_user, provider}`.

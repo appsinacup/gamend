@@ -25,44 +25,55 @@ defmodule GamendWeb.UserLive.SettingsAvatarTest do
     :ok
   end
 
-  test "uploading an avatar stores it and repoints profile_url", %{conn: conn} do
+  defp pick_file(lv, name) do
+    lv
+    |> file_input("#avatar_form", :avatar, [%{name: name, content: @png, type: "image/png"}])
+    |> render_upload(name)
+  end
+
+  defp save(lv), do: lv |> form("#avatar_form") |> render_submit()
+
+  test "a picked file waits for Save, then stores and repoints profile_url", %{conn: conn} do
     user = user_fixture()
     {:ok, lv, _html} = conn |> log_in_user(user) |> live(~p"/users/settings")
-
-    avatar =
-      file_input(lv, "#avatar_form", :avatar, [
-        %{name: "me.png", content: @png, type: "image/png"}
-      ])
+    refute has_element?(lv, "#avatar_form[data-unsaved]")
 
     # The native file input clears its label on re-render, so the picked file
     # must be surfaced by us — otherwise it looks like nothing was selected.
-    midway = render_upload(avatar, "me.png", 50)
-    assert midway =~ "me.png"
-    assert midway =~ "50%"
+    assert pick_file(lv, "me.png") =~ "me.png"
 
-    # The upload needs nothing more than the file: its last chunk repoints the
-    # avatar into our storage.
-    render_upload(avatar, "me.png", 50)
+    assert Accounts.get_user(user.id).profile_url in [nil, ""]
+    assert Gamend.Storage.list_objects(prefix: "avatars/#{user.id}/") == []
+    assert has_element?(lv, "#avatar_form[data-unsaved]")
 
-    updated = Accounts.get_user(user.id)
-    assert updated.profile_url =~ "avatars/#{user.id}"
+    save(lv)
+
+    assert Accounts.get_user(user.id).profile_url =~ "avatars/#{user.id}"
+    refute has_element?(lv, "#avatar_form[data-unsaved]")
   end
 
-  test "uploading a new avatar prunes the previous object", %{conn: conn} do
+  test "a file dropped before Save changes nothing", %{conn: conn} do
     user = user_fixture()
     {:ok, lv, _html} = conn |> log_in_user(user) |> live(~p"/users/settings")
 
-    submit_avatar = fn name ->
-      lv
-      |> file_input("#avatar_form", :avatar, [%{name: name, content: @png, type: "image/png"}])
-      |> render_upload(name)
-    end
+    pick_file(lv, "me.png")
+    lv |> element("#avatar_form button[phx-click=cancel_avatar]") |> render_click()
 
-    submit_avatar.("first.png")
+    refute has_element?(lv, "#avatar_form[data-unsaved]")
+    assert Accounts.get_user(user.id).profile_url in [nil, ""]
+  end
+
+  test "saving a new avatar prunes the previous object", %{conn: conn} do
+    user = user_fixture()
+    {:ok, lv, _html} = conn |> log_in_user(user) |> live(~p"/users/settings")
+
+    pick_file(lv, "first.png")
+    save(lv)
     first_url = Accounts.get_user(user.id).profile_url
     assert length(Gamend.Storage.list_objects(prefix: "avatars/#{user.id}/")) == 1
 
-    submit_avatar.("second.png")
+    pick_file(lv, "second.png")
+    save(lv)
     second_url = Accounts.get_user(user.id).profile_url
 
     # The new avatar replaces the old — exactly one object remains, and it is
@@ -73,38 +84,58 @@ defmodule GamendWeb.UserLive.SettingsAvatarTest do
     assert second_url =~ "avatars/#{user.id}"
   end
 
-  test "one of the site's icons is the avatar as an upload is, and replaces it", %{
+  test "one of the site's icons waits for Save, then is the avatar and replaces the picture", %{
     conn: conn
   } do
     user = user_fixture()
     {:ok, lv, _html} = conn |> log_in_user(user) |> live(~p"/users/settings")
 
-    lv
-    |> file_input("#avatar_form", :avatar, [%{name: "me.png", content: @png, type: "image/png"}])
-    |> render_upload("me.png")
+    pick_file(lv, "me.png")
+    save(lv)
+    uploaded = Accounts.get_user(user.id).profile_url
+    assert uploaded =~ "avatars/#{user.id}"
 
-    assert Accounts.get_user(user.id).profile_url =~ "avatars/#{user.id}"
-
     lv
-    |> form("#avatar_icon_form", avatar: %{profile_url: "/icons/rocket-launch.svg"})
+    |> form("#avatar_form", avatar_icon: %{profile_url: "/icons/rocket-launch.svg"})
     |> render_change()
+
+    assert Accounts.get_user(user.id).profile_url == uploaded
+    assert has_element?(lv, "#avatar_form[data-unsaved]")
+
+    assert has_element?(
+             lv,
+             ~s(#avatar_form input[value="/icons/rocket-launch.svg"][checked])
+           )
+
+    save(lv)
 
     # In the colour already chosen for it, with no click on a colour.
     picked = Accounts.get_user(user.id).profile_url
     assert picked =~ ~r{\A/icons/rocket-launch\.svg\?color=[a-z]+\z}
-
-    assert has_element?(
-             lv,
-             ~s(#avatar_icon_form input[value="/icons/rocket-launch.svg"][checked])
-           )
+    refute has_element?(lv, "#avatar_form[data-unsaved]")
 
     # The picture it replaced is gone from storage.
     assert Gamend.Storage.list_objects(prefix: "avatars/#{user.id}/") == []
 
     # A forged pick of anything but one of the site's icons changes nothing.
-    render_change(lv, "pick_avatar_icon", %{"avatar" => %{"profile_url" => "/icons/not-ours.svg"}})
+    render_submit(lv, "save_avatar", %{
+      "avatar_icon" => %{"profile_url" => "/icons/not-ours.svg"}
+    })
 
     assert Accounts.get_user(user.id).profile_url == picked
+  end
+
+  test "an icon clicked with a file picked drops the file", %{conn: conn} do
+    user = user_fixture()
+    {:ok, lv, _html} = conn |> log_in_user(user) |> live(~p"/users/settings")
+
+    pick_file(lv, "me.png")
+
+    lv
+    |> element(~s(#avatar_form input[value="/icons/rocket-launch.svg"]))
+    |> render_click()
+
+    refute render(lv) =~ "me.png"
   end
 
   test "the icon picked in a colour is the avatar in it; with none picked, the id's is lit", %{
@@ -113,24 +144,37 @@ defmodule GamendWeb.UserLive.SettingsAvatarTest do
     user = user_fixture()
     {:ok, lv, _html} = conn |> log_in_user(user) |> live(~p"/users/settings")
 
-    # Never picked: the icon their id gives them is the one lit.
+    # Never picked: the icon their id gives them is the one lit, and nothing
+    # is unsaved for it.
     own = Gamend.Icons.for_id(user.id)
     own_name = Gamend.Icons.name(own)
-    assert has_element?(lv, ~s(#avatar_icon_form input[value="/icons/#{own_name}.svg"][checked]))
+    assert has_element?(lv, ~s(#avatar_form input[value="/icons/#{own_name}.svg"][checked]))
+    refute has_element?(lv, "#avatar_form[data-unsaved]")
 
     lv
-    |> form("#avatar_icon_form",
-      avatar: %{profile_url: "/icons/rocket-launch.svg", profile_url_color: "error"}
+    |> form("#avatar_form",
+      avatar_icon: %{profile_url: "/icons/rocket-launch.svg", profile_url_color: "error"}
     )
-    |> render_change()
+    |> render_submit()
 
     assert Accounts.get_user(user.id).profile_url == "/icons/rocket-launch.svg?color=error"
-    assert has_element?(lv, ~s(#avatar_icon_form input[value="error"][checked]))
+    assert has_element?(lv, ~s(#avatar_form input[value="error"][checked]))
 
     lv
-    |> form("#avatar_icon_form", avatar: %{profile_url_color: ""})
-    |> render_change()
+    |> form("#avatar_form", avatar_icon: %{profile_url_color: ""})
+    |> render_submit()
 
     assert Accounts.get_user(user.id).profile_url == "/icons/rocket-launch.svg"
+  end
+
+  test "a name typed is unsaved until it is saved", %{conn: conn} do
+    user = user_fixture()
+    {:ok, lv, _html} = conn |> log_in_user(user) |> live(~p"/users/settings")
+
+    lv |> form("#display_form", user: %{display_name: "Someone New"}) |> render_change()
+    assert has_element?(lv, "#display_form[data-unsaved]")
+
+    lv |> form("#display_form", user: %{display_name: "Someone New"}) |> render_submit()
+    refute has_element?(lv, "#display_form[data-unsaved]")
   end
 end

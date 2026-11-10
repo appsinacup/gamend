@@ -19,6 +19,11 @@ msgstr ""
 msgid "Actions"
 msgstr "Akce"
 
+#: lib/gamend_web/components/host_layouts/root.html.heex
+#, elixir-autogen, elixir-format
+msgid "Leave without saving your changes?"
+msgstr "Odejít bez uložení změn?"
+
 #: lib/gamend_web/components/host_layouts/root.html.heex:257
 #, elixir-autogen, elixir-format
 msgid "Are you sure?"

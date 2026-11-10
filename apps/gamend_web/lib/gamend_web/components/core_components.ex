@@ -1410,6 +1410,7 @@ defmodule GamendWeb.CoreComponents do
   """
   attr :field, Phoenix.HTML.FormField, required: true
   attr :label, :string, default: nil
+  attr :on_pick, :any, default: nil, doc: "a `JS` command an icon's click also runs"
 
   def icon_picker(assigns) do
     field = assigns.field
@@ -1444,6 +1445,7 @@ defmodule GamendWeb.CoreComponents do
               name={@field.name}
               value={Gamend.Icons.path(name)}
               checked={@picked == name}
+              phx-click={@on_pick}
               aria-label={String.replace(name, "-", " ")}
               class="peer sr-only"
             />
@@ -1518,6 +1520,31 @@ defmodule GamendWeb.CoreComponents do
     </fieldset>
     """
   end
+
+  @doc """
+  Whether a form holds something its Save has not kept: a changeset's changes,
+  or a file picked on `upload` (one of `@uploads`, or nil when none is allowed).
+  A form's `data-unsaved` says it, and the page asks before the reader leaves
+  (`unsaved_changes.js`). For a form that edits something that exists: a new
+  thing's form starts full of suggestions.
+
+      <.form for={@form} phx-change="validate" data-unsaved={unsaved?(@form, @uploads.picture)}>
+
+  Answered by the server, so a form needs a `phx-change`, and after a save the
+  page assigns it a fresh changeset.
+  """
+  @spec unsaved?(Phoenix.HTML.Form.t(), Phoenix.LiveView.UploadConfig.t() | nil | false) ::
+          boolean()
+  def unsaved?(form, upload \\ nil)
+
+  def unsaved?(%Phoenix.HTML.Form{source: source}, upload),
+    do: changed?(source) or file_picked?(upload)
+
+  defp changed?(%Ecto.Changeset{changes: changes}), do: changes != %{}
+  defp changed?(_params), do: false
+
+  defp file_picked?(%{entries: entries}), do: entries != []
+  defp file_picked?(_none), do: false
 
   # With no icon picked, the colour the next one will have: the one chosen so
   # far (`Gamend.Icons.put_color/2` leaves it on the form), "" being none, else

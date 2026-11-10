@@ -6,14 +6,24 @@
 // ancestor, and its own listener, on `window`, calls `window.confirm`. Stopping
 // the event here keeps it from there; cancelling it stops the click, before
 // LiveView or a form sees it. A yes clicks the element again, let through.
+//
+// Answers `ask(text, onYes)`, the same popup for whatever else must ask
+// (`unsaved_changes.js`), or null on a page without it.
 export function startConfirmDialog(doc = document) {
   const dialog = doc.getElementById("gamend-confirm")
-  if (!dialog) return
+  if (!dialog) return null
 
   const message = dialog.querySelector("[data-confirm-message]")
   const sentence = message.textContent.trim()
-  let asking = null
+  let onYes = null
   let approved = null
+
+  const ask = (text, yes) => {
+    onYes = yes
+    message.textContent = text || sentence
+    dialog.returnValue = ""
+    dialog.showModal()
+  }
 
   doc.addEventListener("phoenix.link.click", (event) => {
     const element = event.target
@@ -23,10 +33,14 @@ export function startConfirmDialog(doc = document) {
     if (element === approved) return
 
     event.preventDefault()
-    asking = element
-    message.textContent = element.getAttribute("data-confirm") || sentence
-    dialog.returnValue = ""
-    dialog.showModal()
+    ask(element.getAttribute("data-confirm"), () => {
+      // The page may have drawn the button away meanwhile (a round's clock ran out).
+      if (!element.isConnected) return
+
+      approved = element
+      element.click()
+      approved = null
+    })
   })
 
   // The dialog has no padding of its own, so a click reporting the dialog
@@ -36,13 +50,10 @@ export function startConfirmDialog(doc = document) {
   })
 
   dialog.addEventListener("close", () => {
-    const element = asking
-    asking = null
-    // The page may have drawn the button away meanwhile (a round's clock ran out).
-    if (dialog.returnValue !== "confirm" || !element?.isConnected) return
-
-    approved = element
-    element.click()
-    approved = null
+    const yes = onYes
+    onYes = null
+    if (dialog.returnValue === "confirm") yes?.()
   })
+
+  return ask
 }

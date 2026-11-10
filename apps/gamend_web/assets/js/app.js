@@ -36,6 +36,7 @@ import {startSearchPalette} from "./search_palette"
 import {startNavbarFit} from "./navbar_fit"
 import {startSideNav} from "./side_nav"
 import {startConfirmDialog} from "./confirm_dialog"
+import {startUnsavedChanges} from "./unsaved_changes"
 import {guestNoticeParams, startAnonymousSession} from "./anonymous_session"
 import {startLiveNav} from "./live_nav"
 import {startBackLink} from "./back_link"
@@ -526,8 +527,10 @@ startLastPage()
 startNavbarFit(document.getElementById("main-navbar"))
 // The sidebar's Collapse / Expand, on every page.
 startSideNav()
-// `data-confirm` in the page's popup, on every page.
-startConfirmDialog()
+// `data-confirm` in the page's popup, on every page, and the same popup before
+// leaving a form not saved. Before LiveView and `startLiveNav`, whose click
+// listeners must not see a link the reader has not agreed to follow.
+startUnsavedChanges(startConfirmDialog())
 
 // Smooth scrolling for in-page anchors — armed on the reader's first input,
 // not in the markup. `scroll-behavior: smooth` on <html> also governs scrolls

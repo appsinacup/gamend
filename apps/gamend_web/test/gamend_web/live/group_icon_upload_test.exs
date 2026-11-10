@@ -173,10 +173,33 @@ defmodule GamendWeb.GroupIconUploadTest do
     |> file_input("#group-edit-form", :group_icon, png("other.png"))
     |> render_upload("other.png")
 
-    # Saved as it arrived, with no Save.
+    # Nothing until Save.
+    assert Groups.get_group(group.id).icon_url == first
+    assert has_element?(view, "#group-edit-form[data-unsaved]")
+
+    view |> form("#group-edit-form") |> render_submit()
+
     icon = Groups.get_group(group.id).icon_url
     assert icon =~ "icons/groups/#{group.id}/"
     refute icon == first
+  end
+
+  test "a file picked on Edit and then Cancel changes nothing, and does not come back",
+       %{conn: conn, user: user} do
+    {:ok, group} = Groups.create_group(user.id, %{"title" => "Studio"})
+    before = group.icon_url
+    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{group.id}?edit=1")
+
+    view
+    |> file_input("#group-edit-form", :group_icon, png("other.png"))
+    |> render_upload("other.png")
+
+    view |> element("#group-edit-cancel") |> render_click()
+    render_click(view, "group_toggle_edit", %{})
+
+    refute render(view) =~ "other.png"
+    refute has_element?(view, "#group-edit-form[data-unsaved]")
+    assert Groups.get_group(group.id).icon_url == before
   end
 
   describe "the groups page's buttons" do
@@ -217,19 +240,26 @@ defmodule GamendWeb.GroupIconUploadTest do
       assert Groups.get_group(group.id).title == "Renamed"
     end
 
-    test "an icon saves as it is picked, the rest waits for Save",
-         %{conn: conn, user: user, group: group} do
+    test "an icon waits for Save with the rest", %{conn: conn, user: user, group: group} do
+      before = group.icon_url
       {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{group.id}?edit=1")
+      refute has_element?(view, "#group-edit-form[data-unsaved]")
 
-      view
-      |> form("#group-edit-form",
-        group: %{title: "Typed", icon_url: "/icons/star.svg", icon_url_color: "info"}
-      )
-      |> render_change()
+      form =
+        form(view, "#group-edit-form",
+          group: %{title: "Typed", icon_url: "/icons/star.svg", icon_url_color: "info"}
+        )
+
+      render_change(form)
+
+      assert Groups.get_group(group.id).icon_url == before
+      assert has_element?(view, "#group-edit-form[data-unsaved]")
+
+      render_submit(form)
 
       saved = Groups.get_group(group.id)
       assert saved.icon_url == "/icons/star.svg?color=info"
-      assert saved.title == "Studio"
+      assert saved.title == "Typed"
     end
 
     test "the colours are there before an icon is, one chosen",
@@ -250,7 +280,7 @@ defmodule GamendWeb.GroupIconUploadTest do
       # The icon clicked next comes in it.
       view
       |> form("#group-edit-form", group: %{icon_url: "/icons/star.svg", icon_url_color: color})
-      |> render_change()
+      |> render_submit()
 
       assert Groups.get_group(group.id).icon_url == "/icons/star.svg?color=#{color}"
     end

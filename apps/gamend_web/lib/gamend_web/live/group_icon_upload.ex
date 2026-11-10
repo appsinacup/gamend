@@ -20,7 +20,7 @@ defmodule GamendWeb.GroupIconUpload do
   use GamendWeb, :html
 
   import Phoenix.LiveView,
-    only: [allow_upload: 3, cancel_upload: 3, consume_uploaded_entries: 3]
+    only: [allow_upload: 3, cancel_upload: 3, consume_uploaded_entries: 3, uploaded_entries: 2]
 
   alias Gamend.Accounts
   alias Gamend.Accounts.User
@@ -33,21 +33,17 @@ defmodule GamendWeb.GroupIconUpload do
   @doc """
   The upload, `:group_icon`, when `user` may upload one, and
   `@group_icon_upload?` saying whether they may. Called once, in a page's
-  mount or a component's first update. `opts` go to `allow_upload/3`: an
-  edit form that saves a file as it arrives gives `auto_upload:` and `progress:`.
+  mount or a component's first update.
   """
-  @spec allow(Phoenix.LiveView.Socket.t(), term(), keyword()) :: Phoenix.LiveView.Socket.t()
-  def allow(socket, user, opts \\ []) do
+  @spec allow(Phoenix.LiveView.Socket.t(), term()) :: Phoenix.LiveView.Socket.t()
+  def allow(socket, user) do
     if allowed?(user) do
       socket
       |> assign(:group_icon_upload?, true)
-      |> allow_upload(
-        @name,
-        [
-          accept: ~w(.png .jpg .jpeg .webp .gif),
-          max_entries: 1,
-          max_file_size: Gamend.Limits.get(:max_upload_bytes)
-        ] ++ opts
+      |> allow_upload(@name,
+        accept: ~w(.png .jpg .jpeg .webp .gif),
+        max_entries: 1,
+        max_file_size: Gamend.Limits.get(:max_upload_bytes)
       )
     else
       assign(socket, :group_icon_upload?, false)
@@ -65,19 +61,27 @@ defmodule GamendWeb.GroupIconUpload do
   @doc """
   The picked file made `group`'s icon, `{socket, group, nil}`, the group as
   it is now; nothing picked, the group as it was. `{socket, group, message}`
-  when the file was no image or could not be kept, for the page to say.
+  when the file was refused, was no image or could not be kept, for the page
+  to say.
   """
   @spec save(Phoenix.LiveView.Socket.t(), term(), Groups.Group.t()) ::
           {Phoenix.LiveView.Socket.t(), Groups.Group.t(), String.t() | nil}
   def save(socket, user, group) do
     if socket.assigns[:group_icon_upload?] == true and allowed?(user) do
-      results =
-        consume_uploaded_entries(socket, @name, fn %{path: path}, _entry ->
-          {:ok, store(group.id, File.read!(path))}
-        end)
+      case uploaded_entries(socket, @name) do
+        # A file refused never finishes, and consuming it would raise.
+        {_done, [_ | _]} ->
+          {socket, group, refused()}
 
-      {group, error} = set(results, user, group)
-      {socket, group, error}
+        _nothing_or_done ->
+          results =
+            consume_uploaded_entries(socket, @name, fn %{path: path}, _entry ->
+              {:ok, store(group.id, File.read!(path))}
+            end)
+
+          {group, error} = set(results, user, group)
+          {socket, group, error}
+      end
     else
       {socket, group, nil}
     end
@@ -116,11 +120,12 @@ defmodule GamendWeb.GroupIconUpload do
     end
   end
 
-  defp set([:not_an_image], _user, group),
-    do: {group, gettext("File is too large or not a supported image.")}
+  defp set([:not_an_image], _user, group), do: {group, refused()}
 
   defp set([_failed], _user, group), do: {group, gettext("Failed")}
   defp set([], _user, group), do: {group, nil}
+
+  defp refused, do: gettext("File is too large or not a supported image.")
 
   attr :id, :string, required: true, doc: "the file input's row is `<id>-upload`"
   attr :field, Phoenix.HTML.FormField, required: true, doc: "the form's icon URL field"
@@ -154,10 +159,22 @@ defmodule GamendWeb.GroupIconUpload do
       <% else %>
         <.group_avatar icon_url={@field.value} class="size-16" />
       <% end %>
-      <.icon_picker field={@field} label={gettext("Icon")} />
+      <.icon_picker
+        field={@field}
+        label={gettext("Icon")}
+        on_pick={drop_picked_file(@uploads, @cancel, @target)}
+      />
     </div>
     """
   end
+
+  # An icon clicked with a file picked means the icon: the file beats it at Save.
+  defp drop_picked_file(%{group_icon: %{entries: [%{ref: ref} | _]}}, cancel, target) do
+    opts = if target, do: [target: target], else: []
+    JS.push(cancel, [value: %{ref: ref}] ++ opts)
+  end
+
+  defp drop_picked_file(_uploads, _cancel, _target), do: nil
 
   attr :uploads, :any, required: true
   attr :icon_url, :string, default: nil, doc: "the icon the form has now, shown with no file"

@@ -1,5 +1,7 @@
 # November 2026
 
+- [changed] **An avatar or a group's icon waits for Save.** A file or one of the site's icons is shown as it will be, and nothing is stored or replaced until Save, so a mistake costs nothing. An icon clicked with a file picked drops the file. **Hosts:** `GroupIconUpload.allow/3` is `allow/2`: no `auto_upload:`.
+- [added] **Leaving a form not saved asks first.** `data-unsaved={unsaved?(@form, @uploads.picture)}` on a form (`CoreComponents.unsaved?/2`, a changeset's changes or a picked file) asks in the page's popup on a link, and in the browser's own on a reload or a closed tab. A button that leaves with no link says `data-leaves-form`. On the account tab and a group's edit form.
 - [added] **`/admin/settings` downloads the server's settings as a `.env` file**, after a recent sign-in. Every setting's and plugin variable's running value, secrets in the clear; one on its default is commented out. A `.env` now reads `\\n` as a backslash and an n, so a JSON key file survives the trip.
 - [removed] **`GamendWeb.Plugs.CanonicalHost` and `config :gamend_web, :canonical_host`.** Redirecting `www` to the apex is a rule where the name is served (a CDN or proxy); set in the app, it also sent a hosted server's own address away.
 - [fixed] **Bans, rate limits and geo see the client behind a proxy on IPv4, not the proxy.** The `::` listener reports that proxy as `::ffff:a.b.c.d`, which `GamendWeb.Plugs.RealIp` now trusts for `X-Forwarded-For` only.

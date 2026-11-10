@@ -106,6 +106,7 @@ custom classes must fully style the input
 - Ensure **clean typography, spacing, and layout balance** for a refined, premium look
 - Focus on **delightful details** like hover effects, loading states, and smooth page transitions
 - The accessibility floors in [RULES.md](RULES.md) are hard limits
+- **A setting is kept by Save.** Nothing that replaces a stored value (an avatar, an icon, a name, a secret) writes on `phx-change` or as an upload arrives: no `auto_upload` on such a form, and the picked thing is shown as it will be. A form that edits something existing says `data-unsaved={unsaved?(@form, @uploads.picture)}`, and leaving it asks first. A toggle, which one click puts back, may save at once
 
 
 <!-- phoenix-gen-auth-start -->

@@ -35,7 +35,7 @@ defmodule GamendWeb.UserLive.Settings do
 
   @account_events ~w(validate_email update_email validate_display_name update_display_name
                      validate_username update_username validate_avatar cancel_avatar
-                     pick_avatar_icon
+                     save_avatar
                      validate_password update_password unlink_provider delete_user
                      delete_conflicting_account)
   @friends_events ~w(search_users send_friend block_friend accept_friend reject_friend
@@ -121,6 +121,7 @@ defmodule GamendWeb.UserLive.Settings do
           }
           phx-click="settings_tab"
           phx-value-tab={tab}
+          data-leaves-form={@settings_tab != tab}
           class={[
             "px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap",
             if(@settings_tab == tab,

@@ -79,10 +79,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     socket
     |> assign(:groups_path, nil)
     |> assign(:group_types, types)
-    |> GroupIconUpload.allow(Shared.current_user(socket),
-      auto_upload: true,
-      progress: &__MODULE__.group_icon_progress/3
-    )
+    |> GroupIconUpload.allow(Shared.current_user(socket))
     |> assign(:group_fixed_max, Groups.fixed_max_members())
     |> assign(:group_owner, owner_name(socket))
     |> assign(:create_slug_auto, "")
@@ -148,7 +145,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
           <div class="ms-auto flex gap-2">
             <%!-- On a page of its own the title row has Back. --%>
             <%= if @group_detail && is_nil(@groups_path) do %>
-              <button phx-click="group_close_detail" class="btn btn-sm btn-ghost">
+              <button phx-click="group_close_detail" data-leaves-form class="btn btn-sm btn-ghost">
                 {gettext("Back")}
               </button>
             <% end %>
@@ -275,6 +272,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                 id="group-edit-form"
                 phx-change="group_validate_edit"
                 phx-submit="group_save_edit"
+                data-unsaved={unsaved?(@group_edit_form, @group_icon_upload? && @uploads.group_icon)}
                 class="space-y-3"
               >
                 <.input field={@group_edit_form[:title]} label={gettext("Name")} type="text" />
@@ -1408,8 +1406,6 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   end
 
   def handle_event("group_validate_edit", %{"group" => group_params}, socket) do
-    socket = save_picked_icon(socket, group_params)
-
     changeset =
       Groups.change_group(socket.assigns.group_detail, group_params)
       |> Map.put(:action, :validate)
@@ -1424,7 +1420,9 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     case Groups.update_group(user.id, group.id, group_params) do
       # To the list, as a navigation: a patch would keep the edit form's
       # scroll on the shorter page.
-      {:ok, _updated} ->
+      {:ok, updated} ->
+        {socket, _updated} = save_group_icon(socket, user, updated)
+
         {:noreply,
          socket
          |> put_flash(:info, gettext("Success."))
@@ -1748,6 +1746,13 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     )
   end
 
+  # A file picked on the form goes with it, or the next edit would open with it.
+  defp apply_edit_param(%{assigns: %{group_editing: true}} = socket, _edit?) do
+    socket
+    |> GroupIconUpload.cancel_all()
+    |> assign(group_editing: false, group_edit_form: nil)
+  end
+
   defp apply_edit_param(socket, _edit?),
     do: assign(socket, group_editing: false, group_edit_form: nil)
 
@@ -1919,46 +1924,6 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
   # An image of one's own for the group's icon (`GamendWeb.GroupIconUpload`),
   # made the icon once the form is saved, its trouble a flash.
-  # An icon picked on the edit form is saved as it is picked, its colour with
-  # it; the rest of the form waits for Save.
-  defp save_picked_icon(socket, params) do
-    group = socket.assigns.group_detail
-    url = Gamend.Icons.put_color(params, "icon_url")["icon_url"]
-
-    if Gamend.Icons.name(url) && url != group.icon_url do
-      case Groups.set_icon_url(Shared.current_user(socket).id, group.id, url) do
-        {:ok, updated} ->
-          assign(socket, :group_detail, updated)
-
-        {:error, reason} ->
-          put_flash(socket, :error, LiveHelpers.failure_message(gettext("Failed"), reason))
-      end
-    else
-      socket
-    end
-  end
-
-  @doc false
-  # An image on the edit form is saved as it arrives, as an icon is; what was
-  # typed stays in the form. On the create form it waits for the group.
-  def group_icon_progress(
-        :group_icon,
-        %{done?: true},
-        %{assigns: %{group_editing: true}} = socket
-      ) do
-    user = Shared.current_user(socket)
-    {socket, updated} = save_group_icon(socket, user, socket.assigns.group_detail)
-    typed = Map.delete(socket.assigns.group_edit_form.params || %{}, "icon_url")
-
-    {:noreply,
-     assign(socket,
-       group_detail: updated,
-       group_edit_form: to_form(Groups.change_group(updated, typed), as: :group)
-     )}
-  end
-
-  def group_icon_progress(_name, _entry, socket), do: {:noreply, socket}
-
   defp save_group_icon(socket, user, group) do
     case GroupIconUpload.save(socket, user, group) do
       {socket, group, nil} -> {socket, group}

@@ -19,6 +19,11 @@ msgstr ""
 msgid "Actions"
 msgstr "동작"
 
+#: lib/gamend_web/components/host_layouts/root.html.heex
+#, elixir-autogen, elixir-format
+msgid "Leave without saving your changes?"
+msgstr "변경 사항을 저장하지 않고 나갈까요?"
+
 #: lib/gamend_web/components/host_layouts/root.html.heex:257
 #, elixir-autogen, elixir-format
 msgid "Are you sure?"

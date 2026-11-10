@@ -250,11 +250,13 @@ reload — the page painted at the top and glided down to where it had been. --%
         a deck, a test) scrolled by the bars' height into nothing. --%>
   <body class="min-h-dvh bg-base-100 text-base-content antialiased">
     {@inner_content}
-    <%!-- What a `data-confirm` asks (`confirm_dialog.js`). Here, outside the
-          LiveView, so no diff redraws it while it is open. --%>
+    <%!-- What a `data-confirm` asks (`confirm_dialog.js`), and leaving a form
+          not saved (`unsaved_changes.js`). Here, outside the LiveView, so no
+          diff redraws it while it is open. --%>
     <dialog
       id="gamend-confirm"
       role="alertdialog"
+      data-unsaved-message={gettext("Leave without saving your changes?")}
       aria-labelledby="gamend-confirm-message"
       class="motion-dialog m-auto w-[min(24rem,calc(100vw-2rem))] rounded-box border border-base-300 bg-base-100 p-0 text-base-content shadow-xl backdrop:bg-black/30"
     >

@@ -17,7 +17,8 @@ is left out; `client.rest().send` reaches it for a tool that needs it.
 
 ```toml
 [dependencies]
-gamend = { path = "rust_sdk" }
+gamend = "1"                        # from crates.io
+# gamend = { path = "rust_sdk" }    # or from the release's tarball
 ```
 
 The one dependency of the core is `serde_json`. The default feature `native` adds

@@ -64,8 +64,8 @@ attached to the [`latest` release](https://github.com/appsinacup/gamend/releases
 - [Godot SDK](https://gamend.org/docs/godot-sdk) — also on the [Godot Asset Library](https://godotengine.org/asset-library/asset/4510)
 - [Rune SDK (Balaur)](https://github.com/appsinacup/gamend/releases/download/latest/balaur_addons.zip) — Rune scripts for the Balaur engine, one module per API area
 - [C++ SDK](https://gamend.org/docs/cpp-sdk) — C++17, pluggable transports, no exceptions or RTTI required
-- [C# SDK](https://gamend.org/docs/csharp-sdk) — netstandard2.1, pluggable transports, no threads or reflection
-- [Rust SDK](https://gamend.org/docs/rust-sdk) — stable Rust, pluggable transports, core builds for wasm32
+- [C# SDK](https://gamend.org/docs/csharp-sdk) — on [NuGet](https://www.nuget.org/packages/Gamend); netstandard2.1, pluggable transports, no threads or reflection
+- [Rust SDK](https://gamend.org/docs/rust-sdk) — on [crates.io](https://crates.io/crates/gamend); stable Rust, pluggable transports, core builds for wasm32
 - [JavaScript SDK](https://www.npmjs.com/package/@ughuuu/gamend) — with TypeScript types
 - [Elixir SDK](sdk/) — Stub modules for IDE autocomplete in custom hooks
 

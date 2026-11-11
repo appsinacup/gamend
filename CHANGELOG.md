@@ -1,7 +1,7 @@
 # November 2026
 
-- [added] **Rust SDK**: every player operation, typed models, realtime with protobuf, and the conformance scenario, for Bevy, Fyrox, macroquad and tools. On the `latest` release as `gamend-rust-sdk.tar.gz`.
-- [added] **C# SDK**: every player operation, typed models, realtime with protobuf, and the conformance scenario, for .NET games and tools. On the `latest` release as `gamend-csharp-sdk.tar.gz`. It starts no threads and uses no reflection, ready for a Unity package.
+- [added] **Rust SDK**: every player operation, typed models, realtime with protobuf, and the conformance scenario, for Bevy, Fyrox, macroquad and tools. On crates.io as `gamend` and on the `latest` release as `gamend-rust-sdk.tar.gz`.
+- [added] **C# SDK**: every player operation, typed models, realtime with protobuf, and the conformance scenario, for .NET games and tools. On NuGet as `Gamend` and on the `latest` release as `gamend-csharp-sdk.tar.gz`. It starts no threads and uses no reflection, ready for a Unity package.
 - [added] **The npm package has TypeScript types**: every operation, schema and realtime event, generated with the SDK (`dist/index.d.ts`). The JavaScript is unchanged.
 - [added] **A notification says which group it is in.** `group` on every notification in the API and the realtime event (empty for none), so a game client can show the same sections. **Hosts:** regenerate clients.
 - [added] **`"site_only" => true` on `Notifications.notify/3`** writes the row in its group and sends no push or email.

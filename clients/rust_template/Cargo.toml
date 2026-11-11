@@ -6,6 +6,8 @@ description = "Client SDK for Gamend, an open-source game backend"
 license = "MIT"
 homepage = "https://gamend.org"
 repository = "https://github.com/appsinacup/gamend"
+documentation = "https://gamend.org/docs/rust-sdk"
+readme = "README.md"
 keywords = ["gamedev", "backend", "multiplayer", "websocket", "phoenix"]
 categories = ["game-development", "network-programming"]
 

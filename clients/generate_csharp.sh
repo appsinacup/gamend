@@ -34,4 +34,7 @@ namespace Gamend
     }
 }
 VERSION
+  # The NuGet package's version, which `dotnet pack` reads.
+  sed -i.bak "s|<Version>.*</Version>|<Version>${APP_VERSION}</Version>|" csharp_sdk/src/Gamend/Gamend.csproj
+  rm csharp_sdk/src/Gamend/Gamend.csproj.bak
 fi

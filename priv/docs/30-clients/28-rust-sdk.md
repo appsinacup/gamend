@@ -13,12 +13,15 @@ the other SDKs and named as the Godot SDK names it.
 
 ## Add it
 
-Unpack the download beside your project:
+From [crates.io](https://crates.io/crates/gamend):
 
-```toml
-[dependencies]
-gamend = { path = "rust_sdk" }
+```bash
+cargo add gamend
 ```
+
+Or unpack the download beside your project and use
+`gamend = { path = "rust_sdk" }`. Every change to Gamend publishes both, at the
+same version.
 
 The default `native` feature brings `ureq` and `tungstenite` with rustls. With
 `default-features = false` the core has no threads and builds for wasm32: bring

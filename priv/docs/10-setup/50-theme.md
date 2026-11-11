@@ -309,6 +309,74 @@ Example: grouped public links plus admin-only account entry:
 }
 ```
 
+## The next step (`nudge`)
+
+One button or card a page can move, to show the reader what to press next: Servers on the home page, New server with none yet, the first quest waiting for its Claim. A chevron, the hero's scroll cue, bounces before it and points at it, and on every second landing a ring grows out of its edge. It never pauses. Under reduced motion the ring stands still around it and the chevron stops moving.
+
+Choose the move in the theme JSON. Without `nudge` the site gets `pointer ring` and `always`:
+
+```json
+"nudge": {
+  "move": "pointer ring",
+  "rhythm": "always"
+}
+```
+
+| Setting | Value | Effect |
+|---|---|---|
+| `move` | `"pointer"` | The chevron alone. |
+| `move` | `"ring"` | A ring out of the edge, on the beat the chevron would land. |
+| `move` | `"hop"` | The button does the chevron's bounce itself. With `pointer` it is knocked away from the chevron on its second landing. |
+| `move` | `"shine"` | A soft light crosses the button. |
+| `move` | `"pointer …"` | The chevron with one of the other three: `"pointer ring"`, `"pointer hop"`, `"pointer shine"`. |
+| `rhythm` | `"always"` | A 2 s beat that never stops: two landings, the effect on the second. |
+| `rhythm` | `"rest"` | Two landings, the effect, then still, every 3.2 s. |
+
+An unknown value falls back to the default. Core writes the choice on `<html data-nudge data-nudge-rhythm>` (`GamendWeb.HostLayouts.nudge/0`), and the stylesheet does the rest.
+
+Mark the step with a class: one per page, on the button or card that is already the primary one.
+
+```text
+<.link navigate={~p"/servers/new"} class="btn btn-primary nudge">New server</.link>
+<.link navigate={@next.href} class="card nudge nudge-top">…</.link>
+```
+
+| Class | Effect |
+|---|---|
+| `nudge` | The chevron before the button, pointing at it in the reading direction (mirrored right to left). |
+| `nudge-top` | The chevron above it, pointing down. For a card in a grid, or a button that is full width on a phone. |
+| `[--nudge-color:var(--color-success)]` | The chevron and the ring in another colour, for a step that is not primary (a green Claim). |
+
+The chevron sits outside the button, about 1.75rem wide or tall, so leave that room: `ms-7` before a button at the edge of its box, `pt-4` over a grid whose first card is the step. A presentation page's button takes `"nudge": true` and gets the chevron above it, so make it the first button of its row:
+
+```json
+{ "label": "Servers", "href": "/servers", "style": "primary", "nudge": true }
+```
+
+Core's own pages already nudge: the first quest waiting for its Claim, on `/quests`.
+
+Your stylesheet must declare the classes, as it does `btn-surface`: copy the block from core's `assets/css/app.css`, from the comment that starts `` `nudge`: the one next step `` to the end of its reduced-motion rule. `/ui` shows both placements.
+
+### A long form's action
+
+`form_heading/1` keeps a form's action in sight on a page that is one form longer than a screen (New server, New project, a settings page). It draws Back, the title and the action in a heading that sticks under the navbar. The submit button sits outside the form and names it with `form`, which LiveView's `phx-submit` takes as its own. Keep it as the form's only submit; a short form (log in, a code) keeps its button under its fields.
+
+```text
+<.form_heading back={~p"/servers"} icon="hero-plus-solid">
+  New server
+  <:actions>
+    <button type="submit" form="new-server-form" class="btn btn-primary btn-sm nudge">
+      Create server
+    </button>
+  </:actions>
+  <:note :if={is_nil(@user)}>Needs an account.</:note>
+</.form_heading>
+
+<.form for={@form} id="new-server-form" phx-submit="create">…</.form>
+```
+
+`note` is a line under the row, at its end: why the action is off. On a phone the buttons wrap under the title.
+
 ## Site search
 
 Every page carries a magnifier in the header and answers Ctrl/Cmd+K with a search palette. Out of the box it searches your navigation: the links you configured above, flattened so a page two taps deep in a phone's hamburger menu is one query away.

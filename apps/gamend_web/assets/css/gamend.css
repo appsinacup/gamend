@@ -1,0 +1,345 @@
+/* Gamend core's stylesheet for a host: everything core's pages need, in one
+   place, so a host's `app.css` holds only its own look. A host imports it
+   first, through the pointers `mix gamend.assets` writes (the
+   `gamend_assets` compiler runs it on every compile), which find core in a
+   sibling `gamend` checkout or under deps:
+
+       @import "../vendor/gamend/gamend.css";
+       @source "../css";
+       @source "../../lib";
+       @plugin "../vendor/gamend/daisyui" { themes: false; }
+       @plugin "../vendor/gamend/daisyui-theme" { name: "light"; … }
+
+   It brings Tailwind, core's own sources (its templates and scripts, so
+   their classes are generated), Phoenix's loading variants and `dark`,
+   heroicons (`hero-*`), core's classes (`vendor/gamend.js`: `btn-surface`,
+   `card-hover`, `text-muted`, `max-w-narrow`, `nudge`) and the base styles
+   of core's features: the Inter font, the background icons' drift,
+   Markdown pages, changelog pills, touch targets, iOS zoom and docs code.
+   A host restyles any of them with its own rule after the import; its
+   colours are its daisyUI themes. Paths here are relative to this file. */
+
+@import "tailwindcss" source(none);
+@source "../js";
+@source "../../lib";
+
+@plugin "../vendor/heroicons";
+@plugin "../vendor/gamend";
+
+@custom-variant phx-click-loading (.phx-click-loading&, .phx-click-loading &);
+@custom-variant phx-submit-loading (.phx-submit-loading&, .phx-submit-loading &);
+@custom-variant phx-change-loading (.phx-change-loading&, .phx-change-loading &);
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+[data-phx-session], [data-phx-teleported-src] { display: contents }
+
+.summary-no-marker {
+  list-style: none;
+}
+
+.summary-no-marker::-webkit-details-marker {
+  display: none;
+}
+
+.summary-no-marker::marker {
+  content: "";
+}
+
+.summary-no-marker::after {
+  display: none;
+}
+
+/* Self-hosted Inter variable font (latin + latin-ext subsets) */
+/* Inter is licensed under the SIL Open Font License 1.1 — https://github.com/rsms/inter */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+/* Float animation for background icons — drift with increased movement range.
+   Defined only when the user allows motion: without the keyframes the inline
+   `animation: float ...` styles resolve to nothing, so reduced-motion users
+   get static icons. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    25% {
+      transform: translateY(-18px) rotate(3deg);
+    }
+    50% {
+      transform: translateY(-9px) rotate(-2deg);
+    }
+    75% {
+      transform: translateY(-22px) rotate(1deg);
+    }
+  }
+}
+
+/* ─── Markdown content (changelog & blog) ───
+   Text in a colour, not an opacity: an opacity fades a child's own colour
+   and a picture with it (Polyglot's fix, 2026-10-08, now every host's). */
+.markdown-content {
+  line-height: 1.75;
+  color: var(--color-base-content);
+}
+.markdown-content h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  border-bottom: 1px solid color-mix(in oklch, var(--color-base-content) 15%, transparent);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+  margin-top: 2rem;
+}
+.markdown-content h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+.markdown-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.markdown-content p {
+  margin-bottom: 1rem;
+  color: color-mix(in oklab, var(--color-base-content) 85%, transparent);
+}
+.markdown-content ul,
+.markdown-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+.markdown-content ul { list-style-type: disc; }
+.markdown-content ol { list-style-type: decimal; }
+.markdown-content li {
+  margin-bottom: 0.25rem;
+  color: color-mix(in oklab, var(--color-base-content) 85%, transparent);
+}
+.markdown-content a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.markdown-content a:hover {
+  opacity: 0.8;
+}
+.markdown-content code,
+.markdown-content pre {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  font-variant-ligatures: none;
+}
+.markdown-content code {
+  background: var(--color-base-200);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  border: 1px solid color-mix(in oklch, var(--color-base-content) 10%, transparent);
+}
+.markdown-content pre {
+  background: color-mix(in oklch, var(--color-base-200) 70%, var(--color-base-100));
+  border: 1px solid color-mix(in oklch, var(--color-base-content) 12%, transparent);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+.markdown-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8125rem;
+}
+.markdown-content blockquote {
+  border-left: 4px solid color-mix(in oklch, var(--color-primary) 40%, transparent);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: color-mix(in oklab, var(--color-base-content) 80%, transparent);
+  font-style: italic;
+}
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+.markdown-content th,
+.markdown-content td {
+  border: 1px solid color-mix(in oklch, var(--color-base-content) 15%, transparent);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.markdown-content th {
+  background: color-mix(in oklch, var(--color-base-content) 8%, var(--color-base-100));
+  font-weight: 600;
+  white-space: nowrap;
+}
+.markdown-content tbody tr:nth-child(even) {
+  background: color-mix(in oklch, var(--color-base-content) 3%, transparent);
+}
+.markdown-content td {
+  vertical-align: top;
+}
+/* A wide table must scroll inside itself rather than widening the page. */
+.markdown-content table {
+  display: block;
+  overflow-x: auto;
+  max-width: 100%;
+}
+.markdown-content img {
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+}
+.markdown-content hr {
+  border: none;
+  border-top: 1px solid color-mix(in oklch, var(--color-base-content) 15%, transparent);
+  margin: 2rem 0;
+}
+
+/* ─── Changelog pills/tags ─── */
+.changelog-pill {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.1rem 0.5rem;
+  border-radius: 9999px;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+.changelog-pill-fix      { background: #dcfce7; color: #166534; }
+.changelog-pill-added    { background: #dbeafe; color: #1e40af; }
+.changelog-pill-bug      { background: #fee2e2; color: #991b1b; }
+.changelog-pill-changed  { background: #fef3c7; color: #92400e; }
+.changelog-pill-removed  { background: #fce7f3; color: #9d174d; }
+.changelog-pill-security { background: #ede9fe; color: #5b21b6; }
+.changelog-pill-breaking { background: #fecaca; color: #7f1d1d; }
+.changelog-pill-deprecated { background: #f3f4f6; color: #4b5563; }
+.changelog-pill-perf     { background: #ccfbf1; color: #115e59; }
+.changelog-pill-docs     { background: #e0e7ff; color: #3730a3; }
+.changelog-pill-started  { background: #fef9c3; color: #854d0e; }
+.changelog-pill-investigated { background: #f0fdf4; color: #166534; }
+.changelog-pill-idea     { background: #fce4ec; color: #880e4f; }
+.changelog-pill-plan     { background: #e1f5fe; color: #01579b; }
+.changelog-pill-other    { background: #c5cae9; color: #283593; }
+
+/* Dark theme keeps each pill's hue but flips to a dark background with a
+   light label, so the tags stay readable instead of glowing pastel boxes. */
+[data-theme="dark"] .changelog-pill-fix      { background: #14532d; color: #bbf7d0; }
+[data-theme="dark"] .changelog-pill-added    { background: #1e3a8a; color: #bfdbfe; }
+[data-theme="dark"] .changelog-pill-bug      { background: #7f1d1d; color: #fecaca; }
+[data-theme="dark"] .changelog-pill-changed  { background: #78350f; color: #fde68a; }
+[data-theme="dark"] .changelog-pill-removed  { background: #831843; color: #fbcfe8; }
+[data-theme="dark"] .changelog-pill-security { background: #4c1d95; color: #ddd6fe; }
+[data-theme="dark"] .changelog-pill-breaking { background: #450a0a; color: #fca5a5; }
+[data-theme="dark"] .changelog-pill-deprecated { background: #374151; color: #d1d5db; }
+[data-theme="dark"] .changelog-pill-perf     { background: #134e4a; color: #99f6e4; }
+[data-theme="dark"] .changelog-pill-docs     { background: #312e81; color: #c7d2fe; }
+[data-theme="dark"] .changelog-pill-started  { background: #713f12; color: #fef08a; }
+[data-theme="dark"] .changelog-pill-investigated { background: #052e16; color: #86efac; }
+[data-theme="dark"] .changelog-pill-idea     { background: #880e4f; color: #fce4ec; }
+[data-theme="dark"] .changelog-pill-plan     { background: #01579b; color: #e1f5fe; }
+[data-theme="dark"] .changelog-pill-other    { background: #283593; color: #c5cae9; }
+
+/* ─── Mobile touch targets ───
+   Interactive controls meet the 44px minimum touch target on devices that
+   don't support hover (phones, tablets): every button, input and select is
+   that tall, and a square or round small button that wide. A row of keys a
+   page packs closer (a game's keyboard) sets its own height after this. */
+@media (hover: none) and (pointer: coarse) {
+  .btn,
+  .btn-sm,
+  .btn-xs,
+  .input,
+  .select {
+    min-height: 2.75rem;
+  }
+
+  .btn-square.btn-xs,
+  .btn-circle.btn-xs,
+  .btn-square.btn-sm,
+  .btn-circle.btn-sm {
+    min-width: 2.75rem;
+  }
+}
+
+/* ─── iOS auto-zoom prevention ───
+   Safari zooms in on inputs with font-size < 16px. Force 16px on
+   touch devices to prevent unwanted zoom that doesn't revert. */
+@media screen and (max-width: 1023px) {
+  input[type="text"],
+  input[type="password"],
+  input[type="email"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ─── Code highlighting for docs ─── */
+.highlight-code {
+  border: 1px solid var(--color-base-300);
+}
+.highlight-code .code-line {
+  line-height: 1.6;
+}
+.highlight-code .code-comment,
+.code-comment {
+  opacity: 0.35;
+  filter: grayscale(1);
+  font-style: italic;
+}
+.highlight-code .code-keyword {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.highlight-code .code-string {
+  color: var(--color-success);
+}
+.highlight-code .code-variable {
+  color: var(--color-info);
+}
+.highlight-code .code-function {
+  color: var(--color-secondary);
+}

@@ -194,7 +194,7 @@ defmodule GamendWeb.HostLayouts do
 
   @doc """
   `<html data-nudge data-nudge-rhythm>`: how the page's next step moves
-  (`app.css`, `nudge`), from the config JSON's `"nudge"`:
+  (`gamend.js`, `nudge`), from the config JSON's `"nudge"`:
 
       "nudge": {"move": "pointer ring", "rhythm": "always"}
 

@@ -187,12 +187,13 @@ defmodule GamendWeb.MixProject do
         "GitHub" => @source_url,
         "Changelog" => "#{@source_url}/blob/main/CHANGELOG.md"
       },
-      # A host builds its own CSS/JS bundle from these: Tailwind scans
-      # `assets/js` and `lib` for classes, and `assets/vendor` holds the shared
-      # plugins (heroicons, daisyUI) its app.css loads. `priv/static/flags` is
+      # A host builds its own CSS/JS bundle from these: its app.css imports
+      # `assets/css/gamend.css` (through `mix gamend.assets`' pointers), which
+      # scans `assets/js` and `lib` for classes and loads the shared plugins
+      # in `assets/vendor` (heroicons, daisyUI, core's classes). `priv/static/flags` is
       # served straight out of this app by the endpoint's bundled-static plug,
       # alongside the fonts.
-      files: ~w(lib assets/js assets/vendor assets/tsconfig.json priv/gettext
+      files: ~w(lib assets/css assets/js assets/vendor assets/tsconfig.json priv/gettext
                 priv/static/fonts priv/static/flags .formatter.exs mix.exs
                 README.md LICENSE)
     ]

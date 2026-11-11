@@ -2,8 +2,20 @@ const plugin = require("tailwindcss/plugin")
 const fs = require("fs")
 const path = require("path")
 
+// The heroicons dep of the project Tailwind runs in: a host's `deps/` (the
+// CLI runs from the project's root, the tailwind profile's `cd`), else this
+// umbrella's, else a dep's own. `gamend.css` loads this for every host.
+const candidates = [
+  path.join(process.cwd(), "deps/heroicons/optimized"),
+  path.join(__dirname, "../../../../deps/heroicons/optimized"),
+  path.join(__dirname, "../../deps/heroicons/optimized")
+]
+
 module.exports = plugin(function({matchComponents, theme}) {
-  let iconsDir = path.join(__dirname, "../../../../deps/heroicons/optimized")
+  let iconsDir = candidates.find(dir => fs.existsSync(dir))
+  if (!iconsDir) {
+    throw new Error(`Could not locate Heroicons. Tried: ${candidates.join(", ")}`)
+  }
   let values = {}
   let icons = [
     ["", "/24/outline"],

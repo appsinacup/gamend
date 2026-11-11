@@ -4,8 +4,8 @@ defmodule GamendWeb.PageWidthTest do
   # Three widths, no more. A page is the layout's column: the default, or
   # `wide` for a page with its own side columns (`Layouts.app wide`).
   # Anything narrower (a form, an article, a whole login page) is
-  # `max-w-narrow` (`--container-narrow` in assets/css/app.css; every host
-  # stylesheet declares it). Before this, pages picked their own: login at sm
+  # `max-w-narrow` (core's Tailwind plugin, `assets/vendor/gamend.js`, in
+  # `assets/css/gamend.css`, which every host stylesheet imports). Before this, pages picked their own: login at sm
   # then 4xl, legal pages at 2xl and 4xl, a blog post at 4xl, others at lg.
   #
   # A source scan, so a class built from pieces (`["mx-auto", width]`) slips
@@ -64,9 +64,15 @@ defmodule GamendWeb.PageWidthTest do
            """
   end
 
-  test "the stylesheet declares max-w-narrow" do
+  test "the stylesheet imports core's, whose plugin declares max-w-narrow" do
     css = File.read!(Path.expand("../../../../assets/css/app.css", __DIR__))
-    assert css =~ "--container-narrow:"
+    assert css =~ ~s(@import "../../apps/gamend_web/assets/css/gamend.css";)
+
+    core_css = File.read!(Path.expand("../../assets/css/gamend.css", __DIR__))
+    assert core_css =~ ~s(@plugin "../vendor/gamend";)
+
+    plugin = File.read!(Path.expand("../../assets/vendor/gamend.js", __DIR__))
+    assert plugin =~ ~s(maxWidth: { narrow: "48rem" })
   end
 
   # The `max-w-<container>` classes of a class string that also centres

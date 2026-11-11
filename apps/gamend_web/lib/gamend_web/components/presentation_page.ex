@@ -1710,7 +1710,7 @@ defmodule GamendWeb.PresentationPage do
       end
 
     # The page's next step (`"nudge": true`): the chevron above it, since a
-    # phone stacks the buttons full width (`app.css`, `nudge`).
+    # phone stacks the buttons full width (`gamend.js`, `nudge`).
     [base, style, button["nudge"] == true && "nudge nudge-top"]
   end
 

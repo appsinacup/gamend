@@ -835,7 +835,7 @@ defmodule GamendWeb.QuestsLive do
 
   defp progress_tint(_assigns), do: nil
 
-  # The page's next step (`app.css`, `nudge`): the first quest waiting for
+  # The page's next step (`gamend.js`, `nudge`): the first quest waiting for
   # its claim that nothing locks, one a page.
   defp first_claim(entries),
     do: Enum.find(entries, &(&1.claimable and is_nil(Map.get(&1, :lock_label))))

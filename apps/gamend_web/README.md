@@ -57,29 +57,24 @@ Recommended setup in your host app:
  depth: 1}
 ```
 
-2. Ensure your Tailwind CSS includes the Heroicons plugin. If you copy the host shell from this repo, keep the small resolver wrappers in `assets/vendor/` and reference:
+2. Import core's stylesheet, which loads the Heroicons plugin (and everything else core's pages need). Add the `gamend_assets` compiler to your `mix.exs`, which writes `assets/vendor/gamend/` on every compile (put it in `.gitignore`):
 
-```css
-@plugin "../vendor/heroicons";
+```elixir
+compilers: Mix.compilers() ++ [:gamend_assets]
 ```
 
-That wrapper resolves the shared plugin from either `apps/gamend_web` or `deps/gamend_web`.
-
-If you wire things up manually, the shared plugin lives in `apps/gamend_web/assets/vendor/heroicons.js`.
-
-For this monorepo layout (host app at repo root):
-
 ```css
-@plugin "../../apps/gamend_web/assets/vendor/heroicons";
+/* assets/css/app.css */
+@import "../vendor/gamend/gamend.css";
+@source "../css";
+@source "../../lib";
+@plugin "../vendor/gamend/daisyui" { themes: false; }
+@plugin "../vendor/gamend/daisyui-theme" { name: "light"; default: true; /* your colours */ }
 ```
 
-For starter/fork layouts where `gamend_web` is installed as a dependency:
+The pointers find `apps/gamend_web` in a sibling `gamend` checkout or `deps/gamend_web`, and the plugin finds `deps/heroicons/optimized` in the project Tailwind runs in. Gamend's own server imports `apps/gamend_web/assets/css/gamend.css` directly.
 
-```css
-@plugin "../../deps/gamend_web/assets/vendor/heroicons";
-```
-
-3. If you extract this into a standalone host app, keep either the shared asset tree with the reusable web package or the host-side resolver wrappers so the plugin can still find `deps/heroicons/optimized`.
+3. Nothing of core's goes into your own stylesheet: a Gamend release brings what it adds. `priv/docs/10-setup/50-theme.md` ("Core's stylesheet") has the details.
 
 If you want your own icon set, keep compatibility by either:
 - providing CSS for the same `hero-*` class names used by templates, or

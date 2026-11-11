@@ -309,6 +309,39 @@ Example: grouped public links plus admin-only account entry:
 }
 ```
 
+## Core's stylesheet
+
+Everything core's pages need comes from one stylesheet in the package, `assets/css/gamend.css`, so your `app.css` holds only your own look. It brings Tailwind, core's sources (so the classes in its templates are generated), Phoenix's loading variants and `dark`, heroicons (`hero-*`), core's classes, and the base styles of core's pages: the Inter font, the background icons' drift, Markdown pages, changelog pills, 44px touch targets, iOS zoom and docs code.
+
+Core's classes: `btn-surface` (the second button), `card-hover` (a card under the pointer), `text-muted` (the second text tone, and daisyUI's grey labels in it), `max-w-narrow` (the one narrow width) and `nudge` (below).
+
+Add the compiler to your `mix.exs`. On every compile it writes `assets/vendor/gamend/`, small pointers to core's files wherever core is (a sibling `gamend` checkout, or `deps/gamend_web`), so dev, tests and a Docker build all have them. The folder goes in `.gitignore`.
+
+```elixir
+compilers: Mix.compilers() ++ [:gamend_assets]
+```
+
+Then your stylesheet starts with the import, your own sources, daisyUI's options and your colours:
+
+```text
+@import "../vendor/gamend/gamend.css";
+@source "../css";
+@source "../../lib";
+
+@plugin "../vendor/gamend/daisyui" {
+  themes: false;
+}
+
+@plugin "../vendor/gamend/daisyui-theme" {
+  name: "light";
+  default: true;
+  --color-primary: #b84a00;
+  /* … */
+}
+```
+
+Never copy core's styles into your own CSS: the next release brings what it adds or fixes. To change one, write your own rule after the import (a font of your own: `:root { --font-sans: … }`). `mix gamend.assets --check` fails when the pointers are missing or stale.
+
 ## The next step (`nudge`)
 
 One button or card a page can move, to show the reader what to press next: Servers on the home page, New server with none yet, the first quest waiting for its Claim. A chevron, the hero's scroll cue, bounces before it and points at it, and on every second landing a ring grows out of its edge. It never pauses. Under reduced motion the ring stands still around it and the chevron stops moving.
@@ -355,7 +388,7 @@ The chevron sits outside the button, about 1.75rem wide or tall, so leave that r
 
 Core's own pages already nudge: the first quest waiting for its Claim, on `/quests`.
 
-Your stylesheet must declare the classes, as it does `btn-surface`: copy the block from core's `assets/css/app.css`, from the comment that starts `` `nudge`: the one next step `` to the end of its reduced-motion rule. `/ui` shows both placements.
+The classes come with core's stylesheet (above). `/ui` shows both placements.
 
 ### A long form's action
 

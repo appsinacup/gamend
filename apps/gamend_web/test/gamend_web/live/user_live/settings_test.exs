@@ -67,11 +67,12 @@ defmodule GamendWeb.UserLive.SettingsTest do
       |> element(~s(button[phx-click="settings_tab"][phx-value-tab="friends"]))
       |> render_click()
 
-      # incoming should be present, labeled with name + @username (no raw id)
+      # incoming should be present, named as the leaderboards name a player:
+      # the name and their title, not their @username or a raw id
       html = render(view)
       assert html =~ "Incoming requests"
       assert html =~ "B-User"
-      assert html =~ "@#{b.username}"
+      refute html =~ "@#{b.username}"
       refute html =~ "(id: #{b.id})"
 
       f =
@@ -275,10 +276,10 @@ defmodule GamendWeb.UserLive.SettingsTest do
       search_el = element(lv, "form[phx-change=\"search_users\"]")
       render_change(search_el, %{"q" => "FriendSearch"})
 
-      # search results should include our user with @username, not the raw id
+      # search results should include our user by name, not @username or the raw id
       html = render(lv)
       assert html =~ b.display_name
-      assert html =~ "@#{b.username}"
+      refute html =~ "@#{b.username}"
       refute html =~ b.email
       refute html =~ "(id: #{b.id})"
 

@@ -81,7 +81,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
                   class="w-16 h-16 shrink-0 rounded-full bg-base-300 object-cover"
                 />
               <% else %>
-                <.user_avatar user={avatar_preview(@user, @avatar_form)} class="w-16 h-16" />
+                <.player_avatar user={avatar_preview(@user, @avatar_form)} class="size-16" />
               <% end %>
               <p :if={@image_uploads && !@can_upload_avatar} class="text-xs text-muted max-w-xs">
                 {gettext("Link an email or a sign-in provider to set a custom avatar.")}

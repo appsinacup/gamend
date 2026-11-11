@@ -255,7 +255,6 @@ defmodule GamendWeb.NotificationsLive do
         <.player_card
           user={@notification.sender}
           name={LiveHelpers.public_user_name(@notification.sender)}
-          subtitle={nil}
           size="sm"
         />
       <% true -> %>

@@ -319,7 +319,7 @@ defmodule GamendWeb.HostLayoutNavigation do
                 (their avatar, a person for a visitor), the account being
                 the menu's first section. --%>
           <%= if @menu_button == "account" do %>
-            <.user_avatar
+            <.player_avatar
               :if={@current_scope}
               user={Scope.user(@current_scope)}
               class="size-8"

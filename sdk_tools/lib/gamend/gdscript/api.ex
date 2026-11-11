@@ -572,6 +572,7 @@ defmodule Gamend.GDScript.API do
       "delete_notifications" => [2],
       "get_notification" => [1],
       "get_notification!" => [1],
+      "group_of" => [1],
       "list_all_notifications" => [0, 1, 2],
       "list_notifications" => [1, 2],
       "list_notifications_by_title" => [2],

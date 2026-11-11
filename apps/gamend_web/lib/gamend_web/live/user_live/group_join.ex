@@ -78,7 +78,7 @@ defmodule GamendWeb.UserLive.GroupJoin do
               :if={@link.created_by}
               class="flex items-center justify-center gap-2 text-sm text-muted"
             >
-              <.user_avatar user={@link.created_by} class="size-6 shrink-0" />
+              <.player_avatar user={@link.created_by} class="size-6 shrink-0" />
               <span>
                 {gettext("%{name} invited you to join.",
                   name: Gamend.Accounts.display_name(@link.created_by)

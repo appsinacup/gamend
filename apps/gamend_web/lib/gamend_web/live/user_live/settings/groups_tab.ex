@@ -634,7 +634,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           else: "bg-base-content/30"
                         )
                       ]} />
-                      <.user_avatar user={u} class="size-6 shrink-0" />
+                      <.player_avatar user={u} class="size-6 shrink-0" />
                       <div>
                         <span class="text-sm font-medium"><.player_name name={
                           LiveHelpers.public_user_name(u)
@@ -691,7 +691,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           else: "bg-base-content/30"
                         )
                       ]} />
-                      <.user_avatar user={f} class="size-6 shrink-0" />
+                      <.player_avatar user={f} class="size-6 shrink-0" />
                       <span class="text-sm"><.player_name name={LiveHelpers.public_user_name(f)} /></span>
                     </div>
                     <span
@@ -732,7 +732,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     class="flex items-center justify-between gap-2 p-2 rounded-lg bg-base-200/40"
                   >
                     <div class="flex min-w-0 items-center gap-2 text-sm">
-                      <.user_avatar user={invite_user(inv, :recipient)} class="size-6 shrink-0" />
+                      <.player_avatar user={invite_user(inv, :recipient)} class="size-6 shrink-0" />
                       <.player_name name={inv.recipient_name} />
                       <span class="text-xs text-muted ms-1">
                         {gettext("by %{name}", name: inv.sender_name)} ·

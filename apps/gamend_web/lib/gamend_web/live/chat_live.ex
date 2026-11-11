@@ -139,7 +139,7 @@ defmodule GamendWeb.ChatLive do
                   )
                 ]}
               >
-                <.user_avatar user={f} class="w-6 h-6 shrink-0" />
+                <.player_avatar user={f} class="w-6 h-6 shrink-0" />
                 <.presence_dot status={PresenceStatus.status(f)} />
                 <.player_name name={LiveHelpers.public_user_name(f)} class="flex-1 max-w-full" />
                 <%= if (count = Map.get(@friend_unread, f.id, 0)) > 0 do %>
@@ -191,7 +191,7 @@ defmodule GamendWeb.ChatLive do
               <button phx-click="close_chat" class="btn btn-xs btn-ghost md:hidden">
                 ←
               </button>
-              <.user_avatar
+              <.player_avatar
                 :if={@chat_type == ChatType.friend()}
                 user={@chat_target_user}
                 class="w-7 h-7"
@@ -237,7 +237,7 @@ defmodule GamendWeb.ChatLive do
                     {gettext("You")}
                   <% else %>
                     <span class="inline-flex items-center gap-1 align-middle">
-                      <.user_avatar user={msg.sender} class="size-5 shrink-0" />
+                      <.player_avatar user={msg.sender} class="size-5 shrink-0" />
                       {sender_name(msg)}
                     </span>
                   <% end %>

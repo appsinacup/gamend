@@ -1902,12 +1902,34 @@ defmodule GamendWeb.CoreComponents do
   attr :class, :string, default: "text-xs text-muted"
 
   def user_title(assigns) do
-    assigns = assign(assigns, :title, user_title_text(assigns.user))
+    title = user_title_text(assigns.user)
+    assigns = assign(assigns, title: title, title_class: user_title_class(assigns.user, title))
 
     ~H"""
-    <span :if={@title} class={@class}>{@title}</span>
+    <span :if={@title} class={[@class, @title_class]}>{@title}</span>
     """
   end
+
+  @doc """
+  The host's class for a player's title, beside the one the caller gave it:
+  what makes one title look unlike another. `{module, function}`, called with
+  the user and the title's text, answering a class or nil:
+
+      config :gamend_web, :user_title_class, {MyHost.Players, :title_class}
+
+  Nil when unset or with no title.
+  """
+  def user_title_class(user, title) when is_binary(title) do
+    case Application.get_env(:gamend_web, :user_title_class) do
+      {module, function} when is_atom(module) and is_atom(function) ->
+        apply(module, function, [user, title])
+
+      _ ->
+        nil
+    end
+  end
+
+  def user_title_class(_user, _title), do: nil
 
   @doc "The title text `user_title/1` renders, or nil. Exposed for plain-text callers."
   def user_title_text(user) do
@@ -2041,6 +2063,44 @@ defmodule GamendWeb.CoreComponents do
     />
     <.icon :if={!@avatar_url} name="hero-user-circle-solid" class={@class} />
     """
+  end
+
+  attr :user, :any, default: nil
+  attr :class, :string, default: "w-6 h-6"
+
+  @doc """
+  A player's avatar as other players see it: `user_avatar/1` with whatever the
+  host draws with it. A function component, given `user`, the avatar's `class`
+  (its size, for anything that must match it) and the avatar as its
+  `inner_block`, free to wrap, frame or draw over it:
+
+      config :gamend_web, :player_avatar, {MyHost.UI, :player_avatar}
+
+  Unset, the avatar alone. Core knows nothing of what is drawn: a rank's
+  emblem, a level ring, a seasonal hat, an online dot. `player_card/1` uses it,
+  so do the navbar, the friends and groups lists and chat; a table for admins
+  keeps `user_avatar/1`.
+  """
+  def player_avatar(assigns) do
+    ~H"""
+    <.host_player_avatar user={@user} class={@class}>
+      <.user_avatar user={@user} class={@class} />
+    </.host_player_avatar>
+    """
+  end
+
+  attr :user, :any, default: nil
+  attr :class, :string, default: nil
+  slot :inner_block, required: true
+
+  defp host_player_avatar(assigns) do
+    case Application.get_env(:gamend_web, :player_avatar) do
+      {module, function} when is_atom(module) and is_atom(function) ->
+        apply(module, function, [assigns])
+
+      _ ->
+        ~H"{render_slot(@inner_block)}"
+    end
   end
 
   # A coloured icon's round tile (`user_avatar/1`, `group_avatar/1`): its
@@ -2262,15 +2322,22 @@ defmodule GamendWeb.CoreComponents do
   own lists, so a player looks the same wherever they are named.
   """
   def player_card(assigns) do
+    line = card_line(assigns.subtitle, assigns.user)
+
     assigns =
       assign(assigns,
-        line: card_line(assigns.subtitle, assigns.user),
+        line: line,
+        # Nil asks for the surrounding colour (a filled button): no host look.
+        line_class:
+          if(assigns.subtitle == :title and assigns.subtitle_class,
+            do: user_title_class(assigns.user, line)
+          ),
         avatar_class: if(assigns.size == "sm", do: "size-6 shrink-0", else: "size-8 shrink-0")
       )
 
     ~H"""
     <div class={["flex min-w-0 items-center gap-2", @class]} {@rest}>
-      <.user_avatar user={@user} class={@avatar_class} />
+      <.player_avatar user={@user} class={@avatar_class} />
       <span class="flex min-w-0 flex-col text-start leading-tight">
         <span class="flex min-w-0 items-center gap-1">
           <.player_name name={@name} class={["max-w-full", @you && "font-bold"]} />
@@ -2278,7 +2345,7 @@ defmodule GamendWeb.CoreComponents do
         </span>
         <span
           :if={@line}
-          class={["truncate text-xs font-normal", @subtitle_class]}
+          class={["truncate text-xs font-normal", @subtitle_class, @line_class]}
           title={@line}
         >
           {@line}

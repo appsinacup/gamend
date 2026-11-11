@@ -5,11 +5,12 @@
 #include <optional>
 #include <string>
 
+#include "gamend/export.hpp"
 #include "gamend/json.hpp"
 
 namespace gamend {
 
-struct Session {
+struct GAMEND_EXPORT Session {
   std::string access_token;
   std::string refresh_token;
   std::string user_id;

@@ -53,7 +53,7 @@ emitter.
 | # | SDK | Realtime | Notes |
 |---|---|---|---|
 | 0 | Named API schemas | — | Prerequisite for the typed targets |
-| 1 | **C++** → Unreal plugin | Hand-written, ported from the Rust client | [cpp-sdk.md](cpp-sdk.md). Pluggable transports so Unreal uses its own HTTP/WebSocket modules |
+| 1 | **C++** → Unreal plugin: built (beta) | Hand-written, ported from the Rust client | [cpp-sdk.md](cpp-sdk.md), [unreal-plugin.md](unreal-plugin.md). Pluggable transports so Unreal uses its own HTTP/WebSocket modules |
 | 2 | **C#**: core built; Unity package next | Hand-written, ported from the C++ SDK | Also serves Godot .NET, MonoGame, Stride. Unity WebGL needs `UnityWebRequest` and a jslib WebSocket |
 | 3 | TypeScript types for the JS SDK: built | — | `.d.ts` over the current output, written by `sdkgen ts` |
 | 4 | Rust crate: built | Ported from the C++ SDK, starting from `balaur_gamend::client` | Serves Bevy, Fyrox, macroquad. Balaur moving onto it is a later, optional step |

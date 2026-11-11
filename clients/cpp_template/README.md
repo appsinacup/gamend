@@ -46,6 +46,11 @@ target_link_libraries(my_game PRIVATE gamend::gamend)
 The install carries the dependencies it fetched, so `find_package(gamend)`
 finds them too. `GAMEND_VERSION` in `gamend/version.hpp` names the release.
 
+The CMake build is a static library. A build that puts the SDK in a shared
+library of its own defines `GAMEND_BUILDING` there and `GAMEND_SHARED`
+wherever it is used, and `gamend/export.hpp` exports its classes; the Unreal
+plugin does, for an editor build.
+
 Dependencies come from `find_package` when your build already has them, and
 from FetchContent otherwise: [nlohmann/json](https://github.com/nlohmann/json)
 always, and for the transports that use them libcurl,

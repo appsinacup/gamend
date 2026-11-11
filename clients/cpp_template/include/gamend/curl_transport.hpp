@@ -5,10 +5,11 @@
 
 #include <memory>
 
+#include "gamend/export.hpp"
 #include "gamend/transport.hpp"
 
 namespace gamend {
 
-std::unique_ptr<HttpTransport> make_curl_transport();
+GAMEND_EXPORT std::unique_ptr<HttpTransport> make_curl_transport();
 
 }  // namespace gamend

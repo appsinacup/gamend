@@ -64,23 +64,25 @@ void WebRtc::connect(std::function<void(const std::string&)> done) {
     auto post = core_.post;
     PeerHandlers handlers;
     handlers.on_local_description = [this, post, generation](std::string sdp, std::string type) {
-      post([=] { local_description(generation, sdp, type); });
+      post([this, generation, sdp, type] { local_description(generation, sdp, type); });
     };
     handlers.on_local_candidate = [this, post, generation](std::string candidate, std::string mid) {
-      post([=] { local_candidate(generation, candidate, mid); });
+      post([this, generation, candidate, mid] { local_candidate(generation, candidate, mid); });
     };
     handlers.on_state = [this, post, generation](std::string s) {
-      post([=] { peer_state(generation, s); });
+      post([this, generation, s] { peer_state(generation, s); });
     };
     handlers.on_channel_open = [this, post, generation](std::string label) {
-      post([=] { channel_opened(generation, label); });
+      post([this, generation, label] { channel_opened(generation, label); });
     };
     handlers.on_channel_close = [this, post, generation](std::string label) {
-      post([=] { channel_closed(generation, label); });
+      post([this, generation, label] { channel_closed(generation, label); });
     };
     handlers.on_message = [this, post, generation](std::string label, std::string data,
                                                    bool binary) {
-      post([=] { message(generation, label, data, binary); });
+      post([this, generation, label, data, binary] {
+        message(generation, label, data, binary);
+      });
     };
     peer->open(core_.config.ice_servers, core_.config.data_channels,
                protobuf(core_) ? "protobuf" : "", std::move(handlers));

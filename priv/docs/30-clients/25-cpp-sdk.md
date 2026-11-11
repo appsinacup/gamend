@@ -8,7 +8,7 @@ icon: hero-cpu-chip-solid
 [View the source](https://github.com/appsinacup/gamend/tree/main/clients/cpp_template)
 
 A C++17 client for custom engines, Steamworks games and native tools, and the
-core an Unreal plugin will wrap. Every REST operation is a method, generated
+core the [Unreal plugin](/docs/unreal-sdk) wraps. Every REST operation is a method, generated
 from the same OpenAPI document as the other SDKs and named as the
 [Godot SDK](/docs/godot-sdk) names it, so a game ported between engines calls
 the same thing. It covers sign-in, the realtime connection and server hooks,

@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 
+#include "gamend/export.hpp"
 #include "gamend/json.hpp"
 #include "gamend/realtime.hpp"
 #include "gamend/transport.hpp"
@@ -37,7 +38,7 @@ struct Core;
 
 enum class WebRtcState { Closed, Connecting, Connected, Failed };
 
-class WebRtc {
+class GAMEND_EXPORT WebRtc {
  public:
   explicit WebRtc(detail::Core& core);
   ~WebRtc();

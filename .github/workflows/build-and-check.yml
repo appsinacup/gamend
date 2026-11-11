@@ -996,6 +996,8 @@ jobs:
             - **Balaur**: `balaur_addons.zip`, Balaur Script modules for the Balaur engine. Copy `addons/gamend` into your Balaur project; its `README.md` lists every module.
             - **C++**: `gamend-cpp-sdk.tar.gz`. Fetch it with CMake's `FetchContent`, or build it and `cmake --install` it for `find_package(gamend)`. [Guide](https://gamend.org/docs/cpp-sdk)
 
+            - **Unreal**: `gamend-unreal-plugin.zip`, a plugin on the C++ SDK for Unreal Engine 5. Unzip `Gamend/` into your project's `Plugins/`. [Guide](https://gamend.org/docs/unreal-sdk)
+
             - **C#**: `gamend-csharp-sdk.tar.gz`, also on NuGet as `Gamend`. netstandard2.1, for .NET games and tools. [Guide](https://gamend.org/docs/csharp-sdk)
 
             - **Rust**: `gamend-rust-sdk.tar.gz`, also on crates.io as `gamend`. A crate for Bevy, Fyrox, macroquad and tools. [Guide](https://gamend.org/docs/rust-sdk)
@@ -1056,6 +1058,40 @@ jobs:
           cmake -S cpp_sdk/tests/package -B build-package -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/gamend"
           cmake --build build-package --config Release --parallel
+
+  # Unreal cannot run in CI. What can: the plugin's GamendSDK module, built with
+  # the engine's rules (no exceptions or RTTI, C++17 and C++20) into a shared
+  # library that hides every symbol GAMEND_EXPORT does not mark, as an editor
+  # build links it, and a program using it from outside. release-cpp-sdk
+  # zips the plugin as gamend-unreal-plugin.zip.
+  unreal-plugin:
+    name: Unreal plugin
+    needs: [build-godot-sdk]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Download the C++ SDK
+        uses: actions/download-artifact@v8
+        with:
+          name: cpp_sdk
+          path: cpp_sdk
+
+      - name: Write the plugin
+        run: clients/generate_unreal.sh --no-cpp
+
+      - name: Build the SDK module as an editor build links it
+        env:
+          CXX: clang++
+        run: clients/check_unreal.sh
+
+      - name: Upload the plugin
+        uses: actions/upload-artifact@v7
+        with:
+          name: unreal_plugin
+          path: unreal_plugin/Gamend
 
   csharp-sdk:
     name: C# SDK
@@ -1303,8 +1339,8 @@ jobs:
         run: tail -200 server.log
 
   release-cpp-sdk:
-    name: Release the C++, C# and Rust SDKs
-    needs: [build-godot-sdk, cpp-sdk, csharp-sdk, rust-sdk, cpp-conformance]
+    name: Release the C++, C# and Rust SDKs and the Unreal plugin
+    needs: [build-godot-sdk, cpp-sdk, csharp-sdk, rust-sdk, unreal-plugin, cpp-conformance]
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
@@ -1327,11 +1363,19 @@ jobs:
           name: rust_sdk
           path: rust_sdk
 
+      - name: Download the Unreal plugin
+        uses: actions/download-artifact@v8
+        with:
+          name: unreal_plugin
+          path: Gamend
+
       - name: Archive
         run: |
           tar -czf gamend-cpp-sdk.tar.gz cpp_sdk
           tar -czf gamend-csharp-sdk.tar.gz csharp_sdk
           tar -czf gamend-rust-sdk.tar.gz rust_sdk
+          # One folder, Gamend/, to drop into a project's Plugins/.
+          zip -r gamend-unreal-plugin.zip Gamend
 
       # Next to godot_addons.zip on the release build-godot-sdk made.
       - name: Release
@@ -1342,6 +1386,7 @@ jobs:
             gamend-cpp-sdk.tar.gz
             gamend-csharp-sdk.tar.gz
             gamend-rust-sdk.tar.gz
+            gamend-unreal-plugin.zip
           fail_on_unmatched_files: true
 
   # Both publish what CI already built, tested and ran against a live server.

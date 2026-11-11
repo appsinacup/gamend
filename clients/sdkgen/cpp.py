@@ -198,6 +198,7 @@ def write_header(model: Model) -> str:
         "#include <string>\n"
         "#include <string_view>\n"
         "\n"
+        '#include "gamend/export.hpp"\n'
         '#include "gamend/json.hpp"\n'
         '#include "gamend/response.hpp"\n'
         "\n"
@@ -205,7 +206,7 @@ def write_header(model: Model) -> str:
         "\n"
         "class Rest;\n"
         "\n"
-        "class Api {\n"
+        "class GAMEND_EXPORT Api {\n"
         " public:\n"
         "  explicit Api(Rest& rest) : rest_(rest) {}\n"
         "\n"
@@ -447,7 +448,7 @@ def write_models_header(model: Model) -> str:
         structs.append("\n".join(lines))
         codecs.append(
             "template <>\n"
-            f"struct Codec<models::{name}> {{\n"
+            f"struct GAMEND_EXPORT Codec<models::{name}> {{\n"
             f"  static bool read(const json& j, models::{name}& out);\n"
             f"  static json write(const models::{name}& v);\n"
             "};"
@@ -472,6 +473,7 @@ def write_models_header(model: Model) -> str:
         "#include <vector>\n"
         "\n"
         '#include "gamend/codec.hpp"\n'
+        '#include "gamend/export.hpp"\n'
         '#include "gamend/json.hpp"\n'
         "\n"
         "namespace gamend {\n"

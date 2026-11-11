@@ -1,0 +1,28 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "dev",
+	"FriendlyName": "Gamend",
+	"Description": "Client for the Gamend game backend: sign-in, every REST operation, realtime channels and server hooks, from C++ and Blueprints.",
+	"Category": "Networking",
+	"CreatedBy": "Apps in a Cup",
+	"CreatedByURL": "https://gamend.org",
+	"DocsURL": "https://gamend.org/docs/unreal-sdk",
+	"SupportURL": "https://github.com/appsinacup/gamend/issues",
+	"EnabledByDefault": true,
+	"CanContainContent": false,
+	"IsBetaVersion": true,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "GamendSDK",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "Gamend",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

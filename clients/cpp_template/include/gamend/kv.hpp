@@ -20,6 +20,7 @@
 #include <tuple>
 #include <utility>
 
+#include "gamend/export.hpp"
 #include "gamend/json.hpp"
 
 namespace gamend {
@@ -67,7 +68,7 @@ struct KvResult {
 using KvCallback = std::function<void(const KvResult&)>;
 using KvListener = std::function<void(const KvKey& key, const KvRow& row)>;
 
-class Kv {
+class GAMEND_EXPORT Kv {
  public:
   explicit Kv(detail::Core& core);
   ~Kv();

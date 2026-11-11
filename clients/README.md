@@ -88,7 +88,7 @@ Every push to `main` publishes each SDK at the server's version,
 | JavaScript | npm, [`@ughuuu/gamend`](https://www.npmjs.com/package/@ughuuu/gamend) | trusted publishing (OIDC) |
 | C# | NuGet, [`Gamend`](https://www.nuget.org/packages/Gamend) | trusted publishing: nuget.org's policy names this repository and `build-and-check.yml`; the `NUGET_USER` secret is the profile it belongs to |
 | Rust | crates.io, [`gamend`](https://crates.io/crates/gamend); reference on docs.rs | the `CARGO_REGISTRY_TOKEN` secret |
-| C++, C#, Rust, Godot | the [`latest` release](https://github.com/appsinacup/gamend/releases/tag/latest): a tarball each, `godot_addons.zip` | the workflow's own token |
+| C++, C#, Rust, Godot, Unreal | the [`latest` release](https://github.com/appsinacup/gamend/releases/tag/latest): a tarball each, `godot_addons.zip`, `gamend-unreal-plugin.zip` | the workflow's own token |
 
 The NuGet, crates.io and release jobs wait for the SDK's build, its tests and
 the live conformance run. A version already on a registry is skipped, so a
@@ -138,4 +138,25 @@ cmake --install ../cpp_sdk/build --prefix /tmp/gamend
 cmake -S ../cpp_sdk/tests/package -B /tmp/gamend-package -DCMAKE_PREFIX_PATH=/tmp/gamend
 cmake --build /tmp/gamend-package
 ../cpp_sdk/build/gamend_conformance http://127.0.0.1:4000
+```
+
+## Unreal
+
+The Unreal plugin is the C++ SDK in a module of its own (`GamendSDK`) and
+`unreal_template/` around it: the subsystem, the transports over Unreal's
+HTTP and WebSocket modules, the Blueprint nodes. `generate_unreal.sh` writes
+it to `unreal_plugin/Gamend/` (ignored by git; CI puts it on the `latest`
+release as `gamend-unreal-plugin.zip`), copying the SDK in without its own
+transports and fetching the nlohmann/json the SDK's CMake build pins.
+
+CI cannot run Unreal. `check_unreal.sh` builds what it can: the `GamendSDK`
+module, in C++17 and C++20 with the engine's rules, into a shared library
+that hides every symbol `GAMEND_EXPORT` does not mark, as an editor build
+links it, then links and runs `unreal_check/sdk_check.cpp` against it. A class
+a game can call that is not exported fails there.
+
+```sh
+./generate_unreal.sh            # regenerates cpp_sdk/ too
+./generate_unreal.sh --no-cpp   # from the cpp_sdk/ on disk
+./check_unreal.sh
 ```

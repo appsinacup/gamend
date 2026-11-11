@@ -10,6 +10,7 @@
 #include <string>
 #include <string_view>
 
+#include "gamend/export.hpp"
 #include "gamend/json.hpp"
 #include "gamend/response.hpp"
 #include "gamend/transport.hpp"
@@ -44,7 +45,7 @@ struct Body {
   }
 };
 
-class Rest {
+class GAMEND_EXPORT Rest {
  public:
   explicit Rest(detail::Core& core);
   ~Rest();

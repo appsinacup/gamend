@@ -25,6 +25,7 @@
 #include <string_view>
 #include <vector>
 
+#include "gamend/export.hpp"
 #include "gamend/json.hpp"
 #include "gamend/session.hpp"
 
@@ -98,7 +99,7 @@ using EventCallback = std::function<void(const Event&)>;
 using HookCallback = std::function<void(const HookResult&)>;
 using StateCallback = std::function<void(RealtimeState)>;
 
-class Realtime {
+class GAMEND_EXPORT Realtime {
  public:
   explicit Realtime(detail::Core& core);
   ~Realtime();

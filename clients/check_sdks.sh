@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Generate every SDK and build and test them all, the way CI does, for whichever
-# this machine has the tools for.
+# this machine has the tools for. The Unreal plugin is built without the engine
+# (clients/check_unreal.sh).
 #
 #   clients/check_sdks.sh                         # build and unit tests
 #   clients/check_sdks.sh http://localhost:4000   # ...and live conformance
@@ -78,6 +79,10 @@ build_godot() {
   clients/check_godot.sh
 }
 
+build_unreal() {
+  clients/generate_unreal.sh --no-cpp && clients/check_unreal.sh
+}
+
 # Godot looks `localhost` up as IPv6 first and does not fall back, and a dev
 # server listens on 127.0.0.1, so the Godot run names the address.
 live_godot() {
@@ -92,12 +97,13 @@ needs() {
     rust) command -v cargo ;;
     typescript) command -v npx && test -f clients/javascript/dist/index.js ;;
     godot) test -d godot_addons/addons/gamend ;;
+    unreal) command -v clang++ || command -v c++ ;;
   esac
 }
 
 names=()
 pids=()
-for sdk in cpp csharp rust typescript godot; do
+for sdk in cpp csharp rust typescript godot unreal; do
   if ! needs "$sdk" > /dev/null 2>&1; then
     echo "skip $sdk: its tool or generated output is not here"
     continue

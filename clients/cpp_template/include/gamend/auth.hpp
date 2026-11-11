@@ -15,6 +15,7 @@
 #include <string>
 #include <string_view>
 
+#include "gamend/export.hpp"
 #include "gamend/response.hpp"
 #include "gamend/rest.hpp"
 #include "gamend/session.hpp"
@@ -39,7 +40,7 @@ struct AuthResult {
 using AuthCallback = std::function<void(const AuthResult&)>;
 using SessionListener = std::function<void(const std::optional<Session>& session)>;
 
-class Auth {
+class GAMEND_EXPORT Auth {
  public:
   explicit Auth(detail::Core& core);
   ~Auth();

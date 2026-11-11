@@ -17,6 +17,7 @@
 #include <map>
 #include <string>
 
+#include "gamend/export.hpp"
 #include "gamend/json.hpp"
 
 namespace gamend {
@@ -25,7 +26,7 @@ namespace detail {
 struct Core;
 }
 
-class Presence {
+class GAMEND_EXPORT Presence {
  public:
   explicit Presence(detail::Core& core);
   ~Presence();

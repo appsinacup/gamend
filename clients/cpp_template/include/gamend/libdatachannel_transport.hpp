@@ -5,10 +5,11 @@
 
 #include <memory>
 
+#include "gamend/export.hpp"
 #include "gamend/transport.hpp"
 
 namespace gamend {
 
-std::unique_ptr<PeerTransport> make_libdatachannel_transport();
+GAMEND_EXPORT std::unique_ptr<PeerTransport> make_libdatachannel_transport();
 
 }  // namespace gamend

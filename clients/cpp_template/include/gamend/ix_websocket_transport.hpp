@@ -6,10 +6,11 @@
 
 #include <memory>
 
+#include "gamend/export.hpp"
 #include "gamend/transport.hpp"
 
 namespace gamend {
 
-std::unique_ptr<WebSocketTransport> make_ix_websocket_transport();
+GAMEND_EXPORT std::unique_ptr<WebSocketTransport> make_ix_websocket_transport();
 
 }  // namespace gamend

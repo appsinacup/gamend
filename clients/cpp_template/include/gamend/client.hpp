@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+#include "gamend/export.hpp"
 #include "gamend/transport.hpp"
 
 namespace gamend {
@@ -115,7 +116,7 @@ namespace detail {
 struct Core;
 }
 
-class Client {
+class GAMEND_EXPORT Client {
  public:
   explicit Client(Config config);
   ~Client();

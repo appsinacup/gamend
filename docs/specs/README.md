@@ -65,6 +65,10 @@ Not a plan; a living reference.
   transports and a per-frame `poll()`, the base the Unreal plugin wraps. Built
   and released as `gamend-cpp-sdk.tar.gz`; open until CI has built it on
   Windows.
+- [unreal-plugin.md](unreal-plugin.md) — **Unreal plugin.** The C++ SDK in a
+  module of its own, Unreal's HTTP and WebSocket under it, a subsystem and
+  Blueprint nodes over it. Released in beta as `gamend-unreal-plugin.zip`;
+  open until it has been built in an engine.
 
 ## Resolved — shipped
 

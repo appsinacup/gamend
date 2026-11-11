@@ -181,8 +181,9 @@ All five are built; see *As built* for where they differ from the plan.
 5. **Protobuf.** Binary event frames, decoded by a table generated from
    `proto/gamend_realtime.proto`: neither libprotobuf-lite nor nanopb.
 
-Then the Unreal plugin gets its own spec: adapters, `UGamendSubsystem`,
-Blueprint nodes, `poll()` from the subsystem's tick.
+The Unreal plugin has its own spec, [unreal-plugin.md](unreal-plugin.md):
+adapters, `UGamendSubsystem`, Blueprint nodes, `poll()` from the subsystem's
+tick.
 
 ## Open questions
 
@@ -253,5 +254,8 @@ Where the SDK differs from the shape above:
   (`register_metadata_decoder`, `register_kv_decoder`, as the JS client's
   `registerMetaSchema` / `registerKvSchema`), and stays base64 without one.
   `WebRtc::call_hook_raw` is the JS client's `callHookRaw`.
+- `GAMEND_EXPORT` (`gamend/export.hpp`) marks the public classes for a
+  shared build, empty in the CMake one; the Unreal plugin's editor build
+  needs it.
 - The Balaur and Godot names were reconciled first: all 259 operations are
   named alike in the Godot, Balaur and C++ SDKs.

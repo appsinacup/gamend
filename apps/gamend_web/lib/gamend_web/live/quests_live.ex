@@ -610,6 +610,7 @@ defmodule GamendWeb.QuestsLive do
               locale={@locale}
               now={@now}
               group_size={Map.get(entry, :group_size, 1)}
+              nudge={entry == first_claim(@entries)}
             />
           </div>
         <% end %>
@@ -834,6 +835,11 @@ defmodule GamendWeb.QuestsLive do
 
   defp progress_tint(_assigns), do: nil
 
+  # The page's next step (`app.css`, `nudge`): the first quest waiting for
+  # its claim that nothing locks, one a page.
+  defp first_claim(entries),
+    do: Enum.find(entries, &(&1.claimable and is_nil(Map.get(&1, :lock_label))))
+
   defp quest_card(assigns) do
     quest = assigns.entry.quest
     progress = assigns.entry.progress
@@ -1018,7 +1024,7 @@ defmodule GamendWeb.QuestsLive do
               <%!-- A guest's reward waits for an account (`Gamend.AccountRequired`):
                   the whole card leads to registration, which keeps the quest. --%>
             <% @claimable and @must_register -> %>
-              <span class="btn btn-primary btn-sm w-full">
+              <span class={["btn btn-primary btn-sm w-full", @nudge && "nudge nudge-top"]}>
                 <.icon name="hero-user-plus-solid" class="w-4 h-4" />
                 {gettext("Register to claim")}
               </span>
@@ -1026,7 +1032,10 @@ defmodule GamendWeb.QuestsLive do
               <button
                 phx-click="claim"
                 phx-value-key={@quest.key}
-                class="btn btn-success btn-sm w-full"
+                class={[
+                  "btn btn-success btn-sm w-full",
+                  @nudge && "nudge nudge-top [--nudge-color:var(--color-success)]"
+                ]}
               >
                 <.icon name="hero-gift-solid" class="w-4 h-4" />
                 {gettext("Claim")}

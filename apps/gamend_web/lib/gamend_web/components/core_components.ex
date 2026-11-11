@@ -405,6 +405,64 @@ defmodule GamendWeb.CoreComponents do
     """
   end
 
+  attr :back, :string,
+    default: nil,
+    doc: "the live route Back leads to (`back_link/1`'s `navigate`)"
+
+  attr :icon, :string, default: nil, doc: "`page_title/1`'s mark"
+  attr :tone, :string, default: nil, doc: "`page_title/1`'s mark colour"
+  attr :class, :any, default: nil, doc: "layout only"
+  attr :rest, :global
+  slot :inner_block, required: true, doc: "the title's words"
+
+  slot :actions,
+    doc: "the form's buttons, its submit last, naming its form (`form=\"new-server-form\"`)"
+
+  slot :note,
+    doc: "a line under the row, at its end: why the action is off (\"Needs an account\")"
+
+  @doc """
+  The heading of a page that is one form longer than a screen (New server,
+  New project, a settings page): Back, the title and the form's action,
+  sticking under the navbar while the form scrolls, so the action is always
+  in sight (2026-11-11). The action is the form's submit button outside it:
+  `form="…"` ties it to the form by id, and `phx-submit` takes it as its
+  own. One button, here only, never a second at the form's foot. A short
+  form (log in, a code) keeps its button under its fields.
+
+      <.form_heading back={~p"/servers"} icon="hero-plus-solid">
+        New server
+        <:actions>
+          <button type="submit" form="new-server-form" class="btn btn-primary nudge">
+            Create server
+          </button>
+        </:actions>
+      </.form_heading>
+  """
+  def form_heading(assigns) do
+    ~H"""
+    <div
+      data-form-heading
+      class={[
+        "sticky top-16 z-30 -mx-2 space-y-1 border-b border-base-300 bg-base-100/95 px-2 py-3 backdrop-blur-md",
+        @class
+      ]}
+      {@rest}
+    >
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div data-heading-fit class="flex min-w-0 items-center gap-3">
+          <.back_link :if={@back} navigate={@back} />
+          <.page_title icon={@icon} tone={@tone}>{render_slot(@inner_block)}</.page_title>
+        </div>
+        <div :if={@actions != []} class="ms-auto flex flex-wrap items-center justify-end gap-2">
+          {render_slot(@actions)}
+        </div>
+      </div>
+      <div :if={@note != []} class="text-end text-sm text-muted">{render_slot(@note)}</div>
+    </div>
+    """
+  end
+
   attr :tag, :string, default: "p"
   attr :class, :any, default: nil, doc: "spacing only"
   attr :rest, :global
@@ -2289,6 +2347,11 @@ defmodule GamendWeb.CoreComponents do
     doc:
       "the `%User{}` behind it (its avatar, its title), or nil: a row with no account (a label)"
 
+  attr :avatar, :any,
+    default: nil,
+    doc:
+      "a row with no account: markup of the caller's where the avatar stands, in the avatar's box (a leaderboard's `row_avatar/2`); nil for the person icon"
+
   attr :subtitle, :any,
     default: :title,
     doc: "the line under the name: `:title` (default) is `user_title_text/1`, nil or \"\" none"
@@ -2337,7 +2400,19 @@ defmodule GamendWeb.CoreComponents do
 
     ~H"""
     <div class={["flex min-w-0 items-center gap-2", @class]} {@rest}>
-      <.player_avatar user={@user} class={@avatar_class} />
+      <%!-- A row with no account may bring its own mark (`avatar`), in the
+            avatar's box: its font size is the box's, so a 1em mark fills it. --%>
+      <span
+        :if={@avatar && !@user}
+        class={[
+          "grid place-items-center overflow-hidden",
+          @avatar_class,
+          if(@size == "sm", do: "text-2xl", else: "text-[2rem]")
+        ]}
+      >
+        {@avatar}
+      </span>
+      <.player_avatar :if={!(@avatar && !@user)} user={@user} class={@avatar_class} />
       <span class="flex min-w-0 flex-col text-start leading-tight">
         <span class="flex min-w-0 items-center gap-1">
           <.player_name name={@name} class={["max-w-full", @you && "font-bold"]} />

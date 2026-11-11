@@ -231,6 +231,174 @@
   color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
 }
 
+/* `nudge`: the one next step on a screen (2026-11-11). The class goes on
+   the primary button or card a reader should press next, one a screen: the
+   language panel, Start, the next game, Claim, New server. A chevron (the
+   home's scroll cue, `animate-bounce`'s curves) bounces before it, pointing
+   at it, and on every second landing a ring grows out of its edge.
+   `nudge-top` puts the chevron above it, pointing down: a card in a grid.
+   Both take the primary colour, or `--nudge-color` where the step wears
+   another (a Claim in the success colour).
+
+   The site picks the move in its config JSON, `"nudge": {"move", "rhythm"}`,
+   which core writes on <html> as `data-nudge` and `data-nudge-rhythm`
+   (`GamendWeb.HostLayouts.nudge/0`). The move is `pointer`, `ring`, `hop`
+   or `shine`, or `pointer` with one of the other three; unset, `pointer
+   ring`. The rhythm: `always`, a 2 s beat, two landings and the effect on
+   the second; `rest`, two landings, the effect, then still (3.2 s). One
+   timeline drives both halves, so the effect lands on the beat. It starts
+   0.8 s after the element appears and never pauses. Reduced motion: a
+   steady ring and the chevron standing still. Core's templates use it, so
+   every host stylesheet declares this block whole. */
+.nudge {
+  position: relative;
+  --nudge-ring: color-mix(in oklch, var(--nudge-color, var(--color-primary)) 75%, transparent);
+  --nudge-away: translateX(-0.45rem);
+  --nudge-knock: translateX(0.25rem);
+  --nudge-time: 2s;
+  --nudge-beat: nudge-beat;
+  --nudge-ring-move: nudge-ring;
+  --nudge-knock-move: nudge-knock;
+  --nudge-shine-move: nudge-shine;
+}
+
+.nudge::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: calc(100% + 0.25rem);
+  top: 50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: -0.75rem;
+  display: none;
+  pointer-events: none;
+  background-color: var(--nudge-color, var(--color-primary));
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M16.28 11.47a.75.75 0 0 1 0 1.06l-7.5 7.5a.75.75 0 0 1-1.06-1.06L14.69 12 7.72 5.03a.75.75 0 0 1 1.06-1.06l7.5 7.5Z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.nudge-top {
+  --nudge-away: translateY(-0.45rem);
+  --nudge-knock: translateY(0.25rem);
+}
+
+.nudge-top::after {
+  inset-inline-end: auto;
+  inset-inline-start: 50%;
+  top: auto;
+  bottom: calc(100% + 0.125rem);
+  margin-top: 0;
+  margin-inline-start: -0.75rem;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12.53 16.28a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 0 1 1.06-1.06L12 14.69l6.97-6.97a.75.75 0 1 1 1.06 1.06l-7.5 7.5Z'/%3E%3C/svg%3E");
+}
+
+[dir="rtl"] .nudge:not(.nudge-top) {
+  --nudge-away: translateX(0.45rem);
+  --nudge-knock: translateX(-0.25rem);
+}
+
+[dir="rtl"] .nudge:not(.nudge-top)::after {
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M7.72 12.53a.75.75 0 0 1 0-1.06l7.5-7.5a.75.75 0 1 1 1.06 1.06L9.31 12l6.97 6.97a.75.75 0 1 1-1.06 1.06l-7.5-7.5Z'/%3E%3C/svg%3E");
+}
+
+[data-nudge-rhythm="rest"] .nudge {
+  --nudge-time: 3.2s;
+  --nudge-beat: nudge-beat-rest;
+  --nudge-ring-move: nudge-ring-rest;
+  --nudge-knock-move: nudge-knock-rest;
+  --nudge-shine-move: nudge-shine-rest;
+}
+
+[data-nudge~="pointer"] .nudge::after {
+  display: block;
+}
+
+/* Always: lands at 50% and 100%, the effect at 50%. */
+@keyframes nudge-beat {
+  0% { transform: none; animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+  25% { transform: var(--nudge-away); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+  50% { transform: none; animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+  75% { transform: var(--nudge-away); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+  100% { transform: none; }
+}
+
+@keyframes nudge-ring {
+  0%, 50% { box-shadow: 0 0 0 0 var(--nudge-ring); animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1); }
+  85%, 100% { box-shadow: 0 0 0 0.75rem transparent; }
+}
+
+@keyframes nudge-knock {
+  0%, 50% { transform: none; animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1); }
+  55% { transform: var(--nudge-knock); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+  68%, 100% { transform: none; }
+}
+
+@keyframes nudge-shine {
+  0%, 50% { background-position: 170% 0; animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+  85%, 100% { background-position: -70% 0; }
+}
+
+/* Rest: lands at 30% and 60%, the effect at 60%, then still. */
+@keyframes nudge-beat-rest {
+  0% { transform: none; animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+  15% { transform: var(--nudge-away); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+  30% { transform: none; animation-timing-function: cubic-bezier(0, 0, 0.2, 1); }
+  45% { transform: var(--nudge-away); animation-timing-function: cubic-bezier(0.8, 0, 1, 1); }
+  60%, 100% { transform: none; }
+}
+
+@keyframes nudge-ring-rest {
+  0%, 60% { box-shadow: 0 0 0 0 var(--nudge-ring); animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1); }
+  82%, 100% { box-shadow: 0 0 0 0.75rem transparent; }
+}
+
+@keyframes nudge-knock-rest {
+  0%, 60% { transform: none; animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1); }
+  63% { transform: var(--nudge-knock); animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+  71%, 100% { transform: none; }
+}
+
+@keyframes nudge-shine-rest {
+  0%, 60% { background-position: 170% 0; animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1); }
+  82%, 100% { background-position: -70% 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-nudge~="pointer"] .nudge::after {
+    animation: var(--nudge-beat) var(--nudge-time) 0.8s infinite;
+  }
+
+  [data-nudge~="ring"] .nudge {
+    animation: var(--nudge-ring-move) var(--nudge-time) 0.8s infinite;
+  }
+
+  /* Hop alone: the step does the bounce itself. With the pointer: knocked
+     away from it on the second landing. */
+  [data-nudge="hop"] .nudge {
+    --nudge-away: translateY(-0.3rem);
+    animation: var(--nudge-beat) var(--nudge-time) 0.8s infinite;
+  }
+
+  [data-nudge~="pointer"][data-nudge~="hop"] .nudge {
+    animation: var(--nudge-knock-move) var(--nudge-time) 0.8s infinite;
+  }
+
+  /* A light under the label: a background layer, so nothing clips the
+     pointer outside the element. */
+  [data-nudge~="shine"] .nudge {
+    background-image: linear-gradient(105deg, transparent 38%, color-mix(in oklab, white 40%, transparent) 50%, transparent 62%);
+    background-size: 250% 100%;
+    background-repeat: no-repeat;
+    background-position: 170% 0;
+    animation: var(--nudge-shine-move) var(--nudge-time) 0.8s infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-nudge] .nudge {
+    box-shadow: 0 0 0 3px var(--nudge-ring);
+  }
+}
+
 /* daisyUI's own muted text is the site's muted tone: table heads, stat and
    fieldset labels at 60%, an inactive tab at 50%, a menu title at 40% read
    below 4.5:1 on the light theme (a table head 4.47 on base-200, a tab

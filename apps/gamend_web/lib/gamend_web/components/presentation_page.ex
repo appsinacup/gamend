@@ -529,7 +529,9 @@ defmodule GamendWeb.PresentationPage do
   "Coming soon"), `disabled` (drawn as the button but not a link, for
   something announced and not yet there; `href` may then be left out) and
   `tone` (its icon in a section's colour, as a navbar link's `"tone"`; for a
-  button with no `style`, whose fill is the page's own).
+  button with no `style`, whose fill is the page's own) and `nudge` (`true`:
+  the one the reader should press next, moving as the site's `"nudge"` says;
+  one a page, on its first row, the chevron standing above it).
   """
   def buttons(assigns) do
     buttons = if is_list(assigns.buttons), do: assigns.buttons, else: []
@@ -1707,7 +1709,9 @@ defmodule GamendWeb.PresentationPage do
         _ -> "btn-surface"
       end
 
-    [base, style]
+    # The page's next step (`"nudge": true`): the chevron above it, since a
+    # phone stacks the buttons full width (`app.css`, `nudge`).
+    [base, style, button["nudge"] == true && "nudge nudge-top"]
   end
 
   # On a coloured button the badge takes the button's content colour, or it

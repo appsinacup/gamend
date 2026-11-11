@@ -33,7 +33,8 @@ defmodule GamendWeb.LeaderboardViews do
 
   Core knows keys and fields, not what they mean. A host names them with a
   module of these callbacks, every one optional, each answering nil to keep
-  core's default (the raw key, value or field; no badge). A row's badge
+  core's default (the raw key, value or field; no badge; the person icon on
+  a label row, where `row_avatar/2` draws whatever the host puts there). A row's badge
   marks a row for what it is (`row_badge/2`: a made-up runner, say), first
   on the line under its name (`GamendWeb.CoreComponents.player_card/1`),
   before its filters' values:
@@ -58,8 +59,21 @@ defmodule GamendWeb.LeaderboardViews do
               String.t() | nil
   @doc "A row's mark, under its name (`\"Crew ghost\"` for a made-up runner), or nil."
   @callback row_badge(Leaderboard.t(), Gamend.Leaderboards.Record.t()) :: String.t() | nil
+  @doc """
+  What stands where a player's avatar does on a row with no account (a label
+  row): any markup the host draws, sized by the avatar's box (its font size
+  is the box's, so a `1em` mark fills it); nil for the person icon. Core
+  knows nothing of what it is: a picture, an icon, a flag.
+  """
+  @callback row_avatar(Leaderboard.t(), Gamend.Leaderboards.Record.t()) ::
+              Phoenix.LiveView.Rendered.t() | nil
 
-  @optional_callbacks tab_label: 2, tab_icon: 2, filter_label: 2, value_label: 3, row_badge: 2
+  @optional_callbacks tab_label: 2,
+                      tab_icon: 2,
+                      filter_label: 2,
+                      value_label: 3,
+                      row_badge: 2,
+                      row_avatar: 2
 
   @typedoc "A board's declared views: its tabs (keys) and its key filters' fields."
   @type t :: %{tabs: [String.t()], filters: [String.t()]}
@@ -145,17 +159,29 @@ defmodule GamendWeb.LeaderboardViews do
   @spec row_badge(Leaderboard.t(), map()) :: String.t() | nil
   def row_badge(board, record), do: ask(:row_badge, [board, record])
 
+  @doc "A label row's avatar: the host's, else none (a row with a user has its own)."
+  @spec row_avatar(Leaderboard.t(), map()) :: Phoenix.LiveView.Rendered.t() | nil
+  def row_avatar(_board, %{user_id: user_id}) when is_binary(user_id), do: nil
+  def row_avatar(board, record), do: host(:row_avatar, [board, record])
+
   @doc "A value's name: the host's, else the value."
   @spec value_label(Leaderboard.t(), String.t(), String.t()) :: String.t()
   def value_label(board, field, value), do: ask(:value_label, [board, field, value]) || value
 
   # The host's answer when it has the callback and answers a string.
   defp ask(fun, args) do
+    case host(fun, args) do
+      label when is_binary(label) and label != "" -> label
+      _ -> nil
+    end
+  end
+
+  # The host's answer as it is (a label, markup), or nil where it has none.
+  defp host(fun, args) do
     with mod when is_atom(mod) and not is_nil(mod) <-
            Application.get_env(:gamend_web, :leaderboard_views),
-         true <- Code.ensure_loaded?(mod) and function_exported?(mod, fun, length(args)),
-         label when is_binary(label) and label != "" <- apply(mod, fun, args) do
-      label
+         true <- Code.ensure_loaded?(mod) and function_exported?(mod, fun, length(args)) do
+      apply(mod, fun, args)
     else
       _ -> nil
     end

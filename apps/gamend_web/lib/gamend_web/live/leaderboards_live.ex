@@ -424,9 +424,11 @@ defmodule GamendWeb.LeaderboardsLive do
                 <td><.leaderboard_rank rank={record.rank} /></td>
                 <td>
                   <%!-- A label-only record (an external scoreboard entry) has
-                        no user behind it: the card draws the person icon. --%>
+                        no user behind it: the card draws the person icon, or
+                        the host's mark for it (`row_avatar/2`). --%>
                   <.player_card
                     user={record.user}
+                    avatar={LeaderboardViews.row_avatar(@leaderboard, record)}
                     name={record.label || LiveHelpers.public_user_name(record.user || record.user_id)}
                     subtitle={row_subtitle(@view, @leaderboard, record)}
                     you={record.user_id != nil and record.user_id == @current_user_id}

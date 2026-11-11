@@ -13,6 +13,8 @@ defmodule GamendWeb.HostLayouts do
   require GamendWeb.NavLinkGroup, as: NavLinkGroup
   require Gamend.LocaleCode, as: LocaleCode
   require GamendWeb.NavLayout, as: NavLayout
+  require GamendWeb.NudgeMove, as: NudgeMove
+  require GamendWeb.NudgeRhythm, as: NudgeRhythm
 
   @flash_group "flash-group"
   @href "href"
@@ -188,6 +190,44 @@ defmodule GamendWeb.HostLayouts do
       GamendWeb.HostLayoutNavigation.auto_layout?(navigation) -> NavLayout.auto()
       true -> nil
     end
+  end
+
+  @doc """
+  `<html data-nudge data-nudge-rhythm>`: how the page's next step moves
+  (`app.css`, `nudge`), from the config JSON's `"nudge"`:
+
+      "nudge": {"move": "pointer ring", "rhythm": "always"}
+
+  `move` is one of `GamendWeb.NudgeMove`'s words, or `pointer` with one
+  other; `rhythm` one of `GamendWeb.NudgeRhythm`'s. Unset or unknown:
+  `pointer ring`, `always`.
+  """
+  def nudge do
+    config = resolve_theme(LocaleCode.en())["nudge"]
+    config = if is_map(config), do: config, else: %{}
+
+    %{move: nudge_move(config["move"]), rhythm: nudge_rhythm(config["rhythm"])}
+  end
+
+  defp nudge_move(move) when is_binary(move) do
+    words = String.split(move)
+    known? = words != [] and Enum.all?(words, &(&1 in NudgeMove.all()))
+
+    one_or_pointer_and_one? =
+      length(words) == 1 or
+        (length(words) == 2 and NudgeMove.pointer() in words and Enum.uniq(words) == words)
+
+    if known? and one_or_pointer_and_one?,
+      do: Enum.join(words, " "),
+      else: default_nudge_move()
+  end
+
+  defp nudge_move(_move), do: default_nudge_move()
+
+  defp default_nudge_move, do: NudgeMove.pointer() <> " " <> NudgeMove.ring()
+
+  defp nudge_rhythm(rhythm) do
+    if rhythm in NudgeRhythm.all(), do: rhythm, else: NudgeRhythm.always()
   end
 
   @doc false

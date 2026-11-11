@@ -16,7 +16,8 @@ API is left out; `client.Rest.Send` reaches it for a tool that needs it.
 
 ## Add it
 
-Reference `src/Gamend/Gamend.csproj`, or take `src/Gamend` as source. The one
+`dotnet add package Gamend` from NuGet, or reference `src/Gamend/Gamend.csproj`,
+or take `src/Gamend` as source. The one
 dependency is [Newtonsoft.Json](https://www.newtonsoft.com/json), which Unity
 has as `com.unity.nuget.newtonsoft-json`.
 

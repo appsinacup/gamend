@@ -15,9 +15,15 @@ reflection.
 
 ## Add it
 
-Unpack the download and reference `src/Gamend/Gamend.csproj`, or copy `src/Gamend`
-into your project. The one dependency is
-[Newtonsoft.Json](https://www.newtonsoft.com/json).
+From [NuGet](https://www.nuget.org/packages/Gamend):
+
+```bash
+dotnet add package Gamend
+```
+
+Or unpack the download and reference `src/Gamend/Gamend.csproj`. The one
+dependency is [Newtonsoft.Json](https://www.newtonsoft.com/json). Every change to
+Gamend publishes both, at the same version.
 
 ## Connect and sign in
 

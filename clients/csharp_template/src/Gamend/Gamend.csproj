@@ -13,7 +13,17 @@
     <Version>0.0.0</Version>
     <Description>Client SDK for Gamend, the open-source game backend.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageId>Gamend</PackageId>
+    <Authors>appsinacup</Authors>
+    <PackageProjectUrl>https://gamend.org/docs/csharp-sdk</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/appsinacup/gamend</RepositoryUrl>
+    <PackageTags>gamedev;game-backend;multiplayer;websocket;unity</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

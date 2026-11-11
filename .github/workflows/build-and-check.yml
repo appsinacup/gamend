@@ -1345,35 +1345,54 @@ jobs:
           fail_on_unmatched_files: true
 
   # Both publish what CI already built, tested and ran against a live server.
-  # Until the repository has a key, the job says so and passes.
+  # Until the repository is set up for it, the job says so and passes.
+  #
+  # NuGet takes no stored key: nuget.org's trusted publishing policy names this
+  # repository and this workflow file, and NuGet/login trades the job's OIDC
+  # token for a key that lasts an hour. NUGET_USER is the nuget.org profile
+  # name the policy belongs to.
   publish-csharp-sdk:
     name: Publish the C# SDK to NuGet
     needs: [build-godot-sdk, csharp-sdk, cpp-conformance]
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
 
     env:
-      NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      NUGET_USER: ${{ secrets.NUGET_USER }}
 
     steps:
+      - name: Skip without a NuGet user
+        if: env.NUGET_USER == ''
+        run: echo "::notice::NUGET_USER is not set - the C# SDK is not published to NuGet"
+
       - name: Download the C# SDK
+        if: env.NUGET_USER != ''
         uses: actions/download-artifact@v8
         with:
           name: csharp_sdk
           path: csharp_sdk
 
       - name: Set up .NET
-        if: env.NUGET_API_KEY != ''
+        if: env.NUGET_USER != ''
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
+      - name: Log in to NuGet
+        if: env.NUGET_USER != ''
+        id: nuget
+        uses: NuGet/login@v1
+        with:
+          user: ${{ env.NUGET_USER }}
+
       - name: Pack and publish
+        if: env.NUGET_USER != ''
+        env:
+          NUGET_API_KEY: ${{ steps.nuget.outputs.NUGET_API_KEY }}
         run: |
-          if [ -z "$NUGET_API_KEY" ]; then
-            echo "::notice::NUGET_API_KEY is not set: the C# SDK is not published to NuGet"
-            exit 0
-          fi
           VERSION=$(sed -n 's|.*<Version>\(.*\)</Version>.*|\1|p' csharp_sdk/src/Gamend/Gamend.csproj)
           dotnet pack csharp_sdk/src/Gamend/Gamend.csproj -c Release -o nupkg
           # A re-run of the same commit finds its version there already.

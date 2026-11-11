@@ -7,6 +7,22 @@ platform Unity builds for, WebGL included.
 
 The guide: [gamend.org/docs/unity-sdk](https://gamend.org/docs/unity-sdk).
 
+## Install
+
+In Unity, open **Window > Package Manager**, then **+ > Add package from git
+URL...**, and paste this repository's URL with a version from its
+[tags](https://github.com/appsinacup/gamend-unity/tags) after `#`:
+
+```
+https://github.com/appsinacup/gamend-unity.git#1.1.1433
+```
+
+The Package Manager runs git for it. Without git, take `gamend-unity-sdk.tgz`
+from Gamend's [`latest` release](https://github.com/appsinacup/gamend/releases/tag/latest)
+and add it with **Add package from tarball...**.
+
+## Use
+
 ```csharp
 using Gamend.Unity;
 
@@ -26,4 +42,6 @@ if (signedIn.Ok) client.Realtime.Connect();
 
 This package is generated from
 [clients/unity_template](https://github.com/appsinacup/gamend/tree/main/clients/unity_template)
-on every change to Gamend; change it there.
+on every change to Gamend, and [appsinacup/gamend-unity](https://github.com/appsinacup/gamend-unity)
+is what CI writes from it: change it in Gamend, and report issues
+[there](https://github.com/appsinacup/gamend/issues).

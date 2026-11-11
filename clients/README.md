@@ -117,7 +117,10 @@ peer-to-peer client over the `signaling:*` commands.
 The Unity package (`org.gamend.sdk`) is the C# SDK copied into
 `unity_template/` with a `GamendBehaviour`, `UnityWebRequest` HTTP and a WebGL
 socket (`GamendWebSocket.jslib`). It writes `unity_sdk/`, not committed, and
-`--pack` the tarball CI puts on the `latest` release:
+`--pack` the tarball CI puts on the `latest` release. CI also commits each
+version to [appsinacup/gamend-unity](https://github.com/appsinacup/gamend-unity),
+the repository the Package Manager installs it from by git URL
+(`publish-unity-sdk` in `build-and-check.yml`):
 
 ```sh
 ./generate_unity.sh --pack

@@ -1002,7 +1002,7 @@ jobs:
 
             - **Rust**: `gamend-rust-sdk.tar.gz`, also on crates.io as `gamend`. A crate for Bevy, Fyrox, macroquad and tools. [Guide](https://gamend.org/docs/rust-sdk)
 
-            - **Unity**: `gamend-unity-sdk.tgz`, the `org.gamend.sdk` package: the C# SDK with a `GamendBehaviour`, `UnityWebRequest` HTTP and a WebGL socket. Install it with the Package Manager's *Add package from tarball*. [Guide](https://gamend.org/docs/unity-sdk)
+            - **Unity**: `gamend-unity-sdk.tgz`, the `org.gamend.sdk` package: the C# SDK with a `GamendBehaviour`, `UnityWebRequest` HTTP and a WebGL socket. The Package Manager installs it from the git URL `https://github.com/appsinacup/gamend-unity.git`, or this file with *Add package from tarball*. [Guide](https://gamend.org/docs/unity-sdk)
 
             The JavaScript SDK is on npm: [`@ughuuu/gamend`](https://www.npmjs.com/package/@ughuuu/gamend).
           files: |
@@ -1475,6 +1475,20 @@ jobs:
           tar -xzf gamend-unity-sdk.tgz
           VERSION=$(jq -r .version package/package.json)
           git clone --depth 1 "git@github.com:${UNITY_UPM_REPO}.git" upm
+          # Most commits here leave the SDK as it was, and change only the
+          # version the package carries (package.json, Version.cs). Those get
+          # no version there, so every tag is a change a game can see.
+          PREVIOUS=$(jq -r '.version // empty' upm/package.json 2>/dev/null || true)
+          if [ -n "$PREVIOUS" ] && [ "$PREVIOUS" != "$VERSION" ]; then
+            cp -R package unchanged
+            # $ENV{...} is perl's, read from the environment, not the shell's.
+            # shellcheck disable=SC2016
+            grep -rlF "$VERSION" unchanged | NEW="$VERSION" OLD="$PREVIOUS" xargs -r perl -pi -e 's/\Q$ENV{NEW}\E/$ENV{OLD}/g'
+            if diff -r -x .git unchanged upm > /dev/null; then
+              echo "org.gamend.sdk ${VERSION} is ${PREVIOUS} under a new number - skipping"
+              exit 0
+            fi
+          fi
           # This version replaces whatever the last one left.
           find upm -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
           cp -R package/. upm/

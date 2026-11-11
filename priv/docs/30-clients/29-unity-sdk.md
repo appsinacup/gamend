@@ -4,6 +4,7 @@ icon: hero-cube-solid
 
 # Unity SDK
 
+[Package repository](https://github.com/appsinacup/gamend-unity) ·
 [Download](https://github.com/appsinacup/gamend/releases/download/latest/gamend-unity-sdk.tgz) ·
 [View the source](https://github.com/appsinacup/gamend/tree/main/clients/unity_template)
 
@@ -16,24 +17,47 @@ component. It uses no reflection, so IL2CPP needs no `link.xml` for it.
 
 ## Install it
 
-Every change to Gamend puts the package on the `latest` release as
-`gamend-unity-sdk.tgz`, at the same version as the C# SDK on NuGet.
+The package lives in a repository of its own,
+[appsinacup/gamend-unity](https://github.com/appsinacup/gamend-unity), with a
+tag for each version. In Unity, open **Window > Package Manager**, then **+ >
+Add package from git URL...**, and paste the URL with the version you want
+after `#`:
 
-1. Download it into your project, next to `Assets/`, and commit it there.
-2. In Unity, open **Window > Package Manager**, then **+ > Add package from
-   tarball...**, and pick the file.
+```
+https://github.com/appsinacup/gamend-unity.git#1.1.1433
+```
 
-The Package Manager installs [Newtonsoft Json](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.2/manual/index.html)
-with it, Unity's own package of the one library the SDK depends on. To update,
-download the new tarball over the old one; the version the Package Manager shows
-for Gamend says which one Unity has loaded.
+The [tags](https://github.com/appsinacup/gamend-unity/tags) list the versions.
+A version is the C# SDK's it carries (`1.1.1433` is `Gamend` 1.1.1433 on
+NuGet), and a new one comes only when the SDK changes, so the numbers skip.
+Unity writes the URL into `Packages/manifest.json`; to update, change the
+version there:
 
-Unity writes where the file is into `Packages/manifest.json`. Check the line
-reads as a path inside the project, which a teammate's checkout has too:
+```json
+"org.gamend.sdk": "https://github.com/appsinacup/gamend-unity.git#1.1.1433"
+```
+
+A URL without `#` takes what `main` holds when Unity first resolves it and
+keeps that commit in `Packages/packages-lock.json`, so a teammate may get
+another one; name the version. The Package Manager runs git for this, so
+whoever opens the project needs git installed.
+
+It installs [Newtonsoft Json](https://docs.unity3d.com/Packages/com.unity.nuget.newtonsoft-json@3.2/manual/index.html)
+with it, Unity's own package of the one library the SDK depends on.
+
+### Without git
+
+Every change to Gamend also puts the package on the `latest` release as
+`gamend-unity-sdk.tgz`. Download it into your project, next to `Assets/`,
+commit it there, and pick it with **+ > Add package from tarball...**. Check the
+line Unity writes into `Packages/manifest.json` reads as a path inside the
+project, which a teammate's checkout has too:
 
 ```json
 "org.gamend.sdk": "file:../gamend-unity-sdk.tgz"
 ```
+
+To update, download the new tarball over the old one.
 
 ## Connect and sign in
 

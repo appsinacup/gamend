@@ -103,13 +103,16 @@ copied into `Runtime/Sdk` (assembly `Gamend`, `noEngineReferences`) without
   dependency. Every asset has a `.meta` (`clients/unity_package.py`): the
   template's are committed, the SDK's derived from their paths.
 
-**Installing.** Today, `gamend-unity-sdk.tgz` on the `latest` release, through
-*Add package from tarball*. The recommended way is a git URL, which updates
-from the Package Manager and pins with `#<version>`. It needs the package at the
-root of a repository of its own: it is not committed in this one, and Unity
-would clone all of this one (hundreds of MB) for it. `publish-unity-sdk` in
-CI commits and tags each version there once `UNITY_UPM_REPO` and
-`UNITY_UPM_DEPLOY_KEY` are set, and OpenUPM can list that repository after.
+**Installing.** A git URL,
+`https://github.com/appsinacup/gamend-unity.git#<version>`: the package at the
+root of a repository of its own, since it is not committed in this one and
+Unity would clone all of this one (hundreds of MB) for it. `publish-unity-sdk`
+in CI replaces that repository's contents with each version and tags it
+(`UNITY_UPM_REPO`, and `UNITY_UPM_DEPLOY_KEY`, the private half of a deploy key
+with write access there). A commit that changes only the version stamped into
+the package (`package.json`, `Version.cs`) is skipped, so every tag is a change.
+`gamend-unity-sdk.tgz` on the `latest` release is for a machine without git.
+OpenUPM can list the repository next.
 
 **Checked without Unity.** `clients/check_unity.sh` checks the `.meta` files,
 compiles both assemblies and the sample at C# 9 against UnityEngine stubs

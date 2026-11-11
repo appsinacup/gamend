@@ -34,8 +34,8 @@ keeps doing what `generate_balaur.py` does.
 
 | Target | REST layer from | Why |
 |---|---|---|
-| JavaScript / TypeScript | openapi-generator (`typescript-fetch` for types) | Mature target; named schemas fix its only real problem |
-| C# (.NET, Unity) | openapi-generator (`csharp`, `unityWebRequest` library for Unity) | Same |
+| JavaScript + TypeScript | openapi-generator (`javascript`), `.d.ts` from our generator | One package; the runtime others already import does not change |
+| C# (.NET, Unity) | our generator | openapi-generator's Unity library is experimental and ties the output to Unity; ours shares the Godot names and needs no reflection under IL2CPP |
 | Godot | openapi-generator (`gdscript`), as today | Existing; fixups shrink once names exist |
 | Python, Go | openapi-generator | Tools, bots, load tests — generated code is fine there |
 | C++ | our generator | The C++ targets bind a transport (`cpp-restsdk` needs cpprestsdk, in maintenance mode) — ours must be pluggable |
@@ -54,15 +54,48 @@ emitter.
 |---|---|---|---|
 | 0 | Named API schemas | — | Prerequisite for the typed targets |
 | 1 | **C++** → Unreal plugin | Hand-written, ported from the Rust client | [cpp-sdk.md](cpp-sdk.md). Pluggable transports so Unreal uses its own HTTP/WebSocket modules |
-| 2 | **C#**: .NET package + Unity package | Hand-written, or PhoenixSharp | Also serves Godot .NET, MonoGame, Stride. Unity WebGL needs `UnityWebRequest` and a jslib WebSocket |
-| 3 | TypeScript types for the JS SDK | — | `typescript-fetch`, or `.d.ts` over the current output |
-| 4 | Rust crate | Extract `balaur_gamend::client` | Already engine-free (serde_json, ureq, tungstenite); serves Bevy, Fyrox, macroquad |
+| 2 | **C#**: core built; Unity package next | Hand-written, ported from the C++ SDK | Also serves Godot .NET, MonoGame, Stride. Unity WebGL needs `UnityWebRequest` and a jslib WebSocket |
+| 3 | TypeScript types for the JS SDK: built | — | `.d.ts` over the current output, written by `sdkgen ts` |
+| 4 | Rust crate: built | Ported from the C++ SDK, starting from `balaur_gamend::client` | Serves Bevy, Fyrox, macroquad. Balaur moving onto it is a later, optional step |
 | 5 | Lua (Defold, LÖVE) | Hand-written | The Balaur emitter is nearly a Lua emitter |
 | 6 | GameMaker (GML) | Hand-written over `network_create_socket_ext` | |
 | 7 | Python / Go | Optional | Bots, tools, load tests |
 
 Swift, Kotlin and Dart wait for someone to ask: mobile games overwhelmingly
 ship through an engine.
+
+## C#, as built
+
+`clients/sdkgen/csharp.py` and `clients/csharp_template/`, output `csharp_sdk/`.
+It ports the C++ SDK with these differences:
+
+- `netstandard2.1`, C# 9, no threads and no reflection, so Unity IL2CPP and
+  WebGL can take it. Readers are generated and looked up by type.
+- Every call answers a `Task`, completed in `Client.Poll()`, so an `await`
+  continues on the game thread. There is no `Dispatch::Immediate`.
+- Game SDKs carry no admin API: `model.player()`, 181 operations of 285.
+  `Rest.Send` reaches the rest for a tool that needs it.
+- A null or empty path parameter refuses the call: the C++ `string_view` cannot
+  be null, and `/lobbies/` would be another operation.
+- `Event.Name` is C++'s `event.event`, since C# forbids a member named after its
+  type. A timer cancelled by an earlier timer in the same drain no longer fires.
+- No peer connection ships: `IPeerTransport` is the interface a Unity package or
+  a game fills.
+
+## Rust, as built
+
+`clients/sdkgen/rust.py` and `clients/rust_template/`, output `rust_sdk/`.
+Stable Rust, 181 player operations as C#. It differs from the C++ SDK in:
+
+- No callbacks: a callback holding game state fights the borrow checker in every
+  Rust engine. A call answers a `Ticket<T>` (`try_take`, or `.await`), completed
+  in `Client::poll()`, and events are drained: `realtime().events()`.
+- `Client` is `Send + Sync`, so it can be a Bevy `Resource`.
+- The core has no threads and no clock. Those live behind the default `native`
+  feature (`ureq`, `tungstenite`), and CI builds the core for wasm32 without it.
+- Models are generated `Model` impls, not serde. No overloads: where every query
+  key is optional, `<name>_with` takes the options.
+- No peer connection ships: `PeerTransport` is the trait a game fills.
 
 ## One conformance scenario for every SDK
 

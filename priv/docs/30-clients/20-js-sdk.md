@@ -17,6 +17,7 @@ npm install @ughuuu/gamend
 
 That is the whole install. The HTTP client, the Phoenix channel wrapper and the
 protobuf codec all arrive with the package, so there is nothing else to add.
+TypeScript types come with it too: every operation, schema and realtime event.
 
 ## Connect
 

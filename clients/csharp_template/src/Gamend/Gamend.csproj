@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <RootNamespace>Gamend</RootNamespace>
+    <AssemblyName>Gamend</AssemblyName>
+    <Nullable>disable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Not every generated property has a description to give it. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <Version>0.0.0</Version>
+    <Description>Client SDK for Gamend, the open-source game backend.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+</Project>

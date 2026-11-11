@@ -3,6 +3,9 @@
     python3 clients/sdkgen balaur            # regenerate balaur_addons/addons/gamend
     python3 clients/sdkgen balaur --check    # fail when the addon is stale (CI)
     python3 clients/sdkgen cpp               # write cpp_sdk/ (not committed)
+    python3 clients/sdkgen csharp            # write csharp_sdk/ (not committed)
+    python3 clients/sdkgen rust              # write rust_sdk/ (not committed)
+    python3 clients/sdkgen ts                # write the npm package's .d.ts
     python3 clients/sdkgen lint              # fail when an SDK lacks something
 
 One model (`model.py`: the operations, the events, the names) and one
@@ -17,17 +20,26 @@ from pathlib import Path
 
 import balaur
 import cpp
+import csharp
 import lint
 import output
-from model import load
+import rust
+import ts
+from model import SPEC, load
 
-TARGETS = {"balaur": balaur, "cpp": cpp}
+TARGETS = {"balaur": balaur, "cpp": cpp, "csharp": csharp, "rust": rust, "ts": ts}
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("target", choices=[*sorted(TARGETS), "lint"])
     parser.add_argument("--out", type=Path)
+    parser.add_argument(
+        "--spec",
+        type=Path,
+        default=SPEC,
+        help="the OpenAPI document, when it is not clients/godot/openapi.json",
+    )
     parser.add_argument(
         "--check",
         action="store_true",
@@ -40,7 +52,7 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    model = load()
+    model = load(args.spec)
     if args.target == "lint":
         return lint.run(model, args.generated)
 

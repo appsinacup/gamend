@@ -115,8 +115,8 @@ if(GAMEND_WITH_CURL)
       set(CURL_USE_SCHANNEL ON CACHE BOOL "" FORCE)
     endif()
     FetchContent_Declare(curl
-      URL https://github.com/curl/curl/releases/download/curl-8_16_0/curl-8.16.0.tar.xz
-      URL_HASH SHA256=40c8cddbcb6cc6251c03dea423a472a6cea4037be654ba5cf5dec6eb2d22ff1d)
+      URL https://github.com/curl/curl/releases/download/curl-8_23_0/curl-8.23.0.tar.xz
+      URL_HASH SHA256=8dadd7d2536a314f982ad05a651b713f426bf7d02cc2c76cffb9796f2218e6c5)
     FetchContent_MakeAvailable(curl)
   endif()
   target_sources(gamend PRIVATE src/curl_transport.cpp)
@@ -179,8 +179,8 @@ if(GAMEND_WITH_IXWEBSOCKET)
     endif()
 
     FetchContent_Declare(ixwebsocket
-      URL https://github.com/machinezone/IXWebSocket/archive/refs/tags/v11.4.6.tar.gz
-      URL_HASH SHA256=c024334f8e45980836c67008979a884d6dcc5ef067dd2eb1fa7241f4c17ddc32)
+      URL https://github.com/machinezone/IXWebSocket/archive/refs/tags/v12.1.0.tar.gz
+      URL_HASH SHA256=55f3a5d3a1a2c5f19d737c24e6aced28d1200f8f5deb45ecd8e5d46f765b5288)
     FetchContent_MakeAvailable(ixwebsocket)
 
     if(GAMEND_FETCHED_MBEDTLS)
@@ -209,7 +209,7 @@ if(GAMEND_WITH_WEBRTC)
     set(NO_TESTS ON CACHE BOOL "" FORCE)
     FetchContent_Declare(libdatachannel
       GIT_REPOSITORY https://github.com/paullouisageneau/libdatachannel.git
-      GIT_TAG v0.24.5
+      GIT_TAG v0.24.6
       GIT_SHALLOW TRUE
       GIT_SUBMODULES_RECURSE TRUE)
     FetchContent_MakeAvailable(libdatachannel)
@@ -269,8 +269,8 @@ if(GAMEND_BUILD_TESTS)
   find_package(doctest CONFIG QUIET)
   if(NOT doctest_FOUND)
     FetchContent_Declare(doctest
-      URL https://github.com/doctest/doctest/archive/refs/tags/v2.4.12.tar.gz
-      URL_HASH SHA256=73381c7aa4dee704bd935609668cf41880ea7f19fa0504a200e13b74999c2d70)
+      URL https://github.com/doctest/doctest/archive/refs/tags/v2.5.3.tar.gz
+      URL_HASH SHA256=174ebc4e769928959614789c5b4e9c3d0a0f81a62bb608756b127bfebfb21331)
     set(DOCTEST_NO_INSTALL ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(doctest)
     set_property(TARGET doctest APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES

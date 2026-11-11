@@ -125,6 +125,9 @@ defmodule GamendWeb.Serializers do
   @spec serialize_notification(term()) :: map()
   def serialize_notification(notification) do
     sender = loaded_assoc(notification, :sender)
+    # Read before `group_of/1`, whose spec tells dialyzer the struct's
+    # metadata is a map, so a fallback after it reads as dead code.
+    metadata = notification.metadata || %{}
 
     %{
       id: notification.id,
@@ -135,7 +138,7 @@ defmodule GamendWeb.Serializers do
       content: notification.content || "",
       icon_url: notification.icon_url || "",
       group: Notifications.group_of(notification) || "",
-      metadata: notification.metadata || %{},
+      metadata: metadata,
       inserted_at: notification.inserted_at
     }
   end

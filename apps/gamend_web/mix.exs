@@ -93,7 +93,7 @@ defmodule GamendWeb.MixProject do
       {:corsica, "~> 2.0"},
       {:hammer, "~> 7.2"},
       {:hammer_backend_redis, "~> 7.1"},
-      {:ex_webrtc, "~> 0.17.0"},
+      {:ex_webrtc, "~> 0.18.0"},
       {:ex_sctp, "~> 0.1.3"},
       {:prom_ex, "~> 1.12"},
       {:geolix, "~> 2.0"},

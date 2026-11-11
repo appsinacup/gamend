@@ -20,21 +20,20 @@ component. It uses no reflection, so IL2CPP needs no `link.xml` for it.
 The package lives in a repository of its own,
 [appsinacup/gamend-unity](https://github.com/appsinacup/gamend-unity), with a
 tag for each version. In Unity, open **Window > Package Manager**, then **+ >
-Add package from git URL...**, and paste the URL with the version you want
-after `#`:
+Add package from git URL...**, and paste the URL with the newest of its
+[tags](https://github.com/appsinacup/gamend-unity/tags) in place of `<version>`:
 
 ```
-https://github.com/appsinacup/gamend-unity.git#1.1.1433
+https://github.com/appsinacup/gamend-unity.git#<version>
 ```
 
-The [tags](https://github.com/appsinacup/gamend-unity/tags) list the versions.
-A version is the C# SDK's it carries (`1.1.1433` is `Gamend` 1.1.1433 on
-NuGet), and a new one comes only when the SDK changes, so the numbers skip.
+A version is the C# SDK's it carries, the same code as `Gamend` of that number
+on NuGet, and a new one comes only when the SDK changes, so the numbers skip.
 Unity writes the URL into `Packages/manifest.json`; to update, change the
 version there:
 
 ```json
-"org.gamend.sdk": "https://github.com/appsinacup/gamend-unity.git#1.1.1433"
+"org.gamend.sdk": "https://github.com/appsinacup/gamend-unity.git#<version>"
 ```
 
 A URL without `#` takes what `main` holds when Unity first resolves it and

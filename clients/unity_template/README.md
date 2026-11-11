@@ -10,11 +10,11 @@ The guide: [gamend.org/docs/unity-sdk](https://gamend.org/docs/unity-sdk).
 ## Install
 
 In Unity, open **Window > Package Manager**, then **+ > Add package from git
-URL...**, and paste this repository's URL with a version from its
-[tags](https://github.com/appsinacup/gamend-unity/tags) after `#`:
+URL...**, and paste this repository's URL with the newest of its
+[tags](https://github.com/appsinacup/gamend-unity/tags) in place of `<version>`:
 
 ```
-https://github.com/appsinacup/gamend-unity.git#1.1.1433
+https://github.com/appsinacup/gamend-unity.git#<version>
 ```
 
 The Package Manager runs git for it. Without git, take `gamend-unity-sdk.tgz`

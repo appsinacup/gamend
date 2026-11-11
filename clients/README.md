@@ -78,6 +78,23 @@ each of them at once, with the TypeScript and Godot checks, skipping any whose
 tool is not installed. With a server URL it then runs each one's live
 conformance, one at a time. CI does the same in separate jobs.
 
+## Where each SDK is published
+
+Every push to `main` publishes each SDK at the server's version,
+`<VERSION>.<commit count>` (`1.1.1429`), from `.github/workflows/build-and-check.yml`:
+
+| SDK | Where | How CI signs in |
+|---|---|---|
+| JavaScript | npm, [`@ughuuu/gamend`](https://www.npmjs.com/package/@ughuuu/gamend) | trusted publishing (OIDC) |
+| C# | NuGet, [`Gamend`](https://www.nuget.org/packages/Gamend) | trusted publishing: nuget.org's policy names this repository and `build-and-check.yml`; the `NUGET_USER` secret is the profile it belongs to |
+| Rust | crates.io, [`gamend`](https://crates.io/crates/gamend); reference on docs.rs | the `CARGO_REGISTRY_TOKEN` secret |
+| C++, C#, Rust, Godot | the [`latest` release](https://github.com/appsinacup/gamend/releases/tag/latest): a tarball each, `godot_addons.zip` | the workflow's own token |
+
+The NuGet, crates.io and release jobs wait for the SDK's build, its tests and
+the live conformance run. A version already on a registry is skipped, so a
+re-run passes. Without `NUGET_USER` or `CARGO_REGISTRY_TOKEN`, that job says so
+and passes.
+
 ## Does every SDK have everything
 
 `python3 clients/sdkgen lint` prints each SDK against the operations and

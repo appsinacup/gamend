@@ -21,6 +21,9 @@ gamend = "1"                        # from crates.io
 # gamend = { path = "rust_sdk" }    # or from the release's tarball
 ```
 
+The API reference is on [docs.rs](https://docs.rs/gamend), and the guide at
+[gamend.org/docs/rust-sdk](https://gamend.org/docs/rust-sdk).
+
 The one dependency of the core is `serde_json`. The default feature `native` adds
 `ureq` for HTTP, `tungstenite` with rustls for the socket, and the default clock.
 Every network library sits behind a trait in `transport.rs`: `HttpTransport`,

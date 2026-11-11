@@ -4,6 +4,8 @@ icon: hero-wrench-screwdriver-solid
 
 # Rust Client SDK
 
+[crates.io](https://crates.io/crates/gamend) ·
+[API reference](https://docs.rs/gamend) ·
 [Download](https://github.com/appsinacup/gamend/releases/download/latest/gamend-rust-sdk.tar.gz) ·
 [View the source](https://github.com/appsinacup/gamend/tree/main/clients/rust_template)
 
@@ -21,7 +23,8 @@ cargo add gamend
 
 Or unpack the download beside your project and use
 `gamend = { path = "rust_sdk" }`. Every change to Gamend publishes both, at the
-same version.
+same version as the server it was built with (such as `1.1.1429`), so pick the
+one your server runs or an older one: `cargo add gamend@=1.1.1429`.
 
 The default `native` feature brings `ureq` and `tungstenite` with rustls. With
 `default-features = false` the core has no threads and builds for wasm32: bring

@@ -30,6 +30,11 @@ instead. No peer connection ships yet; `WebRtc` runs over one you bring.
 ## Use it
 
 ```csharp
+using Gamend;
+using Gamend.Net;
+using Newtonsoft.Json.Linq;
+using Models = Gamend.Models;    // the API's types, as Models.Lobby
+
 var client = new Client(new Config
 {
     BaseUrl = "https://game.example.com",

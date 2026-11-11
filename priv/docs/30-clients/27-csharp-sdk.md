@@ -4,6 +4,7 @@ icon: hero-code-bracket-square-solid
 
 # C# Client SDK
 
+[NuGet](https://www.nuget.org/packages/Gamend) ·
 [Download](https://github.com/appsinacup/gamend/releases/download/latest/gamend-csharp-sdk.tar.gz) ·
 [View the source](https://github.com/appsinacup/gamend/tree/main/clients/csharp_template)
 
@@ -23,7 +24,9 @@ dotnet add package Gamend
 
 Or unpack the download and reference `src/Gamend/Gamend.csproj`. The one
 dependency is [Newtonsoft.Json](https://www.newtonsoft.com/json). Every change to
-Gamend publishes both, at the same version.
+Gamend publishes both, at the same version as the server it was built with
+(`GamendVersion.Value`, such as `1.1.1429`), so pick the one your server runs or
+an older one.
 
 ## Connect and sign in
 
@@ -31,6 +34,7 @@ Gamend publishes both, at the same version.
 using Gamend;
 using Gamend.Net;
 using Newtonsoft.Json.Linq;
+using Models = Gamend.Models;
 
 var client = new Client(new Config
 {

@@ -188,8 +188,8 @@ defmodule GamendWeb.RealtimeEvents do
   ]
 
   # The name an SDK's signal or callback has for an event, where it is not the
-  # event's own (`signal/2`). Balaur's and C++'s come from the table generated
-  # from this registry (`mix gamend.gen.events`, `clients/events.json`); a new
+  # event's own (`signal/2`). The C++, C#, Rust and Balaur SDKs' come from the
+  # table generated from this registry (`mix gamend.gen.events`, `clients/events.json`); a new
   # event's signal is its name unless named here.
   @signals %{
     {"group", "chat_message_created"} => "group_chat_message",

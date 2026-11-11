@@ -4,7 +4,8 @@
 > users, lobbies, groups, parties, friends, chat, notifications, quests,
 > leaderboards, tournaments, payments, an economy/inventory, object storage,
 > server-side scripting and an admin portal, over HTTP, WebSocket and WebRTC,
-> with SDKs for JavaScript and Godot. MIT licensed, self-hosted.
+> with SDKs for Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and
+> Balaur. MIT licensed, self-hosted.
 
 ## What it is
 
@@ -28,8 +29,24 @@ own its own supervision tree — without forking the server.
 
 ## Client SDKs
 
-- JavaScript: `@ughuuu/gamend` on npm.
-- Godot: published in the Godot Asset Library.
+Each has every player-facing operation, generated from the server's OpenAPI
+document, and its realtime events.
+
+- [Godot](https://gamend.org/docs/godot-sdk): published in the Godot Asset Library.
+- [Unity](https://gamend.org/docs/unity-sdk): the C# SDK as the `org.gamend.sdk`
+  package, Unity 2021.3+, WebGL included. Installs from the git URL of
+  `appsinacup/gamend-unity`.
+- [Unreal](https://gamend.org/docs/unreal-sdk): an Unreal Engine 5 plugin on the
+  C++ SDK, with Blueprint nodes (beta).
+- [C++](https://gamend.org/docs/cpp-sdk): C++17, pluggable transports, no
+  exceptions or RTTI required.
+- [C#](https://gamend.org/docs/csharp-sdk): `Gamend` on NuGet, netstandard2.1.
+- [Rust](https://gamend.org/docs/rust-sdk): `gamend` on crates.io; the core
+  builds for wasm32.
+- [JavaScript](https://gamend.org/docs/js-sdk): `@ughuuu/gamend` on npm, with
+  TypeScript types.
+- Balaur: Rune scripts for the Balaur engine, `balaur_addons.zip` on the
+  `latest` GitHub release.
 - Elixir: stub modules under `sdk/`, for autocomplete when writing hooks.
 
 ## Features worth stating precisely

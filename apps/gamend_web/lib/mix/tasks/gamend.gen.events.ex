@@ -15,7 +15,9 @@ defmodule Mix.Tasks.Gamend.Gen.Events do
   the server sent were missing (the matchmaking accept's `ready_check_*` on the
   user channel), and events it never sent were listed.
 
-  Generated from it: the Balaur and C++ SDKs (`clients/sdkgen`). The Godot
+  Generated from it (`clients/sdkgen`): the C++, C#, Rust and Balaur SDKs,
+  so the Unreal and Unity packages built on them, and the TypeScript
+  declarations' event names. The Godot
   and JavaScript clients' hand-written routing and decoders are held to it by
   `sdk_events_drift_test.exs`.
 

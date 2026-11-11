@@ -325,7 +325,7 @@ theme/config.json         # branding, navigation, pages
 blog/                     # blog posts (markdown)
 modules/plugins/          # loaded hook plugins; plugins_examples/ = examples
 sdk/, sdk_tools/          # Elixir plugin SDK stubs; plugin.bundle and GDScript tasks
-clients/                  # SDK generators and templates: JS, Godot, Balaur, C++, Unreal (sdkgen/)
+clients/                  # SDK generators and templates: JS/TS, Godot, Balaur, C++, C#, Rust, Unity, Unreal (sdkgen/)
 proto/                    # realtime protobuf schema
 stress/                   # load tests
 docker/                   # base images every Gamend image starts FROM: builder, runtime, backup (README.md)

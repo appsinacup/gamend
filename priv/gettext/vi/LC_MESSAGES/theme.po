@@ -231,3 +231,18 @@ msgstr "Phân tích, nhật ký và khả năng quan sát"
 
 msgid "Game + Backend"
 msgstr "Game + backend"
+
+msgid "Architecture"
+msgstr "Kiến trúc"
+
+msgid "Unity SDK"
+msgstr "Unity SDK"
+
+msgid "Unreal plugin"
+msgstr "Plugin Unreal"
+
+msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
+msgstr "SDK cho **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript và Balaur**, mỗi SDK có mọi lệnh gọi dành cho người chơi, model có kiểu và các sự kiện thời gian thực, được build lại với mỗi bản phát hành máy chủ. Mọi thứ khác giao tiếp trực tiếp với HTTP API và các kênh WebSocket."
+
+msgid "Client SDKs"
+msgstr "SDK phía client"

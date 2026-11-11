@@ -4,8 +4,8 @@ defmodule GamendWeb.RealtimeCommands do
   answers. `GamendWeb.RealtimeEvents` is the other direction.
 
   `clients/commands.json` (`mix gamend.gen.events`) is this list, and every SDK
-  has a function for each row: generated in the C++ and Balaur SDKs, by hand in
-  the Godot and JavaScript clients. `realtime_events_drift_test.exs` holds the
+  has a function for each row: generated in the C++, C#, Rust and Balaur SDKs,
+  by hand in the Godot and JavaScript clients. `realtime_events_drift_test.exs` holds the
   list to the channels and `python3 clients/sdkgen lint` holds each SDK to it.
 
   A command on `user:*` goes to the caller's own channel. On any other topic

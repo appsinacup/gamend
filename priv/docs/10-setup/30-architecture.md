@@ -12,8 +12,10 @@ High-level overview of how the platform is structured, from clients down to the 
   ┌─────────────────────────────────────────────────────────────┐
   │                        CLIENTS                              │
   │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-  │  │  Godot, C++, │  │   JS SDK     │  │ Web Browser  │       │
-  │  │  Balaur SDKs │  │              │  │              │       │
+  │  │ Godot, Unity,│  │  JS / TS SDK │  │ Web Browser  │       │
+  │  │ Unreal, C++, │  │              │  │              │       │
+  │  │ C#, Rust and │  │              │  │              │       │
+  │  │ Balaur SDKs  │  │              │  │              │       │
   │  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘       │
   └─────────┼─────────────────┼─────────────────┼───────────────┘
             │ REST + WS       │ REST + WS       │ HTTP
@@ -187,7 +189,8 @@ These projects live in one repository, but the runtime split is intentional: cor
   │   └── gamend_web/   # Shared web package: controllers, LiveViews,
   │                     #   channels, components, frontend source
   ├── modules/plugins/  # Hook plugins, as OTP apps (server scripting)
-  ├── clients/          # SDK generators: Godot, JS, Balaur, C++
+  ├── clients/          # SDKs: Godot, JS/TS, C++, C#, Rust, Unity, Unreal,
+  │                     #   Balaur, and their generator
   └── sdk/              # Elixir SDK stubs for hooks
 ```
 

@@ -231,3 +231,18 @@ msgstr "Analyse, logs en observeerbaarheid"
 
 msgid "Game + Backend"
 msgstr "Game + backend"
+
+msgid "Architecture"
+msgstr "Architectuur"
+
+msgid "Unity SDK"
+msgstr "Unity-SDK"
+
+msgid "Unreal plugin"
+msgstr "Unreal-plug-in"
+
+msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
+msgstr "SDK's voor **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript en Balaur**, elk met alle aanroepen voor spelers, getypeerde modellen en de realtime events, opnieuw gebouwd bij elke serverrelease. Al het andere praat rechtstreeks met de HTTP-API en de WebSocket-kanalen."
+
+msgid "Client SDKs"
+msgstr "Client-SDK's"

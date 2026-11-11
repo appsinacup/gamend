@@ -231,3 +231,18 @@ msgstr "분석, 로그, 관측성"
 
 msgid "Game + Backend"
 msgstr "게임 + 백엔드"
+
+msgid "Architecture"
+msgstr "아키텍처"
+
+msgid "Unity SDK"
+msgstr "Unity SDK"
+
+msgid "Unreal plugin"
+msgstr "Unreal 플러그인"
+
+msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
+msgstr "**Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript, Balaur**용 SDK. 각각 플레이어용 모든 호출, 타입이 지정된 모델, 실시간 이벤트를 갖추고 있으며 서버를 릴리스할 때마다 다시 빌드됩니다. 그 밖의 환경은 HTTP API와 WebSocket 채널을 직접 사용합니다."
+
+msgid "Client SDKs"
+msgstr "클라이언트 SDK"

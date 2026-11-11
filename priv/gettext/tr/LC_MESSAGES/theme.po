@@ -231,3 +231,18 @@ msgstr "Analitik, günlükler ve gözlemlenebilirlik"
 
 msgid "Game + Backend"
 msgstr "Oyun + arka uç"
+
+msgid "Architecture"
+msgstr "Mimari"
+
+msgid "Unity SDK"
+msgstr "Unity SDK"
+
+msgid "Unreal plugin"
+msgstr "Unreal eklentisi"
+
+msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
+msgstr "**Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript ve Balaur** için SDK'lar; her biri oyuncuya yönelik tüm çağrıları, tipli modelleri ve gerçek zamanlı olayları içerir ve her sunucu sürümüyle yeniden derlenir. Diğer her şey doğrudan HTTP API ve WebSocket kanallarıyla konuşur."
+
+msgid "Client SDKs"
+msgstr "İstemci SDK'ları"

@@ -77,14 +77,9 @@
               "icon": "hero-chart-bar-solid"
             },
             {
-              "label": "Godot SDK",
-              "href": "/docs/godot-sdk",
-              "icon": "hero-puzzle-piece-solid"
-            },
-            {
-              "label": "C++ SDK",
-              "href": "/docs/cpp-sdk",
-              "icon": "hero-cpu-chip-solid"
+              "label": "Architecture",
+              "href": "/docs/architecture",
+              "icon": "hero-cube-transparent-solid"
             }
           ]
         },
@@ -235,6 +230,37 @@
               "label": "GDScript Hooks",
               "href": "/docs/gdscript-hooks",
               "icon": "hero-puzzle-piece-solid"
+            }
+          ]
+        },
+        {
+          "title": "Client SDKs",
+          "text": "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly.",
+          "icon": "hero-puzzle-piece-solid",
+          "media_width": "third",
+          "image_position_desktop": "left",
+          "image_position_mobile": "top",
+          "text_align": "left",
+          "buttons": [
+            {
+              "label": "Godot SDK",
+              "href": "/docs/godot-sdk",
+              "icon": "hero-puzzle-piece-solid"
+            },
+            {
+              "label": "Unity SDK",
+              "href": "/docs/unity-sdk",
+              "icon": "hero-cube-solid"
+            },
+            {
+              "label": "Unreal plugin",
+              "href": "/docs/unreal-sdk",
+              "icon": "hero-rocket-launch-solid"
+            },
+            {
+              "label": "C++ SDK",
+              "href": "/docs/cpp-sdk",
+              "icon": "hero-cpu-chip-solid"
             }
           ]
         },

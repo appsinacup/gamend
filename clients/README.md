@@ -49,8 +49,10 @@ it by `realtime_events_drift_test.exs`, the protobuf codec by
 `event_codec_coverage_test.exs`. From it:
 
 - `mix gamend.gen.events` writes `clients/events.json` (channel, event,
-  signal, protobuf message), which the Balaur and C++ SDKs are generated
-  from. `precommit` runs it; CI runs `--check`.
+  signal, protobuf message), which the C++, C#, Rust and Balaur SDKs are
+  generated from (and so the Unreal and Unity packages built on them), and
+  the TypeScript declarations' union of event names. `precommit` runs it; CI
+  runs `--check`.
 - `sdk_events_drift_test.exs` holds the hand-written halves to it: Godot's
   routing (`GamendApi.gd`, `GamendWebRTC.gd`, `GamendSignalingClient.gd`)
   and the Godot and JavaScript protobuf decoders (`GamendProto.gd`,
@@ -67,15 +69,15 @@ the schema when it is protobuf), run `mix gamend.gen.events` and
 Every event a channel answers is declared once, in
 `GamendWeb.RealtimeCommands`, which `realtime_events_drift_test.exs` holds to
 the channels' `handle_in` clauses. `mix gamend.gen.events` writes it to
-`clients/commands.json`, and the C++ (`gamend::commands`) and Balaur
+`clients/commands.json`, and the C++ (`gamend::commands`), C#, Rust and Balaur
 (`commands.bs`) SDKs get one function per row from it. The Godot and
 JavaScript clients have theirs by hand.
 
 ## Build and test them all
 
 `clients/check_sdks.sh` generates the C++, C# and Rust SDKs and builds and tests
-each of them at once, with the TypeScript and Godot checks, skipping any whose
-tool is not installed. With a server URL it then runs each one's live
+each of them at once, with the TypeScript, Godot, Unity and Unreal checks,
+skipping any whose tool is not installed. With a server URL it then runs each one's live
 conformance, one at a time. CI does the same in separate jobs.
 
 ## Where each SDK is published
@@ -88,12 +90,13 @@ Every push to `main` publishes each SDK at the server's version,
 | JavaScript | npm, [`@ughuuu/gamend`](https://www.npmjs.com/package/@ughuuu/gamend) | trusted publishing (OIDC) |
 | C# | NuGet, [`Gamend`](https://www.nuget.org/packages/Gamend) | trusted publishing: nuget.org's policy names this repository and `build-and-check.yml`; the `NUGET_USER` secret is the profile it belongs to |
 | Rust | crates.io, [`gamend`](https://crates.io/crates/gamend); reference on docs.rs | the `CARGO_REGISTRY_TOKEN` secret |
-| C++, C#, Rust, Godot, Unreal | the [`latest` release](https://github.com/appsinacup/gamend/releases/tag/latest): a tarball each, `godot_addons.zip`, `gamend-unreal-plugin.zip` | the workflow's own token |
+| Unity | [appsinacup/gamend-unity](https://github.com/appsinacup/gamend-unity), a tag per version, for the Package Manager's git URL install (the `UNITY_UPM_REPO` variable names it) | the `UNITY_UPM_DEPLOY_KEY` secret, a deploy key |
+| C++, C#, Rust, Unity, Godot, Balaur, Unreal | the [`latest` release](https://github.com/appsinacup/gamend/releases/tag/latest): a tarball each, `godot_addons.zip`, `balaur_addons.zip`, `gamend-unreal-plugin.zip` | the workflow's own token |
 
-The NuGet, crates.io and release jobs wait for the SDK's build, its tests and
-the live conformance run. A version already on a registry is skipped, so a
-re-run passes. Without `NUGET_USER` or `CARGO_REGISTRY_TOKEN`, that job says so
-and passes.
+The NuGet, crates.io, Unity and release jobs wait for the SDK's build, its
+tests and the live conformance run. A version already published is skipped, so
+a re-run passes. Without `NUGET_USER`, `CARGO_REGISTRY_TOKEN` or the Unity
+repository's variable and key, that job says so and passes.
 
 ## Does every SDK have everything
 

@@ -231,3 +231,18 @@ msgstr "التحليلات والسجلات وقابلية المراقبة"
 
 msgid "Game + Backend"
 msgstr "اللعبة + الواجهة الخلفية"
+
+msgid "Architecture"
+msgstr "البنية"
+
+msgid "Unity SDK"
+msgstr "Unity SDK"
+
+msgid "Unreal plugin"
+msgstr "إضافة Unreal"
+
+msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
+msgstr "حزم SDK لـ **Godot وUnity وUnreal وC++ وC# وRust وJavaScript/TypeScript وBalaur**، كلٌّ منها يضم كل استدعاء يخص اللاعبين ونماذج ذات أنواع وأحداث الوقت الفعلي، ويُعاد بناؤها مع كل إصدار من الخادم. وأي شيء آخر يتصل مباشرة بواجهة HTTP API وقنوات WebSocket."
+
+msgid "Client SDKs"
+msgstr "حزم SDK للعملاء"

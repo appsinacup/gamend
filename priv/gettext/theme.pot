@@ -103,10 +103,7 @@ msgstr ""
 msgid "Benchmarks"
 msgstr ""
 
-msgid "Godot SDK"
-msgstr ""
-
-msgid "C++ SDK"
+msgid "Architecture"
 msgstr ""
 
 msgid "The **backend for your multiplayer game**: accounts, lobbies, chat, leaderboards and everything players expect around the game itself. It also ships the web UI around it, a ready-made player website (store, leaderboards, tournaments, quests, groups, chat) and a full admin panel. Server-side scripting runs your own logic where players cannot reach it. You run it on your own server; there is no hosted service."
@@ -176,6 +173,24 @@ msgid "Write server hooks in **Elixir, GDScript or Gleam** for scoring, rewards,
 msgstr ""
 
 msgid "Server Scripting & Scheduling"
+msgstr ""
+
+msgid "Godot SDK"
+msgstr ""
+
+msgid "Unity SDK"
+msgstr ""
+
+msgid "Unreal plugin"
+msgstr ""
+
+msgid "C++ SDK"
+msgstr ""
+
+msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
+msgstr ""
+
+msgid "Client SDKs"
 msgstr ""
 
 msgid "REST API, real-time WebSocket channels and low-latency WebRTC DataChannels, with an opt-in protobuf realtime format. Admin portal and web UI, translated into 30 languages."

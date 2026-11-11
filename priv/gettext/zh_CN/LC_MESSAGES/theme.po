@@ -231,3 +231,18 @@ msgstr "分析、日志与可观测性"
 
 msgid "Game + Backend"
 msgstr "游戏 + 后端"
+
+msgid "Architecture"
+msgstr "架构"
+
+msgid "Unity SDK"
+msgstr "Unity SDK"
+
+msgid "Unreal plugin"
+msgstr "Unreal 插件"
+
+msgid "SDKs for **Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Balaur**, each with every player-facing call, typed models and the realtime events, rebuilt with every server release. Anything else talks to the HTTP API and WebSocket channels directly."
+msgstr "面向 **Godot、Unity、Unreal、C++、C#、Rust、JavaScript/TypeScript 和 Balaur** 的 SDK，每个都包含所有面向玩家的调用、类型化模型和实时事件，并随每次服务器发布重新构建。其他任何环境都可以直接使用 HTTP API 和 WebSocket 频道。"
+
+msgid "Client SDKs"
+msgstr "客户端 SDK"

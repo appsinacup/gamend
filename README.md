@@ -2,7 +2,7 @@
 
 # Gamend
 
-**Open source Elixir game server with authentication, users, lobbies, groups, parties, friends, chat, notifications, quests, leaderboards, tournaments, payments, server scripting and an admin portal with HTTP, WebSocket, and WebRTC support and SDKs for Godot, Unreal, Rune (Balaur), C++ and JS.**
+**Open source Elixir game server with authentication, users, lobbies, groups, parties, friends, chat, notifications, quests, leaderboards, tournaments, payments, server scripting and an admin portal with HTTP, WebSocket, and WebRTC support and SDKs for Godot, Unity, Unreal, C++, C#, Rust, JavaScript/TypeScript and Rune (Balaur).**
 
 Game + Backend = Gamend
 
@@ -16,8 +16,8 @@ everything else players expect around the game itself.
 Your game still renders and simulates, but server-side scripting means real logic runs on the
 server: hooks in Elixir fire on your events, so scoring, rewards, matchmaking
 rules and validation are decided somewhere the player cannot edit. Background and
-scheduled jobs run there too. Connect from Godot, Rune (Balaur), C++ or
-JavaScript, or over plain HTTP.
+scheduled jobs run there too. Connect from Godot, Unity, Unreal, C++, C#, Rust,
+JavaScript or Rune (Balaur), or over plain HTTP.
 
 It is written in Elixir — the language behind Discord's messaging — which is why
 one small server holds tens of thousands of connections. **You run it on your

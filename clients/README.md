@@ -112,6 +112,24 @@ The lint says an SDK can call a thing, not that it does anything more with it:
 Balaur has `webrtc_offer` and no WebRTC peer behind it, and only Godot has a
 peer-to-peer client over the `signaling:*` commands.
 
+## Unity
+
+The Unity package (`org.gamend.sdk`) is the C# SDK copied into
+`unity_template/` with a `GamendBehaviour`, `UnityWebRequest` HTTP and a WebGL
+socket (`GamendWebSocket.jslib`). It writes `unity_sdk/`, not committed, and
+`--pack` the tarball CI puts on the `latest` release:
+
+```sh
+./generate_unity.sh --pack
+./check_unity.sh
+```
+
+There is no Unity in CI, so `check_unity.sh` compiles the package against
+UnityEngine stubs (`unity_check/`), for players and for WebGL, and runs the
+jslib in node. A file added to `unity_template/` needs its `.meta`:
+`python3 unity_package.py unity_template` writes the missing ones, and
+`precommit` fails without them.
+
 ## Balaur and C++
 
 The Balaur and C++ SDKs come from our own generator, `sdkgen/`: one model of

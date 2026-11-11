@@ -7,4 +7,4 @@
 - **Economy extensions** — regenerating currencies (lives / energy), store presets.
 - **Realtime** — generalize the WebRTC layer; KV prefix queries and streaming.
 - **Integrations** — Discord notifications; an analytics pipeline once event volume demands one.
-- **SDKs** — Unity on the C# SDK, the Unreal plugin out of beta, and Python; see `docs/specs/client-sdks.md`.
+- **SDKs** — the Unreal plugin out of beta, and Python; see `docs/specs/client-sdks.md`.

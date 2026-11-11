@@ -1,0 +1,32 @@
+{
+  "name": "org.gamend.sdk",
+  "version": "0.0.0-dev",
+  "displayName": "Gamend",
+  "description": "Client SDK for Gamend, the open-source game backend: sign-in, every player API call, realtime channels and server hooks, live key-value rows and presence. Runs on every platform Unity builds for, WebGL included.",
+  "unity": "2021.3",
+  "documentationUrl": "https://gamend.org/docs/unity-sdk",
+  "changelogUrl": "https://gamend.org/changelog",
+  "licensesUrl": "https://github.com/appsinacup/gamend/blob/main/LICENSE",
+  "keywords": [
+    "gamend",
+    "backend",
+    "multiplayer",
+    "matchmaking",
+    "leaderboards",
+    "websocket"
+  ],
+  "author": {
+    "name": "appsinacup",
+    "url": "https://gamend.org"
+  },
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
+  "samples": [
+    {
+      "displayName": "Quick Start",
+      "description": "Sign in with the device, open the realtime connection and quick-join a lobby, with every event on screen.",
+      "path": "Samples~/QuickStart"
+    }
+  ]
+}

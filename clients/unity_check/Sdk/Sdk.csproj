@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The package's Gamend assembly (unity_sdk/Runtime/Sdk) as Unity compiles
+       it: C# 9, no UnityEngine. -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <AssemblyName>Gamend</AssemblyName>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../../unity_sdk/Runtime/Sdk/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- com.unity.nuget.newtonsoft-json 3.2.1 is Newtonsoft.Json 13.0.2. -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+  </ItemGroup>
+
+</Project>

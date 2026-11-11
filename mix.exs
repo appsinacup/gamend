@@ -211,6 +211,9 @@ defmodule GamendHost.MixProject do
           "cmd python3 clients/sdkgen balaur",
           # Every SDK against every operation, schema and socket event.
           "cmd python3 clients/sdkgen lint",
+          # A file added to the Unity package without its .meta, which Unity
+          # would ignore in an installed package.
+          "cmd python3 clients/unity_package.py clients/unity_template --check",
           "credo --strict",
           "gamend.api.lint",
           "gamend.race.lint",

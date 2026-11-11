@@ -9,7 +9,7 @@ icon: hero-code-bracket-square-solid
 [View the source](https://github.com/appsinacup/gamend/tree/main/clients/csharp_template)
 
 A `netstandard2.1` client for .NET games and tools (MonoGame, Stride, Godot
-.NET), and the core a Unity package builds on. Every player-facing operation is
+.NET), and the core of the [Unity package](/docs/unity-sdk). Every player-facing operation is
 a method, generated from the same OpenAPI document as the other SDKs and named
 as the Godot SDK names it, in PascalCase. It starts no threads and uses no
 reflection.

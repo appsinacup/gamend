@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Generate every SDK and build and test them all, the way CI does, for whichever
 # this machine has the tools for. The Unreal plugin is built without the engine
-# (clients/check_unreal.sh).
+# (clients/check_unreal.sh), and the Unity package is checked without Unity
+# (clients/check_unity.sh says what that leaves out).
 #
 #   clients/check_sdks.sh                         # build and unit tests
 #   clients/check_sdks.sh http://localhost:4000   # ...and live conformance
@@ -70,6 +71,10 @@ live_rust() {
     $CARGO run --example conformance -- "$URL" --protobuf
 }
 
+build_unity() {
+  clients/generate_unity.sh && clients/check_unity.sh
+}
+
 build_typescript() {
   python3 clients/sdkgen ts --spec clients/godot/openapi.json &&
     cd clients && npm run check:types
@@ -94,6 +99,7 @@ needs() {
   case "$1" in
     cpp) command -v cmake ;;
     csharp) command -v dotnet ;;
+    unity) command -v dotnet && command -v node ;;
     rust) command -v cargo ;;
     typescript) command -v npx && test -f clients/javascript/dist/index.js ;;
     godot) test -d godot_addons/addons/gamend ;;
@@ -103,7 +109,7 @@ needs() {
 
 names=()
 pids=()
-for sdk in cpp csharp rust typescript godot unreal; do
+for sdk in cpp csharp unity rust typescript godot unreal; do
   if ! needs "$sdk" > /dev/null 2>&1; then
     echo "skip $sdk: its tool or generated output is not here"
     continue

@@ -54,7 +54,7 @@ emitter.
 |---|---|---|---|
 | 0 | Named API schemas | — | Prerequisite for the typed targets |
 | 1 | **C++** → Unreal plugin: built (beta) | Hand-written, ported from the Rust client | [cpp-sdk.md](cpp-sdk.md), [unreal-plugin.md](unreal-plugin.md). Pluggable transports so Unreal uses its own HTTP/WebSocket modules |
-| 2 | **C#**: core built; Unity package next | Hand-written, ported from the C++ SDK | Also serves Godot .NET, MonoGame, Stride. Unity WebGL needs `UnityWebRequest` and a jslib WebSocket |
+| 2 | **C#** and the Unity package: built | Hand-written, ported from the C++ SDK | Also serves Godot .NET, MonoGame, Stride. Unity WebGL needs `UnityWebRequest` and a jslib WebSocket |
 | 3 | TypeScript types for the JS SDK: built | — | `.d.ts` over the current output, written by `sdkgen ts` |
 | 4 | Rust crate: built | Ported from the C++ SDK, starting from `balaur_gamend::client` | Serves Bevy, Fyrox, macroquad. Balaur moving onto it is a later, optional step |
 | 5 | Lua (Defold, LÖVE) | Hand-written | The Balaur emitter is nearly a Lua emitter |
@@ -81,6 +81,42 @@ It ports the C++ SDK with these differences:
   type. A timer cancelled by an earlier timer in the same drain no longer fires.
 - No peer connection ships: `IPeerTransport` is the interface a Unity package or
   a game fills.
+
+## Unity, as built
+
+`clients/unity_template/` and `clients/generate_unity.sh`, output `unity_sdk/`
+(the UPM package `org.gamend.sdk`, Unity 2021.3+). The C# SDK's sources are
+copied into `Runtime/Sdk` (assembly `Gamend`, `noEngineReferences`) without
+`HttpClientTransport` and the test fakes; `Runtime/Unity` (assembly
+`Gamend.Unity`) is hand-written:
+
+- `GamendBehaviour`: builds the client on first use from its inspector fields,
+  polls it in `Update` at execution order -1000, disposes of it in `OnDestroy`,
+  and by default survives scene loads as `GamendBehaviour.Instance`.
+- `UnityHttpTransport` over `UnityWebRequest` on every platform: WebGL needs it,
+  and `System.Net.Http` is not referenced under every API compatibility level.
+  A send off the main thread is posted to Unity's `SynchronizationContext`.
+- `UnityWebSocketTransport`: `ClientWebSocketTransport` outside WebGL; in a
+  WebGL player, `GamendWebSocket.jslib`, with frames crossing as pointer and
+  length (`makeDynCall`, so Unity 2021.2+).
+- Newtonsoft comes from Unity's `com.unity.nuget.newtonsoft-json`, a package
+  dependency. Every asset has a `.meta` (`clients/unity_package.py`): the
+  template's are committed, the SDK's derived from their paths.
+
+**Installing.** Today, `gamend-unity-sdk.tgz` on the `latest` release, through
+*Add package from tarball*. The recommended way is a git URL, which updates
+from the Package Manager and pins with `#<version>`. It needs the package at the
+root of a repository of its own: it is not committed in this one, and Unity
+would clone all of this one (hundreds of MB) for it. `publish-unity-sdk` in
+CI commits and tags each version there once `UNITY_UPM_REPO` and
+`UNITY_UPM_DEPLOY_KEY` are set, and OpenUPM can list that repository after.
+
+**Checked without Unity.** `clients/check_unity.sh` checks the `.meta` files,
+compiles both assemblies and the sample at C# 9 against UnityEngine stubs
+(`clients/unity_check/UnityStubs.cs`) with and without `UNITY_WEBGL`, and runs
+the jslib in node against a fake WebSocket and heap. No editor import, no IL2CPP
+or WebGL player build, no live run: a Unity CI job (game-ci) needs a Unity
+licence in the repository's secrets.
 
 ## Rust, as built
 

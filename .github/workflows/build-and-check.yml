@@ -1002,6 +1002,8 @@ jobs:
 
             - **Rust**: `gamend-rust-sdk.tar.gz`, also on crates.io as `gamend`. A crate for Bevy, Fyrox, macroquad and tools. [Guide](https://gamend.org/docs/rust-sdk)
 
+            - **Unity**: `gamend-unity-sdk.tgz`, the `org.gamend.sdk` package: the C# SDK with a `GamendBehaviour`, `UnityWebRequest` HTTP and a WebGL socket. Install it with the Package Manager's *Add package from tarball*. [Guide](https://gamend.org/docs/unity-sdk)
+
             The JavaScript SDK is on npm: [`@ughuuu/gamend`](https://www.npmjs.com/package/@ughuuu/gamend).
           files: |
             godot_addons.zip
@@ -1117,6 +1119,42 @@ jobs:
       - name: Unit tests
         working-directory: csharp_sdk
         run: dotnet test --no-build
+
+  # The C# SDK as a Unity package (org.gamend.sdk). There is no Unity here, so
+  # check_unity.sh compiles it against UnityEngine stubs and runs the WebGL
+  # socket's jslib in node; nothing builds a player or opens the editor.
+  unity-sdk:
+    name: Unity package
+    needs: [build-godot-sdk]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Download the C# SDK
+        uses: actions/download-artifact@v8
+        with:
+          name: csharp_sdk
+          path: csharp_sdk
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      # The C# SDK carries the version CI stamped into it, and so the package.
+      - name: Build the package
+        run: clients/generate_unity.sh --pack
+
+      - name: Check it
+        run: clients/check_unity.sh
+
+      - name: Upload the Unity package
+        uses: actions/upload-artifact@v7
+        with:
+          name: unity_sdk
+          path: gamend-unity-sdk.tgz
 
   rust-sdk:
     name: Rust SDK
@@ -1339,8 +1377,8 @@ jobs:
         run: tail -200 server.log
 
   release-cpp-sdk:
-    name: Release the C++, C# and Rust SDKs and the Unreal plugin
-    needs: [build-godot-sdk, cpp-sdk, csharp-sdk, rust-sdk, unreal-plugin, cpp-conformance]
+    name: Release the C++, C#, Rust and Unity SDKs and the Unreal plugin
+    needs: [build-godot-sdk, cpp-sdk, csharp-sdk, unity-sdk, rust-sdk, unreal-plugin, cpp-conformance]
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
@@ -1369,6 +1407,13 @@ jobs:
           name: unreal_plugin
           path: Gamend
 
+      # Already a tarball: Unity's, everything under package/.
+      - name: Download the Unity package
+        uses: actions/download-artifact@v8
+        with:
+          name: unity_sdk
+          path: .
+
       - name: Archive
         run: |
           tar -czf gamend-cpp-sdk.tar.gz cpp_sdk
@@ -1387,7 +1432,64 @@ jobs:
             gamend-csharp-sdk.tar.gz
             gamend-rust-sdk.tar.gz
             gamend-unreal-plugin.zip
+            gamend-unity-sdk.tgz
           fail_on_unmatched_files: true
+
+  # The Unity package at the root of a repository of its own, so the Package
+  # Manager's "Add package from git URL" installs it, and each version under a
+  # tag of its own name to pin. Gamend's own repository will not do: Unity
+  # clones the whole of it, and the package is not committed there. Until that
+  # repository is set up, the job says so and passes.
+  #
+  # UNITY_UPM_REPO (a variable) names it, owner/name. UNITY_UPM_DEPLOY_KEY (a
+  # secret) is the private half of a deploy key with write access to it.
+  publish-unity-sdk:
+    name: Push the Unity package to its repository
+    needs: [unity-sdk, csharp-sdk, cpp-conformance]
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+
+    env:
+      UNITY_UPM_REPO: ${{ vars.UNITY_UPM_REPO }}
+      UNITY_UPM_DEPLOY_KEY: ${{ secrets.UNITY_UPM_DEPLOY_KEY }}
+
+    steps:
+      - name: Skip without a repository
+        if: env.UNITY_UPM_REPO == '' || env.UNITY_UPM_DEPLOY_KEY == ''
+        run: echo "::notice::UNITY_UPM_REPO or UNITY_UPM_DEPLOY_KEY is not set - the Unity package is not pushed to a repository"
+
+      - name: Download the Unity package
+        if: env.UNITY_UPM_REPO != '' && env.UNITY_UPM_DEPLOY_KEY != ''
+        uses: actions/download-artifact@v8
+        with:
+          name: unity_sdk
+          path: .
+
+      - name: Commit and tag it there
+        if: env.UNITY_UPM_REPO != '' && env.UNITY_UPM_DEPLOY_KEY != ''
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$UNITY_UPM_DEPLOY_KEY" > ~/.ssh/unity_upm
+          chmod 600 ~/.ssh/unity_upm
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/unity_upm -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+          tar -xzf gamend-unity-sdk.tgz
+          VERSION=$(jq -r .version package/package.json)
+          git clone --depth 1 "git@github.com:${UNITY_UPM_REPO}.git" upm
+          # This version replaces whatever the last one left.
+          find upm -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -R package/. upm/
+          cd upm
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          # A re-run of the same commit finds its version there already.
+          if git diff --cached --quiet; then
+            echo "org.gamend.sdk ${VERSION} is already there - skipping"
+            exit 0
+          fi
+          git commit -q -m "org.gamend.sdk ${VERSION}" -m "From ${GITHUB_REPOSITORY}@${GITHUB_SHA}"
+          git tag "${VERSION}"
+          git push origin "HEAD:refs/heads/main" "refs/tags/${VERSION}"
 
   # Both publish what CI already built, tested and ran against a live server.
   # Until the repository is set up for it, the job says so and passes.

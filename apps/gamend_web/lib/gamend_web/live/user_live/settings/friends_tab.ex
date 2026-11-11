@@ -60,7 +60,6 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                   <.player_card
                     user={req.requester}
                     name={LiveHelpers.public_user_name(req.requester || req.requester_id)}
-                    subtitle={LiveHelpers.public_user_handle(req.requester)}
                     size="sm"
                   />
                 </div>
@@ -109,7 +108,6 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                   <.player_card
                     user={req.target}
                     name={LiveHelpers.public_user_name(req.target || req.target_id)}
-                    subtitle={LiveHelpers.public_user_handle(req.target)}
                     size="sm"
                   />
                 </div>
@@ -151,7 +149,6 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                     <.player_card
                       user={u}
                       name={LiveHelpers.public_user_name(u)}
-                      subtitle={LiveHelpers.public_user_handle(u)}
                       size="sm"
                     />
                   </div>
@@ -194,7 +191,6 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                   <.player_card
                     user={b.requester}
                     name={LiveHelpers.public_user_name(b.requester || b.requester_id)}
-                    subtitle={LiveHelpers.public_user_handle(b.requester)}
                     size="sm"
                   />
                 </div>
@@ -249,7 +245,6 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                     <.player_card
                       user={s}
                       name={LiveHelpers.public_user_name(s)}
-                      subtitle={LiveHelpers.public_user_handle(s)}
                       size="sm"
                     />
                   </div>

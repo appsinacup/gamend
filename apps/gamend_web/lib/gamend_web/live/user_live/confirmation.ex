@@ -18,7 +18,7 @@ defmodule GamendWeb.UserLive.Confirmation do
       <div class="mx-auto max-w-narrow">
         <div class="text-center">
           <div class="flex justify-center">
-            <.user_avatar user={@user} class="size-8" />
+            <.player_avatar user={@user} class="size-8" />
           </div>
           <.header class="break-all">{@user.email}</.header>
         </div>

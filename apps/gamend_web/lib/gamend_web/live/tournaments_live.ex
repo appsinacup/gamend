@@ -836,7 +836,7 @@ defmodule GamendWeb.TournamentsLive do
         <div>
           <span class="text-sm text-muted">{gettext("Showing")}</span>
           <div class="text-xl font-bold flex items-center gap-2">
-            <.user_avatar user={@highlight.leader} class="size-8 shrink-0" />
+            <.player_avatar user={@highlight.leader} class="size-8 shrink-0" />
             <.player_name name={leader_name(@highlight.leader)} />
             <span :if={@own?} class="badge badge-primary badge-sm">{gettext("You")}</span>
           </div>
@@ -924,7 +924,7 @@ defmodule GamendWeb.TournamentsLive do
         <%= cond do %>
           <% @entry_id -> %>
             <span class="flex min-w-0 items-center gap-2">
-              <.user_avatar user={slot_leader(@entries, @entry_id)} class="size-6 shrink-0" />
+              <.player_avatar user={slot_leader(@entries, @entry_id)} class="size-6 shrink-0" />
               <span class="flex min-w-0 flex-col">
                 <span class="truncate">{slot_name(@entries, @entry_id)}</span>
                 <.user_title

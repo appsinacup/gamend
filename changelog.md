@@ -1,10 +1,10 @@
 # November 2026
 
+- [added] **Rust SDK**: every player operation, typed models, realtime with protobuf, and the conformance scenario, for Bevy, Fyrox, macroquad and tools. On crates.io as `gamend` and on the `latest` release as `gamend-rust-sdk.tar.gz`.
+- [added] **C# SDK**: every player operation, typed models, realtime with protobuf, and the conformance scenario, for .NET games and tools. On NuGet as `Gamend` and on the `latest` release as `gamend-csharp-sdk.tar.gz`. It starts no threads and uses no reflection, ready for a Unity package.
 - [added] **`config :gamend_web, :player_avatar`**: a host's function component draws with a player's avatar (an emblem, a frame, a hat). `player_avatar/1` is the avatar players see, in `player_card/1`, the navbar, friends, groups and chat; admin tables keep `user_avatar/1`.
 - [added] **`config :gamend_web, :user_title_class`**: a host's class for a player's title, from the user and the title's text.
 - [changed] **Friends and notifications name a player as the leaderboards do**: the line under the name is their title, not their `@handle` or nothing, and the email confirmation and the account tab's avatar preview are `player_avatar/1`.
-- [added] **Rust SDK**: every player operation, typed models, realtime with protobuf, and the conformance scenario, for Bevy, Fyrox, macroquad and tools. On the `latest` release as `gamend-rust-sdk.tar.gz`.
-- [added] **C# SDK**: every player operation, typed models, realtime with protobuf, and the conformance scenario, for .NET games and tools. On the `latest` release as `gamend-csharp-sdk.tar.gz`. It starts no threads and uses no reflection, ready for a Unity package.
 - [added] **The npm package has TypeScript types**: every operation, schema and realtime event, generated with the SDK (`dist/index.d.ts`). The JavaScript is unchanged.
 - [added] **A notification says which group it is in.** `group` on every notification in the API and the realtime event (empty for none), so a game client can show the same sections. **Hosts:** regenerate clients.
 - [added] **`"site_only" => true` on `Notifications.notify/3`** writes the row in its group and sends no push or email.

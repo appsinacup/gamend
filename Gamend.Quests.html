@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1444">
+    <meta name="project" content="gamend_core v1.1.1445">
 
 
-    <title>Gamend.Quests — gamend_core v1.1.1444</title>
+    <title>Gamend.Quests — gamend_core v1.1.1445</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1444
+          v1.1.1445
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Quests</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1444)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1445)</small>
 
     </h1>
 
@@ -508,9 +508,10 @@ filter does; <code class="inline">nil</code> is the signed-out catalog.</p></div
 
       </div>
 
-        <div class="summary-synopsis"><p>Where this viewer goes to work on this quest, as a path on this site — or
-<code class="inline">nil</code>. Set <code class="inline">config :gamend_core, :quest_action, {Module, :function}</code>; it is
-called as <code class="inline">function(user_id | nil, Quest.t())</code>.</p></div>
+        <div class="summary-synopsis"><p>Where this viewer goes to work on this quest: <code class="inline">{label, path}</code>, a button's
+words (already in the reader's language) and a path on this site, or <code class="inline">nil</code>.
+Set <code class="inline">config :gamend_core, :quest_action, {Module, :function}</code>; it is called
+as <code class="inline">function(user_id | nil, Quest.t())</code>.</p></div>
 
     </div>
 
@@ -955,7 +956,7 @@ definition drops these along with <a href="#active_quests/0"><code class="inline
       <h1 class="signature" translate="no">admin_claim(user_id, quest_key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2445" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2447" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -985,7 +986,7 @@ definition drops these along with <a href="#active_quests/0"><code class="inline
       <h1 class="signature" translate="no">admin_complete(user_id, quest_key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2328" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2330" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1015,7 +1016,7 @@ its target and the normal completion side effects fire (hooks, auto-claim).</p>
       <h1 class="signature" translate="no">admin_reset(user_id, quest_key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2427" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2429" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1168,7 +1169,7 @@ stays completed and pays once they register.</p><p>Returns <code class="inline">
       <h1 class="signature" translate="no">claimable_count(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2251" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2253" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1260,7 +1261,7 @@ before it makes a guest account for a visitor, so a typo makes no account.</p>
       <h1 class="signature" translate="no">count_progress(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2305" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2307" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1320,7 +1321,7 @@ before it makes a guest account for a visitor, so a typo makes no account.</p>
       <h1 class="signature" translate="no">count_user_completions(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2228" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2230" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1466,7 +1467,7 @@ which pairs no row: the run a visitor would start.</p>
       <h1 class="signature" translate="no">dashboard_stats()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2476" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2478" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1523,7 +1524,7 @@ which pairs no row: the run a visitor would start.</p>
       <h1 class="signature" translate="no">funnel(quest_key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2502" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2504" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1612,7 +1613,7 @@ which pairs no row: the run a visitor would start.</p>
       <h1 class="signature" translate="no">get_progress(user_id, quest_key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2270" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2272" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1770,7 +1771,7 @@ filter does; <code class="inline">nil</code> is the signed-out catalog.</p>
       <h1 class="signature" translate="no">host_action(quest, user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L1973" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L1975" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1781,17 +1782,20 @@ filter does; <code class="inline">nil</code> is the signed-out catalog.</p>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@spec</span> host_action(<a href="Gamend.Quests.Quest.html#t:t/0">Gamend.Quests.Quest.t</a>(), <a href="#t:user_id/0">user_id</a>() | nil) :: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil</pre>
+          <pre translate="no"><span class="attribute">@spec</span> host_action(<a href="Gamend.Quests.Quest.html#t:t/0">Gamend.Quests.Quest.t</a>(), <a href="#t:user_id/0">user_id</a>() | nil) ::
+  {<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()} | nil</pre>
 
       </div>
 
-<p>Where this viewer goes to work on this quest, as a path on this site — or
-<code class="inline">nil</code>. Set <code class="inline">config :gamend_core, :quest_action, {Module, :function}</code>; it is
-called as <code class="inline">function(user_id | nil, Quest.t())</code>.</p><p>The quests page makes the whole card a link to it whenever there is nothing
-to claim: before the quest is done, the way to do it, and after it is
-claimed, the way back to more of it. A quest only says what to do (&quot;Visit
-20 cities&quot;), never where, and only the host knows its own pages.</p><p>A path starts with one <code class="inline">/</code> (<code class="inline">&quot;/games&quot;</code>); a URL or <code class="inline">&quot;//…&quot;</code> is dropped. The
-page keeps the reader's locale prefix on it.</p>
+<p>Where this viewer goes to work on this quest: <code class="inline">{label, path}</code>, a button's
+words (already in the reader's language) and a path on this site, or <code class="inline">nil</code>.
+Set <code class="inline">config :gamend_core, :quest_action, {Module, :function}</code>; it is called
+as <code class="inline">function(user_id | nil, Quest.t())</code>.</p><p>The quests page makes the whole card a link to it, with a button of that
+label, whenever there is nothing to claim: before the quest is done, the way
+to do it, and after it is claimed, the way back to more of it. A quest only
+says what to do (&quot;Visit 20 cities&quot;), never where, and only the host knows
+its own pages, as with a board (<a href="Gamend.Leaderboards.html#host_action/2"><code class="inline">Gamend.Leaderboards.host_action/2</code></a>).</p><p>A path starts with one <code class="inline">/</code> (<code class="inline">&quot;/games&quot;</code>); a URL or <code class="inline">&quot;//…&quot;</code> is dropped, and
+so is an empty label. The page keeps the reader's locale prefix on it.</p>
   </section>
 </section>
 <section class="detail" id="host_lock_label/2">
@@ -1942,7 +1946,7 @@ left it; veto the claim in <code class="inline">before_quest_claim</code> if tha
       <h1 class="signature" translate="no">list_progress(opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2295" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2297" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2002,7 +2006,7 @@ left it; veto the claim in <code class="inline">before_quest_claim</code> if tha
       <h1 class="signature" translate="no">list_user_completions(user_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2215" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2217" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2108,7 +2112,7 @@ what was claimed stays claimed. Answers how many rows moved.</p>
       <h1 class="signature" translate="no">period_key(quest_or_reset, now)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2526" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2528" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2168,7 +2172,7 @@ from the clock, so a reset needs nothing to fire at midnight.</p>
       <h1 class="signature" translate="no">prune_old_periods()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2459" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests.ex#L2461" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -2658,9 +2662,9 @@ the signed-out catalog.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1444">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1445">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1444">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1445">Hex Preview</a>
 
             </span>
 

@@ -368,7 +368,8 @@ defmodule GamendWeb.Api.V1.ChatController do
     security: [%{"authorization" => []}],
     summary: "Update your own chat message",
     description:
-      "Edit the content or metadata of a message you sent. Only the sender can update their own message.",
+      "Edit the content or metadata of a message you sent. Only the sender can update their own message. " <>
+        "An edit is moderated as a send is: a mute, the word filter and a game hook apply; slow mode does not.",
     parameters: [
       id: [
         in: :path,
@@ -389,8 +390,12 @@ defmodule GamendWeb.Api.V1.ChatController do
     responses: [
       ok: {"Updated message", "application/json", ChatMessageResponse},
       not_found: Schemas.error("Message not found"),
-      forbidden: Schemas.error("Not message sender"),
-      unprocessable_entity: Schemas.error("Validation error")
+      forbidden:
+        Schemas.error(
+          "Not message sender, muted, or a game hook refused the edit (rejected, its words in message)"
+        ),
+      unprocessable_entity:
+        Schemas.error("Validation failed, or the word filter blocked it (blocked_content)")
     ]
   )
 

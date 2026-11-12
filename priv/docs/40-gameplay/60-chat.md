@@ -127,7 +127,7 @@ Gamend.Chat.list_friend_messages(user_a_id, user_b_id, page: 1)
 # Get a single message
 Gamend.Chat.get_message(message_id)
 
-# Update your own message (ownership enforced)
+# Update your own message (ownership enforced; moderated and hooked as a send)
 Gamend.Chat.update_message(user_id, message_id, %{"content" => "edited"})
 
 # Delete your own message (ownership enforced)
@@ -151,7 +151,9 @@ Gamend.Chat.count_unread_groups_batch(user_id, group_ids)
 
 Three primitives ship with core, all enforced server-side in
 `Gamend.Chat.send_message/2` before a message is persisted: a word filter, a
-report queue and mutes. A message core rejects never reaches the
+report queue and mutes. An edit (`Gamend.Chat.update_message/3`) goes through
+the same mute check, word filter and `before_chat_message` hook; slow mode
+applies to sends only. A message core rejects never reaches the
 database, PubSub or your hooks. Core ships the mechanism, not the policy. The
 blocklist starts empty and nobody is muted until a moderator says so.
 

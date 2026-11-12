@@ -365,7 +365,8 @@ defmodule GamendWeb.Router.Shared do
 
   @doc """
   Every core API route. `:chat_update` swaps the controller behind
-  `PATCH /api/v1/chat/messages/:id` for a host that moderates its own edits.
+  `PATCH /api/v1/chat/messages/:id`; core's own moderates an edit as a send
+  (`Gamend.Chat.update_message/3`).
 
   `except:` leaves out `:payments_catalog` and `:stripe_checkout`, for a host
   that sells through its own page and picks the row itself, and `:report`.

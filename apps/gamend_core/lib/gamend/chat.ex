@@ -212,7 +212,9 @@ defmodule Gamend.Chat do
     end
   end
 
-  defp apply_word_filter(attrs) do
+  # `stored_metadata` is an edited message's own: an edit that sends no
+  # metadata keeps it when the filter marks the message flagged.
+  defp apply_word_filter(attrs, stored_metadata \\ %{}) do
     original = attr(attrs, "content")
 
     case Moderation.check_content(original) do
@@ -221,17 +223,18 @@ defmodule Gamend.Chat do
         {:ok, attrs, []}
 
       {:ok, content, flagged} ->
-        {:ok, attrs |> put_attr("content", content) |> mark_flagged(flagged), flagged}
+        attrs = attrs |> put_attr("content", content) |> mark_flagged(flagged, stored_metadata)
+        {:ok, attrs, flagged}
 
       {:error, :blocked_content} ->
         {:error, :blocked_content}
     end
   end
 
-  defp mark_flagged(attrs, []), do: attrs
+  defp mark_flagged(attrs, [], _stored_metadata), do: attrs
 
-  defp mark_flagged(attrs, _flagged) do
-    metadata = attr(attrs, @metadata) || %{}
+  defp mark_flagged(attrs, _flagged, stored_metadata) do
+    metadata = attr(attrs, @metadata) || stored_metadata || %{}
     put_attr(attrs, @metadata, Map.put(metadata, "flagged", true))
   end
 
@@ -948,38 +951,64 @@ defmodule Gamend.Chat do
   Only the `content` and `metadata` fields can be changed. Returns
   `{:error, :not_found}` if the message does not exist or
   `{:error, :forbidden}` if the caller is not the sender.
+
+  An edit is moderated as a send is (`send_message/2`): a muted sender gets
+  `{:error, :muted}`, a blocked word `{:error, :blocked_content}`, a masked
+  word is masked and a flagged one reported, then the `before_chat_message`
+  hook sees the edit's attrs (`content`, `metadata`) and may change or
+  refuse them (`{:error, {:hook_rejected, reason}}`). Slow mode does not
+  apply to an edit.
   """
   @spec update_message(Ecto.UUID.t(), Ecto.UUID.t(), map()) ::
-          {:ok, Message.t()} | {:error, :not_found | :forbidden | Ecto.Changeset.t()}
-  def update_message(user_id, message_id, attrs) do
+          {:ok, Message.t()}
+          | {:error,
+             :not_found
+             | :forbidden
+             | :muted
+             | :blocked_content
+             | :user_not_found
+             | {:hook_rejected, term()}
+             | Ecto.Changeset.t()}
+  def update_message(user_id, message_id, attrs) when is_map(attrs) do
     case Repo.get(Message, message_id) do
       nil ->
         {:error, :not_found}
 
       %Message{sender_id: ^user_id} = message ->
-        message
-        |> Message.update_changeset(attrs)
-        |> Repo.update()
-        |> case do
-          {:ok, updated} ->
-            updated = Repo.preload(updated, :sender)
-            invalidate_chat_cache(updated.chat_type, updated.chat_ref_id)
+        where = %{"chat_type" => message.chat_type, "chat_ref_id" => message.chat_ref_id}
 
-            broadcast_chat(
-              updated.chat_type,
-              updated.chat_ref_id,
-              updated.sender_id,
-              {:chat_message_updated, updated}
-            )
-
-            {:ok, updated}
-
-          {:error, _cs} = err ->
-            err
+        with :ok <- check_mute(user_id, where),
+             {:ok, attrs, flagged} <- apply_word_filter(attrs, message.metadata),
+             {:ok, attrs} <- run_before_hook(user_id, attrs) do
+          do_update_message(message, attrs, flagged)
         end
 
       %Message{} ->
         {:error, :forbidden}
+    end
+  end
+
+  defp do_update_message(message, attrs, flagged) do
+    case message |> Message.update_changeset(attrs) |> Repo.update() do
+      {:ok, updated} ->
+        updated = Repo.preload(updated, :sender)
+        invalidate_chat_cache(updated.chat_type, updated.chat_ref_id)
+
+        broadcast_chat(
+          updated.chat_type,
+          updated.chat_ref_id,
+          updated.sender_id,
+          {:chat_message_updated, updated}
+        )
+
+        if flagged != [] do
+          Gamend.Async.run(fn -> Reports.report_flagged_message(updated, flagged) end)
+        end
+
+        {:ok, updated}
+
+      {:error, _cs} = err ->
+        err
     end
   end
 

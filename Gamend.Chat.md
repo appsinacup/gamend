@@ -500,9 +500,11 @@ Only the `content` and `metadata` fields can be changed. Returns
 An edit is moderated as a send is (`send_message/2`): a muted sender gets
 `{:error, :muted}`, a blocked word `{:error, :blocked_content}`, a masked
 word is masked and a flagged one reported, then the `before_chat_message`
-hook sees the edit's attrs (`content`, `metadata`) and may change or
-refuse them (`{:error, {:hook_rejected, reason}}`). Slow mode does not
-apply to an edit.
+hook may change or refuse it (`{:error, {:hook_rejected, reason}}`). The
+hook sees the edit with its conversation, as a send's: `chat_type`,
+`chat_ref_id`, and `message_id`, which only an edit carries. Only the
+`content` and `metadata` it answers are saved. Slow mode does not apply to
+an edit.
 
 ---
 

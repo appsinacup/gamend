@@ -850,9 +850,26 @@ defmodule Gamend.Chat do
     `{:error, :not_found}` if the message does not exist or
     `{:error, :forbidden}` if the caller is not the sender.
     
+    An edit is moderated as a send is (`send_message/2`): a muted sender gets
+    `{:error, :muted}`, a blocked word `{:error, :blocked_content}`, a masked
+    word is masked and a flagged one reported, then the `before_chat_message`
+    hook may change or refuse it (`{:error, {:hook_rejected, reason}}`). The
+    hook sees the edit with its conversation, as a send's: `chat_type`,
+    `chat_ref_id`, and `message_id`, which only an edit carries. Only the
+    `content` and `metadata` it answers are saved. Slow mode does not apply to
+    an edit.
+    
   """
   @spec update_message(Ecto.UUID.t(), Ecto.UUID.t(), map()) ::
-          {:ok, Gamend.Chat.Message.t()} | {:error, :not_found | :forbidden | Ecto.Changeset.t()}
+          {:ok, Gamend.Chat.Message.t()}
+          | {:error,
+             :not_found
+             | :forbidden
+             | :muted
+             | :blocked_content
+             | :user_not_found
+             | {:hook_rejected, term()}
+             | Ecto.Changeset.t()}
   def update_message(_user_id, _message_id, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->

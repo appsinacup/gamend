@@ -62,7 +62,20 @@ defmodule GamendWeb.SRI do
         _ -> compute_and_cache(key, generation, path)
       end
     else
-      compute(path)
+      dev_hash(path)
+    end
+  end
+
+  # While code reloads (dev) the files change under the server, so the hash
+  # follows each file's size and change time (`GamendWeb.DevWatch.memo/3`)
+  # instead of reading and hashing it on every page: the stylesheet alone is
+  # ~670 KB, read twice a render.
+  defp dev_hash(path) do
+    with file when is_binary(file) <- ProjectStatic.path_for(path),
+         {:ok, %File.Stat{size: size, mtime: mtime}} <- File.stat(file, time: :posix) do
+      GamendWeb.DevWatch.memo({:sri, file}, {size, mtime}, fn -> compute(path) end)
+    else
+      _ -> nil
     end
   end
 

@@ -201,6 +201,9 @@ defmodule GamendWeb.HostSupervision do
     ] ++
       plugin_children(plugins?) ++
       [
+        # Dev only (`:ignore` elsewhere): what changed on disk, so a request
+        # reloads code and checks migrations only after a change.
+        GamendWeb.DevWatch,
         GamendWeb.Endpoint,
         # Coalesces is_online transitions into one write per window, so a
         # connect storm of distinct players is not one transaction each.

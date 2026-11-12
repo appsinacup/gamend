@@ -85,9 +85,13 @@ defmodule GamendWeb.Endpoint do
   # this app as a dep, `ensure_loaded?(Phoenix.LiveReloader)` is false, and a
   # single combined guard silently dropped code reloading too: every change,
   # host or plugin, needed a full server restart to take effect.
+  #
+  # Each runs only when its files changed since the last check that passed
+  # (`GamendWeb.DevWatch`): run on every request they were a queue a busy
+  # laptop made seconds long.
   if code_reloading? do
-    plug Phoenix.CodeReloader
-    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :gamend_web
+    plug GamendWeb.Plugs.DevCodeReloader
+    plug GamendWeb.Plugs.DevRepoStatus, otp_app: :gamend_web
   end
 
   # Browser auto-refresh is the part that genuinely needs the dev dependency.

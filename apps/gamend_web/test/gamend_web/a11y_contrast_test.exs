@@ -104,7 +104,9 @@ defmodule GamendWeb.A11yContrastTest do
 
   defp theme_tokens(css, theme_name) do
     [_before, block | _rest] =
-      String.split(css, ~r/@plugin "\.\.\/vendor\/daisyui-theme" \{\s*name: "#{theme_name}";/)
+      # Wherever the stylesheet loads the plugin from (`../vendor/` in a host,
+      # the app's own vendor dir in this server's).
+      String.split(css, ~r/@plugin "[^"]*daisyui-theme" \{\s*name: "#{theme_name}";/)
 
     block = block |> String.split("}") |> hd()
 

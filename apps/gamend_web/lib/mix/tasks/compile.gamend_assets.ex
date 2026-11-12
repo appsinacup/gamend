@@ -15,13 +15,15 @@ defmodule Mix.Tasks.Compile.GamendAssets do
 
   use Mix.Task.Compiler
 
+  alias Mix.Tasks.Gamend.Assets
+
   @impl Mix.Task.Compiler
   def run(_args) do
     root = File.cwd!()
 
     cond do
       not File.dir?(Path.join(root, "assets/css")) -> {:noop, []}
-      Mix.Tasks.Gamend.Assets.write(root) == [] -> {:noop, []}
+      Assets.write(root) == [] -> {:noop, []}
       true -> {:ok, []}
     end
   end

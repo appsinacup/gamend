@@ -945,6 +945,9 @@ defmodule Gamend.Chat do
   # Update / Delete own messages
   # ---------------------------------------------------------------------------
 
+  # What an edit may change, in either key style.
+  @editable_attrs ["content", "metadata", :content, :metadata]
+
   @doc """
   Update a chat message owned by the given user.
 
@@ -955,9 +958,11 @@ defmodule Gamend.Chat do
   An edit is moderated as a send is (`send_message/2`): a muted sender gets
   `{:error, :muted}`, a blocked word `{:error, :blocked_content}`, a masked
   word is masked and a flagged one reported, then the `before_chat_message`
-  hook sees the edit's attrs (`content`, `metadata`) and may change or
-  refuse them (`{:error, {:hook_rejected, reason}}`). Slow mode does not
-  apply to an edit.
+  hook may change or refuse it (`{:error, {:hook_rejected, reason}}`). The
+  hook sees the edit with its conversation, as a send's: `chat_type`,
+  `chat_ref_id`, and `message_id`, which only an edit carries. Only the
+  `content` and `metadata` it answers are saved. Slow mode does not apply to
+  an edit.
   """
   @spec update_message(Ecto.UUID.t(), Ecto.UUID.t(), map()) ::
           {:ok, Message.t()}
@@ -979,13 +984,28 @@ defmodule Gamend.Chat do
 
         with :ok <- check_mute(user_id, where),
              {:ok, attrs, flagged} <- apply_word_filter(attrs, message.metadata),
-             {:ok, attrs} <- run_before_hook(user_id, attrs) do
-          do_update_message(message, attrs, flagged)
+             {:ok, attrs} <- run_before_hook(user_id, edit_context(attrs, message)) do
+          do_update_message(message, Map.take(attrs, @editable_attrs), flagged)
         end
 
       %Message{} ->
         {:error, :forbidden}
     end
+  end
+
+  # The conversation the hook sees on a send, plus the message, in the
+  # caller's key style: Ecto refuses a map of mixed keys.
+  defp edit_context(attrs, message) do
+    context = %{
+      chat_type: message.chat_type,
+      chat_ref_id: message.chat_ref_id,
+      message_id: message.id
+    }
+
+    if Enum.any?(Map.keys(attrs), &is_atom/1),
+      do: Map.merge(context, attrs),
+      else:
+        Map.merge(Map.new(context, fn {key, value} -> {Atom.to_string(key), value} end), attrs)
   end
 
   defp do_update_message(message, attrs, flagged) do

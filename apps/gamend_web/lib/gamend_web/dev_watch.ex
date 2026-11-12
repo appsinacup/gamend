@@ -91,13 +91,20 @@ defmodule GamendWeb.DevWatch do
   def init(_opts) do
     code = folders(code_roots(), @code_folders)
     repo = repo_folders()
-    :ets.new(@table, [:named_table, :public, :set, read_concurrency: true])
-    :ets.insert(@table, [{:code, 0}, {:repo, 0}])
 
-    {:ok, watcher} = FileSystem.start_link(dirs: code ++ repo)
-    :ok = FileSystem.subscribe(watcher)
+    # `FileSystem` answers `:ignore` when the system has no watcher it can
+    # run (Linux without `inotify-tools`, as in CI's containers) and has
+    # logged why. No table then, so every request checks, as Phoenix does.
+    case FileSystem.start_link(dirs: code ++ repo) do
+      {:ok, watcher} ->
+        :ok = FileSystem.subscribe(watcher)
+        :ets.new(@table, [:named_table, :public, :set, read_concurrency: true])
+        :ets.insert(@table, [{:code, 0}, {:repo, 0}])
+        {:ok, %{watcher: watcher, repo: repo}}
 
-    {:ok, %{watcher: watcher, repo: repo}}
+      :ignore ->
+        :ignore
+    end
   end
 
   @impl GenServer

@@ -23,7 +23,23 @@ config :gamend_web, GamendWeb.Auth.Guardian,
   secret_key: "dJoNJZBOt08JlBREyPV5xvuOdwgHPORxK9WHp/k3Cs+g0R9ctyheJ8/CMeg/AdI1",
   ttl: {15, :minutes}
 
-config :gamend_web, GamendWeb.Plugs.RateLimiter, enabled: false
+# A test that turns rate limiting on counts in windows that never turn over:
+# Hammer's ETS backend counts in fixed windows aligned to the epoch
+# (`div(now, scale)`), so a 60s window starts again at every minute, and a test
+# whose hits straddle one sees its count reset. A window longer than the time
+# since the epoch stays the first one. Same as the root `config/test.exs`.
+never_turns_over = :timer.hours(24 * 365 * 1000)
+
+config :gamend_web, GamendWeb.Plugs.RateLimiter,
+  enabled: false,
+  general_window_ms: never_turns_over,
+  auth_window_ms: never_turns_over,
+  client_logs_window_ms: never_turns_over,
+  ws_window_ms: never_turns_over,
+  dc_window_ms: never_turns_over,
+  ice_window_ms: never_turns_over,
+  signaling_ws_window_ms: never_turns_over,
+  signaling_ice_window_ms: never_turns_over
 
 # A cold test request (first render, first query) routinely passes the 200ms
 # slow-request threshold, and each one would print a warning into the run.

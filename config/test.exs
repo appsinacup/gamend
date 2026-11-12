@@ -138,8 +138,24 @@ config :gamend_web, GamendWeb.Auth.Guardian,
   issuer: "gamend",
   secret_key: "dJoNJZBOt08JlBREyPV5xvuOdwgHPORxK9WHp/k3Cs+g0R9ctyheJ8/CMeg/AdI1"
 
-# Disable rate limiting in tests
-config :gamend_web, GamendWeb.Plugs.RateLimiter, enabled: false
+# Disable rate limiting in tests. A test that turns it on counts in windows that
+# never turn over: Hammer's ETS backend counts in fixed windows aligned to the
+# epoch (`div(now, scale)`), so a 60s window starts again at every minute, and
+# a test whose hits straddle one sees its count reset (the third login, meant
+# to be refused, gets through). A window longer than the time since the epoch
+# stays the first one.
+never_turns_over = :timer.hours(24 * 365 * 1000)
+
+config :gamend_web, GamendWeb.Plugs.RateLimiter,
+  enabled: false,
+  general_window_ms: never_turns_over,
+  auth_window_ms: never_turns_over,
+  client_logs_window_ms: never_turns_over,
+  ws_window_ms: never_turns_over,
+  dc_window_ms: never_turns_over,
+  ice_window_ms: never_turns_over,
+  signaling_ws_window_ms: never_turns_over,
+  signaling_ice_window_ms: never_turns_over
 
 # No reverse-DNS lookups from tests: a request naming Googlebot would ask the
 # real resolver. `crawlers_test.exs` turns it on with a fake one.

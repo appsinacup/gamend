@@ -93,7 +93,7 @@ defmodule GamendWeb.AbuseLimitsTest do
       Application.put_env(
         :gamend_web,
         GamendWeb.Plugs.RateLimiter,
-        Keyword.merge(previous, enabled: true, auth_limit: 2, auth_window_ms: 60_000)
+        Keyword.merge(previous, enabled: true, auth_limit: 2)
       )
 
       on_exit(fn ->
@@ -132,7 +132,7 @@ defmodule GamendWeb.AbuseLimitsTest do
       Application.put_env(
         :gamend_web,
         GamendWeb.Plugs.RateLimiter,
-        Keyword.merge(previous, enabled: true, auth_limit: 1, auth_window_ms: 60_000)
+        Keyword.merge(previous, enabled: true, auth_limit: 1)
       )
 
       on_exit(fn ->

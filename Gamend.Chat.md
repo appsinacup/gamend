@@ -481,7 +481,14 @@ Unsubscribe from party chat events.
 ```elixir
 @spec update_message(Ecto.UUID.t(), Ecto.UUID.t(), map()) ::
   {:ok, Gamend.Chat.Message.t()}
-  | {:error, :not_found | :forbidden | Ecto.Changeset.t()}
+  | {:error,
+     :not_found
+     | :forbidden
+     | :muted
+     | :blocked_content
+     | :user_not_found
+     | {:hook_rejected, term()}
+     | Ecto.Changeset.t()}
 ```
 
 Update a chat message owned by the given user.
@@ -489,6 +496,13 @@ Update a chat message owned by the given user.
 Only the `content` and `metadata` fields can be changed. Returns
 `{:error, :not_found}` if the message does not exist or
 `{:error, :forbidden}` if the caller is not the sender.
+
+An edit is moderated as a send is (`send_message/2`): a muted sender gets
+`{:error, :muted}`, a blocked word `{:error, :blocked_content}`, a masked
+word is masked and a flagged one reported, then the `before_chat_message`
+hook sees the edit's attrs (`content`, `metadata`) and may change or
+refuse them (`{:error, {:hook_rejected, reason}}`). Slow mode does not
+apply to an edit.
 
 ---
 

@@ -36,8 +36,12 @@ defmodule GamendWeb.HostLayoutNavigation do
     doc:
       "what the page changes that an entry shows (`Layouts.app`'s): a change re-renders the bar, since no other attr of it moves"
 
+  attr :prepared, :map,
+    default: nil,
+    doc: "the links already resolved for this render (`prepare/1`), as the shell passes them"
+
   def desktop_nav(assigns) do
-    assigns = prepare_navigation_assigns(assigns)
+    assigns = navigation_assigns(assigns)
 
     # With the sidebar (`side_nav/1`) the bar keeps only what the sidebar
     # does not draw: an entry the host draws (a wallet), a readonly badge, a
@@ -104,8 +108,12 @@ defmodule GamendWeb.HostLayoutNavigation do
   reader's menu, or Log in and Register. Shown where the bar is
   (`[data-nav~=bar]`); elsewhere they are the menu's (`mobile_nav/1`).
   """
+  attr :prepared, :map,
+    default: nil,
+    doc: "the links already resolved for this render (`prepare/1`), as the shell passes them"
+
   def desktop_account(assigns) do
-    assigns = prepare_navigation_assigns(assigns)
+    assigns = navigation_assigns(assigns)
     assigns = assign(assigns, :guest?, Scope.anonymous?(assigns.current_scope))
 
     ~H"""
@@ -262,8 +270,12 @@ defmodule GamendWeb.HostLayoutNavigation do
     doc:
       "what the page changes that an entry shows (`Layouts.app`'s): a change re-renders the bar, since no other attr of it moves"
 
+  attr :prepared, :map,
+    default: nil,
+    doc: "the links already resolved for this render (`prepare/1`), as the shell passes them"
+
   def mobile_nav(assigns) do
-    assigns = prepare_navigation_assigns(assigns)
+    assigns = navigation_assigns(assigns)
 
     # With the sidebar its links are the sidebar's, and on a phone the tab
     # bar's (`tab_nav/1`): neither pinned nor in the menu. With `"layout":
@@ -463,8 +475,12 @@ defmodule GamendWeb.HostLayoutNavigation do
   (`desktop_nav/1`). With `"layout": "auto"` (`auto`) it shows only where
   the bar holds no stage (`auto_layout?/1`).
   """
+  attr :prepared, :map,
+    default: nil,
+    doc: "the links already resolved for this render (`prepare/1`), as the shell passes them"
+
   def side_nav(assigns) do
-    assigns = prepare_navigation_assigns(assigns)
+    assigns = navigation_assigns(assigns)
     links = Enum.filter(assigns.primary_links, &side_link?/1)
     assigns = assign(assigns, links: links, best_href: best_href(links, assigns.current_path))
 
@@ -529,8 +545,12 @@ defmodule GamendWeb.HostLayoutNavigation do
   link that also claims them (its `"active"` prefixes). With `"layout":
   "auto"` (`auto`), only where the bar does not fit the phone.
   """
+  attr :prepared, :map,
+    default: nil,
+    doc: "the links already resolved for this render (`prepare/1`), as the shell passes them"
+
   def tab_nav(assigns) do
-    assigns = prepare_navigation_assigns(assigns)
+    assigns = navigation_assigns(assigns)
     links = Enum.filter(assigns.primary_links, &(side_link?(&1) and not phone_hidden?(&1)))
     assigns = assign(assigns, links: links, best_href: best_href(links, assigns.current_path))
 
@@ -1244,6 +1264,30 @@ defmodule GamendWeb.HostLayoutNavigation do
     <% end %>
     """
   end
+
+  @prepared_keys [
+    :primary_links,
+    :guest_links,
+    :authenticated_links,
+    :account_links,
+    :side?,
+    :auto?,
+    :menu_button
+  ]
+
+  @doc """
+  The navigation's links resolved for one render: their counts, hrefs and
+  the entries a host draws. The shell resolves them once and hands them to
+  its five navs (`prepared`); resolved by each, a page counted its quests,
+  read the wallet and looked up the reader's languages five times a render.
+  """
+  @spec prepare(map()) :: map()
+  def prepare(assigns), do: assigns |> prepare_navigation_assigns() |> Map.take(@prepared_keys)
+
+  defp navigation_assigns(%{prepared: prepared} = assigns) when is_map(prepared),
+    do: assign(assigns, prepared)
+
+  defp navigation_assigns(assigns), do: prepare_navigation_assigns(assigns)
 
   defp prepare_navigation_assigns(assigns) do
     scope = assigns.current_scope

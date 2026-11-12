@@ -54,12 +54,19 @@ defmodule GamendWeb.IconsTest do
   end
 
   describe "entity_icon/1" do
-    test "inlines one of ours, so currentColor follows the theme" do
+    test "draws one of ours from its cached file, masked so currentColor follows the theme" do
       html = render_icon(%{icon_url: Icons.path(:trophy), type: :quest})
 
-      assert html =~ "<svg"
-      assert html =~ "currentColor"
+      assert html =~ ~s(class="icon-mask)
+      assert html =~ "--icon-src: url(#{Icons.draw_path(:trophy)})"
+      refute html =~ "<svg", "the SVG is the file's, not the page's"
       refute html =~ "<img", "our own icons must not go through <img>"
+    end
+
+    test "the draw URL carries the icon's content hash and is served" do
+      assert "/icons/trophy.svg?v=" <> hash = Icons.draw_path(:trophy)
+      assert byte_size(hash) == 8
+      assert Icons.from_path(Icons.draw_path(:trophy)) == {:ok, :trophy}
     end
 
     test "an uploaded image still renders as an img" do
@@ -77,7 +84,7 @@ defmodule GamendWeb.IconsTest do
     test "no icon at all falls back to the type default" do
       html = render_icon(%{type: :leaderboard})
 
-      assert html =~ "<svg"
+      assert html =~ Icons.draw_path(Icons.default(:leaderboard))
 
       assert html ==
                render_icon(%{
@@ -93,7 +100,13 @@ defmodule GamendWeb.IconsTest do
 
       assert response_content_type(conn, :svg) =~ "image/svg+xml"
       assert response(conn, 200) =~ "<svg"
-      assert get_resp_header(conn, "cache-control") == ["public, max-age=31536000, immutable"]
+      assert get_resp_header(conn, "cache-control") == ["public, max-age=86400"]
+
+      versioned = get(build_conn(), Icons.draw_path(:trophy))
+
+      assert get_resp_header(versioned, "cache-control") == [
+               "public, max-age=31536000, immutable"
+             ]
     end
 
     test "a dasherized name resolves", %{conn: conn} do

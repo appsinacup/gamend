@@ -237,7 +237,7 @@ defmodule GamendWeb.NotificationsLiveTest do
       now = DateTime.utc_now(:second)
 
       rows =
-        for i <- 1..201 do
+        for i <- 1..51 do
           %{
             id: Gamend.UUIDv7.generate(),
             sender_id: user.id,

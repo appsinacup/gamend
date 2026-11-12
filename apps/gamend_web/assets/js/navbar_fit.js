@@ -120,7 +120,83 @@ function apply(words) {
 // the root's width is the window's.
 export function applySaved() {
   const root = document.documentElement
-  apply(stageFor(readSaved(root.lang), root.clientWidth, sideRoom()))
+  const needs = readSaved(root.lang)
+  apply(stageFor(needs, root.clientWidth, sideRoom()))
+  // Nothing measured: the shell waits unseen for `fitWhenStyled/0`, since a
+  // guess painted is a shift. From `md` up only: narrower, no stage moves the
+  // page (the sidebar is the tab bar there), and the title would wait for
+  // nothing.
+  if (!needs && wide()) root.dataset.navFit = "pending"
+}
+
+function wide() {
+  return typeof matchMedia === "function" && matchMedia("(min-width: 48rem)").matches
+}
+
+// A first visit (`applySaved/0`'s hold) measures the header as soon as it is
+// parsed and the stylesheets are in, whichever comes last, and is drawn once
+// at the stage that fits. Before this it was drawn at a guess (the bar from
+// 1280px) that the deferred `app.js` corrected: in the auto layout the
+// sidebar's room then slid the whole page 224px sideways, a layout shift of
+// 0.8 on a desktop (2026-11-12). Watched from the head, never blocking the
+// parser: a script after the header that waited for the stylesheet left the
+// rest of the page to be parsed after it, the title ~100 ms after the header.
+export function fitWhenStyled() {
+  const root = document.documentElement
+  if (root.dataset.navFit !== "pending" || typeof MutationObserver !== "function") return
+
+  const check = () => {
+    const header = document.getElementById("main-navbar")
+    // The header is whole once anything after it is parsed.
+    if (!header?.nextElementSibling || !styled()) return
+    stop()
+    fitNow(header)
+  }
+  const done = () => {
+    // A page with no navbar: nothing to fit.
+    if (!document.getElementById("main-navbar")) {
+      stop()
+      reveal()
+    }
+  }
+  const observer = new MutationObserver(check)
+  const stop = () => {
+    observer.disconnect()
+    document.removeEventListener("load", check, true)
+    document.removeEventListener("DOMContentLoaded", done)
+  }
+  observer.observe(root, {childList: true, subtree: true})
+  // A stylesheet's `load` reaches a capturing listener on the document.
+  document.addEventListener("load", check, true)
+  document.addEventListener("DOMContentLoaded", done)
+}
+
+function styled() {
+  return Array.from(document.querySelectorAll('link[rel="stylesheet"]')).every((link) => link.sheet)
+}
+
+// Measures `header`, keeps the widths and sets the stage, the shell's margin
+// transition held so the stage arrives still, then shows the shell.
+function fitNow(header) {
+  const lang = document.documentElement.lang
+  const shell = header.parentElement
+  const transition = shell.style.transition
+  shell.style.transition = "none"
+  const needs = measure(header)
+  if (needs) {
+    save(lang, needs)
+    apply(stageFor(needs, roomOf(header), sideRoom()))
+  }
+  // The stage's margin, read now, is where a transition would start from.
+  void shell.offsetWidth
+  shell.style.transition = transition
+  reveal()
+}
+
+// The shell shown again (`applySaved/0`'s hold): by the fit, else by
+// `startNavbarFit/1`, else by the stylesheet after two seconds.
+function reveal() {
+  delete document.documentElement.dataset.navFit
 }
 
 // Each stage's width: the header's padding and gap, the logo with its name on
@@ -172,6 +248,7 @@ const fitted = new WeakMap()
 // Measures `header` now, again when its width, its fonts or its content
 // change (`refit`, from the navbar's hook), and sets the stage that fits.
 export function startNavbarFit(header) {
+  reveal()
   if (!header) return null
   if (fitted.has(header)) return fitted.get(header)
 

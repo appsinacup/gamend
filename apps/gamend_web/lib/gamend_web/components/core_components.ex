@@ -175,6 +175,15 @@ defmodule GamendWeb.CoreComponents do
   # is ~50 KB of SVG and 6 ms to draw, ~1.5 KB and 0.1 ms as a 120x90 WebP),
   # else the SVG. Which codes have one is read from the host's
   # `priv/static/flags` once and kept, like the rest of the static files.
+  @doc """
+  A flag's URL: the WebP a host wrote beside the SVG where that is the
+  smaller file, else the SVG (`flag/1`). No version in it, as `flag/1` says.
+
+      flag_path("ro") #=> "/flags/ro.svg"
+  """
+  @spec flag_path(String.t()) :: String.t()
+  def flag_path(code) when is_binary(code), do: flag_src(code)
+
   defp flag_src(code) do
     if MapSet.member?(raster_flags(), code),
       do: "/flags/#{code}.webp",
@@ -193,6 +202,11 @@ defmodule GamendWeb.CoreComponents do
     end
   end
 
+  # The WebP a host wrote beside a flag's SVG where it is the smaller file
+  # (the reference host's `mix host.flag_rasters`: a flag with a coat of arms
+  # is ~50 KB of SVG and 6 ms to draw, ~1.5 KB and 0.1 ms as a 120x90 WebP),
+  # else the SVG. Which codes have one is read from the host's
+  # `priv/static/flags` once and kept, like the rest of the static files.
   defp load_raster_flags do
     GamendWeb.host_app()
     |> Application.app_dir("priv/static/flags")
@@ -1373,16 +1387,15 @@ defmodule GamendWeb.CoreComponents do
     required: true,
     values: [:group, :tournament, :leaderboard, :quest, :notification, :user]
 
-  # `:any` so callers can pass the usual Phoenix class list; both branches
-  # below normalise it the same way.
+  # `:any` so callers can pass the usual Phoenix class list.
   attr :class, :any, default: "w-6 h-6"
 
   def entity_icon(%{icon_url: url} = assigns) when is_binary(url) and url != "" do
     case GamendWeb.Icons.from_path(url) do
-      # One of ours: inline it rather than fetching it back over HTTP, so its
-      # `currentColor` follows the theme. In an <img> it would resolve to black
-      # and disappear against the dark theme. Picked in one of the site's
-      # colours (`Gamend.Icons.color/1`), it is drawn in that, over the class's.
+      # One of ours: a mask of its file over `currentColor`, so it follows the
+      # theme. In an <img> it would resolve to black and disappear against the
+      # dark theme. Picked in one of the site's colours (`Gamend.Icons.color/1`),
+      # it is drawn in that, over the class's.
       {:ok, icon} ->
         assigns
         |> assign(:icon, icon)
@@ -1411,40 +1424,27 @@ defmodule GamendWeb.CoreComponents do
     """
   end
 
+  # One of ours as a mask of its file over `currentColor` (`icon-mask`,
+  # core's stylesheet), not its SVG inline: the browser fetches each icon once
+  # and keeps it (`Icons.draw_path/1`), and a row names the file in ~100 bytes
+  # where the SVG was ~700. Not a `hero-*` class: Tailwind only generates
+  # those for names it finds literally in source, and this one is chosen at
+  # runtime.
   defp inline_icon(assigns) do
     icon = assigns.icon || GamendWeb.Icons.default(assigns.type)
 
-    # Inline SVG, not a `hero-*` class: Tailwind only generates those classes
-    # for names it finds literally in source, and this one is chosen at runtime.
-    # The class is interpolated into raw markup, so it has to be flattened to a
-    # string first — a list would render as one run-on token.
-    style =
+    color =
       case assigns[:color_css] do
-        css when is_binary(css) ->
-          ~s| style="color: #{css |> Phoenix.HTML.html_escape() |> Phoenix.HTML.safe_to_string()}"|
-
-        _none ->
-          ""
+        css when is_binary(css) -> "; color: " <> css
+        _none -> ""
       end
 
-    svg =
-      GamendWeb.Icons.svg(icon)
-      |> String.replace("<svg ", ~s|<svg class="#{class_string(assigns.class)}"#{style} |,
-        global: false
-      )
-
-    assigns = assign(assigns, :svg, svg)
+    assigns =
+      assign(assigns, :style, "--icon-src: url(#{GamendWeb.Icons.draw_path(icon)})" <> color)
 
     ~H"""
-    {Phoenix.HTML.raw(@svg)}
+    <span class={["icon-mask", @class]} style={@style} aria-hidden="true"></span>
     """
-  end
-
-  defp class_string(class) do
-    class
-    |> List.wrap()
-    |> Enum.reject(&(&1 in [nil, false, ""]))
-    |> Enum.join(" ")
   end
 
   @doc """
@@ -2056,7 +2056,7 @@ defmodule GamendWeb.CoreComponents do
   @doc """
   A user's avatar as a round image when they have one we host
   (`User.public_avatar_url/1`), or the icon they picked in its place, drawn
-  inline on a round tile, falling back to the generic person icon. A
+  on a round tile, falling back to the generic person icon. A
   provider's URL is never drawn: it would send the viewer's IP to that provider,
   so an avatar not yet mirrored shows the icon. Pass `class` for sizing, e.g.
   `"w-5 h-5"`. If the image fails to load (an object gone from storage),
@@ -2089,7 +2089,7 @@ defmodule GamendWeb.CoreComponents do
 
     ~H"""
     <%!-- One of the site's icons as the avatar (`Gamend.Icons`): drawn
-          inline, so it follows the theme, on a round tile the size of a
+          over `currentColor`, so it follows the theme, on a round tile the size of a
           picture, tinted with its colour when it has one. Everyone has one
           (`User.public_avatar_url/1`): the person icon is only for no user. --%>
     <span
@@ -2174,7 +2174,7 @@ defmodule GamendWeb.CoreComponents do
 
   @doc """
   A group's icon as `user_avatar/1` draws a person's, on a tile the size of a
-  picture: an uploaded image filling it, or one of the site's icons inline,
+  picture: an uploaded image filling it, or one of the site's icons,
   tinted with its colour. Square-cornered where a person's is round, so a
   group and a person beside it (`owner_picker/1`) read as two kinds.
   """

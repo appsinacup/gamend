@@ -8,10 +8,13 @@ defmodule GamendWeb.Icons do
   does it through a typed value; an unknown atom raises instead of silently
   rendering nothing.
 
-  `svg/1` returns the icon's inline SVG (compile-time embedded), which is how
-  `<.entity_icon>` renders fallbacks — deliberately not the `hero-*` CSS
-  classes, because Tailwind only generates those for names it finds literally
-  in source, and these names are chosen at runtime.
+  The web UI draws one as a file, `draw_path/1` (`/icons/trophy.svg?v=…`),
+  masked over `currentColor` (`icon-mask`, core's stylesheet), so it follows
+  the theme and the browser fetches each icon once and keeps it: a page of
+  200 rows names the file 200 times instead of carrying its SVG 200 times
+  (2026-11-12; the notifications page was 300 KB of inline SVG). Not the
+  `hero-*` classes, because Tailwind only generates those for names it finds
+  literally in source, and these names are chosen at runtime.
 
   Entities with no uploaded `icon_url` fall back to `default/1` for their
   type: every group without an icon shares one icon, every tournament
@@ -44,6 +47,23 @@ defmodule GamendWeb.Icons do
 
   if map_size(@svgs) == 0, do: raise("no heroicons found under #{@icons_dir}")
 
+  # The other sets the `hero-*` classes are masks of (`assets/vendor/heroicons.js`),
+  # by the name in their URL (`/icons/outline/trophy.svg`), served beside the
+  # solid one by `GamendWeb.IconController`. Keyed by strings: a request's
+  # name never becomes an atom.
+  @set_dirs %{"outline" => "24/outline", "mini" => "20/solid", "micro" => "16/solid"}
+  @sets_root Path.expand("../..", @icons_dir)
+
+  @set_files (for {set, dir} <- @set_dirs,
+                  path <- Path.wildcard(Path.join([@sets_root, dir, "*.svg"])),
+                  into: %{} do
+                {{set, Path.basename(path)}, File.read!(path)}
+              end)
+
+  for {_set, dir} <- @set_dirs, path <- Path.wildcard(Path.join([@sets_root, dir, "*.svg"])) do
+    @external_resource path
+  end
+
   # The icons people pick from (`Gamend.Icons.picks/0`) as `<symbol>`s of one
   # file, for the page that draws them all at once (`<.icon_picker>`): each is
   # then a `<use>` of a few bytes, and the file is fetched once and cached for
@@ -71,6 +91,15 @@ defmodule GamendWeb.Icons do
                  (:crypto.hash(:sha256, @sprite)
                   |> Base.url_encode64(padding: false)
                   |> binary_part(0, 12))
+
+  # Each icon's content hash, for the URL the web UI draws it from: the file
+  # is cached for good, so a new heroicons release needs a new URL.
+  @versions Map.new(@svgs, fn {name, svg} ->
+              {name,
+               :crypto.hash(:sha256, svg)
+               |> Base.url_encode64(padding: false)
+               |> binary_part(0, 8)}
+            end)
 
   @defaults %{
     group: :user_group,
@@ -109,6 +138,14 @@ defmodule GamendWeb.Icons do
   @spec svg(icon()) :: String.t()
   def svg(icon) when is_map_key(@svgs, icon), do: @svgs[icon]
 
+  @doc """
+  An icon of another set (`"outline"`, `"mini"`, `"micro"`) by its file name
+  (`"trophy.svg"`), as a `hero-*` class draws it; `:error` for anything else.
+  """
+  @spec set_file(String.t(), String.t()) :: {:ok, String.t()} | :error
+  def set_file(set, file) when is_binary(set) and is_binary(file),
+    do: Map.fetch(@set_files, {set, file})
+
   @doc "The shared default icon atom for an entity type without an icon."
   @spec default(entity()) :: icon()
   def default(type) when is_map_key(@defaults, type), do: @defaults[type]
@@ -125,11 +162,24 @@ defmodule GamendWeb.Icons do
 
   Storing a URL rather than an atom keeps `icon_url` one kind of thing: a game
   client fetches it like any other icon, while the web UI recognises its own
-  route and inlines the SVG instead (see `GamendWeb.CoreComponents.entity_icon/1`),
-  so `currentColor` still follows the theme.
+  route and draws it as a mask (`draw_path/1`,
+  `GamendWeb.CoreComponents.entity_icon/1`), so `currentColor` still follows
+  the theme.
   """
   @spec path(icon()) :: String.t()
   def path(icon) when is_map_key(@svgs, icon), do: "/icons/" <> dasherize(icon) <> ".svg"
+
+  @doc """
+  The URL the web UI draws the icon from (`<.entity_icon>`): `path/1` with
+  its content hash, so the browser keeps it for good and a new heroicons
+  release reaches it. Not for storing: that is `path/1`.
+
+      GamendWeb.Icons.draw_path(:trophy)
+      #=> "/icons/trophy.svg?v=3kD9xQ2a"
+  """
+  @spec draw_path(icon()) :: String.t()
+  def draw_path(icon) when is_map_key(@versions, icon),
+    do: path(icon) <> "?v=" <> Map.fetch!(@versions, icon)
 
   @doc """
   The icon a `path/1` URL refers to, or `:error` for anything else — an

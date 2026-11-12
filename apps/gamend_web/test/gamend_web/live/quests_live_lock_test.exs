@@ -50,8 +50,14 @@ defmodule GamendWeb.QuestsLiveLockTest do
 
   defp signed_in(conn), do: log_in_user(conn, Gamend.AccountsFixtures.user_fixture())
 
+  # From the title to the next card: a window of characters reached into the
+  # next card once a card's icon stopped being inline SVG.
   defp card(html, title) do
-    html |> String.split(title) |> Enum.at(1, "") |> String.slice(0, 1800)
+    html
+    |> String.split(title)
+    |> Enum.at(1, "")
+    |> String.split(~s(<div class="card ), parts: 2)
+    |> hd()
   end
 
   test "with no filter registered nothing is locked", %{conn: conn} do

@@ -267,7 +267,10 @@ defmodule GamendWeb.PresentationPage do
               ]}>
                 <%!-- `hero.logo`: the site's mark over the claim, larger
                       than the navbar's. Decorative: the title names the
-                      site. --%>
+                      site. Not `fetchpriority="high"`: the title is the
+                      page's largest paint, and on a slow phone a high
+                      picture is fetched beside the stylesheet the title
+                      waits for (2026-11-12). --%>
                 <img
                   :if={image_src(@hero["logo"])}
                   src={image_src(@hero["logo"])}
@@ -275,7 +278,6 @@ defmodule GamendWeb.PresentationPage do
                   height="112"
                   alt=""
                   loading="eager"
-                  fetchpriority="high"
                   class="size-20 sm:size-24 lg:size-28"
                   data-hero-logo
                 />

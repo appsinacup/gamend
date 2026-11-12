@@ -1957,19 +1957,21 @@ defmodule Gamend.Quests do
   defp normalize_note(_note), do: nil
 
   @doc """
-  Where this viewer goes to work on this quest, as a path on this site — or
-  `nil`. Set `config :gamend_core, :quest_action, {Module, :function}`; it is
-  called as `function(user_id | nil, Quest.t())`.
+  Where this viewer goes to work on this quest: `{label, path}`, a button's
+  words (already in the reader's language) and a path on this site, or `nil`.
+  Set `config :gamend_core, :quest_action, {Module, :function}`; it is called
+  as `function(user_id | nil, Quest.t())`.
 
-  The quests page makes the whole card a link to it whenever there is nothing
-  to claim: before the quest is done, the way to do it, and after it is
-  claimed, the way back to more of it. A quest only says what to do ("Visit
-  20 cities"), never where, and only the host knows its own pages.
+  The quests page makes the whole card a link to it, with a button of that
+  label, whenever there is nothing to claim: before the quest is done, the way
+  to do it, and after it is claimed, the way back to more of it. A quest only
+  says what to do ("Visit 20 cities"), never where, and only the host knows
+  its own pages, as with a board (`Gamend.Leaderboards.host_action/2`).
 
-  A path starts with one `/` (`"/games"`); a URL or `"//…"` is dropped. The
-  page keeps the reader's locale prefix on it.
+  A path starts with one `/` (`"/games"`); a URL or `"//…"` is dropped, and
+  so is an empty label. The page keeps the reader's locale prefix on it.
   """
-  @spec host_action(Quest.t(), user_id() | nil) :: String.t() | nil
+  @spec host_action(Quest.t(), user_id() | nil) :: {String.t(), String.t()} | nil
   def host_action(quest, user_id) do
     case Application.get_env(:gamend_core, :quest_action) do
       {mod, fun} when is_atom(mod) and is_atom(fun) ->
@@ -1982,8 +1984,8 @@ defmodule Gamend.Quests do
 
   # Same leniency as the lock label: a host answering nonsense means "no
   # link", never a broken one or one off the site.
-  defp normalize_action("/" <> rest = path) do
-    if String.starts_with?(rest, ["/", "\\"]), do: nil, else: path
+  defp normalize_action({label, "/" <> rest = path}) when is_binary(label) and label != "" do
+    if String.starts_with?(rest, ["/", "\\"]), do: nil, else: {label, path}
   end
 
   defp normalize_action(_action), do: nil

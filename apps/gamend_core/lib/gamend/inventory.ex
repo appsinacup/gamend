@@ -52,13 +52,34 @@ defmodule Gamend.Inventory do
       0
   end
 
-  @doc "All held items for a user, as a `%{item => quantity}` map."
+  @doc """
+  All held items for a user, as a `%{item => quantity}` map.
+
+  Cached in `Gamend.Cache` and evicted by every change that commits (the
+  post-commit step of `grant_item/4` and `consume_item/4`), as the
+  entitlement rows are: a host drawing something from a player's items on
+  every row of a list (a title on a leaderboard) read it once per player,
+  not once per row per render. Inside a transaction the cache is skipped
+  both ways: a read there may see a write a rollback would undo.
+  """
   @spec inventory(user_id()) :: %{item() => non_neg_integer()}
   def inventory(user_id) do
+    if Repo.in_transaction?() do
+      read_inventory(user_id)
+    else
+      Gamend.Cache.cached(inventory_key(user_id), [ttl: Gamend.Cache.ttl()], fn ->
+        read_inventory(user_id)
+      end)
+    end
+  end
+
+  defp read_inventory(user_id) do
     from(i in Item, where: i.user_id == ^user_id and i.quantity > 0, select: {i.item, i.quantity})
     |> Repo.all()
     |> Map.new()
   end
+
+  defp inventory_key(user_id), do: {:inventory, :items, user_id}
 
   # ── Mutations ───────────────────────────────────────────────────────────
 
@@ -106,7 +127,9 @@ defmodule Gamend.Inventory do
       true ->
         case run_change(user_id, item, delta, reason, idem, metadata) do
           {:ok, new_qty} = ok ->
-            # Post-commit: push to the user's socket and fire the plugin hook.
+            # Post-commit: drop the cached items, push to the user's socket
+            # and fire the plugin hook.
+            _ = Gamend.Cache.invalidate(inventory_key(user_id))
             broadcast(user_id, item, new_qty, delta)
             change = %{user_id: user_id, item: item, quantity: new_qty, delta: delta}
 

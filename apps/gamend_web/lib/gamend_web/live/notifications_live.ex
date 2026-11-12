@@ -10,8 +10,10 @@ defmodule GamendWeb.NotificationsLive do
 
   # Pages of a fixed size would cut a stack in two, and neither a section (the
   # group is decided in code) nor a stack (the type is in the JSON metadata) is
-  # something a query can page by. So the newest rows are arranged whole.
-  @load_step 200
+  # something a query can page by. So the newest rows are arranged whole,
+  # 50 at a time (200 until 2026-11-12: a first page of ~800 KB), more on
+  # "Load more".
+  @load_step 50
 
   require Gamend.Notifications.NotificationType, as: NotificationType
   require Gamend.Notifications.PreferenceGroup, as: PreferenceGroup

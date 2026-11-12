@@ -12,8 +12,9 @@
 
    It brings Tailwind, core's own sources (its templates and scripts, so
    their classes are generated), Phoenix's loading variants and `dark`,
-   heroicons (`hero-*`), core's classes (`vendor/gamend.js`: `btn-surface`,
-   `card-hover`, `text-muted`, `max-w-narrow`, `nudge`) and the base styles
+   heroicons (`hero-*`, masks of `/icons/...` files), core's classes
+   (`vendor/gamend.js`: `btn-surface`, `card-hover`, `text-muted`,
+   `max-w-narrow`, `nudge`, `icon-mask`) and the base styles
    of core's features: the Inter font, the background icons' drift,
    Markdown pages, changelog pills, touch targets, iOS zoom and docs code.
    A host restyles any of them with its own rule after the import; its

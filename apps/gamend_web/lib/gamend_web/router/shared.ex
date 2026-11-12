@@ -331,11 +331,13 @@ defmodule GamendWeb.Router.Shared do
       end
 
       # The typed icon set as SVG, so `icon_url` can point at an icon we
-      # already ship. Public and unauthenticated: it is static artwork.
+      # already ship, and every set the `hero-*` classes are masks of.
+      # Public and unauthenticated: it is static artwork.
       scope "/", GamendWeb do
         pipe_through :gamend_icons
 
         get "/icons/:name", IconController, :show
+        get "/icons/:set/:name", IconController, :show
       end
 
       # An email's unsubscribe link. The POST has no pipeline on purpose: a

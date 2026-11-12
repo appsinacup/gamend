@@ -248,13 +248,17 @@ defmodule Gamend.Notifications do
   @doc "Mark all notifications as read for a user."
   @spec mark_all_notifications_read(user_id()) :: {non_neg_integer(), nil}
   def mark_all_notifications_read(user_id) when is_binary(user_id) do
-    result =
+    {marked, _} =
+      result =
       from(n in Notification,
         where: n.recipient_id == ^user_id and n.read == false
       )
       |> Repo.update_all(set: [read: true, updated_at: DateTime.utc_now(:second)])
 
-    invalidate_notifications_cache(user_id)
+    # The notifications page calls this on every visit: with nothing unread
+    # the cached lists and counts are still right, and dropping them made the
+    # page read them all again.
+    if marked > 0, do: invalidate_notifications_cache(user_id)
     result
   end
 

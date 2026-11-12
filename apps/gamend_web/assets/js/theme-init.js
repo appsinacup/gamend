@@ -1,6 +1,6 @@
 // Theme initializer — runs synchronously before CSS to prevent FOUC.
 // This file is a separate esbuild entry point loaded without `defer`.
-import {applySaved} from "./navbar_fit.js"
+import {applySaved, fitWhenStyled} from "./navbar_fit.js"
 import {applySavedSide} from "./side_nav.js"
 
 // The sidebar as the reader left it, open or collapsed: first, since the
@@ -8,6 +8,8 @@ import {applySavedSide} from "./side_nav.js"
 applySavedSide();
 // The navbar's stage, from the widths measured on an earlier page.
 applySaved();
+// None measured yet: measured once the header is parsed and styled.
+fitWhenStyled();
 
 (function () {
   // A signed-in reader's saved theme (`GamendWeb.Plugs.ColorMode`) is the

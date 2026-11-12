@@ -314,9 +314,10 @@ defmodule GamendWeb.QuestsLive do
     Enum.map(entries, &Map.put(&1, :lock_label, Quests.host_lock_label(&1.quest, user.id)))
   end
 
-  # Where each quest is done, from the host (`Quests.host_action/2`), for
-  # everyone: a visitor reading the catalog wants the way in as much as a
-  # player does. The card links there only when there is nothing to claim.
+  # Where each quest is done, from the host (`Quests.host_action/2`, `{label,
+  # path}`), for everyone: a visitor reading the catalog wants the way in as
+  # much as a player does. The card links there, with a button of the label,
+  # only when there is nothing to claim.
   defp actions(entries, user) do
     user_id = user && user.id
     Enum.map(entries, &Map.put(&1, :action, Quests.host_action(&1.quest, user_id)))
@@ -874,7 +875,8 @@ defmodule GamendWeb.QuestsLive do
         assigns.logged_in and claimable and is_nil(lock_label) ->
           :claim
 
-        is_binary(assigns.entry[:action]) and not claimable and is_nil(lock_label) ->
+        match?({_label, _path}, assigns.entry[:action]) and not claimable and
+            is_nil(lock_label) ->
           :go
 
         grouped? ->
@@ -922,7 +924,7 @@ defmodule GamendWeb.QuestsLive do
       description={@localized_desc}
       href={
         case @click do
-          :go -> GamendWeb.HostLayouts.localized_href(@action, @locale)
+          :go -> GamendWeb.HostLayouts.localized_href(elem(@action, 1), @locale)
           :register -> register_href(@locale)
           _ -> false
         end
@@ -1077,6 +1079,13 @@ defmodule GamendWeb.QuestsLive do
           <% end %>
         </div>
       <% end %>
+
+      <%!-- Where the quest is done (`Quests.host_action/2`), as a button: the
+            whole card is the link already, so this is its look, not a second
+            link, as "Register to claim" is. --%>
+      <span :if={@click == :go} aria-hidden="true" class="btn btn-surface btn-sm w-full mt-2">
+        {elem(@action, 0)}
+      </span>
     </.entity_card>
     """
   end

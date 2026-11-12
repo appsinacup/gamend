@@ -46,7 +46,7 @@ defmodule GamendWeb.Components.UserAvatarTest do
       refute html =~ "<img", url
       refute html =~ url
       # In its place, the icon the user's id gives them.
-      assert html =~ "<svg"
+      assert html =~ "icon-mask"
       assert html =~ "var(--color-#{Gamend.Icons.color(Gamend.Icons.for_id(@id))})"
     end
   end
@@ -56,7 +56,7 @@ defmodule GamendWeb.Components.UserAvatarTest do
 
     html = render_component(&CoreComponents.user_avatar/1, user: user)
 
-    assert html =~ ~s|style="color: var(--color-warning)"|
+    assert html =~ "; color: var(--color-warning)"
     assert html =~ "color-mix(in oklab, var(--color-warning) 20%"
   end
 
@@ -65,13 +65,13 @@ defmodule GamendWeb.Components.UserAvatarTest do
     assert html =~ "hero-user-circle-solid"
   end
 
-  test "one of the site's icons is drawn inline, not fetched" do
+  test "one of the site's icons is drawn as a mask of its file, not an img" do
     user = %User{id: @id, profile_url: "/icons/rocket-launch.svg"}
 
     html = render_component(&CoreComponents.user_avatar/1, user: user)
 
     refute html =~ "<img"
-    assert html =~ "<svg"
+    assert html =~ "icon-mask"
     assert html =~ "rounded-full"
   end
 

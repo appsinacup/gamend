@@ -35,6 +35,9 @@ defmodule GamendWeb.HostLayoutShell do
       |> assign(:side?, GamendWeb.HostLayoutNavigation.side_layout?(assigns[:navigation]))
       |> assign(:auto?, GamendWeb.HostLayoutNavigation.auto_layout?(assigns[:navigation]))
 
+    # The five navs below draw the same links: resolved once here.
+    assigns = assign(assigns, :nav_prepared, GamendWeb.HostLayoutNavigation.prepare(assigns))
+
     ~H"""
     <%!-- First focusable element on every page: invisible until it receives
           keyboard focus, then lets the reader jump past the navbar straight
@@ -52,6 +55,7 @@ defmodule GamendWeb.HostLayoutShell do
           `navbar_fit.js`). --%>
     <GamendWeb.HostLayoutNavigation.side_nav
       :if={@side? or @auto?}
+      prepared={@nav_prepared}
       auto={@auto?}
       current_scope={@current_scope}
       current_path={@current_path}
@@ -76,6 +80,7 @@ defmodule GamendWeb.HostLayoutShell do
           ends its height above it. --%>
     <GamendWeb.HostLayoutNavigation.tab_nav
       :if={@side? or @auto?}
+      prepared={@nav_prepared}
       auto={@auto?}
       current_scope={@current_scope}
       current_path={@current_path}
@@ -188,6 +193,7 @@ defmodule GamendWeb.HostLayoutShell do
               control buried in the phone menu. --%>
         <div data-nav-bar class="flex-none flex items-center gap-1 [[data-nav~=bar]_&]:gap-2">
           <GamendWeb.HostLayoutNavigation.desktop_nav
+            prepared={@nav_prepared}
             current_scope={@current_scope}
             current_path={@current_path}
             current_query={@current_query}
@@ -235,6 +241,7 @@ defmodule GamendWeb.HostLayoutShell do
           <%!-- The account, rightmost where the bar is, as the menu is where
                 it is not. --%>
           <GamendWeb.HostLayoutNavigation.desktop_account
+            prepared={@nav_prepared}
             current_scope={@current_scope}
             current_path={@current_path}
             navigation={@navigation}
@@ -244,6 +251,7 @@ defmodule GamendWeb.HostLayoutShell do
           />
 
           <GamendWeb.HostLayoutNavigation.mobile_nav
+            prepared={@nav_prepared}
             current_scope={@current_scope}
             current_path={@current_path}
             current_query={@current_query}

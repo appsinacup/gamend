@@ -19,6 +19,7 @@
 //   text-muted    the second text tone, and daisyUI's own muted text in it
 //   max-w-narrow  the one narrow width
 //   nudge         the page's one next step, moving
+//   icon-mask     an icon drawn from its file, in the text's colour
 
 const plugin = require("tailwindcss/plugin")
 
@@ -43,7 +44,38 @@ const RING_OUT = "cubic-bezier(0.2, 0.7, 0.2, 1)"
 const SLIDE = "cubic-bezier(0.4, 0, 0.2, 1)"
 
 module.exports = plugin(
-  function ({ addBase, addUtilities }) {
+  function ({ addBase, addComponents, addUtilities }) {
+    /* `icon-mask`: one of the site's icons drawn from its file
+       (`GamendWeb.Icons.draw_path/1`, set as `--icon-src` by
+       `<.entity_icon>`), masked over `currentColor` so it follows the theme
+       and the browser fetches it once. A component, so a utility beside it
+       (`w-6`, `hidden`, `inline-block`) wins. Laid out as the inline SVG it
+       replaced (2026-11-12): a block, as Tailwind's base sets an `svg`, that
+       a flex row does not shrink. Nothing shows until the file arrives. */
+    /* The page's shell unseen while the navbar has no widths measured for
+       its language (`<html data-nav-fit="pending">`, `navbar_fit.js`): a
+       first visit is drawn once, at the stage that fits, not at a guess the
+       sidebar's room then moves (2026-11-12). Shown by the fit before the
+       first paint, else at the latest after two seconds. */
+    addBase({
+      '[data-nav-fit="pending"] :has(> #main-navbar)': {
+        visibility: "hidden",
+        animation: "nav-fit-reveal 0s 2s forwards"
+      },
+      "@keyframes nav-fit-reveal": { to: { visibility: "visible" } }
+    })
+
+    addComponents({
+      ".icon-mask": {
+        display: "block",
+        "flex-shrink": "0",
+        "vertical-align": "middle",
+        "background-color": "currentColor",
+        "-webkit-mask": "var(--icon-src) center / contain no-repeat",
+        mask: "var(--icon-src) center / contain no-repeat"
+      }
+    })
+
     /* `btn-surface`: the secondary button, beside `btn-primary`. The page's
        own colour behind a dark hairline (2026-09-30, it replaced
        `btn-outline`'s white border). It sets the RESTING fill and border and

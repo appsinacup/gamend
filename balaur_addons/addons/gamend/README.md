@@ -1,9 +1,11 @@
 # The Gamend SDK for Balaur
 
 Written by `clients/sdkgen` (balaur), in Balaur Script. Copy this
-directory into a project as `addons/gamend/`. A script links a module
-with `use addons::gamend::<module>;`, beside the engine's own
-`gamend::login` and `gamend::rest`:
+directory into a project as `addons/gamend/`, beside the Balaur
+library's `addons/save/`, which keeps the session and the prefs; the
+editor's Library dock adds both. A script links a module with
+`use addons::gamend::<module>;`, beside the engine's own `gamend::login`
+and `gamend::rest`:
 
 ```rust
 use addons::gamend::lobbies;
@@ -25,7 +27,8 @@ Beside the generated modules and `events.bs`, written by hand:
 | `gamend::prefs` | The player's prefs on this device |
 | `gamend::logs` | This run's log, shipped in batches; put `log_sink.bs` on a node that lives as long as the game |
 | `gamend::commands` | Generated: one function per event a channel answers |
-| `gamend::core` | The query string, the required-field check and the reply helpers |
+| `gamend::core` | The query string, the required-field check, the reply helpers, and the engine's calls, each kept in the activity log |
+| `gamend::activity` | The calls `core` sent and what `client::route` heard, for the dock; a call made on `gamend::` directly is not in it |
 | `editor/gamend.bs` | The Gamend dock in the Balaur editor: the server, the session, and what the calls answered |
 
 ## admin_analytics

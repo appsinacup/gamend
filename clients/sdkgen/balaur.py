@@ -1,4 +1,5 @@
-"""The Balaur emitter: Balaur Script over the engine's `gamend::rest`.
+"""The Balaur emitter: Balaur Script over the engine's `gamend::rest`, sent
+through the template's `core::rest` so the activity log keeps each call.
 
 The Godot client goes through openapi-generator, which has no Balaur Script
 target, so this writes one `.bs` module per tag. A script links one with
@@ -28,8 +29,8 @@ OWNS_OUT = True
 FILE_NAMES = {"push": "push_tokens"}
 # What a tag's file must not take: the template's files.
 TAKEN = {
-    "auth", "client", "commands", "core", "events", "log_sink", "logs", "prefs", "presence",
-    "version",
+    "activity", "auth", "client", "commands", "core", "events", "log_sink", "logs", "prefs",
+    "presence", "version",
 }
 
 BANNER = (
@@ -80,7 +81,7 @@ def short_name(op: dict, file: str) -> str:
 
 
 def emit_function(model: Model, op: dict, file: str, name: str) -> str:
-    """One operation as a function over `gamend::rest`, answering its id.
+    """One operation as a function over `core::rest`, answering its id.
     Path parameters are `str`, as they are in a path; the body and the query
     are JSON maps, so `any`."""
     args = [f"{safe(p)}: str" for p in op["path_params"]]
@@ -114,7 +115,7 @@ def emit_function(model: Model, op: dict, file: str, name: str) -> str:
     path = path_expression(op, bool(op["query"]))
     # A left-out body is nil, so a call with none writes none.
     body = ", params" if op["body"] else ""
-    out.append(f'    gamend::rest("{op["method"]}", {path}{body})')
+    out.append(f'    core::rest("{op["method"]}", {path}{body})')
     out.append("}")
     return "\n".join(out)
 
@@ -148,7 +149,7 @@ def write_tags(model: Model) -> dict[str, str]:
             "// for an id a reply holds), then `params` for the request body and\n"
             "// `options` for the query where the operation has them; either may be\n"
             "// left out when the call has nothing to put in it. It answers the id\n"
-            "// `gamend::rest` answers, to await with `task::wait`. With a path\n"
+            "// `core::rest` answers, to await with `task::wait`. With a path\n"
             "// parameter empty or a required field left out it sends nothing and\n"
             "// logs which, and the id answers an `error` naming it.\n"
             "\nuse core;",
@@ -221,7 +222,7 @@ def write_events(model: Model) -> dict[str, str]:
 
 
 def command_function(row: dict) -> str:
-    """One command as a function over `gamend::push`, answering its id."""
+    """One command as a function over `core::push`, answering its id."""
     on_user = row["channel"] == "user"
     args = ["socket: int"]
     if not on_user:
@@ -237,7 +238,7 @@ def command_function(row: dict) -> str:
     topic = '"user:" + auth::user_id()' if on_user else f'"{row["channel"]}:" + id'
     payload = "params" if fields else "{}"
     out.append(f"pub fn {row['name']}({', '.join(args)}) -> int {{")
-    out.append(f'    gamend::push(socket, {topic}, "{row["event"]}", {payload})')
+    out.append(f'    core::push(socket, {topic}, "{row["event"]}", {payload})')
     out.append("}")
     return "\n".join(out)
 
@@ -246,9 +247,9 @@ def write_commands(model: Model) -> str:
     chunks = [
         BANNER.rstrip("\n"),
         "// Every event a channel answers, one function each, from\n"
-        "// `clients/commands.json`. A call answers the id `gamend::push` answers,\n"
+        "// `clients/commands.json`. A call answers the id `core::push` answers,\n"
         "// to await with `task::wait`.\n"
-        "\nuse auth;",
+        "\nuse auth;\nuse core;",
     ]
     chunks += [command_function(row) for row in model.commands]
     return "\n\n".join(chunks) + "\n"
@@ -260,9 +261,11 @@ def write_readme(model: Model) -> str:
         "# The Gamend SDK for Balaur",
         "",
         "Written by `clients/sdkgen` (balaur), in Balaur Script. Copy this",
-        "directory into a project as `addons/gamend/`. A script links a module",
-        "with `use addons::gamend::<module>;`, beside the engine's own",
-        "`gamend::login` and `gamend::rest`:",
+        "directory into a project as `addons/gamend/`, beside the Balaur",
+        "library's `addons/save/`, which keeps the session and the prefs; the",
+        "editor's Library dock adds both. A script links a module with",
+        "`use addons::gamend::<module>;`, beside the engine's own `gamend::login`",
+        "and `gamend::rest`:",
         "",
         "```rust",
         "use addons::gamend::lobbies;",
@@ -285,7 +288,8 @@ def write_readme(model: Model) -> str:
         "| `gamend::prefs` | The player's prefs on this device |",
         "| `gamend::logs` | This run's log, shipped in batches; put `log_sink.bs` on a node that lives as long as the game |",
         "| `gamend::commands` | Generated: one function per event a channel answers |",
-        "| `gamend::core` | The query string, the required-field check and the reply helpers |",
+        "| `gamend::core` | The query string, the required-field check, the reply helpers, and the engine's calls, each kept in the activity log |",
+        "| `gamend::activity` | The calls `core` sent and what `client::route` heard, for the dock; a call made on `gamend::` directly is not in it |",
         "| `editor/gamend.bs` | The Gamend dock in the Balaur editor: the server, the session, and what the calls answered |",
         "",
     ]

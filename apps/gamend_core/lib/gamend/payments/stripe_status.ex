@@ -3,5 +3,6 @@ defmodule Gamend.Payments.StripeStatus do
   Stripe's own statuses, read off its objects (not the rows it updates).
   """
 
-  use Gamend.Names, ~w(active trialing canceled incomplete_expired paid open expired completed)
+  use Gamend.Names,
+      ~w(active trialing canceled incomplete_expired paid open expired completed failed)
 end

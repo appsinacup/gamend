@@ -40,6 +40,8 @@ defmodule Gamend.Payments.StripeCheckoutTest do
       {:error, {:stripe_error, %{"code" => "checkout_session_not_open"}}}
     end
 
+    def checkout_decline(_session), do: nil
+
     def retrieve_checkout_session("cs_paid_" <> _rest = session_id) do
       {:ok,
        %{

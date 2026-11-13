@@ -18,6 +18,7 @@ defmodule GamendWeb.AdminLive.Payments do
   require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
   require Gamend.Payments.ProductKind, as: ProductKind
   require Gamend.Payments.ProviderId, as: ProviderId
+  require Gamend.Payments.PurchaseMetadata, as: PurchaseMetadata
   require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
   require Gamend.Payments.StripeIdPrefix, as: StripeIdPrefix
   require Gamend.Payments.StripeKeyMode, as: StripeKeyMode
@@ -283,7 +284,8 @@ defmodule GamendWeb.AdminLive.Payments do
                     <th>Status</th>
                     <th>Amount</th>
                     <th>Provider TX</th>
-                    <th>Purchased</th>
+                    <th>Opened</th>
+                    <th>Paid</th>
                     <th>Revoked</th>
                     <th>Actions</th>
                   </tr>
@@ -302,11 +304,25 @@ defmodule GamendWeb.AdminLive.Payments do
                       <span class={["badge", provider_badge_class(p.provider)]}>{p.provider}</span>
                     </td>
                     <td class="font-mono text-xs">{p.product && p.product.sku}</td>
-                    <td><span class={["badge", status_badge_class(p.status)]}>{p.status}</span></td>
+                    <td>
+                      <span class={["badge", status_badge_class(p.status)]}>
+                        {purchase_status_label(p)}
+                      </span>
+                      <div
+                        :if={decline = checkout_decline(p)}
+                        class="mt-1 text-xs text-muted"
+                        title={decline["message"]}
+                      >
+                        card declined: {decline["reason"] || decline["code"]}
+                      </div>
+                    </td>
                     <td class="font-mono text-xs">{format_amount(p.amount, p.currency)}</td>
                     <td class="font-mono text-xs break-all">{p.provider_transaction_id}</td>
                     <td class="font-mono text-xs">
-                      <.timestamp at={p.purchased_at || p.inserted_at} format="full" />
+                      <.timestamp at={p.inserted_at} format="full" />
+                    </td>
+                    <td class="font-mono text-xs">
+                      <.timestamp at={p.purchased_at} format="full" />
                     </td>
                     <td class="font-mono text-xs"><.timestamp at={p.revoked_at} format="full" /></td>
                     <td>
@@ -1142,6 +1158,20 @@ defmodule GamendWeb.AdminLive.Payments do
        do: "badge-warning"
 
   defp status_badge_class(_status), do: "badge-ghost"
+
+  # `cancelled` names two ends: a checkout that ran out unpaid (the buyer
+  # left Stripe's page, or opened another checkout) and a paid subscription
+  # that ended. Only the second was ever paid (`purchased_at`).
+  defp purchase_status_label(%{status: PurchaseStatus.cancelled(), purchased_at: nil}),
+    do: "expired, not paid"
+
+  defp purchase_status_label(%{status: status}), do: status
+
+  # A card refused in that checkout (`StripeEvents`, at its end), or nil.
+  defp checkout_decline(%{metadata: %{} = metadata}),
+    do: Map.get(metadata, PurchaseMetadata.checkout_decline())
+
+  defp checkout_decline(_purchase), do: nil
 
   defp stripe_reconcile_available?(
          %{

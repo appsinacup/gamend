@@ -10,6 +10,8 @@ defmodule GamendWeb.Api.V1.PaymentControllerTest do
   end
 
   defmodule StripeAdapter do
+    def checkout_decline(_session), do: nil
+
     def create_checkout_session(_purchase, %{external_id: "price_fail" <> _rest}, _attrs) do
       {:error, :stripe_not_configured}
     end

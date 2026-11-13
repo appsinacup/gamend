@@ -23,8 +23,13 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
     user = Shared.current_user(socket)
 
     if user do
+      purchases =
+        user.id
+        |> Payments.list_user_purchases(limit: 100)
+        |> Enum.reject(&ended_unpaid?/1)
+
       socket
-      |> assign(:payment_purchases, Payments.list_user_purchases(user.id, limit: 100))
+      |> assign(:payment_purchases, purchases)
       |> assign(:payment_entitlements, Payments.list_user_entitlements(user.id))
       |> assign(:stripe_customer?, is_binary(Payments.stripe_customer_id(user)))
     else
@@ -34,6 +39,14 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
       |> assign(:stripe_customer?, false)
     end
   end
+
+  # A checkout the buyer left unpaid (it ran out, or they opened another)
+  # took nothing, so it is no payment of theirs: it read "Cancelled", as if
+  # something had been taken back. Only `cancelled` with no `purchased_at`:
+  # a paid subscription that ended keeps its row. The admin's Payments page
+  # still lists it, as "expired, not paid".
+  defp ended_unpaid?(%{status: PurchaseStatus.cancelled(), purchased_at: nil}), do: true
+  defp ended_unpaid?(_purchase), do: false
 
   def tab(assigns) do
     ~H"""

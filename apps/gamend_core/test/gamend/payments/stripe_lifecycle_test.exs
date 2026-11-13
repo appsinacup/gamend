@@ -33,6 +33,8 @@ defmodule Gamend.Payments.StripeLifecycleTest do
     def expire_checkout_session(session_id),
       do: {:error, {:stripe_error, %{"code" => "checkout_session_not_open", "id" => session_id}}}
 
+    def checkout_decline(_session), do: nil
+
     def retrieve_checkout_session("cs_paid_" <> _rest = id),
       do:
         {:ok,

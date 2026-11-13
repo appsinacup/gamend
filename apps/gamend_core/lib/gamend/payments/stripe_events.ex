@@ -176,11 +176,22 @@ defmodule Gamend.Payments.StripeEvents do
     purchase
     |> Purchase.changeset(%{
       status: PurchaseStatus.cancelled(),
+      metadata: with_checkout_decline(purchase, session),
       raw_provider_payload:
         Params.merge_payload(purchase.raw_provider_payload, %{"stripe_session" => session})
     })
     |> Repo.update()
     |> Payments.tap_bump({:payments, :purchase_version})
+  end
+
+  # A checkout that ended unpaid reads as never tried, unless a card was
+  # refused in it: that refusal (`Providers.Stripe.checkout_decline/1`) on
+  # the purchase, under `checkout_decline`, for the admin's Payments page.
+  defp with_checkout_decline(%Purchase{metadata: metadata}, session) do
+    case Payments.stripe_adapter().checkout_decline(session) do
+      %{} = decline -> Map.put(metadata || %{}, PurchaseMetadata.checkout_decline(), decline)
+      nil -> metadata
+    end
   end
 
   @doc """
@@ -805,9 +816,15 @@ defmodule Gamend.Payments.StripeEvents do
   defp stripe_payment_intent_status(_session), do: nil
 
   defp update_purchase_from_stripe_reconciliation(%Purchase{} = purchase, session, status, result) do
+    metadata =
+      if status == PurchaseStatus.cancelled(),
+        do: with_checkout_decline(purchase, session),
+        else: purchase.metadata
+
     purchase
     |> Purchase.changeset(%{
       status: status,
+      metadata: metadata,
       raw_provider_payload:
         Params.merge_payload(
           purchase.raw_provider_payload,

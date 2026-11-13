@@ -3,5 +3,5 @@ defmodule Gamend.Payments.PurchaseMetadata do
   Keys payments keeps in a purchase's metadata.
   """
 
-  use Gamend.Names, ~w(stripe_subscription_id paid_through)
+  use Gamend.Names, ~w(stripe_subscription_id paid_through checkout_decline)
 end

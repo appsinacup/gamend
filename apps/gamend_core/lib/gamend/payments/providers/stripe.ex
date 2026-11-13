@@ -6,9 +6,12 @@ defmodule Gamend.Payments.Providers.Stripe do
   alias Gamend.Payments.ProviderConfig
   alias Gamend.Theme.JSONConfig
 
+  require Logger
+
   require Gamend.Payments.ProductKind, as: ProductKind
   require Gamend.Payments.StripeIdPrefix, as: StripeIdPrefix
   require Gamend.Payments.StripeMode, as: StripeMode
+  require Gamend.Payments.StripeStatus, as: StripeStatus
   require Gamend.UrlScheme, as: UrlScheme
 
   @url "url"
@@ -90,6 +93,65 @@ defmodule Gamend.Payments.Providers.Stripe do
         {:error, reason} ->
           {:error, {:stripe_error, normalize_stripe_payload(reason)}}
       end
+    end
+  end
+
+  # A checkout's tries are a handful; the newest failed one is all we keep.
+  @decline_lookup 10
+
+  @doc """
+  Why a checkout that ended unpaid was not paid, when a card was tried in
+  it: the newest failed charge on the session's customer since the session
+  opened, as `%{"code", "reason", "message", "at"}` (Stripe's
+  `failure_code`, `outcome.reason` such as `insufficient_funds`, the
+  buyer's message, unix seconds). Nil when Pay was never pressed (Stripe
+  names a new buyer's customer only once it was), when nothing failed, or
+  when Stripe cannot be asked, which is logged.
+
+  Read as the session ends: Stripe then cancels its payment intent and
+  clears the intent's error, while the failed charge keeps it, and a
+  subscription checkout's session never names its payment intent at all.
+  A returning buyer's failed renewal since the session opened would read as
+  this checkout's, which is a guess at worst: it fails the same card.
+  """
+  @spec checkout_decline(map()) :: map() | nil
+  def checkout_decline(%{"customer" => StripeIdPrefix.customer() <> _ = customer} = session) do
+    params = %{
+      customer: customer,
+      created: %{gte: session["created"] || 0},
+      limit: @decline_lookup
+    }
+
+    with {:ok, secret_key} <- secret_key(),
+         {:ok, %{"data" => charges}} <- list_charges(params, secret_key) do
+      charges |> Enum.find(&(&1["status"] == StripeStatus.failed())) |> decline()
+    else
+      {:error, reason} ->
+        Logger.warning(
+          "Stripe checkout decline not read session=#{session["id"]} reason=#{inspect(reason)}"
+        )
+
+        nil
+    end
+  end
+
+  def checkout_decline(_session), do: nil
+
+  defp decline(nil), do: nil
+
+  defp decline(charge) do
+    %{
+      "code" => charge["failure_code"],
+      "reason" => get_in(charge, ["outcome", "reason"]),
+      "message" => charge["failure_message"],
+      "at" => charge["created"]
+    }
+  end
+
+  defp list_charges(params, secret_key) do
+    case list_charges_with_sdk(params, stripe_request_opts(secret_key)) do
+      {:ok, list} -> {:ok, normalize_stripe_payload(list)}
+      {:error, reason} -> {:error, {:stripe_error, normalize_stripe_payload(reason)}}
     end
   end
 
@@ -551,6 +613,12 @@ defmodule Gamend.Payments.Providers.Stripe do
     exception -> {:error, exception}
   end
 
+  defp list_charges_with_sdk(params, opts) do
+    stripe_client().list_charges(params, opts)
+  rescue
+    exception -> {:error, exception}
+  end
+
   defp create_refund_with_sdk(params, opts) do
     stripe_client().create_refund(params, opts)
   rescue
@@ -594,6 +662,7 @@ defmodule Gamend.Payments.Providers.Stripe do
     @moduledoc false
 
     alias Stripe.BillingPortal.Session, as: PortalSession
+    alias Stripe.Charge
     alias Stripe.Checkout.Session
     alias Stripe.InvoicePayment
     alias Stripe.Refund
@@ -626,6 +695,10 @@ defmodule Gamend.Payments.Providers.Stripe do
 
     def list_invoice_payments(params, opts) do
       InvoicePayment.list(params, opts)
+    end
+
+    def list_charges(params, opts) do
+      Charge.list(params, opts)
     end
 
     def create_refund(params, opts) do

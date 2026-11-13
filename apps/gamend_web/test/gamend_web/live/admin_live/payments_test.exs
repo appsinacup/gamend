@@ -9,6 +9,8 @@ defmodule GamendWeb.AdminLive.PaymentsTest do
   alias Gamend.Repo
 
   defmodule StripeReconcileAdapter do
+    def checkout_decline(_session), do: nil
+
     def retrieve_checkout_session("cs_paid_" <> _rest = session_id) do
       {:ok,
        %{

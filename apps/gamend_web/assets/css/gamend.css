@@ -279,6 +279,25 @@
 [data-theme="dark"] .changelog-pill-plan     { background: #01579b; color: #e1f5fe; }
 [data-theme="dark"] .changelog-pill-other    { background: #283593; color: #c5cae9; }
 
+/* ─── Dropdown menus ───
+   A dropdown's menu is a box of a set width (`w-56`, `w-64`). daisyUI's
+   menu and each of its rows are wrapped columns, and a wrapped column is as
+   wide as its widest row, never the box: one long name in the account menu
+   pushed every row, its badge and its highlight past the edge. Unwrapped,
+   a row is the box's width, a name is cut and a long label breaks: between
+   words, inside one only when the word alone is wider than the box. A
+   group's rows (daisyUI: one line each, cut by the group) break the same. */
+.menu.dropdown-content,
+.menu.dropdown-content :where(li) {
+  flex-wrap: nowrap;
+}
+.menu.dropdown-content :where(li) {
+  overflow-wrap: anywhere;
+}
+.menu.dropdown-content :where(li ul) {
+  white-space: normal;
+}
+
 /* ─── Mobile touch targets ───
    Interactive controls meet the 44px minimum touch target on devices that
    don't support hover (phones, tablets): every button, input and select is

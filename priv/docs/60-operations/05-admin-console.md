@@ -67,7 +67,7 @@ A user with `is_admin` set can open the console; everyone else gets redirected. 
 
 | Page | What it does |
 |---|---|
-| [/admin/settings](/admin/settings) | Every declared setting and every variable a loaded plugin declares, with its effective value and where it came from. Read-only, since settings resolve once at boot. Limits are the Limits group, by area; **Changed from default** narrows to what this server overrides. **Download .env** writes them all to a file, secrets in the clear, after a recent sign-in. |
+| [/admin/settings](/admin/settings) | Every declared setting and every variable a loaded plugin declares, with its effective value and where it came from. Read-only, since settings resolve once at boot. Limits are the Limits group, by area; **Changed from default** narrows to what this server overrides. **Download .env** writes them all to a file, secrets in the clear: it asks for the password again (an account that signs in only through a provider needs a recent sign-in instead). |
 | [/admin/plugins](/admin/plugins) | The loaded plugins and their status, reload, bundle build, protobuf schema coverage, and calling any exported function: pick a plugin and a function, give it arguments, see the answer and how long it took. |
 | [/admin/theme](/admin/theme) | The theme as resolved: branding images and their dark variants, copy, pages, navigation, footer, raw JSON. |
 | [/admin/runtime](/admin/runtime) | Read-only introspection of what the code actually loaded: hooks, protobuf messages, channels and realtime events, an ER diagram of the data model, scheduled jobs, advisory locks and migration status. |

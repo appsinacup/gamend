@@ -1,5 +1,6 @@
 defmodule GamendWeb.Api.V1.NotificationControllerTest do
   use GamendWeb.ConnCase
+  use Oban.Testing, repo: Gamend.Repo
 
   alias Gamend.AccountsFixtures
   alias Gamend.Friends
@@ -64,6 +65,30 @@ defmodule GamendWeb.Api.V1.NotificationControllerTest do
     assert resp["title"] == "Game invite"
     assert resp["content"] == "Join my lobby!"
     assert resp["metadata"]["lobby_id"] == 42
+  end
+
+  test "POST /api/v1/notifications cannot name the notice's group or send its email now", %{
+    conn: conn
+  } do
+    {a, b} = make_friends()
+
+    resp =
+      conn
+      |> auth_conn(a)
+      |> post("/api/v1/notifications", %{
+        user_id: b.id,
+        title: "Your account",
+        metadata: %{"group" => "account", "email_now" => true, "lobby_id" => "x"}
+      })
+      |> json_response(201)
+      |> Map.fetch!("data")
+
+    assert resp["metadata"] == %{"lobby_id" => "x"}
+
+    [stored] = Notifications.list_recent_notifications(b.id, 10)
+    assert stored.metadata == %{"lobby_id" => "x"}
+    assert Notifications.group_of(stored) == nil
+    assert [] == all_enqueued(worker: "GamendWeb.Workers.NotificationEmail")
   end
 
   test "POST /api/v1/notifications fails when not friends", %{conn: conn} do

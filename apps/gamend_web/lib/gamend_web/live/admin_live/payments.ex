@@ -24,7 +24,7 @@ defmodule GamendWeb.AdminLive.Payments do
   require GamendWeb.CheckboxValue, as: CheckboxValue
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     pages = Map.new(@sections, &{&1, 1})
     page_sizes = Map.new(@sections, &{&1, @default_page_size})
 
@@ -39,6 +39,7 @@ defmodule GamendWeb.AdminLive.Payments do
      |> assign(:selected_product, nil)
      |> assign(:provider_product_form, nil)
      |> assign(:selected_provider_product, nil)
+     |> GamendWeb.UrlState.from_url(params)
      |> reload_all()}
   end
 

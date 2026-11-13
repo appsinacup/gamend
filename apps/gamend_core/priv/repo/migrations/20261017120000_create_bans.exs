@@ -9,10 +9,15 @@ defmodule Gamend.Repo.Migrations.CreateBans do
   """
   # The rows the data copy writes, typed so ids and times dump as the adapter
   # stores them. Defined before `use Ecto.Migration`, whose `timestamps/1`
-  # would clash with the schema's inside a nested module.
+  # would clash with the schema's inside a nested module. The keys are what
+  # `use Gamend.Schema` set on 2026-11-13, written out so a change to it cannot
+  # change this migration; every id is given (`id/0`).
   defmodule Row do
     @moduledoc false
-    use Gamend.Schema
+    use Ecto.Schema
+
+    @primary_key {:id, Ecto.UUID, autogenerate: false}
+    @foreign_key_type Ecto.UUID
 
     schema "bans" do
       field(:kind, :string)
@@ -25,7 +30,10 @@ defmodule Gamend.Repo.Migrations.CreateBans do
 
   defmodule IpRow do
     @moduledoc false
-    use Gamend.Schema
+    use Ecto.Schema
+
+    @primary_key {:id, Ecto.UUID, autogenerate: false}
+    @foreign_key_type Ecto.UUID
 
     schema "ip_bans" do
       field(:ip, :string)
@@ -75,7 +83,7 @@ defmodule Gamend.Repo.Migrations.CreateBans do
       )
 
     rows =
-      Enum.map(rows, &Map.merge(&1, %{id: Gamend.UUIDv7.generate(), kind: "ip", source: "admin"}))
+      Enum.map(rows, &Map.merge(&1, %{id: id(), kind: "ip", source: "admin"}))
 
     if rows != [], do: repo().insert_all(Row, rows)
 
@@ -111,9 +119,12 @@ defmodule Gamend.Repo.Migrations.CreateBans do
         )
       )
 
-    rows = rows |> Enum.uniq_by(& &1.ip) |> Enum.map(&Map.put(&1, :id, Gamend.UUIDv7.generate()))
+    rows = rows |> Enum.uniq_by(& &1.ip) |> Enum.map(&Map.put(&1, :id, id()))
     if rows != [], do: repo().insert_all(IpRow, rows)
 
     drop table(:bans)
   end
+
+  # `Gamend.UUIDv7.generate/0` as it was on 2026-11-13.
+  defp id, do: Ecto.UUID.generate(version: 7, precision: :monotonic)
 end

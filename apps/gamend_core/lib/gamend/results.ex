@@ -94,27 +94,35 @@ defmodule Gamend.Results do
   def record(%Result{status: ResultStatus.ended()}, _key, _value, _metadata), do: {:error, :ended}
 
   # The struct's status is an early refusal only: it was read before, maybe
-  # long before (`record_lobby/4`'s list, a caller's own copy). The result is
-  # read again under its lock, where `finish/1` writes too, so an event lands
-  # before the end or is refused, and the cap counts what is really there.
-  # Checked against the struct and counted with no lock, two events at the
-  # cap both passed it, and an event recorded beside `finish/1` landed after
-  # the play had ended.
+  # long before (`record_lobby/4`'s list, a caller's own copy). The event
+  # takes its place on the result's `event_count` with one conditional update
+  # (still open, under the cap), under the lock `finish/1` writes in too, so
+  # an event lands before the end or is refused. Checked against the struct
+  # and counted with no lock, two events at the cap both passed it, and an
+  # event recorded beside `finish/1` landed after the play had ended; counted
+  # under the lock, each event read all of its result's before it.
   def record(%Result{} = result, key, value, metadata) when is_binary(key) do
+    max = Gamend.Limits.get(:max_result_events)
+
     with_result_lock(result.id, fn ->
-      case Repo.get(Result, result.id) do
-        nil ->
-          Repo.rollback(:not_found)
-
-        %Result{status: ResultStatus.ended()} ->
-          Repo.rollback(:ended)
-
-        %Result{} = current ->
-          if count_events(current.id) >= Gamend.Limits.get(:max_result_events),
-            do: Repo.rollback(:too_many_events),
-            else: insert_event(current, key, value, metadata)
+      from(r in Result,
+        where: r.id == ^result.id and r.status == ^ResultStatus.open() and r.event_count < ^max
+      )
+      |> Repo.compare_and_set(inc: [event_count: 1])
+      |> case do
+        {:ok, current} -> insert_event(current, key, value, metadata)
+        {:error, :precondition_failed} -> Repo.rollback(refusal(result.id))
       end
     end)
+  end
+
+  # Why a result took no event: gone, over, or full.
+  defp refusal(result_id) do
+    case Repo.get(Result, result_id) do
+      nil -> :not_found
+      %Result{status: ResultStatus.ended()} -> :ended
+      %Result{} -> :too_many_events
+    end
   end
 
   # Pushes wait for the commit (`Gamend.Broadcast`).

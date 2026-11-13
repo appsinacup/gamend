@@ -28,7 +28,7 @@ defmodule GamendWeb.AdminLive.Reports do
   require Gamend.Reports.ReportStatus, as: ReportStatus
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     {:ok,
      socket
      |> assign(:page_title, "Admin · Reports")
@@ -42,6 +42,7 @@ defmodule GamendWeb.AdminLive.Reports do
      })
      |> assign(:kinds, Reports.kinds())
      |> close_form()
+     |> GamendWeb.UrlState.from_url(params)
      |> reload()}
   end
 

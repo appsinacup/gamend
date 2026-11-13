@@ -345,12 +345,13 @@ defmodule GamendWeb.AdminLive.Connections do
     keys: [conn_page: [param: UrlParam.page()], conn_filter: [param: UrlParam.filter()]]
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     if connected?(socket), do: schedule_refresh()
 
     socket =
       socket
       |> assign(conn_page: 1, conn_filter: FilterValue.everything())
+      |> GamendWeb.UrlState.from_url(params)
       |> assign_all()
 
     {:ok, socket}

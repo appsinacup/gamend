@@ -13,6 +13,10 @@ defmodule Gamend.Repo.Migrations.CreateSecrets do
   Both adapters, as ever: no Postgres-only types, every index named.
   """
 
+  # Drift, accepted (2026-11-13): until 48ba1dbe5 (2026-11-01) this declared
+  # its own `:binary_id` key, which SQLite leaves nullable; since, it takes
+  # the repo's `migration_primary_key` (`null: false`). SQLite databases
+  # created before keep a nullable `id` (see `20260715210000`).
   def change do
     create table(:secrets) do
       # What owns this, without core having to know what that is. A host says

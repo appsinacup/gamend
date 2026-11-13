@@ -165,15 +165,15 @@ defmodule GamendWeb.AdminLive.QuestCodes do
     codes = Quests.list_codes(key, page: page, page_size: page_size, search: search)
     count = Quests.count_codes(key, search: search)
 
+    # One statement for the page's redeemers, not one per code.
+    used_by = codes |> Enum.reject(&(&1.uses == 0)) |> Enum.map(& &1.id) |> Codes.used_by_codes()
+
     socket
     |> assign(:codes, codes)
-    |> assign(:used_by, Map.new(codes, &{&1.id, used_by(&1)}))
+    |> assign(:used_by, Map.new(codes, &{&1.id, Map.get(used_by, &1.id, [])}))
     |> assign(:count, count)
     |> assign(:total_pages, max(LiveHelpers.total_pages(count, page_size), 1))
   end
-
-  defp used_by(%{uses: 0}), do: []
-  defp used_by(code), do: Codes.used_by(code.id)
 
   defp uses_text(%{max_uses: nil, uses: uses}), do: "#{uses} / every player"
   defp uses_text(%{max_uses: max, uses: uses}), do: "#{uses} / #{max}"

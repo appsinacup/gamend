@@ -49,7 +49,7 @@ defmodule GamendWeb.Icons do
 
   # The other sets the `hero-*` classes are masks of (`assets/vendor/heroicons.js`),
   # by the name in their URL (`/icons/outline/trophy.svg`), served beside the
-  # solid one by `GamendWeb.IconController`. Keyed by strings: a request's
+  # solid one by `GamendWeb.Plugs.Icons`. Keyed by strings: a request's
   # name never becomes an atom.
   @set_dirs %{"outline" => "24/outline", "mini" => "20/solid", "micro" => "16/solid"}
   @sets_root Path.expand("../..", @icons_dir)

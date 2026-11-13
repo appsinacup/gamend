@@ -41,9 +41,9 @@ defmodule Gamend.Matchmaking.Match do
   require Gamend.ReadyChecks.CheckStatus, as: CheckStatus
   require Gamend.ReadyChecks.ParticipantState, as: ParticipantState
 
-  # The sweep starts its matches one after another, and a claimed ticket is
-  # held for a minute (`Gamend.Matchmaking`): a game's answer must come well
-  # inside that, not take the hooks' own default of a minute.
+  # A claimed ticket is held for a minute from the moment its match starts
+  # (`Gamend.Matchmaking.restamp/1`): a game's answer must come well inside
+  # that, not take the hooks' own default of a minute.
   @seat_hook_timeout_ms 5_000
 
   # Who a match seats is the game's or the queue's choice, and neither a

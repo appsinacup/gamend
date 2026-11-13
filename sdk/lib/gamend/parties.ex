@@ -465,6 +465,8 @@ defmodule Gamend.Parties do
     any member and anyone already seated answers `{:error, :blocked}`, and the
     game's `before_lobby_join` is asked for every member (`"party_id"` in its
     opts), the first refusal answering `{:error, {:hook_rejected, reason}}`.
+    A member who joined or left the party meanwhile answers
+    `{:error, :state_changed}`, with nobody seated.
     
   """
   @spec join_lobby_with_party(Gamend.Accounts.User.t(), Ecto.UUID.t(), map()) ::

@@ -320,6 +320,47 @@ defmodule GamendWeb.LiveHelpers do
   def error_message(:registration_closed), do: gettext("Registration is closed.")
   def error_message(_reason), do: nil
 
+  # ── Coalesced reloads ───────────────────────────────────────────────────
+  #
+  # A broadcast that only says "something moved" comes in bursts: a game
+  # reports quest progress several times a second, every quest edit anywhere is
+  # `{:quests_changed}`, a friend's tabs go on- and offline. A page that
+  # reloaded on each ran its queries once per message. These turn a burst into
+  # one reload, sent to the LiveView as `message` a moment after the first.
+
+  @reload_after_ms 500
+
+  @doc """
+  Sends `message` to this LiveView in `ms`, unless it is already on its way:
+  the broadcasts before it arrives ride on that one. Its handler calls
+  `reloaded/2` and reloads. The pending set is a private, not an assign, so
+  scheduling renders nothing.
+  """
+  @spec reload_soon(Phoenix.LiveView.Socket.t(), term(), non_neg_integer()) ::
+          Phoenix.LiveView.Socket.t()
+  def reload_soon(socket, message, ms \\ @reload_after_ms) do
+    pending = pending_reloads(socket)
+
+    if MapSet.member?(pending, message) do
+      socket
+    else
+      Process.send_after(self(), message, ms)
+      Phoenix.LiveView.put_private(socket, :gamend_reloads, MapSet.put(pending, message))
+    end
+  end
+
+  @doc "`message` has arrived: the next `reload_soon/3` for it schedules another."
+  @spec reloaded(Phoenix.LiveView.Socket.t(), term()) :: Phoenix.LiveView.Socket.t()
+  def reloaded(socket, message) do
+    Phoenix.LiveView.put_private(
+      socket,
+      :gamend_reloads,
+      MapSet.delete(pending_reloads(socket), message)
+    )
+  end
+
+  defp pending_reloads(socket), do: Map.get(socket.private, :gamend_reloads, MapSet.new())
+
   # ── Payment labels ──────────────────────────────────────────────────────
   #
   # Payments store lowercase codes ("stripe", "requires_action",

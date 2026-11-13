@@ -9,10 +9,15 @@ defmodule Gamend.Repo.Migrations.MoveChatMutesToBans do
 
   # The rows the copy writes, typed so ids and times dump as the adapter stores
   # them. Defined before `use Ecto.Migration`, whose `timestamps/1` would clash
-  # with the schema's inside a nested module.
+  # with the schema's inside a nested module. The keys are what
+  # `use Gamend.Schema` set on 2026-11-13, written out so a change to it cannot
+  # change this migration; every id is copied from the row it came from.
   defmodule BanRow do
     @moduledoc false
-    use Gamend.Schema
+    use Ecto.Schema
+
+    @primary_key {:id, Ecto.UUID, autogenerate: false}
+    @foreign_key_type Ecto.UUID
 
     schema "bans" do
       field(:kind, :string)
@@ -31,7 +36,10 @@ defmodule Gamend.Repo.Migrations.MoveChatMutesToBans do
 
   defmodule MuteRow do
     @moduledoc false
-    use Gamend.Schema
+    use Ecto.Schema
+
+    @primary_key {:id, Ecto.UUID, autogenerate: false}
+    @foreign_key_type Ecto.UUID
 
     schema "chat_mutes" do
       field(:user_id, Ecto.UUID)
@@ -46,7 +54,10 @@ defmodule Gamend.Repo.Migrations.MoveChatMutesToBans do
 
   defmodule UserRow do
     @moduledoc false
-    use Gamend.Schema
+    use Ecto.Schema
+
+    @primary_key {:id, Ecto.UUID, autogenerate: false}
+    @foreign_key_type Ecto.UUID
 
     schema "users" do
       field(:is_admin, :boolean)

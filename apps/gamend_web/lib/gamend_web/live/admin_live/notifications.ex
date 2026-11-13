@@ -13,7 +13,7 @@ defmodule GamendWeb.AdminLive.Notifications do
     keys: [:page, :page_size, filters: [keys: @filter_keys]]
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     user = Scope.user(socket.assigns.current_scope)
 
     socket =
@@ -41,6 +41,7 @@ defmodule GamendWeb.AdminLive.Notifications do
           as: :notification
         )
       )
+      |> GamendWeb.UrlState.from_url(params)
       |> reload_notifications()
 
     {:ok, socket}

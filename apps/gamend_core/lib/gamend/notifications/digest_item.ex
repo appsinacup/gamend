@@ -12,6 +12,8 @@ defmodule Gamend.Notifications.DigestItem do
     field :subject, :string
     field :text, :string, default: ""
     field :url, :string
+    # How many sweeps queued this notice's digest (`Gamend.Notifications.Digest`).
+    field :sweeps, :integer, default: 0
 
     timestamps(type: :utc_datetime, updated_at: false)
   end

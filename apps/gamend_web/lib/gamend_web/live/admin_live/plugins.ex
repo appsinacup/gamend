@@ -28,7 +28,7 @@ defmodule GamendWeb.AdminLive.Plugins do
   @json "json"
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     # The endpoint can take traffic briefly before the plugins finish loading
     # (after a node restart): look once more shortly after connecting.
     if connected?(socket), do: Process.send_after(self(), :refresh_plugins, 250)
@@ -51,6 +51,7 @@ defmodule GamendWeb.AdminLive.Plugins do
      )
      |> assign_build_form()
      |> load_plugins()
+     |> GamendWeb.UrlState.from_url(params)
      |> assign_call()}
   end
 

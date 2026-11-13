@@ -16,7 +16,8 @@ defmodule GamendWeb.UrlState do
   function from socket to socket; without `:reload`, the page's own
   `handle_params/3` loads, and runs after the keys are read. Other query
   parameters stay as they are. So `mount/3` gives each key its default and an
-  event only assigns, as pages have always done.
+  event only assigns, as pages have always done. A `mount/3` that loads reads
+  the URL first (`from_url/2`), and the link costs one load, not two.
 
   A key's value is read by the type of its default: an integer (`:page` and any
   `*_page` never below 1, `*_page_size` through `Gamend.Limits`), a boolean, a
@@ -126,6 +127,33 @@ defmodule GamendWeb.UrlState do
   @doc false
   def after_event({:noreply, socket}), do: {:noreply, write(socket)}
   def after_event({:reply, reply, socket}), do: {:reply, reply, write(socket)}
+
+  @doc """
+  Reads the URL into the keys now, in `mount/3`, once each has its default and
+  before the page loads, so it loads once, as the link asks. Without it the
+  page loads its defaults, and `handle_params/3` loads again whenever the URL
+  names a key: twice a render, four times for a deep link.
+
+      def mount(params, _session, socket) do
+        {:ok, socket |> assign(page: 1, status: nil) |> UrlState.from_url(params) |> reload()}
+      end
+
+  What the keys hold here is their default, as it is for the first read
+  without it.
+  """
+  @spec from_url(LiveView.Socket.t(), map() | atom()) :: LiveView.Socket.t()
+  def from_url(socket, params) when is_map(params) do
+    %{keys: keys} = socket.view.__url_state__()
+    defaults = Map.new(keys, fn {key, _opts} -> {key, socket.assigns[key]} end)
+    decoded = decode(keys, params, kept(keys, defaults, socket))
+
+    socket
+    |> LiveView.put_private(@private, %{keys: keys, defaults: defaults})
+    |> assign(merged(keys, decoded, socket.assigns))
+  end
+
+  # A view not mounted at the router (`live_render/3`) has no URL.
+  def from_url(socket, _params), do: socket
 
   @doc """
   Writes the keys to the URL now. Events do it by themselves; this is for state

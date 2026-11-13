@@ -1545,9 +1545,11 @@ defmodule Gamend.Parties do
     # each of them as for any join; a refusal unmakes the lobby below. Then a
     # transaction with advisory lock, so either ALL members join or NONE do.
     with :ok <- run_party_join_hooks(non_leader_members, lobby, party, %{}) do
-      Lock.serialize(:lobby, lobby.id, fn ->
-        Enum.map(non_leader_members, fn member ->
-          seat_member(member.id, lobby.id)
+      with_party_as_read(party, members, fn ->
+        Lock.serialize(:lobby, lobby.id, fn ->
+          Enum.map(non_leader_members, fn member ->
+            seat_member(member.id, lobby.id)
+          end)
         end)
       end)
     end
@@ -1613,6 +1615,8 @@ defmodule Gamend.Parties do
   any member and anyone already seated answers `{:error, :blocked}`, and the
   game's `before_lobby_join` is asked for every member (`"party_id"` in its
   opts), the first refusal answering `{:error, {:hook_rejected, reason}}`.
+  A member who joined or left the party meanwhile answers
+  `{:error, :state_changed}`, with nobody seated.
   """
   @spec join_lobby_with_party(User.t(), Ecto.UUID.t(), map()) :: {:ok, map()} | {:error, term()}
   def join_lobby_with_party(%User{} = user, lobby_id, opts \\ %{}) when is_binary(lobby_id) do
@@ -1725,16 +1729,18 @@ defmodule Gamend.Parties do
     end
   end
 
-  defp join_all_members_to_lobby(members, lobby, _party) do
+  defp join_all_members_to_lobby(members, lobby, party) do
     # Use a transaction with advisory lock so the space check + member joins
     # are atomic. This prevents TOCTOU race conditions on PostgreSQL.
-    Lock.serialize(:lobby, lobby.id, fn ->
-      # The seats again, under the lock: space, and the blocks a solo join
-      # checks there.
-      case check_party_seats(lobby, Enum.map(members, & &1.id)) do
-        :ok -> Enum.map(members, &seat_member(&1.id, lobby.id))
-        {:error, reason} -> Repo.rollback(reason)
-      end
+    with_party_as_read(party, members, fn ->
+      Lock.serialize(:lobby, lobby.id, fn ->
+        # The seats again, under the lock: space, and the blocks a solo join
+        # checks there.
+        case check_party_seats(lobby, Enum.map(members, & &1.id)) do
+          :ok -> Enum.map(members, &seat_member(&1.id, lobby.id))
+          {:error, reason} -> Repo.rollback(reason)
+        end
+      end)
     end)
     |> case do
       {:ok, updated_members} ->
@@ -1771,6 +1777,30 @@ defmodule Gamend.Parties do
         Logger.warning("Party lobby join rolled back: #{inspect(reason)}")
         {:error, reason}
     end
+  end
+
+  # The seats under the party's lock (then the lobby's, the one order these two
+  # are taken in), and only while the party is the one the gates were run
+  # for. The members were read with no lock: one who left the party since was
+  # seated with it, one who joined since was left out, and neither had been
+  # asked about by the hooks. A party that changed answers `:state_changed`
+  # and nobody is seated.
+  defp with_party_as_read(%Party{id: party_id}, members, seat) do
+    read = MapSet.new(members, & &1.id)
+
+    Lock.serialize(:party, party_id, fn ->
+      now =
+        from(u in User, where: u.party_id == ^party_id, select: u.id)
+        |> Repo.all()
+        |> MapSet.new()
+
+      if now != read, do: Repo.rollback(:state_changed)
+
+      case seat.() do
+        {:ok, seated} -> seated
+        {:error, reason} -> Repo.rollback(reason)
+      end
+    end)
   end
 
   # ---------------------------------------------------------------------------

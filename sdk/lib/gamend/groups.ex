@@ -1183,6 +1183,20 @@ defmodule Gamend.Groups do
   end
 
   @doc ~S"""
+    Which of `user_ids` are members of the group, without reading its whole member list.
+  """
+  @spec member_ids_among(Ecto.UUID.t(), [Ecto.UUID.t()]) :: MapSet.t(Ecto.UUID.t())
+  def member_ids_among(_group_id, _user_ids) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Groups.member_ids_among/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Send a notification to all members of a group (except the sender).
     
     **Server-side only.** There is deliberately no player-facing endpoint for
@@ -1288,6 +1302,28 @@ defmodule Gamend.Groups do
 
       _ ->
         raise "Gamend.Groups.request_join/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    The players a group's invite search offers: `Gamend.Accounts.search_users/2`'s
+    match (a display name or username prefix, or an exact id) with the group's
+    members left out by the query. Filtered after the page, a page of members
+    came back empty, and the filter read every member with their user first.
+    
+    See `t:Gamend.Types.pagination_opts/0` for the options.
+    
+  """
+  @spec search_invitable_users(Ecto.UUID.t(), String.t(), Gamend.Types.pagination_opts()) :: [
+          Gamend.Accounts.User.t()
+        ]
+  def search_invitable_users(_group_id, _query, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        []
+
+      _ ->
+        raise "Gamend.Groups.search_invitable_users/3 is a stub - only available at runtime on Gamend"
     end
   end
 

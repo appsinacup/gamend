@@ -236,7 +236,10 @@ defmodule Gamend.Payments.StripePlanChange do
       "at" => DateTime.utc_now(:second) |> DateTime.to_iso8601()
     }
 
-    Gamend.AfterCommit.transaction(fn ->
+    # Both keys' rows locked (`Payments.with_entitlement_locks/3`): the move
+    # reads and rewrites them, and a grant to either would otherwise land
+    # between.
+    Payments.with_entitlement_locks(purchase.user_id, [from_key, to_key], fn ->
       with :ok <- clear_key(purchase, from_key, to_key),
            {:ok, moved} <-
              purchase

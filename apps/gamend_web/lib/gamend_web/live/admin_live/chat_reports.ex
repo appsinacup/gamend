@@ -39,7 +39,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
   @permanent BanDuration.permanent()
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket =
       socket
       |> assign(:page_title, "Admin · Chat reports")
@@ -48,6 +48,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
       |> assign(:status_filter, "")
       |> assign(:user_filter, "")
       |> close_form()
+      |> GamendWeb.UrlState.from_url(params)
       |> reload()
 
     {:ok, socket}

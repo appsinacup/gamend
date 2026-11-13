@@ -30,7 +30,7 @@ defmodule GamendWeb.RedeemLive do
     keys: [:page, :quest, page_size: [min: 24]]
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     user = get_user(socket)
 
     if connected?(socket) do
@@ -49,6 +49,7 @@ defmodule GamendWeb.RedeemLive do
      |> assign(:connected?, connected?(socket))
      |> assign(:needs_account, false)
      |> assign_form()
+     |> GamendWeb.UrlState.from_url(params)
      |> load_entries()}
   end
 
@@ -94,11 +95,16 @@ defmodule GamendWeb.RedeemLive do
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size, min: 24) |> load_entries()}
 
+  # Every quest edit anywhere is `{:quests_changed}`: one reload covers a burst.
   @impl true
-  def handle_info({:quests_changed}, socket), do: {:noreply, load_entries(socket)}
+  def handle_info({:quests_changed}, socket),
+    do: {:noreply, LiveHelpers.reload_soon(socket, :reload_entries)}
 
   def handle_info({event, _payload}, socket) when event in [:quest_completed, :quest_claimed],
-    do: {:noreply, load_entries(socket)}
+    do: {:noreply, LiveHelpers.reload_soon(socket, :reload_entries)}
+
+  def handle_info(:reload_entries, socket),
+    do: {:noreply, socket |> LiveHelpers.reloaded(:reload_entries) |> load_entries()}
 
   def handle_info(_msg, socket), do: {:noreply, socket}
 

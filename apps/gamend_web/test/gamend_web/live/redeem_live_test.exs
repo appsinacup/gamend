@@ -51,6 +51,37 @@ defmodule GamendWeb.RedeemLiveTest do
 
   defp account_count, do: Repo.aggregate(User, :count)
 
+  # The repo queries `fun` runs, in any process: the dead render runs here,
+  # the connected one in the LiveView's.
+  defp count_queries(fun) do
+    test = self()
+    ref = make_ref()
+    handler = "redeem-queries-#{inspect(ref)}"
+
+    :telemetry.attach(
+      handler,
+      [:gamend, :repo, :query],
+      fn _event, _measurements, _meta, _config -> send(test, {:query, ref}) end,
+      nil
+    )
+
+    try do
+      fun.()
+    after
+      :telemetry.detach(handler)
+    end
+
+    count_messages(ref, 0)
+  end
+
+  defp count_messages(ref, count) do
+    receive do
+      {:query, ^ref} -> count_messages(ref, count + 1)
+    after
+      0 -> count
+    end
+  end
+
   describe "what it lists" do
     test "every open code-only quest, to anyone", %{conn: conn} do
       first = code_quest()
@@ -76,6 +107,23 @@ defmodule GamendWeb.RedeemLiveTest do
 
       assert has_element?(view, "#redeem-card-#{second.key}")
       assert_patch(view, "/redeem")
+    end
+
+    # `GamendWeb.UrlState.from_url/2`: mount reads the URL before it loads.
+    # Read after, the page loaded its defaults and then the link, on both
+    # renders.
+    test "a deep link loads once, as the plain page does", %{conn: conn} do
+      quest = code_quest()
+      code_quest()
+      # Warm what the first visit caches, so both counts start alike.
+      {:ok, _view, _html} = live(conn, "/redeem")
+
+      plain = count_queries(fn -> {:ok, _view, _html} = live(conn, "/redeem") end)
+
+      deep =
+        count_queries(fn -> {:ok, _view, _html} = live(conn, "/redeem?quest=#{quest.key}") end)
+
+      assert deep <= plain, "the deep link ran #{deep} queries, the plain page #{plain}"
     end
 
     test "a link to a quest that is not there still has the box", %{conn: conn} do

@@ -1177,11 +1177,26 @@ defmodule Gamend.Quests do
     end
   end
 
+  # A capped code counts its uses on its row, and the cap holds in that
+  # conditional update. An uncapped one has no count to keep: the update made
+  # every redeem of a public code wait on that one row, one after another.
+  # Its row is read `FOR SHARE` instead (`max_uses` is fixed at creation),
+  # which redeems hold side by side and a revoke's update waits for, so a
+  # code revoked is revoked for every redeem that commits after it.
+  defp take_code_use(%QuestCode{max_uses: nil} = code, _now) do
+    active? =
+      from(c in QuestCode, where: c.id == ^code.id and c.status == ^QuestCodeStatus.active())
+      |> Repo.lock_rows(:share)
+      |> Repo.exists?()
+
+    if active?, do: :ok, else: Repo.rollback(:code_not_found)
+  end
+
   defp take_code_use(code, now) do
     from(c in QuestCode,
       where:
         c.id == ^code.id and c.status == ^QuestCodeStatus.active() and
-          (is_nil(c.max_uses) or c.uses < c.max_uses)
+          not is_nil(c.max_uses) and c.uses < c.max_uses
     )
     |> Repo.compare_and_set(set: [updated_at: now], inc: [uses: 1])
     |> case do

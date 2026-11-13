@@ -77,7 +77,12 @@ config :gamend_core, Oban,
   queues: [default: 10, hooks: 20, mailers: 5, storage: 5, webhooks: 10, push: 10],
   plugins: [
     {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7},
-    {Oban.Plugins.Cron, crontab: [{"* * * * *", Gamend.Schedule.TickWorker}]}
+    {Oban.Plugins.Cron, crontab: [{"* * * * *", Gamend.Schedule.TickWorker}]},
+    # A job cut off by a restart stays `executing` for ever without it. The
+    # rescue is by time alone, so it waits well past core's longest job (a
+    # plugin hook's `call_timeout_ms`, a minute; a mail's 60 s timeout): one
+    # rescued while still running would run twice.
+    {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(30)}
   ]
 
 # Push notifications (Gamend.Push) need no compiled config: delivery

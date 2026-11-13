@@ -17,7 +17,8 @@ defmodule Gamend.Matchmaking do
   into a lobby. Two things keep the queue honest:
 
     * `Gamend.Accounts.Online.disconnected/2` cancels the user's tickets when
-      their last socket closes (a game's, or a website page's), and
+      their last socket closes (a game's, or a website page's) and none is
+      back a moment later (the next page's, a reconnect), and
     * `prune_offline/0` sweeps tickets whose owner the database no longer
       considers online — the safety net for tickets created over HTTP by a
       client that never opened a socket.
@@ -525,6 +526,33 @@ defmodule Gamend.Matchmaking do
       # whole group flipped them back to queued while their sweep was seating
       # them, and the next sweep claimed them a second time.
       _ = requeue(Enum.filter(claimed, &(&1.id in flipped)))
+      :conflict
+    end
+  end
+
+  @doc """
+  Moves a claim's mark to now, for a match about to start: a claimed ticket is
+  held for a minute from its mark, and a sweep starting many matches reached
+  the last of them after that. Answers the tickets with the new mark, or
+  `:conflict` when one of them is no longer held by the claim (cancelled by
+  an admin, say), putting the others back in the queue.
+  """
+  @spec restamp([Ticket.t()]) :: {:ok, [Ticket.t()]} | :conflict
+  def restamp(tickets) do
+    now = DateTime.utc_now()
+
+    {count, ids} =
+      tickets
+      |> held_by_claim()
+      |> select([t], t.id)
+      |> Repo.update_all(set: [matched_at: now, updated_at: now])
+
+    restamped = Enum.map(tickets, &%{&1 | matched_at: now})
+
+    if count == length(tickets) do
+      {:ok, restamped}
+    else
+      _ = requeue(Enum.filter(restamped, &(&1.id in ids)))
       :conflict
     end
   end

@@ -258,6 +258,34 @@ defmodule Gamend.QuestCodesTest do
       assert {:ok, _} = Quests.redeem_code(user().id, "ａｂｃ　１２３")
     end
 
+    test "a generated code typed with look-alike letters still redeems" do
+      quest = code_quest()
+      code(quest, %{token: "ABCD-0011-QRST"})
+      # An admin's own token keeps its letters, and its exact form wins.
+      code(quest, %{token: "GOLD"})
+
+      assert {:ok, _} = Quests.redeem_code(user().id, "abcd-0oIl-qrst")
+      assert %QuestCode{token: "GOLD"} = Codes.find("gold")
+      assert [%{token: "ABCD-0011-QRST"}] = Quests.list_codes(quest.key, search: "ABCD OOLL QRST")
+    end
+
+    test "an uncapped code's redeems leave its row alone, and its uses are counted" do
+      quest = code_quest()
+      code = code(quest, %{max_uses: nil})
+      stored = Repo.get!(QuestCode, code.id)
+
+      {:ok, _} = Quests.redeem_code(user().id, code.token)
+      {:ok, _} = Quests.redeem_code(user().id, code.token)
+
+      assert Repo.get!(QuestCode, code.id) == stored
+      assert Codes.get(code.id).uses == 2
+      assert [%{uses: 2}] = Quests.list_codes(quest.key)
+      assert [%{uses: 2}] = Codes.all(quest.key)
+
+      {:ok, _} = Quests.set_code_status(code.id, "revoked")
+      assert {:error, :code_not_found} = Quests.redeem_code(user().id, code.token)
+    end
+
     test "a key that pays nothing opens the gate" do
       quest = code_quest(%{key: "beta_access", rewards: []})
       code = code(quest)
@@ -523,6 +551,34 @@ defmodule Gamend.QuestCodesTest do
                Enum.sort([first.id, second.id])
 
       assert [_] = Codes.used_by(code.id, 1)
+    end
+
+    test "says who used each code of a page in one go, first redeemers first" do
+      quest = code_quest()
+      shared = code(quest, %{max_uses: nil})
+      single = code(quest)
+      unused = code(quest)
+      [a, b, c] = for _ <- 1..3, do: user()
+
+      for player <- [a, b, c], do: {:ok, _} = Quests.redeem_code(player.id, shared.token)
+      {:ok, _} = Quests.redeem_code(user().id, single.token)
+
+      used = Codes.used_by_codes([shared.id, single.id, unused.id], 2)
+
+      assert Enum.map(used[shared.id], & &1.id) == [a.id, b.id]
+      assert [_] = used[single.id]
+      refute Map.has_key?(used, unused.id)
+      assert Codes.used_by_codes([]) == %{}
+    end
+
+    test "the export reads every code in batches, oldest first" do
+      quest = code_quest()
+      codes = for _ <- 1..5, do: code(quest)
+
+      assert quest.key |> Codes.stream_all(2) |> Enum.map(& &1.id) ==
+               Enum.map(Codes.all(quest.key), & &1.id)
+
+      assert quest.key |> Codes.stream_all(2) |> Enum.count() == length(codes)
     end
 
     test "set_code_status/2 refuses what is not there" do

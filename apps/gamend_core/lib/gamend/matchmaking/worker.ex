@@ -31,6 +31,9 @@ defmodule Gamend.Matchmaking.Worker do
 
   @initial_delay_ms :timer.seconds(3)
 
+  # Matches started at once by one sweep.
+  @start_concurrency 8
+
   # Long enough to absorb the joins of a party arriving together or a burst of
   # players hitting queue at once, short enough that it reads as immediate.
   @nudge_debounce_ms 100
@@ -154,9 +157,36 @@ defmodule Gamend.Matchmaking.Worker do
 
     # A match that asks its players to accept first seats nobody yet: it
     # counts once the accept passes (`Match.accept_resolved/1`).
+    #
+    # Several at once: each start waits on the seat hook (up to 5 s), makes a
+    # lobby and asks `before_lobby_join` per player, and one after another a
+    # busy sweep reached its last matches after their claim's hold
+    # (`Gamend.Matchmaking`, a minute) had run out, so their players could
+    # queue again while being seated. Each match also moves its claim's mark
+    # to the moment it starts (`Matchmaking.restamp/1`).
     claimed
-    |> Enum.map(&Match.start/1)
-    |> Enum.count(&match?({:ok, _}, &1))
+    |> Task.async_stream(&start_held/1,
+      max_concurrency: @start_concurrency,
+      ordered: false,
+      timeout: :infinity
+    )
+    |> Enum.count(&match?({:ok, {:ok, _}}, &1))
+  end
+
+  # One match's start in its own task: a raise there would take the sweep
+  # (and its other matches) with it, so it is logged and answered instead.
+  defp start_held(tickets) do
+    case Matchmaking.restamp(tickets) do
+      {:ok, held} -> Match.start(held)
+      :conflict -> {:error, :no_longer_held}
+    end
+  rescue
+    e ->
+      Logger.error(
+        "matchmaking: match start failed: " <> Exception.format(:error, e, __STACKTRACE__)
+      )
+
+      {:error, :crashed}
   end
 
   defp claim_phase(proposed) do

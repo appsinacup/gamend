@@ -28,7 +28,7 @@ defmodule GamendWeb.AdminLive.Matchmaking do
   require Gamend.Matchmaking.TicketStatus, as: TicketStatus
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket =
       socket
       |> assign(:page_title, "Admin · Matchmaking")
@@ -36,6 +36,7 @@ defmodule GamendWeb.AdminLive.Matchmaking do
       |> assign(:page_size, 25)
       |> assign(:status_filter, FilterValue.everything())
       |> assign(:user_filter, "")
+      |> GamendWeb.UrlState.from_url(params)
       |> reload()
 
     {:ok, socket}

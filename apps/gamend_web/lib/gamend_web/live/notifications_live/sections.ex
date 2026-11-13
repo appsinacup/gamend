@@ -63,7 +63,7 @@ defmodule GamendWeb.NotificationsLive.Sections do
   # another group.
   defp stacks(section_key, rows, descriptions) do
     rows
-    |> group_in_order(&(&1.metadata["type"] || &1.id))
+    |> group_in_order(&(type_of(&1) || &1.id))
     |> Enum.map(fn {stack_key, notifications} ->
       %{
         key: section_key <> "-" <> stack_key,
@@ -72,6 +72,11 @@ defmodule GamendWeb.NotificationsLive.Sections do
       }
     end)
   end
+
+  # A stored row's metadata is whatever was written then: only a string type
+  # names a stack.
+  defp type_of(%{metadata: %{"type" => type}}) when is_binary(type) and type != "", do: type
+  defp type_of(_notification), do: nil
 
   # `Enum.group_by/2` answers a map, which forgets which key came first.
   defp group_in_order(items, key_fun) do

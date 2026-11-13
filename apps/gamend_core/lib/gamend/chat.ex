@@ -955,7 +955,10 @@ defmodule Gamend.Chat do
   `{:error, :not_found}` if the message does not exist or
   `{:error, :forbidden}` if the caller is not the sender.
 
-  An edit is moderated as a send is (`send_message/2`): a muted sender gets
+  An edit is checked as a send is (`send_message/2`): a sender who may no
+  longer write there (blocked by the friend, out of the group, lobby or
+  party) gets that send's error (`:blocked`, `:not_friends`,
+  `:not_in_group`, `:not_in_lobby`, `:not_in_party`), a muted sender gets
   `{:error, :muted}`, a blocked word `{:error, :blocked_content}`, a masked
   word is masked and a flagged one reported, then the `before_chat_message`
   hook may change or refuse it (`{:error, {:hook_rejected, reason}}`). The
@@ -969,6 +972,11 @@ defmodule Gamend.Chat do
           | {:error,
              :not_found
              | :forbidden
+             | :blocked
+             | :not_friends
+             | :not_in_group
+             | :not_in_lobby
+             | :not_in_party
              | :muted
              | :blocked_content
              | :user_not_found
@@ -982,7 +990,8 @@ defmodule Gamend.Chat do
       %Message{sender_id: ^user_id} = message ->
         where = %{"chat_type" => message.chat_type, "chat_ref_id" => message.chat_ref_id}
 
-        with :ok <- check_mute(user_id, where),
+        with :ok <- validate_chat_access(user_id, where),
+             :ok <- check_mute(user_id, where),
              {:ok, attrs, flagged} <- apply_word_filter(attrs, message.metadata),
              {:ok, attrs} <- run_before_hook(user_id, edit_context(attrs, message)) do
           do_update_message(message, Map.take(attrs, @editable_attrs), flagged)

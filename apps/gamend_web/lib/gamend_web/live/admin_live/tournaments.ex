@@ -203,7 +203,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
               </h3>
               <div class="flex flex-wrap gap-2">
                 <button
-                  :if={@detail.tournament.state == "scheduled"}
+                  :if={@detail.tournament.state == TournamentState.scheduled()}
                   phx-click="force_registration"
                   class="btn btn-surface btn-sm"
                 >
@@ -218,7 +218,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                   Draw now
                 </button>
                 <button
-                  :if={@detail.tournament.state == "running"}
+                  :if={@detail.tournament.state == TournamentState.running()}
                   phx-click="force_finish"
                   data-confirm
                   class="btn btn-surface btn-sm"

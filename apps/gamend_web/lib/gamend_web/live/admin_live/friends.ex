@@ -25,7 +25,7 @@ defmodule GamendWeb.AdminLive.Friends do
   require Gamend.Friends.FriendshipStatus, as: FriendshipStatus
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket =
       socket
       |> assign(:page_title, "Admin · Friends")
@@ -33,6 +33,7 @@ defmodule GamendWeb.AdminLive.Friends do
       |> assign(:page_size, 25)
       |> assign(:status_filter, FilterValue.everything())
       |> assign(:user_filter, "")
+      |> GamendWeb.UrlState.from_url(params)
       |> reload()
 
     {:ok, socket}

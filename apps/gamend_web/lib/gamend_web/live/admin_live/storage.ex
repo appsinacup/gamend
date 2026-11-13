@@ -18,7 +18,7 @@ defmodule GamendWeb.AdminLive.Storage do
   @admin "admin"
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket =
       socket
       |> assign(:page_title, "Admin · Storage")
@@ -34,6 +34,7 @@ defmodule GamendWeb.AdminLive.Storage do
         max_entries: 1,
         max_file_size: Gamend.Limits.get(:max_upload_bytes)
       )
+      |> GamendWeb.UrlState.from_url(params)
       |> reload()
 
     {:ok, socket}

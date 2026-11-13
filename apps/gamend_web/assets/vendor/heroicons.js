@@ -13,7 +13,7 @@ const candidates = [
 ]
 
 // Each class's suffix, its folder in the dep, and where the site serves the
-// file (`GamendWeb.IconController`): the 24px solid set at `/icons/<name>.svg`,
+// file (`GamendWeb.Plugs.Icons`): the 24px solid set at `/icons/<name>.svg`,
 // the URL `<.entity_icon>` draws too, so a browser keeps one copy of it.
 const sets = [
   ["", "/24/outline", "/icons/outline/"],

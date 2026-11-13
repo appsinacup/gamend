@@ -340,7 +340,10 @@ defmodule GamendWeb.Api.V1.PartyController do
     },
     responses: [
       created: {"Lobby created with all party members", "application/json", LobbyResponse},
-      conflict: Schemas.error("A member is already in a lobby (member_in_lobby)"),
+      conflict:
+        Schemas.error(
+          "A member is already in a lobby (member_in_lobby), or the party changed while it was being seated (state_changed)"
+        ),
       forbidden:
         Schemas.error(
           "Not the leader, the lobby is too small for the party, a member is offline " <>
@@ -379,7 +382,10 @@ defmodule GamendWeb.Api.V1.PartyController do
     },
     responses: [
       ok: {"Lobby joined with all party members", "application/json", LobbyResponse},
-      conflict: Schemas.error("A member is already in a lobby (member_in_lobby)"),
+      conflict:
+        Schemas.error(
+          "A member is already in a lobby (member_in_lobby), or the party changed while it was being seated (state_changed)"
+        ),
       forbidden:
         Schemas.error(
           "Cannot join (not enough space, locked, wrong password, a member offline, " <>

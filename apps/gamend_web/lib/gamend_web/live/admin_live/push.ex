@@ -13,7 +13,7 @@ defmodule GamendWeb.AdminLive.Push do
     keys: [:page, :page_size, filters: [keys: @filter_keys]]
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket =
       socket
       |> assign(:page, 1)
@@ -22,6 +22,7 @@ defmodule GamendWeb.AdminLive.Push do
       |> assign(:show_send, false)
       |> assign(:send_form, blank_send_form())
       |> assign(:stats, Push.token_stats())
+      |> GamendWeb.UrlState.from_url(params)
       |> reload_tokens()
 
     {:ok, socket}

@@ -850,7 +850,10 @@ defmodule Gamend.Chat do
     `{:error, :not_found}` if the message does not exist or
     `{:error, :forbidden}` if the caller is not the sender.
     
-    An edit is moderated as a send is (`send_message/2`): a muted sender gets
+    An edit is checked as a send is (`send_message/2`): a sender who may no
+    longer write there (blocked by the friend, out of the group, lobby or
+    party) gets that send's error (`:blocked`, `:not_friends`,
+    `:not_in_group`, `:not_in_lobby`, `:not_in_party`), a muted sender gets
     `{:error, :muted}`, a blocked word `{:error, :blocked_content}`, a masked
     word is masked and a flagged one reported, then the `before_chat_message`
     hook may change or refuse it (`{:error, {:hook_rejected, reason}}`). The
@@ -865,6 +868,11 @@ defmodule Gamend.Chat do
           | {:error,
              :not_found
              | :forbidden
+             | :blocked
+             | :not_friends
+             | :not_in_group
+             | :not_in_lobby
+             | :not_in_party
              | :muted
              | :blocked_content
              | :user_not_found

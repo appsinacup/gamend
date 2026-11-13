@@ -22,7 +22,6 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   use GamendWeb, :html
   import Phoenix.LiveView
 
-  alias Gamend.Accounts
   alias Gamend.Friends
   alias Gamend.Groups
   alias Gamend.Groups.Group
@@ -1501,20 +1500,13 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
   def handle_event("group_invite_search", %{"value" => query}, socket) do
     query = String.trim(query)
 
+    # Members are left out by the query: a page of ten, then filtered, could
+    # come back empty, and the filter read every member first.
     results =
-      if query == "" do
-        []
-      else
-        group_id = socket.assigns.group_detail.id
-
-        all_member_ids =
-          Groups.get_group_members(group_id)
-          |> Enum.map(& &1.user_id)
-          |> MapSet.new()
-
-        Accounts.search_users(query, page: 1, page_size: 10)
-        |> Enum.reject(fn u -> MapSet.member?(all_member_ids, u.id) end)
-      end
+      Groups.search_invitable_users(socket.assigns.group_detail.id, query,
+        page: 1,
+        page_size: 10
+      )
 
     {:noreply,
      socket
@@ -1677,7 +1669,8 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
     end
   end
 
-  defp reload_browse_groups(socket) do
+  @doc "Reloads only the directory of groups to browse: a group the reader is not in moved."
+  def reload_browse_groups(socket) do
     page = socket.assigns.browse_groups_page
     page_size = socket.assigns.browse_groups_page_size
     filters = socket.assigns.browse_groups_filters
@@ -1813,12 +1806,9 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
 
     case membership do
       %{role: role} ->
-        member_ids =
-          Groups.get_group_members(group.id) |> Enum.map(& &1.user_id) |> MapSet.new()
-
-        friends_not_in_group =
-          Friends.list_friends_for_user(user.id)
-          |> Enum.reject(fn f -> MapSet.member?(member_ids, f.id) end)
+        friends = Friends.list_friends_for_user(user.id)
+        member_ids = Groups.member_ids_among(group.id, Enum.map(friends, & &1.id))
+        friends_not_in_group = Enum.reject(friends, &MapSet.member?(member_ids, &1.id))
 
         join_requests = load_join_requests(role, user.id, group.id)
 

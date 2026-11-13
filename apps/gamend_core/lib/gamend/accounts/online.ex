@@ -12,10 +12,12 @@ defmodule Gamend.Accounts.Online do
       told, and the game's `after_socket_connected/3` called.
     * `heartbeat/1`: `last_seen_at` refreshed. A socket calls it every
       `heartbeat_ms/0`, so `StalePresenceSweeper` leaves a live player alone.
-    * `disconnected/2`: when no other socket of theirs is left, the user's
-      matchmaking tickets cancelled (an accept they were asked for declined)
-      and `users.is_online` cleared. Checked again a moment later for a
-      socket another node had not replicated yet.
+    * `disconnected/2`: when no other socket of theirs is left,
+      `users.is_online` cleared, then checked again a moment later: a socket
+      back by then (the next page's, a reconnect, one another node had not
+      replicated yet) puts the flag back, and with none the user's
+      matchmaking tickets are cancelled (an accept they were asked for
+      declined).
 
   `watch/2` does all three (as a `"page"`) for a process with no `terminate/2` to rely on:
   a LiveView's is not called when the process is killed or crashes. It
@@ -101,22 +103,16 @@ defmodule Gamend.Accounts.Online do
 
   @doc """
   `pid`, a socket of `user_id`'s, closed (or is closing). With no other
-  socket of theirs left, their matchmaking tickets are cancelled,
-  `users.is_online` is cleared and their lobby, party and groups told, then
-  checked again after a moment and the flag put back if a socket is there
-  after all.
+  socket of theirs left, `users.is_online` is cleared and their lobby, party
+  and groups told, then checked again after a moment: the flag is put back if
+  a socket is there after all, and otherwise their matchmaking tickets are
+  cancelled.
   """
   @spec disconnected(Ecto.UUID.t(), pid()) :: :ok
   def disconnected(user_id, pid) when is_binary(user_id) and is_pid(pid) do
     if Gamend.Presence.other_socket?(user_id, pid) do
       :ok
     else
-      # Their last socket: out of the queue, as a ticket must belong to
-      # someone who can be seated. Not before: a reload, a second tab or the
-      # game beside the website closes one socket of several, and the player
-      # is still there to answer a match.
-      _ = Gamend.Matchmaking.cancel(user_id)
-
       case Accounts.set_user_offline(user_id) do
         {:ok, _} -> broadcast_member_presence(user_id, false)
         _ -> :ok
@@ -131,6 +127,12 @@ defmodule Gamend.Accounts.Online do
   # last one. Nothing else would put the flag back (`connected/2` runs only on
   # a connect, the stale sweeper only marks people offline), so they showed
   # offline to every friend, lobby and group until they reconnected.
+  #
+  # The queue waits for the same moment. A ticket must belong to someone who
+  # can be seated, but a page change closes the old page's socket before the
+  # next one opens (`watch/2`'s process dies first), and so does a reload or
+  # a reconnect: cancelled at the close, a player queued on one page lost the
+  # queue by opening another. Gone still after the recheck, they leave it.
   defp recheck(user_id, pid) do
     Gamend.Async.run(fn ->
       Process.sleep(@recheck_ms)
@@ -140,6 +142,8 @@ defmodule Gamend.Accounts.Online do
           {:ok, _} -> broadcast_member_presence(user_id, true)
           _ -> :ok
         end
+      else
+        _ = Gamend.Matchmaking.cancel(user_id)
       end
     end)
   end

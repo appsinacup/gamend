@@ -135,6 +135,12 @@ defmodule Gamend.Limits do
   setting(:max_notification_content, :integer, default: 10_000)
   setting(:max_notifications_per_user, :integer, default: 500)
 
+  setting(:max_digest_items_per_user, :integer,
+    default: 200,
+    doc:
+      "Notices one user's digest emails hold while they wait, every group together. Past it a notice is left out of the email; its row on the site and its push still go."
+  )
+
   section("Push")
 
   setting(:max_push_tokens_per_user, :integer,

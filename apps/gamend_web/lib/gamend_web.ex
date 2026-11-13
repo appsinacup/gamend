@@ -137,8 +137,26 @@ defmodule GamendWeb do
 
       # HTML escaping functionality
       import Phoenix.HTML
-      # Core UI components
-      import GamendWeb.CoreComponents
+      # Core UI components. The larger ones live in modules of their own, so
+      # an edit to one recompiles only the templates that draw it; core keeps
+      # their old names for hosts (`CoreComponents.player_avatar/1`), which
+      # are not imported from it twice.
+      import GamendWeb.CoreComponents,
+        except: [
+          user_avatar: 1,
+          player_avatar: 1,
+          group_avatar: 1,
+          owner_picker: 1,
+          player_card: 1,
+          icon_picker: 1,
+          markdown: 1,
+          reward_chip: 1
+        ]
+
+      import GamendWeb.AvatarComponents
+      import GamendWeb.IconPickerComponents
+      import GamendWeb.MarkdownComponents
+      import GamendWeb.RewardComponents
       # The admin console's heading, icon and card
       import GamendWeb.AdminComponents
       # Dynamic SVG loader component (runtime hero icons)

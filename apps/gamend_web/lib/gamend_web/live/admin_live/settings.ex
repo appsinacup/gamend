@@ -11,7 +11,7 @@ defmodule GamendWeb.AdminLive.Settings do
   environment variable name — every one of them, without exception — and the
   variables loaded plugins declare (`Gamend.Hooks.Declarations`).
 
-  The page masks secrets; the `.env` it links to does not
+  The page masks secrets; the `.env` it posts for does not
   (`GamendWeb.AdminSettingsController`), since that file is for restoring a
   server.
 
@@ -21,6 +21,9 @@ defmodule GamendWeb.AdminLive.Settings do
 
   use GamendWeb, :live_view
 
+  alias Gamend.Accounts
+  alias Gamend.Accounts.Scope
+  alias Gamend.Accounts.User
   alias Gamend.Settings
   alias GamendWeb.RuntimeIntrospection, as: Introspection
 
@@ -34,7 +37,7 @@ defmodule GamendWeb.AdminLive.Settings do
   @default "default"
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     {failures, warnings} = Settings.validate(environment())
 
     {:ok,
@@ -45,10 +48,20 @@ defmodule GamendWeb.AdminLive.Settings do
      |> assign(:failures, failures)
      |> assign(:warnings, warnings)
      |> assign(:groups, groups())
+     |> assign(:has_password?, has_password?(socket.assigns.current_scope))
+     |> GamendWeb.UrlState.from_url(params)
      |> assign_rows()}
   end
 
   defp groups, do: Settings.groups() ++ plugin_groups(Introspection.plugin_env_vars())
+
+  # Whether the download asks for a password: only of an account that has one.
+  defp has_password?(scope) do
+    case Scope.user(scope) do
+      %User{} = user -> Accounts.has_password?(user)
+      _none -> false
+    end
+  end
 
   defp plugin_groups([]), do: []
   defp plugin_groups(_vars), do: [{Introspection.plugin_env_group(), "Plugin variables"}]
@@ -157,9 +170,32 @@ defmodule GamendWeb.AdminLive.Settings do
             The download holds real secrets.
           </:subtitle>
           <:actions>
-            <a id="settings-export" href={~p"/admin/settings/export"} class="btn btn-sm btn-outline">
-              <.icon name="hero-arrow-down-tray-solid" class="w-4 h-4" /> Download .env
-            </a>
+            <%!-- A plain POST, not a LiveView event: the answer is a file. It
+                  asks for the password again (`AdminSettingsController`);
+                  an account with none signed in recently, which is enough. --%>
+            <.form
+              for={%{}}
+              as={:export}
+              id="settings-export"
+              action={~p"/admin/settings/export"}
+              method="post"
+              class="flex flex-wrap items-center gap-2"
+            >
+              <input
+                :if={@has_password?}
+                type="password"
+                name="password"
+                id="settings-export-password"
+                required
+                autocomplete="current-password"
+                placeholder="Your password"
+                aria-label="Your password, to download the .env"
+                class="input input-sm w-44"
+              />
+              <button type="submit" class="btn btn-sm btn-outline">
+                <.icon name="hero-arrow-down-tray-solid" class="w-4 h-4" /> Download .env
+              </button>
+            </.form>
           </:actions>
         </.admin_header>
 

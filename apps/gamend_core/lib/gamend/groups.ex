@@ -205,6 +205,69 @@ defmodule Gamend.Groups do
     |> Repo.all()
   end
 
+  @doc """
+  The players a group's invite search offers: `Gamend.Accounts.search_users/2`'s
+  match (a display name or username prefix, or an exact id) with the group's
+  members left out by the query. Filtered after the page, a page of members
+  came back empty, and the filter read every member with their user first.
+
+  See `t:Gamend.Types.pagination_opts/0` for the options.
+  """
+  @spec search_invitable_users(Ecto.UUID.t(), String.t(), Gamend.Types.pagination_opts()) ::
+          [User.t()]
+  def search_invitable_users(group_id, query, opts \\ [])
+      when is_binary(group_id) and is_binary(query) do
+    case String.trim(query) do
+      "" ->
+        []
+
+      q ->
+        page = max(Keyword.get(opts, :page, 1), 1)
+        page_size = Gamend.Limits.clamp_page_size(Keyword.get(opts, :page_size, 25))
+        pattern = "#{Repo.escape_like(String.downcase(q))}%"
+
+        text =
+          from(u in invitable_users(group_id),
+            where:
+              fragment("lower(?) LIKE ? ESCAPE '\\'", u.display_name, ^pattern) or
+                fragment("? LIKE ? ESCAPE '\\'", u.username, ^pattern),
+            limit: ^page_size,
+            offset: ^((page - 1) * page_size)
+          )
+          |> Repo.all()
+
+        prepend_invitable_id_match(text, group_id, q)
+    end
+  end
+
+  @doc "Which of `user_ids` are members of the group, without reading its whole member list."
+  @spec member_ids_among(Ecto.UUID.t(), [Ecto.UUID.t()]) :: MapSet.t(Ecto.UUID.t())
+  def member_ids_among(_group_id, []), do: MapSet.new()
+
+  def member_ids_among(group_id, user_ids) when is_binary(group_id) and is_list(user_ids) do
+    from(m in GroupMember,
+      where: m.group_id == ^group_id and m.user_id in ^user_ids,
+      select: m.user_id
+    )
+    |> Repo.all()
+    |> MapSet.new()
+  end
+
+  defp invitable_users(group_id) do
+    members = from(m in GroupMember, where: m.group_id == ^group_id, select: m.user_id)
+    from(u in User, where: u.id not in subquery(members))
+  end
+
+  # A full id, as `search_users/2` takes one: that player first, unless a member.
+  defp prepend_invitable_id_match(results, group_id, q) do
+    with id when is_binary(id) <- Gamend.Parse.uuid(q),
+         %User{} = user <- Repo.one(from(u in invitable_users(group_id), where: u.id == ^id)) do
+      [user | Enum.reject(results, &(&1.id == id))]
+    else
+      _ -> results
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Cache helpers
   # ---------------------------------------------------------------------------

@@ -13,17 +13,18 @@ defmodule GamendWeb.AdminLive.Index do
   alias Gamend.Parties
   alias Gamend.Payments
   alias Gamend.Repo
+  alias GamendWeb.AdminLive.IndexCards
   alias GamendWeb.ConnectionTracker
   alias GamendWeb.Gettext.Stats, as: TranslationStats
   alias GamendWeb.Plugs.GeoCountry
 
   require Ecto.Query
+  require Logger
   require Gamend.Groups.GroupType, as: GroupType
   require Gamend.Results.ResultStatus, as: ResultStatus
   require Gamend.Accounts.TokenContext, as: TokenContext
 
   @dev_routes? Application.compile_env(:gamend_web, :dev_routes, false)
-  @translations_shown 3
 
   @impl true
   def render(assigns) do
@@ -39,471 +40,33 @@ defmodule GamendWeb.AdminLive.Index do
           <:subtitle>System administration</:subtitle>
         </.admin_header>
 
-        <div id="admin-cards" class="space-y-8">
-          <.admin_section title="Players">
-            <.admin_card page="/admin/users" value={@users_count}>
-              <div>With password: {@users_password}</div>
-              <div>Google: {@users_google}</div>
-              <div>Facebook: {@users_facebook}</div>
-              <div>GitHub: {@users_github}</div>
-              <div>Discord: {@users_discord}</div>
-              <div>Apple: {@users_apple}</div>
-              <div>Steam: {@users_steam}</div>
-              <div>Device-linked: {@users_device}</div>
-            </.admin_card>
+        <%!-- The figures arrive once the socket is up (`load_stats/0`). --%>
+        <div
+          :if={!@stats_loaded?}
+          id="admin-cards-loading"
+          role="status"
+          class="card bg-base-200 p-6 text-sm text-muted"
+        >
+          Counting the figures…
+        </div>
 
+        <div :if={@stats_loaded?} id="admin-cards" class="space-y-8">
+          <%!-- Core's cards, from data (`IndexCards.sections/1`): each names
+                its page in `GamendWeb.AdminLive.Pages` and says its lines. --%>
+          <.admin_section :for={{title, cards} <- @sections} :key={title} title={title}>
             <.admin_card
-              page="/admin/users"
-              title="Registration"
-              icon="hero-user-plus-solid"
-              color="emerald"
+              :for={card <- cards}
+              :key={card.id}
+              page={card.page}
+              path={card[:path]}
+              title={card[:title]}
+              icon={card[:icon]}
+              color={card[:color]}
+              value={card[:value]}
+              unit={card[:unit]}
+              value_class={card[:value_class]}
             >
-              <div class="font-semibold">Today: {@snapshot.activity.new_users_1d}</div>
-              <div class="font-semibold mt-2">
-                Last 7 days: {@snapshot.activity.new_users_7d}
-              </div>
-              <div class="font-semibold mt-2">
-                Last 30 days: {@snapshot.activity.new_users_30d}
-              </div>
-              <%= if @users_unactivated > 0 do %>
-                <div class="mt-3 pt-2 border-t border-base-300">
-                  <.link
-                    navigate={~p"/admin/users?filter=unactivated"}
-                    class="inline-flex items-center gap-1.5 text-warning font-semibold hover:underline"
-                  >
-                    <.icon name="hero-exclamation-triangle-solid" class="w-4 h-4" />
-                    Pending activation: {@users_unactivated}
-                  </.link>
-                </div>
-              <% end %>
-            </.admin_card>
-
-            <.admin_card page="/admin/sessions" value={@sessions_count}>
-              <div>Signed-in browser sessions</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/analytics" title="Activity" icon="hero-bolt-solid">
-              <div class="font-semibold">Today (DAU): {@snapshot.activity.dau}</div>
-              <div class="font-semibold mt-2">Last 7 days (WAU): {@snapshot.activity.wau}</div>
-              <div class="font-semibold mt-2">Last 30 days (MAU): {@snapshot.activity.mau}</div>
-              <div class="mt-3 pt-2 border-t border-base-300">
-                Stickiness: {pct(@analytics_stats.stickiness)}
-              </div>
-              <div>
-                D1 / D7 / D30: {pct(@analytics_stats.d1)} / {pct(@analytics_stats.d7)} / {pct(
-                  @analytics_stats.d30
-                )}
-              </div>
-              <div>Payer conversion (30d): {pct(@analytics_stats.conversion_30d)}</div>
-            </.admin_card>
-          </.admin_section>
-
-          <.admin_section title="Gameplay">
-            <.admin_card page="/admin/lobbies" value={@lobbies_count}>
-              <div>Hostless: {@lobbies_hostless}</div>
-              <div>Hidden: {@lobbies_hidden}</div>
-              <div>Locked: {@lobbies_locked}</div>
-              <div>With password: {@lobbies_passworded}</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/matchmaking" value={@matchmaking_stats.queued}>
-              <div>In queue now: {@matchmaking_stats.queued}</div>
-              <div>
-                Matched: {@matchmaking_stats.matched} · Cancelled: {@matchmaking_stats.cancelled}
-              </div>
-              <div>Active queues: {length(@matchmaking_stats.queues)}</div>
-              <div>
-                Ready checks 24h: {Map.get(@ready_check_stats, "passed", 0)} passed · {Map.get(
-                  @ready_check_stats,
-                  "failed",
-                  0
-                )} failed
-              </div>
-            </.admin_card>
-
-            <.admin_card page="/admin/tournaments" value={@tournaments_count}>
-              <div>
-                Running: {state_count(@tournament_stats.tournaments, "running")} · Registration: {state_count(
-                  @tournament_stats.tournaments,
-                  "registration"
-                )}
-              </div>
-              <div>
-                Scheduled: {state_count(@tournament_stats.tournaments, "scheduled")} · Finished: {state_count(
-                  @tournament_stats.tournaments,
-                  "finished"
-                )}
-              </div>
-              <div>Participants: {entries_total(@tournament_stats.entries)}</div>
-              <div>
-                Still in: {state_count(@tournament_stats.entries, "active")} · Eliminated: {state_count(
-                  @tournament_stats.entries,
-                  "eliminated"
-                )}
-              </div>
-              <div>
-                Champions: {state_count(@tournament_stats.entries, "winner")} · Awaiting draw: {state_count(
-                  @tournament_stats.entries,
-                  "registered"
-                )}
-              </div>
-              <div>
-                Matches: {@tournament_stats.matches.open} open / {@tournament_stats.matches.total}
-              </div>
-              <div :if={@tournament_stats.matches.overdue > 0} class="text-warning">
-                Past deadline: {@tournament_stats.matches.overdue}
-              </div>
-            </.admin_card>
-
-            <.admin_card page="/admin/leaderboards" value={@leaderboards_count}>
-              <div>Scores total: {@leaderboard_records}</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/quests" value={@quest_stats.definitions}>
-              <div>Active: {@quest_stats.active_definitions}</div>
-              <div>Completions today: {@quest_stats.completions_today}</div>
-              <div>Claims today: {@quest_stats.claims_today}</div>
-              <div>Claimable now: {@quest_stats.claimable_now}</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/results" value={@result_counts.total} unit="plays">
-              <div class="flex justify-between">
-                <span>Open</span>
-                <span class="font-mono">{@result_counts.open}</span>
-              </div>
-            </.admin_card>
-
-            <.admin_card
-              page="/admin/economy"
-              value={@economy_stats.wallets}
-              unit="wallets"
-            >
-              <div class="flex justify-between">
-                <span>Ledger entries</span>
-                <span class="font-mono">{@economy_stats.ledger}</span>
-              </div>
-            </.admin_card>
-
-            <.admin_card page="/admin/payments" value={@payments_stats.purchases}>
-              <div>Completed: {@payments_stats.completed_purchases}</div>
-              <div>Products: {@payments_stats.products}</div>
-              <div>Provider SKUs: {@payments_stats.provider_products}</div>
-              <div>Active entitlements: {@payments_stats.active_entitlements}</div>
-            </.admin_card>
-          </.admin_section>
-
-          <.admin_section title="Social">
-            <.admin_card page="/admin/groups" value={@groups_count}>
-              <div>Public: {@groups_public}</div>
-              <div>Private: {@groups_private}</div>
-              <div>Hidden: {@groups_hidden}</div>
-              <div>Total members: {@groups_members}</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/parties" value={@parties_count}>
-              <div>Total members: {@parties_members}</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/friends" value={@friends_count}>
-              <div>Friendships</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/blacklist" value={@blacklist_count}>
-              <div>Blocks between players</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/chat" value={@chat_count}>
-              <div>Users who wrote: {@chat_senders}</div>
-              <div>Users who never wrote: {@chat_silent}</div>
-              <div>In lobbies: {@chat_by_lobby}</div>
-              <div>In groups: {@chat_by_group}</div>
-              <div>Friend DMs: {@chat_by_friend}</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/notifications" value={@notifications_count}>
-              <div>In-app notifications stored</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/push" value={@push_stats.live}>
-              <div>Disabled: {@push_stats.disabled}</div>
-              <div :for={{platform, n} <- @push_stats.by_platform}>{platform}: {n}</div>
-            </.admin_card>
-          </.admin_section>
-
-          <.admin_section title="Moderation">
-            <.admin_card page="/admin/chat/reports" title="Chat moderation" value={@open_reports}>
-              <div>Open reports</div>
-              <div>
-                Active mutes:
-                <.link navigate={~p"/admin/bans?kind=chat"} class="link">{@active_mutes}</.link>
-              </div>
-            </.admin_card>
-
-            <.admin_card page="/admin/chat/filter">
-              <div>Blocked words, and a box to test a phrase</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/reports" value={@content_reports}>
-              <div>Open reports</div>
-              <div>Fixed: {Map.get(@report_counts, "fixed", 0)}</div>
-              <div>Won't fix: {Map.get(@report_counts, "wontfix", 0)}</div>
-              <div>Duplicate: {Map.get(@report_counts, "duplicate", 0)}</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/bans">
-              <div class="flex justify-between items-center">
-                <span>Banned accounts</span>
-                <span class={[
-                  "badge badge-sm font-mono",
-                  if(@account_ban_count > 0, do: "badge-error", else: "badge-ghost opacity-50")
-                ]}>
-                  {@account_ban_count}
-                </span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span>Banned IPs</span>
-                <span class={[
-                  "badge badge-sm font-mono",
-                  if(@ip_ban_count > 0, do: "badge-error", else: "badge-ghost opacity-50")
-                ]}>
-                  {@ip_ban_count}
-                </span>
-              </div>
-            </.admin_card>
-          </.admin_section>
-
-          <.admin_section title="Data">
-            <.admin_card
-              page="/admin/translations"
-              value={ngettext("%{count} language", "%{count} languages", length(@translation_stats))}
-            >
-              <div
-                :for={stats <- least_translated(@translation_stats)}
-                class="flex items-center gap-2"
-              >
-                <span class="font-mono font-semibold w-12">{String.upcase(stats.locale)}</span>
-                <div class="flex-1 bg-base-300 rounded-full h-1.5">
-                  <div
-                    class={[
-                      "h-1.5 rounded-full transition-all",
-                      if(stats.percent == 100.0, do: "bg-success", else: "bg-warning")
-                    ]}
-                    style={"width: #{stats.percent}%"}
-                  >
-                  </div>
-                </div>
-                <span class="font-mono text-xs w-10 text-right">{stats.percent}%</span>
-              </div>
-              <div :if={translations_hidden(@translation_stats) > 0}>
-                +{translations_hidden(@translation_stats)} more
-              </div>
-            </.admin_card>
-
-            <.admin_card page="/admin/kv" value={@kv_count}>
-              <div>Global entries: {@kv_global}</div>
-              <div>User entries: {@kv_user}</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/storage" value={@storage_info.adapter}>
-              <div class="flex justify-between">
-                <span>Target</span>
-                <span class="font-mono truncate ml-2">{@storage_info.detail}</span>
-              </div>
-            </.admin_card>
-
-            <.admin_card page="/admin/retention">
-              <div>What is kept, for how long, and the last sweep</div>
-            </.admin_card>
-          </.admin_section>
-
-          <.admin_section title="Configuration">
-            <.admin_card page="/admin/plugins" value={@plugin_count}>
-              <div :if={@plugin_errors > 0} class="text-error">
-                {ngettext("%{count} failed to load", "%{count} failed to load", @plugin_errors)}
-              </div>
-              <div>Reload, build and call</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/theme">
-              <div>Branding, navigation and footer as resolved</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/settings">
-              <div>Every setting the server declares</div>
-            </.admin_card>
-
-            <.admin_card
-              page="/admin/settings"
-              path="/admin/settings?group=limits"
-              title="Limits"
-              icon="hero-scale-solid"
-              color="amber"
-            >
-              <div>Size and count caps, by area</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/rate_limiting">
-              <div class="flex justify-between items-center">
-                <span>Rate Limited (1m)</span>
-                <span class={[
-                  "badge badge-sm font-mono",
-                  if(@rate_stats.limited > 0, do: "badge-warning", else: "badge-ghost opacity-50")
-                ]}>
-                  {@rate_stats.limited}
-                </span>
-              </div>
-            </.admin_card>
-          </.admin_section>
-
-          <.admin_section title="Server">
-            <.admin_card
-              page="/admin/system"
-              title="Cache & limits"
-              icon="hero-bolt-solid"
-              color="lime"
-              value={cache_hit_rate_label(@cache_stats)}
-              unit="hit rate since boot"
-            >
-              <div
-                :for={row <- Enum.take(@cache_stats.cache, 6)}
-                class="flex justify-between"
-              >
-                <span>{row.prefix}</span>
-                <span class="font-mono">
-                  {row.hits}/{row.hits + row.misses} ({round(row.hit_rate * 100)}%)
-                </span>
-              </div>
-              <div class="flex justify-between border-t border-base-300 pt-1 mt-1">
-                <span>Rate-limit denials</span>
-                <span class="font-mono">
-                  {@cache_stats.rate_limit_denies |> Map.values() |> Enum.sum()}
-                </span>
-              </div>
-              <div class="flex justify-between">
-                <span>Async overloads</span>
-                <span class={[
-                  "font-mono",
-                  @cache_stats.async_overloads > 0 && "text-warning"
-                ]}>
-                  {@cache_stats.async_overloads}
-                </span>
-              </div>
-            </.admin_card>
-
-            <.admin_card
-              page="/admin/system"
-              value={GamendWeb.ConnectionTracker.format_uptime(@sys_stats.uptime_seconds)}
-            >
-              <div>OTP: {@sys_stats.otp_release}</div>
-              <div>Schedulers: {@sys_stats.schedulers}</div>
-              <div>Node: {@sys_stats.node}</div>
-              <div>
-                Cluster: {ngettext("%{count} node", "%{count} nodes", @sys_stats.cluster_size)}
-              </div>
-              <div>Memory: {@sys_stats.memory_total_mb} MB</div>
-              <div>
-                Processes: {@sys_stats.process_count} / {format_number(@sys_stats.process_limit)}
-              </div>
-            </.admin_card>
-
-            <.admin_card page="/admin/runtime">
-              <div>Read-only; reflects the running node</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/connections" value={@conn_stats.total_connections}>
-              <div>WS sockets: {@conn_stats.ws_sockets}</div>
-              <div>WS channels: {@conn_stats.total_channels}</div>
-              <div>LiveViews: {@conn_stats.live_views}</div>
-              <div>WebRTC: {@conn_stats.webrtc_peers}</div>
-            </.admin_card>
-
-            <.admin_card page="/admin/dashboard">
-              <div>Processes, ports, ETS and metrics</div>
-            </.admin_card>
-
-            <.admin_card
-              page="/admin/logs"
-              value={@log_recent_errors}
-              unit="errors (1h)"
-              value_class={if(@log_recent_errors > 0, do: "text-error", else: "text-success")}
-            >
-              <div class="flex justify-between">
-                <span>Buffered</span>
-                <span class="font-mono">{@log_total_buffered}</span>
-              </div>
-              <div :for={{level, count} <- @log_level_counts} class="flex justify-between">
-                <span>{level}</span>
-                <span class={[
-                  "font-mono",
-                  level == :error && "text-error",
-                  level == :warning && "text-warning"
-                ]}>
-                  {count}
-                </span>
-              </div>
-            </.admin_card>
-
-            <.admin_card
-              page="/admin/oban"
-              title="Background jobs"
-              value={@oban_stats.total}
-              unit="jobs"
-            >
-              <div class="flex justify-between">
-                <span>Executing</span>
-                <span class="font-mono">{@oban_stats.executing}</span>
-              </div>
-              <div class="flex justify-between">
-                <span>Available</span>
-                <span class="font-mono">{@oban_stats.available}</span>
-              </div>
-              <div class="flex justify-between">
-                <span>Scheduled</span>
-                <span class="font-mono">{@oban_stats.scheduled}</span>
-              </div>
-              <div class="flex justify-between">
-                <span>Retryable</span>
-                <span class={["font-mono", @oban_stats.retryable > 0 && "text-warning"]}>
-                  {@oban_stats.retryable}
-                </span>
-              </div>
-            </.admin_card>
-
-            <.admin_card page="/admin/geo" value={format_number(@geo_total)}>
-              <div>
-                {countries_label(length(@geo_stats))} &middot; {if(@geoip_available?,
-                  do: "MMDB",
-                  else: "CF header"
-                )}
-              </div>
-              <div class="flex justify-between items-center">
-                <span>Last hour</span>
-                <span class="font-mono font-semibold">
-                  {format_number(@geo_total_1h)} reqs &middot; {countries_label(length(@geo_stats_1h))}
-                </span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span>Crawlers, last hour</span>
-                <span class="font-mono font-semibold">
-                  {format_number(@geo_crawlers_1h)} &middot; {if(@geo_total_1h > 0,
-                    do: round(@geo_crawlers_1h / @geo_total_1h * 100),
-                    else: 0
-                  )}%
-                </span>
-              </div>
-              <%= for {country, count} <- Enum.take(@geo_stats_1h, 3) do %>
-                <div class="flex justify-between items-center">
-                  <span class="font-mono">{GamendWeb.AdminLive.Shared.country_flag(country)} {country}</span>
-                  <span class="font-mono">{format_number(count)} (1h)</span>
-                </div>
-              <% end %>
-              <div :if={length(@geo_stats_1h) > 3} class="text-center opacity-50">
-                +{length(@geo_stats_1h) - 3} more
-              </div>
-            </.admin_card>
-
-            <.admin_card page="/admin/github" value={@github_installations}>
-              <div>Every installation of the server's GitHub App</div>
+              <IndexCards.line :for={line <- card.lines} line={line} />
             </.admin_card>
           </.admin_section>
 
@@ -516,18 +79,7 @@ defmodule GamendWeb.AdminLive.Index do
               color={card[:color]}
               value={card[:value]}
             >
-              <div :for={line <- card[:lines] || []}>
-                <%= case line do %>
-                  <% text when is_binary(text) -> %>
-                    {text}
-                  <% {label, nil, path} -> %>
-                    <.link navigate={path} class="link">{label}</.link>
-                  <% {label, value, path} -> %>
-                    {label}: <.link navigate={path} class="link">{value}</.link>
-                  <% {label, value} -> %>
-                    {label}: {value}
-                <% end %>
-              </div>
+              <IndexCards.line :for={line <- card[:lines] || []} line={line} />
             </.admin_card>
           </.admin_section>
         </div>
@@ -536,166 +88,257 @@ defmodule GamendWeb.AdminLive.Index do
     """
   end
 
+  @stats_key {:admin_dashboard_stats}
+
   @impl true
   def mount(_params, _session, socket) do
-    # Fire all independent DB queries in parallel for fast mount. The page
-    # renders twice per view (HTTP, then the socket), and at a million rows
-    # these counts take a second or more, so the two share one run for half a
-    # minute; the live block below refreshes on its own.
-    r =
-      Gamend.Cache.cached({:admin_dashboard_stats}, [ttl: :timer.seconds(30)], fn ->
-        tasks = %{
-          # Players / lobbies / parties / quests / matchmaking / tournaments come
-          # from the one cached composition every stats surface reads.
-          snapshot: Task.async(fn -> safe_snapshot() end),
-          # Sessions only, as the page the button opens lists: every token context
-          # (reset, confirm, API) made this read higher than that page ever showed.
-          sessions_count:
-            Task.async(fn ->
-              Repo.aggregate(
-                Ecto.Query.where(UserToken, [t], t.context == ^TokenContext.session()),
-                :count
-              )
-            end),
-          notifications_count: Task.async(fn -> Notifications.count_all_notifications() end),
-          push_stats: Task.async(fn -> Gamend.Push.token_stats() end),
-          leaderboards_count: Task.async(fn -> Repo.aggregate(Leaderboard, :count) end),
-          matchmaking_stats: Task.async(fn -> Gamend.Matchmaking.stats() end),
-          ready_check_stats: Task.async(fn -> Gamend.ReadyChecks.stats() end),
-          kv_count: Task.async(fn -> KV.count_entries() end),
-          kv_global: Task.async(fn -> KV.count_entries(global_only: true) end),
-          users_google: Task.async(fn -> Accounts.count_users_with_provider(:google_id) end),
-          users_facebook: Task.async(fn -> Accounts.count_users_with_provider(:facebook_id) end),
-          users_github: Task.async(fn -> Accounts.count_users_with_provider(:github_id) end),
-          users_discord: Task.async(fn -> Accounts.count_users_with_provider(:discord_id) end),
-          users_apple: Task.async(fn -> Accounts.count_users_with_provider(:apple_id) end),
-          users_steam: Task.async(fn -> Accounts.count_users_with_provider(:steam_id) end),
-          users_device: Task.async(fn -> Accounts.count_users_with_provider(:device_id) end),
-          users_password: Task.async(fn -> Accounts.count_users_with_password() end),
-          lobbies_hostless: Task.async(fn -> Gamend.Lobbies.count_hostless_lobbies() end),
-          lobbies_hidden: Task.async(fn -> Gamend.Lobbies.count_hidden_lobbies() end),
-          lobbies_locked: Task.async(fn -> Gamend.Lobbies.count_locked_lobbies() end),
-          lobbies_passworded: Task.async(fn -> Gamend.Lobbies.count_passworded_lobbies() end),
-          leaderboard_records: Task.async(fn -> Gamend.Leaderboards.count_all_records() end),
-          groups_count: Task.async(fn -> Groups.count_all_groups() end),
-          groups_public: Task.async(fn -> Groups.count_groups_by_type(GroupType.public()) end),
-          groups_private: Task.async(fn -> Groups.count_groups_by_type(GroupType.private()) end),
-          groups_hidden: Task.async(fn -> Groups.count_groups_by_type(GroupType.hidden()) end),
-          groups_members: Task.async(fn -> Groups.count_all_members() end),
-          parties_count: Task.async(fn -> Parties.count_all_parties() end),
-          blacklist_count: Task.async(fn -> Gamend.Friends.count_all_blocks() end),
-          friends_count: Task.async(fn -> Gamend.Friends.count_all_friendships() end),
-          parties_members: Task.async(fn -> Parties.count_all_party_members() end),
-          chat_count: Task.async(fn -> Gamend.Chat.count_all_messages() end),
-          chat_senders: Task.async(fn -> Gamend.Chat.count_unique_senders() end),
-          chat_by_type: Task.async(fn -> Gamend.Chat.count_messages_by_type() end),
-          open_reports: Task.async(fn -> Reports.count_open_reports() end),
-          report_counts: Task.async(fn -> Gamend.Reports.count_by_status() end),
-          host: Task.async(fn -> GamendWeb.AdminCard.load() end),
-          github_installations: Task.async(fn -> Gamend.GitHub.count_all_installations() end),
-          active_mutes: Task.async(fn -> Gamend.Chat.count_mutes(%{"active" => true}) end),
-          quest_stats: Task.async(fn -> Gamend.Quests.dashboard_stats() end),
-          payments_stats: Task.async(fn -> Payments.admin_stats() end),
-          translation_stats: Task.async(fn -> TranslationStats.all_completeness() end),
-          users_unactivated: Task.async(fn -> Accounts.count_unactivated_users() end),
-          oban_stats: Task.async(fn -> safe_oban_stats() end),
-          economy_stats: Task.async(fn -> safe_economy_stats() end),
-          analytics_stats: Task.async(fn -> safe_analytics_stats() end)
-        }
-
-        # Await all tasks (the DB pool handles concurrency)
-        Map.new(tasks, fn {key, task} -> {key, Task.await(task, 30_000)} end)
-      end)
-
-    # In-memory stats (ETS / GenServer — instant, no DB)
-    conn_stats = ConnectionTracker.cluster_counts()
-    sys_stats = ConnectionTracker.system_stats()
-    rate_stats = build_rate_limit_stats()
-    geo = GeoCountry.dashboard_stats()
-    log_level_counts = safe_log_count_by_level()
-    log_total_buffered = Enum.reduce(log_level_counts, 0, fn {_, v}, acc -> acc + v end)
-    log_recent_errors = safe_log_recent_errors()
-
     if connected?(socket), do: schedule_live_refresh()
 
-    {:ok,
-     assign(socket,
-       snapshot: r.snapshot,
-       users_count: r.snapshot.players.players_total,
-       sessions_count: r.sessions_count,
-       lobbies_count: r.snapshot.lobbies.lobbies_total,
-       leaderboards_count: r.leaderboards_count,
-       tournaments_count: r.snapshot.tournaments.tournaments |> Map.values() |> Enum.sum(),
-       matchmaking_stats: r.matchmaking_stats,
-       ready_check_stats: r.ready_check_stats,
-       tournament_stats: r.snapshot.tournaments,
-       kv_count: r.kv_count,
-       kv_global: r.kv_global,
-       kv_user: r.kv_count - r.kv_global,
-       users_google: r.users_google,
-       users_facebook: r.users_facebook,
-       users_github: r.users_github,
-       users_discord: r.users_discord,
-       users_apple: r.users_apple,
-       users_steam: r.users_steam,
-       users_device: r.users_device,
-       users_password: r.users_password,
-       lobbies_hostless: r.lobbies_hostless,
-       lobbies_hidden: r.lobbies_hidden,
-       lobbies_locked: r.lobbies_locked,
-       lobbies_passworded: r.lobbies_passworded,
-       notifications_count: r.notifications_count,
-       push_stats: r.push_stats,
-       leaderboard_records: r.leaderboard_records,
-       groups_count: r.groups_count,
-       groups_public: r.groups_public,
-       groups_private: r.groups_private,
-       groups_hidden: r.groups_hidden,
-       groups_members: r.groups_members,
-       parties_count: r.parties_count,
-       blacklist_count: r.blacklist_count,
-       friends_count: r.friends_count,
-       parties_members: r.parties_members,
-       chat_count: r.chat_count,
-       chat_senders: r.chat_senders,
-       chat_silent: max(r.snapshot.players.players_total - r.chat_senders, 0),
-       chat_by_lobby: Map.get(r.chat_by_type, "lobby", 0),
-       chat_by_group: Map.get(r.chat_by_type, "group", 0),
-       chat_by_friend: Map.get(r.chat_by_type, "friend", 0),
-       open_reports: r.open_reports,
-       content_reports: Map.get(r.report_counts, "open", 0),
-       report_counts: r.report_counts,
-       host: r.host,
-       github_installations: r.github_installations,
-       active_mutes: r.active_mutes,
-       translation_stats: r.translation_stats,
-       quest_stats: r.quest_stats,
-       payments_stats: r.payments_stats,
-       conn_stats: conn_stats,
-       sys_stats: sys_stats,
-       rate_stats: rate_stats,
-       ip_ban_count: length(BanCache.list(:ip)),
-       account_ban_count: length(BanCache.list(:account)),
-       geo_stats: geo.stats_all,
-       geo_total: geo.total_all,
-       geo_total_1h: geo.total_1h,
-       geo_stats_1h: geo.stats_1h,
-       geo_crawlers_1h: geo.crawlers_1h,
-       geoip_available?: GeoCountry.geoip_available?(),
-       log_level_counts: log_level_counts,
-       log_total_buffered: log_total_buffered,
-       log_recent_errors: log_recent_errors,
-       result_counts: safe_result_counts(),
-       analytics_stats: r.analytics_stats,
-       users_unactivated: r.users_unactivated,
-       oban_stats: r.oban_stats,
-       economy_stats: r.economy_stats,
-       storage_info: safe_storage_info(),
-       cache_stats: Gamend.Cache.Stats.snapshot(),
-       plugin_count: length(PluginManager.list()),
-       plugin_errors: Enum.count(PluginManager.list(), &match?({:error, _}, &1.status)),
-       dev_routes?: @dev_routes?
-     )}
+    socket = socket |> assign(:stats_loaded?, false) |> assign_live_stats()
+
+    # The figures are ~45 counts, and at a million rows they take a second or
+    # more each. Read in `mount` they held the page, both renders, and up to 45
+    # pooled connections at once; one that raised took the page down. So they
+    # are read once the socket is up, four at a time (`load_stats/0`), and kept
+    # for half a minute: within it, both renders draw them at once.
+    socket =
+      case Gamend.Cache.fetch(@stats_key) do
+        {:ok, stats} ->
+          assign_stats(socket, stats)
+
+        _miss ->
+          if connected?(socket), do: start_async(socket, :stats, &load_stats/0), else: socket
+      end
+
+    {:ok, socket}
+  end
+
+  @impl true
+  def handle_async(:stats, {:ok, stats}, socket), do: {:noreply, assign_stats(socket, stats)}
+
+  def handle_async(:stats, {:exit, reason}, socket) do
+    Logger.error("admin dashboard: the figures did not load: #{inspect(reason)}")
+    {:noreply, put_flash(socket, :error, "The figures could not be read. Reload to try again.")}
+  end
+
+  # In memory (ETS, GenServers): instant, read on every render.
+  defp assign_live_stats(socket) do
+    geo = GeoCountry.dashboard_stats()
+    log_level_counts = safe_log_count_by_level()
+
+    assign(socket,
+      conn_stats: ConnectionTracker.cluster_counts(),
+      sys_stats: ConnectionTracker.system_stats(),
+      rate_stats: build_rate_limit_stats(),
+      ip_ban_count: length(BanCache.list(:ip)),
+      account_ban_count: length(BanCache.list(:account)),
+      geo_stats: geo.stats_all,
+      geo_total: geo.total_all,
+      geo_total_1h: geo.total_1h,
+      geo_stats_1h: geo.stats_1h,
+      geo_crawlers_1h: geo.crawlers_1h,
+      geoip_available?: GeoCountry.geoip_available?(),
+      log_level_counts: log_level_counts,
+      log_total_buffered: Enum.reduce(log_level_counts, 0, fn {_, v}, acc -> acc + v end),
+      log_recent_errors: safe_log_recent_errors(),
+      storage_info: safe_storage_info(),
+      cache_stats: Gamend.Cache.Stats.snapshot(),
+      dev_routes?: @dev_routes?
+    )
+  end
+
+  defp assign_stats(socket, r) do
+    assign(socket,
+      stats_loaded?: true,
+      snapshot: r.snapshot,
+      users_count: r.snapshot.players.players_total,
+      sessions_count: r.sessions_count,
+      lobbies_count: r.snapshot.lobbies.lobbies_total,
+      leaderboards_count: r.leaderboards_count,
+      tournaments_count: r.snapshot.tournaments.tournaments |> Map.values() |> Enum.sum(),
+      matchmaking_stats: r.matchmaking_stats,
+      ready_check_stats: r.ready_check_stats,
+      tournament_stats: r.snapshot.tournaments,
+      kv_count: r.kv_count,
+      kv_global: r.kv_global,
+      kv_user: r.kv_count - r.kv_global,
+      users_google: r.users_google,
+      users_facebook: r.users_facebook,
+      users_github: r.users_github,
+      users_discord: r.users_discord,
+      users_apple: r.users_apple,
+      users_steam: r.users_steam,
+      users_device: r.users_device,
+      users_password: r.users_password,
+      lobbies_hostless: r.lobbies_hostless,
+      lobbies_hidden: r.lobbies_hidden,
+      lobbies_locked: r.lobbies_locked,
+      lobbies_passworded: r.lobbies_passworded,
+      notifications_count: r.notifications_count,
+      push_stats: r.push_stats,
+      leaderboard_records: r.leaderboard_records,
+      groups_count: r.groups_count,
+      groups_public: r.groups_public,
+      groups_private: r.groups_private,
+      groups_hidden: r.groups_hidden,
+      groups_members: r.groups_members,
+      parties_count: r.parties_count,
+      blacklist_count: r.blacklist_count,
+      friends_count: r.friends_count,
+      parties_members: r.parties_members,
+      chat_count: r.chat_count,
+      chat_senders: r.chat_senders,
+      chat_silent: max(r.snapshot.players.players_total - r.chat_senders, 0),
+      chat_by_lobby: Map.get(r.chat_by_type, "lobby", 0),
+      chat_by_group: Map.get(r.chat_by_type, "group", 0),
+      chat_by_friend: Map.get(r.chat_by_type, "friend", 0),
+      open_reports: r.open_reports,
+      content_reports: Map.get(r.report_counts, "open", 0),
+      report_counts: r.report_counts,
+      host: r.host,
+      github_installations: r.github_installations,
+      active_mutes: r.active_mutes,
+      translation_stats: r.translation_stats,
+      quest_stats: r.quest_stats,
+      payments_stats: r.payments_stats,
+      result_counts: r.result_counts,
+      analytics_stats: r.analytics_stats,
+      users_unactivated: r.users_unactivated,
+      oban_stats: r.oban_stats,
+      economy_stats: r.economy_stats,
+      plugin_count: r.plugins.count,
+      plugin_errors: r.plugins.errors
+    )
+    |> assign_sections()
+  end
+
+  # The cards read the figures and the live stats both: built again when
+  # either moves, once the figures are in.
+  defp assign_sections(%{assigns: %{stats_loaded?: true}} = socket),
+    do: assign(socket, :sections, IndexCards.sections(socket.assigns))
+
+  defp assign_sections(socket), do: socket
+
+  # Four at a time, so the dashboard never holds more than four of the pool's
+  # connections; each figure on its own, so one that raises or runs past 30 s
+  # is logged and shows its default while the rest still draw.
+  defp load_stats do
+    Gamend.Cache.cached(@stats_key, [ttl: :timer.seconds(30)], fn ->
+      queries = stat_queries()
+
+      queries
+      |> Task.async_stream(fn {key, _default, fun} -> read_stat(key, fun) end,
+        max_concurrency: 4,
+        timeout: 30_000,
+        on_timeout: :kill_task
+      )
+      |> Enum.zip(queries)
+      |> Map.new(fn
+        {{:ok, {:ok, value}}, {key, _default, _fun}} ->
+          {key, value}
+
+        {{:ok, :error}, {key, default, _fun}} ->
+          {key, default}
+
+        {{:exit, reason}, {key, default, _fun}} ->
+          Logger.warning("admin dashboard: #{key} did not finish: #{inspect(reason)}")
+          {key, default}
+      end)
+    end)
+  end
+
+  defp read_stat(key, fun) do
+    {:ok, fun.()}
+  rescue
+    error ->
+      Logger.warning(
+        "admin dashboard: #{key} failed\n" <> Exception.format(:error, error, __STACKTRACE__)
+      )
+
+      :error
+  end
+
+  # `{key, default, read}`: the default is what the card shows when the read fails.
+  defp stat_queries do
+    [
+      # Players / lobbies / parties / quests / matchmaking / tournaments come
+      # from the one cached composition every stats surface reads.
+      {:snapshot, empty_snapshot(), &safe_snapshot/0},
+      # Sessions only, as the page the button opens lists: every token context
+      # (reset, confirm, API) made this read higher than that page ever showed.
+      {:sessions_count, 0,
+       fn ->
+         Repo.aggregate(
+           Ecto.Query.where(UserToken, [t], t.context == ^TokenContext.session()),
+           :count
+         )
+       end},
+      {:notifications_count, 0, &Notifications.count_all_notifications/0},
+      {:push_stats, %{live: 0, disabled: 0, by_platform: []}, &Gamend.Push.token_stats/0},
+      {:leaderboards_count, 0, fn -> Repo.aggregate(Leaderboard, :count) end},
+      {:matchmaking_stats, %{queued: 0, matched: 0, cancelled: 0, queues: []},
+       &Gamend.Matchmaking.stats/0},
+      {:ready_check_stats, %{}, &Gamend.ReadyChecks.stats/0},
+      {:kv_count, 0, fn -> KV.count_entries() end},
+      {:kv_global, 0, fn -> KV.count_entries(global_only: true) end},
+      {:users_google, 0, fn -> Accounts.count_users_with_provider(:google_id) end},
+      {:users_facebook, 0, fn -> Accounts.count_users_with_provider(:facebook_id) end},
+      {:users_github, 0, fn -> Accounts.count_users_with_provider(:github_id) end},
+      {:users_discord, 0, fn -> Accounts.count_users_with_provider(:discord_id) end},
+      {:users_apple, 0, fn -> Accounts.count_users_with_provider(:apple_id) end},
+      {:users_steam, 0, fn -> Accounts.count_users_with_provider(:steam_id) end},
+      {:users_device, 0, fn -> Accounts.count_users_with_provider(:device_id) end},
+      {:users_password, 0, &Accounts.count_users_with_password/0},
+      {:lobbies_hostless, 0, &Gamend.Lobbies.count_hostless_lobbies/0},
+      {:lobbies_hidden, 0, &Gamend.Lobbies.count_hidden_lobbies/0},
+      {:lobbies_locked, 0, &Gamend.Lobbies.count_locked_lobbies/0},
+      {:lobbies_passworded, 0, &Gamend.Lobbies.count_passworded_lobbies/0},
+      {:leaderboard_records, 0, &Gamend.Leaderboards.count_all_records/0},
+      {:groups_count, 0, &Groups.count_all_groups/0},
+      {:groups_public, 0, fn -> Groups.count_groups_by_type(GroupType.public()) end},
+      {:groups_private, 0, fn -> Groups.count_groups_by_type(GroupType.private()) end},
+      {:groups_hidden, 0, fn -> Groups.count_groups_by_type(GroupType.hidden()) end},
+      {:groups_members, 0, &Groups.count_all_members/0},
+      {:parties_count, 0, &Parties.count_all_parties/0},
+      {:blacklist_count, 0, &Gamend.Friends.count_all_blocks/0},
+      {:friends_count, 0, &Gamend.Friends.count_all_friendships/0},
+      {:parties_members, 0, &Parties.count_all_party_members/0},
+      {:chat_count, 0, &Gamend.Chat.count_all_messages/0},
+      {:chat_senders, 0, &Gamend.Chat.count_unique_senders/0},
+      {:chat_by_type, %{}, &Gamend.Chat.count_messages_by_type/0},
+      {:open_reports, 0, &Reports.count_open_reports/0},
+      {:report_counts, %{}, &Gamend.Reports.count_by_status/0},
+      {:host, [], &GamendWeb.AdminCard.load/0},
+      {:github_installations, 0, &Gamend.GitHub.count_all_installations/0},
+      {:active_mutes, 0, fn -> Gamend.Chat.count_mutes(%{"active" => true}) end},
+      {:quest_stats,
+       %{
+         definitions: 0,
+         active_definitions: 0,
+         completions_today: 0,
+         claims_today: 0,
+         claimable_now: 0
+       }, &Gamend.Quests.dashboard_stats/0},
+      {:payments_stats,
+       %{
+         purchases: 0,
+         completed_purchases: 0,
+         products: 0,
+         provider_products: 0,
+         active_entitlements: 0
+       }, &Payments.admin_stats/0},
+      {:translation_stats, [], &TranslationStats.all_completeness/0},
+      {:users_unactivated, 0, &Accounts.count_unactivated_users/0},
+      {:oban_stats, empty_oban_stats(), &safe_oban_stats/0},
+      {:economy_stats, %{wallets: 0, ledger: 0}, &safe_economy_stats/0},
+      {:analytics_stats, empty_analytics_stats(), &safe_analytics_stats/0},
+      {:result_counts, %{total: 0, open: 0}, &safe_result_counts/0},
+      {:plugins, %{count: 0, errors: 0},
+       fn ->
+         plugins = PluginManager.list()
+         %{count: length(plugins), errors: Enum.count(plugins, &match?({:error, _}, &1.status))}
+       end}
+    ]
   end
 
   @impl true
@@ -718,20 +361,14 @@ defmodule GamendWeb.AdminLive.Index do
        geo_crawlers_1h: geo.crawlers_1h,
        log_recent_errors: safe_log_recent_errors(),
        cache_stats: Gamend.Cache.Stats.snapshot()
-     )}
+     )
+     |> assign_sections()}
   end
 
   @impl true
   def handle_info(_msg, socket), do: {:noreply, socket}
 
   defp schedule_live_refresh, do: Process.send_after(self(), :refresh_live_stats, 5_000)
-
-  # The languages furthest from done; the page itself lists them all.
-  defp least_translated(stats) do
-    stats |> Enum.sort_by(& &1.percent) |> Enum.take(@translations_shown)
-  end
-
-  defp translations_hidden(stats), do: max(length(stats) - @translations_shown, 0)
 
   defp build_rate_limit_stats do
     # Counter inspection only works for the ETS backend; with the Redis
@@ -771,36 +408,11 @@ defmodule GamendWeb.AdminLive.Index do
   defp bucket_limit("general:" <> _, _auth_limit, general_limit), do: general_limit
   defp bucket_limit(_key, _auth_limit, _general_limit), do: nil
 
-  defp cache_hit_rate_label(%{cache: []}), do: "—"
-
-  defp cache_hit_rate_label(%{cache: rows}) do
-    hits = Enum.sum_by(rows, & &1.hits)
-    total = hits + Enum.sum_by(rows, & &1.misses)
-
-    if total > 0, do: "#{round(hits / total * 100)}%", else: "—"
-  end
-
-  defp format_number(n) when is_integer(n) and n >= 1_000_000 do
-    "#{Float.round(n / 1_000_000, 1)}M"
-  end
-
-  defp format_number(n) when is_integer(n) and n >= 1_000 do
-    "#{Float.round(n / 1_000, 1)}K"
-  end
-
-  defp format_number(n), do: to_string(n)
-
-  defp countries_label(n), do: ngettext("%{count} country", "%{count} countries", n)
-
   defp safe_log_count_by_level do
     GamendWeb.AdminLogBuffer.count_by_level()
   rescue
     _ -> %{}
   end
-
-  defp state_count(counts, state), do: Map.get(counts, state, 0)
-
-  defp entries_total(counts), do: counts |> Map.values() |> Enum.sum()
 
   defp safe_log_recent_errors do
     GamendWeb.AdminLogBuffer.count_recent_errors(3600)
@@ -835,22 +447,33 @@ defmodule GamendWeb.AdminLive.Index do
   defp safe_analytics_stats do
     Gamend.Analytics.dashboard_stats()
   rescue
-    _ ->
-      %{
-        dau: 0,
-        wau: 0,
-        mau: 0,
-        stickiness: nil,
-        d1: nil,
-        d7: nil,
-        d30: nil,
-        payers_30d: 0,
-        conversion_30d: nil
-      }
+    _ -> empty_analytics_stats()
   end
 
-  defp pct(nil), do: "—"
-  defp pct(rate) when is_float(rate), do: "#{Float.round(rate * 100, 1)}%"
+  defp empty_analytics_stats do
+    %{
+      dau: 0,
+      wau: 0,
+      mau: 0,
+      stickiness: nil,
+      d1: nil,
+      d7: nil,
+      d30: nil,
+      payers_30d: 0,
+      conversion_30d: nil
+    }
+  end
+
+  # What the cards read of `Gamend.Analytics.snapshot/0`, all zero: the
+  # default when even `safe_snapshot/0`'s fallback fails.
+  defp empty_snapshot do
+    %{
+      players: %{players_total: 0},
+      activity: %{dau: 0, wau: 0, mau: 0, new_users_1d: 0, new_users_7d: 0, new_users_30d: 0},
+      lobbies: %{lobbies_total: 0},
+      tournaments: %{tournaments: %{}, entries: %{}, matches: %{open: 0, total: 0, overdue: 0}}
+    }
+  end
 
   defp safe_storage_info do
     case Gamend.Storage.adapter() do
@@ -882,8 +505,10 @@ defmodule GamendWeb.AdminLive.Index do
       retryable: Map.get(counts, "retryable", 0)
     }
   rescue
-    _ -> %{total: 0, executing: 0, available: 0, scheduled: 0, retryable: 0}
+    _ -> empty_oban_stats()
   end
+
+  defp empty_oban_stats, do: %{total: 0, executing: 0, available: 0, scheduled: 0, retryable: 0}
 
   defp safe_result_counts do
     %{total: Gamend.Results.count(), open: Gamend.Results.count(%{status: ResultStatus.open()})}

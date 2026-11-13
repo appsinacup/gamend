@@ -82,6 +82,7 @@ defmodule GamendWeb.AdminCardTest do
     {:ok, admin} = admin |> User.admin_changeset(%{"is_admin" => true}) |> Repo.update()
 
     {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
+    render_async(view, 30_000)
     view
   end
 

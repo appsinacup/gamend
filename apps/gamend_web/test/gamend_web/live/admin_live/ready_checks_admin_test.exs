@@ -114,7 +114,8 @@ defmodule GamendWeb.AdminLive.ReadyChecksAdminTest do
       {:ok, check} = ReadyChecks.open(ctx.lobby, [ctx.host.id, ctx.member.id])
       {:ok, _} = ReadyChecks.cancel(check)
 
-      {:ok, _view, html} = live(ctx.conn, ~p"/admin")
+      {:ok, view, _html} = live(ctx.conn, ~p"/admin")
+      html = render_async(view, 30_000)
 
       assert html =~ "Ready checks 24h"
     end

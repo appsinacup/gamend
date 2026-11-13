@@ -74,6 +74,34 @@ defmodule Gamend.Payments.EntitlementRaceTest do
     end
   end
 
+  test "extends at once each add their days", %{users: users} do
+    now = DateTime.utc_now(:second)
+    ends_at = DateTime.add(now, 10, :day)
+
+    rows =
+      unboxed(fn ->
+        for user <- users do
+          {:ok, row} = Payments.grant_entitlement(user.id, "race_extend", expires_at: ends_at)
+          row
+        end
+      end)
+
+    results =
+      rows
+      |> Enum.flat_map(fn row ->
+        for _ <- 1..3, do: fn -> Payments.extend_entitlement(row.id, 30) end
+      end)
+      |> race()
+
+    refute Enum.any?(results, &match?({:raised, _}, &1)), inspect(results)
+    assert Enum.all?(results, &match?({:ok, %Entitlement{}}, &1)), inspect(results)
+
+    for user <- users do
+      [row] = unboxed(fn -> Repo.all(entitlement_rows(user.id, "race_extend")) end)
+      assert row.expires_at == DateTime.add(ends_at, 90, :day), "an extend lost another's days"
+    end
+  end
+
   test "two purchases of one key fulfilled at once both complete", %{
     users: users,
     provider_product: provider_product

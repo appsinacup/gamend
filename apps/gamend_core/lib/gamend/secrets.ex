@@ -87,26 +87,19 @@ defmodule Gamend.Secrets do
   @spec put(String.t(), String.t(), String.t(), binary(), keyword()) ::
           {:ok, Secret.t()} | {:error, :no_key | Ecto.Changeset.t()}
   def put(scope, scope_id, name, value, opts \\ []) when is_binary(value) do
-    with {:ok, {key_id, key}} <- current_key() do
-      iv = :crypto.strong_rand_bytes(@iv_size)
-      aad = aad(scope, scope_id, name)
-
-      {ciphertext, tag} =
-        :crypto.crypto_one_time_aead(@cipher, key, iv, value, aad, true)
-
-      attrs = %{
-        scope: scope,
-        scope_id: scope_id,
-        name: name,
-        ciphertext: ciphertext,
-        iv: iv,
-        tag: tag,
-        key_id: key_id,
-        kind: Keyword.get(opts, :kind),
-        byte_size: byte_size(value),
-        expires_at: Keyword.get(opts, :expires_at),
-        created_by_id: Keyword.get(opts, :created_by_id)
-      }
+    with {:ok, current} <- current_key() do
+      attrs =
+        scope
+        |> seal(scope_id, name, value, current)
+        |> Map.merge(%{
+          scope: scope,
+          scope_id: scope_id,
+          name: name,
+          kind: Keyword.get(opts, :kind),
+          byte_size: byte_size(value),
+          expires_at: Keyword.get(opts, :expires_at),
+          created_by_id: Keyword.get(opts, :created_by_id)
+        })
 
       case get(scope, scope_id, name) do
         nil -> %Secret{}
@@ -203,13 +196,16 @@ defmodule Gamend.Secrets do
   stays configured until this reports none stuck — removing it earlier is how a
   certificate becomes unreadable.
 
-  Answers how many rows moved, and how many could not be opened at all.
+  Answers how many rows moved, how many could not be opened at all, and how
+  many were skipped because a `put/5` or `delete/3` changed them meanwhile
+  (a `put` writes under the current key already).
   """
   @spec rotate(pos_integer()) ::
-          {:ok, %{moved: non_neg_integer(), stuck: non_neg_integer()}} | {:error, :no_key}
+          {:ok, %{moved: non_neg_integer(), stuck: non_neg_integer(), skipped: non_neg_integer()}}
+          | {:error, :no_key}
   def rotate(batch \\ 100) do
     with {:ok, {key_id, _key}} <- current_key() do
-      {:ok, rotate_after(nil, key_id, batch, %{moved: 0, stuck: 0})}
+      {:ok, rotate_after(nil, key_id, batch, %{moved: 0, stuck: 0, skipped: 0})}
     end
   end
 
@@ -245,21 +241,41 @@ defmodule Gamend.Secrets do
   defp after_id(query, nil), do: query
   defp after_id(query, id), do: where(query, [s], s.id > ^id)
 
+  # Re-encrypted only if the row is still the one read: the same id, key and
+  # last write. An upsert by name (`put/5`) wrote back the value read here
+  # over a `put` that landed meanwhile, and brought back a secret deleted
+  # meanwhile; the `{:ok, _} =` then raised and ended the walk. A row that
+  # changed was written under the current key anyway, and counts as skipped.
   defp rotate_row(%Secret{} = secret, tally) do
-    case open(secret) do
-      {:ok, value} ->
-        {:ok, _} =
-          put(secret.scope, secret.scope_id, secret.name, value,
-            kind: secret.kind,
-            expires_at: secret.expires_at,
-            created_by_id: secret.created_by_id
-          )
+    with {:ok, value} <- open(secret),
+         {:ok, current} <- current_key() do
+      sealed = seal(secret.scope, secret.scope_id, secret.name, value, current)
 
-        %{tally | moved: tally.moved + 1}
-
-      {:error, _reason} ->
-        %{tally | stuck: tally.stuck + 1}
+      from(s in Secret,
+        where:
+          s.id == ^secret.id and s.key_id == ^secret.key_id and
+            s.updated_at == ^secret.updated_at
+      )
+      |> Repo.compare_and_set(
+        set: Map.to_list(Map.put(sealed, :updated_at, DateTime.utc_now(:microsecond)))
+      )
+      |> case do
+        {:ok, _rotated} -> %{tally | moved: tally.moved + 1}
+        {:error, :precondition_failed} -> %{tally | skipped: tally.skipped + 1}
+      end
+    else
+      {:error, _reason} -> %{tally | stuck: tally.stuck + 1}
     end
+  end
+
+  # The value encrypted under `{key_id, key}`, bound to its owner and name.
+  defp seal(scope, scope_id, name, value, {key_id, key}) do
+    iv = :crypto.strong_rand_bytes(@iv_size)
+
+    {ciphertext, tag} =
+      :crypto.crypto_one_time_aead(@cipher, key, iv, value, aad(scope, scope_id, name), true)
+
+    %{ciphertext: ciphertext, iv: iv, tag: tag, key_id: key_id}
   end
 
   defp open(%Secret{} = secret) do

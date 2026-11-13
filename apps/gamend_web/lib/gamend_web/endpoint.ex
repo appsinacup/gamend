@@ -78,6 +78,9 @@ defmodule GamendWeb.Endpoint do
   plug :serve_asset_static
   plug :serve_bundled_static
   plug GamendWeb.HostContentStatic
+  # The icon set, embedded at compile time: static artwork, served with the
+  # files above rather than counted, geolocated and given a session per icon.
+  plug GamendWeb.Plugs.Icons
 
   # Two separate guards, deliberately. `Phoenix.CodeReloader` ships with
   # :phoenix, but `Phoenix.LiveReloader` is a `only: :dev` dependency — and

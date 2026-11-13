@@ -71,14 +71,21 @@ defmodule GamendWeb.AdminLive.SettingsTest do
       :ok
     end
 
-    test "the page links to it", %{conn: conn} do
+    test "the page posts for it, asking a password only of an account with one", %{conn: conn} do
       {:ok, view, _html} = live(conn, ~p"/admin/settings")
 
-      assert has_element?(view, ~s(#settings-export[href="/admin/settings/export"]))
+      assert has_element?(view, ~s(form#settings-export[action="/admin/settings/export"]))
+      refute has_element?(view, "#settings-export-password")
+
+      {:ok, view, _html} = live(log_in_user(build_conn(), password_admin()), ~p"/admin/settings")
+
+      assert has_element?(view, ~s(#settings-export-password[type="password"][required]))
     end
 
-    test "an admin gets real values, uncached", %{conn: conn} do
-      conn = get(conn, ~p"/admin/settings/export")
+    test "an admin with no password, signed in recently, gets real values, uncached", %{
+      conn: conn
+    } do
+      conn = post(conn, ~p"/admin/settings/export")
 
       assert response(conn, 200) =~ "=super-secret-value\n"
       assert [disposition] = get_resp_header(conn, "content-disposition")
@@ -86,11 +93,30 @@ defmodule GamendWeb.AdminLive.SettingsTest do
       assert get_resp_header(conn, "cache-control") == ["private, no-store"]
     end
 
+    # A session left open is not enough: the password, typed again.
+    test "an admin with a password types it again" do
+      conn = log_in_user(build_conn(), password_admin())
+
+      for password <- [nil, "", "not it"] do
+        refused = post(conn, ~p"/admin/settings/export", %{"password" => password})
+
+        assert redirected_to(refused) == ~p"/admin/settings"
+        refute response(refused, 302) =~ "super-secret-value"
+      end
+
+      conn =
+        post(conn, ~p"/admin/settings/export", %{
+          "password" => AccountsFixtures.valid_user_password()
+        })
+
+      assert response(conn, 200) =~ "=super-secret-value\n"
+    end
+
     test "an admin who signed in long ago signs in again, back to the page", %{admin: admin} do
       long_ago = DateTime.add(DateTime.utc_now(:second), -1, :day)
       conn = build_conn() |> log_in_user(admin, token_authenticated_at: long_ago)
 
-      conn = get(conn, ~p"/admin/settings/export")
+      conn = post(conn, ~p"/admin/settings/export")
 
       assert redirected_to(conn) == ~p"/users/log_in"
       assert get_session(conn, :user_return_to) == ~p"/admin/settings"
@@ -101,11 +127,19 @@ defmodule GamendWeb.AdminLive.SettingsTest do
       player = log_in_user(build_conn(), AccountsFixtures.user_fixture())
 
       for conn <- [build_conn(), player] do
-        conn = get(conn, ~p"/admin/settings/export")
+        conn = post(conn, ~p"/admin/settings/export")
 
         assert conn.status == 302
         refute response(conn, 302) =~ "super-secret-value"
       end
+    end
+
+    # Its password set before it signs in: setting one ends its sessions.
+    defp password_admin do
+      AccountsFixtures.user_fixture()
+      |> AccountsFixtures.set_password()
+      |> User.admin_changeset(%{"is_admin" => true})
+      |> Repo.update!()
     end
   end
 

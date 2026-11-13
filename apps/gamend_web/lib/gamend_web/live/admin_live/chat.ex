@@ -13,13 +13,14 @@ defmodule GamendWeb.AdminLive.Chat do
     keys: [:page, :page_size, filters: [keys: @filter_keys]]
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket =
       socket
       |> assign(:page, 1)
       |> assign(:page_size, 25)
       |> assign(:filters, %{})
       |> assign(:selected_ids, MapSet.new())
+      |> GamendWeb.UrlState.from_url(params)
       |> reload_messages()
 
     {:ok, socket}

@@ -15,6 +15,11 @@ defmodule GamendWeb.NotificationsLive do
   # "Load more".
   @load_step 50
 
+  # Notifications that arrive while the page is open are taken in one go,
+  # this long after the first: chat sends one per message per recipient, and
+  # each was an UPDATE marking every row read, a cache bump and three queries.
+  @arrivals_ms 750
+
   require Gamend.Notifications.NotificationType, as: NotificationType
   require Gamend.Notifications.PreferenceGroup, as: PreferenceGroup
   require GamendWeb.UserLive.Settings.SettingsTab, as: SettingsTab
@@ -314,6 +319,8 @@ defmodule GamendWeb.NotificationsLive do
       |> assign(:open_stacks, MapSet.new())
       |> assign(:notif_count, 0)
       |> assign(:notif_unread_count, 0)
+      |> assign(:arrived, MapSet.new())
+      |> assign(:arrivals_due?, false)
       |> reload_notifications()
 
     {:ok, socket}
@@ -341,12 +348,7 @@ defmodule GamendWeb.NotificationsLive do
 
   def handle_event("delete_all", _params, socket) do
     user = Scope.user(socket.assigns.current_scope)
-
-    all_ids =
-      Notifications.list_notifications(user.id, page: 1, page_size: 10_000)
-      |> Enum.map(& &1.id)
-
-    Notifications.delete_notifications(user.id, all_ids)
+    Notifications.delete_all_notifications(user.id)
 
     {:noreply,
      socket
@@ -355,12 +357,31 @@ defmodule GamendWeb.NotificationsLive do
      |> reload_notifications()}
   end
 
+  # Read, since the page is open: only the ones that arrived, once per
+  # `@arrivals_ms`, with one reload for the lot.
   @impl true
-  def handle_info({:notification_created, _notification}, socket) do
+  def handle_info({:notification_created, %{id: id}}, socket) do
+    socket = update(socket, :arrived, &MapSet.put(&1, id))
+
+    if socket.assigns.arrivals_due? do
+      {:noreply, socket}
+    else
+      Process.send_after(self(), :take_arrivals, @arrivals_ms)
+      {:noreply, assign(socket, :arrivals_due?, true)}
+    end
+  end
+
+  def handle_info(:take_arrivals, %{assigns: %{arrivals_due?: false}} = socket),
+    do: {:noreply, socket}
+
+  def handle_info(:take_arrivals, socket) do
     user = Scope.user(socket.assigns.current_scope)
-    # Auto-mark new notifications as read since the user is viewing the page
-    Notifications.mark_all_notifications_read(user.id)
-    {:noreply, reload_notifications(socket)}
+    Notifications.mark_notifications_read(user.id, MapSet.to_list(socket.assigns.arrived))
+
+    {:noreply,
+     socket
+     |> assign(arrived: MapSet.new(), arrivals_due?: false)
+     |> reload_notifications()}
   end
 
   def handle_info(_msg, socket), do: {:noreply, socket}

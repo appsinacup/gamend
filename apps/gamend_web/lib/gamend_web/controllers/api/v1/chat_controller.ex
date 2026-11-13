@@ -389,10 +389,13 @@ defmodule GamendWeb.Api.V1.ChatController do
        }},
     responses: [
       ok: {"Updated message", "application/json", ChatMessageResponse},
-      not_found: Schemas.error("Message not found"),
+      not_found:
+        Schemas.error(
+          "Message not found, or no longer in its lobby or party (not_in_lobby, not_in_party)"
+        ),
       forbidden:
         Schemas.error(
-          "Not message sender, muted, or a game hook refused the edit (rejected, its words in message)"
+          "Not message sender, no longer allowed in the conversation (blocked, not_friends, not_in_group), muted, or a game hook refused the edit (rejected, its words in message)"
         ),
       unprocessable_entity:
         Schemas.error("Validation failed, or the word filter blocked it (blocked_content)")

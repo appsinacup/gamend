@@ -140,5 +140,23 @@ defmodule GamendWeb.IconsTest do
       assert response(conn, 200) =~ "<symbol "
       assert get_resp_header(conn, "set-cookie") == []
     end
+
+    # A page draws 30 to 60 icons: routed, each was a request of the visitor's
+    # rate-limit budget and a geo stat, and a shared address got 429s.
+    test "is answered with the static files, before the rate limiter and geo stats",
+         %{conn: conn} do
+      for path <- [Icons.draw_path(:trophy), "/icons/outline/trophy.svg", "/icons/nope.svg"] do
+        conn = get(conn, path)
+
+        assert conn.halted
+        # `GeoCountry` assigns it, and runs just before `IpBan` and the limiter.
+        refute Map.has_key?(conn.assigns, :country), "#{path} went through GeoCountry"
+        refute conn.private[:plug_session], "#{path} was given a session"
+      end
+    end
+
+    test "a path deeper than any icon is the router's 404", %{conn: conn} do
+      assert response(get(conn, "/icons/outline/deeper/trophy.svg"), 404)
+    end
   end
 end

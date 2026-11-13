@@ -39,7 +39,7 @@ defmodule GamendWeb.LeaderboardsLive do
   require GamendWeb.FilterValue, as: FilterValue
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     unless FeatureGate.enabled?(:list_leaderboards) do
       raise GamendWeb.NotFoundError
     end
@@ -61,6 +61,7 @@ defmodule GamendWeb.LeaderboardsLive do
       |> assign(:record_key, "")
       |> assign(:all_time, false)
       |> assign(:period_tabs, nil)
+      |> GamendWeb.UrlState.from_url(params)
       |> reload_groups()
 
     {:ok, socket}

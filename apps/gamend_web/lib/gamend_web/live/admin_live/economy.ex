@@ -23,7 +23,7 @@ defmodule GamendWeb.AdminLive.Economy do
     ]
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket =
       socket
       |> assign(:page_title, "Admin · Economy")
@@ -33,6 +33,7 @@ defmodule GamendWeb.AdminLive.Economy do
       |> assign(:currency_filter, "")
       |> assign(:form, %{"user_id" => "", "currency" => "", "amount" => "", "reason" => ""})
       |> assign(:item_form, %{"user_id" => "", "item" => "", "quantity" => ""})
+      |> GamendWeb.UrlState.from_url(params)
       |> reload()
 
     {:ok, socket}

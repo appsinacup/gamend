@@ -15,6 +15,7 @@ defmodule GamendWeb.AdminLive.IndexTest do
     {:ok, admin} = admin |> User.admin_changeset(%{"is_admin" => true}) |> Repo.update()
 
     {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
+    render_async(view, 30_000)
 
     doc = view |> render() |> LazyHTML.from_fragment()
     names = doc |> LazyHTML.query("#admin-cards > section > h2") |> Enum.map(&LazyHTML.text/1)
@@ -33,17 +34,33 @@ defmodule GamendWeb.AdminLive.IndexTest do
     {:ok, admin} = admin |> User.admin_changeset(%{"is_admin" => true}) |> Repo.update()
 
     {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
+    render_async(view, 30_000)
 
     for %{path: path} <- Pages.dashboard() do
       assert has_element?(view, card(path)), "no card opens #{path}"
     end
   end
 
-  test "the dashboard is cards alone, with no menu and no View link", %{conn: conn} do
+  # The counts are read once the socket is up: the first render says so.
+  test "the figures arrive after the page", %{conn: conn} do
+    Gamend.Cache.invalidate({:admin_dashboard_stats})
     admin = AccountsFixtures.user_fixture()
     {:ok, admin} = admin |> User.admin_changeset(%{"is_admin" => true}) |> Repo.update()
 
     {:ok, view, html} = conn |> log_in_user(admin) |> live(~p"/admin")
+
+    assert html =~ "admin-cards-loading"
+    render_async(view, 30_000)
+    assert has_element?(view, "#admin-cards")
+    refute has_element?(view, "#admin-cards-loading")
+  end
+
+  test "the dashboard is cards alone, with no menu and no View link", %{conn: conn} do
+    admin = AccountsFixtures.user_fixture()
+    {:ok, admin} = admin |> User.admin_changeset(%{"is_admin" => true}) |> Repo.update()
+
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
+    html = render_async(view, 30_000)
 
     assert has_element?(view, "#admin-cards")
     refute has_element?(view, "#admin-menu")
@@ -55,6 +72,7 @@ defmodule GamendWeb.AdminLive.IndexTest do
     {:ok, admin} = admin |> User.admin_changeset(%{"is_admin" => true}) |> Repo.update()
 
     {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
+    render_async(view, 30_000)
 
     hidden = length(Stats.all_completeness()) - 3
 
@@ -75,6 +93,7 @@ defmodule GamendWeb.AdminLive.IndexTest do
     Gamend.Lobbies.create_lobby(%{title: "dash-2", hostless: true})
 
     {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
+    render_async(view, 30_000)
 
     assert has_element?(view, card("/admin/lobbies"), ~r/Lobbies\s+2\s+Hostless/)
   end
@@ -109,7 +128,8 @@ defmodule GamendWeb.AdminLive.IndexTest do
     {:ok, _} = Gamend.Leaderboards.submit_score(lb.id, u1.id, 10)
     {:ok, _} = Gamend.Leaderboards.submit_score(lb.id, u2.id, 20)
 
-    {:ok, _view, html} = conn |> log_in_user(admin) |> live(~p"/admin")
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
+    html = render_async(view, 30_000)
 
     assert html =~ "Users"
     assert html =~ "Google: 1"
@@ -131,6 +151,7 @@ defmodule GamendWeb.AdminLive.IndexTest do
     {:ok, _} = KV.put("dash-kv-2", %{v: 2}, %{"m" => "b"})
 
     {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin")
+    render_async(view, 30_000)
 
     assert has_element?(view, card("/admin/kv"), ~r/Key-Value\s+2\s+Global/)
   end

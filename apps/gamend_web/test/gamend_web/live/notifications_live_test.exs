@@ -4,6 +4,7 @@ defmodule GamendWeb.NotificationsLiveTest do
   """
   use GamendWeb.ConnCase, async: false
 
+  import Ecto.Query
   import Phoenix.LiveViewTest
   import Gamend.AccountsFixtures
 
@@ -49,6 +50,17 @@ defmodule GamendWeb.NotificationsLiveTest do
 
       assert [%{key: "payments", stacks: [%{key: "payments-quest_completed"}]}] =
                Sections.build([row("a", metadata)])
+    end
+
+    test "a stored group or type that names nothing goes in Other" do
+      assert [%{key: key, stacks: [_one, _other]}] =
+               Sections.build([
+                 row("a", %{"group" => 1, "type" => 5}),
+                 row("b", %{"group" => "no_such_group"})
+               ])
+
+      assert key == Sections.other()
+      assert GamendWeb.NotificationEmail.group_label(1) == "Other"
     end
 
     test "a notice with no type goes in Other and stacks with nothing" do
@@ -224,9 +236,65 @@ defmodule GamendWeb.NotificationsLiveTest do
       view |> element("#notif-stack-toggle-social-friend_request") |> render_click()
 
       late = create(user, user_fixture(), "Friend request three", "friend_request")
+      # What the page's timer sends, without waiting for it.
+      send(view.pid, :take_arrivals)
 
       assert has_element?(view, "#notif-#{late.id}")
       assert has_element?(view, "#notif-#{first.id}")
+    end
+
+    test "only the notifications that arrived are marked read", %{
+      conn: conn,
+      user: user,
+      invite: invite
+    } do
+      {:ok, view, _html} = live(conn, ~p"/notifications")
+      Repo.update_all(from(n in Notification, where: n.id == ^invite.id), set: [read: false])
+
+      first = create(user, user_fixture(), "Arrival one", "friend_request")
+      second = create(user, user_fixture(), "Arrival two", "friend_request")
+      send(view.pid, :take_arrivals)
+      _ = render(view)
+
+      assert Repo.get!(Notification, first.id).read
+      assert Repo.get!(Notification, second.id).read
+      refute Repo.get!(Notification, invite.id).read
+    end
+
+    test "Delete all deletes every notification", %{conn: conn, user: user} do
+      {:ok, view, _html} = live(conn, ~p"/notifications")
+
+      view |> element("button[phx-click=delete_all]") |> render_click()
+
+      assert Notifications.count_notifications(user.id) == 0
+      refute has_element?(view, "#notifications-sections")
+    end
+  end
+
+  describe "a row stored with a bad group" do
+    setup :register_and_log_in_user
+
+    test "the page still opens", %{conn: conn, user: user} do
+      now = DateTime.utc_now(:second)
+      id = Gamend.UUIDv7.generate()
+
+      Repo.insert_all(Notification, [
+        %{
+          id: id,
+          sender_id: user.id,
+          recipient_id: user.id,
+          title: "From before the fix",
+          content: "",
+          metadata: %{"group" => 1, "type" => %{"x" => 1}},
+          read: false,
+          inserted_at: now,
+          updated_at: now
+        }
+      ])
+
+      {:ok, view, _html} = live(conn, ~p"/notifications")
+
+      assert has_element?(view, "#notif-section-other #notif-#{id}")
     end
   end
 

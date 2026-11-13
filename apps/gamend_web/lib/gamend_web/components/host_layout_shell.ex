@@ -32,11 +32,12 @@ defmodule GamendWeb.HostLayoutShell do
       assigns
       |> Map.put_new(:nav_key, nil)
       |> Map.put_new(:screen, false)
-      |> assign(:side?, GamendWeb.HostLayoutNavigation.side_layout?(assigns[:navigation]))
-      |> assign(:auto?, GamendWeb.HostLayoutNavigation.auto_layout?(assigns[:navigation]))
 
-    # The five navs below draw the same links: resolved once here.
-    assigns = assign(assigns, :nav_prepared, GamendWeb.HostLayoutNavigation.prepare(assigns))
+    # `HostLayouts.prepare_app_assigns/1` has already derived them, and kept
+    # them out of `__changed__` when no input moved. Assigned here, they were
+    # new on every call, and every nav re-rendered on every diff.
+    assigns =
+      if Map.has_key?(assigns, :nav_prepared), do: assigns, else: assign_nav(assigns, true)
 
     ~H"""
     <%!-- First focusable element on every page: invisible until it receives
@@ -369,6 +370,27 @@ defmodule GamendWeb.HostLayoutShell do
       <% end %>
     </div>
     """
+  end
+
+  @doc false
+  # The layout the shell draws and the links its five navs share. Resolving the
+  # links counts quests and reads the wallet, so a render that keeps the
+  # navbar as it was (`rerender?` false) leaves them `nil`: the navs are out
+  # of that diff, and a nav handed `nil` resolves its own links anyway.
+  def assign_nav(assigns, rerender?) do
+    navigation = assigns[:navigation]
+
+    assigns =
+      assign(assigns,
+        side?: GamendWeb.HostLayoutNavigation.side_layout?(navigation),
+        auto?: GamendWeb.HostLayoutNavigation.auto_layout?(navigation)
+      )
+
+    assign(
+      assigns,
+      :nav_prepared,
+      if(rerender?, do: GamendWeb.HostLayoutNavigation.prepare(assigns))
+    )
   end
 
   attr :index_url, :string, required: true

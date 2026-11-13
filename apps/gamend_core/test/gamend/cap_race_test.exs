@@ -14,6 +14,9 @@ defmodule Gamend.CapRaceTest do
   alias Gamend.Accounts.ApiTokens
   alias Gamend.Accounts.User
   alias Gamend.AccountsFixtures
+  alias Gamend.Friends
+  alias Gamend.Notifications
+  alias Gamend.Notifications.Notification
   alias Gamend.Quests
   alias Gamend.Quests.Quest
   alias Gamend.Quests.QuestProgress
@@ -113,6 +116,48 @@ defmodule Gamend.CapRaceTest do
       |> Enum.filter(&(&1 > ended_ms))
 
     assert late == [], "#{length(late)} events landed after the play ended"
+  end
+
+  test "what friends send stops at max_notifications_per_user", %{user: user} do
+    friends =
+      unboxed(fn ->
+        for _ <- 1..@racers do
+          friend = AccountsFixtures.user_fixture()
+          {:ok, request} = Friends.create_request(friend.id, user.id)
+          {:ok, _} = Friends.accept_friend_request(request.id, user)
+          friend
+        end
+      end)
+
+    ids = Enum.map(friends, & &1.id)
+    cleanup(fn -> Repo.delete_all(from u in User, where: u.id in ^ids) end)
+
+    unboxed(fn ->
+      Repo.delete_all(from n in Notification, where: n.recipient_id == ^user.id)
+      Notifications.invalidate_notifications_cache(user.id)
+    end)
+
+    put_limit(:max_notifications_per_user, @cap)
+
+    results =
+      friends
+      |> Enum.map(fn friend ->
+        fn ->
+          Notifications.send_notification(friend.id, %{"user_id" => user.id, "title" => "Hi"})
+        end
+      end)
+      |> race()
+
+    refute Enum.any?(results, &match?({:raised, _}, &1)), inspect(results)
+    assert Enum.count(results, &match?({:ok, %Notification{}}, &1)) == @cap
+    assert Enum.count(results, &(&1 == {:error, :too_many_notifications})) == @racers - @cap
+
+    received =
+      unboxed(fn ->
+        Repo.aggregate(from(n in Notification, where: n.recipient_id == ^user.id), :count)
+      end)
+
+    assert received == @cap
   end
 
   defp put_limit(key, value) do

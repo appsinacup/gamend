@@ -934,32 +934,31 @@ defmodule Gamend.Payments.StripeEvents do
     metadata = stripe_entitlement_subscription_metadata(subscription)
     period_end = stripe_subscription_period_end(subscription)
 
-    from(e in Entitlement, where: e.source_purchase_id == ^purchase.id)
+    purchase_id = purchase.id
+
+    # Each row under its lock (`Payments.change_entitlement/2`), the end
+    # computed from the row as it is then: a grant beside a renewal kept its
+    # metadata only by luck.
+    from(e in Entitlement, where: e.source_purchase_id == ^purchase_id)
     |> Repo.all()
     |> Enum.reduce_while({:ok, []}, fn entitlement, {:ok, updated_entitlements} ->
-      {expires_at, paid_through} =
-        subscription_access(entitlement, subscription["status"], period_end)
+      Payments.change_entitlement(entitlement, fn
+        %Entitlement{source_purchase_id: ^purchase_id} = row ->
+          subscription_attrs(row, subscription["status"], period_end, metadata)
 
-      attrs = %{
-        metadata:
-          (entitlement.metadata || %{})
-          |> Params.merge_payload(metadata)
-          |> Params.put_if_present(
-            PurchaseMetadata.paid_through(),
-            Params.datetime_iso(paid_through),
-            true
-          )
-      }
-
-      attrs = if expires_at, do: Map.put(attrs, :expires_at, expires_at), else: attrs
-
-      case entitlement |> Entitlement.changeset(attrs) |> Repo.update() do
-        {:ok, updated} ->
-          report_subscription_change(purchase, entitlement, updated)
+        _taken_over ->
+          :unchanged
+      end)
+      |> case do
+        {:ok, {%Entitlement{} = before, %Entitlement{source_purchase_id: ^purchase_id} = updated}} ->
+          report_subscription_change(purchase, before, updated)
           Payments.after_entitlement_changed(updated)
 
           {:cont,
            {:ok, [Repo.preload(updated, [:product, :source_purchase]) | updated_entitlements]}}
+
+        {:ok, {_before, _gone_or_taken_over}} ->
+          {:cont, {:ok, updated_entitlements}}
 
         {:error, reason} ->
           {:halt, {:error, reason}}
@@ -969,6 +968,23 @@ defmodule Gamend.Payments.StripeEvents do
       {:ok, entitlements} -> {:ok, Enum.reverse(entitlements)}
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  defp subscription_attrs(%Entitlement{} = entitlement, status, period_end, metadata) do
+    {expires_at, paid_through} = subscription_access(entitlement, status, period_end)
+
+    attrs = %{
+      metadata:
+        (entitlement.metadata || %{})
+        |> Params.merge_payload(metadata)
+        |> Params.put_if_present(
+          PurchaseMetadata.paid_through(),
+          Params.datetime_iso(paid_through),
+          true
+        )
+    }
+
+    if expires_at, do: Map.put(attrs, :expires_at, expires_at), else: attrs
   end
 
   # `{expires_at, paid_through}` for a subscription status; a nil

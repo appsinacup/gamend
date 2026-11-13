@@ -56,7 +56,7 @@ defmodule GamendWeb.QuestsLive do
   require Gamend.Quests.QuestStatus, as: QuestStatus
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     unless FeatureGate.enabled?(:list_quests) do
       raise GamendWeb.NotFoundError
     end
@@ -78,6 +78,7 @@ defmodule GamendWeb.QuestsLive do
       |> assign(:shown_group, nil)
       |> assign(:status, nil)
       |> assign(:group_key, default_group(user))
+      |> GamendWeb.UrlState.from_url(params)
       |> load_quests()
 
     {:ok, socket}
@@ -162,15 +163,18 @@ defmodule GamendWeb.QuestsLive do
   def handle_event("page_size", %{"size" => size}, socket),
     do: {:noreply, socket |> LiveHelpers.put_page_size(size, min: 24) |> load_quests()}
 
+  # Every quest edit anywhere, and each progress report a game sends for this
+  # player (several a second while it plays): one reload covers a burst.
   @impl true
-  def handle_info({:quests_changed}, socket) do
-    {:noreply, load_quests(socket)}
-  end
+  def handle_info({:quests_changed}, socket),
+    do: {:noreply, LiveHelpers.reload_soon(socket, :reload_quests)}
 
   def handle_info({event, _payload}, socket)
-      when event in [:quest_progress, :quest_completed, :quest_claimed] do
-    {:noreply, load_quests(socket)}
-  end
+      when event in [:quest_progress, :quest_completed, :quest_claimed],
+      do: {:noreply, LiveHelpers.reload_soon(socket, :reload_quests)}
+
+  def handle_info(:reload_quests, socket),
+    do: {:noreply, socket |> LiveHelpers.reloaded(:reload_quests) |> load_quests()}
 
   def handle_info(_msg, socket), do: {:noreply, socket}
 

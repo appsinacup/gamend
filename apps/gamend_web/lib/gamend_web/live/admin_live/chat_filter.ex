@@ -36,7 +36,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
   require Gamend.Chat.FilterSeverity, as: FilterSeverity
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     languages = Moderation.bundled_languages()
 
     socket =
@@ -55,6 +55,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
       })
       |> assign(:phrase, "")
       |> assign(:chat_guide_url, chat_guide_url(socket))
+      |> GamendWeb.UrlState.from_url(params)
       |> reload()
 
     {:ok, socket}

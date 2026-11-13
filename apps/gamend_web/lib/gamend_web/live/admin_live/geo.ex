@@ -316,7 +316,7 @@ defmodule GamendWeb.AdminLive.Geo do
     ]
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     if connected?(socket), do: schedule_refresh()
 
     {:ok,
@@ -332,6 +332,7 @@ defmodule GamendWeb.AdminLive.Geo do
        sort: :count,
        refresh_interval: @refresh_interval
      )
+     |> GamendWeb.UrlState.from_url(params)
      |> load_snapshot()}
   end
 

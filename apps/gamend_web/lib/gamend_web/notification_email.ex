@@ -20,8 +20,11 @@ defmodule GamendWeb.NotificationEmail do
 
   @salt "notification unsubscribe"
 
-  @doc "A group's name as the reader sees it (core's in the catalogue, a host's through its own)."
-  @spec group_label(map() | String.t()) :: String.t()
+  @doc """
+  A group's name as the reader sees it (core's in the catalogue, a host's
+  through its own). A stored value that names no group reads "Other".
+  """
+  @spec group_label(term()) :: String.t()
   def group_label(key) when is_binary(key),
     do: key |> Preferences.group() |> Kernel.||(%{key: key, label: key}) |> group_label()
 
@@ -31,7 +34,11 @@ defmodule GamendWeb.NotificationEmail do
   def group_label(%{key: PreferenceGroup.quests()}), do: gettext("Quests and rewards")
   def group_label(%{key: PreferenceGroup.reports()}), do: gettext("Your reports")
   def group_label(%{key: PreferenceGroup.payments()}), do: gettext("Payments")
-  def group_label(%{label: label}), do: GamendWeb.HostLayouts.translate(label)
+
+  def group_label(%{label: label}) when is_binary(label),
+    do: GamendWeb.HostLayouts.translate(label)
+
+  def group_label(_unknown), do: dgettext("notifications", "Other")
 
   @doc "A channel's name."
   @spec channel_label(String.t()) :: String.t()

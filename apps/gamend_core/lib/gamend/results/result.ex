@@ -31,6 +31,10 @@ defmodule Gamend.Results.Result do
     field :metadata, :map, default: %{}
     field :started_at, :utc_datetime_usec
     field :ended_at, :utc_datetime_usec
+    # The events recorded so far, what `max_result_events` is checked against
+    # (`Gamend.Results.record/4`). Not cast; plays that had ended before the
+    # column (2026-11-13) read 0.
+    field :event_count, :integer, default: 0
 
     belongs_to :user, User
   end

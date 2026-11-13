@@ -29,7 +29,12 @@ defmodule Gamend.Quests.Codes do
 
   @doc "A code by id, or nil."
   @spec get(Ecto.UUID.t()) :: QuestCode.t() | nil
-  def get(id), do: Repo.get_uuid(QuestCode, id)
+  def get(id) do
+    case Repo.get_uuid(QuestCode, id) do
+      nil -> nil
+      code -> hd(with_uses([code]))
+    end
+  end
 
   @doc """
   The code what a player typed stands for, its quest preloaded, or nil.
@@ -38,8 +43,11 @@ defmodule Gamend.Quests.Codes do
   @spec find(String.t()) :: QuestCode.t() | nil
   def find(raw) when is_binary(raw) do
     with true <- QuestCode.plausible?(raw),
-         lookup when lookup != "" <- QuestCode.normalize(raw) do
-      from(c in QuestCode, where: c.lookup == ^lookup, preload: :quest) |> Repo.one()
+         [exact | _] = lookups when exact != "" <- QuestCode.lookups(raw) do
+      from(c in QuestCode, where: c.lookup in ^lookups, preload: :quest)
+      |> Repo.all()
+      |> Enum.sort_by(&(&1.lookup != exact))
+      |> List.first()
     else
       _ -> nil
     end
@@ -143,6 +151,7 @@ defmodule Gamend.Quests.Codes do
     |> order_by([c], desc: c.inserted_at, desc: c.id)
     |> Gamend.Query.page(opts)
     |> Repo.all()
+    |> with_uses()
   end
 
   @doc "How many codes match (same filters as `list/2`)."
@@ -154,11 +163,77 @@ defmodule Gamend.Quests.Codes do
   @doc "Every code of a quest, oldest first: what an export writes."
   @spec all(String.t()) :: [QuestCode.t()]
   def all(quest_key) when is_binary(quest_key) do
-    from(c in QuestCode,
-      where: c.quest_key == ^quest_key,
-      order_by: [asc: c.inserted_at, asc: c.id]
+    quest_key
+    |> stream_all(@chunk)
+    |> Enum.to_list()
+  end
+
+  @doc """
+  `all/1` read `batch` codes at a time, as a lazy stream: an export of a
+  quest with a few hundred thousand codes holds one batch, never the table.
+  Each batch is its own query, paged by `(inserted_at, id)`, so no
+  transaction stays open while the caller writes.
+  """
+  @spec stream_all(String.t(), pos_integer()) :: Enumerable.t()
+  def stream_all(quest_key, batch \\ @chunk) when is_binary(quest_key) and batch > 0 do
+    Stream.resource(
+      fn -> :start end,
+      fn
+        :done ->
+          {:halt, :done}
+
+        after_code ->
+          case codes_after(quest_key, after_code, batch) do
+            [] -> {:halt, :done}
+            codes when length(codes) < batch -> {with_uses(codes), :done}
+            codes -> {with_uses(codes), List.last(codes)}
+          end
+      end,
+      fn _ -> :ok end
     )
+  end
+
+  defp codes_after(quest_key, after_code, batch) do
+    query =
+      from(c in QuestCode,
+        where: c.quest_key == ^quest_key,
+        order_by: [asc: c.inserted_at, asc: c.id],
+        limit: ^batch
+      )
+
+    case after_code do
+      :start ->
+        query
+
+      %QuestCode{inserted_at: at, id: id} ->
+        where(query, [c], c.inserted_at > ^at or (c.inserted_at == ^at and c.id > ^id))
+    end
     |> Repo.all()
+  end
+
+  # An uncapped code's `uses` is not kept on its row (`take_code_use` would
+  # write that one row on every redeem of a public code), so it is counted:
+  # one grouped query over the `(code_id, …)` index for the codes at hand.
+  defp with_uses(codes) do
+    case for(%QuestCode{max_uses: nil, id: id} <- codes, do: id) do
+      [] ->
+        codes
+
+      ids ->
+        counts =
+          from(p in QuestProgress,
+            where: p.code_id in ^ids,
+            group_by: p.code_id,
+            select: {p.code_id, count(p.id)}
+          )
+          |> Repo.all()
+          |> Map.new()
+
+        Enum.map(codes, fn
+          %QuestCode{max_uses: nil} = code -> %{code | uses: Map.get(counts, code.id, 0)}
+          code -> code
+        end)
+    end
   end
 
   defp codes_query(quest_key, opts) do
@@ -166,7 +241,7 @@ defmodule Gamend.Quests.Codes do
 
     case Keyword.get(opts, :search) do
       term when is_binary(term) and term != "" ->
-        where(query, [c], c.lookup == ^QuestCode.normalize(term))
+        where(query, [c], c.lookup in ^QuestCode.lookups(term))
 
       _ ->
         query
@@ -178,15 +253,50 @@ defmodule Gamend.Quests.Codes do
   `uses` column for the rest. A public code can have millions.
   """
   @spec used_by(Ecto.UUID.t(), pos_integer()) :: [User.t()]
-  def used_by(code_id, limit \\ 3) when is_binary(code_id) do
-    from(p in QuestProgress,
-      join: u in assoc(p, :user),
-      where: p.code_id == ^code_id,
-      order_by: [asc: p.completed_at, asc: p.id],
-      limit: ^limit,
-      select: u
-    )
-    |> Repo.all()
+  def used_by(code_id, limit \\ 3) when is_binary(code_id),
+    do: Map.get(used_by_codes([code_id], limit), code_id, [])
+
+  @doc """
+  `used_by/2` for a page of codes in one statement: `%{code_id => [User.t()]}`,
+  a code nobody redeemed absent. Each code's first `limit` rows come off the
+  `(code_id, completed_at, id)` index, so a code with millions costs as
+  little as one with three.
+  """
+  @spec used_by_codes([Ecto.UUID.t()], pos_integer()) :: %{Ecto.UUID.t() => [User.t()]}
+  def used_by_codes(code_ids, limit \\ 3) when is_list(code_ids) and limit > 0 do
+    case Enum.uniq(code_ids) do
+      [] ->
+        %{}
+
+      [first | rest] ->
+        firsts =
+          Enum.reduce(rest, first_redeemers(first, limit), fn id, query ->
+            union_all(query, ^first_redeemers(id, limit))
+          end)
+
+        from(r in subquery(firsts),
+          join: u in User,
+          on: u.id == r.user_id,
+          order_by: [asc: r.code_id, asc: r.completed_at, asc: r.id],
+          select: {r.code_id, u}
+        )
+        |> Repo.all()
+        |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+    end
+  end
+
+  # One code's first redeemers, wrapped so its own ORDER BY and LIMIT survive
+  # the UNION (SQLite allows them only on the compound as a whole).
+  defp first_redeemers(code_id, limit) do
+    first =
+      from(p in QuestProgress,
+        where: p.code_id == ^code_id,
+        order_by: [asc: p.completed_at, asc: p.id],
+        limit: ^limit,
+        select: %{code_id: p.code_id, user_id: p.user_id, completed_at: p.completed_at, id: p.id}
+      )
+
+    from(f in subquery(first), select: f)
   end
 
   @doc """
@@ -201,7 +311,7 @@ defmodule Gamend.Quests.Codes do
          {:ok, code} <-
            from(c in QuestCode, where: c.id == ^id)
            |> Repo.compare_and_set(set: [status: status, updated_at: DateTime.utc_now(:second)]) do
-      {:ok, code}
+      {:ok, hd(with_uses([code]))}
     else
       _ -> {:error, :code_not_found}
     end

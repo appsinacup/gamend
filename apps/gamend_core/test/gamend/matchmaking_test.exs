@@ -293,6 +293,37 @@ defmodule Gamend.MatchmakingTest do
       assert Repo.get!(Ticket, alice.id).match_id == lobby.id
     end
 
+    test "restamp moves the claim's mark to now, and keeps its players out of the queue" do
+      alice = user()
+      bob = user()
+      {:ok, claimed} = Matchmaking.claim([ticket!(alice), ticket!(bob)])
+
+      # A sweep that reached this match after the claim's minute had passed.
+      old = DateTime.add(DateTime.utc_now(), -120, :second)
+      ids = Enum.map(claimed, & &1.id)
+      Repo.update_all(from(t in Ticket, where: t.id in ^ids), set: [matched_at: old])
+      stale = Enum.map(claimed, &%{&1 | matched_at: old})
+
+      assert {:ok, [%{matched_at: mark} | _] = held} = Matchmaking.restamp(stale)
+      assert DateTime.after?(mark, old)
+      assert Repo.get!(Ticket, hd(ids)).matched_at == mark
+      assert {:error, :already_queued} = Matchmaking.join(alice, %{"mode" => "duel"}, 2, 2)
+
+      # The mark is the claim's identity: the stale copies no longer hold it.
+      assert Matchmaking.restamp(stale) == :conflict
+      assert Matchmaking.assign_lobby(held, match_lobby().id) == :ok
+    end
+
+    test "restamp of a match one of whose tickets left puts the others back" do
+      alice = ticket!(user())
+      bob = ticket!(user())
+      {:ok, claimed} = Matchmaking.claim([alice, bob])
+      Repo.update_all(from(t in Ticket, where: t.id == ^bob.id), set: [status: "cancelled"])
+
+      assert Matchmaking.restamp(claimed) == :conflict
+      assert Repo.get!(Ticket, alice.id).status == "queued"
+    end
+
     test "requeue returns claimed tickets without a lobby to the queue" do
       ticket = ticket!(user())
       {:ok, [ticket]} = Matchmaking.claim([ticket])

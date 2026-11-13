@@ -505,16 +505,12 @@ defmodule Gamend.Payments do
   defp disputed?(_purchase), do: false
 
   defp restore_entitlements_for_purchase(%Purchase{} = purchase) do
-    from(e in Entitlement, where: e.source_purchase_id == ^purchase.id)
-    |> Repo.all()
-    |> Enum.map(fn entitlement ->
-      entitlement
-      |> Entitlement.changeset(%{
+    change_purchase_rows(purchase, fn entitlement ->
+      %{
         status: EntitlementStatus.active(),
         revoked_at: nil,
         metadata: Map.delete(entitlement.metadata || %{}, "revocation_reason")
-      })
-      |> Repo.update!()
+      }
     end)
   end
 
@@ -849,33 +845,26 @@ defmodule Gamend.Payments do
           {:ok, Entitlement.t()} | {:error, term()}
   def grant_entitlement(user_id, key, opts \\ [])
       when is_binary(user_id) and is_binary(key) do
-    now = DateTime.utc_now(:second)
     requested = Keyword.get(opts, :expires_at)
+    write_grant(user_id, key, fn _existing, _now -> {:ok, requested} end, opts)
+  end
+
+  # A grant's read-modify-write, under the row's lock (`with_entitlement_lock/3`).
+  # The row was read with no lock at all: two grants at once both saw the end
+  # it had, and the one that wrote last set its own, so a 30-day trial landing
+  # beside a year's reward could shorten the year; with no row yet, the second
+  # insert failed on the unique index. `expiry` answers the end asked for from
+  # the row as it is under the lock (`{:ok, end}`), or refuses (`{:error, _}`).
+  defp write_grant(user_id, key, expiry, opts) do
+    now = DateTime.utc_now(:second)
     extra = Keyword.get(opts, :metadata, %{})
 
-    # Read and written under the row's lock (`with_entitlement_lock/3`). The
-    # row was read with no lock at all: two grants at once both saw the end
-    # it had, and the one that wrote last set its own, so a 30-day trial
-    # landing beside a year's reward could shorten the year; with no row yet,
-    # the second insert failed on the unique index.
     with_entitlement_lock(user_id, key, fn ->
       existing = Repo.get_by(Entitlement, user_id: user_id, key: key)
 
-      attrs = %{
-        user_id: user_id,
-        key: key,
-        status: EntitlementStatus.active(),
-        starts_at: (existing && existing_active?(existing, now) && existing.starts_at) || now,
-        expires_at: granted_expiry(existing, requested, now),
-        revoked_at: nil,
-        metadata: Map.merge((existing && existing.metadata) || %{}, extra)
-      }
-
-      case (existing || %Entitlement{})
-           |> Entitlement.changeset(attrs)
-           |> Repo.insert_or_update() do
-        {:ok, entitlement} -> entitlement
-        {:error, changeset} -> Repo.rollback(changeset)
+      case expiry.(existing, now) do
+        {:ok, requested} -> upsert_grant(existing, user_id, key, requested, extra, now)
+        {:error, reason} -> Repo.rollback(reason)
       end
     end)
     |> case do
@@ -886,6 +875,26 @@ defmodule Gamend.Payments do
 
       {:error, reason} ->
         {:error, reason}
+    end
+  end
+
+  # race-safe: only called by write_grant/4, inside the row's lock.
+  defp upsert_grant(existing, user_id, key, requested, extra, now) do
+    attrs = %{
+      user_id: user_id,
+      key: key,
+      status: EntitlementStatus.active(),
+      starts_at: (existing && existing_active?(existing, now) && existing.starts_at) || now,
+      expires_at: granted_expiry(existing, requested, now),
+      revoked_at: nil,
+      metadata: Map.merge((existing && existing.metadata) || %{}, extra)
+    }
+
+    case (existing || %Entitlement{})
+         |> Entitlement.changeset(attrs)
+         |> Repo.insert_or_update() do
+      {:ok, entitlement} -> entitlement
+      {:error, changeset} -> Repo.rollback(changeset)
     end
   end
 
@@ -956,28 +965,34 @@ defmodule Gamend.Payments do
           {:ok, Entitlement.t()} | {:error, term()}
   def extend_entitlement(id, days, opts \\ [])
       when is_binary(id) and is_integer(days) and days > 0 do
-    now = DateTime.utc_now(:second)
-
+    # Read here only for the row's user and key, which name its lock; the end
+    # is computed from the row as it is under the lock. Computed before it,
+    # two extends of +30 days both started from the same end and gave +30.
     case Repo.get(Entitlement, id) do
       nil ->
         {:error, :entitlement_not_found}
 
-      %Entitlement{source_purchase_id: purchase} when is_binary(purchase) ->
-        {:error, :purchased}
-
-      %Entitlement{expires_at: nil} ->
-        {:error, :no_end}
-
-      %Entitlement{} = entitlement ->
-        from = if existing_active?(entitlement, now), do: entitlement.expires_at, else: now
-
-        grant_entitlement(entitlement.user_id, entitlement.key,
-          expires_at: DateTime.add(from, days, :day),
-          metadata: Keyword.get(opts, :metadata, %{}),
-          notify: Keyword.get(opts, :notify, false)
-        )
+      %Entitlement{user_id: user_id, key: key} ->
+        write_grant(user_id, key, &extended_end(&1, id, days, &2), opts)
     end
   end
+
+  defp extended_end(%Entitlement{id: id} = existing, id, days, now) do
+    cond do
+      is_binary(existing.source_purchase_id) ->
+        {:error, :purchased}
+
+      is_nil(existing.expires_at) ->
+        {:error, :no_end}
+
+      true ->
+        from = if existing_active?(existing, now), do: existing.expires_at, else: now
+        {:ok, DateTime.add(from, days, :day)}
+    end
+  end
+
+  # Gone, or another row under the key now (deleted and granted again).
+  defp extended_end(_existing, _id, _days, _now), do: {:error, :entitlement_not_found}
 
   @doc "Whether `extend_entitlement/3` can give `entitlement` more time."
   @spec entitlement_extendable?(Entitlement.t()) :: boolean()
@@ -991,6 +1006,187 @@ defmodule Gamend.Payments do
   # own transaction (the lock is then held until that commits).
   defp with_entitlement_lock(user_id, key, fun),
     do: Lock.serialize(ProductKind.entitlement(), "#{user_id}:#{key}", fun)
+
+  @doc false
+  # Several of one user's rows at once (a plan change moves a row from one key
+  # to another), locked in key order so two callers cannot take them crosswise.
+  @spec with_entitlement_locks(Ecto.UUID.t(), [String.t()], (-> result)) ::
+          {:ok, result} | {:error, term()}
+        when result: term()
+  def with_entitlement_locks(user_id, keys, fun) when is_binary(user_id) and is_list(keys) do
+    keys
+    |> Enum.uniq()
+    |> Enum.sort()
+    |> nest_entitlement_locks(user_id, fun)
+  end
+
+  defp nest_entitlement_locks([], _user_id, fun), do: Gamend.AfterCommit.transaction(fun)
+  defp nest_entitlement_locks([key], user_id, fun), do: with_entitlement_lock(user_id, key, fun)
+
+  defp nest_entitlement_locks([key | rest], user_id, fun) do
+    with_entitlement_lock(user_id, key, fn ->
+      case nest_entitlement_locks(rest, user_id, fun) do
+        {:ok, result} -> result
+        {:error, reason} -> Repo.rollback(reason)
+      end
+    end)
+  end
+
+  @doc false
+  # Every change to an existing row that is not a grant (a purchase revoked or
+  # restored, a subscription's renewal) goes through here: under the row's lock,
+  # on the row as it is now, so a grant landing at the same moment keeps what
+  # it wrote. `fun` answers the attrs to write, or `:unchanged`. A row that
+  # changed hands since it was read (a guest's merged into an account) is
+  # followed once, under its new owner's lock. Answers the row as it was under
+  # the lock and as it is after, `{nil, nil}` for a row gone.
+  @spec change_entitlement(Entitlement.t(), (Entitlement.t() -> map() | :unchanged)) ::
+          {:ok, {Entitlement.t() | nil, Entitlement.t() | nil}} | {:error, term()}
+  def change_entitlement(%Entitlement{} = read, fun) when is_function(fun, 1),
+    do: change_entitlement(read, fun, 2)
+
+  defp change_entitlement(%Entitlement{id: id, user_id: user_id, key: key}, fun, attempts) do
+    with_entitlement_lock(user_id, key, fn ->
+      case Repo.get(Entitlement, id) do
+        nil -> {nil, nil}
+        %Entitlement{user_id: ^user_id, key: ^key} = row -> {row, write_change(row, fun)}
+        %Entitlement{} = moved -> {:moved, moved}
+      end
+    end)
+    |> case do
+      {:ok, {:moved, moved}} when attempts > 1 -> change_entitlement(moved, fun, attempts - 1)
+      {:ok, {:moved, moved}} -> {:ok, {moved, moved}}
+      other -> other
+    end
+  end
+
+  # race-safe: only called by change_entitlement/3, inside the row's lock.
+  defp write_change(%Entitlement{} = row, fun) do
+    case fun.(row) do
+      :unchanged ->
+        row
+
+      attrs when is_map(attrs) ->
+        case row |> Entitlement.changeset(attrs) |> Repo.update() do
+          {:ok, updated} -> updated
+          {:error, changeset} -> Repo.rollback(changeset)
+        end
+    end
+  end
+
+  @doc """
+  Hand everything `from_id` bought to `to_id`: its purchases, and the
+  entitlement rows they made. A guest's, when it signs in to an account it
+  already has (`Gamend.Accounts.GuestMerge`), before the guest is deleted:
+  the delete would take the rows with it, leave the purchases with no owner and
+  cancel their subscriptions (`DeletedAccountSubscriptions`).
+
+  A key both hold keeps the row that lasts longer (an active one over an ended
+  one, no end over any end, the later end); on a tie the account's. When the
+  guest's wins, the account's row takes over its purchase, end and status, and
+  keeps its own notes (`carried_metadata/1`); when the account's wins, the
+  guest's row stays to go with the guest. Running it twice moves nothing twice.
+  Answers the account's rows that changed.
+  """
+  @spec move_purchases(Ecto.UUID.t(), Ecto.UUID.t()) ::
+          {:ok, [Entitlement.t()]} | {:error, term()}
+  def move_purchases(from_id, to_id)
+      when is_binary(from_id) and is_binary(to_id) and from_id != to_id do
+    now = DateTime.utc_now(:second)
+
+    # The purchases first: a fulfilment of one of them running now holds its
+    # row (`FOR UPDATE`) and this waits for it, so its entitlement is written
+    # before the rows below are read; one that starts after reads the new owner.
+    Repo.durable_transaction(fn ->
+      {moved, _} =
+        Repo.update_all(from(p in Purchase, where: p.user_id == ^from_id),
+          set: [user_id: to_id, updated_at: now]
+        )
+
+      changed =
+        from(e in Entitlement,
+          where: e.user_id == ^from_id and not is_nil(e.source_purchase_id),
+          order_by: e.key
+        )
+        |> Repo.all()
+        |> Enum.flat_map(&move_purchase_row(&1, to_id, now))
+
+      {moved, changed}
+    end)
+    |> case do
+      {:ok, {moved, changed}} ->
+        if moved > 0, do: Gamend.Cache.bump_version({:payments, :purchase_version})
+        _ = Gamend.Cache.invalidate(entitlements_key(from_id))
+        Enum.each(changed, &after_entitlement_changed/1)
+        {:ok, changed}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # Both users' rows of the key, locked in a fixed order (by user id) so a
+  # merge and a grant to either cannot take them crosswise.
+  defp move_purchase_row(%Entitlement{key: key} = guest_row, to_id, now) do
+    [first, second] = Enum.sort([guest_row.user_id, to_id])
+
+    {:ok, changed} =
+      with_entitlement_lock(first, key, fn ->
+        {:ok, changed} =
+          with_entitlement_lock(second, key, fn ->
+            case Repo.get(Entitlement, guest_row.id) do
+              %Entitlement{user_id: from_id} = row when from_id == guest_row.user_id ->
+                take_over(row, Repo.get_by(Entitlement, user_id: to_id, key: key), to_id, now)
+
+              _gone_or_moved ->
+                []
+            end
+          end)
+
+        changed
+      end)
+
+    changed
+  end
+
+  # race-safe: only called by move_purchase_row/3, under both rows' locks.
+  defp take_over(%Entitlement{} = row, nil, to_id, _now) do
+    [row |> Entitlement.changeset(%{user_id: to_id}) |> Repo.update!()]
+  end
+
+  defp take_over(%Entitlement{} = row, %Entitlement{} = held, _to_id, now) do
+    if lasts_longer?(row, held, now) do
+      Repo.delete!(row)
+
+      [
+        held
+        |> Entitlement.changeset(%{
+          product_id: row.product_id,
+          source_purchase_id: row.source_purchase_id,
+          status: row.status,
+          starts_at: row.starts_at,
+          expires_at: row.expires_at,
+          revoked_at: row.revoked_at,
+          metadata: Map.merge(carried_metadata(held.metadata), row.metadata || %{})
+        })
+        |> Repo.update!()
+      ]
+    else
+      []
+    end
+  end
+
+  # Whether `row` outlasts `held`: active beats ended, no end beats any end,
+  # then the later end. A tie is `held`'s.
+  defp lasts_longer?(row, held, now) do
+    cond do
+      not existing_active?(row, now) -> false
+      not existing_active?(held, now) -> true
+      is_nil(held.expires_at) -> false
+      is_nil(row.expires_at) -> true
+      true -> DateTime.after?(row.expires_at, held.expires_at)
+    end
+  end
 
   # The later of what the user holds (while it is still active) and what is
   # granted; no end beats any end.
@@ -1845,17 +2041,36 @@ defmodule Gamend.Payments do
   # One row at a time, to keep each row's metadata: it was overwritten with
   # the reason alone, losing the subscription's id and whatever a grant had
   # recorded on the same row. A purchase has one or two rows.
+  #
+  # Each under its row's lock (`change_entitlement/2`), on the row as it is
+  # then: a grant landing beside the revocation kept its metadata only by luck.
   defp revoke_entitlements_for_purchase(%Purchase{} = purchase, now, reason) do
-    from(e in Entitlement, where: e.source_purchase_id == ^purchase.id)
-    |> Repo.all()
-    |> Enum.map(fn entitlement ->
-      entitlement
-      |> Entitlement.changeset(%{
+    purchase
+    |> change_purchase_rows(fn entitlement ->
+      %{
         status: EntitlementStatus.revoked(),
         revoked_at: entitlement.revoked_at || now,
         metadata: Map.put(entitlement.metadata || %{}, "revocation_reason", reason)
-      })
-      |> Repo.update!()
+      }
+    end)
+  end
+
+  # The rows `purchase` made, each changed by `fun` under its lock. A row that
+  # left the purchase meanwhile (another purchase took it over) is left alone.
+  defp change_purchase_rows(%Purchase{id: purchase_id}, fun) do
+    from(e in Entitlement, where: e.source_purchase_id == ^purchase_id)
+    |> Repo.all()
+    |> Enum.flat_map(fn entitlement ->
+      {:ok, {_before, changed}} =
+        change_entitlement(entitlement, fn
+          %Entitlement{source_purchase_id: ^purchase_id} = row -> fun.(row)
+          _taken_over -> :unchanged
+        end)
+
+      case changed do
+        %Entitlement{source_purchase_id: ^purchase_id} -> [changed]
+        _gone_or_taken -> []
+      end
     end)
   end
 

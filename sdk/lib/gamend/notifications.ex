@@ -143,6 +143,20 @@ defmodule Gamend.Notifications do
   end
 
   @doc ~S"""
+    Delete every notification `user_id` received, in one statement. Returns `{deleted_count, nil}`.
+  """
+  @spec delete_all_notifications(user_id()) :: {non_neg_integer(), nil}
+  def delete_all_notifications(_user_id) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.Notifications.delete_all_notifications/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Delete all notifications from `sender_id` to `recipient_id` with the given `title`.
     Used internally to retract system-generated notifications (e.g. friend request cancelled).
     
@@ -357,6 +371,23 @@ defmodule Gamend.Notifications do
 
       _ ->
         raise "Gamend.Notifications.mark_notification_read/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Mark the user's notifications `ids` read, in one statement: what the
+    notifications page does with those that arrive while it is open. Others'
+    ids are skipped.
+    
+  """
+  @spec mark_notifications_read(user_id(), [Ecto.UUID.t()]) :: {non_neg_integer(), nil}
+  def mark_notifications_read(_user_id, _ids) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.Notifications.mark_notifications_read/2 is a stub - only available at runtime on Gamend"
     end
   end
 

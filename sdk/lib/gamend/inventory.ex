@@ -79,6 +79,14 @@ defmodule Gamend.Inventory do
 
   @doc ~S"""
     All held items for a user, as a `%{item => quantity}` map.
+    
+    Cached in `Gamend.Cache` and evicted by every change that commits (the
+    post-commit step of `grant_item/4` and `consume_item/4`), as the
+    entitlement rows are: a host drawing something from a player's items on
+    every row of a list (a title on a leaderboard) read it once per player,
+    not once per row per render. Inside a transaction the cache is skipped
+    both ways: a read there may see a write a rollback would undo.
+    
   """
   @spec inventory(user_id()) :: %{required(item()) => non_neg_integer()}
   def inventory(_user_id) do

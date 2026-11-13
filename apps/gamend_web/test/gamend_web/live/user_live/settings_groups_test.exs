@@ -212,6 +212,36 @@ defmodule GamendWeb.UserLive.SettingsGroupsTest do
     assert flash(invited, :error)
   end
 
+  # The search's page is ten. Members were filtered out after it, so ten
+  # members matching the name left nobody to invite.
+  test "the invite search leaves members out of its page, not after it", %{
+    conn: conn,
+    user: user,
+    other: other
+  } do
+    mine = group(other)
+    prefix = "Crew#{System.unique_integer([:positive])}"
+
+    for n <- 1..10 do
+      member = AccountsFixtures.user_fixture()
+      {:ok, _} = Accounts.update_user_display_name(member, %{"display_name" => "#{prefix}a#{n}"})
+      {:ok, _} = Groups.join_group(member.id, mine.id)
+    end
+
+    {:ok, _} = Accounts.update_user_display_name(user, %{"display_name" => "#{prefix}z"})
+    view = page(conn, other, "&group=#{mine.id}")
+
+    render_click(view, "group_invite_search", %{"value" => prefix})
+    assert [%{id: user_id}] = assigns(view).invite_search_results
+    assert user_id == user.id
+
+    # A full id finds the player, never a member.
+    render_click(view, "group_invite_search", %{"value" => other.id})
+    assert assigns(view).invite_search_results == []
+    render_click(view, "group_invite_search", %{"value" => user.id})
+    assert [%{id: ^user_id}] = assigns(view).invite_search_results
+  end
+
   test "an invite is declined by the invited, or cancelled by its sender", %{
     conn: conn,
     user: user,

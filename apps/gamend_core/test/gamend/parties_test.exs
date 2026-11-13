@@ -615,6 +615,50 @@ defmodule Gamend.PartiesTest do
       assert Accounts.get_user(member1.id).party_id == party.id
     end
 
+    defmodule JoinPartyDuringHook do
+      use Gamend.TestSupport.NoopHooks
+
+      # A player joins the party while the game is asked about its members:
+      # after they were read, before the seats.
+      @impl true
+      def before_lobby_join(user, lobby, opts) do
+        {joiner_id, party_id} = Application.fetch_env!(:gamend, :join_party_during_hook)
+
+        if Gamend.Repo.get!(Gamend.Accounts.User, joiner_id).party_id != party_id do
+          Gamend.Repo.get!(Gamend.Accounts.User, joiner_id)
+          |> Ecto.Changeset.change(party_id: party_id)
+          |> Gamend.Repo.update!()
+        end
+
+        {:ok, {user, lobby, opts}}
+      end
+    end
+
+    test "a party that changed between the gates and the seats is not seated", %{
+      leader: leader,
+      member1: member1,
+      member2: member2
+    } do
+      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
+      add_member_to_party(member1, party)
+      set_all_online([leader, member1, member2])
+      {:ok, lobby} = Lobbies.create_lobby(%{title: "changed-party", hostless: true})
+
+      original = Application.get_env(:gamend_core, :hooks_module)
+      Application.put_env(:gamend, :join_party_during_hook, {member2.id, party.id})
+      Application.put_env(:gamend_core, :hooks_module, JoinPartyDuringHook)
+
+      on_exit(fn ->
+        Application.delete_env(:gamend, :join_party_during_hook)
+        Application.put_env(:gamend_core, :hooks_module, original)
+      end)
+
+      assert {:error, :state_changed} = Parties.join_lobby_with_party(leader, lobby.id)
+
+      for user <- [leader, member1, member2],
+          do: assert(Gamend.Repo.get!(Accounts.User, user.id).lobby_id == nil)
+    end
+
     test "fails if lobby doesn't have enough space", %{
       leader: leader,
       member1: member1,

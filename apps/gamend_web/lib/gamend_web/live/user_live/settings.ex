@@ -12,6 +12,7 @@ defmodule GamendWeb.UserLive.Settings do
   alias Gamend.Accounts.Scope
   alias Gamend.Friends
   alias Gamend.Groups
+  alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.AccountTab
   alias GamendWeb.UserLive.Settings.ApiTokensTab
   alias GamendWeb.UserLive.Settings.DataTab
@@ -261,24 +262,34 @@ defmodule GamendWeb.UserLive.Settings do
              :friend_removed,
              :friend_unblocked
            ] do
-    {:noreply, reload_if_open(socket, SettingsTab.friends())}
+    {:noreply, reload_soon(socket, SettingsTab.friends())}
   end
 
   # Online status change broadcast from UserChannel (via PubSub on "user:<id>")
   def handle_info(%Phoenix.Socket.Broadcast{event: event}, socket)
       when event in ["friend_online", "friend_offline"] do
-    {:noreply, reload_if_open(socket, SettingsTab.friends())}
+    {:noreply, reload_soon(socket, SettingsTab.friends())}
   end
 
   # Ignore other broadcasts on the user topic (e.g. "updated" events from channel)
   def handle_info(%Phoenix.Socket.Broadcast{}, socket), do: {:noreply, socket}
 
-  # Groups PubSub — refresh groups when something changes
+  # The global "groups" topic: every group's creation, edit and deletion
+  # anywhere on the site. One of the reader's own reloads the tab; any other
+  # can only move the directory under it, two queries rather than the tab's
+  # seven a message.
+  def handle_info({event, payload}, socket)
+      when event in [:group_created, :group_updated, :group_deleted] do
+    cond do
+      socket.assigns.settings_tab != SettingsTab.groups() -> {:noreply, socket}
+      own_group?(socket, payload) -> {:noreply, reload_soon(socket, SettingsTab.groups())}
+      true -> {:noreply, LiveHelpers.reload_soon(socket, :reload_browse_groups)}
+    end
+  end
+
+  # The reader's own invites and requests, on "user:<id>".
   def handle_info({event, _payload}, socket)
       when event in [
-             :group_created,
-             :group_updated,
-             :group_deleted,
              :group_invite_accepted,
              :group_invite_cancelled,
              :group_join_request_approved,
@@ -294,7 +305,18 @@ defmodule GamendWeb.UserLive.Settings do
              :join_request_approved,
              :join_request_rejected
            ] do
-    {:noreply, reload_if_open(socket, SettingsTab.groups())}
+    {:noreply, reload_soon(socket, SettingsTab.groups())}
+  end
+
+  def handle_info({:reload_tab, tab} = message, socket),
+    do: {:noreply, socket |> LiveHelpers.reloaded(message) |> reload_if_open(tab)}
+
+  def handle_info(:reload_browse_groups, socket) do
+    socket = LiveHelpers.reloaded(socket, :reload_browse_groups)
+
+    if socket.assigns.settings_tab == SettingsTab.groups(),
+      do: {:noreply, GroupsTab.reload_browse_groups(socket)},
+      else: {:noreply, socket}
   end
 
   # Catch-all: ignore unhandled PubSub messages (e.g. :chat_message_created,
@@ -355,4 +377,22 @@ defmodule GamendWeb.UserLive.Settings do
   defp reload_if_open(socket, tab) do
     if socket.assigns.settings_tab == tab, do: load_tab(socket, tab), else: socket
   end
+
+  # A burst of broadcasts (a friend's tabs going on- and offline, an invite
+  # flurry) is one reload of the tab, if it is the one on screen.
+  defp reload_soon(socket, tab) do
+    if socket.assigns.settings_tab == tab,
+      do: LiveHelpers.reload_soon(socket, {:reload_tab, tab}),
+      else: socket
+  end
+
+  # `my_groups` holds every group the reader is in (the tab lists them all).
+  defp own_group?(socket, %{id: id} = group),
+    do: group.creator_id == Shared.current_user(socket).id or member_of?(socket, id)
+
+  defp own_group?(socket, id) when is_binary(id), do: member_of?(socket, id)
+  defp own_group?(_socket, _payload), do: false
+
+  defp member_of?(socket, id),
+    do: Enum.any?(socket.assigns.my_groups, fn {g, _} -> g.id == id end)
 end

@@ -79,6 +79,50 @@ defmodule Gamend.ChatTest do
     end
   end
 
+  describe "update_message/3" do
+    test "an edit after the recipient blocked the sender is refused and announces nothing" do
+      alice = create_user()
+      bob = create_user()
+      make_friends(alice, bob)
+
+      {:ok, message} =
+        Chat.send_message(%{user: alice}, %{
+          "chat_type" => "friend",
+          "chat_ref_id" => bob.id,
+          "content" => "hi bob"
+        })
+
+      {:ok, _} = Friends.block_user(bob, alice.id)
+      [low, high] = Enum.sort([alice.id, bob.id])
+      :ok = Phoenix.PubSub.subscribe(Gamend.PubSub, "chat:friend:#{low}:#{high}")
+
+      assert {:error, :blocked} =
+               Chat.update_message(alice.id, message.id, %{"content" => "edited"})
+
+      refute_receive {:chat_message_updated, _}, 100
+      assert Repo.get!(Message, message.id).content == "hi bob"
+    end
+
+    test "an edit after leaving the group is refused" do
+      owner = create_user()
+      member = create_user()
+      {:ok, group} = Groups.create_group(owner.id, %{"title" => "edit-club", "type" => "public"})
+      {:ok, _} = Groups.join_group(member.id, group.id)
+
+      {:ok, message} =
+        Chat.send_message(%{user: member}, %{
+          "chat_type" => "group",
+          "chat_ref_id" => group.id,
+          "content" => "hello"
+        })
+
+      {:ok, _} = Groups.leave_group(member.id, group.id)
+
+      assert {:error, :not_in_group} =
+               Chat.update_message(member.id, message.id, %{"content" => "edited"})
+    end
+  end
+
   describe "mark_read/4" do
     test "rejects a message from another group conversation" do
       owner = create_user()

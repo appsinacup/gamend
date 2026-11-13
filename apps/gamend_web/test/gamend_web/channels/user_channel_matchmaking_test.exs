@@ -3,6 +3,7 @@ defmodule GamendWeb.UserChannelMatchmakingTest do
 
   import Phoenix.ChannelTest
 
+  alias Gamend.Accounts.Online
   alias Gamend.AccountsFixtures
   alias Gamend.Matchmaking
   alias Gamend.Matchmaking.Worker
@@ -63,5 +64,27 @@ defmodule GamendWeb.UserChannelMatchmakingTest do
     close(socket)
 
     assert Matchmaking.current_ticket(user.id) == nil
+  end
+
+  # A page change closes the old page's socket before the next one opens
+  # (`Online.watch/2`), and a reload or a reconnect does the same.
+  test "a socket back within the moment after the last one closed keeps the queue" do
+    user = user_fixture()
+    old_page = spawn(fn -> Process.sleep(:infinity) end)
+    new_page = spawn(fn -> Process.sleep(:infinity) end)
+    {:ok, _} = Online.connected(old_page, user.id, "page")
+    {:ok, _} = Matchmaking.join(user, %{"mode" => "duel"})
+
+    # Its recheck waits a moment (inline in tests), while the next page opens.
+    closing = Task.async(fn -> Online.disconnected(user.id, old_page) end)
+    Process.sleep(200)
+    {:ok, _} = Online.connected(new_page, user.id, "page")
+    Task.await(closing, 10_000)
+
+    assert Matchmaking.current_ticket(user.id) != nil
+    assert Gamend.Accounts.get_user(user.id).is_online
+
+    Process.exit(old_page, :kill)
+    Process.exit(new_page, :kill)
   end
 end

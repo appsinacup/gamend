@@ -16,13 +16,14 @@ defmodule GamendWeb.AdminLive.Blacklist do
     keys: [:page, :page_size, user_filter: [param: UrlParam.user()]]
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     socket =
       socket
       |> assign(:page_title, "Admin · Blacklist")
       |> assign(:page, 1)
       |> assign(:page_size, 25)
       |> assign(:user_filter, "")
+      |> GamendWeb.UrlState.from_url(params)
       |> reload()
 
     {:ok, socket}

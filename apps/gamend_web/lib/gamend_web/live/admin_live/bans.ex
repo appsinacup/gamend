@@ -35,7 +35,7 @@ defmodule GamendWeb.AdminLive.Bans do
     ]
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     {:ok,
      socket
      |> assign(:page_title, "Admin · Bans")
@@ -46,6 +46,7 @@ defmodule GamendWeb.AdminLive.Bans do
      |> assign(:active_only, true)
      |> assign(:form, new_form())
      |> assign(:form_error, nil)
+     |> GamendWeb.UrlState.from_url(params)
      |> reload()}
   end
 

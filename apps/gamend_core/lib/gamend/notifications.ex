@@ -49,6 +49,9 @@ defmodule Gamend.Notifications do
 
   @type user_id :: Ecto.UUID.t()
 
+  # A recipient's inbox, for the cap on what friends send (`send_capped/4`).
+  @inbox_lock "notifications_inbox"
+
   # ---------------------------------------------------------------------------
   # PubSub
   # ---------------------------------------------------------------------------
@@ -84,15 +87,15 @@ defmodule Gamend.Notifications do
   defp notification_row_version, do: Gamend.Cache.get!({:notifications, :row_version}) || 1
   defp bump_notification_row, do: Gamend.Cache.bump_version({:notifications, :row_version})
 
+  # At once, not in a task: a writer evicts its own node's copy before it
+  # answers, so the counts it reads back are the ones after its write (they
+  # read stale after a delete). `bump_version/1` also bumps again after the
+  # enclosing transaction commits, and reaches the other nodes itself.
   @doc false
   @spec invalidate_notifications_cache(user_id()) :: :ok
   def invalidate_notifications_cache(user_id) when is_binary(user_id) do
-    Gamend.Async.run(fn ->
-      _ = Gamend.Cache.bump_version({:notifications, :version, user_id})
-      _ = bump_notification_row()
-      :ok
-    end)
-
+    _ = Gamend.Cache.bump_version({:notifications, :version, user_id})
+    _ = bump_notification_row()
     :ok
   end
 
@@ -262,6 +265,24 @@ defmodule Gamend.Notifications do
     result
   end
 
+  @doc """
+  Mark the user's notifications `ids` read, in one statement: what the
+  notifications page does with those that arrive while it is open. Others'
+  ids are skipped.
+  """
+  @spec mark_notifications_read(user_id(), [Ecto.UUID.t()]) :: {non_neg_integer(), nil}
+  def mark_notifications_read(user_id, ids) when is_binary(user_id) and is_list(ids) do
+    {marked, _} =
+      result =
+      from(n in Notification,
+        where: n.recipient_id == ^user_id and n.id in ^ids and n.read == false
+      )
+      |> Repo.update_all(set: [read: true, updated_at: DateTime.utc_now(:second)])
+
+    if marked > 0, do: invalidate_notifications_cache(user_id)
+    result
+  end
+
   @doc "Get a single notification by ID."
   @spec get_notification(Ecto.UUID.t()) :: Notification.t() | nil
   @decorate cacheable(
@@ -373,8 +394,20 @@ defmodule Gamend.Notifications do
   """
   @spec group_of(Notification.t()) :: String.t() | nil
   def group_of(%{metadata: metadata}) do
-    metadata = metadata || %{}
-    metadata["group"] || Preferences.group_for_type(metadata["type"])
+    metadata = if is_map(metadata), do: metadata, else: %{}
+
+    # Only `notify/3` names a group (`upsert_notification/4` drops a client's),
+    # but rows written before 2026-11-13 may carry anything: a key nobody
+    # declares, or not a string at all.
+    case metadata["group"] do
+      group when is_binary(group) and group != "" ->
+        if Preferences.group(group),
+          do: group,
+          else: Preferences.group_for_type(metadata["type"])
+
+      _none ->
+        Preferences.group_for_type(metadata["type"])
+    end
   end
 
   @doc """
@@ -404,7 +437,7 @@ defmodule Gamend.Notifications do
 
       user ->
         metadata =
-          %{"type" => attrs["type"], "url" => attrs["url"], "group" => group}
+          %{"type" => attrs["type"], "url" => attrs["url"]}
           |> Map.reject(fn {_k, v} -> is_nil(v) end)
 
         row = %{
@@ -415,7 +448,10 @@ defmodule Gamend.Notifications do
 
         in_app? =
           Preferences.enabled?(user, group, NotificationChannel.in_app()) and
-            match?({:ok, _}, upsert_notification(user_id, user_id, row, fan_out: false))
+            match?(
+              {:ok, _},
+              upsert_notification(user_id, user_id, row, fan_out: false, group: group)
+            )
 
         site_only? = attrs["site_only"] == true
 
@@ -543,11 +579,37 @@ defmodule Gamend.Notifications do
       true ->
         max = Gamend.Limits.get(:max_notifications_per_user)
 
+        # The cached count only refuses early; the cap holds in `send_capped/4`.
         if count_notifications(recipient_id) >= max do
           {:error, :too_many_notifications}
         else
-          upsert_notification(sender_id, recipient_id, attrs)
+          send_capped(sender_id, recipient_id, attrs, max)
         end
+    end
+  end
+
+  # The count and the write under the recipient's lock: counted before it,
+  # every send of a burst saw the same room and all of them inserted. The
+  # cache, the broadcast and the push follow the commit, outside the lock.
+  defp send_capped(sender_id, recipient_id, attrs, max) do
+    Gamend.Lock.serialize(@inbox_lock, recipient_id, fn ->
+      received =
+        Repo.one(from(n in Notification, where: n.recipient_id == ^recipient_id, select: count()))
+
+      if received >= max, do: Repo.rollback(:too_many_notifications)
+
+      case write_notification(sender_id, recipient_id, attrs, nil) do
+        {:ok, notification} -> notification
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+    |> case do
+      {:ok, notification} ->
+        announce(notification, sender_id, recipient_id, [])
+        {:ok, notification}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -566,6 +628,14 @@ defmodule Gamend.Notifications do
       )
       |> Repo.delete_all()
 
+    invalidate_notifications_cache(user_id)
+    result
+  end
+
+  @doc "Delete every notification `user_id` received, in one statement. Returns `{deleted_count, nil}`."
+  @spec delete_all_notifications(user_id()) :: {non_neg_integer(), nil}
+  def delete_all_notifications(user_id) when is_binary(user_id) do
+    result = Repo.delete_all(from(n in Notification, where: n.recipient_id == ^user_id))
     invalidate_notifications_cache(user_id)
     result
   end
@@ -596,9 +666,25 @@ defmodule Gamend.Notifications do
 
   # Upsert a notification: on conflict (same sender, recipient, title),
   # replace content, metadata, and read flag so the user sees the latest.
+  #
+  # The group decides who may switch the notice off and whether it mails at
+  # once, so it is the server's: only `notify/3` names one (`opts[:group]`),
+  # and a `"group"` or `"email_now"` in the caller's metadata is dropped. A
+  # friend's `"group" => "account"` was mailed past every opt-out.
   defp upsert_notification(sender_id, recipient_id, attrs, opts \\ []) do
+    case write_notification(sender_id, recipient_id, attrs, Keyword.get(opts, :group)) do
+      {:ok, notification} ->
+        announce(notification, sender_id, recipient_id, opts)
+        {:ok, notification}
+
+      error ->
+        error
+    end
+  end
+
+  defp write_notification(sender_id, recipient_id, attrs, group) do
+    {attrs, metadata} = server_owned_metadata(attrs, group)
     content = Map.get(attrs, "content") || Map.get(attrs, :content, "")
-    metadata = Map.get(attrs, "metadata") || Map.get(attrs, :metadata, %{})
     icon_url = Map.get(attrs, "icon_url") || Map.get(attrs, :icon_url)
 
     %Notification{}
@@ -618,17 +704,51 @@ defmodule Gamend.Notifications do
       conflict_target: {:unsafe_fragment, "(sender_id, recipient_id, title)"},
       returning: true
     )
-    |> case do
-      {:ok, notification} ->
-        invalidate_notifications_cache(recipient_id)
-        invalidate_notifications_cache(sender_id)
-        broadcast_user(recipient_id, {:notification_created, notification})
-        if Keyword.get(opts, :fan_out, true), do: push_notification(notification)
-        {:ok, notification}
+  end
 
-      error ->
-        error
-    end
+  defp announce(notification, sender_id, recipient_id, opts) do
+    invalidate_notifications_cache(recipient_id)
+    invalidate_notifications_cache(sender_id)
+    broadcast_user(recipient_id, {:notification_created, notification})
+    if Keyword.get(opts, :fan_out, true), do: push_notification(notification)
+    :ok
+  end
+
+  @server_metadata ["group", "email_now", :group, :email_now]
+
+  # The attrs with their metadata cleaned (kept under the key they came in,
+  # since `cast/3` refuses a map that mixes atom and string keys), and the
+  # metadata the conflict update writes.
+  defp server_owned_metadata(attrs, group) do
+    {key, metadata} =
+      cond do
+        Map.has_key?(attrs, "metadata") -> {"metadata", attrs["metadata"]}
+        Map.has_key?(attrs, :metadata) -> {:metadata, attrs[:metadata]}
+        true -> {"metadata", nil}
+      end
+
+    metadata =
+      case {metadata, group} do
+        {%{} = metadata, nil} ->
+          Map.drop(metadata, @server_metadata)
+
+        {%{} = metadata, group} ->
+          metadata |> Map.drop(@server_metadata) |> Map.put("group", group)
+
+        {nil, nil} ->
+          nil
+
+        {nil, group} ->
+          %{"group" => group}
+
+        # Not a map: the changeset refuses it.
+        {other, _group} ->
+          other
+      end
+
+    if is_nil(metadata),
+      do: {attrs, %{}},
+      else: {Map.put(attrs, key, metadata), metadata}
   end
 
   # Best-effort bridge to push so an offline recipient still gets pinged:
@@ -726,10 +846,13 @@ defmodule Gamend.Notifications do
 
     on_conflict_query = chat_notification_on_conflict(content, now)
 
+    # `returning: true`: on a conflict the row is the stored one (its id, its
+    # count), not the struct this insert built, so a reader can mark it read.
     changeset
     |> Repo.insert(
       on_conflict: on_conflict_query,
-      conflict_target: {:unsafe_fragment, "(sender_id, recipient_id, title)"}
+      conflict_target: {:unsafe_fragment, "(sender_id, recipient_id, title)"},
+      returning: true
     )
     |> case do
       {:ok, notification} ->

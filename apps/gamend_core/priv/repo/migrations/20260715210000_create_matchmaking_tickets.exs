@@ -1,6 +1,13 @@
 defmodule Gamend.Repo.Migrations.CreateMatchmakingTickets do
   use Ecto.Migration
 
+  # Drift, accepted (2026-11-13): until 48ba1dbe5 (2026-11-01) this declared
+  # its own `:binary_id` key, which SQLite leaves nullable (only an INTEGER
+  # PRIMARY KEY is NOT NULL there); since, the table takes the repo's
+  # `migration_primary_key` (`null: false`). SQLite databases created before
+  # keep a nullable `id`. Every insert gives one, and SQLite cannot alter a
+  # column in place, so they are left. Postgres makes a primary key NOT NULL
+  # either way.
   def change do
     create table(:matchmaking_tickets) do
       add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false

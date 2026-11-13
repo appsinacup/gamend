@@ -7,6 +7,7 @@ defmodule Gamend.JobsObanConfigTest do
   """
   use ExUnit.Case, async: false
 
+  alias Gamend.Hooks.PluginManager
   alias Gamend.Jobs
 
   defp with_adapter(adapter, fun) do
@@ -63,6 +64,15 @@ defmodule Gamend.JobsObanConfigTest do
 
       assert pruner[:max_age] == 2 * 86_400
     end)
+  end
+
+  test "a job cut off by a restart is rescued, long after any job could still be running" do
+    config = Jobs.oban_config()
+
+    assert {Oban.Plugins.Lifeline, lifeline} =
+             Enum.find(config[:plugins], &match?({Oban.Plugins.Lifeline, _}, &1))
+
+    assert lifeline[:rescue_after] > 10 * PluginManager.call_timeout_ms()
   end
 
   test "postgres keeps the configured concurrency untouched" do

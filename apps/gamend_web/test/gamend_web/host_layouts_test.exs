@@ -2,6 +2,7 @@ defmodule GamendWeb.HostLayoutsTest do
   use ExUnit.Case, async: true
 
   alias GamendWeb.HostLayouts
+  alias Phoenix.HTML.Safe
 
   test "locale labels use display casing for native language names" do
     labels = HostLayouts.locale_labels()
@@ -75,6 +76,7 @@ defmodule GamendWeb.HostLayoutsTest do
   ## assert on `__changed__` itself.
   describe "app shell change tracking" do
     @derived [
+      :auto?,
       :background_icons,
       :breadcrumbs,
       :current_path,
@@ -82,8 +84,11 @@ defmodule GamendWeb.HostLayoutsTest do
       :footer,
       :known_locales,
       :locale,
+      :nav_prepared,
       :navigation,
       :notif_unread_count,
+      :search,
+      :side?,
       :theme
     ]
 
@@ -147,6 +152,45 @@ defmodule GamendWeb.HostLayoutsTest do
       assert assigns.__changed__ == nil
       assert assigns.navigation
       assert assigns.theme["title"]
+    end
+
+    ## What the engine sends: the shell's dynamics evaluated as a LiveView diff
+    ## would (`track_changes?`), `nil` where nothing moved. A nav handed fresh
+    ## links each render (2026-11-12) was in every one of them, and an open
+    ## dropdown in it shut on the next diff.
+    defp sent(changed) do
+      body = [%{__slot__: :inner_block, inner_block: fn _changed, _arg -> "page body" end}]
+      rendered = HostLayouts.app(%{app_assigns(changed) | inner_block: body})
+
+      Enum.reject(rendered.dynamic.(true), &is_nil/1)
+    end
+
+    defp html(rendered), do: rendered |> Safe.to_iodata() |> IO.iodata_to_binary()
+
+    # A mark each nav's markup carries: the bar's links, the account, the
+    # phone's menu.
+    @navs %{
+      desktop_nav: "flex-row px-1 space-x-4",
+      desktop_account: "order-2 flex-row",
+      mobile_nav: "data-navbar-dropdown"
+    }
+
+    test "a diff that only touched the page body re-sends no nav" do
+      sent = sent(%{inner_block: true})
+
+      for {nav, mark} <- @navs,
+          do: refute(Enum.any?(sent, &(html(&1) =~ mark)), "#{nav} was re-sent")
+
+      # The page column holding the body, and nothing of the header.
+      assert [main] = sent
+      assert ["page body"] = Enum.reject(main.dynamic.(true), &is_nil/1)
+    end
+
+    test "a new path re-sends the navs" do
+      sent = Enum.map(sent(%{current_path: true}), &html/1)
+
+      for {nav, mark} <- @navs,
+          do: assert(Enum.any?(sent, &(&1 =~ mark)), "#{nav} was not re-sent")
     end
   end
 end

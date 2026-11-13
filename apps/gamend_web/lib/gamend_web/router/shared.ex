@@ -269,14 +269,6 @@ defmodule GamendWeb.Router.Shared do
       # while anything under `/api` is skipped by both `LocalePath` and the
       # session plug — and this needs both, the locale to translate into and
       # the session to know who is asking.
-      # An icon is SVG on a browser path, and `:browser` is `accepts ["html"]`:
-      # Safari fetches a `<use>`'s file with `Accept: image/svg+xml` alone, which
-      # that 406s, so every icon of `<.icon_picker>` drew nothing there. No
-      # session either: the response is public and cached for good.
-      pipeline :gamend_icons do
-        plug :put_secure_browser_headers, RouterShared.browser_headers()
-      end
-
       pipeline :gamend_search_json do
         plug :accepts, ["json"]
         plug :fetch_session
@@ -330,15 +322,8 @@ defmodule GamendWeb.Router.Shared do
         get "/ui", PageController, :ui
       end
 
-      # The typed icon set as SVG, so `icon_url` can point at an icon we
-      # already ship, and every set the `hero-*` classes are masks of.
-      # Public and unauthenticated: it is static artwork.
-      scope "/", GamendWeb do
-        pipe_through :gamend_icons
-
-        get "/icons/:name", IconController, :show
-        get "/icons/:set/:name", IconController, :show
-      end
+      # `/icons/*` is not routed: the endpoint serves it with the static files
+      # (`GamendWeb.Plugs.Icons`), ahead of the rate limiter and the session.
 
       # An email's unsubscribe link. The POST has no pipeline on purpose: a
       # mail client's one-click unsubscribe (RFC 8058) carries no CSRF token
@@ -1008,7 +993,8 @@ defmodule GamendWeb.Router.Shared do
         get "/admin/reports/:id/attachments/:index", GamendWeb.AdminReportController, :attachment
         get "/admin/reports/export/:kind", GamendWeb.AdminReportController, :export
         get "/admin/quests/:key/codes/export", GamendWeb.AdminQuestCodeController, :export
-        get "/admin/settings/export", GamendWeb.AdminSettingsController, :export
+        # A POST: it carries the admin's password, typed again.
+        post "/admin/settings/export", GamendWeb.AdminSettingsController, :export
       end
 
       scope "/" do

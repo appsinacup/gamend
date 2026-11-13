@@ -12,9 +12,11 @@ defmodule GamendWeb.DevWatch do
   each.
 
   This process watches the reloadable apps' `lib`, `priv/gettext` and
-  `config` folders and the repos' migration folders (`FileSystem`, the
-  watcher `phoenix_live_reload` already brings), and counts each folder
-  set's changes. `GamendWeb.Plugs.DevCodeReloader` and
+  `config` folders, the folders of the files they declare as
+  `@external_resource` elsewhere (the SDK's hooks file, which
+  `GamendWeb.RuntimeIntrospection` reads), and the repos' migration folders
+  (`FileSystem`, the watcher `phoenix_live_reload` already brings), and counts
+  each folder set's changes. `GamendWeb.Plugs.DevCodeReloader` and
   `GamendWeb.Plugs.DevRepoStatus` run their check only when the count moved
   since the last check that passed; a failed check (a compile error, a
   pending migration) is not marked, so the next request shows it again.
@@ -26,11 +28,13 @@ defmodule GamendWeb.DevWatch do
 
   use GenServer
 
+  alias Mix.Compilers.Elixir, as: ElixirCompiler
+
   require Logger
 
   # `FileSystem` comes with `phoenix_live_reload`, a host's dev dependency:
   # absent from a production build, which never starts this process.
-  @compile {:no_warn_undefined, FileSystem}
+  @compile {:no_warn_undefined, [FileSystem, Mix.Compilers.Elixir]}
 
   @table :gamend_dev_watch
   @code_folders ["lib", "priv/gettext", "config"]
@@ -89,7 +93,8 @@ defmodule GamendWeb.DevWatch do
 
   @impl GenServer
   def init(_opts) do
-    code = folders(code_roots(), @code_folders)
+    watched = folders(code_roots(), @code_folders)
+    code = watched ++ external_folders(watched)
     repo = repo_folders()
 
     # `FileSystem` answers `:ignore` when the system has no watcher it can
@@ -133,17 +138,69 @@ defmodule GamendWeb.DevWatch do
 
   # Where Phoenix's reloader looks: the endpoint's `reloadable_apps`, else
   # the project's own app (every app of an umbrella).
-  defp code_roots do
+  defp reloadable_apps do
     endpoint = Application.get_env(:gamend_web, GamendWeb.Endpoint, [])
 
-    apps =
-      endpoint[:reloadable_apps] ||
-        if Mix.Project.umbrella?(),
-          do: Map.keys(Mix.Project.apps_paths()),
-          else: [Mix.Project.config()[:app]]
-
-    Enum.flat_map(apps, &source_root/1)
+    endpoint[:reloadable_apps] ||
+      if Mix.Project.umbrella?(),
+        do: Map.keys(Mix.Project.apps_paths()),
+        else: [Mix.Project.config()[:app]]
   end
+
+  defp code_roots, do: Enum.flat_map(reloadable_apps(), &source_root/1)
+
+  # Mix recompiles a module when a file it declares with `@external_resource`
+  # changes, so a change there is a code change too: unwatched, an edit to
+  # `sdk/lib/gamend/hooks.ex` reached the server only with some other edit.
+  # The folders of those outside `watched`, read from each reloadable app's
+  # compile manifest, the one record of them; nothing under `deps` or
+  # `_build`, which no one edits. A resource first declared after boot is
+  # watched from the next start.
+  defp external_folders(watched) do
+    skip = Enum.map([Mix.Project.deps_path(), Mix.Project.build_path()], &Path.expand/1)
+
+    for app <- reloadable_apps(),
+        path <- manifest_externals(app),
+        not Enum.any?(skip ++ watched, &under?(path, &1)),
+        dir = Path.dirname(path),
+        File.dir?(dir),
+        uniq: true,
+        do: dir
+  end
+
+  # The manifest's layout is Mix's own and moves between Elixir releases, so
+  # this takes any `{path, stamp, digest}` it finds in a source's record
+  # rather than a field by position.
+  defp manifest_externals(app) do
+    # literal-ok: a folder of Mix's build layout
+    build_lib = Path.join(Mix.Project.build_path(), "lib")
+    manifest = Path.join([build_lib, to_string(app), ".mix", "compile.elixir"])
+
+    if File.regular?(manifest) and Code.ensure_loaded?(ElixirCompiler) and
+         function_exported?(ElixirCompiler, :read_manifest, 1) do
+      {_modules, sources} = ElixirCompiler.read_manifest(manifest)
+
+      for {_file, record} <- sources,
+          is_tuple(record),
+          field <- Tuple.to_list(record),
+          is_list(field),
+          {path, _stamp, _digest} <- field,
+          is_binary(path),
+          do: Path.expand(path)
+    else
+      []
+    end
+  rescue
+    error ->
+      Logger.warning(
+        "dev watch: could not read #{app}'s external resources; edits to them reload with the next code change\n" <>
+          Exception.format(:error, error, __STACKTRACE__)
+      )
+
+      []
+  end
+
+  defp under?(path, dir), do: String.starts_with?(path, dir <> "/")
 
   # The migration folders `CheckRepoStatus` (`otp_app: :gamend_web`) reads,
   # at their source: `Ecto.Migrator.migrations_path/1` answers the build's

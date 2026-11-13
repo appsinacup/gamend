@@ -1,5 +1,6 @@
 defmodule Gamend.Accounts.GuestMergeTest do
   use Gamend.DataCase, async: false
+  use Oban.Testing, repo: Gamend.Repo
 
   alias Gamend.Accounts
   alias Gamend.Accounts.GuestMerge
@@ -7,6 +8,7 @@ defmodule Gamend.Accounts.GuestMergeTest do
   alias Gamend.Economy
   alias Gamend.Inventory
   alias Gamend.Payments
+  alias Gamend.Payments.DeletedAccountSubscriptions
   alias Gamend.Payments.Entitlement
   alias Gamend.Payments.Purchase
   alias Gamend.Quests
@@ -193,25 +195,60 @@ defmodule Gamend.Accounts.GuestMergeTest do
       refute Payments.has_entitlement?(account.id, "beta")
     end
 
-    test "one a purchase made stays with the guest", %{guest: guest, account: account} do
-      purchase =
-        Repo.insert!(%Purchase{
-          user_id: guest.id,
-          provider: "test",
-          order_id: "merge_#{System.unique_integer([:positive])}",
-          status: "completed"
-        })
-
-      Repo.insert!(%Entitlement{
-        user_id: guest.id,
-        key: "paid",
-        status: "active",
-        source_purchase_id: purchase.id
-      })
+    test "one a purchase made moves with its purchase, and deleting the guest cancels nothing",
+         %{guest: guest, account: account} do
+      purchase = purchase(guest, "sub_merged")
+      paid = purchase_row(guest, purchase, "paid", nil)
 
       assert :ok = GuestMerge.merge(guest, account)
 
-      refute Payments.entitlement_ever?(account.id, "paid")
+      assert Repo.get!(Purchase, purchase.id).user_id == account.id
+      assert %Entitlement{id: id, source_purchase_id: source} = entitlement(account, "paid")
+      assert {id, source} == {paid.id, purchase.id}
+      assert Payments.has_entitlement?(account.id, "paid")
+
+      assert {:ok, _} = Accounts.delete_user(guest)
+
+      refute_enqueued(worker: DeletedAccountSubscriptions)
+      assert Repo.get!(Purchase, purchase.id).user_id == account.id
+      assert Payments.has_entitlement?(account.id, "paid")
+    end
+
+    test "a bought row that outlasts the account's takes it over, keeping the account's notes",
+         %{guest: guest, account: account, now: now} do
+      {:ok, _} =
+        Payments.grant_entitlement(account.id, "pro",
+          expires_at: DateTime.add(now, 7, :day),
+          metadata: %{"source" => "trial"}
+        )
+
+      purchase = purchase(guest, "sub_longer")
+      purchase_row(guest, purchase, "pro", nil)
+
+      assert :ok = GuestMerge.merge(guest, account)
+
+      pro = entitlement(account, "pro")
+      assert pro.source_purchase_id == purchase.id
+      assert pro.expires_at == nil
+      assert pro.metadata["source"] == "trial"
+      assert pro.metadata["stripe_subscription_id"] == "sub_longer"
+      refute Repo.get_by(Entitlement, user_id: guest.id, key: "pro")
+    end
+
+    test "the account's longer row stands; the purchase still moves", %{
+      guest: guest,
+      account: account,
+      now: now
+    } do
+      {:ok, held} = Payments.grant_entitlement(account.id, "pro")
+      purchase = purchase(guest, "sub_shorter")
+      purchase_row(guest, purchase, "pro", DateTime.add(now, 30, :day))
+
+      assert :ok = GuestMerge.merge(guest, account)
+
+      pro = entitlement(account, "pro")
+      assert {pro.id, pro.source_purchase_id, pro.expires_at} == {held.id, nil, nil}
+      assert Repo.get!(Purchase, purchase.id).user_id == account.id
     end
 
     test "one the guest no longer holds is not carried over", %{
@@ -259,4 +296,25 @@ defmodule Gamend.Accounts.GuestMergeTest do
   end
 
   defp entitlement(user, key), do: Repo.get_by!(Entitlement, user_id: user.id, key: key)
+
+  defp purchase(user, subscription_id) do
+    Repo.insert!(%Purchase{
+      user_id: user.id,
+      provider: "stripe",
+      order_id: "merge_#{System.unique_integer([:positive])}",
+      status: "completed",
+      metadata: %{"stripe_subscription_id" => subscription_id}
+    })
+  end
+
+  defp purchase_row(user, purchase, key, expires_at) do
+    Repo.insert!(%Entitlement{
+      user_id: user.id,
+      key: key,
+      status: "active",
+      expires_at: expires_at,
+      source_purchase_id: purchase.id,
+      metadata: %{"stripe_subscription_id" => purchase.metadata["stripe_subscription_id"]}
+    })
+  end
 end

@@ -7,7 +7,7 @@ generated: by `mix gamend.settings.guide` - do not edit by hand; edit the
 # Settings
 
 Every setting the server has, with the environment variable that sets it.
-330 settings across 31 groups.
+331 settings across 31 groups.
 
 A setting is declared in the module that owns it, so this page and
 `.env.example` are generated from the same source the server reads. The
@@ -267,6 +267,7 @@ That declares `GAMEND_UGC_MAX_UPLOADS`, read with
 | `GAMEND_LIMITS_MAX_CHAT_REPORTS_PER_USER_PER_DAY` | integer | `50` | Rolling 24h; 0 disables. Needs rate limiting on; ETS backend counts per instance. |
 | `GAMEND_LIMITS_MAX_CODES_PER_GENERATE` | integer | `10000` | Redemption codes one Generate makes. To have more, run it again. |
 | `GAMEND_LIMITS_MAX_DEVICE_ID` | integer | `256` |  |
+| `GAMEND_LIMITS_MAX_DIGEST_ITEMS_PER_USER` | integer | `200` | Notices one user's digest emails hold while they wait, every group together. Past it a notice is left out of the email; its row on the site and its push still go. |
 | `GAMEND_LIMITS_MAX_DISPLAY_NAME` | integer | `255` | Max display-name length in codepoints. 255 is the users.display_name column's own limit on Postgres (varchar(255)); higher fails the insert there. |
 | `GAMEND_LIMITS_MAX_EMAIL` | integer | `160` |  |
 | `GAMEND_LIMITS_MAX_FRIENDS_PER_USER` | integer | `500` |  |

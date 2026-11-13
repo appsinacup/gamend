@@ -510,6 +510,7 @@ defmodule GamendWeb.HostLayouts do
   # itself. The Tests page refreshes its clock once a second, which turned that
   # into a menu closing a second after it was opened.
   @derived_shell_assigns [
+    :auto?,
     :background_icons,
     :breadcrumbs,
     :current_path,
@@ -517,9 +518,11 @@ defmodule GamendWeb.HostLayouts do
     :footer,
     :known_locales,
     :locale,
+    :nav_prepared,
     :navigation,
     :notif_unread_count,
     :search,
+    :side?,
     :theme
   ]
 
@@ -586,6 +589,7 @@ defmodule GamendWeb.HostLayouts do
         search: search_assign(locale),
         breadcrumbs: breadcrumbs_for(current_path, locale)
       )
+      |> HostLayoutShell.assign_nav(rerender?)
 
     freeze_derived_shell_assigns(assigns, rerender?)
   end

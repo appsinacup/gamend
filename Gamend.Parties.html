@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1446">
+    <meta name="project" content="gamend_core v1.1.1449">
 
 
-    <title>Gamend.Parties — gamend_core v1.1.1446</title>
+    <title>Gamend.Parties — gamend_core v1.1.1449</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-090D9535.js"></script>
+    <script defer src="dist/sidebar_items-F45DCC45.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1446
+          v1.1.1449
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Parties</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1446)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1449)</small>
 
     </h1>
 
@@ -563,7 +563,7 @@ and <code class="inline">{:error, {:hook_rejected, reason}}</code> when <code cl
       <h1 class="signature" translate="no">admin_add_member(party, user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2027" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2057" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -595,7 +595,7 @@ party's capacity and one party per player hold (<code class="inline">:party_full
       <h1 class="signature" translate="no">admin_delete_party(party_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2056" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2086" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -624,7 +624,7 @@ party's capacity and one party per player hold (<code class="inline">:party_full
       <h1 class="signature" translate="no">admin_update_party(party, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2036" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2066" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -744,7 +744,7 @@ own <code class="inline">party_id</code> is the common case.</p>
       <h1 class="signature" translate="no">change_party(party)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2016" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2046" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -774,7 +774,7 @@ own <code class="inline">party_id</code> is the common case.</p>
       <h1 class="signature" translate="no">count_all_parties(filters \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2008" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2038" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1220,7 +1220,7 @@ If a pending invite already exists, returns <code class="inline">{:ok, existing_
       <h1 class="signature" translate="no">join_lobby_with_party(user, lobby_id, opts \\ %{})</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1618" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1622" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1244,7 +1244,9 @@ gets in only where each member could alone: a hidden lobby answers
 for a locked one, which answers <code class="inline">{:error, :locked}</code>), a block between
 any member and anyone already seated answers <code class="inline">{:error, :blocked}</code>, and the
 game's <code class="inline">before_lobby_join</code> is asked for every member (<code class="inline">&quot;party_id&quot;</code> in its
-opts), the first refusal answering <code class="inline">{:error, {:hook_rejected, reason}}</code>.</p>
+opts), the first refusal answering <code class="inline">{:error, {:hook_rejected, reason}}</code>.
+A member who joined or left the party meanwhile answers
+<code class="inline">{:error, :state_changed}</code>, with nobody seated.</p>
   </section>
 </section>
 <section class="detail" id="kick_member/2">
@@ -1322,7 +1324,7 @@ the party with them, since there is nobody to hand it to.</p><p>To end a party o
       <h1 class="signature" translate="no">list_all_parties(filters \\ %{}, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1995" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2025" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1476,7 +1478,7 @@ derived counts rather than a maintained size.</p>
       <h1 class="signature" translate="no">subscribe_parties()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L1985" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/parties.ex#L2015" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1589,9 +1591,9 @@ derived counts rather than a maintained size.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1446">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1449">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1446">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1449">Hex Preview</a>
 
             </span>
 

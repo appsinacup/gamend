@@ -17,6 +17,9 @@ Keys payments keeps in a purchase's metadata.
 
 Every value.
 
+# `checkout_decline`
+*macro* 
+
 # `paid_through`
 *macro* 
 

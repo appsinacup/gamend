@@ -29,6 +29,9 @@ Every value.
 # `expired`
 *macro* 
 
+# `failed`
+*macro* 
+
 # `incomplete_expired`
 *macro* 
 

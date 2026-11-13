@@ -296,6 +296,8 @@ for a locked one, which answers `{:error, :locked}`), a block between
 any member and anyone already seated answers `{:error, :blocked}`, and the
 game's `before_lobby_join` is asked for every member (`"party_id"` in its
 opts), the first refusal answering `{:error, {:hook_rejected, reason}}`.
+A member who joined or left the party meanwhile answers
+`{:error, :state_changed}`, with nobody seated.
 
 # `kick_member`
 

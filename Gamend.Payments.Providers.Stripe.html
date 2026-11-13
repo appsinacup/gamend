@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1446">
+    <meta name="project" content="gamend_core v1.1.1449">
 
 
-    <title>Gamend.Payments.Providers.Stripe — gamend_core v1.1.1446</title>
+    <title>Gamend.Payments.Providers.Stripe — gamend_core v1.1.1449</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-090D9535.js"></script>
+    <script defer src="dist/sidebar_items-F45DCC45.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1446
+          v1.1.1449
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Payments.<wbr />Providers.<wbr />Stripe</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1446)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1449)</small>
 
     </h1>
 
@@ -164,6 +164,22 @@ is charged its difference for the rest of the period now and a cheaper one
 leaves a credit on the customer's balance for the next invoices.
 <code class="inline">error_if_incomplete</code>: when that invoice cannot be paid, Stripe answers an
 error and the subscription stays as it was.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#checkout_decline/1" data-no-tooltip="" translate="no">checkout_decline(session)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Why a checkout that ended unpaid was not paid, when a card was tried in
+it: the newest failed charge on the session's customer since the session
+opened, as <code class="inline">%{&quot;code&quot;, &quot;reason&quot;, &quot;message&quot;, &quot;at&quot;}</code> (Stripe's
+<code class="inline">failure_code</code>, <code class="inline">outcome.reason</code> such as <code class="inline">insufficient_funds</code>, the
+buyer's message, unix seconds). Nil when Pay was never pressed (Stripe
+names a new buyer's customer only once it was), when nothing failed, or
+when Stripe cannot be asked, which is logged.</p></div>
 
     </div>
 
@@ -296,7 +312,7 @@ expanded: what the subscription last charged, and when.</p></div>
       <h1 class="signature" translate="no">cancel_subscription_at_period_end(subscription_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L96" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L158" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -320,7 +336,7 @@ expanded: what the subscription last charged, and when.</p></div>
       <h1 class="signature" translate="no">cancel_subscription_now(subscription_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L167" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L229" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -347,7 +363,7 @@ sends <code class="inline">customer.subscription.deleted</code>.</p>
       <h1 class="signature" translate="no">change_subscription_price(subscription_id, item_id, price_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L134" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L196" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -366,6 +382,44 @@ is charged in full from today. <code class="inline">idempotency_key:</code> make
 same change answer the first one's result.</p>
   </section>
 </section>
+<section class="detail" id="checkout_decline/1">
+
+  <div class="detail-header">
+    <a href="#checkout_decline/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">checkout_decline(session)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L118" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> checkout_decline(<a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>() | nil</pre>
+
+      </div>
+
+<p>Why a checkout that ended unpaid was not paid, when a card was tried in
+it: the newest failed charge on the session's customer since the session
+opened, as <code class="inline">%{&quot;code&quot;, &quot;reason&quot;, &quot;message&quot;, &quot;at&quot;}</code> (Stripe's
+<code class="inline">failure_code</code>, <code class="inline">outcome.reason</code> such as <code class="inline">insufficient_funds</code>, the
+buyer's message, unix seconds). Nil when Pay was never pressed (Stripe
+names a new buyer's customer only once it was), when nothing failed, or
+when Stripe cannot be asked, which is logged.</p><p>Read as the session ends: Stripe then cancels its payment intent and
+clears the intent's error, while the failed charge keeps it, and a
+subscription checkout's session never names its payment intent at all.
+A returning buyer's failed renewal since the session opened would read as
+this checkout's, which is a guess at worst: it fails the same card.</p>
+  </section>
+</section>
 <section class="detail" id="create_billing_portal_session/2">
 
   <div class="detail-header">
@@ -376,7 +430,7 @@ same change answer the first one's result.</p>
       <h1 class="signature" translate="no">create_billing_portal_session(customer_id, return_url)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L288" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L350" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -400,7 +454,7 @@ session; its <code class="inline">&quot;url&quot;</code> is single-use and short
       <h1 class="signature" translate="no">create_checkout_session(purchase, provider_product, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L26" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L29" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -424,7 +478,7 @@ session; its <code class="inline">&quot;url&quot;</code> is single-use and short
       <h1 class="signature" translate="no">create_refund(payment_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L237" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L299" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -450,7 +504,7 @@ Stripe's 24 hours answers the same refund instead of trying a second, and
       <h1 class="signature" translate="no">expire_checkout_session(session_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L56" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L59" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -474,7 +528,7 @@ being paid, or expired already.</p>
       <h1 class="signature" translate="no">list_invoice_payments(payment_intent_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L212" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L274" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -499,7 +553,7 @@ object; <code class="inline">&quot;data&quot;</code> holds the payments.</p>
       <h1 class="signature" translate="no">resume_subscription(subscription_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L103" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L165" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -522,7 +576,7 @@ renews again. Stripe refuses it once the subscription has ended.</p>
       <h1 class="signature" translate="no">retrieve_checkout_session(session_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L71" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -544,7 +598,7 @@ renews again. Stripe refuses it once the subscription has ended.</p>
       <h1 class="signature" translate="no">retrieve_subscription(subscription_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L84" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L87" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -566,7 +620,7 @@ renews again. Stripe refuses it once the subscription has ended.</p>
       <h1 class="signature" translate="no">retrieve_subscription_with_latest_invoice(subscription_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L189" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L251" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -589,7 +643,7 @@ expanded: what the subscription last charged, and when.</p>
       <h1 class="signature" translate="no">verify_webhook(raw_body, signature_header)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L304" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/stripe.ex#L366" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -610,9 +664,9 @@ expanded: what the subscription last charged, and when.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1446">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1449">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1446">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1449">Hex Preview</a>
 
             </span>
 

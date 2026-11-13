@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1446">
+    <meta name="project" content="gamend_core v1.1.1449">
 
 
-    <title>Gamend.Quests.QuestCode — gamend_core v1.1.1446</title>
+    <title>Gamend.Quests.QuestCode — gamend_core v1.1.1449</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-090D9535.js"></script>
+    <script defer src="dist/sidebar_items-F45DCC45.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1446
+          v1.1.1449
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Quests.<wbr />QuestCode</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1446)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1449)</small>
 
     </h1>
 
@@ -120,7 +120,10 @@ Kept in plain text so an admin can export a batch again and read a public
 code</li><li><code class="inline">lookup</code> — <a href="#normalize/1"><code class="inline">normalize/1</code></a> of the token, unique across quests, and the only
 column a redeem reads by: the player types only the code, so nothing else
 can say which quest is meant</li><li><code class="inline">max_uses</code> — <code class="inline">1</code> single-use, <code class="inline">N</code> the first N players, <code class="inline">nil</code> every player
-once</li><li><code class="inline">uses</code> — how many players redeemed it</li><li><code class="inline">status</code> — <code class="inline">&quot;active&quot;</code> or <code class="inline">&quot;revoked&quot;</code></li><li><code class="inline">metadata</code> — copied onto each player's <code class="inline">quest_progress</code> row, so a hook can
+once</li><li><code class="inline">uses</code> — how many players redeemed it, counted on the row for a capped
+code only (the cap is checked against it). An uncapped code's redeems
+would all update this one row, so it stays as it is and
+<a href="Gamend.Quests.Codes.html"><code class="inline">Gamend.Quests.Codes</code></a> reads its count from <code class="inline">quest_progress</code></li><li><code class="inline">status</code> — <code class="inline">&quot;active&quot;</code> or <code class="inline">&quot;revoked&quot;</code></li><li><code class="inline">metadata</code> — copied onto each player's <code class="inline">quest_progress</code> row, so a hook can
 tell which channel a redemption came from. Players can read it there</li></ul>
     </section>
 
@@ -151,6 +154,20 @@ tell which channel a redemption came from. Players can read it there</li></ul>
   <h3>
     <a href="#functions">Functions</a>
   </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#lookups/1" data-no-tooltip="" translate="no">lookups(raw)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>The lookups a typed code may stand for: its <a href="#normalize/1"><code class="inline">normalize/1</code></a>, then the same
+with the letters people type for Crockford's look-alike digits folded in
+(<code class="inline">o</code> → <code class="inline">0</code>, <code class="inline">i</code> and <code class="inline">l</code> → <code class="inline">1</code>). A generated token has none of those
+letters, so <code class="inline">ABCD-0O1L</code> typed from a printed card still finds <code class="inline">ABCD-0011</code>;
+a token an admin chose keeps its own letters, and its exact form comes first.</p></div>
+
+    </div>
 
     <div class="summary-row">
       <div class="summary-signature">
@@ -210,7 +227,7 @@ any work is done on it.</p></div>
       <h1 class="signature" translate="no">t()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest_code.ex#L28" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest_code.ex#L31" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -254,6 +271,38 @@ any work is done on it.</p></div>
     </h2>
 
     <div class="functions-list">
+<section class="detail" id="lookups/1">
+
+  <div class="detail-header">
+    <a href="#lookups/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">lookups(raw)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest_code.ex#L82" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> lookups(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()) :: [<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>()]</pre>
+
+      </div>
+
+<p>The lookups a typed code may stand for: its <a href="#normalize/1"><code class="inline">normalize/1</code></a>, then the same
+with the letters people type for Crockford's look-alike digits folded in
+(<code class="inline">o</code> → <code class="inline">0</code>, <code class="inline">i</code> and <code class="inline">l</code> → <code class="inline">1</code>). A generated token has none of those
+letters, so <code class="inline">ABCD-0O1L</code> typed from a printed card still finds <code class="inline">ABCD-0011</code>;
+a token an admin chose keeps its own letters, and its exact form comes first.</p>
+  </section>
+</section>
 <section class="detail" id="max_token/0">
 
   <div class="detail-header">
@@ -264,7 +313,7 @@ any work is done on it.</p></div>
       <h1 class="signature" translate="no">max_token()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest_code.ex#L73" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest_code.ex#L92" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -292,7 +341,7 @@ any work is done on it.</p></div>
       <h1 class="signature" translate="no">normalize(raw)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest_code.ex#L64" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest_code.ex#L67" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -322,7 +371,7 @@ In Elixir, so both adapters compare the same bytes with no collation.</p>
       <h1 class="signature" translate="no">plausible?(raw)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest_code.ex#L81" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/quest_code.ex#L100" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -351,9 +400,9 @@ any work is done on it.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1446">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1449">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1446">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1449">Hex Preview</a>
 
             </span>
 

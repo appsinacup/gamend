@@ -14,7 +14,10 @@ Ecto schema for the `quest_codes` table: one redemption code of a
   can say which quest is meant
 - `max_uses` — `1` single-use, `N` the first N players, `nil` every player
   once
-- `uses` — how many players redeemed it
+- `uses` — how many players redeemed it, counted on the row for a capped
+  code only (the cap is checked against it). An uncapped code's redeems
+  would all update this one row, so it stays as it is and
+  `Gamend.Quests.Codes` reads its count from `quest_progress`
 - `status` — `"active"` or `"revoked"`
 - `metadata` — copied onto each player's `quest_progress` row, so a hook can
   tell which channel a redemption came from. Players can read it there
@@ -37,6 +40,18 @@ Ecto schema for the `quest_codes` table: one redemption code of a
   uses: term()
 }
 ```
+
+# `lookups`
+
+```elixir
+@spec lookups(String.t()) :: [String.t()]
+```
+
+The lookups a typed code may stand for: its `normalize/1`, then the same
+with the letters people type for Crockford's look-alike digits folded in
+(`o` → `0`, `i` and `l` → `1`). A generated token has none of those
+letters, so `ABCD-0O1L` typed from a printed card still finds `ABCD-0011`;
+a token an admin chose keeps its own letters, and its exact form comes first.
 
 # `max_token`
 

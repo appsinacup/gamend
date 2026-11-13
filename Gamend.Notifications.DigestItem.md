@@ -12,6 +12,7 @@ One notice waiting for a digest email (`Gamend.Notifications.Digest`).
   id: term(),
   inserted_at: term(),
   subject: term(),
+  sweeps: term(),
   text: term(),
   url: term(),
   user: term(),

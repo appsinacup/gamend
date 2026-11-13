@@ -304,6 +304,26 @@ The user's entitlements, by key: active ones only unless
 Stamp a provider event as fully handled. Only then does a retry of the same
 event id count as a duplicate.
 
+# `move_purchases`
+
+```elixir
+@spec move_purchases(Ecto.UUID.t(), Ecto.UUID.t()) ::
+  {:ok, [Gamend.Payments.Entitlement.t()]} | {:error, term()}
+```
+
+Hand everything `from_id` bought to `to_id`: its purchases, and the
+entitlement rows they made. A guest's, when it signs in to an account it
+already has (`Gamend.Accounts.GuestMerge`), before the guest is deleted:
+the delete would take the rows with it, leave the purchases with no owner and
+cancel their subscriptions (`DeletedAccountSubscriptions`).
+
+A key both hold keeps the row that lasts longer (an active one over an ended
+one, no end over any end, the later end); on a tie the account's. When the
+guest's wins, the account's row takes over its purchase, end and status, and
+keeps its own notes (`carried_metadata/1`); when the account's wins, the
+guest's row stays to go with the guest. Running it twice moves nothing twice.
+Answers the account's rows that changed.
+
 # `per_subject?`
 
 ```elixir

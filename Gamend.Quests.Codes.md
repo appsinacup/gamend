@@ -92,6 +92,17 @@ One quest's codes, newest first.
 Revokes a code or restores it. Stopping every code of a quest at once is
 unticking the quest's `active`.
 
+# `stream_all`
+
+```elixir
+@spec stream_all(String.t(), pos_integer()) :: Enumerable.t()
+```
+
+`all/1` read `batch` codes at a time, as a lazy stream: an export of a
+quest with a few hundred thousand codes holds one batch, never the table.
+Each batch is its own query, paged by `(inserted_at, id)`, so no
+transaction stays open while the caller writes.
+
 # `used_by`
 
 ```elixir
@@ -100,6 +111,19 @@ unticking the quest's `active`.
 
 The first few players who redeemed a code, with how many there are in the
 `uses` column for the rest. A public code can have millions.
+
+# `used_by_codes`
+
+```elixir
+@spec used_by_codes([Ecto.UUID.t()], pos_integer()) :: %{
+  required(Ecto.UUID.t()) =&gt; [Gamend.Accounts.User.t()]
+}
+```
+
+`used_by/2` for a page of codes in one statement: `%{code_id => [User.t()]}`,
+a code nobody redeemed absent. Each code's first `limit` rows come off the
+`(code_id, completed_at, id)` index, so a code with millions costs as
+little as one with three.
 
 ---
 

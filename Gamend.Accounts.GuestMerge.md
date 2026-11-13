@@ -32,10 +32,13 @@ because of a merge:
      not counted twice.
   4. Inventory: quantities moved the same way (`Gamend.Inventory.consume_item/4`,
      `Gamend.Inventory.grant_item/4`).
-  5. Entitlements granted without a purchase, through
+  5. Purchases and the entitlements they made
+     (`Gamend.Payments.move_purchases/2`): every purchase becomes the
+     account's, so its subscription goes on renewing for the account and is
+     not cancelled with the guest. A key both hold keeps the row that lasts
+     longer. Then entitlements granted without a purchase, through
      `Gamend.Payments.grant_entitlement/3`, which never shortens what the
-     account holds. One the account had revoked stays revoked, and one a
-     purchase made stays with the guest.
+     account holds. One the account had revoked stays revoked.
   6. Leaderboards: `Gamend.Leaderboards.merge_user_records/2` (best kept,
      counters added, the account's never lowered).
   7. Quests: `Gamend.Quests.merge_user_progress/2` (periods the account has

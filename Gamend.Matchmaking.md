@@ -18,7 +18,8 @@ A queued ticket only means something while its owner can still be pulled
 into a lobby. Two things keep the queue honest:
 
   * `Gamend.Accounts.Online.disconnected/2` cancels the user's tickets when
-    their last socket closes (a game's, or a website page's), and
+    their last socket closes (a game's, or a website page's) and none is
+    back a moment later (the next page's, a reconnect), and
   * `prune_offline/0` sweeps tickets whose owner the database no longer
     considers online — the safety net for tickets created over HTTP by a
     client that never opened a socket.
@@ -227,6 +228,19 @@ cancelled.
 ```
 
 Returns claimed tickets to the queue (lobby creation failed).
+
+# `restamp`
+
+```elixir
+@spec restamp([Gamend.Matchmaking.Ticket.t()]) ::
+  {:ok, [Gamend.Matchmaking.Ticket.t()]} | :conflict
+```
+
+Moves a claim's mark to now, for a match about to start: a claimed ticket is
+held for a minute from its mark, and a sweep starting many matches reached
+the last of them after that. Answers the tickets with the new mark, or
+`:conflict` when one of them is no longer held by the claim (cancelled by
+an admin, say), putting the others back in the queue.
 
 # `seatable?`
 

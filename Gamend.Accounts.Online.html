@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1446">
+    <meta name="project" content="gamend_core v1.1.1449">
 
 
-    <title>Gamend.Accounts.Online — gamend_core v1.1.1446</title>
+    <title>Gamend.Accounts.Online — gamend_core v1.1.1449</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-090D9535.js"></script>
+    <script defer src="dist/sidebar_items-F45DCC45.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1446
+          v1.1.1449
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Accounts.<wbr />Online</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1446)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1449)</small>
 
     </h1>
 
@@ -122,10 +122,12 @@ abandoned-lobby reaper see them alike.</p><ul><li><a href="#connected/3"><code c
 topic (<a href="Gamend.Presence.html#users_topic/1"><code class="inline">Gamend.Presence.users_topic/1</code></a>) with its kind (<code class="inline">&quot;socket&quot;</code> or
 <code class="inline">&quot;page&quot;</code>), <code class="inline">users.is_online</code> set, the user's lobby, party and groups
 told, and the game's <code class="inline">after_socket_connected/3</code> called.</li><li><a href="#heartbeat/1"><code class="inline">heartbeat/1</code></a>: <code class="inline">last_seen_at</code> refreshed. A socket calls it every
-<a href="#heartbeat_ms/0"><code class="inline">heartbeat_ms/0</code></a>, so <code class="inline">StalePresenceSweeper</code> leaves a live player alone.</li><li><a href="#disconnected/2"><code class="inline">disconnected/2</code></a>: when no other socket of theirs is left, the user's
-matchmaking tickets cancelled (an accept they were asked for declined)
-and <code class="inline">users.is_online</code> cleared. Checked again a moment later for a
-socket another node had not replicated yet.</li></ul><p><a href="#watch/2"><code class="inline">watch/2</code></a> does all three (as a <code class="inline">&quot;page&quot;</code>) for a process with no <code class="inline">terminate/2</code> to rely on:
+<a href="#heartbeat_ms/0"><code class="inline">heartbeat_ms/0</code></a>, so <code class="inline">StalePresenceSweeper</code> leaves a live player alone.</li><li><a href="#disconnected/2"><code class="inline">disconnected/2</code></a>: when no other socket of theirs is left,
+<code class="inline">users.is_online</code> cleared, then checked again a moment later: a socket
+back by then (the next page's, a reconnect, one another node had not
+replicated yet) puts the flag back, and with none the user's
+matchmaking tickets are cancelled (an accept they were asked for
+declined).</li></ul><p><a href="#watch/2"><code class="inline">watch/2</code></a> does all three (as a <code class="inline">&quot;page&quot;</code>) for a process with no <code class="inline">terminate/2</code> to rely on:
 a LiveView's is not called when the process is killed or crashes. It
 monitors the process, keeps its heartbeat and runs <a href="#disconnected/2"><code class="inline">disconnected/2</code></a> when
 it goes. A node going down takes its watchers with it, and
@@ -169,10 +171,10 @@ written, or <code class="inline">{:error, reason}</code> when the account is gon
       </div>
 
         <div class="summary-synopsis"><p><code class="inline">pid</code>, a socket of <code class="inline">user_id</code>'s, closed (or is closing). With no other
-socket of theirs left, their matchmaking tickets are cancelled,
-<code class="inline">users.is_online</code> is cleared and their lobby, party and groups told, then
-checked again after a moment and the flag put back if a socket is there
-after all.</p></div>
+socket of theirs left, <code class="inline">users.is_online</code> is cleared and their lobby, party
+and groups told, then checked again after a moment: the flag is put back if
+a socket is there after all, and otherwise their matchmaking tickets are
+cancelled.</p></div>
 
     </div>
 
@@ -235,7 +237,7 @@ it ends. One watcher process per socket, under its own supervisor.</p></div>
       <h1 class="signature" translate="no">connected(pid, user_id, kind \\ &quot;socket&quot;)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L59" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L61" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -269,7 +271,7 @@ written, or <code class="inline">{:error, reason}</code> when the account is gon
       <h1 class="signature" translate="no">disconnected(user_id, pid)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L110" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L112" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -285,10 +287,10 @@ written, or <code class="inline">{:error, reason}</code> when the account is gon
       </div>
 
 <p><code class="inline">pid</code>, a socket of <code class="inline">user_id</code>'s, closed (or is closing). With no other
-socket of theirs left, their matchmaking tickets are cancelled,
-<code class="inline">users.is_online</code> is cleared and their lobby, party and groups told, then
-checked again after a moment and the flag put back if a socket is there
-after all.</p>
+socket of theirs left, <code class="inline">users.is_online</code> is cleared and their lobby, party
+and groups told, then checked again after a moment: the flag is put back if
+a socket is there after all, and otherwise their matchmaking tickets are
+cancelled.</p>
   </section>
 </section>
 <section class="detail" id="heartbeat/1">
@@ -301,7 +303,7 @@ after all.</p>
       <h1 class="signature" translate="no">heartbeat(user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L93" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L95" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -329,7 +331,7 @@ after all.</p>
       <h1 class="signature" translate="no">heartbeat_ms()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L100" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L102" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -357,7 +359,7 @@ after all.</p>
       <h1 class="signature" translate="no">watch(pid, user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L154" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/accounts/online.ex#L158" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -387,9 +389,9 @@ it ends. One watcher process per socket, under its own supervisor.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1446">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1449">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1446">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1449">Hex Preview</a>
 
             </span>
 

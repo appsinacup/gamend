@@ -14,6 +14,7 @@ result is.
 @type t() :: %Gamend.Results.Result{
   __meta__: term(),
   ended_at: term(),
+  event_count: term(),
   id: term(),
   kind: term(),
   lobby_id: term(),

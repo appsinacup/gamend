@@ -13,6 +13,12 @@ job (`GamendWeb.Workers.NotificationDigest`) builds and sends it, deleting
 only the rows it listed. A notice that arrives meanwhile waits for the next
 one.
 
+A notice whose subject is already waiting replaces that one's words and
+keeps its place, as the site's row does (one row per title). A user holds
+at most `max_digest_items_per_user` notices (`Gamend.Limits`). A digest
+that keeps failing (an address that bounces) is given up after 24
+sweeps, a day of them: its notices are deleted, not queued forever.
+
 # `add`
 
 ```elixir
@@ -20,7 +26,9 @@ one.
   {:ok, Gamend.Notifications.DigestItem.t()} | {:error, term()}
 ```
 
-Keep a notice for `user_id`'s next digest of `group`.
+Keep a notice for `user_id`'s next digest of `group`. A subject already
+waiting there takes the new words; past the user's cap the notice is left
+out (`{:error, :too_many_items}`).
 
 # `delete`
 
@@ -53,7 +61,9 @@ What waits for `user_id` in `group`, oldest first.
 @spec sweep(DateTime.t()) :: non_neg_integer()
 ```
 
-Queue every digest due at `now`. Returns how many pairs were due.
+Queue every digest due at `now`, after giving up the notices whose digest
+was queued `24` times and never sent. Returns how many pairs
+were due.
 
 ---
 

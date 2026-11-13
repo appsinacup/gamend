@@ -99,6 +99,14 @@ Uses upsert semantics: if a notification with the same
 `(sender_id, recipient_id, title)` already exists, its content and metadata
 are updated (so the user sees the latest message preview).
 
+# `delete_all_notifications`
+
+```elixir
+@spec delete_all_notifications(user_id()) :: {non_neg_integer(), nil}
+```
+
+Delete every notification `user_id` received, in one statement. Returns `{deleted_count, nil}`.
+
 # `delete_notification_by`
 
 ```elixir
@@ -233,6 +241,16 @@ Mark all notifications as read for a user.
 ```
 
 Mark a single notification as read. Only the recipient can mark it.
+
+# `mark_notifications_read`
+
+```elixir
+@spec mark_notifications_read(user_id(), [Ecto.UUID.t()]) :: {non_neg_integer(), nil}
+```
+
+Mark the user's notifications `ids` read, in one statement: what the
+notifications page does with those that arrive while it is open. Others'
+ids are skipped.
 
 # `notify`
 

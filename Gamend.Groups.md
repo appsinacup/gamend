@@ -651,6 +651,14 @@ List pending join requests sent by a user.
 
 Check if user is a member (any role) of the group.
 
+# `member_ids_among`
+
+```elixir
+@spec member_ids_among(Ecto.UUID.t(), [Ecto.UUID.t()]) :: MapSet.t(Ecto.UUID.t())
+```
+
+Which of `user_ids` are members of the group, without reading its whole member list.
+
 # `notify_group`
 
 ```elixir
@@ -720,6 +728,25 @@ Reject a pending join request. Admin only.
 ```
 
 Request to join a private group. Creates a pending join request.
+
+# `search_invitable_users`
+
+```elixir
+@spec search_invitable_users(
+  Ecto.UUID.t(),
+  String.t(),
+  Gamend.Types.pagination_opts()
+) :: [
+  Gamend.Accounts.User.t()
+]
+```
+
+The players a group's invite search offers: `Gamend.Accounts.search_users/2`'s
+match (a display name or username prefix, or an exact id) with the group's
+members left out by the query. Filtered after the page, a page of members
+came back empty, and the filter read every member with their user first.
+
+See `t:Gamend.Types.pagination_opts/0` for the options.
 
 # `set_icon_url`
 

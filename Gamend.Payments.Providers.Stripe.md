@@ -25,6 +25,26 @@ error and the subscription stays as it was.
 is charged in full from today. `idempotency_key:` makes a retry of the
 same change answer the first one's result.
 
+# `checkout_decline`
+
+```elixir
+@spec checkout_decline(map()) :: map() | nil
+```
+
+Why a checkout that ended unpaid was not paid, when a card was tried in
+it: the newest failed charge on the session's customer since the session
+opened, as `%{"code", "reason", "message", "at"}` (Stripe's
+`failure_code`, `outcome.reason` such as `insufficient_funds`, the
+buyer's message, unix seconds). Nil when Pay was never pressed (Stripe
+names a new buyer's customer only once it was), when nothing failed, or
+when Stripe cannot be asked, which is logged.
+
+Read as the session ends: Stripe then cancels its payment intent and
+clears the intent's error, while the failed charge keeps it, and a
+subscription checkout's session never names its payment intent at all.
+A returning buyer's failed renewal since the session opened would read as
+this checkout's, which is a guess at worst: it fails the same card.
+
 # `create_billing_portal_session`
 
 A Stripe customer-portal session for `customer_id`: the Stripe-hosted page

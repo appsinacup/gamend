@@ -13,10 +13,12 @@ abandoned-lobby reaper see them alike.
     told, and the game's `after_socket_connected/3` called.
   * `heartbeat/1`: `last_seen_at` refreshed. A socket calls it every
     `heartbeat_ms/0`, so `StalePresenceSweeper` leaves a live player alone.
-  * `disconnected/2`: when no other socket of theirs is left, the user's
-    matchmaking tickets cancelled (an accept they were asked for declined)
-    and `users.is_online` cleared. Checked again a moment later for a
-    socket another node had not replicated yet.
+  * `disconnected/2`: when no other socket of theirs is left,
+    `users.is_online` cleared, then checked again a moment later: a socket
+    back by then (the next page's, a reconnect, one another node had not
+    replicated yet) puts the flag back, and with none the user's
+    matchmaking tickets are cancelled (an accept they were asked for
+    declined).
 
 `watch/2` does all three (as a `"page"`) for a process with no `terminate/2` to rely on:
 a LiveView's is not called when the process is killed or crashes. It
@@ -50,10 +52,10 @@ written, or `{:error, reason}` when the account is gone.
 ```
 
 `pid`, a socket of `user_id`'s, closed (or is closing). With no other
-socket of theirs left, their matchmaking tickets are cancelled,
-`users.is_online` is cleared and their lobby, party and groups told, then
-checked again after a moment and the flag put back if a socket is there
-after all.
+socket of theirs left, `users.is_online` is cleared and their lobby, party
+and groups told, then checked again after a moment: the flag is put back if
+a socket is there after all, and otherwise their matchmaking tickets are
+cancelled.
 
 # `heartbeat`
 

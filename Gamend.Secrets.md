@@ -132,7 +132,12 @@ and `:created_by_id`.
 
 ```elixir
 @spec rotate(pos_integer()) ::
-  {:ok, %{moved: non_neg_integer(), stuck: non_neg_integer()}}
+  {:ok,
+   %{
+     moved: non_neg_integer(),
+     stuck: non_neg_integer(),
+     skipped: non_neg_integer()
+   }}
   | {:error, :no_key}
 ```
 
@@ -143,7 +148,9 @@ table, `batch` rows read at a time and each rewritten on its own. The old key
 stays configured until this reports none stuck — removing it earlier is how a
 certificate becomes unreadable.
 
-Answers how many rows moved, and how many could not be opened at all.
+Answers how many rows moved, how many could not be opened at all, and how
+many were skipped because a `put/5` or `delete/3` changed them meanwhile
+(a `put` writes under the current key already).
 
 # `use`
 

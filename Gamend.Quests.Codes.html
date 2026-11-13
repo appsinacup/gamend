@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1446">
+    <meta name="project" content="gamend_core v1.1.1449">
 
 
-    <title>Gamend.Quests.Codes — gamend_core v1.1.1446</title>
+    <title>Gamend.Quests.Codes — gamend_core v1.1.1449</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-090D9535.js"></script>
+    <script defer src="dist/sidebar_items-F45DCC45.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1446
+          v1.1.1449
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Quests.<wbr />Codes</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1446)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1449)</small>
 
     </h1>
 
@@ -221,12 +221,38 @@ unticking the quest's <code class="inline">active</code>.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#stream_all/2" data-no-tooltip="" translate="no">stream_all(quest_key, batch \\ 500)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p><a href="#all/1"><code class="inline">all/1</code></a> read <code class="inline">batch</code> codes at a time, as a lazy stream: an export of a
+quest with a few hundred thousand codes holds one batch, never the table.
+Each batch is its own query, paged by <code class="inline">(inserted_at, id)</code>, so no
+transaction stays open while the caller writes.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#used_by/2" data-no-tooltip="" translate="no">used_by(code_id, limit \\ 3)</a>
 
       </div>
 
         <div class="summary-synopsis"><p>The first few players who redeemed a code, with how many there are in the
 <code class="inline">uses</code> column for the rest. A public code can have millions.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#used_by_codes/2" data-no-tooltip="" translate="no">used_by_codes(code_ids, limit \\ 3)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p><a href="#used_by/2"><code class="inline">used_by/2</code></a> for a page of codes in one statement: <code class="inline">%{code_id =&gt; [User.t()]}</code>,
+a code nobody redeemed absent. Each code's first <code class="inline">limit</code> rows come off the
+<code class="inline">(code_id, completed_at, id)</code> index, so a code with millions costs as
+little as one with three.</p></div>
 
     </div>
 
@@ -254,7 +280,7 @@ unticking the quest's <code class="inline">active</code>.</p></div>
       <h1 class="signature" translate="no">all(quest_key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L156" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L165" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -284,7 +310,7 @@ unticking the quest's <code class="inline">active</code>.</p></div>
       <h1 class="signature" translate="no">count(quest_key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L150" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L159" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -312,7 +338,7 @@ unticking the quest's <code class="inline">active</code>.</p></div>
       <h1 class="signature" translate="no">create(quest, attrs)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L54" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L62" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -343,7 +369,7 @@ on another quest, fails on <code class="inline">:token</code>.</p>
       <h1 class="signature" translate="no">find(raw)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L39" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L44" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -374,7 +400,7 @@ Says nothing about whether it still works.</p>
       <h1 class="signature" translate="no">generate(quest, count, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L74" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L82" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -437,7 +463,7 @@ one request; to have more, run it again.</p><h2 id="generate/3-options" class="s
       <h1 class="signature" translate="no">list(quest_key, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L140" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L148" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -465,7 +491,7 @@ one request; to have more, run it again.</p><h2 id="generate/3-options" class="s
       <h1 class="signature" translate="no">set_status(code_id, status)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L198" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L308" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -486,6 +512,39 @@ one request; to have more, run it again.</p><h2 id="generate/3-options" class="s
 unticking the quest's <code class="inline">active</code>.</p>
   </section>
 </section>
+<section class="detail" id="stream_all/2">
+
+    <span id="stream_all/1"></span>
+
+  <div class="detail-header">
+    <a href="#stream_all/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">stream_all(quest_key, batch \\ 500)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L178" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> stream_all(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()) :: <a href="https://elixir.hexdocs.pm/Enumerable.html#t:t/0">Enumerable.t</a>()</pre>
+
+      </div>
+
+<p><a href="#all/1"><code class="inline">all/1</code></a> read <code class="inline">batch</code> codes at a time, as a lazy stream: an export of a
+quest with a few hundred thousand codes holds one batch, never the table.
+Each batch is its own query, paged by <code class="inline">(inserted_at, id)</code>, so no
+transaction stays open while the caller writes.</p>
+  </section>
+</section>
 <section class="detail" id="used_by/2">
 
     <span id="used_by/1"></span>
@@ -498,7 +557,7 @@ unticking the quest's <code class="inline">active</code>.</p>
       <h1 class="signature" translate="no">used_by(code_id, limit \\ 3)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L181" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L256" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -517,6 +576,41 @@ unticking the quest's <code class="inline">active</code>.</p>
 <code class="inline">uses</code> column for the rest. A public code can have millions.</p>
   </section>
 </section>
+<section class="detail" id="used_by_codes/2">
+
+    <span id="used_by_codes/1"></span>
+
+  <div class="detail-header">
+    <a href="#used_by_codes/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">used_by_codes(code_ids, limit \\ 3)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/quests/codes.ex#L266" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> used_by_codes([<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()], <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">pos_integer</a>()) :: %{
+  required(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) =&gt; [<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>()]
+}</pre>
+
+      </div>
+
+<p><a href="#used_by/2"><code class="inline">used_by/2</code></a> for a page of codes in one statement: <code class="inline">%{code_id =&gt; [User.t()]}</code>,
+a code nobody redeemed absent. Each code's first <code class="inline">limit</code> rows come off the
+<code class="inline">(code_id, completed_at, id)</code> index, so a code with millions costs as
+little as one with three.</p>
+  </section>
+</section>
 
     </div>
   </section>
@@ -526,9 +620,9 @@ unticking the quest's <code class="inline">active</code>.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1446">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1449">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1446">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1449">Hex Preview</a>
 
             </span>
 

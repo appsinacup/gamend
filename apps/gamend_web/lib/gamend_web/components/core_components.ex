@@ -321,6 +321,41 @@ defmodule GamendWeb.CoreComponents do
   `class` is for layout: a second padding or background would fight the
   panel's own, and which one wins is the stylesheet's order, not the markup's.
   """
+  def panel(%{tag: "section"} = assigns) do
+    ~H"""
+    <section
+      class={[
+        "rounded-box border border-base-300 bg-base-100",
+        if(@compact, do: "p-3", else: "p-4"),
+        @class
+      ]}
+      {@rest}
+    >
+      <.eyebrow :if={@title}>{@title}</.eyebrow>
+      {render_slot(@inner_block)}
+    </section>
+    """
+  end
+
+  def panel(%{tag: @div} = assigns) do
+    ~H"""
+    <div
+      class={[
+        "rounded-box border border-base-300 bg-base-100",
+        if(@compact, do: "p-3", else: "p-4"),
+        @class
+      ]}
+      {@rest}
+    >
+      <.eyebrow :if={@title}>{@title}</.eyebrow>
+      {render_slot(@inner_block)}
+    </div>
+    """
+  end
+
+  # Any other tag. A dynamic tag is sent again, its name and every
+  # attribute, with each update inside it (a LiveView has nothing to compare
+  # them with), so the two tags nearly every panel is are written out above.
   def panel(assigns) do
     ~H"""
     <.dynamic_tag

@@ -4,6 +4,7 @@ defmodule GamendWeb.HostLayoutNavigation do
   use GamendWeb, :html
 
   alias Gamend.Accounts.Scope
+  alias GamendWeb.ChangeTracking
   alias GamendWeb.Plugs.LocalePath
 
   require GamendWeb.NavAuth, as: NavAuth
@@ -49,26 +50,28 @@ defmodule GamendWeb.HostLayoutNavigation do
     # phone's menu there whatever fits. With `"layout": "auto"` the bar has
     # every link, and the sidebar's go where the sidebar shows
     # (`[data-nav~=side]`).
-    assigns =
+    bar_links =
       if assigns.side?,
-        do: update(assigns, :primary_links, &Enum.reject(&1, fn entry -> side_link?(entry) end)),
-        else: assigns
+        do: Enum.reject(assigns.primary_links, &side_link?/1),
+        else: assigns.primary_links
 
     # The theme toggle is the bar's for a reader with no menu of their own (a
     # visitor, a guest); a signed-in reader finds it in their menu
     # (`user_menu/1`, 2026-10-30, user). No dividers between the link groups
     # (2026-10-30, user): the bar's spacing sets them apart.
     assigns =
-      assign(
-        assigns,
+      assigns
+      |> ChangeTracking.derive(:bar_links, [:primary_links, :side?], bar_links)
+      |> ChangeTracking.derive(
         :toggle?,
+        [:current_scope],
         is_nil(assigns.current_scope) or Scope.anonymous?(assigns.current_scope)
       )
 
     ~H"""
     <ul class="hidden [[data-nav~=bar]_&]:flex flex-row px-1 space-x-4 items-center">
       <.main_nav_links
-        links={@primary_links}
+        links={@bar_links}
         current_path={@current_path}
         inactive_class="btn-surface"
         side={@auto?}
@@ -114,7 +117,14 @@ defmodule GamendWeb.HostLayoutNavigation do
 
   def desktop_account(assigns) do
     assigns = navigation_assigns(assigns)
-    assigns = assign(assigns, :guest?, Scope.anonymous?(assigns.current_scope))
+
+    assigns =
+      ChangeTracking.derive(
+        assigns,
+        :guest?,
+        [:current_scope],
+        Scope.anonymous?(assigns.current_scope)
+      )
 
     ~H"""
     <%!-- `order-2`: the language picker before it is ordered `1` (the shell). --%>
@@ -156,7 +166,7 @@ defmodule GamendWeb.HostLayoutNavigation do
     path = assigns.current_path
 
     assigns =
-      assign(assigns,
+      ChangeTracking.derive_all(assigns, [:account_links, :current_path, :current_scope],
         active?:
           any_entry_active?(assigns.account_links, path) or here?(path, "/users/settings") or
             here?(path, "/notifications") or here?(path, "/chat"),
@@ -290,24 +300,33 @@ defmodule GamendWeb.HostLayoutNavigation do
     # instead of inside the dropdown, so they stay visible on mobile.
     pinned = Enum.filter(primary_links ++ assigns.authenticated_links, &pinned_link?/1)
 
-    assigns =
-      assign(assigns,
-        pinned_links: pinned,
-        primary_links: Enum.reject(primary_links, &pinned_link?/1),
-        authenticated_links: Enum.reject(assigns.authenticated_links, &pinned_link?/1)
-      )
+    menu_primary = Enum.reject(primary_links, &pinned_link?/1)
+    menu_authenticated = Enum.reject(assigns.authenticated_links, &pinned_link?/1)
 
     # On a phone every count is behind the hamburger, so it shows their total.
     menu_count =
       if(assigns.current_scope, do: assigns.notif_unread_count, else: 0) +
         Enum.sum(
           Enum.map(
-            assigns.primary_links ++ assigns.authenticated_links ++ assigns.account_links,
+            menu_primary ++ menu_authenticated ++ assigns.account_links,
             &Map.get(&1, "count", 0)
           )
         )
 
-    assigns = assign(assigns, :menu_count, menu_count)
+    links = [:primary_links, :authenticated_links, :side?, :auto?]
+
+    assigns =
+      assigns
+      |> ChangeTracking.derive_all(links,
+        pinned_links: pinned,
+        menu_primary: menu_primary,
+        menu_links: menu_primary ++ menu_authenticated
+      )
+      |> ChangeTracking.derive(
+        :menu_count,
+        links ++ [:account_links, :current_scope, :notif_unread_count],
+        menu_count
+      )
 
     ~H"""
     <%!-- `contents` where the bar does not fit: its icons and its menu are
@@ -377,7 +396,7 @@ defmodule GamendWeb.HostLayoutNavigation do
             />
 
             <.mobile_nav_links
-              links={@primary_links ++ @authenticated_links}
+              links={@menu_links}
               current_path={@current_path}
               inactive_class="btn-ghost"
               group="mobile-nav"
@@ -422,7 +441,7 @@ defmodule GamendWeb.HostLayoutNavigation do
             </li>
 
             <.mobile_nav_links
-              links={@primary_links}
+              links={@menu_primary}
               current_path={@current_path}
               inactive_class="btn-ghost"
               group="mobile-nav"
@@ -482,7 +501,7 @@ defmodule GamendWeb.HostLayoutNavigation do
   def side_nav(assigns) do
     assigns = navigation_assigns(assigns)
     links = Enum.filter(assigns.primary_links, &side_link?/1)
-    assigns = assign(assigns, links: links, best_href: best_href(links, assigns.current_path))
+    assigns = assign(assigns, :links, marked_links(links, assigns.current_path))
 
     ~H"""
     <nav
@@ -496,11 +515,7 @@ defmodule GamendWeb.HostLayoutNavigation do
       ]}
     >
       {render_slot(@logo)}
-      <.side_nav_item
-        :for={link <- @links}
-        link={link}
-        active?={sibling_active?(link, @current_path, @best_href)}
-      />
+      <.side_nav_item :for={{link, active?} <- @links} link={link} active?={active?} />
       <button
         :if={!@flush}
         type="button"
@@ -552,7 +567,7 @@ defmodule GamendWeb.HostLayoutNavigation do
   def tab_nav(assigns) do
     assigns = navigation_assigns(assigns)
     links = Enum.filter(assigns.primary_links, &(side_link?(&1) and not phone_hidden?(&1)))
-    assigns = assign(assigns, links: links, best_href: best_href(links, assigns.current_path))
+    assigns = assign(assigns, :links, marked_links(links, assigns.current_path))
 
     ~H"""
     <nav
@@ -569,12 +584,7 @@ defmodule GamendWeb.HostLayoutNavigation do
         ]
       }
     >
-      <.side_nav_item
-        :for={link <- @links}
-        link={link}
-        compact
-        active?={sibling_active?(link, @current_path, @best_href)}
-      />
+      <.side_nav_item :for={{link, active?} <- @links} link={link} compact active?={active?} />
     </nav>
     """
   end
@@ -838,15 +848,15 @@ defmodule GamendWeb.HostLayoutNavigation do
     doc: "`\"layout\": \"auto\"`: a sidebar link leaves the bar while the sidebar shows"
 
   defp main_nav_links(assigns) do
-    assigns = assign(assigns, :best_href, best_href(assigns.links, assigns.current_path))
+    assigns = assign(assigns, :marked, marked_links(assigns.links, assigns.current_path))
 
     ~H"""
-    <%= for entry <- @links do %>
+    <%= for {entry, active?} <- @marked do %>
       <li class={@side && side_link?(entry) && "[[data-nav~=side]_&]:hidden"}>
         <.main_nav_link_item
           link={entry}
+          active?={active?}
           current_path={@current_path}
-          best_href={@best_href}
           inactive_class={@inactive_class}
         />
       </li>
@@ -860,15 +870,15 @@ defmodule GamendWeb.HostLayoutNavigation do
   attr :group, :string, default: nil
 
   defp mobile_nav_links(assigns) do
-    assigns = assign(assigns, :best_href, best_href(assigns.links, assigns.current_path))
+    assigns = assign(assigns, :marked, marked_links(assigns.links, assigns.current_path))
 
     ~H"""
-    <%= for entry <- @links do %>
+    <%= for {entry, active?} <- @marked do %>
       <li class="w-full">
         <.mobile_nav_link_item
           link={entry}
+          active?={active?}
           current_path={@current_path}
-          best_href={@best_href}
           inactive_class={@inactive_class}
           group={@group}
         />
@@ -957,7 +967,10 @@ defmodule GamendWeb.HostLayoutNavigation do
         any_entry_active?(assigns.account_links, assigns.current_path)
 
     assigns =
-      assign(assigns, active?: active?, anonymous?: Scope.anonymous?(assigns.current_scope))
+      ChangeTracking.derive_all(assigns, [:account_links, :current_path, :current_scope],
+        active?: active?,
+        anonymous?: Scope.anonymous?(assigns.current_scope)
+      )
 
     ~H"""
     <li class="w-full">
@@ -1055,19 +1068,17 @@ defmodule GamendWeb.HostLayoutNavigation do
   end
 
   attr :link, :map, required: true
+  attr :active?, :boolean, required: true, doc: "the page's own link (`marked_links/2`)"
   attr :current_path, :string, default: nil
   attr :inactive_class, :string, required: true
-  attr :best_href, :string, default: nil
 
   defp main_nav_link_item(assigns) do
-    active? = sibling_active?(assigns.link, assigns.current_path, assigns[:best_href])
     icon_only? = icon_only?(assigns.link)
 
     # A label beside an icon goes where the bar is too narrow for it, and is
     # the tooltip then.
     assigns =
-      assign(assigns,
-        active?: active?,
+      ChangeTracking.derive_all(assigns, [:link],
         label_class: if(icon_only?, do: fit_label()),
         title: if(icon_only?, do: translate_label(assigns.link["label"]))
       )
@@ -1125,9 +1136,9 @@ defmodule GamendWeb.HostLayoutNavigation do
   end
 
   attr :link, :map, required: true
+  attr :active?, :boolean, required: true, doc: "the page's own link (`marked_links/2`)"
   attr :current_path, :string, default: nil
   attr :inactive_class, :string, required: true
-  attr :best_href, :string, default: nil
 
   # `group` is the top-level groups' shared `<details name>`: the browser keeps
   # one of them open, so opening Social closes Learn and the rest stay on a
@@ -1136,10 +1147,6 @@ defmodule GamendWeb.HostLayoutNavigation do
   attr :group, :string, default: nil
 
   defp mobile_nav_link_item(assigns) do
-    active? = sibling_active?(assigns.link, assigns.current_path, assigns[:best_href])
-
-    assigns = assign(assigns, active?: active?)
-
     ~H"""
     <%= if dropdown_entry?(@link) do %>
       <details open={@active?} name={@group} class="group w-full">
@@ -1209,24 +1216,20 @@ defmodule GamendWeb.HostLayoutNavigation do
   attr :current_path, :string, default: nil
 
   defp dropdown_menu_entries(assigns) do
-    assigns = assign(assigns, :best_href, best_href(assigns.entries, assigns.current_path))
+    assigns = assign(assigns, :marked, marked_links(assigns.entries, assigns.current_path))
 
     ~H"""
-    <%= for entry <- @entries do %>
-      <.dropdown_menu_entry entry={entry} current_path={@current_path} best_href={@best_href} />
+    <%= for {entry, active?} <- @marked do %>
+      <.dropdown_menu_entry entry={entry} active?={active?} current_path={@current_path} />
     <% end %>
     """
   end
 
   attr :entry, :map, required: true
+  attr :active?, :boolean, required: true, doc: "the page's own entry (`marked_links/2`)"
   attr :current_path, :string, default: nil
-  attr :best_href, :string, default: nil
 
   defp dropdown_menu_entry(assigns) do
-    active? = sibling_active?(assigns.entry, assigns.current_path, assigns[:best_href])
-
-    assigns = assign(assigns, active?: active?)
-
     ~H"""
     <%= if dropdown_entry?(@entry) do %>
       <li>
@@ -1284,8 +1287,15 @@ defmodule GamendWeb.HostLayoutNavigation do
   @spec prepare(map()) :: map()
   def prepare(assigns), do: assigns |> prepare_navigation_assigns() |> Map.take(@prepared_keys)
 
-  defp navigation_assigns(%{prepared: prepared} = assigns) when is_map(prepared),
-    do: assign(assigns, prepared)
+  # Each of the shell's lists, marked changed only when it is another list
+  # than at the last render (the shell hands the links it had then with the
+  # new ones, `HostLayoutShell.assign_nav/1`): a coin spent changes the list
+  # with the wallet in it and no other.
+  defp navigation_assigns(%{prepared: prepared} = assigns) when is_map(prepared) do
+    Enum.reduce(@prepared_keys, assigns, fn key, acc ->
+      ChangeTracking.derive(acc, key, [prepared: [key]], Map.fetch!(prepared, key))
+    end)
+  end
 
   defp navigation_assigns(assigns), do: prepare_navigation_assigns(assigns)
 
@@ -1707,6 +1717,14 @@ defmodule GamendWeb.HostLayoutNavigation do
   # start `/docs/reference/body2d`. Lighting both says the reader is in two
   # places, so among one list's links only the longest match is active. A
   # group is active when anything under it is, as before.
+  # Each link with whether it is the page's, among its siblings: what a
+  # loop over them draws from, so a link that is as it was is not sent again
+  # when another of the list changes (`GamendWeb.ChangeTracking`).
+  defp marked_links(entries, current_path) do
+    best_href = best_href(entries, current_path)
+    Enum.map(entries, &{&1, sibling_active?(&1, current_path, best_href)})
+  end
+
   defp sibling_active?(entry, current_path, best_href) do
     cond do
       dropdown_entry?(entry) -> entry_active?(entry, current_path)

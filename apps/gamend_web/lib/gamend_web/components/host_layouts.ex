@@ -6,6 +6,7 @@ defmodule GamendWeb.HostLayouts do
   use GamendWeb, :html
 
   alias Gamend.Theme.JSONConfig
+  alias GamendWeb.ChangeTracking
   alias GamendWeb.HostLayoutShell
   alias GamendWeb.Plugs.LocalePath
 
@@ -509,30 +510,23 @@ defmodule GamendWeb.HostLayouts do
   # `<details>` dropdown has no `open` attribute in it, so the menu shuts
   # itself. The Tests page refreshes its clock once a second, which turned that
   # into a menu closing a second after it was opened.
-  @derived_shell_assigns [
-    :auto?,
-    :background_icons,
-    :breadcrumbs,
-    :current_path,
-    :current_query,
-    :footer,
-    :known_locales,
-    :locale,
-    :nav_prepared,
-    :navigation,
-    :notif_unread_count,
-    :search,
-    :side?,
-    :theme
-  ]
+  #
+  # So each value is marked changed only with the attrs it is worked out from
+  # (`GamendWeb.ChangeTracking.derive/4`). All of them were one group once,
+  # marked together when any attr moved: a coin spent (`:nav_key`) sent the
+  # language picker, the footer and every link again, 11 KB for one number.
+  #
+  # Nothing else they depend on can move inside the life of one render: the
+  # locale belongs to the process, the theme config is global and only
+  # re-read on deploy, and `:current_path` is kept in step by the
+  # `:set_current_path` hook in `GamendWeb.UserAuth`, so a `push_patch` to
+  # another URL does change the nav highlight. The one thing that can is what
+  # a `{Module.fun}` nav label reads (a coin balance a hint spends): the page
+  # passes it as `:nav_key`, and the links are resolved again
+  # (`HostLayoutShell.assign_nav/1`).
 
-  # The attrs the derivation reads. Nothing else it depends on can move inside
-  # the life of one render: the locale belongs to the process, the theme config
-  # is global and only re-read on deploy, and `:current_path` is kept in step
-  # by the `:set_current_path` hook in `GamendWeb.UserAuth`, so a `push_patch`
-  # to another URL does change the nav highlight. The one thing that can is
-  # what a `{Module.fun}` nav label reads (a coin balance a hint spends): the
-  # page passes it as `:nav_key`.
+  # The attrs any of it reads: with none of them changed, nothing asks the
+  # database for the unread count again.
   @shell_assign_inputs [
     :background_icons,
     :conn,
@@ -550,7 +544,6 @@ defmodule GamendWeb.HostLayouts do
   # fix, and it leaves no trace in rendered markup.
   @doc false
   def prepare_app_assigns(assigns) do
-    rerender? = shell_inputs_changed?(assigns)
     conn = Map.get(assigns, :conn)
 
     # `Layouts.app` is a function component, so it only sees the attrs a
@@ -572,31 +565,37 @@ defmodule GamendWeb.HostLayouts do
 
     navigation = navigation_config(theme, en_theme)
     background_icons = shell_background_icons(assigns, theme, en_theme)
+    notif_unread_count = unread_notifications(assigns)
 
-    notif_unread_count = unread_notifications(assigns, rerender?)
-
-    assigns =
-      assign(assigns,
-        current_path: current_path,
-        current_query: current_query,
-        locale: locale,
-        known_locales: @known_locales,
-        theme: theme,
-        navigation: localize_hrefs(navigation, locale),
-        footer: localize_hrefs(Map.get(theme, "footer", %{}), locale),
-        background_icons: background_icons,
-        notif_unread_count: notif_unread_count,
-        search: search_assign(locale),
-        breadcrumbs: breadcrumbs_for(current_path, locale)
-      )
-      |> HostLayoutShell.assign_nav(rerender?)
-
-    freeze_derived_shell_assigns(assigns, rerender?)
+    assigns
+    |> ChangeTracking.derive(:current_path, [:current_path, :conn], current_path)
+    |> ChangeTracking.derive(:current_query, [:conn], current_query)
+    # The process's, for the life of the page.
+    |> ChangeTracking.derive_all([],
+      locale: locale,
+      known_locales: @known_locales,
+      search: search_assign(locale)
+    )
+    |> ChangeTracking.derive_all([:theme],
+      theme: theme,
+      navigation: localize_hrefs(navigation, locale),
+      footer: localize_hrefs(Map.get(theme, "footer", %{}), locale)
+    )
+    |> ChangeTracking.derive(
+      :background_icons,
+      [:background_icons, :flush, :theme],
+      background_icons
+    )
+    |> ChangeTracking.derive(
+      :breadcrumbs,
+      [:current_path, :conn],
+      breadcrumbs_for(current_path, locale)
+    )
+    |> ChangeTracking.derive_in_render(:notif_unread_count, notif_unread_count, __MODULE__)
+    |> HostLayoutShell.assign_nav()
   end
 
-  # The index URL carries the locale, so this moves when the locale does —
-  # which is why `:search` is one of the frozen shell assigns rather than a
-  # constant computed once.
+  # The index URL carries the locale, so this moves when the locale does.
   defp search_assign(locale) do
     if GamendWeb.SearchIndex.enabled?() do
       %{
@@ -611,40 +610,23 @@ defmodule GamendWeb.HostLayouts do
     end
   end
 
-  # `nil` means the caller is not change-tracking at all — a dead render, or a
-  # first render, where every dynamic has to be produced.
-  defp shell_inputs_changed?(%{__changed__: changed}) when is_map(changed),
-    do: Enum.any?(@shell_assign_inputs, &Map.has_key?(changed, &1))
-
-  defp shell_inputs_changed?(_assigns), do: true
-
-  defp freeze_derived_shell_assigns(assigns, true), do: assigns
-
-  defp freeze_derived_shell_assigns(%{__changed__: changed} = assigns, false)
-       when is_map(changed),
-       do: %{assigns | __changed__: Map.drop(changed, @derived_shell_assigns)}
-
-  defp freeze_derived_shell_assigns(assigns, false), do: assigns
-
   # The unread count is the one derived value that can move without an attr
   # moving, and a function component has nowhere to keep the last one it
-  # rendered. The process does: a LiveView is one process for the life of the
-  # page, so a render that is not re-rendering the navbar reuses the number the
-  # navbar is already showing instead of asking the database for it again. A
-  # dead render is a fresh process, so it always counts.
-  defp unread_notifications(assigns, true) do
-    count =
-      if scope = assigns[:current_scope] do
-        Gamend.Notifications.count_unread_notifications(scope.user_id)
-      else
-        0
-      end
+  # rendered. The process does (`ChangeTracking.derive_in_render/4`): a
+  # LiveView is one process for the life of the page, so a render that
+  # changes no attr of the shell reuses the number the navbar is already
+  # showing instead of asking the database for it again, and a count that
+  # comes back the same is not sent again. A dead render is a fresh process,
+  # so it always counts.
+  defp unread_notifications(assigns) do
+    last = ChangeTracking.last_rendered(:notif_unread_count, __MODULE__)
 
-    Process.put(:gamend_notif_unread_count, count)
-    count
+    cond do
+      is_integer(last) and not ChangeTracking.changed?(assigns, @shell_assign_inputs) -> last
+      scope = assigns[:current_scope] -> Gamend.Notifications.count_unread_notifications(scope.user_id)
+      true -> 0
+    end
   end
-
-  defp unread_notifications(_assigns, false), do: Process.get(:gamend_notif_unread_count, 0)
 
   # The shell's icon layer is the fallback for pages that do not paint one
   # themselves. A `PresentationPage` draws its own, band by band, and says so

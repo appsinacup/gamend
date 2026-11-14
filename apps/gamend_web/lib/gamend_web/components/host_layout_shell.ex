@@ -4,6 +4,7 @@ defmodule GamendWeb.HostLayoutShell do
   use GamendWeb, :html
 
   alias Gamend.Accounts.Scope
+  alias GamendWeb.ChangeTracking
 
   attr :flash, :map, required: true
   attr :current_scope, :map, default: nil
@@ -36,8 +37,7 @@ defmodule GamendWeb.HostLayoutShell do
     # `HostLayouts.prepare_app_assigns/1` has already derived them, and kept
     # them out of `__changed__` when no input moved. Assigned here, they were
     # new on every call, and every nav re-rendered on every diff.
-    assigns =
-      if Map.has_key?(assigns, :nav_prepared), do: assigns, else: assign_nav(assigns, true)
+    assigns = if Map.has_key?(assigns, :nav_prepared), do: assigns, else: assign_nav(assigns)
 
     ~H"""
     <%!-- First focusable element on every page: invisible until it receives
@@ -372,24 +372,36 @@ defmodule GamendWeb.HostLayoutShell do
     """
   end
 
+  # What the navs' links are resolved from: the config, who reads, where
+  # they are, and what a page says moved (`Layouts.app`'s `nav_key`).
+  @nav_inputs [:navigation, :theme, :current_scope, :current_path, :conn, :nav_key]
+
   @doc false
-  # The layout the shell draws and the links its five navs share. Resolving the
-  # links counts quests and reads the wallet, so a render that keeps the
-  # navbar as it was (`rerender?` false) leaves them `nil`: the navs are out
-  # of that diff, and a nav handed `nil` resolves its own links anyway.
-  def assign_nav(assigns, rerender?) do
+  # The layout the shell draws and the links its five navs share. Resolving
+  # the links counts quests and reads the wallet, so a render with none of
+  # their inputs changed keeps the links the last one resolved. Resolved
+  # again, they are marked changed with the links they were
+  # (`ChangeTracking.derive_in_render/4`), so each nav sees which of its
+  # lists is another (`HostLayoutNavigation`): a coin spent changes the one
+  # entry that shows it.
+  def assign_nav(assigns) do
     navigation = assigns[:navigation]
 
     assigns =
-      assign(assigns,
+      ChangeTracking.derive_all(assigns, [:navigation, :theme],
         side?: GamendWeb.HostLayoutNavigation.side_layout?(navigation),
         auto?: GamendWeb.HostLayoutNavigation.auto_layout?(navigation)
       )
 
-    assign(
+    kept =
+      if not ChangeTracking.changed?(assigns, @nav_inputs),
+        do: ChangeTracking.last_rendered(:nav_prepared, __MODULE__)
+
+    ChangeTracking.derive_in_render(
       assigns,
       :nav_prepared,
-      if(rerender?, do: GamendWeb.HostLayoutNavigation.prepare(assigns))
+      kept || GamendWeb.HostLayoutNavigation.prepare(assigns),
+      __MODULE__
     )
   end
 

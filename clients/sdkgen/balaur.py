@@ -14,9 +14,10 @@ are one file per channel under `events/` (`use addons::gamend::events::lobby;`,
 hand-written `clients/balaur_template/`, copied over the top.
 
 An operation that answers a session the template opens is not emitted:
-`client::login_device`, `client::login_email`, `client::confirm_registration`
-and the refresh inside `core::rest` are the one way to sign in, and each keeps
-the session the calls after it carry.
+`client::login_device`, `login_email`, `login_google`, `login_apple`,
+`login_steam`, `confirm_registration` and the refresh inside `core::rest` are
+the one way to sign in, and each keeps the session the calls after it carry.
+`oauth_session_status` stays: `auth::sign_in` polls it for a provider's page.
 """
 
 import json
@@ -39,7 +40,12 @@ TAKEN = {
     "presence", "socket", "version",
 }
 # Operations the template signs in with, which a game reaches only through it.
-SIGN_IN = {"login", "device_login", "refresh_token", "confirm_registration"}
+# `oauth_api_callback` is `login_steam`: a provider's code is bound to the
+# server's own redirect, which redeems it, so a Steam ticket is all a game holds.
+SIGN_IN = {
+    "login", "device_login", "refresh_token", "confirm_registration",
+    "oauth_google_id_token", "oauth_callback_api_apple_ios", "oauth_api_callback",
+}
 
 BANNER = (
     "// Written by clients/sdkgen (balaur) from the OpenAPI document.\n"
@@ -296,7 +302,7 @@ def write_readme(model: Model) -> str:
         "",
         "| Module | For |",
         "| --- | --- |",
-        "| `gamend::client` | `configure`, signing in by device or email and confirming an email account, the socket, hooks and the key-value cache |",
+        "| `gamend::client` | `configure`, signing in by device, email, Google ID token, Apple code or Steam ticket and confirming an email account, the socket, hooks and the key-value cache |",
         "| `gamend::auth` | The session, sign-in through a provider, and the session kept for the next run |",
         "| `gamend::socket` | The realtime socket's node: Phoenix Channels over `websocket`, heartbeats, reconnects and rejoins |",
         "| `gamend::presence` | The user cache |",

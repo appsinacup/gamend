@@ -128,7 +128,7 @@ pub class Gamend {
 
 // The Editor, whose methods are what a plugin reaches the editor through.
 fn editor() -> Node {
-    scene::get_node("Editor")
+    scene::root().get_node("Editor")
 }
 
 fn core_pages() -> [str] {

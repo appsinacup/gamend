@@ -104,7 +104,13 @@ defmodule GamendWeb.HostLayoutsTest do
       }
     end
 
+    # A tracked render always follows the page's first, which draws
+    # everything and is what the unread count and the links are compared
+    # with (`GamendWeb.ChangeTracking.derive_in_render/4`).
+    defp first_render, do: HostLayouts.prepare_app_assigns(app_assigns(nil))
+
     test "a diff that only touched the page body leaves the shell alone" do
+      first_render()
       changed = HostLayouts.prepare_app_assigns(app_assigns(%{inner_block: true})).__changed__
 
       assert Map.has_key?(changed, :inner_block)
@@ -115,33 +121,38 @@ defmodule GamendWeb.HostLayoutsTest do
     end
 
     test "a flash does not re-render the shell either" do
+      first_render()
       changed = HostLayouts.prepare_app_assigns(app_assigns(%{flash: true})).__changed__
 
       for key <- @derived, do: refute(Map.has_key?(changed, key))
     end
 
-    test "a new path re-renders the shell" do
+    ## Each value moves with what it is worked out from, and no other: the
+    ## path is the breadcrumbs' and the highlight's, never the footer's or the
+    ## language list's.
+    @not_the_paths [:footer, :known_locales, :locale, :navigation, :search, :theme]
+
+    test "a new path changes what is drawn from the path, and only that" do
+      first_render()
+
       changed =
         HostLayouts.prepare_app_assigns(app_assigns(%{current_path: true})).__changed__
 
-      for key <- @derived, do: assert(Map.has_key?(changed, key))
-    end
-
-    test "a change of scope re-renders the shell" do
-      changed =
-        HostLayouts.prepare_app_assigns(app_assigns(%{current_scope: true})).__changed__
-
-      assert Map.has_key?(changed, :navigation)
-      assert Map.has_key?(changed, :footer)
-      assert Map.has_key?(changed, :notif_unread_count)
+      assert Map.has_key?(changed, :current_path)
+      assert Map.has_key?(changed, :breadcrumbs)
+      for key <- @not_the_paths, do: refute(Map.has_key?(changed, key), "#{key} was marked")
     end
 
     ## A nav label can read something the page changes (the coin badge after a
-    ## purchase): `nav_key` is how the page says it moved.
-    test "a new nav key re-renders the shell" do
+    ## purchase): `nav_key` is how the page says it moved. The links are
+    ## resolved again and each nav sees which changed; the footer, the
+    ## language picker and the breadcrumbs are not sent for one number.
+    test "a new nav key leaves the rest of the shell alone" do
+      first_render()
       changed = HostLayouts.prepare_app_assigns(app_assigns(%{nav_key: true})).__changed__
 
-      assert Map.has_key?(changed, :navigation)
+      for key <- [:breadcrumbs, :current_path | @not_the_paths],
+          do: refute(Map.has_key?(changed, key), "#{key} was marked")
     end
 
     ## `nil` is how the engine says "not change tracking" — a dead render, or a
@@ -176,6 +187,7 @@ defmodule GamendWeb.HostLayoutsTest do
     }
 
     test "a diff that only touched the page body re-sends no nav" do
+      first_render()
       sent = sent(%{inner_block: true})
 
       for {nav, mark} <- @navs,
@@ -187,10 +199,22 @@ defmodule GamendWeb.HostLayoutsTest do
     end
 
     test "a new path re-sends the navs" do
+      first_render()
       sent = Enum.map(sent(%{current_path: true}), &html/1)
 
       for {nav, mark} <- @navs,
           do: assert(Enum.any?(sent, &(&1 =~ mark)), "#{nav} was not re-sent")
+    end
+
+    test "a change of scope and a new nav key reach the navs" do
+      first_render()
+
+      for changed <- [%{current_scope: true}, %{nav_key: true}] do
+        sent = Enum.map(sent(changed), &html/1)
+
+        for {nav, mark} <- @navs,
+            do: assert(Enum.any?(sent, &(&1 =~ mark)), "#{nav} was not reached")
+      end
     end
   end
 end

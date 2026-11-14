@@ -21,6 +21,25 @@ expression **without starting the application**, which is the point: a
 migration that fails takes the command down instead of half-booting an
 endpoint against a database it does not match.
 
+# `convert`
+
+```elixir
+@spec convert(Path.t(), keyword(), keyword()) :: Gamend.Export.Convert.summary()
+```
+
+Fills this host's database from another Gamend's, of the other adapter
+(`Gamend.Export.Convert`), then writes it into `dir` as `gamend.db`: a
+Postgres host's rows as the file a SQLite host starts from. `source` is
+the other database, as a repo takes it (`url:`, or `hostname:`,
+`username:`, `password:`, `database:`).
+
+Run it in a SQLite build of the release the source runs, with
+`GAMEND_DB_SQLITE_PATH` naming a file that does not exist yet: it is
+made and migrated here, and is the scratch copy `gamend.db` is taken from.
+Prints what it copied and raises when it cannot, with nothing written.
+
+    bin/gamend_host eval 'Gamend.Release.convert("/tmp/export", url: "ecto://…")'
+
 # `createdb`
 
 ```elixir

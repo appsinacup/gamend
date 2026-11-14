@@ -1,4 +1,4 @@
-# gamend_core v1.1.1451 - Table of Contents
+# gamend_core v1.1.1453 - Table of Contents
 
 > Core functionality for Gamend, including user management, authentication, friends, matchmaking, and more.
 
@@ -84,6 +84,8 @@ L2 cache.
 list/detail pages at realistic sizes.
 - [Gamend.Export](Gamend.Export.md): A host's data as files another host can start from: what only the
 application can copy.
+- [Gamend.Export.Convert](Gamend.Export.Convert.md): Another Gamend's rows, copied into this one's database: how a host moves
+from a Postgres of its own to a SQLite file, or the other way.
 - [Gamend.GitHub](Gamend.GitHub.md): The server's GitHub App: who may use which installation, the credentials a
 job borrows from it, and what its webhook means.
 - [Gamend.GitHub.API](Gamend.GitHub.API.md): The GitHub REST calls a GitHub App makes, and the credentials that make

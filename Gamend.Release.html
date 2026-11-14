@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1451">
+    <meta name="project" content="gamend_core v1.1.1453">
 
 
-    <title>Gamend.Release — gamend_core v1.1.1451</title>
+    <title>Gamend.Release — gamend_core v1.1.1453</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-F45DCC45.js"></script>
+    <script defer src="dist/sidebar_items-B6044C72.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1451
+          v1.1.1453
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Release</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1451)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1453)</small>
 
     </h1>
 
@@ -140,6 +140,20 @@ endpoint against a database it does not match.</p>
   <h3>
     <a href="#functions">Functions</a>
   </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#convert/3" data-no-tooltip="" translate="no">convert(dir, source, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Fills this host's database from another Gamend's, of the other adapter
+(<a href="Gamend.Export.Convert.html"><code class="inline">Gamend.Export.Convert</code></a>), then writes it into <code class="inline">dir</code> as <code class="inline">gamend.db</code>: a
+Postgres host's rows as the file a SQLite host starts from. <code class="inline">source</code> is
+the other database, as a repo takes it (<code class="inline">url:</code>, or <code class="inline">hostname:</code>,
+<code class="inline">username:</code>, <code class="inline">password:</code>, <code class="inline">database:</code>).</p></div>
+
+    </div>
 
     <div class="summary-row">
       <div class="summary-signature">
@@ -245,6 +259,43 @@ or <code class="inline">nil</code> when there is none. <code class="inline">mix 
     </h2>
 
     <div class="functions-list">
+<section class="detail" id="convert/3">
+
+    <span id="convert/2"></span>
+
+  <div class="detail-header">
+    <a href="#convert/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">convert(dir, source, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L119" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> convert(<a href="https://elixir.hexdocs.pm/Path.html#t:t/0">Path.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: <a href="Gamend.Export.Convert.html#t:summary/0">Gamend.Export.Convert.summary</a>()</pre>
+
+      </div>
+
+<p>Fills this host's database from another Gamend's, of the other adapter
+(<a href="Gamend.Export.Convert.html"><code class="inline">Gamend.Export.Convert</code></a>), then writes it into <code class="inline">dir</code> as <code class="inline">gamend.db</code>: a
+Postgres host's rows as the file a SQLite host starts from. <code class="inline">source</code> is
+the other database, as a repo takes it (<code class="inline">url:</code>, or <code class="inline">hostname:</code>,
+<code class="inline">username:</code>, <code class="inline">password:</code>, <code class="inline">database:</code>).</p><p>Run it in a SQLite build of the release the source runs, with
+<code class="inline">GAMEND_DB_SQLITE_PATH</code> naming a file that does not exist yet: it is
+made and migrated here, and is the scratch copy <code class="inline">gamend.db</code> is taken from.
+Prints what it copied and raises when it cannot, with nothing written.</p><pre><code class="makeup elixir" translate="no"><span class="n">bin</span><span class="o">/</span><span class="n">gamend_host</span><span class="w"> </span><span class="n">eval</span><span class="w"> </span><span class="sc">&#39;Gamend.Release.convert(&quot;/tmp/export&quot;, url: &quot;ecto://…&quot;)&#39;</span></code></pre>
+  </section>
+</section>
 <section class="detail" id="createdb/0">
 
   <div class="detail-header">
@@ -255,7 +306,7 @@ or <code class="inline">nil</code> when there is none. <code class="inline">mix 
       <h1 class="signature" translate="no">createdb()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L59" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L60" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -284,7 +335,7 @@ the server provisions the database already can skip this entirely.</p>
       <h1 class="signature" translate="no">dropdb()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L66" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L67" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -315,7 +366,7 @@ exist is not an error.</p>
       <h1 class="signature" translate="no">export(dir, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L77" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L78" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -346,7 +397,7 @@ serving, so it can run beside one:</p><pre><code class="makeup elixir" translate
       <h1 class="signature" translate="no">migrate()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L35" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L36" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -374,7 +425,7 @@ serving, so it can run beside one:</p><pre><code class="makeup elixir" translate
       <h1 class="signature" translate="no">prepare()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L111" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L211" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -406,7 +457,7 @@ image's command both run this.</p>
       <h1 class="signature" translate="no">rollback(opts)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L48" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L49" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -435,7 +486,7 @@ image's command both run this.</p>
       <h1 class="signature" translate="no">rollback(repo, version)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L41" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L42" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -463,7 +514,7 @@ image's command both run this.</p>
       <h1 class="signature" translate="no">seeds_file()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L126" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/release.ex#L226" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -491,9 +542,9 @@ or <code class="inline">nil</code> when there is none. <code class="inline">mix 
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1451">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1453">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1451">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1453">Hex Preview</a>
 
             </span>
 

@@ -100,6 +100,7 @@ Gamend.DemoSeed.html
 Gamend.Economy.LedgerEntry.html
 Gamend.Economy.Wallet.html
 Gamend.Economy.html
+Gamend.Export.Convert.html
 Gamend.Export.html
 Gamend.Friends.Friendship.html
 Gamend.Friends.FriendshipStatus.html
@@ -366,8 +367,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-1A1EE8CD.js
-dist/sidebar_items-F45DCC45.js
+dist/search_data-CEA53DB7.js
+dist/sidebar_items-B6044C72.js
 index.html
 readme.html
 search.html

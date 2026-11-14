@@ -1,5 +1,6 @@
-"""The Balaur emitter: Balaur Script over the engine's `gamend::rest`, sent
-through the template's `core::rest` so the activity log keeps each call.
+"""The Balaur emitter: Balaur Script over the template's `core::rest`, which
+speaks HTTP through the engine's `http` and keeps each call in the activity
+log.
 
 The Godot client goes through openapi-generator, which has no Balaur Script
 target, so this writes one `.bs` module per tag. A script links one with
@@ -11,6 +12,11 @@ are one file per channel under `events/` (`use addons::gamend::events::lobby;`,
 `commands.bs` is one function per event a channel answers.
 `README.md` is the reference, by tag. Everything else in the addon is the
 hand-written `clients/balaur_template/`, copied over the top.
+
+An operation that answers a session the template opens is not emitted:
+`client::login_device`, `client::login_email`, `client::confirm_registration`
+and the refresh inside `core::rest` are the one way to sign in, and each keeps
+the session the calls after it carry.
 """
 
 import json
@@ -30,8 +36,10 @@ FILE_NAMES = {"push": "push_tokens"}
 # What a tag's file must not take: the template's files.
 TAKEN = {
     "activity", "auth", "client", "commands", "core", "events", "log_sink", "logs", "prefs",
-    "presence", "version",
+    "presence", "socket", "version",
 }
+# Operations the template signs in with, which a game reaches only through it.
+SIGN_IN = {"login", "device_login", "refresh_token", "confirm_registration"}
 
 BANNER = (
     "// Written by clients/sdkgen (balaur) from the OpenAPI document.\n"
@@ -81,9 +89,9 @@ def short_name(op: dict, file: str) -> str:
 
 
 def emit_function(model: Model, op: dict, file: str, name: str) -> str:
-    """One operation as a function over `core::rest`, answering its id.
-    Path parameters are `str`, as they are in a path; the body and the query
-    are JSON maps, so `any`."""
+    """One operation as an async function over `core::rest`, answering its
+    reply. Path parameters are `str`, as they are in a path; the body and the
+    query are JSON maps, so `any`."""
     args = [f"{safe(p)}: str" for p in op["path_params"]]
     required_body: list[str] = []
     if op["body"]:
@@ -94,7 +102,7 @@ def emit_function(model: Model, op: dict, file: str, name: str) -> str:
     called = json.dumps(f"gamend::{file}::{name}")
     out = wrap(op["summary"], 76, "///")
     out.append(f"/// `{op['method']} {op['path']}`")
-    out.append(f"pub fn {name}({', '.join(args)}) -> int {{")
+    out.append(f"pub async fn {name}({', '.join(args)}) -> any {{")
     # An empty id is `.as_str()` of a number, and a path built on it asks for
     # something else.
     for param in op["path_params"]:
@@ -115,7 +123,8 @@ def emit_function(model: Model, op: dict, file: str, name: str) -> str:
     path = path_expression(op, bool(op["query"]))
     # A left-out body is nil, so a call with none writes none.
     body = ", params" if op["body"] else ""
-    out.append(f'    core::rest("{op["method"]}", {path}{body})')
+    out.append(f'    let reply = await core::rest("{op["method"]}", {path}{body});')
+    out.append("    reply")
     out.append("}")
     return "\n".join(out)
 
@@ -124,6 +133,8 @@ def by_file(model: Model) -> dict[str, list[tuple[str, dict]]]:
     """Each file's operations, with the name each takes in it."""
     files: dict[str, list[tuple[str, dict]]] = {}
     for op in model.ops:
+        if op["id"] in SIGN_IN:
+            continue
         file = file_of(op)
         if file in TAKEN:
             raise SystemExit(f"tag {op['tag']!r} would be gamend::{file}; add it to FILE_NAMES")
@@ -148,10 +159,10 @@ def write_tags(model: Model) -> dict[str, str]:
             "// A call takes the path's own parameters as text (`reply[\"id\"].text()`\n"
             "// for an id a reply holds), then `params` for the request body and\n"
             "// `options` for the query where the operation has them; either may be\n"
-            "// left out when the call has nothing to put in it. It answers the id\n"
-            "// `core::rest` answers, to await with `task::wait`. With a path\n"
-            "// parameter empty or a required field left out it sends nothing and\n"
-            "// logs which, and the id answers an `error` naming it.\n"
+            "// left out when the call has nothing to put in it. It is async, and\n"
+            "// answers what `core::rest` answers: `await lobbies::get_lobby(id)`.\n"
+            "// With a path parameter empty or a required field left out it sends\n"
+            "// nothing and logs which, and answers an `error` naming it.\n"
             "\nuse core;",
         ]
         chunks += [emit_function(model, op, file, name) for name, op in ops]
@@ -263,33 +274,37 @@ def write_readme(model: Model) -> str:
         "Written by `clients/sdkgen` (balaur), in Balaur Script. Copy this",
         "directory into a project as `addons/gamend/`, beside the Balaur",
         "library's `addons/save/`, which keeps the session and the prefs; the",
-        "editor's Library dock adds both. A script links a module with",
-        "`use addons::gamend::<module>;`, beside the engine's own `gamend::login`",
-        "and `gamend::rest`:",
+        "editor's Library dock adds both. It speaks to the server over the",
+        "engine's `http` and `websocket`, so a recorded run replays with no",
+        "server. A script links a module with `use addons::gamend::<module>;`,",
+        "and awaits a call:",
         "",
         "```rust",
+        "use addons::gamend::client;",
         "use addons::gamend::lobbies;",
         "use addons::gamend::events::lobby;",
         "",
-        'let reply = await task::wait(lobbies::quick_join({ "title": "duel", "max_users": 2 }));',
+        "let login = await client::login_device(engine::device_id());",
+        'let reply = await lobbies::quick_join({ "title": "duel", "max_users": 2 });',
         'if e["kind"].as_str() == lobby::MEMBER_JOINED { }',
         "```",
         "",
-        f"{len(model.ops)} operations in {len(files)} modules, and "
+        f"{sum(len(ops) for ops in files.values())} operations in {len(files)} modules, and "
         f"{len(model.signals())} realtime events, {len(model.commands)} socket commands.",
         "",
         "Beside the generated modules and `events.bs`, written by hand:",
         "",
         "| Module | For |",
         "| --- | --- |",
-        "| `gamend::client` | `configure`, the socket, hooks and the key-value cache |",
-        "| `gamend::auth` | Sign-in through a provider, and the kept session |",
+        "| `gamend::client` | `configure`, signing in by device or email and confirming an email account, the socket, hooks and the key-value cache |",
+        "| `gamend::auth` | The session, sign-in through a provider, and the session kept for the next run |",
+        "| `gamend::socket` | The realtime socket's node: Phoenix Channels over `websocket`, heartbeats, reconnects and rejoins |",
         "| `gamend::presence` | The user cache |",
         "| `gamend::prefs` | The player's prefs on this device |",
         "| `gamend::logs` | This run's log, shipped in batches; put `log_sink.bs` on a node that lives as long as the game |",
         "| `gamend::commands` | Generated: one function per event a channel answers |",
-        "| `gamend::core` | The query string, the required-field check, the reply helpers, and the engine's calls, each kept in the activity log |",
-        "| `gamend::activity` | The calls `core` sent and what `client::route` heard, for the dock; a call made on `gamend::` directly is not in it |",
+        "| `gamend::core` | The server, HTTP with the session's token and its refresh, the query string, the required-field check and the reply helpers, each call kept in the activity log |",
+        "| `gamend::activity` | The calls `core` and the socket sent and what `client::route` heard, for the dock |",
         "| `editor/gamend.bs` | The Gamend dock in the Balaur editor: the server, the session, and what the calls answered |",
         "",
     ]
@@ -326,6 +341,6 @@ def emit(model: Model) -> dict[str, str]:
 
 def summary(model: Model) -> str:
     return (
-        f"wrote {len(model.ops)} operations, {len(model.signals())} events "
+        f"wrote {sum(len(ops) for ops in by_file(model).values())} operations, {len(model.signals())} events "
         f"and {len(model.commands)} commands"
     )

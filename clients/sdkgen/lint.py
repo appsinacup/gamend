@@ -119,7 +119,7 @@ def operations(report: Report, model: Model, generated: bool) -> None:
         surface,
         "Balaur",
         [f"{file}.bs::{name}" for file, ops in balaur.by_file(model).items() for name, _ in ops],
-        lambda item: f"pub fn {item.split('::')[1]}(" in written[item.split("::")[0]],
+        lambda item: f"pub async fn {item.split('::')[1]}(" in written[item.split("::")[0]],
     )
 
 

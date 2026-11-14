@@ -20,8 +20,8 @@ order and a method. Each SDK gets its own spec when it starts;
 | WebRTC (opt-in) | DataChannels, signaled over the user channel (`webrtc:offer` / `webrtc:ice`) | `GamendWeb.WebRTCPeer` |
 
 The REST layer is generated. The realtime layer is hand-written per SDK, and
-it is the real cost — ~400 lines of protocol in the Rust client
-(`balaur/crates/balaur_gamend/src/client/phoenix.rs`), ~320 in GDScript
+it is the real cost — ~640 lines of protocol in the Balaur SDK's
+`socket.bs`, ~320 in GDScript
 (`GamendWebSocket.gd`), plus reconnect, token refresh and hook replies around
 it.
 
@@ -56,7 +56,7 @@ emitter.
 | 1 | **C++** → Unreal plugin: built (beta) | Hand-written, ported from the Rust client | [cpp-sdk.md](cpp-sdk.md), [unreal-plugin.md](unreal-plugin.md). Pluggable transports so Unreal uses its own HTTP/WebSocket modules |
 | 2 | **C#** and the Unity package: built | Hand-written, ported from the C++ SDK | Also serves Godot .NET, MonoGame, Stride. Unity WebGL needs `UnityWebRequest` and a jslib WebSocket |
 | 3 | TypeScript types for the JS SDK: built | — | `.d.ts` over the current output, written by `sdkgen ts` |
-| 4 | Rust crate: built | Ported from the C++ SDK, starting from `balaur_gamend::client` | Serves Bevy, Fyrox, macroquad. Balaur moving onto it is a later, optional step |
+| 4 | Rust crate: built | Ported from the C++ SDK | Serves Bevy, Fyrox, macroquad. Balaur's client is its own Balaur Script SDK |
 | 5 | Lua (Defold, LÖVE) | Hand-written | The Balaur emitter is nearly a Lua emitter |
 | 6 | GameMaker (GML) | Hand-written over `network_create_socket_ext` | |
 | 7 | Python / Go | Optional | Bots, tools, load tests |

@@ -130,6 +130,7 @@ DNS_NAMES=""
 PODMAN_IMAGES=""                     # pulled into the host's podman when missing
 MAKE_DIRS="backups logs"             # created when missing (bind mounts)
 EXPORT_FILES=1                       # 0: --export leaves the stored files out
+EXPORT_DATABASE=""                   # sqlite: --export writes a Postgres host's rows as gamend.db
 DISK_PATH="."
 MIN_FREE_GB=50
 UP_TIMEOUT=600
@@ -176,6 +177,55 @@ done
 # EXPORT_FILES=0. An app's own extras go in through its `app_export DIR`
 # hook. Nothing is stopped: for the last export before a move, stop the app
 # first (`$COMPOSE stop $APP_SERVICE`), so no write lands after the copy.
+# A Postgres host's rows as `gamend.db`, the file a SQLite server starts from
+# (`Gamend.Release.convert`): for a host that moves to the other database.
+# The adapter is compiled into a release, so the copy runs in a build of this
+# checkout for SQLite, made here, on the database's own network. `.env`'s
+# values go in by name and the database's own from its container, so none is
+# an argument.
+export_sqlite() {
+  local db_service=$1 image id network line key user="" password="" database="" args=()
+  image="$(basename "$PWD" | tr '[:upper:]' '[:lower:]')-export-sqlite"
+  id=$($COMPOSE ps -q "$db_service" | head -1)
+  network=$(docker inspect -f '{{range $name, $_ := .NetworkSettings.Networks}}{{println $name}}{{end}}' "$id" | head -1)
+
+  note "building this checkout for SQLite (${image}): the copy runs in it"
+  if ! docker build -q -t "$image" --build-arg GAMEND_DB_ADAPTER=sqlite ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"} . >/dev/null; then
+    bad "could not build ${image}"
+    return 1
+  fi
+
+  while IFS= read -r line; do
+    case "$line" in
+      POSTGRES_USER=*) user=${line#*=} ;;
+      POSTGRES_PASSWORD=*) password=${line#*=} ;;
+      POSTGRES_DB=*) database=${line#*=} ;;
+    esac
+  done < <(docker inspect -f '{{range .Config.Env}}{{println .}}{{end}}' "$id")
+
+  while IFS= read -r key; do
+    args+=(-e "$key")
+  done < <(sed -n 's/^\(export \)\{0,1\}\([A-Za-z_][A-Za-z0-9_]*\)=.*/\2/p' .env)
+
+  # Out as a tar on stdout, so the file is this user's; what the copy prints
+  # goes to stderr.
+  # shellcheck disable=SC2016 # the container's shell expands these
+  if PGUSER=${user:-postgres} PGPASSWORD=$password PGDATABASE=${database:-${user:-postgres}} \
+    docker run --rm --network "$network" ${args[@]+"${args[@]}"} \
+      -e PGHOST="$db_service" -e PGUSER -e PGPASSWORD -e PGDATABASE \
+      -e GAMEND_DB_ADAPTER=sqlite -e GAMEND_DB_SQLITE_PATH=/tmp/convert/work.db "$image" sh -c '
+        mkdir -p /tmp/convert/out &&
+        "bin/$GAMEND_RELEASE" eval "Gamend.Release.convert(\"/tmp/convert/out\", hostname: System.fetch_env!(\"PGHOST\"), username: System.fetch_env!(\"PGUSER\"), password: System.fetch_env!(\"PGPASSWORD\"), database: System.fetch_env!(\"PGDATABASE\"))" >&2 &&
+        tar -cf - -C /tmp/convert/out gamend.db' | tar -xf - -C "$EXPORT_DIR"; then
+    chmod 600 "$EXPORT_DIR/gamend.db"
+    ok "gamend.db ($(du -h "$EXPORT_DIR/gamend.db" | cut -f1)), every row of ${db_service}'s"
+  else
+    rm -f "$EXPORT_DIR/gamend.db"
+    bad "could not copy ${db_service} into a SQLite database (the lines above say why)"
+    return 1
+  fi
+}
+
 if [ -n "$EXPORT_DIR" ]; then
   step "Exporting to $EXPORT_DIR"
   # Players' data and the app's secrets: nobody else's to read.
@@ -187,7 +237,13 @@ if [ -n "$EXPORT_DIR" ]; then
 
   db_service=${DB_SERVICE:-db}
   dumped=0
-  if $COMPOSE ps --services --status running 2>/dev/null | grep -qx "$db_service"; then
+  if [ "$EXPORT_DATABASE" = "sqlite" ]; then
+    if $COMPOSE ps --services --status running 2>/dev/null | grep -qx "$db_service"; then
+      if export_sqlite "$db_service"; then dumped=1; fi
+    else
+      bad "EXPORT_DATABASE=sqlite copies the running ${db_service}, and it is not running"
+    fi
+  elif $COMPOSE ps --services --status running 2>/dev/null | grep -qx "$db_service"; then
     # The container's own POSTGRES_USER and POSTGRES_DB, as the image read them.
     if $COMPOSE exec -T "$db_service" sh -c 'exec pg_dump -Fc -U "$POSTGRES_USER" "$POSTGRES_DB"' \
       > "$EXPORT_DIR/gamend.dump.part"; then

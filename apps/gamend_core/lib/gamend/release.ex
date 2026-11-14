@@ -22,6 +22,7 @@ defmodule Gamend.Release do
   """
 
   alias Gamend.Export
+  alias Gamend.Export.Convert
   alias Gamend.Repo.MigrationPaths
 
   @create "create"
@@ -97,6 +98,105 @@ defmodule Gamend.Release do
       result
     else
       Export.write(dir, opts)
+    end
+  end
+
+  @doc """
+  Fills this host's database from another Gamend's, of the other adapter
+  (`Gamend.Export.Convert`), then writes it into `dir` as `gamend.db`: a
+  Postgres host's rows as the file a SQLite host starts from. `source` is
+  the other database, as a repo takes it (`url:`, or `hostname:`,
+  `username:`, `password:`, `database:`).
+
+  Run it in a SQLite build of the release the source runs, with
+  `GAMEND_DB_SQLITE_PATH` naming a file that does not exist yet: it is
+  made and migrated here, and is the scratch copy `gamend.db` is taken from.
+  Prints what it copied and raises when it cannot, with nothing written.
+
+      bin/gamend_host eval 'Gamend.Release.convert("/tmp/export", url: "ecto://…")'
+  """
+  @spec convert(Path.t(), keyword(), keyword()) :: Convert.summary()
+  def convert(dir, source, opts \\ []) do
+    load_applications()
+
+    unless Export.database?() do
+      raise "convert writes a SQLite database: run it in a build with GAMEND_DB_ADAPTER=sqlite"
+    end
+
+    prepare()
+    {:ok, _apps} = Application.ensure_all_started(:postgrex)
+
+    {:ok, result, _apps} =
+      Ecto.Migrator.with_repo(Gamend.Repo, fn _repo -> converted(dir, source, opts) end)
+
+    case result do
+      {:ok, summary} ->
+        print_summary(summary)
+        IO.puts("wrote " <> Path.join(dir, "gamend.db"))
+        summary
+
+      {:error, reason} ->
+        raise "convert failed, nothing written: #{inspect(reason)}"
+    end
+  end
+
+  defp converted(dir, source, opts) do
+    {:ok, pid} = Convert.Source.start_link(Keyword.merge([pool_size: 2], source))
+
+    try do
+      with {:ok, summary} <- Convert.run(Convert.Source, opts),
+           {:ok, _written} <- Export.write(dir, files: false) do
+        {:ok, summary}
+      end
+    after
+      Supervisor.stop(pid)
+    end
+  end
+
+  defp print_summary(summary) do
+    for {table, rows} <- summary.tables, rows > 0, do: IO.puts("copied #{rows} rows of #{table}")
+
+    for table <- summary.by_column_type do
+      IO.puts("no schema describes #{table}: copied by its columns' types")
+    end
+
+    for {table, columns} <- summary.not_in_schema do
+      IO.puts("left at their default, no schema has them: #{table}.#{Enum.join(columns, ", ")}")
+    end
+
+    if summary.gone_migrations != [] do
+      IO.puts(
+        "the source ran migrations this release no longer has: " <>
+          Enum.join(summary.gone_migrations, ", ")
+      )
+    end
+  end
+
+  # Every application the release holds, loaded: a schema is found among a
+  # loaded application's modules (`Gamend.Export.Convert`), and `eval` loads
+  # none. The host's name is the release's (`Gamend.Repo.MigrationPaths`);
+  # under Mix they are loaded already.
+  defp load_applications do
+    Application.load(@otp_app)
+
+    with name when is_binary(name) <- System.get_env("RELEASE_NAME") do
+      load_tree(String.to_atom(name), MapSet.new())
+    end
+
+    :ok
+  end
+
+  defp load_tree(app, seen) do
+    if MapSet.member?(seen, app) do
+      seen
+    else
+      _ = Application.load(app)
+
+      Enum.reduce(
+        Application.spec(app, :applications) || [],
+        MapSet.put(seen, app),
+        &load_tree/2
+      )
     end
   end
 

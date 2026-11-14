@@ -41,12 +41,12 @@ at the first tick whose digest disagrees.
 
 Two properties matter to us:
 
-- **`balaur_gamend` is already a replay source.** It registers
-  `add_replay_source("gamend", …)` and routes all I/O through
-  `replay::ExternalIo`, whose `start` is a no-op while a replay plays. So a
-  recording of an **online** session replays offline: the recorded server
-  replies are re-fed and no request is made. A session against this server is
-  reproducible without this server.
+- **The Balaur client replays by itself.** The Balaur SDK is a script over
+  the engine's `http` and `websocket`, both replay sources that route their
+  I/O through `replay::ExternalIo`, whose `start` is a no-op while a replay
+  plays. So a recording of an **online** session replays offline: the
+  recorded server replies are re-fed and no request is made. A session
+  against this server is reproducible without this server.
 - **The digest is per tick, in the file.** That is what makes cross-player
   desync detection possible here without an engine.
 

@@ -22,6 +22,13 @@ files with `storage/` inside (`EXPORT_FILES=0` leaves them out, for a host
 whose folders move with it). The app's `app_export DIR` hook adds anything
 else. It stops nothing: for the last export before a move, stop the app first.
 
+`EXPORT_DATABASE=sqlite` is for a Postgres host that moves to SQLite, Gamend
+Cloud's default: in place of `gamend.dump` it writes `gamend.db`, every row
+of the running database copied through the schemas' own types
+(`Gamend.Release.convert`), in a build of the checkout for SQLite that it
+makes first. The two must be on the same migrations, so deploy the version
+you export.
+
 `rebuild.sh` pulls the checkout first, so the checks and the deploy are the new
 code's, then fetches `gamend-deploy` from this repository at the version
 `deploy.conf` names (`GAMEND_DEPLOY_REF`): a commit is fetched once and kept in
@@ -56,6 +63,7 @@ PODMAN_IMAGES="ghcr.io/appsinacup/gamend:latest-slim"   # pulled when missing
 BUILD_ARGS=(--build-arg "SYNC=$(date +%s)")             # a layer never cached
 MAKE_DIRS="backups logs"                 # default; created for bind mounts
 EXPORT_FILES=0                           # --export leaves the stored files out
+EXPORT_DATABASE=sqlite                   # --export writes Postgres' rows as gamend.db
 MIN_FREE_GB=50 DISK_PATH=.
 UP_TIMEOUT=600                           # how long `up --wait` waits
 KEEP_HOURS=336                           # build cache kept by the prune (or KEEP_CACHE=20GB)

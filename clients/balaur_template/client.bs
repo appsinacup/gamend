@@ -1,5 +1,5 @@
 // The session, the socket and the server's hooks. Rows, topics and keys live
-// in `memory`, so every script sees one cache.
+// on the client's node (`service.bs`), so every script sees one cache.
 
 use activity;
 use auth;
@@ -9,6 +9,7 @@ use events::user;
 use kv;
 use users;
 use lobbies;
+use service;
 
 const CLOSED: str = "closed";
 const ERROR: str = "error";
@@ -78,26 +79,14 @@ pub struct Connection {
     pub sockets: [SocketRow],
 }
 
-/// Where the hook calls go. Godot's SDK called this `plugin`.
-const PLUGIN_KEY: str = "gamend:plugin";
-/// The rows the server sent, by row id: a global row's key, or its key and
-/// whose it is (`row_id`).
-const ROWS_KEY: str = "gamend:rows";
-/// The rows this session subscribed, by row id, and the topics it joined.
-const KEYS_KEY: str = "gamend:keys";
-const TOPICS_KEY: str = "gamend:topics";
-/// Writes in flight, by key, so an identical one is not sent twice.
-const WRITES_KEY: str = "gamend:writes";
-/// What this client thinks of its connection.
-const NETWORK_KEY: str = "gamend:network";
-
 /// Point every call at another server, and name the server plugin `call`
 /// reaches; empty for either takes `[gamend]`'s, which is what a game that
 /// never calls this talks to. A different server signs out here. Answers the
 /// server's url.
 pub fn configure(url: str, plugin: str) -> str {
     if plugin != "" {
-        memory::set(PLUGIN_KEY, plugin);
+        let state = service::get();
+        state.plugin = plugin;
     }
     core::point(url)
 }
@@ -129,9 +118,9 @@ pub fn connection() -> Connection {
 
 /// The server plugin this game's hooks live in.
 pub fn plugin() -> str {
-    let named = memory::get(PLUGIN_KEY);
-    if named.kind() == types::KIND_STRING && named.as_str() != "" {
-        return named.as_str();
+    let named = service::get().plugin;
+    if named != "" {
+        return named;
     }
     core::target().plugin
 }
@@ -244,8 +233,9 @@ pub fn route(node: Node, e: any) -> bool {
 
 /// Shut the socket down; false when it was already gone.
 pub fn close(socket: int) -> bool {
-    memory::set(TOPICS_KEY, {});
-    memory::set(KEYS_KEY, {});
+    let state = service::get();
+    state.topics = nil;
+    state.keys = nil;
     let held = core::socket_node(socket);
     held.is_valid() && held.call("close").as_bool()
 }
@@ -258,20 +248,22 @@ pub fn join(socket: int, topic: str) -> int {
     let held = joined();
     if !contains(held, topic) {
         held.push(topic);
-        memory::set(TOPICS_KEY, held);
+        let state = service::get();
+        state.topics = held;
     }
     core::join(socket, topic)
 }
 
 /// Leave a topic and drop it from the record.
 pub fn leave(socket: int, topic: str) -> int {
-    memory::set(TOPICS_KEY, without(joined(), topic));
+    let state = service::get();
+    state.topics = without(joined(), topic);
     core::leave(socket, topic)
 }
 
 /// Every topic this session joined, in the order it joined them.
 pub fn joined() -> [str] {
-    stored_list(TOPICS_KEY)
+    names_in(service::get().topics)
 }
 
 /// Call a server hook and await the reply. The caller decides what to say
@@ -385,7 +377,8 @@ pub fn register_row(socket: int, key: str, scope: RowScope) -> bool {
     let held = registered();
     if !contains(held, id) {
         held.push(id);
-        memory::set(KEYS_KEY, held);
+        let state = service::get();
+        state.keys = held;
     }
     core::push(socket, user_topic(), "kv:subscribe", subscription(key, scope)) > 0
 }
@@ -394,14 +387,15 @@ pub fn unregister_row(socket: int, key: str, scope: RowScope) -> bool {
     if socket <= 0 {
         return false;
     }
-    memory::set(KEYS_KEY, without(registered(), row_id(key, scope)));
+    let state = service::get();
+    state.keys = without(registered(), row_id(key, scope));
     core::push(socket, user_topic(), "kv:unsubscribe", subscription(key, scope)) > 0
 }
 
 /// Every row this session subscribed, by row id, in the order it asked for
 /// them. A global row's id is its key.
 pub fn registered() -> [str] {
-    stored_list(KEYS_KEY)
+    names_in(service::get().keys)
 }
 
 /// Subscribe to exactly `keys` among the global rows: what is new is
@@ -509,10 +503,11 @@ pub async fn write_deduped(socket: int, key: str, value: any, hook: str, args: a
     }
     let held = writes();
     held[key] = sent;
-    memory::set(WRITES_KEY, held);
+    let state = service::get();
+    state.writes = held;
     let reply = await call(socket, hook, args);
     if writes()[key].text() == sent {
-        memory::set(WRITES_KEY, dropped(writes(), key));
+        state.writes = dropped(writes(), key);
     }
     Write { skipped: false, reply: reply }
 }
@@ -542,7 +537,8 @@ pub fn keep_row(key: str, value: any) {
 pub fn keep_row_in(key: str, scope: RowScope, value: any) {
     let held = rows();
     held[row_id(key, scope)] = value;
-    memory::set(ROWS_KEY, held);
+    let state = service::get();
+    state.rows = held;
 }
 
 /// Forget one row, or all of them: what a sign-out does.
@@ -551,25 +547,28 @@ pub fn clear_row(key: str) {
 }
 
 pub fn clear_row_in(key: str, scope: RowScope) {
-    memory::set(ROWS_KEY, dropped(rows(), row_id(key, scope)));
+    let state = service::get();
+    state.rows = dropped(rows(), row_id(key, scope));
 }
 
 pub fn clear_rows() {
-    memory::set(ROWS_KEY, {});
+    let state = service::get();
+    state.rows = nil;
 }
 
 /// `"open"`, `"reconnecting"` or `"failed"`. The socket's own events move the
 /// first two as `route` sees them; `fail_network` is what moves it to the
 /// third.
 pub fn network_state() -> str {
-    let held = memory::get(NETWORK_KEY);
-    if held.kind() == types::KIND_STRING { held.as_str() } else { OPEN }
+    let held = service::get().network;
+    if held != "" { held } else { OPEN }
 }
 
 /// Say the connection is gone: what a game calls when a request it needed
 /// failed and it wants its offline screen. `retry_network` is the way back.
 pub fn fail_network() {
-    memory::set(NETWORK_KEY, FAILED);
+    let state = service::get();
+    state.network = FAILED;
 }
 
 /// Cut the socket as a network failure would, so it opens again and joins
@@ -578,7 +577,8 @@ pub fn fail_network() {
 /// when the socket was already gone, which is when a caller opens a new one
 /// with `connect`.
 pub fn retry_network(socket: int) -> bool {
-    memory::set(NETWORK_KEY, RECONNECTING);
+    let state = service::get();
+    state.network = RECONNECTING;
     let held = core::socket_node(socket);
     held.is_valid() && held.call("interrupt").as_bool()
 }
@@ -644,28 +644,28 @@ fn keep_socket_event(kind: str, e: any) {
 }
 
 fn note_socket(kind: str) {
+    let state = service::get();
     if kind == RECONNECTING {
-        memory::set(NETWORK_KEY, RECONNECTING);
+        state.network = RECONNECTING;
     } else if kind == OPEN || kind == REOPENED {
-        memory::set(NETWORK_KEY, OPEN);
+        state.network = OPEN;
     } else if kind == CLOSED {
-        memory::set(NETWORK_KEY, FAILED);
+        state.network = FAILED;
     }
 }
 
 fn rows() -> any {
-    let held = memory::get(ROWS_KEY);
+    let held = service::get().rows;
     if held.kind() == types::KIND_MAP { held } else { {} }
 }
 
 fn writes() -> any {
-    let held = memory::get(WRITES_KEY);
+    let held = service::get().writes;
     if held.kind() == types::KIND_MAP { held } else { {} }
 }
 
-/// A list of names `memory` holds, as names.
-fn stored_list(key: str) -> [str] {
-    let held = memory::get(key);
+/// A list of names a field of the client's node holds, as names.
+fn names_in(held: any) -> [str] {
     let out: [str] = [];
     for i in 0..held.len() {
         out.push(held[i].text());

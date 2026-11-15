@@ -37,7 +37,7 @@ FILE_NAMES = {"push": "push_tokens"}
 # What a tag's file must not take: the template's files.
 TAKEN = {
     "activity", "auth", "client", "commands", "core", "events", "log_sink", "logs", "prefs",
-    "presence", "socket", "version",
+    "presence", "service", "socket", "version",
 }
 # Operations the template signs in with, which a game reaches only through it.
 # `oauth_api_callback` is `login_steam`: a provider's code is bound to the
@@ -306,6 +306,7 @@ def write_readme(model: Model) -> str:
         "| `gamend::auth` | The session, sign-in through a provider, and the session kept for the next run |",
         "| `gamend::socket` | The realtime socket's node: Phoenix Channels over `websocket`, heartbeats, reconnects and rejoins |",
         "| `gamend::presence` | The user cache |",
+        "| `gamend::service` | The client's node, made beside the scene and tagged `local`: the server, the session, the sockets and every cache |",
         "| `gamend::prefs` | The player's prefs on this device |",
         "| `gamend::logs` | This run's log, shipped in batches; put `log_sink.bs` on a node that lives as long as the game |",
         "| `gamend::commands` | Generated: one function per event a channel answers |",

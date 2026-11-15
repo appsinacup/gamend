@@ -38,6 +38,7 @@ defmodule Gamend.Export.Convert do
   # is how a test (and a host with more than one database) names this one.
 
   alias Ecto.Adapters.SQL
+  alias Gamend.AfterCommit
   alias Gamend.Repo
 
   defmodule Source do
@@ -205,7 +206,7 @@ defmodule Gamend.Export.Convert do
   defp copy_all(source, tables) do
     schemas = schemas()
 
-    Repo.transaction(
+    AfterCommit.transaction(
       fn ->
         defer_foreign_keys()
 

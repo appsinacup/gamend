@@ -40,7 +40,7 @@ internal const MESSAGE: str = "message";
 internal const STATUS: str = "status";
 
 /// The server `configure` named, the session, this run's id, each socket by
-/// its id, and the count that names a refusal's answer, in the script store.
+/// its id, and the count that names a refusal's answer, in `memory`.
 const URL_KEY: str = "gamend:url";
 const SESSION_KEY: str = "gamend:session";
 const RUN_KEY: str = "gamend:run";
@@ -114,7 +114,7 @@ internal fn refusal(message: str) -> any {
 /// nothing hands back, so an await on it still resumes.
 internal fn answer_later(answer: any) -> int {
     let n = stored_int(REFUSALS_KEY) + 1;
-    engine::store(REFUSALS_KEY, n);
+    memory::set(REFUSALS_KEY, n);
     let name = REFUSAL_EVENT + "{n}";
     let id = events::next(name);
     events::emit(name, answer);
@@ -196,7 +196,7 @@ internal fn received(reply: any, sent: float) -> any {
 /// address, ten a minute). Answers "" when the session was renewed, else
 /// why not.
 pub async fn renew_session() -> str {
-    let running = engine::stored(RENEWING_KEY);
+    let running = memory::get(RENEWING_KEY);
     if running.kind() == types::KIND_MAP && running.has(RENEWAL_FIELD) && engine::unix_time() - running[BEGAN].as_float() < RENEWAL_STALE {
         let shared = await task::wait(events::next(running[RENEWAL_FIELD].as_str()));
         return shared.text();
@@ -206,12 +206,12 @@ pub async fn renew_session() -> str {
         return "no refresh token to renew with";
     }
     let n = stored_int(RENEWALS_KEY) + 1;
-    engine::store(RENEWALS_KEY, n);
+    memory::set(RENEWALS_KEY, n);
     let name = RENEWAL_EVENT + "{n}";
-    engine::store(RENEWING_KEY, { RENEWAL_FIELD: name, BEGAN: engine::unix_time() });
+    memory::set(RENEWING_KEY, { RENEWAL_FIELD: name, BEGAN: engine::unix_time() });
     let reply = await send(POST, REFRESH_PATH, body, false);
     let why = renewed(reply);
-    engine::store(RENEWING_KEY, {});
+    memory::set(RENEWING_KEY, {});
     events::emit(name, why);
     why
 }
@@ -254,7 +254,7 @@ internal fn opened(reply: any, what: str) -> any {
         EXPIRES_IN: lifetime,
         EXPIRES_AT: (engine::unix_time() as int) + lifetime,
     };
-    engine::store(SESSION_KEY, session);
+    memory::set(SESSION_KEY, session);
     {
         KIND: LOGIN,
         USER_ID: session[USER_ID],
@@ -272,7 +272,7 @@ fn kept_text(data: any, before: any, key: str) -> str {
 
 /// The session a sign-in opened, as a map, or nil.
 internal fn held() -> any {
-    let session = engine::stored(SESSION_KEY);
+    let session = memory::get(SESSION_KEY);
     if session.kind() == types::KIND_MAP && session[ACCESS_TOKEN].as_str() != "" { session } else { nil }
 }
 
@@ -280,7 +280,7 @@ internal fn held() -> any {
 /// False for a map with no `access_token`.
 internal fn hold(session: any) -> bool {
     if session == nil {
-        engine::store(SESSION_KEY, {});
+        memory::set(SESSION_KEY, {});
         return true;
     }
     if session[ACCESS_TOKEN].kind() != types::KIND_STRING || session[ACCESS_TOKEN].as_str() == "" {
@@ -297,7 +297,7 @@ internal fn hold(session: any) -> bool {
     if session[EXPIRES_AT].kind() == types::KIND_INT {
         kept[EXPIRES_AT] = session[EXPIRES_AT].as_int();
     }
-    engine::store(SESSION_KEY, kept);
+    memory::set(SESSION_KEY, kept);
     true
 }
 
@@ -320,17 +320,17 @@ internal fn stale(margin: float) -> bool {
 /// signs out here, since the session is the old server's.
 internal fn point(named: str) -> str {
     let was = url();
-    engine::store(URL_KEY, named);
+    memory::set(URL_KEY, named);
     let now = url();
     if now != was {
-        engine::store(SESSION_KEY, {});
+        memory::set(SESSION_KEY, {});
     }
     now
 }
 
 /// The server every call goes to.
 internal fn url() -> str {
-    let named = engine::stored(URL_KEY);
+    let named = memory::get(URL_KEY);
     let chosen = if named.kind() == types::KIND_STRING && named.as_str() != "" { named.as_str() } else { target().url };
     trimmed(chosen)
 }
@@ -378,7 +378,7 @@ async fn clocked() {
 /// together. Made once, from the clock a replay reads back; empty before
 /// the clock is read.
 internal fn run_id() -> str {
-    let kept = engine::stored(RUN_KEY);
+    let kept = memory::get(RUN_KEY);
     if kept.kind() == types::KIND_STRING {
         return kept.as_str();
     }
@@ -386,7 +386,7 @@ internal fn run_id() -> str {
         return "";
     }
     let made = "balaur-" + "{(engine::unix_time() * 1000000.0) as int}";
-    engine::store(RUN_KEY, made);
+    memory::set(RUN_KEY, made);
     made
 }
 
@@ -412,14 +412,14 @@ internal fn connect(node: Node) -> int {
     held.attach_script(SOCKET_SCRIPT);
     let socket = events::next(OPENED, held);
     kept["{socket}"] = held;
-    engine::store(SOCKETS_KEY, kept);
+    memory::set(SOCKETS_KEY, kept);
     held.call("start", socket, node, row);
     socket
 }
 
 /// Every socket this run made, still on its node, by id.
 internal fn sockets() -> any {
-    let held = engine::stored(SOCKETS_KEY);
+    let held = memory::get(SOCKETS_KEY);
     let out: any = {};
     if held.kind() != types::KIND_MAP {
         return out;
@@ -565,6 +565,6 @@ pub fn unpack(reply: any) -> any {
 }
 
 fn stored_int(key: str) -> int {
-    let held = engine::stored(key);
+    let held = memory::get(key);
     if held.kind() == types::KIND_INT { held.as_int() } else { 0 }
 }

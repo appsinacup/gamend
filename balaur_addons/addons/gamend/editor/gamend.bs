@@ -71,7 +71,7 @@ const SESSION_SLOT: str = "gamend";
 const PREFS_SLOT: str = "gamend_prefs";
 
 /// Where `log_sink.bs` reports, and where the dock asks it to flush now, in
-/// the script store.
+/// `memory`.
 const LOGS_KEY: str = "gamend:logs";
 const FLUSH_KEY: str = "gamend:logs_flush";
 
@@ -557,7 +557,7 @@ impl Gamend {
             show(out, key, self.fetch(key, "/api/v1/kv/" + self.kv_key));
         }
         out.push(heading("Rows the game keeps"));
-        let rows = engine::stored(ROWS_KEY);
+        let rows = memory::get(ROWS_KEY);
         if rows.keys().len() == 0 {
             out.push(line("none: the rows a playing game subscribed to with `register_kv` show here", QUIET));
         } else {
@@ -813,7 +813,7 @@ impl Gamend {
     }
 
     pub fn flush_logs(_data: any, _value: any) {
-        engine::store(FLUSH_KEY, "yes");
+        memory::set(FLUSH_KEY, "yes");
     }
 }
 
@@ -869,7 +869,7 @@ fn logs(to: Node) -> [any] {
         out.push(field("log file", "none: [log] file is off", {}));
     }
     out.push(heading("Shipping to Gamend"));
-    let report = engine::stored(LOGS_KEY);
+    let report = memory::get(LOGS_KEY);
     if report.kind() != types::KIND_MAP {
         out.push(line("not shipping: put addons/gamend/log_sink.bs on a node that lives as long as the game", QUIET));
         return out;

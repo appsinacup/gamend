@@ -60,7 +60,7 @@ pub fn noted(kind: str, what: str, payload: any) {
 /// A row already dropped from the ring is left alone.
 pub fn finished(seq: int, reply: any) {
     let key = ROW_KEY + "{seq % KEPT}";
-    let row = engine::stored(key);
+    let row = memory::get(key);
     if row.kind() != types::KIND_MAP || row[SEQ].as_int() != seq {
         return;
     }
@@ -78,7 +78,7 @@ pub fn finished(seq: int, reply: any) {
     if seq > count() - DETAILED {
         row[REPLY] = kept(if kind == REST { reply["body"] } else { reply });
     }
-    engine::store(key, row);
+    memory::set(key, row);
 }
 
 /// Every row, newest first.
@@ -88,7 +88,7 @@ pub fn rows() -> [Entry] {
     let first = max(stored_int(FROM_KEY), last - KEPT);
     let seq = last;
     while seq > first {
-        let row = engine::stored(ROW_KEY + "{seq % KEPT}");
+        let row = memory::get(ROW_KEY + "{seq % KEPT}");
         if row.kind() == types::KIND_MAP && row[SEQ].as_int() == seq {
             out.push(entry(row));
         }
@@ -99,20 +99,20 @@ pub fn rows() -> [Entry] {
 
 /// Forget the rows kept so far; a reply to one of them is dropped.
 pub fn clear() {
-    engine::store(FROM_KEY, count());
+    memory::set(FROM_KEY, count());
 }
 
 fn push(row: any) -> int {
     let seq = count() + 1;
     row[SEQ] = seq;
-    engine::store(ROW_KEY + "{seq % KEPT}", row);
-    engine::store(COUNT_KEY, seq);
+    memory::set(ROW_KEY + "{seq % KEPT}", row);
+    memory::set(COUNT_KEY, seq);
     let plain = seq - DETAILED;
-    let older = engine::stored(ROW_KEY + "{plain % KEPT}");
+    let older = memory::get(ROW_KEY + "{plain % KEPT}");
     if plain > 0 && older.kind() == types::KIND_MAP && older[SEQ].as_int() == plain {
         older[ARGS] = nil;
         older[REPLY] = nil;
-        engine::store(ROW_KEY + "{plain % KEPT}", older);
+        memory::set(ROW_KEY + "{plain % KEPT}", older);
     }
     seq
 }
@@ -147,7 +147,7 @@ fn count() -> int {
 }
 
 fn stored_int(key: str) -> int {
-    let held = engine::stored(key);
+    let held = memory::get(key);
     if held.kind() == types::KIND_INT { held.as_int() } else { 0 }
 }
 

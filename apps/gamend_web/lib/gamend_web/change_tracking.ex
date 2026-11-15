@@ -12,15 +12,28 @@ defmodule GamendWeb.ChangeTracking do
   from it is sent with every update of the page: a navbar with each coin
   spent, a keyboard with each key pressed.
 
-  Three tools:
+  First, LiveView's own way, which needs nothing here: **a value a
+  LiveView works out from its state is assigned where that state changes**
+  (the callback that sets the round sets its score too). `assign/3` on a
+  socket compares the new value with the old and marks only a change. A
+  page that funnels every change of a thing through one function
+  (`put_round/2`) assigns what is worked out from it there.
 
-    * `derive/4` (and `derive_all/3`), in a **function component**: the value
-      is marked changed only when the attrs it is worked out from are. It
-      keeps nothing: it reads the component's own `__changed__`.
-    * `derive_in_render/4`, where there are no such attrs to go by: a
-      LiveView's `render/1`, or a component drawn once a page that reads
-      something outside its attrs (a count in the database). The value is
-      compared with the one the last render had.
+  Where that cannot be, three tools:
+
+    * `derive/4` (and `derive_all/3`): the value is marked changed only when
+      the assigns it is worked out from are. In a **function component**,
+      its attrs; in a LiveView's `render/1`, the socket's assigns, for a
+      value read from state that more than one module changes (the page's
+      round and the strip's `strip_mp`). It keeps nothing: it reads
+      LiveView's own `__changed__`, as an expression in the template does.
+      The inputs must name everything the value reads.
+    * `derive_in_render/4`, for a component drawn once a page (or once per
+      `id`) that reads something no attr says changed: a count in the
+      database, the reader's languages, what a page put in the process. The
+      value is compared with the one the last render had, kept in the
+      process. Not for a page's own state: that is assigned where it
+      changes.
     * `changed?/2`: whether any of the inputs changed, to skip work whose
       answer would not be drawn.
 
@@ -87,7 +100,8 @@ defmodule GamendWeb.ChangeTracking do
   @spec derive_all(map(), [input()], Enumerable.t({atom(), term()})) :: map()
   def derive_all(assigns, inputs, values) do
     if changed?(assigns, inputs),
-      do: Enum.reduce(values, assigns, fn {key, value}, acc -> put_marked(acc, key, value, true) end),
+      do:
+        Enum.reduce(values, assigns, fn {key, value}, acc -> put_marked(acc, key, value, true) end),
       else: Enum.reduce(values, assigns, fn {key, value}, acc -> Map.put(acc, key, value) end)
   end
 
@@ -102,9 +116,10 @@ defmodule GamendWeb.ChangeTracking do
   The last value is the process's (a LiveView is one process for the life of
   its page; a reconnect is a new one), kept under `scope` and `key`: two
   renders in one process that use the same key (a LiveComponent and its
-  LiveView, two components) each pass their own `scope`, their module.
-  Never for a component drawn more than once a render: the second would be
-  compared with the first.
+  LiveView, two components) each pass their own `scope`, their module, and
+  a component drawn more than once a render its `id` too
+  (`{__MODULE__, id}`). Without one, the second would be compared with the
+  first.
 
   A value that was a map is marked as an assign is, with the map it was, so
   `@key.field` and a component handed `key={@key}` are tracked field by

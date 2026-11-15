@@ -129,14 +129,15 @@ defmodule GamendWeb.HostLayoutsTest do
 
     ## Each value moves with what it is worked out from, and no other: the
     ## path is the breadcrumbs' and the highlight's, never the footer's or the
-    ## language list's.
+    ## language list's. The trail is marked by its value (a host's trail may
+    ## read what the page put in the process), so it moves with a path that
+    ## gives another trail.
     @not_the_paths [:footer, :known_locales, :locale, :navigation, :search, :theme]
 
     test "a new path changes what is drawn from the path, and only that" do
       first_render()
-
-      changed =
-        HostLayouts.prepare_app_assigns(app_assigns(%{current_path: true})).__changed__
+      another = %{app_assigns(%{current_path: true}) | current_path: "/admin/users"}
+      changed = HostLayouts.prepare_app_assigns(another).__changed__
 
       assert Map.has_key?(changed, :current_path)
       assert Map.has_key?(changed, :breadcrumbs)

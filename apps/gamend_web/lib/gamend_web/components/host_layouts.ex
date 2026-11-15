@@ -586,10 +586,15 @@ defmodule GamendWeb.HostLayouts do
       [:background_icons, :flush, :theme],
       background_icons
     )
-    |> ChangeTracking.derive(
+    # By value, not by the path: the host's trail (`:page_meta_provider`) may
+    # read what the page put in the process (a topic it plays), which no
+    # attr of the layout says. Marked by the path alone, a topic changed by
+    # a patch kept the trail of the last one until the next page. The
+    # layout is drawn once a render, so the last trail is its alone.
+    |> ChangeTracking.derive_in_render(
       :breadcrumbs,
-      [:current_path, :conn],
-      breadcrumbs_for(current_path, locale)
+      breadcrumbs_for(current_path, locale),
+      __MODULE__
     )
     |> ChangeTracking.derive_in_render(:notif_unread_count, notif_unread_count, __MODULE__)
     |> HostLayoutShell.assign_nav()
@@ -622,9 +627,14 @@ defmodule GamendWeb.HostLayouts do
     last = ChangeTracking.last_rendered(:notif_unread_count, __MODULE__)
 
     cond do
-      is_integer(last) and not ChangeTracking.changed?(assigns, @shell_assign_inputs) -> last
-      scope = assigns[:current_scope] -> Gamend.Notifications.count_unread_notifications(scope.user_id)
-      true -> 0
+      is_integer(last) and not ChangeTracking.changed?(assigns, @shell_assign_inputs) ->
+        last
+
+      scope = assigns[:current_scope] ->
+        Gamend.Notifications.count_unread_notifications(scope.user_id)
+
+      true ->
+        0
     end
   end
 

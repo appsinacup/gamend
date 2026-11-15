@@ -48,6 +48,17 @@ const SOCKETS_KEY: str = "gamend:sockets";
 const REFUSALS_KEY: str = "gamend:refusals";
 /// What a refused call's answer arrives as, numbered.
 const REFUSAL_EVENT: str = "gamend_refused_";
+/// The renewal under way, `{ event, began }`: the event its answer arrives
+/// as and when it began, so a second caller waits on it instead of spending
+/// another refresh. Numbered as refusals are.
+const RENEWING_KEY: str = "gamend:renewing";
+const RENEWALS_KEY: str = "gamend:renewals";
+const RENEWAL_EVENT: str = "gamend_renewed_";
+const RENEWAL_FIELD: str = "event";
+const BEGAN: str = "began";
+/// A renewal older than this died with the script that began it: the next
+/// caller begins its own. Longer than a request's own timeout.
+const RENEWAL_STALE: float = 30.0;
 /// The node a socket runs on, under the node `connect` names, its script,
 /// and its first answer: `open`, or why it never opened.
 const SOCKET_NODE: str = "gamend_socket";
@@ -119,7 +130,7 @@ pub async fn rest(method: str, path: str, body: any) -> any {
     let row = activity::started(REST, method + " " + path, body);
     let reply = await send(method, path, body, true);
     if reply[STATUS].as_int() == 401 && refresh_token() != "" {
-        let why = await renew();
+        let why = await renew_session();
         if why == "" {
             reply = await send(method, path, body, true);
         }
@@ -178,15 +189,31 @@ internal fn received(reply: any, sent: float) -> any {
     { KIND: REST, STATUS: reply[STATUS], BODY: decoded, MS: ms }
 }
 
-/// Trade the refresh token for a fresh session. Empty when it worked,
-/// otherwise why not.
-async fn renew() -> str {
+/// Trade the refresh token for a new session, once however many ask. A
+/// renewal under way is shared: calls that answered 401 together, and a
+/// socket dialling meanwhile, wait on the one in flight and take its answer,
+/// so they spend one refresh between them (the server counts refreshes per
+/// address, ten a minute). Answers "" when the session was renewed, else
+/// why not.
+pub async fn renew_session() -> str {
+    let running = engine::stored(RENEWING_KEY);
+    if running.kind() == types::KIND_MAP && running.has(RENEWAL_FIELD) && engine::unix_time() - running[BEGAN].as_float() < RENEWAL_STALE {
+        let shared = await task::wait(events::next(running[RENEWAL_FIELD].as_str()));
+        return shared.text();
+    }
     let body = renewal();
     if body == nil {
         return "no refresh token to renew with";
     }
+    let n = stored_int(RENEWALS_KEY) + 1;
+    engine::store(RENEWALS_KEY, n);
+    let name = RENEWAL_EVENT + "{n}";
+    engine::store(RENEWING_KEY, { RENEWAL_FIELD: name, BEGAN: engine::unix_time() });
     let reply = await send(POST, REFRESH_PATH, body, false);
-    renewed(reply)
+    let why = renewed(reply);
+    engine::store(RENEWING_KEY, {});
+    events::emit(name, why);
+    why
 }
 
 /// What a renewal posts, or nil with no refresh token in hand.

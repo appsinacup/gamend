@@ -73,6 +73,8 @@ defmodule Gamend.MembershipConcurrencyTest do
       :not_member,
       :party_full,
       :party_not_found,
+      # The party gained or lost a member between the gates and the seats.
+      :state_changed,
       :target_in_party,
       :too_many_invites
     ])

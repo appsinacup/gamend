@@ -298,6 +298,16 @@ tournament is over. Answers how many entries reached the account.
 
 The caller's current unresolved match (their entry filled in a slot), if any.
 
+# `play_ends_at`
+
+```elixir
+@spec play_ends_at(Gamend.Tournaments.Tournament.t()) :: DateTime.t() | nil
+```
+
+When `tournament` stops playing: its `ends_at`, else its last round's
+deadline (`round_deadline/2`, `bracket_rounds/1` of its bracket size).
+nil with no start or no bracket size.
+
 # `reopen_tournament`
 
 ```elixir

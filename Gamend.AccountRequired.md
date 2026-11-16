@@ -20,14 +20,22 @@ Default: none, so a guest does everything a registered player does.
     the API's `GET …/me`). Registering lists them at once: each record
     keeps a `guest` flag that the database sets from the account and moves
     when the account gains its first identity (or loses its last).
+  * `:tournaments` — `Gamend.Tournaments.join_tournament/2` answers
+    `{:error, :account_required}` before a seat is taken or a hook runs.
+    An entry a guest already holds stays, and leaving is never refused.
+  * `:matchmaking` — `Gamend.Matchmaking.join/4` answers
+    `{:error, :account_required}` for a guest, and for a party with a
+    guest in it. A host that builds more on its queue (who is listed as
+    playing, who may be asked) reads `allowed?/2` for the same feature, so
+    one switch opens or closes all of it.
 
-Both apply in core, so every client meets the same rule; a client reads
+All apply in core, so every client meets the same rule; a client reads
 the 403 or the `hidden` flag to say why and offer registration.
 
 # `feature`
 
 ```elixir
-@type feature() :: :quest_claims | :leaderboards
+@type feature() :: :quest_claims | :leaderboards | :tournaments | :matchmaking
 ```
 
 # `allowed?`

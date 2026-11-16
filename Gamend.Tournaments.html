@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1460">
+    <meta name="project" content="gamend_core v1.1.1462">
 
 
-    <title>Gamend.Tournaments — gamend_core v1.1.1460</title>
+    <title>Gamend.Tournaments — gamend_core v1.1.1462</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-B6044C72.js"></script>
+    <script defer src="dist/sidebar_items-86A52D29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1460
+          v1.1.1462
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Tournaments</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1460)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1462)</small>
 
     </h1>
 
@@ -404,6 +404,21 @@ leaderboard seasons are grouped.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#merge_user_entries/2" data-no-tooltip="" translate="no">merge_user_entries(from_user_id, to_user_id)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Moves <code class="inline">from_user_id</code>'s entries onto <code class="inline">to_user_id</code>, the way a guest's play
+joins the account they log in to (<a href="Gamend.Accounts.GuestMerge.html"><code class="inline">Gamend.Accounts.GuestMerge</code></a>). An entry
+in a tournament the account has not entered becomes the account's, with
+its seed, bracket, wins and matches (a game's match metadata keyed by the
+entry's id with them), so a guest who joined, or is playing, goes on as the
+account. No hook fires: the entry was registered once.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#my_match/2" data-no-tooltip="" translate="no">my_match(tournament, user_id)</a>
 
       </div>
@@ -550,7 +565,7 @@ due. Serialized cluster-wide so hooks fire once.</p></div>
       <h1 class="signature" translate="no">advance_lifecycle(tournament, now \\ DateTime.utc_now())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L603" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L669" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -580,7 +595,7 @@ row. Called lazily from API paths and periodically from <a href="#tick/0"><code 
       <h1 class="signature" translate="no">bracket_rounds(size)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1480" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1546" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -608,7 +623,7 @@ row. Called lazily from API paths and periodically from <a href="#tick/0"><code 
       <h1 class="signature" translate="no">bracket_size_for(n, max)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1494" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1560" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -696,7 +711,7 @@ row. Called lazily from API paths and periodically from <a href="#tick/0"><code 
       <h1 class="signature" translate="no">count_brackets(tournament_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1412" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1478" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -726,7 +741,7 @@ row. Called lazily from API paths and periodically from <a href="#tick/0"><code 
       <h1 class="signature" translate="no">count_entries(tournament_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L590" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L656" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -870,7 +885,7 @@ row. Called lazily from API paths and periodically from <a href="#tick/0"><code 
       <h1 class="signature" translate="no">entries_by_id(tournament_id, entry_ids)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1446" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1512" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -900,7 +915,7 @@ row. Called lazily from API paths and periodically from <a href="#tick/0"><code 
       <h1 class="signature" translate="no">get_bracket(tournament_id, index)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1417" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1483" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -928,7 +943,7 @@ row. Called lazily from API paths and periodically from <a href="#tick/0"><code 
       <h1 class="signature" translate="no">get_entry(tournament_id, leader_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L519" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L585" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -956,7 +971,7 @@ row. Called lazily from API paths and periodically from <a href="#tick/0"><code 
       <h1 class="signature" translate="no">get_match(match_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1401" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1467" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1069,7 +1084,7 @@ cancelled, falling back to the most recent row.</p>
       <h1 class="signature" translate="no">join_tournament(user, tournament)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L273" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L276" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1083,7 +1098,8 @@ cancelled, falling back to the most recent row.</p>
           <pre translate="no"><span class="attribute">@spec</span> join_tournament(<a href="Gamend.Accounts.User.html#t:t/0">Gamend.Accounts.User.t</a>(), <a href="Gamend.Tournaments.Tournament.html#t:t/0">Gamend.Tournaments.Tournament.t</a>()) ::
   {:ok, <a href="Gamend.Tournaments.Entry.html#t:t/0">Gamend.Tournaments.Entry.t</a>()}
   | {:error,
-     :registration_closed
+     :account_required
+     | :registration_closed
      | :already_registered
      | :tournament_full
      | :not_found
@@ -1102,7 +1118,9 @@ and its refusal answered; in a tournament drawn while the hook ran, the
 refused entry forfeits its match instead. <code class="inline">after_tournament_register</code> fires
 only once the hook allowed it.</p><p>Refuses with <code class="inline">:registration_closed</code>, <code class="inline">:already_registered</code>,
 <code class="inline">:tournament_full</code>, <code class="inline">:not_found</code> (deleted meanwhile), a changeset, or
-<code class="inline">{:hook_rejected, reason}</code> with the hook's own reason.</p>
+<code class="inline">{:hook_rejected, reason}</code> with the hook's own reason. A guest is refused
+with <code class="inline">:account_required</code> where the host requires an account to enter
+(<a href="Gamend.AccountRequired.html"><code class="inline">Gamend.AccountRequired</code></a>, <code class="inline">:tournaments</code>), before anything else.</p>
   </section>
 </section>
 <section class="detail" id="leave_tournament/2">
@@ -1115,7 +1133,7 @@ only once the hook allowed it.</p><p>Refuses with <code class="inline">:registra
       <h1 class="signature" translate="no">leave_tournament(user, tournament)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L466" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L472" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1149,7 +1167,7 @@ veto, answered as <code class="inline">{:hook_rejected, reason}</code>.</p>
       <h1 class="signature" translate="no">list_brackets(tournament_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1405" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1471" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1179,7 +1197,7 @@ veto, answered as <code class="inline">{:hook_rejected, reason}</code>.</p>
       <h1 class="signature" translate="no">list_entries(tournament_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L534" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L600" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1209,7 +1227,7 @@ veto, answered as <code class="inline">{:hook_rejected, reason}</code>.</p>
       <h1 class="signature" translate="no">list_matches(tournament_id, opts \\ [])</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1427" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1493" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1328,7 +1346,7 @@ editions exist.</p>
       <h1 class="signature" translate="no">match_index(slot, round)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1489" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1555" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1356,7 +1374,7 @@ editions exist.</p>
       <h1 class="signature" translate="no">match_payload(tournament, match)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1518" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1584" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1375,6 +1393,43 @@ editions exist.</p>
 <p>The match struct with tournament and both entries preloaded (hook payload).</p>
   </section>
 </section>
+<section class="detail" id="merge_user_entries/2">
+
+  <div class="detail-header">
+    <a href="#merge_user_entries/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">merge_user_entries(from_user_id, to_user_id)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L539" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> merge_user_entries(<a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>(), <a href="https://ecto.hexdocs.pm/3.14.3/Ecto.UUID.html#t:t/0">Ecto.UUID.t</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>()</pre>
+
+      </div>
+
+<p>Moves <code class="inline">from_user_id</code>'s entries onto <code class="inline">to_user_id</code>, the way a guest's play
+joins the account they log in to (<a href="Gamend.Accounts.GuestMerge.html"><code class="inline">Gamend.Accounts.GuestMerge</code></a>). An entry
+in a tournament the account has not entered becomes the account's, with
+its seed, bracket, wins and matches (a game's match metadata keyed by the
+entry's id with them), so a guest who joined, or is playing, goes on as the
+account. No hook fires: the entry was registered once.</p><p>Where the account has its own entry in that tournament, the account's
+stands and the guest's leaves the field: withdrawn before the draw (its
+seat given back), forfeited while it runs (its opponent advances, as
+against a withdrawal), and left to go with the guest account once the
+tournament is over. Answers how many entries reached the account.</p>
+  </section>
+</section>
 <section class="detail" id="my_match/2">
 
   <div class="detail-header">
@@ -1385,7 +1440,7 @@ editions exist.</p>
       <h1 class="signature" translate="no">my_match(tournament, user_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1459" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1525" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1445,7 +1500,7 @@ throw away the draw. Any due transition is applied immediately afterwards.</p>
       <h1 class="signature" translate="no">resolve_match(match_id, winner)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L909" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L975" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1479,7 +1534,7 @@ reason comes back as <code class="inline">{:hook_rejected, reason}</code>.</p>
       <h1 class="signature" translate="no">round_deadline(tournament, round)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L848" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L914" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1507,7 +1562,7 @@ reason comes back as <code class="inline">{:hook_rejected, reason}</code>.</p>
       <h1 class="signature" translate="no">round_matches(size, round)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1485" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1551" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1535,7 +1590,7 @@ reason comes back as <code class="inline">{:hook_rejected, reason}</code>.</p>
       <h1 class="signature" translate="no">round_opens_at(tournament, round)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L854" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L920" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1563,7 +1618,7 @@ reason comes back as <code class="inline">{:hook_rejected, reason}</code>.</p>
       <h1 class="signature" translate="no">standard_seed_order(size)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1506" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1572" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1592,7 +1647,7 @@ slot <code class="inline">i</code> holds this seed rank (1-based); top seeds are
       <h1 class="signature" translate="no">standings(tournament)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1239" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1305" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1620,7 +1675,7 @@ slot <code class="inline">i</code> holds this seed rank (1-based); top seeds are
       <h1 class="signature" translate="no">stats()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1371" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1437" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1660,7 +1715,7 @@ open matches).</p>
       <h1 class="signature" translate="no">tick(now \\ DateTime.utc_now())</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L691" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L757" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1690,7 +1745,7 @@ due. Serialized cluster-wide so hooks fire once.</p>
       <h1 class="signature" translate="no">update_match_metadata(match_id, map)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1105" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/tournaments.ex#L1171" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -1749,9 +1804,9 @@ each other.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1460">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1462">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1460">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1462">Hex Preview</a>
 
             </span>
 

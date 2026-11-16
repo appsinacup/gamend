@@ -180,6 +180,9 @@ Returns the caller's own ticket. Fails with:
   * `{:error, :party_too_large}` — the party cannot fit in `max_players`
   * `{:error, :party_has_blocked_pair}` — two members have blocked each other
   * `{:error, :already_queued}` — the caller or a party member is queued
+  * `{:error, :account_required}` — the caller, or a party member, is a
+    guest and the host requires an account to queue
+    (`Gamend.AccountRequired`, `:matchmaking`)
 
 # `list_queued_by_params`
 

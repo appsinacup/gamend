@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1460">
+    <meta name="project" content="gamend_core v1.1.1462">
 
 
-    <title>Gamend.AccountRequired — gamend_core v1.1.1460</title>
+    <title>Gamend.AccountRequired — gamend_core v1.1.1462</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-B6044C72.js"></script>
+    <script defer src="dist/sidebar_items-86A52D29.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1460
+          v1.1.1462
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />AccountRequired</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1460)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1462)</small>
 
     </h1>
 
@@ -125,7 +125,13 @@ so a guest moves nobody. Their own record still reads, ranked where it
 would stand, with <code class="inline">hidden: true</code> (<a href="Gamend.Leaderboards.html#get_user_record/3"><code class="inline">Gamend.Leaderboards.get_user_record/3</code></a>,
 the API's <code class="inline">GET …/me</code>). Registering lists them at once: each record
 keeps a <code class="inline">guest</code> flag that the database sets from the account and moves
-when the account gains its first identity (or loses its last).</li></ul><p>Both apply in core, so every client meets the same rule; a client reads
+when the account gains its first identity (or loses its last).</li><li><code class="inline">:tournaments</code> — <a href="Gamend.Tournaments.html#join_tournament/2"><code class="inline">Gamend.Tournaments.join_tournament/2</code></a> answers
+<code class="inline">{:error, :account_required}</code> before a seat is taken or a hook runs.
+An entry a guest already holds stays, and leaving is never refused.</li><li><code class="inline">:matchmaking</code> — <a href="Gamend.Matchmaking.html#join/4"><code class="inline">Gamend.Matchmaking.join/4</code></a> answers
+<code class="inline">{:error, :account_required}</code> for a guest, and for a party with a
+guest in it. A host that builds more on its queue (who is listed as
+playing, who may be asked) reads <a href="#allowed?/2"><code class="inline">allowed?/2</code></a> for the same feature, so
+one switch opens or closes all of it.</li></ul><p>All apply in core, so every client meets the same rule; a client reads
 the 403 or the <code class="inline">hidden</code> flag to say why and offer registration.</p>
     </section>
 
@@ -213,7 +219,7 @@ registered account. An unknown id may not.</p></div>
       <h1 class="signature" translate="no">feature()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/account_required.ex#L33" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/account_required.ex#L41" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -224,7 +230,7 @@ registered account. An unknown id may not.</p></div>
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@type</span> feature() :: :quest_claims | :leaderboards</pre>
+          <pre translate="no"><span class="attribute">@type</span> feature() :: :quest_claims | :leaderboards | :tournaments | :matchmaking</pre>
 
       </div>
 
@@ -254,7 +260,7 @@ registered account. An unknown id may not.</p></div>
       <h1 class="signature" translate="no">allowed?(who, feature)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/account_required.ex#L50" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/account_required.ex#L58" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -288,7 +294,7 @@ registered account. An unknown id may not.</p>
       <h1 class="signature" translate="no">features()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/account_required.ex#L37" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/account_required.ex#L45" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -316,7 +322,7 @@ registered account. An unknown id may not.</p>
       <h1 class="signature" translate="no">required?(feature)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/account_required.ex#L41" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/account_required.ex#L49" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -343,9 +349,9 @@ registered account. An unknown id may not.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1460">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1462">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1460">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1462">Hex Preview</a>
 
             </span>
 

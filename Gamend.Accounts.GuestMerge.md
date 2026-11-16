@@ -43,9 +43,13 @@ because of a merge:
      counters added, the account's never lowered).
   7. Quests: `Gamend.Quests.merge_user_progress/2` (periods the account has
      not played).
-  8. Activity days the account lacks; the guest's analytics events,
+  8. Tournaments: `Gamend.Tournaments.merge_user_entries/2` (an entry in a
+     tournament the account has not entered becomes the account's, its
+     bracket and matches with it; beside the account's own it is withdrawn
+     or forfeited).
+  9. Activity days the account lacks; the guest's analytics events,
      content reports and notifications become the account's.
-  9. `users.metadata` and `users.preferences` keys the account lacks.
+  10. `users.metadata` and `users.preferences` keys the account lacks.
 
 Sessions, push tokens, bans, lobby and party seats are not moved. Wallet
 and inventory moves carry idempotency keys and every other step only moves

@@ -434,6 +434,10 @@ defmodule Gamend.Containers do
       for a host showing the build live. Of arity 2, it is given the end
       of the output so far too (the `log` the answer would have now), for
       a host keeping it as it goes, so a page opened mid-build has it.
+    * `stop_on:` — a message which, sent to the process building, stops
+      the build as `timeout_ms:` does, and it answers `{:build_stopped,
+      log}`: a host's Stop button. A message that comes before the build
+      starts stops it at once, since it waits in the mailbox.
 
   No hardening floor, unlike `create/1`: a Dockerfile's `RUN` expects the
   root a build normally has (apt drops to its own user with `setgroups`,
@@ -441,7 +445,8 @@ defmodule Gamend.Containers do
   `runtime:` for someone else's Dockerfile, are what keep a build in.
 
   Errors besides the module's: `{:build_failed, status, log}`, the build's
-  exit status and the end of its output, and `{:build_timeout, log}`.
+  exit status and the end of its output, `{:build_timeout, log}` and
+  `{:build_stopped, log}`.
   """
   @spec build(Path.t(), keyword()) ::
           {:ok, %{id: String.t(), log: String.t()}} | {:error, term()}
@@ -456,6 +461,7 @@ defmodule Gamend.Containers do
           {:exited, 0, log} -> read_iid(iidfile, log)
           {:exited, status, log} -> {:error, {:build_failed, status, log}}
           {:timeout, log} -> {:error, {:build_timeout, log}}
+          {:stopped, log} -> {:error, {:build_stopped, log}}
         end
       after
         File.rm(iidfile)
@@ -538,10 +544,13 @@ defmodule Gamend.Containers do
   @doc false
   # Public so a test can time a program out without podman. Runs `path`
   # through a port, gives `on_output:` each piece, keeps the end of what it
-  # printed, and past `timeout_ms:` stops it: SIGTERM, then SIGKILL
-  # `kill_grace_ms:` later (a test's, shorter than a build's).
+  # printed, and past `timeout_ms:`, or on the message `stop_on:`, stops it:
+  # SIGTERM, then SIGKILL `kill_grace_ms:` later (a test's, shorter than a
+  # build's).
   @spec run_port(Path.t(), [String.t()], keyword()) ::
-          {:exited, non_neg_integer(), String.t()} | {:timeout, String.t()}
+          {:exited, non_neg_integer(), String.t()}
+          | {:timeout, String.t()}
+          | {:stopped, String.t()}
   def run_port(path, args, opts) do
     Logger.debug("#{Path.basename(path)} #{Enum.join(args, " ")}")
 
@@ -559,22 +568,34 @@ defmodule Gamend.Containers do
         ms -> System.monotonic_time(:millisecond) + ms
       end
 
-    grace_ms = Keyword.get(opts, :kill_grace_ms, @build_kill_grace_ms)
-    collect(port, deadline, grace_ms, Keyword.get(opts, :on_output), "")
+    watch = %{
+      port: port,
+      deadline: deadline,
+      grace_ms: Keyword.get(opts, :kill_grace_ms, @build_kill_grace_ms),
+      on_output: Keyword.get(opts, :on_output),
+      # A ref no one holds when none is given: a message nothing sends.
+      stop_on: Keyword.get_lazy(opts, :stop_on, &make_ref/0)
+    }
+
+    collect(watch, "")
   end
 
-  defp collect(port, deadline, grace_ms, on_output, log) do
+  defp collect(%{port: port, stop_on: stop_on} = watch, log) do
     receive do
       {^port, {:data, chunk}} ->
         log = keep_end(log <> chunk)
-        give_output(on_output, chunk, log)
-        collect(port, deadline, grace_ms, on_output, log)
+        give_output(watch.on_output, chunk, log)
+        collect(watch, log)
 
       {^port, {:exit_status, status}} ->
         {:exited, status, log}
+
+      ^stop_on ->
+        stop_port(port, watch.grace_ms)
+        {:stopped, log}
     after
-      remaining(deadline) ->
-        stop_port(port, grace_ms)
+      remaining(watch.deadline) ->
+        stop_port(port, watch.grace_ms)
         {:timeout, log}
     end
   end

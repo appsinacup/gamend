@@ -342,6 +342,36 @@ defmodule Gamend.ContainersTest do
       refute_receive {_port, {:exit_status, _}}, 100
     end
 
+    test "the stop_on message stops a program, and what it printed is kept" do
+      started = System.monotonic_time(:millisecond)
+
+      # Sent once it printed: the program is running by then.
+      assert {:stopped, "started\n"} =
+               Containers.run_port("/bin/sh", ["-c", "echo started; exec sleep 30"],
+                 stop_on: {:stop, :this},
+                 on_output: fn _chunk -> send(self(), {:stop, :this}) end
+               )
+
+      assert System.monotonic_time(:millisecond) - started < 5_000
+      refute_receive {_port, {:exit_status, _}}, 100
+    end
+
+    test "a stop_on message sent before the program starts stops it at once" do
+      send(self(), :stop_now)
+
+      assert {:stopped, _log} =
+               Containers.run_port("/bin/sh", ["-c", "exec sleep 30"], stop_on: :stop_now)
+    end
+
+    test "another message does not stop it" do
+      send(self(), :something_else)
+
+      assert {:exited, 0, "done\n"} =
+               Containers.run_port("/bin/sh", ["-c", "echo done"], stop_on: :stop_now)
+
+      assert_received :something_else
+    end
+
     test "only the end of a long output is kept, from a whole line" do
       script = "i=0; while [ $i -lt 20000 ]; do echo line-$i; i=$((i+1)); done"
 

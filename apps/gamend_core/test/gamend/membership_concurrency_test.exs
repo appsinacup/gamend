@@ -29,7 +29,7 @@ defmodule Gamend.MembershipConcurrencyTest do
   @moves 25
 
   setup do
-    %{players: for(_ <- 1..@players, do: AccountsFixtures.user_fixture())}
+    %{players: for(_ <- 1..@players, do: AccountsFixtures.unconfirmed_user_fixture())}
   end
 
   test "lobbies keep their rules under concurrent joins, leaves, kicks and disbands",

@@ -33,13 +33,11 @@ defmodule GamendWeb.BlogLayoutTest do
   ]
 
   describe "the index" do
-    test "is a grid: cards in columns, each picture above its text" do
+    test "a card is a link with its picture above its text" do
       html = render_index()
 
-      assert html =~ "grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
-
       # The picture is the card link's first child, the text after it.
-      assert html =~ ~r/<a[^>]*class="flex h-full flex-col"[^>]*>\s*<img/
+      assert html =~ ~r{<a[^>]*href="/blog/one"[^>]*>\s*<img}
     end
 
     test "a card shows the post's card picture, else its picture, else none" do
@@ -116,9 +114,8 @@ defmodule GamendWeb.BlogLayoutTest do
       assert html =~ ~s(<img loading="lazy" src="/b.png">)
     end
 
-    # The post's way back is the Back button every page has (2026-10-09),
-    # not the old "Blog /" text crumb before the date.
-    test "goes back to the blog with the Back button, not a text crumb" do
+    # The post's way back is the Back button every page has (2026-10-09).
+    test "goes back to the blog with the Back button" do
       html =
         render_component(&ContentPages.blog_post/1,
           flash: %{},
@@ -129,7 +126,6 @@ defmodule GamendWeb.BlogLayoutTest do
         )
 
       assert html =~ ~r{<a[^>]*href="/blog"[^>]*title="Back"}
-      refute html =~ ~r{<a[^>]*href="/blog"[^>]*>\s*Blog\s*</a>}
       assert html =~ ~s(href="/blog/one")
       assert html =~ ~s(href="/blog/three")
     end

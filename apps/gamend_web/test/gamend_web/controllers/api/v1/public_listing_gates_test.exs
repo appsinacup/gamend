@@ -35,14 +35,6 @@ defmodule GamendWeb.Api.V1.PublicListingGatesTest do
     )
   end
 
-  describe "defaults (flags unset)" do
-    test "public listing endpoints are reachable", %{conn: conn} do
-      assert conn |> get("/api/v1/users") |> json_response(200)
-      assert conn |> get("/api/v1/lobbies") |> json_response(200)
-      assert conn |> get("/api/v1/groups") |> json_response(200)
-    end
-  end
-
   describe "LIST_USERS_ENABLED=false" do
     test "GET /users and /users/:id return 404", %{conn: conn} do
       user = AccountsFixtures.user_fixture()

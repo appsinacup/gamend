@@ -17,16 +17,6 @@ defmodule GamendWeb.ChatNavigationTest do
     group
   end
 
-  test "a group chat URL selects that conversation (survives refresh)", %{conn: conn, user: user} do
-    group = own_group(user)
-
-    {:ok, _view, html} = live(conn, ~p"/chat?#{[type: "group", id: group.id]}")
-
-    # The chat header shows the selected group — the same path a browser
-    # refresh takes, since a reload re-requests this exact URL.
-    assert html =~ "Test Guild"
-  end
-
   test "opening a group from the sidebar pushes the URL", %{conn: conn, user: user} do
     group = own_group(user)
 
@@ -48,7 +38,6 @@ defmodule GamendWeb.ChatNavigationTest do
     {:ok, _view, html} = live(conn, ~p"/groups/#{group.id}")
 
     assert html =~ ~s(href="/chat?type=group&amp;id=#{group.id}")
-    assert html =~ "Open chat"
   end
 
   # A message that arrives while its conversation is already open must advance
@@ -61,7 +50,9 @@ defmodule GamendWeb.ChatNavigationTest do
     sender = Gamend.AccountsFixtures.user_fixture()
     {:ok, _} = Groups.join_group(sender.id, group.id)
 
-    {:ok, view, _html} = live(conn, ~p"/chat?#{[type: "group", id: group.id]}")
+    # The URL alone opens the conversation: the path a refresh takes.
+    {:ok, view, html} = live(conn, ~p"/chat?#{[type: "group", id: group.id]}")
+    assert html =~ "Test Guild"
 
     {:ok, _msg} =
       Chat.send_message(%{user: sender}, %{
@@ -81,7 +72,7 @@ defmodule GamendWeb.ChatNavigationTest do
 
     {:ok, _view, html} = live(other_conn, ~p"/groups/#{group.id}")
 
-    refute html =~ "Open chat"
+    refute html =~ ~s(href="/chat?type=group&amp;id=#{group.id}")
   end
 
   test "a group's chat opens only for its members", %{conn: conn} do

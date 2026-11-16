@@ -102,8 +102,10 @@ defmodule Gamend.ReportResolveRaceTest do
       assert told == 1, "the reporter was told #{told} times"
     end
 
-    resolved = for _ <- reports, do: assert_receive({:resolved, _id}, 1_000)
+    # The hook ran inside each racer (`async_inline` in tests): every message is
+    # already in the mailbox.
+    resolved = for _ <- reports, do: assert_received({:resolved, _id})
     assert length(Enum.uniq(resolved)) == @reports
-    refute_receive {:resolved, _}, 200
+    refute_received {:resolved, _}
   end
 end

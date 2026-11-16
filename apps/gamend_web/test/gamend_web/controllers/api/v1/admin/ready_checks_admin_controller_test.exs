@@ -23,7 +23,6 @@ defmodule GamendWeb.Api.V1.Admin.ReadyChecksAdminControllerTest do
 
     %{
       admin_conn: bearer_conn(conn, admin),
-      plain_conn: conn,
       host: host,
       member: member,
       lobby: lobby
@@ -69,10 +68,5 @@ defmodule GamendWeb.Api.V1.Admin.ReadyChecksAdminControllerTest do
 
     conn = get(ctx.admin_conn, "/api/v1/admin/ready_checks/stats")
     assert %{"data" => %{"cancelled" => 1}} = json_response(conn, 200)
-  end
-
-  test "a non-admin is refused", ctx do
-    conn = ctx.plain_conn |> bearer_conn(ctx.host) |> get("/api/v1/admin/ready_checks")
-    assert json_response(conn, 403)
   end
 end

@@ -32,7 +32,7 @@ defmodule GamendWeb.AdminLive.LobbiesTest do
         hostless: true
       })
 
-    {:ok, _lv, html} =
+    {:ok, view, html} =
       conn
       |> log_in_user(user)
       |> live(~p"/admin/lobbies")
@@ -48,8 +48,6 @@ defmodule GamendWeb.AdminLive.LobbiesTest do
     assert html =~ ~r/<a[^>]*href="\/admin"[^>]*data-back/
 
     # test edit flow via live view: open manage UI, change title and save
-    {:ok, view, _html} = conn |> log_in_user(user) |> live(~p"/admin/lobbies")
-
     # open edit modal for first lobby (its row) and verify modal shows created/updated
     view |> element("#admin-lobby-#{lobby1.id}") |> render_click()
 
@@ -63,15 +61,14 @@ defmodule GamendWeb.AdminLive.LobbiesTest do
     form = form(view, "#lobby-form", %{"lobby" => %{"title" => "Updated Title"}})
     render_submit(form)
 
-    # ensure update is persisted
+    # ensure update is persisted, and the list shows it
     assert Gamend.Lobbies.get_lobby!(lobby1.id).title == "Updated Title"
+    assert render(view) =~ "Updated Title"
 
     # now delete second lobby
     delete_btn = element(view, "#admin-lobby-#{lobby2.id} button", "Delete")
     render_click(delete_btn)
 
-    # re-fetch the page and ensure that the specific lobby element is gone
-    _html2 = render(view)
     refute has_element?(view, "#admin-lobby-#{lobby2.id}")
   end
 
@@ -107,34 +104,6 @@ defmodule GamendWeb.AdminLive.LobbiesTest do
 
     # on last page Next should be disabled
     assert html2 =~ ~r/<button[^>]*phx-click="admin_lobbies_next"[^>]*disabled/
-  end
-
-  test "admin update is reflected in admin lobbies view", %{conn: conn} do
-    user = Gamend.AccountsFixtures.user_fixture()
-
-    {:ok, admin} =
-      user
-      |> User.admin_changeset(%{"is_admin" => true})
-      |> Gamend.Repo.update()
-
-    # create a lobby hosted by admin
-    {:ok, lobby} =
-      Gamend.Lobbies.create_lobby(%{
-        title: "admin-prop",
-        name: "admin-prop",
-        host_id: admin.id
-      })
-
-    # admin opens admin page and edits the lobby title
-    {:ok, view_admin, _html} = conn |> log_in_user(admin) |> live(~p"/admin/lobbies")
-    assert render(view_admin) =~ "admin-prop"
-
-    view_admin |> element("#admin-lobby-#{lobby.id}") |> render_click()
-    form = form(view_admin, "#lobby-form", %{"lobby" => %{"title" => "Admin Updated"}})
-    render_submit(form)
-
-    updated_html = render(view_admin)
-    assert updated_html =~ "Admin Updated"
   end
 
   test "admin creates a lobby with a host id submitted as form text", %{conn: conn} do
@@ -194,32 +163,5 @@ defmodule GamendWeb.AdminLive.LobbiesTest do
     render_click(view, "add_member", %{})
 
     assert length(Gamend.Lobbies.list_memberships_for_lobby(lobby.id)) == length(members)
-  end
-
-  test "admin deletion removes the lobby from admin lobbies view", %{conn: conn} do
-    user = AccountsFixtures.user_fixture()
-
-    {:ok, admin} =
-      user
-      |> User.admin_changeset(%{"is_admin" => true})
-      |> Repo.update()
-
-    # create a lobby
-    {:ok, lobby} =
-      Gamend.Lobbies.create_lobby(%{
-        title: "cross-delete",
-        name: "cross-delete",
-        host_id: admin.id
-      })
-
-    # admin opens admin page and deletes the lobby
-    {:ok, view_admin, _html} = conn |> log_in_user(admin) |> live(~p"/admin/lobbies")
-    assert render(view_admin) =~ "cross-delete"
-
-    delete_btn = element(view_admin, "#admin-lobby-#{lobby.id} button", "Delete")
-    render_click(delete_btn)
-
-    updated_html = render(view_admin)
-    refute updated_html =~ "cross-delete"
   end
 end

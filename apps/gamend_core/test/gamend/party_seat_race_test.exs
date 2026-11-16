@@ -90,8 +90,8 @@ defmodule Gamend.PartySeatRaceTest do
   end
 
   defp invited_player do
-    leader = AccountsFixtures.user_fixture()
-    player = AccountsFixtures.user_fixture()
+    leader = AccountsFixtures.unconfirmed_user_fixture()
+    player = AccountsFixtures.unconfirmed_user_fixture()
 
     {:ok, request} = Friends.create_request(leader, player.id)
     Friends.accept_friend_request(request.id, player)

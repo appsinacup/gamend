@@ -67,7 +67,7 @@ defmodule GamendWeb.AdminLive.PartiesActionsTest do
     assert assigns(view).selected_party == nil
   end
 
-  test "a member is added by id and kicked; a bad id is refused", %{
+  test "a member is added by id and kicked; a bad id or no account is refused", %{
     conn: conn,
     admin: admin,
     party: party
@@ -80,6 +80,11 @@ defmodule GamendWeb.AdminLive.PartiesActionsTest do
     render_click(view, "add_party_member", %{})
     refute Enum.any?(Parties.get_party_members(party.id), &(&1.id == member.id))
 
+    # A valid uuid that is no account is refused too.
+    render_change(view, "update_add_member_id", %{"value" => Gamend.UUIDv7.generate()})
+    render_click(view, "add_party_member", %{})
+    assert length(Parties.get_party_members(party.id)) == 1
+
     render_change(view, "update_add_member_id", %{"value" => member.id})
     render_click(view, "add_party_member", %{})
     assert Enum.any?(Parties.get_party_members(party.id), &(&1.id == member.id))
@@ -89,17 +94,5 @@ defmodule GamendWeb.AdminLive.PartiesActionsTest do
 
     render_click(view, "close_members", %{})
     refute assigns(view).show_members
-  end
-
-  test "a player id that is a valid uuid but no account is refused", %{
-    conn: conn,
-    admin: admin,
-    party: party
-  } do
-    view = page(conn, admin)
-    render_click(view, "view_members", %{"id" => party.id})
-    render_change(view, "update_add_member_id", %{"value" => Gamend.UUIDv7.generate()})
-    render_click(view, "add_party_member", %{})
-    assert length(Parties.get_party_members(party.id)) == 1
   end
 end

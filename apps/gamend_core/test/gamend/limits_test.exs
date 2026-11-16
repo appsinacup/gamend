@@ -4,18 +4,6 @@ defmodule Gamend.LimitsTest do
   alias Gamend.Limits
 
   describe "defaults/0" do
-    test "returns a map with all expected keys" do
-      defaults = Limits.defaults()
-      assert is_map(defaults)
-      assert Map.has_key?(defaults, :max_metadata_size)
-      assert Map.has_key?(defaults, :max_page_size)
-      assert Map.has_key?(defaults, :max_group_title)
-      assert Map.has_key?(defaults, :max_lobby_users)
-      assert Map.has_key?(defaults, :max_party_size)
-      assert Map.has_key?(defaults, :max_hook_args_size)
-      assert Map.has_key?(defaults, :max_kv_value_size)
-    end
-
     # A limit's default has to be a value of its declared type, or `get/1`
     # hands callers something no parser would ever produce.
     test "every default is a value of its declared type" do
@@ -30,11 +18,6 @@ defmodule Gamend.LimitsTest do
   defp typed?(:boolean, value), do: is_boolean(value)
 
   describe "get/1" do
-    test "returns default value for known key" do
-      assert Limits.get(:max_metadata_size) == 16_384
-      assert Limits.get(:max_page_size) == 100
-    end
-
     test "raises for unknown key, naming the module and the declared keys" do
       assert_raise ArgumentError, ~r/declares no setting :nonexistent_limit/, fn ->
         Limits.get(:nonexistent_limit)

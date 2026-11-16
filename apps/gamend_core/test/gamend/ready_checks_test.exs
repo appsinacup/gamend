@@ -9,9 +9,9 @@ defmodule Gamend.ReadyChecksTest do
   alias Gamend.ReadyChecks.Participant
 
   setup do
-    host = AccountsFixtures.user_fixture()
-    alice = AccountsFixtures.user_fixture()
-    bob = AccountsFixtures.user_fixture()
+    host = AccountsFixtures.unconfirmed_user_fixture()
+    alice = AccountsFixtures.unconfirmed_user_fixture()
+    bob = AccountsFixtures.unconfirmed_user_fixture()
 
     {:ok, lobby} = Lobbies.create_lobby(%{title: "ready-room", host_id: host.id, max_users: 4})
     {:ok, _} = Lobbies.join_lobby(alice, lobby.id)
@@ -60,7 +60,7 @@ defmodule Gamend.ReadyChecksTest do
     end
 
     test "refuses a player already in another check", ctx do
-      other_host = AccountsFixtures.user_fixture()
+      other_host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, other_lobby} = Lobbies.create_lobby(%{title: "other", host_id: other_host.id})
       {:ok, _} = ReadyChecks.open(ctx.lobby, [ctx.alice.id])
 
@@ -94,7 +94,7 @@ defmodule Gamend.ReadyChecksTest do
 
     test "a member who joins while the board is open goes on it, pending", ctx do
       {:ok, check} = ReadyChecks.open(ctx.lobby, [ctx.host.id, ctx.alice.id], timeout_ms: nil)
-      carol = AccountsFixtures.user_fixture()
+      carol = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, _} = Lobbies.join_lobby(carol, ctx.lobby.id)
 
@@ -106,7 +106,7 @@ defmodule Gamend.ReadyChecksTest do
         ReadyChecks.open(ctx.lobby, [ctx.host.id, ctx.alice.id], opened_by: ctx.host.id)
 
       {:ok, %Check{status: "passed"}} = ReadyChecks.respond(ctx.alice, true)
-      carol = AccountsFixtures.user_fixture()
+      carol = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, _} = Lobbies.join_lobby(carol, ctx.lobby.id)
 
@@ -323,14 +323,6 @@ defmodule Gamend.ReadyChecksTest do
       assert length(ReadyChecks.get_check(check.id).participants) == 2
     end
 
-    test "a late joiner is added as pending", ctx do
-      {:ok, check} = ReadyChecks.open(ctx.lobby, ctx.members, opened_by: ctx.host.id)
-      late = AccountsFixtures.user_fixture()
-      {:ok, _} = Lobbies.join_lobby(late, ctx.lobby.id)
-
-      assert state_of(check, late.id) == "pending"
-    end
-
     test "the check is cancelled when the last member leaves", ctx do
       {:ok, check} = ReadyChecks.open(ctx.lobby, [ctx.bob.id])
       {:ok, _} = Lobbies.leave_lobby(ctx.bob)
@@ -348,7 +340,7 @@ defmodule Gamend.ReadyChecksTest do
     test "a joiner's seat on a board deleted as it is read is dropped and the add answers ok",
          ctx do
       {:ok, check} = ReadyChecks.open(ctx.lobby, ctx.members)
-      late = AccountsFixtures.user_fixture()
+      late = AccountsFixtures.unconfirmed_user_fixture()
       pid = self()
       handler = {__MODULE__, :delete_check_after_read, System.unique_integer()}
 
@@ -394,7 +386,10 @@ defmodule Gamend.ReadyChecksTest do
 
     test "passed?/1 is false for a lobby that never had one", _ctx do
       {:ok, fresh} =
-        Lobbies.create_lobby(%{title: "fresh", host_id: AccountsFixtures.user_fixture().id})
+        Lobbies.create_lobby(%{
+          title: "fresh",
+          host_id: AccountsFixtures.unconfirmed_user_fixture().id
+        })
 
       refute ReadyChecks.passed?(fresh)
     end
@@ -433,7 +428,7 @@ defmodule Gamend.ReadyChecksTest do
       # Only the fresh board is announced; the replaced one dies silently.
       assert_receive {:ready_check_event, "ready_check_started", %{id: id}}
       assert id == second.id
-      refute_receive {:ready_check_event, "ready_check_failed", _}
+      refute_received {:ready_check_event, "ready_check_failed", _}
     end
 
     test "makes passed?/1 false again — a rematch cannot ride the old pass", ctx do

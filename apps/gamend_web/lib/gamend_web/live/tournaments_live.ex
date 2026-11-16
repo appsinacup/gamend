@@ -525,6 +525,7 @@ defmodule GamendWeb.TournamentsLive do
           <% true -> %>
             <.group_list
               groups={@groups}
+              tone={@tone}
               page={@page}
               page_size={@page_size}
               total_pages={@total_pages}
@@ -539,6 +540,7 @@ defmodule GamendWeb.TournamentsLive do
   # ── Index: one card per tournament type ───────────────────────────────────
 
   attr :groups, :list, required: true
+  attr :tone, :string, default: nil, doc: "the Tournaments link's tone, the cards' marks"
   attr :page, :integer, required: true
   attr :page_size, :integer, required: true
   attr :total_pages, :integer, required: true
@@ -553,12 +555,18 @@ defmodule GamendWeb.TournamentsLive do
         title={group.title}
         icon_url={group.icon_url}
         type={:tournament}
+        tone={@tone}
         description={group.description}
       >
         <:badges>
           <.state_badge state={group.state} />
         </:badges>
 
+        <.schedule
+          registration_opens_at={group[:registration_opens_at]}
+          starts_at={group[:starts_at]}
+          play_ends_at={group[:play_ends_at]}
+        />
         <div class="text-sm text-muted">
           {gettext("Players")}: {group.entry_count}
         </div>
@@ -582,6 +590,35 @@ defmodule GamendWeb.TournamentsLive do
     """
   end
 
+  attr :registration_opens_at, :any, default: nil
+  attr :starts_at, :any, default: nil
+  attr :play_ends_at, :any, default: nil
+
+  # When a tournament takes entries and when it plays, each in the reader's
+  # own time (`timestamp/1`), named as its state badge names that time. A
+  # tournament started by hand has no dates: nothing.
+  defp schedule(assigns) do
+    ~H"""
+    <dl
+      :if={@starts_at}
+      class="grid grid-cols-[auto_1fr] items-baseline gap-x-3 gap-y-0.5 text-sm"
+    >
+      <%= if @registration_opens_at do %>
+        <dt class="font-semibold">{gettext("Registration open")}</dt>
+        <dd class="text-muted">
+          <.timestamp at={@registration_opens_at} format="datetime" /> –
+          <.timestamp at={@starts_at} format="datetime" />
+        </dd>
+      <% end %>
+      <dt class="font-semibold">{gettext("Running")}</dt>
+      <dd class="text-muted">
+        <.timestamp at={@starts_at} format="datetime" />
+        <span :if={@play_ends_at}>– <.timestamp at={@play_ends_at} format="datetime" /></span>
+      </dd>
+    </dl>
+    """
+  end
+
   # ── Detail: one edition ───────────────────────────────────────────────────
 
   defp detail_view(assigns) do
@@ -590,9 +627,6 @@ defmodule GamendWeb.TournamentsLive do
       <%!-- The title row (Back, icon, name) is the page's; this is the edition's state. --%>
       <div class="flex flex-wrap items-center gap-2">
         <.state_badge state={@tournament.state} />
-        <span :if={@tournament.starts_at} class="text-sm text-muted">
-          <.timestamp at={@tournament.starts_at} format="date" />
-        </span>
         <span :if={is_nil(@tournament.starts_at)} class="text-sm text-muted">
           {gettext("Starts manually")}
         </span>
@@ -608,6 +642,12 @@ defmodule GamendWeb.TournamentsLive do
           />
         </div>
       </div>
+
+      <.schedule
+        registration_opens_at={@tournament.registration_opens_at}
+        starts_at={@tournament.starts_at}
+        play_ends_at={Tournaments.play_ends_at(@tournament)}
+      />
 
       <%!-- Edition navigation, mirroring leaderboard seasons --%>
       <div

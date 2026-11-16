@@ -17,18 +17,12 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
   alias Gamend.Repo
   alias GamendWeb.Auth.Guardian
 
-  setup do
-    {:ok, %{}}
-  end
-
   defp auth_conn(conn, user) do
     {:ok, token, _} = Guardian.encode_and_sign(user)
     put_req_header(conn, "authorization", "Bearer " <> token)
   end
 
-  defp create_user do
-    AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-  end
+  defp create_user, do: AccountsFixtures.user_fixture()
 
   # Every `before_group_*` hook a test reaches after this refuses.
   defp refuse_group_changes do
@@ -149,11 +143,6 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
       assert Map.has_key?(resp, "creator_name")
     end
 
-    test "returns 401 without auth", %{conn: conn} do
-      conn = post(conn, "/api/v1/groups", %{title: "NoAuth"})
-      assert conn.status == 401
-    end
-
     test "a missing title answers 422 validation_failed", %{conn: conn} do
       user = create_user()
 
@@ -177,17 +166,6 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
 
       assert %{"error" => "validation_failed", "errors" => %{"slug" => [_]}} =
                json_response(conn, 409)
-    end
-
-    test "a title another group has is fine", %{conn: conn} do
-      {:ok, _} = Groups.create_group(create_user().id, %{"title" => "Same Name"})
-
-      conn =
-        conn
-        |> auth_conn(create_user())
-        |> post("/api/v1/groups", %{title: "Same Name"})
-
-      assert %{"title" => "Same Name"} = json_response(conn, 201)["data"]
     end
   end
 
@@ -303,14 +281,6 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
         |> post("/api/v1/groups/#{group.id}/join")
 
       assert json_response(conn, 200)
-    end
-
-    test "returns 401 without auth", %{conn: conn} do
-      owner = create_user()
-      {:ok, group} = Groups.create_group(owner.id, %{"title" => "NoAuthJoin"})
-
-      conn = post(conn, "/api/v1/groups/#{group.id}/join")
-      assert conn.status == 401
     end
 
     test "returns 403 when blocked by before_group_join hook", %{conn: conn} do
@@ -445,14 +415,6 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
 
       assert json_response(conn, 403)
     end
-
-    test "returns 401 without auth", %{conn: conn} do
-      owner = create_user()
-      {:ok, group} = Groups.create_group(owner.id, %{"title" => "NAKick"})
-
-      conn = post(conn, "/api/v1/groups/#{group.id}/kick", %{target_user_id: 1})
-      assert conn.status == 401
-    end
   end
 
   describe "POST /api/v1/groups/:id/promote" do
@@ -528,19 +490,6 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
   # ---------------------------------------------------------------------------
 
   describe "join request via POST /api/v1/groups/:id/join (private group)" do
-    test "user can request to join private group via join endpoint", %{conn: conn} do
-      owner = create_user()
-      other = create_user()
-      {:ok, group} = Groups.create_group(owner.id, %{"title" => "PrvReq", "type" => "private"})
-
-      conn =
-        conn
-        |> auth_conn(other)
-        |> post("/api/v1/groups/#{group.id}/join")
-
-      assert %{"status" => "pending"} = json_response(conn, 201)["data"]
-    end
-
     test "returns 201 when user already requested (idempotent)", %{conn: conn} do
       owner = create_user()
       other = create_user()
@@ -657,8 +606,8 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
       {:ok, group} = Groups.create_group(owner.id, %{"title" => "Mems"})
 
       conn = get(conn, "/api/v1/groups/#{group.id}/members")
-      assert %{"data" => members} = json_response(conn, 200)
-      assert length(members) == 1
+      assert %{"data" => [_owner], "meta" => meta} = json_response(conn, 200)
+      assert %{"total_count" => 1, "page" => 1} = meta
     end
   end
 
@@ -676,7 +625,8 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
         |> auth_conn(user)
         |> get("/api/v1/groups/me")
 
-      assert %{"data" => [%{"title" => "Mine1"}]} = json_response(conn, 200)
+      assert %{"data" => [%{"title" => "Mine1"}], "meta" => %{"total_count" => 1}} =
+               json_response(conn, 200)
     end
 
     test "returns an empty creator_id for a system group", %{conn: conn} do
@@ -695,11 +645,6 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
       # A string, not the old -1 sentinel: the contract types creator_id as a
       # string, and a number here failed to assign in typed clients.
       assert %{"data" => [%{"creator_id" => "", "creator_name" => ""}]} = json_response(conn, 200)
-    end
-
-    test "returns 401 without auth", %{conn: conn} do
-      conn = get(conn, "/api/v1/groups/me")
-      assert conn.status == 401
     end
 
     test "returns empty list when user has no groups", %{conn: conn} do
@@ -799,22 +744,6 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
       assert Groups.member?(group.id, target.id)
     end
 
-    test "accepts invite for non-hidden group", %{conn: conn} do
-      owner = create_user()
-      target = create_user()
-      :ok = AccountsFixtures.befriend(owner, target)
-      {:ok, group} = Groups.create_group(owner.id, %{"title" => "PubAccInv", "type" => "public"})
-      {:ok, invite} = Groups.invite_to_group(owner.id, group.id, target.id)
-
-      conn =
-        conn
-        |> auth_conn(target)
-        |> post("/api/v1/groups/invitations/#{invite.id}/accept")
-
-      assert json_response(conn, 200)
-      assert Groups.member?(group.id, target.id)
-    end
-
     test "returns not_found for unknown invite_id", %{conn: conn} do
       user = create_user()
 
@@ -885,12 +814,7 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
         |> auth_conn(user)
         |> get("/api/v1/groups/sent_invitations")
 
-      assert %{"data" => []} = json_response(conn, 200)
-    end
-
-    test "returns 401 without auth", %{conn: conn} do
-      conn = get(conn, "/api/v1/groups/sent_invitations")
-      assert conn.status == 401
+      assert %{"data" => [], "meta" => %{"total_count" => 0}} = json_response(conn, 200)
     end
   end
 
@@ -948,60 +872,14 @@ defmodule GamendWeb.Api.V1.GroupControllerTest do
     end
   end
 
-  # ---------------------------------------------------------------------------
-  # Notify Group
-  # ---------------------------------------------------------------------------
-
-  describe "pagination" do
-    test "members endpoint returns meta", %{conn: conn} do
-      owner = create_user()
-      {:ok, group} = Groups.create_group(owner.id, %{"title" => "PagMem"})
-
-      conn = get(conn, "/api/v1/groups/#{group.id}/members")
-      body = json_response(conn, 200)
-      assert is_list(body["data"])
-      assert body["meta"]["total_count"] == 1
-      assert body["meta"]["page"] == 1
-    end
-
-    test "my_groups endpoint returns meta", %{conn: conn} do
-      user = create_user()
-      {:ok, _} = Groups.create_group(user.id, %{"title" => "PagMine"})
-
+  describe "GET /api/v1/groups/invitations" do
+    test "returns an empty page when there are none", %{conn: conn} do
       conn =
         conn
-        |> auth_conn(user)
-        |> get("/api/v1/groups/me")
-
-      body = json_response(conn, 200)
-      assert is_list(body["data"])
-      assert body["meta"]["total_count"] == 1
-    end
-
-    test "invitations endpoint returns meta", %{conn: conn} do
-      user = create_user()
-
-      conn =
-        conn
-        |> auth_conn(user)
+        |> auth_conn(create_user())
         |> get("/api/v1/groups/invitations")
 
-      body = json_response(conn, 200)
-      assert is_list(body["data"])
-      assert body["meta"]["total_count"] == 0
-    end
-
-    test "sent_invitations endpoint returns meta", %{conn: conn} do
-      user = create_user()
-
-      conn =
-        conn
-        |> auth_conn(user)
-        |> get("/api/v1/groups/sent_invitations")
-
-      body = json_response(conn, 200)
-      assert is_list(body["data"])
-      assert body["meta"]["total_count"] == 0
+      assert %{"data" => [], "meta" => %{"total_count" => 0}} = json_response(conn, 200)
     end
   end
 

@@ -26,6 +26,15 @@ defmodule Gamend.SpectatorTrackerTest do
     pid
   end
 
+  # The tracker drops a dead process's entries when it handles the exit.
+  defp eventually(fun, tries \\ 200) do
+    cond do
+      fun.() -> :ok
+      tries == 0 -> flunk("condition never held")
+      true -> Process.sleep(5) && eventually(fun, tries - 1)
+    end
+  end
+
   test "counts spectators per lobby" do
     a = Ecto.UUID.generate()
     b = Ecto.UUID.generate()
@@ -57,9 +66,7 @@ defmodule Gamend.SpectatorTrackerTest do
     assert SpectatorTracker.count(lobby) == 1
 
     Process.exit(pid, :kill)
-    Process.sleep(100)
-
-    assert SpectatorTracker.count(lobby) == 0
+    eventually(fn -> SpectatorTracker.count(lobby) == 0 end)
   end
 
   test "untrack removes only the caller's entry" do
@@ -90,9 +97,8 @@ defmodule Gamend.SpectatorTrackerTest do
     assert SpectatorTracker.count(lobby) == 2
 
     send(pid, :go)
+    # `untrack/2` is a call to the tracker: done when it returns.
     assert_receive :untracked, 2_000
-    Process.sleep(100)
-
     assert SpectatorTracker.list(lobby) == [stays]
   end
 end

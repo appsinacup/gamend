@@ -37,8 +37,4 @@ defmodule GamendWeb.ProtoTimestampNamingTest do
              "REST name — rename to <field>_at_ms (or <field>_seconds if it really " <>
              "is not milliseconds):\n  " <> Enum.join(offenders, "\n  ")
   end
-
-  test "the proto file the check reads is where it is expected" do
-    assert File.exists?(@proto), "gamend_realtime.proto moved — fix the path in this test"
-  end
 end

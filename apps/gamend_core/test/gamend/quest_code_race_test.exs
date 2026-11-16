@@ -38,7 +38,7 @@ defmodule Gamend.QuestCodeRaceTest do
   end
 
   defp users(count) do
-    users = unboxed(fn -> for _ <- 1..count, do: AccountsFixtures.user_fixture() end)
+    users = unboxed(fn -> for _ <- 1..count, do: AccountsFixtures.unconfirmed_user_fixture() end)
     ids = Enum.map(users, & &1.id)
     cleanup(fn -> Repo.delete_all(from u in User, where: u.id in ^ids) end)
     users

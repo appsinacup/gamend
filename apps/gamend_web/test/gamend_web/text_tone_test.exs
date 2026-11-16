@@ -15,7 +15,10 @@ defmodule GamendWeb.TextToneTest do
     offenders =
       for root <- @roots,
           path <- Path.wildcard(root <> "/**/*.{ex,heex,js}"),
-          {line, n} <- path |> File.read!() |> String.split("\n") |> Enum.with_index(1),
+          source = File.read!(path),
+          # Only a file that has one is split into lines.
+          String.contains?(source, "text-base-content/"),
+          {line, n} <- source |> String.split("\n") |> Enum.with_index(1),
           [_, tone] <- Regex.scan(~r/text-base-content\/(\d+)\b/, line),
           do: "#{Path.relative_to_cwd(path)}:#{n}  text-base-content/#{tone}"
 

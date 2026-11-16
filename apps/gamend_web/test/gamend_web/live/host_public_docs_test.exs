@@ -13,9 +13,10 @@ defmodule GamendWeb.HostPublicDocsTest do
 
   @docs_dir Path.expand(Path.join(__DIR__, "../../../../../priv/docs"))
 
-  setup do
+  # Once for the module: each test walks the same files, and a reload per test
+  # parsed and rendered every guide again.
+  setup_all do
     Content.register_path(:docs, kind: :dir, candidates: [@docs_dir])
-    Content.reload()
     on_exit(&Content.reload/0)
     :ok
   end

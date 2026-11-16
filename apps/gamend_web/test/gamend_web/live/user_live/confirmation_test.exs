@@ -17,8 +17,8 @@ defmodule GamendWeb.UserLive.ConfirmationTest do
           Accounts.deliver_login_instructions(user, url)
         end)
 
-      {:ok, lv, html} = live(conn, ~p"/users/log_in/#{token}")
-      assert html =~ "Confirm"
+      {:ok, lv, _html} = live(conn, ~p"/users/log_in/#{token}")
+      assert has_element?(lv, "#confirmation_form")
       refute has_element?(lv, "#confirmation-password-notice")
     end
 
@@ -35,18 +35,6 @@ defmodule GamendWeb.UserLive.ConfirmationTest do
 
       {:ok, lv, _html} = live(conn, ~p"/users/log_in/#{token}")
       assert has_element?(lv, "#confirmation_form #confirmation-password-notice")
-    end
-
-    test "renders login page for confirmed user", %{conn: conn, confirmed_user: user} do
-      token =
-        extract_user_token(fn url ->
-          Accounts.deliver_login_instructions(user, url)
-        end)
-
-      {:ok, _lv, html} = live(conn, ~p"/users/log_in/#{token}")
-      refute html =~ "Confirm my account"
-      assert html =~ "Log in"
-      assert html =~ user.email
     end
 
     test "confirms the given token once", %{conn: conn, unconfirmed_user: user} do
@@ -89,7 +77,10 @@ defmodule GamendWeb.UserLive.ConfirmationTest do
           Accounts.deliver_login_instructions(user, url)
         end)
 
-      {:ok, lv, _html} = live(conn, ~p"/users/log_in/#{token}")
+      # A confirmed account gets the login form, for its own address.
+      {:ok, lv, html} = live(conn, ~p"/users/log_in/#{token}")
+      refute has_element?(lv, "#confirmation_form")
+      assert html =~ user.email
 
       form = form(lv, "#login_form", %{"user" => %{"token" => token}})
       render_submit(form)

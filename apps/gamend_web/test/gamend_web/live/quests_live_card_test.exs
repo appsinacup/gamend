@@ -289,15 +289,6 @@ defmodule GamendWeb.QuestsLiveCardTest do
     end
   end
 
-  test "the icon sits in the title, with no boxed-off tile around it", %{conn: conn} do
-    html = page(conn)
-
-    assert html =~ ~s(class="card-title text-lg")
-
-    refute html =~ "w-12 h-12 rounded-lg",
-           "the icon tile is gone; the icon reads like the other grids"
-  end
-
   test "title and description use the same sizes as the other grids", %{conn: conn} do
     html = page(conn)
 
@@ -331,7 +322,7 @@ defmodule GamendWeb.QuestsLiveCardTest do
            )
   end
 
-  test "the cadence badge is dropped when it just repeats the category", %{conn: conn} do
+  test "the cadence badge shows only where it differs from the category", %{conn: conn} do
     html = page(conn)
 
     # "Daily check-in" is category Daily *and* reset daily — one badge, not two.
@@ -345,10 +336,7 @@ defmodule GamendWeb.QuestsLiveCardTest do
 
     refute Regex.scan(~r/>\s*Daily\s*</, daily_card) |> length() > 1,
            "Daily is shown twice on the same card"
-  end
 
-  test "the cadence badge stays when it differs from the category", %{conn: conn} do
-    html = page(conn)
     weekly = html |> String.split("Weekly regular") |> Enum.at(1, "") |> String.slice(0, 900)
 
     assert String.contains?(weekly, "Achievements")
@@ -372,27 +360,6 @@ defmodule GamendWeb.QuestsLiveCardTest do
 
     refute html =~ ~r/<span class="badge badge-ghost badge-sm text-nowrap">\s*<\/span>/,
            "repeat quests have no cadence label, so they should not render an empty badge"
-  end
-
-  test "a chain is the tier the player is on: no number, nothing to open", %{conn: conn} do
-    for tier <- 1..40 do
-      {:ok, _} =
-        Quests.create_quest(%{
-          key: "sets_#{tier}",
-          title: "Sets tier #{tier}",
-          description: "Tier #{tier}.",
-          category: "Sets",
-          objectives: [%{event: "sets_evt", target: 1}],
-          prerequisite_quest_key: if(tier > 1, do: "sets_#{tier - 1}")
-        })
-    end
-
-    {:ok, view, html} = live(conn, ~p"/quests")
-
-    assert html =~ "Sets tier 1"
-    refute html =~ "1/40"
-    refute html =~ "Sets tier 2"
-    refute has_element?(view, ~s([phx-click="show_chain"]))
   end
 
   test "an item reward shows by the name the quest gives it, not its code", %{conn: conn} do

@@ -205,6 +205,11 @@ defmodule Gamend.Tournaments do
       description: latest.description,
       icon_url: latest.icon_url,
       state: (current || latest).state,
+      # The schedule of the edition the card opens: registration from
+      # `registration_opens_at` to `starts_at`, play to `play_ends_at`.
+      registration_opens_at: (current || latest).registration_opens_at,
+      starts_at: (current || latest).starts_at,
+      play_ends_at: play_ends_at(current || latest),
       current_id: (current || latest).id,
       latest_id: latest.id,
       edition_count: length(occurrences),
@@ -914,6 +919,20 @@ defmodule Gamend.Tournaments do
   def round_deadline(%Tournament{} = tournament, round) do
     DateTime.add(tournament.starts_at, round * tournament.round_window_sec, :second)
   end
+
+  @doc """
+  When `tournament` stops playing: its `ends_at`, else its last round's
+  deadline (`round_deadline/2`, `bracket_rounds/1` of its bracket size).
+  nil with no start or no bracket size.
+  """
+  @spec play_ends_at(Tournament.t()) :: DateTime.t() | nil
+  def play_ends_at(%Tournament{ends_at: %DateTime{} = ends_at}), do: ends_at
+
+  def play_ends_at(%Tournament{starts_at: %DateTime{}, bracket_size: size} = tournament)
+      when is_integer(size) and size >= 2,
+      do: round_deadline(tournament, bracket_rounds(size))
+
+  def play_ends_at(_tournament), do: nil
 
   @doc "When `round` becomes playable (its window start)."
   @spec round_opens_at(Tournament.t(), pos_integer()) :: DateTime.t()

@@ -35,7 +35,7 @@ defmodule Gamend.Payments.EntitlementRaceTest do
         else: Application.delete_env(:gamend_core, :hooks_module)
     end)
 
-    users = unboxed(fn -> for _ <- 1..@users, do: AccountsFixtures.user_fixture() end)
+    users = unboxed(fn -> for _ <- 1..@users, do: AccountsFixtures.unconfirmed_user_fixture() end)
     ids = Enum.map(users, & &1.id)
     {product, provider_product} = unboxed(&entitlement_product/0)
 

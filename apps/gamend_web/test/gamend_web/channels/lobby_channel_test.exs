@@ -133,27 +133,6 @@ defmodule GamendWeb.LobbyChannelTest do
     assert is_binary(kicked_name)
   end
 
-  test "channel receives updated event when lobby is updated" do
-    host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-
-    {:ok, lobby} = Lobbies.create_lobby(%{title: "update-channel-room", host_id: host.id})
-
-    {:ok, token_host, _} = Guardian.encode_and_sign(host)
-    {:ok, socket_host} = connect(GamendWeb.UserSocket, %{"token" => token_host})
-    {:ok, _, _socket} = subscribe_and_join(socket_host, "lobby:#{lobby.id}", %{})
-
-    # drain the initial after_join payload
-    assert_push "updated", %{title: "update-channel-room"}, 500
-
-    # Update the lobby
-    {:ok, _} = Lobbies.update_lobby_by_host(host, lobby, %{"title" => "New Title"})
-
-    # allow a slightly longer window for the broadcast -> push to arrive in tests
-    assert_push "updated", payload, 500
-    assert payload.id == lobby.id
-    assert payload.title == "New Title"
-  end
-
   test "channel sends the full lobby state on update" do
     host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
 
@@ -195,16 +174,19 @@ defmodule GamendWeb.LobbyChannelTest do
 
     {:ok, token_host, _} = Guardian.encode_and_sign(host)
     {:ok, socket_host} = connect(GamendWeb.UserSocket, %{"token" => token_host})
-    {:ok, _, _socket} = subscribe_and_join(socket_host, "lobby:#{lobby.id}", %{})
+    {:ok, _, socket} = subscribe_and_join(socket_host, "lobby:#{lobby.id}", %{})
 
     # consume the initial after_join payload
     assert_push "updated", %{title: "single-update-room"}, 500
 
     {:ok, _} = Lobbies.update_lobby_by_host(host, lobby, %{"title" => "Single Update"})
 
-    # One push carrying the new state, and no duplicate for the unchanged rest.
-    assert_push "updated", %{title: "Single Update"}, 500
-    refute_push "updated", _payload, 200
+    # One push carrying the new state, and no duplicate for the unchanged rest:
+    # the update's broadcasts reached the channel before it returned.
+    assert_push "updated", %{id: lobby_id, title: "Single Update"}, 500
+    assert lobby_id == lobby.id
+    _ = :sys.get_state(socket.channel_pid)
+    refute_push "updated", _payload, 0
   end
 
   test "channel receives user_online when a lobby member comes online" do

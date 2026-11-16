@@ -16,7 +16,12 @@ defmodule Gamend.Accounts.AvatarMirrorTest do
     old = Application.get_env(:gamend_core, Gamend.Storage.Local)
     Application.put_env(:gamend_core, Gamend.Storage.Local, dir: dir)
 
-    Application.put_env(:gamend_core, :avatar_mirror_req_options, plug: {Req.Test, __MODULE__})
+    # Req's own retry of a 429 sleeps a second first; Oban's retry of the
+    # job is what is under test.
+    Application.put_env(:gamend_core, :avatar_mirror_req_options,
+      plug: {Req.Test, __MODULE__},
+      retry: false
+    )
 
     on_exit(fn ->
       File.rm_rf(dir)

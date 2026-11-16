@@ -29,8 +29,6 @@ defmodule GamendWeb.LeaderboardScoreLabelTest do
     board
   end
 
-  defp visible_text(html), do: String.replace(html, ~r/<[^>]*>/, " ")
-
   test "a board with a unit renders it beside every score", %{conn: conn, user: user} do
     board = board!(%{"score_label" => "Distance", "score_unit" => "km"})
     {:ok, _record} = Leaderboards.submit_score(board.id, user.id, 12_500)
@@ -40,7 +38,7 @@ defmodule GamendWeb.LeaderboardScoreLabelTest do
 
     # The reader's own card and the table cell both carry it, and the column is
     # headed by the board's own word.
-    assert html =~ "Distance"
+    assert html =~ ">Distance<"
     assert html =~ "12,500 km"
     refute html =~ ">Score<"
   end
@@ -51,9 +49,8 @@ defmodule GamendWeb.LeaderboardScoreLabelTest do
 
     {:ok, _view, html} = live(conn, ~p"/leaderboards/#{board.slug}")
 
-    assert html =~ "Score"
-    # The score is there, and bare: no unit was declared, so none is invented.
-    assert visible_text(html) =~ "7"
+    assert html =~ ">Score<"
+    # Bare: no unit was declared, so none is invented.
     refute html =~ "7 km"
   end
 end

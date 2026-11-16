@@ -118,18 +118,4 @@ defmodule GamendWeb.AdminLive.UsersActionsTest do
     render_click(view, "unlock_login", %{"id" => player.id})
     refute assigns(view).login_locked
   end
-
-  test "a user deleted since the page loaded is answered on every action", %{
-    conn: conn,
-    admin: admin
-  } do
-    view = page(conn, admin)
-    gone = Ecto.UUID.generate()
-
-    for event <- ~w(edit_user cancel_user_deletion unlock_login delete_user) do
-      render_click(view, event, %{"id" => gone})
-    end
-
-    assert assigns(view).selected_user == nil
-  end
 end

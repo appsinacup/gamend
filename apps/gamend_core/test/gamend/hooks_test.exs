@@ -13,38 +13,41 @@ defmodule Gamend.HooksTest do
 
   setup do
     orig = Application.get_env(:gamend_core, :hooks_module)
-    on_exit(fn -> Application.put_env(:gamend_core, :hooks_module, orig) end)
+    :persistent_term.put({__MODULE__, :test_pid}, self())
+
+    on_exit(fn ->
+      :persistent_term.erase({__MODULE__, :test_pid})
+      Application.put_env(:gamend_core, :hooks_module, orig)
+    end)
+
     :ok
   end
 
   defmodule TestHooksRegister do
     use Gamend.TestSupport.NoopHooks
 
-    # After-register hook - mutate the user record in DB so tests can observe it
-    # Use metadata to avoid interfering with email-based token logic.
+    # Each hook marks the user's metadata, so a test sees the hook could write,
+    # then tells the test it ran: they run off the caller's process.
     @impl true
-    def after_user_register(user) do
-      meta = Map.put(user.metadata || %{}, "registered_hook", true)
-      Repo.update!(Ecto.Changeset.change(user, metadata: meta))
-    end
+    def after_user_register(user), do: mark(user, "registered_hook")
 
     @impl true
-    def after_user_logged_in(user) do
-      # mark metadata to signal the hook ran
-      meta = Map.put(user.metadata || %{}, "hooked", true)
-      Repo.update!(Ecto.Changeset.change(user, metadata: meta))
-    end
+    def after_user_logged_in(user), do: mark(user, "hooked")
 
     @impl true
-    def after_user_online(user) do
-      meta = Map.put(user.metadata || %{}, "online_hook", true)
-      Repo.update!(Ecto.Changeset.change(user, metadata: meta))
-    end
+    def after_user_online(user), do: mark(user, "online_hook")
 
     @impl true
-    def after_user_offline(user) do
-      meta = Map.put(user.metadata || %{}, "offline_hook", true)
-      Repo.update!(Ecto.Changeset.change(user, metadata: meta))
+    def after_user_offline(user), do: mark(user, "offline_hook")
+
+    defp mark(user, key) do
+      meta = Map.put(user.metadata || %{}, key, true)
+      updated = Repo.update!(Ecto.Changeset.change(user, metadata: meta))
+
+      if pid = :persistent_term.get({Gamend.HooksTest, :test_pid}, nil),
+        do: send(pid, {:hook_ran, key})
+
+      updated
     end
   end
 
@@ -53,8 +56,7 @@ defmodule Gamend.HooksTest do
 
     {:ok, user} = Accounts.register_user(%{email: "a@example.com"})
 
-    # after_user_register runs asynchronously; wait shortly for it to finish
-    Process.sleep(50)
+    assert_receive {:hook_ran, "registered_hook"}, 1_000
 
     reloaded = Accounts.get_user!(user.id)
     assert Map.get(reloaded.metadata || %{}, "registered_hook") == true
@@ -93,8 +95,7 @@ defmodule Gamend.HooksTest do
 
     assert {:ok, {_, _}} = Accounts.login_user_by_magic_link(encoded_token)
 
-    # after_user_logged_in runs asynchronously; wait for update
-    Process.sleep(50)
+    assert_receive {:hook_ran, "hooked"}, 1_000
 
     reloaded = Accounts.get_user!(user.id)
     assert Map.get(reloaded.metadata || %{}, "hooked") == true
@@ -106,8 +107,7 @@ defmodule Gamend.HooksTest do
     user = unconfirmed_user_fixture()
     {:ok, _online_user} = Accounts.set_user_online(user.id)
 
-    # after_user_online runs asynchronously; wait for update
-    Process.sleep(50)
+    assert_receive {:hook_ran, "online_hook"}, 1_000
 
     reloaded = Accounts.get_user!(user.id)
     assert reloaded.is_online == true
@@ -121,8 +121,7 @@ defmodule Gamend.HooksTest do
     {:ok, _online} = Accounts.set_user_online(user.id)
     {:ok, _offline} = Accounts.set_user_offline(user.id)
 
-    # after_user_offline runs asynchronously; wait for update
-    Process.sleep(50)
+    assert_receive {:hook_ran, "offline_hook"}, 1_000
 
     reloaded = Accounts.get_user!(user.id)
     assert reloaded.is_online == false
@@ -223,13 +222,6 @@ defmodule Gamend.HooksTest do
 
       assert {:ok, %{"touched" => true, "a" => 1}} =
                Gamend.Hooks.internal_call(:before_build, [%{a: 1}])
-    end
-
-    test "a registered host hook transforms its input" do
-      Gamend.Hooks.register_pipeline_hook(:before_build)
-
-      assert {:ok, %{"touched" => true, "a" => 1}} =
-               Gamend.Hooks.internal_call(:before_build, [%{"a" => 1}])
     end
 
     test "a registered host hook can block" do

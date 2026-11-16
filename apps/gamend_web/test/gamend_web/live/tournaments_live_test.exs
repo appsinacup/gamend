@@ -69,12 +69,10 @@ defmodule GamendWeb.TournamentsLiveTest do
 
     {:ok, _view, html} = live(conn, ~p"/tournaments")
 
-    # one card, not two "Public Cup" cards. The edition count badge used to sit
-    # under the state badge as a context-free number.
+    # one card, not two "Public Cup" cards.
     assert length(String.split(html, "card-title")) - 1 == 1
     assert html =~ "Public Cup"
     assert html =~ "Players: 2"
-    refute html =~ ~r/<span[^>]*badge-ghost[^>]*>\s*2\s*<\/span>/
   end
 
   test "detail resolves a 16-character slug (Ecto.UUID.cast accepts 16-byte binaries)", %{
@@ -92,14 +90,6 @@ defmodule GamendWeb.TournamentsLiveTest do
     assert html =~ "Public Cup"
     assert html =~ "Registered"
     refute html =~ "Not found"
-  end
-
-  test "index paginates", %{conn: conn} do
-    for _ <- 1..3, do: create_tournament()
-
-    {:ok, view, _html} = live(conn, ~p"/tournaments")
-    # 3 tournaments fit one page (page size 25): no pager rendered
-    refute render(view) =~ "Page 1 of"
   end
 
   test "detail lists registrants before the draw", %{conn: conn} do
@@ -260,46 +250,34 @@ defmodule GamendWeb.TournamentsLiveTest do
       }
     end
 
-    test "a bracket you are in shows you by default", %{
-      conn: conn,
-      tournament: tournament,
-      mine: mine
-    } do
-      {:ok, _view, html} =
-        live(conn, ~p"/tournaments/#{tournament.slug}/brackets/#{mine.bracket_index}")
-
-      assert html =~ "Showing"
-      assert html =~ "Ada Lovelace"
-      # the "You" badge, which only appears when the highlight is your own entry
-      assert html =~ ~s(badge badge-primary badge-sm)
-      assert html =~ "ring-primary"
-    end
-
-    test "an explicit entry link wins over defaulting to you", %{
+    # One test over the one draw: setting it up (eight players, drawn) was most
+    # of each of five tests' time.
+    test "you are shown by default where you are, and only there", %{
       conn: conn,
       tournament: tournament,
       mine: mine,
-      neighbour: neighbour
+      neighbour: neighbour,
+      other_bracket: other_bracket
     } do
+      mine_path = ~p"/tournaments/#{tournament.slug}/brackets/#{mine.bracket_index}"
+
+      # A bracket you are in shows you by default, with the "You" badge, which
+      # only appears when the highlight is your own entry.
+      {:ok, _view, html} = live(conn, mine_path)
+      assert html =~ "Showing"
+      assert html =~ "Ada Lovelace"
+      assert html =~ ~s(badge badge-primary badge-sm)
+      assert html =~ "ring-primary"
+
+      # An explicit entry link wins over defaulting to you, and does not claim
+      # they are you.
       assert neighbour, "expected a rival sharing the bracket"
-
-      {:ok, _view, html} =
-        live(
-          conn,
-          ~p"/tournaments/#{tournament.slug}/brackets/#{mine.bracket_index}?entry=#{neighbour.id}"
-        )
-
-      # the banner names them, and does not claim they are you
+      {:ok, _view, html} = live(conn, mine_path <> "?entry=#{neighbour.id}")
       assert html =~ "Showing"
       assert html =~ neighbour.leader.display_name
       refute html =~ ~s(badge badge-primary badge-sm)
-    end
 
-    test "a bracket you are not in highlights nobody", %{
-      conn: conn,
-      tournament: tournament,
-      other_bracket: other_bracket
-    } do
+      # A bracket you are not in highlights nobody.
       assert other_bracket, "expected a second bracket"
 
       {:ok, _view, html} =
@@ -307,19 +285,14 @@ defmodule GamendWeb.TournamentsLiveTest do
 
       refute html =~ "Showing"
       refute html =~ "ring-primary"
-    end
 
-    test "the player list marks your row", %{conn: conn, tournament: tournament} do
+      # The player list marks your row.
       {:ok, _view, html} = live(conn, ~p"/tournaments/#{tournament.slug}")
-
       assert html =~ "Ada Lovelace"
       assert html =~ ~s(badge badge-primary badge-sm)
-    end
 
-    test "a signed-out visitor sees no default highlight", %{tournament: tournament, mine: mine} do
-      {:ok, _view, html} =
-        live(build_conn(), ~p"/tournaments/#{tournament.slug}/brackets/#{mine.bracket_index}")
-
+      # A signed-out visitor sees no default highlight.
+      {:ok, _view, html} = live(build_conn(), mine_path)
       refute html =~ "Showing"
       refute html =~ "ring-primary"
     end
@@ -457,7 +430,7 @@ defmodule GamendWeb.TournamentsLiveTest do
   test "detail navigates between editions of the same slug", %{conn: conn} do
     slug = "cup-#{System.unique_integer([:positive])}"
 
-    past =
+    _past =
       create_tournament(%{
         slug: slug,
         state: "finished",
@@ -474,7 +447,6 @@ defmodule GamendWeb.TournamentsLiveTest do
     assert html =~ "#1"
     # editions are numbered oldest-first, so the older one is edition 1
     assert_patched(view, ~p"/tournaments/#{slug}/1")
-    assert past.slug == slug
 
     # a one-shot tournament has no edition navigation
     solo = create_tournament()
@@ -490,13 +462,6 @@ defmodule GamendWeb.TournamentsLiveTest do
 
     assert {:error, {:live_redirect, %{to: "/tournaments"}}} =
              live(conn, ~p"/tournaments/#{tournament.id}/brackets/9")
-  end
-
-  test "tournament is reachable by slug", %{conn: conn} do
-    tournament = create_tournament()
-
-    {:ok, _view, html} = live(conn, ~p"/tournaments/#{tournament.slug}")
-    assert html =~ "Public Cup"
   end
 
   describe "edition URLs" do
@@ -548,11 +513,6 @@ defmodule GamendWeb.TournamentsLiveTest do
         assert {:error, {:live_redirect, %{to: "/tournaments"}}} =
                  live(conn, ~p"/tournaments/#{slug}/#{bad}")
       end
-    end
-
-    test "old UUID links still resolve", %{conn: conn, past: past} do
-      {:ok, _view, html} = live(conn, ~p"/tournaments/#{past.id}")
-      assert html =~ "Old Cup"
     end
   end
 

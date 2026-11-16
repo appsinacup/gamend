@@ -194,7 +194,11 @@ defmodule GamendWeb.GroupIconUploadTest do
     |> file_input("#group-edit-form", :group_icon, png("other.png"))
     |> render_upload("other.png")
 
+    # Cancel goes back to the group.
     view |> element("#group-edit-cancel") |> render_click()
+    refute has_element?(view, "#group-edit-form")
+    assert_patch(view)
+
     render_click(view, "group_toggle_edit", %{})
 
     refute render(view) =~ "other.png"
@@ -220,15 +224,6 @@ defmodule GamendWeb.GroupIconUploadTest do
       {:ok, edit, _html} = live(conn, "/users/groups/#{group.id}?edit=1")
       refute has_element?(edit, "#groups-toggle-create")
       assert has_element?(edit, "button#group-edit-save[form=group-edit-form]", "Save")
-    end
-
-    test "Cancel goes back to the group", %{conn: conn, user: user, group: group} do
-      {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{group.id}?edit=1")
-
-      view |> element("#group-edit-cancel") |> render_click()
-
-      refute has_element?(view, "#group-edit-form")
-      assert_patch(view)
     end
 
     test "Save goes to the list as a navigation", %{conn: conn, user: user, group: group} do
@@ -262,7 +257,7 @@ defmodule GamendWeb.GroupIconUploadTest do
       assert saved.title == "Typed"
     end
 
-    test "the colours are there before an icon is, one chosen",
+    test "the colours are there before an icon is, one chosen, and a colour chosen stays",
          %{conn: conn, user: user, group: group} do
       {:ok, _} = Groups.set_icon_url(user.id, group.id, "/storage/icons/groups/x/a.png")
       {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{group.id}?edit=1")
@@ -275,19 +270,6 @@ defmodule GamendWeb.GroupIconUploadTest do
         end)
 
       assert length(chosen) == 1
-      [color] = chosen
-
-      # The icon clicked next comes in it.
-      view
-      |> form("#group-edit-form", group: %{icon_url: "/icons/star.svg", icon_url_color: color})
-      |> render_submit()
-
-      assert Groups.get_group(group.id).icon_url == "/icons/star.svg?color=#{color}"
-    end
-
-    test "a colour chosen before an icon stays chosen", %{conn: conn, user: user, group: group} do
-      {:ok, _} = Groups.set_icon_url(user.id, group.id, "/storage/icons/groups/x/a.png")
-      {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{group.id}?edit=1")
 
       for color <- Gamend.Icons.colors() do
         view |> form("#group-edit-form", group: %{icon_url_color: color}) |> render_change()
@@ -297,6 +279,15 @@ defmodule GamendWeb.GroupIconUploadTest do
                  "input[name='group[icon_url_color]'][value='#{color}'][checked]"
                )
       end
+
+      # The icon clicked next comes in it.
+      color = List.last(Gamend.Icons.colors())
+
+      view
+      |> form("#group-edit-form", group: %{icon_url: "/icons/star.svg", icon_url_color: color})
+      |> render_submit()
+
+      assert Groups.get_group(group.id).icon_url == "/icons/star.svg?color=#{color}"
     end
   end
 end

@@ -10,9 +10,9 @@ defmodule Gamend.PolicyTest do
 
   describe "can?/3 routes to the context that owns the rule" do
     test "a lobby's host and its pinned WebRTC host both manage it" do
-      host = AccountsFixtures.user_fixture()
-      server = AccountsFixtures.user_fixture()
-      stranger = AccountsFixtures.user_fixture()
+      host = AccountsFixtures.unconfirmed_user_fixture()
+      server = AccountsFixtures.unconfirmed_user_fixture()
+      stranger = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, lobby} = Lobbies.create_lobby(%{title: "room", host_id: host.id})
 
@@ -26,8 +26,8 @@ defmodule Gamend.PolicyTest do
     end
 
     test "a group's admins manage it" do
-      admin = AccountsFixtures.user_fixture()
-      member = AccountsFixtures.user_fixture()
+      admin = AccountsFixtures.unconfirmed_user_fixture()
+      member = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, group} =
         Groups.create_group(admin.id, %{"title" => "clan-#{System.unique_integer([:positive])}"})
@@ -39,15 +39,15 @@ defmodule Gamend.PolicyTest do
     end
 
     test "a party's leader manages it" do
-      leader = AccountsFixtures.user_fixture()
+      leader = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, party} = Parties.create_party(leader, %{})
 
       assert Policy.can?(leader, :manage, party)
-      refute Policy.can?(AccountsFixtures.user_fixture(), :manage, party)
+      refute Policy.can?(AccountsFixtures.unconfirmed_user_fixture(), :manage, party)
     end
 
     test "an unknown action or resource is false, not a raise" do
-      user = AccountsFixtures.user_fixture()
+      user = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, lobby} = Lobbies.create_lobby(%{title: "room", host_id: user.id})
 
       refute Policy.can?(user, :launch_the_missiles, lobby)

@@ -92,11 +92,4 @@ defmodule GamendWeb.AdminCardTest do
     assert has_element?(view, "#admin-cards > section:last-child h2", "This site")
     assert has_element?(view, ~s|#admin-cards > section:last-child a[href="/admin/builds"]|)
   end
-
-  test "with no host cards there is no section for them", %{conn: conn} do
-    view = dashboard(conn, [])
-
-    assert has_element?(view, "#admin-cards h2", "Players")
-    refute has_element?(view, "#admin-cards h2", "This site")
-  end
 end

@@ -22,7 +22,7 @@ defmodule Gamend.LeaderboardsMetaFilterTest do
       })
 
     submit = fn score, lang ->
-      user = AccountsFixtures.user_fixture()
+      user = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, _} = Leaderboards.submit_score(board.id, user.id, score, %{"target_lang" => lang})
       user
     end

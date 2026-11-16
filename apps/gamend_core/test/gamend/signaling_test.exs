@@ -15,8 +15,8 @@ defmodule Gamend.SignalingTest do
   alias Gamend.Signaling
 
   setup do
-    host = AccountsFixtures.user_fixture()
-    peer = AccountsFixtures.user_fixture()
+    host = AccountsFixtures.unconfirmed_user_fixture()
+    peer = AccountsFixtures.unconfirmed_user_fixture()
 
     {:ok, lobby} = Lobbies.create_lobby(%{"title" => "Signaling", "host_id" => host.id})
     {:ok, lobby} = Signaling.configure(lobby, enabled: true, topology: :star)
@@ -42,6 +42,15 @@ defmodule Gamend.SignalingTest do
     pid
   end
 
+  # The tracker drops a dead process's entries when it handles the exit.
+  defp eventually(fun, tries \\ 200) do
+    cond do
+      fun.() -> :ok
+      tries == 0 -> flunk("condition never held")
+      true -> Process.sleep(5) && eventually(fun, tries - 1)
+    end
+  end
+
   describe "config/1" do
     test "derives from the lobby's own columns", %{lobby: lobby, host: host} do
       assert {:ok, cfg} = Signaling.config(lobby.id)
@@ -52,7 +61,7 @@ defmodule Gamend.SignalingTest do
     end
 
     test "a lobby without webrtc has no room" do
-      owner = AccountsFixtures.user_fixture()
+      owner = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, plain} = Lobbies.create_lobby(%{"title" => "Plain", "host_id" => owner.id})
 
       assert {:error, :room_not_found} = Signaling.config(plain.id)
@@ -67,7 +76,7 @@ defmodule Gamend.SignalingTest do
 
     # The bug that shipped: `|| true` read an explicit false as "unset".
     test "late_join false is honoured" do
-      owner = AccountsFixtures.user_fixture()
+      owner = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, closed} = Lobbies.create_lobby(%{"title" => "Closed", "host_id" => owner.id})
 
@@ -113,7 +122,7 @@ defmodule Gamend.SignalingTest do
     end
 
     test "a non-member is refused when late_join is off", %{peer: peer} do
-      host = AccountsFixtures.user_fixture()
+      host = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, closed} = Lobbies.create_lobby(%{"title" => "Closed", "host_id" => host.id})
 
@@ -128,8 +137,8 @@ defmodule Gamend.SignalingTest do
     # Signaling config is server-owned now, so a client cannot reach any of it.
     # The star host is the lobby host, and nothing in metadata changes that.
     test "metadata cannot grant a signaling role", %{peer: peer} do
-      owner = AccountsFixtures.user_fixture()
-      impostor = AccountsFixtures.user_fixture()
+      owner = AccountsFixtures.unconfirmed_user_fixture()
+      impostor = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, lobby} = Lobbies.create_lobby(%{"title" => "Planted", "host_id" => owner.id})
       {:ok, lobby} = Signaling.configure(lobby, enabled: true, topology: :star)
@@ -169,9 +178,7 @@ defmodule Gamend.SignalingTest do
       assert peers[peer.id] == :user
 
       Process.exit(pid, :kill)
-      Process.sleep(100)
-
-      refute Map.has_key?(Signaling.peers(lobby.id), peer.id)
+      eventually(fn -> not Map.has_key?(Signaling.peers(lobby.id), peer.id) end)
     end
   end
 
@@ -242,20 +249,20 @@ defmodule Gamend.SignalingTest do
 
     # Star topology: every exchange must involve the host.
     test "two non-hosts cannot talk in a star room", %{lobby: lobby, peer: peer} do
-      other = AccountsFixtures.user_fixture()
+      other = AccountsFixtures.unconfirmed_user_fixture()
       connect(lobby, other.id, :user)
 
       assert {:error, :not_allowed} = Signaling.relay(lobby.id, peer.id, other.id, :offer, %{})
     end
 
     test "two non-hosts can talk in a mesh room" do
-      owner = AccountsFixtures.user_fixture()
+      owner = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, mesh} = Lobbies.create_lobby(%{"title" => "Mesh", "host_id" => owner.id})
       {:ok, mesh} = Signaling.configure(mesh, enabled: true, topology: :mesh)
 
-      a = AccountsFixtures.user_fixture()
-      b = AccountsFixtures.user_fixture()
+      a = AccountsFixtures.unconfirmed_user_fixture()
+      b = AccountsFixtures.unconfirmed_user_fixture()
       connect(mesh, a.id, :user)
       connect(mesh, b.id, :user)
 

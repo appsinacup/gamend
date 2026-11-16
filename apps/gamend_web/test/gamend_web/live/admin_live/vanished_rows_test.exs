@@ -32,14 +32,21 @@ defmodule GamendWeb.AdminLive.VanishedRowsTest do
     %{conn: log_in_user(conn, admin)}
   end
 
-  for {path, events} <- @pages, event <- events do
-    test "#{path} #{event} on a deleted row flashes that it is gone", %{conn: conn} do
+  # One mount a page: the flash is cleared after each event, so every event
+  # has to put it there again.
+  for {path, events} <- @pages do
+    test "#{path}: #{Enum.join(events, ", ")} on a deleted row flash that it is gone", %{
+      conn: conn
+    } do
       {:ok, view, _html} = live(conn, unquote(path))
 
-      html = render_hook(view, unquote(event), %{"id" => Ecto.UUID.generate()})
+      for event <- unquote(events) do
+        html = render_hook(view, event, %{"id" => Ecto.UUID.generate()})
+        assert html =~ Shared.gone_message(), "#{event} did not say the row is gone"
 
-      assert html =~ Shared.gone_message()
-      assert render(view) =~ Shared.gone_message()
+        render_hook(view, "lv:clear-flash", %{"key" => "error"})
+        refute render(view) =~ Shared.gone_message()
+      end
     end
   end
 

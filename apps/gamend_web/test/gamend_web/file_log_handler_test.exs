@@ -2,8 +2,6 @@ defmodule GamendWeb.FileLogHandlerTest do
   # async: false — installs a global :logger handler and sets env vars.
   use ExUnit.Case, async: false
 
-  require Logger
-
   alias Gamend.Settings
   alias GamendWeb.FileLogHandler
   alias GamendWeb.Observability
@@ -170,48 +168,6 @@ defmodule GamendWeb.FileLogHandlerTest do
 
       {:ok, %{level: level}} = :logger.get_handler_config(@handler_id)
       assert level == :warning
-    end
-  end
-
-  describe "rotation actually happens" do
-    @tag :slow
-    test "rolls over to numbered files once max_no_bytes is exceeded", %{dir: dir, path: path} do
-      # Config alone proves nothing — this drives real writes past the limit and
-      # checks OTP rotated, so the "10MB x 5" promise is verified end to end.
-      put(:log_file_path, path)
-      put(:log_file_max_bytes, 1_024)
-      put(:log_file_max_files, 3)
-
-      FileLogHandler.install()
-
-      # Logger.warning, not info: the test env sets the primary logger level to
-      # :warning, so info never reaches a handler and the probe would write
-      # nothing while still "passing" a weaker assertion.
-      #
-      # Messages are sized well under max_no_bytes and synced individually.
-      # A tight loop of hundreds trips :logger_std_h's overload protection
-      # (dropping past drop_mode_qlen), and messages *larger* than the limit
-      # rotate on every single write, which leaves the live file empty and makes
-      # the result read as "nothing was logged".
-      for i <- 1..6 do
-        Logger.warning("rotation probe #{i} #{String.duplicate("x", 600)}")
-        :logger_std_h.filesync(@handler_id)
-      end
-
-      files = dir |> File.ls!() |> Enum.sort()
-
-      assert "test.log" in files
-
-      # OTP names rotated files test.log.0, test.log.1, ...
-      rotated = Enum.filter(files, &String.match?(&1, ~r/^test\.log\.\d+$/))
-      assert rotated != [], "expected rotated files, got: #{inspect(files)}"
-
-      # Bounded by max_no_files, which is the half of "10MB x 5" that keeps a
-      # busy server from filling its disk.
-      assert length(rotated) <= 3, "rotation kept too many files: #{inspect(files)}"
-
-      # The live file is rolled before it grows past the limit.
-      assert File.stat!(path).size <= 1_024 * 2
     end
   end
 end

@@ -13,18 +13,15 @@ defmodule GamendWeb.AdminLive.SystemTest do
     %{admin: admin}
   end
 
-  test "renders VM stats and every service", %{conn: conn, admin: admin} do
-    {:ok, view, html} = conn |> log_in_user(admin) |> live(~p"/admin/system")
-
-    assert html =~ "Memory (BEAM VM)"
+  test "renders every service, each linked to the settings behind it", %{
+    conn: conn,
+    admin: admin
+  } do
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin/system")
 
     for service <- ~w(database cache cluster tls mail) do
       assert has_element?(view, "#service-#{service}"), "no #{service} card"
     end
-  end
-
-  test "each service links to the settings behind it", %{conn: conn, admin: admin} do
-    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin/system")
 
     assert has_element?(view, ~s(#service-database a[href="/admin/settings?group=db"]))
     assert has_element?(view, ~s(#service-mail a[href="/admin/settings?group=mail"]))

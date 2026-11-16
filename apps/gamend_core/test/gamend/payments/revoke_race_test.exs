@@ -43,7 +43,7 @@ defmodule Gamend.Payments.RevokeRaceTest do
       :persistent_term.erase({RevokeHooks, :pid})
     end)
 
-    users = unboxed(fn -> for _ <- 1..@users, do: AccountsFixtures.user_fixture() end)
+    users = unboxed(fn -> for _ <- 1..@users, do: AccountsFixtures.unconfirmed_user_fixture() end)
     ids = Enum.map(users, & &1.id)
     {product, provider_product} = unboxed(&entitlement_product/0)
 
@@ -95,11 +95,13 @@ defmodule Gamend.Payments.RevokeRaceTest do
     end
   end
 
+  # The hook ran inside each racer (`async_inline` in tests), so every message
+  # is in the mailbox by the time `race/1` returns.
   defp collect_revoked(acc) do
     receive do
       {:revoked, id} -> collect_revoked([id | acc])
     after
-      500 -> acc
+      0 -> acc
     end
   end
 

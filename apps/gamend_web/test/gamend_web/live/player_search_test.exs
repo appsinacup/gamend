@@ -35,43 +35,29 @@ defmodule GamendWeb.PlayerSearchTest do
       %{leaderboard: leaderboard}
     end
 
-    test "filters by name and keeps the real rank", %{conn: conn, leaderboard: leaderboard} do
+    test "filters by name, case-insensitive and partial, and keeps the real rank", %{
+      conn: conn,
+      leaderboard: leaderboard
+    } do
       {:ok, view, html} = live(conn, ~p"/leaderboards/#{leaderboard.slug}")
       assert html =~ "Ada Lovelace"
       assert html =~ "Grace Hopper"
 
       html = view |> form("#records-search-form", %{"search" => "ada"}) |> render_change()
-
       assert html =~ "Ada Lovelace"
       refute html =~ "Grace Hopper"
       # rank 2 of the whole board, not "1" because she is the only match left
       # (the rank cell is `<.leaderboard_rank>`: a round font-mono badge)
       assert html =~ ~r|<td>\s*<span class="[^"]*font-mono[^"]*">\s*2\s*</span>|
-    end
-
-    test "search is case-insensitive and matches partial names", %{
-      conn: conn,
-      leaderboard: leaderboard
-    } do
-      {:ok, view, _html} = live(conn, ~p"/leaderboards/#{leaderboard.slug}")
 
       html = view |> form("#records-search-form", %{"search" => "HOPP"}) |> render_change()
       assert html =~ "Grace Hopper"
       refute html =~ "Ada Lovelace"
-    end
 
-    test "clearing the search restores the full board", %{conn: conn, leaderboard: leaderboard} do
-      {:ok, view, _html} = live(conn, ~p"/leaderboards/#{leaderboard.slug}")
-
-      view |> form("#records-search-form", %{"search" => "ada"}) |> render_change()
+      # Cleared, the whole board is back.
       html = view |> form("#records-search-form", %{"search" => ""}) |> render_change()
-
       assert html =~ "Ada Lovelace"
       assert html =~ "Grace Hopper"
-    end
-
-    test "a search matching nobody reports no results", %{conn: conn, leaderboard: leaderboard} do
-      {:ok, view, _html} = live(conn, ~p"/leaderboards/#{leaderboard.slug}")
 
       html = view |> form("#records-search-form", %{"search" => "zzz"}) |> render_change()
       assert html =~ "No results."
@@ -115,14 +101,7 @@ defmodule GamendWeb.PlayerSearchTest do
 
       assert html =~ "Grace Hopper"
       refute html =~ "Ada Lovelace"
-    end
-
-    test "the roster size stat ignores the search", %{conn: conn, group: group} do
-      {:ok, view, _html} = live(conn, ~p"/groups/#{group.id}")
-
-      html = view |> form("#members-search-form", %{"search" => "grace"}) |> render_change()
-
-      # the stat card still reports both members, only the table is filtered
+      # The roster size stat still reports both members; only the table is filtered.
       assert html =~ "2 /"
     end
   end

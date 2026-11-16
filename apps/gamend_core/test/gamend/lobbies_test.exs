@@ -21,8 +21,8 @@ defmodule Gamend.LobbiesTest do
     end
 
     setup do
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-      other = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
+      other = AccountsFixtures.unconfirmed_user_fixture()
 
       %{host: host, other: other}
     end
@@ -65,7 +65,7 @@ defmodule Gamend.LobbiesTest do
       assert {:ok, _} = Lobbies.join_lobby(other, lobby)
 
       # third user can't join when full
-      user3 = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      user3 = AccountsFixtures.unconfirmed_user_fixture()
       assert {:error, :full} = Lobbies.join_lobby(user3, lobby)
     end
 
@@ -255,7 +255,7 @@ defmodule Gamend.LobbiesTest do
       assert {:error, :cannot_kick_self} = Lobbies.kick_user(host, lobby, host)
 
       # not_host (some other non-host user tries to kick) - create additional user
-      another = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      another = AccountsFixtures.unconfirmed_user_fixture()
       assert {:error, :not_host} = Lobbies.kick_user(another, lobby, other)
 
       # not_found (target id points to non-existing user)
@@ -263,7 +263,7 @@ defmodule Gamend.LobbiesTest do
                Lobbies.kick_user(host, lobby, %Gamend.Accounts.User{id: Ecto.UUID.generate()})
 
       # not_in_lobby: target exists but not in this lobby
-      outsider = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      outsider = AccountsFixtures.unconfirmed_user_fixture()
       assert {:error, :not_in_lobby} = Lobbies.kick_user(host, lobby, outsider)
     end
 
@@ -275,7 +275,10 @@ defmodule Gamend.LobbiesTest do
 
       # tries to join a different lobby and should get error :already_in_lobby
       {:ok, lobby2} =
-        Lobbies.create_lobby(%{title: "a-room-2", host_id: AccountsFixtures.user_fixture().id})
+        Lobbies.create_lobby(%{
+          title: "a-room-2",
+          host_id: AccountsFixtures.unconfirmed_user_fixture().id
+        })
 
       assert {:error, :already_in_lobby} = Lobbies.join_lobby(other, lobby2)
     end
@@ -340,7 +343,7 @@ defmodule Gamend.LobbiesTest do
 
       # two other users join -> total 3
       assert {:ok, _} = Lobbies.join_lobby(other, lobby)
-      user3 = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      user3 = AccountsFixtures.unconfirmed_user_fixture()
       assert {:ok, _} = Lobbies.join_lobby(user3, lobby)
 
       # host tries to shrink to 2, should be rejected
@@ -537,27 +540,15 @@ defmodule Gamend.LobbiesTest do
       assert reloaded.lobby_id == lobby.id
     end
 
-    test "quick_join persists metadata when creating new lobby (no title provided)", %{
-      other: other
-    } do
+    test "quick_join with no title makes one, and keeps the metadata", %{other: other} do
       {:ok, lobby} = Lobbies.quick_join(other, nil, 6, %{mode: "capture", region: "EU"})
 
+      assert lobby.title |> to_string() |> String.trim() != ""
       assert lobby.max_users == 6
       # metadata stored as map with either atom or string keys
       m = lobby.metadata || %{}
       assert Map.get(m, :mode) == "capture" or Map.get(m, "mode") == "capture"
       assert Map.get(m, :region) == "EU" or Map.get(m, "region") == "EU"
-
-      reloaded = Gamend.Repo.get(Gamend.Accounts.User, other.id)
-      assert reloaded.lobby_id == lobby.id
-    end
-
-    test "quick_join generates a unique title when caller omits title (nil)", %{other: other} do
-      assert {:ok, lobby} = Lobbies.quick_join(other, nil, 4, %{mode: "coop"})
-
-      # generated title should be present and non-blank
-      assert lobby.title != nil
-      assert lobby.title |> to_string() |> String.trim() != ""
 
       reloaded = Gamend.Repo.get(Gamend.Accounts.User, other.id)
       assert reloaded.lobby_id == lobby.id
@@ -593,7 +584,7 @@ defmodule Gamend.LobbiesTest do
         })
 
       # create a non-passworded lobby that should be preferred
-      second_host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      second_host = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, _non_pw} =
         Lobbies.create_lobby(%{
@@ -623,8 +614,8 @@ defmodule Gamend.LobbiesTest do
 
   describe "update_lobby_by_host/3 authorization" do
     setup do
-      host = AccountsFixtures.user_fixture()
-      member = AccountsFixtures.user_fixture()
+      host = AccountsFixtures.unconfirmed_user_fixture()
+      member = AccountsFixtures.unconfirmed_user_fixture()
 
       %{host: host, member: member}
     end
@@ -684,7 +675,10 @@ defmodule Gamend.LobbiesTest do
 
   describe "the pinned WebRTC host holds lobby authority" do
     setup do
-      %{server: AccountsFixtures.user_fixture(), member: AccountsFixtures.user_fixture()}
+      %{
+        server: AccountsFixtures.unconfirmed_user_fixture(),
+        member: AccountsFixtures.unconfirmed_user_fixture()
+      }
     end
 
     defp hostless_lobby_hosted_by(server, title) do
@@ -716,7 +710,7 @@ defmodule Gamend.LobbiesTest do
       member: member
     } do
       lobby = hostless_lobby_hosted_by(server, "kickable")
-      other = AccountsFixtures.user_fixture()
+      other = AccountsFixtures.unconfirmed_user_fixture()
       assert {:ok, _} = Lobbies.join_lobby(member, lobby)
       assert {:ok, _} = Lobbies.join_lobby(other, lobby)
 
@@ -731,7 +725,7 @@ defmodule Gamend.LobbiesTest do
     end
 
     test "a hostless lobby with no pinned host still has no authority", %{member: member} do
-      other = AccountsFixtures.user_fixture()
+      other = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, lobby} = Lobbies.create_lobby(%{title: "ownerless", hostless: true})
       assert {:ok, _} = Lobbies.join_lobby(member, lobby)
       assert {:ok, _} = Lobbies.join_lobby(other, lobby)
@@ -766,8 +760,8 @@ defmodule Gamend.LobbiesTest do
     # `create_lobby` is the path that seats the host and refuses one already
     # seated elsewhere; `update_lobby/2` does neither.
     test "a server hosts many lobbies at once, seated in none" do
-      server = AccountsFixtures.user_fixture()
-      player = AccountsFixtures.user_fixture()
+      server = AccountsFixtures.unconfirmed_user_fixture()
+      player = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, a} = Lobbies.create_lobby(%{title: "a", hostless: true})
       {:ok, b} = Lobbies.create_lobby(%{title: "b", hostless: true})
@@ -790,8 +784,8 @@ defmodule Gamend.LobbiesTest do
     # password hash unhashed, or set `hostless` — which makes `can_manage_lobby?/2`
     # false for everyone and leaves the lobby permanently unmanageable.
     test "a host cannot rewrite ownership, hostless or the password hash" do
-      host = AccountsFixtures.user_fixture()
-      server = AccountsFixtures.user_fixture()
+      host = AccountsFixtures.unconfirmed_user_fixture()
+      server = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, lobby} = Lobbies.create_lobby(%{title: "transfer", host_id: host.id})
 
       assert {:ok, moved} =
@@ -813,7 +807,7 @@ defmodule Gamend.LobbiesTest do
     end
 
     test "a host setting a password gets it hashed, not stored verbatim" do
-      host = AccountsFixtures.user_fixture()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, lobby} = Lobbies.create_lobby(%{title: "secret", host_id: host.id})
 
       assert {:ok, updated} =
@@ -824,8 +818,8 @@ defmodule Gamend.LobbiesTest do
     end
 
     test "a member leaving does not take the host seat from it" do
-      server = AccountsFixtures.user_fixture()
-      player = AccountsFixtures.user_fixture()
+      server = AccountsFixtures.unconfirmed_user_fixture()
+      player = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, lobby} = Lobbies.create_lobby(%{title: "stable", hostless: true})
       assert {:ok, _} = Lobbies.join_lobby(player, lobby)
@@ -848,7 +842,7 @@ defmodule Gamend.LobbiesTest do
     # inside this transaction and rolls back with it; what counts is the answer
     # and that no lobby is left behind.
     test "create refuses a host seated after its lobby was inserted" do
-      host = AccountsFixtures.user_fixture()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, elsewhere} = Lobbies.create_lobby(%{title: "elsewhere", hostless: true})
 
       result =
@@ -863,8 +857,8 @@ defmodule Gamend.LobbiesTest do
     # A join reads the player before it waits on the lobby's lock, and a join to
     # another lobby takes another lock.
     test "join refuses a player seated elsewhere after it read them" do
-      host = AccountsFixtures.user_fixture()
-      player = AccountsFixtures.user_fixture()
+      host = AccountsFixtures.unconfirmed_user_fixture()
+      player = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, elsewhere} = Lobbies.create_lobby(%{title: "elsewhere", hostless: true})
       {:ok, lobby} = Lobbies.create_lobby(%{title: "target", host_id: host.id})
 
@@ -882,8 +876,8 @@ defmodule Gamend.LobbiesTest do
     # broadcast `user_joined`, ran `after_lobby_join` and counted the
     # "lobby_joined" quest event again.
     test "a second join to the same lobby is refused, not counted twice" do
-      host = AccountsFixtures.user_fixture()
-      player = AccountsFixtures.user_fixture()
+      host = AccountsFixtures.unconfirmed_user_fixture()
+      player = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, lobby} = Lobbies.create_lobby(%{title: "twice", host_id: host.id})
 
       result =
@@ -898,7 +892,7 @@ defmodule Gamend.LobbiesTest do
     end
 
     test "claim_seat/2 answers why it did not seat" do
-      player = AccountsFixtures.user_fixture()
+      player = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, a} = Lobbies.create_lobby(%{title: "a", hostless: true})
       {:ok, b} = Lobbies.create_lobby(%{title: "b", hostless: true})
 

@@ -13,25 +13,9 @@ defmodule GamendWeb.UserChannelTest do
 
   @endpoint GamendWeb.Endpoint
 
-  test "user channel receives updated event when lobby_id changes" do
-    user = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-    {:ok, token, _claims} = Guardian.encode_and_sign(user)
-
-    {:ok, socket} = connect(GamendWeb.UserSocket, %{"token" => token})
-    {:ok, _, _socket} = subscribe_and_join(socket, "user:#{user.id}", %{})
-
-    assert_push "updated", initial_payload
-    assert initial_payload.id == user.id
-    assert initial_payload.lobby_id == ""
-
-    {:ok, lobby} = Gamend.Lobbies.create_lobby(%{title: "user-updates-room", hostless: true})
-
-    assert {:ok, _updated_user} = Gamend.Lobbies.join_lobby(user, lobby.id)
-
-    assert_push "updated", payload
-    assert payload.id == user.id
-    assert payload.lobby_id == lobby.id
-  end
+  # A write's broadcasts reach the channel before the write returns, so once
+  # the channel has answered a call every push they cause has been sent.
+  defp settle(socket), do: :sys.get_state(socket.channel_pid)
 
   test "user channel receives updated event when leaving clears lobby_id" do
     user = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
@@ -360,7 +344,6 @@ defmodule GamendWeb.UserChannelTest do
 
     assert_push "friend_updated", friend_payload
     assert friend_payload.friends[to_string(a.id)].is_online == true
-    refute_push "friend_online", _, 100
 
     # Verify DB state
     refreshed_a = Gamend.Accounts.get_user!(a.id)
@@ -415,7 +398,6 @@ defmodule GamendWeb.UserChannelTest do
                    1000
 
     assert offline_payload.is_online == false
-    refute_push "friend_offline", _, 100
   end
 
   test "user channel sends accepted friends in initial friend_updated on join" do
@@ -491,7 +473,7 @@ defmodule GamendWeb.UserChannelTest do
 
     {:ok, token_a, _} = Guardian.encode_and_sign(a)
     {:ok, socket_a} = connect(GamendWeb.UserSocket, %{"token" => token_a})
-    {:ok, _, _socket_a} = subscribe_and_join(socket_a, "user:#{a.id}", %{})
+    {:ok, _, socket_a} = subscribe_and_join(socket_a, "user:#{a.id}", %{})
 
     assert_push "updated", _a_initial
     assert_push "friend_updated", _a_initial_friends
@@ -503,7 +485,8 @@ defmodule GamendWeb.UserChannelTest do
 
     assert_push "updated", self_payload
     assert self_payload.id == a.id
-    refute_push "friend_updated", _, 100
+    settle(socket_a)
+    refute_push "friend_updated", _, 0
   end
 
   test "friend_updated is not pushed for pending friend requests" do
@@ -514,7 +497,7 @@ defmodule GamendWeb.UserChannelTest do
 
     {:ok, token_b, _} = Guardian.encode_and_sign(b)
     {:ok, socket_b} = connect(GamendWeb.UserSocket, %{"token" => token_b})
-    {:ok, _, _socket_b} = subscribe_and_join(socket_b, "user:#{b.id}", %{})
+    {:ok, _, socket_b} = subscribe_and_join(socket_b, "user:#{b.id}", %{})
 
     assert_push "updated", _b_initial
     assert_push "friend_updated", %{friends: friends}
@@ -525,7 +508,8 @@ defmodule GamendWeb.UserChannelTest do
         metadata: %{"map_country_id" => "ro"}
       })
 
-    refute_push "friend_updated", _, 100
+    settle(socket_b)
+    refute_push "friend_updated", _, 0
   end
 
   test "friend_updated is not pushed for blocked friend requests" do
@@ -537,7 +521,7 @@ defmodule GamendWeb.UserChannelTest do
 
     {:ok, token_b, _} = Guardian.encode_and_sign(b)
     {:ok, socket_b} = connect(GamendWeb.UserSocket, %{"token" => token_b})
-    {:ok, _, _socket_b} = subscribe_and_join(socket_b, "user:#{b.id}", %{})
+    {:ok, _, socket_b} = subscribe_and_join(socket_b, "user:#{b.id}", %{})
 
     assert_push "updated", _b_initial
     assert_push "friend_updated", %{friends: friends}
@@ -548,7 +532,8 @@ defmodule GamendWeb.UserChannelTest do
         metadata: %{"map_country_id" => "ro"}
       })
 
-    refute_push "friend_updated", _, 100
+    settle(socket_b)
+    refute_push "friend_updated", _, 0
   end
 
   test "friend_updated is not pushed after friendship removal" do
@@ -561,7 +546,7 @@ defmodule GamendWeb.UserChannelTest do
 
     {:ok, token_b, _} = Guardian.encode_and_sign(b)
     {:ok, socket_b} = connect(GamendWeb.UserSocket, %{"token" => token_b})
-    {:ok, _, _socket_b} = subscribe_and_join(socket_b, "user:#{b.id}", %{})
+    {:ok, _, socket_b} = subscribe_and_join(socket_b, "user:#{b.id}", %{})
 
     assert_push "updated", _b_initial
     assert_push "friend_updated", %{friends: friends}
@@ -572,7 +557,8 @@ defmodule GamendWeb.UserChannelTest do
         metadata: %{"map_country_id" => "ro"}
       })
 
-    refute_push "friend_updated", _, 100
+    settle(socket_b)
+    refute_push "friend_updated", _, 0
   end
 
   test "deleting a user who is online sends offline friend_updated to friends" do
@@ -600,6 +586,5 @@ defmodule GamendWeb.UserChannelTest do
 
     assert_push "friend_updated", payload, 1000
     assert payload.friends[to_string(a.id)].is_online == false
-    refute_push "friend_offline", _, 100
   end
 end

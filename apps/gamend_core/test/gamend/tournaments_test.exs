@@ -130,7 +130,7 @@ defmodule Gamend.TournamentsTest do
     tournament
   end
 
-  defp users(n), do: for(_ <- 1..n, do: AccountsFixtures.user_fixture())
+  defp users(n), do: for(_ <- 1..n, do: AccountsFixtures.unconfirmed_user_fixture())
 
   defp join_all(tournament, users) do
     Enum.map(users, fn user ->
@@ -191,7 +191,7 @@ defmodule Gamend.TournamentsTest do
   describe "registration" do
     test "join registers an entry and fires hooks" do
       tournament = create_tournament()
-      user = AccountsFixtures.user_fixture()
+      user = AccountsFixtures.unconfirmed_user_fixture()
 
       assert {:ok, entry} = Tournaments.join_tournament(user, tournament)
       assert entry.leader_id == user.id
@@ -204,7 +204,7 @@ defmodule Gamend.TournamentsTest do
 
     test "before_tournament_register veto blocks joining" do
       tournament = create_tournament()
-      user = AccountsFixtures.user_fixture()
+      user = AccountsFixtures.unconfirmed_user_fixture()
       Application.put_env(:gamend, :tournament_reject_register, true)
 
       assert {:error, {:hook_rejected, :not_enough_coins}} =
@@ -225,14 +225,14 @@ defmodule Gamend.TournamentsTest do
     test "scheduled tournament with future registration window rejects joins" do
       now = DateTime.utc_now(:second)
       tournament = create_tournament(%{registration_opens_at: DateTime.add(now, 1800)})
-      user = AccountsFixtures.user_fixture()
+      user = AccountsFixtures.unconfirmed_user_fixture()
 
       assert {:error, :registration_closed} = Tournaments.join_tournament(user, tournament)
     end
 
     test "leave withdraws before the draw; hook can veto" do
       tournament = create_tournament()
-      user = AccountsFixtures.user_fixture()
+      user = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, _} = Tournaments.join_tournament(user, tournament)
 
       Application.put_env(:gamend, :tournament_reject_leave, true)
@@ -544,7 +544,8 @@ defmodule Gamend.TournamentsTest do
       assert reopened.state == "registration"
 
       # registration works again
-      assert {:ok, _} = Tournaments.join_tournament(AccountsFixtures.user_fixture(), reopened)
+      assert {:ok, _} =
+               Tournaments.join_tournament(AccountsFixtures.unconfirmed_user_fixture(), reopened)
     end
 
     test "a cancelled tournament that was already drawn resumes running" do
@@ -618,7 +619,7 @@ defmodule Gamend.TournamentsTest do
 
   describe "list_entries/2 search and ordering" do
     defp named_user(display_name) do
-      AccountsFixtures.user_fixture()
+      AccountsFixtures.unconfirmed_user_fixture()
       |> Ecto.Changeset.change(display_name: display_name)
       |> Gamend.Repo.update!()
     end
@@ -637,7 +638,7 @@ defmodule Gamend.TournamentsTest do
 
     test "falls back to the username when a player has no display name" do
       user =
-        AccountsFixtures.user_fixture()
+        AccountsFixtures.unconfirmed_user_fixture()
         |> Ecto.Changeset.change(username: "solo_flyer")
         |> Gamend.Repo.update!()
 

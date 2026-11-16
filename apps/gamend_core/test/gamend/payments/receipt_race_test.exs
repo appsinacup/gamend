@@ -18,6 +18,7 @@ defmodule Gamend.Payments.ReceiptRaceTest do
   alias Gamend.Payments.Entitlement
   alias Gamend.Payments.Product
   alias Gamend.Payments.Purchase
+  alias Gamend.Repo.AdvisoryLock
 
   defmodule StoreAdapter do
     def validate_purchase(_user, attrs) do
@@ -37,9 +38,9 @@ defmodule Gamend.Payments.ReceiptRaceTest do
     use Gamend.TestSupport.NoopHooks
 
     # Every validation waits here, past its early check and before its
-    # insert, until all of them have arrived. On SQLite the test pool is one
-    # connection, which a racer holds throughout, so the others cannot
-    # arrive: after a second it goes on alone, and the racers run in turn.
+    # insert, until all of them have arrived. On SQLite `race/1` runs the
+    # racers in turn, so nobody else is coming (see `barrier/1`); a second
+    # without them still lets one go on alone.
     @impl true
     def before_purchase(_user, product) do
       {counter, expected} = :persistent_term.get({__MODULE__, :barrier})
@@ -164,7 +165,11 @@ defmodule Gamend.Payments.ReceiptRaceTest do
            end) == 1
   end
 
+  # Only Postgres releases the racers together (`Gamend.TestSupport.Race`):
+  # elsewhere each one arrives alone, and waiting for the next is a second lost.
   defp barrier(expected) do
+    expected = if AdvisoryLock.postgres?(), do: expected, else: 1
+
     :persistent_term.put({BarrierHooks, :barrier}, {:counters.new(1, []), expected})
   end
 

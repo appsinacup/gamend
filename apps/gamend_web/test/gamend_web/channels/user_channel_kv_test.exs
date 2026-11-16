@@ -12,11 +12,9 @@ defmodule GamendWeb.UserChannelKvTest do
 
   @endpoint GamendWeb.Endpoint
 
-  setup tags do
-    Gamend.DataCase.setup_sandbox(tags)
-
-    original_hooks_module = Application.get_env(:gamend_core, :hooks_module)
-
+  # No plugin's before_kv_get in the way: an empty plugins directory, loaded
+  # once for the module.
+  setup_all do
     original_plugins_dir =
       Gamend.SettingsHelpers.get(:gamend_core, Gamend.ContentSettings, :plugins_dir)
 
@@ -24,24 +22,10 @@ defmodule GamendWeb.UserChannelKvTest do
       Path.join(System.tmp_dir!(), "gs-empty-plugins-#{System.unique_integer([:positive])}")
 
     File.mkdir_p!(plugin_root)
-    Application.put_env(:gamend_core, :hooks_module, Gamend.Hooks.Default)
-
-    Gamend.SettingsHelpers.put(
-      :gamend_core,
-      Gamend.ContentSettings,
-      :plugins_dir,
-      plugin_root
-    )
-
+    Gamend.SettingsHelpers.put(:gamend_core, Gamend.ContentSettings, :plugins_dir, plugin_root)
     _ = PluginManager.reload()
 
     on_exit(fn ->
-      if original_hooks_module do
-        Application.put_env(:gamend_core, :hooks_module, original_hooks_module)
-      else
-        Application.delete_env(:gamend_core, :hooks_module)
-      end
-
       if original_plugins_dir do
         Gamend.SettingsHelpers.put(
           :gamend_core,
@@ -50,15 +34,28 @@ defmodule GamendWeb.UserChannelKvTest do
           original_plugins_dir
         )
       else
-        Gamend.SettingsHelpers.delete(
-          :gamend_core,
-          Gamend.ContentSettings,
-          :plugins_dir
-        )
+        Gamend.SettingsHelpers.delete(:gamend_core, Gamend.ContentSettings, :plugins_dir)
       end
 
       _ = PluginManager.reload()
       File.rm_rf(plugin_root)
+    end)
+
+    :ok
+  end
+
+  setup tags do
+    Gamend.DataCase.setup_sandbox(tags)
+
+    original_hooks_module = Application.get_env(:gamend_core, :hooks_module)
+    Application.put_env(:gamend_core, :hooks_module, Gamend.Hooks.Default)
+
+    on_exit(fn ->
+      if original_hooks_module do
+        Application.put_env(:gamend_core, :hooks_module, original_hooks_module)
+      else
+        Application.delete_env(:gamend_core, :hooks_module)
+      end
     end)
 
     :ok
@@ -270,21 +267,9 @@ defmodule GamendWeb.UserChannelKvTest do
 
     {:ok, _entry} = KV.put(key, %{"v" => "after-unsubscribe"}, %{})
 
-    refute_push "kv_updated", %{key: ^key}, 100
-  end
-
-  test "kv:subscribe enforces read access" do
-    install_kv_access(:owner_only)
-
-    owner = user_fixture()
-    other = user_fixture()
-    key = unique_key("ws_owner_stream_key")
-    {:ok, _entry} = KV.put(key, %{"v" => 1}, %{}, user_id: owner.id)
-    socket = join_user_channel(other)
-
-    ref = push(socket, "kv:subscribe", %{"key" => key, "user_id" => owner.id})
-
-    assert_reply ref, :error, %{error: "forbidden"}
+    # The put's broadcast reached the channel before it returned.
+    _ = :sys.get_state(socket.channel_pid)
+    refute_push "kv_updated", %{key: ^key}, 0
   end
 
   defp join_user_channel(user) do

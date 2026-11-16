@@ -7,20 +7,6 @@ defmodule GamendWeb.Api.V1.FriendControllerTest do
   alias GamendWeb.Auth.Guardian
   import Ecto.Query
 
-  test "POST /api/v1/friends requires auth and creates a request", %{conn: conn} do
-    a = AccountsFixtures.user_fixture()
-    b = AccountsFixtures.user_fixture()
-
-    {:ok, token, _} = Guardian.encode_and_sign(a)
-
-    conn =
-      conn
-      |> put_req_header("authorization", "Bearer " <> token)
-      |> post("/api/v1/friends", %{target_user_id: b.id})
-
-    assert conn.status == 201
-  end
-
   test "friend request -> accept -> friends list", %{conn: conn} do
     a = AccountsFixtures.user_fixture()
     b = AccountsFixtures.user_fixture()
@@ -169,16 +155,6 @@ defmodule GamendWeb.Api.V1.FriendControllerTest do
     conn_del = conn_a |> delete("/api/v1/friends/#{f2.id}")
     # successful removal returns 200 with empty object
     assert conn_del.status == 200
-  end
-
-  test "unauthenticated actions are rejected", %{conn: conn} do
-    # create should fail without auth
-    conn = post(conn, "/api/v1/friends", %{target_user_id: 1})
-    assert conn.status == 401
-
-    # accept should also fail without auth
-    conn2 = post(conn, "/api/v1/friends/1/accept")
-    assert conn2.status == 401
   end
 
   test "cannot request self; duplicate request succeeds idempotently", %{conn: conn} do

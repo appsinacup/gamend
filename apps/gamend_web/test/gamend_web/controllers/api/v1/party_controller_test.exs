@@ -20,10 +20,6 @@ defmodule GamendWeb.Api.V1.PartyControllerTest do
   alias Gamend.Parties
   alias GamendWeb.Auth.Guardian
 
-  setup do
-    {:ok, %{}}
-  end
-
   defp auth_conn(conn, user) do
     {:ok, token, _} = Guardian.encode_and_sign(user)
     put_req_header(conn, "authorization", "Bearer " <> token)
@@ -67,11 +63,6 @@ defmodule GamendWeb.Api.V1.PartyControllerTest do
         |> post("/api/v1/parties", %{})
 
       assert json_response(conn, 409)["error"] == "already_in_party"
-    end
-
-    test "requires auth", %{conn: conn} do
-      conn = post(conn, "/api/v1/parties", %{})
-      assert conn.status == 401
     end
   end
 

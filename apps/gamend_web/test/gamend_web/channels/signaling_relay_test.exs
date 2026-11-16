@@ -44,10 +44,13 @@ defmodule GamendWeb.SignalingRelayTest do
   defp both(lobby, host, peer) do
     {:ok, %{role: _}, host_socket} = enter(host, lobby.id)
     {:ok, _reply, peer_socket} = enter(peer, lobby.id)
-    # Let presence settle so each sees the other.
-    Process.sleep(200)
+    tracked([host_socket, peer_socket])
     {host_socket, peer_socket}
   end
+
+  # A channel tracks itself and subscribes to its inbox in the message it
+  # sends itself on join: once it has answered a call, both are done.
+  defp tracked(sockets), do: Enum.each(sockets, &:sys.get_state(&1.channel_pid))
 
   describe "a mesh room" do
     setup %{lobby: lobby} do
@@ -160,9 +163,9 @@ defmodule GamendWeb.SignalingRelayTest do
       host: host,
       peer: peer
     } do
-      assert {:ok, %{role: :host}, _} = enter(host, lobby.id)
+      assert {:ok, %{role: :host}, host_socket} = enter(host, lobby.id)
       assert {:ok, %{role: :user}, peer_socket} = enter(peer, lobby.id)
-      Process.sleep(200)
+      tracked([host_socket, peer_socket])
 
       ref = push(peer_socket, "broadcast_offer", %{"sdp" => "v=0"})
       assert_reply ref, :error, %{error: "not_allowed"}
@@ -174,10 +177,10 @@ defmodule GamendWeb.SignalingRelayTest do
     test "a user may not talk to another user", %{lobby: lobby, host: host, peer: peer} do
       third = AccountsFixtures.user_fixture()
       {:ok, _} = Lobbies.join_lobby(third, lobby.id)
-      {:ok, _, _} = enter(host, lobby.id)
+      {:ok, _, host_socket} = enter(host, lobby.id)
       {:ok, _, peer_socket} = enter(peer, lobby.id)
-      {:ok, _, _} = enter(third, lobby.id)
-      Process.sleep(200)
+      {:ok, _, third_socket} = enter(third, lobby.id)
+      tracked([host_socket, peer_socket, third_socket])
 
       for event <- ~w(offer answer) do
         ref = push(peer_socket, event, %{"target" => third.id, "sdp" => "v=0"})

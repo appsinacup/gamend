@@ -12,13 +12,19 @@ defmodule GamendWeb.AdminLive.PluginsTest do
 
   @plugin "admin_test_plugin"
 
+  # Once for the module: compiling the plugin and reloading every plugin for
+  # each test was most of its time, and no test changes the plugin.
+  setup_all do
+    install_plugin()
+    :ok
+  end
+
   setup %{conn: conn} do
     admin =
       AccountsFixtures.user_fixture()
       |> User.admin_changeset(%{"is_admin" => true})
       |> Repo.update!()
 
-    install_plugin()
     %{conn: log_in_user(conn, admin)}
   end
 
@@ -99,12 +105,14 @@ defmodule GamendWeb.AdminLive.PluginsTest do
     |> String.trim()
   end
 
-  test "lists the plugin and its status", %{conn: conn} do
+  test "lists the plugin, its status and the schema coverage", %{conn: conn} do
     {:ok, view, _html} = live(conn, ~p"/admin/plugins")
 
     assert has_element?(view, "#plugin-#{@plugin}", "OK")
     assert has_element?(view, "#plugin-#{@plugin} button[phx-value-plugin='#{@plugin}']")
     assert has_element?(view, "#plugins-reload-btn")
+    assert has_element?(view, "#plugins-coverage", "kv data")
+    assert has_element?(view, "#plugins-coverage", "typed hooks")
   end
 
   test "choosing a function selects it and fills in the shape of its arguments", %{conn: conn} do
@@ -188,12 +196,5 @@ defmodule GamendWeb.AdminLive.PluginsTest do
     {:ok, view, _html} = live(conn, ~p"/admin/plugins?plugin=#{@plugin}&fn=hello2")
 
     assert has_element?(view, "#call_function option[selected][value='hello2']")
-  end
-
-  test "shows the schema coverage", %{conn: conn} do
-    {:ok, view, _html} = live(conn, ~p"/admin/plugins")
-
-    assert has_element?(view, "#plugins-coverage", "kv data")
-    assert has_element?(view, "#plugins-coverage", "typed hooks")
   end
 end

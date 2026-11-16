@@ -76,16 +76,6 @@ defmodule GamendWeb.UserChannelWebRTCTest do
   end
 
   describe "webrtc:offer" do
-    test "accepts a valid SDP offer and returns ok", %{socket: socket} do
-      {_client_pc, offer_json} = create_test_offer()
-
-      ref = push(socket, "webrtc:offer", offer_json)
-      assert_reply ref, :ok, %{}, 5000
-
-      # Server should push an SDP answer back
-      assert_push "webrtc:answer", _answer_payload, 5000
-    end
-
     test "returns error when WebRTC is disabled via config", %{socket: socket} do
       # Temporarily disable WebRTC
       original = Application.get_env(:gamend_web, :webrtc, [])
@@ -236,8 +226,8 @@ defmodule GamendWeb.UserChannelWebRTCTest do
           channel_pid: self()
         )
 
-      assert Process.alive?(peer)
       assert GamendWeb.WebRTCPeer.connection_state(peer) == :new
+      monitor = Process.monitor(peer)
 
       # close/1 calls GenServer.stop which may trigger NIF crash
       try do
@@ -246,9 +236,7 @@ defmodule GamendWeb.UserChannelWebRTCTest do
         :exit, _ -> :ok
       end
 
-      # Give time for process to terminate
-      Process.sleep(50)
-      refute Process.alive?(peer)
+      assert_receive {:DOWN, ^monitor, :process, ^peer, _reason}
     end
 
     test "handle_offer sends answer back to controlling process" do

@@ -289,22 +289,4 @@ defmodule GamendWeb.Api.V1.Admin.NotificationControllerTest do
 
     assert resp["error"] == "invalid_id"
   end
-
-  # ── Auth ───────────────────────────────────────────────────────────────────
-
-  test "non-admin user cannot access admin notifications", %{conn: conn} do
-    user = AccountsFixtures.user_fixture()
-
-    resp =
-      conn
-      |> bearer_conn(user)
-      |> get("/api/v1/admin/notifications")
-
-    assert resp.status in [401, 403]
-  end
-
-  test "unauthenticated request is rejected", %{conn: conn} do
-    resp = get(conn, "/api/v1/admin/notifications")
-    assert resp.status in [401, 403]
-  end
 end

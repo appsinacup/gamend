@@ -16,8 +16,12 @@ defmodule Gamend.OAuth.ExchangerTest do
     end
   end
 
-  setup do
-    jwk = JOSE.JWK.generate_key({:rsa, 2048})
+  # An RSA key takes a while to make, and is only read.
+  setup_all do
+    %{jwk: JOSE.JWK.generate_key({:rsa, 2048})}
+  end
+
+  setup %{jwk: jwk} do
     Application.put_env(:gamend_core, :apple_test_jwk, jwk)
     Application.put_env(:gamend_core, :oauth_exchanger_client, AppleKeysClient)
 
@@ -26,7 +30,7 @@ defmodule Gamend.OAuth.ExchangerTest do
       Application.delete_env(:gamend_core, :oauth_exchanger_client)
     end)
 
-    {:ok, jwk: jwk}
+    :ok
   end
 
   describe "parse_apple_id_token/1" do

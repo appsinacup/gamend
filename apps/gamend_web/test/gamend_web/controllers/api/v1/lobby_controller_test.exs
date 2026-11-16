@@ -32,10 +32,6 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
   alias Gamend.Lobbies
   alias GamendWeb.Auth.Guardian
 
-  setup do
-    {:ok, %{}}
-  end
-
   test "GET /api/v1/lobbies lists lobbies but hides hidden ones", %{conn: conn} do
     host = AccountsFixtures.user_fixture()
     {:ok, lobby1} = Lobbies.create_lobby(%{title: "visible-room", host_id: host.id})
@@ -381,7 +377,7 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
     assert host_row.(outsider)["metadata"] == %{}
   end
 
-  test "POST /api/v1/lobbies (hosted) requires auth and creates a lobby", %{conn: conn} do
+  test "POST /api/v1/lobbies creates a lobby the caller hosts", %{conn: conn} do
     user = AccountsFixtures.user_fixture()
     {:ok, token, _} = Guardian.encode_and_sign(user)
 
@@ -394,17 +390,6 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
     lobby = json_response(conn, 201)["data"]
     assert lobby["host_id"] == user.id
     assert Map.has_key?(lobby, "host_name")
-    # 'name' (slug) is omitted from API responses - the unique id is used instead
-    refute Map.has_key?(lobby, "name")
-
-    # 'name' intentionally omitted
-  end
-
-  test "POST /api/v1/lobbies hostless creation removed from public API returns unauthorized", %{
-    conn: conn
-  } do
-    conn = post(conn, "/api/v1/lobbies", %{title: "service-room", hostless: true})
-    assert conn.status == 401
   end
 
   defp create_as(conn, user, params) do
@@ -769,33 +754,6 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
     assert reloaded.lobby_id == lobby.id
   end
 
-  test "POST /api/v1/lobbies/:id/kick uses authenticated user's lobby when path id mismatches", %{
-    conn: conn
-  } do
-    host = AccountsFixtures.user_fixture()
-    other = AccountsFixtures.user_fixture()
-    {:ok, lobby} = Lobbies.create_lobby(%{title: "kick-mismatch-room", host_id: host.id})
-
-    # create a different lobby to use as mismatched path id
-    other_host = AccountsFixtures.user_fixture()
-    {:ok, _other_lobby} = Lobbies.create_lobby(%{title: "other-room", host_id: other_host.id})
-
-    assert {:ok, _} = Lobbies.join_lobby(other, lobby)
-
-    {:ok, token_host, _} = Guardian.encode_and_sign(host)
-
-    conn =
-      conn
-      |> put_req_header("authorization", "Bearer " <> token_host)
-      |> post("/api/v1/lobbies/kick", %{target_user_id: other.id})
-
-    # kick returns 200 with empty object now and uses host's lobby, not path id
-    assert conn.status == 200
-
-    reloaded = Gamend.Repo.get(User, other.id)
-    assert is_nil(reloaded.lobby_id)
-  end
-
   describe "a miss answers its code, never a crash" do
     setup %{conn: conn} do
       host = AccountsFixtures.user_fixture()
@@ -892,34 +850,6 @@ defmodule GamendWeb.Api.V1.LobbyControllerTest do
       |> post("/api/v1/lobbies/leave")
 
     # leave now returns 200 with empty object
-    assert conn.status == 200
-
-    reloaded = Gamend.Repo.get(Gamend.Accounts.User, member.id)
-    assert is_nil(reloaded.lobby_id)
-  end
-
-  test "POST /api/v1/lobbies/:id/leave ignores path id and removes authenticated user", %{
-    conn: conn
-  } do
-    host = AccountsFixtures.user_fixture()
-    member = AccountsFixtures.user_fixture()
-    {:ok, lobby} = Lobbies.create_lobby(%{title: "leave-mismatch-room", host_id: host.id})
-
-    {:ok, _other_lobby} =
-      Lobbies.create_lobby(%{
-        title: "other-leave-room",
-        host_id: AccountsFixtures.user_fixture().id
-      })
-
-    assert {:ok, _} = Lobbies.join_lobby(member, lobby)
-
-    {:ok, token_member, _} = Guardian.encode_and_sign(member)
-
-    conn =
-      conn
-      |> put_req_header("authorization", "Bearer " <> token_member)
-      |> post("/api/v1/lobbies/leave")
-
     assert conn.status == 200
 
     reloaded = Gamend.Repo.get(Gamend.Accounts.User, member.id)

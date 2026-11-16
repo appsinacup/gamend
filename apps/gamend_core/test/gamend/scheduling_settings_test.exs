@@ -38,23 +38,22 @@ defmodule Gamend.SchedulingSettingsTest do
   end
 
   describe "retention cadence" do
-    test "the live cycle comes round after live_interval_seconds" do
-      put(Retention, :live_interval_seconds, 1)
-
-      assert {:noreply, _} = Retention.handle_info(:prune_live, %{})
-      assert_receive :prune_live, 1_500
-    end
-
-    test "a live interval of 0 schedules nothing" do
+    # One wait for both: a cycle run at 0 then one at 1 must leave exactly one
+    # timer, the second's. A 0 that scheduled at once, or at the 1 s floor the
+    # ticker has, shows as a second message.
+    test "the live cycle comes round after live_interval_seconds, and 0 schedules nothing" do
       put(Retention, :live_interval_seconds, 0)
-
       assert {:noreply, _} = Retention.handle_info(:prune_live, %{})
-      refute_receive :prune_live, 1_200
+
+      put(Retention, :live_interval_seconds, 1)
+      assert {:noreply, _} = Retention.handle_info(:prune_live, %{})
+
+      refute_received :prune_live
+      assert_receive :prune_live, 1_500
+      refute_receive :prune_live, 100
     end
 
     test "the full sweep waits interval_hours, at least one" do
-      assert Retention.sweep_interval_ms() == :timer.hours(6)
-
       put(Retention, :interval_hours, 24)
       assert Retention.sweep_interval_ms() == :timer.hours(24)
 

@@ -111,13 +111,14 @@ defmodule GamendWeb.AdminLive.ReadyChecksAdminTest do
 
   describe "/admin dashboard" do
     test "the matchmaking card carries the 24h ready-check outcomes", ctx do
+      # The line is drawn with no checks at all, so it is the count that tells.
       {:ok, check} = ReadyChecks.open(ctx.lobby, [ctx.host.id, ctx.member.id])
-      {:ok, _} = ReadyChecks.cancel(check)
+      :ok = ReadyChecks.expire(check)
 
       {:ok, view, _html} = live(ctx.conn, ~p"/admin")
       html = render_async(view, 30_000)
 
-      assert html =~ "Ready checks 24h"
+      assert html =~ "Ready checks 24h: 0 passed · 1 failed"
     end
   end
 end

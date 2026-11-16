@@ -6,19 +6,6 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
   alias GamendWeb.Auth.Guardian
 
   describe "GET /api/v1/leaderboards" do
-    test "lists all leaderboards with pagination", %{conn: conn} do
-      for i <- 1..3 do
-        Leaderboards.create_leaderboard(%{slug: "lb_#{i}", title: "Leaderboard #{i}"})
-      end
-
-      conn = get(conn, "/api/v1/leaderboards")
-      resp = json_response(conn, 200)
-
-      assert length(resp["data"]) == 3
-      assert resp["meta"]["total_count"] == 3
-      assert resp["meta"]["page"] == 1
-    end
-
     test "paginates results", %{conn: conn} do
       for i <- 1..5 do
         Leaderboards.create_leaderboard(%{slug: "lb_page_#{i}", title: "Leaderboard #{i}"})
@@ -104,13 +91,6 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       assert lb2.id in ids
     end
 
-    test "returns empty list for non-existent slug", %{conn: conn} do
-      conn = get(conn, "/api/v1/leaderboards?slug=nonexistent")
-      resp = json_response(conn, 200)
-
-      assert resp["data"] == []
-    end
-
     test "can filter by slug and active status", %{conn: conn} do
       {:ok, active} = Leaderboards.create_leaderboard(%{slug: "mixed", title: "Active"})
       {:ok, ended} = Leaderboards.create_leaderboard(%{slug: "mixed", title: "Ended"})
@@ -189,6 +169,8 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       first = hd(resp["data"])
       assert first["rank"] == 1
       assert first["score"] == 500
+      assert is_binary(first["user_id"])
+      assert Map.has_key?(first, "display_name")
     end
 
     test "paginates records", %{conn: conn, leaderboard: lb} do
@@ -198,15 +180,6 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       assert length(resp["data"]) == 2
       assert resp["meta"]["total_count"] == 5
       assert resp["meta"]["has_more"] == true
-    end
-
-    test "includes user display info", %{conn: conn, leaderboard: lb} do
-      conn = get(conn, "/api/v1/leaderboards/#{lb.id}/records")
-      resp = json_response(conn, 200)
-
-      first = hd(resp["data"])
-      assert Map.has_key?(first, "user_id")
-      assert Map.has_key?(first, "display_name")
     end
 
     test "returns 404 for non-existent leaderboard", %{conn: conn} do
@@ -220,7 +193,7 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       {:ok, lb} = Leaderboards.create_leaderboard(%{slug: "around_lb", title: "Around"})
 
       users =
-        for i <- 1..10 do
+        for i <- 1..5 do
           user = AccountsFixtures.user_fixture()
           Leaderboards.submit_score(lb.id, user.id, i * 100)
           user
@@ -230,7 +203,7 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
     end
 
     test "returns records around the user", %{conn: conn, leaderboard: lb, users: users} do
-      target_user = Enum.at(users, 4)
+      target_user = Enum.at(users, 2)
 
       conn = get(conn, "/api/v1/leaderboards/#{lb.id}/records/around/#{target_user.id}")
       resp = json_response(conn, 200)
@@ -246,15 +219,14 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
     end
 
     test "respects limit parameter", %{conn: conn, leaderboard: lb, users: users} do
-      target_user = Enum.at(users, 4)
+      target_user = Enum.at(users, 2)
 
       conn =
-        get(conn, "/api/v1/leaderboards/#{lb.id}/records/around/#{target_user.id}", %{limit: 1})
+        get(conn, "/api/v1/leaderboards/#{lb.id}/records/around/#{target_user.id}", %{limit: 3})
 
-      resp = json_response(conn, 200)
-
-      # With limit 1, should get 1 above + user + 1 below = 3 max
-      assert length(resp["data"]) <= 3
+      # A window of `limit` rows centred on the user: one above, one below.
+      assert [_, %{"user_id" => user_id}, _] = json_response(conn, 200)["data"]
+      assert user_id == target_user.id
     end
 
     test "returns 404 for non-existent leaderboard", %{conn: conn} do
@@ -289,11 +261,6 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
         end
 
       %{leaderboard: lb, users: users}
-    end
-
-    test "requires authentication", %{conn: conn, leaderboard: lb} do
-      conn = get(conn, "/api/v1/leaderboards/#{lb.id}/records/me")
-      assert conn.status == 401
     end
 
     test "returns the current user's record with rank", %{

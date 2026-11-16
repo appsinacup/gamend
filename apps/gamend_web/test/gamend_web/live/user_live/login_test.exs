@@ -5,16 +5,6 @@ defmodule GamendWeb.UserLive.LoginTest do
   import Gamend.AccountsFixtures
 
   describe "login page" do
-    test "renders login page", %{conn: conn} do
-      {:ok, _lv, html} = live(conn, ~p"/users/log_in")
-
-      assert html =~ "Log in"
-      assert html =~ "Register"
-      assert html =~ "Email"
-      assert html =~ "Remember me"
-      assert html =~ "Forgot password?"
-    end
-
     test "remember me is one checkbox, on by default, beside a single submit", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/log_in")
 
@@ -123,14 +113,10 @@ defmodule GamendWeb.UserLive.LoginTest do
     end
 
     test "shows login page with email filled in", %{conn: conn, user: user} do
-      {:ok, _lv, html} = live(conn, ~p"/users/log_in")
+      {:ok, lv, _html} = live(conn, ~p"/users/log_in")
 
-      assert html =~ "Confirm"
-      refute html =~ "Register"
-      assert html =~ "Email"
-
-      assert html =~
-               ~s(<input type="email" name="user[email]" id="login_form_magic_email" value="#{user.email}")
+      refute has_element?(lv, "main a", "Register")
+      assert has_element?(lv, ~s(#login_form_magic_email[type=email][value="#{user.email}"]))
     end
   end
 end

@@ -9,7 +9,7 @@ defmodule Gamend.MatchmakingTest do
   alias Gamend.Matchmaking.Worker
 
   defp user(online \\ true) do
-    u = AccountsFixtures.user_fixture()
+    u = AccountsFixtures.unconfirmed_user_fixture()
     {:ok, u} = u |> Ecto.Changeset.change(is_online: online) |> Repo.update()
     u
   end
@@ -22,7 +22,7 @@ defmodule Gamend.MatchmakingTest do
       |> DateTime.add(-Gamend.Limits.get(:matchmaking_offline_grace_ms) - 1_000, :millisecond)
       |> DateTime.truncate(:second)
 
-    AccountsFixtures.user_fixture()
+    AccountsFixtures.unconfirmed_user_fixture()
     |> Ecto.Changeset.change(is_online: false, last_seen_at: seen)
     |> Repo.update!()
   end

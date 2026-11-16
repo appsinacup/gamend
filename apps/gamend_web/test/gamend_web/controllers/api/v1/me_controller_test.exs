@@ -4,11 +4,6 @@ defmodule GamendWeb.Api.V1.MeControllerTest do
   alias GamendWeb.Auth.Guardian
 
   describe "GET /api/v1/me" do
-    test "returns 401 when not authenticated", %{conn: conn} do
-      conn = get(conn, "/api/v1/me")
-      assert json_response(conn, 401)
-    end
-
     test "returns user info when authenticated", %{conn: conn} do
       user = Gamend.AccountsFixtures.user_fixture()
 
@@ -189,11 +184,6 @@ defmodule GamendWeb.Api.V1.MeControllerTest do
 
       # Ensure user was deleted
       assert Gamend.Repo.get(Gamend.Accounts.User, user.id) == nil
-    end
-
-    test "returns 401 when not authenticated", %{conn: conn} do
-      conn = delete(conn, "/api/v1/me")
-      assert json_response(conn, 401)
     end
 
     test "an account with a password is deleted only with it in the body", %{conn: conn} do

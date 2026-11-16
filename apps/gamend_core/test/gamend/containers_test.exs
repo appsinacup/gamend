@@ -373,7 +373,7 @@ defmodule Gamend.ContainersTest do
     end
 
     test "only the end of a long output is kept, from a whole line" do
-      script = "i=0; while [ $i -lt 20000 ]; do echo line-$i; i=$((i+1)); done"
+      script = "awk 'BEGIN { for (i = 0; i < 20000; i++) print \"line-\" i }'"
 
       assert {:exited, 0, log} = Containers.run_port("/bin/sh", ["-c", script], [])
       assert byte_size(log) <= 64 * 1024

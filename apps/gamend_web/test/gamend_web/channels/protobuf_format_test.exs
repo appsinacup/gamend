@@ -35,13 +35,6 @@ defmodule GamendWeb.ProtobufFormatTest do
     _ = socket
   end
 
-  test "socket without format still receives JSON payloads" do
-    user = user_fixture()
-    _socket = join_user_channel(user, nil)
-
-    assert_push "updated", %{id: _}
-  end
-
   test "kv_updated arrives as decodable KvEntry on protobuf sockets" do
     user = user_fixture()
     socket = join_user_channel(user, "protobuf")
@@ -217,55 +210,6 @@ defmodule GamendWeb.ProtobufFormatTest do
       assert EventCodec.encode("user:x", "notification_created", %{inserted_at: :not_a_time}) ==
                :json
     end)
-  end
-
-  # ── WebRTC RPC envelope ──────────────────────────────────────────────────
-
-  test "RtcEnvelope call/reply round-trip preserves request id" do
-    call = %PB.RtcEnvelope{
-      msg:
-        {:call_hook,
-         %PB.RpcCall{id: 7, plugin: "p", fn: "f", args: {:args_json, Jason.encode!([1, "two"])}}}
-    }
-
-    assert %PB.RtcEnvelope{msg: {:call_hook, decoded}} =
-             PB.RtcEnvelope.decode(PB.RtcEnvelope.encode(call))
-
-    assert decoded.id == 7
-    assert {:args_json, json} = decoded.args
-    assert Jason.decode!(json) == [1, "two"]
-
-    reply = %PB.RtcEnvelope{
-      msg: {:hook_reply, %PB.RpcReply{id: 7, data: {:data_json, Jason.encode!(%{"ok" => true})}}}
-    }
-
-    assert %PB.RtcEnvelope{msg: {:hook_reply, %PB.RpcReply{id: 7}}} =
-             PB.RtcEnvelope.decode(PB.RtcEnvelope.encode(reply))
-  end
-
-  test "RtcEnvelope raw args/data round-trip (typed hooks)" do
-    call = %PB.RtcEnvelope{
-      msg:
-        {:call_hook,
-         %PB.RpcCall{
-           id: 9,
-           plugin: "example_hook",
-           fn: "hello_proto",
-           args: {:args_raw, <<1, 2, 3>>}
-         }}
-    }
-
-    assert %PB.RtcEnvelope{msg: {:call_hook, decoded}} =
-             PB.RtcEnvelope.decode(PB.RtcEnvelope.encode(call))
-
-    assert decoded.args == {:args_raw, <<1, 2, 3>>}
-
-    reply = %PB.RtcEnvelope{
-      msg: {:hook_reply, %PB.RpcReply{id: 9, data: {:data_raw, <<9, 9>>}}}
-    }
-
-    assert %PB.RtcEnvelope{msg: {:hook_reply, %PB.RpcReply{id: 9, data: {:data_raw, <<9, 9>>}}}} =
-             PB.RtcEnvelope.decode(PB.RtcEnvelope.encode(reply))
   end
 
   # ── Helpers ──────────────────────────────────────────────────────────────

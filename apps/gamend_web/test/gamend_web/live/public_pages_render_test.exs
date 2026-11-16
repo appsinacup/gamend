@@ -6,49 +6,24 @@ defmodule GamendWeb.PublicPagesRenderTest do
   use GamendWeb.ConnCase, async: true
   import Phoenix.LiveViewTest
 
+  @pages ~w(/leaderboards /quests /groups /roadmap /changelog /blog)
+
   describe "unauthenticated" do
-    test "GET /leaderboards renders", %{conn: conn} do
-      {:ok, _view, html} = live(conn, ~p"/leaderboards")
-      assert html =~ "Leaderboards"
-    end
-
-    test "GET /quests renders", %{conn: conn} do
-      {:ok, _view, html} = live(conn, ~p"/quests")
-      assert html =~ "Quests"
-    end
-
-    test "GET /groups renders", %{conn: conn} do
-      {:ok, _view, html} = live(conn, ~p"/groups")
-      assert html =~ "Groups"
-    end
-
-    test "GET /roadmap renders", %{conn: conn} do
-      {:ok, _view, html} = live(conn, ~p"/roadmap")
-      assert html =~ "Roadmap"
-    end
-
-    test "GET /changelog renders", %{conn: conn} do
-      {:ok, _view, html} = live(conn, ~p"/changelog")
-      assert html =~ "Changelog"
-    end
-
-    test "GET /blog renders", %{conn: conn} do
-      {:ok, _view, html} = live(conn, ~p"/blog")
-      assert html =~ "Blog"
+    for path <- @pages do
+      test "GET #{path} renders", %{conn: conn} do
+        assert {:ok, _view, _html} = live(conn, unquote(path))
+      end
     end
   end
 
   describe "authenticated" do
     setup :register_and_log_in_user
 
-    test "GET /leaderboards renders when logged in", %{conn: conn} do
-      {:ok, _view, html} = live(conn, ~p"/leaderboards")
-      assert html =~ "Leaderboards"
-    end
-
-    test "GET /quests renders when logged in", %{conn: conn} do
-      {:ok, _view, html} = live(conn, ~p"/quests")
-      assert html =~ "Quests"
+    # /quests is rendered, with a card of every shape, below.
+    for path <- ~w(/leaderboards /groups) do
+      test "GET #{path} renders when logged in", %{conn: conn} do
+        assert {:ok, _view, _html} = live(conn, unquote(path))
+      end
     end
 
     # An empty page renders even when the card markup is broken, so seed one
@@ -114,11 +89,6 @@ defmodule GamendWeb.PublicPagesRenderTest do
       refute html =~ "Secret"
       # Chained quests stay out of sight until their prerequisite is done.
       refute html =~ "Chained"
-    end
-
-    test "GET /groups renders when logged in", %{conn: conn} do
-      {:ok, _view, html} = live(conn, ~p"/groups")
-      assert html =~ "Groups"
     end
 
     test "a chained quest is the tier the player is on: no number, no tiers ahead", %{

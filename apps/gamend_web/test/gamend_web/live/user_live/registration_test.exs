@@ -5,21 +5,9 @@ defmodule GamendWeb.UserLive.RegistrationTest do
   import Gamend.AccountsFixtures
 
   describe "Registration page" do
-    test "renders registration page", %{conn: conn} do
-      {:ok, _lv, html} = live(conn, ~p"/users/register")
-
-      assert html =~ "Register"
-      assert html =~ "Log in"
-    end
-
     test "redirects if already logged in", %{conn: conn} do
-      result =
-        conn
-        |> log_in_user(user_fixture())
-        |> live(~p"/users/register")
-        |> follow_redirect(conn, ~p"/users/settings")
-
-      assert {:ok, _conn} = result
+      assert {:error, {:redirect, %{to: "/users/settings"}}} =
+               conn |> log_in_user(user_fixture()) |> live(~p"/users/register")
     end
 
     test "renders errors for invalid data", %{conn: conn} do
@@ -30,7 +18,6 @@ defmodule GamendWeb.UserLive.RegistrationTest do
         |> element("#registration_form")
         |> render_change(user: %{"email" => "with spaces"})
 
-      assert result =~ "Register"
       assert result =~ "must have the @ sign and no spaces"
     end
   end

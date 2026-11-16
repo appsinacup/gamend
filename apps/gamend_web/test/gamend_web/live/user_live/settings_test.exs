@@ -26,7 +26,7 @@ defmodule GamendWeb.UserLive.SettingsTest do
       refute "purchases" in sources
     end
 
-    test "renders settings page", %{conn: conn} do
+    test "renders settings page for an admin, with their name", %{conn: conn} do
       user = user_fixture()
 
       {:ok, user} =
@@ -42,10 +42,6 @@ defmodule GamendWeb.UserLive.SettingsTest do
         |> log_in_user(user)
         |> live(~p"/users/settings")
 
-      assert html =~ "Email"
-      assert html =~ "Data"
-      assert html =~ "Save"
-      assert html =~ "Link"
       assert has_element?(lv, "#password_form")
       assert html =~ "Tester"
     end

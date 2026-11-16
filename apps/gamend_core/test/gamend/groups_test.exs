@@ -62,9 +62,11 @@ defmodule Gamend.GroupsTest do
   alias Gamend.Groups.{Group, GroupInvite, GroupJoinRequest, GroupMember}
 
   setup do
-    owner = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-    other = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-    third = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+    # Accounts, not signed-in ones: no group rule reads the confirmation, and
+    # this runs before each of the file's tests.
+    owner = AccountsFixtures.unconfirmed_user_fixture()
+    other = AccountsFixtures.unconfirmed_user_fixture()
+    third = AccountsFixtures.unconfirmed_user_fixture()
 
     # Invites require a connection, so the fixtures are connected. Tests that
     # care about the *absence* of one establish that themselves.

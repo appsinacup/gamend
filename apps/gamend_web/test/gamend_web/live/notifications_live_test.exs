@@ -108,7 +108,7 @@ defmodule GamendWeb.NotificationsLiveTest do
       }
     end
 
-    test "shows a section per group, a stack for one type and a row for a lone one", %{
+    test "a section per group with its count, a stack for one type, a row for a lone one", %{
       conn: conn,
       invite: invite,
       quest: quest,
@@ -121,14 +121,22 @@ defmodule GamendWeb.NotificationsLiveTest do
       assert has_element?(view, "#notif-section-quests #notif-#{quest.id}")
       assert has_element?(view, "#notif-section-other #notif-#{plain.id}")
       refute has_element?(view, "#notif-stack-social-group_invite")
-    end
 
-    test "only a section shows a count, and a stack names no senders", %{conn: conn} do
-      {:ok, view, _html} = live(conn, ~p"/notifications")
-
+      # Only a section shows a count, and a stack names no senders.
       assert has_element?(view, "#notif-section-toggle-social .badge", "3")
       refute has_element?(view, "#notif-stack-social-friend_request .badge")
       refute has_element?(view, "#notif-stack-toggle-social-friend_request img")
+
+      # A notification with nowhere to go is plain text.
+      refute has_element?(view, "#notif-#{plain.id} a")
+
+      # Dates say how long ago.
+      assert has_element?(view, ~s(#notif-#{plain.id} time[data-local-time="relative"]))
+
+      assert has_element?(
+               view,
+               ~s(#notif-stack-toggle-social-friend_request time[data-local-time="relative"])
+             )
     end
 
     test "a notification opens its page, alone or from an open stack", %{
@@ -143,23 +151,6 @@ defmodule GamendWeb.NotificationsLiveTest do
 
       assert has_element?(view, ~s(#notif-#{quest.id} a[href="/quests"]))
       assert has_element?(view, ~s(#notif-#{other.id} a[href="/quests"]))
-    end
-
-    test "a notification with nowhere to go is plain text", %{conn: conn, plain: plain} do
-      {:ok, view, _html} = live(conn, ~p"/notifications")
-
-      refute has_element?(view, "#notif-#{plain.id} a")
-    end
-
-    test "dates say how long ago", %{conn: conn, plain: plain} do
-      {:ok, view, _html} = live(conn, ~p"/notifications")
-
-      assert has_element?(view, ~s(#notif-#{plain.id} time[data-local-time="relative"]))
-
-      assert has_element?(
-               view,
-               ~s(#notif-stack-toggle-social-friend_request time[data-local-time="relative"])
-             )
     end
 
     test "a stack opens to its notifications and closes again", %{

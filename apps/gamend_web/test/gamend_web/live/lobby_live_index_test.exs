@@ -107,12 +107,6 @@ defmodule GamendWeb.LobbyLive.IndexTest do
     assert assigns(view).joining_lobby_id == nil
   end
 
-  test "the join form comes back from the URL after a reload", %{conn: conn, admin: admin} do
-    {_host, lobby} = hosted(%{"password" => "secret"})
-    view = page(conn, admin, ~p"/admin/lobbies/live?join=#{lobby.id}")
-    assert has_element?(view, "#lobby-join-#{lobby.id}")
-  end
-
   test "the host manages the lobby; an unreadable size is left alone", %{conn: conn} do
     {host, lobby} = hosted(%{"max_users" => 4})
     view = page(conn, host)

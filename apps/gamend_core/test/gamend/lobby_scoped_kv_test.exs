@@ -11,7 +11,7 @@ defmodule Gamend.LobbyScopedKvTest do
   alias Gamend.Lobbies
 
   defp lobby_with_members(count) do
-    [host | rest] = users = for _ <- 1..count, do: AccountsFixtures.user_fixture()
+    [host | rest] = users = for _ <- 1..count, do: AccountsFixtures.unconfirmed_user_fixture()
     # create_lobby/1 already seats the host.
     {:ok, lobby} = Lobbies.create_lobby(%{title: "t", host_id: host.id, max_users: 8})
 

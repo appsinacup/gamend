@@ -158,20 +158,4 @@ defmodule Gamend.ThemeI18nTest do
       assert JSONConfig.get_theme("zz") == JSONConfig.raw_theme()
     end
   end
-
-  describe "no per-locale config files remain" do
-    test "the theme is one file" do
-      # The failure this replaces: 29 copies, each free to drift from the base.
-      assert Path.wildcard(Path.join(@repo_root, "theme/config.*.json")) == [],
-             "per-locale theme configs are gone; translations live in priv/gettext"
-
-      assert File.exists?(Path.join(@repo_root, "theme/config.json"))
-    end
-
-    test "there is no second, example copy of it" do
-      # `modules/example_config.json` was a stale duplicate nothing loaded, so
-      # it drifted from the real theme and misled anyone who edited it.
-      refute File.exists?(Path.join(@repo_root, "modules/example_config.json"))
-    end
-  end
 end

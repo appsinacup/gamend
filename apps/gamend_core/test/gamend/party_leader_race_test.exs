@@ -44,8 +44,8 @@ defmodule Gamend.PartyLeaderRaceTest do
   end
 
   setup do
-    leader = AccountsFixtures.user_fixture()
-    member = AccountsFixtures.user_fixture()
+    leader = AccountsFixtures.unconfirmed_user_fixture()
+    member = AccountsFixtures.unconfirmed_user_fixture()
     :ok = AccountsFixtures.befriend(leader, member)
 
     {:ok, party} = Parties.create_party(leader, %{"max_size" => 3})
@@ -78,7 +78,7 @@ defmodule Gamend.PartyLeaderRaceTest do
       leader: leader,
       party: party
     } do
-      third = AccountsFixtures.user_fixture()
+      third = AccountsFixtures.unconfirmed_user_fixture()
       :ok = AccountsFixtures.befriend(leader, third)
       {:ok, _} = Parties.invite_to_party(leader, third.id)
 

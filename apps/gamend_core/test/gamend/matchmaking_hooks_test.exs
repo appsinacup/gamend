@@ -90,7 +90,7 @@ defmodule Gamend.MatchmakingHooksTest do
   end
 
   defp player(rating) do
-    user = AccountsFixtures.user_fixture()
+    user = AccountsFixtures.unconfirmed_user_fixture()
     {:ok, user} = Gamend.Accounts.update_user(user, %{metadata: %{"rating" => rating}})
     {:ok, user} = user |> Ecto.Changeset.change(is_online: true) |> Repo.update()
     user
@@ -130,7 +130,7 @@ defmodule Gamend.MatchmakingHooksTest do
 
     test "after_matchmaking_cancel does not fire when nothing was queued" do
       assert Matchmaking.cancel(player(1000).id) == 0
-      refute_receive {:cancelled, _, _}, 100
+      refute_received {:cancelled, _, _}
     end
   end
 

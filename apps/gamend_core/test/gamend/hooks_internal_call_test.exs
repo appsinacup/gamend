@@ -31,24 +31,14 @@ defmodule Gamend.Hooks.InternalCallTest do
   end
 
   test "internal_call unwraps hook returning {:\:ok, value} (no double wrap)" do
-    # create a temporary module under the test namespace that returns {:ok, attrs}
-    mod = ReturnOkTuple
-
-    Application.put_env(:gamend_core, :hooks_module, mod)
-
-    # sanity-check the module exports
-    assert function_exported?(mod, :before_lobby_create, 1)
+    Application.put_env(:gamend_core, :hooks_module, ReturnOkTuple)
 
     assert {:ok, %{"name" => "t1", "x" => 1}} =
              Hooks.internal_call(:before_lobby_create, [%{name: "t1"}])
   end
 
   test "internal_call unwraps hook returning raw value and wraps it in {:ok, value}" do
-    mod = ReturnRaw
-
-    Application.put_env(:gamend_core, :hooks_module, mod)
-
-    assert function_exported?(mod, :before_lobby_create, 1)
+    Application.put_env(:gamend_core, :hooks_module, ReturnRaw)
 
     # raw return should be normalized to {:ok, value}
     assert {:ok, %{"name" => "t2", "raw" => true}} =
@@ -56,9 +46,7 @@ defmodule Gamend.Hooks.InternalCallTest do
   end
 
   test "internal_call returns sensible default when callback missing" do
-    mod = NoCallbacks
-
-    Application.put_env(:gamend_core, :hooks_module, mod)
+    Application.put_env(:gamend_core, :hooks_module, NoCallbacks)
 
     assert {:ok, %{"name" => "t3"}} =
              Hooks.internal_call(:before_lobby_create, [%{name: "t3"}])

@@ -58,13 +58,6 @@ defmodule Gamend.LeaderboardsTest do
       assert {:error, _} = Leaderboards.create_leaderboard(%{slug: "周榜 击杀", title: "x"})
     end
 
-    test "get_leaderboard/1 with integer id returns the leaderboard" do
-      attrs = %{slug: "get_test", title: "Test"}
-      {:ok, lb} = Leaderboards.create_leaderboard(attrs)
-
-      assert Leaderboards.get_leaderboard(lb.id).id == lb.id
-    end
-
     test "get_leaderboard/1 returns nil for non-existent id" do
       assert Leaderboards.get_leaderboard(Ecto.UUID.generate()) == nil
     end
@@ -175,11 +168,6 @@ defmodule Gamend.LeaderboardsTest do
       assert record.user_id == user.id
     end
 
-    test "accepts integer id", %{user: user, leaderboard: lb} do
-      assert {:ok, %Record{} = record} = Leaderboards.submit_score(lb.id, user.id, 1000)
-      assert record.score == 1000
-    end
-
     test "operator :set always replaces the score", %{user: user} do
       {:ok, lb} =
         Leaderboards.create_leaderboard(%{slug: "set_test", title: "Set", operator: :set})
@@ -263,7 +251,7 @@ defmodule Gamend.LeaderboardsTest do
 
       users =
         for i <- 1..10 do
-          user = AccountsFixtures.user_fixture()
+          user = AccountsFixtures.unconfirmed_user_fixture()
           Leaderboards.submit_score(lb.id, user.id, i * 100)
           user
         end
@@ -271,26 +259,14 @@ defmodule Gamend.LeaderboardsTest do
       %{leaderboard: lb, users: users}
     end
 
-    test "returns records with pagination and rank", %{leaderboard: lb} do
-      result = Leaderboards.list_records(lb.id, page: 1, page_size: 5)
-
-      assert length(result) == 5
-      total = Leaderboards.count_records(lb.id)
-      assert total == 10
-      # Records are ordered by score desc, so first should have rank 1
-      first = hd(result)
-      assert first.rank == 1
-      assert first.score == 1000
-    end
-
-    test "ranks are continuous across pages", %{leaderboard: lb} do
+    test "pages are ranked from the top, continuously across pages", %{leaderboard: lb} do
       page1 = Leaderboards.list_records(lb.id, page: 1, page_size: 5)
       page2 = Leaderboards.list_records(lb.id, page: 2, page_size: 5)
 
-      last_rank_page1 = List.last(page1).rank
-      first_rank_page2 = hd(page2).rank
-
-      assert first_rank_page2 == last_rank_page1 + 1
+      assert Leaderboards.count_records(lb.id) == 10
+      # Ordered by score desc, so the top score is rank 1.
+      assert Enum.map(page1, &{&1.rank, &1.score}) == for(r <- 1..5, do: {r, 1100 - r * 100})
+      assert Enum.map(page2, & &1.rank) == Enum.to_list(6..10)
     end
   end
 
@@ -360,7 +336,7 @@ defmodule Gamend.LeaderboardsTest do
 
       users =
         for i <- 1..5 do
-          user = AccountsFixtures.user_fixture()
+          user = AccountsFixtures.unconfirmed_user_fixture()
           Leaderboards.submit_score(lb.id, user.id, i * 100)
           user
         end
@@ -382,27 +358,6 @@ defmodule Gamend.LeaderboardsTest do
   end
 
   describe "list_records_around_user/3" do
-    test "returns records around the user's position" do
-      {:ok, lb} = Leaderboards.create_leaderboard(%{slug: "around_test", title: "Test"})
-
-      users =
-        for i <- 1..10 do
-          user = AccountsFixtures.user_fixture()
-          Leaderboards.submit_score(lb.id, user.id, i * 100)
-          user
-        end
-
-      # User with score 500 should be rank 6 (10 - 5 + 1 = 6 in desc order)
-      target_user = Enum.at(users, 4)
-
-      result = Leaderboards.list_records_around_user(lb.id, target_user.id, limit: 5)
-
-      # Should get up to 5 records centered around the user
-      refute Enum.empty?(result)
-      # The user should be in the result
-      assert Enum.any?(result, fn r -> r.user_id == target_user.id end)
-    end
-
     test "returns empty list for user without record" do
       {:ok, lb} = Leaderboards.create_leaderboard(%{slug: "around_empty_test", title: "Test"})
       user = AccountsFixtures.user_fixture()
@@ -416,7 +371,7 @@ defmodule Gamend.LeaderboardsTest do
       # Descending board, so the user given score i * 100 sits at rank 11 - i.
       users =
         for i <- 1..10 do
-          user = AccountsFixtures.user_fixture()
+          user = AccountsFixtures.unconfirmed_user_fixture()
           Leaderboards.submit_score(lb.id, user.id, i * 100)
           user
         end
@@ -441,8 +396,8 @@ defmodule Gamend.LeaderboardsTest do
       {:ok, lb} = Leaderboards.create_leaderboard(%{slug: "around_atomic_test", title: "Test"})
 
       users =
-        for i <- 1..10 do
-          user = AccountsFixtures.user_fixture()
+        for i <- 1..3 do
+          user = AccountsFixtures.unconfirmed_user_fixture()
           Leaderboards.submit_score(lb.id, user.id, i * 100)
           user
         end

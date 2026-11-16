@@ -9,12 +9,7 @@ defmodule GamendWeb.Api.V1.UserControllerTest do
     a = user_fixture(%{email: "search-me@example.com"})
     {:ok, a} = Accounts.update_user_display_name(a, %{"display_name" => "SearchMe"})
 
-    conn = get(conn, "/api/v1/users", %{q: "Search"})
-    assert conn.status == 200
-
-    resp = json_response(conn, 200)
-    assert is_map(resp)
-    assert is_list(resp["data"])
+    resp = conn |> get("/api/v1/users", %{q: "Search"}) |> json_response(200)
     assert Enum.any?(resp["data"], fn r -> r["id"] == a.id end)
     assert Enum.all?(resp["data"], fn r -> not Map.has_key?(r, "email") end)
   end
@@ -37,22 +32,17 @@ defmodule GamendWeb.Api.V1.UserControllerTest do
       {:ok, _user} = Accounts.update_user_display_name(user, %{"display_name" => "Many"})
     end
 
-    # page 1, size 2
-    conn1 = get(conn, "/api/v1/users", %{q: "Many", page: 1, page_size: 2})
-    resp1 = json_response(conn1, 200)
+    resp1 =
+      conn |> get("/api/v1/users", %{q: "Many", page: 1, page_size: 2}) |> json_response(200)
+
     assert length(resp1["data"]) == 2
+    assert %{"total_count" => 3, "total_pages" => 2, "has_more" => true} = resp1["meta"]
 
-    expected_total = Gamend.Accounts.count_search_users("Many")
-    assert resp1["meta"]["total_count"] == expected_total
-    assert resp1["meta"]["total_pages"] == div(expected_total + 2 - 1, 2)
+    resp2 =
+      conn |> get("/api/v1/users", %{q: "Many", page: 2, page_size: 2}) |> json_response(200)
 
-    # page 2 should have the remaining results (could be 0..1 depending on fixtures)
-    conn2 = get(conn, "/api/v1/users", %{q: "Many", page: 2, page_size: 2})
-    resp2 = json_response(conn2, 200)
-    remaining = max(0, expected_total - 2)
-    assert length(resp2["data"]) == remaining
-    assert resp2["meta"]["total_count"] == expected_total
-    assert resp2["meta"]["total_pages"] == div(expected_total + 2 - 1, 2)
+    assert length(resp2["data"]) == 1
+    assert %{"total_count" => 3, "has_more" => false} = resp2["meta"]
   end
 
   test "GET /api/v1/users/:id returns user info", %{conn: conn} do
@@ -181,7 +171,7 @@ defmodule GamendWeb.Api.V1.UserControllerTest do
       refute Map.has_key?(row, "profile_url")
 
       resp = conn |> get("/api/v1/users/#{user.id}") |> json_response(200)
-      refute Map.has_key?(resp, "profile_url")
+      refute Map.has_key?(resp["data"], "profile_url")
     end
   end
 end

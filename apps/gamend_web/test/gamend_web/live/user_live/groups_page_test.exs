@@ -165,6 +165,7 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
     {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups")
 
+    refute has_element?(view, "a[title='Back']")
     refute has_element?(view, "#my-group-#{team.id} button", "Leave")
     view |> element("#my-group-#{team.id} a") |> render_click()
 
@@ -175,7 +176,7 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
 
   # A group is a page under the list's path, so `back_link.js` takes Back to
   # the list the reader opened it from rather than walking past it.
-  test "Back from a group opens the list, which has no Back of its own", %{
+  test "Back from a group opens the list", %{
     conn: conn,
     user: user
   } do
@@ -187,9 +188,6 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
 
     assert {:error, {:live_redirect, %{to: "/users/groups"}}} =
              view |> element("a[title='Back']") |> render_click()
-
-    {:ok, list, _html} = conn |> log_in_user(user) |> live("/users/groups")
-    refute has_element?(list, "a[title='Back']")
   end
 
   test "the old ?group= link opens the group's own path", %{conn: conn, user: user} do
@@ -204,51 +202,6 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
 
     {:ok, view, _html} = conn |> log_in_user(user) |> live(to)
     assert assigns(view).group_detail.id == team.id
-  end
-
-  test "a team opens from its URL and a colleague is invited by name, never found by email", %{
-    conn: conn,
-    user: user,
-    other: other
-  } do
-    {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
-    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{team.id}")
-    assert assigns(view).group_detail.id == team.id
-
-    render_keyup(view, "group_invite_search", %{"value" => other.email})
-    assert assigns(view).invite_search_results == []
-
-    render_keyup(view, "group_invite_search", %{"value" => other.username})
-    assert [%{id: other_id}] = assigns(view).invite_search_results
-    assert other_id == other.id
-
-    render_click(view, "group_invite_user", %{"group_id" => team.id, "user_id" => other.id})
-    assert [%{recipient_id: ^other_id}] = Groups.list_sent_invitations(user.id)
-  end
-
-  # The invitations tabs read the invite's `group_title`; they read a
-  # `group_name` invites have not had since groups lost their name, and
-  # crashed the page for anyone with an invite pending.
-  test "the invited colleague sees the invite and accepts it", %{
-    conn: conn,
-    user: user,
-    other: other
-  } do
-    {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
-    {:ok, _invite} = Groups.invite_to_group(user.id, team.id, other.id)
-
-    {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups")
-
-    assert view |> element("button[phx-value-tab='sent_invitations']") |> render_click() =~
-             "Studio"
-
-    {:ok, view, _html} = build_conn() |> log_in_user(other) |> live("/users/groups")
-    html = view |> element("button[phx-value-tab='invitations']") |> render_click()
-    assert html =~ "Studio"
-    assert html =~ Gamend.Accounts.display_name(user)
-
-    view |> element("button[phx-click='group_accept_invite']") |> render_click()
-    assert Groups.member?(team.id, other.id)
   end
 
   test "an admin shares an invite link, and whoever opens it joins", %{
@@ -299,11 +252,15 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     assert to =~ "/users/log_in"
   end
 
-  test "an admin sees the group's pending invites, the invited stay marked, and one is cancelled",
+  test "a colleague is invited by name, never found by email; the admin sees the invite and cancels it",
        %{conn: conn, user: user, other: other} do
     {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
     {:ok, view, _html} = conn |> log_in_user(user) |> live("/users/groups/#{team.id}")
+    assert assigns(view).group_detail.id == team.id
     refute has_element?(view, "#group-pending-invites")
+
+    render_keyup(view, "group_invite_search", %{"value" => other.email})
+    assert assigns(view).invite_search_results == []
 
     render_keyup(view, "group_invite_search", %{"value" => other.username})
     render_click(view, "group_invite_user", %{"group_id" => team.id, "user_id" => other.id})
@@ -311,6 +268,7 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     # Still in the results, marked Invited, and listed under the group.
     assert [%{id: other_id}] = assigns(view).invite_search_results
     assert other_id == other.id
+    assert [%{recipient_id: ^other_id}] = Groups.list_sent_invitations(user.id)
     assert render(view) =~ "Invited"
 
     refute has_element?(
@@ -326,14 +284,23 @@ defmodule GamendWeb.UserLive.GroupsPageTest do
     assert {:ok, []} = Groups.list_group_invites(user.id, team.id)
   end
 
+  # The invitations tabs read the invite's `group_title`; they read a
+  # `group_name` invites have not had since groups lost their name, and
+  # crashed the page for anyone with an invite pending.
   test "someone with an invite lands on Invitations, and on their groups once it is accepted",
        %{conn: conn, user: user, other: other} do
     {:ok, team} = Groups.create_group(user.id, %{"title" => "Studio"})
     {:ok, _invite} = Groups.invite_to_group(user.id, team.id, other.id)
 
-    {:ok, view, html} = conn |> log_in_user(other) |> live("/users/groups")
+    {:ok, sender, _html} = conn |> log_in_user(user) |> live("/users/groups")
+
+    assert sender |> element("button[phx-value-tab='sent_invitations']") |> render_click() =~
+             "Studio"
+
+    {:ok, view, html} = build_conn() |> log_in_user(other) |> live("/users/groups")
     assert assigns(view).groups_tab == "invitations"
     assert html =~ "Studio"
+    assert html =~ Gamend.Accounts.display_name(user)
 
     view |> element("button[phx-click='group_accept_invite']") |> render_click()
     assert assigns(view).groups_tab == "my_groups"

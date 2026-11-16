@@ -761,9 +761,11 @@ defmodule Gamend.RetentionTest do
 
     test "reaches an orphan that sorts past the first page of objects" do
       # Both backends list in key order, so an orphan whose owner id sorts last
-      # is only found if the sweep pages past the live users ahead of it.
+      # is only found if the sweep pages past the live users ahead of it: two
+      # full pages of them at a batch of 2.
+      Application.put_env(:gamend_core, Gamend.Retention, batch_size: 2)
       live = AccountsFixtures.user_fixture()
-      for _ <- 1..500, do: put_avatar(live.id, 120)
+      for _ <- 1..4, do: put_avatar(live.id, 120)
       orphan_key = put_avatar("ffffffff-ffff-7fff-8fff-ffffffffffff", 120)
 
       assert Retention.prune_all().orphaned_avatars == 1

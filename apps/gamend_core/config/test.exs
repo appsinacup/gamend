@@ -6,6 +6,12 @@ import Config
 
 config :bcrypt_elixir, :log_rounds, 1
 
+# 256 KiB / 1 pass, as the host's config/test.exs: at the production settings
+# every set_password and login in this suite is a 16 MiB Argon2id hash.
+config :gamend_core, Gamend.Accounts.PasswordHash,
+  argon2_memory_log2: 8,
+  argon2_time_cost: 1
+
 # Named after the project running the suite, so gamend_core and gamend_web —
 # which imports this file — each test against their own database.
 test_app = Mix.Project.config()[:app]

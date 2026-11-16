@@ -71,7 +71,7 @@ defmodule GamendWeb.UserChannelNotificationsTest do
     assert payload.group == ""
   end
 
-  test "notifications persist across sessions (reconnect)" do
+  test "a pushed notification is pushed again to the next session" do
     {a, b} = make_friends()
 
     # Send a notification
@@ -80,16 +80,13 @@ defmodule GamendWeb.UserChannelNotificationsTest do
     # First session - connect and receive
     {:ok, token, _claims} = Guardian.encode_and_sign(b)
     {:ok, socket1} = connect(GamendWeb.UserSocket, %{"token" => token})
-    {:ok, _, socket1} = subscribe_and_join(socket1, "user:#{b.id}", %{})
+    {:ok, _, _socket1} = subscribe_and_join(socket1, "user:#{b.id}", %{})
 
     assert_push "updated", _
     assert_push "notification_created", %{title: "Persist"}
 
-    # Leave the channel (simulating disconnect)
-    Process.unlink(socket1.channel_pid)
-    :ok = close(socket1)
-
-    # Reconnect - should still get the notification since it wasn't deleted
+    # Another session (the first left open: closing one waits out the
+    # disconnect's recheck) still gets it, since pushing deletes nothing.
     {:ok, socket2} = connect(GamendWeb.UserSocket, %{"token" => token})
     {:ok, _, _socket2} = subscribe_and_join(socket2, "user:#{b.id}", %{})
 
@@ -108,11 +105,12 @@ defmodule GamendWeb.UserChannelNotificationsTest do
     # Connect - should NOT receive the deleted notification
     {:ok, token, _claims} = Guardian.encode_and_sign(b)
     {:ok, socket} = connect(GamendWeb.UserSocket, %{"token" => token})
-    {:ok, _, _socket} = subscribe_and_join(socket, "user:#{b.id}", %{})
+    {:ok, _, socket} = subscribe_and_join(socket, "user:#{b.id}", %{})
 
     assert_push "updated", _
 
-    # Should not receive any notification
-    refute_push "notification_created", _, 200
+    # The join's pushes are all sent by the time the channel answers a call.
+    _ = :sys.get_state(socket.channel_pid)
+    refute_push "notification_created", _, 0
   end
 end

@@ -25,11 +25,11 @@ defmodule Gamend.PartyInviteCapRaceTest do
   test "invites from many leaders at once end at the recipient's cap" do
     {player, leaders} =
       unboxed(fn ->
-        player = AccountsFixtures.user_fixture()
+        player = AccountsFixtures.unconfirmed_user_fixture()
 
         leaders =
           for _ <- 1..6 do
-            leader = AccountsFixtures.user_fixture()
+            leader = AccountsFixtures.unconfirmed_user_fixture()
             :ok = AccountsFixtures.befriend(leader, player)
             {:ok, _party} = Parties.create_party(leader, %{})
             leader

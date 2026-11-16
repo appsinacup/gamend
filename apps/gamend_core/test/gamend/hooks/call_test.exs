@@ -57,7 +57,7 @@ defmodule Gamend.Hooks.CallTest do
     assert {:error, :not_implemented} = Gamend.Hooks.call(:hidden, [])
   end
 
-  test "extracts docs and returns info from docs when available" do
+  test "docs, signatures and example args come from the module's beam" do
     mod =
       Module.concat([
         Gamend,
@@ -65,28 +65,55 @@ defmodule Gamend.Hooks.CallTest do
         String.to_atom("DocsTest_#{System.unique_integer([:positive])}")
       ])
 
-    Module.create(
-      mod,
-      quote do
-        @moduledoc false
-        @doc "Does something.\n\nReturns: a special return value"
-        def foo(a), do: {:ok, a}
-      end,
-      __ENV__
-    )
+    # `mix test` compiles without docs; a plugin is compiled with them.
+    docs = Code.get_compiler_option(:docs)
+    Code.put_compiler_option(:docs, true)
+
+    {:module, ^mod, beam, _} =
+      try do
+        Module.create(
+          mod,
+          quote do
+            @moduledoc false
+            @doc "Does something.\n\nReturns: a special return value"
+            def foo(count), do: {:ok, count}
+
+            @doc "No-arg function"
+            def no_args, do: :ok
+          end,
+          __ENV__
+        )
+      after
+        Code.put_compiler_option(:docs, docs)
+      end
+
+    # Docs are read from a beam on the code path, as a plugin's ebin is: a
+    # module that only exists in memory has none.
+    dir = Path.join(System.tmp_dir!(), "gs-hooks-docs-#{System.unique_integer([:positive])}")
+    File.mkdir_p!(dir)
+    File.write!(Path.join(dir, "#{mod}.beam"), beam)
+    :code.purge(mod)
+    :code.delete(mod)
+    Code.prepend_path(dir)
+
+    on_exit(fn ->
+      Code.delete_path(dir)
+      File.rm_rf!(dir)
+    end)
+
+    {:module, ^mod} = Code.ensure_loaded(mod)
 
     Application.put_env(:gamend_core, :hooks_module, mod)
-
     funcs = Gamend.Hooks.exported_functions()
-    foo = Enum.find(funcs, fn f -> f.name == "foo" end)
-    assert foo != nil
-    sig = Enum.find(foo.signatures, &(&1.arity == 1))
-    assert sig != nil
 
-    if is_binary(sig.doc) do
-      assert sig.doc =~ "Does something"
-      assert sig.doc =~ "Returns: a special return value"
-    end
+    assert %{signatures: [foo]} = Enum.find(funcs, &(&1.name == "foo"))
+    assert foo.doc =~ "Returns: a special return value"
+    assert foo.signature == "foo(count)"
+    assert foo.example_args == "[0]"
+
+    assert %{signatures: [no_args]} = Enum.find(funcs, &(&1.name == "no_args"))
+    assert no_args.signature == "no_args()"
+    assert no_args.example_args == "[]"
   end
 
   test "call returns :not_implemented for missing function" do
@@ -252,57 +279,5 @@ defmodule Gamend.Hooks.CallTest do
     assert no_doc != nil
     # signature may be nil when neither docs nor source are available
     assert Enum.any?(no_doc.signatures, fn s -> s.signature == nil end)
-  end
-
-  test "zero-arity functions produce example_args of []" do
-    mod =
-      Module.concat([
-        Gamend,
-        TestHooks,
-        String.to_atom("ZeroArity_#{System.unique_integer([:positive])}")
-      ])
-
-    Code.compile_string("""
-    defmodule #{inspect(mod)} do
-      @moduledoc false
-
-      @doc "No-arg function"
-      def no_args, do: :ok
-    end
-    """)
-
-    Application.put_env(:gamend_core, :hooks_module, mod)
-
-    funcs = Gamend.Hooks.exported_functions()
-    f = Enum.find(funcs, &(&1.name == "no_args"))
-    assert f != nil
-
-    sig = Enum.find(f.signatures, &(&1.arity == 0))
-    assert sig != nil
-    # Signatures may be nil when docs/typespecs are not available.
-    assert sig.example_args in ["[]", nil]
-  end
-
-  test "prefers @spec types for signatures when available" do
-    _mod =
-      Module.concat([
-        Gamend,
-        TestHooks,
-        String.to_atom("SpecTest_#{System.unique_integer([:positive])}")
-      ])
-
-    # Not all dynamically compiled modules will retain typespecs in every
-    # runtime. Use a known stdlib module (String) which has specs available
-    # to validate that typespec extraction works when specs are present.
-    Application.put_env(:gamend_core, :hooks_module, String)
-
-    funcs = Gamend.Hooks.exported_functions()
-
-    # ensure some signature text is present; prefer doc/parsed signatures which contain param names
-    assert Enum.any?(funcs, fn f ->
-             Enum.any?(f.signatures, fn s ->
-               is_binary(s.signature) and String.contains?(s.signature, "(")
-             end)
-           end)
   end
 end

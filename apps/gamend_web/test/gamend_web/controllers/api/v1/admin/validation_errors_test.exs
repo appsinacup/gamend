@@ -56,41 +56,6 @@ defmodule GamendWeb.Api.V1.Admin.ValidationErrorsTest do
     end
   end
 
-  describe "an admin request naming a user who does not exist" do
-    # These raised Ecto.ConstraintError before the contexts checked first, so
-    # the response was a 500.
-    test "leaderboard record create answers 404", %{admin_conn: conn} do
-      {:ok, board} =
-        Gamend.Leaderboards.create_leaderboard(%{
-          "slug" => "fk404_#{System.unique_integer([:positive])}",
-          "title" => "FK 404"
-        })
-
-      body =
-        conn
-        |> post(~p"/api/v1/admin/leaderboards/#{board.id}/records", %{
-          "user_id" => Ecto.UUID.generate(),
-          "score" => 10
-        })
-        |> json_response(404)
-
-      assert body["error"] == "user_not_found"
-    end
-
-    test "economy grant answers 404", %{admin_conn: conn} do
-      body =
-        conn
-        |> post(~p"/api/v1/admin/economy/grant", %{
-          "user_id" => Ecto.UUID.generate(),
-          "currency" => "gold",
-          "amount" => 10
-        })
-        |> json_response(404)
-
-      assert body["error"] == "user_not_found"
-    end
-  end
-
   describe "admin leaderboard record create, malformed input" do
     setup do
       {:ok, board} =

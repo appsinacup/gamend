@@ -61,12 +61,6 @@ defmodule GamendWeb.BrotliCompressorTest do
     end
   end
 
-  describe "file_extensions/0" do
-    test "is .br" do
-      assert BrotliCompressor.file_extensions() == [".br"]
-    end
-  end
-
   defp without_path(dir, fun) do
     original = System.get_env("PATH")
     System.put_env("PATH", dir)

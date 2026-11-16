@@ -17,11 +17,15 @@ defmodule Gamend.PartyAcceptRaceTest do
   alias Gamend.Groups
   alias Gamend.Parties
   alias Gamend.Repo
+  alias Gamend.Repo.AdvisoryLock
 
-  @rounds 25
+  # Postgres is where the racers overlap (CI's test-postgres job); SQLite runs
+  # their writes one at a time, so a few rounds there only walk the path.
+  defp rounds, do: if(AdvisoryLock.postgres?(), do: 25, else: 5)
 
   setup do
-    [leader_a, leader_b, player] = players = for _ <- 1..3, do: AccountsFixtures.user_fixture()
+    [leader_a, leader_b, player] =
+      players = for _ <- 1..3, do: AccountsFixtures.unconfirmed_user_fixture()
 
     # Party invites need the leader and the player connected and online.
     ids = Enum.map(players, & &1.id)
@@ -33,7 +37,7 @@ defmodule Gamend.PartyAcceptRaceTest do
   end
 
   test "a kick from the current party never fails an accept", ctx do
-    for _ <- 1..@rounds do
+    for _ <- 1..rounds() do
       {:ok, party_a} = Parties.create_party(me(ctx.leader_a), %{max_size: 4})
       {:ok, _} = Parties.invite_to_party(me(ctx.leader_a), ctx.player.id)
       {:ok, _} = Parties.accept_party_invite(me(ctx.player), party_a.id)
@@ -43,8 +47,6 @@ defmodule Gamend.PartyAcceptRaceTest do
 
       kick = Task.async(fn -> Parties.kick_member(me(ctx.leader_a), ctx.player.id) end)
       accept = Task.async(fn -> Parties.accept_party_invite(me(ctx.player), party_b.id) end)
-      # Generous, as in `race/2` of `Gamend.GroupAdminRaceTest`: a `:global`
-      # lock's waiter backs off by a growing random sleep.
       _kicked_or_already_gone = Task.await(kick, 60_000)
 
       assert {:ok, _} = Task.await(accept, 60_000)

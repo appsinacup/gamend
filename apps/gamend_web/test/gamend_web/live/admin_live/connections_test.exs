@@ -50,6 +50,6 @@ defmodule GamendWeb.AdminLive.ConnectionsTest do
     send(view.pid, :refresh)
     send(view.pid, :unrelated)
     render_click(view, "filter-connections", %{"filter" => "liveview"})
-    assert :sys.get_state(view.pid).socket.assigns.conn_filter == "liveview"
+    assert has_element?(view, "#conn-user-#{admin.id}")
   end
 end

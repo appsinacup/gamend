@@ -43,16 +43,6 @@ defmodule GamendWeb.UserChannelMatchmakingTest do
     assert is_binary(lobby_id)
   end
 
-  test "matchmaking:join is no longer a channel push (moved to HTTP)" do
-    socket = join_user_channel(user_fixture())
-
-    ref = push(socket, "matchmaking:join", %{"match_params" => %{"mode" => "duel"}})
-    assert_reply ref, :error, %{error: "unknown_event"}
-
-    ref = push(socket, "matchmaking:cancel", %{})
-    assert_reply ref, :error, %{error: "unknown_event"}
-  end
-
   test "socket disconnect cancels the user's queued tickets" do
     user = user_fixture()
     socket = join_user_channel(user)
@@ -74,10 +64,16 @@ defmodule GamendWeb.UserChannelMatchmakingTest do
     new_page = spawn(fn -> Process.sleep(:infinity) end)
     {:ok, _} = Online.connected(old_page, user.id, "page")
     {:ok, _} = Matchmaking.join(user, %{"mode" => "duel"})
+    Phoenix.PubSub.subscribe(Gamend.PubSub, "user:#{user.id}")
 
-    # Its recheck waits a moment (inline in tests), while the next page opens.
+    # Its recheck waits a moment (inline in tests), while the next page opens:
+    # marked offline, the close is past its look for another socket and into
+    # that wait.
     closing = Task.async(fn -> Online.disconnected(user.id, old_page) end)
-    Process.sleep(200)
+
+    assert_receive %Phoenix.Socket.Broadcast{event: "updated", payload: %{is_online: false}},
+                   5_000
+
     {:ok, _} = Online.connected(new_page, user.id, "page")
     Task.await(closing, 10_000)
 

@@ -26,8 +26,9 @@ defmodule Gamend.Hooks.InternalCallPluginFanoutTest do
       Module.create(
         hook_mod,
         quote do
-          @behaviour Gamend.Hooks
+          use Gamend.Hooks
 
+          @impl true
           def after_user_register(_user) do
             if pid = Application.get_env(:gamend, :plugin_fanout_test_pid) do
               send(pid, :after_user_register_called)
@@ -35,49 +36,6 @@ defmodule Gamend.Hooks.InternalCallPluginFanoutTest do
 
             :ok
           end
-
-          # satisfy behaviour with default no-ops where required
-          def after_startup, do: :ok
-          def before_stop, do: :ok
-          def after_user_logged_in(_user), do: :ok
-          def after_user_updated(_user), do: :ok
-          def before_user_update(_user, attrs), do: {:ok, attrs}
-          def on_custom_hook(_hook, _args), do: {:error, :not_implemented}
-
-          def before_lobby_create(attrs), do: {:ok, attrs}
-          def after_lobby_create(_lobby), do: :ok
-          def before_group_create(_user, attrs), do: {:ok, attrs}
-          def after_group_create(_group), do: :ok
-          def before_group_join(user, group, opts), do: {:ok, {user, group, opts}}
-          def before_group_update(_group, attrs), do: {:ok, attrs}
-          def after_group_updated(_group), do: :ok
-          def before_lobby_join(user, lobby, opts), do: {:ok, {user, lobby, opts}}
-          def before_chat_message(_user, attrs), do: {:ok, attrs}
-          def after_chat_message(_message), do: :ok
-          def after_lobby_join(_user, _lobby), do: :ok
-          def before_lobby_leave(user, lobby), do: {:ok, {user, lobby}}
-          def after_lobby_leave(_user, _lobby), do: :ok
-          def before_lobby_update(_lobby, attrs), do: {:ok, attrs}
-          def after_lobby_updated(_lobby), do: :ok
-          def before_lobby_delete(lobby), do: {:ok, lobby}
-          def after_lobby_deleted(_lobby), do: :ok
-          def before_lobby_kick(host, target, lobby), do: {:ok, {host, target, lobby}}
-          def after_lobby_kick(_host, _target, _lobby), do: :ok
-          def after_lobby_host_change(_lobby, _new_host_id), do: :ok
-          def after_group_join(_user_id, _group), do: :ok
-          def after_group_leave(_user_id, _group_id), do: :ok
-          def after_group_deleted(_group), do: :ok
-          def after_group_kick(_admin_id, _target_id, _group_id), do: :ok
-          def before_party_create(_user, attrs), do: {:ok, attrs}
-          def after_party_create(_party), do: :ok
-          def before_party_update(_party, attrs), do: {:ok, attrs}
-          def after_party_updated(_party), do: :ok
-          def after_party_join(_user, _party), do: :ok
-          def after_party_leave(_user, _party_id), do: :ok
-          def after_party_kick(_target, _leader, _party), do: :ok
-          def after_party_disband(_party), do: :ok
-
-          def before_kv_get(_key, _opts), do: :public
         end,
         __ENV__
       )

@@ -48,7 +48,7 @@ defmodule Gamend.MatchmakingSeatHookTest do
   defp answer(fun), do: Application.put_env(:gamend, @answer_key, fun)
 
   defp user do
-    AccountsFixtures.user_fixture()
+    AccountsFixtures.unconfirmed_user_fixture()
     |> Ecto.Changeset.change(is_online: true)
     |> Repo.update!()
   end

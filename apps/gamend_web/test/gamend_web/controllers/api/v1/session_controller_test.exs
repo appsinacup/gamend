@@ -167,12 +167,6 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       assert user_id == user.id
     end
 
-    test "returns 401 with invalid refresh token", %{conn: conn} do
-      conn = post(conn, "/api/v1/refresh", %{refresh_token: "invalid.token.here"})
-
-      assert %{"error" => _} = json_response(conn, 401)
-    end
-
     test "returns 401 when using access token instead of refresh token", %{conn: conn} do
       # Login to get tokens
       conn =

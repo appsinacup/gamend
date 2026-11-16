@@ -19,6 +19,6 @@ defmodule Gamend.RealtimeTest do
       end)
 
     assert log =~ "never_declared_event"
-    refute_receive {:plugin_event, _, _}, 50
+    refute_received {:plugin_event, _, _}
   end
 end

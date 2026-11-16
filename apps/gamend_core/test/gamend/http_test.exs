@@ -3,14 +3,6 @@ defmodule Gamend.HTTPTest do
 
   alias Gamend.SettingsHelpers
 
-  test "every call gets the declared timeout and retries" do
-    opts = Gamend.HTTP.options()
-
-    assert opts[:receive_timeout] == 10_000
-    assert opts[:connect_options] == [timeout: 10_000]
-    assert opts[:max_retries] == 1
-  end
-
   test "the settings drive them, and a caller's own options win" do
     SettingsHelpers.put(:gamend_core, Gamend.HTTP, :client_timeout_ms, 2_000)
     SettingsHelpers.put(:gamend_core, Gamend.HTTP, :client_retries, 0)

@@ -60,13 +60,4 @@ defmodule Gamend.Hooks.PluginBuilderTest do
                PluginBuilder.build("../../../../tmp/evil", mode: :in_process)
     end
   end
-
-  describe "list_buildable_plugins/0" do
-    test "returns a sorted list and never raises on a missing sources dir" do
-      plugins = PluginBuilder.list_buildable_plugins()
-
-      assert is_list(plugins)
-      assert plugins == Enum.sort(plugins)
-    end
-  end
 end

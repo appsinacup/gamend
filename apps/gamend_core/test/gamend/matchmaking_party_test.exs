@@ -13,7 +13,7 @@ defmodule Gamend.MatchmakingPartyTest do
   alias Gamend.Parties
 
   defp online_user do
-    user = AccountsFixtures.user_fixture()
+    user = AccountsFixtures.unconfirmed_user_fixture()
     {:ok, user} = user |> Ecto.Changeset.change(is_online: true) |> Repo.update()
     user
   end
@@ -237,7 +237,7 @@ defmodule Gamend.MatchmakingPartyTest do
     end
 
     test "a never-connected HTTP queuer gets the grace period from queued_at" do
-      user = AccountsFixtures.user_fixture()
+      user = AccountsFixtures.unconfirmed_user_fixture()
       assert user.is_online == false
       assert user.last_seen_at == nil
 

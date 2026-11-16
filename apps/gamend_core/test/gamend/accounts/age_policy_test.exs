@@ -68,16 +68,12 @@ defmodule Gamend.Accounts.AgePolicyTest do
   end
 
   describe "age_in_years/3" do
-    test "rolls on the first of the birth month" do
+    test "rolls on the first of the birth month, so it never reports an account younger" do
       # Born June 2010, asked in May 2026: not yet 16.
       assert AgePolicy.age_in_years(2010, 6, ~D[2026-05-31]) == 15
-      # ...and on the 1st of June, 16.
-      assert AgePolicy.age_in_years(2010, 6, ~D[2026-06-01]) == 16
-    end
-
-    test "never reports an account as younger than it is" do
-      # Conservative by up to 30 days: someone born 30 June is treated as
-      # having had their birthday on the 1st, so the age errs high, never low.
+      # ...and on the 1st of June, 16. Conservative by up to 30 days: someone
+      # born 30 June is treated as having had their birthday on the 1st, so the
+      # age errs high, never low.
       assert AgePolicy.age_in_years(2010, 6, ~D[2026-06-01]) == 16
     end
   end

@@ -24,17 +24,11 @@ defmodule GamendWeb.AdminLive.StorageTest do
     %{conn: log_in_user(conn, admin)}
   end
 
-  test "renders usage and object rows", %{conn: conn} do
+  test "lists an object with the adapter it is on, and deletes it", %{conn: conn} do
     Storage.put("avatars/a/1.png", "xx", content_type: "image/png")
-
-    {:ok, _view, html} = live(conn, "/admin/storage")
+    {:ok, view, html} = live(conn, "/admin/storage")
     assert html =~ "Local disk"
     assert html =~ "avatars/a/1.png"
-  end
-
-  test "delete removes an object", %{conn: conn} do
-    Storage.put("avatars/a/1.png", "xx", content_type: "image/png")
-    {:ok, view, _html} = live(conn, "/admin/storage")
 
     view |> element(~s(button[phx-value-key="avatars/a/1.png"])) |> render_click()
 

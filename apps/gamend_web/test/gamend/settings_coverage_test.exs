@@ -48,16 +48,6 @@ defmodule Gamend.SettingsCoverageTest do
       assert wrong == [], "names not following the convention: #{inspect(wrong)}"
     end
 
-    test "the declaration offers no way to pin a name" do
-      # `env:` and `external:` were removed so an exception cannot come back.
-      assert_raise ArgumentError, ~r/unknown option\(s\) \[:env\]/, fn ->
-        defmodule PinnedName do
-          use Gamend.Settings.Provider, app: :gamend_core, group: :pinned
-          setting(:thing, :string, env: "LEGACY_NAME")
-        end
-      end
-    end
-
     test "every group has a display label" do
       for definition <- @definitions do
         assert is_binary(definition.label) and definition.label != "",

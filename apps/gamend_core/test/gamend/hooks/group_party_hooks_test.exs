@@ -196,9 +196,9 @@ defmodule Gamend.Hooks.GroupPartyHooksTest do
         else: Application.delete_env(:gamend, :hooks_test_pid)
     end)
 
-    owner = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-    other = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-    third = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+    owner = AccountsFixtures.unconfirmed_user_fixture()
+    other = AccountsFixtures.unconfirmed_user_fixture()
+    third = AccountsFixtures.unconfirmed_user_fixture()
 
     # Invites require a connection between the two accounts.
     :ok = AccountsFixtures.befriend(owner, other)

@@ -341,22 +341,6 @@ defmodule GamendWeb.PageControllerTest do
     assert body =~ "href=\"/admin/reports\""
   end
 
-  test "privacy page present", %{conn: conn} do
-    conn = get(conn, "/privacy")
-    body = html_response(conn, 200)
-
-    assert body =~ "Privacy Policy"
-    assert body =~ "Information We Collect"
-  end
-
-  test "terms page present", %{conn: conn} do
-    conn = get(conn, "/terms")
-    body = html_response(conn, 200)
-
-    assert body =~ "Terms and Conditions"
-    assert body =~ "Acceptance of Terms"
-  end
-
   # The reference page: every example captioned with its classes, and kept out
   # of search, since it is a reference and not content.
   test "the UI page shows the building blocks and is not indexed", %{conn: conn} do
@@ -410,18 +394,11 @@ defmodule GamendWeb.PageControllerTest do
     end
   end
 
-  test "privacy link present in layout", %{conn: conn} do
-    conn = get(conn, "/")
-    body = html_response(conn, 200)
+  test "the layout links the privacy and terms pages", %{conn: conn} do
+    body = conn |> get("/") |> html_response(200)
 
-    assert body =~ "href=\"/privacy\""
-  end
-
-  test "terms link present in layout", %{conn: conn} do
-    conn = get(conn, "/")
-    body = html_response(conn, 200)
-
-    assert body =~ "href=\"/terms\""
+    assert body =~ ~s(href="/privacy")
+    assert body =~ ~s(href="/terms")
   end
 
   test "footer column labels are not headings", %{conn: conn} do

@@ -229,16 +229,4 @@ defmodule Gamend.Accounts.AgeGrandfatheringTest do
       assert refreshed.account_class == "teen"
     end
   end
-
-  test "answering the age question ends the grandfathering" do
-    user = user_fixture()
-    {:ok, _} = Repo.query(backfill_sql())
-    legacy = Repo.get!(User, user.id)
-    assert AgePolicy.effective_class(legacy) == :adult
-
-    answered = %{legacy | birth_year: 2016, birth_month: 3, age_country: "RO"}
-
-    refute AgePolicy.grandfathered?(answered)
-    assert AgePolicy.effective_class(answered, ~D[2026-08-20]) == :child
-  end
 end

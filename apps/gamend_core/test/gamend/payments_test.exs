@@ -459,7 +459,7 @@ defmodule Gamend.PaymentsTest do
                  "payload" => %{"second_event" => true}
                })
 
-      refute_receive {:payment_purchase_revoked, ^purchase_id, _}, 200
+      refute_received {:payment_purchase_revoked, ^purchase_id, _}
       assert again.metadata["revocation_reason"] == "a"
       assert again.raw_provider_payload["second_event"] == true
     end

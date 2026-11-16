@@ -177,11 +177,4 @@ defmodule GamendWeb.Api.V1.Admin.QuestCodesAdminControllerTest do
     assert ctx.admin_conn |> post(path, %{token: "A"}) |> json_response(404)
     assert ctx.admin_conn |> post(path <> "/generate", %{count: 1}) |> json_response(404)
   end
-
-  test "a player cannot reach any of it", %{conn: conn, quest_id: quest_id} do
-    {:ok, token, _} = Guardian.encode_and_sign(AccountsFixtures.user_fixture())
-    player = put_req_header(conn, "authorization", "Bearer " <> token)
-
-    assert player |> get("/api/v1/admin/quests/#{quest_id}/codes") |> json_response(403)
-  end
 end

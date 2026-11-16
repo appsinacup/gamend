@@ -8,12 +8,6 @@ defmodule Gamend.QuestConcurrencyTest do
   guarded by `lock_version`: the loser of a race matches no row, re-reads and
   merges again. The tests below are what says that holds — a lost increment is
   invisible from the outside, which is exactly why it needs asserting.
-
-  The IMMEDIATE-transaction check stays because the rest of the app still
-  takes transactions under contention: on SQLite a DEFERRED transaction that
-  reads before it writes has to upgrade its lock, and SQLite answers a
-  contended upgrade with `SQLITE_BUSY` immediately — `busy_timeout` only
-  covers *waiting* for a lock, never *upgrading* one.
   """
 
   use Gamend.DataCase, async: false
@@ -31,15 +25,6 @@ defmodule Gamend.QuestConcurrencyTest do
       })
 
     %{quest: quest}
-  end
-
-  @tag :sqlite_only
-  test "the repo opens transactions in IMMEDIATE mode" do
-    assert Keyword.get(
-             Application.get_env(:gamend_core, Gamend.Repo),
-             :default_transaction_mode
-           ) == :immediate,
-           "deferred transactions make read-modify-write paths fail under contention"
   end
 
   test "many players earning the same quest at once all get progress" do

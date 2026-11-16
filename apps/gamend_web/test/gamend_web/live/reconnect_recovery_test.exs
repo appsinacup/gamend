@@ -39,18 +39,15 @@ defmodule GamendWeb.ReconnectRecoveryTest do
       %{group: group, msg: msg}
     end
 
-    test "the composer keeps its draft in the rendered value", %{conn: conn, group: group} do
-      {:ok, view, _html} = live(conn, ~p"/chat?#{[type: "group", id: group.id]}")
-
-      view |> form("#chat-send-form", content: "half typed") |> render_change()
-
-      assert has_element?(view, ~s(#chat-send-form input[name="content"][value="half typed"]))
-    end
-
-    test "sending clears the draft", %{conn: conn, group: group} do
+    test "the composer keeps its draft in the rendered value; sending clears it", %{
+      conn: conn,
+      group: group
+    } do
       {:ok, view, _html} = live(conn, ~p"/chat?#{[type: "group", id: group.id]}")
 
       view |> form("#chat-send-form", content: "hello there") |> render_change()
+      assert has_element?(view, ~s(#chat-send-form input[name="content"][value="hello there"]))
+
       view |> form("#chat-send-form", content: "hello there") |> render_submit()
 
       assert has_element?(view, ~s(#chat-send-form input[name="content"][value=""]))
@@ -68,7 +65,11 @@ defmodule GamendWeb.ReconnectRecoveryTest do
       assert has_element?(view, ~s(#edit-#{msg.id}[phx-change="chat_edit_change"]))
     end
 
-    test "the edit URL renders the edit form on mount", %{conn: conn, group: group, msg: msg} do
+    test "the edit URL renders the edit form on mount; saving drops it from the URL", %{
+      conn: conn,
+      group: group,
+      msg: msg
+    } do
       {:ok, view, _html} =
         live(conn, ~p"/chat?#{[type: "group", id: group.id, edit: msg.id]}")
 
@@ -80,12 +81,8 @@ defmodule GamendWeb.ReconnectRecoveryTest do
       view |> form("#edit-#{msg.id}", content: "rewritten") |> render_change()
 
       assert has_element?(view, ~s(#edit-#{msg.id} input[name="content"][value="rewritten"]))
-    end
 
-    test "saving an edit drops it from the URL", %{conn: conn, group: group, msg: msg} do
-      {:ok, view, _html} =
-        live(conn, ~p"/chat?#{[type: "group", id: group.id, edit: msg.id]}")
-
+      # Saving drops the edit from the URL.
       view |> form("#edit-#{msg.id}", content: "rewritten") |> render_submit()
 
       assert_patch(view, ~p"/chat?#{[type: "group", id: group.id]}")

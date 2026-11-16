@@ -134,13 +134,6 @@ defmodule GamendWeb.EventCodecCoverageTest do
                "CgVsb2ItMRIHd2FpdGluZxoLaW5fcHJvZ3Jlc3MggMyTs/4z"
     end
 
-    test "a mapped event encodes to something a client can decode" do
-      # `encode/3` rescues anything a builder raises and falls back to JSON, so
-      # "mapped" only means a clause matched. This proves the bytes are real.
-      assert {:ok, iodata} = EventCodec.encode("user:1", "kv_updated", %{})
-      assert IO.iodata_to_binary(iodata) |> is_binary()
-    end
-
     # The client MERGES these three into a long-lived cache (GamendPresence:
     # apply_user_update and cache_user), so for them an absent field means
     # "unchanged", not "empty". proto3 does not write an implicit-presence

@@ -283,7 +283,7 @@ defmodule Gamend.ReportsTest do
       {:ok, reopened} = Reports.resolve(closed, "open")
       assert reopened.status == "open"
       assert reopened.resolved_at == nil
-      refute_receive {:resolved, _, "open"}, 100
+      refute_received {:resolved, _, "open"}
     end
 
     test "a close made from a copy read before another moderator's closes nothing" do
@@ -297,7 +297,7 @@ defmodule Gamend.ReportsTest do
       assert Reports.resolve(report, "wontfix", %{message: "Won't fix."}) ==
                {:error, :status_changed}
 
-      refute_receive {:resolved, _, _}, 100
+      refute_received {:resolved, _, _}
       assert Reports.get(report.id).status == "fixed"
 
       assert [%{content: "Fixed."}] =

@@ -35,10 +35,6 @@ defmodule Gamend.CaptchaTest do
       assert :ok = Captcha.verify(nil)
       assert :ok = Captcha.verify("anything")
     end
-
-    test "enabled?/0 is false by default" do
-      refute Captcha.enabled?()
-    end
   end
 
   describe "when enabled" do

@@ -74,12 +74,6 @@ defmodule GamendWeb.PresentationPageTest do
       assert {:safe, _} = result
       assert Phoenix.HTML.safe_to_string(result) == ""
     end
-
-    test "handles text with no bold markers" do
-      result = PresentationPage.rich_text("No bold here at all.")
-      html = Phoenix.HTML.safe_to_string(result)
-      assert html == "No bold here at all."
-    end
   end
 
   describe "page/1" do

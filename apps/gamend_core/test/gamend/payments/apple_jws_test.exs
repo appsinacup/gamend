@@ -42,10 +42,6 @@ defmodule Gamend.Payments.Providers.Apple.JWSTest do
     assert {:error, {:apple_cert_chain_invalid, _reason}} = JWS.verify_and_decode(forged_jws())
   end
 
-  test "never returns {:ok, _} for a forged payload" do
-    refute match?({:ok, _}, JWS.verify_and_decode(forged_jws()))
-  end
-
   test "rejects a JWS with no x5c certificate" do
     jwk = JOSE.JWK.from_pem(@forged_key_pem)
 

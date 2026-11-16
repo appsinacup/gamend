@@ -237,8 +237,13 @@ defmodule Gamend.OAuth.ExchangerExchangeTest do
     end
   end
 
-  setup do
-    Application.put_env(:gamend_core, :apple_test_jwk, JOSE.JWK.generate_key({:rsa, 2048}))
+  # An RSA key takes a while to make, and is only read.
+  setup_all do
+    %{apple_jwk: JOSE.JWK.generate_key({:rsa, 2048})}
+  end
+
+  setup %{apple_jwk: apple_jwk} do
+    Application.put_env(:gamend_core, :apple_test_jwk, apple_jwk)
     Application.put_env(:gamend_core, :oauth_exchanger_client, TestClient)
     # Ensure a test steam api key and app id are available
     Application.put_env(:ueberauth, Ueberauth.Strategy.Steam, api_key: "testkey")

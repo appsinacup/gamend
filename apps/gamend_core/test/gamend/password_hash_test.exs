@@ -69,10 +69,8 @@ defmodule Gamend.Accounts.PasswordHashTest do
 
       assert %Accounts.User{} = Accounts.get_user_by_email_and_password(email, @password)
 
-      # The rewrite runs off the request, so wait for it rather than assuming.
-      assert eventually(fn ->
-               String.starts_with?(Repo.reload!(user).hashed_password, "$argon2id$")
-             end)
+      # The rewrite runs off the request (`Gamend.Async`), inline in tests.
+      assert String.starts_with?(Repo.reload!(user).hashed_password, "$argon2id$")
 
       # …and the password still works afterwards, through the new hash.
       assert %Accounts.User{} = Accounts.get_user_by_email_and_password(email, @password)
@@ -89,17 +87,8 @@ defmodule Gamend.Accounts.PasswordHashTest do
         |> Repo.update()
 
       refute Accounts.get_user_by_email_and_password(email, "wrong")
-      Process.sleep(50)
 
       assert Repo.reload!(user).hashed_password == user.hashed_password
-    end
-  end
-
-  defp eventually(fun, attempts \\ 100) do
-    cond do
-      fun.() -> true
-      attempts == 0 -> false
-      true -> Process.sleep(20) && eventually(fun, attempts - 1)
     end
   end
 end

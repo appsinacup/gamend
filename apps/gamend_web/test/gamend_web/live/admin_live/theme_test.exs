@@ -6,7 +6,6 @@ defmodule GamendWeb.AdminLive.ThemeTest do
 
   alias Gamend.Accounts.User
   alias Gamend.AccountsFixtures
-  alias Gamend.Content
   alias Gamend.Repo
   alias Gamend.SettingsHelpers
   alias Gamend.Theme.JSONConfig
@@ -25,7 +24,6 @@ defmodule GamendWeb.AdminLive.ThemeTest do
         else: SettingsHelpers.delete(:gamend_core, Gamend.ContentSettings, :theme_config)
 
       JSONConfig.reload()
-      Content.reload()
     end)
 
     %{conn: log_in_user(conn, admin)}
@@ -34,7 +32,6 @@ defmodule GamendWeb.AdminLive.ThemeTest do
   defp use_theme(value) do
     SettingsHelpers.put(:gamend_core, Gamend.ContentSettings, :theme_config, value)
     JSONConfig.reload()
-    Content.reload()
   end
 
   test "renders what a configured theme resolved to", %{conn: conn} do
@@ -73,7 +70,6 @@ defmodule GamendWeb.AdminLive.ThemeTest do
   test "says so when no theme is configured", %{conn: conn} do
     SettingsHelpers.delete(:gamend_core, Gamend.ContentSettings, :theme_config)
     JSONConfig.reload()
-    Content.reload()
 
     {:ok, view, _html} = live(conn, ~p"/admin/theme")
 

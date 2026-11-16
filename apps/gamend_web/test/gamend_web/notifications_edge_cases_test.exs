@@ -35,47 +35,6 @@ defmodule GamendWeb.NotificationsEdgeCasesTest do
   # User deletion cascade
   # ---------------------------------------------------------------------------
   describe "user deletion cascade" do
-    test "deleting the recipient cascades to all their received notifications" do
-      {sender, recipient} = make_friends()
-
-      # Create several notifications to the recipient
-      for i <- 1..3 do
-        {:ok, _} =
-          Notifications.admin_create_notification(sender.id, recipient.id, %{
-            "title" => "Notif #{i}"
-          })
-      end
-
-      assert Notifications.count_notifications(recipient.id) == 3
-
-      # Delete the recipient
-      {:ok, _} = Accounts.delete_user(recipient)
-
-      # All notifications where recipient_id = recipient.id should be gone
-      assert Notifications.count_notifications(recipient.id) == 0
-      assert Notifications.list_notifications(recipient.id) == []
-    end
-
-    test "deleting the sender cascades to all their sent notifications" do
-      {sender, recipient} = make_friends()
-
-      for i <- 1..3 do
-        {:ok, _} =
-          Notifications.admin_create_notification(sender.id, recipient.id, %{
-            "title" => "Sent #{i}"
-          })
-      end
-
-      assert Notifications.count_notifications(recipient.id) == 3
-
-      # Delete the sender – because sender_id FK has on_delete: :delete_all,
-      # all notifications from this sender are removed
-      {:ok, _} = Accounts.delete_user(sender)
-
-      assert Notifications.count_notifications(recipient.id) == 0
-      assert Notifications.list_notifications(recipient.id) == []
-    end
-
     test "deleting a user removes notifications in both directions" do
       {a, b} = make_friends()
 
@@ -153,34 +112,6 @@ defmodule GamendWeb.NotificationsEdgeCasesTest do
       notifs = Notifications.list_notifications(recipient.id)
       assert length(notifs) == 1
       assert hd(notifs).id == n1.id
-
-      assert Notifications.count_notifications(recipient.id) == 1
-    end
-
-    test "list_notifications reflects deleted notifications" do
-      {sender, recipient} = make_friends()
-
-      {:ok, n1} =
-        Notifications.send_notification(sender.id, %{
-          "user_id" => recipient.id,
-          "title" => "Will delete"
-        })
-
-      {:ok, n2} =
-        Notifications.send_notification(sender.id, %{
-          "user_id" => recipient.id,
-          "title" => "Will keep"
-        })
-
-      assert Notifications.count_notifications(recipient.id) == 2
-
-      # Delete one
-      Notifications.delete_notifications(recipient.id, [n1.id])
-
-      # Cache should not be stale
-      notifs = Notifications.list_notifications(recipient.id)
-      assert length(notifs) == 1
-      assert hd(notifs).id == n2.id
 
       assert Notifications.count_notifications(recipient.id) == 1
     end

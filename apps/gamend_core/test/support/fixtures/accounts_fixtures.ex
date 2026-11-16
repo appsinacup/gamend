@@ -8,6 +8,8 @@ defmodule Gamend.AccountsFixtures do
 
   alias Gamend.Accounts
   alias Gamend.Accounts.Scope
+  alias Gamend.Accounts.User
+  alias Gamend.Repo
 
   def unique_user_email, do: "user#{System.unique_integer()}@example.com"
   def valid_user_password, do: "hello world!"
@@ -35,18 +37,15 @@ defmodule Gamend.AccountsFixtures do
     user
   end
 
+  # A confirmed account, confirmed in place. Going through the magic link
+  # (an email, a login, its hooks and its quest event) cost ~3x a bare
+  # registration in every test that makes a user; a test about logging in
+  # logs in itself.
   def user_fixture(attrs \\ %{}) do
-    user = unconfirmed_user_fixture(attrs)
-
-    token =
-      extract_user_token(fn url ->
-        Accounts.deliver_login_instructions(user, url)
-      end)
-
-    {:ok, {user, _expired_tokens}} =
-      Accounts.login_user_by_magic_link(token)
-
-    user
+    attrs
+    |> unconfirmed_user_fixture()
+    |> User.confirm_changeset()
+    |> Repo.update!()
   end
 
   def user_scope_fixture do
@@ -72,7 +71,7 @@ defmodule Gamend.AccountsFixtures do
   end
 
   def override_token_authenticated_at(token, authenticated_at) when is_binary(token) do
-    Gamend.Repo.update_all(
+    Repo.update_all(
       from(t in Accounts.UserToken,
         where: t.token == ^token
       ),
@@ -82,7 +81,7 @@ defmodule Gamend.AccountsFixtures do
 
   def generate_user_magic_link_token(user) do
     {encoded_token, user_token} = Accounts.UserToken.build_email_token(user, "login")
-    Gamend.Repo.insert!(user_token)
+    Repo.insert!(user_token)
     {encoded_token, user_token.token}
   end
 
@@ -102,7 +101,7 @@ defmodule Gamend.AccountsFixtures do
   def offset_user_token(token, amount_to_add, unit) do
     dt = DateTime.add(DateTime.utc_now(:second), amount_to_add, unit)
 
-    Gamend.Repo.update_all(
+    Repo.update_all(
       from(ut in Accounts.UserToken, where: ut.token == ^token),
       set: [inserted_at: dt, authenticated_at: dt]
     )

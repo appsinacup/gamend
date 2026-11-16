@@ -46,13 +46,6 @@ defmodule GamendWeb.AuthControllerApiTest do
   end
 
   describe "GET /api/v1/auth/session/:session_id" do
-    test "returns 404 for missing session id", %{conn: conn} do
-      conn = get(conn, ~p"/api/v1/auth/session/nonexistent-id")
-
-      assert conn.status == 404
-      assert json_response(conn, 404)["error"] == "session_not_found"
-    end
-
     test "empty session path is a 404", %{conn: conn} do
       # Matches the :provider route with "session", which no provider is.
       assert_error_sent 404, fn -> get(conn, "/api/v1/auth/session/") end
@@ -201,43 +194,9 @@ defmodule GamendWeb.AuthControllerApiTest do
       assert is_binary(body["data"]["user_id"])
     end
 
-    test "POST /api/v1/auth/google/callback skips profile lookup when user already has profile",
+    # Google gives a legal name, which a public display name must not be.
+    test "POST /api/v1/auth/google/callback signs in an existing user without taking the name",
          %{conn: conn} do
-      # Create existing user with google_id and display/profile set
-      {:ok, _user} =
-        Gamend.Accounts.find_or_create_from_google(%{
-          google_id: "g1",
-          display_name: "Existing",
-          profile_url: "https://x",
-          email: "existing@example.com"
-        })
-
-      defmodule MockExchangerGoogle do
-        def exchange_google_code("valid_ticket", _cid, _sec, _redirect),
-          do:
-            {:ok,
-             %{"id" => "g1", "email" => "g@example.com", "picture" => "pic", "name" => "Gname"}}
-
-        def exchange_google_code("valid_ticket", _cid, _sec, _redirect, opts)
-            when is_list(opts) do
-          if Keyword.get(opts, :fetch_profile, false) == false do
-            {:ok, %{"id" => "g1"}}
-          else
-            {:ok,
-             %{"id" => "g1", "email" => "g@example.com", "picture" => "pic", "name" => "Gname"}}
-          end
-        end
-      end
-
-      Application.put_env(:gamend_web, :oauth_exchanger, MockExchangerGoogle)
-
-      conn = post(conn, "/api/v1/auth/google/callback", %{code: "valid_ticket"})
-      assert conn.status == 200
-    end
-
-    test "POST /api/v1/auth/google/callback fills missing profile fields for existing user", %{
-      conn: conn
-    } do
       # Create existing user with google_id but missing display_name
       {:ok, user} =
         Gamend.Accounts.find_or_create_from_google(%{
@@ -298,68 +257,8 @@ defmodule GamendWeb.AuthControllerApiTest do
       end)
     end
 
-    test "POST /api/v1/auth/apple/callback skips profile lookup when user already has profile", %{
-      conn: conn
-    } do
-      Gamend.SettingsHelpers.put(
-        :gamend_core,
-        Gamend.OAuth.Providers,
-        :apple_client_id,
-        "com.example.web"
-      )
-
-      on_exit(fn ->
-        Gamend.SettingsHelpers.delete(
-          :gamend_core,
-          Gamend.OAuth.Providers,
-          :apple_client_id
-        )
-      end)
-
-      {:ok, _user} =
-        Gamend.Accounts.find_or_create_from_apple(%{
-          apple_id: "a1",
-          display_name: "Existing",
-          profile_url: "https://x",
-          email: "existing@apple.com"
-        })
-
-      # ensure Apple client secret generation doesn't fail in tests
-      System.put_env(
-        "APPLE_PRIVATE_KEY",
-        "-----BEGIN PRIVATE KEY-----\nMYSAMPLE\n-----END PRIVATE KEY-----"
-      )
-
-      on_exit(fn ->
-        Gamend.SettingsHelpers.delete(
-          :gamend_core,
-          Gamend.OAuth.Providers,
-          :apple_private_key
-        )
-      end)
-
-      defmodule MockExchangerApple do
-        def exchange_apple_code("valid_ticket", _cid, _secret, _redirect) do
-          {:ok, %{"sub" => "a1", "email" => "a@example.com", "name" => "Aname"}}
-        end
-
-        def exchange_apple_code("valid_ticket", _cid, _secret, _redirect, opts)
-            when is_list(opts) do
-          if Keyword.get(opts, :fetch_profile, false) == false do
-            {:ok, %{"sub" => "a1"}}
-          else
-            {:ok, %{"sub" => "a1", "email" => "a@example.com", "name" => "Aname"}}
-          end
-        end
-      end
-
-      Application.put_env(:gamend_web, :oauth_exchanger, MockExchangerApple)
-
-      conn = post(conn, "/api/v1/auth/apple/callback", %{code: "valid_ticket"})
-      assert conn.status == 200
-    end
-
-    test "POST /api/v1/auth/apple/callback fetches profile when missing fields", %{conn: conn} do
+    test "POST /api/v1/auth/apple/callback signs in an existing user without taking the name",
+         %{conn: conn} do
       Gamend.SettingsHelpers.put(
         :gamend_core,
         Gamend.OAuth.Providers,
@@ -377,20 +276,6 @@ defmodule GamendWeb.AuthControllerApiTest do
 
       {:ok, user} =
         Gamend.Accounts.find_or_create_from_apple(%{apple_id: "a2", display_name: nil})
-
-      # ensure Apple client secret generation doesn't fail in tests
-      System.put_env(
-        "APPLE_PRIVATE_KEY",
-        "-----BEGIN PRIVATE KEY-----\nMYSAMPLE\n-----END PRIVATE KEY-----"
-      )
-
-      on_exit(fn ->
-        Gamend.SettingsHelpers.delete(
-          :gamend_core,
-          Gamend.OAuth.Providers,
-          :apple_private_key
-        )
-      end)
 
       defmodule MockExchangerAppleFetch do
         def exchange_apple_code("valid_ticket", _cid, _secret, _redirect) do
@@ -514,7 +399,7 @@ defmodule GamendWeb.AuthControllerApiTest do
       assert_received {:apple_ios_client_id, "com.example.ios"}
     end
 
-    test "POST /api/v1/auth/apple/ios/callback fills the display name from given/family name", %{
+    test "POST /api/v1/auth/apple/ios/callback does not publish the given/family name", %{
       conn: conn
     } do
       SettingsHelpers.put(
@@ -549,7 +434,7 @@ defmodule GamendWeb.AuthControllerApiTest do
       assert Gamend.Accounts.get_user_by_apple_id("a_ios_named").display_name == nil
     end
 
-    test "POST /api/v1/auth/steam/callback skips profile lookup when user already has profile", %{
+    test "POST /api/v1/auth/steam/callback keeps the display name an existing user has", %{
       conn: conn
     } do
       # Create existing user that already has display_name and profile_url
@@ -574,13 +459,9 @@ defmodule GamendWeb.AuthControllerApiTest do
       Application.put_env(:gamend_web, :oauth_exchanger, MockExchangerSteamIdOnlyNoProfile)
 
       conn = post(conn, "/api/v1/auth/steam/callback", %{code: "valid_ticket"})
-      assert conn.status == 200
-      body = json_response(conn, 200)
 
-      assert is_binary(body["data"]["access_token"]) and is_binary(body["data"]["refresh_token"]) and
-               is_integer(body["data"]["expires_in"])
-
-      assert is_binary(body["data"]["user_id"])
+      assert json_response(conn, 200)["data"]["user_id"] == existing.id
+      assert Gamend.Repo.get(Gamend.Accounts.User, existing.id).display_name == "Existing"
     end
 
     test "POST /api/v1/auth/steam/callback fills missing profile fields for existing user", %{
@@ -610,8 +491,6 @@ defmodule GamendWeb.AuthControllerApiTest do
       reloaded = Gamend.Repo.get(Gamend.Accounts.User, existing.id)
       assert reloaded.display_name == "FetchedName"
     end
-
-    # Note: API now expects 'code' to be a Steam auth ticket. Supplying a steam id is not allowed.
   end
 
   describe "POST /api/v1/auth/google/id_token" do

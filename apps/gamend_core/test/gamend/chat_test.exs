@@ -8,7 +8,7 @@ defmodule Gamend.ChatTest do
   alias Gamend.Groups
   alias Gamend.Repo
 
-  defp create_user, do: AccountsFixtures.user_fixture()
+  defp create_user, do: AccountsFixtures.unconfirmed_user_fixture()
 
   defp insert_message(sender, chat_type, chat_ref_id, content) do
     %Message{sender_id: sender.id}

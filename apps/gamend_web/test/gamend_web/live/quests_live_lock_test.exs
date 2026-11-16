@@ -48,7 +48,12 @@ defmodule GamendWeb.QuestsLiveLockTest do
     html
   end
 
-  defp signed_in(conn), do: log_in_user(conn, Gamend.AccountsFixtures.user_fixture())
+  # The login a real sign-in reports, which finishes both quests.
+  defp signed_in(conn) do
+    user = Gamend.AccountsFixtures.user_fixture()
+    Gamend.Quests.report_event(user.id, "login")
+    log_in_user(conn, user)
+  end
 
   # From the title to the next card: a window of characters reached into the
   # next card once a card's icon stopped being inline SVG.
@@ -67,7 +72,9 @@ defmodule GamendWeb.QuestsLiveLockTest do
     refute html =~ "hero-lock-closed-solid"
   end
 
-  test "a locked quest shows the host's reason and no Claim button", %{conn: conn} do
+  test "a locked quest shows the host's reason, its title, no Claim, and is not counted", %{
+    conn: conn
+  } do
     Application.put_env(:gamend_core, :quest_lock_filter, {LockAll, :label})
 
     # Logging in fires `login`, so both quests finish and would both offer a
@@ -84,21 +91,9 @@ defmodule GamendWeb.QuestsLiveLockTest do
     free = card(html, "Log in today")
     assert free =~ ~s(phx-value-key="free_quest"), "the unlocked quest still claims normally"
     refute free =~ "hero-lock-closed-solid"
-  end
 
-  test "a locked quest keeps its real title and is not a ??? teaser", %{conn: conn} do
-    Application.put_env(:gamend_core, :quest_lock_filter, {LockAll, :label})
-
-    html = conn |> signed_in() |> page()
-
-    assert html =~ "Sell ten crates", "the offer IS the title; hiding it is what this replaces"
+    # It keeps its real title and is not a ??? teaser: the offer IS the title.
     refute html =~ "???"
-  end
-
-  test "the Claimable count does not count what it cannot offer", %{conn: conn} do
-    Application.put_env(:gamend_core, :quest_lock_filter, {LockAll, :label})
-
-    html = conn |> signed_in() |> page()
 
     # Both quests completed on login; only the free one is claimable, so the
     # Claimable chip must say one. Counting two sends the reader hunting for a

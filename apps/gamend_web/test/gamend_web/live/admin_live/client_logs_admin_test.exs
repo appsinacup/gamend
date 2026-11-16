@@ -48,15 +48,6 @@ defmodule GamendWeb.AdminLive.ClientLogsAdminTest do
     }
   end
 
-  test "renders both tabs", %{conn: conn} do
-    {:ok, view, html} = live(conn, ~p"/admin/logs")
-
-    assert html =~ "Server"
-    assert html =~ "Client sessions"
-
-    assert view |> element("button", "Client sessions") |> render_click() =~ "No client sessions"
-  end
-
   test "lists a session with its counts", %{conn: conn} do
     sid = session_id()
     assert {:ok, _} = ingest(sid, [entry(1), entry(2, level: "error")])

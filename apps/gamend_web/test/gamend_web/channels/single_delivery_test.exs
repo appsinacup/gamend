@@ -33,9 +33,20 @@ defmodule GamendWeb.SingleDeliveryTest do
 
   @endpoint GamendWeb.Endpoint
 
-  # A refute window long enough for a second delivery, which would arrive in
-  # the same mailbox pass as the first, to show up.
-  @refute_ms 300
+  # A second delivery would reach the channel's mailbox in the same broadcast
+  # as the first, before the call that made it returns: once the channel has
+  # answered a call, every push it owes has been sent. One that stopped after
+  # its push (a group channel hearing its own member leave) sends no more.
+  defp refute_second(socket, event) do
+    settle(socket.channel_pid)
+    refute_push ^event, _, 0
+  end
+
+  defp settle(pid) do
+    _ = :sys.get_state(pid)
+  catch
+    :exit, _ -> :ok
+  end
 
   defp user, do: AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
 
@@ -49,38 +60,38 @@ defmodule GamendWeb.SingleDeliveryTest do
   test "lobby: a state transition is pushed once" do
     host = user()
     {:ok, lobby} = Lobbies.create_lobby(%{title: "once", host_id: host.id})
-    join_as(host, "lobby:#{lobby.id}")
+    socket = join_as(host, "lobby:#{lobby.id}")
     assert_push "updated", _
 
     {:ok, _} = Lobbies.transition_state(lobby, "starting")
 
     assert_push "state_changed", %{to: "starting"}
-    refute_push "state_changed", _, @refute_ms
+    refute_second(socket, "state_changed")
   end
 
   test "lobby: a spectator gets each event once too" do
     host = user()
     spectator = user()
     {:ok, lobby} = Lobbies.create_lobby(%{title: "once-spectated", host_id: host.id})
-    join_as(spectator, "lobby:#{lobby.id}")
+    socket = join_as(spectator, "lobby:#{lobby.id}")
     assert_push "updated", _
 
     {:ok, _} = Lobbies.transition_state(lobby, "starting")
 
     assert_push "state_changed", %{to: "starting"}
-    refute_push "state_changed", _, @refute_ms
+    refute_second(socket, "state_changed")
   end
 
   test "party: a broadcast on the party topic is pushed once" do
     leader = user()
     {:ok, party} = Parties.create_party(leader, %{})
-    join_as(leader, "party:#{party.id}")
+    socket = join_as(leader, "party:#{party.id}")
     assert_push "updated", _, 500
 
     Phoenix.PubSub.broadcast(Gamend.PubSub, "party:#{party.id}", {:party_disbanded, party.id})
 
     assert_push "disbanded", %{party_id: _}
-    refute_push "disbanded", _, @refute_ms
+    refute_second(socket, "disbanded")
   end
 
   test "group: a broadcast on the group topic is pushed once" do
@@ -92,7 +103,7 @@ defmodule GamendWeb.SingleDeliveryTest do
         "type" => "public"
       })
 
-    join_as(owner, "group:#{group.id}")
+    socket = join_as(owner, "group:#{group.id}")
 
     Phoenix.PubSub.broadcast(
       Gamend.PubSub,
@@ -101,27 +112,27 @@ defmodule GamendWeb.SingleDeliveryTest do
     )
 
     assert_push "member_left", %{group_id: _}
-    refute_push "member_left", _, @refute_ms
+    refute_second(socket, "member_left")
   end
 
   test "lobbies feed: a broadcast is pushed once" do
-    join_as(user(), "lobbies")
+    socket = join_as(user(), "lobbies")
     lobby_id = Ecto.UUID.generate()
 
     Phoenix.PubSub.broadcast(Gamend.PubSub, "lobbies", {:lobby_deleted, lobby_id})
 
     assert_push "lobby_deleted", %{id: ^lobby_id}
-    refute_push "lobby_deleted", _, @refute_ms
+    refute_second(socket, "lobby_deleted")
   end
 
   test "groups feed: a broadcast is pushed once" do
-    join_as(user(), "groups")
+    socket = join_as(user(), "groups")
     group_id = Ecto.UUID.generate()
 
     Phoenix.PubSub.broadcast(Gamend.PubSub, "groups", {:group_deleted, group_id})
 
     assert_push "group_deleted", %{id: ^group_id}
-    refute_push "group_deleted", _, @refute_ms
+    refute_second(socket, "group_deleted")
   end
 
   # The user channel was never part of the original bug, but it is the one
@@ -130,7 +141,7 @@ defmodule GamendWeb.SingleDeliveryTest do
   # colliding with `"user:<id>"` would double every event on it.
   test "user: a broadcast on the user topic is pushed once" do
     player = user()
-    join_as(player, "user:#{player.id}")
+    socket = join_as(player, "user:#{player.id}")
 
     Phoenix.PubSub.broadcast(
       Gamend.PubSub,
@@ -139,7 +150,7 @@ defmodule GamendWeb.SingleDeliveryTest do
     )
 
     assert_push "wallet_updated", %{balance: 5}
-    refute_push "wallet_updated", _, @refute_ms
+    refute_second(socket, "wallet_updated")
   end
 
   # Chat is the one topic these channels DO subscribe to explicitly, which makes
@@ -148,7 +159,7 @@ defmodule GamendWeb.SingleDeliveryTest do
   test "lobby chat: a message is pushed once" do
     host = user()
     {:ok, lobby} = Lobbies.create_lobby(%{title: "chat-once", host_id: host.id})
-    join_as(host, "lobby:#{lobby.id}")
+    socket = join_as(host, "lobby:#{lobby.id}")
     assert_push "updated", _
 
     {:ok, _} =
@@ -159,7 +170,7 @@ defmodule GamendWeb.SingleDeliveryTest do
       })
 
     assert_push "chat_message_created", %{content: "ahoy"}
-    refute_push "chat_message_created", _, @refute_ms
+    refute_second(socket, "chat_message_created")
   end
 
   # A client that asks for the same key twice — two panels, a retry after a
@@ -178,6 +189,6 @@ defmodule GamendWeb.SingleDeliveryTest do
     {:ok, _} = KV.put("single_delivery", %{"n" => 1}, %{}, user_id: player.id)
 
     assert_push "kv_updated", %{key: "single_delivery"}
-    refute_push "kv_updated", _, @refute_ms
+    refute_second(socket, "kv_updated")
   end
 end

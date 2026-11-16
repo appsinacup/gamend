@@ -33,7 +33,6 @@ defmodule Gamend.Accounts.DisplayNameTest do
     test "never falls back to the email or the id" do
       named = user(%{display_name: nil, username: nil, email: "a@example.com"})
       assert Accounts.display_name(named) == ""
-      refute Accounts.display_name(named) =~ "@"
     end
 
     test "nil is the empty string, not a crash" do

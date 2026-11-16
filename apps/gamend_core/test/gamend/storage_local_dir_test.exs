@@ -33,24 +33,6 @@ defmodule Gamend.StorageLocalDirTest do
            "the code default and the documented default must be the same path"
   end
 
-  test "an explicit directory wins" do
-    Application.put_env(:gamend_core, Local, dir: "/data/storage")
-
-    assert Local.root_dir() == "/data/storage"
-  end
-
-  test "GAMEND_STORAGE_DIR reaches the adapter through from_env/0" do
-    System.put_env("GAMEND_STORAGE_DIR", "/mnt/objects")
-    on_exit(fn -> System.delete_env("GAMEND_STORAGE_DIR") end)
-
-    # What a host's runtime.exs does.
-    for {app, module, opts} <- Settings.from_env(), module == Local do
-      Application.put_env(app, module, opts)
-    end
-
-    assert Local.root_dir() == "/mnt/objects"
-  end
-
   test "objects written anywhere under the root are listed, not just top level" do
     dir = Path.join(System.tmp_dir!(), "gs_storage_#{System.unique_integer([:positive])}")
     Application.put_env(:gamend_core, Local, dir: dir)

@@ -2,7 +2,6 @@ defmodule GamendWeb.AdminLive.UsersTest do
   use GamendWeb.ConnCase, async: false
 
   import Phoenix.LiveViewTest
-  import Ecto.Query
   alias Gamend.Accounts
   alias Gamend.Accounts.User
   alias Gamend.AccountsFixtures
@@ -20,9 +19,6 @@ defmodule GamendWeb.AdminLive.UsersTest do
     for i <- 1..30 do
       AccountsFixtures.user_fixture(%{email: "pagi-user-#{i}@example.com"})
     end
-
-    # sanity-check: DB has users we created (pagination test)
-    assert Repo.aggregate(User, :count, :id) >= 4
 
     {:ok, view, html} = conn |> log_in_user(admin) |> live(~p"/admin/users")
 
@@ -91,17 +87,6 @@ defmodule GamendWeb.AdminLive.UsersTest do
     assert html =~ "google1@example.com"
     assert html =~ "s1"
     assert html =~ "plain@example.com"
-
-    # confirm DB-level provider counts match expectations
-    discord_count =
-      Repo.one(
-        from(u in User,
-          where: not is_nil(u.discord_id) and u.discord_id != "",
-          select: count(u.id)
-        )
-      )
-
-    assert discord_count >= 2
 
     # toggle discord filter on
     view

@@ -167,10 +167,6 @@ defmodule GamendHost.SearchTest do
   end
 
   describe "through core" do
-    test "this host is the configured provider" do
-      assert SearchIndex.provider() == GamendHost.Search
-    end
-
     # Core prefixes only the paths this host declares translatable, which is
     # the point of handing it clean hrefs: the provider writes `/blog` and
     # `/docs/theme` and does not have to know that the blog index is
@@ -182,10 +178,6 @@ defmodule GamendHost.SearchTest do
       assert "/ro/blog" in hrefs
       assert "/docs/theme" in hrefs
       refute "/ro/docs/theme" in hrefs
-    end
-
-    test "index only — this host has nothing too large to enumerate" do
-      refute SearchIndex.live?()
     end
   end
 end

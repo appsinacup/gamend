@@ -6,8 +6,8 @@ defmodule Gamend.FriendsTest do
 
   describe "friendship flows" do
     setup do
-      a = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-      b = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      a = AccountsFixtures.user_fixture()
+      b = AccountsFixtures.user_fixture()
 
       %{a: a, b: b}
     end
@@ -76,8 +76,8 @@ defmodule Gamend.FriendsTest do
 
   describe "blocking flows and pubsub" do
     setup do
-      a = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-      b = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      a = AccountsFixtures.user_fixture()
+      b = AccountsFixtures.user_fixture()
 
       %{a: a, b: b}
     end
@@ -140,8 +140,8 @@ defmodule Gamend.FriendsTest do
 
   describe "blacklisting arbitrary users" do
     setup do
-      a = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-      b = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      a = AccountsFixtures.user_fixture()
+      b = AccountsFixtures.user_fixture()
 
       %{a: a, b: b}
     end

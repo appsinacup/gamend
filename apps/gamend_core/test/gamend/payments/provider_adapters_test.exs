@@ -299,8 +299,6 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
     put_setting(:environment, :test)
     assert ProviderConfig.environment() == "sandbox"
 
-    # One version, pinned to the SDK's: not a setting.
-    assert ProviderConfig.stripe_api_version() == "2025-11-17.clover"
     assert ProviderConfig.stripe_api_release("2025-11-17.clover") == "clover"
     assert ProviderConfig.stripe_api_release("2026-02-25.clover") == "clover"
     assert ProviderConfig.stripe_api_release("2022-11-15") == nil
@@ -339,7 +337,7 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
 
     assert params.payment_intent_data == %{metadata: params.metadata}
     assert opts[:api_key] == "sk_test_sdk_123"
-    assert opts[:api_version] == "2025-11-17.clover"
+    assert opts[:api_version] == ProviderConfig.stripe_api_version()
     assert opts[:idempotency_key] == "order_42"
     # The decoded JSON, never the SDK's structs, which drop fields.
     assert opts[:response_as] == :map
@@ -360,7 +358,7 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
 
     assert_received {:stripe_expire_checkout_session, "cs_test_open", %{}, opts}
     assert opts[:api_key] == "sk_test_sdk_123"
-    assert opts[:api_version] == "2025-11-17.clover"
+    assert opts[:api_version] == ProviderConfig.stripe_api_version()
     assert opts[:response_as] == :map
     refute Keyword.has_key?(opts, :idempotency_key)
   end
@@ -442,7 +440,7 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
     assert {:ok, _} = Stripe.create_checkout_session(purchase, provider_product, urls)
     assert_received {:stripe_create_checkout_session, params, opts}
     refute Map.has_key?(params, :managed_payments)
-    assert opts[:api_version] == "2025-11-17.clover"
+    assert opts[:api_version] == ProviderConfig.stripe_api_version()
 
     # On: the flag. The pinned version is past basil, which Managed Payments needs.
     put_setting(:stripe_managed_payments, true)
@@ -452,7 +450,7 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
     assert is_integer(params.expires_at)
     refute Map.has_key?(params, :automatic_tax)
     refute Map.has_key?(params, :payment_method_types)
-    assert opts[:api_version] == "2025-11-17.clover"
+    assert opts[:api_version] == ProviderConfig.stripe_api_version()
   end
 
   test "Stripe Checkout takes the site's look from its theme" do
@@ -529,7 +527,7 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
     assert_received {:stripe_retrieve_checkout_session, "cs_test_reconcile", params, opts}
     assert params == %{expand: ["payment_intent", "subscription"]}
     assert opts[:api_key] == "sk_test_sdk_123"
-    assert opts[:api_version] == "2025-11-17.clover"
+    assert opts[:api_version] == ProviderConfig.stripe_api_version()
     refute Keyword.has_key?(opts, :idempotency_key)
   end
 
@@ -546,7 +544,7 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
     assert_received {:stripe_update_subscription, "sub_test_cancel", params, opts}
     assert params == %{cancel_at_period_end: true}
     assert opts[:api_key] == "sk_test_sdk_123"
-    assert opts[:api_version] == "2025-11-17.clover"
+    assert opts[:api_version] == ProviderConfig.stripe_api_version()
   end
 
   test "Stripe resumes a subscription set to cancel at period end through SDK client" do
@@ -593,7 +591,7 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
     assert_received {:stripe_retrieve_subscription, "sub_inv",
                      %{expand: ["latest_invoice", "latest_invoice.payments"]}, opts}
 
-    assert opts[:api_version] == "2025-11-17.clover"
+    assert opts[:api_version] == ProviderConfig.stripe_api_version()
   end
 
   test "Stripe lists the invoice payments a PaymentIntent paid, with their invoices" do

@@ -1,7 +1,6 @@
 defmodule GamendWeb.HomeThemeTest do
   use GamendWeb.ConnCase, async: true
 
-  alias Gamend.Content
   alias Gamend.Theme.JSONConfig
 
   test "home page renders without errors when runtime theme has empty values", %{conn: conn} do
@@ -21,8 +20,9 @@ defmodule GamendWeb.HomeThemeTest do
       base
     )
 
+    # Only the theme is reread: `Gamend.Content` does not read it, and clearing
+    # its cache made every content page after this one render from disk again.
     JSONConfig.reload()
-    Content.reload()
 
     on_exit(fn ->
       if orig,
@@ -41,14 +41,11 @@ defmodule GamendWeb.HomeThemeTest do
           )
 
       JSONConfig.reload()
-      Content.reload()
       File.rm(base)
     end)
 
     resp = get(conn, "/") |> html_response(200)
 
-    # Page should render without crashing
-    assert resp =~ "<html"
     assert resp =~ "<title"
   end
 end

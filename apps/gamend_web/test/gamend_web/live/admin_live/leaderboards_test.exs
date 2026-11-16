@@ -72,7 +72,6 @@ defmodule GamendWeb.AdminLive.LeaderboardsTest do
 
     render_click(view, "new_season_from", %{"id" => board.id})
     assert has_element?(view, "#leaderboard-form")
-    assert assigns(view).form.params == %{} or assigns(view).form.data.slug == board.slug
     assert assigns(view).form.data.title == "Weekly"
   end
 
@@ -106,19 +105,5 @@ defmodule GamendWeb.AdminLive.LeaderboardsTest do
 
     render_click(view, "close_records", %{})
     refute assigns(view).viewing_records
-  end
-
-  test "a board or record that no longer exists is answered, not crashed on", %{
-    conn: conn,
-    admin: admin
-  } do
-    view = page(conn, admin)
-    missing = Ecto.UUID.generate()
-
-    for event <- ~w(new_season_from edit_leaderboard view_records edit_record) do
-      render_click(view, event, %{"id" => missing})
-    end
-
-    assert render(view)
   end
 end

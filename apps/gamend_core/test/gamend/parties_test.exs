@@ -1,7 +1,3 @@
-defmodule Gamend.PartiesTest.HooksAllowPartyCreate do
-  def before_party_create(_user, attrs), do: {:ok, attrs}
-end
-
 defmodule Gamend.PartiesTest.HooksDenyPartyCreate do
   def before_party_create(_user, _attrs), do: {:error, :party_creation_blocked}
 end
@@ -10,10 +6,6 @@ defmodule Gamend.PartiesTest.HooksModifyPartyCreate do
   def before_party_create(_user, attrs) do
     {:ok, Map.put(attrs, "max_size", 3)}
   end
-end
-
-defmodule Gamend.PartiesTest.HooksAllowPartyUpdate do
-  def before_party_update(_party, attrs), do: {:ok, attrs}
 end
 
 defmodule Gamend.PartiesTest.HooksDenyPartyUpdate do
@@ -40,9 +32,9 @@ defmodule Gamend.PartiesTest do
   alias Gamend.Parties.PartyInvite
 
   setup do
-    leader = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-    member1 = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-    member2 = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+    leader = AccountsFixtures.unconfirmed_user_fixture()
+    member1 = AccountsFixtures.unconfirmed_user_fixture()
+    member2 = AccountsFixtures.unconfirmed_user_fixture()
 
     %{leader: leader, member1: member1, member2: member2}
   end
@@ -80,11 +72,6 @@ defmodule Gamend.PartiesTest do
       {:ok, _party} = Parties.create_party(leader, %{})
 
       assert {:error, :already_in_party} = Parties.create_party(leader, %{})
-    end
-
-    test "uses default max_size when not specified", %{leader: leader} do
-      assert {:ok, party} = Parties.create_party(leader)
-      assert party.max_size == 4
     end
   end
 
@@ -214,17 +201,7 @@ defmodule Gamend.PartiesTest do
 
       updated = Accounts.get_user(member1.id)
       assert updated.party_id == party.id
-    end
-
-    test "invite notification is removed after accept", %{leader: leader, member1: member1} do
-      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
-      make_friends(leader, member1)
-      {:ok, _} = Parties.invite_to_party(leader, member1.id)
-
-      {:ok, _} = Parties.accept_party_invite(member1, party.id)
-
-      invites = Parties.list_party_invitations(member1)
-      assert invites == []
+      assert Parties.list_party_invitations(member1) == []
     end
 
     test "fails when no invite exists", %{leader: leader, member1: member1} do
@@ -251,15 +228,6 @@ defmodule Gamend.PartiesTest do
 
       # The old party should be disbanded (member1 was leader)
       assert is_nil(Parties.get_party(other_party.id))
-    end
-
-    test "fails when party is full", %{leader: leader, member1: member1, member2: member2} do
-      {:ok, party} = Parties.create_party(leader, %{max_size: 2})
-      add_member_to_party(member1, party)
-      make_friends(leader, member2)
-      {:ok, _} = Parties.invite_to_party(leader, member2.id)
-
-      assert {:error, :party_full} = Parties.accept_party_invite(member2, party.id)
     end
 
     test "full party marks invite as declined and notifies sender", %{
@@ -346,42 +314,33 @@ defmodule Gamend.PartiesTest do
       assert :ok = Parties.cancel_party_invite(leader, member1.id)
 
       # Ensure no spurious cancelled event was broadcast
-      refute_receive {:party_invite_cancelled, _}, 100
+      refute_received {:party_invite_cancelled, _}
     end
   end
 
   describe "list_party_invitations/1" do
-    test "returns pending invites for user", %{leader: leader, member1: member1} do
-      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
-      make_friends(leader, member1)
-      {:ok, _} = Parties.invite_to_party(leader, member1.id)
-
-      invites = Parties.list_party_invitations(member1)
-      assert length(invites) == 1
-      assert hd(invites).party_id == party.id
-      assert hd(invites).sender_id == leader.id
-    end
-
-    test "includes sender_name and recipient_name", %{leader: leader, member1: member1} do
+    test "returns the user's pending invites, with both names", %{
+      leader: leader,
+      member1: member1
+    } do
       {:ok, _} =
         Gamend.Accounts.update_user_display_name(leader, %{"display_name" => "InvLeader"})
 
       {:ok, _} =
         Gamend.Accounts.update_user_display_name(member1, %{"display_name" => "InvMember"})
 
-      {:ok, _party} = Parties.create_party(leader, %{max_size: 4})
+      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
       make_friends(leader, member1)
       {:ok, _} = Parties.invite_to_party(leader, member1.id)
 
-      invites = Parties.list_party_invitations(member1)
-      assert length(invites) == 1
-      invite = hd(invites)
+      assert [invite] = Parties.list_party_invitations(member1)
+      assert invite.party_id == party.id
+      assert invite.sender_id == leader.id
       assert invite.sender_name == "InvLeader"
       assert invite.recipient_name == "InvMember"
-    end
 
-    test "returns empty list with no invites", %{member1: member1} do
-      assert Parties.list_party_invitations(member1) == []
+      # The sender's own list holds what they received, not what they sent.
+      assert Parties.list_party_invitations(leader) == []
     end
   end
 
@@ -483,31 +442,6 @@ defmodule Gamend.PartiesTest do
   end
 
   describe "create_lobby_with_party/2" do
-    test "leader creates lobby and all members join, party stays intact", %{
-      leader: leader,
-      member1: member1
-    } do
-      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
-      add_member_to_party(member1, party)
-      set_all_online([leader, member1])
-
-      assert {:ok, lobby} =
-               Parties.create_lobby_with_party(leader, %{title: "party-lobby", max_users: 8})
-
-      assert lobby.title == "party-lobby"
-
-      # Party should still exist
-      assert Parties.get_party(party.id) != nil
-
-      # Both users should be in the lobby
-      assert Accounts.get_user(leader.id).lobby_id == lobby.id
-      assert Accounts.get_user(member1.id).lobby_id == lobby.id
-
-      # Both should still be in the party
-      assert Accounts.get_user(leader.id).party_id == party.id
-      assert Accounts.get_user(member1.id).party_id == party.id
-    end
-
     test "fails if lobby max_users is too small for party", %{
       leader: leader,
       member1: member1,
@@ -537,7 +471,7 @@ defmodule Gamend.PartiesTest do
       set_all_online([leader, member1])
 
       # Put member1 in a lobby
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, lobby} = Lobbies.create_lobby(%{title: "existing", host_id: host.id})
       Lobbies.join_lobby(member1, lobby.id)
 
@@ -588,33 +522,6 @@ defmodule Gamend.PartiesTest do
   end
 
   describe "join_lobby_with_party/3" do
-    test "leader joins existing lobby and all members join, party stays intact", %{
-      leader: leader,
-      member1: member1
-    } do
-      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
-      add_member_to_party(member1, party)
-      set_all_online([leader, member1])
-
-      # Create a lobby with a different host
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-      {:ok, lobby} = Lobbies.create_lobby(%{title: "existing-lobby", host_id: host.id})
-
-      assert {:ok, joined_lobby} = Parties.join_lobby_with_party(leader, lobby.id)
-      assert joined_lobby.id == lobby.id
-
-      # Party should still exist
-      assert Parties.get_party(party.id) != nil
-
-      # All users should be in the lobby
-      assert Accounts.get_user(leader.id).lobby_id == lobby.id
-      assert Accounts.get_user(member1.id).lobby_id == lobby.id
-
-      # All users should still be in the party
-      assert Accounts.get_user(leader.id).party_id == party.id
-      assert Accounts.get_user(member1.id).party_id == party.id
-    end
-
     defmodule JoinPartyDuringHook do
       use Gamend.TestSupport.NoopHooks
 
@@ -670,7 +577,7 @@ defmodule Gamend.PartiesTest do
       set_all_online([leader, member1, member2])
 
       # Create a lobby with max 3 users and 1 already in it (the host)
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, lobby} = Lobbies.create_lobby(%{title: "small-lobby", host_id: host.id, max_users: 3})
 
       # 3 party members + 1 existing host = 4, but max is 3
@@ -682,7 +589,7 @@ defmodule Gamend.PartiesTest do
       add_member_to_party(member1, party)
       set_all_online([leader, member1])
 
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, lobby} =
         Lobbies.create_lobby(%{title: "locked-lobby", host_id: host.id, is_locked: true})
@@ -690,53 +597,12 @@ defmodule Gamend.PartiesTest do
       assert {:error, :locked} = Parties.join_lobby_with_party(leader, lobby.id)
     end
 
-    test "fails if lobby requires password and no password given", %{
-      leader: leader,
-      member1: member1
-    } do
-      {:ok, party} = Parties.create_party(leader, %{})
-      add_member_to_party(member1, party)
-      set_all_online([leader, member1])
-
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-      phash = Bcrypt.hash_pwd_salt("secret")
-
-      {:ok, lobby} =
-        Lobbies.create_lobby(%{
-          title: "pw-lobby",
-          host_id: host.id,
-          password_hash: phash,
-          max_users: 8
-        })
-
-      assert {:error, :password_required} = Parties.join_lobby_with_party(leader, lobby.id)
-    end
-
-    test "succeeds with correct password", %{leader: leader, member1: member1} do
-      {:ok, party} = Parties.create_party(leader, %{})
-      add_member_to_party(member1, party)
-      set_all_online([leader, member1])
-
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-      phash = Bcrypt.hash_pwd_salt("secret")
-
-      {:ok, lobby} =
-        Lobbies.create_lobby(%{
-          title: "pw-lobby",
-          host_id: host.id,
-          password_hash: phash,
-          max_users: 8
-        })
-
-      assert {:ok, _} = Parties.join_lobby_with_party(leader, lobby.id, %{password: "secret"})
-    end
-
     test "non-leader cannot join lobby with party", %{leader: leader, member1: member1} do
       {:ok, party} = Parties.create_party(leader, %{})
       add_member_to_party(member1, party)
       set_all_online([leader, member1])
 
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, lobby} = Lobbies.create_lobby(%{title: "test-lobby", host_id: host.id})
 
       assert {:error, :not_leader} = Parties.join_lobby_with_party(member1, lobby.id)
@@ -751,12 +617,15 @@ defmodule Gamend.PartiesTest do
                Parties.join_lobby_with_party(leader, Ecto.UUID.generate())
     end
 
-    test "fails with wrong password", %{leader: leader, member1: member1} do
+    test "a wrong password keeps the party out, the right one seats it", %{
+      leader: leader,
+      member1: member1
+    } do
       {:ok, party} = Parties.create_party(leader, %{})
       add_member_to_party(member1, party)
       set_all_online([leader, member1])
 
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       phash = Bcrypt.hash_pwd_salt("secret")
 
       {:ok, lobby} =
@@ -774,6 +643,9 @@ defmodule Gamend.PartiesTest do
       updated_leader = Accounts.get_user(leader.id)
       assert updated_leader.party_id != nil
       assert is_nil(updated_leader.lobby_id)
+
+      assert {:ok, _} = Parties.join_lobby_with_party(leader, lobby.id, %{password: "secret"})
+      assert Accounts.get_user(member1.id).lobby_id == lobby.id
     end
 
     test "fails if any party member is already in a lobby", %{leader: leader, member1: member1} do
@@ -782,12 +654,12 @@ defmodule Gamend.PartiesTest do
       set_all_online([leader, member1])
 
       # Put member1 in a lobby
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, existing_lobby} = Lobbies.create_lobby(%{title: "existing", host_id: host.id})
       Lobbies.join_lobby(member1, existing_lobby.id)
 
       # Create a target lobby to try to join
-      host2 = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host2 = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, target_lobby} = Lobbies.create_lobby(%{title: "target", host_id: host2.id})
 
       assert {:error, :member_in_lobby} = Parties.join_lobby_with_party(leader, target_lobby.id)
@@ -803,7 +675,7 @@ defmodule Gamend.PartiesTest do
       add_member_to_party(member1, party)
       set_all_online([leader, member1])
 
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, lobby} =
         Lobbies.create_lobby(%{title: "hidden-lobby", host_id: host.id, is_hidden: true})
@@ -823,7 +695,7 @@ defmodule Gamend.PartiesTest do
       add_member_to_party(member1, party)
       set_all_online([leader, member1])
 
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, lobby} = Lobbies.create_lobby(%{title: "with-a-block", host_id: host.id})
       {:ok, _} = Friends.block_user(host, member1.id)
 
@@ -869,7 +741,7 @@ defmodule Gamend.PartiesTest do
       member1: member1,
       party: party
     } do
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, lobby} = Lobbies.create_lobby(%{title: "mid-match", host_id: host.id})
 
       assert {:error, {:hook_rejected, :mid_match}} =
@@ -880,7 +752,7 @@ defmodule Gamend.PartiesTest do
       assert Accounts.get_user(leader.id).lobby_id == nil
       assert Accounts.get_user(member1.id).lobby_id == nil
 
-      other_host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      other_host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, open} = Lobbies.create_lobby(%{title: "open", host_id: other_host.id, max_users: 8})
       flush_asked()
       assert {:ok, _} = Parties.join_lobby_with_party(leader, open.id)
@@ -900,7 +772,7 @@ defmodule Gamend.PartiesTest do
     end
 
     test "a quick join passes over a lobby the game refuses", %{leader: leader, member1: member1} do
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, refused} = Lobbies.create_lobby(%{title: "mid-match", host_id: host.id, max_users: 6})
 
       assert {:ok, lobby} = Parties.quick_join_with_party(leader, %{max_users: 6})
@@ -925,7 +797,7 @@ defmodule Gamend.PartiesTest do
       add_member_to_party(member1, party)
       set_all_online([leader, member1])
 
-      blocker = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      blocker = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, blocked_lobby} =
         Lobbies.create_lobby(%{title: "qj-block", host_id: blocker.id, max_users: 6})
@@ -938,7 +810,7 @@ defmodule Gamend.PartiesTest do
     end
 
     test "a player alone takes another lobby, not a 403", %{leader: player} do
-      blocker = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      blocker = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, blocked_lobby} =
         Lobbies.create_lobby(%{title: "qj-solo-block", host_id: blocker.id, max_users: 7})
@@ -995,7 +867,7 @@ defmodule Gamend.PartiesTest do
       add_member_to_party(member2, party)
       set_all_online([leader, member1, member2])
 
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, lobby} = Lobbies.create_lobby(%{title: "existing", host_id: host.id, max_users: 10})
 
       {:ok, joined_lobby} = Parties.join_lobby_with_party(leader, lobby.id)
@@ -1030,7 +902,7 @@ defmodule Gamend.PartiesTest do
       add_member_to_party(member1, party)
       set_all_online([leader, member1])
 
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       phash = Bcrypt.hash_pwd_salt("secret")
 
       {:ok, lobby} =
@@ -1186,37 +1058,27 @@ defmodule Gamend.PartiesTest do
   # ---------------------------------------------------------------------------
 
   describe "list_sent_party_invitations/1" do
-    test "returns invitations sent by leader", %{leader: leader, member1: member1} do
-      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
-      make_friends(leader, member1)
-      {:ok, _} = Parties.invite_to_party(leader, member1.id)
-
-      invites = Parties.list_sent_party_invitations(leader)
-      assert length(invites) == 1
-      invite = hd(invites)
-      assert invite.party_id == party.id
-      assert invite.recipient_id == member1.id
-    end
-
-    test "includes sender_name and recipient_name", %{leader: leader, member1: member1} do
+    test "returns the invitations the leader sent, with both names", %{
+      leader: leader,
+      member1: member1
+    } do
       {:ok, _} =
         Gamend.Accounts.update_user_display_name(leader, %{"display_name" => "SentLeader"})
 
       {:ok, _} =
         Gamend.Accounts.update_user_display_name(member1, %{"display_name" => "SentMember"})
 
-      {:ok, _party} = Parties.create_party(leader, %{max_size: 4})
+      {:ok, party} = Parties.create_party(leader, %{max_size: 4})
       make_friends(leader, member1)
       {:ok, _} = Parties.invite_to_party(leader, member1.id)
 
-      invites = Parties.list_sent_party_invitations(leader)
-      assert length(invites) == 1
-      invite = hd(invites)
+      assert [invite] = Parties.list_sent_party_invitations(leader)
+      assert invite.party_id == party.id
+      assert invite.recipient_id == member1.id
       assert invite.sender_name == "SentLeader"
       assert invite.recipient_name == "SentMember"
-    end
 
-    test "returns empty when no invitations sent", %{member1: member1} do
+      # The recipient sent nothing.
       assert Parties.list_sent_party_invitations(member1) == []
     end
   end
@@ -1238,17 +1100,6 @@ defmodule Gamend.PartiesTest do
       end)
 
       :ok
-    end
-
-    test "allows create when hook returns {:ok, attrs}", %{leader: leader} do
-      Application.put_env(
-        :gamend_core,
-        :hooks_module,
-        Gamend.PartiesTest.HooksAllowPartyCreate
-      )
-
-      assert {:ok, party} = Parties.create_party(leader, %{max_size: 4})
-      assert party.leader_id == leader.id
     end
 
     test "blocks create when hook returns {:error, reason}", %{leader: leader} do
@@ -1289,19 +1140,6 @@ defmodule Gamend.PartiesTest do
       :ok
     end
 
-    test "allows update when hook returns {:ok, attrs}", %{leader: leader} do
-      {:ok, _party} = Parties.create_party(leader, %{max_size: 4})
-
-      Application.put_env(
-        :gamend_core,
-        :hooks_module,
-        Gamend.PartiesTest.HooksAllowPartyUpdate
-      )
-
-      assert {:ok, updated} = Parties.update_party(leader, %{"max_size" => 6})
-      assert updated.max_size == 6
-    end
-
     test "blocks update when hook returns {:error, reason}", %{leader: leader} do
       {:ok, _party} = Parties.create_party(leader, %{max_size: 4})
 
@@ -1326,62 +1164,6 @@ defmodule Gamend.PartiesTest do
 
       assert {:ok, updated} = Parties.update_party(leader, %{"max_size" => 10})
       assert updated.max_size == 5
-    end
-  end
-
-  describe "after_party_join hook" do
-    test "fires after invite accept without breaking the flow", %{
-      leader: leader,
-      member1: member1
-    } do
-      make_friends(leader, member1)
-      {:ok, party} = Parties.create_party(leader, %{})
-      {:ok, _invite} = Parties.invite_to_party(leader, member1.id)
-
-      assert {:ok, _party} = Parties.accept_party_invite(member1, party.id)
-      updated = Accounts.get_user(member1.id)
-      assert updated.party_id == party.id
-    end
-  end
-
-  describe "after_party_leave hook" do
-    test "fires after leave without breaking the flow", %{leader: leader, member1: member1} do
-      make_friends(leader, member1)
-      {:ok, party} = Parties.create_party(leader, %{})
-      {:ok, _invite} = Parties.invite_to_party(leader, member1.id)
-      {:ok, _} = Parties.accept_party_invite(member1, party.id)
-
-      assert {:ok, :left} = Parties.leave_party(member1)
-      updated = Accounts.get_user(member1.id)
-      assert is_nil(updated.party_id)
-    end
-  end
-
-  describe "after_party_kick hook" do
-    test "fires after kick without breaking the flow", %{leader: leader, member1: member1} do
-      make_friends(leader, member1)
-      {:ok, party} = Parties.create_party(leader, %{})
-      {:ok, _invite} = Parties.invite_to_party(leader, member1.id)
-      {:ok, _} = Parties.accept_party_invite(member1, party.id)
-
-      assert {:ok, _} = Parties.kick_member(leader, member1.id)
-      updated = Accounts.get_user(member1.id)
-      assert is_nil(updated.party_id)
-    end
-  end
-
-  describe "after_party_disband hook" do
-    test "fires after disband without breaking the flow", %{leader: leader, member1: member1} do
-      make_friends(leader, member1)
-      {:ok, party} = Parties.create_party(leader, %{})
-      {:ok, _invite} = Parties.invite_to_party(leader, member1.id)
-      {:ok, _} = Parties.accept_party_invite(member1, party.id)
-
-      # Both out: the second leaves nobody to hand the party to, so it disbands.
-      assert {:ok, :left} = Parties.leave_party(member1)
-      assert {:ok, :disbanded} = Parties.leave_party(leader)
-      updated_leader = Accounts.get_user(leader.id)
-      assert is_nil(updated_leader.party_id)
     end
   end
 
@@ -1469,7 +1251,7 @@ defmodule Gamend.PartiesTest do
       {:ok, party} = Parties.create_party(leader, %{max_size: 4})
       add_member_to_party(member1, party)
       set_all_online([leader, member1])
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, lobby} = Lobbies.create_lobby(%{title: "doomed-lobby", host_id: host.id})
 
       result =
@@ -1494,7 +1276,7 @@ defmodule Gamend.PartiesTest do
       {:ok, party} = Parties.create_party(leader, %{max_size: 4})
       add_member_to_party(member1, party)
       set_all_online([leader, member1])
-      host = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+      host = AccountsFixtures.unconfirmed_user_fixture()
 
       {:ok, vanishing} =
         Lobbies.create_lobby(%{title: "vanishing-room", host_id: host.id, max_users: 4})

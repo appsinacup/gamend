@@ -250,7 +250,7 @@ defmodule Gamend.UserRetentionTest do
   end
 
   describe "inactive registered accounts" do
-    test "off by default" do
+    test "0 turns it off" do
       configure(inactive_users_days: 0)
       user = registered_user(9999)
 

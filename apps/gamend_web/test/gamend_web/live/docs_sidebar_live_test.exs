@@ -160,10 +160,7 @@ defmodule GamendWeb.DocsSidebarLiveTest do
     # The tree opens the category the reader is in and marks the page.
     assert html =~ ~s(<details open>)
 
-    assert Regex.match?(
-             ~r{href="/docs/manual/scenes"[^>]*bg-primary/10[^>]*aria-current="page"},
-             html
-           )
+    assert Regex.match?(~r{href="/docs/manual/scenes"[^>]*aria-current="page"}, html)
 
     assert html =~ ~s(href="#nodes")
     assert html =~ ~s(href="https://example.com/edit/docs/20-manual/10-scenes.md")
@@ -173,8 +170,8 @@ defmodule GamendWeb.DocsSidebarLiveTest do
     assert html =~ ~s(href="/docs/manual/scripting")
 
     # The page's icon and its category in the tree wear the category's colour.
-    assert html =~ "hero-document-text-solid size-8 shrink-0 opacity-80 text-rose-400"
-    assert html =~ "hero-folder-solid size-4 shrink-0 text-rose-400"
+    assert html =~ ~r/hero-document-text-solid[^"]*text-rose-400/
+    assert html =~ ~r/hero-folder-solid[^"]*text-rose-400/
   end
 
   test "a category without an index gets a landing page of its children" do

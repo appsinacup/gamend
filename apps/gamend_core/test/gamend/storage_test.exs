@@ -169,17 +169,14 @@ defmodule Gamend.StorageTest do
   end
 
   describe "cache_control/1" do
-    test "avatars default to immutable one-year caching" do
+    # build_key/3 makes an avatar's or an entity icon's URL content-unique.
+    test "avatars and entity icons cache for a year; everything else revalidates" do
       assert Storage.cache_control("avatars/user-1/abc.png") ==
                "public, max-age=31536000, immutable"
-    end
 
-    test "entity icons do too — build_key/3 makes their URL content-unique" do
       assert Storage.cache_control("icons/groups/group-1/abc.png") ==
                "public, max-age=31536000, immutable"
-    end
 
-    test "everything else revalidates by default" do
       assert Storage.cache_control("uploads/report.pdf") == "public, max-age=0, must-revalidate"
     end
 

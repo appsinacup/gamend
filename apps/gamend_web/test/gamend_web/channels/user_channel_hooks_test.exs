@@ -9,10 +9,8 @@ defmodule GamendWeb.UserChannelHooksTest do
 
   @endpoint GamendWeb.Endpoint
 
-  setup tags do
-    Gamend.DataCase.setup_sandbox(tags)
-
-    # Set up a temporary plugin
+  # One plugin serves every test: compiled, written and loaded once.
+  setup_all do
     tmp = Path.join(System.tmp_dir!(), "gs-plugin-ch-#{System.unique_integer([:positive])}")
     plugin_root = Path.join(tmp, "modules/plugins")
     plugin_name = "channel_test_plugin"
@@ -110,14 +108,6 @@ defmodule GamendWeb.UserChannelHooksTest do
 
     _ = PluginManager.reload()
 
-    user = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
-    {:ok, token, _claims} = Guardian.encode_and_sign(user)
-    {:ok, socket} = connect(GamendWeb.UserSocket, %{"token" => token})
-    {:ok, _, socket} = subscribe_and_join(socket, "user:#{user.id}", %{})
-
-    # Drain the initial "updated" push
-    assert_push "updated", _user_payload
-
     on_exit(fn ->
       Gamend.SettingsHelpers.delete(
         :gamend_core,
@@ -126,9 +116,24 @@ defmodule GamendWeb.UserChannelHooksTest do
       )
 
       _ = PluginManager.reload()
+      File.rm_rf(tmp)
     end)
 
-    {:ok, socket: socket, user: user, plugin: plugin_name}
+    {:ok, plugin: plugin_name}
+  end
+
+  setup tags do
+    Gamend.DataCase.setup_sandbox(tags)
+
+    user = AccountsFixtures.user_fixture() |> AccountsFixtures.set_password()
+    {:ok, token, _claims} = Guardian.encode_and_sign(user)
+    {:ok, socket} = connect(GamendWeb.UserSocket, %{"token" => token})
+    {:ok, _, socket} = subscribe_and_join(socket, "user:#{user.id}", %{})
+
+    # Drain the initial "updated" push
+    assert_push "updated", _user_payload
+
+    {:ok, socket: socket, user: user}
   end
 
   test "call_hook returns result from plugin function", %{socket: socket, plugin: plugin} do
@@ -192,10 +197,5 @@ defmodule GamendWeb.UserChannelHooksTest do
       })
 
     assert_reply ref, :error, %{error: _reason}
-  end
-
-  test "unknown event returns error", %{socket: socket} do
-    ref = push(socket, "some_unknown_event", %{})
-    assert_reply ref, :error, %{error: "unknown_event"}
   end
 end

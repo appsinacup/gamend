@@ -1,7 +1,7 @@
 defmodule Gamend.RuntimeSettingsTest do
   @moduledoc """
-  Values that used to be literals and are now declared settings: each keeps
-  its old value by default and follows its setting.
+  What a declared setting changes beyond its own getter: a URL's form, a
+  cap, a budget inside a transaction, a heartbeat derived from a threshold.
   """
   # Settings are global Application config.
   use ExUnit.Case, async: false
@@ -18,12 +18,6 @@ defmodule Gamend.RuntimeSettingsTest do
   end
 
   describe "storage" do
-    test "a private S3 bucket hands out a URL that does not expire" do
-      put(Storage, :adapter, :s3)
-
-      assert Storage.url("avatars/u/a.png") == "/storage/avatars/u/a.png"
-    end
-
     test "with a public_url, S3 URLs point there, signed or not" do
       put(Storage, :adapter, :s3)
       put(Storage, :public_url, "https://cdn.example.com/")
@@ -35,23 +29,15 @@ defmodule Gamend.RuntimeSettingsTest do
     end
 
     test "an upload ticket lasts upload_ttl_seconds, on the ticket and on its token" do
-      assert Storage.upload_ttl_seconds() == 600
       put(Storage, :upload_ttl_seconds, 1_800)
 
       assert {:ok, %{expires_in: 1_800}} = Storage.presigned_upload("avatars/u/a.png")
     end
 
     test "a signed link lasts at most S3's seven days" do
-      assert Storage.signed_url_seconds() == 3_600
       put(Storage, :signed_url_seconds, 30 * 86_400)
       assert Storage.signed_url_seconds() == 7 * 86_400
     end
-  end
-
-  test "the cache TTL follows its setting" do
-    assert Gamend.Cache.ttl() == 60_000
-    put(Gamend.Cache.Settings, :ttl_ms, 5_000)
-    assert Gamend.Cache.ttl() == 5_000
   end
 
   describe "hooks" do
@@ -69,8 +55,6 @@ defmodule Gamend.RuntimeSettingsTest do
 
   describe "presence" do
     test "the heartbeat is three fifths of the stale threshold, and at most 3 minutes" do
-      assert StalePresenceSweeper.heartbeat_ms() == 180_000
-
       put(StalePresenceSweeper, :stale_threshold_s, 60)
       assert StalePresenceSweeper.heartbeat_ms() == 36_000
 

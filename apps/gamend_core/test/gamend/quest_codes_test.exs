@@ -59,7 +59,7 @@ defmodule Gamend.QuestCodesTest do
     code
   end
 
-  defp user, do: AccountsFixtures.user_fixture()
+  defp user, do: AccountsFixtures.unconfirmed_user_fixture()
 
   defp guest do
     {:ok, guest} = Accounts.find_or_create_from_device("code_test_#{System.unique_integer()}")
@@ -100,13 +100,6 @@ defmodule Gamend.QuestCodesTest do
                })
 
       assert %{code_only: [_]} = errors_on(changeset)
-    end
-
-    test "a quest that is not one still needs them" do
-      assert {:error, %Ecto.Changeset{} = changeset} =
-               Quests.create_quest(%{key: "needs_objectives", title: "x"})
-
-      assert %{objectives: [_]} = errors_on(changeset)
     end
 
     for {field, value, message} <- [

@@ -45,14 +45,7 @@ defmodule GamendWeb.UserLive.SettingsDevicesTest do
     refute rendered =~ "settings-other"
   end
 
-  test "user with no devices sees the empty state", %{conn: conn} do
-    user = AccountsFixtures.user_fixture()
-
-    lv = open_devices_tab(conn, user)
-    assert render(lv) =~ "No devices registered."
-  end
-
-  test "user can remove a device", %{conn: conn} do
+  test "user can remove a device, and then sees the empty state", %{conn: conn} do
     user = AccountsFixtures.user_fixture()
 
     {:ok, token} =

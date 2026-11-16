@@ -1,5 +1,5 @@
 defmodule GamendWeb.ErrorJSONTest do
-  use GamendWeb.ConnCase, async: true
+  use ExUnit.Case, async: true
 
   test "renders 404" do
     assert GamendWeb.ErrorJSON.render("404.json", %{}) == %{

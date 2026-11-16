@@ -1,8 +1,8 @@
 defmodule Gamend.Chat.ModerationSyncTest do
   # Chat moderation kept in step with the other instances: a mute (a chat ban,
   # carried by `Gamend.Bans.Sync`) put or lifted on another node is applied
-  # here, one from this node is not (the writer applied it), and the blocklist
-  # (`Gamend.Chat.Moderation.Sync`) loads once.
+  # here (one from this node is skipped: bans/sync_test.exs), and the
+  # blocklist (`Gamend.Chat.Moderation.Sync`) loads once.
   use Gamend.DataCase, async: false
 
   alias Gamend.Bans
@@ -26,14 +26,6 @@ defmodule Gamend.Chat.ModerationSyncTest do
 
     {:noreply, _} = Bans.Sync.handle_info({:bans, :deleted, key, :other@node}, @state)
     refute Bans.muted?(user_id, "lobby", Ecto.UUID.generate())
-  end
-
-  test "an event this node sent is not applied twice", %{user_id: user_id} do
-    key = {:chat, user_id, "global"}
-
-    {:noreply, _} = Bans.Sync.handle_info({:bans, :put, {key, later()}, Node.self()}, @state)
-
-    refute Bans.muted?(user_id, "lobby", nil)
   end
 
   test "a scoped mute covers its own room only", %{user_id: user_id} do

@@ -18,7 +18,7 @@ defmodule GamendWeb.AdminLive.SettingsTest do
     %{conn: log_in_user(conn, admin), admin: admin}
   end
 
-  test "lists every declared group and setting", %{conn: conn} do
+  test "lists every declared group and setting, and offers every group", %{conn: conn} do
     {:ok, _view, html} = live(conn, ~p"/admin/settings")
 
     for {_group, label} <- Settings.groups() do
@@ -29,6 +29,11 @@ defmodule GamendWeb.AdminLive.SettingsTest do
     assert html =~ "GAMEND_RETENTION_CHAT_MESSAGES_DAYS"
     assert html =~ "GAMEND_LIMITS_MAX_METADATA_SIZE"
     assert html =~ "#{length(Settings.all())}"
+
+    # And each group is offered in the dropdown.
+    for {group, _label} <- Settings.groups() do
+      assert html =~ ~s(value="#{group}"), "group #{group} missing from the dropdown"
+    end
   end
 
   test "masks secrets rather than printing them", %{conn: conn} do
@@ -167,24 +172,7 @@ defmodule GamendWeb.AdminLive.SettingsTest do
     assert all =~ "GAMEND_RETENTION_CHAT_MESSAGES_DAYS"
   end
 
-  test "every group is offered in the dropdown", %{conn: conn} do
-    {:ok, _view, html} = live(conn, ~p"/admin/settings")
-
-    for {group, _label} <- Settings.groups() do
-      assert html =~ ~s(value="#{group}"), "group #{group} missing from the dropdown"
-    end
-  end
-
-  test "shows which values came from config rather than the default", %{conn: conn} do
-    {:ok, _view, html} = live(conn, ~p"/admin/settings")
-
-    assert html =~ "default"
-    assert html =~ "config"
-  end
-
-  test "no setting escapes the naming convention", %{conn: conn} do
-    {:ok, _view, html} = live(conn, ~p"/admin/settings")
-
+  test "no setting escapes the naming convention" do
     # Every declared variable is derived from its own root, so the check needs
     # no list of known hosts — naming one would only assert that that host is
     # installed, and would miss any other plugin's settings entirely.
@@ -192,8 +180,6 @@ defmodule GamendWeb.AdminLive.SettingsTest do
       assert String.starts_with?(definition.env, definition.root <> "_"),
              "#{definition.env} does not follow the #{definition.root}_ convention"
     end
-
-    refute html =~ "inherited"
   end
 
   test "the limits are one group, under their sections", %{conn: conn} do
@@ -205,7 +191,7 @@ defmodule GamendWeb.AdminLive.SettingsTest do
     assert has_element?(view, "th[scope=colgroup]", "Quests")
   end
 
-  test "every limit has a section", %{conn: _conn} do
+  test "every limit has a section" do
     for definition <- Settings.group(:limits) do
       assert is_binary(definition.section), "#{definition.key} is under no heading"
     end

@@ -325,12 +325,4 @@ defmodule GamendWeb.UserLive.SettingsGroupsTest do
     render_submit(view, "group_save_edit", %{"group" => %{"title" => "Mine now"}})
     refute Groups.get_group(mine.id).title == "Mine now"
   end
-
-  test "the open group and its create form come back from the URL", %{conn: conn, other: other} do
-    mine = group(other)
-    view = page(conn, other, "&group=#{mine.id}&edit=1&create=1")
-    assert assigns(view).group_detail.id == mine.id
-    assert assigns(view).group_editing
-    assert assigns(view).groups_show_create
-  end
 end

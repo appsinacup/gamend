@@ -47,7 +47,6 @@ defmodule GamendWeb.UserLive.SettingsWalletItemsTest do
 
     rendered = render(lv)
     assert rendered =~ "health_potion"
-    assert rendered =~ "5"
     refute rendered =~ "secret_sword"
   end
 

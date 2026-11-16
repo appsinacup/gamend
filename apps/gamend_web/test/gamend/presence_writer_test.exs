@@ -129,7 +129,7 @@ defmodule Gamend.PresenceWriterTest do
     test "reads one user without copying every presence on the shard" do
       parent = self()
 
-      for _ <- 1..2_000 do
+      for _ <- 1..500 do
         spawn_link(fn ->
           id = Ecto.UUID.generate()
           {:ok, _} = Gamend.Presence.track(self(), Gamend.Presence.users_topic(id), id, %{})
@@ -138,10 +138,11 @@ defmodule Gamend.PresenceWriterTest do
         end)
       end
 
-      for _ <- 1..2_000, do: assert_receive(:tracked, 5_000)
+      for _ <- 1..500, do: assert_receive(:tracked, 5_000)
 
       # A fresh process, so what it holds after the call is what the call cost:
-      # through the shard's reply this was ~1 MB at 2,000 presences.
+      # through the shard's reply this was ~1 MB at 2,000 presences, so about
+      # 250 KB at these 500, still over twice the bound.
       user_id = Ecto.UUID.generate()
 
       task =

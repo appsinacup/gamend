@@ -50,10 +50,8 @@ defmodule GamendWeb.UserAuthTest do
     test "triggers hooks.after_user_logged_in for non-token logins", %{conn: conn, user: user} do
       Application.put_env(:gamend_core, :hooks_module, TestHooksLogin)
 
+      # The hook runs through Gamend.Async, inline in tests.
       _conn = UserAuth.log_in_user(conn, user, %{})
-
-      # hooks run asynchronously
-      Process.sleep(50)
 
       reloaded = Gamend.Accounts.get_user!(user.id)
       assert Map.get(reloaded.metadata || %{}, "hooked_from_log_in") == true

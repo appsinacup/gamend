@@ -12,7 +12,9 @@ defmodule GamendWeb.Api.V1.ReadyCheckControllerTest do
     build_conn() |> put_req_header("authorization", "Bearer " <> token)
   end
 
-  setup do
+  # A host and a member seated in one lobby. The party describe has a crew of
+  # its own and does not pay for this.
+  defp seated_lobby(_ctx) do
     host = AccountsFixtures.user_fixture()
     member = AccountsFixtures.user_fixture()
 
@@ -23,6 +25,8 @@ defmodule GamendWeb.Api.V1.ReadyCheckControllerTest do
   end
 
   describe "POST /api/v1/lobbies/ready_check" do
+    setup :seated_lobby
+
     test "the host opens one over every member", ctx do
       conn = post(authed(ctx.host), "/api/v1/lobbies/ready_check", %{})
 
@@ -35,15 +39,6 @@ defmodule GamendWeb.Api.V1.ReadyCheckControllerTest do
 
     test "a non-host member is refused", ctx do
       conn = post(authed(ctx.member), "/api/v1/lobbies/ready_check", %{})
-      assert json_response(conn, 403)["error"] == "not_host"
-    end
-
-    test "no caller may open one on a hostless lobby", _ctx do
-      user = AccountsFixtures.user_fixture()
-      {:ok, lobby} = Lobbies.create_lobby(%{title: "ranked", hostless: true})
-      {:ok, _} = Lobbies.join_lobby(user, lobby.id)
-
-      conn = post(authed(user), "/api/v1/lobbies/ready_check", %{})
       assert json_response(conn, 403)["error"] == "not_host"
     end
 
@@ -106,14 +101,11 @@ defmodule GamendWeb.Api.V1.ReadyCheckControllerTest do
 
       assert NaiveDateTime.diff(deadline_at, NaiveDateTime.utc_now()) > 30
     end
-
-    test "requires authentication" do
-      conn = post(build_conn(), "/api/v1/lobbies/ready_check", %{})
-      assert json_response(conn, 401)
-    end
   end
 
   describe "GET /api/v1/me/ready_check" do
+    setup :seated_lobby
+
     test "returns null lanes when there is none", ctx do
       conn = get(authed(ctx.member), "/api/v1/me/ready_check")
       assert json_response(conn, 200)["data"] == %{"lobby" => nil, "party" => nil}
@@ -155,6 +147,8 @@ defmodule GamendWeb.Api.V1.ReadyCheckControllerTest do
   end
 
   describe "POST /api/v1/me/ready_check" do
+    setup :seated_lobby
+
     setup ctx do
       {:ok, check} =
         ReadyChecks.open(ctx.lobby, [ctx.host.id, ctx.member.id], opened_by: ctx.host.id)
@@ -225,6 +219,8 @@ defmodule GamendWeb.Api.V1.ReadyCheckControllerTest do
   end
 
   describe "DELETE /api/v1/lobbies/ready_check" do
+    setup :seated_lobby
+
     test "the host calls it off", ctx do
       {:ok, check} = ReadyChecks.open(ctx.lobby, [ctx.host.id, ctx.member.id])
 

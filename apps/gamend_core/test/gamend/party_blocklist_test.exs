@@ -10,7 +10,7 @@ defmodule Gamend.PartyBlocklistTest do
   alias Gamend.Parties
 
   defp user do
-    user = AccountsFixtures.user_fixture()
+    user = AccountsFixtures.unconfirmed_user_fixture()
     {:ok, user} = user |> Ecto.Changeset.change(is_online: true) |> Repo.update()
     user
   end

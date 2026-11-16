@@ -115,8 +115,8 @@ defmodule GamendWeb.AdminLive.PaymentsTest do
     Application.put_env(:gamend_core, :stripe_adapter, StripeReconcileAdapter)
 
     on_exit(fn ->
-      restore_env("GAMEND_PAYMENTS_STRIPE_SANDBOX_SECRET_KEY", original_secret)
-      restore_env("GAMEND_PAYMENTS_STRIPE_SANDBOX_WEBHOOK_SECRET", original_webhook)
+      restore_setting(:stripe_sandbox_secret_key, original_secret)
+      restore_setting(:stripe_sandbox_webhook_secret, original_webhook)
 
       Gamend.SettingsHelpers.put(
         :gamend_core,
@@ -349,8 +349,14 @@ defmodule GamendWeb.AdminLive.PaymentsTest do
     {product, provider_product}
   end
 
-  defp restore_env(key, nil), do: System.delete_env(key)
-  defp restore_env(key, value), do: System.put_env(key, value)
+  # The keys were set as settings, so they are put back as settings: the env
+  # var of the same name was never what the suite read.
+  defp restore_setting(key, nil),
+    do: Gamend.SettingsHelpers.delete(:gamend_core, Gamend.Payments.Settings, key)
+
+  defp restore_setting(key, value),
+    do: Gamend.SettingsHelpers.put(:gamend_core, Gamend.Payments.Settings, key, value)
+
   defp restore_app_env(key, nil), do: Application.delete_env(:gamend_core, key)
   defp restore_app_env(key, value), do: Application.put_env(:gamend_core, key, value)
 

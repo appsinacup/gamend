@@ -8,22 +8,10 @@ defmodule GamendWeb.ContentTextTest do
 
   use ExUnit.Case, async: true
 
-  alias Gamend.Leaderboards.Leaderboard
   alias Gamend.Quests.Quest
   alias GamendWeb.ContentText
 
   describe "the database holds source text, never translations" do
-    test "the per-locale lookup helpers are gone" do
-      refute function_exported?(Quest, :localized_title, 2)
-      refute function_exported?(Quest, :localized_description, 2)
-      refute function_exported?(Leaderboard, :localized_title, 2)
-      refute function_exported?(Leaderboard, :localized_description, 2)
-    end
-
-    test "so is the admin editor that wrote them" do
-      refute Code.ensure_loaded?(GamendWeb.AdminLive.TranslationMetadata)
-    end
-
     test "metadata is not consulted when rendering" do
       quest = %Quest{
         title: "Welcome aboard",

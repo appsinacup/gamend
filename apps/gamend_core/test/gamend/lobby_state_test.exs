@@ -40,22 +40,11 @@ defmodule Gamend.LobbyStateTest do
     lobby
   end
 
-  describe "states vocabulary" do
-    test "core documents a default vocabulary and assigns the initial state" do
-      assert States.initial() == "created"
-
-      # Documentation, not an enum: the game enforces its own vocabulary in
-      # before_lobby_state_change.
-      assert Map.keys(States.core()) |> Enum.sort() ==
-               ["created", "ended", "playing", "starting"]
-    end
-  end
-
   describe "create_lobby/1" do
     test "starts in the initial state with a timestamp" do
       lobby = lobby_fixture()
 
-      assert lobby.state == "created"
+      assert lobby.state == States.initial()
       assert lobby.state_changed_at
     end
   end

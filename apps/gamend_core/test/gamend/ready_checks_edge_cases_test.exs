@@ -16,9 +16,9 @@ defmodule Gamend.ReadyChecksEdgeCasesTest do
   alias Gamend.ReadyChecks.Check
 
   setup do
-    host = AccountsFixtures.user_fixture()
-    alice = AccountsFixtures.user_fixture()
-    bob = AccountsFixtures.user_fixture()
+    host = AccountsFixtures.unconfirmed_user_fixture()
+    alice = AccountsFixtures.unconfirmed_user_fixture()
+    bob = AccountsFixtures.unconfirmed_user_fixture()
 
     {:ok, lobby} = Lobbies.create_lobby(%{title: "edge-room", host_id: host.id, max_users: 4})
     {:ok, _} = Lobbies.join_lobby(alice, lobby.id)
@@ -117,7 +117,7 @@ defmodule Gamend.ReadyChecksEdgeCasesTest do
       assert_receive {:ready_check_event, "ready_check_failed", %{reason: "timeout"}}
 
       # Nothing else lands, in particular no "passed".
-      refute_receive {:ready_check_event, "ready_check_passed", _}, 100
+      refute_received {:ready_check_event, "ready_check_passed", _}
     end
 
     test "passing emits ready_check_passed once", ctx do
@@ -132,7 +132,7 @@ defmodule Gamend.ReadyChecksEdgeCasesTest do
 
       # Expiry runs anyway (the sweep does not know it passed) and stays silent.
       assert expire_now(check) == 0
-      refute_receive {:ready_check_event, "ready_check_failed", _}, 100
+      refute_received {:ready_check_event, "ready_check_failed", _}
     end
 
     test "expire_due/0 skips a check that resolved between select and lock", ctx do
@@ -202,7 +202,7 @@ defmodule Gamend.ReadyChecksEdgeCasesTest do
       {:ok, check} = ReadyChecks.open(ctx.lobby, ctx.members)
       {:ok, _} = ReadyChecks.cancel(check)
 
-      late = AccountsFixtures.user_fixture()
+      late = AccountsFixtures.unconfirmed_user_fixture()
       {:ok, _} = Lobbies.join_lobby(late, ctx.lobby.id)
 
       assert length(ReadyChecks.get_check(check.id).participants) == 3

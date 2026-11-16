@@ -106,12 +106,10 @@ defmodule GamendWeb.AuthControllerTest do
     on_exit(fn -> Application.put_env(:gamend_web, :oauth_exchanger, orig) end)
 
     ExUnit.CaptureLog.capture_log(fn ->
-      _conn = get(conn, "/auth/discord/callback?code=abc")
+      conn = get(conn, "/auth/discord/callback?code=abc")
+      assert redirected_to(conn) =~ "/"
+      assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Failed to authenticate"
     end)
-
-    conn = get(conn, "/auth/discord/callback?code=abc")
-    assert redirected_to(conn) =~ "/"
-    assert Phoenix.Flash.get(conn.assigns.flash, :error) =~ "Failed to authenticate"
   end
 
   test "callback with neither code nor state logs a warning, not an error", %{conn: conn} do
@@ -456,10 +454,9 @@ defmodule GamendWeb.AuthControllerTest do
     assert session.status == "completed"
   end
 
-  # Apple sends the name once, as a `user` form field beside the code, and
-  # never in the ID token: a callback that ignores it leaves the account
-  # nameless for good.
-  test "callback (apple) takes the display name from the one-time user field", %{conn: conn} do
+  # Apple sends the name once, as a `user` form field beside the code. It is a
+  # legal name, and a display name is public, so it is not taken.
+  test "callback (apple) does not publish the name in the one-time user field", %{conn: conn} do
     orig = Application.get_env(:gamend_web, :oauth_exchanger)
     oauth_orig = Application.get_env(:ueberauth, Ueberauth.Strategy.Apple.OAuth)
 

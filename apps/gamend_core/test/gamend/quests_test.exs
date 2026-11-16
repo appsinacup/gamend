@@ -20,7 +20,7 @@ defmodule Gamend.QuestsTest do
   end
 
   defp user_fixture do
-    AccountsFixtures.user_fixture()
+    AccountsFixtures.unconfirmed_user_fixture()
   end
 
   describe "quest CRUD" do

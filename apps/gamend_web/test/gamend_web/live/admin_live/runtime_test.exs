@@ -31,23 +31,17 @@ defmodule GamendWeb.AdminLive.RuntimeTest do
     end
   end
 
-  test "each tab renders its own table", %{conn: conn} do
+  @faceted ~w(hooks proto events notifications model migrations)
+
+  test "each tab renders its own table, with a filter only when it is faceted", %{conn: conn} do
     for tab <- @tabs do
+      # The mount's html, not `has_element?/2`: that renders and parses the
+      # whole page again, and some tabs list every schema or migration.
       {:ok, _view, html} = live(conn, ~p"/admin/runtime?tab=#{tab}")
-      assert html =~ "Runtime introspection"
       assert html =~ "<table", "tab #{tab} rendered no table"
-    end
-  end
 
-  test "faceted tabs render a filter, unfaceted ones do not", %{conn: conn} do
-    for tab <- ~w(hooks proto events notifications model migrations) do
-      {:ok, _view, html} = live(conn, ~p"/admin/runtime?tab=#{tab}")
-      assert html =~ ~s(id="facet-#{tab}"), "tab #{tab} should have a facet filter"
-    end
-
-    for tab <- ~w(channels jobs locks) do
-      {:ok, _view, html} = live(conn, ~p"/admin/runtime?tab=#{tab}")
-      refute html =~ ~s(id="facet-#{tab}"), "tab #{tab} should not have a facet filter"
+      assert html =~ ~s(id="facet-#{tab}") == tab in @faceted,
+             "tab #{tab} should #{if tab in @faceted, do: "", else: "not "}have a facet filter"
     end
   end
 
@@ -73,6 +67,6 @@ defmodule GamendWeb.AdminLive.RuntimeTest do
 
   test "an unknown tab falls back to hooks rather than crashing", %{conn: conn} do
     {:ok, _view, html} = live(conn, ~p"/admin/runtime?tab=nonsense")
-    assert html =~ "Hook"
+    assert html =~ ~s(id="facet-hooks")
   end
 end

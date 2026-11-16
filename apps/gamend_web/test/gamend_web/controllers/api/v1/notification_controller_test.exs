@@ -116,14 +116,6 @@ defmodule GamendWeb.Api.V1.NotificationControllerTest do
     assert resp["error"] == "validation_failed"
   end
 
-  test "POST /api/v1/notifications fails without auth", %{conn: conn} do
-    resp =
-      conn
-      |> post("/api/v1/notifications", %{user_id: 1, title: "Hi"})
-
-    assert resp.status in [401, 403]
-  end
-
   test "POST /api/v1/notifications upserts duplicate title from same sender to same recipient",
        %{conn: conn} do
     {a, b} = make_friends()
@@ -312,20 +304,6 @@ defmodule GamendWeb.Api.V1.NotificationControllerTest do
 
     # Notification should still exist for b
     assert Notifications.count_notifications(b.id) == 1
-  end
-
-  test "DELETE /api/v1/notifications with single id in array", %{conn: conn} do
-    {a, b} = make_friends()
-
-    {:ok, n} = Notifications.send_notification(a.id, %{"user_id" => b.id, "title" => "Single"})
-
-    resp =
-      conn
-      |> auth_conn(b)
-      |> delete("/api/v1/notifications", %{ids: [n.id]})
-      |> json_response(200)
-
-    assert resp["data"]["deleted"] == 1
   end
 
   test "DELETE /api/v1/notifications without ids returns error", %{conn: conn} do

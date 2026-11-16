@@ -26,14 +26,19 @@ defmodule Gamend.QuestClaimRaceTest do
     use Gamend.TestSupport.NoopHooks
 
     # First claim in: wait for the second to have read the row. Second in:
-    # give the first time to pay and re-arm.
+    # wait for the first to have paid and re-armed (its claim has returned).
     @impl true
     def before_quest_claim(_user_id, _quest, progress) do
       coordinator = Application.fetch_env!(:gamend, :quest_claim_race)
 
-      case Agent.get_and_update(coordinator, &{&1 + 1, &1 + 1}) do
-        1 -> wait_until(fn -> Agent.get(coordinator, & &1) >= 2 end)
-        _ -> Process.sleep(500)
+      arrived =
+        Agent.get_and_update(coordinator, fn state ->
+          {state.arrived + 1, %{state | arrived: state.arrived + 1}}
+        end)
+
+      case arrived do
+        1 -> wait_until(fn -> Agent.get(coordinator, & &1.arrived) >= 2 end)
+        _ -> wait_until(fn -> Agent.get(coordinator, & &1.returned) >= 1 end)
       end
 
       {:ok, progress}
@@ -45,7 +50,7 @@ defmodule Gamend.QuestClaimRaceTest do
           :ok
 
         attempts == 0 ->
-          raise "the second claim never reached its hook"
+          raise "the other claim never got there"
 
         true ->
           Process.sleep(10)
@@ -55,7 +60,7 @@ defmodule Gamend.QuestClaimRaceTest do
   end
 
   setup do
-    {:ok, coordinator} = Agent.start_link(fn -> 0 end)
+    {:ok, coordinator} = Agent.start_link(fn -> %{arrived: 0, returned: 0} end)
     previous = Application.get_env(:gamend_core, :hooks_module)
     Application.put_env(:gamend_core, :hooks_module, InterleavingHook)
     Application.put_env(:gamend, :quest_claim_race, coordinator)
@@ -77,20 +82,25 @@ defmodule Gamend.QuestClaimRaceTest do
         rewards: [%{type: "currency", code: "gold", amount: 50}]
       })
 
-    :ok
+    %{coordinator: coordinator}
   end
 
-  test "a claim that read an earlier run never spends the banked one unpaid" do
+  test "a claim that read an earlier run never spends the banked one unpaid", %{
+    coordinator: coordinator
+  } do
     user = AccountsFixtures.user_fixture()
 
     # Two finds on a one-find quest: one run to claim, one banked behind it.
     {:ok, _} = Quests.report_event(user.id, "found", 2, %{})
 
+    claim = fn ->
+      result = Quests.claim(user.id, "treasure_race")
+      Agent.update(coordinator, &%{&1 | returned: &1.returned + 1})
+      result
+    end
+
     results =
-      [
-        fn -> Quests.claim(user.id, "treasure_race") end,
-        fn -> Quests.claim(user.id, "treasure_race") end
-      ]
+      [claim, claim]
       |> Enum.map(&Task.async/1)
       |> Task.await_many(10_000)
 

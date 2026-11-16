@@ -13,7 +13,6 @@ defmodule GamendWeb.SocketFormatVisibilityTest do
   """
   use ExUnit.Case, async: false
 
-  import ExUnit.CaptureLog
   import Phoenix.ChannelTest
 
   alias Gamend.AccountsFixtures
@@ -87,22 +86,6 @@ defmodule GamendWeb.SocketFormatVisibilityTest do
         end)
 
       assert meta.format == "json"
-    end
-  end
-
-  describe "the downgrade warning" do
-    test "asking for protobuf and getting it logs nothing" do
-      log = capture_log(fn -> connect_with("protobuf") end)
-
-      refute log =~ "falling back to JSON"
-    end
-
-    test "never asking for protobuf logs nothing either" do
-      # Only a *downgrade* is worth a line; every JSON client logging on connect
-      # would bury it.
-      log = capture_log(fn -> connect_with(nil) end)
-
-      refute log =~ "falling back to JSON"
     end
   end
 end

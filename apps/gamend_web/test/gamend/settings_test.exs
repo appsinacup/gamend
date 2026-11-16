@@ -89,15 +89,6 @@ defmodule Gamend.SettingsTest do
       definition = definition(:chat_days)
       assert definition.env == "GAMEND_SAMPLE_CHAT_DAYS"
     end
-
-    test "a name cannot be pinned — derivation is the only path" do
-      assert_raise ArgumentError, ~r/unknown option\(s\) \[:env\]/, fn ->
-        defmodule Pinned do
-          use Gamend.Settings.Provider, app: :gamend_core, group: :pinned
-          setting(:thing, :string, env: "LEGACY")
-        end
-      end
-    end
   end
 
   describe "get/2" do
@@ -494,21 +485,6 @@ defmodule Gamend.SettingsTest do
       urls = Enum.filter(Settings.all(), &(&1.key == :public_url and &1.group == :storage))
 
       assert [%{module: Gamend.Storage, env: "GAMEND_STORAGE_PUBLIC_URL"}] = urls
-    end
-  end
-
-  describe "the real Retention provider" do
-    test "declares its keys with the current env names" do
-      chat = Enum.find(Gamend.Retention.__settings__(), &(&1.key == :chat_messages_days))
-
-      assert chat.env == "GAMEND_RETENTION_CHAT_MESSAGES_DAYS"
-      assert chat.default == 0
-      assert chat.group == :retention
-    end
-
-    test "reads through Settings with its documented defaults" do
-      assert Settings.get(Gamend.Retention, :push_tokens_days) == 270
-      assert Settings.get(Gamend.Retention, :results_days) == 0
     end
   end
 

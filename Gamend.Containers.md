@@ -170,6 +170,10 @@ it `tag:`. Answers the image's id and the end of the build's output:
     for a host showing the build live. Of arity 2, it is given the end
     of the output so far too (the `log` the answer would have now), for
     a host keeping it as it goes, so a page opened mid-build has it.
+  * `stop_on:` — a message which, sent to the process building, stops
+    the build as `timeout_ms:` does, and it answers `{:build_stopped,
+    log}`: a host's Stop button. A message that comes before the build
+    starts stops it at once, since it waits in the mailbox.
 
 No hardening floor, unlike `create/1`: a Dockerfile's `RUN` expects the
 root a build normally has (apt drops to its own user with `setgroups`,
@@ -177,7 +181,8 @@ which a container without capabilities refuses). Rootless podman, and
 `runtime:` for someone else's Dockerfile, are what keep a build in.
 
 Errors besides the module's: `{:build_failed, status, log}`, the build's
-exit status and the end of its output, and `{:build_timeout, log}`.
+exit status and the end of its output, `{:build_timeout, log}` and
+`{:build_stopped, log}`.
 
 # `connection`
 

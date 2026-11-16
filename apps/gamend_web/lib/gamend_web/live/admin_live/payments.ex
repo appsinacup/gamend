@@ -145,7 +145,7 @@ defmodule GamendWeb.AdminLive.Payments do
             <div class="flex flex-wrap items-center justify-between gap-3">
               <h2 class="card-title">Products ({@counts.products || 0})</h2>
               <button type="button" phx-click="new_product" class="btn btn-primary btn-sm">
-                + Product
+                <.icon name="hero-plus-solid" class="size-4" /> Product
               </button>
             </div>
 
@@ -208,7 +208,7 @@ defmodule GamendWeb.AdminLive.Payments do
             <div class="flex flex-wrap items-center justify-between gap-3">
               <h2 class="card-title">Provider SKUs ({@counts.provider_products || 0})</h2>
               <button type="button" phx-click="new_provider_product" class="btn btn-primary btn-sm">
-                + Provider SKU
+                <.icon name="hero-plus-solid" class="size-4" /> Provider SKU
               </button>
             </div>
 
@@ -333,7 +333,7 @@ defmodule GamendWeb.AdminLive.Payments do
                         phx-value-id={p.id}
                         class="btn btn-xs btn-outline btn-primary"
                       >
-                        Reconcile Stripe
+                        <.icon name="hero-arrow-path-solid" class="size-4" /> Reconcile Stripe
                       </button>
                       <button
                         :if={Payments.admin_stripe_refundable?(p)}
@@ -343,7 +343,7 @@ defmodule GamendWeb.AdminLive.Payments do
                         data-confirm
                         class="btn btn-xs btn-outline btn-warning"
                       >
-                        Refund
+                        <.icon name="hero-arrow-uturn-left-solid" class="size-4" /> Refund
                       </button>
                     </td>
                   </tr>
@@ -422,7 +422,7 @@ defmodule GamendWeb.AdminLive.Payments do
                           /> Tell user
                         </label>
                         <button type="submit" class="btn btn-xs btn-outline btn-primary">
-                          Add days
+                          <.icon name="hero-plus-solid" class="size-4" /> Add days
                         </button>
                       </form>
                     </td>
@@ -575,8 +575,12 @@ defmodule GamendWeb.AdminLive.Payments do
               />
             </div>
             <div class="modal-action">
-              <button type="button" phx-click="close_product_modal" class="btn">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="button" phx-click="close_product_modal" class="btn">
+                <.icon name="hero-x-mark-solid" class="size-5" /> Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <.icon name="hero-check-solid" class="size-5" /> Save
+              </button>
             </div>
           </.form>
         </div>
@@ -643,9 +647,11 @@ defmodule GamendWeb.AdminLive.Payments do
             />
             <div class="modal-action">
               <button type="button" phx-click="close_provider_product_modal" class="btn">
-                Cancel
+                <.icon name="hero-x-mark-solid" class="size-5" /> Cancel
               </button>
-              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="submit" class="btn btn-primary">
+                <.icon name="hero-check-solid" class="size-5" /> Save
+              </button>
             </div>
           </.form>
         </div>

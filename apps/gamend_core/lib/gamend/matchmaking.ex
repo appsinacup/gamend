@@ -105,6 +105,9 @@ defmodule Gamend.Matchmaking do
     * `{:error, :party_too_large}` — the party cannot fit in `max_players`
     * `{:error, :party_has_blocked_pair}` — two members have blocked each other
     * `{:error, :already_queued}` — the caller or a party member is queued
+    * `{:error, :account_required}` — the caller, or a party member, is a
+      guest and the host requires an account to queue
+      (`Gamend.AccountRequired`, `:matchmaking`)
   """
   @spec join(User.t(), map(), pos_integer() | nil, pos_integer() | nil) ::
           {:ok, Ticket.t()} | {:error, Ecto.Changeset.t() | atom()}
@@ -122,6 +125,7 @@ defmodule Gamend.Matchmaking do
     # plugin time. The partial unique index
     # (`matchmaking_tickets_one_queued_per_user`) closes the remaining window.
     with {:ok, members} <- resolve_queue_group(user, proposed),
+         :ok <- accounts_allowed(members),
          {:ok, attrs} <- run_join_hook(user, proposed),
          :ok <- ensure_none_queued(members) do
       case insert_tickets(user, members, attrs) do
@@ -138,6 +142,14 @@ defmodule Gamend.Matchmaking do
   # (`GAMEND_LIMITS_MATCHMAKING_DEFAULT_*_PLAYERS`).
   defp default_min_players, do: Limits.get(:matchmaking_default_min_players)
   defp default_max_players, do: Limits.get(:matchmaking_default_max_players)
+
+  # Before the hook, which a game may charge or stamp in: a guest the host
+  # keeps out of the queue (`Gamend.AccountRequired`) never reaches it.
+  defp accounts_allowed(members) do
+    if Enum.all?(members, &Gamend.AccountRequired.allowed?(&1, :matchmaking)),
+      do: :ok,
+      else: {:error, :account_required}
+  end
 
   defp run_join_hook(user, proposed) do
     case Gamend.Hooks.internal_call(:before_matchmaking_join, [user, proposed]) do

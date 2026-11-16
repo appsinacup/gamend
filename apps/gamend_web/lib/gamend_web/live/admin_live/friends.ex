@@ -111,7 +111,9 @@ defmodule GamendWeb.AdminLive.Friends do
         <div class="card-body">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="card-title">Friendships ({@count})</h2>
-            <button phx-click="refresh" class="btn btn-ghost btn-sm">Refresh</button>
+            <button phx-click="refresh" class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-path-solid" class="size-4" /> Refresh
+            </button>
           </div>
 
           <p class="text-sm text-muted">
@@ -204,7 +206,7 @@ defmodule GamendWeb.AdminLive.Friends do
                       data-confirm
                       class="btn btn-outline btn-error btn-xs"
                     >
-                      Remove
+                      <.icon name="hero-trash-solid" class="size-4" /> Remove
                     </button>
                   </td>
                 </tr>

@@ -103,6 +103,7 @@ custom classes must fully style the input
 
 - **Produce world-class UI designs** with a focus on usability, aesthetics, and modern design principles
 - Implement **subtle micro-interactions** (e.g., button hover effects, and smooth transitions)
+- **A button with words has its icon before them** (2026-11-16): `<.icon>` first, then the words (Register `hero-user-plus-solid`, Log in `hero-arrow-right-on-rectangle-solid`, Join `hero-plus-solid`, Leave, Cancel and Close `hero-x-mark-solid`, Save `hero-check-solid`, Delete `hero-trash-solid`, Edit `hero-pencil-solid`, Refresh `hero-arrow-path-solid`); a choice among options (a tab, a filter, an answer) has none. On a phone a button that leads with its icon and stands beside another button shows its icon alone (`gamend.css`, *A button as its icon alone on a phone*: a selector, nothing measured); a lone button, a `btn-block` and anything under `data-btn-keep` keep their words
 - Ensure **clean typography, spacing, and layout balance** for a refined, premium look
 - Focus on **delightful details** like hover effects, loading states, and smooth page transitions
 - The accessibility floors in [RULES.md](RULES.md) are hard limits

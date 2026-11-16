@@ -176,13 +176,17 @@ defmodule GamendWeb.AdminLive.Results do
               <span class="font-mono text-sm">{@result.id}</span>
             </h2>
             <div class="flex gap-2">
-              <button phx-click="refresh" class="btn btn-ghost btn-sm">{gettext("Refresh")}</button>
+              <button phx-click="refresh" class="btn btn-ghost btn-sm">
+                <.icon name="hero-arrow-path-solid" class="size-4" />
+                {gettext("Refresh")}
+              </button>
               <button
                 phx-click="delete"
                 phx-value-id={@result.id}
                 data-confirm
                 class="btn btn-outline btn-error btn-sm"
               >
+                <.icon name="hero-trash-solid" class="size-4" />
                 {gettext("Delete")}
               </button>
             </div>
@@ -281,6 +285,7 @@ defmodule GamendWeb.AdminLive.Results do
               </tbody>
             </table>
             <button :if={@more?} phx-click="more_events" class="btn btn-surface btn-sm mt-2">
+              <.icon name="hero-chevron-down-solid" class="size-4" />
               {gettext("More events")}
             </button>
           </div>
@@ -299,7 +304,10 @@ defmodule GamendWeb.AdminLive.Results do
         <div class="card-body space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="card-title">{gettext("Results")} ({@count})</h2>
-            <button phx-click="refresh" class="btn btn-ghost btn-sm">{gettext("Refresh")}</button>
+            <button phx-click="refresh" class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-path-solid" class="size-4" />
+              {gettext("Refresh")}
+            </button>
           </div>
 
           <p class="text-sm text-muted">

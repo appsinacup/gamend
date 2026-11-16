@@ -259,12 +259,15 @@ defmodule Gamend.Tournaments do
 
   Refuses with `:registration_closed`, `:already_registered`,
   `:tournament_full`, `:not_found` (deleted meanwhile), a changeset, or
-  `{:hook_rejected, reason}` with the hook's own reason.
+  `{:hook_rejected, reason}` with the hook's own reason. A guest is refused
+  with `:account_required` where the host requires an account to enter
+  (`Gamend.AccountRequired`, `:tournaments`), before anything else.
   """
   @spec join_tournament(User.t(), Tournament.t()) ::
           {:ok, Entry.t()}
           | {:error,
-             :registration_closed
+             :account_required
+             | :registration_closed
              | :already_registered
              | :tournament_full
              | :not_found
@@ -274,6 +277,9 @@ defmodule Gamend.Tournaments do
     tournament = advance_lifecycle(tournament)
 
     cond do
+      not Gamend.AccountRequired.allowed?(user, :tournaments) ->
+        {:error, :account_required}
+
       tournament.state != TournamentState.registration() ->
         {:error, :registration_closed}
 
@@ -512,6 +518,66 @@ defmodule Gamend.Tournaments do
     case Repo.rescue_stale(:not_registered, fn -> Repo.delete(entry) end) do
       {:ok, _} -> :left
       {:error, reason} -> Repo.rollback(reason)
+    end
+  end
+
+  @doc """
+  Moves `from_user_id`'s entries onto `to_user_id`, the way a guest's play
+  joins the account they log in to (`Gamend.Accounts.GuestMerge`). An entry
+  in a tournament the account has not entered becomes the account's, with
+  its seed, bracket, wins and matches (a game's match metadata keyed by the
+  entry's id with them), so a guest who joined, or is playing, goes on as the
+  account. No hook fires: the entry was registered once.
+
+  Where the account has its own entry in that tournament, the account's
+  stands and the guest's leaves the field: withdrawn before the draw (its
+  seat given back), forfeited while it runs (its opponent advances, as
+  against a withdrawal), and left to go with the guest account once the
+  tournament is over. Answers how many entries reached the account.
+  """
+  @spec merge_user_entries(Ecto.UUID.t(), Ecto.UUID.t()) :: non_neg_integer()
+  def merge_user_entries(from_user_id, to_user_id)
+      when is_binary(from_user_id) and is_binary(to_user_id) and from_user_id != to_user_id do
+    from(e in Entry, where: e.leader_id == ^from_user_id, preload: [:tournament])
+    |> Repo.all()
+    |> Enum.count(fn %Entry{tournament: tournament} = entry ->
+      moved? = move_entry(entry, to_user_id) == :moved
+      if not moved?, do: drop_entry(tournament, entry)
+      broadcast_tournament(tournament, RealtimeEvent.tournament_updated())
+      moved?
+    end)
+  end
+
+  # The unique index is the rule: an account that joined since it was read
+  # keeps its own entry, as one read here would.
+  defp move_entry(%Entry{} = entry, to_user_id) do
+    if get_entry(entry.tournament_id, to_user_id) do
+      :kept
+    else
+      Repo.rescue_stale(:gone, fn ->
+        entry |> Entry.changeset(%{leader_id: to_user_id}) |> Repo.update()
+      end)
+      |> case do
+        {:ok, _moved} -> :moved
+        {:error, _taken_or_gone} -> :kept
+      end
+    end
+  end
+
+  # The account plays its own entry, so the guest's goes as a withdrawal
+  # goes: deleted before the draw, forfeited after it (`forfeit_entry/2`),
+  # never left in a running bracket for the guest's delete to empty a side
+  # of.
+  defp drop_entry(%Tournament{} = tournament, %Entry{} = entry) do
+    case withdraw_entry(tournament.id, entry) do
+      {:error, :already_drawn} ->
+        case Repo.get(Tournament, tournament.id) do
+          %Tournament{} = drawn -> forfeit_entry(drawn, entry.id)
+          nil -> :ok
+        end
+
+      _left_or_gone ->
+        :ok
     end
   end
 

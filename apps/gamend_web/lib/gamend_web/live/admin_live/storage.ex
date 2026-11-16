@@ -166,7 +166,9 @@ defmodule GamendWeb.AdminLive.Storage do
         <div class="card-body">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="card-title">Storage</h2>
-            <button phx-click="refresh" class="btn btn-ghost btn-sm">Refresh</button>
+            <button phx-click="refresh" class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-path-solid" class="size-4" /> Refresh
+            </button>
           </div>
           <div class="flex flex-wrap gap-6 text-sm">
             <div><span class="text-muted">Backend:</span> <b>{@adapter}</b></div>
@@ -200,7 +202,7 @@ defmodule GamendWeb.AdminLive.Storage do
               class="btn btn-primary btn-sm"
               disabled={@uploads.object.entries == []}
             >
-              Upload
+              <.icon name="hero-arrow-up-tray-solid" class="size-4" /> Upload
             </button>
             <%!-- The native file input clears its label on re-render, so show
                   the picked file here instead. --%>
@@ -290,7 +292,7 @@ defmodule GamendWeb.AdminLive.Storage do
                       data-confirm
                       class="btn btn-outline btn-error btn-xs"
                     >
-                      Delete
+                      <.icon name="hero-trash-solid" class="size-4" /> Delete
                     </button>
                   </td>
                 </tr>

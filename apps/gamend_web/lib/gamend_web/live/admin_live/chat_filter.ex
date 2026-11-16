@@ -401,6 +401,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
               </option>
             </select>
             <button type="button" phx-click="import_list" class="btn btn-primary btn-sm">
+              <.icon name="hero-arrow-up-tray-solid" class="size-4" />
               {gettext("Import bundled list")}
             </button>
             <button
@@ -409,6 +410,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
               data-confirm
               class="btn btn-outline btn-error btn-sm"
             >
+              <.icon name="hero-trash-solid" class="size-4" />
               {gettext("Remove this list")}
             </button>
           </form>
@@ -509,7 +511,10 @@ defmodule GamendWeb.AdminLive.ChatFilter do
                 {gettext("%{n} on this node", n: @cached_words)}
               </span>
             </div>
-            <button phx-click="refresh" class="btn btn-ghost btn-sm">{gettext("Refresh")}</button>
+            <button phx-click="refresh" class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-path-solid" class="size-4" />
+              {gettext("Refresh")}
+            </button>
           </div>
 
           <form
@@ -551,6 +556,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
               class="input input-sm input-bordered font-mono w-32"
             />
             <button type="button" phx-click="save_word" class="btn btn-primary btn-sm">
+              <.icon name="hero-check-solid" class="size-4" />
               {if @word_form["id"], do: gettext("Save word"), else: gettext("Add word")}
             </button>
             <button
@@ -559,6 +565,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
               phx-click="cancel_edit"
               class="btn btn-ghost btn-sm"
             >
+              <.icon name="hero-x-mark-solid" class="size-4" />
               {gettext("Cancel")}
             </button>
           </form>
@@ -644,6 +651,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
                       data-confirm
                       class="btn btn-outline btn-error btn-xs"
                     >
+                      <.icon name="hero-trash-solid" class="size-4" />
                       {gettext("Delete")}
                     </button>
                   </td>

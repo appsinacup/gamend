@@ -65,6 +65,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
               phx-click="open_stripe_portal"
               class="btn btn-surface btn-sm"
             >
+              <.icon name="hero-cog-6-tooth-solid" class="size-4" />
               {gettext("Manage billing")}
             </button>
             <.link
@@ -72,6 +73,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
               navigate={~p"/store"}
               class="btn btn-sm btn-primary"
             >
+              <.icon name="hero-shopping-bag-solid" class="size-4" />
               {gettext("Open Store")}
             </.link>
           </div>
@@ -139,6 +141,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
                         }
                         class="btn btn-xs btn-outline btn-warning"
                       >
+                        <.icon name="hero-arrow-uturn-left-solid" class="size-4" />
                         {gettext("Refund")}
                       </button>
                     </div>
@@ -207,6 +210,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
                   phx-value-id={entitlement.id}
                   class="btn btn-sm btn-outline btn-warning"
                 >
+                  <.icon name="hero-x-mark-solid" class="size-4" />
                   {gettext("Cancel renewal")}
                 </button>
                 <span
@@ -223,6 +227,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
                   phx-value-id={entitlement.id}
                   class="btn btn-sm btn-surface"
                 >
+                  <.icon name="hero-arrow-path-solid" class="size-4" />
                   {gettext("Resume renewal")}
                 </button>
                 <.link
@@ -230,6 +235,7 @@ defmodule GamendWeb.UserLive.Settings.PaymentsTab do
                   href={~p"/payments/downloads/#{entitlement.id}"}
                   class="btn btn-sm btn-primary"
                 >
+                  <.icon name="hero-arrow-down-tray-solid" class="size-4" />
                   {gettext("Download")}
                 </.link>
               </div>

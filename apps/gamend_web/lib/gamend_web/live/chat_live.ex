@@ -213,6 +213,7 @@ defmodule GamendWeb.ChatLive do
             >
               <div :if={@has_more} class="text-center py-2">
                 <button phx-click="load_more" class="btn btn-xs btn-ghost">
+                  <.icon name="hero-chevron-left-solid" class="size-4 rtl:-scale-x-100" />
                   {gettext("Older")}
                 </button>
               </div>
@@ -265,9 +266,11 @@ defmodule GamendWeb.ChatLive do
                       phx-mounted={JS.dispatch("focus")}
                     />
                     <button type="submit" class="btn btn-sm btn-primary">
+                      <.icon name="hero-check-solid" class="size-4" />
                       {gettext("Save")}
                     </button>
                     <button type="button" phx-click="chat_edit_cancel" class="btn btn-sm btn-ghost">
+                      <.icon name="hero-x-mark-solid" class="size-4" />
                       {gettext("Cancel")}
                     </button>
                   </form>
@@ -286,6 +289,7 @@ defmodule GamendWeb.ChatLive do
                         class="btn btn-xs btn-ghost min-h-[2rem] min-w-[2rem] px-2 lg:px-1"
                         title={gettext("Edit")}
                       >
+                        <.icon name="hero-pencil-solid" class="size-4" />
                         {gettext("Edit")}
                       </button>
                       <button
@@ -295,6 +299,7 @@ defmodule GamendWeb.ChatLive do
                         class="btn btn-xs btn-ghost min-h-[2rem] min-w-[2rem] px-2 lg:px-1 text-error"
                         title={gettext("Delete")}
                       >
+                        <.icon name="hero-trash-solid" class="size-4" />
                         {gettext("Delete")}
                       </button>
                     </div>
@@ -329,6 +334,7 @@ defmodule GamendWeb.ChatLive do
                 autocomplete="off"
               />
               <button type="submit" class="btn btn-sm btn-primary">
+                <.icon name="hero-paper-airplane-solid" class="size-4" />
                 {gettext("Send")}
               </button>
             </form>

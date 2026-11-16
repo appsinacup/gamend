@@ -212,9 +212,13 @@ defmodule GamendWeb.NewGroupComponent do
                 phx-click="close"
                 phx-target={@myself}
               >
+                <.icon name="hero-x-mark-solid" class="size-4" />
                 {gettext("Cancel")}
               </button>
-              <button type="submit" class="btn btn-primary btn-sm">{gettext("Create")}</button>
+              <button type="submit" class="btn btn-primary btn-sm">
+                <.icon name="hero-plus-solid" class="size-4" />
+                {gettext("Create")}
+              </button>
             </div>
           </.form>
         </div>

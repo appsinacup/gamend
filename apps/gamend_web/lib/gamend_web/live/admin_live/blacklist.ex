@@ -93,7 +93,9 @@ defmodule GamendWeb.AdminLive.Blacklist do
         <div class="card-body">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="card-title">Blacklist ({@count})</h2>
-            <button phx-click="refresh" class="btn btn-ghost btn-sm">Refresh</button>
+            <button phx-click="refresh" class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-path-solid" class="size-4" /> Refresh
+            </button>
           </div>
 
           <p class="text-sm text-muted">
@@ -156,7 +158,7 @@ defmodule GamendWeb.AdminLive.Blacklist do
                       phx-value-id={block.id}
                       class="btn btn-outline btn-error btn-xs"
                     >
-                      Unblock
+                      <.icon name="hero-lock-open-solid" class="size-4" /> Unblock
                     </button>
                   </td>
                 </tr>

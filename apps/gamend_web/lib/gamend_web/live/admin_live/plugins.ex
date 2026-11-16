@@ -352,7 +352,7 @@ defmodule GamendWeb.AdminLive.Plugins do
               phx-click="reload_plugins"
               class="btn btn-primary btn-sm"
             >
-              Reload plugins
+              <.icon name="hero-arrow-path-solid" class="size-4" /> Reload plugins
             </button>
           </:actions>
         </.admin_header>
@@ -486,7 +486,7 @@ defmodule GamendWeb.AdminLive.Plugins do
                     phx-debounce="200"
                   />
                   <button id="plugins-call-btn" type="submit" class="btn btn-primary btn-sm">
-                    Call
+                    <.icon name="hero-phone-solid" class="size-4" /> Call
                   </button>
                 </.form>
 
@@ -540,6 +540,7 @@ defmodule GamendWeb.AdminLive.Plugins do
                   class="btn btn-surface btn-sm"
                   disabled={@build_running? or @build_options == [] or not @build_available?}
                 >
+                  <.icon name="hero-wrench-screwdriver-solid" class="size-4" />
                   {if @build_running?, do: "Building…", else: "Build bundle"}
                 </button>
               </.form>

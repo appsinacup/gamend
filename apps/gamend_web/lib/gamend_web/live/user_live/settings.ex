@@ -91,6 +91,7 @@ defmodule GamendWeb.UserLive.Settings do
                     gettext("Delete the other account permanently? This cannot be undone.")
                   }
                 >
+                  <.icon name="hero-trash-solid" class="size-4" />
                   {gettext("Delete other account")}
                 </button>
               </div>

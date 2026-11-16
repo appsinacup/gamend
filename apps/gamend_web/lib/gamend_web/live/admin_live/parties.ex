@@ -67,7 +67,7 @@ defmodule GamendWeb.AdminLive.Parties do
                   class="btn btn-sm btn-outline btn-primary"
                   id="create-party-btn"
                 >
-                  + Create Party
+                  <.icon name="hero-plus-solid" class="size-4" /> Create Party
                 </button>
                 <button
                   type="button"
@@ -76,6 +76,7 @@ defmodule GamendWeb.AdminLive.Parties do
                   class="btn btn-sm btn-outline btn-error"
                   disabled={MapSet.size(@selected_ids) == 0}
                 >
+                  <.icon name="hero-trash-solid" class="size-4" />
                   Delete selected ({MapSet.size(@selected_ids)})
                 </button>
               </div>
@@ -242,7 +243,7 @@ defmodule GamendWeb.AdminLive.Parties do
                             data-confirm
                             class="btn btn-xs btn-outline btn-error"
                           >
-                            Delete
+                            <.icon name="hero-trash-solid" class="size-4" /> Delete
                           </button>
                         </div>
                       </td>
@@ -305,8 +306,12 @@ defmodule GamendWeb.AdminLive.Parties do
             </div>
 
             <div class="modal-action">
-              <button type="button" phx-click="cancel_edit" class="btn">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="button" phx-click="cancel_edit" class="btn">
+                <.icon name="hero-x-mark-solid" class="size-5" /> Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <.icon name="hero-check-solid" class="size-5" /> Save
+              </button>
             </div>
           </.form>
         </div>
@@ -336,7 +341,7 @@ defmodule GamendWeb.AdminLive.Parties do
               class="btn btn-sm btn-outline btn-primary"
               id="party-add-member-btn"
             >
-              Add Member
+              <.icon name="hero-user-plus-solid" class="size-4" /> Add Member
             </button>
           </div>
 
@@ -378,7 +383,7 @@ defmodule GamendWeb.AdminLive.Parties do
                         data-confirm
                         class="btn btn-xs btn-outline btn-error"
                       >
-                        Kick
+                        <.icon name="hero-user-minus-solid" class="size-4" /> Kick
                       </button>
                     <% end %>
                   </td>
@@ -388,7 +393,9 @@ defmodule GamendWeb.AdminLive.Parties do
           </div>
 
           <div class="modal-action">
-            <button type="button" phx-click="close_members" class="btn">Close</button>
+            <button type="button" phx-click="close_members" class="btn">
+              <.icon name="hero-x-mark-solid" class="size-5" /> Close
+            </button>
           </div>
         </div>
       </div>
@@ -414,8 +421,12 @@ defmodule GamendWeb.AdminLive.Parties do
             />
 
             <div class="modal-action">
-              <button type="button" phx-click="cancel_create" class="btn">Cancel</button>
-              <button type="submit" class="btn btn-primary">Create</button>
+              <button type="button" phx-click="cancel_create" class="btn">
+                <.icon name="hero-x-mark-solid" class="size-5" /> Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <.icon name="hero-plus-solid" class="size-5" /> Create
+              </button>
             </div>
           </.form>
         </div>

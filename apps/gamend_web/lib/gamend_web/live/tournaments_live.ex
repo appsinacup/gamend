@@ -14,6 +14,7 @@ defmodule GamendWeb.TournamentsLive do
   """
   use GamendWeb, :live_view
 
+  alias Gamend.AccountRequired
   alias Gamend.Accounts.Scope
   alias Gamend.Accounts.User
   alias Gamend.Tournaments
@@ -22,6 +23,7 @@ defmodule GamendWeb.TournamentsLive do
   alias GamendWeb.LiveHelpers
   alias GamendWeb.OnMount.SeoTitle
   alias GamendWeb.Plugs.FeatureGate
+  alias GamendWeb.UserAuth
 
   require Gamend.Tournaments.EntryState, as: EntryState
   require Gamend.Tournaments.TournamentState, as: TournamentState
@@ -39,6 +41,9 @@ defmodule GamendWeb.TournamentsLive do
     {:ok,
      socket
      |> assign(:page_title, gettext("Tournaments"))
+     # The marks' colour on every tournament page, list and detail alike: the
+     # host's Tournaments link's `"tone"`, nil for the muted text.
+     |> assign(:tone, GamendWeb.HostLayouts.nav_tone("/tournaments"))
      |> assign(:page, 1)
      |> assign(:page_size, @page_size)
      |> assign(:brackets_page_size, @brackets_page_size)
@@ -49,6 +54,17 @@ defmodule GamendWeb.TournamentsLive do
      |> assign(:tournament, nil)
      |> assign(:bracket, nil)
      |> assign(:own?, false)
+     # Who may enter is the host's (`Gamend.AccountRequired`, `:tournaments`):
+     # where an account is required, a visitor and a guest are offered
+     # Register, and no guest account is made here.
+     |> assign(
+       :guests?,
+       Gamend.Accounts.device_auth_enabled?() and not AccountRequired.required?(:tournaments)
+     )
+     |> assign(
+       :must_register?,
+       not AccountRequired.allowed?(socket.assigns[:current_scope], :tournaments)
+     )
      |> assign(:current_user_id, current_user_id(socket))}
   end
 
@@ -119,7 +135,21 @@ defmodule GamendWeb.TournamentsLive do
 
   # Registration is server-authoritative: the button only offers the action, and
   # `before_tournament_register` may still refuse it (entry fee, rank gate, ...).
+  # A visitor joins as a guest where the host makes guest accounts
+  # (`UserAuth.ensure_user/1`); a guest's entry joins the account they later
+  # log in to (`Tournaments.merge_user_entries/2`). Where the host requires
+  # an account to enter, the page offers Register and this event leads there.
+  def handle_event("join_tournament", _params, %{assigns: %{must_register?: true}} = socket) do
+    {:noreply, push_navigate(socket, to: register_href())}
+  end
+
   def handle_event("join_tournament", _params, socket) do
+    socket =
+      case UserAuth.ensure_user(socket) do
+        {:ok, socket} -> assign(socket, :current_user_id, current_user_id(socket))
+        {:error, _reason} -> socket
+      end
+
     with_current_user(socket, fn user, tournament ->
       case Tournaments.join_tournament(user, tournament) do
         {:ok, _entry} -> {:ok, gettext("Joined")}
@@ -162,6 +192,16 @@ defmodule GamendWeb.TournamentsLive do
   end
 
   defp refresh(tournament), do: Tournaments.get_tournament(tournament.id) || tournament
+
+  # Registering keeps a guest's account and everything on it
+  # (`Gamend.Accounts.upgrade_anonymous_user_and_deliver/4`), and comes back
+  # to this page.
+  defp register_href,
+    do:
+      GamendWeb.HostLayouts.localized_href(
+        ~p"/users/register",
+        GamendWeb.HostLayouts.current_locale()
+      )
 
   defp entry_error_message(:registration_closed), do: gettext("Registration is closed.")
   defp entry_error_message(:already_registered), do: gettext("You are already registered.")
@@ -440,11 +480,18 @@ defmodule GamendWeb.TournamentsLive do
             }
           />
           <.page_title :if={@tournament} class="flex min-w-0 items-center gap-3">
-            <.entity_icon
-              icon_url={@tournament.icon_url}
-              type={:tournament}
-              class="size-8 shrink-0 text-muted sm:size-9"
-            />
+            <%!-- In the Tournaments link's colour, as the list's mark: the
+                  host's `"tone"` (`HostLayouts.nav_tone/1`), else muted. --%>
+            <span data-tone={@tone} class="contents">
+              <.entity_icon
+                icon_url={@tournament.icon_url}
+                type={:tournament}
+                class={[
+                  "size-8 shrink-0 sm:size-9",
+                  if(@tone, do: "text-(--nav-tone)", else: "text-muted")
+                ]}
+              />
+            </span>
             <span class="min-w-0 break-words">
               {@tournament.title}
               <span :if={@bracket} class="text-muted font-normal">
@@ -455,7 +502,7 @@ defmodule GamendWeb.TournamentsLive do
           <.page_title
             :if={is_nil(@tournament)}
             icon={GamendWeb.HostLayouts.nav_icon("/tournaments", "hero-bolt-solid")}
-            tone={GamendWeb.HostLayouts.nav_tone("/tournaments")}
+            tone={@tone}
           >
             {gettext("Tournaments")}
             <span class="text-muted font-normal">({@count})</span>
@@ -555,6 +602,9 @@ defmodule GamendWeb.TournamentsLive do
             tournament={@tournament}
             joined?={@joined?}
             signed_in?={not is_nil(@current_user_id)}
+            guests?={@guests?}
+            must_register?={@must_register?}
+            register_href={register_href()}
           />
         </div>
       </div>
@@ -569,6 +619,7 @@ defmodule GamendWeb.TournamentsLive do
           class="btn btn-sm btn-ghost"
           disabled={@edition_index >= length(@editions) - 1}
         >
+          <.icon name="hero-chevron-left-solid" class="size-4 rtl:-scale-x-100" />
           {gettext("Older")}
         </button>
         <div class="text-sm">
@@ -580,6 +631,7 @@ defmodule GamendWeb.TournamentsLive do
           class="btn btn-sm btn-ghost"
           disabled={@edition_index <= 0}
         >
+          <.icon name="hero-chevron-right-solid" class="size-4 rtl:-scale-x-100" />
           {gettext("Newer")}
         </button>
       </div>
@@ -763,24 +815,56 @@ defmodule GamendWeb.TournamentsLive do
   attr :tournament, :map, required: true
   attr :joined?, :boolean, required: true
   attr :signed_in?, :boolean, required: true
+  attr :guests?, :boolean, default: false, doc: "a visitor's Join makes a guest account"
+
+  attr :must_register?, :boolean,
+    default: false,
+    doc: "the host requires an account to enter, and the viewer has none"
+
+  attr :register_href, :string, default: nil
 
   defp join_action(assigns) do
     ~H"""
     <%= cond do %>
+      <% @must_register? and not @joined? and @tournament.state == TournamentState.registration() -> %>
+        <div class="flex items-center gap-2">
+          <.link navigate={~p"/users/log_in"} class="btn btn-surface btn-sm">
+            <.icon name="hero-arrow-right-on-rectangle-solid" class="size-4" />
+            {gettext("Log in")}
+          </.link>
+          <.link href={@register_href} class="btn btn-primary btn-sm" id="register-btn">
+            <.icon name="hero-user-plus-solid" class="size-4" />
+            {gettext("Register")}
+          </.link>
+        </div>
       <% not @signed_in? and @tournament.state == TournamentState.registration() -> %>
-        <.link navigate={~p"/users/log_in"} class="btn btn-surface btn-sm">
-          {gettext("Log in")}
-        </.link>
+        <div class="flex items-center gap-2">
+          <.link navigate={~p"/users/log_in"} class="btn btn-surface btn-sm">
+            <.icon name="hero-arrow-right-on-rectangle-solid" class="size-4" />
+            {gettext("Log in")}
+          </.link>
+          <button
+            :if={@guests?}
+            phx-click="join_tournament"
+            class="btn btn-primary btn-sm"
+            id="join-btn"
+          >
+            <.icon name="hero-plus-solid" class="size-4" />
+            {gettext("Join")}
+          </button>
+        </div>
       <% not @signed_in? -> %>
         <%!-- Withdrawing is only possible until the bracket is drawn. --%>
       <% @joined? and @tournament.state in ["scheduled", "registration"] -> %>
         <button phx-click="leave_tournament" class="btn btn-outline btn-error btn-sm" id="leave-btn">
+          <.icon name="hero-x-mark-solid" class="size-4" />
           {gettext("Leave")}
         </button>
       <% @joined? -> %>
         <span class="badge badge-primary">{gettext("You")}</span>
       <% @tournament.state == TournamentState.registration() -> %>
         <button phx-click="join_tournament" class="btn btn-primary btn-sm" id="join-btn">
+          <.icon name="hero-plus-solid" class="size-4" />
           {gettext("Join")}
         </button>
       <% true -> %>

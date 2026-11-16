@@ -77,6 +77,7 @@ defmodule GamendWeb.UserLive.Settings.DevicesTab do
                     data-confirm
                     class="btn btn-sm btn-outline btn-error"
                   >
+                    <.icon name="hero-trash-solid" class="size-4" />
                     {gettext("Remove")}
                   </button>
                 </td>

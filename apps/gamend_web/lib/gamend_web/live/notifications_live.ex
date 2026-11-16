@@ -64,6 +64,7 @@ defmodule GamendWeb.NotificationsLive do
                 data-confirm
                 class="btn btn-sm btn-outline btn-error"
               >
+                <.icon name="hero-trash-solid" class="size-4" />
                 {gettext("Delete all")}
               </button>
             <% end %>
@@ -86,6 +87,7 @@ defmodule GamendWeb.NotificationsLive do
                 phx-click="load_more"
                 class="btn btn-sm btn-surface"
               >
+                <.icon name="hero-chevron-down-solid" class="size-4" />
                 {dgettext("notifications", "Load more")}
               </button>
             </div>

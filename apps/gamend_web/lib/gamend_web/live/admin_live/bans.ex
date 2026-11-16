@@ -334,7 +334,7 @@ defmodule GamendWeb.AdminLive.Bans do
                       data-confirm
                       class="btn btn-outline btn-success btn-xs"
                     >
-                      Lift
+                      <.icon name="hero-lock-open-solid" class="size-4" /> Lift
                     </button>
                   </td>
                 </tr>

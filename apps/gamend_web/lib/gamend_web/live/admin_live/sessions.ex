@@ -30,6 +30,7 @@ defmodule GamendWeb.AdminLive.Sessions do
                 class="btn btn-sm btn-outline btn-error"
                 disabled={MapSet.size(@selected_ids) == 0}
               >
+                <.icon name="hero-trash-solid" class="size-4" />
                 Delete selected ({MapSet.size(@selected_ids)})
               </button>
             </div>
@@ -102,7 +103,7 @@ defmodule GamendWeb.AdminLive.Sessions do
                         data-confirm
                         class="btn btn-xs btn-outline btn-error"
                       >
-                        Delete
+                        <.icon name="hero-trash-solid" class="size-4" /> Delete
                       </button>
                     </td>
                   </tr>

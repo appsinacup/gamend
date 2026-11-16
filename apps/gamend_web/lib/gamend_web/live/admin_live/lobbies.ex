@@ -69,7 +69,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
               <h2 class="card-title">Lobbies ({@count})</h2>
               <div class="flex flex-wrap gap-2">
                 <.link navigate={~p"/admin/lobbies/live"} class="btn btn-surface btn-sm">
-                  Open lobby page
+                  <.icon name="hero-arrow-top-right-on-square-solid" class="size-4" /> Open lobby page
                 </.link>
                 <button
                   type="button"
@@ -77,7 +77,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
                   class="btn btn-sm btn-outline btn-primary"
                   id="create-lobby-btn"
                 >
-                  + Create Lobby
+                  <.icon name="hero-plus-solid" class="size-4" /> Create Lobby
                 </button>
                 <button
                   type="button"
@@ -86,6 +86,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
                   class="btn btn-sm btn-outline btn-error"
                   disabled={MapSet.size(@selected_ids) == 0}
                 >
+                  <.icon name="hero-trash-solid" class="size-4" />
                   Delete selected ({MapSet.size(@selected_ids)})
                 </button>
               </div>
@@ -310,7 +311,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
                             data-confirm
                             class="btn btn-xs btn-outline btn-error"
                           >
-                            Delete
+                            <.icon name="hero-trash-solid" class="size-4" /> Delete
                           </button>
                         </div>
                       </td>
@@ -394,8 +395,12 @@ defmodule GamendWeb.AdminLive.Lobbies do
             </div>
 
             <div class="modal-action">
-              <button type="button" phx-click="cancel_edit" class="btn">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="button" phx-click="cancel_edit" class="btn">
+                <.icon name="hero-x-mark-solid" class="size-5" /> Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <.icon name="hero-check-solid" class="size-5" /> Save
+              </button>
             </div>
           </.form>
         </div>
@@ -429,6 +434,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
               phx-value-id={@ready_check.id}
               class="btn btn-xs"
             >
+              <.icon name="hero-x-mark-solid" class="size-4" />
               {gettext("Cancel")}
             </button>
           </div>
@@ -448,7 +454,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
               class="btn btn-sm btn-outline btn-primary"
               id="add-member-btn"
             >
-              Add Member
+              <.icon name="hero-user-plus-solid" class="size-4" /> Add Member
             </button>
           </div>
 
@@ -495,7 +501,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
                       data-confirm
                       class="btn btn-xs btn-outline btn-error"
                     >
-                      Remove
+                      <.icon name="hero-trash-solid" class="size-4" /> Remove
                     </button>
                   </td>
                 </tr>
@@ -504,7 +510,9 @@ defmodule GamendWeb.AdminLive.Lobbies do
           </div>
 
           <div class="modal-action">
-            <button type="button" phx-click="close_members" class="btn">Close</button>
+            <button type="button" phx-click="close_members" class="btn">
+              <.icon name="hero-x-mark-solid" class="size-5" /> Close
+            </button>
           </div>
         </div>
       </div>
@@ -534,8 +542,12 @@ defmodule GamendWeb.AdminLive.Lobbies do
             />
 
             <div class="modal-action">
-              <button type="button" phx-click="cancel_create" class="btn">Cancel</button>
-              <button type="submit" class="btn btn-primary">Create</button>
+              <button type="button" phx-click="cancel_create" class="btn">
+                <.icon name="hero-x-mark-solid" class="size-5" /> Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <.icon name="hero-plus-solid" class="size-5" /> Create
+              </button>
             </div>
           </.form>
         </div>

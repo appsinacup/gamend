@@ -53,6 +53,7 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
             {@api_token_created}
           </code>
           <button type="button" phx-click="api_token_dismiss" class="btn btn-sm">
+            <.icon name="hero-check-solid" class="size-4" />
             {gettext("Done")}
           </button>
         </div>
@@ -81,6 +82,7 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
             />
           </div>
           <button type="submit" class="btn btn-primary btn-sm mb-2">
+            <.icon name="hero-plus-solid" class="size-4" />
             {gettext("Create token")}
           </button>
         </.form>
@@ -131,6 +133,7 @@ defmodule GamendWeb.UserLive.Settings.ApiTokensTab do
                     data-confirm
                     class="btn btn-sm btn-outline btn-error"
                   >
+                    <.icon name="hero-no-symbol-solid" class="size-4" />
                     {gettext("Revoke")}
                   </button>
                 </td>

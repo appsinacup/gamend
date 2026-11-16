@@ -45,6 +45,7 @@ defmodule GamendWeb.UserLive.Registration do
             phx-disable-with={gettext("Loading...")}
             class="btn btn-primary w-full"
           >
+            <.icon name="hero-user-plus-solid" class="size-5" />
             {gettext("Register")}
           </.button>
         </.form>

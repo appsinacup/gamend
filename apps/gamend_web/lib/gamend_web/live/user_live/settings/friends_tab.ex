@@ -69,9 +69,11 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                     phx-value-id={req.id}
                     class="btn btn-sm btn-primary"
                   >
+                    <.icon name="hero-check-solid" class="size-4" />
                     {gettext("Accept")}
                   </button>
                   <button phx-click="reject_friend" phx-value-id={req.id} class="btn btn-sm btn-error">
+                    <.icon name="hero-x-mark-solid" class="size-4" />
                     {gettext("Reject")}
                   </button>
                   <button
@@ -79,6 +81,7 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                     phx-value-id={req.id}
                     class="btn btn-sm btn-outline btn-error"
                   >
+                    <.icon name="hero-no-symbol-solid" class="size-4" />
                     {gettext("Block")}
                   </button>
                 </div>
@@ -113,6 +116,7 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                 </div>
                 <div class="flex gap-2 mt-2">
                   <button phx-click="cancel_friend" phx-value-id={req.id} class="btn btn-sm btn-error">
+                    <.icon name="hero-x-mark-solid" class="size-4" />
                     {gettext("Cancel")}
                   </button>
                 </div>
@@ -158,6 +162,7 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                       phx-value-friend_id={u.id}
                       class="btn btn-sm btn-error btn-outline"
                     >
+                      <.icon name="hero-trash-solid" class="size-4" />
                       {gettext("Remove")}
                     </button>
                   </div>
@@ -200,6 +205,7 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                     phx-value-id={b.id}
                     class="btn btn-surface btn-sm"
                   >
+                    <.icon name="hero-lock-open-solid" class="size-4" />
                     {gettext("Unblock")}
                   </button>
                 </div>
@@ -254,6 +260,7 @@ defmodule GamendWeb.UserLive.Settings.FriendsTab do
                       phx-value-target={s.id}
                       class="btn btn-sm btn-primary"
                     >
+                      <.icon name="hero-paper-airplane-solid" class="size-4" />
                       {gettext("Send")}
                     </button>
                   </div>

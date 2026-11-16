@@ -320,6 +320,45 @@
   }
 }
 
+/* ─── A button as its icon alone on a phone ───
+   A row of buttons has no room for their words on a phone, so there a
+   button that leads with an icon and stands beside another button (in the
+   same parent, or in a form there) shows its icon alone; its words stay its
+   accessible name, drawn at size 0 (user, 2026-11-16: "on mobile always
+   prefer icon"). A button alone in its row has the room, and keeps its
+   words, as every button does from `md` up, and so does one given room:
+   one that grows (`btn-block`, `btn-wide`, `flex-1`, `grow`, `w-full`) or
+   a grid's cell. Nothing is measured: the selector decides, so no script
+   reads a layout. A badge or a price inside keeps its own size. Kept out
+   too: `data-btn-keep` (a button whose words are the point, or a part of
+   the page that keeps them all), and the navbar and a measured heading row
+   (`data-heading-fit`), which fit themselves. */
+@media (max-width: 47.98rem) {
+  :is(
+      :is(.btn, form:has(> .btn)) ~ .btn,
+      .btn:has(~ .btn, ~ form > .btn),
+      :is(.btn, form:has(> .btn)) ~ form > .btn,
+      form:has(~ .btn, ~ form > .btn) > .btn
+    ):has(> :first-child:is([class*="hero-"], svg, .icon-mask)):not(
+      .btn-square,
+      .btn-circle,
+      .btn-block,
+      .btn-wide,
+      .flex-1,
+      .grow,
+      .w-full,
+      [data-btn-keep],
+      :where(.grid) > *,
+      :where(.grid) > form > *,
+      :where([data-btn-keep], [data-heading-fit], nav, #main-navbar) *
+    ) {
+    font-size: 0;
+    gap: 0.25rem;
+    padding-inline: 0.5rem;
+    min-width: max(var(--size), 2.75rem);
+  }
+}
+
 /* ─── iOS auto-zoom prevention ───
    Safari zooms in on inputs with font-size < 16px. Force 16px on
    touch devices to prevent unwanted zoom that doesn't revert. */

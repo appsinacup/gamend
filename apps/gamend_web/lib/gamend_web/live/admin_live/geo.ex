@@ -37,7 +37,7 @@ defmodule GamendWeb.AdminLive.Geo do
               data-confirm
               class="btn btn-outline btn-error btn-xs"
             >
-              Reset
+              <.icon name="hero-arrow-uturn-left-solid" class="size-4" /> Reset
             </button>
           </:actions>
         </.admin_header>
@@ -157,6 +157,7 @@ defmodule GamendWeb.AdminLive.Geo do
               phx-click="toggle_sort"
               class="btn btn-ghost btn-xs"
             >
+              <.icon name="hero-arrows-up-down-solid" class="size-4" />
               {if @sort == :count, do: "By Count ↓", else: "By Code A→Z"}
             </button>
           </div>

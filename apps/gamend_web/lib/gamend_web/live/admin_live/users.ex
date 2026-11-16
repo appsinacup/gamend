@@ -38,6 +38,7 @@ defmodule GamendWeb.AdminLive.Users do
                   class="btn btn-sm btn-outline btn-error"
                   disabled={MapSet.size(@selected_ids) == 0}
                 >
+                  <.icon name="hero-trash-solid" class="size-4" />
                   Delete selected ({MapSet.size(@selected_ids)})
                 </button>
                 <form
@@ -56,7 +57,9 @@ defmodule GamendWeb.AdminLive.Users do
                     class="input input-sm w-full md:w-64"
                   />
                 </form>
-                <button phx-click="clear_search" class="btn btn-sm">Clear</button>
+                <button phx-click="clear_search" class="btn btn-sm">
+                  <.icon name="hero-x-mark-solid" class="size-4" /> Clear
+                </button>
               </div>
             </div>
 
@@ -449,7 +452,7 @@ defmodule GamendWeb.AdminLive.Users do
                         data-confirm
                         class="btn btn-xs btn-outline btn-error"
                       >
-                        Delete
+                        <.icon name="hero-trash-solid" class="size-4" /> Delete
                       </button>
                     </td>
                   </tr>
@@ -515,7 +518,7 @@ defmodule GamendWeb.AdminLive.Users do
                 phx-value-id={@selected_user.id}
                 class="btn btn-sm"
               >
-                Keep account
+                <.icon name="hero-check-solid" class="size-4" /> Keep account
               </button>
             </div>
 
@@ -533,7 +536,7 @@ defmodule GamendWeb.AdminLive.Users do
                 phx-value-id={@selected_user.id}
                 class="btn btn-sm"
               >
-                Unlock
+                <.icon name="hero-lock-open-solid" class="size-4" /> Unlock
               </button>
             </div>
 
@@ -604,8 +607,12 @@ defmodule GamendWeb.AdminLive.Users do
                 </label>
               </div>
               <div class="modal-action">
-                <button type="button" phx-click="cancel_edit" class="btn">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" phx-click="cancel_edit" class="btn">
+                  <.icon name="hero-x-mark-solid" class="size-5" /> Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  <.icon name="hero-check-solid" class="size-5" /> Save
+                </button>
               </div>
             </.form>
 
@@ -636,7 +643,7 @@ defmodule GamendWeb.AdminLive.Users do
                       data-confirm
                       class="btn btn-sm"
                     >
-                      Lift ban
+                      <.icon name="hero-lock-open-solid" class="size-4" /> Lift ban
                     </button>
                   </div>
                 <% true -> %>
@@ -681,7 +688,7 @@ defmodule GamendWeb.AdminLive.Users do
                   data-confirm
                   class="btn btn-xs btn-outline btn-error"
                 >
-                  Revoke all sessions
+                  <.icon name="hero-no-symbol-solid" class="size-4" /> Revoke all sessions
                 </button>
               </div>
               <div class="overflow-x-auto">
@@ -731,7 +738,7 @@ defmodule GamendWeb.AdminLive.Users do
                           data-confirm
                           class="btn btn-xs btn-ghost text-error"
                         >
-                          Revoke
+                          <.icon name="hero-no-symbol-solid" class="size-4" /> Revoke
                         </button>
                       </td>
                     </tr>

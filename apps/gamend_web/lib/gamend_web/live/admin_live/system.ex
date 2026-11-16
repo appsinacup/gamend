@@ -74,7 +74,7 @@ defmodule GamendWeb.AdminLive.System do
                 rel="noopener noreferrer"
                 class="btn btn-primary"
               >
-                Open Grafana
+                <.icon name="hero-arrow-top-right-on-square-solid" class="size-5" /> Open Grafana
               </.link>
             </div>
           </div>

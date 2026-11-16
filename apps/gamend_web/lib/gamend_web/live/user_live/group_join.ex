@@ -97,13 +97,16 @@ defmodule GamendWeb.UserLive.GroupJoin do
                   navigate={@group_path}
                   class="btn btn-primary btn-sm"
                 >
+                  <.icon name="hero-arrow-top-right-on-square-solid" class="size-4" />
                   {gettext("Open")}
                 </.link>
               <% else %>
                 <.link navigate={home_path()} class="btn btn-ghost btn-sm">
+                  <.icon name="hero-x-mark-solid" class="size-4" />
                   {gettext("Not now")}
                 </.link>
                 <button id="group-join-button" phx-click="join" class="btn btn-primary btn-sm">
+                  <.icon name="hero-plus-solid" class="size-4" />
                   {gettext("Join")}
                 </button>
               <% end %>

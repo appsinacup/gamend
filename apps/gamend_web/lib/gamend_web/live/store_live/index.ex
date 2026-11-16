@@ -179,6 +179,7 @@ defmodule GamendWeb.StoreLive.Index do
                       class="btn btn-sm btn-disabled"
                       disabled
                     >
+                      <.icon name="hero-check-solid" class="size-4" />
                       {gettext("Owned")}
                     </button>
                     <button
@@ -191,6 +192,7 @@ defmodule GamendWeb.StoreLive.Index do
                       phx-value-id={provider_product.id}
                       class="btn btn-primary btn-sm"
                     >
+                      <.icon name="hero-shopping-cart-solid" class="size-4" />
                       {gettext("Buy")}
                     </button>
                     <%!-- A window the host says is shut. `before_purchase` also

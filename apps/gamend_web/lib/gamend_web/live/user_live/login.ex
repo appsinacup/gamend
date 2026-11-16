@@ -64,6 +64,7 @@ defmodule GamendWeb.UserLive.Login do
             />
             <.captcha id="login_magic_captcha" />
             <.button class="btn btn-primary w-full">
+              <.icon name="hero-envelope-solid" class="size-5" />
               {gettext("Send magic link")} <span aria-hidden="true">→</span>
             </.button>
           </.form>
@@ -129,6 +130,7 @@ defmodule GamendWeb.UserLive.Login do
               )}
             </p>
             <.button class="btn btn-primary w-full">
+              <.icon name="hero-arrow-right-on-rectangle-solid" class="size-5 rtl:-scale-x-100" />
               {gettext("Log in")} <span aria-hidden="true">→</span>
             </.button>
           </.form>

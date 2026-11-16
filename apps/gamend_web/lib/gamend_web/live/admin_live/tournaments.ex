@@ -70,7 +70,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                   </select>
                 </form>
                 <button phx-click="new_tournament" class="btn btn-primary btn-sm">
-                  New tournament
+                  <.icon name="hero-plus-solid" class="size-4" /> New tournament
                 </button>
               </div>
             </div>
@@ -114,7 +114,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                     <td class="font-mono text-xs">{t.recur}</td>
                     <td class="flex gap-1">
                       <button phx-click="edit_tournament" phx-value-id={t.id} class="btn btn-xs">
-                        Edit
+                        <.icon name="hero-pencil-solid" class="size-4" /> Edit
                       </button>
                       <button
                         phx-click="delete_tournament"
@@ -122,7 +122,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                         data-confirm
                         class="btn btn-xs btn-error btn-outline"
                       >
-                        Delete
+                        <.icon name="hero-trash-solid" class="size-4" /> Delete
                       </button>
                     </td>
                   </tr>
@@ -185,8 +185,12 @@ defmodule GamendWeb.AdminLive.Tournaments do
                 options={Tournament.deadline_policies()}
               />
               <div class="col-span-2 flex gap-2">
-                <button type="submit" class="btn btn-primary btn-sm">Save</button>
-                <button type="button" phx-click="cancel_form" class="btn btn-sm">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <.icon name="hero-check-solid" class="size-4" /> Save
+                </button>
+                <button type="button" phx-click="cancel_form" class="btn btn-sm">
+                  <.icon name="hero-x-mark-solid" class="size-4" /> Cancel
+                </button>
               </div>
             </.form>
           </div>
@@ -207,7 +211,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                   phx-click="force_registration"
                   class="btn btn-surface btn-sm"
                 >
-                  Open registration
+                  <.icon name="hero-lock-open-solid" class="size-4" /> Open registration
                 </button>
                 <button
                   :if={@detail.tournament.state == TournamentState.registration()}
@@ -215,7 +219,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                   data-confirm
                   class="btn btn-surface btn-sm"
                 >
-                  Draw now
+                  <.icon name="hero-play-solid" class="size-4" /> Draw now
                 </button>
                 <button
                   :if={@detail.tournament.state == TournamentState.running()}
@@ -223,7 +227,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                   data-confirm
                   class="btn btn-surface btn-sm"
                 >
-                  Finish
+                  <.icon name="hero-flag-solid" class="size-4" /> Finish
                 </button>
                 <button
                   :if={@detail.tournament.state in ["scheduled", "registration", "running"]}
@@ -231,16 +235,18 @@ defmodule GamendWeb.AdminLive.Tournaments do
                   data-confirm
                   class="btn btn-sm btn-error btn-outline"
                 >
-                  Cancel tournament
+                  <.icon name="hero-x-mark-solid" class="size-4" /> Cancel tournament
                 </button>
                 <button
                   :if={@detail.tournament.state == TournamentState.cancelled()}
                   phx-click="force_reopen"
                   class="btn btn-surface btn-sm"
                 >
-                  Reopen
+                  <.icon name="hero-arrow-uturn-left-solid" class="size-4" /> Reopen
                 </button>
-                <button phx-click="close_detail" class="btn btn-sm">Close</button>
+                <button phx-click="close_detail" class="btn btn-sm">
+                  <.icon name="hero-x-mark-solid" class="size-4" /> Close
+                </button>
               </div>
             </div>
 
@@ -308,7 +314,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                 }
                 class="btn btn-surface btn-xs"
               >
-                View bracket tree →
+                <.icon name="hero-eye-solid" class="size-4" /> View bracket tree →
               </.link>
             </div>
 

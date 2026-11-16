@@ -234,6 +234,7 @@ defmodule GamendWeb.AdminLive.Matchmaking do
                       phx-value-id={check.id}
                       class="btn btn-ghost btn-xs"
                     >
+                      <.icon name="hero-x-mark-solid" class="size-4" />
                       {gettext("Cancel")}
                     </button>
                   </td>
@@ -250,9 +251,11 @@ defmodule GamendWeb.AdminLive.Matchmaking do
             <h2 class="card-title">Tickets ({@count})</h2>
             <div class="flex gap-2">
               <button phx-click="sweep_now" class="btn btn-surface btn-sm" id="sweep-now-btn">
-                Run sweep now
+                <.icon name="hero-play-solid" class="size-4" /> Run sweep now
               </button>
-              <button phx-click="refresh" class="btn btn-ghost btn-sm">Refresh</button>
+              <button phx-click="refresh" class="btn btn-ghost btn-sm">
+                <.icon name="hero-arrow-path-solid" class="size-4" /> Refresh
+              </button>
             </div>
           </div>
 
@@ -342,7 +345,7 @@ defmodule GamendWeb.AdminLive.Matchmaking do
                       phx-value-id={ticket.id}
                       class="btn btn-outline btn-error btn-xs"
                     >
-                      Cancel
+                      <.icon name="hero-x-mark-solid" class="size-4" /> Cancel
                     </button>
                   </td>
                 </tr>

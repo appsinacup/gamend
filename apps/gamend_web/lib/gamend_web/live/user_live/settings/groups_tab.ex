@@ -145,6 +145,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
             <%!-- On a page of its own the title row has Back. --%>
             <%= if @group_detail && is_nil(@groups_path) do %>
               <button phx-click="group_close_detail" data-leaves-form class="btn btn-sm btn-ghost">
+                <.icon name="hero-arrow-left-solid" class="size-4 rtl:-scale-x-100" />
                 {gettext("Back")}
               </button>
             <% end %>
@@ -159,8 +160,10 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
               ]}
             >
               <%= if @groups_show_create do %>
+                <.icon name="hero-x-mark-solid" class="size-4" />
                 {gettext("Cancel")}
               <% else %>
+                <.icon name="hero-plus-solid" class="size-4" />
                 {gettext("Create")}
               <% end %>
             </button>
@@ -172,6 +175,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
               form="create-group-form"
               class="btn btn-sm btn-primary"
             >
+              <.icon name="hero-plus-solid" class="size-4" />
               {gettext("Create")}
             </button>
             <%= if @group_editing && @group_detail_role == GroupRole.admin() && !@groups_show_create do %>
@@ -181,6 +185,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                 phx-click="group_toggle_edit"
                 class="btn btn-sm btn-ghost"
               >
+                <.icon name="hero-x-mark-solid" class="size-4" />
                 {gettext("Cancel")}
               </button>
               <button
@@ -189,6 +194,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                 form="group-edit-form"
                 class="btn btn-sm btn-primary"
               >
+                <.icon name="hero-check-solid" class="size-4" />
                 {gettext("Save")}
               </button>
             <% end %>
@@ -359,6 +365,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       phx-click="group_toggle_edit"
                       class="btn btn-sm btn-outline btn-info"
                     >
+                      <.icon name="hero-pencil-solid" class="size-4" />
                       {gettext("Edit")}
                     </button>
                     <button
@@ -367,6 +374,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       class="btn btn-sm btn-outline btn-error"
                       data-confirm
                     >
+                      <.icon name="hero-x-mark-solid" class="size-4" />
                       {gettext("Leave")}
                     </button>
                   </div>
@@ -436,6 +444,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                                 phx-value-user_id={m.user_id}
                                 class="btn btn-xs btn-outline btn-primary"
                               >
+                                <.icon name="hero-arrow-up-solid" class="size-4" />
                                 {gettext("Promote")}
                               </button>
                             <% else %>
@@ -445,6 +454,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                                 phx-value-user_id={m.user_id}
                                 class="btn btn-xs btn-outline btn-warning"
                               >
+                                <.icon name="hero-arrow-down-solid" class="size-4" />
                                 {gettext("Demote")}
                               </button>
                             <% end %>
@@ -455,6 +465,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                               class="btn btn-xs btn-outline btn-error"
                               data-confirm
                             >
+                              <.icon name="hero-user-minus-solid" class="size-4" />
                               {gettext("Kick")}
                             </button>
                           <% end %>
@@ -509,6 +520,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       phx-value-request_id={req.id}
                       class="btn btn-sm btn-primary"
                     >
+                      <.icon name="hero-check-solid" class="size-4" />
                       {gettext("Approve")}
                     </button>
                     <button
@@ -516,6 +528,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       phx-value-request_id={req.id}
                       class="btn btn-sm btn-outline btn-error"
                     >
+                      <.icon name="hero-x-mark-solid" class="size-4" />
                       {gettext("Reject")}
                     </button>
                   </div>
@@ -551,6 +564,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       data-copied={gettext("Copied")}
                       class="btn btn-sm btn-primary"
                     >
+                      <.icon name="hero-clipboard-document-solid" class="size-4" />
                       {gettext("Copy")}
                     </button>
                   </div>
@@ -570,6 +584,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       data-confirm
                       class="btn btn-ghost btn-xs"
                     >
+                      <.icon name="hero-plus-solid" class="size-4" />
                       {gettext("New link")}
                     </button>
                     <button
@@ -578,6 +593,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       phx-click="group_link_delete"
                       class="btn btn-ghost btn-xs text-error"
                     >
+                      <.icon name="hero-power-solid" class="size-4" />
                       {gettext("Turn off")}
                     </button>
                   </div>
@@ -593,6 +609,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                     phx-click="group_link_create"
                     class="btn btn-sm mt-2"
                   >
+                    <.icon name="hero-plus-solid" class="size-4" />
                     {gettext("Create link")}
                   </button>
                 <% end %>
@@ -659,6 +676,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       phx-value-user_id={u.id}
                       class="btn btn-sm btn-primary"
                     >
+                      <.icon name="hero-paper-airplane-solid" class="size-4" />
                       {gettext("Invite")}
                     </button>
                   </div>
@@ -706,6 +724,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       phx-value-user_id={f.id}
                       class="btn btn-sm btn-outline btn-primary"
                     >
+                      <.icon name="hero-paper-airplane-solid" class="size-4" />
                       {gettext("Invite")}
                     </button>
                   </div>
@@ -743,6 +762,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       phx-value-invite_id={inv.id}
                       class="btn btn-xs btn-ghost text-error"
                     >
+                      <.icon name="hero-x-mark-solid" class="size-4" />
                       {gettext("Cancel")}
                     </button>
                   </div>
@@ -875,6 +895,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                       phx-click="browse_groups_clear"
                       class="btn btn-sm btn-ghost"
                     >
+                      <.icon name="hero-x-mark-solid" class="size-4" />
                       {gettext("Clear")}
                     </button>
                   </div>
@@ -950,6 +971,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                             phx-value-group_id={group.id}
                             class="btn btn-sm btn-primary"
                           >
+                            <.icon name="hero-plus-solid" class="size-4" />
                             {gettext("Join")}
                           </button>
                         <% group.type == GroupType.private() -> %>
@@ -958,6 +980,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                             phx-value-group_id={group.id}
                             class="btn btn-sm btn-outline btn-primary"
                           >
+                            <.icon name="hero-hand-raised-solid" class="size-4" />
                             {gettext("Request")}
                           </button>
                         <% true -> %>
@@ -1020,6 +1043,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           phx-value-invite_id={inv.id}
                           class="btn btn-sm btn-primary"
                         >
+                          <.icon name="hero-check-solid" class="size-4" />
                           {gettext("Accept")}
                         </button>
                         <button
@@ -1027,6 +1051,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           phx-value-invite_id={inv.id}
                           class="btn btn-sm btn-outline btn-error"
                         >
+                          <.icon name="hero-x-mark-solid" class="size-4" />
                           {gettext("Decline")}
                         </button>
                       </td>
@@ -1077,6 +1102,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           class="btn btn-xs btn-outline btn-error"
                           data-confirm
                         >
+                          <.icon name="hero-x-mark-solid" class="size-4" />
                           {gettext("Cancel")}
                         </button>
                       </td>
@@ -1131,6 +1157,7 @@ defmodule GamendWeb.UserLive.Settings.GroupsTab do
                           class={["btn btn-xs btn-outline btn-error", row_control()]}
                           data-confirm
                         >
+                          <.icon name="hero-x-mark-solid" class="size-4" />
                           {gettext("Cancel")}
                         </button>
                       </td>

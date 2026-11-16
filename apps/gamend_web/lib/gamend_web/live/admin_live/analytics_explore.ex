@@ -271,7 +271,9 @@ defmodule GamendWeb.AdminLive.AnalyticsExplore do
               selected={@params.days}
               to={&nav(assigns, %{days: &1})}
             />
-            <button phx-click="refresh" class="btn btn-ghost btn-sm">Refresh</button>
+            <button phx-click="refresh" class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-path-solid" class="size-4" /> Refresh
+            </button>
           </:controls>
         </.analytics_header>
 
@@ -353,7 +355,7 @@ defmodule GamendWeb.AdminLive.AnalyticsExplore do
               patch={nav(assigns, %{where: %{}, user: nil})}
               class="btn btn-ghost btn-sm"
             >
-              Clear filters
+              <.icon name="hero-x-mark-solid" class="size-4" /> Clear filters
             </.link>
           </form>
           <p :if={@user} class="mt-2 flex flex-wrap items-center gap-1 text-sm">
@@ -477,7 +479,7 @@ defmodule GamendWeb.AdminLive.AnalyticsExplore do
                 patch={nav(assigns, %{page: @params.page + 1})}
                 class="btn btn-xs"
               >
-                Older
+                <.icon name="hero-chevron-left-solid" class="size-4 rtl:-scale-x-100" /> Older
               </.link>
             </div>
           </div>

@@ -53,10 +53,11 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                   class="btn btn-sm btn-outline btn-error"
                   disabled={MapSet.size(@selected_ids) == 0}
                 >
+                  <.icon name="hero-trash-solid" class="size-4" />
                   Delete selected ({MapSet.size(@selected_ids)})
                 </button>
                 <button phx-click="new_leaderboard" class="btn btn-primary btn-sm">
-                  + Create Leaderboard
+                  <.icon name="hero-plus-solid" class="size-4" /> Create Leaderboard
                 </button>
               </div>
             </div>
@@ -175,7 +176,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                             data-confirm
                             class="btn btn-xs btn-outline btn-warning"
                           >
-                            End
+                            <.icon name="hero-flag-solid" class="size-4" /> End
                           </button>
                         <% end %>
                         <button
@@ -184,7 +185,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                           data-confirm
                           class="btn btn-xs btn-outline btn-error"
                         >
-                          Delete
+                          <.icon name="hero-trash-solid" class="size-4" /> Delete
                         </button>
                         <button
                           phx-click="new_season_from"
@@ -192,7 +193,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                           class="btn btn-xs btn-outline btn-success"
                           title="Create a new season with the same settings"
                         >
-                          + Season
+                          <.icon name="hero-plus-solid" class="size-4" /> Season
                         </button>
                       </div>
                     </td>
@@ -305,8 +306,12 @@ defmodule GamendWeb.AdminLive.Leaderboards do
               </div>
 
               <div class="modal-action">
-                <button type="button" phx-click="cancel_edit" class="btn">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" phx-click="cancel_edit" class="btn">
+                  <.icon name="hero-x-mark-solid" class="size-5" /> Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  <.icon name="hero-check-solid" class="size-5" /> Save
+                </button>
               </div>
             </.form>
           </div>
@@ -326,7 +331,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                 class="btn btn-sm btn-primary"
                 disabled={not Leaderboard.active?(@selected_leaderboard)}
               >
-                + Add Record
+                <.icon name="hero-plus-solid" class="size-4" /> Add Record
               </button>
             </div>
 
@@ -384,7 +389,7 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                         data-confirm
                         class="btn btn-xs btn-outline btn-error"
                       >
-                        Delete
+                        <.icon name="hero-trash-solid" class="size-4" /> Delete
                       </button>
                     </td>
                   </tr>
@@ -400,7 +405,9 @@ defmodule GamendWeb.AdminLive.Leaderboards do
                 on_prev="records_prev_page"
                 on_next="records_next_page"
               />
-              <button phx-click="close_records" class="btn btn-sm">Close</button>
+              <button phx-click="close_records" class="btn btn-sm">
+                <.icon name="hero-x-mark-solid" class="size-4" /> Close
+              </button>
             </div>
           </div>
         </div>
@@ -430,8 +437,12 @@ defmodule GamendWeb.AdminLive.Leaderboards do
               </div>
 
               <div class="modal-action">
-                <button type="button" phx-click="cancel_record_edit" class="btn">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" phx-click="cancel_record_edit" class="btn">
+                  <.icon name="hero-x-mark-solid" class="size-5" /> Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  <.icon name="hero-check-solid" class="size-5" /> Save
+                </button>
               </div>
             </.form>
           </div>

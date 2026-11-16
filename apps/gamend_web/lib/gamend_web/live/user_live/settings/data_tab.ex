@@ -48,8 +48,12 @@ defmodule GamendWeb.UserLive.Settings.DataTab do
               />
             </div>
             <div class="flex gap-2 mt-2">
-              <button type="submit" class="btn btn-surface btn-sm">{gettext("Apply")}</button>
+              <button type="submit" class="btn btn-surface btn-sm">
+                <.icon name="hero-check-solid" class="size-4" />
+                {gettext("Apply")}
+              </button>
               <button type="button" phx-click="kv_filters_clear" class="btn btn-sm btn-ghost">
+                <.icon name="hero-x-mark-solid" class="size-4" />
                 {gettext("Clear")}
               </button>
             </div>

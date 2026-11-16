@@ -79,7 +79,7 @@ defmodule GamendWeb.AdminLive.Quests do
                   />
                 </form>
                 <button phx-click="new_quest" class="btn btn-primary btn-sm">
-                  + Create Quest
+                  <.icon name="hero-plus-solid" class="size-4" /> Create Quest
                 </button>
               </div>
             </div>
@@ -157,7 +157,7 @@ defmodule GamendWeb.AdminLive.Quests do
                           phx-value-id={q.id}
                           class="btn btn-xs btn-outline btn-success"
                         >
-                          Grant
+                          <.icon name="hero-check-badge-solid" class="size-4" /> Grant
                         </button>
                         <button
                           phx-click="delete_quest"
@@ -165,7 +165,7 @@ defmodule GamendWeb.AdminLive.Quests do
                           data-confirm
                           class="btn btn-xs btn-outline btn-error"
                         >
-                          Delete
+                          <.icon name="hero-trash-solid" class="size-4" /> Delete
                         </button>
                       </div>
                     </td>
@@ -263,7 +263,7 @@ defmodule GamendWeb.AdminLive.Quests do
                           phx-value-key={p.quest_key}
                           class="btn btn-xs btn-outline btn-success"
                         >
-                          Force complete
+                          <.icon name="hero-check-solid" class="size-4" /> Force complete
                         </button>
                         <button
                           :if={p.status == "completed"}
@@ -272,7 +272,7 @@ defmodule GamendWeb.AdminLive.Quests do
                           phx-value-key={p.quest_key}
                           class="btn btn-xs btn-outline btn-success"
                         >
-                          Force claim
+                          <.icon name="hero-gift-solid" class="size-4" /> Force claim
                         </button>
                         <button
                           phx-click="reset_progress"
@@ -281,7 +281,7 @@ defmodule GamendWeb.AdminLive.Quests do
                           data-confirm
                           class="btn btn-xs btn-outline btn-error"
                         >
-                          Reset
+                          <.icon name="hero-arrow-uturn-left-solid" class="size-4" /> Reset
                         </button>
                       </div>
                     </td>
@@ -427,8 +427,12 @@ defmodule GamendWeb.AdminLive.Quests do
               </div>
 
               <div class="modal-action">
-                <button type="button" phx-click="cancel_edit" class="btn">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" phx-click="cancel_edit" class="btn">
+                  <.icon name="hero-x-mark-solid" class="size-5" /> Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  <.icon name="hero-check-solid" class="size-5" /> Save
+                </button>
               </div>
             </.form>
           </div>
@@ -450,8 +454,12 @@ defmodule GamendWeb.AdminLive.Quests do
               <.input field={@grant_form[:user_id]} type="text" label="User ID" />
 
               <div class="modal-action">
-                <button type="button" phx-click="cancel_grant" class="btn">Cancel</button>
-                <button type="submit" class="btn btn-success">Grant</button>
+                <button type="button" phx-click="cancel_grant" class="btn">
+                  <.icon name="hero-x-mark-solid" class="size-5" /> Cancel
+                </button>
+                <button type="submit" class="btn btn-success">
+                  <.icon name="hero-check-badge-solid" class="size-5" /> Grant
+                </button>
               </div>
             </.form>
           </div>

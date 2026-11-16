@@ -360,7 +360,10 @@ defmodule GamendWeb.AdminLive.ChatReports do
         <div class="card-body">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="card-title">{gettext("Chat reports")} ({@count})</h2>
-            <button phx-click="refresh" class="btn btn-ghost btn-sm">{gettext("Refresh")}</button>
+            <button phx-click="refresh" class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-path-solid" class="size-4" />
+              {gettext("Refresh")}
+            </button>
           </div>
 
           <p class="text-sm text-muted">
@@ -468,6 +471,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                         phx-value-id={report.id}
                         class="btn btn-ghost btn-xs"
                       >
+                        <.icon name="hero-eye-solid" class="size-4" />
                         {gettext("Review")}
                       </button>
                       <button
@@ -476,6 +480,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                         phx-value-id={report.id}
                         class="btn btn-ghost btn-xs"
                       >
+                        <.icon name="hero-x-mark-solid" class="size-4" />
                         {gettext("Dismiss")}
                       </button>
                       <button
@@ -484,6 +489,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                         phx-value-id={report.id}
                         class="btn btn-surface btn-xs"
                       >
+                        <.icon name="hero-exclamation-triangle-solid" class="size-4" />
                         {gettext("Warn")}
                       </button>
                       <%!-- With a reporter to answer, the modal is the confirm step. --%>
@@ -494,6 +500,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                         data-confirm={is_nil(report.reporter_id)}
                         class="btn btn-outline btn-error btn-xs"
                       >
+                        <.icon name="hero-trash-solid" class="size-4" />
                         {gettext("Delete message")}
                       </button>
                       <button
@@ -502,6 +509,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                         phx-value-id={report.id}
                         class="btn btn-outline btn-warning btn-xs"
                       >
+                        <.icon name="hero-speaker-x-mark-solid" class="size-4" />
                         {gettext("Mute player")}
                       </button>
                     </div>
@@ -638,6 +646,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
 
             <div class="modal-action">
               <button type="button" phx-click="close_action" class="btn btn-sm">
+                <.icon name="hero-x-mark-solid" class="size-4" />
                 {gettext("Cancel")}
               </button>
               <button type="submit" class="btn btn-primary btn-sm">

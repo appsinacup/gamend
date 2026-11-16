@@ -195,7 +195,9 @@ defmodule GamendWeb.AdminLive.Logs do
             />
             <span class="text-xs">Auto-scroll</span>
           </label>
-          <button type="button" phx-click="clear_filters" class="btn btn-ghost btn-sm">Clear</button>
+          <button type="button" phx-click="clear_filters" class="btn btn-ghost btn-sm">
+            <.icon name="hero-x-mark-solid" class="size-4" /> Clear
+          </button>
         </div>
       </.form>
 
@@ -343,7 +345,7 @@ defmodule GamendWeb.AdminLive.Logs do
             <span class="text-xs">Errors only</span>
           </label>
           <button type="button" phx-click="clear_session_filters" class="btn btn-ghost btn-sm">
-            Clear
+            <.icon name="hero-x-mark-solid" class="size-4" /> Clear
           </button>
         </div>
       </.form>
@@ -430,7 +432,7 @@ defmodule GamendWeb.AdminLive.Logs do
             disabled={@session_page <= 1}
             class="btn btn-ghost btn-xs"
           >
-            &larr; Prev
+            <.icon name="hero-chevron-left-solid" class="size-4 rtl:-scale-x-100" /> Prev
           </button>
           <button
             phx-click="page"
@@ -475,7 +477,9 @@ defmodule GamendWeb.AdminLive.Logs do
           <button phx-click="toggle_flag" class="btn btn-ghost btn-xs">
             {if @selected.flagged, do: "Unflag", else: "Flag"}
           </button>
-          <button phx-click="close_session" class="btn btn-ghost btn-xs">Close</button>
+          <button phx-click="close_session" class="btn btn-ghost btn-xs">
+            <.icon name="hero-x-mark-solid" class="size-4" /> Close
+          </button>
         </div>
       </div>
 

@@ -389,6 +389,7 @@ defmodule GamendWeb.ReportLive do
               <.icon name="hero-pencil-square-solid" class="size-4" /> {gettext("Edit this report")}
             </button>
             <button type="button" class="btn btn-surface" phx-click="again">
+              <.icon name="hero-flag-solid" class="size-5" />
               {gettext("Report something else")}
             </button>
           </div>

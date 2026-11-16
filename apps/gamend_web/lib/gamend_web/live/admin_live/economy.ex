@@ -185,7 +185,9 @@ defmodule GamendWeb.AdminLive.Economy do
         <div class="card-body">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="card-title">Economy · grant / spend</h2>
-            <button phx-click="refresh" class="btn btn-ghost btn-sm">Refresh</button>
+            <button phx-click="refresh" class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-path-solid" class="size-4" /> Refresh
+            </button>
           </div>
           <form
             phx-change="form_change"
@@ -222,8 +224,12 @@ defmodule GamendWeb.AdminLive.Economy do
               placeholder="reason (optional)"
               class="input input-sm input-bordered w-48"
             />
-            <button type="button" phx-click="grant" class="btn btn-primary btn-sm">Grant</button>
-            <button type="button" phx-click="spend" class="btn btn-surface btn-sm">Spend</button>
+            <button type="button" phx-click="grant" class="btn btn-primary btn-sm">
+              <.icon name="hero-check-badge-solid" class="size-4" /> Grant
+            </button>
+            <button type="button" phx-click="spend" class="btn btn-surface btn-sm">
+              <.icon name="hero-minus-circle-solid" class="size-4" /> Spend
+            </button>
           </form>
         </div>
       </div>
@@ -321,8 +327,12 @@ defmodule GamendWeb.AdminLive.Economy do
               placeholder="qty"
               class="input input-sm input-bordered w-24"
             />
-            <button type="button" phx-click="grant_item" class="btn btn-primary btn-sm">Grant</button>
-            <button type="button" phx-click="consume_item" class="btn btn-surface btn-sm">Consume</button>
+            <button type="button" phx-click="grant_item" class="btn btn-primary btn-sm">
+              <.icon name="hero-check-badge-solid" class="size-4" /> Grant
+            </button>
+            <button type="button" phx-click="consume_item" class="btn btn-surface btn-sm">
+              <.icon name="hero-minus-circle-solid" class="size-4" /> Consume
+            </button>
           </form>
           <div class="overflow-x-auto mt-3">
             <table class="table table-sm">

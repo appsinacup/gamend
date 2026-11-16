@@ -722,7 +722,10 @@ defmodule GamendWeb.LobbyLive.Index do
             >
               <.input name="title" label={gettext("Title")} value={@title} />
               <div class="flex items-center gap-2">
-                <button type="submit" class="btn btn-primary">{gettext("Create")}</button>
+                <button type="submit" class="btn btn-primary">
+                  <.icon name="hero-plus-solid" class="size-5" />
+                  {gettext("Create")}
+                </button>
                 <%= if @current_scope && Scope.user(@current_scope) && Scope.user(@current_scope).lobby_id do %>
                   <span class="text-sm text-warning">
                     {gettext("Joined")}
@@ -759,6 +762,7 @@ defmodule GamendWeb.LobbyLive.Index do
                             phx-value-id={lobby.id}
                             class="btn btn-surface btn-sm"
                           >
+                            <.icon name="hero-pencil-solid" class="size-4" />
                             {gettext("Edit")}
                           </button>
                         <% user.lobby_id == lobby.id -> %>
@@ -768,6 +772,7 @@ defmodule GamendWeb.LobbyLive.Index do
                             phx-value-id={lobby.id}
                             class="btn btn-ghost btn-sm"
                           >
+                            <.icon name="hero-eye-solid" class="size-4" />
                             {gettext("View")}
                           </button>
                         <% user.lobby_id != nil -> %>
@@ -777,28 +782,37 @@ defmodule GamendWeb.LobbyLive.Index do
                             phx-value-id={lobby.id}
                             class="btn btn-ghost btn-sm"
                           >
+                            <.icon name="hero-eye-solid" class="size-4" />
                             {gettext("View")}
                           </button>
                         <% lobby.is_locked -> %>
-                          <button class="btn btn-disabled btn-sm">{gettext("Locked")}</button>
+                          <button class="btn btn-disabled btn-sm">
+                            <.icon name="hero-lock-closed-solid" class="size-4" />
+                            {gettext("Locked")}
+                          </button>
                         <% true -> %>
                           <button
                             phx-click="start_join"
                             phx-value-id={lobby.id}
                             class="btn btn-primary btn-sm"
                           >
+                            <.icon name="hero-plus-solid" class="size-4" />
                             {gettext("Join")}
                           </button>
                       <% end %>
                     <% else %>
                       <%= if lobby.is_locked do %>
-                        <button class="btn btn-disabled btn-sm">{gettext("Locked")}</button>
+                        <button class="btn btn-disabled btn-sm">
+                          <.icon name="hero-lock-closed-solid" class="size-4" />
+                          {gettext("Locked")}
+                        </button>
                       <% else %>
                         <button
                           phx-click="start_join"
                           phx-value-id={lobby.id}
                           class="btn btn-primary btn-sm"
                         >
+                          <.icon name="hero-plus-solid" class="size-4" />
                           {gettext("Join")}
                         </button>
                       <% end %>
@@ -823,9 +837,11 @@ defmodule GamendWeb.LobbyLive.Index do
                           class="input input-sm"
                         />
                         <button type="submit" class="btn btn-primary btn-sm">
+                          <.icon name="hero-check-solid" class="size-4" />
                           {gettext("Confirm")}
                         </button>
                         <button type="button" phx-click="cancel_join" class="btn btn-ghost btn-sm">
+                          <.icon name="hero-x-mark-solid" class="size-4" />
                           {gettext("Cancel")}
                         </button>
                       </div>
@@ -881,6 +897,7 @@ defmodule GamendWeb.LobbyLive.Index do
                           />
                           <div class="flex items-center gap-2 mt-2">
                             <button type="submit" class="btn btn-primary btn-sm">
+                              <.icon name="hero-check-solid" class="size-4" />
                               {gettext("Save")}
                             </button>
                             <button
@@ -888,6 +905,7 @@ defmodule GamendWeb.LobbyLive.Index do
                               phx-click="cancel_manage"
                               class="btn btn-ghost btn-sm"
                             >
+                              <.icon name="hero-x-mark-solid" class="size-4" />
                               {gettext("Close")}
                             </button>
                           </div>
@@ -918,6 +936,7 @@ defmodule GamendWeb.LobbyLive.Index do
                                 <% @current_scope && Scope.user(@current_scope) && m.id == @current_scope.user_id -> %>
                                   <%!-- Current user (host or member) can leave --%>
                                   <button phx-click="leave" class="btn btn-sm btn-warning">
+                                    <.icon name="hero-x-mark-solid" class="size-4" />
                                     {gettext("Leave")}
                                   </button>
                                 <% m.id == lobby.host_id -> %>
@@ -929,6 +948,7 @@ defmodule GamendWeb.LobbyLive.Index do
                                     phx-value-target_id={m.id}
                                     class="btn btn-surface btn-xs"
                                   >
+                                    <.icon name="hero-user-minus-solid" class="size-4" />
                                     {gettext("Kick")}
                                   </button>
                               <% end %>
@@ -959,6 +979,7 @@ defmodule GamendWeb.LobbyLive.Index do
                               <% end %>
                               <%= if @current_scope && Scope.user(@current_scope) && m.id == @current_scope.user_id do %>
                                 <button phx-click="leave" class="btn btn-sm btn-warning ms-2">
+                                  <.icon name="hero-x-mark-solid" class="size-4" />
                                   {gettext("Leave")}
                                 </button>
                               <% end %>
@@ -968,6 +989,7 @@ defmodule GamendWeb.LobbyLive.Index do
                       </div>
                       <div class="flex items-center gap-2 mt-2">
                         <button type="button" phx-click="cancel_manage" class="btn btn-ghost btn-sm">
+                          <.icon name="hero-x-mark-solid" class="size-4" />
                           {gettext("Close")}
                         </button>
                       </div>

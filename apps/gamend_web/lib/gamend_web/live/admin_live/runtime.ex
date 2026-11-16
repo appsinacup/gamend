@@ -254,6 +254,7 @@ defmodule GamendWeb.AdminLive.Runtime do
               phx-click="toggle_diagram"
               class="btn btn-surface btn-sm"
             >
+              <.icon name="hero-eye-solid" class="size-4" />
               {if @show_diagram, do: "Hide ER diagram", else: "Show ER diagram"}
             </button>
           </div>

@@ -280,8 +280,14 @@ export function measure(header) {
 function headerKey(header) {
   const parts = ["[data-nav-logo]", "[data-nav-bar]"].map((part) => header.querySelector(part))
   // Its words, not its white space: a page LiveView has patched keeps other
-  // gaps between its tags than the same page as it was sent.
-  const words = parts.map((part) => (part?.textContent ?? "").replace(/\s+/g, " ").trim())
+  // gaps between its tags than the same page as it was sent. Nor its
+  // numbers, only how many digits they have (2026-11-16): a coin earned, a
+  // level or a count of quests changed the key, and every reward cost the
+  // next page a measure. A number a digit longer is a new width, and still
+  // measures.
+  const words = parts.map((part) =>
+    (part?.textContent ?? "").replace(/\s+/g, " ").replace(/\p{Nd}/gu, "0").trim(),
+  )
   // And the stylesheets it is drawn with, by their addresses, which carry
   // their versions: a release that moves a padding or a gap changes every
   // width with no word changed, and the widths kept before it are not these.

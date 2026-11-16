@@ -401,13 +401,47 @@ defmodule GamendWeb.TournamentsLiveTest do
     end
   end
 
-  test "a signed-out visitor is pointed at log in", %{conn: conn} do
-    tournament = create_tournament()
+  describe "a signed-out visitor" do
+    setup do
+      previous = Application.get_env(:gamend_core, Accounts, [])
+      on_exit(fn -> Application.put_env(:gamend_core, Accounts, previous) end)
+      %{previous: previous}
+    end
 
-    {:ok, _view, html} = live(conn, ~p"/tournaments/#{tournament.slug}")
+    test "joins as a guest beside Log in", %{conn: conn, previous: previous} do
+      Application.put_env(
+        :gamend_core,
+        Accounts,
+        Keyword.put(previous, :device_auth_enabled, true)
+      )
 
-    refute html =~ ~s(id="join-btn")
-    assert html =~ "Log in"
+      tournament = create_tournament()
+
+      {:ok, view, html} = live(conn, ~p"/tournaments/#{tournament.slug}")
+
+      assert html =~ "Log in"
+      view |> element("#join-btn") |> render_click()
+
+      assert [%{leader: %{} = guest}] =
+               Tournaments.list_entries(tournament.id, preload_leader: true)
+
+      assert Accounts.User.anonymous?(guest)
+    end
+
+    test "is pointed at log in with device accounts off", %{conn: conn, previous: previous} do
+      Application.put_env(
+        :gamend_core,
+        Accounts,
+        Keyword.put(previous, :device_auth_enabled, false)
+      )
+
+      tournament = create_tournament()
+
+      {:ok, _view, html} = live(conn, ~p"/tournaments/#{tournament.slug}")
+
+      refute html =~ ~s(id="join-btn")
+      assert html =~ "Log in"
+    end
   end
 
   test "bracket view shows byes for empty round-1 slots", %{conn: conn} do

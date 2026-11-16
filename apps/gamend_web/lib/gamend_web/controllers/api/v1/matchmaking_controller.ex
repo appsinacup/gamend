@@ -36,7 +36,8 @@ defmodule GamendWeb.Api.V1.MatchmakingController do
     any member is already in the queue; `not_party_leader` (403) when a member
     rather than the leader calls this; `party_has_blocked_pair` (403) when two
     members have blocked each other; `party_too_large` (400) when the party
-    cannot fit in `max_players`.
+    cannot fit in `max_players`; `account_required` (403) for a guest where
+    the server requires an account to queue.
     """,
     security: [%{"authorization" => []}],
     request_body:
@@ -52,7 +53,8 @@ defmodule GamendWeb.Api.V1.MatchmakingController do
     responses: [
       created: {"Ticket", "application/json", MatchmakingTicketResponse},
       bad_request: Schemas.error("The party cannot fit in max_players"),
-      forbidden: Schemas.error("Not the party leader, or two members blocked each other"),
+      forbidden:
+        Schemas.error("Not the party leader, two members blocked each other, or a guest"),
       conflict: Schemas.error("Already queued"),
       unauthorized: Schemas.error("Not authenticated"),
       unprocessable_entity: Schemas.error("Validation failed")

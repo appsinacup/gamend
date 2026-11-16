@@ -266,14 +266,17 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
                     phx-value-provider={provider}
                     class="btn btn-surface btn-sm"
                   >
+                    <.icon name="hero-trash-solid" class="size-4" />
                     {gettext("Remove")}
                   </button>
                 <% linked_id -> %>
                   <button class="btn btn-disabled btn-sm" disabled aria-disabled>
+                    <.icon name="hero-trash-solid" class="size-4" />
                     {gettext("Remove")}
                   </button>
                 <% true -> %>
                   <.link href={"/auth/#{provider}"} class="btn btn-primary btn-sm">
+                    <.icon name="hero-link-solid" class="size-4" />
                     {gettext("Link")}
                   </.link>
               <% end %>
@@ -306,6 +309,7 @@ defmodule GamendWeb.UserLive.Settings.AccountTab do
             class="btn btn-error"
             data-confirm={delete_confirmation(Accounts.deletion_grace_days())}
           >
+            <.icon name="hero-trash-solid" class="size-5" />
             {gettext("Delete account")}
           </button>
         </div>

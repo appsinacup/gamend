@@ -480,6 +480,7 @@ defmodule GamendWeb.CoreComponents do
         New server
         <:actions>
           <button type="submit" form="new-server-form" class="btn btn-primary nudge">
+            <.icon name="hero-plus-solid" class="size-5" />
             Create server
           </button>
         </:actions>
@@ -1477,7 +1478,7 @@ defmodule GamendWeb.CoreComponents do
       />
 
       <.empty_state title={gettext("Log in to keep your tests")}>
-        <:actions><.link navigate={~p"/users/log_in"} class="btn btn-primary btn-sm">Log in</.link></:actions>
+        <:actions><.link navigate={~p"/users/log_in"} class="btn btn-primary btn-sm"><.icon name="hero-arrow-right-on-rectangle-solid" class="size-4 rtl:-scale-x-100" /> Log in</.link></:actions>
       </.empty_state>
   """
   attr :icon, :string, default: nil
@@ -1699,6 +1700,7 @@ defmodule GamendWeb.CoreComponents do
         disabled={@page <= 1}
         {@value_attrs}
       >
+        <.icon name="hero-chevron-left-solid" class="size-4 rtl:-scale-x-100" />
         {gettext("Prev")}
       </button>
       <div :if={@multi_page?} class="text-xs text-muted">
@@ -1715,6 +1717,7 @@ defmodule GamendWeb.CoreComponents do
         disabled={@page >= @total_pages}
         {@value_attrs}
       >
+        <.icon name="hero-chevron-right-solid" class="size-4 rtl:-scale-x-100" />
         {gettext("Next")}
       </button>
       <form

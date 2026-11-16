@@ -42,9 +42,13 @@ defmodule Gamend.Accounts.GuestMerge do
        counters added, the account's never lowered).
     7. Quests: `Gamend.Quests.merge_user_progress/2` (periods the account has
        not played).
-    8. Activity days the account lacks; the guest's analytics events,
+    8. Tournaments: `Gamend.Tournaments.merge_user_entries/2` (an entry in a
+       tournament the account has not entered becomes the account's, its
+       bracket and matches with it; beside the account's own it is withdrawn
+       or forfeited).
+    9. Activity days the account lacks; the guest's analytics events,
        content reports and notifications become the account's.
-    9. `users.metadata` and `users.preferences` keys the account lacks.
+    10. `users.metadata` and `users.preferences` keys the account lacks.
 
   Sessions, push tokens, bans, lobby and party seats are not moved. Wallet
   and inventory moves carry idempotency keys and every other step only moves
@@ -97,6 +101,7 @@ defmodule Gamend.Accounts.GuestMerge do
         step(:entitlements, fn -> merge_entitlements(guest_id, user_id) end)
         step(:leaderboards, fn -> Gamend.Leaderboards.merge_user_records(guest_id, user_id) end)
         step(:quests, fn -> Gamend.Quests.merge_user_progress(guest_id, user_id) end)
+        step(:tournaments, fn -> Gamend.Tournaments.merge_user_entries(guest_id, user_id) end)
         step(:results, fn -> Gamend.Results.move_user(guest_id, user_id) end)
         step(:activity, fn -> merge_activity(guest_id, user_id) end)
         step(:metadata, fn -> merge_metadata(guest_id, user_id) end)

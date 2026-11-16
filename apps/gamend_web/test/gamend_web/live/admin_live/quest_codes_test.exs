@@ -158,7 +158,7 @@ defmodule GamendWeb.AdminLive.QuestCodesTest do
       key = "made_#{System.unique_integer([:positive])}"
       {:ok, view, _html} = live(conn, "/admin/quests")
 
-      view |> element("button", "+ Create Quest") |> render_click()
+      view |> element("button", "Create Quest") |> render_click()
 
       view
       |> form("#quest-form", quest: %{key: key, title: "By code", code_only: "true"})

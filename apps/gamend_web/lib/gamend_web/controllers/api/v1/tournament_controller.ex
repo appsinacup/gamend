@@ -99,12 +99,13 @@ defmodule GamendWeb.Api.V1.TournamentController do
     summary: "Register as an entry leader",
     description:
       "Answers the new entry. Refusals: `registration_closed`, `tournament_full` or a " <>
-        "game hook's `rejected` (403), `already_registered` (409).",
+        "game hook's `rejected` (403), `already_registered` (409). A guest gets 403 " <>
+        "`account_required` where the server requires an account to enter.",
     parameters: [id: @id_param],
     security: [%{"authorization" => []}],
     responses: [
       ok: {"The new entry", "application/json", TournamentEntryResponse},
-      forbidden: Schemas.error("Registration closed, full, or rejected by a hook"),
+      forbidden: Schemas.error("Registration closed, full, a guest, or rejected by a hook"),
       conflict: Schemas.error("Already registered"),
       not_found: Schemas.error("Tournament not found"),
       unprocessable_entity: Schemas.error("Validation failed"),

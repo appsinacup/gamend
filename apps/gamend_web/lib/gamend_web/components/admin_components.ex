@@ -9,7 +9,7 @@ defmodule GamendWeb.AdminComponents do
   A core page names its table entry (`GamendWeb.AdminLive.Pages`):
 
       <.admin_header page="/admin/users">
-        <:actions><button class="btn btn-sm">Export</button></:actions>
+        <:actions><button class="btn btn-sm"><.icon name="hero-arrow-down-tray-solid" class="size-4" /> Export</button></:actions>
       </.admin_header>
 
   A host's page says the same three things itself:

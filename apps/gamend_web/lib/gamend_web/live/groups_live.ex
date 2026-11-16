@@ -644,6 +644,7 @@ defmodule GamendWeb.GroupsLive do
             phx-value-id={@group.id}
             class="btn btn-primary btn-sm"
           >
+            <.icon name="hero-plus-solid" class="size-4" />
             {gettext("Join")}
           </button>
         <% @group.type == GroupType.private() -> %>
@@ -652,12 +653,14 @@ defmodule GamendWeb.GroupsLive do
             phx-value-id={@group.id}
             class="btn btn-surface btn-sm"
           >
+            <.icon name="hero-hand-raised-solid" class="size-4" />
             {gettext("Request")}
           </button>
         <% true -> %>
       <% end %>
     <% else %>
       <.link navigate={~p"/users/log_in"} class="btn btn-ghost btn-sm">
+        <.icon name="hero-arrow-right-on-rectangle-solid" class="size-4 rtl:-scale-x-100" />
         {gettext("Log in")}
       </.link>
     <% end %>
@@ -784,6 +787,7 @@ defmodule GamendWeb.GroupsLive do
             class="btn btn-surface btn-sm"
             id="group-chat-btn"
           >
+            <.icon name="hero-chat-bubble-left-right-solid" class="size-4" />
             {gettext("Open chat")}
           </.link>
           <button
@@ -792,6 +796,7 @@ defmodule GamendWeb.GroupsLive do
             class="btn btn-outline btn-error btn-sm"
             id="group-leave-btn"
           >
+            <.icon name="hero-x-mark-solid" class="size-4" />
             {gettext("Leave")}
           </button>
         <% MapSet.member?(@pending_request_ids, @selected_group.id) -> %>
@@ -803,6 +808,7 @@ defmodule GamendWeb.GroupsLive do
             class="btn btn-primary btn-sm"
             id="group-join-btn"
           >
+            <.icon name="hero-plus-solid" class="size-4" />
             {gettext("Join")}
           </button>
         <% @selected_group.type == GroupType.private() -> %>
@@ -812,12 +818,14 @@ defmodule GamendWeb.GroupsLive do
             class="btn btn-surface btn-sm"
             id="group-request-btn"
           >
+            <.icon name="hero-hand-raised-solid" class="size-4" />
             {gettext("Request")}
           </button>
         <% true -> %>
       <% end %>
     <% else %>
       <.link navigate={~p"/users/log_in"} class="btn btn-surface btn-sm">
+        <.icon name="hero-arrow-right-on-rectangle-solid" class="size-4 rtl:-scale-x-100" />
         {gettext("Log in")}
       </.link>
     <% end %>

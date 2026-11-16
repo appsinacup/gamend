@@ -216,6 +216,7 @@ defmodule GamendWeb.AdminLive.QuestCodes do
                   label="Metadata (JSON, players can read it)"
                 />
                 <button type="submit" class="btn btn-primary btn-sm" disabled={@generating}>
+                  <.icon name="hero-sparkles-solid" class="size-4" />
                   {if @generating, do: "Generating…", else: "Generate"}
                 </button>
               </.form>
@@ -238,7 +239,9 @@ defmodule GamendWeb.AdminLive.QuestCodes do
                   type="text"
                   label="Metadata (JSON, players can read it)"
                 />
-                <button type="submit" class="btn btn-primary btn-sm">Add</button>
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <.icon name="hero-plus-solid" class="size-4" /> Add
+                </button>
               </.form>
             </div>
           </div>
@@ -294,7 +297,7 @@ defmodule GamendWeb.AdminLive.QuestCodes do
                           data-copied="Copied"
                           class="btn btn-xs btn-ghost"
                         >
-                          Copy
+                          <.icon name="hero-clipboard-document-solid" class="size-4" /> Copy
                         </button>
                       </div>
                     </td>
@@ -320,7 +323,7 @@ defmodule GamendWeb.AdminLive.QuestCodes do
                           phx-value-id={code.id}
                           class="btn btn-xs btn-outline btn-error"
                         >
-                          Revoke
+                          <.icon name="hero-no-symbol-solid" class="size-4" /> Revoke
                         </button>
                       <% else %>
                         <button
@@ -328,7 +331,7 @@ defmodule GamendWeb.AdminLive.QuestCodes do
                           phx-value-id={code.id}
                           class="btn btn-xs btn-outline btn-success"
                         >
-                          Restore
+                          <.icon name="hero-arrow-uturn-left-solid" class="size-4" /> Restore
                         </button>
                       <% end %>
                     </td>

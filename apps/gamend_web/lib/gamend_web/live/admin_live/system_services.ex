@@ -124,7 +124,7 @@ defmodule GamendWeb.AdminLive.SystemServices do
               phx-click="send_test_email"
               class="btn btn-surface btn-sm"
             >
-              Send test email
+              <.icon name="hero-paper-airplane-solid" class="size-4" /> Send test email
             </button>
             <a
               :if={@services.environment == BuildEnv.dev()}

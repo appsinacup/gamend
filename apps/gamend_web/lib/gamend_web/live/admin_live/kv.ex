@@ -25,7 +25,7 @@ defmodule GamendWeb.AdminLive.KV do
                   phx-click="new_entry"
                   class="btn btn-sm btn-primary"
                 >
-                  + New Entry
+                  <.icon name="hero-plus-solid" class="size-4" /> New Entry
                 </button>
                 <button
                   type="button"
@@ -34,6 +34,7 @@ defmodule GamendWeb.AdminLive.KV do
                   class="btn btn-sm btn-outline btn-error"
                   disabled={MapSet.size(@selected_ids) == 0}
                 >
+                  <.icon name="hero-trash-solid" class="size-4" />
                   Delete selected ({MapSet.size(@selected_ids)})
                 </button>
               </div>
@@ -74,7 +75,7 @@ defmodule GamendWeb.AdminLive.KV do
 
                 <div class="flex gap-2">
                   <button type="button" phx-click="filters_clear" class="btn btn-sm btn-ghost">
-                    Clear
+                    <.icon name="hero-x-mark-solid" class="size-4" /> Clear
                   </button>
                 </div>
               </.form>
@@ -162,7 +163,7 @@ defmodule GamendWeb.AdminLive.KV do
                         data-confirm
                         class="btn btn-xs btn-outline btn-error"
                       >
-                        Delete
+                        <.icon name="hero-trash-solid" class="size-4" /> Delete
                       </button>
                     </td>
                   </tr>
@@ -234,9 +235,10 @@ defmodule GamendWeb.AdminLive.KV do
 
             <div class="modal-action">
               <button type="button" phx-click="close_entry_modal" class="btn">
-                Cancel
+                <.icon name="hero-x-mark-solid" class="size-5" /> Cancel
               </button>
               <button id="admin-kv-save" type="submit" class="btn btn-primary">
+                <.icon name="hero-check-solid" class="size-5" />
                 {if(@editing?, do: "Save changes", else: "Create")}
               </button>
             </div>

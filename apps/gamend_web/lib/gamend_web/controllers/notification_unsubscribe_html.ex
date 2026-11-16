@@ -27,6 +27,7 @@ defmodule GamendWeb.NotificationUnsubscribeHTML do
           >
             <input type="hidden" name="scope" value="group" />
             <button type="submit" id="unsubscribe-group" class="btn btn-primary w-full">
+              <.icon name="hero-bell-slash-solid" class="size-5" />
               {gettext("Stop these emails")}
             </button>
           </.form>
@@ -39,6 +40,7 @@ defmodule GamendWeb.NotificationUnsubscribeHTML do
           >
             <input type="hidden" name="scope" value="all" />
             <button type="submit" id="unsubscribe-all" class="btn btn-outline w-full">
+              <.icon name="hero-bell-slash-solid" class="size-5" />
               {gettext("Stop all emails")}
             </button>
           </.form>

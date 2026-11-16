@@ -76,6 +76,7 @@ defmodule GamendWeb.AdminLive.Notifications do
                 phx-click="toggle_create"
                 class="btn btn-surface btn-sm"
               >
+                <.icon name="hero-x-mark-solid" class="size-4" />
                 {if @show_create, do: "Hide", else: "Show"}
               </button>
             </div>
@@ -102,7 +103,9 @@ defmodule GamendWeb.AdminLive.Notifications do
                     rows="3"
                   >{Phoenix.HTML.Form.input_value(@create_form, :metadata)}</textarea>
                 </div>
-                <button type="submit" class="btn btn-primary btn-sm">Send Notification</button>
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <.icon name="hero-paper-airplane-solid" class="size-4" /> Send Notification
+                </button>
               </.form>
             <% end %>
           </div>
@@ -119,6 +122,7 @@ defmodule GamendWeb.AdminLive.Notifications do
                 class="btn btn-sm btn-outline btn-error"
                 disabled={MapSet.size(@selected_ids) == 0}
               >
+                <.icon name="hero-trash-solid" class="size-4" />
                 Delete selected ({MapSet.size(@selected_ids)})
               </button>
             </div>
@@ -230,7 +234,7 @@ defmodule GamendWeb.AdminLive.Notifications do
                           data-confirm
                           class="btn btn-xs btn-outline btn-error"
                         >
-                          Delete
+                          <.icon name="hero-trash-solid" class="size-4" /> Delete
                         </button>
                       </td>
                     </tr>

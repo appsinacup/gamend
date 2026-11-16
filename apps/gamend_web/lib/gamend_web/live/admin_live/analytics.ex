@@ -106,7 +106,9 @@ defmodule GamendWeb.AdminLive.Analytics do
               selected={@days}
               to={&here(assigns, %{"days" => &1})}
             />
-            <button phx-click="refresh" class="btn btn-ghost btn-sm">Refresh</button>
+            <button phx-click="refresh" class="btn btn-ghost btn-sm">
+              <.icon name="hero-arrow-path-solid" class="size-4" /> Refresh
+            </button>
           </:controls>
         </.analytics_header>
 

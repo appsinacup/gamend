@@ -238,7 +238,10 @@ defmodule GamendWeb.AdminLive.Reports do
               >
                 <.icon name="hero-arrow-down-tray-solid" class="size-4" /> {gettext("Export")}
               </.link>
-              <button phx-click="refresh" class="btn btn-ghost btn-sm">{gettext("Refresh")}</button>
+              <button phx-click="refresh" class="btn btn-ghost btn-sm">
+                <.icon name="hero-arrow-path-solid" class="size-4" />
+                {gettext("Refresh")}
+              </button>
             </div>
           </div>
 
@@ -418,6 +421,7 @@ defmodule GamendWeb.AdminLive.Reports do
                     phx-value-status="fixed"
                     class="btn btn-primary btn-xs"
                   >
+                    <.icon name="hero-check-solid" class="size-4" />
                     {gettext("Fixed")}
                   </button>
                   <button
@@ -426,6 +430,7 @@ defmodule GamendWeb.AdminLive.Reports do
                     phx-value-status="duplicate"
                     class="btn btn-surface btn-xs"
                   >
+                    <.icon name="hero-document-duplicate-solid" class="size-4" />
                     {gettext("Duplicate")}
                   </button>
                   <button
@@ -434,10 +439,12 @@ defmodule GamendWeb.AdminLive.Reports do
                     phx-value-status="wontfix"
                     class="btn btn-surface btn-xs"
                   >
+                    <.icon name="hero-x-mark-solid" class="size-4" />
                     {gettext("Won't fix")}
                   </button>
                 <% else %>
                   <button phx-click="reopen" phx-value-id={report.id} class="btn btn-surface btn-xs">
+                    <.icon name="hero-arrow-uturn-left-solid" class="size-4" />
                     {gettext("Reopen")}
                   </button>
                 <% end %>
@@ -447,6 +454,7 @@ defmodule GamendWeb.AdminLive.Reports do
                   data-confirm
                   class="btn btn-outline btn-error btn-xs"
                 >
+                  <.icon name="hero-trash-solid" class="size-4" />
                   {gettext("Delete")}
                 </button>
               </div>
@@ -509,9 +517,13 @@ defmodule GamendWeb.AdminLive.Reports do
 
             <div class="modal-action">
               <button type="button" phx-click="close_form" class="btn btn-sm">
+                <.icon name="hero-x-mark-solid" class="size-4" />
                 {gettext("Cancel")}
               </button>
-              <button type="submit" class="btn btn-primary btn-sm">{gettext("Close report")}</button>
+              <button type="submit" class="btn btn-primary btn-sm">
+                <.icon name="hero-x-mark-solid" class="size-4" />
+                {gettext("Close report")}
+              </button>
             </div>
           </form>
         </div>

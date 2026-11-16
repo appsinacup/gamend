@@ -70,6 +70,7 @@ defmodule GamendWeb.AdminLive.Push do
             <div class="flex flex-wrap items-center justify-between">
               <h2 class="card-title">Send Test Push</h2>
               <button type="button" phx-click="toggle_send" class="btn btn-surface btn-sm">
+                <.icon name="hero-x-mark-solid" class="size-4" />
                 {if @show_send, do: "Hide", else: "Show"}
               </button>
             </div>
@@ -84,7 +85,9 @@ defmodule GamendWeb.AdminLive.Push do
                 <.input field={@send_form[:user_id]} type="text" label="User ID" />
                 <.input field={@send_form[:title]} type="text" label="Title" />
                 <.input field={@send_form[:body]} type="text" label="Body (optional)" />
-                <button type="submit" class="btn btn-primary btn-sm">Send Push</button>
+                <button type="submit" class="btn btn-primary btn-sm">
+                  <.icon name="hero-paper-airplane-solid" class="size-4" /> Send Push
+                </button>
               </.form>
               <p class="text-sm text-muted mt-2">
                 Queued to every live device of that user; with no provider configured the
@@ -203,7 +206,7 @@ defmodule GamendWeb.AdminLive.Push do
                           data-confirm
                           class="btn btn-xs btn-outline btn-error"
                         >
-                          Delete
+                          <.icon name="hero-trash-solid" class="size-4" /> Delete
                         </button>
                       </td>
                     </tr>

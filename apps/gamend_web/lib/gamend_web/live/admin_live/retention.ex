@@ -36,6 +36,7 @@ defmodule GamendWeb.AdminLive.Retention do
                   </div>
                 </div>
                 <button phx-click="prune_now" class="btn btn-primary" disabled={@retention_running}>
+                  <.icon name="hero-play-solid" class="size-5" />
                   {if @retention_running, do: "Running...", else: "Run now"}
                 </button>
               </div>

@@ -50,12 +50,14 @@ defmodule GamendWeb.UserLive.Confirmation do
             phx-disable-with={gettext("Loading...")}
             class="btn btn-primary w-full"
           >
+            <.icon name="hero-check-solid" class="size-5" />
             {gettext("Confirm and remember me")}
           </.button>
           <.button
             phx-disable-with={gettext("Loading...")}
             class="btn btn-primary btn-soft w-full mt-2"
           >
+            <.icon name="hero-check-solid" class="size-5" />
             {gettext("Confirm")}
           </.button>
         </.form>
@@ -75,6 +77,7 @@ defmodule GamendWeb.UserLive.Confirmation do
               phx-disable-with={gettext("Loading...")}
               class="btn btn-primary w-full"
             >
+              <.icon name="hero-arrow-right-on-rectangle-solid" class="size-5 rtl:-scale-x-100" />
               {gettext("Log in")}
             </.button>
           <% else %>
@@ -84,12 +87,14 @@ defmodule GamendWeb.UserLive.Confirmation do
               phx-disable-with={gettext("Loading...")}
               class="btn btn-primary w-full"
             >
+              <.icon name="hero-arrow-right-on-rectangle-solid" class="size-5 rtl:-scale-x-100" />
               {gettext("Log in and remember me")}
             </.button>
             <.button
               phx-disable-with={gettext("Loading...")}
               class="btn btn-primary btn-soft w-full mt-2"
             >
+              <.icon name="hero-arrow-right-on-rectangle-solid" class="size-5 rtl:-scale-x-100" />
               {gettext("Log in")}
             </.button>
           <% end %>

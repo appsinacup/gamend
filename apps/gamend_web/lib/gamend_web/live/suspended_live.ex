@@ -55,6 +55,7 @@ defmodule GamendWeb.SuspendedLive do
             {gettext("Settings")}
           </.link>
           <.link href={~p"/users/log_out"} method="delete" class="btn btn-surface">
+            <.icon name="hero-arrow-right-start-on-rectangle-solid" class="size-5 rtl:-scale-x-100" />
             {gettext("Log out")}
           </.link>
         </div>

@@ -59,6 +59,21 @@ defmodule GamendWeb.Plugs.RequestTimerTest do
     assert log =~ ~s("lobby" => "harbour")
   end
 
+  test "a webhook's big body is cut to a kilobyte, and the duration still ends the line" do
+    commit = Map.new(1..20, &{"field_#{&1}", String.duplicate("x", 300)})
+
+    log =
+      Plug.Test.conn(:post, "/cloud/hooks/github", %{
+        "ref" => "refs/heads/main",
+        "commits" => List.duplicate(commit, 20)
+      })
+      |> slow_log()
+
+    assert log =~ "Slow Request: POST /cloud/hooks/github body="
+    assert log =~ ~r/\.\.\.\[truncated\] took \d+\.\d{3}ms/
+    assert byte_size(log) < 1_500
+  end
+
   test "keys that only contain a redacted word stay readable" do
     log =
       Plug.Test.conn(:get, "/courses/download?country_code=RO&name=Unit+1&user_count=3")

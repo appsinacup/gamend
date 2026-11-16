@@ -29,7 +29,7 @@
 - [changed] **Slugs and usernames take any script.** `GAMEND_LIMITS_USERNAME_ASCII_ONLY` and `GAMEND_GROUPS_UNIQUE_TITLES` are gone. **Hosts:** drop them; keep ASCII handles with `validate_username/1`.
 - [changed] **Secrets**: rotation finishes in one call, a malformed key no longer writes under the next, and `secrets.fingerprint` is gone. **Hosts:** run the migration.
 - [added] **Smaller additions**: the guides as one download ([#58](https://github.com/appsinacup/gamend/issues/58)), Oban Lifeline, `before_user_delete/1`, `after_socket_connected/3`, Balaur Script highlighting and `flag_path/1`. **Hosts:** an Oban config of your own adds `Oban.Plugins.Lifeline`.
-- [fixed] **Smaller fixes**: fenced code is highlighted again, a chat edit is moderated as a send, IPv4 clients behind a proxy are seen, a Postgres image builds, and dialogs, the theme toggle and Safari's icon picker work. **Hosts:** `mix deps.get`; a settings `group:` is snake_case, its text in `label:`.
+- [fixed] **Smaller fixes**: fenced code is highlighted again, a chat edit is moderated as a send, IPv4 clients behind a proxy are seen, a Postgres image builds, a slow request's warning logs at most a kilobyte of its query and of its body, and dialogs, the theme toggle and Safari's icon picker work. **Hosts:** `mix deps.get`; a settings `group:` is snake_case, its text in `label:`.
 
 # October 2026
 

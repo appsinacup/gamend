@@ -14,6 +14,10 @@ defmodule GamendWeb.Plugs.RequestTimer do
   @max_param_depth 4
   @max_param_items 20
   @max_string_bytes 300
+  # The query's or the body's whole line, after the limits above: a webhook's
+  # body (a GitHub push with its commits) passes each of them and still came
+  # to tens of kilobytes a warning.
+  @max_params_bytes 1_000
   @redacted "[FILTERED]"
 
   def init(opts), do: opts
@@ -50,7 +54,13 @@ defmodule GamendWeb.Plugs.RequestTimer do
         []
 
       {label, params} ->
-        ["#{label}=#{inspect(sanitize_param(params, @max_param_depth))}"]
+        shown =
+          params
+          |> sanitize_param(@max_param_depth)
+          |> inspect()
+          |> truncate_string(@max_params_bytes)
+
+        ["#{label}=#{shown}"]
     end)
     |> case do
       [] -> ""
@@ -80,7 +90,9 @@ defmodule GamendWeb.Plugs.RequestTimer do
     |> Enum.map(&sanitize_param(&1, depth - 1))
   end
 
-  defp sanitize_param(value, _depth) when is_binary(value), do: truncate_string(value)
+  defp sanitize_param(value, _depth) when is_binary(value),
+    do: truncate_string(value, @max_string_bytes)
+
   defp sanitize_param(value, _depth) when is_integer(value), do: value
   defp sanitize_param(value, _depth) when is_float(value), do: value
   defp sanitize_param(value, _depth) when is_boolean(value), do: value
@@ -141,11 +153,11 @@ defmodule GamendWeb.Plugs.RequestTimer do
   defp param_type(nil), do: "nil"
   defp param_type(_value), do: ParamType.unknown()
 
-  defp truncate_string(value) do
-    if byte_size(value) <= @max_string_bytes do
+  defp truncate_string(value, max_bytes) do
+    if byte_size(value) <= max_bytes do
       value
     else
-      String.slice(value, 0, @max_string_bytes) <> "...[truncated]"
+      String.slice(value, 0, max_bytes) <> "...[truncated]"
     end
   end
 

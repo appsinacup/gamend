@@ -1,4 +1,4 @@
-# gamend_core v1.1.1462 - API Reference
+# gamend_core v1.1.1463 - API Reference
 
 ## Modules
 
@@ -155,6 +155,7 @@ account's (Forge's `/projects/<owner>/<name>`).
 so a test can show whether a rule holds when requests land together.
 - [Gamend.Time](Gamend.Time.md): The server's wall clock, in milliseconds since the epoch, for sending to
 clients.
+- [Gamend.TimeLint](Gamend.TimeLint.md): Finds a time a page formats by hand. `mix gamend.time.lint` runs it.
 - [Gamend.UrlScheme](Gamend.UrlScheme.md): URL schemes.
 
 - Accounts
@@ -692,6 +693,10 @@ secret key belongs to (`GAMEND_PAYMENTS_ENVIRONMENT` picks the sandbox or
 the production key, read from `.env` like the server reads it).
 - [mix gamend.theme.extract](Mix.Tasks.Gamend.Theme.Extract.md): Writes `theme.pot` from the strings in the theme config.
 - [mix gamend.theme.migrate_locales](Mix.Tasks.Gamend.Theme.MigrateLocales.md): One-shot migration off one-JSON-file-per-locale.
+- [mix gamend.time.lint](Mix.Tasks.Gamend.Time.Lint.md): Flags a date, an instant or a relative phrase a page writes out by hand
+instead of through `<.timestamp>`, `<.duration>` or `GamendWeb.TimeText`.
+See `Gamend.TimeLint` for what counts and for the `# time-ok: <reason>`
+marker that accepts one.
 - [mix gen.sdk](Mix.Tasks.Gen.Sdk.md): Generates SDK stub modules from the real Gamend modules.
 - [mix host.proto.check](Mix.Tasks.Host.Proto.Check.md): Check that registered protobuf schemas actually match the JSON they encode.
 - [mix host.proto.gen](Mix.Tasks.Host.Proto.Gen.md): Generates protobuf bindings for every target from a `.proto` file.

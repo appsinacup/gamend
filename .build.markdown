@@ -329,6 +329,7 @@ Gamend.Theme.JSONConfig.md
 Gamend.Theme.Translatable.md
 Gamend.Theme.md
 Gamend.Time.md
+Gamend.TimeLint.md
 Gamend.Tournaments.DeadlinePolicy.md
 Gamend.Tournaments.Entry.md
 Gamend.Tournaments.EntryState.md
@@ -354,6 +355,7 @@ Mix.Tasks.Gamend.Settings.Guide.md
 Mix.Tasks.Gamend.Stripe.Setup.md
 Mix.Tasks.Gamend.Theme.Extract.md
 Mix.Tasks.Gamend.Theme.MigrateLocales.md
+Mix.Tasks.Gamend.Time.Lint.md
 Mix.Tasks.Gen.Sdk.md
 Mix.Tasks.Host.Proto.Check.md
 Mix.Tasks.Host.Proto.Gen.md

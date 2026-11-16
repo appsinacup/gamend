@@ -330,6 +330,7 @@ Gamend.Theme.JSONConfig.html
 Gamend.Theme.Translatable.html
 Gamend.Theme.html
 Gamend.Time.html
+Gamend.TimeLint.html
 Gamend.Tournaments.DeadlinePolicy.html
 Gamend.Tournaments.Entry.html
 Gamend.Tournaments.EntryState.html
@@ -355,6 +356,7 @@ Mix.Tasks.Gamend.Settings.Guide.html
 Mix.Tasks.Gamend.Stripe.Setup.html
 Mix.Tasks.Gamend.Theme.Extract.html
 Mix.Tasks.Gamend.Theme.MigrateLocales.html
+Mix.Tasks.Gamend.Time.Lint.html
 Mix.Tasks.Gen.Sdk.html
 Mix.Tasks.Host.Proto.Check.html
 Mix.Tasks.Host.Proto.Gen.html
@@ -367,8 +369,8 @@ dist/lato-latin-700-normal-2XVSBPG4.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-ZWU5GQ4X.woff2
-dist/search_data-D2B249C0.js
-dist/sidebar_items-86A52D29.js
+dist/search_data-5CF51AC9.js
+dist/sidebar_items-3B74D5DD.js
 index.html
 readme.html
 search.html

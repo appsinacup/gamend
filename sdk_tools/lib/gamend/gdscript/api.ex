@@ -882,6 +882,7 @@ defmodule Gamend.GDScript.API do
       "list_tournaments" => [0, 1],
       "match_index" => [2],
       "match_payload" => [2],
+      "merge_user_entries" => [2],
       "my_match" => [2],
       "reopen_tournament" => [1],
       "resolve_match" => [2],

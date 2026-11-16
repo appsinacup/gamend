@@ -425,13 +425,16 @@ defmodule Gamend.Tournaments do
     
     Refuses with `:registration_closed`, `:already_registered`,
     `:tournament_full`, `:not_found` (deleted meanwhile), a changeset, or
-    `{:hook_rejected, reason}` with the hook's own reason.
+    `{:hook_rejected, reason}` with the hook's own reason. A guest is refused
+    with `:account_required` where the host requires an account to enter
+    (`Gamend.AccountRequired`, `:tournaments`), before anything else.
     
   """
   @spec join_tournament(Gamend.Accounts.User.t(), Gamend.Tournaments.Tournament.t()) ::
           {:ok, Gamend.Tournaments.Entry.t()}
           | {:error,
-             :registration_closed
+             :account_required
+             | :registration_closed
              | :already_registered
              | :tournament_full
              | :not_found
@@ -636,6 +639,32 @@ defmodule Gamend.Tournaments do
 
       _ ->
         raise "Gamend.Tournaments.match_payload/2 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Moves `from_user_id`'s entries onto `to_user_id`, the way a guest's play
+    joins the account they log in to (`Gamend.Accounts.GuestMerge`). An entry
+    in a tournament the account has not entered becomes the account's, with
+    its seed, bracket, wins and matches (a game's match metadata keyed by the
+    entry's id with them), so a guest who joined, or is playing, goes on as the
+    account. No hook fires: the entry was registered once.
+    
+    Where the account has its own entry in that tournament, the account's
+    stands and the guest's leaves the field: withdrawn before the draw (its
+    seat given back), forfeited while it runs (its opponent advances, as
+    against a withdrawal), and left to go with the guest account once the
+    tournament is over. Answers how many entries reached the account.
+    
+  """
+  @spec merge_user_entries(Ecto.UUID.t(), Ecto.UUID.t()) :: non_neg_integer()
+  def merge_user_entries(_from_user_id, _to_user_id) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        0
+
+      _ ->
+        raise "Gamend.Tournaments.merge_user_entries/2 is a stub - only available at runtime on Gamend"
     end
   end
 

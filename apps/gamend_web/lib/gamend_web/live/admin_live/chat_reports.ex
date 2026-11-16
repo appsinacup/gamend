@@ -339,15 +339,6 @@ defmodule GamendWeb.AdminLive.ChatReports do
   defp status_class(ChatReportStatus.actioned()), do: "badge-error"
   defp status_class(_status), do: "badge-ghost"
 
-  defp age(%DateTime{} = at) do
-    case DateTime.diff(DateTime.utc_now(), at, :second) do
-      seconds when seconds < 60 -> gettext("just now")
-      seconds when seconds < 3600 -> gettext("%{count}m ago", count: div(seconds, 60))
-      seconds when seconds < 86_400 -> gettext("%{count}h ago", count: div(seconds, 3600))
-      seconds -> gettext("%{count}d ago", count: div(seconds, 86_400))
-    end
-  end
-
   # ── render ────────────────────────────────────────────────────────────────
 
   @impl true
@@ -458,10 +449,7 @@ defmodule GamendWeb.AdminLive.ChatReports do
                     </div>
                   </td>
                   <td class="text-xs whitespace-nowrap">
-                    {age(report.inserted_at)}
-                    <div class="text-muted">
-                      <.timestamp at={report.inserted_at} format="full" />
-                    </div>
+                    <.timestamp at={report.inserted_at} />
                   </td>
                   <td class="text-right whitespace-nowrap">
                     <div :if={report.status in ~w(open reviewing)} class="flex justify-end gap-1">

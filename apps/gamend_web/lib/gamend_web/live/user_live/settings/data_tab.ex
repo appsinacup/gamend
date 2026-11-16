@@ -83,9 +83,7 @@ defmodule GamendWeb.UserLive.Settings.DataTab do
                 <td class="font-mono text-sm w-16">{e.id}</td>
                 <td class="font-mono text-sm break-all">{e.key}</td>
                 <td class="text-sm w-40">
-                  <span class="font-mono text-xs">
-                    {if e.updated_at, do: DateTime.to_iso8601(e.updated_at), else: "-"}
-                  </span>
+                  <.timestamp at={e.updated_at} class="text-xs" />
                 </td>
                 <td class="text-sm">
                   <pre class="text-xs font-mono whitespace-pre-wrap max-h-24 overflow-auto bg-base-100/60 rounded p-2">{json_preview(e.value)}</pre>

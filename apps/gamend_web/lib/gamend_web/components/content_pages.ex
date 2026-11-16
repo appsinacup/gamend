@@ -502,6 +502,7 @@ defmodule GamendWeb.ContentPages do
     assigns =
       assign(assigns,
         iso: "#{assigns.year}-#{String.pad_leading(to_string(assigns.month), 2, "0")}",
+        # time-ok: the no-JS name of a calendar month, which the script translates
         english: Calendar.strftime(Date.new!(assigns.year, assigns.month, 1), "%B")
       )
 

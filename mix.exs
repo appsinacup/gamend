@@ -217,7 +217,8 @@ defmodule GamendHost.MixProject do
           "credo --strict",
           "gamend.api.lint",
           "gamend.race.lint",
-          "gamend.literal.lint"
+          "gamend.literal.lint",
+          "gamend.time.lint"
         ] ++
           local_web_commands([
             # No `xref unreachable`: Elixir folded that check into the compiler,

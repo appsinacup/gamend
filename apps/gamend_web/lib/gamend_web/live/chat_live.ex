@@ -801,7 +801,8 @@ defmodule GamendWeb.ChatLive do
   end
 
   defp different_minute?(t1, t2) do
-    Calendar.strftime(t1, "%Y-%m-%d %H:%M") != Calendar.strftime(t2, "%Y-%m-%d %H:%M")
+    minute = [:year, :month, :day, :hour, :minute]
+    Map.take(t1, minute) != Map.take(t2, minute)
   end
 
   defp parse_id(id) when is_binary(id), do: id

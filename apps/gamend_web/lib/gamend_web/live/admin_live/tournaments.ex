@@ -108,7 +108,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                       </button>
                     </td>
                     <td><span class={state_badge(t.state)}>{t.state}</span></td>
-                    <td class="text-xs">{t.starts_at}</td>
+                    <td class="text-xs"><.timestamp at={t.starts_at} /></td>
                     <td>{Tournaments.count_entries(t.id)}</td>
                     <td class="text-xs">{t.bracket_size} / {t.round_window_sec}s</td>
                     <td class="font-mono text-xs">{t.recur}</td>
@@ -346,7 +346,7 @@ defmodule GamendWeb.AdminLive.Tournaments do
                           do: leader_of(@detail, match.winner_entry_id),
                           else: if(match.resolved_at, do: "no winner", else: "—")}
                       </td>
-                      <td class="text-xs">{match.deadline_at}</td>
+                      <td class="text-xs"><.timestamp at={match.deadline_at} /></td>
                       <td class="flex gap-1">
                         <button
                           :if={match.resolved_at == nil and match.a_entry_id}

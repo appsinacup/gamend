@@ -298,6 +298,18 @@
   white-space: normal;
 }
 
+/* ─── A relative time ───
+   "3 days ago" holds its exact moment: on hover as its title, and a tap swaps
+   it in (`local_time.js`). Inside a link or a control the tap is that
+   control's, so the cursor is too. */
+time[data-local-time="relative"] {
+  cursor: help;
+}
+
+:is(a, button, label, summary, [phx-click]) time[data-local-time="relative"] {
+  cursor: inherit;
+}
+
 /* ─── Mobile touch targets ───
    Interactive controls meet the 44px minimum touch target on devices that
    don't support hover (phones, tablets): every button, input and select is

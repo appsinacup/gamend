@@ -466,23 +466,20 @@ defmodule GamendWeb.QuestsLive do
   # Whichever comes first: the window closing, or the next reset — tagged, so
   # the card says "Resets in" when the reset is what it is counting down to.
   # It used to say "Ends in" whenever the quest had a window at all.
+  # The instant, not the seconds to it: `<.timestamp>` counts down to it on
+  # its own and says it in the reader's language.
   defp time_left(quest, now) do
-    [{:ends, window_left(quest, now)}, {:resets, reset_left(quest, now)}]
-    |> Enum.reject(fn {_kind, seconds} -> is_nil(seconds) end)
+    [{:ends, quest.ends_at}, {:resets, next_reset(quest, now)}]
+    |> Enum.reject(fn {_kind, at} -> is_nil(at) end)
     |> case do
       [] -> nil
-      values -> Enum.min_by(values, &elem(&1, 1))
+      values -> Enum.min_by(values, &elem(&1, 1), DateTime)
     end
   end
 
-  defp window_left(%Quest{ends_at: %DateTime{} = ends_at}, now),
-    do: max(DateTime.diff(ends_at, now), 0)
+  defp next_reset(%Quest{reset: QuestReset.never()}, _now), do: nil
 
-  defp window_left(_quest, _now), do: nil
-
-  defp reset_left(%Quest{reset: QuestReset.never()}, _now), do: nil
-
-  defp reset_left(quest, now) do
+  defp next_reset(quest, now) do
     date = DateTime.to_date(now)
 
     next =
@@ -494,7 +491,7 @@ defmodule GamendWeb.QuestsLive do
         _ -> nil
       end
 
-    if next, do: DateTime.diff(DateTime.new!(next, ~T[00:00:00]), now)
+    if next, do: DateTime.new!(next, ~T[00:00:00])
   end
 
   defp interval_days_left(%Quest{reset_interval_days: days}, date)
@@ -503,14 +500,6 @@ defmodule GamendWeb.QuestsLive do
   end
 
   defp interval_days_left(_quest, _date), do: 1
-
-  @doc false
-  def format_duration(seconds) when seconds >= 86_400, do: "#{div(seconds, 86_400)}d"
-
-  def format_duration(seconds) when seconds >= 3_600,
-    do: "#{div(seconds, 3_600)}h #{div(rem(seconds, 3_600), 60)}m"
-
-  def format_duration(seconds), do: "#{div(seconds, 60)}m"
 
   defp objective_rows(quest, progress) do
     counts = (progress && progress.objective_progress) || %{}
@@ -1006,10 +995,10 @@ defmodule GamendWeb.QuestsLive do
           <.icon name="hero-clock-solid" class="w-3.5 h-3.5" />
           <span class="text-xs">
             <%= case @left do %>
-              <% {:ends, seconds} -> %>
-                {gettext("Ends in %{time}", time: format_duration(seconds))}
-              <% {:resets, seconds} -> %>
-                {gettext("Resets in %{time}", time: format_duration(seconds))}
+              <% {:ends, at} -> %>
+                {gettext("Ends")} <.timestamp at={at} />
+              <% {:resets, at} -> %>
+                {gettext("Resets")} <.timestamp at={at} />
             <% end %>
           </span>
         </div>
@@ -1052,7 +1041,7 @@ defmodule GamendWeb.QuestsLive do
                 <span class="text-xs font-medium">
                   {gettext("Claimed")}
                   <span :if={@progress.completed_at} class="text-muted ms-1">
-                    <.timestamp at={@progress.completed_at} format="date" />
+                    <.timestamp at={@progress.completed_at} />
                   </span>
                 </span>
               </div>

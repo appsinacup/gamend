@@ -75,7 +75,7 @@ Elixir 1.20 / OTP 29 (`.tool-versions`), Phoenix 1.8, LiveView 1.2, Ecto 3.14, B
 - **Always** use the imported `<.input>` component for form inputs from `core_components.ex` when available. `<.input>` is imported and using it will save steps and prevent errors
 - If you override the default input classes (`<.input class="myclass px-2 py-1 rounded-lg">)`) class with your own values, no default classes are inherited, so your
 custom classes must fully style the input
-- Instants render with `<.timestamp at={...} />` and are entered with `<.input type="utc-datetime-local">`. See [CONTRIBUTING.md](CONTRIBUTING.md#time)
+- Instants render with `<.timestamp at={...} />` (relative by default: "7m ago", "in 12 days"; `format="datetime"` only where the clock is the content), spans with `<.duration>`, and are entered with `<.input type="utc-datetime-local">`. See [CONTRIBUTING.md](CONTRIBUTING.md#time)
 
 ### JS and CSS guidelines
 

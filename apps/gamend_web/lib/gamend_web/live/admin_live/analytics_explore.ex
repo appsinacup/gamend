@@ -497,7 +497,7 @@ defmodule GamendWeb.AdminLive.AnalyticsExplore do
               <tbody>
                 <tr :for={e <- @rows.rows}>
                   <td class="font-mono whitespace-nowrap">
-                    {Calendar.strftime(e.inserted_at, "%m-%d %H:%M:%S")}
+                    <.timestamp at={e.inserted_at} format="full" />
                   </td>
                   <td :if={is_nil(@columns)} class="whitespace-nowrap">
                     <.link

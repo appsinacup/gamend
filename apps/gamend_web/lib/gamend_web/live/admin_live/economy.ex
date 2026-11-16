@@ -374,7 +374,7 @@ defmodule GamendWeb.AdminLive.Economy do
               <tbody>
                 <tr :for={e <- @ledger} id={"ledger-#{e.id}"}>
                   <td class="text-xs whitespace-nowrap">
-                    <.timestamp at={e.inserted_at} format="full" />
+                    <.timestamp at={e.inserted_at} />
                   </td>
                   <td class="text-xs" title={e.user_id}>
                     <div class="flex items-center gap-2">

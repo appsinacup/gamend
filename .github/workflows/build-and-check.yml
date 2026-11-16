@@ -349,6 +349,9 @@ jobs:
       - name: Named strings (CONTRIBUTING.md)
         run: MIX_ENV=dev mix gamend.literal.lint
 
+      - name: Times formatted by hand (CONTRIBUTING.md, Time)
+        run: MIX_ENV=dev mix gamend.time.lint
+
       - name: Credo (strict, web app)
         working-directory: apps/gamend_web
         run: MIX_ENV=dev mix credo --strict

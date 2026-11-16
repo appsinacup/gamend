@@ -1551,16 +1551,21 @@ defmodule GamendWeb.CoreComponents do
   the viewer's own zone and locale once it runs. Without JS the UTC text stands,
   which is why it is labelled rather than left to look local.
 
-  `format` is `"datetime"` (default), `"date"`, `"time"`, `"full"`, or
-  `"relative"` for something in the past: "3m ago", "1 day ago", kept current
-  while the page is open, with the exact time on hover.
+  `format` is `"relative"` by default: how far the instant is from now, in one
+  unit ("7m ago", "3 weeks ago", "in 12 days"; `GamendWeb.TimeText`), kept
+  current while the page is open, with the exact time on hover and a tap
+  swapping it in on a phone. Word the label around it so either direction
+  reads ("Expires" + "in 12 days", never "until" + it).
+
+  An absolute is for where the clock itself is the content (a log line, a
+  chat message, a billing date): `"datetime"`, `"date"`, `"time"` or `"full"`.
 
       <.timestamp at={@user.inserted_at} />
       <.timestamp at={@message.inserted_at} format="time" class="text-xs" />
-      <.timestamp at={@notification.inserted_at} format="relative" />
+      <.timestamp at={@purchase.first_charge_at} format="date" />
   """
   attr :at, :any, required: true, doc: "a DateTime, or nil to render the dash"
-  attr :format, :string, default: "datetime", values: ~w(datetime date time full relative)
+  attr :format, :string, default: "relative", values: ~w(relative datetime date time full)
   attr :class, :string, default: nil
   attr :empty, :string, default: "-", doc: "text shown when `at` is nil"
 
@@ -1584,47 +1589,101 @@ defmodule GamendWeb.CoreComponents do
 
     ~H"""
     <time datetime={@iso} data-local-time="calendar-date" class={@class}>
-      {Calendar.strftime(@at, "%b %-d, %Y")}
+      {utc_text(@at, "date")}
+    </time>
+    """
+  end
+
+  def timestamp(%{format: "relative"} = assigns) do
+    now = DateTime.utc_now()
+    past? = DateTime.compare(assigns.at, now) != :gt
+    assigns = assign(assigns, now: now, past?: past?)
+
+    # `data-local-time-past`: the instant was behind the server's clock. A
+    # browser clock running a little slow would otherwise say a row made a
+    # second ago was made "in 2m"; the script keeps such a time in the past.
+    ~H"""
+    <time
+      datetime={DateTime.to_iso8601(@at)}
+      data-local-time="relative"
+      data-local-time-past={@past?}
+      title={utc_text(@at, "full")}
+      class={@class}
+    >
+      {GamendWeb.TimeText.relative(@at, @now, past: @past?)}
     </time>
     """
   end
 
   def timestamp(assigns) do
     ~H"""
-    <time
-      datetime={DateTime.to_iso8601(@at)}
-      data-local-time={@format}
-      title={@format == "relative" && utc_text(@at, "full")}
-      class={@class}
-    >
+    <time datetime={DateTime.to_iso8601(@at)} data-local-time={@format} class={@class}>
       {utc_text(@at, @format)}
     </time>
     """
   end
 
-  # Matches what `dateStyle: "medium"` produces in English, so the page does not
-  # visibly reflow when the localizer runs. No UTC marker on a date alone: it is
-  # an hour shown in the wrong zone that misleads, and the localizer corrects
-  # the date across a midnight boundary anyway.
-  # `%-d`, not `%d`: "Sep 8", as `dateStyle: "medium"` writes it, not "Sep 08".
-  defp utc_text(at, "date"), do: Calendar.strftime(at, "%b %-d, %Y")
-  defp utc_text(at, "time"), do: Calendar.strftime(at, "%H:%M UTC")
-  defp utc_text(at, "full"), do: Calendar.strftime(at, "%Y-%m-%d %H:%M:%S UTC")
-  # The first paint, in English; `local_time.js` counts the same way and says it
-  # in the reader's language.
-  defp utc_text(at, "relative"), do: ago(max(DateTime.diff(DateTime.utc_now(), at), 1))
-  defp utc_text(at, _datetime), do: Calendar.strftime(at, "%Y-%m-%d %H:%M UTC")
+  defp utc_text(at, format), do: GamendWeb.TimeText.utc(at, format)
 
-  defp ago(seconds) when seconds < 60, do: "#{seconds}s ago"
-  defp ago(seconds) when seconds < 3_600, do: "#{div(seconds, 60)}m ago"
-  defp ago(seconds) when seconds < 86_400, do: "#{div(seconds, 3_600)}h ago"
-  # literal-ok: the English word for the unit
-  defp ago(seconds) when seconds < 2_592_000, do: ago_spelled(div(seconds, 86_400), "day")
-  defp ago(seconds) when seconds < 31_536_000, do: ago_spelled(div(seconds, 2_592_000), "month")
-  defp ago(seconds), do: ago_spelled(div(seconds, 31_536_000), "year")
+  @doc """
+  Renders how long something lasted: "45s", "9m 1s", "3h 5m", "2d 3h"
+  (`GamendWeb.TimeText.duration/2`), said again in the reader's language by
+  `local_time.js`.
 
-  defp ago_spelled(1, unit), do: "1 #{unit} ago"
-  defp ago_spelled(count, unit), do: "#{count} #{unit}s ago"
+  Give it the span (`seconds` or `ms`), or the two ends (`from`, `to`). With
+  `from` and no `to` it is still running, and the script counts it up every
+  second.
+
+      <.duration from={@build.inserted_at} to={@build.finished_at} />
+      <.duration seconds={@sys.uptime_seconds} />
+      <.duration ms={@step.estimate_ms} units={1} />
+  """
+  attr :seconds, :integer, default: nil
+  attr :ms, :integer, default: nil
+  attr :from, :any, default: nil, doc: "a DateTime the span starts at"
+  attr :to, :any, default: nil, doc: "a DateTime it ends at; nil while `from` is still running"
+  attr :units, :integer, default: 2, values: [1, 2], doc: "1 keeps only the largest unit"
+  attr :class, :string, default: nil
+  attr :empty, :string, default: "-", doc: "text shown when there is no span"
+
+  def duration(assigns) do
+    case duration_span(assigns) do
+      {nil, nil} ->
+        ~H"{@empty}"
+
+      {seconds, running_from} ->
+        assigns = assign(assigns, seconds: seconds, running_from: running_from)
+
+        ~H"""
+        <time
+          datetime={"PT#{@seconds}S"}
+          data-local-duration={@seconds}
+          data-local-duration-from={@running_from}
+          data-local-duration-units={@units}
+          class={@class}
+        >
+          {GamendWeb.TimeText.duration(@seconds, units: @units)}
+        </time>
+        """
+    end
+  end
+
+  defp duration_span(%{seconds: seconds}) when is_integer(seconds), do: {max(seconds, 0), nil}
+  defp duration_span(%{ms: ms}) when is_integer(ms), do: {max(div(ms, 1000), 0), nil}
+
+  defp duration_span(%{from: %NaiveDateTime{} = from} = assigns),
+    do: duration_span(%{assigns | from: DateTime.from_naive!(from, "Etc/UTC")})
+
+  defp duration_span(%{to: %NaiveDateTime{} = to} = assigns),
+    do: duration_span(%{assigns | to: DateTime.from_naive!(to, "Etc/UTC")})
+
+  defp duration_span(%{from: %DateTime{} = from, to: %DateTime{} = to}),
+    do: {max(DateTime.diff(to, from), 0), nil}
+
+  defp duration_span(%{from: %DateTime{} = from, to: nil}),
+    do: {max(DateTime.diff(DateTime.utc_now(), from), 0), DateTime.to_iso8601(from)}
+
+  defp duration_span(_assigns), do: {nil, nil}
 
   # ---------------------------------------------------------------------------
   # Pagination

@@ -270,23 +270,4 @@ defmodule GamendWeb.ConnectionTracker do
       cluster_size: 1 + length(Node.list())
     }
   end
-
-  @doc """
-  Formats uptime seconds into a human-readable string like "2d 3h 15m".
-  """
-  def format_uptime(seconds) when is_integer(seconds) do
-    days = div(seconds, 86_400)
-    hours = div(rem(seconds, 86_400), 3600)
-    minutes = div(rem(seconds, 3600), 60)
-
-    parts =
-      [{days, "d"}, {hours, "h"}, {minutes, "m"}]
-      |> Enum.reject(fn {val, _} -> val == 0 end)
-      |> Enum.map(fn {val, unit} -> "#{val}#{unit}" end)
-
-    case parts do
-      [] -> "< 1m"
-      _ -> Enum.join(parts, " ")
-    end
-  end
 end

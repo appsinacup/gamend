@@ -91,7 +91,7 @@ defmodule GamendWeb.AdminLive.Analytics do
       <div class="space-y-4">
         <.analytics_header
           tab="overview"
-          note={"Accounts seen per UTC day, as of #{Date.to_iso8601(@summary.day)}. Registered = an email or a provider; Guests = a device or a browser only, as the account is now. Visitors without an account are in Counters. Hover a number for what it means."}
+          note={overview_note(@summary.day)}
         >
           <:controls>
             <.switch
@@ -274,6 +274,7 @@ defmodule GamendWeb.AdminLive.Analytics do
               </thead>
               <tbody>
                 <tr :for={cohort <- @cohorts}>
+                  <%!-- time-ok: a UTC calendar day, the row's key --%>
                   <td class="font-mono">{Date.to_iso8601(cohort.from)}</td>
                   <td class="text-right tabular-nums">{num(cohort.size)}</td>
                   <td
@@ -388,6 +389,7 @@ defmodule GamendWeb.AdminLive.Analytics do
               </thead>
               <tbody>
                 <tr :for={row <- Enum.reverse(@series)}>
+                  <%!-- time-ok: a UTC calendar day, the row's key --%>
                   <td class="font-mono">{Date.to_iso8601(row.day)}</td>
                   <td class="text-right tabular-nums">{num(row.active)}</td>
                   <td class="text-right tabular-nums">{num(row.returning)}</td>
@@ -458,10 +460,17 @@ defmodule GamendWeb.AdminLive.Analytics do
     end
   end
 
+  defp overview_note(day) do
+    # time-ok: a UTC calendar day, named as one in the note
+    "Accounts seen per UTC day, as of #{Date.to_iso8601(day)}. Registered = an email or a provider; Guests = a device or a browser only, as the account is now. Visitors without an account are in Counters. Hover a number for what it means."
+  end
+
   defp since_note(nil), do: ""
 
-  defp since_note(%Date{} = day),
-    do: ", from #{Date.to_iso8601(day)} (the first day whose visits all count)"
+  defp since_note(%Date{} = day) do
+    # time-ok: a UTC calendar day, named as one in the note
+    ", from #{Date.to_iso8601(day)} (the first day whose visits all count)"
+  end
 
   defp share(_part, 0), do: nil
   defp share(part, total), do: part / total

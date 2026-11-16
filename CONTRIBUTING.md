@@ -18,7 +18,9 @@ The server stores and sends UTC and has **no timezone database**; the reader's
 zone is only known in their browser. So:
 
 - Persist `:utc_datetime` and serialise ISO8601 with the `Z` (the default `Jason` encoding). Never send a wall-clock string a client cannot place.
-- Render every human-facing instant with `<.timestamp at={...} />`, never `Calendar.strftime` in a template. The component emits the UTC text plus the marks `local_time.js` needs; formatting by hand silently ships UTC dressed up as local time.
+- Render every human-facing instant with `<.timestamp at={...} />`, never `Calendar.strftime` in a template. The component emits the UTC text plus the marks `local_time.js` needs; formatting by hand silently ships UTC dressed up as local time. `mix gamend.time.lint` catches one (`# time-ok: <why>` accepts it).
+- An instant is **relative by default**: "7m ago", "in 12 days", one unit, the exact moment on hover and on a tap. Word the label so either direction reads ("Expires" + it, never "until" + it). An absolute (`format="datetime"`, `"date"`, `"time"`, `"full"`) is for where the clock itself is the content: a log line, a chat message, a range, a billing date, a restore point.
+- A span (a build's time, uptime, a play) is `<.duration seconds={…} />` or `from={…} to={…}`: two units at most ("9m 1s", "2d 3h"), counting up while `to` is nil. Where no element fits (a flash, a stat's value, an `<option>`), `GamendWeb.TimeText` says both as text. Stored or emailed text keeps an absolute date: "in 3 days" goes stale.
 - A form field a person fills in uses `type="utc-datetime-local"`. A plain `datetime-local` submits the browser's wall clock with no offset, and casting that as UTC stores an instant hours off — the bug is invisible to whoever entered it, because it reads back the same way.
 - Prefer a **duration** to an instant wherever the product allows: a countdown ("resets in 4h") is right in every zone and needs no conversion.
 - Period boundaries (quest resets, quotas, recurring tournaments) are UTC and deliberately global — one rollover instant everyone races. Document the boundary where players can see it; never show them a reset hour.

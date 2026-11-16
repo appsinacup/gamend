@@ -21,47 +21,137 @@ const FORMATS = {
   "calendar-month": {month: "long", timeZone: "UTC"},
 }
 
-// "3m ago": not a format of the instant but of its distance from now, so it is
-// said again as time passes (`startLocalTime`).
+// "7m ago", "in 12 days": not a format of the instant but of its distance from
+// now, so it is said again as time passes (`startLocalTime`).
 const RELATIVE = "relative"
-const RELATIVE_TICK_MS = 10_000
+const TICK_MS = 1_000
+// A relative time is re-said every 10 ticks; one less than a minute ahead
+// (a deadline counting down) and a running duration every tick.
+const SLOW_TICKS = 10
+const FAST_WITHIN_S = 60
 
 // Marks what a node was last rendered from, so re-running over a page that has
 // not changed is free and cannot loop against the MutationObserver below.
 const RENDERED = "localTimeRendered"
+// Set by a tap: the stamp shows its exact moment instead of the distance.
+const EXACT = "localTimeExact"
+
+const STAMPS = "time[data-local-time]"
+const DURATIONS = "time[data-local-duration]"
+
+const MINUTE = 60
+const HOUR = 60 * MINUTE
+const DAY = 24 * HOUR
+const WEEK = 7 * DAY
+const MONTH = 30 * DAY
+const YEAR = 365 * DAY
 
 function pageLocale() {
   const lang = document.documentElement.getAttribute("lang")
   return lang && lang.trim() !== "" ? lang : undefined
 }
 
-// How long ago, in the largest unit that fits: [3, "minute"]. Counted as the
-// server counts for its first paint (`timestamp/1`). Never under a second: a
-// clock a little ahead of the server's would otherwise say "in 2s".
-export function agoParts(seconds) {
-  const s = Math.max(1, Math.floor(seconds))
-  if (s < 60) return [s, "second"]
-  if (s < 3600) return [Math.floor(s / 60), "minute"]
-  if (s < 86400) return [Math.floor(s / 3600), "hour"]
-  if (s < 2592000) return [Math.floor(s / 86400), "day"]
-  if (s < 31536000) return [Math.floor(s / 2592000), "month"]
-  return [Math.floor(s / 31536000), "year"]
+// Building an Intl formatter costs far more than using one, and a page of
+// stamps re-says itself every second.
+const formatters = new Map()
+
+function cached(kind, locale, options, build) {
+  const key = `${kind}|${locale || ""}|${JSON.stringify(options)}`
+  if (!formatters.has(key)) formatters.set(key, build())
+  return formatters.get(key)
 }
 
-// Terse up to the hour ("3m ago") and spelled out from a day ("1 day ago").
-// The words are the browser's, so all the site's languages come for free.
-export function agoText(date, locale, now = Date.now()) {
-  const [value, unit] = agoParts((now - date.getTime()) / 1000)
-  const say = style => new Intl.RelativeTimeFormat(locale, {style, numeric: "always"}).format(-value, unit)
+const relativeFormat = (locale, style) =>
+  cached("relative", locale, style, () => new Intl.RelativeTimeFormat(locale, {style, numeric: "always"}))
+
+// The distance in the largest unit that fits, one unit only: [3, "minute"],
+// [1, "week"]. Counted as `GamendWeb.TimeText.parts/1` counts for the first
+// paint. The sign is ignored, and it is never under a second.
+export function relativeParts(seconds) {
+  const s = Math.max(1, Math.floor(Math.abs(seconds)))
+  if (s < MINUTE) return [s, "second"]
+  if (s < HOUR) return [Math.floor(s / MINUTE), "minute"]
+  if (s < DAY) return [Math.floor(s / HOUR), "hour"]
+  if (s < WEEK) return [Math.floor(s / DAY), "day"]
+  if (s < MONTH) return [Math.floor(s / WEEK), "week"]
+  // 360 to 364 days would floor to "12 months": still under a year.
+  if (s < YEAR) return [Math.min(Math.floor(s / MONTH), 11), "month"]
+  return [Math.floor(s / YEAR), "year"]
+}
+
+// "7m ago" / "in 7m", terse up to the hour; "12 days ago" / "in 3 weeks" from a
+// day. The words are the browser's, so all the site's languages come for free.
+// `past`: the server saw the instant behind it, so a slow clock here still
+// says it happened rather than that it will.
+export function relativeText(date, locale, now = Date.now(), {past = false} = {}) {
+  const diff = (date.getTime() - now) / 1000
+  const future = diff >= 1 && !past
+  const [value, unit] = relativeParts(diff)
+  const say = style => relativeFormat(locale, style).format(future ? value : -value, unit)
 
   if (!["second", "minute", "hour"].includes(unit)) return say("long")
 
-  // French, Russian, Swedish and others make the narrow form a bare "-3 min".
+  // French, Russian, Swedish and others make the narrow form a bare "-3 min"
+  // (or "+3 min" ahead).
   const narrow = say("narrow")
-  return /^[-−]/.test(narrow) ? say("short") : narrow
+  return /^[-−+]/.test(narrow) ? say("short") : narrow
 }
 
-function localize(el) {
+// A span in its largest unit and the one under it, the smaller left out when it
+// is zero: [[9, "minutes"], [1, "seconds"]]. `GamendWeb.TimeText.duration_parts/2`
+// counts the same way.
+export function durationParts(seconds, units = 2) {
+  const s = Math.max(0, Math.floor(seconds))
+  const all = [
+    [Math.floor(s / DAY), "days"],
+    [Math.floor((s % DAY) / HOUR), "hours"],
+    [Math.floor((s % HOUR) / MINUTE), "minutes"],
+    [s % MINUTE, "seconds"],
+  ]
+  const first = all.findIndex(([count]) => count > 0)
+  if (first === -1) return [[0, "seconds"]]
+
+  return [all[first], ...all.slice(first + 1, first + units).filter(([count]) => count > 0)]
+}
+
+const LETTERS = {days: "d", hours: "h", minutes: "m", seconds: "s"}
+
+// "9m 1s" in the reader's language where the browser can say it, the server's
+// English letters where it cannot.
+export function durationText(seconds, locale, units = 2) {
+  const parts = durationParts(seconds, units)
+  const english = parts.map(([count, unit]) => `${count}${LETTERS[unit]}`).join(" ")
+
+  try {
+    // `Intl.DurationFormat` says nothing at all for a zero-length span.
+    if (parts[0][0] === 0) {
+      return cached("zero", locale, "", () =>
+        new Intl.NumberFormat(locale, {style: "unit", unit: "second", unitDisplay: "narrow"}),
+      ).format(0)
+    }
+    if (typeof Intl.DurationFormat !== "function") return english
+
+    const format = cached("duration", locale, "", () => new Intl.DurationFormat(locale, {style: "narrow"}))
+    return format.format(Object.fromEntries(parts.map(([count, unit]) => [unit, count]))) || english
+  } catch (_e) {
+    return english
+  }
+}
+
+function parseInstant(iso) {
+  // `2026-09` is a valid HTML month string but not every engine parses it as a
+  // date; anchoring it to the first keeps it on the calendar-month path.
+  const date = new Date(/^\d{4}-\d{2}$/.test(iso) ? `${iso}-01` : iso)
+  return isNaN(date.getTime()) ? null : date
+}
+
+function setText(el, text) {
+  // A relative time or a running span comes through here on every tick;
+  // rewriting the same words would only wake the observer.
+  if (el.textContent !== text) el.textContent = text
+}
+
+function localize(el, now = Date.now()) {
   const iso = el.getAttribute("datetime")
   const format = el.dataset.localTime
   if (!iso || !format) return
@@ -69,31 +159,72 @@ function localize(el) {
   const stamp = `${iso}|${format}`
   if (format !== RELATIVE && el.dataset[RENDERED] === stamp) return
 
-  // `2026-09` is a valid HTML month string but not every engine parses it as a
-  // date; anchoring it to the first keeps it on the calendar-month path.
-  const date = new Date(/^\d{4}-\d{2}$/.test(iso) ? `${iso}-01` : iso)
-  if (isNaN(date.getTime())) return
+  const date = parseInstant(iso)
+  if (!date) return
 
   try {
-    const text =
-      format === RELATIVE
-        ? agoText(date, pageLocale())
-        : date.toLocaleString(pageLocale(), FORMATS[format] || FORMATS.datetime)
+    const locale = pageLocale()
 
-    // A relative time comes through here on every tick; rewriting the same
-    // words would only wake the observer.
-    if (el.textContent !== text) el.textContent = text
-    if (format === RELATIVE) el.title = date.toLocaleString(pageLocale(), FORMATS.full)
+    if (format === RELATIVE) {
+      const exact = date.toLocaleString(locale, FORMATS.full)
+      const past = el.hasAttribute("data-local-time-past")
+      setText(el, el.dataset[EXACT] ? exact : relativeText(date, locale, now, {past}))
+      if (el.title !== exact) el.title = exact
+    } else {
+      setText(el, date.toLocaleString(locale, FORMATS[format] || FORMATS.datetime))
+    }
+
     el.dataset[RENDERED] = stamp
   } catch (_e) {
     // Leave the server's UTC text in place rather than showing nothing.
   }
 }
 
+function localizeDuration(el, now = Date.now()) {
+  const from = el.dataset.localDurationFrom
+  const start = from && parseInstant(from)
+  const seconds = start ? (now - start.getTime()) / 1000 : Number(el.dataset.localDuration)
+  if (!Number.isFinite(seconds)) return
+
+  const units = Number(el.dataset.localDurationUnits) || 2
+  const stamp = `${seconds}|${units}`
+  if (!start && el.dataset[RENDERED] === stamp) return
+
+  setText(el, durationText(seconds, pageLocale(), units))
+  el.dataset[RENDERED] = stamp
+}
+
 export function localizeTimes(root = document) {
   const scope = root instanceof Element || root instanceof Document ? root : document
-  if (scope instanceof Element && scope.matches("time[data-local-time]")) localize(scope)
-  scope.querySelectorAll("time[data-local-time]").forEach(localize)
+  if (scope instanceof Element && scope.matches(STAMPS)) localize(scope)
+  if (scope instanceof Element && scope.matches(DURATIONS)) localizeDuration(scope)
+  scope.querySelectorAll(STAMPS).forEach(el => localize(el))
+  scope.querySelectorAll(DURATIONS).forEach(el => localizeDuration(el))
+}
+
+// Whether a relative stamp is re-said on this tick: every tick while it is a
+// deadline under a minute away, every tenth otherwise.
+export function dueThisTick(el, tick, now = Date.now()) {
+  if (tick % SLOW_TICKS === 0) return true
+  if (el.hasAttribute("data-local-time-past")) return false
+
+  const date = parseInstant(el.getAttribute("datetime") || "")
+  if (!date) return false
+  const ahead = (date.getTime() - now) / 1000
+  return ahead > -SLOW_TICKS && ahead < FAST_WITHIN_S
+}
+
+// A tap on a relative stamp swaps in its exact moment, and back: a phone has
+// no hover to show the title. Not inside a link or a control, where the tap
+// already means something else.
+export function toggleExact(el) {
+  if (el.closest("a, button, label, summary, [phx-click]")) return false
+
+  if (el.dataset[EXACT]) delete el.dataset[EXACT]
+  else el.dataset[EXACT] = "1"
+
+  localize(el)
+  return true
 }
 
 // LiveView patches nodes in without firing navigation events, and static pages
@@ -122,9 +253,21 @@ export function startLocalTime() {
 
   window.addEventListener("phx:page-loading-stop", () => localizeTimes())
 
+  document.addEventListener("click", event => {
+    const el = event.target instanceof Element && event.target.closest(`time[data-local-time="${RELATIVE}"]`)
+    if (el) toggleExact(el)
+  })
+
+  let tick = 0
   setInterval(() => {
-    document.querySelectorAll(`time[data-local-time="${RELATIVE}"]`).forEach(localize)
-  }, RELATIVE_TICK_MS)
+    tick += 1
+    const now = Date.now()
+
+    document.querySelectorAll(`time[data-local-time="${RELATIVE}"]`).forEach(el => {
+      if (dueThisTick(el, tick, now)) localize(el, now)
+    })
+    document.querySelectorAll("time[data-local-duration-from]").forEach(el => localizeDuration(el, now))
+  }, TICK_MS)
 }
 
 // Pairs a hidden UTC field (what the form casts) with a visible datetime-local

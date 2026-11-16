@@ -314,6 +314,7 @@ defmodule GamendWeb.Charts do
     |> String.reverse()
   end
 
+  # time-ok: an axis label for a UTC calendar day, short enough to fit a bar
   defp label(%Date{} = day), do: Calendar.strftime(day, "%m-%d")
   defp label(label), do: to_string(label)
 end

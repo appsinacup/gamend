@@ -316,6 +316,10 @@ defmodule GamendWeb.LeaderboardsLive do
             <% @leaderboard.starts_at && @leaderboard.ends_at -> %>
               <.timestamp at={@leaderboard.starts_at} format="date" /> —
               <.timestamp at={@leaderboard.ends_at} format="date" />
+              <%!-- A running season: how long is left matters more than the last day. --%>
+              <span :if={DateTime.after?(@leaderboard.ends_at, DateTime.utc_now())}>
+                · {gettext("ends")} <.timestamp at={@leaderboard.ends_at} />
+              </span>
             <% @leaderboard.ends_at -> %>
               <.timestamp at={@leaderboard.ends_at} format="date" />
             <% @leaderboard.starts_at -> %>

@@ -194,10 +194,10 @@ defmodule GamendWeb.AdminLive.Friends do
                     </span>
                   </td>
                   <td class="text-xs">
-                    <.timestamp at={friendship.inserted_at} format="full" />
+                    <.timestamp at={friendship.inserted_at} />
                   </td>
                   <td class="text-xs">
-                    <.timestamp at={friendship.updated_at} format="full" />
+                    <.timestamp at={friendship.updated_at} />
                   </td>
                   <td class="text-right">
                     <button

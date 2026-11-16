@@ -276,7 +276,7 @@ defmodule GamendWeb.AdminLive.Storage do
                   <td class="font-mono text-xs break-all">{obj.key}</td>
                   <td class="text-xs whitespace-nowrap">{format_bytes(obj.size)}</td>
                   <td class="text-xs whitespace-nowrap">
-                    <.timestamp at={obj.last_modified} format="full" empty="—" />
+                    <.timestamp at={obj.last_modified} empty="—" />
                   </td>
                   <td class="text-right whitespace-nowrap">
                     <a

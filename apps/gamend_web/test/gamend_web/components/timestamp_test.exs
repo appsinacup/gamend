@@ -14,14 +14,21 @@ defmodule GamendWeb.Components.TimestampTest do
   @at ~U[2026-08-01 23:30:00Z]
 
   test "carries the machine-readable instant and the localizer's marks" do
-    html = render_component(&CoreComponents.timestamp/1, at: @at)
+    html = render_component(&CoreComponents.timestamp/1, at: @at, format: "datetime")
 
     assert html =~ ~s(datetime="2026-08-01T23:30:00Z")
     assert html =~ ~s(data-local-time="datetime")
   end
 
+  test "is relative unless told otherwise" do
+    assert render_component(&CoreComponents.timestamp/1, at: @at) =~
+             ~s(data-local-time="relative")
+  end
+
   test "the fallback text names the zone whenever it shows an hour" do
-    assert render_component(&CoreComponents.timestamp/1, at: @at) =~ "2026-08-01 23:30 UTC"
+    assert render_component(&CoreComponents.timestamp/1, at: @at, format: "datetime") =~
+             "2026-08-01 23:30 UTC"
+
     assert render_component(&CoreComponents.timestamp/1, at: @at, format: "time") =~ "23:30 UTC"
 
     assert render_component(&CoreComponents.timestamp/1, at: @at, format: "full") =~
@@ -64,7 +71,7 @@ defmodule GamendWeb.Components.TimestampTest do
   describe "a relative time" do
     defp ago(seconds) do
       at = DateTime.add(DateTime.utc_now(), -seconds, :second)
-      render_component(&CoreComponents.timestamp/1, at: at, format: "relative")
+      render_component(&CoreComponents.timestamp/1, at: at)
     end
 
     test "carries the localizer's mark and the exact time on hover" do
@@ -80,16 +87,58 @@ defmodule GamendWeb.Components.TimestampTest do
       assert ago(3_700) =~ "1h ago"
       assert ago(90_000) =~ "1 day ago"
       assert ago(2 * 86_400 + 10) =~ "2 days ago"
+      assert ago(13 * 86_400) =~ "1 week ago"
       assert ago(40 * 86_400) =~ "1 month ago"
       assert ago(400 * 86_400) =~ "1 year ago"
     end
 
-    test "a time a little ahead of the server's clock is a moment ago" do
-      assert ago(-5) =~ "1s ago"
+    test "a future instant is how long until it" do
+      html = ago(-(12 * 86_400 + 60))
+
+      assert html =~ "in 1 week"
+      refute html =~ "data-local-time-past"
+    end
+
+    test "a past instant is marked so a slow browser clock keeps it past" do
+      assert ago(200) =~ "data-local-time-past"
     end
 
     test "only a relative time carries a title" do
-      refute render_component(&CoreComponents.timestamp/1, at: @at) =~ "title="
+      refute render_component(&CoreComponents.timestamp/1, at: @at, format: "datetime") =~
+               "title="
+    end
+  end
+
+  describe "a duration" do
+    defp duration(attrs), do: render_component(&CoreComponents.duration/1, attrs)
+
+    test "says a span in its two largest units" do
+      html = duration(seconds: 541)
+
+      assert html =~ "9m 1s"
+      assert html =~ ~s(datetime="PT541S")
+      assert html =~ ~s(data-local-duration="541")
+      refute html =~ "data-local-duration-from"
+    end
+
+    test "takes milliseconds, one unit, or the two ends of the span" do
+      assert duration(ms: 541_900) =~ "9m 1s"
+      assert duration(seconds: 541, units: 1) =~ "9m"
+      refute duration(seconds: 541, units: 1) =~ "9m 1s"
+      assert duration(from: ~U[2026-08-01 10:00:00Z], to: ~U[2026-08-01 12:05:30Z]) =~ "2h 5m"
+    end
+
+    test "a span with no end is still running and counts up" do
+      from = DateTime.add(DateTime.utc_now(), -75, :second)
+      html = duration(from: from)
+
+      assert html =~ "data-local-duration-from"
+      assert html =~ ~r/1m 1[56]s/
+    end
+
+    test "no span renders the placeholder" do
+      assert duration(from: nil) == "-"
+      assert duration(seconds: nil, empty: "—") == "—"
     end
   end
 

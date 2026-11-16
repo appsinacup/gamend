@@ -677,7 +677,7 @@ defmodule GamendWeb.GroupsLive do
         <span class="badge badge-warning">{gettext("Private")}</span>
       <% end %>
       <span class="text-sm text-muted">
-        <.timestamp at={@selected_group.inserted_at} format="date" />
+        <.timestamp at={@selected_group.inserted_at} />
       </span>
     </div>
 

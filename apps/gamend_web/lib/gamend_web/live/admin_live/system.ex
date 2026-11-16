@@ -25,7 +25,7 @@ defmodule GamendWeb.AdminLive.System do
           <div class="bg-base-100 rounded-lg shadow-sm p-4">
             <div class="text-xs text-muted">Uptime</div>
             <div class="text-xl font-bold">
-              {ConnectionTracker.format_uptime(@sys.uptime_seconds)}
+              <.duration seconds={@sys.uptime_seconds} />
             </div>
           </div>
           <div class="bg-base-100 rounded-lg shadow-sm p-4">

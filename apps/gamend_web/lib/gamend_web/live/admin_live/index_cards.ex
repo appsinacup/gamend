@@ -516,7 +516,7 @@ defmodule GamendWeb.AdminLive.IndexCards do
     %{
       id: :system,
       page: "/admin/system",
-      value: GamendWeb.ConnectionTracker.format_uptime(sys.uptime_seconds),
+      value: GamendWeb.TimeText.duration(sys.uptime_seconds),
       lines: [
         {"OTP", sys.otp_release},
         {"Schedulers", sys.schedulers},

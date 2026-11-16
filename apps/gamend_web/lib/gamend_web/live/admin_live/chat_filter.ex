@@ -642,7 +642,7 @@ defmodule GamendWeb.AdminLive.ChatFilter do
                   <td class="text-xs">{word.match_mode}</td>
                   <td class="font-mono text-xs">{word.lang || "—"}</td>
                   <td class="text-xs">
-                    <.timestamp at={word.inserted_at} format="full" />
+                    <.timestamp at={word.inserted_at} />
                   </td>
                   <td class="text-right whitespace-nowrap">
                     <button

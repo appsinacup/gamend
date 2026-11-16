@@ -905,7 +905,10 @@ defmodule GamendWeb.TournamentsLive do
         {gettext("Slots")}: {@bracket.size}
       </span>
       <span :if={@tournament.starts_at} class="text-sm text-muted">
-        <.timestamp at={@tournament.starts_at} format="date" />
+        {if DateTime.after?(@tournament.starts_at, DateTime.utc_now()),
+          do: gettext("Starts"),
+          else: gettext("Started")}
+        <.timestamp at={@tournament.starts_at} />
       </span>
       <span :if={is_nil(@tournament.starts_at)} class="text-sm text-muted">
         {gettext("Starts manually")}

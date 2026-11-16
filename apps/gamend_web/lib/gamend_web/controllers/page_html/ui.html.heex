@@ -23,6 +23,7 @@
           {"widths", "Widths"},
           {"colours", "Colours"},
           {"type", "Type"},
+          {"time", "Time"},
           {"feedback", "Feedback"}
         ]
       }
@@ -96,16 +97,16 @@
             <.icon name="hero-play-solid" class="size-5" />
           </button>
         </.specimen>
-        <.specimen code="<.back_link navigate={~p&quot;/parent&quot;} /> (a nested page's Back)">
+        <.specimen code={~S|<.back_link navigate={~p"/parent"} /> (a nested page's Back)|}>
           <.back_link href="#" />
         </.specimen>
       </.ui_row>
 
       <.ui_row title="Admin (GamendWeb.AdminComponents)">
-        <.specimen code="<.admin_icon icon=&quot;hero-cube-solid&quot; color=&quot;violet&quot; />">
+        <.specimen code={~S|<.admin_icon icon="hero-cube-solid" color="violet" />|}>
           <.admin_icon icon="hero-cube-solid" color="violet" />
         </.specimen>
-        <.specimen code="<.admin_card title=&quot;Builds&quot; icon=… color=… path=&quot;#&quot; value={2}>">
+        <.specimen code={~S|<.admin_card title="Builds" icon=… color=… path="#" value={2}>|}>
           <.admin_card title="Builds" icon="hero-cube-solid" color="violet" path="#" value={2}>
             <div>Running or queued</div>
           </.admin_card>
@@ -435,6 +436,50 @@
         </.specimen>
         <.specimen code="code">
           <code>btn-surface</code>
+        </.specimen>
+      </div>
+    </.ui_section>
+
+    <.ui_section id="time" title="Time">
+      <:intro>
+        An instant is <code>&lt;.timestamp at=…&gt;</code>: how far it is from now, in one unit, with the exact moment on hover and on a tap. An absolute is for where the clock is the content (a log line, a chat message, a billing date). A span is <code>&lt;.duration&gt;</code>.
+      </:intro>
+
+      <div class="grid gap-4 md:grid-cols-3">
+        <.specimen code="<.timestamp at={…} />">
+          <span class="text-sm">
+            Created <.timestamp at={DateTime.add(DateTime.utc_now(), -7 * 60)} />
+          </span>
+        </.specimen>
+        <.specimen code="<.timestamp at={…} /> (ahead)">
+          <span class="text-sm">
+            Expires <.timestamp at={DateTime.add(DateTime.utc_now(), 12 * 86_400 + 60)} />
+          </span>
+        </.specimen>
+        <.specimen code="<.timestamp at={…} /> (under a minute)">
+          <span class="text-sm">
+            Deadline <.timestamp at={DateTime.add(DateTime.utc_now(), 45)} />
+          </span>
+        </.specimen>
+        <.specimen code={~s(format="datetime")}>
+          <.timestamp at={DateTime.utc_now()} format="datetime" class="text-sm" />
+        </.specimen>
+        <.specimen code={~s(format="date")}>
+          <.timestamp at={DateTime.utc_now()} format="date" class="text-sm" />
+        </.specimen>
+        <.specimen code={~s(format="time")}>
+          <.timestamp at={DateTime.utc_now()} format="time" class="text-sm" />
+        </.specimen>
+        <.specimen code="<.duration seconds={541} />">
+          <span class="text-sm">Took <.duration seconds={541} /></span>
+        </.specimen>
+        <.specimen code="<.duration from={…} to={nil} />">
+          <span class="text-sm">
+            Running for <.duration from={DateTime.add(DateTime.utc_now(), -75)} />
+          </span>
+        </.specimen>
+        <.specimen code="<.duration ms={…} units={1} />">
+          <span class="text-sm">About <.duration ms={194_000} units={1} /></span>
         </.specimen>
       </div>
     </.ui_section>

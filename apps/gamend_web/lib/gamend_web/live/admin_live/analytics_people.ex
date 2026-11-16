@@ -179,16 +179,10 @@ defmodule GamendWeb.AdminLive.AnalyticsPeople do
           </.panel>
 
           <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-            <.stat title="Created" value={Calendar.strftime(@user.inserted_at, "%Y-%m-%d")} />
-            <.stat
-              title="Last seen"
-              value={
-                if @user.last_seen_at,
-                  do: Calendar.strftime(@user.last_seen_at, "%m-%d %H:%M"),
-                  else: "—"
-              }
-              desc={if @user.is_online, do: "online now"}
-            />
+            <.stat title="Created"><.timestamp at={@user.inserted_at} /></.stat>
+            <.stat title="Last seen" desc={if @user.is_online, do: "online now"}>
+              <.timestamp at={@user.last_seen_at} empty="—" />
+            </.stat>
             <.stat title="Days active" value={num(@person.days_active)} desc="ever" />
             <.stat title="Days active" value={num(@person.days_active_30)} desc="last 30 days" />
             <.stat title="Events" value={num(@person.events)} desc="kept rows" />
@@ -212,6 +206,7 @@ defmodule GamendWeb.AdminLive.AnalyticsPeople do
                     ]}
                   >
                     <span class="pointer-events-none absolute bottom-full start-1/2 z-10 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded bg-base-content px-1.5 py-0.5 text-xs text-base-100 group-hover:block">
+                      <%!-- time-ok: a UTC calendar day's square --%>
                       {Date.to_iso8601(elem(cell, 0))}{if elem(cell, 1), do: " · seen"}
                     </span>
                   </div>
@@ -233,7 +228,7 @@ defmodule GamendWeb.AdminLive.AnalyticsPeople do
                     </td>
                     <td class="text-right tabular-nums">{num(row.events)}</td>
                     <td class="whitespace-nowrap text-right text-xs text-muted">
-                      {Calendar.strftime(row.last_at, "%m-%d %H:%M")}
+                      <.timestamp at={row.last_at} />
                     </td>
                   </tr>
                   <tr :if={@person.by_name == []}>
@@ -274,7 +269,7 @@ defmodule GamendWeb.AdminLive.AnalyticsPeople do
                   <tbody>
                     <tr :for={e <- @rows.rows}>
                       <td class="whitespace-nowrap font-mono">
-                        {Calendar.strftime(e.inserted_at, "%m-%d %H:%M:%S")}
+                        <.timestamp at={e.inserted_at} format="full" />
                       </td>
                       <td>
                         <.link
@@ -310,7 +305,7 @@ defmodule GamendWeb.AdminLive.AnalyticsPeople do
                 <tbody>
                   <tr :for={l <- @ledger}>
                     <td class="whitespace-nowrap font-mono">
-                      {Calendar.strftime(l.inserted_at, "%m-%d %H:%M:%S")}
+                      <.timestamp at={l.inserted_at} format="full" />
                     </td>
                     <td class="font-mono">{l.currency}</td>
                     <td class="font-mono">{l.reason}</td>

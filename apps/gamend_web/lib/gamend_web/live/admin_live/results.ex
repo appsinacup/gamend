@@ -136,11 +136,8 @@ defmodule GamendWeb.AdminLive.Results do
     end
   end
 
-  # How long a play ran: to its end, or so far.
-  defp duration(%Result{started_at: started, ended_at: ended}) do
-    (ended || DateTime.utc_now()) |> DateTime.diff(started, :millisecond) |> format_ms()
-  end
-
+  # An event's offset into its play: sub-second precision is the point, so it
+  # is not a `<.duration>`.
   defp format_ms(ms) when ms < 1_000, do: "#{ms} ms"
   defp format_ms(ms) when ms < 60_000, do: "#{Float.round(ms / 1000, 1)} s"
   defp format_ms(ms) when ms < 3_600_000, do: "#{div(ms, 60_000)} min #{rem(div(ms, 1000), 60)} s"
@@ -225,7 +222,7 @@ defmodule GamendWeb.AdminLive.Results do
               <span :if={is_nil(@result.ended_at)} class="text-muted">—</span>
             </dd>
             <dt class="text-muted">{gettext("Duration")}</dt>
-            <dd>{duration(@result)}</dd>
+            <dd><.duration from={@result.started_at} to={@result.ended_at} /></dd>
             <dt class="text-muted">{gettext("Events")}</dt>
             <dd>{@event_count}</dd>
           </dl>
@@ -399,9 +396,11 @@ defmodule GamendWeb.AdminLive.Results do
                     <span class={["badge badge-sm", status_class(result.status)]}>{result.status}</span>
                   </td>
                   <td class="whitespace-nowrap">
-                    <.timestamp at={result.started_at} format="full" />
+                    <.timestamp at={result.started_at} />
                   </td>
-                  <td class="whitespace-nowrap">{duration(result)}</td>
+                  <td class="whitespace-nowrap">
+                    <.duration from={result.started_at} to={result.ended_at} />
+                  </td>
                   <td class="text-right">{event_total(@stats[result.id] || %{})}</td>
                   <td class="text-xs">
                     <span

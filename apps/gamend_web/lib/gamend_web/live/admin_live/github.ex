@@ -98,7 +98,7 @@ defmodule GamendWeb.AdminLive.GitHub do
                       </span>
                     </td>
                     <td class="text-xs text-muted">
-                      <.timestamp at={row.installation.inserted_at} format="full" empty="—" />
+                      <.timestamp at={row.installation.inserted_at} empty="—" />
                     </td>
                     <td>
                       <span :if={row.installation.suspended_at} class="badge badge-warning badge-sm">

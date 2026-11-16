@@ -209,16 +209,13 @@ defmodule GamendWeb.RedeemLive do
     |> assign(:total_count, total)
     |> assign(:total_pages, max(ceil(total / page_size), 1))
     |> assign(:redeemed_count, Enum.count(entries, & &1.progress))
-    |> assign(:now, DateTime.utc_now(:second))
   end
 
   defp register_href(locale),
     do: GamendWeb.HostLayouts.localized_href(~p"/users/register", locale)
 
-  defp seconds_left(%{ends_at: %DateTime{} = ends_at}, now),
-    do: max(DateTime.diff(ends_at, now), 0)
-
-  defp seconds_left(_quest, _now), do: nil
+  defp ends_at(%{ends_at: %DateTime{} = ends_at}), do: ends_at
+  defp ends_at(_quest), do: nil
 
   @impl true
   def render(assigns) do
@@ -303,7 +300,7 @@ defmodule GamendWeb.RedeemLive do
           id="redeem-list"
           class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
         >
-          <.redeem_card :for={entry <- @entries} entry={entry} now={@now} />
+          <.redeem_card :for={entry <- @entries} entry={entry} />
         </div>
 
         <div :if={@total_pages > 1} class="flex justify-center items-center pt-4">
@@ -324,13 +321,12 @@ defmodule GamendWeb.RedeemLive do
   end
 
   attr :entry, :map, required: true
-  attr :now, DateTime, required: true
 
   defp redeem_card(assigns) do
     assigns =
       assigns
       |> assign(:quest, assigns.entry.quest)
-      |> assign(:left, seconds_left(assigns.entry.quest, assigns.now))
+      |> assign(:left, ends_at(assigns.entry.quest))
 
     ~H"""
     <.entity_card
@@ -364,7 +360,7 @@ defmodule GamendWeb.RedeemLive do
       <div :if={@left && is_nil(@entry.progress)} class="flex items-center gap-1.5 text-muted">
         <.icon name="hero-clock-solid" class="w-3.5 h-3.5" />
         <span class="text-xs">
-          {gettext("Ends in %{time}", time: GamendWeb.QuestsLive.format_duration(@left))}
+          {gettext("Ends")} <.timestamp at={@left} />
         </span>
       </div>
 

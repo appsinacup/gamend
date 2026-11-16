@@ -34,7 +34,7 @@ defmodule GamendWeb.SuspendedLive do
 
       <.panel class="space-y-4">
         <dl class="grid gap-x-6 gap-y-2 sm:grid-cols-[auto_1fr]">
-          <dt class="text-muted">{gettext("Suspended until")}</dt>
+          <dt class="text-muted">{gettext("Ends")}</dt>
           <dd id="suspended-until">
             <%= if @ban.expires_at do %>
               <.timestamp at={@ban.expires_at} />

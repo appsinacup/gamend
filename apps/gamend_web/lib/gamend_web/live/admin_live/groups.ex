@@ -318,13 +318,13 @@ defmodule GamendWeb.AdminLive.Groups do
               <div>
                 Created:
                 <span class="font-mono">
-                  <.timestamp at={@selected_group.inserted_at} format="full" />
+                  <.timestamp at={@selected_group.inserted_at} />
                 </span>
               </div>
               <div>
                 Updated:
                 <span class="font-mono">
-                  <.timestamp at={@selected_group.updated_at} format="full" />
+                  <.timestamp at={@selected_group.updated_at} />
                 </span>
               </div>
             </div>

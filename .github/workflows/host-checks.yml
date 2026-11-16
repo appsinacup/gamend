@@ -77,5 +77,8 @@ jobs:
       - name: Named strings (CONTRIBUTING.md)
         run: mix gamend.literal.lint
 
+      - name: Times formatted by hand (CONTRIBUTING.md, Time)
+        run: mix gamend.time.lint
+
       - name: Race shapes (AGENTS.md, Locks)
         run: mix gamend.race.lint

@@ -150,7 +150,7 @@ defmodule GamendWeb.AdminLive.Blacklist do
                     </div>
                   </td>
                   <td class="text-xs">
-                    <.timestamp at={block.inserted_at} format="full" />
+                    <.timestamp at={block.inserted_at} />
                   </td>
                   <td class="text-right">
                     <button

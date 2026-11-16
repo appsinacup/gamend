@@ -188,7 +188,7 @@ defmodule GamendWeb.AdminLive.Payments do
                       <pre class="text-xs font-mono whitespace-pre-wrap max-h-24 overflow-auto bg-base-100/60 rounded p-2">{json_preview(product.grant_config)}</pre>
                     </td>
                     <td class="font-mono text-xs">
-                      <.timestamp at={product.inserted_at} format="full" />
+                      <.timestamp at={product.inserted_at} />
                     </td>
                   </tr>
                 </tbody>
@@ -319,12 +319,12 @@ defmodule GamendWeb.AdminLive.Payments do
                     <td class="font-mono text-xs">{format_amount(p.amount, p.currency)}</td>
                     <td class="font-mono text-xs break-all">{p.provider_transaction_id}</td>
                     <td class="font-mono text-xs">
-                      <.timestamp at={p.inserted_at} format="full" />
+                      <.timestamp at={p.inserted_at} />
                     </td>
                     <td class="font-mono text-xs">
-                      <.timestamp at={p.purchased_at} format="full" />
+                      <.timestamp at={p.purchased_at} />
                     </td>
-                    <td class="font-mono text-xs"><.timestamp at={p.revoked_at} format="full" /></td>
+                    <td class="font-mono text-xs"><.timestamp at={p.revoked_at} /></td>
                     <td>
                       <button
                         :if={stripe_reconcile_available?(p)}
@@ -393,9 +393,9 @@ defmodule GamendWeb.AdminLive.Payments do
                     </td>
                     <td class="font-mono text-xs">{e.product && e.product.sku}</td>
                     <td class="font-mono text-xs">{e.source_purchase_id}</td>
-                    <td class="font-mono text-xs"><.timestamp at={e.starts_at} format="full" /></td>
-                    <td class="font-mono text-xs"><.timestamp at={e.expires_at} format="full" /></td>
-                    <td class="font-mono text-xs"><.timestamp at={e.revoked_at} format="full" /></td>
+                    <td class="font-mono text-xs"><.timestamp at={e.starts_at} /></td>
+                    <td class="font-mono text-xs"><.timestamp at={e.expires_at} /></td>
+                    <td class="font-mono text-xs"><.timestamp at={e.revoked_at} /></td>
                     <td>
                       <form
                         :if={Payments.entitlement_extendable?(e)}
@@ -465,7 +465,7 @@ defmodule GamendWeb.AdminLive.Payments do
                       <td class="font-mono text-xs break-all">{event.event_id}</td>
                       <td class="font-mono text-xs break-all">{event.event_type}</td>
                       <td class="font-mono text-xs">
-                        <.timestamp at={event.processed_at} format="full" />
+                        <.timestamp at={event.processed_at} />
                       </td>
                     </tr>
                   </tbody>
@@ -511,7 +511,7 @@ defmodule GamendWeb.AdminLive.Payments do
                       <pre class="text-xs font-mono whitespace-pre-wrap max-h-24 overflow-auto bg-base-100/60 rounded p-2">{json_preview(cursor.cursor)}</pre>
                     </td>
                     <td class="font-mono text-xs">
-                      <.timestamp at={cursor.updated_at} format="full" />
+                      <.timestamp at={cursor.updated_at} />
                     </td>
                   </tr>
                 </tbody>
@@ -852,7 +852,7 @@ defmodule GamendWeb.AdminLive.Payments do
          socket
          |> put_flash(
            :info,
-           "#{entitlement.key} now ends #{Calendar.strftime(entitlement.expires_at, "%Y-%m-%d %H:%M UTC")}"
+           "#{entitlement.key} now ends #{GamendWeb.TimeText.relative(entitlement.expires_at)}"
          )
          |> reload_all()}
 

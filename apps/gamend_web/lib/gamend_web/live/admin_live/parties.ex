@@ -294,13 +294,13 @@ defmodule GamendWeb.AdminLive.Parties do
               <div>
                 Created:
                 <span class="font-mono">
-                  <.timestamp at={@selected_party.inserted_at} format="full" />
+                  <.timestamp at={@selected_party.inserted_at} />
                 </span>
               </div>
               <div>
                 Updated:
                 <span class="font-mono">
-                  <.timestamp at={@selected_party.updated_at} format="full" />
+                  <.timestamp at={@selected_party.updated_at} />
                 </span>
               </div>
             </div>

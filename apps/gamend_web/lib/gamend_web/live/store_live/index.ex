@@ -143,7 +143,11 @@ defmodule GamendWeb.StoreLive.Index do
                       </li>
                     </ul>
                     <p :if={detail.closes_at} class="text-xs font-medium text-warning">
-                      {closes_in(detail.closes_at)}
+                      <%= if detail.closes_at <= System.system_time(:second) do %>
+                        {gettext("Closed")}
+                      <% else %>
+                        {gettext("Closes")} <.timestamp at={DateTime.from_unix!(detail.closes_at)} />
+                      <% end %>
                     </p>
                   </div>
 
@@ -364,18 +368,6 @@ defmodule GamendWeb.StoreLive.Index do
         false
     end
   end
-
-  defp closes_in(closes_at) do
-    case closes_at - System.system_time(:second) do
-      seconds when seconds <= 0 -> gettext("Closed")
-      seconds when seconds < 3600 -> gettext("Closes in under an hour")
-      seconds when seconds < 86_400 -> gettext("Closes in %{n}h", n: div(seconds, 3600))
-      seconds -> closes_in_days(div(seconds, 86_400))
-    end
-  end
-
-  defp closes_in_days(days),
-    do: ngettext("Closes in %{count} day", "Closes in %{count} days", days)
 
   # "Grant" (the item is granted in-game, not downloaded) is setup language.
   defp download_hint(product, admin?) do

@@ -226,7 +226,7 @@ defmodule GamendWeb.AdminLive.Matchmaking do
                   <td><span class={"badge #{status_class(check.status)}"}>{check.status}</span></td>
                   <td class="font-mono text-xs">{check_reason(check)}</td>
                   <td class="text-right font-mono">{ready_counts(check)}</td>
-                  <td class="text-xs"><.timestamp at={check.inserted_at} format="full" /></td>
+                  <td class="text-xs"><.timestamp at={check.inserted_at} /></td>
                   <td class="text-right">
                     <button
                       :if={check.status == CheckStatus.pending()}
@@ -328,7 +328,7 @@ defmodule GamendWeb.AdminLive.Matchmaking do
                   </td>
                   <td class="font-mono text-xs">{params_label(ticket.match_params)}</td>
                   <td class="text-right font-mono">{ticket.min_players}/{ticket.max_players}</td>
-                  <td class="text-xs"><.timestamp at={ticket.queued_at} format="full" /></td>
+                  <td class="text-xs"><.timestamp at={ticket.queued_at} /></td>
                   <td class="font-mono text-xs">
                     <%= if ticket.match_id do %>
                       <%!-- Not a link: /admin/lobbies takes no id filter, so it

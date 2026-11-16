@@ -209,15 +209,6 @@ defmodule GamendWeb.AdminLive.Reports do
   defp user_label(%{user: %Gamend.Accounts.User{} = user}), do: user_display(user)
   defp user_label(_report), do: gettext("Visitor")
 
-  defp age(%DateTime{} = at) do
-    case DateTime.diff(DateTime.utc_now(), at, :second) do
-      seconds when seconds < 60 -> gettext("just now")
-      seconds when seconds < 3600 -> gettext("%{count}m ago", count: div(seconds, 60))
-      seconds when seconds < 86_400 -> gettext("%{count}h ago", count: div(seconds, 3600))
-      seconds -> gettext("%{count}d ago", count: div(seconds, 86_400))
-    end
-  end
-
   # ── render ───────────────────────────────────────────────────────────────
 
   @impl true
@@ -342,7 +333,7 @@ defmodule GamendWeb.AdminLive.Reports do
                   ×{@groups[Reports.group_key(report)]}
                 </button>
                 <span class="text-muted">
-                  {age(report.inserted_at)} · <.timestamp at={report.inserted_at} format="full" />
+                  <.timestamp at={report.inserted_at} />
                 </span>
               </div>
 

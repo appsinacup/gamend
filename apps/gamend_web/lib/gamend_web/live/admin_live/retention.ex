@@ -32,7 +32,7 @@ defmodule GamendWeb.AdminLive.Retention do
                 <div class="text-right">
                   <div class="text-xs text-muted">Last run</div>
                   <div class="text-sm font-mono">
-                    <.timestamp at={@retention.last_run_at} format="full" empty="never" />
+                    <.timestamp at={@retention.last_run_at} empty="never" />
                   </div>
                 </div>
                 <button phx-click="prune_now" class="btn btn-primary" disabled={@retention_running}>

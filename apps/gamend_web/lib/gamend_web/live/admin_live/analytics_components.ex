@@ -81,7 +81,7 @@ defmodule GamendWeb.AdminLive.AnalyticsComponents do
   end
 
   attr :title, :string, required: true
-  attr :value, :any, required: true
+  attr :value, :any, default: nil, doc: "the number; or give the inner block (a `<.timestamp>`)"
   attr :desc, :string, default: nil
   attr :id, :string, default: nil
   attr :band, :atom, default: nil, values: [nil, :low, :fair, :good], doc: "`band/2`'s verdict"
@@ -91,6 +91,8 @@ defmodule GamendWeb.AdminLive.AnalyticsComponents do
     doc:
       "what the number means and its bands: the tile's hover text and its accessible description"
 
+  slot :inner_block
+
   @doc "One headline number, with its band and its meaning on hover when it has them."
   def stat(assigns) do
     ~H"""
@@ -98,7 +100,13 @@ defmodule GamendWeb.AdminLive.AnalyticsComponents do
       <div title={@hint}>
         <.eyebrow tag="div">{@title}</.eyebrow>
         <div class="flex flex-wrap items-baseline gap-x-2">
-          <span class="text-2xl font-bold">{@value}</span>
+          <span class="text-2xl font-bold">
+            <%= if @inner_block != [] do %>
+              {render_slot(@inner_block)}
+            <% else %>
+              {@value}
+            <% end %>
+          </span>
           <.band_chip band={@band} />
         </div>
         <div :if={@desc} class="text-xs text-muted">{@desc}</div>

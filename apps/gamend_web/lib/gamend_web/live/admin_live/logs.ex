@@ -380,7 +380,7 @@ defmodule GamendWeb.AdminLive.Logs do
               phx-value-id={session.client_session_id}
             >
               <td class="whitespace-nowrap">
-                <.timestamp at={session.last_seen_at} format="full" empty="—" />
+                <.timestamp at={session.last_seen_at} format="datetime" empty="—" />
               </td>
               <td class="font-mono text-xs">
                 <span class="flex items-center gap-1">
@@ -462,7 +462,7 @@ defmodule GamendWeb.AdminLive.Logs do
             <span :if={@selected.locale != ""}>locale {@selected.locale}</span>
             <span :if={@selected.device_id != ""} class="font-mono">device {short(@selected.device_id)}</span>
             <span>
-              started <.timestamp at={@selected.started_at} format="full" empty="—" />
+              started <.timestamp at={@selected.started_at} format="datetime" empty="—" />
             </span>
             <span :if={@selected.dropped_count > 0} class="text-warning font-semibold">
               {ngettext(

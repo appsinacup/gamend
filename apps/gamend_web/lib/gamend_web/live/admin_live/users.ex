@@ -508,8 +508,8 @@ defmodule GamendWeb.AdminLive.Users do
               class="alert alert-warning mb-3 flex flex-wrap items-center justify-between gap-2"
             >
               <span>
-                The player deleted this account. It is deleted on
-                <.timestamp at={@selected_user.deletion_scheduled_at} format="full" />.
+                The player deleted this account. It is deleted
+                <.timestamp at={@selected_user.deletion_scheduled_at} />.
               </span>
               <button
                 type="button"
@@ -630,7 +630,7 @@ defmodule GamendWeb.AdminLive.Users do
                     <span>
                       Banned
                       <%= if @selected_ban.expires_at do %>
-                        until <.timestamp at={@selected_ban.expires_at} format="full" />
+                        · ends <.timestamp at={@selected_ban.expires_at} />
                       <% else %>
                         permanently
                       <% end %>

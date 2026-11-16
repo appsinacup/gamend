@@ -383,13 +383,13 @@ defmodule GamendWeb.AdminLive.Lobbies do
               <div>
                 Created:
                 <span class="font-mono">
-                  <.timestamp at={@selected_lobby.inserted_at} format="full" />
+                  <.timestamp at={@selected_lobby.inserted_at} />
                 </span>
               </div>
               <div>
                 Updated:
                 <span class="font-mono">
-                  <.timestamp at={@selected_lobby.updated_at} format="full" />
+                  <.timestamp at={@selected_lobby.updated_at} />
                 </span>
               </div>
             </div>
@@ -425,7 +425,7 @@ defmodule GamendWeb.AdminLive.Lobbies do
               <span class="font-mono">{@ready_check.kind}</span>
               — {ready_summary(@ready_check)}
               <span :if={@ready_check.deadline_at}>
-                · {gettext("Deadline")} <.timestamp at={@ready_check.deadline_at} format="full" />
+                · {gettext("Deadline")} <.timestamp at={@ready_check.deadline_at} />
               </span>
             </span>
             <button

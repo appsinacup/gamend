@@ -702,6 +702,23 @@ defmodule Gamend.Tournaments do
   end
 
   @doc ~S"""
+    When `tournament` stops playing: its `ends_at`, else its last round's
+    deadline (`round_deadline/2`, `bracket_rounds/1` of its bracket size).
+    nil with no start or no bracket size.
+    
+  """
+  @spec play_ends_at(Gamend.Tournaments.Tournament.t()) :: DateTime.t() | nil
+  def play_ends_at(_tournament) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        nil
+
+      _ ->
+        raise "Gamend.Tournaments.play_ends_at/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Reopens a cancelled tournament.
     
     A tournament that was never drawn goes back to `registration`; one that

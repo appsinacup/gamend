@@ -884,6 +884,7 @@ defmodule Gamend.GDScript.API do
       "match_payload" => [2],
       "merge_user_entries" => [2],
       "my_match" => [2],
+      "play_ends_at" => [1],
       "reopen_tournament" => [1],
       "resolve_match" => [2],
       "round_deadline" => [2],

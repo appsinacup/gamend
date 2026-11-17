@@ -242,7 +242,7 @@ defmodule GamendWeb.RedeemLiveTest do
       submit(view, code.token)
 
       assert account_count() == accounts + 1
-      assert_push_event(view, "gamend:anonymous_session", %{token: _, notice: true})
+      assert_push_event(view, "gamend:anonymous_session", %{token: _})
       assert has_element?(view, "#redeem-card-#{quest.key} .badge-success")
       assert Quests.get_code(code.id).uses == 1
     end

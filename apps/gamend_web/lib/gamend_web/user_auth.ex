@@ -146,9 +146,9 @@ defmodule GamendWeb.UserAuth do
   reader who only looks never gets an account row. When to call it is the
   page's decision.
 
-  The visitor is told: "Guest account created" (user, 2026-10-27), on the
-  page the socket reconnects with, since a flash put now would go with this
-  mount (`notice` in the push, `put_live_guest_notice/1`).
+  Nothing pops up to say so (user, 2026-11-17: the "Guest account created"
+  notice is gone): the page that asks says it before Start, as the site's
+  keep-progress line.
 
   Returns `{:ok, socket}` with `current_scope` set, or `{:error, reason}`:
   `:disabled` when device accounts are off, `:not_connected` on the static render
@@ -176,18 +176,13 @@ defmodule GamendWeb.UserAuth do
            socket
            |> Phoenix.Component.assign(:current_scope, Scope.for_user(user))
            |> Phoenix.LiveView.push_event("gamend:anonymous_session", %{
-             token: encrypt_anonymous_session(token),
-             notice: true
+             token: encrypt_anonymous_session(token)
            })}
         else
           error -> log_guest_refused(error, inspect(socket.view))
         end
     end
   end
-
-  @doc false
-  def guest_notice,
-    do: gettext("Guest account created. Register any time to keep your progress on every device.")
 
   @doc """
   Writes the anonymous account `ensure_user/1` made into this browser's session.
@@ -561,7 +556,6 @@ defmodule GamendWeb.UserAuth do
         Scope.for_user(user)
       end)
       |> assign_guest_ip(session)
-      |> put_live_guest_notice()
 
     remember_reader(socket)
     record_reader_day(socket)
@@ -592,23 +586,6 @@ defmodule GamendWeb.UserAuth do
         GamendWeb.LiveHelpers.client_ip(socket, session)
       end)
     end
-  end
-
-  # "Guest account created", on the mount the socket reconnected with it: a
-  # flash put before the reconnect would go with the old mount, so the
-  # browser says so in its connect params, once (`_guest_created`,
-  # `anonymous_session.js`, from `ensure_user/1`'s `notice`).
-  defp put_live_guest_notice(socket) do
-    with true <- Phoenix.LiveView.connected?(socket),
-         true <- Scope.anonymous?(socket.assigns.current_scope),
-         %{"_guest_created" => "1"} <- Phoenix.LiveView.get_connect_params(socket) do
-      Phoenix.LiveView.put_flash(socket, :info, guest_notice())
-    else
-      _ -> socket
-    end
-  rescue
-    # get_connect_params outside mount (a nested live_render) raises.
-    RuntimeError -> socket
   end
 
   # A page mounts with the session it was rendered with, which predates a guest

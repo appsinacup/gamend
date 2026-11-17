@@ -237,41 +237,17 @@ defmodule GamendWeb.AnonymousSessionTest do
     end
   end
 
-  describe "Guest account created" do
-    test "a visitor's save makes the account at once and asks the browser to say so", %{
+  describe "a guest made on a save" do
+    test "a visitor's save makes the account at once and hands the browser its session", %{
       conn: conn
     } do
       {:ok, view, _html} = live_isolated(conn, SaveLive)
       html = render_click(view, "save", %{"what" => "route"})
 
-      assert_push_event(view, "gamend:anonymous_session", %{token: token, notice: true})
+      assert_push_event(view, "gamend:anonymous_session", %{token: token})
       assert is_binary(token)
       [user] = Gamend.Repo.all(from u in User, where: like(u.device_id, "web:%"))
       assert html =~ "route on #{user.id}"
-    end
-
-    test "the page the socket reconnects with says so, once, and only to a guest", %{conn: conn} do
-      guest = guest()
-      notice = UserAuth.guest_notice()
-
-      {:ok, _view, html} =
-        conn
-        |> log_in_user(guest)
-        |> put_connect_params(%{"_guest_created" => "1"})
-        |> live_isolated(SaveLive)
-
-      assert html =~ notice
-
-      {:ok, _view, html} = conn |> log_in_user(guest) |> live_isolated(SaveLive)
-      refute html =~ notice
-
-      {:ok, _view, html} =
-        conn
-        |> log_in_user(Gamend.AccountsFixtures.user_fixture())
-        |> put_connect_params(%{"_guest_created" => "1"})
-        |> live_isolated(SaveLive)
-
-      refute html =~ notice
     end
   end
 

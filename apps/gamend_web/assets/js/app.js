@@ -37,7 +37,7 @@ import {startNavbarFit} from "./navbar_fit"
 import {startSideNav} from "./side_nav"
 import {startConfirmDialog} from "./confirm_dialog"
 import {startUnsavedChanges} from "./unsaved_changes"
-import {guestNoticeParams, startAnonymousSession} from "./anonymous_session"
+import {startAnonymousSession} from "./anonymous_session"
 import {startLiveNav} from "./live_nav"
 import {startBackLink} from "./back_link"
 import {ReportForm, ReportPagePath, startLastPage} from "./report_form"
@@ -486,10 +486,8 @@ function createLiveSocket(extraHooks) {
     // typing into a page that had already stopped listening.
     heartbeatIntervalMs: 15000,
     // The reader's time zone, saved on their account (`GamendWeb.UserAuth`)
-    // so "today" and "this evening" are theirs, not UTC's. A function, read
-    // on every join: the join after a guest account was made says so once
-    // (`guestNoticeParams`).
-    params: (el) => ({_csrf_token: csrfToken, timezone: browserTimeZone(), ...guestNoticeParams(el)}),
+    // so "today" and "this evening" are theirs, not UTC's.
+    params: {_csrf_token: csrfToken, timezone: browserTimeZone()},
     hooks: {...colocatedHooks, ...Hooks, ...extraHooks},
     // A `phx-remove` plays when a patch takes its element away, never when
     // the page is left. LiveView 1.2 defaults this to true: on a live

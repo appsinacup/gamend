@@ -56,6 +56,20 @@ The Stripe API version every request names, and webhooks are expected in.
 @spec stripe_candidate_labels(:secret_key | :webhook_secret) :: [String.t()]
 ```
 
+# `stripe_checkout_origin`
+
+```elixir
+@spec stripe_checkout_origin() :: String.t() | nil
+```
+
+Which server opened a checkout, as its metadata's `gamend_origin` says:
+16 hex characters of a hash of this server's webhook secret, or nil
+without one. Every endpoint on a Stripe account has its own secret, and
+Stripe sends each of them every event, so a server sharing an account with
+another Gamend tells its own checkouts from the other's by it
+(`Gamend.Payments.StripeEvents`). Only a hash: the metadata is visible to
+anyone who can read the Stripe account.
+
 # `stripe_managed_payments?`
 
 ```elixir

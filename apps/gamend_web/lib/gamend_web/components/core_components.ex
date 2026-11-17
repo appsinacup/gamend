@@ -36,6 +36,8 @@ defmodule GamendWeb.CoreComponents do
   alias Phoenix.HTML.Form
   alias Phoenix.LiveView.JS
 
+  require GamendWeb.TimeFormat, as: TimeFormat
+
   @div "div"
 
   attr :name, :string, required: true
@@ -626,6 +628,7 @@ defmodule GamendWeb.CoreComponents do
 
   attr :type, :string,
     default: "text",
+    # literal-ok: HTML input types (`date` and `time` are not `TimeFormat`'s)
     values: ~w(checkbox color date datetime-local utc-datetime-local email file month number
                password search select tel text textarea time url week)
 
@@ -1565,7 +1568,7 @@ defmodule GamendWeb.CoreComponents do
       <.timestamp at={@purchase.first_charge_at} format="date" />
   """
   attr :at, :any, required: true, doc: "a DateTime, or nil to render the dash"
-  attr :format, :string, default: "relative", values: ~w(relative datetime date time full)
+  attr :format, :string, default: TimeFormat.relative(), values: TimeFormat.all()
   attr :class, :string, default: nil
   attr :empty, :string, default: "-", doc: "text shown when `at` is nil"
 
@@ -1589,12 +1592,12 @@ defmodule GamendWeb.CoreComponents do
 
     ~H"""
     <time datetime={@iso} data-local-time="calendar-date" class={@class}>
-      {utc_text(@at, "date")}
+      {utc_text(@at, TimeFormat.date())}
     </time>
     """
   end
 
-  def timestamp(%{format: "relative"} = assigns) do
+  def timestamp(%{format: TimeFormat.relative()} = assigns) do
     now = DateTime.utc_now()
     past? = DateTime.compare(assigns.at, now) != :gt
     assigns = assign(assigns, now: now, past?: past?)
@@ -1605,9 +1608,9 @@ defmodule GamendWeb.CoreComponents do
     ~H"""
     <time
       datetime={DateTime.to_iso8601(@at)}
-      data-local-time="relative"
+      data-local-time={TimeFormat.relative()}
       data-local-time-past={@past?}
-      title={utc_text(@at, "full")}
+      title={utc_text(@at, TimeFormat.full())}
       class={@class}
     >
       {GamendWeb.TimeText.relative(@at, @now, past: @past?)}

@@ -13,6 +13,8 @@ defmodule GamendWeb.TimeText do
   never "1 week 6 days ago". The exact moment is the element's title.
   """
 
+  require GamendWeb.TimeFormat, as: TimeFormat
+
   @minute 60
   @hour 3_600
   @day 86_400
@@ -115,9 +117,9 @@ defmodule GamendWeb.TimeText do
   corrects it across a midnight boundary anyway.
   """
   @spec utc(DateTime.t() | Date.t(), String.t()) :: String.t()
-  def utc(at, "date"), do: Calendar.strftime(at, "%b %-d, %Y")
-  def utc(at, "time"), do: Calendar.strftime(at, "%H:%M UTC")
-  def utc(at, "full"), do: Calendar.strftime(at, "%Y-%m-%d %H:%M:%S UTC")
+  def utc(at, TimeFormat.date()), do: Calendar.strftime(at, "%b %-d, %Y")
+  def utc(at, TimeFormat.time()), do: Calendar.strftime(at, "%H:%M UTC")
+  def utc(at, TimeFormat.full()), do: Calendar.strftime(at, "%Y-%m-%d %H:%M:%S UTC")
   def utc(at, _datetime), do: Calendar.strftime(at, "%Y-%m-%d %H:%M UTC")
 
   # Terse up to the hour, spelled out from a day: what

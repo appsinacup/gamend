@@ -8,6 +8,7 @@ defmodule GamendWeb.Api.V1.SessionController do
   alias Gamend.Captcha
   alias GamendWeb.Auth.Guardian
   alias GamendWeb.Auth.Tokens
+  alias GamendWeb.Plugs.RateLimiter
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.{OkResponse, RegistrationResponse, SessionResponse}
   alias OpenApiSpex.Schema
@@ -54,7 +55,10 @@ defmodule GamendWeb.Api.V1.SessionController do
 
   def create(conn, %{"email" => email, "password" => password}) do
     case Accounts.authenticate_by_password(email, password) do
+      # A right password is not a guess: it gives back its per-IP charge.
       {:ok, user} ->
+        conn = RateLimiter.refund_login(conn)
+
         case Tokens.refusal(user) do
           nil ->
             maybe_attach_device(conn, user)
@@ -75,7 +79,7 @@ defmodule GamendWeb.Api.V1.SessionController do
 
       {:error, :email_not_confirmed} ->
         reply_error(
-          conn,
+          RateLimiter.refund_login(conn),
           :forbidden,
           "email_not_confirmed",
           "Confirm your email address with the link we sent to it, then log in again. " <>

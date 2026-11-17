@@ -35,8 +35,18 @@ defmodule GamendWeb.Plugs.RateLimiter do
   require GamendWeb.ApiSegment, as: ApiSegment
   require GamendWeb.Plugs.RateLimitBucket, as: RateLimitBucket
 
-  @browser_auth_actions ~w(log_in log-in register)
-  @auth_paths ~w(login register refresh)
+  @log_in_actions ~w(log_in log-in)
+  @browser_auth_actions ["register" | @log_in_actions]
+  # Not `refresh`: a refresh token is a signed secret nobody can guess, so
+  # counting it as a sign-in only throttled apps behind one address (a
+  # classroom, a carrier) that reopen at once. It is in the general bucket.
+  @auth_paths ~w(login register)
+  @password_login "login"
+  @post "POST"
+
+  # Where `do_rate_limit/1` notes the auth bucket a password sign-in was
+  # charged to, for `refund_login/1`.
+  @login_charge :gamend_rate_limit_login_charge
 
   setting(:enabled, :boolean,
     default: true,
@@ -61,7 +71,10 @@ defmodule GamendWeb.Plugs.RateLimiter do
 
   setting(:auth_limit, :integer,
     default: 10,
-    doc: "Max login/register requests per window, per IP."
+    doc:
+      "Max sign-in and sign-up requests per window, per IP. A sign-in with the right " <>
+        "password gives its request back, so only wrong passwords, device logins, " <>
+        "sign-ups and OAuth use it up."
   )
 
   setting(:auth_window_ms, :integer,
@@ -168,13 +181,40 @@ defmodule GamendWeb.Plugs.RateLimiter do
   defp skip_path?(%{path_info: ["health"]}), do: true
   defp skip_path?(_conn), do: false
 
+  @doc """
+  Gives back a password sign-in's charge to the per-IP auth bucket, for a
+  sign-in whose password was right.
+
+  The bucket is there to slow guessing, and a right password is not a guess:
+  without the refund a classroom or a mobile carrier behind one address
+  could sign in only `auth_limit` people a window. A wrong password keeps
+  its charge, and the per-address lockout (`Gamend.Accounts.LoginLockouts`)
+  also counts it, across every IP. The charge is taken before the password
+  is checked, so guesses sent all at once are still held to the limit.
+
+  A request this plug did not charge (rate limiting off, an exempt address,
+  another path) gives nothing back, and a request gives back once. A refund
+  that lands in the next window lowers that window's count instead: by the
+  one slot the request took, so over the two windows the count is right.
+  """
+  @spec refund_login(Plug.Conn.t()) :: Plug.Conn.t()
+  def refund_login(%Plug.Conn{private: %{@login_charge => {bucket, scale}}} = conn) do
+    _count = GamendWeb.RateLimit.backend().inc(bucket, scale, -1)
+    %{conn | private: Map.delete(conn.private, @login_charge)}
+  end
+
+  def refund_login(%Plug.Conn{} = conn), do: conn
+
   defp do_rate_limit(conn) do
     ip = client_ip(conn)
-    {bucket, scale, limit} = bucket_for(%{conn | path_info: routed_path(conn.path_info)}, ip)
+    routed = %{conn | path_info: routed_path(conn.path_info)}
+    {bucket, scale, limit} = bucket_for(routed, ip)
 
     case GamendWeb.RateLimit.hit(bucket, scale, limit) do
       {:allow, _count} ->
-        conn
+        if password_login?(routed),
+          do: put_private(conn, @login_charge, {bucket, scale}),
+          else: conn
 
       {:deny, retry_after_ms} ->
         retry_secs = max(div(retry_after_ms, 1000), 1)
@@ -214,7 +254,7 @@ defmodule GamendWeb.Plugs.RateLimiter do
     """
   end
 
-  # API login/registration/refresh — stricter auth bucket
+  # API login, device login and registration — stricter auth bucket
   defp bucket_for(%{path_info: [ApiSegment.api(), ApiSegment.v1(), path | _]} = _conn, ip)
        when path in @auth_paths do
     auth_bucket(ip)
@@ -249,8 +289,12 @@ defmodule GamendWeb.Plugs.RateLimiter do
   # Both spellings: the routes are `/users/log_in` and `/users/log_in/:token`,
   # so matching only the hyphenated form left browser password login in the
   # general bucket (240/min) instead of the auth one (10/min).
-  defp bucket_for(%{path_info: [ApiSegment.users(), action | _], method: method} = _conn, ip)
-       when action in @browser_auth_actions and method in ["POST", "GET"] do
+  #
+  # Only the POST. Opening the page (a GET, the login form, the registration
+  # form, a login link's landing) checks nothing, and counting it made every
+  # browser sign-in cost two of the ten: one address got five a window.
+  defp bucket_for(%{path_info: [ApiSegment.users(), action | _], method: @post} = _conn, ip)
+       when action in @browser_auth_actions do
     auth_bucket(ip)
   end
 
@@ -266,7 +310,7 @@ defmodule GamendWeb.Plugs.RateLimiter do
   defp bucket_for(
          %{
            path_info: [ApiSegment.api(), ApiSegment.v1(), RateLimitBucket.client_logs() | _],
-           method: "POST"
+           method: @post
          } = _conn,
          ip
        ) do
@@ -280,6 +324,22 @@ defmodule GamendWeb.Plugs.RateLimiter do
   defp auth_bucket(ip) do
     {"auth:#{ip}", setting(:auth_window_ms), setting(:auth_limit)}
   end
+
+  # The sign-ins whose controller knows whether the password was right, and
+  # gives the charge back when it was (`refund_login/1`): the API's email and
+  # password, and the browser's form (a password or a login link's token).
+  # Device login and registration make accounts, so they keep theirs.
+  defp password_login?(%{
+         method: @post,
+         path_info: [ApiSegment.api(), ApiSegment.v1(), @password_login]
+       }),
+       do: true
+
+  defp password_login?(%{method: @post, path_info: [ApiSegment.users(), action]})
+       when action in @log_in_actions,
+       do: true
+
+  defp password_login?(_conn), do: false
 
   defp setting(key), do: Gamend.Settings.get(__MODULE__, key)
 

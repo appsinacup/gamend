@@ -155,7 +155,7 @@ Only a path on this site counts (`UserAuth.safe_return_to/1`: one leading `/`, n
 
 ## Failed password lockout
 
-The per-IP auth rate limit caps how fast one machine can guess, not guesses spread across many machines at one account. So failed passwords are also counted per email address: `GAMEND_AUTH_LOCKOUT_ATTEMPTS` failures (default `10`, `0` turns it off) within `GAMEND_AUTH_LOCKOUT_WINDOW_MINUTES` (default `15`) lock password sign-in for that address for `GAMEND_AUTH_LOCKOUT_MINUTES` (default `15`). The count lives in the database, so it holds across instances, and a correct password clears it.
+The per-IP auth rate limit caps how fast one machine can guess, not guesses spread across many machines at one account. It counts only guesses: a right password gives its request back, so many players behind one address can sign in at once. So failed passwords are also counted per email address: `GAMEND_AUTH_LOCKOUT_ATTEMPTS` failures (default `10`, `0` turns it off) within `GAMEND_AUTH_LOCKOUT_WINDOW_MINUTES` (default `15`) lock password sign-in for that address for `GAMEND_AUTH_LOCKOUT_MINUTES` (default `15`). The count lives in the database, so it holds across instances, and a correct password clears it.
 
 While locked, the password is not checked at all: `POST /api/v1/login` answers `429 account_locked` with a `Retry-After` header, and the browser form says to try again later. An address with no account counts and locks exactly like one with an account, so the lock never reveals which addresses are registered.
 

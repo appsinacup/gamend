@@ -63,13 +63,15 @@ HTTP requests are throttled per client IP (an IPv6 client per /64, for the same 
 | Bucket | Scope | Default | Variables |
 |---|---|---|---|
 | General HTTP | per IP | 240 / 60s | `GAMEND_RATELIMIT_GENERAL_LIMIT`, `GAMEND_RATELIMIT_GENERAL_WINDOW_MS` |
-| Auth (login, register, refresh, OAuth — API and browser) | per IP | 10 / 60s | `GAMEND_RATELIMIT_AUTH_LIMIT`, `GAMEND_RATELIMIT_AUTH_WINDOW_MS` |
+| Auth (sign-in, device login, sign-up, OAuth — API and browser; a right password gives its request back) | per IP | 10 / 60s | `GAMEND_RATELIMIT_AUTH_LIMIT`, `GAMEND_RATELIMIT_AUTH_WINDOW_MS` |
 | Client log uploads | per IP | 30 / 60s | `GAMEND_RATELIMIT_CLIENT_LOGS_LIMIT`, `GAMEND_RATELIMIT_CLIENT_LOGS_WINDOW_MS` |
 | WebSocket channel messages | per user | 60 / 10s | `GAMEND_RATELIMIT_WS_LIMIT`, `GAMEND_RATELIMIT_WS_WINDOW_MS` |
 | WebRTC DataChannel messages | per user | 300 / 10s | `GAMEND_RATELIMIT_DC_LIMIT`, `GAMEND_RATELIMIT_DC_WINDOW_MS` |
 | ICE candidates | per user | 150 / 30s | `GAMEND_RATELIMIT_ICE_LIMIT`, `GAMEND_RATELIMIT_ICE_WINDOW_MS` |
 | Peer-to-peer signaling messages | per user | 300 / 10s | `GAMEND_RATELIMIT_SIGNALING_WS_LIMIT`, `GAMEND_RATELIMIT_SIGNALING_WS_WINDOW_MS` |
 | Peer-to-peer ICE candidates | per user | 150 / 30s | `GAMEND_RATELIMIT_SIGNALING_ICE_LIMIT`, `GAMEND_RATELIMIT_SIGNALING_ICE_WINDOW_MS` |
+
+The auth bucket is there to slow guessing, so it counts guesses. A sign-in with the right password (`POST /api/v1/login`, the browser's login form, a login link) gives its request back, so a classroom or a mobile carrier behind one address is held only by its wrong passwords; device logins and sign-ups keep theirs, since each can make an account. Opening the login or sign-up page and refreshing a token (`POST /api/v1/refresh`, a signed secret) are in the general bucket. Wrong passwords are also counted per email address across every IP ([failed password lockout](/docs/authentication#failed-password-lockout)).
 
 `GAMEND_RATELIMIT_ENABLED` is the master switch. An HTTP client over the limit gets `429 Too Many Requests` with a `Retry-After` header; a WebSocket client over its budget has the channel closed with a `rate_limited` error, and a flooding WebRTC peer is disconnected. Separate daily quotas cap chat messages and chat reports per user (`GAMEND_LIMITS_MAX_CHAT_MESSAGES_PER_DAY`, `GAMEND_LIMITS_MAX_CHAT_REPORTS_PER_USER_PER_DAY`).
 

@@ -3,6 +3,7 @@ defmodule GamendWeb.UserSessionController do
 
   alias Gamend.Accounts
   alias Gamend.Accounts.Scope
+  alias GamendWeb.Plugs.RateLimiter
   alias GamendWeb.UserAuth
 
   def create(conn, %{"_action" => "confirmed"} = params) do
@@ -17,6 +18,8 @@ defmodule GamendWeb.UserSessionController do
   defp create(conn, %{"user" => %{"token" => token} = user_params}, info) do
     case Accounts.login_user_by_magic_link(token) do
       {:ok, {user, tokens_to_disconnect}} ->
+        conn = RateLimiter.refund_login(conn)
+
         if Accounts.user_activated?(user) do
           UserAuth.disconnect_sessions(tokens_to_disconnect)
 
@@ -41,7 +44,10 @@ defmodule GamendWeb.UserSessionController do
     %{"email" => email, "password" => password} = user_params
 
     case Accounts.authenticate_by_password(email, password) do
+      # A right password is not a guess: it gives back its per-IP charge.
       {:ok, user} ->
+        conn = RateLimiter.refund_login(conn)
+
         if Accounts.user_activated?(user) do
           conn
           |> put_flash(:info, info)
@@ -72,6 +78,7 @@ defmodule GamendWeb.UserSessionController do
       # Only after the right password, so it reveals nothing to a guesser.
       {:error, :email_not_confirmed} ->
         conn
+        |> RateLimiter.refund_login()
         |> put_flash(
           :error,
           gettext(

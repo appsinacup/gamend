@@ -164,5 +164,66 @@ defmodule GamendWeb.AbuseLimitsTest do
       refute login.().status == 429
       assert login.().status == 429
     end
+
+    test "an API sign-in with the right password gives its charge back; a wrong one keeps it" do
+      user = AccountsFixtures.set_password(AccountsFixtures.user_fixture())
+
+      login = fn password ->
+        post(%{build_conn() | remote_ip: {198, 51, 100, 23}}, "/api/v1/login", %{
+          "email" => user.email,
+          "password" => password
+        })
+      end
+
+      for _ <- 1..3, do: assert(login.(AccountsFixtures.valid_user_password()).status == 200)
+
+      assert login.("not the password").status == 401
+      assert login.("not the password").status == 429
+    end
+
+    test "a browser sign-in: opening the form is free, a right password gives its charge back" do
+      user = AccountsFixtures.set_password(AccountsFixtures.user_fixture())
+      conn = fn -> %{build_conn() | remote_ip: {198, 51, 100, 24}} end
+
+      for _ <- 1..3, do: refute(get(conn.(), "/users/log_in").status == 429)
+
+      for _ <- 1..3 do
+        signed_in =
+          post(conn.(), "/users/log_in", %{
+            "user" => %{
+              "email" => user.email,
+              "password" => AccountsFixtures.valid_user_password()
+            }
+          })
+
+        assert get_session(signed_in, :user_token)
+      end
+
+      wrong = %{"user" => %{"email" => user.email, "password" => "not the password"}}
+      refute post(conn.(), "/users/log_in", wrong).status == 429
+      assert post(conn.(), "/users/log_in", wrong).status == 429
+    end
+
+    test "a token refresh is not a sign-in" do
+      refresh = fn ->
+        post(%{build_conn() | remote_ip: {198, 51, 100, 25}}, "/api/v1/refresh", %{
+          "refresh_token" => "not-a-token"
+        })
+      end
+
+      assert refresh.().status == 401
+      assert refresh.().status == 401
+    end
+
+    test "a device login keeps its charge: it can make an account" do
+      device_login = fn ->
+        post(%{build_conn() | remote_ip: {198, 51, 100, 26}}, "/api/v1/login/device", %{
+          "device_id" => "abuse-limits-device"
+        })
+      end
+
+      refute device_login.().status == 429
+      assert device_login.().status == 429
+    end
   end
 end

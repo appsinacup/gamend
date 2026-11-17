@@ -447,7 +447,7 @@ That declares `GAMEND_UGC_MAX_UPLOADS`, read with
 
 | Variable | Type | Default | Notes |
 |---|---|---|---|
-| `GAMEND_RATELIMIT_AUTH_LIMIT` | integer | `10` | Max login/register requests per window, per IP. |
+| `GAMEND_RATELIMIT_AUTH_LIMIT` | integer | `10` | Max sign-in and sign-up requests per window, per IP. A sign-in with the right password gives its request back, so only wrong passwords, device logins, sign-ups and OAuth use it up. |
 | `GAMEND_RATELIMIT_AUTH_WINDOW_MS` | integer | `60000` | Auth HTTP window, in milliseconds. |
 | `GAMEND_RATELIMIT_BACKEND` | atom | `:ets` | ets (per-node counters) or redis (shared across instances). |
 | `GAMEND_RATELIMIT_CLIENT_LOGS_LIMIT` | integer | `30` | Max client log batch uploads per window, per IP. |

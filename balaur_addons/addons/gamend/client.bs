@@ -32,6 +32,7 @@ const USERNAME: str = "username";
 const USER_ID: str = "user_id";
 const LOBBY_ID: str = "lobby_id";
 const VALUE: str = "value";
+const DATA: str = "data";
 /// Between a key and its scope in a row's id, which no key holds: the unit
 /// separator. A global row's id is its key alone.
 const SCOPE_MARK: str = "\u{1f}";
@@ -460,10 +461,11 @@ pub async fn fetch_row(key: str, force: bool) -> any {
 }
 
 /// The cached row of a key for that scope, or the server's, fetched once and
-/// kept. `force` asks the server even when a row is cached. A row the server
-/// does not have caches an empty map, so `has_row_in` answers without asking
-/// again; anything else that went wrong caches nothing and the next call
-/// retries.
+/// kept: its value, as a live push keeps it (`absorb`), not the reply it
+/// came in. `force` asks the server even when a row is cached. A row the
+/// server does not have caches an empty map, so `has_row_in` answers without
+/// asking again; anything else that went wrong caches nothing and the next
+/// call retries.
 pub async fn fetch_row_in(key: str, scope: RowScope, force: bool) -> any {
     if !force && has_row_in(key, scope) {
         return row_in(key, scope);
@@ -477,9 +479,23 @@ pub async fn fetch_row_in(key: str, scope: RowScope, force: bool) -> any {
         log::warn(core::error_of(reply));
         return nil;
     }
-    let value = core::body(reply);
+    let value = row_of(core::body(reply));
     keep_row_in(key, scope, value);
     value
+}
+
+// The row's value in a `get_kv` reply's body, `{ data: { key, data, … } }`,
+// as the Godot SDK's `_kv_row` reads it: the entry's `data` where the entry
+// carries its key, else the entry itself.
+fn row_of(body: any) -> any {
+    if body == nil || body.kind() != types::KIND_MAP {
+        return {};
+    }
+    let entry = if body.has(DATA) { body[DATA] } else if body.has(VALUE) { body[VALUE] } else { body };
+    if entry != nil && entry.kind() == types::KIND_MAP && entry.has(KEY) && entry.has(DATA) {
+        return entry[DATA];
+    }
+    if entry == nil { {} } else { entry }
 }
 
 /// The signed-in player's profile, fetched fresh, as `core::unpack` shapes it.

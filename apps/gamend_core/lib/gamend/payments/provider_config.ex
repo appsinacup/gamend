@@ -72,6 +72,29 @@ defmodule Gamend.Payments.ProviderConfig do
   @spec stripe_webhook_secret() :: String.t() | nil
   def stripe_webhook_secret, do: stripe_value(:webhook_secret)
 
+  @doc """
+  Which server opened a checkout, as its metadata's `gamend_origin` says:
+  16 hex characters of a hash of this server's webhook secret, or nil
+  without one. Every endpoint on a Stripe account has its own secret, and
+  Stripe sends each of them every event, so a server sharing an account with
+  another Gamend tells its own checkouts from the other's by it
+  (`Gamend.Payments.StripeEvents`). Only a hash: the metadata is visible to
+  anyone who can read the Stripe account.
+  """
+  @spec stripe_checkout_origin() :: String.t() | nil
+  def stripe_checkout_origin do
+    case stripe_webhook_secret() do
+      secret when is_binary(secret) and secret != "" ->
+        :sha256
+        |> :crypto.hash("gamend checkout origin:" <> secret)
+        |> Base.encode16(case: :lower)
+        |> binary_part(0, 16)
+
+      _none ->
+        nil
+    end
+  end
+
   @doc "The Stripe API version every request names, and webhooks are expected in."
   @spec stripe_api_version() :: String.t()
   def stripe_api_version, do: @stripe_api_version

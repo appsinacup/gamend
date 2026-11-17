@@ -14,6 +14,7 @@ defmodule Gamend.Payments.StripeLifecycleTest do
   alias Gamend.Analytics
   alias Gamend.Payments
   alias Gamend.Payments.Entitlement
+  alias Gamend.Payments.ProviderConfig
   alias Gamend.Payments.Purchase
   alias Gamend.Payments.Settings
   alias Gamend.Payments.StripeSweeper
@@ -88,7 +89,12 @@ defmodule Gamend.Payments.StripeLifecycleTest do
     def verify_webhook(raw_body, _signature), do: Jason.decode(raw_body)
   end
 
-  @settings [:stripe_past_due_grace_days, :stripe_sandbox_secret_key, :environment]
+  @settings [
+    :stripe_past_due_grace_days,
+    :stripe_sandbox_secret_key,
+    :stripe_sandbox_webhook_secret,
+    :environment
+  ]
 
   setup do
     original_stripe = Application.get_env(:gamend_core, :stripe_adapter)
@@ -123,6 +129,60 @@ defmodule Gamend.Payments.StripeLifecycleTest do
                    "metadata" => %{}
                  })
       end
+    end
+
+    test "another Gamend's checkout on this Stripe account is ignored, ours with no purchase is not",
+         %{user: user} do
+      SettingsHelpers.put(:gamend_core, Settings, :environment, :sandbox)
+      SettingsHelpers.put(:gamend_core, Settings, :stripe_sandbox_webhook_secret, "whsec_here")
+      ours = ProviderConfig.stripe_checkout_origin()
+      nobody = %{"purchase_id" => Ecto.UUID.generate(), "order_id" => "ord_elsewhere"}
+
+      paid = fn metadata ->
+        %{
+          "id" => "cs_paid_elsewhere_1",
+          "object" => "checkout.session",
+          "status" => "complete",
+          "payment_status" => "paid",
+          "metadata" => metadata
+        }
+      end
+
+      # Stripe sends every endpoint on the account every event: another
+      # server's checkout, stamped with its own origin, is not ours to refuse.
+      for step <- ~w(completed async_payment_succeeded async_payment_failed) do
+        assert {:ok, :ignored} =
+                 webhook(
+                   "checkout.session.#{step}",
+                   paid.(Map.put(nobody, "gamend_origin", "0123456789abcdef"))
+                 )
+      end
+
+      # Ours, or one stamped by no one: a paid checkout with no purchase is lost.
+      for metadata <- [Map.put(nobody, "gamend_origin", ours), nobody] do
+        capture_log(fn ->
+          assert {:error, :purchase_not_found} =
+                   webhook("checkout.session.completed", paid.(metadata))
+        end)
+      end
+
+      # A purchase found is processed whatever the origin says (a secret
+      # changed while its checkout was open).
+      purchase = open_checkout(user, "cs_paid_rotated_1")
+
+      assert {:ok, :processed} =
+               webhook(
+                 "checkout.session.completed",
+                 session(purchase, "cs_paid_rotated_1", %{
+                   "metadata" => %{
+                     "purchase_id" => purchase.id,
+                     "order_id" => purchase.order_id,
+                     "gamend_origin" => "fedcba9876543210"
+                   }
+                 })
+               )
+
+      assert Repo.get!(Purchase, purchase.id).status == "completed"
     end
 
     test "a refund made outside this server counts only through charge.refunded", %{user: user} do

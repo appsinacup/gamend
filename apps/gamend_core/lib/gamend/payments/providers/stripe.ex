@@ -388,6 +388,8 @@ defmodule Gamend.Payments.Providers.Stripe do
   defp stripe_mode(ProductKind.subscription()), do: StripeMode.subscription()
   defp stripe_mode(_kind), do: StripeMode.payment()
 
+  # `gamend_origin` says which server opened it, for a Stripe account several
+  # servers share (`ProviderConfig.stripe_checkout_origin/0`).
   defp checkout_metadata(purchase, provider_product) do
     %{
       "purchase_id" => to_string(purchase.id),
@@ -395,7 +397,13 @@ defmodule Gamend.Payments.Providers.Stripe do
       "user_id" => to_string(purchase.user_id),
       "product_sku" => provider_product.product.sku
     }
+    |> put_origin(ProviderConfig.stripe_checkout_origin())
   end
+
+  defp put_origin(metadata, origin) when is_binary(origin),
+    do: Map.put(metadata, "gamend_origin", origin)
+
+  defp put_origin(metadata, _origin), do: metadata
 
   defp checkout_params(provider_product, purchase, success_url, cancel_url, mode, metadata) do
     %{

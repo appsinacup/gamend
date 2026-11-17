@@ -435,10 +435,11 @@ defmodule Gamend.Payments.StripeEvents do
   defp stripe_cancel_result(:resume), do: "resume"
 
   # A checkout session this server did not open (a Payment Link, a product
-  # sold another way, another app on the same Stripe account) carries none of
-  # the metadata `Providers.Stripe` puts on ours. It used to answer 404, which
-  # Stripe retries for three days and, past that, can disable the endpoint
-  # over, taking every real delivery with it.
+  # sold another way, an app on the same Stripe account that is not a Gamend)
+  # carries none of the metadata `Providers.Stripe` puts on ours. It used to
+  # answer 404, which Stripe retries for three days and, past that, can
+  # disable the endpoint over, taking every real delivery with it. Another
+  # Gamend's carries the same metadata: `checkout_purchase/1`.
   defp process_stripe_event(%{
          "type" => "checkout.session." <> step,
          "data" => %{"object" => object}
@@ -534,7 +535,7 @@ defmodule Gamend.Payments.StripeEvents do
   defp process_stripe_event(_event), do: {:ok, :ignored}
 
   defp process_checkout_session(StripeStatus.completed(), object) do
-    with {:ok, purchase} <- Payments.purchase_from_provider_object(object),
+    with {:ok, %Purchase{} = purchase} <- checkout_purchase(object),
          {:ok, updated} <- update_purchase_from_stripe_session(purchase, object) do
       if stripe_session_paid?(object) do
         with {:ok, _purchase} <- Payments.fulfill_purchase(updated, %{"stripe_session" => object}) do
@@ -547,7 +548,7 @@ defmodule Gamend.Payments.StripeEvents do
   end
 
   defp process_checkout_session("async_payment_succeeded", object) do
-    with {:ok, purchase} <- Payments.purchase_from_provider_object(object),
+    with {:ok, %Purchase{} = purchase} <- checkout_purchase(object),
          {:ok, updated} <- update_purchase_from_stripe_session(purchase, object),
          {:ok, _purchase} <- Payments.fulfill_purchase(updated, %{"stripe_session" => object}) do
       {:ok, :processed}
@@ -555,7 +556,7 @@ defmodule Gamend.Payments.StripeEvents do
   end
 
   defp process_checkout_session("async_payment_failed", object) do
-    with {:ok, purchase} <- Payments.purchase_from_provider_object(object),
+    with {:ok, %Purchase{} = purchase} <- checkout_purchase(object),
          {:ok, _purchase, :failed} <-
            update_purchase_from_stripe_reconciliation(
              purchase,
@@ -588,6 +589,40 @@ defmodule Gamend.Payments.StripeEvents do
   end
 
   defp process_checkout_session(_step, _object), do: {:ok, :ignored}
+
+  # The purchase a checkout pays for. Stripe sends every endpoint on the
+  # account every event, so a Gamend sharing this Stripe account with another
+  # gets that one's checkouts too, with the same metadata. One whose
+  # `gamend_origin` is another server's (`ProviderConfig.stripe_checkout_origin/0`)
+  # answers `{:ok, :ignored}`, which the callers' `with` passes through: it
+  # was a 404, retried for three days. A paid checkout of ours with no
+  # purchase stays an error, and so does one with no origin (opened before
+  # servers stamped one, or by a Gamend that does not). The purchase is
+  # looked up first, so a checkout opened before the webhook secret changed
+  # still finds its own.
+  defp checkout_purchase(object) do
+    case Payments.purchase_from_provider_object(object) do
+      {:error, :purchase_not_found} = missing ->
+        if opened_elsewhere?(object) do
+          Logger.info(
+            "Stripe checkout opened by another server on this account session=#{object["id"]} " <>
+              "origin=#{object["metadata"]["gamend_origin"]}"
+          )
+
+          {:ok, :ignored}
+        else
+          missing
+        end
+
+      found ->
+        found
+    end
+  end
+
+  defp opened_elsewhere?(%{"metadata" => %{"gamend_origin" => origin}}) when is_binary(origin),
+    do: origin != ProviderConfig.stripe_checkout_origin()
+
+  defp opened_elsewhere?(_object), do: false
 
   defp ours?(%{"metadata" => %{} = metadata}),
     do: is_binary(metadata["purchase_id"]) or is_binary(metadata["order_id"])

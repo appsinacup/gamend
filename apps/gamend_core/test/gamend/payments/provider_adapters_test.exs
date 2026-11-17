@@ -348,6 +348,36 @@ defmodule Gamend.Payments.ProviderAdaptersTest do
     assert params.expires_at in (now + 30 * 60)..(now + 32 * 60)
   end
 
+  test "a Stripe checkout says which server opened it, by a hash of its webhook secret" do
+    Application.put_env(:gamend_core, :stripe_client, StripeClient)
+    put_setting(:environment, :sandbox)
+    put_setting(:stripe_sandbox_secret_key, "sk_test_sdk_123")
+
+    assert ProviderConfig.stripe_checkout_origin() == nil
+
+    put_setting(:stripe_sandbox_webhook_secret, "whsec_one")
+    origin = ProviderConfig.stripe_checkout_origin()
+    assert origin =~ ~r/\A[0-9a-f]{16}\z/
+    refute String.contains?(origin, "whsec")
+
+    put_setting(:stripe_sandbox_webhook_secret, "whsec_two")
+    refute ProviderConfig.stripe_checkout_origin() == origin
+
+    product = %Product{id: 10, sku: "coins_100", title: "100 Coins", kind: "consumable"}
+    provider_product = %ProviderProduct{external_id: "price_123", product: product}
+    purchase = %Purchase{id: 42, user_id: 7, order_id: "order_42", quantity: 1}
+
+    assert {:ok, _session} =
+             Stripe.create_checkout_session(purchase, provider_product, %{
+               "success_url" => "https://example.test/success",
+               "cancel_url" => "https://example.test/cancel"
+             })
+
+    assert_received {:stripe_create_checkout_session, params, _opts}
+    assert params.metadata["gamend_origin"] == ProviderConfig.stripe_checkout_origin()
+    assert params.payment_intent_data == %{metadata: params.metadata}
+  end
+
   test "Stripe expires a checkout session through SDK client at the pinned API version" do
     Application.put_env(:gamend_core, :stripe_client, StripeClient)
     put_setting(:environment, :sandbox)

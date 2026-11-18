@@ -1,6 +1,7 @@
 # November 2026
 
 - [added] **Any member can fill their lobby from the queue.** When `before_matchmaking_join/2` answers `Gamend.Matchmaking.Constants.member_backfill()` as `true`, a player who queues alone from a lobby they sit in fills it, host or not. A backfill ticket now fills its lobby while its holder sits there, not while they host it.
+- [fixed] **Godot calls that never answered.** `GamendApi.gd` passed fewer arguments than nine generated functions take, so the callbacks sat in an optional parameter's place and the call timed out: leaderboard records and your record (now with `search` and `all_time`), party invitations (now paged), the admin quest lists (now filtered), the analytics (now by `segment`) and deleting the account (now with `current_password`). `python3 clients/sdkgen lint` checks each call's arguments against the API.
 - [added] **Computed rows**: a key-value row the host works out from other state (`config :gamend_core, :computed_rows`), read and subscribed to like a stored one and stored nowhere; a client is pushed `kv_updated` when what it is worked out from moves ([Key-Value Store](/docs/key-value)).
 - [added] **The API sends what the quests and leaderboards pages draw**: a quest's `action`, `note` and `lock` and a board's `action` for the reader, a board's `all_time`, records searched and all-time, and each row's `avatar_url`, `title`, `title_class` and `badge`.
 - [fixed] **A phone's rankings keep their score.** A long name is cut instead of pushing the table past its card.

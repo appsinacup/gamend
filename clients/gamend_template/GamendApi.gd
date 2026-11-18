@@ -1007,8 +1007,12 @@ func hooks_list_hooks(page = 1, pageSize = 25) -> GamendResult:
 ### USERS
 
 ## Delete current user
-func user_delete_current_user() -> GamendResult:
-	return await _call_api(UsersApi.new(_config), "delete_current_user")
+## `current_password` is required when the account has a password.
+func user_delete_current_user(current_password = "") -> GamendResult:
+	var request = GamendDeleteCurrentUserRequest.new()
+	if current_password != "":
+		request.current_password = current_password
+	return await _call_api(UsersApi.new(_config), "delete_current_user", [request])
 
 ## Get current user info
 func users_get_current_user() -> GamendResult:
@@ -1258,16 +1262,18 @@ func lobbies_get_lobby(id: String) -> GamendResult:
 
 ## List leaderboard records
 ## `key` names one ranking on a board with several (its `metadata.views` lists them); "" is the default one.
-func leaderboards_list_leaderboard_records(id: String, page = 1, page_size = 25, key = "") -> GamendResult:
-	return await _call_api(LeaderboardsApi.new(_config), "list_leaderboard_records", [id, page, page_size, key])
+## `search` keeps the rows whose name holds it, each at its rank; `all_time` ranks every season of the board's slug as one (its `all_time`).
+func leaderboards_list_leaderboard_records(id: String, page = 1, page_size = 25, key = "", search = "", all_time = false) -> GamendResult:
+	return await _call_api(LeaderboardsApi.new(_config), "list_leaderboard_records", [id, page, page_size, key, search, all_time])
 
 ## List leaderboards
 func leaderboards_list_leaderboards(slug = "", active = null, orderBy = "ends_at", startsAfter = null, startsBefore = null, endsAfter = null, endsBefore = null, page = 1, pageSize = 25) -> GamendResult:
 	return await _call_api(LeaderboardsApi.new(_config), "list_leaderboards", [slug, active, orderBy, startsAfter, startsBefore, endsAfter, endsBefore, page, pageSize])
 
 ## Get current user's record
-func leaderboards_get_my_record(id: String, key = "") -> GamendResult:
-	return await _call_api(LeaderboardsApi.new(_config), "get_my_record", [id, key])
+## `all_time` reads the rank across every season of the board's slug (its `all_time`).
+func leaderboards_get_my_record(id: String, key = "", all_time = false) -> GamendResult:
+	return await _call_api(LeaderboardsApi.new(_config), "get_my_record", [id, key, all_time])
 
 ## List records around a user
 func leaderboards_list_records_around_user(id: String, user_id: String, limit = 11, key = "") -> GamendResult:
@@ -1722,12 +1728,12 @@ func parties_decline_party_invite(declinePartyInviteRequest: GamendDeclinePartyI
 	return await _call_api(PartiesApi.new(_config), "decline_party_invite", [declinePartyInviteRequest])
 
 ## List pending party invites for the current user
-func parties_list_party_invitations() -> GamendResult:
-	return await _call_api(PartiesApi.new(_config), "list_party_invitations", [])
+func parties_list_party_invitations(page = 1, page_size = 25) -> GamendResult:
+	return await _call_api(PartiesApi.new(_config), "list_party_invitations", [page, page_size])
 
 ## List pending party invites sent by the current leader
-func parties_list_sent_party_invitations() -> GamendResult:
-	return await _call_api(PartiesApi.new(_config), "list_sent_party_invitations", [])
+func parties_list_sent_party_invitations(page = 1, page_size = 25) -> GamendResult:
+	return await _call_api(PartiesApi.new(_config), "list_sent_party_invitations", [page, page_size])
 
 ## Kick a member from the party (leader only)
 func parties_kick_party_member(kickPartyMemberRequest: GamendKickPartyMemberRequest) -> GamendResult:
@@ -1938,8 +1944,8 @@ func admin_chat_admin_delete_chat_conversation(chat_type: String, chat_ref_id: S
 ## ADMIN QUESTS
 
 ## List all quest definitions (admin)
-func admin_quests_admin_list_quests(page = 1, pageSize = 25) -> GamendResult:
-	return await _call_api(AdminQuestsApi.new(_config), "admin_list_quests", [page, pageSize])
+func admin_quests_admin_list_quests(page = 1, pageSize = 25, category = null, search = null) -> GamendResult:
+	return await _call_api(AdminQuestsApi.new(_config), "admin_list_quests", [category, search, page, pageSize])
 
 ## Create a quest (admin)
 func admin_quests_admin_create_quest(request: GamendAdminCreateQuestRequest) -> GamendResult:
@@ -1954,8 +1960,8 @@ func admin_quests_admin_delete_quest(id: String) -> GamendResult:
 	return await _call_api(AdminQuestsApi.new(_config), "admin_delete_quest", [id])
 
 ## List quest progress rows (admin)
-func admin_quests_admin_list_quest_progress(page = 1, pageSize = 25) -> GamendResult:
-	return await _call_api(AdminQuestsApi.new(_config), "admin_list_quest_progress", [page, pageSize])
+func admin_quests_admin_list_quest_progress(page = 1, pageSize = 25, user_id = null, quest_key = null, status = null) -> GamendResult:
+	return await _call_api(AdminQuestsApi.new(_config), "admin_list_quest_progress", [user_id, quest_key, status, page, pageSize])
 
 ## Force-complete a quest for a user (admin)
 func admin_quests_admin_grant_quest(request: GamendAdminGrantQuestRequest) -> GamendResult:
@@ -2083,14 +2089,14 @@ static func parse_last_seen(last_seen_str: String) -> float:
 ### ADMIN ANALYTICS
 ## DAU / WAU / MAU, D1 / D7 / D30 and payer conversion (admin)
 ## Operation adminGetAnalyticsSummary → GET /api/v1/admin/analytics
-func admin_analytics_admin_get_analytics_summary() -> GamendResult:
-	return await _call_api(AdminAnalyticsApi.new(_config), "admin_get_analytics_summary")
+func admin_analytics_admin_get_analytics_summary(segment = "all") -> GamendResult:
+	return await _call_api(AdminAnalyticsApi.new(_config), "admin_get_analytics_summary", [segment])
 
 
 ## Per-day active / new users and cohort retention (admin)
 ## Operation adminGetAnalyticsDaily → GET /api/v1/admin/analytics/daily
-func admin_analytics_admin_get_analytics_daily(days = 30) -> GamendResult:
-	return await _call_api(AdminAnalyticsApi.new(_config), "admin_get_analytics_daily", [days])
+func admin_analytics_admin_get_analytics_daily(days = 30, segment = "all") -> GamendResult:
+	return await _call_api(AdminAnalyticsApi.new(_config), "admin_get_analytics_daily", [days, segment])
 
 
 ## Currency granted / spent per day per ledger reason (admin)

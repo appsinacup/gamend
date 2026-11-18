@@ -96,6 +96,7 @@ def operations(report: Report, model: Model, generated: bool) -> None:
         report.problems.append(
             f"Godot {surface}: GamendApi.gd calls what the API lacks: {', '.join(sorted(stale))}"
         )
+    check_facade_arguments(report, model, surface)
     if generated and (GODOT_OUT / "apis").is_dir():
         apis = text_of(sorted((GODOT_OUT / "apis").glob("*.gd")))
         missing = [i for i in ids if f"func {i}(" not in apis]
@@ -121,6 +122,75 @@ def operations(report: Report, model: Model, generated: bool) -> None:
         [f"{file}.bs::{name}" for file, ops in balaur.by_file(model).items() for name, _ in ops],
         lambda item: f"pub async fn {item.split('::')[1]}(" in written[item.split("::")[0]],
     )
+
+
+def generated_parameters(model: Model, op_id: str) -> list[str]:
+    """The arguments openapi-generator's GDScript function takes before its two
+    callbacks: the required ones first (`sortParamsByRequiredFlag`), each group
+    in the document's order, the body last of its group."""
+    for path, item in model.spec["paths"].items():
+        for op in item.values():
+            if isinstance(op, dict) and op.get("operationId") == op_id:
+                params = [(p["name"], bool(p.get("required"))) for p in op.get("parameters", [])]
+                body = op.get("requestBody")
+                if body:
+                    params.append(("<body>", bool(body.get("required"))))
+                return [n for n, r in params if r] + [n for n, r in params if not r]
+    return []
+
+
+def facade_arguments(text: str, at: int) -> list[str] | None:
+    """The items of the list literal `_call_api(api, "op", [...])` passes from
+    `at` (just after the operation's name); [] for no list, None for a list
+    built elsewhere."""
+    rest = text[at:].lstrip()
+    if rest.startswith(")"):
+        return []
+    rest = rest[1:].lstrip() if rest.startswith(",") else rest
+    if not rest.startswith("["):
+        return None
+    items, depth, start, i = [], 0, 1, 0
+    while i < len(rest):
+        c = rest[i]
+        if c == '"':
+            i = rest.index('"', i + 1)
+        elif c in "[({":
+            depth += 1
+        elif c in "])}":
+            depth -= 1
+            if depth == 0:
+                items.append(rest[start:i].strip())
+                return [item for item in items if item]
+        elif c == "," and depth == 1:
+            items.append(rest[start:i].strip())
+            start = i + 1
+        i += 1
+    return None
+
+
+def check_facade_arguments(report: Report, model: Model, surface: str) -> None:
+    """`_call_api` appends the two callbacks to the list and `callv`s it, so a
+    list one short puts `on_success` where an optional parameter goes: the call
+    never answers. The list must match the generated function's parameters, by
+    count, and by place where an argument is named after its parameter."""
+    text = (GODOT / "GamendApi.gd").read_text()
+    wrong = []
+    for match in FACADE_CALL.finditer(text):
+        op_id = match.group(1)
+        args = facade_arguments(text, match.end())
+        params = generated_parameters(model, op_id)
+        if args is None or not params and op_id not in {op["id"] for op in model.ops}:
+            continue
+        if len(args) != len(params):
+            wrong.append(f"{op_id} passes {len(args)} of ({', '.join(params)})")
+            continue
+        for index, arg in enumerate(args):
+            name = re.sub(r"(?<!^)([A-Z])", r"_\1", arg).lower()
+            if re.fullmatch(r"\w+", arg) and name in params and params.index(name) != index:
+                wrong.append(f"{op_id} passes {arg} where ({', '.join(params)}) has {params[index]}")
+                break
+    if wrong:
+        report.problems.append(f"Godot {surface}: GamendApi.gd's arguments: {'; '.join(wrong)}")
 
 
 def csharp_file(model: Model, name: str) -> str:

@@ -168,7 +168,7 @@ def facade_arguments(text: str, at: int) -> list[str] | None:
     return None
 
 
-GDSCRIPT_FUNC = re.compile(r"^func (\w+)\(\n(.*?)^\):", re.MULTILINE | re.DOTALL)
+GDSCRIPT_FUNC = re.compile(r"^func (\w+)\(\n(.*?)^\)", re.MULTILINE | re.DOTALL)
 GDSCRIPT_PARAM = re.compile(r"^\t(\w+)\s*[:=,]", re.MULTILINE)
 
 

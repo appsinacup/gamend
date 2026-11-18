@@ -15,6 +15,12 @@ Event broadcast when a match is found.
 
 Event broadcast when a ticket goes in the queue: joined, or put back after a failed accept.
 
+# `member_backfill`
+
+The key `before_matchmaking_join/2` sets to `true` in the attrs it answers
+when a player who sits in a lobby they do not host fills it too
+(`Gamend.Matchmaking`, *Backfill*).
+
 # `status_cancelled`
 
 Status for a ticket that has been cancelled.

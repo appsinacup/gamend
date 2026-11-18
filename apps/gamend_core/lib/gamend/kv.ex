@@ -11,10 +11,15 @@ defmodule Gamend.KV do
 
   This module uses the app cache (`Gamend.Cache`) as a best-effort read cache.
   Writes update the cache and deletes evict it.
+
+  A key the host computes from other state (`Gamend.KV.Computed`) is read
+  through `get/2` like a stored one and stored nowhere; its subscribers hear
+  `{:kv_stale, ...}` when it moves.
   """
 
   import Ecto.Query
 
+  alias Gamend.KV.Computed
   alias Gamend.KV.Entry
   alias Gamend.Repo
 
@@ -171,6 +176,13 @@ defmodule Gamend.KV do
     user_id = Keyword.get(opts, :user_id)
     lobby_id = Keyword.get(opts, :lobby_id)
 
+    case Computed.fetch(key, user_id, lobby_id) do
+      :not_computed -> get_stored(key, user_id, lobby_id)
+      computed -> computed
+    end
+  end
+
+  defp get_stored(key, user_id, lobby_id) do
     # A key that is not there is read as often as one that is — a player with
     # no saved curriculum, no quota row yet today — so the absence is cached
     # too. `Gamend.Cache.cached/3` keeps neither when a write evicted the key
@@ -748,24 +760,64 @@ defmodule Gamend.KV do
   end
 
   defp broadcast_kv_updated(key, user_id, lobby_id, value, metadata) do
-    Gamend.Broadcast.publish(
-      topic(key, user_id, lobby_id),
-      {:kv_updated,
-       %{
-         key: key,
-         user_id: user_id,
-         lobby_id: lobby_id,
-         data: value,
-         metadata: metadata || %{}
-       }}
-    )
+    result =
+      Gamend.Broadcast.publish(
+        topic(key, user_id, lobby_id),
+        {:kv_updated,
+         %{
+           key: key,
+           user_id: user_id,
+           lobby_id: lobby_id,
+           data: value,
+           metadata: metadata || %{}
+         }}
+      )
+
+    stale_dependents(key, user_id, lobby_id)
+    result
   end
 
   defp broadcast_kv_deleted(key, user_id, lobby_id) do
-    Gamend.Broadcast.publish(
-      topic(key, user_id, lobby_id),
-      {:kv_deleted, %{key: key, user_id: user_id, lobby_id: lobby_id}}
-    )
+    result =
+      Gamend.Broadcast.publish(
+        topic(key, user_id, lobby_id),
+        {:kv_deleted, %{key: key, user_id: user_id, lobby_id: lobby_id}}
+      )
+
+    stale_dependents(key, user_id, lobby_id)
+    result
+  end
+
+  @doc """
+  Say that the computed row `key` (`Gamend.KV.Computed`) moved in a scope, for
+  what it depends on outside the store: its subscribers hear `{:kv_stale,
+  %{key, user_id, lobby_id}}` and read it again. Nothing for a stored key.
+
+  Inside a transaction it is said once the transaction commits, so a reader
+  it wakes sees what was written.
+  """
+  @spec refresh(String.t(), keyword()) :: :ok
+  def refresh(key, opts \\ []) when is_binary(key) and is_list(opts) do
+    if Computed.computed?(key),
+      do: publish_stale(key, Keyword.get(opts, :user_id), Keyword.get(opts, :lobby_id))
+
+    :ok
+  end
+
+  # A stored row moved: so did every computed row worked out from it.
+  defp stale_dependents(key, user_id, lobby_id) do
+    Enum.each(Computed.dependents(key), &publish_stale(&1, user_id, lobby_id))
+  end
+
+  # Once the transaction it is said in commits (now, with none): a reader it
+  # wakes before then would read the row as it was.
+  defp publish_stale(key, user_id, lobby_id) do
+    Gamend.AfterCommit.defer(fn ->
+      Gamend.Broadcast.publish(
+        topic(key, user_id, lobby_id),
+        {:kv_stale, %{key: key, user_id: user_id, lobby_id: lobby_id}}
+      )
+    end)
   end
 
   defp cache_key(key, nil, nil), do: {:kv, :global, key}

@@ -272,6 +272,81 @@ defmodule GamendWeb.UserChannelKvTest do
     refute_push "kv_updated", %{key: ^key}, 0
   end
 
+  describe "a computed row" do
+    defmodule Host do
+      @moduledoc false
+      def level(%{user_id: user_id}) do
+        case KV.get("points", user_id: user_id) do
+          {:ok, %{value: %{"points" => points}}} -> %{"level" => div(points, 100)}
+          :error -> nil
+        end
+      end
+    end
+
+    setup do
+      Application.put_env(:gamend_core, :computed_rows, %{
+        "level" => %{value: {Host, :level}, from: ["points"]}
+      })
+
+      on_exit(fn -> Application.delete_env(:gamend_core, :computed_rows) end)
+      install_kv_access(:owner_only)
+      :ok
+    end
+
+    test "subscribes as a row, and is pushed when what it is worked out from moves" do
+      user = user_fixture()
+      user_id = user.id
+      {:ok, _entry} = KV.put("points", %{"points" => 120}, %{}, user_id: user.id)
+      socket = join_user_channel(user)
+
+      ref = push(socket, "kv:subscribe", %{"key" => "level", "user_id" => user.id})
+      assert_reply ref, :ok, %{subscribed: true, data: %{"level" => 1}, metadata: %{}}
+
+      {:ok, _entry} = KV.put("points", %{"points" => 310}, %{}, user_id: user.id)
+
+      assert_push "kv_updated", %{
+        key: "level",
+        user_id: ^user_id,
+        lobby_id: nil,
+        data: %{"level" => 3},
+        metadata: %{}
+      }
+
+      :ok = KV.delete("points", user_id: user.id)
+      assert_push "kv_deleted", %{key: "level", user_id: ^user_id}
+    end
+
+    test "a burst of changes already waiting is read once" do
+      user = user_fixture()
+      {:ok, _entry} = KV.put("points", %{"points" => 500}, %{}, user_id: user.id)
+      socket = join_user_channel(user)
+      ref = push(socket, "kv:subscribe", %{"key" => "level", "user_id" => user.id})
+      assert_reply ref, :ok, %{subscribed: true}
+
+      # Held while both land in its mailbox, as a burst does.
+      :erlang.suspend_process(socket.channel_pid)
+      stale = {:kv_stale, %{key: "level", user_id: user.id, lobby_id: nil}}
+      send(socket.channel_pid, stale)
+      send(socket.channel_pid, stale)
+      :erlang.resume_process(socket.channel_pid)
+
+      assert_push "kv_updated", %{key: "level", data: %{"level" => 5}}
+      refute_push "kv_updated", %{key: "level"}, 100
+    end
+
+    test "is not pushed to someone who may not read it" do
+      owner = user_fixture()
+      other = user_fixture()
+      socket = join_user_channel(other)
+
+      ref = push(socket, "kv:subscribe", %{"key" => "level", "user_id" => owner.id})
+      assert_reply ref, :error, %{error: "forbidden"}
+
+      send(socket.channel_pid, {:kv_stale, %{key: "level", user_id: owner.id, lobby_id: nil}})
+      refute_push "kv_updated", %{key: "level"}, 100
+    end
+  end
+
   defp join_user_channel(user) do
     {:ok, token, _claims} = Guardian.encode_and_sign(user)
     {:ok, socket} = connect(GamendWeb.UserSocket, %{"token" => token})

@@ -468,6 +468,45 @@ defmodule GamendWeb.UserChannel do
     {:noreply, socket}
   end
 
+  # A computed row moved (`Gamend.KV.Computed`): read once and pushed as the
+  # row it is to the client. A burst of writes says so many times over; the
+  # read waits behind what is already in the mailbox, so it runs once for it.
+  @impl true
+  def handle_info({:kv_stale, %{key: key} = payload}, socket) when is_binary(key) do
+    scope = {key, Map.get(payload, :user_id), Map.get(payload, :lobby_id)}
+    pending = Map.get(socket.assigns, :kv_stale, MapSet.new())
+
+    if MapSet.member?(pending, scope) do
+      {:noreply, socket}
+    else
+      send(self(), {:kv_recompute, scope})
+      {:noreply, assign(socket, :kv_stale, MapSet.put(pending, scope))}
+    end
+  end
+
+  @impl true
+  def handle_info({:kv_recompute, {key, user_id, lobby_id} = scope}, socket) do
+    pending = Map.get(socket.assigns, :kv_stale, MapSet.new())
+    socket = assign(socket, :kv_stale, MapSet.delete(pending, scope))
+    row = %{key: key, user_id: user_id, lobby_id: lobby_id}
+
+    if kv_read_allowed?(socket, key, user_id, lobby_id) do
+      case KV.get(key, user_id: user_id, lobby_id: lobby_id) do
+        {:ok, %{value: value, metadata: metadata}} ->
+          push_event(
+            socket,
+            RealtimeEvent.kv_updated(),
+            Map.merge(row, %{data: value, metadata: metadata})
+          )
+
+        :error ->
+          push_event(socket, RealtimeEvent.kv_deleted(), row)
+      end
+    end
+
+    {:noreply, socket}
+  end
+
   # ── Notification PubSub events ──────────────────────────────────────────────
 
   @impl true

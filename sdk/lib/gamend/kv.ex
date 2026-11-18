@@ -12,6 +12,10 @@ defmodule Gamend.KV do
   This module uses the app cache (`Gamend.Cache`) as a best-effort read cache.
   Writes update the cache and deletes evict it.
 
+  A key the host computes from other state (`Gamend.KV.Computed`) is read
+  through `get/2` like a stored one and stored nowhere; its subscribers hear
+  `{:kv_stale, ...}` when it moves.
+
 
   **Note:** This is an SDK stub. Calling these functions will raise an error.
   The actual implementation runs on the Gamend.
@@ -374,6 +378,29 @@ defmodule Gamend.KV do
 
       _ ->
         raise "Gamend.KV.put/4 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
+    Say that the computed row `key` (`Gamend.KV.Computed`) moved in a scope, for
+    what it depends on outside the store: its subscribers hear `{:kv_stale,
+    %{key, user_id, lobby_id}}` and read it again. Nothing for a stored key.
+    
+    Inside a transaction it is said once the transaction commits, so a reader
+    it wakes sees what was written.
+    
+  """
+  @spec refresh(
+          String.t(),
+          keyword()
+        ) :: :ok
+  def refresh(_key, _opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        :ok
+
+      _ ->
+        raise "Gamend.KV.refresh/2 is a stub - only available at runtime on Gamend"
     end
   end
 

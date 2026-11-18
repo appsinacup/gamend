@@ -88,6 +88,28 @@ Gamend.KV.list_entries(user_id: user.id, page: 1, page_size: 50)
 Gamend.KV.count_entries(lobby_id: lobby.id)
 ```
 
+## Computed rows
+
+A page often draws more than what is stored: a level from the points banked, a track with what is owned. A computed row gives a client the same value, live, without a second copy to keep in step. The host names it and what it is worked out from:
+
+```elixir
+config :gamend_core, :computed_rows, %{
+  "level" => %{value: {MyGame.Level, :row}, from: ["points"]}
+}
+
+# Called with the scope asked for; a map is the row, anything else no row.
+def row(%{user_id: user_id}), do: %{"level" => level_of(user_id)}
+```
+
+| | A computed row |
+|---|---|
+| Read | as any row: `Gamend.KV.get/2`, `GET /api/v1/kv/level`, `kv:subscribe`, behind the same `before_kv_get/2` decision |
+| Stored | nowhere: the function runs on each read |
+| Moves | when a key in `from` is written or deleted in the same scope, or the host calls `Gamend.KV.refresh("level", user_id: id)` for what lives outside the store |
+| Pushed | a subscribed client gets `kv_updated` with the new value (`kv_deleted` where it is gone), read once for a burst of changes; with nobody subscribed nothing is computed |
+
+A server process subscribed to it (`Gamend.KV.subscribe/2`) receives `{:kv_stale, %{key: _, user_id: _, lobby_id: _}}` and reads it itself.
+
 ## Typed schemas
 
 KV values are JSON, but a plugin can map keys to protobuf messages by exporting `kv_schemas/0`, which lists exact keys or `*`-suffixed prefixes:

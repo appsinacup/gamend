@@ -449,6 +449,7 @@ defmodule Gamend.GDScript.API do
       "list_entries" => [0, 1],
       "prune_prefix" => [2, 3],
       "put" => [2, 3, 4],
+      "refresh" => [1, 2],
       "stream_prefix" => [1, 2],
       "subscribe" => [1, 2],
       "unsubscribe" => [1, 2],

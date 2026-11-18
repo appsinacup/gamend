@@ -160,22 +160,25 @@ defmodule GamendWeb.Schemas.Quest do
         nullable: true,
         description:
           "The host's line under the description for the caller (`label`, then `items`, " <>
-            "each a `name` and maybe a `flag`); null when none and for a visitor",
+            "each a `title` and a `flag`, empty for none); null when none and for a visitor",
         properties: %{
           label: %Schema{type: :string},
           items: %Schema{
             type: :array,
             items: %Schema{
               type: :object,
-              properties: %{name: %Schema{type: :string}, flag: %Schema{type: :string}}
+              properties: %{
+                title: %Schema{type: :string},
+                flag: %Schema{type: :string, description: "A country's code; empty for none"}
+              },
+              required: [:title, :flag]
             }
           }
         }
       },
       lock: %Schema{
         type: :string,
-        nullable: true,
-        description: "The host's reason the caller cannot claim it yet; null when none"
+        description: "The host's reason the caller cannot claim it yet; empty when none"
       }
     },
     required: [

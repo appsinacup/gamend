@@ -374,10 +374,21 @@ defmodule GamendWeb.Api.V1.QuestController do
 
     %{
       action: action_json(Quests.host_action(quest, reader)),
-      note: if(reader && !secret?, do: Quests.host_note(quest, reader)),
-      lock: if(reader, do: Quests.host_lock_label(quest, reader))
+      note: if(reader && !secret?, do: note_json(Quests.host_note(quest, reader))),
+      lock: (reader && Quests.host_lock_label(quest, reader)) || ""
     }
   end
+
+  # A thing has a title on the API (its rule R16): the host's items are
+  # named, and a flag left out is empty.
+  defp note_json(%{label: label, items: items}) do
+    %{
+      label: label,
+      items: Enum.map(items, &%{title: &1.name, flag: Map.get(&1, :flag) || ""})
+    }
+  end
+
+  defp note_json(_note), do: nil
 
   defp action_json({label, path}), do: %{label: label, path: path}
   defp action_json(_action), do: nil

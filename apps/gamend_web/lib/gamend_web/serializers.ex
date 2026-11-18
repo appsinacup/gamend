@@ -14,6 +14,7 @@ defmodule GamendWeb.Serializers do
   alias Gamend.Accounts.User
   alias Gamend.Bans
   alias Gamend.Groups
+  alias Gamend.Leaderboards
   alias Gamend.Leaderboards.Leaderboard
   alias Gamend.Lobbies
   alias Gamend.Lobbies.SpectatorTracker
@@ -199,9 +200,15 @@ defmodule GamendWeb.Serializers do
     )
   end
 
-  @doc "A leaderboard as the player and admin APIs send it (`GamendWeb.Schemas.Leaderboard`)."
-  @spec serialize_leaderboard(Leaderboard.t()) :: map()
-  def serialize_leaderboard(%Leaderboard{} = lb) do
+  @doc """
+  A leaderboard as the player and admin APIs send it
+  (`GamendWeb.Schemas.Leaderboard`), for `reader` (nil for no one): whether
+  it has an all-time ranking (`Leaderboards.all_time?/1`) and where it is
+  climbed, the host's button beside its title (`Leaderboards.host_action/2`),
+  as the leaderboards page draws them.
+  """
+  @spec serialize_leaderboard(Leaderboard.t(), String.t() | nil) :: map()
+  def serialize_leaderboard(%Leaderboard{} = lb, reader \\ nil) do
     %{
       id: lb.id,
       slug: lb.slug,
@@ -213,11 +220,16 @@ defmodule GamendWeb.Serializers do
       starts_at: lb.starts_at,
       ends_at: lb.ends_at,
       is_active: Leaderboard.active?(lb),
+      all_time: Leaderboards.all_time?(lb),
+      action: leaderboard_action(Leaderboards.host_action(lb.slug, reader)),
       metadata: lb.metadata || %{},
       inserted_at: lb.inserted_at,
       updated_at: lb.updated_at
     }
   end
+
+  defp leaderboard_action({label, path}), do: %{label: label, path: path}
+  defp leaderboard_action(_action), do: nil
 
   @doc """
   A tournament match as the player and admin APIs send it

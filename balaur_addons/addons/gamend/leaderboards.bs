@@ -31,7 +31,7 @@ pub async fn get_my_record(id: str, options: any) -> any {
     if id == "" {
         return core::missing("gamend::leaderboards::get_my_record", "id");
     }
-    let query = core::query(options, ["key"]);
+    let query = core::query(options, ["key", "all_time"]);
     let reply = await core::rest("GET", "/api/v1/leaderboards/{id}/records/me{query}");
     reply
 }
@@ -53,7 +53,7 @@ pub async fn list_leaderboard_records(id: str, options: any) -> any {
     if id == "" {
         return core::missing("gamend::leaderboards::list_leaderboard_records", "id");
     }
-    let query = core::query(options, ["page", "page_size", "key"]);
+    let query = core::query(options, ["page", "page_size", "key", "search", "all_time"]);
     let reply = await core::rest("GET", "/api/v1/leaderboards/{id}/records{query}");
     reply
 }

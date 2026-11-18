@@ -369,4 +369,141 @@ defmodule GamendWeb.Api.V1.LeaderboardControllerTest do
       assert is_binary(lb_data["id"])
     end
   end
+
+  describe "what the leaderboards page draws" do
+    defmodule Host do
+      @moduledoc false
+      def action(nil, _slug), do: {"Look", "/boards"}
+      def action(_user_id, "climbed"), do: {"Play", "/games"}
+      def action(_user_id, _slug), do: nil
+      def title(%{username: "titled" <> _}), do: "Captain"
+      def title(_user), do: nil
+      def title_class(_user, "Captain"), do: "title-3"
+      def badge(%{username: "titled" <> _}), do: "Pro"
+      def badge(_user), do: nil
+    end
+
+    setup do
+      Application.put_env(:gamend_core, :leaderboard_action, {Host, :action})
+      on_exit(fn -> Application.delete_env(:gamend_core, :leaderboard_action) end)
+
+      for {name, fun} <- [user_title: :title, user_title_class: :title_class, user_badge: :badge] do
+        Application.put_env(:gamend_web, name, {Host, fun})
+        on_exit(fn -> Application.delete_env(:gamend_web, name) end)
+      end
+
+      {:ok, lb} = Leaderboards.create_leaderboard(%{slug: "climbed", title: "Climbed"})
+      %{leaderboard: lb}
+    end
+
+    test "a board says where it is climbed, for the reader asking", %{conn: conn, leaderboard: lb} do
+      visitor = conn |> get("/api/v1/leaderboards/#{lb.id}") |> json_response(200)
+      assert visitor["data"]["action"] == %{"label" => "Look", "path" => "/boards"}
+      assert visitor["data"]["all_time"] == false
+
+      {:ok, token, _} = Guardian.encode_and_sign(AccountsFixtures.user_fixture())
+
+      reader =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> get("/api/v1/leaderboards", %{slug: "climbed"})
+        |> json_response(200)
+
+      assert hd(reader["data"])["action"] == %{"label" => "Play", "path" => "/games"}
+    end
+
+    test "a row carries its player's avatar, the host's title and badge", %{
+      conn: conn,
+      leaderboard: lb
+    } do
+      titled = AccountsFixtures.user_fixture(%{display_name: "Titled"})
+      plain = AccountsFixtures.user_fixture()
+      Leaderboards.submit_score(lb.id, titled.id, 200)
+      Leaderboards.submit_score(lb.id, plain.id, 100)
+
+      [first, second] =
+        conn
+        |> get("/api/v1/leaderboards/#{lb.id}/records")
+        |> json_response(200)
+        |> Map.get("data")
+
+      assert first["title"] == "Captain"
+      assert first["title_class"] == "title-3"
+      assert first["badge"] == "Pro"
+      assert String.starts_with?(first["avatar_url"], "/icons/")
+      assert second["title"] == ""
+      assert second["title_class"] == ""
+      assert second["badge"] == ""
+    end
+
+    test "a search keeps the rows it names, at their rank", %{conn: conn, leaderboard: lb} do
+      users = for i <- 1..3, do: AccountsFixtures.user_fixture(%{display_name: "Sailor#{i}"})
+      for {user, i} <- Enum.with_index(users, 1), do: Leaderboards.submit_score(lb.id, user.id, i)
+
+      body =
+        conn
+        |> get("/api/v1/leaderboards/#{lb.id}/records", %{search: "sailor1"})
+        |> json_response(200)
+
+      assert [%{"username" => "sailor1-" <> _, "rank" => 3}] = body["data"]
+      assert body["meta"]["total_count"] == 1
+    end
+
+    test "all_time ranks every season of a best board as one", %{conn: conn} do
+      now = DateTime.utc_now(:second)
+
+      season = fn from, to ->
+        {:ok, lb} =
+          Leaderboards.create_leaderboard(%{
+            slug: "best_seasons",
+            title: "Best",
+            operator: :best,
+            starts_at: DateTime.add(now, from, :day),
+            ends_at: DateTime.add(now, to, :day)
+          })
+
+        lb
+      end
+
+      # A season takes scores while it runs: the old one is scored, then
+      # moved into the past.
+      old = season.(-2, 1)
+      [a, b] = for _ <- 1..2, do: AccountsFixtures.user_fixture()
+      Leaderboards.submit_score(old.id, a.id, 900)
+
+      {:ok, _old} =
+        Leaderboards.update_leaderboard(old, %{
+          starts_at: DateTime.add(now, -60, :day),
+          ends_at: DateTime.add(now, -30, :day)
+        })
+
+      current = season.(-1, 29)
+      Leaderboards.submit_score(current.id, b.id, 100)
+
+      shown = conn |> get("/api/v1/leaderboards/#{current.id}") |> json_response(200)
+      assert shown["data"]["all_time"] == true
+
+      season_rows =
+        conn |> get("/api/v1/leaderboards/#{current.id}/records") |> json_response(200)
+
+      assert length(season_rows["data"]) == 1
+
+      all_rows =
+        conn
+        |> get("/api/v1/leaderboards/#{current.id}/records", %{all_time: true})
+        |> json_response(200)
+
+      assert [%{"score" => 900}, %{"score" => 100}] = all_rows["data"]
+
+      {:ok, token, _} = Guardian.encode_and_sign(a)
+
+      mine =
+        conn
+        |> put_req_header("authorization", "Bearer " <> token)
+        |> get("/api/v1/leaderboards/#{current.id}/records/me", %{all_time: true})
+        |> json_response(200)
+
+      assert mine["data"]["rank"] == 1
+    end
+  end
 end

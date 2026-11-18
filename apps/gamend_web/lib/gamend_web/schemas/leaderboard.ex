@@ -40,6 +40,24 @@ defmodule GamendWeb.Schemas.Leaderboard do
         description: "Null for a permanent leaderboard"
       },
       is_active: %Schema{type: :boolean, description: "Still accepting scores"},
+      all_time: %Schema{
+        type: :boolean,
+        description:
+          "Has an all-time ranking (a `best` board with seasons): its records read " <>
+            "with `all_time=true` rank every season of the slug as one"
+      },
+      action: %Schema{
+        type: :object,
+        nullable: true,
+        description:
+          "Where the board is climbed, for the reader asking (the host's): the button " <>
+            "beside its title. Null for none.",
+        properties: %{
+          label: %Schema{type: :string},
+          path: %Schema{type: :string, description: "A path on the site, `/games/spanish`"}
+        },
+        required: [:label, :path]
+      },
       metadata: %Schema{type: :object},
       inserted_at: %Schema{type: :string, format: :"date-time"},
       updated_at: %Schema{type: :string, format: :"date-time"}
@@ -55,6 +73,8 @@ defmodule GamendWeb.Schemas.Leaderboard do
       :starts_at,
       :ends_at,
       :is_active,
+      :all_time,
+      :action,
       :metadata,
       :inserted_at,
       :updated_at
@@ -70,6 +90,8 @@ defmodule GamendWeb.Schemas.Leaderboard do
       starts_at: "2025-12-02T00:00:00Z",
       ends_at: nil,
       is_active: true,
+      all_time: false,
+      action: %{label: "Play", path: "/play"},
       metadata: %{},
       inserted_at: "2025-12-02T10:00:00Z",
       updated_at: "2025-12-02T10:00:00Z"
@@ -106,6 +128,24 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
         description: "The user's display name, or the label's text"
       },
       score: %Schema{type: :integer},
+      avatar_url: %Schema{
+        type: :string,
+        description:
+          "The user's avatar: an uploaded picture, or `/icons/<name>.svg?color=<color>`. " <>
+            "Empty for a label record"
+      },
+      title: %Schema{
+        type: :string,
+        description: "The host's line under the name (a rank, a title); empty for none"
+      },
+      title_class: %Schema{
+        type: :string,
+        description: "The host's look for that line (a CSS class on the website); empty for none"
+      },
+      badge: %Schema{
+        type: :string,
+        description: "The host's badge beside the name (Pro); empty for none"
+      },
       metadata: %Schema{type: :object, description: "Per-record metadata"},
       updated_at: %Schema{type: :string, format: :"date-time"}
     },
@@ -116,6 +156,10 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
       :username,
       :display_name,
       :score,
+      :avatar_url,
+      :title,
+      :title_class,
+      :badge,
       :metadata,
       :updated_at
     ],
@@ -126,6 +170,10 @@ defmodule GamendWeb.Schemas.LeaderboardRecord do
       username: "progamer123-4821",
       display_name: "ProGamer123",
       score: 5000,
+      avatar_url: "/icons/rocket-launch.svg?color=info",
+      title: "",
+      title_class: "",
+      badge: "",
       metadata: %{weapon: "sword"},
       updated_at: "2025-12-02T10:00:00Z"
     }

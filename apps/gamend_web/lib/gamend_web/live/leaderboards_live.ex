@@ -427,7 +427,10 @@ defmodule GamendWeb.LeaderboardsLive do
                 ]}
               >
                 <td><.leaderboard_rank rank={record.rank} /></td>
-                <td>
+                <%!-- `max-w-0`: the name's cell takes what the rank and the score
+                      leave, and a long name is cut there; with none, a phone's
+                      table ran past its card and hid the score. --%>
+                <td class="max-w-0">
                   <%!-- A label-only record (an external scoreboard entry) has
                         no user behind it: the card draws the person icon, or
                         the host's mark for it (`row_avatar/2`). --%>

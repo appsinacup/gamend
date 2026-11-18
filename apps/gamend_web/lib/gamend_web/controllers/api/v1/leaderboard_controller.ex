@@ -2,7 +2,9 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   use GamendWeb, :controller
   use OpenApiSpex.ControllerSpecs
 
+  alias Gamend.Accounts.User
   alias Gamend.Leaderboards
+  alias GamendWeb.CoreComponents
   alias GamendWeb.Pagination
   alias GamendWeb.Schemas
 
@@ -37,12 +39,23 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
         "the default ranking when left out. A board's `metadata.views` names its keys."
   ]
 
+  # A board with an all-time ranking (`all_time` on it: a `best` board with
+  # seasons) reads every season of its slug as one ranking when asked.
+  @all_time_param [
+    in: :query,
+    schema: %Schema{type: :boolean, default: false},
+    description:
+      "Every season of the board's slug as one ranking, where the board has one " <>
+        "(its `all_time`); its own season otherwise."
+  ]
+
   # ---------------------------------------------------------------------------
   # List Leaderboards
   # ---------------------------------------------------------------------------
 
   operation(:index,
     operation_id: "list_leaderboards",
+    security: [%{}, %{"authorization" => []}],
     summary: "List leaderboards",
     description: """
     Return all leaderboards with optional filters. Results are ordered by end date (active/permanent first, then most recently ended).
@@ -130,9 +143,11 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
     leaderboards = Leaderboards.list_leaderboards(opts)
     total_count = Leaderboards.count_leaderboards(count_opts)
 
+    reader = viewer_id(conn)
+
     reply_page(
       conn,
-      Enum.map(leaderboards, &serialize_leaderboard/1),
+      Enum.map(leaderboards, &serialize_leaderboard(&1, reader)),
       page,
       page_size,
       total_count
@@ -145,6 +160,7 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
 
   operation(:show,
     operation_id: "get_leaderboard",
+    security: [%{}, %{"authorization" => []}],
     summary: "Get a leaderboard by ID",
     description: "Return details for a specific leaderboard by its ID.",
     parameters: [
@@ -164,7 +180,7 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   def show(conn, %{"id" => id}) do
     case Leaderboards.get_leaderboard(to_string(id)) do
       nil -> not_found(conn)
-      leaderboard -> reply_data(conn, serialize_leaderboard(leaderboard))
+      leaderboard -> reply_data(conn, serialize_leaderboard(leaderboard, viewer_id(conn)))
     end
   end
 
@@ -174,6 +190,7 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
 
   operation(:resolve,
     operation_id: "resolve_leaderboard_slugs",
+    security: [%{}, %{"authorization" => []}],
     summary: "Resolve multiple slugs to active leaderboards",
     description: """
     Accepts an array of leaderboard slugs and returns the currently active
@@ -206,7 +223,12 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   def resolve(conn, %{"slugs" => slugs}) when is_list(slugs) do
     resolved = Leaderboards.resolve_slugs(slugs)
 
-    reply_data(conn, Map.new(resolved, fn {slug, lb} -> {slug, serialize_leaderboard(lb)} end))
+    reader = viewer_id(conn)
+
+    reply_data(
+      conn,
+      Map.new(resolved, fn {slug, lb} -> {slug, serialize_leaderboard(lb, reader)} end)
+    )
   end
 
   def resolve(conn, _params) do
@@ -219,6 +241,7 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
 
   operation(:records,
     operation_id: "list_leaderboard_records",
+    security: [%{}, %{"authorization" => []}],
     summary: "List leaderboard records",
     description: "Return ranked records for a leaderboard, best first.",
     parameters: [
@@ -238,7 +261,13 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
         schema: %Schema{type: :integer, default: 25},
         description: "Page size (max 100)"
       ],
-      key: @key_param
+      key: @key_param,
+      search: [
+        in: :query,
+        schema: %Schema{type: :string, default: "", maxLength: 100},
+        description: "Only the rows whose name holds it, each at its rank on the whole ranking"
+      ],
+      all_time: @all_time_param
     ],
     responses: [
       ok: {"List of records", "application/json", LeaderboardRecordPage},
@@ -254,11 +283,20 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
       leaderboard ->
         {page, page_size} = Pagination.params(params)
         key = key_param(params)
+        search = String.slice(to_string(params["search"] || ""), 0, 100)
+        all_time = all_time_param(params)
 
         records =
-          Leaderboards.list_records(leaderboard.id, key: key, page: page, page_size: page_size)
+          Leaderboards.list_records(leaderboard.id,
+            key: key,
+            page: page,
+            page_size: page_size,
+            search: search,
+            all_time: all_time
+          )
 
-        total_count = Leaderboards.count_records(leaderboard.id, key: key)
+        total_count =
+          Leaderboards.count_records(leaderboard.id, key: key, search: search, all_time: all_time)
 
         reply_page(conn, Enum.map(records, &serialize_record/1), page, page_size, total_count)
     end
@@ -270,6 +308,7 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
 
   operation(:around,
     operation_id: "list_records_around_user",
+    security: [%{}, %{"authorization" => []}],
     summary: "List records around a user",
     description: """
     Return up to `limit` records centered on a user's rank. The window is
@@ -342,7 +381,8 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
         description: "Leaderboard ID",
         required: true
       ],
-      key: @key_param
+      key: @key_param,
+      all_time: @all_time_param
     ],
     responses: [
       ok: {"User's record with rank", "application/json", LeaderboardRecordResponse},
@@ -361,7 +401,10 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
         not_found(conn)
 
       leaderboard ->
-        case Leaderboards.get_user_record(leaderboard.id, user_id, key: key_param(params)) do
+        case Leaderboards.get_user_record(leaderboard.id, user_id,
+               key: key_param(params),
+               all_time: all_time_param(params)
+             ) do
           {:ok, record} -> reply_data(conn, serialize_record(record))
           {:error, :not_found} -> reply_error(conn, :not_found, "record_not_found")
         end
@@ -374,6 +417,7 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
 
   operation(:above,
     operation_id: "list_records_above",
+    security: [%{}, %{"authorization" => []}],
     summary: "List the records just ahead of a score",
     description: """
     Return up to `limit` listed records whose score is strictly better than
@@ -434,6 +478,7 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
 
   operation(:keys,
     operation_id: "list_leaderboard_keys",
+    security: [%{}, %{"authorization" => []}],
     summary: "List a leaderboard's rankings",
     description: """
     Return the keys (rankings) the board holds listed records under, sorted;
@@ -481,6 +526,16 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
   defp key_param(%{"key" => key}) when is_binary(key), do: String.slice(key, 0, 255)
   defp key_param(_params), do: ""
 
+  defp all_time_param(%{"all_time" => value}), do: value in [true, "true"]
+  defp all_time_param(_params), do: false
+
+  defp viewer_id(conn) do
+    case conn.assigns[:current_scope] do
+      %{user_id: user_id} -> user_id
+      _ -> nil
+    end
+  end
+
   defp integer_param(value) when is_integer(value), do: {:ok, value}
 
   defp integer_param(value) when is_binary(value) do
@@ -494,7 +549,11 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
 
   defp not_found(conn), do: reply_error(conn, :not_found, "not_found")
 
-  defp serialize_leaderboard(lb), do: Serializers.serialize_leaderboard(lb)
+  # A board as the leaderboards page draws it for the reader asking
+  # (`GamendWeb.LeaderboardsLive`): the button beside its title (`action`,
+  # `Leaderboards.host_action/2`: `{label, path}`, or null) and whether it
+  # has an All time tab (`all_time`, `Leaderboards.all_time?/1`).
+  defp serialize_leaderboard(lb, reader), do: Serializers.serialize_leaderboard(lb, reader)
 
   defp serialize_record(record) do
     base = %{
@@ -504,6 +563,8 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
       metadata: record.metadata || %{},
       updated_at: record.updated_at
     }
+
+    base = Map.merge(base, player_fields(record))
 
     if label = record.label do
       Map.merge(base, %{
@@ -519,6 +580,25 @@ defmodule GamendWeb.Api.V1.LeaderboardController do
       })
     end
   end
+
+  # What a row's player card shows beside the name, as the page's
+  # `player_card/1` draws it: the avatar (`User.public_avatar_url/1`: an
+  # uploaded picture or `/icons/<name>.svg?color=<color>`), the host's title
+  # under the name and its class (`user_title/1`, `user_title_class/2`) and
+  # the host's badge (`user_badge/1`). Empty for a label's row, and for a
+  # read that does not load the user.
+  defp player_fields(%{user: %User{} = user}) do
+    title = CoreComponents.user_title_text(user)
+
+    %{
+      avatar_url: User.public_avatar_url(user) || "",
+      title: title || "",
+      title_class: (title && CoreComponents.user_title_class(user, title)) || "",
+      badge: CoreComponents.user_badge_text(user) || ""
+    }
+  end
+
+  defp player_fields(_record), do: %{avatar_url: "", title: "", title_class: "", badge: ""}
 
   defp maybe_add_slug_filter(opts, nil), do: opts
   defp maybe_add_slug_filter(opts, ""), do: opts

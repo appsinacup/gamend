@@ -69,8 +69,13 @@ defmodule GamendWeb.Api.V1.QuestControllerTest do
 
       open = Enum.find(body["data"], &(&1["key"] == "open"))
       assert open["action"] == %{"label" => "Play", "path" => "/games"}
-      assert open["note"] == %{"label" => "Done in:", "items" => [%{"name" => "French", "flag" => "fr"}]}
-      assert open["lock"] == nil
+
+      assert open["note"] == %{
+               "label" => "Done in:",
+               "items" => [%{"title" => "French", "flag" => "fr"}]
+             }
+
+      assert open["lock"] == ""
       assert Enum.find(body["data"], &(&1["key"] == "locked"))["lock"] == "Pro"
     end
 
@@ -80,16 +85,16 @@ defmodule GamendWeb.Api.V1.QuestControllerTest do
 
       assert open["action"] == %{"label" => "Look", "path" => "/catalog"}
       assert open["note"] == nil
-      assert open["lock"] == nil
+      assert open["lock"] == ""
     end
 
-    test "with no host they are null", %{conn: conn} do
+    test "with no host there is no action, note or lock", %{conn: conn} do
       for name <- [:quest_action, :quest_note, :quest_lock_filter],
           do: Application.delete_env(:gamend_core, name)
 
       body = conn |> get("/api/v1/quests") |> json_response(200)
       open = Enum.find(body["data"], &(&1["key"] == "open"))
-      assert open["action"] == nil and open["note"] == nil and open["lock"] == nil
+      assert open["action"] == nil and open["note"] == nil and open["lock"] == ""
     end
   end
 

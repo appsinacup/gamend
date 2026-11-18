@@ -465,7 +465,7 @@ defmodule GamendWeb.Router.Shared do
       end
 
       scope "/api/v1", GamendWeb.Api.V1, as: :api_v1 do
-        pipe_through [:api, :list_leaderboards_gate]
+        pipe_through [:api, :api_optional_auth, :list_leaderboards_gate]
 
         get "/leaderboards", LeaderboardController, :index
         post "/leaderboards/resolve", LeaderboardController, :resolve

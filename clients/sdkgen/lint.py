@@ -96,7 +96,7 @@ def operations(report: Report, model: Model, generated: bool) -> None:
         report.problems.append(
             f"Godot {surface}: GamendApi.gd calls what the API lacks: {', '.join(sorted(stale))}"
         )
-    check_facade_arguments(report, model, surface)
+    check_facade_arguments(report, model, surface, generated)
     if generated and (GODOT_OUT / "apis").is_dir():
         apis = text_of(sorted((GODOT_OUT / "apis").glob("*.gd")))
         missing = [i for i in ids if f"func {i}(" not in apis]
@@ -168,17 +168,37 @@ def facade_arguments(text: str, at: int) -> list[str] | None:
     return None
 
 
-def check_facade_arguments(report: Report, model: Model, surface: str) -> None:
+GDSCRIPT_FUNC = re.compile(r"^func (\w+)\(\n(.*?)^\):", re.MULTILINE | re.DOTALL)
+GDSCRIPT_PARAM = re.compile(r"^\t(\w+)\s*[:=,]", re.MULTILINE)
+
+
+def written_parameters() -> dict[str, list[str]]:
+    """What openapi-generator wrote, where it lies on disk (`--generated`): each
+    function's parameters before its callbacks, in snake_case."""
+    found = {}
+    for path in sorted((GODOT_OUT / "apis").glob("*.gd")):
+        for match in GDSCRIPT_FUNC.finditer(path.read_text()):
+            names = [n for n in GDSCRIPT_PARAM.findall(match.group(2))]
+            names = [n for n in names if n not in ("on_success", "on_failure")]
+            found[match.group(1)] = [re.sub(r"(?<!^)([A-Z])", r"_\1", n).lower() for n in names]
+    return found
+
+
+def check_facade_arguments(
+    report: Report, model: Model, surface: str, generated: bool = False
+) -> None:
     """`_call_api` appends the two callbacks to the list and `callv`s it, so a
     list one short puts `on_success` where an optional parameter goes: the call
     never answers. The list must match the generated function's parameters, by
     count, and by place where an argument is named after its parameter."""
     text = (GODOT / "GamendApi.gd").read_text()
+    written = written_parameters() if generated and (GODOT_OUT / "apis").is_dir() else {}
     wrong = []
     for match in FACADE_CALL.finditer(text):
         op_id = match.group(1)
         args = facade_arguments(text, match.end())
         params = generated_parameters(model, op_id)
+        params = written.get(op_id, params)
         if args is None or not params and op_id not in {op["id"] for op in model.ops}:
             continue
         if len(args) != len(params):

@@ -20,6 +20,9 @@ The groups a player's notification choices are made per.
 
 Every value.
 
+# `announcements`
+*macro* 
+
 # `chat`
 *macro* 
 

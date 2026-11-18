@@ -38,7 +38,7 @@ Which channel a group defaults to follows one rule (2026-10-28):
     must work through, or what they lose if they miss it: "Your reports"
     (a report's answer, a moderator's warning), "Reports to review";
   * **email off, theirs to turn on**: news and nudges ("Friends and
-    groups", a host's streak reminder);
+    groups", "News and announcements", a host's streak reminder);
   * **on the site only**: what comes often and matters in the moment
     ("Chat messages", "Quests and rewards").
 

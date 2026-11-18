@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1472">
+    <meta name="project" content="gamend_core v1.1.1474">
 
 
-    <title>Gamend.Notifications.Preferences — gamend_core v1.1.1472</title>
+    <title>Gamend.Notifications.Preferences — gamend_core v1.1.1474</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-BFAEA861.js"></script>
+    <script defer src="dist/sidebar_items-269758F3.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1472
+          v1.1.1474
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Notifications.<wbr />Preferences</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1472)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1474)</small>
 
     </h1>
 
@@ -136,7 +136,7 @@ lists the types that keep their own email, for a notice that cannot wait
 (a moderator's warning); a <code class="inline">notify/3</code> call says so with <code class="inline">&quot;email_now&quot;</code>.</p><p>Which channel a group defaults to follows one rule (2026-10-28):</p><ul><li><strong>email on</strong>: what the person asked for and waits on, a queue an admin
 must work through, or what they lose if they miss it: &quot;Your reports&quot;
 (a report's answer, a moderator's warning), &quot;Reports to review&quot;;</li><li><strong>email off, theirs to turn on</strong>: news and nudges (&quot;Friends and
-groups&quot;, a host's streak reminder);</li><li><strong>on the site only</strong>: what comes often and matters in the moment
+groups&quot;, &quot;News and announcements&quot;, a host's streak reminder);</li><li><strong>on the site only</strong>: what comes often and matters in the moment
 (&quot;Chat messages&quot;, &quot;Quests and rewards&quot;).</li></ul><p>Stored in the user's private preferences (<a href="Gamend.Accounts.Preferences.html"><code class="inline">Gamend.Accounts.Preferences</code></a>)
 under <code class="inline">&quot;notifications&quot;</code>:</p><pre><code class="makeup elixir" translate="no"><span class="p" data-group-id="group-1">%{</span><span class="s">&quot;off_all&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="n">bool</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;off_email&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="n">bool</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;off_push&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="n">bool</span><span class="p">,</span><span class="w">
   </span><span class="s">&quot;groups&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p" data-group-id="group-2">%{</span><span class="n">group</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p" data-group-id="group-3">%{</span><span class="n">channel</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="n">bool</span><span class="p" data-group-id="group-3">}</span><span class="p" data-group-id="group-2">}</span><span class="p" data-group-id="group-1">}</span></code></pre>
@@ -319,7 +319,7 @@ nil for a type in no group (a moderator's notice), which is always sent.</p></di
       <h1 class="signature" translate="no">channels()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L141" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L152" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -347,7 +347,7 @@ nil for a type in no group (a moderator's notice), which is always sent.</p></di
       <h1 class="signature" translate="no">digest?(group_key, type)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L231" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L242" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -377,7 +377,7 @@ not in its <code class="inline">email_now</code>.</p>
       <h1 class="signature" translate="no">email_every_days(group_key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L246" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L257" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -405,7 +405,7 @@ not in its <code class="inline">email_now</code>.</p>
       <h1 class="signature" translate="no">enabled?(user, group_key, channel)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L267" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L278" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -437,7 +437,7 @@ else.</p>
       <h1 class="signature" translate="no">group(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L168" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L179" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -465,7 +465,7 @@ else.</p>
       <h1 class="signature" translate="no">group_for_type(type)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L176" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L187" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -495,7 +495,7 @@ nil for a type in no group (a moderator's notice), which is always sent.</p>
       <h1 class="signature" translate="no">groups()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L149" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L160" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -524,7 +524,7 @@ nil for a type in no group (a moderator's notice), which is always sent.</p>
       <h1 class="signature" translate="no">groups_for(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L160" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L171" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -552,7 +552,7 @@ nil for a type in no group (a moderator's notice), which is always sent.</p>
       <h1 class="signature" translate="no">off?(user, switch)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L342" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L353" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -580,7 +580,7 @@ nil for a type in no group (a moderator's notice), which is always sent.</p>
       <h1 class="signature" translate="no">put(user, group_key, channel, on?)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L305" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L316" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -609,7 +609,7 @@ nil for a type in no group (a moderator's notice), which is always sent.</p>
       <h1 class="signature" translate="no">stored(user)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L257" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L268" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -637,7 +637,7 @@ nil for a type in no group (a moderator's notice), which is always sent.</p>
       <h1 class="signature" translate="no">turn_off(user, atom)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L330" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L341" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -666,7 +666,7 @@ nil for a type in no group (a moderator's notice), which is always sent.</p>
       <h1 class="signature" translate="no">turn_on(user, atom)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L336" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/notifications/preferences.ex#L347" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -694,9 +694,9 @@ nil for a type in no group (a moderator's notice), which is always sent.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1472">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1474">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1472">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1474">Hex Preview</a>
 
             </span>
 

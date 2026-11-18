@@ -17,6 +17,9 @@ The `metadata["type"]` codes core writes on a notification. The registry with th
 
 Every value.
 
+# `announcement`
+*macro* 
+
 # `chat_friend`
 *macro* 
 

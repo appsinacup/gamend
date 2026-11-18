@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1472">
+    <meta name="project" content="gamend_core v1.1.1474">
 
 
-    <title>API Reference — gamend_core v1.1.1472</title>
+    <title>API Reference — gamend_core v1.1.1474</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-BFAEA861.js"></script>
+    <script defer src="dist/sidebar_items-269758F3.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1472
+          v1.1.1474
         </div>
       </div>
     </div>
@@ -92,7 +92,7 @@ gamend_core
 
 <div id="top-content">
   <div class="heading-with-actions top-heading">
-    <h1>API Reference <small class="app-vsn">gamend_core v#1.1.1472</small></h1>
+    <h1>API Reference <small class="app-vsn">gamend_core v#1.1.1474</small></h1>
 <a href="api-reference.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
   <i class="ri-markdown-line" aria-hidden="true"></i>
   <span class="sr-only">Copy Markdown</span>
@@ -1814,6 +1814,28 @@ guard can name one, and <code class="inline">all/0</code> for <code class="inlin
 
     <div class="summary-synopsis"><p>Notifications context – create, list, and delete persisted user-to-user
 notifications.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Notifications.AnnouncementWorker.html" translate="no">Gamend.<wbr />Notifications.<wbr />AnnouncementWorker</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Sends one batch of an announcement (<a href="Gamend.Notifications.Announcements.html"><code class="inline">Gamend.Notifications.Announcements</code></a>)
+and queues the next. Unique per announcement (<code class="inline">&quot;id&quot;</code>) and cursor
+(<code class="inline">&quot;after&quot;</code>), forever: a job rescued after a crash cannot start a second
+chain behind the first.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Gamend.Notifications.Announcements.html" translate="no">Gamend.<wbr />Notifications.<wbr />Announcements</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>One notice to every player at once (<a href="Gamend.Notifications.html#announce_to_all/1"><code class="inline">Gamend.Notifications.announce_to_all/1</code></a>),
+sent from the admin console or the admin API.</p></div>
 
 </div>
 <div class="summary-row">
@@ -3582,9 +3604,9 @@ marker that accepts one.</p></div>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1472">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1474">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1472">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1474">Hex Preview</a>
 
             </span>
 

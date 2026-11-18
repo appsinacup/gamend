@@ -1,4 +1,4 @@
-# gamend_core v1.1.1472 - API Reference
+# gamend_core v1.1.1474 - API Reference
 
 ## Modules
 
@@ -519,6 +519,13 @@ translates its text through gettext at read time.
 - Delivery
   - [Gamend.Notifications](Gamend.Notifications.md): Notifications context – create, list, and delete persisted user-to-user
 notifications.
+  - [Gamend.Notifications.AnnouncementWorker](Gamend.Notifications.AnnouncementWorker.md): Sends one batch of an announcement (`Gamend.Notifications.Announcements`)
+and queues the next. Unique per announcement (`"id"`) and cursor
+(`"after"`), forever: a job rescued after a crash cannot start a second
+chain behind the first.
+
+  - [Gamend.Notifications.Announcements](Gamend.Notifications.Announcements.md): One notice to every player at once (`Gamend.Notifications.announce_to_all/1`),
+sent from the admin console or the admin API.
   - [Gamend.Notifications.Digest](Gamend.Notifications.Digest.md): Emails that wait and go out together: a group with `email_every`
 (`Gamend.Notifications.Preferences`) keeps its notices here, and one email
 lists them.

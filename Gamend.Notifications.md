@@ -59,6 +59,19 @@ Admin: create a notification from any sender to any recipient (no friendship che
 
 Admin: delete a single notification by ID (no ownership check).
 
+# `announce_to_all`
+
+```elixir
+@spec announce_to_all(map()) ::
+  {:ok, non_neg_integer()} | {:error, Ecto.Changeset.t()}
+```
+
+Admin: tell every player the same thing at once (`attrs` as `notify/3`
+takes them: `"title"`, `"content"`, `"url"`, `"site_only"`), in the
+"News and announcements" group, so each player's choices for it apply.
+Delivery runs in the background (`Gamend.Notifications.Announcements`);
+answers how many accounts it is going to.
+
 # `count_all_notifications`
 
 ```elixir
@@ -255,7 +268,7 @@ ids are skipped.
 # `notify`
 
 ```elixir
-@spec notify(user_id(), String.t(), map()) ::
+@spec notify(user_id() | Gamend.Accounts.User.t(), String.t(), map()) ::
   {:ok, [String.t()]} | {:error, :not_found}
 ```
 

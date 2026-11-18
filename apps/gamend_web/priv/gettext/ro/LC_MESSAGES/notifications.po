@@ -186,3 +186,8 @@ msgstr "Cineva a cerut să se alăture unui grup pe care îl administrezi"
 #, elixir-autogen, elixir-format
 msgid "Someone sent a friend request"
 msgstr "Cineva a trimis o cerere de prietenie"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:41
+#, elixir-autogen, elixir-format
+msgid "An announcement to every player"
+msgstr "Un anunț pentru toți jucătorii"

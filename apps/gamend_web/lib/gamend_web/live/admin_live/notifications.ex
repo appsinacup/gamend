@@ -3,6 +3,7 @@ defmodule GamendWeb.AdminLive.Notifications do
 
   alias Gamend.Accounts.Scope
   alias Gamend.Notifications
+  alias Gamend.Notifications.Announcements
   alias GamendWeb.LiveHelpers
   alias GamendWeb.UserLive.Settings.NotificationsTab
 
@@ -27,6 +28,8 @@ defmodule GamendWeb.AdminLive.Notifications do
       |> assign(:filters, %{})
       |> assign(:selected_ids, MapSet.new())
       |> assign(:show_create, false)
+      |> assign(:audience_count, Announcements.count_audience())
+      |> assign(:announce_form, announce_form(%{}))
       |> assign(
         :create_form,
         to_form(
@@ -63,6 +66,53 @@ defmodule GamendWeb.AdminLive.Notifications do
               </p>
             </div>
             <NotificationsTab.group_rows user={@user} groups={@admin_notify_groups} />
+          </div>
+        </div>
+
+        <div id="admin-announce" class="card bg-base-200">
+          <div class="card-body space-y-3">
+            <div>
+              <h2 class="card-title">Send to everyone</h2>
+              <p class="text-sm text-muted">
+                One notification to every player ({@audience_count} accounts; banned ones are skipped).
+                It is always on the site; by phone and email as each player chose for
+                "News and announcements" (phone on, email off until they turn it on).
+              </p>
+            </div>
+            <.form
+              for={@announce_form}
+              id="admin-announce-form"
+              phx-change="validate_announcement"
+              phx-submit="announce"
+              class="space-y-3"
+            >
+              <.input field={@announce_form[:title]} type="text" label="Title" />
+              <.input
+                field={@announce_form[:content]}
+                type="textarea"
+                label="Content (optional)"
+                rows="3"
+              />
+              <.input
+                field={@announce_form[:url]}
+                type="text"
+                label="Link (optional, a path on this site such as /news)"
+              />
+              <.input
+                field={@announce_form[:site_only]}
+                type="checkbox"
+                label="On the site only (no phone, no email)"
+              />
+              <button
+                type="submit"
+                id="admin-announce-submit"
+                data-confirm={"Send this to all #{@audience_count} players?"}
+                phx-disable-with="Sending..."
+                class="btn btn-primary btn-sm"
+              >
+                <.icon name="hero-megaphone-solid" class="size-4" /> Send to everyone
+              </button>
+            </.form>
           </div>
         </div>
 
@@ -273,6 +323,23 @@ defmodule GamendWeb.AdminLive.Notifications do
      |> reload_notifications()}
   end
 
+  def handle_event("validate_announcement", %{"announcement" => params}, socket),
+    do: {:noreply, assign(socket, :announce_form, announce_form(params, :validate))}
+
+  def handle_event("announce", %{"announcement" => params}, socket) do
+    case Notifications.announce_to_all(params) do
+      {:ok, count} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, "Sending to every player (#{count} accounts)")
+         |> assign(:audience_count, count)
+         |> assign(:announce_form, announce_form(%{}))}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, :announce_form, to_form(changeset, as: :announcement))}
+    end
+  end
+
   @impl true
   def handle_event("toggle_create", _params, socket) do
     {:noreply, assign(socket, :show_create, !socket.assigns.show_create)}
@@ -431,6 +498,13 @@ defmodule GamendWeb.AdminLive.Notifications do
     selected = socket.assigns.selected_ids
     allowed = MapSet.new(ids)
     assign(socket, :selected_ids, MapSet.intersection(selected, allowed))
+  end
+
+  defp announce_form(params, action \\ nil) do
+    params
+    |> Announcements.changeset()
+    |> Map.put(:action, action)
+    |> to_form(as: :announcement)
   end
 
   defp parse_id(v), do: Gamend.UUIDv7.cast_or_nil(v)

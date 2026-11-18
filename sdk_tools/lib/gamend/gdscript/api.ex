@@ -567,6 +567,7 @@ defmodule Gamend.GDScript.API do
     "Notifications" => %{
       "admin_create_notification" => [3],
       "admin_delete_notification" => [1],
+      "announce_to_all" => [1],
       "count_all_notifications" => [0, 1],
       "count_notifications" => [1],
       "count_unread_notifications" => [1],

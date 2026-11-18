@@ -1862,6 +1862,10 @@ func admin_kv_admin_upsert_kv(adminUpsertKvRequest: GamendAdminUpsertKvRequest) 
 
 ## ADMIN NOTIFICATIONS
 
+## Send a notification to every player (admin)
+func admin_notifications_admin_announce_notification(adminAnnounceNotificationRequest: GamendAdminAnnounceNotificationRequest) -> GamendResult:
+	return await _call_api(AdminNotificationsApi.new(_config), "admin_announce_notification", [adminAnnounceNotificationRequest])
+
 ## Create a notification (admin)
 func admin_notifications_admin_create_notification(adminCreateNotificationRequest: GamendAdminCreateNotificationRequest) -> GamendResult:
 	return await _call_api(AdminNotificationsApi.new(_config), "admin_create_notification", [adminCreateNotificationRequest])

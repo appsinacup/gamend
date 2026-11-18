@@ -37,7 +37,8 @@ defmodule GamendWeb.I18n.NotificationTypesCatalog do
       dgettext("notifications", "A moderator sent a warning"),
       dgettext("notifications", "Muted in chat"),
       dgettext("notifications", "A quest or achievement was completed"),
-      dgettext("notifications", "A report is waiting for review")
+      dgettext("notifications", "A report is waiting for review"),
+      dgettext("notifications", "An announcement to every player")
     ]
   end
 end

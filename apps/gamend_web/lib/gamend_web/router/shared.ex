@@ -880,6 +880,7 @@ defmodule GamendWeb.Router.Shared do
         delete "/users/:id", UserController, :delete
         get "/notifications", NotificationController, :index
         post "/notifications", NotificationController, :create
+        post "/notifications/announce", NotificationController, :announce
         delete "/notifications/:id", NotificationController, :delete
         get "/push/tokens", PushController, :index
         delete "/push/tokens/:id", PushController, :delete

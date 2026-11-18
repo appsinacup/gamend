@@ -4223,3 +4223,8 @@ msgstr "Te veel pogingen. Wacht een minuut."
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "Kon deze code niet inwisselen."
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "Nieuws en aankondigingen"

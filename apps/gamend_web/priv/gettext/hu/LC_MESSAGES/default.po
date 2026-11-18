@@ -4224,3 +4224,8 @@ msgstr "Túl sok próbálkozás. Várj egy percet."
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "A kódot nem sikerült beváltani."
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "Hírek és közlemények"

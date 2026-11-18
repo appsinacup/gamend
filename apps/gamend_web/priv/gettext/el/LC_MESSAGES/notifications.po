@@ -186,3 +186,8 @@ msgstr "Κάποιος ζήτησε να μπει σε ομάδα που δια�
 #, elixir-autogen, elixir-format
 msgid "Someone sent a friend request"
 msgstr "Κάποιος έστειλε αίτημα φιλίας"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:41
+#, elixir-autogen, elixir-format
+msgid "An announcement to every player"
+msgstr "Μια ανακοίνωση προς όλους τους παίκτες"

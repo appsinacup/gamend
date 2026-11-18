@@ -4173,3 +4173,8 @@ msgstr "尝试次数过多，请等待一分钟。"
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "无法兑换该兑换码。"
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "新闻与公告"

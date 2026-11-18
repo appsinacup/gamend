@@ -4173,3 +4173,8 @@ msgstr "試行回数が多すぎます。1分待ってください。"
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "このコードを引き換えられませんでした。"
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "ニュースとお知らせ"

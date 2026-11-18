@@ -35,6 +35,9 @@ defmodule GamendWeb.NotificationEmail do
   def group_label(%{key: PreferenceGroup.reports()}), do: gettext("Your reports")
   def group_label(%{key: PreferenceGroup.payments()}), do: gettext("Payments")
 
+  def group_label(%{key: PreferenceGroup.announcements()}),
+    do: gettext("News and announcements")
+
   def group_label(%{label: label}) when is_binary(label),
     do: GamendWeb.HostLayouts.translate(label)
 

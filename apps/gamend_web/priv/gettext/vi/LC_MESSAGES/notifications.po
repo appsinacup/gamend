@@ -186,3 +186,8 @@ msgstr "Có người xin tham gia nhóm bạn quản lý"
 #, elixir-autogen, elixir-format
 msgid "Someone sent a friend request"
 msgstr "Có người gửi lời mời kết bạn"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:41
+#, elixir-autogen, elixir-format
+msgid "An announcement to every player"
+msgstr "Thông báo gửi đến mọi người chơi"

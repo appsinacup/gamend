@@ -186,3 +186,8 @@ msgstr "Joku pyysi liittymistä ylläpitämääsi ryhmään"
 #, elixir-autogen, elixir-format
 msgid "Someone sent a friend request"
 msgstr "Joku lähetti kaveripyynnön"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:41
+#, elixir-autogen, elixir-format
+msgid "An announcement to every player"
+msgstr "Tiedote kaikille pelaajille"

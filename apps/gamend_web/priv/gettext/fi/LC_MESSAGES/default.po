@@ -4223,3 +4223,8 @@ msgstr "Liian monta yritystä. Odota minuutti."
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "Koodia ei voitu lunastaa."
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "Uutiset ja tiedotteet"

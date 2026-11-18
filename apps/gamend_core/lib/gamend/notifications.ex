@@ -38,7 +38,9 @@ defmodule Gamend.Notifications do
 
   use Nebulex.Caching, cache: Gamend.Cache
 
+  alias Gamend.Accounts.User
   alias Gamend.Friends
+  alias Gamend.Notifications.Announcements
   alias Gamend.Notifications.Digest
   alias Gamend.Notifications.Notification
   alias Gamend.Notifications.Preferences
@@ -428,52 +430,65 @@ defmodule Gamend.Notifications do
   refreshes the one row rather than stacking. Returns the channels it went
   out on.
   """
-  @spec notify(user_id(), String.t(), map()) :: {:ok, [String.t()]} | {:error, :not_found}
+  @spec notify(user_id() | User.t(), String.t(), map()) ::
+          {:ok, [String.t()]} | {:error, :not_found}
+  def notify(%User{} = user, group, attrs) when is_binary(group) and is_map(attrs),
+    do: {:ok, deliver_notice(user, group, attrs)}
+
   def notify(user_id, group, attrs)
       when is_binary(user_id) and is_binary(group) and is_map(attrs) do
     case Gamend.Accounts.get_user(user_id) do
-      nil ->
-        {:error, :not_found}
-
-      user ->
-        metadata =
-          %{"type" => attrs["type"], "url" => attrs["url"]}
-          |> Map.reject(fn {_k, v} -> is_nil(v) end)
-
-        row = %{
-          "title" => attrs["title"],
-          "content" => attrs["content"] || "",
-          "metadata" => metadata
-        }
-
-        in_app? =
-          Preferences.enabled?(user, group, NotificationChannel.in_app()) and
-            match?(
-              {:ok, _},
-              upsert_notification(user_id, user_id, row, fan_out: false, group: group)
-            )
-
-        site_only? = attrs["site_only"] == true
-
-        push? =
-          not site_only? and Preferences.enabled?(user, group, NotificationChannel.push()) and
-            push_message(user_id, row, "notify-#{group}")
-
-        email? =
-          not site_only? and Preferences.enabled?(user, group, NotificationChannel.email()) and
-            enqueue_email(user, group, attrs)
-
-        {:ok,
-         for(
-           {channel, true} <- [
-             {NotificationChannel.in_app(), in_app?},
-             {NotificationChannel.push(), push?},
-             {NotificationChannel.email(), email?}
-           ],
-           do: channel
-         )}
+      nil -> {:error, :not_found}
+      user -> {:ok, deliver_notice(user, group, attrs)}
     end
   end
+
+  defp deliver_notice(%User{id: user_id} = user, group, attrs) do
+    metadata =
+      %{"type" => attrs["type"], "url" => attrs["url"]}
+      |> Map.reject(fn {_k, v} -> is_nil(v) end)
+
+    row = %{
+      "title" => attrs["title"],
+      "content" => attrs["content"] || "",
+      "metadata" => metadata
+    }
+
+    in_app? =
+      Preferences.enabled?(user, group, NotificationChannel.in_app()) and
+        match?(
+          {:ok, _},
+          upsert_notification(user_id, user_id, row, fan_out: false, group: group)
+        )
+
+    site_only? = attrs["site_only"] == true
+
+    push? =
+      not site_only? and Preferences.enabled?(user, group, NotificationChannel.push()) and
+        push_message(user_id, row, "notify-#{group}")
+
+    email? =
+      not site_only? and Preferences.enabled?(user, group, NotificationChannel.email()) and
+        enqueue_email(user, group, attrs)
+
+    for {channel, true} <- [
+          {NotificationChannel.in_app(), in_app?},
+          {NotificationChannel.push(), push?},
+          {NotificationChannel.email(), email?}
+        ],
+        do: channel
+  end
+
+  @doc """
+  Admin: tell every player the same thing at once (`attrs` as `notify/3`
+  takes them: `"title"`, `"content"`, `"url"`, `"site_only"`), in the
+  "News and announcements" group, so each player's choices for it apply.
+  Delivery runs in the background (`Gamend.Notifications.Announcements`);
+  answers how many accounts it is going to.
+  """
+  @spec announce_to_all(map()) ::
+          {:ok, non_neg_integer()} | {:error, Ecto.Changeset.t()}
+  def announce_to_all(attrs) when is_map(attrs), do: Announcements.send_to_all(attrs)
 
   # The email is the web app's to build (it knows the site's URL and signs the
   # unsubscribe link), so core queues its job by the worker's name. A job made

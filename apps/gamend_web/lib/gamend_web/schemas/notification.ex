@@ -65,3 +65,27 @@ defmodule GamendWeb.Schemas.NotificationResponse do
   @moduledoc "One notification under `data`."
   use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.Notification
 end
+
+defmodule GamendWeb.Schemas.Announcement do
+  @moduledoc "An announcement on its way to every player."
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  OpenApiSpex.schema(%{
+    title: "Announcement",
+    description: "An announcement queued for every player",
+    type: :object,
+    properties: %{
+      recipients: %Schema{
+        type: :integer,
+        description: "Accounts it is going to (banned ones are skipped as it reaches them)"
+      }
+    },
+    required: [:recipients]
+  })
+end
+
+defmodule GamendWeb.Schemas.AnnouncementResponse do
+  @moduledoc "A queued announcement under `data`."
+  use GamendWeb.Schemas.Envelope, data: GamendWeb.Schemas.Announcement
+end

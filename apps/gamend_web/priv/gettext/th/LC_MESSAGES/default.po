@@ -4173,3 +4173,8 @@ msgstr "ลองหลายครั้งเกินไป รอสัก�
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "ไม่สามารถแลกโค้ดนี้ได้"
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "ข่าวสารและประกาศ"

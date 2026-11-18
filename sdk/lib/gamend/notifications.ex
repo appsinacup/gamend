@@ -76,6 +76,27 @@ defmodule Gamend.Notifications do
   end
 
   @doc ~S"""
+    Admin: tell every player the same thing at once (`attrs` as `notify/3`
+    takes them: `"title"`, `"content"`, `"url"`, `"site_only"`), in the
+    "News and announcements" group, so each player's choices for it apply.
+    Delivery runs in the background (`Gamend.Notifications.Announcements`);
+    answers how many accounts it is going to.
+    
+  """
+  @spec announce_to_all(map()) :: {:ok, non_neg_integer()} | {:error, Ecto.Changeset.t()}
+  def announce_to_all(_attrs) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        if reason = Application.get_env(:gamend_sdk, :stub_error),
+          do: {:error, reason},
+          else: {:ok, nil}
+
+      _ ->
+        raise "Gamend.Notifications.announce_to_all/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     Count all notifications matching the given filters (admin).
   """
   @spec count_all_notifications(map()) :: non_neg_integer()
@@ -410,8 +431,9 @@ defmodule Gamend.Notifications do
     out on.
     
   """
-  @spec notify(user_id(), String.t(), map()) :: {:ok, [String.t()]} | {:error, :not_found}
-  def notify(_user_id, _group, _attrs) do
+  @spec notify(user_id() | Gamend.Accounts.User.t(), String.t(), map()) ::
+          {:ok, [String.t()]} | {:error, :not_found}
+  def notify(_user, _group, _attrs) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
         if reason = Application.get_env(:gamend_sdk, :stub_error),

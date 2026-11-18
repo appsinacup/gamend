@@ -186,3 +186,8 @@ msgstr "有人申请加入你管理的群组"
 #, elixir-autogen, elixir-format
 msgid "Someone sent a friend request"
 msgstr "有人发送了好友请求"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:41
+#, elixir-autogen, elixir-format
+msgid "An announcement to every player"
+msgstr "致所有玩家的公告"

@@ -186,3 +186,8 @@ msgstr "Valaki csatlakozni kért egy általad kezelt csoporthoz"
 #, elixir-autogen, elixir-format
 msgid "Someone sent a friend request"
 msgstr "Valaki barátkérelmet küldött"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:41
+#, elixir-autogen, elixir-format
+msgid "An announcement to every player"
+msgstr "Közlemény minden játékosnak"

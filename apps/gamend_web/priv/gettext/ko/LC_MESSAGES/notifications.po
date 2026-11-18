@@ -186,3 +186,8 @@ msgstr "누군가 내가 관리하는 그룹에 가입을 요청했습니다"
 #, elixir-autogen, elixir-format
 msgid "Someone sent a friend request"
 msgstr "누군가 친구 요청을 보냈습니다"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:41
+#, elixir-autogen, elixir-format
+msgid "An announcement to every player"
+msgstr "모든 플레이어를 위한 공지"

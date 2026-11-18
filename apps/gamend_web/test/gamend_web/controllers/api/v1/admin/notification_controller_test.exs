@@ -1,9 +1,11 @@
 defmodule GamendWeb.Api.V1.Admin.NotificationControllerTest do
   use GamendWeb.ConnCase, async: false
+  use Oban.Testing, repo: Gamend.Repo
 
   alias Gamend.Accounts
   alias Gamend.AccountsFixtures
   alias Gamend.Notifications
+  alias Gamend.Notifications.AnnouncementWorker
   alias GamendWeb.Auth.Guardian
 
   defp bearer_conn(conn, user) do
@@ -288,5 +290,62 @@ defmodule GamendWeb.Api.V1.Admin.NotificationControllerTest do
       |> json_response(400)
 
     assert resp["error"] == "invalid_id"
+  end
+
+  # ── Announce ───────────────────────────────────────────────────────────────
+
+  test "POST /api/v1/admin/notifications/announce queues one for every player", %{
+    conn: conn,
+    admin: admin
+  } do
+    player = AccountsFixtures.user_fixture()
+
+    resp =
+      conn
+      |> bearer_conn(admin)
+      |> post("/api/v1/admin/notifications/announce", %{
+        title: "Season 2",
+        content: "Out now",
+        url: "/news",
+        site_only: true
+      })
+      |> json_response(202)
+
+    assert resp["data"]["recipients"] >= 2
+
+    assert [job] = all_enqueued(worker: AnnouncementWorker)
+    assert :ok = perform_job(AnnouncementWorker, job.args)
+
+    assert [row] = Notifications.list_notifications(player.id)
+    assert row.title == "Season 2"
+    assert row.metadata["group"] == "announcements"
+  end
+
+  test "POST /api/v1/admin/notifications/announce answers 422 without a title", %{
+    conn: conn,
+    admin: admin
+  } do
+    resp =
+      conn
+      |> bearer_conn(admin)
+      |> post("/api/v1/admin/notifications/announce", %{content: "No title"})
+      |> json_response(422)
+
+    assert resp["error"] == "validation_failed"
+    assert all_enqueued(worker: AnnouncementWorker) == []
+  end
+
+  test "POST /api/v1/admin/notifications/announce answers 422 for a link off the site", %{
+    conn: conn,
+    admin: admin
+  } do
+    resp =
+      conn
+      |> bearer_conn(admin)
+      |> post("/api/v1/admin/notifications/announce", %{title: "T", url: "https://example.com"})
+      |> json_response(422)
+
+    assert resp["error"] == "validation_failed"
+    assert resp["errors"]["url"] != nil
   end
 end

@@ -44,7 +44,8 @@ defmodule Gamend.Notifications.Types do
     "chat_mute" => "Muted in chat",
     "quest_completed" => "A quest or achievement was completed",
     "report" => "A report is waiting for review",
-    "report_resolved" => "A report you filed was reviewed"
+    "report_resolved" => "A report you filed was reviewed",
+    "announcement" => "An announcement to every player"
   }
 
   @doc "Core notification codes, mapped to their description."

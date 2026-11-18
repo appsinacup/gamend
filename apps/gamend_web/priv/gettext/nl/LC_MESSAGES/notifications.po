@@ -186,3 +186,8 @@ msgstr "Iemand wil lid worden van een groep die je beheert"
 #, elixir-autogen, elixir-format
 msgid "Someone sent a friend request"
 msgstr "Iemand heeft een vriendschapsverzoek gestuurd"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:41
+#, elixir-autogen, elixir-format
+msgid "An announcement to every player"
+msgstr "Een aankondiging voor alle spelers"

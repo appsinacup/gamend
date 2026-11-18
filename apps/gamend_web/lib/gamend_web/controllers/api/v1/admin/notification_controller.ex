@@ -6,7 +6,14 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
 
   alias Gamend.Notifications
   alias GamendWeb.Schemas
-  alias GamendWeb.Schemas.{NotificationPage, NotificationResponse, OkResponse}
+
+  alias GamendWeb.Schemas.{
+    AnnouncementResponse,
+    NotificationPage,
+    NotificationResponse,
+    OkResponse
+  }
+
   alias GamendWeb.Serializers
   alias OpenApiSpex.Schema
 
@@ -93,6 +100,42 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
     ]
   )
 
+  operation(:announce,
+    operation_id: "admin_announce_notification",
+    summary: "Send a notification to every player (admin)",
+    description:
+      "Queues one notification for every activated account that is not banned, in the " <>
+        "`announcements` group: always on the site, by phone and email as each player chose " <>
+        "for that group. Delivery is asynchronous, in batches. Sending the same title again " <>
+        "refreshes each player's earlier row instead of adding a second.",
+    security: [%{"authorization" => []}],
+    request_body: {
+      "Announcement",
+      "application/json",
+      %Schema{
+        type: :object,
+        properties: %{
+          title: %Schema{type: :string, description: "Notification title (required)"},
+          content: %Schema{type: :string, description: "Body text (optional)"},
+          url: %Schema{
+            type: :string,
+            description:
+              "A path on this site the notification leads to, such as `/news` (optional)"
+          },
+          site_only: %Schema{
+            type: :boolean,
+            description: "Only the site's row: no push and no email (default false)"
+          }
+        },
+        required: [:title]
+      }
+    },
+    responses: [
+      accepted: {"Queued", "application/json", AnnouncementResponse},
+      unprocessable_entity: Schemas.error("Validation failed")
+    ]
+  )
+
   operation(:delete,
     operation_id: "admin_delete_notification",
     summary: "Delete a notification (admin)",
@@ -158,6 +201,13 @@ defmodule GamendWeb.Api.V1.Admin.NotificationController do
           {:error, %Ecto.Changeset{} = cs} ->
             unprocessable(conn, cs)
         end
+    end
+  end
+
+  def announce(conn, params) do
+    case Notifications.announce_to_all(params) do
+      {:ok, recipients} -> reply_data(conn, :accepted, %{recipients: recipients})
+      {:error, %Ecto.Changeset{} = cs} -> unprocessable(conn, cs)
     end
   end
 

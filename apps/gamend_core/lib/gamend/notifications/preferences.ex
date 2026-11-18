@@ -37,7 +37,7 @@ defmodule Gamend.Notifications.Preferences do
       must work through, or what they lose if they miss it: "Your reports"
       (a report's answer, a moderator's warning), "Reports to review";
     * **email off, theirs to turn on**: news and nudges ("Friends and
-      groups", a host's streak reminder);
+      groups", "News and announcements", a host's streak reminder);
     * **on the site only**: what comes often and matters in the moment
       ("Chat messages", "Quests and rewards").
 
@@ -132,6 +132,17 @@ defmodule Gamend.Notifications.Preferences do
       defaults: %{"in_app" => true, "email" => false, "push" => false},
       configurable: ~w(push),
       types: [],
+      admin: false
+    },
+    # What the site's team tells every player at once
+    # (`Gamend.Notifications.announce_to_all/1`): news, so its email waits to
+    # be turned on, and the phone is the player's to turn off.
+    %{
+      key: "announcements",
+      label: "News and announcements",
+      defaults: %{"in_app" => true, "email" => false, "push" => true},
+      configurable: ~w(email push),
+      types: ~w(announcement),
       admin: false
     }
   ]

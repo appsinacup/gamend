@@ -186,3 +186,8 @@ msgstr "Alguém pediu para entrar num grupo que administra"
 #, elixir-autogen, elixir-format
 msgid "Someone sent a friend request"
 msgstr "Alguém enviou um pedido de amizade"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:41
+#, elixir-autogen, elixir-format
+msgid "An announcement to every player"
+msgstr "Um anúncio para todos os jogadores"

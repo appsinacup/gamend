@@ -186,3 +186,8 @@ msgstr "طلب انضمام إلى مجموعة تديرها"
 #, elixir-autogen, elixir-format
 msgid "Someone sent a friend request"
 msgstr "وصل طلب صداقة"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:41
+#, elixir-autogen, elixir-format
+msgid "An announcement to every player"
+msgstr "إعلان لجميع اللاعبين"

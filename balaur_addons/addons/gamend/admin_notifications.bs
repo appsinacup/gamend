@@ -15,6 +15,16 @@
 
 use core;
 
+/// Send a notification to every player (admin)
+/// `POST /api/v1/admin/notifications/announce`
+pub async fn announce_notification(params: any) -> any {
+    if !core::given(params, "title") {
+        return core::missing("gamend::admin_notifications::announce_notification", "title");
+    }
+    let reply = await core::rest("POST", "/api/v1/admin/notifications/announce", params);
+    reply
+}
+
 /// Create a notification (admin)
 /// `POST /api/v1/admin/notifications`
 pub async fn create_notification(params: any) -> any {

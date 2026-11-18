@@ -4173,3 +4173,8 @@ msgstr "Thử quá nhiều lần. Hãy đợi một phút."
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "Không thể đổi mã này."
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "Tin tức và thông báo"

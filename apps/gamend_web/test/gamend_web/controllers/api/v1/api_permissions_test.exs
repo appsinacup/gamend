@@ -138,6 +138,7 @@ defmodule GamendWeb.Api.V1.ApiPermissionsTest do
       # Notifications Admin
       {:get, "/api/v1/admin/notifications"},
       {:post, "/api/v1/admin/notifications"},
+      {:post, "/api/v1/admin/notifications/announce"},
       # Groups Admin
       {:get, "/api/v1/admin/groups"},
       # Sessions Admin

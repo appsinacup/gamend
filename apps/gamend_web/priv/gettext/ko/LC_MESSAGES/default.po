@@ -4173,3 +4173,8 @@ msgstr "시도 횟수가 너무 많습니다. 1분 후에 다시 시도하세요
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "이 코드를 사용할 수 없습니다."
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "뉴스 및 공지사항"

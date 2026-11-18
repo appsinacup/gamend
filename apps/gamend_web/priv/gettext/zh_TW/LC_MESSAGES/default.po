@@ -4173,3 +4173,8 @@ msgstr "嘗試次數過多，請等待一分鐘。"
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "無法兌換此兌換碼。"
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "新聞與公告"

@@ -4273,3 +4273,8 @@ msgstr "Prea multe încercări. Așteaptă un minut."
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "Nu s-a putut revendica acest cod."
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "Noutăți și anunțuri"

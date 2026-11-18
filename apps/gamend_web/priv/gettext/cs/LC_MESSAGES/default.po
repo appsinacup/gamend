@@ -4273,3 +4273,8 @@ msgstr "Příliš mnoho pokusů. Počkej minutu."
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "Tento kód se nepodařilo uplatnit."
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "Novinky a oznámení"

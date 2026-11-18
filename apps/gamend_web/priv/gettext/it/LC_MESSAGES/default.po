@@ -4224,3 +4224,8 @@ msgstr "Troppi tentativi. Aspetta un minuto."
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "Impossibile riscattare questo codice."
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "Novità e annunci"

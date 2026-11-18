@@ -186,3 +186,8 @@ msgstr "管理中のグループへの参加リクエスト"
 #, elixir-autogen, elixir-format
 msgid "Someone sent a friend request"
 msgstr "フレンドリクエストが届きました"
+
+#: lib/gamend_web/i18n/notification_types_catalog.ex:41
+#, elixir-autogen, elixir-format
+msgid "An announcement to every player"
+msgstr "全プレイヤーへのお知らせ"

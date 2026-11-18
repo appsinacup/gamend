@@ -144,6 +144,22 @@ Chat notifications include a message_count field in metadata indicating how many
   └──────────────────────┴──────────────────────────────────────────────┘
 ```
 
+### Announcements
+
+```text
+  ┌──────────────────────┬──────────────────────────────────────────────┐
+  │ Type                 │ Description                                  │
+  ├──────────────────────┼──────────────────────────────────────────────┤
+  │ announcement         │ An announcement to every player              │
+  └──────────────────────┴──────────────────────────────────────────────┘
+```
+
+## Send to every player
+
+Admin → Notifications → **Send to everyone** (or `POST /api/v1/admin/notifications/announce`, `Gamend.Notifications.announce_to_all/1`) sends one notification to every activated account that is not banned, guests included. It takes `title`, an optional `content`, an optional `url` (a path on this site, such as `/news`) and `site_only`.
+
+Each player gets it in the `announcements` group: on the site always, by phone unless they turned it off, by email only if they turned it on. `site_only` sends neither. Delivery runs in the background, one `AnnouncementWorker` job per 500 accounts, so the answer is how many accounts it is going to, not how many it reached. The row is the player's own (sender = recipient): the same title again refreshes it instead of adding a second.
+
 ## Behaviour notes
 
 - Notifications upsert on (sender_id, recipient_id, title): sending the same notification again updates the existing one.
@@ -164,6 +180,7 @@ A user chooses per **group** and per **channel** (`in_app`, `email`, `push`) on 
 | `reports` | `report_resolved`, `chat_report_resolved`, `chat_warning`, `chat_mute` | in-app + email + push, email weekly but for a warning or mute | email, push |
 | `moderation` | `report`, `chat_report` (admins only, chosen on `/admin/notifications`) | in-app + email + push | email, push |
 | `payments` | an entitlement granted with `notify: true` ([payments](../50-monetization/10-payments.md)) | in-app + email | email, push |
+| `announcements` | `announcement` ([sent to every player](#send-to-every-player)) | in-app + push | email, push |
 
 A type in no group (a moderator's notice) is always pushed. A host adds its own groups in config:
 

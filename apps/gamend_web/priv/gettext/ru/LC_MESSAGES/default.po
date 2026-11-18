@@ -4273,3 +4273,8 @@ msgstr "Слишком много попыток. Подожди минуту."
 #, elixir-autogen, elixir-format
 msgid "Could not redeem this code."
 msgstr "Не удалось активировать этот код."
+
+#: lib/gamend_web/notification_email.ex:39
+#, elixir-autogen, elixir-format
+msgid "News and announcements"
+msgstr "Новости и объявления"

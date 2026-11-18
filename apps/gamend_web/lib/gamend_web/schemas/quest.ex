@@ -146,7 +146,37 @@ defmodule GamendWeb.Schemas.Quest do
         nullable: true,
         description: "Null when the caller has not started it, or is not signed in"
       },
-      claimable: %Schema{type: :boolean, description: "Completed and waiting to be claimed"}
+      claimable: %Schema{type: :boolean, description: "Completed and waiting to be claimed"},
+      action: %Schema{
+        type: :object,
+        nullable: true,
+        description:
+          "Where the caller works on it, as the host's quests page links it (`label`, " <>
+            "already in the reader's language, and a `path` on the host's site); null when none",
+        properties: %{label: %Schema{type: :string}, path: %Schema{type: :string}}
+      },
+      note: %Schema{
+        type: :object,
+        nullable: true,
+        description:
+          "The host's line under the description for the caller (`label`, then `items`, " <>
+            "each a `name` and maybe a `flag`); null when none and for a visitor",
+        properties: %{
+          label: %Schema{type: :string},
+          items: %Schema{
+            type: :array,
+            items: %Schema{
+              type: :object,
+              properties: %{name: %Schema{type: :string}, flag: %Schema{type: :string}}
+            }
+          }
+        }
+      },
+      lock: %Schema{
+        type: :string,
+        nullable: true,
+        description: "The host's reason the caller cannot claim it yet; null when none"
+      }
     },
     required: [
       :id,
@@ -171,7 +201,10 @@ defmodule GamendWeb.Schemas.Quest do
       :ends_at,
       :metadata,
       :progress,
-      :claimable
+      :claimable,
+      :action,
+      :note,
+      :lock
     ]
   })
 end

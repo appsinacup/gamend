@@ -51,7 +51,8 @@ defmodule GamendWeb.Api.V1.QuestController do
 
         %{entries: entries, total: total_count} = Quests.user_quest_page(user_id, opts)
 
-        reply_page(conn, Enum.map(entries, &serialize_entry/1), page, page_size, total_count)
+        rows = Enum.map(entries, &serialize_entry(&1, user_id))
+        reply_page(conn, rows, page, page_size, total_count)
 
       _ ->
         reply_error(conn, :unauthorized, "not_authenticated")
@@ -213,7 +214,13 @@ defmodule GamendWeb.Api.V1.QuestController do
         page_size: page_size
       )
 
-    reply_page(conn, Enum.map(entries, &serialize_entry/1), page, page_size, total_count)
+    reply_page(
+      conn,
+      Enum.map(entries, &serialize_entry(&1, user_id)),
+      page,
+      page_size,
+      total_count
+    )
   end
 
   # ---------------------------------------------------------------------------
@@ -268,7 +275,8 @@ defmodule GamendWeb.Api.V1.QuestController do
           |> Enum.take(page_size)
           |> Enum.map(fn quest -> %{quest: quest, progress: nil, claimable: false} end)
 
-        reply_page(conn, Enum.map(entries, &serialize_entry/1), page, page_size, length(visible))
+        rows = Enum.map(entries, &serialize_entry(&1, nil))
+        reply_page(conn, rows, page, page_size, length(visible))
     end
   end
 
@@ -327,9 +335,11 @@ defmodule GamendWeb.Api.V1.QuestController do
         entries = Quests.list_user_completions(user_id, opts)
         total_count = Quests.count_user_completions(user_id, category: category)
 
+        reader = viewer_id(conn)
+
         rows =
           Enum.map(entries, fn %{quest: quest, progress: progress} ->
-            serialize_entry(%{quest: quest, progress: progress, claimable: false})
+            serialize_entry(%{quest: quest, progress: progress, claimable: false}, reader)
           end)
 
         reply_page(conn, rows, page, page_size, total_count)
@@ -343,12 +353,43 @@ defmodule GamendWeb.Api.V1.QuestController do
   # Serialization
   # ---------------------------------------------------------------------------
 
-  defp serialize_entry(%{quest: quest} = entry) do
+  defp serialize_entry(%{quest: quest} = entry, reader) do
     entry
     |> serialize_quest()
     |> Map.put(:group_key, quest.group_key || "")
     |> Map.put(:group_title, quest.group_title || "")
     |> Map.put(:group_size, Map.get(entry, :group_size, 1))
+    |> Map.merge(host_fields(entry, reader))
+  end
+
+  # What the host says of this quest to the reader asking, as the quests page
+  # draws it (`GamendWeb.QuestsLive`): where it is done (`action`, the card's
+  # button and link, `Quests.host_action/2`), a line under its description
+  # (`note`, `Quests.host_note/2`) and why it cannot be claimed yet (`lock`,
+  # `Quests.host_lock_label/2`). A client draws the same card from them. A
+  # note or a lock is about an account: a visitor gets neither, and a hidden
+  # quest not yet earned no note.
+  defp host_fields(%{quest: quest, progress: progress}, reader) do
+    secret? = quest.hidden and not done?(progress)
+
+    %{
+      action: action_json(Quests.host_action(quest, reader)),
+      note: if(reader && !secret?, do: Quests.host_note(quest, reader)),
+      lock: if(reader, do: Quests.host_lock_label(quest, reader))
+    }
+  end
+
+  defp action_json({label, path}), do: %{label: label, path: path}
+  defp action_json(_action), do: nil
+
+  defp done?(nil), do: false
+  defp done?(progress), do: progress.status in [QuestStatus.completed(), QuestStatus.claimed()]
+
+  defp viewer_id(conn) do
+    case conn.assigns[:current_scope] do
+      %{user_id: user_id} -> user_id
+      _ -> nil
+    end
   end
 
   defp serialize_quest(%{quest: quest, progress: progress, claimable: claimable}) do

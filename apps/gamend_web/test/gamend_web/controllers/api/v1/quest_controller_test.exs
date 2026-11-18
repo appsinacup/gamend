@@ -38,6 +38,61 @@ defmodule GamendWeb.Api.V1.QuestControllerTest do
     end
   end
 
+  describe "the host's fields" do
+    defmodule Host do
+      @moduledoc false
+      def action(nil, _quest), do: {"Look", "/catalog"}
+      def action(_user_id, _quest), do: {"Play", "/games"}
+      def note(_user_id, _quest), do: %{label: "Done in:", items: [%{name: "French", flag: "fr"}]}
+      def lock(_user_id, %{key: "locked"}), do: "Pro"
+      def lock(_user_id, _quest), do: nil
+    end
+
+    setup do
+      create_quest(%{key: "open"})
+      create_quest(%{key: "locked"})
+
+      for {name, fun} <- [quest_action: :action, quest_note: :note, quest_lock_filter: :lock] do
+        Application.put_env(:gamend_core, name, {Host, fun})
+        on_exit(fn -> Application.delete_env(:gamend_core, name) end)
+      end
+
+      :ok
+    end
+
+    test "a reader gets where each quest is done, the host's note and its lock", %{conn: conn} do
+      body =
+        conn
+        |> auth_conn(AccountsFixtures.user_fixture())
+        |> get("/api/v1/me/quests")
+        |> json_response(200)
+
+      open = Enum.find(body["data"], &(&1["key"] == "open"))
+      assert open["action"] == %{"label" => "Play", "path" => "/games"}
+      assert open["note"] == %{"label" => "Done in:", "items" => [%{"name" => "French", "flag" => "fr"}]}
+      assert open["lock"] == nil
+      assert Enum.find(body["data"], &(&1["key"] == "locked"))["lock"] == "Pro"
+    end
+
+    test "a visitor gets the action for no one, and no note or lock", %{conn: conn} do
+      body = conn |> get("/api/v1/quests") |> json_response(200)
+      open = Enum.find(body["data"], &(&1["key"] == "open"))
+
+      assert open["action"] == %{"label" => "Look", "path" => "/catalog"}
+      assert open["note"] == nil
+      assert open["lock"] == nil
+    end
+
+    test "with no host they are null", %{conn: conn} do
+      for name <- [:quest_action, :quest_note, :quest_lock_filter],
+          do: Application.delete_env(:gamend_core, name)
+
+      body = conn |> get("/api/v1/quests") |> json_response(200)
+      open = Enum.find(body["data"], &(&1["key"] == "open"))
+      assert open["action"] == nil and open["note"] == nil and open["lock"] == nil
+    end
+  end
+
   describe "POST /api/v1/me/quests/:key/claim" do
     setup do
       quest =

@@ -4224,6 +4224,21 @@ msgstr "För många försök. Vänta en minut."
 msgid "Could not redeem this code."
 msgstr "Det gick inte att lösa in koden."
 
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Registration opens"
+msgstr "Anmälan öppnar"
+
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Starts"
+msgstr "Börjar"
+
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Ends"
+msgstr "Slutar"
+
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
 msgid "News and announcements"

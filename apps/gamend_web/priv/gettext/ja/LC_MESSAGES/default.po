@@ -4174,6 +4174,21 @@ msgstr "試行回数が多すぎます。1分待ってください。"
 msgid "Could not redeem this code."
 msgstr "このコードを引き換えられませんでした。"
 
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Registration opens"
+msgstr "登録開始"
+
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Starts"
+msgstr "開始"
+
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Ends"
+msgstr "終了"
+
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
 msgid "News and announcements"

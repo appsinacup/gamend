@@ -563,6 +563,7 @@ defmodule GamendWeb.TournamentsLive do
         </:badges>
 
         <.schedule
+          state={group.state}
           registration_opens_at={group[:registration_opens_at]}
           starts_at={group[:starts_at]}
           play_ends_at={group[:play_ends_at]}
@@ -590,34 +591,57 @@ defmodule GamendWeb.TournamentsLive do
     """
   end
 
+  attr :state, :string, required: true
   attr :registration_opens_at, :any, default: nil
   attr :starts_at, :any, default: nil
   attr :play_ends_at, :any, default: nil
 
-  # When a tournament takes entries and when it plays, each in the reader's
-  # own time (`timestamp/1`), named as its state badge names that time. A
-  # tournament started by hand has no dates: nothing.
+  # The one moment the phase waits for, how far off ("Starts in 2 days"):
+  # the state badge beside it names the phase, and the exact time is the
+  # timestamp's hover (a tap on a phone). Before registration, when it
+  # opens; while it is open, the start; while playing, the end; once over,
+  # when it ended. A tournament started by hand, or canceled: nothing.
   defp schedule(assigns) do
+    {label, at} = schedule_moment(assigns, DateTime.utc_now())
+    assigns = assign(assigns, label: label, at: at)
+
     ~H"""
-    <dl
-      :if={@starts_at}
-      class="grid grid-cols-[auto_1fr] items-baseline gap-x-3 gap-y-0.5 text-sm"
-    >
-      <%= if @registration_opens_at do %>
-        <dt class="font-semibold">{gettext("Registration open")}</dt>
-        <dd class="text-muted">
-          <.timestamp at={@registration_opens_at} format="datetime" /> –
-          <.timestamp at={@starts_at} format="datetime" />
-        </dd>
-      <% end %>
-      <dt class="font-semibold">{gettext("Running")}</dt>
-      <dd class="text-muted">
-        <.timestamp at={@starts_at} format="datetime" />
-        <span :if={@play_ends_at}>– <.timestamp at={@play_ends_at} format="datetime" /></span>
-      </dd>
-    </dl>
+    <p :if={@at} class="text-sm text-muted">{@label} <.timestamp at={@at} /></p>
     """
   end
+
+  defp schedule_moment(%{state: state} = schedule, now) do
+    cond do
+      state == TournamentState.cancelled() ->
+        {nil, nil}
+
+      state == TournamentState.finished() ->
+        if past?(schedule.play_ends_at, now),
+          do: {gettext("Ended"), schedule.play_ends_at},
+          else: {nil, nil}
+
+      future?(schedule.registration_opens_at, now) ->
+        {gettext("Registration opens"), schedule.registration_opens_at}
+
+      future?(schedule.starts_at, now) ->
+        {gettext("Starts"), schedule.starts_at}
+
+      future?(schedule.play_ends_at, now) ->
+        {gettext("Ends"), schedule.play_ends_at}
+
+      past?(schedule.starts_at, now) ->
+        {gettext("Started"), schedule.starts_at}
+
+      true ->
+        {nil, nil}
+    end
+  end
+
+  defp future?(%DateTime{} = at, now), do: DateTime.after?(at, now)
+  defp future?(_at, _now), do: false
+
+  defp past?(%DateTime{} = at, now), do: not DateTime.after?(at, now)
+  defp past?(_at, _now), do: false
 
   # ── Detail: one edition ───────────────────────────────────────────────────
 
@@ -627,6 +651,12 @@ defmodule GamendWeb.TournamentsLive do
       <%!-- The title row (Back, icon, name) is the page's; this is the edition's state. --%>
       <div class="flex flex-wrap items-center gap-2">
         <.state_badge state={@tournament.state} />
+        <.schedule
+          state={@tournament.state}
+          registration_opens_at={@tournament.registration_opens_at}
+          starts_at={@tournament.starts_at}
+          play_ends_at={Tournaments.play_ends_at(@tournament)}
+        />
         <span :if={is_nil(@tournament.starts_at)} class="text-sm text-muted">
           {gettext("Starts manually")}
         </span>
@@ -642,12 +672,6 @@ defmodule GamendWeb.TournamentsLive do
           />
         </div>
       </div>
-
-      <.schedule
-        registration_opens_at={@tournament.registration_opens_at}
-        starts_at={@tournament.starts_at}
-        play_ends_at={Tournaments.play_ends_at(@tournament)}
-      />
 
       <%!-- Edition navigation, mirroring leaderboard seasons --%>
       <div
@@ -944,12 +968,12 @@ defmodule GamendWeb.TournamentsLive do
       <span class="text-sm text-muted">
         {gettext("Slots")}: {@bracket.size}
       </span>
-      <span :if={@tournament.starts_at} class="text-sm text-muted">
-        {if DateTime.after?(@tournament.starts_at, DateTime.utc_now()),
-          do: gettext("Starts"),
-          else: gettext("Started")}
-        <.timestamp at={@tournament.starts_at} />
-      </span>
+      <.schedule
+        state={@tournament.state}
+        registration_opens_at={@tournament.registration_opens_at}
+        starts_at={@tournament.starts_at}
+        play_ends_at={Tournaments.play_ends_at(@tournament)}
+      />
       <span :if={is_nil(@tournament.starts_at)} class="text-sm text-muted">
         {gettext("Starts manually")}
       </span>

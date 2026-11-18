@@ -4174,6 +4174,21 @@ msgstr "Thử quá nhiều lần. Hãy đợi một phút."
 msgid "Could not redeem this code."
 msgstr "Không thể đổi mã này."
 
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Registration opens"
+msgstr "Mở đăng ký"
+
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Starts"
+msgstr "Bắt đầu"
+
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Ends"
+msgstr "Kết thúc"
+
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
 msgid "News and announcements"

@@ -523,9 +523,10 @@ defmodule GamendWeb.TournamentsLiveTest do
 
     {:ok, _view, html} = live(conn, ~p"/tournaments/#{tournament.slug}/brackets/0")
 
-    # When it starts, as a relative time the browser keeps current.
-    assert html =~ ~s(datetime="#{DateTime.to_iso8601(tournament.starts_at)}")
-    assert html =~ ~r/Start(s|ed)/
+    # While it plays, when it ends, as a relative time the browser keeps current.
+    ends_at = Tournaments.play_ends_at(tournament)
+    assert html =~ ~s(datetime="#{DateTime.to_iso8601(ends_at)}")
+    assert html =~ "Ends"
     assert html =~ "Running"
   end
 end

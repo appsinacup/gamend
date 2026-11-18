@@ -4224,6 +4224,21 @@ msgstr "Πάρα πολλές προσπάθειες. Περίμενε ένα λ
 msgid "Could not redeem this code."
 msgstr "Δεν ήταν δυνατή η εξαργύρωση αυτού του κωδικού."
 
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Registration opens"
+msgstr "Οι εγγραφές ανοίγουν"
+
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Starts"
+msgstr "Ξεκινά"
+
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Ends"
+msgstr "Λήγει"
+
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
 msgid "News and announcements"

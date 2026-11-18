@@ -4424,6 +4424,21 @@ msgstr "محاولات كثيرة جدًا. انتظر دقيقة."
 msgid "Could not redeem this code."
 msgstr "تعذر استرداد هذا الرمز."
 
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Registration opens"
+msgstr "يفتح التسجيل"
+
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Starts"
+msgstr "يبدأ"
+
+#: lib/gamend_web/live/tournaments_live.ex
+#, elixir-autogen, elixir-format
+msgid "Ends"
+msgstr "ينتهي"
+
 #: lib/gamend_web/notification_email.ex:39
 #, elixir-autogen, elixir-format
 msgid "News and announcements"

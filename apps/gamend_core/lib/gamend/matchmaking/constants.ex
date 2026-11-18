@@ -11,6 +11,8 @@ defmodule Gamend.Matchmaking.Constants do
   @event_queued "ticket_queued"
   @event_cancelled "ticket_cancelled"
 
+  @member_backfill "member_backfill"
+
   @doc "Status for a ticket that is waiting for a match."
   def status_queued, do: @status_queued
 
@@ -28,4 +30,11 @@ defmodule Gamend.Matchmaking.Constants do
 
   @doc "Event broadcast when a ticket leaves the queue without a match."
   def event_cancelled, do: @event_cancelled
+
+  @doc """
+  The key `before_matchmaking_join/2` sets to `true` in the attrs it answers
+  when a player who sits in a lobby they do not host fills it too
+  (`Gamend.Matchmaking`, *Backfill*).
+  """
+  def member_backfill, do: @member_backfill
 end

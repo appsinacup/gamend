@@ -34,10 +34,12 @@ defmodule Gamend.Matchmaking do
 
   A lobby's host who queues fills that lobby: the ticket carries its
   `lobby_id`, and a match seats the other players there rather than in a new
-  lobby. A match holds at most one lobby with other players in it, and fits
-  in its seats; a player queued from a lobby of their own alone leaves it for
-  the match's. With no lobby among them, a match gets a new hidden lobby, as
-  before.
+  lobby. Any other player sitting in it fills it too when the game's
+  `before_matchmaking_join/2` answers `Constants.member_backfill/0` as
+  `true`. A ticket fills its lobby while its holder sits there. A match
+  holds at most one lobby with other players in it, and fits in its seats; a
+  player queued from a lobby of their own alone leaves it for the match's.
+  With no lobby among them, a match gets a new hidden lobby, as before.
 
   ## Seating
 
@@ -216,7 +218,8 @@ defmodule Gamend.Matchmaking do
     
     `min_players` and `max_players` can be passed to override the defaults.
     
-    A lobby's host queues to fill that lobby (see *Backfill*).
+    A lobby's host queues to fill that lobby, and so does another member of it
+    when the game's join hook says so (see *Backfill*).
     
     ## Parties
     
@@ -416,7 +419,7 @@ defmodule Gamend.Matchmaking do
 
   @doc ~S"""
     `tickets` with each backfill ticket's lobby read: `size` its members,
-    `capacity` its seats. A ticket whose holder no longer hosts the lobby it
+    `capacity` its seats. A ticket whose holder no longer sits in the lobby it
     named fills nothing (`lobby_id` nil): it is seated as any other.
     
   """

@@ -36,7 +36,7 @@ Parameters match exactly: a ticket queued with map=dust2 never joins one with ma
 
 Blacklists are applied while the group is being formed, not after: two players who have blocked each other are never put in the same match, and each is matched with someone else instead. A player blocked with everyone ahead of them in the queue is skipped over rather than allowed to stall the players behind them. See the Friends & Blacklist guide.
 
-## Backfill: filling a lobby you host
+## Backfill: filling your lobby
 
 A lobby's host who queues fills that lobby: the ticket carries its
 `lobby_id`, and the match seats the other players there instead of in a new
@@ -44,8 +44,22 @@ lobby. It counts as the lobby's members toward `max_players`, and a match
 never holds more players than the lobby has seats. A match holds at most one
 lobby with other players in it; a player queued from a lobby of their own
 alone leaves it (an empty lobby is deleted) and joins the match's. Of two
-such solo lobbies, the oldest ticket's is kept. A lobby member who is not
-its host, or a party, queues as before.
+such solo lobbies, the oldest ticket's is kept. A ticket fills its lobby
+while its holder sits there; one who left it is seated as any other.
+
+A member who is not the host queues as before, unless the game lets them
+fill it too: `before_matchmaking_join/2` answers the key
+`Gamend.Matchmaking.Constants.member_backfill()` as `true`, and the ticket
+of any player sitting in a lobby, queued alone, fills it as the host's
+would. A party never fills a lobby.
+
+```elixir
+alias Gamend.Matchmaking.Constants
+
+@impl true
+def before_matchmaking_join(_user, attrs),
+  do: {:ok, Map.put(attrs, Constants.member_backfill(), true)}
+```
 
 ## Seating a match: the game decides
 
@@ -53,7 +67,7 @@ Once a match forms, `matchmaking_seat_match/1` answers where it sits and whether
 
 | Answer | The match |
 |---|---|
-| `:default`, or no hook | The lobby a host's ticket fills, else a new hidden, locked, hostless lobby |
+| `:default`, or no hook | The lobby a ticket fills (*Backfill*), else a new hidden, locked, hostless lobby |
 | `MatchSeating.default(opts)` | The same, with `accept_timeout_ms` |
 | `MatchSeating.new_lobby(opts)` | A new lobby: `title`, `max_users`, `host_id`, `hostless`, `is_hidden`, `is_locked`, `metadata`, `slowdown`, `accept_timeout_ms`. What you leave out is the default above |
 | `MatchSeating.in_lobby(id, opts)` | An existing lobby, past its hidden and locked flags, with `accept_timeout_ms` |

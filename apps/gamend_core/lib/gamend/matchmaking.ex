@@ -34,10 +34,12 @@ defmodule Gamend.Matchmaking do
 
   A lobby's host who queues fills that lobby: the ticket carries its
   `lobby_id`, and a match seats the other players there rather than in a new
-  lobby. A match holds at most one lobby with other players in it, and fits
-  in its seats; a player queued from a lobby of their own alone leaves it for
-  the match's. With no lobby among them, a match gets a new hidden lobby, as
-  before.
+  lobby. Any other player sitting in it fills it too when the game's
+  `before_matchmaking_join/2` answers `Constants.member_backfill/0` as
+  `true`. A ticket fills its lobby while its holder sits there. A match
+  holds at most one lobby with other players in it, and fits in its seats; a
+  player queued from a lobby of their own alone leaves it for the match's.
+  With no lobby among them, a match gets a new hidden lobby, as before.
 
   ## Seating
 
@@ -89,7 +91,8 @@ defmodule Gamend.Matchmaking do
 
   `min_players` and `max_players` can be passed to override the defaults.
 
-  A lobby's host queues to fill that lobby (see *Backfill*).
+  A lobby's host queues to fill that lobby, and so does another member of it
+  when the game's join hook says so (see *Backfill*).
 
   ## Parties
 
@@ -253,7 +256,7 @@ defmodule Gamend.Matchmaking do
       timeout_ms: Limits.get(:matchmaking_timeout_ms),
       queued_at: now,
       party_id: caller.party_id,
-      lobby_id: backfill_lobby_id(caller, members)
+      lobby_id: backfill_lobby_id(caller, members, attrs)
     }
 
     # The caller's party was read before this; disbanded since, a ticket would
@@ -282,20 +285,22 @@ defmodule Gamend.Matchmaking do
     end
   end
 
-  # The lobby a ticket fills: the caller's, when they queue alone as its host.
-  # Read fresh, not from the cached user the request carried: a seat taken or
-  # left a moment ago decides it.
-  defp backfill_lobby_id(%User{id: user_id}, [_alone]) do
+  # The lobby a ticket fills: the caller's, when they queue alone as its host,
+  # or as any member of it when the join hook's `attrs` say so
+  # (`Constants.member_backfill/0`). Read fresh, not from the cached user the
+  # request carried: a seat taken or left a moment ago decides it.
+  defp backfill_lobby_id(%User{id: user_id}, [_alone], attrs) do
     with %User{lobby_id: lobby_id, party_id: nil} when is_binary(lobby_id) <-
            Repo.get(User, user_id),
-         %Gamend.Lobbies.Lobby{host_id: ^user_id} <- Gamend.Lobbies.get_lobby(lobby_id) do
+         %Gamend.Lobbies.Lobby{host_id: host_id} <- Gamend.Lobbies.get_lobby(lobby_id),
+         true <- host_id == user_id or Map.get(attrs, Constants.member_backfill()) == true do
       lobby_id
     else
       _ -> nil
     end
   end
 
-  defp backfill_lobby_id(_caller, _party), do: nil
+  defp backfill_lobby_id(_caller, _party, _attrs), do: nil
 
   defp insert_member_tickets(members, base) do
     Enum.reduce_while(members, [], fn member, acc ->
@@ -428,24 +433,34 @@ defmodule Gamend.Matchmaking do
 
   @doc """
   `tickets` with each backfill ticket's lobby read: `size` its members,
-  `capacity` its seats. A ticket whose holder no longer hosts the lobby it
+  `capacity` its seats. A ticket whose holder no longer sits in the lobby it
   named fills nothing (`lobby_id` nil): it is seated as any other.
   """
   @spec with_lobbies([Ticket.t()]) :: [Ticket.t()]
   def with_lobbies(tickets) do
-    lobby_ids = tickets |> Enum.map(& &1.lobby_id) |> Enum.reject(&is_nil/1) |> Enum.uniq()
-    lobbies = lobby_rows(lobby_ids)
+    backfill = Enum.filter(tickets, & &1.lobby_id)
+    lobbies = backfill |> Enum.map(& &1.lobby_id) |> Enum.uniq() |> lobby_rows()
+    seats = backfill |> Enum.map(& &1.user_id) |> seats_now()
 
-    Enum.map(tickets, fn ticket ->
-      case Map.get(lobbies, ticket.lobby_id) do
-        %{host_id: host_id, members: members, max_users: max_users}
-        when host_id == ticket.user_id and members > 0 ->
-          %{ticket | size: members, capacity: max_users}
-
-        _ ->
-          %{ticket | lobby_id: nil, size: 1, capacity: nil}
+    Enum.map(tickets, fn %Ticket{lobby_id: lobby_id} = ticket ->
+      with %{members: members, max_users: max_users} when members > 0 <-
+             Map.get(lobbies, lobby_id),
+           ^lobby_id <- Map.get(seats, ticket.user_id) do
+        %{ticket | size: members, capacity: max_users}
+      else
+        _ -> %{ticket | lobby_id: nil, size: 1, capacity: nil}
       end
     end)
+  end
+
+  # The lobby each of `user_ids` sits in now, read fresh: a holder may have
+  # left since their ticket was written (or since an accept began).
+  defp seats_now([]), do: %{}
+
+  defp seats_now(user_ids) do
+    from(u in User, where: u.id in ^user_ids, select: {u.id, u.lobby_id})
+    |> Repo.all()
+    |> Map.new()
   end
 
   defp lobby_rows([]), do: %{}
@@ -462,11 +477,11 @@ defmodule Gamend.Matchmaking do
 
     from(l in Gamend.Lobbies.Lobby,
       where: l.id in ^lobby_ids,
-      select: {l.id, l.host_id, l.max_users}
+      select: {l.id, l.max_users}
     )
     |> Repo.all()
-    |> Map.new(fn {id, host_id, max_users} ->
-      {id, %{host_id: host_id, max_users: max_users, members: Map.get(members, id, 0)}}
+    |> Map.new(fn {id, max_users} ->
+      {id, %{max_users: max_users, members: Map.get(members, id, 0)}}
     end)
   end
 

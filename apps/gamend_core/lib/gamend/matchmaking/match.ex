@@ -179,8 +179,8 @@ defmodule Gamend.Matchmaking.Match do
   defp backfill(tickets, target) do
     lobby = Lobbies.get_lobby(target.lobby_id)
 
-    # Its host left it since the sweep read it: the next sweep sees the
-    # tickets as they are now.
+    # The ticket's holder left it since the sweep read it: the next sweep
+    # sees the tickets as they are now.
     fill(tickets, if(lobby && seated_in?(target.user_id, lobby.id), do: lobby))
   end
 

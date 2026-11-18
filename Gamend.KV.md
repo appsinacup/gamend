@@ -13,6 +13,10 @@ You can also pass both to scope a key to a user within a lobby.
 This module uses the app cache (`Gamend.Cache`) as a best-effort read cache.
 Writes update the cache and deletes evict it.
 
+A key the host computes from other state (`Gamend.KV.Computed`) is read
+through `get/2` like a stored one and stored nowhere; its subscribers hear
+`{:kv_stale, ...}` when it moves.
+
 # `attrs`
 
 ```elixir
@@ -225,6 +229,19 @@ Store `value` with optional `metadata` at `key`.
 When using the 4-arity, supported options include `user_id: id` or `lobby_id: id` to scope
 the entry.
 Returns `{:ok, entry}` on success or `{:error, changeset}` on validation failure.
+
+# `refresh`
+
+```elixir
+@spec refresh(String.t(), keyword()) :: :ok
+```
+
+Say that the computed row `key` (`Gamend.KV.Computed`) moved in a scope, for
+what it depends on outside the store: its subscribers hear `{:kv_stale,
+%{key, user_id, lobby_id}}` and read it again. Nothing for a stored key.
+
+Inside a transaction it is said once the transaction commits, so a reader
+it wakes sees what was written.
 
 # `stream_prefix`
 

@@ -1,4 +1,4 @@
-# gamend_core v1.1.1477 - Table of Contents
+# gamend_core v1.1.1478 - Table of Contents
 
 > Core functionality for Gamend, including user management, authentication, friends, matchmaking, and more.
 
@@ -504,6 +504,7 @@ purchase stands alone.
 project static files, and the GeoIP database.
 
   - [Gamend.KV](Gamend.KV.md): Generic key/value storage.
+  - [Gamend.KV.Computed](Gamend.KV.Computed.md): Rows the host computes: read like any row, stored nowhere.
   - [Gamend.Settings](Gamend.Settings.md): The declared configuration surface: every setting core, the host and its
 plugins expose, with its type, default, group, env var name and required
 level.

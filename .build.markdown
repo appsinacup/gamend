@@ -142,6 +142,7 @@ Gamend.Inventory.Item.md
 Gamend.Inventory.LedgerEntry.md
 Gamend.Inventory.md
 Gamend.Jobs.md
+Gamend.KV.Computed.md
 Gamend.KV.md
 Gamend.Leaderboards.Leaderboard.md
 Gamend.Leaderboards.Record.md

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="ExDoc v0.40.4">
+    <meta name="project" content="gamend_core v1.1.1482">
+
+
+    <title>Gamend.Payments.Charges — gamend_core v1.1.1482</title>
+
+    <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
+
+    <script defer src="dist/sidebar_items-3577C32D.js"></script>
+    <script defer src="docs_config.js"></script>
+    <script defer src="dist/html-MI33G4N7.js"></script>
+
+  </head>
+  <body>
+    <script>(()=>{var t="ex_doc:settings",e="dark";var o="dark",s="light";var E="sidebar_state",n="closed";var r="sidebar_width";var a="sidebar-open";var i=new URLSearchParams(window.location.search),S=i.get("theme")||JSON.parse(localStorage.getItem(t)||"{}").theme;(S===o||S!==s&&window.matchMedia("(prefers-color-scheme: dark)").matches)&&document.body.classList.add(e);var d=sessionStorage.getItem(E),A=d!==n&&!window.matchMedia(`screen and (max-width: ${768}px)`).matches;document.body.classList.toggle(a,A);var c=sessionStorage.getItem(r);c&&document.body.style.setProperty("--sidebarWidth",`${c}px`);var p=/(Macintosh|iPhone|iPad|iPod)/.test(window.navigator.userAgent);document.documentElement.classList.toggle("apple-os",p);})();
+</script>
+
+<div class="body-wrapper">
+
+<button id="sidebar-menu" class="sidebar-button sidebar-toggle" aria-label="toggle sidebar" aria-controls="sidebar">
+  <i class="ri-menu-line ri-lg" title="Collapse/expand sidebar"></i>
+</button>
+
+<nav id="sidebar" class="sidebar">
+
+  <div class="sidebar-header">
+    <div class="sidebar-projectInfo">
+
+      <div>
+        <a href="readme.html" class="sidebar-projectName" translate="no">
+gamend_core
+        </a>
+        <div class="sidebar-projectVersion" translate="no">
+          v1.1.1482
+        </div>
+      </div>
+    </div>
+    <ul id="sidebar-list-nav" class="sidebar-list-nav" role="tablist" data-extras="Pages"></ul>
+  </div>
+</nav>
+
+<output role="status" id="toast"></output>
+
+<main class="content page-module" id="main" data-type="modules">
+  <div id="content" class="content-inner">
+    <div class="top-search">
+      <div class="search-settings">
+        <form class="search-bar" action="search.html">
+          <label class="search-label">
+            <span class="sr-only">Search documentation of gamend_core</span>
+            <div class="search-input-wrapper">
+              <input name="q" type="text" class="search-input" placeholder="Press / to search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+              <button type="button" tabindex="-1" class="search-close-button" aria-hidden="true">
+                <i class="ri-close-line ri-lg" title="Cancel search"></i>
+              </button>
+            </div>
+          </label>
+        </form>
+        <div class="autocomplete">
+        </div>
+        <div class="engine-selector" data-multiple="false">
+          <button type="button" class="engine-button" aria-label="Select search engine" aria-haspopup="true" aria-expanded="false">
+            <i class="ri-search-2-line" aria-hidden="true"></i>
+            <span class="engine-name">Default</span>
+            <i class="ri-arrow-down-s-line" aria-hidden="true"></i>
+          </button>
+          <div class="engine-dropdown" hidden role="menu">
+
+              <button type="button"
+                      class="engine-option"
+                      data-engine-url="search.html?q="
+                      role="menuitemradio"
+                      aria-checked="true">
+                <span class="name">Default</span>
+                <span class="help">In-browser search</span>
+              </button>
+
+          </div>
+        </div>
+        <button class="icon-settings display-settings">
+          <i class="ri-settings-3-line"></i>
+          <span class="sr-only">Settings</span>
+        </button>
+      </div>
+    </div>
+
+<div id="top-content">
+  <div class="heading-with-actions top-heading">
+    <h1>
+      <span translate="no">Gamend.<wbr />Payments.<wbr />Charges</span> 
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1482)</small>
+
+    </h1>
+
+<a href="Gamend.Payments.Charges.md" title="Copy Markdown (hold Ctrl/Cmd and click it to open as Markdown)" class="copy-markdown icon-action" rel="help">
+  <i class="ri-markdown-line" aria-hidden="true"></i>
+  <span class="sr-only">Copy Markdown</span>
+</a>
+
+
+
+      <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/charges.ex#L1" title="View Source" class="icon-action" rel="help nofollow">
+        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        <span class="sr-only">View Source</span>
+      </a>
+
+  </div>
+
+
+    <section id="moduledoc">
+<p>The money a purchase moved (<a href="Gamend.Payments.Charge.html"><code class="inline">Gamend.Payments.Charge</code></a>), written where it
+moves and read back as revenue for the admin payments page.</p><p>Written at three points, each idempotent on <code class="inline">(provider, kind, provider_ref)</code>:</p><ul><li>the sale, when <code class="inline">Payments.fulfill_purchase/2</code> first completes a purchase,
+keyed by its provider transaction (or order) id;</li><li>a renewal, for each later charge of a subscription: Stripe's
+<code class="inline">charge.succeeded</code> (keyed by the charge id) and Apple's renewal
+notifications (by the new transaction id, at its <code class="inline">price</code>). Google renewals the client
+validates are purchases of their own, so they arrive as sales;</li><li>a refund, when a refund or lost dispute ends the purchase
+(<code class="inline">Payments.revoke_purchase/2</code>), removed again by a dispute the seller
+won (<code class="inline">Payments.restore_purchase/2</code>), and the unused part of a Stripe
+plan refunded when a player changes plan (<a href="Gamend.Payments.Upgrades.html"><code class="inline">Gamend.Payments.Upgrades</code></a>).
+Any other partial refund ends nothing and is not recorded.</li></ul>
+    </section>
+
+</div>
+
+  <section id="summary" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#summary">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Summary</span>
+    </h2>
+<div class="summary-functions summary">
+  <h3>
+    <a href="#functions">Functions</a>
+  </h3>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#drop_refund/1" data-no-tooltip="" translate="no">drop_refund(purchase)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A won dispute handed the money back: its refund row goes.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#empty_totals/0" data-no-tooltip="" translate="no">empty_totals()</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A totals map with nothing in it.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#record_refund/2" data-no-tooltip="" translate="no">record_refund(purchase, opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Record the money a refund or lost dispute gave back. One per purchase:
+revoking it twice records once. Options: <code class="inline">amount:</code> (the purchase's by
+default), <code class="inline">currency:</code>, and <code class="inline">ref:</code> for a refund that does not end the
+purchase (the unused part of a plan changed mid-period), keyed by the
+provider's refund id.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#record_renewal/3" data-no-tooltip="" translate="no">record_renewal(purchase, ref, opts)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Record a renewal of <code class="inline">purchase</code>'s subscription, keyed by the provider's id
+for that one charge. Options: <code class="inline">amount:</code>, <code class="inline">currency:</code>, <code class="inline">occurred_at:</code>.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#record_sale/1" data-no-tooltip="" translate="no">record_sale(purchase)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Record a purchase's sale. Runs inside its fulfilment's transaction.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#revenue_summary/1" data-no-tooltip="" translate="no">revenue_summary(opts \\ [])</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Revenue for the admin payments page, per currency (amounts never add across
+currencies): <code class="inline">lifetime</code>, <code class="inline">this_month</code>, <code class="inline">last_month</code> and <code class="inline">last_30_days</code>
+totals, the last 12 calendar months oldest first, and lifetime totals by
+provider and by product. Each total is <code class="inline">%{sales, renewals, refunds, gross, refunded, net}</code>: counts, then amounts in the smallest unit.</p></div>
+
+    </div>
+
+</div>
+
+  </section>
+
+
+  <section id="functions" class="details-list">
+    <h2 class="section-heading">
+      <a class="hover-link" href="#functions">
+        <i class="ri-link-m" aria-hidden="true"></i>
+      </a>
+      <span class="text">Functions</span>
+    </h2>
+
+    <div class="functions-list">
+<section class="detail" id="drop_refund/1">
+
+  <div class="detail-header">
+    <a href="#drop_refund/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">drop_refund(purchase)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/charges.ex#L68" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> drop_refund(<a href="Gamend.Payments.Purchase.html#t:t/0">Gamend.Payments.Purchase.t</a>()) :: :ok</pre>
+
+      </div>
+
+<p>A won dispute handed the money back: its refund row goes.</p>
+  </section>
+</section>
+<section class="detail" id="empty_totals/0">
+
+  <div class="detail-header">
+    <a href="#empty_totals/0" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">empty_totals()</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/charges.ex#L200" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> empty_totals() :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()</pre>
+
+      </div>
+
+<p>A totals map with nothing in it.</p>
+  </section>
+</section>
+<section class="detail" id="record_refund/2">
+
+    <span id="record_refund/1"></span>
+
+  <div class="detail-header">
+    <a href="#record_refund/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">record_refund(purchase, opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/charges.ex#L59" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> record_refund(<a href="Gamend.Payments.Purchase.html#t:t/0">Gamend.Payments.Purchase.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Record the money a refund or lost dispute gave back. One per purchase:
+revoking it twice records once. Options: <code class="inline">amount:</code> (the purchase's by
+default), <code class="inline">currency:</code>, and <code class="inline">ref:</code> for a refund that does not end the
+purchase (the unused part of a plan changed mid-period), keyed by the
+provider's refund id.</p>
+  </section>
+</section>
+<section class="detail" id="record_renewal/3">
+
+  <div class="detail-header">
+    <a href="#record_renewal/3" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">record_renewal(purchase, ref, opts)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/charges.ex#L47" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> record_renewal(<a href="Gamend.Payments.Purchase.html#t:t/0">Gamend.Payments.Purchase.t</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>(), <a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Record a renewal of <code class="inline">purchase</code>'s subscription, keyed by the provider's id
+for that one charge. Options: <code class="inline">amount:</code>, <code class="inline">currency:</code>, <code class="inline">occurred_at:</code>.</p>
+  </section>
+</section>
+<section class="detail" id="record_sale/1">
+
+  <div class="detail-header">
+    <a href="#record_sale/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">record_sale(purchase)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/charges.ex#L34" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> record_sale(<a href="Gamend.Payments.Purchase.html#t:t/0">Gamend.Payments.Purchase.t</a>()) :: :ok</pre>
+
+      </div>
+
+<p>Record a purchase's sale. Runs inside its fulfilment's transaction.</p>
+  </section>
+</section>
+<section class="detail" id="revenue_summary/1">
+
+    <span id="revenue_summary/0"></span>
+
+  <div class="detail-header">
+    <a href="#revenue_summary/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">revenue_summary(opts \\ [])</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/charges.ex#L116" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> revenue_summary(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">keyword</a>()) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">map</a>()</pre>
+
+      </div>
+
+<p>Revenue for the admin payments page, per currency (amounts never add across
+currencies): <code class="inline">lifetime</code>, <code class="inline">this_month</code>, <code class="inline">last_month</code> and <code class="inline">last_30_days</code>
+totals, the last 12 calendar months oldest first, and lifetime totals by
+provider and by product. Each total is <code class="inline">%{sales, renewals, refunds, gross, refunded, net}</code>: counts, then amounts in the smallest unit.</p><p>Options: <code class="inline">environment:</code> (<code class="inline">&quot;production&quot;</code> by default, <code class="inline">:all</code> for every one),
+<code class="inline">now:</code>.</p>
+  </section>
+</section>
+
+    </div>
+  </section>
+
+    <footer class="footer">
+
+        <p>
+
+            <span class="line">
+              <a href="https://hex.pm/packages/gamend_core/1.1.1482">Hex Package</a>
+
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1482">Hex Preview</a>
+
+            </span>
+
+          <span class="line">
+            <button class="a-main footer-button display-quick-switch" title="Go to package docs">
+              Go to package docs
+            </button>
+
+              <a href="llms.txt" target="_blank">
+                View llms.txt
+              </a>
+
+
+              <a href="gamend_core.epub">
+                Download ePub version
+              </a>
+
+          </span>
+        </p>
+
+        <p class="built-using">
+          Built using
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.4) for the
+
+            <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
+
+        </p>
+
+
+    </footer>
+  </div>
+</main>
+</div>
+
+  </body>
+</html>

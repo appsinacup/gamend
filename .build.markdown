@@ -202,6 +202,9 @@ Gamend.Parties.PartyInvite.md
 Gamend.Parties.PartyInviteStatus.md
 Gamend.Parties.md
 Gamend.Payments.Admin.md
+Gamend.Payments.Charge.md
+Gamend.Payments.ChargeKind.md
+Gamend.Payments.Charges.md
 Gamend.Payments.CounterName.md
 Gamend.Payments.Counters.md
 Gamend.Payments.DeletedAccountSubscriptions.md

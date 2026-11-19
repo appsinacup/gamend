@@ -41,6 +41,9 @@ Every value.
 # `paid`
 *macro* 
 
+# `succeeded`
+*macro* 
+
 # `trialing`
 *macro* 
 

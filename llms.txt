@@ -1,4 +1,4 @@
-# gamend_core v1.1.1481 - Table of Contents
+# gamend_core v1.1.1482 - Table of Contents
 
 > Core functionality for Gamend, including user management, authentication, friends, matchmaking, and more.
 
@@ -412,6 +412,18 @@ Carries the `idempotency_key` that makes item grants safe to retry.
   - [Gamend.Payments.Admin](Gamend.Payments.Admin.md): What the admin payments pages and API read: the stats, provider configuration
 status, and filtered listings of products, purchases, entitlements, provider
 events and reconciliation cursors.
+  - [Gamend.Payments.Charge](Gamend.Payments.Charge.md): One time money moved for a purchase (`payment_charges`): its sale, each
+renewal a provider charged, or its refund. Revenue is read from here, not
+from `purchases`, because a Stripe subscription is one purchase row however
+many periods it was paid for. Rows are written by `Gamend.Payments.Charges`
+and unique per provider, kind and `provider_ref` (a charge or transaction
+id), so a webhook delivered twice records once.
+  - [Gamend.Payments.ChargeKind](Gamend.Payments.ChargeKind.md): What a `payment_charges` row records: the `sale` that started a purchase,
+a subscription's `renewal`, or the `refund` (or lost dispute) that gave the
+money back.
+
+  - [Gamend.Payments.Charges](Gamend.Payments.Charges.md): The money a purchase moved (`Gamend.Payments.Charge`), written where it
+moves and read back as revenue for the admin payments page.
   - [Gamend.Payments.CounterName](Gamend.Payments.CounterName.md): The counters of payments in `Gamend.Payments.Counters`.
 
   - [Gamend.Payments.Counters](Gamend.Payments.Counters.md): What happened to payments, per day, as `Gamend.Analytics.count/3` counters:

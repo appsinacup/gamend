@@ -391,6 +391,8 @@ other.
 
 # `resume_stripe_subscription`
 
+# `revenue_summary`
+
 # `revoke_entitlement`
 
 ```elixir

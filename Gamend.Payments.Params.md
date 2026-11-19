@@ -15,6 +15,14 @@ existed verbatim in four modules (Apple twice, once in `Apple.JWS`),
 in two. None of the copies had drifted yet, which is the only reason this is
 a tidy-up rather than a bug hunt.
 
+# `currency_decimals`
+
+```elixir
+@spec currency_decimals(String.t() | nil) :: 0 | 2 | 3
+```
+
+How many decimals `currency`'s minor unit has: 2 for most, 0 for JPY, 3 for KWD.
+
 # `datetime_iso`
 
 ```elixir
@@ -38,6 +46,16 @@ A stored provider payload with newer fields merged over it.
 ```
 
 Epoch milliseconds as an ISO-8601 string; `nil` when it is not one.
+
+# `milliunits_to_minor`
+
+```elixir
+@spec milliunits_to_minor(term(), String.t() | nil) :: non_neg_integer() | nil
+```
+
+A price in milliunits (a thousandth of the currency's unit: Apple's
+`price`, 1990 for 1.99) in the currency's minor unit, rounded; nil when
+either is missing.
 
 # `normalize`
 

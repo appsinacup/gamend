@@ -1,5 +1,5 @@
 # `Gamend.Payments.Providers.Apple.JWS`
-[🔗](https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/apple.ex#L259)
+[🔗](https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/providers/apple.ex#L263)
 
 Verifies App Store JWS payloads (StoreKit signed transactions and App Store
 Server Notifications V2).

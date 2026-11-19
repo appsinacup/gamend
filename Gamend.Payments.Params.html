@@ -5,14 +5,14 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1481">
+    <meta name="project" content="gamend_core v1.1.1482">
 
 
-    <title>Gamend.Payments.Params — gamend_core v1.1.1481</title>
+    <title>Gamend.Payments.Params — gamend_core v1.1.1482</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
-    <script defer src="dist/sidebar_items-AEC3A93D.js"></script>
+    <script defer src="dist/sidebar_items-3577C32D.js"></script>
     <script defer src="docs_config.js"></script>
     <script defer src="dist/html-MI33G4N7.js"></script>
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1481
+          v1.1.1482
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Payments.<wbr />Params</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1481)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1482)</small>
 
     </h1>
 
@@ -141,6 +141,16 @@ a tidy-up rather than a bug hunt.</p>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#currency_decimals/1" data-no-tooltip="" translate="no">currency_decimals(currency)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>How many decimals <code class="inline">currency</code>'s minor unit has: 2 for most, 0 for JPY, 3 for KWD.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#datetime_iso/1" data-no-tooltip="" translate="no">datetime_iso(value)</a>
 
       </div>
@@ -166,6 +176,18 @@ a tidy-up rather than a bug hunt.</p>
       </div>
 
         <div class="summary-synopsis"><p>Epoch milliseconds as an ISO-8601 string; <code class="inline">nil</code> when it is not one.</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#milliunits_to_minor/2" data-no-tooltip="" translate="no">milliunits_to_minor(price, currency)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>A price in milliunits (a thousandth of the currency's unit: Apple's
+<code class="inline">price</code>, 1990 for 1.99) in the currency's minor unit, rounded; nil when
+either is missing.</p></div>
 
     </div>
 
@@ -295,6 +317,34 @@ environment variable back into real newlines.</p></div>
     </h2>
 
     <div class="functions-list">
+<section class="detail" id="currency_decimals/1">
+
+  <div class="detail-header">
+    <a href="#currency_decimals/1" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">currency_decimals(currency)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/params.ex#L145" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> currency_decimals(<a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) :: 0 | 2 | 3</pre>
+
+      </div>
+
+<p>How many decimals <code class="inline">currency</code>'s minor unit has: 2 for most, 0 for JPY, 3 for KWD.</p>
+  </section>
+</section>
 <section class="detail" id="datetime_iso/1">
 
   <div class="detail-header">
@@ -377,6 +427,36 @@ environment variable back into real newlines.</p></div>
       </div>
 
 <p>Epoch milliseconds as an ISO-8601 string; <code class="inline">nil</code> when it is not one.</p>
+  </section>
+</section>
+<section class="detail" id="milliunits_to_minor/2">
+
+  <div class="detail-header">
+    <a href="#milliunits_to_minor/2" class="detail-link" data-no-tooltip="" aria-label="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+    </a>
+    <div class="heading-with-actions">
+      <h1 class="signature" translate="no">milliunits_to_minor(price, currency)</h1>
+
+
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/payments/params.ex#L161" class="icon-action" rel="help nofollow" aria-label="View Source">
+          <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+        </a>
+
+    </div>
+  </div>
+
+  <section class="docstring">
+
+      <div class="specs">
+
+          <pre translate="no"><span class="attribute">@spec</span> milliunits_to_minor(<a href="https://elixir.hexdocs.pm/typespecs.html#built-in-types">term</a>(), <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil) :: <a href="https://elixir.hexdocs.pm/typespecs.html#basic-types">non_neg_integer</a>() | nil</pre>
+
+      </div>
+
+<p>A price in milliunits (a thousandth of the currency's unit: Apple's
+<code class="inline">price</code>, 1990 for 1.99) in the currency's minor unit, rounded; nil when
+either is missing.</p>
   </section>
 </section>
 <section class="detail" id="normalize/1">
@@ -698,9 +778,9 @@ environment variable back into real newlines.</p>
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1481">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1482">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1481">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1482">Hex Preview</a>
 
             </span>
 

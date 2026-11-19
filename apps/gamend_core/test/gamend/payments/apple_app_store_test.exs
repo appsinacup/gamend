@@ -165,6 +165,23 @@ defmodule Gamend.Payments.AppleAppStoreTest do
                Apple.validate_purchase(nil, %{"signed_transaction_info" => "live"})
     end
 
+    test "the price paid is read in the currency's minor unit" do
+      signs("usd", transaction(%{"price" => 1990, "currency" => "USD"}))
+
+      assert {:ok, %{"amount" => 199, "currency" => "USD"}} =
+               Apple.validate_purchase(nil, %{"signedTransactionInfo" => "usd"})
+
+      signs("jpy", transaction(%{"price" => 160_000, "currency" => "JPY"}))
+
+      assert {:ok, %{"amount" => 160, "currency" => "JPY"}} =
+               Apple.validate_purchase(nil, %{"signedTransactionInfo" => "jpy"})
+
+      signs("none", transaction())
+
+      assert {:ok, %{"amount" => nil}} =
+               Apple.validate_purchase(nil, %{"signedTransactionInfo" => "none"})
+    end
+
     test "each environment Apple names maps to ours" do
       for {apple, ours} <- [
             {"Production", "production"},

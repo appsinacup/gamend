@@ -9,6 +9,7 @@ defmodule Gamend.Payments.StoreEvents do
 
   import Ecto.Query, warn: false
   alias Gamend.Payments
+  alias Gamend.Payments.Charges
   alias Gamend.Payments.Params
   alias Gamend.Payments.ProviderConfig
   alias Gamend.Payments.Purchase
@@ -130,6 +131,8 @@ defmodule Gamend.Payments.StoreEvents do
         Payments.revoke_purchase(purchase, %{
           "status" => google_subscription_reversal_status(type),
           "reason" => "google_subscription_notification_#{type}",
+          # 12 is SUBSCRIPTION_REVOKED, a refund; 13 an expiry, 20 a pending one cancelled.
+          "money_returned" => type == 12,
           "payload" => %{"google_notification" => notification}
         })
         |> Payments.processed_result()
@@ -164,6 +167,7 @@ defmodule Gamend.Payments.StoreEvents do
         Payments.revoke_purchase(purchase, %{
           "status" => PurchaseStatus.revoked(),
           "reason" => "apple_#{type}",
+          "money_returned" => type == "REFUND",
           "payload" => %{"apple_notification" => event}
         })
         |> Payments.processed_result()
@@ -176,6 +180,7 @@ defmodule Gamend.Payments.StoreEvents do
                ),
              {:ok, _purchase} <-
                Payments.fulfill_purchase(updated, %{"apple_notification" => event}) do
+          record_apple_renewal(purchase, updated, transaction)
           {:ok, :processed}
         end
 
@@ -183,6 +188,27 @@ defmodule Gamend.Payments.StoreEvents do
         {:ok, :ignored}
     end
   end
+
+  # A renewal (or a recovered, or resubscribed, period) is a new transaction
+  # on a purchase already sold: the purchase row now carries it, so revenue
+  # keeps its own row, at the price Apple says the buyer paid for it (the
+  # catalogue's price when the transaction names none).
+  defp record_apple_renewal(
+         %Purchase{status: PurchaseStatus.completed(), provider_transaction_id: before},
+         %Purchase{} = updated,
+         %{"transactionId" => transaction_id} = transaction
+       )
+       when is_binary(transaction_id) and transaction_id != before do
+    currency = Params.normalize_currency(transaction["currency"])
+
+    Charges.record_renewal(updated, transaction_id,
+      amount: Params.milliunits_to_minor(transaction["price"], currency) || updated.amount,
+      currency: currency || updated.currency,
+      occurred_at: Params.parse_datetime(Params.millis_to_iso8601(transaction["purchaseDate"]))
+    )
+  end
+
+  defp record_apple_renewal(_purchase, _updated, _transaction), do: :ok
 
   defp google_subscription_reversal_status(20), do: PurchaseStatus.cancelled()
   defp google_subscription_reversal_status(_type), do: PurchaseStatus.revoked()
@@ -195,6 +221,8 @@ defmodule Gamend.Payments.StoreEvents do
       "quantity" => transaction["quantity"] || 1,
       "environment" => apple_event_environment(transaction["environment"]),
       "expires_at" => Params.millis_to_iso8601(transaction["expiresDate"]),
+      "currency" => Params.normalize_currency(transaction["currency"]),
+      "amount" => Params.milliunits_to_minor(transaction["price"], transaction["currency"]),
       "raw_payload" => %{"apple_transaction" => transaction}
     }
   end

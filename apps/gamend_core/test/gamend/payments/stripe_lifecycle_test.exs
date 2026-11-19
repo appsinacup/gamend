@@ -13,6 +13,7 @@ defmodule Gamend.Payments.StripeLifecycleTest do
   alias Gamend.AccountsFixtures
   alias Gamend.Analytics
   alias Gamend.Payments
+  alias Gamend.Payments.Charge
   alias Gamend.Payments.Entitlement
   alias Gamend.Payments.ProviderConfig
   alias Gamend.Payments.Purchase
@@ -369,6 +370,95 @@ defmodule Gamend.Payments.StripeLifecycleTest do
     end
   end
 
+  describe "revenue" do
+    test "each renewal a subscription is charged is revenue of its own, once", %{user: user} do
+      purchase = paid_subscription(user, "sub_revenue_1")
+      assert [%Charge{kind: "sale"} = sale] = charges(purchase)
+      assert sale.amount == purchase.amount
+      assert sale.currency == purchase.currency
+
+      # The checkout's own charge, a moment after it: the sale already counts it.
+      assert {:ok, :processed} =
+               webhook("charge.succeeded", renewal_charge("ch_first_1", "sub_revenue_1", 0))
+
+      assert [%Charge{kind: "sale"}] = charges(purchase)
+
+      # A period on, twice delivered: one renewal.
+      for _delivery <- 1..2 do
+        assert {:ok, :processed} =
+                 webhook("charge.succeeded", renewal_charge("ch_renew_1", "sub_revenue_1", 31))
+      end
+
+      assert %Charge{kind: "renewal", amount: 999, currency: "EUR"} =
+               Enum.find(charges(purchase), &(&1.kind == "renewal"))
+
+      # The purchase keeps the subscription as its original transaction.
+      assert Repo.get!(Purchase, purchase.id).provider_original_transaction_id == "sub_revenue_1"
+
+      assert {:ok, :processed} =
+               webhook("refund.updated", %{
+                 "id" => "re_revenue_1",
+                 "object" => "refund",
+                 "status" => "succeeded",
+                 "amount" => 999,
+                 "currency" => "eur",
+                 "metadata" => %{"purchase_id" => purchase.id}
+               })
+
+      totals = Payments.revenue_summary(environment: :all).lifetime[purchase.currency]
+      assert totals.sales == 1
+      assert totals.renewals == 1
+      assert totals.refunds == 1
+      assert totals.gross == purchase.amount + 999
+      assert totals.net == purchase.amount
+    end
+
+    test "a won dispute takes its refund back out; an expiry is no refund", %{user: user} do
+      purchase = paid_one_off(user)
+
+      assert {:ok, :processed} =
+               webhook("charge.dispute.created", %{
+                 "id" => "dp_rev_1",
+                 "object" => "dispute",
+                 "amount" => 999,
+                 "currency" => "eur",
+                 "charge" => "ch_one_1"
+               })
+
+      assert [%Charge{amount: 999}] = Enum.filter(charges(purchase), &(&1.kind == "refund"))
+
+      assert {:ok, :processed} =
+               webhook("charge.dispute.closed", %{
+                 "id" => "dp_rev_1",
+                 "object" => "dispute",
+                 "status" => "won",
+                 "charge" => "ch_one_1"
+               })
+
+      assert [%Charge{kind: "sale"}] = charges(purchase)
+
+      # A store revoking at the end of a period gave nothing back.
+      {:ok, _revoked} =
+        Payments.revoke_purchase(purchase, %{"status" => "revoked", "reason" => "apple_EXPIRED"})
+
+      assert [%Charge{kind: "sale"}] = charges(purchase)
+    end
+
+    test "the month's totals count what moved in it", %{user: user} do
+      purchase = paid_subscription(user, "sub_revenue_2")
+      summary = Payments.revenue_summary(environment: :all)
+
+      assert purchase.currency in summary.currencies
+      assert summary.this_month[purchase.currency].sales == 1
+      refute Map.has_key?(summary.last_month, purchase.currency)
+      assert length(summary.months) == 12
+      assert List.last(summary.months).totals[purchase.currency].sales == 1
+
+      assert [%{key: "stripe", totals: %{sales: 1}}] =
+               Enum.filter(summary.by_provider, &(&1.currency == purchase.currency))
+    end
+  end
+
   describe "a one-off purchase" do
     test "a dispute the seller won hands it back; a lost one does not", %{user: user} do
       purchase = paid_one_off(user)
@@ -605,6 +695,23 @@ defmodule Gamend.Payments.StripeLifecycleTest do
 
     {:ok, purchase} = Payments.fulfill_purchase(purchase)
     purchase
+  end
+
+  defp charges(%Purchase{id: id}),
+    do: Repo.all(from(c in Charge, where: c.purchase_id == ^id, order_by: c.occurred_at))
+
+  # A charge of the subscription's invoice, `days` after now: no metadata,
+  # only the PaymentIntent the stub traces to `subscription`.
+  defp renewal_charge(id, subscription, days) do
+    %{
+      "id" => id,
+      "object" => "charge",
+      "status" => "succeeded",
+      "amount" => 999,
+      "currency" => "eur",
+      "created" => DateTime.utc_now(:second) |> DateTime.add(days, :day) |> DateTime.to_unix(),
+      "payment_intent" => "pi_sub_" <> subscription
+    }
   end
 
   defp entitlement(user, %Purchase{} = purchase),

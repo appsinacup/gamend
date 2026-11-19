@@ -12,6 +12,7 @@ defmodule Gamend.Payments.StripeEvents do
   require Logger
   alias Gamend.Accounts.User
   alias Gamend.Payments
+  alias Gamend.Payments.Charges
   alias Gamend.Payments.Counters
   alias Gamend.Payments.Entitlement
   alias Gamend.Payments.Params
@@ -450,12 +451,25 @@ defmodule Gamend.Payments.StripeEvents do
 
   defp process_stripe_event(%{"type" => "charge.succeeded", "data" => %{"object" => object}})
        when is_map(object) do
-    with {:ok, purchase} <- Payments.purchase_from_provider_object(object),
-         {:ok, _purchase} <- update_purchase_from_stripe_charge(purchase, object) do
-      {:ok, :processed}
-    else
-      {:error, :purchase_not_found} -> {:ok, :ignored}
-      {:error, reason} -> {:error, reason}
+    case Payments.purchase_from_provider_object(object) do
+      {:ok, purchase} ->
+        with {:ok, _updated} <- update_purchase_from_stripe_charge(purchase, object),
+             do: {:ok, :processed}
+
+      # A subscription's charges carry none of the checkout's metadata, so
+      # they were all ignored here. Traced to the subscription through their
+      # invoice, as a refund of one is, each later one is a renewal's revenue.
+      # The purchase is not linked to the charge: its original transaction is
+      # the subscription, which every later event finds it by.
+      {:error, :purchase_not_found} ->
+        case purchase_from_invoice_subscription(object) do
+          {:ok, purchase} ->
+            record_renewal_charge(purchase, object)
+            {:ok, :processed}
+
+          {:error, :purchase_not_found} ->
+            {:ok, :ignored}
+        end
     end
   end
 
@@ -682,12 +696,55 @@ defmodule Gamend.Payments.StripeEvents do
            Payments.revoke_purchase(purchase, %{
              "status" => stripe_reversal_status(type),
              "reason" => type,
-             "payload" => %{"stripe_event_object" => object}
+             "payload" => %{"stripe_event_object" => object},
+             "money_returned" => true,
+             "refund_amount" => reversal_amount(object),
+             "refund_currency" => object["currency"]
            }) do
       end_subscription(revoked)
       {:ok, :processed}
     end
   end
+
+  # What the reversal took: a charge says how much of it was refunded, a
+  # refund and a dispute say their own amount.
+  defp reversal_amount(%{"object" => "charge", "amount_refunded" => amount})
+       when is_integer(amount),
+       do: amount
+
+  defp reversal_amount(%{"amount" => amount}) when is_integer(amount), do: amount
+  defp reversal_amount(_object), do: nil
+
+  # A subscription's later charges (each renewal, the first charge at the end
+  # of a trial) land on the purchase that started it, which keeps only the
+  # checkout's amount; each is a revenue row of its own. The checkout's own
+  # charge is the purchase's sale (`Charges.record_sale/1`), told apart by
+  # time: it is made as the purchase completes, and Stripe's shortest period
+  # or trial is a day. A charge seen before the purchase completed is that one.
+  @renewal_after_seconds 12 * 3600
+
+  defp record_renewal_charge(
+         %Purchase{
+           product: %Product{kind: ProductKind.subscription()},
+           purchased_at: %DateTime{} = paid_at
+         } =
+           purchase,
+         %{"id" => "ch_" <> _ = charge_id, "status" => StripeStatus.succeeded()} = charge
+       ) do
+    charged_at = Params.unix_seconds_to_datetime(charge["created"]) || DateTime.utc_now(:second)
+
+    if DateTime.diff(charged_at, paid_at) > @renewal_after_seconds do
+      Charges.record_renewal(purchase, charge_id,
+        amount: charge["amount"],
+        currency: Params.normalize_currency(charge["currency"]),
+        occurred_at: charged_at
+      )
+    end
+
+    :ok
+  end
+
+  defp record_renewal_charge(_purchase, _charge), do: :ok
 
   # Money taken back from a subscription ends the subscription too. Revoking
   # the entitlement alone left Stripe renewing it: charged every period, with

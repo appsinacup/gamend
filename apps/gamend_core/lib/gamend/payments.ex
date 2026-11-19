@@ -15,6 +15,7 @@ defmodule Gamend.Payments do
   alias Gamend.Accounts.User
   alias Gamend.Lock
   alias Gamend.Payments.Admin
+  alias Gamend.Payments.Charges
   alias Gamend.Payments.Counters
   alias Gamend.Payments.Entitlement
   alias Gamend.Payments.Notices
@@ -40,6 +41,7 @@ defmodule Gamend.Payments do
   require Gamend.Payments.PurchaseMetadata, as: PurchaseMetadata
   require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
   require Gamend.Payments.StripeEvent, as: StripeEvent
+  require Gamend.Payments.StripeStatus, as: StripeStatus
 
   @fulfilled "fulfilled"
   @provider "provider"
@@ -326,7 +328,8 @@ defmodule Gamend.Payments do
 
           _ ->
             with {:ok, updated} <- complete_purchase(purchase, provider_payload),
-                 :ok <- grant_purchase(updated) do
+                 :ok <- grant_purchase(updated),
+                 :ok <- Charges.record_sale(updated) do
               {:ok, updated, :fulfilled}
             else
               {:error, reason} -> Repo.rollback(reason)
@@ -397,6 +400,7 @@ defmodule Gamend.Payments do
           |> Repo.update()
           |> tap_bump({:payments, :purchase_version})
 
+        maybe_record_refund(updated, purchase.status, attrs)
         {:revoked, updated, revoke_entitlements_for_purchase(updated, now, reason)}
       end
     end)
@@ -416,6 +420,26 @@ defmodule Gamend.Payments do
         {:error, reason}
     end
   end
+
+  # Money given back on a purchase that had been paid: a refund, or a
+  # revocation its caller says returned the money (`"money_returned" => true`:
+  # a lost dispute, a store's refund). A revocation alone is not one: Apple's
+  # `EXPIRED` and Google's expiry revoke too. A purchase never paid (failed,
+  # pending) has no sale to take it from.
+  defp maybe_record_refund(%Purchase{status: status} = purchase, previous, attrs)
+       when previous in [PurchaseStatus.completed(), PurchaseStatus.cancelled()] do
+    if status == PurchaseStatus.refunded() or
+         (status == PurchaseStatus.revoked() and attrs["money_returned"] == true) do
+      Charges.record_refund(purchase,
+        amount: attrs["refund_amount"],
+        currency: Params.normalize_currency(attrs["refund_currency"])
+      )
+    end
+
+    :ok
+  end
+
+  defp maybe_record_refund(_purchase, _previous, _attrs), do: :ok
 
   # A refund or a lost dispute is the purchase's end. The subscription's own
   # cancellation, which a refund sets off and whose webhook can arrive after
@@ -471,6 +495,7 @@ defmodule Gamend.Payments do
           |> Repo.update()
           |> tap_bump({:payments, :purchase_version})
 
+        :ok = Charges.drop_refund(updated)
         {updated, restore_entitlements_for_purchase(updated)}
       else
         :unchanged
@@ -1274,6 +1299,9 @@ defmodule Gamend.Payments do
   @doc delegate_to: {Admin, :admin_stats, 0}
   defdelegate admin_stats(), to: Admin
 
+  @doc delegate_to: {Charges, :revenue_summary, 1}
+  defdelegate revenue_summary(opts \\ []), to: Charges
+
   @doc delegate_to: {Admin, :stripe_config_status, 0}
   defdelegate stripe_config_status(), to: Admin
 
@@ -1990,7 +2018,7 @@ defmodule Gamend.Payments do
 
     ours? and
       case object["status"] do
-        status when is_binary(status) -> status == "succeeded"
+        status when is_binary(status) -> status == StripeStatus.succeeded()
         _unknown -> true
       end
   end

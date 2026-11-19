@@ -4,5 +4,5 @@ defmodule Gamend.Payments.StripeStatus do
   """
 
   use Gamend.Names,
-      ~w(active trialing canceled incomplete_expired paid open expired completed failed)
+      ~w(active trialing canceled incomplete_expired paid open expired completed failed succeeded)
 end

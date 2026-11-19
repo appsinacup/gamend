@@ -134,4 +134,33 @@ defmodule Gamend.Payments.Params do
   @spec normalize_currency(String.t() | nil) :: String.t() | nil
   def normalize_currency(nil), do: nil
   def normalize_currency(currency) when is_binary(currency), do: String.upcase(currency)
+
+  # Amounts are kept in the currency's minor unit (Stripe's convention): 499
+  # USD is 4.99. These are the currencies with no minor unit and with three.
+  @zero_decimal_currencies ~w(BIF CLP DJF GNF JPY KMF KRW MGA PYG RWF UGX VND VUV XAF XOF XPF)
+  @three_decimal_currencies ~w(BHD JOD KWD OMR TND)
+
+  @doc "How many decimals `currency`'s minor unit has: 2 for most, 0 for JPY, 3 for KWD."
+  @spec currency_decimals(String.t() | nil) :: 0 | 2 | 3
+  def currency_decimals(currency) when is_binary(currency) do
+    case String.upcase(currency) do
+      code when code in @zero_decimal_currencies -> 0
+      code when code in @three_decimal_currencies -> 3
+      _code -> 2
+    end
+  end
+
+  def currency_decimals(_currency), do: 2
+
+  @doc """
+  A price in milliunits (a thousandth of the currency's unit: Apple's
+  `price`, 1990 for 1.99) in the currency's minor unit, rounded; nil when
+  either is missing.
+  """
+  @spec milliunits_to_minor(term(), String.t() | nil) :: non_neg_integer() | nil
+  def milliunits_to_minor(price, currency)
+      when is_integer(price) and price >= 0 and is_binary(currency),
+      do: round(price / Integer.pow(10, 3 - currency_decimals(currency)))
+
+  def milliunits_to_minor(_price, _currency), do: nil
 end

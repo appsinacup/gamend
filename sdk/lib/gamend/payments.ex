@@ -1049,6 +1049,28 @@ defmodule Gamend.Payments do
   end
 
   @doc ~S"""
+    Revenue for the admin payments page, per currency (amounts never add across
+    currencies): `lifetime`, `this_month`, `last_month` and `last_30_days`
+    totals, the last 12 calendar months oldest first, and lifetime totals by
+    provider and by product. Each total is `%{sales, renewals, refunds, gross,
+    refunded, net}`: counts, then amounts in the smallest unit.
+    
+    Options: `environment:` (`"production"` by default, `:all` for every one),
+    `now:`.
+    
+  """
+  @spec revenue_summary(keyword()) :: map()
+  def revenue_summary(_opts \\ []) do
+    case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
+      :placeholder ->
+        %{}
+
+      _ ->
+        raise "Gamend.Payments.revenue_summary/1 is a stub - only available at runtime on Gamend"
+    end
+  end
+
+  @doc ~S"""
     End a granted entitlement now: a trial cut short, a reward taken back.
     The one `(user, key)` row turns `revoked` at once, its `metadata` merged
     with `:metadata` (e.g. `%{"revocation_reason" => "upgraded"}`); the row

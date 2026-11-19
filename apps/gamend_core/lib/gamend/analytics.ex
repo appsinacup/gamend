@@ -52,11 +52,13 @@ defmodule Gamend.Analytics do
   alias Gamend.Analytics.Segment
   alias Gamend.Cache
   alias Gamend.Economy.LedgerEntry
+  alias Gamend.Payments.Charge
   alias Gamend.Payments.Entitlement
   alias Gamend.Payments.Purchase
   alias Gamend.Repo
   alias Gamend.Repo.AdvisoryLock
 
+  require Gamend.Payments.ChargeKind, as: ChargeKind
   require Gamend.Payments.EntitlementStatus, as: EntitlementStatus
   require Gamend.Payments.PaymentEnvironment, as: PaymentEnvironment
   require Gamend.Payments.PurchaseStatus, as: PurchaseStatus
@@ -1287,14 +1289,16 @@ defmodule Gamend.Analytics do
     start = start_of_day(first)
     counter = &funnel_count({:counter, &1}, first, today)
 
+    # What was charged in the window, renewals included and refunds not taken
+    # off: the same rows as Admin → Payments' revenue (`Gamend.Payments.Charges`).
     revenue =
-      from(p in Purchase,
+      from(c in Charge,
         where:
-          p.status == ^PurchaseStatus.completed() and
-            p.environment == ^PaymentEnvironment.production(),
-        where: p.inserted_at >= ^start and not is_nil(p.amount),
-        group_by: p.currency,
-        select: {p.currency, sum(p.amount)}
+          c.kind in ^[ChargeKind.sale(), ChargeKind.renewal()] and
+            c.environment == ^PaymentEnvironment.production(),
+        where: c.occurred_at >= ^start and not is_nil(c.amount) and not is_nil(c.currency),
+        group_by: c.currency,
+        select: {c.currency, sum(c.amount)}
       )
       |> Repo.all()
       |> Enum.map(fn {currency, amount} -> {currency, to_int(amount)} end)

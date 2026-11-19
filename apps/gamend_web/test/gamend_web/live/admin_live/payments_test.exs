@@ -154,6 +154,26 @@ defmodule GamendWeb.AdminLive.PaymentsTest do
     refute html =~ "Wallet Ledger"
   end
 
+  test "revenue counts production sales only, per currency", %{conn: conn, admin: admin} do
+    {_product, provider_product} = create_provider_product("stripe", "price_admin_revenue")
+    {:ok, purchase} = Payments.create_purchase(admin, provider_product)
+    {:ok, purchase} = Payments.fulfill_purchase(purchase)
+
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin/payments")
+
+    # This server runs in the sandbox: its sale is a test, not revenue.
+    assert has_element?(view, "#payments-revenue-empty")
+
+    Repo.update_all(Gamend.Payments.Charge, set: [environment: "production"])
+    {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin/payments")
+    slug = String.downcase(purchase.currency)
+
+    refute has_element?(view, "#payments-revenue-empty")
+    assert has_element?(view, "#revenue-#{slug}-lifetime", "1 sale")
+    assert has_element?(view, "#revenue-#{slug}-months")
+    assert has_element?(view, "#revenue-#{slug}-providers", "Stripe")
+  end
+
   test "admin can create product and provider SKU", %{conn: conn, admin: admin} do
     {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin/payments")
 

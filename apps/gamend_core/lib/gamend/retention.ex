@@ -8,7 +8,7 @@ defmodule Gamend.Retention do
   - `GAMEND_RETENTION_CHAT_MESSAGES_DAYS` — `chat_messages` older than N days
   - `GAMEND_RETENTION_NOTIFICATIONS_DAYS` — `notifications` older than N days
   - `GAMEND_RETENTION_PAYMENT_EVENTS_DAYS` — payment provider webhook events older
-    than N days (purchases/entitlements are never pruned)
+    than N days (purchases, entitlements and payment charges are never pruned)
   - `GAMEND_RETENTION_RESULTS_DAYS` — results (`Gamend.Results`) started more
     than N days ago, with their events
   - Closed reports (`Gamend.Reports`) and their images, on that module's own

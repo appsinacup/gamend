@@ -690,6 +690,7 @@ defmodule Gamend.GDScript.API do
       "refund_window_days" => [0],
       "restore_purchase" => [1, 2],
       "resume_stripe_subscription" => [2],
+      "revenue_summary" => [0, 1],
       "revoke_entitlement" => [2, 3],
       "revoke_purchase" => [1, 2],
       "stripe_config_status" => [0],

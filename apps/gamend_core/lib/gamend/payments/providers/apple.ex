@@ -135,6 +135,10 @@ defmodule Gamend.Payments.Providers.Apple do
       "quantity" => Params.parse_positive_int(transaction["quantity"], 1),
       "environment" => apple_transaction_environment(transaction["environment"]),
       "expires_at" => Params.millis_to_iso8601(transaction["expiresDate"]),
+      # What the buyer paid in their storefront's currency, tax included where
+      # the storefront includes it, before Apple's commission.
+      "currency" => Params.normalize_currency(transaction["currency"]),
+      "amount" => Params.milliunits_to_minor(transaction["price"], transaction["currency"]),
       "raw_payload" => %{"apple_transaction" => transaction}
     }
   end

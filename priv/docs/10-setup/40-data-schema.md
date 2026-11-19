@@ -339,6 +339,7 @@ ledger is the audit trail; the balance is a cache of it.
 | `tournaments`, `tournament_entries`, `tournament_matches`, `tournament_brackets` | Bracket state per occurrence | Tournaments |
 | `results`, `result_events` | One play per player and what happened in it, in order | [Results](/docs/results) |
 | `purchases`, `entitlements`, `store_products`, `provider_products`, `provider_events`, `reconciliation_cursors` | Store catalogue, receipts and provider webhooks | Payments |
+| `payment_charges` | Each time money moved for a purchase (sale, renewal, refund): what revenue is read from | Payments |
 | `push_tokens` | Device tokens for push, pruned when stale | Push notifications |
 | `user_activity_days` | One row per user per UTC day seen; source of DAU and D1/D7/D30 | Player analytics |
 | `analytics_daily_counts` | One row per `(day, key)` game-defined counter, incremented in place | Player analytics |

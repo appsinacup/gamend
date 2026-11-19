@@ -286,6 +286,20 @@ Default payment hooks mirror payment state into user metadata under payments. Pu
 
 Use these hooks for analytics, custom fulfillment, notifications, or external sync.
 
+## Revenue
+
+The Revenue card on Admin > Payments shows production money per currency (amounts never add across currencies): lifetime, this month, last month and the last 30 days, each as net (charged minus refunded) with its sales, renewals and refunds, a column per month for the last 12, and the totals by provider and by product. Months are UTC and count when the money moved.
+
+It is read from `payment_charges`, one row each time money moved (`Gamend.Payments.Charges`):
+
+| Row | Written when |
+|---|---|
+| `sale` | a purchase is first fulfilled, with the purchase's amount |
+| `renewal` | Stripe charges a subscription again (`charge.succeeded`, traced to the subscription through its invoice; a renewal, or the first charge when a trial ends), or Apple sends a renewal notification with a new transaction |
+| `refund` | a refund, a lost dispute or a store refund ends the purchase, and the unused part of a plan refunded on a plan change. A won dispute removes it again |
+
+Each row is written once, however many times its webhook arrives. A Google renewal the client validates is a purchase of its own and counts as a sale. A partial refund made in the Stripe Dashboard ends nothing and is not counted, and an expiry is no refund. An App Store sale or renewal is at the price Apple's signed transaction says the buyer paid, in their storefront's currency, or the SKU's `unit_amount` when it names none. A row with no amount at all counts as a sale and adds nothing. Renewals Stripe charged before this table existed were written over their purchase and are not recovered; the migration fills a sale for every purchase already paid and a refund for every one already refunded. Amounts are what the buyer paid: tax included wherever the store or Stripe Checkout charged it on top, and before the store's commission or Stripe's fees, which this server never sees. Net only takes refunds off.
+
 ## Reference
 
 - **HTTP API:** [/api/docs](/api/docs) - every endpoint, parameter and response, generated from the spec.

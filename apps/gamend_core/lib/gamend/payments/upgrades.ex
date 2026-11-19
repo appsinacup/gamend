@@ -41,6 +41,7 @@ defmodule Gamend.Payments.Upgrades do
 
   alias Gamend.Lock
   alias Gamend.Payments
+  alias Gamend.Payments.Charges
   alias Gamend.Payments.Counters
   alias Gamend.Payments.Entitlement
   alias Gamend.Payments.Params
@@ -306,6 +307,12 @@ defmodule Gamend.Payments.Upgrades do
     end
   end
 
+  defp record_unused_refund(%Purchase{} = old, %{"refund_id" => id, "refund_amount" => amount})
+       when is_binary(id) and is_integer(amount) and amount > 0,
+       do: Charges.record_refund(old, ref: id, amount: amount)
+
+  defp record_unused_refund(_old, _extra), do: :ok
+
   # A retry keeps the mode the first attempt chose.
   defp run(%Purchase{} = old, %Purchase{} = new) do
     mode = recorded_mode(old) || mode(new, old)
@@ -313,7 +320,9 @@ defmodule Gamend.Payments.Upgrades do
     with {:ok, subscription_id} <- StripeEvents.stripe_subscription_id(old),
          {:ok, old} <- record(old, %{"by" => new.id, "mode" => Atom.to_string(mode)}),
          {:ok, extra} <- apply_mode(mode, subscription_id, old, new),
-         {:ok, _old} <- record(old, Map.put(extra, "done_at", now_iso())) do
+         {:ok, old} <- record(old, Map.put(extra, "done_at", now_iso())) do
+      record_unused_refund(old, extra)
+
       Logger.info(
         "Stripe subscription superseded purchase_id=#{old.id} by=#{new.id} mode=#{mode} " <>
           "refund=#{inspect(extra["refund_amount"])}"

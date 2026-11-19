@@ -2,10 +2,14 @@ defmodule GamendWeb.AdminLive.Payments do
   use GamendWeb, :live_view
 
   alias Gamend.Payments
+  alias Gamend.Payments.Params
   alias Gamend.Payments.Product
   alias Gamend.Payments.ProviderProduct
   alias GamendWeb.AdminLive.PaymentProviderStatus
   alias GamendWeb.LiveHelpers
+
+  import GamendWeb.AdminLive.AnalyticsComponents, only: [stat: 1]
+  import GamendWeb.Charts, only: [bars: 1]
 
   @sections ~w(products provider_products purchases entitlements provider_events reconciliation_cursors)a
   @default_page_size 25
@@ -139,6 +143,8 @@ defmodule GamendWeb.AdminLive.Payments do
             </div>
           </div>
         </div>
+
+        <.revenue revenue={@revenue} />
 
         <div class="card bg-base-200">
           <div class="card-body">
@@ -864,6 +870,179 @@ defmodule GamendWeb.AdminLive.Payments do
     end
   end
 
+  @empty_totals %{sales: 0, renewals: 0, refunds: 0, gross: 0, refunded: 0, net: 0}
+
+  attr :revenue, :map, required: true
+
+  # What was sold, per currency: amounts never add across currencies, and a
+  # sale with no price known (no provider price, no SKU `unit_amount`) is
+  # counted under "No price".
+  defp revenue(assigns) do
+    ~H"""
+    <div id="payments-revenue" class="card bg-base-200">
+      <div class="card-body gap-4">
+        <div>
+          <h2 class="card-title">Revenue</h2>
+          <p class="text-sm text-muted">
+            What buyers paid (tax included where charged, before store and Stripe fees), less refunds. Production only, by when the money moved (UTC).
+          </p>
+        </div>
+
+        <p :if={@revenue.currencies == []} id="payments-revenue-empty" class="text-sm text-muted">
+          No sales yet.
+        </p>
+
+        <section
+          :for={currency <- @revenue.currencies}
+          id={"payments-revenue-#{currency_slug(currency)}"}
+          class="space-y-4"
+        >
+          <h3 :if={length(@revenue.currencies) > 1} class="font-semibold">
+            {currency || "No price"}
+          </h3>
+
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <.stat
+              :for={{id, title, totals} <- revenue_tiles(@revenue, currency)}
+              id={"revenue-#{currency_slug(currency)}-#{id}"}
+              title={title}
+              value={money(totals.net, currency)}
+              desc={totals_desc(totals, currency)}
+              hint="Net: charged minus refunded."
+            />
+          </div>
+
+          <.bars
+            :if={currency}
+            id={"revenue-#{currency_slug(currency)}-months"}
+            title={"Net per month, #{currency}"}
+            points={month_points(@revenue.months, currency)}
+            summary={"12 months: " <> money(twelve_month_net(@revenue.months, currency), currency)}
+          />
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <.revenue_table
+              id={"revenue-#{currency_slug(currency)}-providers"}
+              title="By provider"
+              rows={
+                for row <- @revenue.by_provider,
+                    row.currency == currency,
+                    do: {String.capitalize(row.key), row.totals}
+              }
+              currency={currency}
+            />
+            <.revenue_table
+              id={"revenue-#{currency_slug(currency)}-products"}
+              title="Top products"
+              rows={
+                for row <- @revenue.by_product, row.currency == currency do
+                  {product_label(row.key), row.totals}
+                end
+                |> Enum.take(10)
+              }
+              currency={currency}
+            />
+          </div>
+        </section>
+      </div>
+    </div>
+    """
+  end
+
+  attr :id, :string, required: true
+  attr :title, :string, required: true
+  attr :rows, :list, required: true
+  attr :currency, :string, default: nil
+
+  defp revenue_table(assigns) do
+    ~H"""
+    <div id={@id} class="overflow-x-auto">
+      <table class="table table-sm w-full">
+        <caption class="text-left font-semibold pb-1">{@title}</caption>
+        <thead>
+          <tr>
+            <th scope="col"></th>
+            <th scope="col" class="text-right">Sales</th>
+            <th scope="col" class="text-right">Renewals</th>
+            <th scope="col" class="text-right">Refunds</th>
+            <th scope="col" class="text-right">Net</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr :for={{label, totals} <- @rows}>
+            <th scope="row" class="font-normal">{label}</th>
+            <td class="text-right font-mono">{totals.sales}</td>
+            <td class="text-right font-mono">{totals.renewals}</td>
+            <td class="text-right font-mono">{totals.refunds}</td>
+            <td class="text-right font-mono">{money(totals.net, @currency)}</td>
+          </tr>
+          <tr :if={@rows == []}>
+            <td colspan="5" class="text-muted">None.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    """
+  end
+
+  defp revenue_tiles(revenue, currency) do
+    [
+      {"lifetime", "Lifetime", revenue.lifetime},
+      {"this-month", "This month", revenue.this_month},
+      {"last-month", "Last month", revenue.last_month},
+      {"last-30-days", "Last 30 days", revenue.last_30_days}
+    ]
+    |> Enum.map(fn {id, title, totals} ->
+      {id, title, Map.get(totals, currency, @empty_totals)}
+    end)
+  end
+
+  defp totals_desc(totals, currency) do
+    counts =
+      [
+        plural(totals.sales, "sale", "sales"),
+        totals.renewals > 0 && plural(totals.renewals, "renewal", "renewals"),
+        totals.refunds > 0 && plural(totals.refunds, "refund", "refunds")
+      ]
+      |> Enum.filter(& &1)
+      |> Enum.join(" · ")
+
+    if currency && totals.refunded > 0,
+      do: "#{counts} · #{money(totals.refunded, currency)} refunded",
+      else: counts
+  end
+
+  defp plural(1, one, _many), do: "1 #{one}"
+  defp plural(n, _one, many), do: "#{n} #{many}"
+
+  # The chart counts whole units: a column's height is what matters, and the
+  # table and tiles carry the exact amounts.
+  defp month_points(months, currency) do
+    unit = Integer.pow(10, currency_decimals(currency))
+
+    for %{month: month, totals: totals} <- months do
+      net = Map.get(totals, currency, @empty_totals).net
+      # time-ok: a calendar month naming a chart column, not an instant
+      {Calendar.strftime(month, "%b %Y"), max(div(net, unit), 0)}
+    end
+  end
+
+  defp twelve_month_net(months, currency) do
+    Enum.reduce(months, 0, fn %{totals: totals}, acc ->
+      acc + Map.get(totals, currency, @empty_totals).net
+    end)
+  end
+
+  defp money(_amount, nil), do: "—"
+  defp money(amount, currency), do: format_amount(amount, currency)
+
+  defp product_label({nil, _name}), do: "Deleted product"
+  defp product_label({_id, nil}), do: "Untitled product"
+  defp product_label({_id, name}), do: name
+
+  defp currency_slug(nil), do: "none"
+  defp currency_slug(currency), do: String.downcase(currency)
+
   # Each section pages independently, so the section rides along as a
   # phx-value on the shared bar's events.
   defp section_pager(assigns) do
@@ -885,6 +1064,7 @@ defmodule GamendWeb.AdminLive.Payments do
     |> assign(:store_adapters, Payments.provider_adapter_statuses())
     |> assign(:provider_status, PaymentProviderStatus.configs())
     |> assign(:stats, Payments.admin_stats())
+    |> assign(:revenue, Payments.revenue_summary())
     |> assign(:all_products, Payments.list_products(include_inactive: true))
     |> reload_section(:products)
     |> reload_section(:provider_products)
@@ -1092,11 +1272,7 @@ defmodule GamendWeb.AdminLive.Payments do
   defp json_preview(_value), do: ""
 
   # Amounts are stored in the currency's minor unit (Stripe's convention), so
-  # 499 USD is 4.99 — this page printed the raw 499. Stripe's zero- and
-  # three-decimal currencies are the exceptions.
-  @zero_decimal_currencies ~w(BIF CLP DJF GNF JPY KMF KRW MGA PYG RWF UGX VND VUV XAF XOF XPF)
-  @three_decimal_currencies ~w(BHD JOD KWD OMR TND)
-
+  # 499 USD is 4.99 — this page printed the raw 499.
   defp format_amount(nil, currency), do: "- #{currency || ""}"
   defp format_amount(amount, nil), do: to_string(amount)
 
@@ -1107,9 +1283,7 @@ defmodule GamendWeb.AdminLive.Payments do
 
   defp format_amount(amount, currency), do: "#{amount} #{currency}"
 
-  defp currency_decimals(code) when code in @zero_decimal_currencies, do: 0
-  defp currency_decimals(code) when code in @three_decimal_currencies, do: 3
-  defp currency_decimals(_code), do: 2
+  defp currency_decimals(code), do: Params.currency_decimals(code)
 
   defp minor_to_major(amount, 0), do: Integer.to_string(amount)
 

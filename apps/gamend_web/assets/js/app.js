@@ -509,7 +509,12 @@ startVideoClickToPlay()
 // first event it handles.
 startAnonymousSession({getLiveSocket: () => window.liveSocket})
 
-window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
+// A live navigation and a socket join wait a second before the bar: a page
+// opened over the socket is a round trip and its mount, 150-400 ms, and a
+// bar at 300 ms read as the socket reconnecting (host, 2026-11-20). A form
+// or a `phx-page-loading` click keeps 300 ms: the reader is waiting on it.
+const BAR_DELAY_MS = {initial: 1000, redirect: 1000, patch: 1000}
+window.addEventListener("phx:page-loading-start", info => topbar.show(BAR_DELAY_MS[info.detail?.kind] ?? 300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
 // Timestamps render as UTC server-side and are rewritten in the viewer's zone.

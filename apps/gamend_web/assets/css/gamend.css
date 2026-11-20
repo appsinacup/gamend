@@ -35,6 +35,21 @@
 
 [data-phx-session], [data-phx-teleported-src] { display: contents }
 
+/* Locale rows (`HostLayoutNavigation.locale_option/1`): one class a row.
+   ~30 locales, in the dropdown and in the sheet, on every page and in every
+   LiveView join; the utilities retyped on each row were ~4 KB of a join. */
+@layer components {
+  .locale-option {
+    @apply flex min-w-0 items-center gap-2 rounded px-2 py-2 text-sm transition-colors hover:bg-base-200;
+  }
+  .locale-option-current {
+    @apply bg-primary font-semibold text-primary-content hover:bg-primary;
+  }
+  .locale-option-flag {
+    @apply rounded-[2px] shadow-sm ring-1 ring-base-content/10;
+  }
+}
+
 .summary-no-marker {
   list-style: none;
 }

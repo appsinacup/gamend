@@ -804,6 +804,10 @@ defmodule GamendWeb.HostLayoutNavigation do
   # Brasil") pushes its column over the next one instead of letting `truncate` do
   # its job.
   #
+  # One class a row (`gamend.css`, *Locale rows*): the row is ~30 locales
+  # twice on every page, sent whole with each join; the retyped utilities
+  # were ~4 KB of it.
+  #
   # The current locale is a solid `bg-primary` with its paired content color:
   # the previous primary-tinted text on a primary-tinted fill fell below AA
   # contrast on themed hosts.
@@ -819,13 +823,7 @@ defmodule GamendWeb.HostLayoutNavigation do
         rel={@link[:rel]}
         data-no-live-nav
         aria-current={if(@link.locale == @locale, do: "true")}
-        class={[
-          "flex min-w-0 items-center gap-2 rounded px-2 py-2 text-sm transition-colors",
-          if(@link.locale == @locale,
-            do: "bg-primary font-semibold text-primary-content",
-            else: "hover:bg-base-200"
-          )
-        ]}
+        class={if(@link.locale == @locale, do: "locale-option locale-option-current", else: "locale-option")}
       >
         <%!-- `deferred`: this row is in the document ~30 times over, in a
               dropdown and a sheet that are both closed. --%>
@@ -833,7 +831,7 @@ defmodule GamendWeb.HostLayoutNavigation do
           :if={@link.flag_code}
           code={@link.flag_code}
           deferred
-          class="rounded-[2px] shadow-sm ring-1 ring-base-content/10"
+          class="locale-option-flag"
         />
         <span class="truncate">{@link.label}</span>
       </a>

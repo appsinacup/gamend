@@ -17,6 +17,10 @@ first. A computed row is that value under a key of its own:
     is the row's value, anything else no row.
   * `from` lists the stored keys it is worked out from. A write or a delete
     of one, in the same scope, says the computed row moved.
+  * `access`, where it is given, is the least a reader must be, in the
+    words `before_kv_get` answers in (`:owner_only` and the like): the
+    hook can close the row further, never open it. A row of what is
+    only its owner's is that owner's on a host that says nothing.
 
 A key ending in `*` is a family of rows, one a part: a row per language
 worked out from that language's stored row.
@@ -42,6 +46,10 @@ says itself: `Gamend.KV.refresh/2`.
 
 A computed key is never stored: a row written under it is never read.
 
+Core computes one row itself, `preferences`: what a page may set on the
+account (`Gamend.Accounts.Preferences.row/1`), its owner's only. A host's
+row under the same key replaces it.
+
 # `scope`
 
 ```elixir
@@ -51,6 +59,15 @@ A computed key is never stored: a row written under it is never read.
   part: String.t() | nil
 }
 ```
+
+# `access`
+
+```elixir
+@spec access(String.t()) :: atom()
+```
+
+The least a reader of `key` must be (`access`), `:public` for a computed
+row that names none and for a stored key.
 
 # `computed?`
 

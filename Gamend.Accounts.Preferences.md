@@ -17,8 +17,14 @@ settings changed at once cannot lose each other.
 Some are set by the page itself (`put_client/3`, `PUT /preferences`): the
 site's theme, and whatever a host adds to
 `config :gamend_core, :client_preferences` (a map of key to allowed
-values, e.g. `%{"game_sounds" => ~w(on off)}`). Only those keys, with only
-those values, can be written that way.
+values, e.g. `%{"game_sounds" => ~w(on off)}`, or to a `{module,
+function}` answering them, e.g. the languages the site serves). Only
+those keys, with only those values, can be written that way.
+
+Those are what a client reads back, as the row `preferences`
+(`row/1`, `Gamend.KV.Computed`): its owner's only, moved by every change
+here, so a second device sees the theme or the sound change the first
+made.
 
 # `client_keys`
 
@@ -56,6 +62,16 @@ Save a preference a page set: `{:ok, user}`, or `{:error, :invalid}` for a
 key or value not in `client_keys/0`. The theme's `"system"` removes the
 saved theme, so the device decides again.
 
+# `row`
+
+```elixir
+@spec row(%{user_id: String.t() | nil}) :: map() | nil
+```
+
+The row `preferences` (`Gamend.KV.Computed`) for the user in `scope`:
+what they set of `client_keys/0` (no theme where the device decides), or
+nil with no such user.
+
 # `theme`
 
 ```elixir
@@ -72,7 +88,7 @@ The theme the user saved, `"dark"` or `"light"`, or nil.
 ```
 
 Change a user's preferences: `fun` gets the current map and returns the
-new one. `{:ok, user}` with the saved user.
+new one. `{:ok, user}` with the saved user; the row `preferences` moves.
 
 ---
 

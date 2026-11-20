@@ -485,7 +485,14 @@ pub async fn fetch_row_in(key: str, scope: RowScope, force: bool) -> any {
             keep_row_in(key, scope, {});
             return {};
         }
-        log::warn(core::error_of(reply));
+        // A 401 that renewing did not heal: the session ended under the
+        // read (a log-out, or a guest's merged into the account it signed
+        // in to), which is no fault. Anything else is one.
+        if reply[core::STATUS].as_int() == 401 {
+            log::info("gamend: {key} not read, the session ended");
+        } else {
+            log::warn(core::error_of(reply));
+        }
         return nil;
     }
     let value = row_of(core::body(reply));

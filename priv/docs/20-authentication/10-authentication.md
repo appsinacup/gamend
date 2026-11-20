@@ -144,6 +144,17 @@ A guest (an account with no email and no provider, made for a visitor's first sa
 
 Sessions, push tokens, bans and lobby or party seats are not moved. Before anything moves, the guest's credentials are revoked (its sessions deleted and `token_version` bumped, so its access and refresh tokens stop working) and its game sockets are disconnected: a client still signed in as the guest cannot keep spending what is being moved.
 
+A game client's guest merges the same way. The API's sign-ins read the guest's access token the request carries (`Authorization: Bearer`, `GamendWeb.Auth.GuestCaller`) and merge that guest into the account they sign in to:
+
+| Sign-in | The account |
+|---|---|
+| `POST /api/v1/login` | the email's |
+| `POST /api/v1/register/confirm` | the one `POST /api/v1/register` made, which so gets all the guest did |
+| `GET /api/v1/auth/{provider}`, then its poll | the provider's, found or made; the guest is kept with the started session |
+| `POST /api/v1/auth/{provider}/callback`, `/api/v1/auth/google/id_token`, `/api/v1/auth/apple/ios/callback` | the provider's, found or made |
+
+A token of an account that is no guest, or one that is invalid, expired or revoked, is ignored there: the sign-in goes ahead with no merge, never a 401. A device login (`POST /api/v1/login/device`) is the guest's own and merges nothing. The Balaur SDK renews a token about to expire before each call, so a guest's is current when it signs in.
+
 ### Coming back after signing in
 
 A reader who signs in comes back to the page they were on, by a password, an emailed link or a provider. When a sign-in page (`/users/log_in`, `/users/register`, under a locale prefix too) is opened, the `:browser` pipeline's `UserAuth.store_return_to/2` keeps where to come back to in the session as `:user_return_to`, which `log_in_user/3` redirects to:

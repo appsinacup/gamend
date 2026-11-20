@@ -27,6 +27,8 @@ const USERNAME: str = "username";
 const DISPLAY_NAME: str = "display_name";
 const EXPIRES_IN: str = "expires_in";
 const EXPIRES_AT: str = "expires_at";
+// Seconds before its expiry a token is renewed ahead of a call.
+const RENEW_MARGIN: float = 30.0;
 internal const URL: str = "url";
 internal const OPTIONS: str = "options";
 internal const ENDED: str = "ended";
@@ -112,13 +114,19 @@ internal fn answer_later(answer: any) -> int {
     id
 }
 
-/// A path on the server over HTTP, with the session's token. A 401 with a
-/// refresh token in hand renews the session once and asks again, so an
-/// expired token heals; a refused renewal answers the 401. Answers
-/// `{ kind: "rest", status, body, ms }`, the body decoded from JSON, or
-/// `{ kind: "error", error }` when no answer came.
+/// A path on the server over HTTP, with the session's token. A token past
+/// its expiry, or within `RENEW_MARGIN` seconds of it, is renewed first: a
+/// route that takes a token without needing one (a sign-in, which merges
+/// the guest that sends it) would otherwise read it as none. A 401 with a
+/// refresh token in hand renews the session once and asks again, so a
+/// token refused all the same heals; a refused renewal answers the 401.
+/// Answers `{ kind: "rest", status, body, ms }`, the body decoded from
+/// JSON, or `{ kind: "error", error }` when no answer came.
 pub async fn rest(method: str, path: str, body: any) -> any {
     let row = activity::started(REST, method + " " + path, body);
+    if access_token() != "" && refresh_token() != "" && stale(RENEW_MARGIN) {
+        await renew_session();
+    }
     let reply = await send(method, path, body, true);
     if reply[STATUS].as_int() == 401 && refresh_token() != "" {
         let why = await renew_session();

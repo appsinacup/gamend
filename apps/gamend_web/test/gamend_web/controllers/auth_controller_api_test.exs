@@ -635,4 +635,50 @@ defmodule GamendWeb.AuthControllerApiTest do
       assert json_response(conn, 400)["error"] == "missing_param"
     end
   end
+
+  describe "a guest's client signing in with a provider" do
+    defmodule MockExchangerGuest do
+      def exchange_discord_code(_code, _cid, _secret, _redirect),
+        do: {:ok, %{"id" => "d-guest", "email" => "guest_d@example.com", "global_name" => "G"}}
+    end
+
+    setup do
+      Application.put_env(:gamend_web, :oauth_exchanger, MockExchangerGuest)
+      device_id = "device:#{System.unique_integer([:positive])}"
+
+      body =
+        json_response(post(build_conn(), "/api/v1/login/device", %{device_id: device_id}), 200)
+
+      %{"access_token" => token, "user_id" => id} = body["data"]
+      {:ok, _entry} = Gamend.KV.put("progress", %{"km" => 7}, %{}, user_id: id)
+      %{guest_id: id, token: token}
+    end
+
+    defp as(token), do: put_req_header(build_conn(), "authorization", "Bearer " <> token)
+
+    test "polled, the account it signs in to gets what the guest did", %{
+      guest_id: guest_id,
+      token: token
+    } do
+      session_id =
+        json_response(get(as(token), ~p"/api/v1/auth/discord"), 200)["data"]["session_id"]
+
+      assert Gamend.OAuthSessions.get_session(session_id).data["guest_user_id"] == guest_id
+
+      post(build_conn(), "/auth/discord/callback", %{code: "ok", state: session_id})
+
+      status = json_response(get(as(token), ~p"/api/v1/auth/session/#{session_id}"), 200)["data"]
+      assert status["status"] == "completed"
+      user_id = status["session"]["user_id"]
+      assert user_id != guest_id
+      assert {:ok, %{value: %{"km" => 7}}} = Gamend.KV.get("progress", user_id: user_id)
+    end
+
+    test "with a code, the same", %{guest_id: guest_id, token: token} do
+      body = json_response(post(as(token), "/api/v1/auth/discord/callback", %{code: "ok"}), 200)
+      user_id = body["data"]["user_id"]
+      assert user_id != guest_id
+      assert {:ok, %{value: %{"km" => 7}}} = Gamend.KV.get("progress", user_id: user_id)
+    end
+  end
 end

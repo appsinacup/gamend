@@ -169,6 +169,12 @@ defmodule GamendWeb.Router.Shared do
         plug GamendWeb.Plugs.LoginGate
       end
 
+      # A sign-in from a guest's client: the guest, merged into the account
+      # it signs in to (`GamendWeb.Auth.GuestCaller`).
+      pipeline :api_guest do
+        plug GamendWeb.Auth.GuestCaller
+      end
+
       pipeline :oauth_callback do
         plug :accepts, ["html", "json"]
         plug :fetch_session
@@ -422,7 +428,7 @@ defmodule GamendWeb.Router.Shared do
       end
 
       scope "/api/v1", GamendWeb.Api.V1, as: :api_v1 do
-        pipe_through [:api, :api_login_gate]
+        pipe_through [:api, :api_login_gate, :api_guest]
 
         post "/login", SessionController, :create
         post "/register", SessionController, :register
@@ -964,7 +970,7 @@ defmodule GamendWeb.Router.Shared do
   defmacro gamend_api_auth_routes do
     quote do
       scope "/api/v1/auth", GamendWeb do
-        pipe_through :api
+        pipe_through [:api, :api_guest]
 
         # Before "/:provider", which would otherwise capture it.
         get "/providers", AuthController, :api_providers

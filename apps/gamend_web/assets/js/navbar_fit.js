@@ -62,13 +62,15 @@ export function stageFor(needs, width, side = null) {
     if (width >= UNMEASURED_BAR) return STAGES[0][1]
     return side ? SIDE_MENU : MENU
   }
+  // What the page keeps of the header's row for its own (`reserve/0`).
+  const kept = side?.reserve || 0
   for (const [name, words] of side ? AUTO_STAGES : STAGES) {
-    if (needs[name] <= width) return words
+    if (needs[name] <= width - kept) return words
   }
   if (!side) return MENU
   if (side.phone) return SIDE_MENU
   for (const [name, words] of SIDE_STAGES) {
-    if (needs[name] <= width - side.width) return words
+    if (needs[name] <= width - side.width - kept) return words
   }
   return SIDE_MENU
 }
@@ -87,7 +89,16 @@ function sideRoom() {
   const root = document.documentElement
   const rem = parseFloat(getComputedStyle(root).fontSize) || 16
   const open = root.dataset.side !== "rail" && !document.getElementById("navbar-autohide")
-  return {width: rem * (open ? 14 : 6), phone: !matchMedia("(min-width: 48rem)").matches}
+  return {width: rem * (open ? 14 : 6), phone: !matchMedia("(min-width: 48rem)").matches, reserve: reserve()}
+}
+
+// The room a page keeps in the header's row for its own (a heading the bar
+// lies over: `--nav-reserve` on `#main-navbar`, px, set by the host): the
+// bar falls to a smaller stage rather than leave the page's row too little.
+function reserve() {
+  const header = document.getElementById("main-navbar")
+  if (!header) return 0
+  return parseFloat(header.style.getPropertyValue("--nav-reserve")) || 0
 }
 
 // What the stages are compared with: the header's width, or in the auto

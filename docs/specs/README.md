@@ -24,6 +24,10 @@ Not a plan; a living reference.
 
 ## Open
 
+- [heading-bar.md](heading-bar.md) — **The heading is the bar.** Polyglot
+  Pirates' heading bar as one core setting (`"heading_bar"`): one
+  `<.page_heading>` component, the bar's CSS and heading fit in core, the …
+  menu from the navbar's entries; Polyglot, then Forge and Cloud.
 - [cloud-saves.md](cloud-saves.md) — **Cloud saves.** Versioned save-slots on
   object storage with lock-free optimistic conflict detection.
 - [skill-matchmaking.md](skill-matchmaking.md) — **Skill matchmaking.** Partly

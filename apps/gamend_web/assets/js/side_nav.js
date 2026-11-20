@@ -5,12 +5,26 @@
 
 const KEY = "gamend:side"
 
-export function applySavedSide() {
+// Under `xl` (a tablet, a small laptop) the sidebar is only ever the rail,
+// its toggle not drawn: open, it left a page's heading too little room
+// (Polyglot Pirates, 2026-11-20: the heading is the bar, the navbar's items
+// at its end). From `xl` up the reader's choice stands, open by default.
+const OPEN_FROM = 1280
+
+const wide = () => typeof window === "undefined" || window.innerWidth >= OPEN_FROM
+
+export function applySavedSide(root = document.documentElement) {
+  let saved = null
   try {
-    if (localStorage.getItem(KEY) === "rail") document.documentElement.dataset.side = "rail"
+    saved = localStorage.getItem(KEY)
   } catch (_) {
-    // A browser that keeps nothing opens it on every page.
+    // A browser that keeps nothing opens it on every wide page.
   }
+  const rail = !wide() || saved === "rail"
+  if (rail === (root.dataset.side === "rail")) return false
+  if (rail) root.dataset.side = "rail"
+  else delete root.dataset.side
+  return true
 }
 
 export function toggleSide(root = document.documentElement) {
@@ -34,4 +48,15 @@ export function startSideNav() {
   document.addEventListener("click", (event) => {
     if (event.target.closest?.("[data-side-toggle]")) toggleSide()
   })
+  // A window resized across `xl`: the rail, or the reader's choice again.
+  let wasWide = wide()
+  window.addEventListener?.(
+    "resize",
+    () => {
+      if (wide() === wasWide) return
+      wasWide = wide()
+      if (applySavedSide()) document.dispatchEvent?.(new CustomEvent("gamend:side"))
+    },
+    {passive: true},
+  )
 }

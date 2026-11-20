@@ -187,7 +187,12 @@ defmodule GamendWeb.HostLayoutShell do
               {theme_tagline(@theme)}
             </span>
           </a>
-          <.breadcrumbs trail={@breadcrumbs} side={@side?} auto={@auto?} />
+          <.breadcrumbs
+            :if={Application.get_env(:gamend_web, :breadcrumbs, true)}
+            trail={@breadcrumbs}
+            side={@side?}
+            auto={@auto?}
+          />
         </div>
         <%!-- The language picker sits outside both navs: one button in the bar
               at every width, rather than a dropdown up here and a different
@@ -550,6 +555,9 @@ defmodule GamendWeb.HostLayoutShell do
   `xl` the whole nav is in the bar, and the trail comes back from about
   1440 px. Below that the page's own heading (its Back, its menus) is the way
   up.
+
+  `config :gamend_web, :breadcrumbs, false` draws none (the trail still
+  sets every page's Back link).
 
   `config :gamend_web, :breadcrumb_depth, n` draws only a trail of `n` crumbs
   or more past home (default 1): where the navigation lights the section and

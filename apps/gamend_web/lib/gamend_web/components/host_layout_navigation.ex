@@ -345,7 +345,9 @@ defmodule GamendWeb.HostLayoutNavigation do
             if(@menu_button == "account", do: "btn-circle", else: "px-1")
           ]}
         >
-          <.count_pill count={@menu_count} class="absolute -top-1 -end-1" />
+          <%!-- Over the avatar: a player's avatar is positioned (its face, a
+                host's mark on it), and drawn after, so it hid the count. --%>
+          <.count_pill count={@menu_count} class="absolute -top-1 -end-1 z-10" />
           <%!-- `"menu_button": "account"`: the menu opens from the reader
                 (their avatar, a person for a visitor), the account being
                 the menu's first section. --%>
@@ -521,7 +523,7 @@ defmodule GamendWeb.HostLayoutNavigation do
         type="button"
         data-side-toggle
         class={[
-          "mt-auto flex items-center justify-center rounded-field px-1 py-2",
+          "mt-auto flex items-center justify-center rounded-field px-1 py-2 max-xl:hidden",
           "text-muted hover:bg-base-100 @min-[8rem]/side:justify-start @min-[8rem]/side:px-3"
         ]}
       >

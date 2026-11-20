@@ -4,6 +4,7 @@ defmodule Gamend.KVComputedTest do
   alias Gamend.AccountsFixtures
   alias Gamend.AfterCommit
   alias Gamend.KV
+  alias Gamend.KV.Computed
 
   defmodule Host do
     @moduledoc false
@@ -14,11 +15,20 @@ defmodule Gamend.KVComputedTest do
         :error -> nil
       end
     end
+
+    # A language's words counted, from that language's stored list.
+    def words(%{user_id: user_id, part: part}) do
+      case KV.get("words:" <> part, user_id: user_id) do
+        {:ok, %{value: %{"words" => words}}} -> %{"count" => length(words), "part" => part}
+        :error -> nil
+      end
+    end
   end
 
   setup do
     Application.put_env(:gamend_core, :computed_rows, %{
-      "level" => %{value: {Host, :level}, from: ["points"]}
+      "level" => %{value: {Host, :level}, from: ["points"]},
+      "word_count:*" => %{value: {Host, :words}, from: ["words:*"]}
     })
 
     on_exit(fn -> Application.delete_env(:gamend_core, :computed_rows) end)
@@ -74,5 +84,32 @@ defmodule Gamend.KVComputedTest do
       end)
 
     assert_receive {:kv_stale, %{key: "level"}}
+  end
+
+  test "a family's row is its part's, worked out from the same part's", %{user: user} do
+    assert :error == KV.get("word_count:fr", user_id: user.id)
+    {:ok, _entry} = KV.put("words:fr", %{"words" => ["a", "b"]}, %{}, user_id: user.id)
+    {:ok, _entry} = KV.put("words:de", %{"words" => ["c"]}, %{}, user_id: user.id)
+
+    assert {:ok, %{value: %{"count" => 2, "part" => "fr"}}} =
+             KV.get("word_count:fr", user_id: user.id)
+
+    assert {:ok, %{value: %{"count" => 1}}} = KV.get("word_count:de", user_id: user.id)
+    assert :not_computed == Computed.fetch("word_count", user.id, nil)
+    assert :not_computed == Computed.fetch("word_count:", user.id, nil)
+    assert KV.count_entries(user_id: user.id, key: "word_count:fr") == 0
+  end
+
+  test "a write moves its own part's row, and no other", %{user: user} do
+    :ok = KV.subscribe("word_count:fr", user_id: user.id)
+    :ok = KV.subscribe("word_count:de", user_id: user.id)
+
+    {:ok, _entry} = KV.put("words:fr", %{"words" => []}, %{}, user_id: user.id)
+    assert_receive {:kv_stale, %{key: "word_count:fr"}}
+    refute_receive {:kv_stale, %{key: "word_count:de"}}, 50
+
+    assert Computed.dependents("words:fr") == ["word_count:fr"]
+    assert Computed.dependents("words") == []
+    assert Computed.dependents("points") == ["level"]
   end
 end

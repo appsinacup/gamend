@@ -110,6 +110,19 @@ def row(%{user_id: user_id}), do: %{"level" => level_of(user_id)}
 
 A server process subscribed to it (`Gamend.KV.subscribe/2`) receives `{:kv_stale, %{key: _, user_id: _, lobby_id: _}}` and reads it itself.
 
+A key ending in `*` is a family, a row for every part: one a language, worked out from that language's stored row.
+
+```elixir
+config :gamend_core, :computed_rows, %{
+  "word_pools:*" => %{value: {MyGame.WordPools, :row}, from: ["words:*"]}
+}
+
+# `word_pools:fr` is called with `part: "fr"`; a write of `words:fr` moves it alone.
+def row(%{user_id: user_id, part: language}), do: pools_of(user_id, language)
+```
+
+A key named whole wins over a family and the longest prefix over a shorter one, as `kv_schemas` patterns do.
+
 ## Typed schemas
 
 KV values are JSON, but a plugin can map keys to protobuf messages by exporting `kv_schemas/0`, which lists exact keys or `*`-suffixed prefixes:

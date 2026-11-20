@@ -1,8 +1,10 @@
 defmodule Gamend.KVComputedTest do
   use Gamend.DataCase, async: false
 
+  alias Gamend.Accounts.Preferences
   alias Gamend.AccountsFixtures
   alias Gamend.AfterCommit
+  alias Gamend.Hooks
   alias Gamend.KV
   alias Gamend.KV.Computed
 
@@ -111,5 +113,49 @@ defmodule Gamend.KVComputedTest do
     assert Computed.dependents("words:fr") == ["word_count:fr"]
     assert Computed.dependents("words") == []
     assert Computed.dependents("points") == ["level"]
+  end
+
+  describe "the account's preferences" do
+    test "are a row of what a client may set, theirs alone, and move with each change", %{
+      user: user
+    } do
+      {:ok, user} =
+        Preferences.update(user, &Map.merge(&1, %{"timezone" => "Europe/Paris"}))
+
+      assert {:ok, %{value: %{}}} = KV.get("preferences", user_id: user.id)
+      assert :error == KV.get("preferences")
+
+      :ok = KV.subscribe("preferences", user_id: user.id)
+      {:ok, _user} = Preferences.put_client(user, "theme", "dark")
+      user_id = user.id
+      assert_receive {:kv_stale, %{key: "preferences", user_id: ^user_id}}
+
+      assert {:ok, %{value: %{"theme" => "dark"} = row}} = KV.get("preferences", user_id: user.id)
+      refute Map.has_key?(row, "timezone")
+
+      {:ok, _user} = Preferences.put_client(user, "theme", "system")
+      assert {:ok, %{value: %{}}} = KV.get("preferences", user_id: user.id)
+    end
+
+    test "are read by their owner alone, whatever a plugin answers" do
+      assert Computed.access("preferences") == :owner_only
+      assert Computed.access("level") == :public
+      assert Computed.access("stored") == :public
+
+      assert {:ok, :owner_only} ==
+               Hooks.internal_call(:before_kv_get, ["preferences", %{user_id: nil}])
+
+      assert {:ok, :public} ==
+               Hooks.internal_call(:before_kv_get, ["level", %{user_id: nil}])
+    end
+
+    test "a host's row of the same name replaces core's" do
+      Application.put_env(:gamend_core, :computed_rows, %{
+        "preferences" => %{value: {Host, :level}, from: ["points"]}
+      })
+
+      assert Computed.access("preferences") == :public
+      assert Computed.dependents("points") == ["preferences"]
+    end
   end
 end

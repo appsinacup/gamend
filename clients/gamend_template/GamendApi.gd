@@ -1024,6 +1024,15 @@ func user_update_current_user_display_name(display_name: String) -> GamendResult
 	request.display_name = display_name
 	return await _call_api(UsersApi.new(_config), "update_current_user_display_name", [request])
 
+## Set one of the current user's preferences on the account: the theme
+## (dark, light, or system, which removes it), or a key the host allows
+## with one of its values. Read back as the KV row `preferences`.
+func user_update_current_user_preference(key: String, value: String) -> GamendResult:
+	var request := GamendUpdateCurrentUserPreferenceRequest.new()
+	request.key = key
+	request.value = value
+	return await _call_api(UsersApi.new(_config), "update_current_user_preference", [request])
+
 ## Update current user's unique username handle (lowercased on save; 3-32
 ## letters or digits, with non-consecutive . _ - separators; letters keep to
 ## one script, except Latin mixes with Chinese, Japanese or Korean).

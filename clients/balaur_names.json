@@ -46,6 +46,7 @@
   "unlink_provider": "authenticate_unlink_provider",
   "update_current_user_display_name": "user_update_current_user_display_name",
   "update_current_user_password": "user_update_current_user_password",
+  "update_current_user_preference": "user_update_current_user_preference",
   "update_current_user_username": "user_update_current_user_username",
   "user_stats": "user_user_stats"
 }

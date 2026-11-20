@@ -123,6 +123,22 @@ def row(%{user_id: user_id, part: language}), do: pools_of(user_id, language)
 
 A key named whole wins over a family and the longest prefix over a shorter one, as `kv_schemas` patterns do.
 
+A row only its owner may read says so with `access`, in the words `before_kv_get/2` answers in. That is the least a reader must be: a plugin can close the row further, never open it, and on a host with no plugin it holds all the same.
+
+```elixir
+"word_pools:*" => %{value: {MyGame.WordPools, :row}, from: ["words:*"], access: :owner_only}
+```
+
+### The account's preferences
+
+Core computes one row itself: `preferences`, what a page or a client may set on the account (`Gamend.Accounts.Preferences.client_keys/0`: the theme, and what the host adds to `config :gamend_core, :client_preferences`), its owner's only. A client sets one with `PUT /api/v1/me/preferences` (`{"key": "theme", "value": "dark"}`; `system` removes the theme), the site's page with `PUT /preferences`, and every change moves the row, so a second device is pushed the theme or the sound the first one changed.
+
+```json
+{"theme": "dark", "game_sounds": "off"}
+```
+
+A host's `:client_preferences` value is the list of what a key may be, or a `{module, function}` that answers it, such as the languages the site serves (`%{"locale" => {MyGame.Locales, :all}}`). A host's row under the same key replaces core's.
+
 ## Typed schemas
 
 KV values are JSON, but a plugin can map keys to protobuf messages by exporting `kv_schemas/0`, which lists exact keys or `*`-suffixed prefixes:

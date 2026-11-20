@@ -16,6 +16,10 @@ defmodule Gamend.KV.Computed do
       is the row's value, anything else no row.
     * `from` lists the stored keys it is worked out from. A write or a delete
       of one, in the same scope, says the computed row moved.
+    * `access`, where it is given, is the least a reader must be, in the
+      words `before_kv_get` answers in (`:owner_only` and the like): the
+      hook can close the row further, never open it. A row of what is
+      only its owner's is that owner's on a host that says nothing.
 
   A key ending in `*` is a family of rows, one a part: a row per language
   worked out from that language's stored row.
@@ -40,6 +44,10 @@ defmodule Gamend.KV.Computed do
   says itself: `Gamend.KV.refresh/2`.
 
   A computed key is never stored: a row written under it is never read.
+
+  Core computes one row itself, `preferences`: what a page may set on the
+  account (`Gamend.Accounts.Preferences.row/1`), its owner's only. A host's
+  row under the same key replaces it.
   """
 
   @type scope :: %{
@@ -49,6 +57,10 @@ defmodule Gamend.KV.Computed do
         }
 
   @family "*"
+
+  @core %{
+    "preferences" => %{value: {Gamend.Accounts.Preferences, :row}, access: :owner_only}
+  }
 
   @doc "Whether `key` is a computed row, one of a family's included."
   @spec computed?(String.t()) :: boolean()
@@ -70,6 +82,18 @@ defmodule Gamend.KV.Computed do
 
       _stored ->
         :not_computed
+    end
+  end
+
+  @doc """
+  The least a reader of `key` must be (`access`), `:public` for a computed
+  row that names none and for a stored key.
+  """
+  @spec access(String.t()) :: atom()
+  def access(key) when is_binary(key) do
+    case find(key) do
+      {%{access: access}, _part} when is_atom(access) -> access
+      _none -> :public
     end
   end
 
@@ -138,8 +162,8 @@ defmodule Gamend.KV.Computed do
 
   defp rows do
     case Application.get_env(:gamend_core, :computed_rows) do
-      %{} = rows -> rows
-      _none -> %{}
+      %{} = rows -> Map.merge(@core, rows)
+      _none -> @core
     end
   end
 end

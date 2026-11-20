@@ -87,6 +87,19 @@ pub async fn update_current_user_password(params: any) -> any {
     reply
 }
 
+/// Set one of the current user's preferences
+/// `PUT /api/v1/me/preferences`
+pub async fn update_current_user_preference(params: any) -> any {
+    if !core::given(params, "key") {
+        return core::missing("gamend::users::update_current_user_preference", "key");
+    }
+    if !core::given(params, "value") {
+        return core::missing("gamend::users::update_current_user_preference", "value");
+    }
+    let reply = await core::rest("PUT", "/api/v1/me/preferences", params);
+    reply
+}
+
 /// Update current user's username
 /// `PATCH /api/v1/me/username`
 pub async fn update_current_user_username(params: any) -> any {

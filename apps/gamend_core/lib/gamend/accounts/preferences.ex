@@ -16,8 +16,14 @@ defmodule Gamend.Accounts.Preferences do
   Some are set by the page itself (`put_client/3`, `PUT /preferences`): the
   site's theme, and whatever a host adds to
   `config :gamend_core, :client_preferences` (a map of key to allowed
-  values, e.g. `%{"game_sounds" => ~w(on off)}`). Only those keys, with only
-  those values, can be written that way.
+  values, e.g. `%{"game_sounds" => ~w(on off)}`, or to a `{module,
+  function}` answering them, e.g. the languages the site serves). Only
+  those keys, with only those values, can be written that way.
+
+  Those are what a client reads back, as the row `preferences`
+  (`row/1`, `Gamend.KV.Computed`): its owner's only, moved by every change
+  here, so a second device sees the theme or the sound change the first
+  made.
   """
 
   alias Gamend.Accounts
@@ -41,14 +47,23 @@ defmodule Gamend.Accounts.Preferences do
   end
 
   @client %{"theme" => ~w(dark light system)}
+  @row "preferences"
 
   @doc """
   The preferences a page may set (`put_client/3`): core's `theme` and the
   host's `:client_preferences`, each with its allowed values.
   """
   @spec client_keys() :: %{String.t() => [String.t()]}
-  def client_keys,
-    do: Map.merge(@client, Application.get_env(:gamend_core, :client_preferences, %{}))
+  def client_keys do
+    :gamend_core
+    |> Application.get_env(:client_preferences, %{})
+    |> Map.new(fn {key, values} -> {key, allowed(values)} end)
+    |> then(&Map.merge(@client, &1))
+  end
+
+  defp allowed({mod, fun}) when is_atom(mod) and is_atom(fun), do: apply(mod, fun, [])
+  defp allowed(values) when is_list(values), do: values
+  defp allowed(_values), do: []
 
   @doc """
   Save a preference a page set: `{:ok, user}`, or `{:error, :invalid}` for a
@@ -66,6 +81,21 @@ defmodule Gamend.Accounts.Preferences do
 
   def put_client(_user, _key, _value), do: {:error, :invalid}
 
+  @doc """
+  The row `preferences` (`Gamend.KV.Computed`) for the user in `scope`:
+  what they set of `client_keys/0` (no theme where the device decides), or
+  nil with no such user.
+  """
+  @spec row(%{user_id: String.t() | nil}) :: map() | nil
+  def row(%{user_id: id}) when is_binary(id) do
+    case Accounts.get_user(id) do
+      %User{} = user -> Map.take(get(user), Map.keys(client_keys()))
+      _none -> nil
+    end
+  end
+
+  def row(_scope), do: nil
+
   @doc ~s[The theme the user saved, `"dark"` or `"light"`, or nil.]
   @spec theme(User.t() | nil) :: String.t() | nil
   def theme(user) do
@@ -77,7 +107,7 @@ defmodule Gamend.Accounts.Preferences do
 
   @doc """
   Change a user's preferences: `fun` gets the current map and returns the
-  new one. `{:ok, user}` with the saved user.
+  new one. `{:ok, user}` with the saved user; the row `preferences` moves.
   """
   @spec update(User.t(), (map() -> map())) :: {:ok, User.t()} | {:error, term()}
   def update(%User{id: id}, fun) when is_function(fun, 1) do
@@ -97,6 +127,7 @@ defmodule Gamend.Accounts.Preferences do
     case result do
       {:ok, {:ok, updated}} ->
         Accounts.invalidate_user_cache(updated)
+        Gamend.KV.refresh(@row, user_id: id)
         {:ok, updated}
 
       {:ok, other} ->

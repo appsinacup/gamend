@@ -19,6 +19,7 @@ defmodule Gamend.Hooks do
   alias Gamend.Hooks.Default, as: Default
   alias Gamend.Hooks.Defaults
   alias Gamend.Hooks.PluginManager
+  alias Gamend.KV.Computed
   alias Gamend.Lobbies.Lobby
   alias Gamend.Parties.Party
   alias Gamend.Payments.Entitlement
@@ -1138,11 +1139,12 @@ defmodule Gamend.Hooks do
     exporting_mods = Enum.filter(mods, &exports_function?(&1, name, arity))
 
     case exporting_mods do
-      [] ->
-        defaults_for_missing_callback(name, args)
-
+      # Before `[]`: a computed row's own floor holds with no plugin at all.
       _ when name == :before_kv_get and arity == 2 ->
         run_before_kv_get(exporting_mods, args, opts, timeout)
+
+      [] ->
+        defaults_for_missing_callback(name, args)
 
       _ when name == :matchmaking_form_matches and arity == 2 ->
         run_matchmaking_form_matches(exporting_mods, args, opts, timeout)
@@ -1243,12 +1245,16 @@ defmodule Gamend.Hooks do
     end)
   end
 
-  defp run_before_kv_get(mods, args, opts, timeout) when is_list(mods) do
-    # Security-sensitive hook: default to :public. Multiple plugin decisions
-    # are intersected; incompatible restrictions fail closed to :server_only.
-    # If any hook errors (timeout/exception), fail closed.
+  defp run_before_kv_get(mods, [key | _rest] = args, opts, timeout) when is_list(mods) do
+    # Security-sensitive hook: default to :public, or to the least a computed
+    # row says its reader must be (`Gamend.KV.Computed.access/1`), which no
+    # plugin can open. Multiple plugin decisions are intersected;
+    # incompatible restrictions fail closed to :server_only. If any hook
+    # errors (timeout/exception), fail closed.
+    floor = if is_binary(key), do: Computed.access(key), else: :public
+
     mods
-    |> Enum.reduce_while(:public, fn mod, decision ->
+    |> Enum.reduce_while(floor, fn mod, decision ->
       mod
       |> safe_apply_raw(:before_kv_get, args, opts, timeout)
       |> normalize_before_kv_get_result()

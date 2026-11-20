@@ -18,7 +18,7 @@ let reply = await lobbies::quick_join({ "title": "duel", "max_users": 2 });
 if e["kind"].as_str() == lobby::MEMBER_JOINED { }
 ```
 
-279 operations in 44 modules, and 100 realtime events, 15 socket commands.
+280 operations in 44 modules, and 100 realtime events, 15 socket commands.
 
 Beside the generated modules and `events.bs`, written by hand:
 
@@ -620,5 +620,6 @@ Users.
 | `set_current_user_avatar(params)` | `POST /api/v1/me/avatar` | Confirm an uploaded avatar |
 | `update_current_user_display_name(params)` | `PATCH /api/v1/me/display_name` | Update current user's display name |
 | `update_current_user_password(params)` | `PATCH /api/v1/me/password` | Update current user password |
+| `update_current_user_preference(params)` | `PUT /api/v1/me/preferences` | Set one of the current user's preferences |
 | `update_current_user_username(params)` | `PATCH /api/v1/me/username` | Update current user's username |
 | `user_stats()` | `GET /api/v1/users/stats` | Player counts |

@@ -666,6 +666,7 @@ defmodule GamendWeb.Router.Shared do
         patch "/me/password", MeController, :update_password
         patch "/me/display_name", MeController, :update_display_name
         patch "/me/username", MeController, :update_username
+        put "/me/preferences", PreferenceController, :update
         put "/storage/upload", StorageController, :upload
         get "/me/wallet", EconomyController, :wallet
         get "/me/wallet/ledger", EconomyController, :ledger

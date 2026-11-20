@@ -313,11 +313,15 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
   end
 
   # Sends the queued confirmation email; answers the code in it.
-  defp emailed_code(email) do
+  defp emailed_code(email), do: email |> emailed() |> elem(0)
+
+  # The code and the link's token from the confirmation email.
+  defp emailed(email) do
     assert %{success: _} = Oban.drain_queue(queue: :mailers)
     assert_received {:email, %Swoosh.Email{to: [{_, ^email}], text_body: body}}
     [_, code] = Regex.run(~r/^\s*(\d{6})\s*$/m, body)
-    code
+    [_, token] = Regex.run(~r{/users/confirm/([A-Za-z0-9_-]+)}, body)
+    {code, token}
   end
 
   defp register_and_get_code(email) do
@@ -470,6 +474,22 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
 
       # Spent.
       assert json_response(confirm("coded@example.com", code), 401)["error"] == "invalid_code"
+    end
+
+    test "after the email's link was opened, the code still finishes the sign-up" do
+      assert json_response(
+               post(build_conn(), "/api/v1/register", %{email: "linked@example.com"}),
+               201
+             )
+
+      {code, token} = emailed("linked@example.com")
+      user = Repo.get_by!(User, email: "linked@example.com")
+      {:ok, _confirmed} = Gamend.Accounts.confirm_user_by_token(token)
+
+      assert %{"data" => %{"user_id" => user_id}} =
+               json_response(confirm("linked@example.com", code), 200)
+
+      assert user_id == user.id
     end
 
     test "a wrong code is 401 invalid_code" do

@@ -425,12 +425,14 @@ defmodule Gamend.Accounts.Registration do
   Returns {:ok, user} when the token is valid and user was confirmed.
   Returns {:error, :not_found} or {:error, :invalid} when token is invalid/expired.
 
-  Confirming spends the link and the code sent with it. An account confirmed
-  this way has no password: registration takes none, and one set before the
-  address was proved is removed, since whoever set it may not own the inbox
-  (an account registered when the API still took one, or a guest account
-  that was given an email). Its owner sets one in settings, where the link's
-  page signs them in, or confirms with the code instead.
+  Confirming spends the link, not the code sent with it. An account
+  confirmed this way has no password: registration takes none, and one set
+  before the address was proved is removed, since whoever set it may not own
+  the inbox (an account registered when the API still took one, or a guest
+  account that was given an email). Its owner sets one in settings, where
+  the link's page signs them in, or with the code, which still works: a
+  game client that registered waits on the code, and its player may open
+  the link on a computer instead (`confirm_user_by_code/3`).
   """
   @spec confirm_user_by_token(String.t()) :: {:ok, User.t()} | {:error, :invalid | :not_found}
   def confirm_user_by_token(token) when is_binary(token) do
@@ -470,7 +472,11 @@ defmodule Gamend.Accounts.Registration do
     result =
       Gamend.AfterCommit.transaction(fn ->
         confirmed_user = Repo.update!(changeset)
-        Repo.delete_all(confirmation_tokens_query(confirmed_user))
+
+        Repo.delete_all(
+          where(confirmation_tokens_query(confirmed_user), context: ^TokenContext.confirm())
+        )
+
         confirmed_user
       end)
 
@@ -501,9 +507,18 @@ defmodule Gamend.Accounts.Registration do
   - `{:error, %Ecto.Changeset{}}` for a password the account would refuse.
     It is checked before the code, so it costs no attempt and says nothing
     about the code.
-  - `{:error, :invalid_code}` for a wrong, spent or expired code, an address
-    with no unconfirmed account, or one already confirmed: the same answer,
-    so it tells no one which addresses are registered.
+  - `{:error, :invalid_code}` for a wrong, spent or expired code, or an
+    address with no account waiting: the same answer, so it tells no one
+    which addresses are registered.
+  - `{:error, :already_confirmed}` for the right code of an account that
+    has a password already (its link was opened, then a password chosen in
+    settings): it has nothing to set, and whoever holds the code reads the
+    inbox, so may learn to log in instead. The code is spent.
+
+  The right code of an account the link confirmed, which has no password
+  yet, sets one and signs in as for one never confirmed: the player who
+  opened the link on a computer finishes in the game that waited on the
+  code.
   - `{:error, {:locked, seconds}}`: a wrong code counts toward the address's
     sign-in lockout (`Gamend.Accounts.LoginLockouts`), shared with passwords.
     The failure that locks it also voids the code, so guessing needs a fresh
@@ -514,7 +529,8 @@ defmodule Gamend.Accounts.Registration do
   """
   @spec confirm_user_by_code(String.t(), String.t(), String.t()) ::
           {:ok, {User.t(), [UserToken.t()]}}
-          | {:error, :invalid_code | {:locked, pos_integer()} | Ecto.Changeset.t()}
+          | {:error,
+             :invalid_code | :already_confirmed | {:locked, pos_integer()} | Ecto.Changeset.t()}
   def confirm_user_by_code(email, code, password)
       when is_binary(email) and is_binary(code) and is_binary(password) do
     attrs = %{"password" => password}
@@ -531,16 +547,27 @@ defmodule Gamend.Accounts.Registration do
   end
 
   defp redeem_code(email, code, attrs) do
-    with %User{confirmed_at: nil} = user <- user_by_email_uncached(email),
+    with %User{} = user <- user_by_email_uncached(email),
          true <- Repo.exists?(UserToken.verify_confirm_code_query(user, code)) do
       LoginLockouts.clear(email)
 
-      # Hashed here, before `update_user_and_delete_all_tokens/1` opens its
-      # transaction: the hash is the slow part.
-      user
-      |> User.password_changeset(attrs)
-      |> Ecto.Changeset.put_change(:confirmed_at, DateTime.utc_now(:second))
-      |> Accounts.update_user_and_delete_all_tokens()
+      if user.confirmed_at && user.hashed_password do
+        Repo.delete_all(
+          where(confirmation_tokens_query(user), context: ^TokenContext.confirm_code())
+        )
+
+        {:error, :already_confirmed}
+      else
+        # Hashed here, before `update_user_and_delete_all_tokens/1` opens its
+        # transaction: the hash is the slow part.
+        user
+        |> User.password_changeset(attrs)
+        |> Ecto.Changeset.put_change(
+          :confirmed_at,
+          user.confirmed_at || DateTime.utc_now(:second)
+        )
+        |> Accounts.update_user_and_delete_all_tokens()
+      end
     else
       _ -> code_failure(email)
     end
@@ -562,7 +589,7 @@ defmodule Gamend.Accounts.Registration do
         {:error, :invalid_code}
 
       {:locked, seconds} ->
-        with %User{confirmed_at: nil} = user <- user_by_email_uncached(email) do
+        with %User{} = user <- user_by_email_uncached(email) do
           Repo.delete_all(
             where(confirmation_tokens_query(user), context: ^TokenContext.confirm_code())
           )

@@ -182,8 +182,10 @@ defmodule GamendWeb.Api.V1.SessionController do
       "Confirm the account `register` made with the six-digit code from its email, " <>
         "choose its password, and sign in: answers a session, as `login` does. The code " <>
         "proves the inbox, so this is where the password is set. Spaces and a dash in the " <>
-        "code are ignored. A wrong, spent or expired code, an address with no account " <>
-        "waiting, and one already confirmed all answer `401 invalid_code`. Wrong codes " <>
+        "code are ignored. A wrong, spent or expired code and an address with no account " <>
+        "waiting both answer `401 invalid_code`. The code still works after the email's " <>
+        "link was opened, on a computer say, and sets the password then; once the account " <>
+        "has one, the right code answers `409 already_confirmed`: log in instead. Wrong codes " <>
         "count toward the address's sign-in lockout, shared with passwords: the one that " <>
         "locks it answers `429 account_locked` and voids the code, so `resend_confirmation` " <>
         "sends a new one once the lock lifts; the link in the email keeps working. The " <>
@@ -212,6 +214,10 @@ defmodule GamendWeb.Api.V1.SessionController do
       ok: {"Confirmed and signed in", "application/json", SessionResponse},
       bad_request: Schemas.error("Email, code or password missing (missing_param)"),
       unauthorized: Schemas.error("Wrong, spent or expired code (invalid_code)"),
+      conflict:
+        Schemas.error(
+          "The right code, but the account has a password already: log in (already_confirmed)"
+        ),
       forbidden:
         Schemas.error("Confirmed, but the account awaits activation or is scheduled for deletion"),
       unprocessable_entity: Schemas.error("The password is refused"),
@@ -249,6 +255,14 @@ defmodule GamendWeb.Api.V1.SessionController do
 
       {:error, :invalid_code} ->
         reply_error(conn, :unauthorized, "invalid_code", "Wrong or expired code")
+
+      {:error, :already_confirmed} ->
+        reply_error(
+          conn,
+          :conflict,
+          "already_confirmed",
+          "This email is confirmed and has a password: log in with it"
+        )
     end
   end
 

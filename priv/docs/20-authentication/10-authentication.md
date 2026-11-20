@@ -38,8 +38,12 @@ A game client signs a player up in two steps, and the password comes second:
    the code and a password and sends them to `POST /api/v1/register/confirm`
    (`email`, `code`, `password`), which confirms the email, sets the password
    and answers a session, as login does. From then on `POST /api/v1/login`
-   signs in with that password. A player who opens the link instead confirms
-   on the website and sets a password in their settings.
+   signs in with that password. A player who opens the link instead, on a
+   computer say, confirms on the website; the code still works after, so
+   the game waiting on it is not stuck: it sets the password and signs in
+   as before. Once the account has a password (set in the website's
+   settings), the right code answers `409 already_confirmed`, and the game
+   logs in with the password instead.
 
 Why the password waits: anyone can type any address. A password chosen at
 registration would belong to whoever typed it, and once the address's owner
@@ -47,8 +51,8 @@ opened the confirmation email, the account they confirmed would let that
 person in. The code proves the inbox, so the password set with it is the
 owner's.
 
-A wrong, spent or expired code, an address with no account waiting, and one
-already confirmed all answer `401 invalid_code`. Wrong codes count toward the
+A wrong, spent or expired code and an address with no account waiting both
+answer `401 invalid_code`. Wrong codes count toward the
 address's lockout (below), shared with passwords; the
 one that locks it answers `429 account_locked` and voids the code. A password
 the server refuses is `422`, checked before the code so it costs no attempt.

@@ -166,13 +166,19 @@ pub async fn login_steam(ticket: str) -> any {
 }
 
 /// Open a session at a sign-in path: the reply's tokens become the session
-/// every later call carries. `who` is what the activity row shows.
+/// every later call carries. `who` is what the activity row shows. A session
+/// held already (a guest's) is sent along, renewed first when due, so the
+/// account signed in to gets what the guest did; the server ignores any
+/// other.
 async fn signed(path: str, body: any, who: str) -> any {
     while engine::unix_time() <= 0.0 {
         await task::frames(1);
     }
+    if core::due() {
+        await core::renew_session();
+    }
     let row = activity::started(LOGIN, who);
-    let asked = core::request(core::POST, path, body, false);
+    let asked = core::request(core::POST, path, body, true);
     let sent = engine::unix_time();
     let reply = await task::wait(http::request(asked[core::URL].as_str(), asked[core::OPTIONS]));
     let answer = core::opened(core::received(reply, sent), LOGIN);
@@ -182,9 +188,12 @@ async fn signed(path: str, body: any, who: str) -> any {
 
 /// Confirm an account `authentication::register` made, with the six-digit
 /// code from its email, set its password, and open its session: answered as
-/// `login_device` is. A refusal's `error` says why: `invalid_code` (wrong,
-/// spent or expired), `account_locked` (too many wrong codes; the code is
-/// void, so `authentication::resend_confirmation` sends a new one), or
+/// `login_device` is. The code works after the email's link was opened too,
+/// until the account has a password. A refusal's `error` says why:
+/// `invalid_code` (wrong, spent or expired), `already_confirmed` (the
+/// account has a password: `login_email` with it), `account_locked` (too
+/// many wrong codes; the code is void, so
+/// `authentication::resend_confirmation` sends a new one), or
 /// `validation_failed` (the password).
 pub async fn confirm_registration(email: str, code: str, password: str) -> any {
     let body: any = { core::EMAIL: email, CODE: code, PASSWORD: password };

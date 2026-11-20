@@ -120,11 +120,6 @@ defmodule Gamend.Accounts.ConfirmationCodeTest do
     test "an address with no account waiting answers the same", ctx do
       assert {:error, :invalid_code} =
                Accounts.confirm_user_by_code(unique_user_email(), ctx.code, @password)
-
-      assert {:ok, _} = Accounts.confirm_user_by_token(ctx.token)
-
-      assert {:error, :invalid_code} =
-               Accounts.confirm_user_by_code(ctx.email, ctx.code, @password)
     end
 
     test "an expired code is refused", ctx do
@@ -198,14 +193,37 @@ defmodule Gamend.Accounts.ConfirmationCodeTest do
                Accounts.authenticate_by_password(ctx.email, @password)
     end
 
-    test "spends the code", ctx do
-      assert {:ok, _} = Accounts.confirm_user_by_token(ctx.token)
+    test "leaves the code, which then sets the password and signs in", ctx do
+      assert {:ok, %User{hashed_password: nil}} = Accounts.confirm_user_by_token(ctx.token)
+
+      assert {:ok, {%User{id: id, confirmed_at: %DateTime{}}, _expired}} =
+               Accounts.confirm_user_by_code(ctx.email, ctx.code, @password)
+
+      assert id == ctx.user.id
+      assert {:ok, %User{id: ^id}} = Accounts.authenticate_by_password(ctx.email, @password)
+    end
+
+    test "once the account has a password, the right code says so and is spent", ctx do
+      assert {:ok, confirmed} = Accounts.confirm_user_by_token(ctx.token)
+
+      confirmed
+      |> Ecto.Changeset.change(hashed_password: PasswordHash.hash("chosen on the site"))
+      |> Repo.update!()
+
+      assert {:error, :already_confirmed} =
+               Accounts.confirm_user_by_code(ctx.email, ctx.code, @password)
 
       refute Repo.exists?(
                from(t in UserToken,
                  where: t.user_id == ^ctx.user.id and t.context == "confirm_code"
                )
              )
+
+      assert {:error, :invalid_credentials} =
+               Accounts.authenticate_by_password(ctx.email, @password)
+
+      assert {:error, :invalid_code} =
+               Accounts.confirm_user_by_code(ctx.email, wrong(ctx.code), @password)
     end
   end
 

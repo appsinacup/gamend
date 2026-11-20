@@ -202,7 +202,7 @@ defmodule GamendWeb.AuthController do
           link_session_outcome(link_user_id, user_params, provider, config)
 
         _ ->
-          sign_in_session_outcome(user_params, config)
+          sign_in_session_outcome(user_params, config, session_guest(session))
       end
 
     OAuthSessions.create_session(session_id, outcome)
@@ -241,16 +241,29 @@ defmodule GamendWeb.AuthController do
     end
   end
 
-  defp sign_in_session_outcome(user_params, config) do
+  # The guest whose client started the sign-in (`api_request/2`), merged
+  # into the account the provider signs in to.
+  defp sign_in_session_outcome(user_params, config, guest) do
     case config.finder.(user_params) do
       {:ok, user} ->
         case Tokens.refusal(user) do
-          nil -> %{status: SessionStatus.completed(), data: Tokens.sign_in(user)}
-          {_status, code, message} -> session_error(code, message)
+          nil ->
+            UserAuth.merge_guest(guest, user)
+            %{status: SessionStatus.completed(), data: Tokens.sign_in(user)}
+
+          {_status, code, message} ->
+            session_error(code, message)
         end
 
       {:error, _changeset} ->
         session_error("sign_in_failed", "The account could not be created")
+    end
+  end
+
+  defp session_guest(session) do
+    case session && (session.data["guest_user_id"] || session.data[:guest_user_id]) do
+      id when is_binary(id) -> Accounts.get_user(id)
+      _none -> nil
     end
   end
 
@@ -266,8 +279,12 @@ defmodule GamendWeb.AuthController do
     case config.finder.(user_params) do
       {:ok, user} ->
         case Tokens.refusal(user) do
-          nil -> reply_data(conn, Tokens.sign_in(user))
-          {status, code, message} -> reply_error(conn, status, code, message)
+          nil ->
+            UserAuth.merge_guest(conn.assigns[:guest], user)
+            reply_data(conn, Tokens.sign_in(user))
+
+          {status, code, message} ->
+            reply_error(conn, status, code, message)
         end
 
       {:error, changeset} ->
@@ -749,7 +766,9 @@ defmodule GamendWeb.AuthController do
       "Answers the provider page to open and a session to poll with " <>
         "`GET /api/v1/auth/session/{session_id}` until the player finishes there. " <>
         "Always a sign-in; to link a provider to the signed-in account, " <>
-        "`POST /api/v1/me/providers/{provider}/authorize`.",
+        "`POST /api/v1/me/providers/{provider}/authorize`. Started with a guest's access " <>
+        "token, what the guest did is merged into the account it signs in to, found or " <>
+        "made, and the guest deleted, as the website's sign-in does.",
     tags: ["Authentication"],
     parameters: [provider: @provider_path_param],
     responses: [
@@ -759,7 +778,13 @@ defmodule GamendWeb.AuthController do
   )
 
   def api_request(conn, %{"provider" => provider}) do
-    reply_data(conn, OAuthExchange.start_session(provider, %{}))
+    data =
+      case conn.assigns[:guest] do
+        %User{id: id} -> %{guest_user_id: id}
+        nil -> %{}
+      end
+
+    reply_data(conn, OAuthExchange.start_session(provider, data))
   end
 
   operation(:api_callback,

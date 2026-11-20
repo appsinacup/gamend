@@ -548,4 +548,89 @@ defmodule GamendWeb.Api.V1.SessionControllerTest do
       assert json_response(conn, 200) == %{"ok" => true}
     end
   end
+
+  describe "a guest's client signing in" do
+    setup do
+      accounts = Application.get_env(:gamend_core, Gamend.Accounts, [])
+      on_exit(fn -> Application.put_env(:gamend_core, Gamend.Accounts, accounts) end)
+      :ok
+    end
+
+    # A guest as a game client makes one, with a row of its own.
+    defp guest do
+      device_id = "device:#{System.unique_integer([:positive])}"
+
+      body =
+        json_response(post(build_conn(), "/api/v1/login/device", %{device_id: device_id}), 200)
+
+      %{"access_token" => token, "user_id" => id} = body["data"]
+      {:ok, _entry} = Gamend.KV.put("progress", %{"km" => 42}, %{}, user_id: id)
+      {id, token}
+    end
+
+    defp as(token), do: put_req_header(build_conn(), "authorization", "Bearer " <> token)
+
+    test "by email brings the guest's progress to the account and ends the guest", %{user: user} do
+      {guest_id, token} = guest()
+
+      body =
+        token
+        |> as()
+        |> post("/api/v1/login", %{email: @valid_email, password: @valid_password})
+        |> json_response(200)
+
+      assert body["data"]["user_id"] == user.id
+      assert {:ok, %{value: %{"km" => 42}}} = Gamend.KV.get("progress", user_id: user.id)
+      assert token |> as() |> get("/api/v1/me") |> response(401)
+      assert guest_id != user.id
+    end
+
+    test "by a registration's code makes the guest's progress the new account's" do
+      {_guest_id, token} = guest()
+      code = register_and_get_code("guest@example.com")
+
+      body =
+        token
+        |> as()
+        |> post("/api/v1/register/confirm", %{
+          email: "guest@example.com",
+          code: code,
+          password: @valid_password
+        })
+        |> json_response(200)
+
+      assert {:ok, %{value: %{"km" => 42}}} =
+               Gamend.KV.get("progress", user_id: body["data"]["user_id"])
+    end
+
+    test "with no guest's token signs in as before", %{user: user} do
+      {guest_id, _token} = guest()
+      {:ok, account_token, _claims} = Guardian.encode_and_sign(user)
+
+      for header <- ["Bearer nonsense", "Bearer " <> account_token] do
+        assert build_conn()
+               |> put_req_header("authorization", header)
+               |> post("/api/v1/login", %{email: @valid_email, password: @valid_password})
+               |> json_response(200)
+      end
+
+      assert :error == Gamend.KV.get("progress", user_id: user.id)
+      assert {:ok, _guest_row} = Gamend.KV.get("progress", user_id: guest_id)
+    end
+
+    test "a device login is the guest's own and merges nothing" do
+      {guest_id, token} = guest()
+      device_id = "device:#{System.unique_integer([:positive])}"
+
+      body =
+        token
+        |> as()
+        |> post("/api/v1/login/device", %{device_id: device_id})
+        |> json_response(200)
+
+      assert body["data"]["user_id"] != guest_id
+      assert {:ok, _guest_row} = Gamend.KV.get("progress", user_id: guest_id)
+      assert :error == Gamend.KV.get("progress", user_id: body["data"]["user_id"])
+    end
+  end
 end

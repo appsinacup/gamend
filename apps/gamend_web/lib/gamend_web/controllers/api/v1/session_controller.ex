@@ -11,6 +11,7 @@ defmodule GamendWeb.Api.V1.SessionController do
   alias GamendWeb.Plugs.RateLimiter
   alias GamendWeb.Schemas
   alias GamendWeb.Schemas.{OkResponse, RegistrationResponse, SessionResponse}
+  alias GamendWeb.UserAuth
   alias OpenApiSpex.Schema
 
   require GamendWeb.Auth.TokenType, as: TokenType
@@ -20,7 +21,10 @@ defmodule GamendWeb.Api.V1.SessionController do
   operation(:create,
     operation_id: "login",
     summary: "Login",
-    description: "Authenticate user with email and password",
+    description:
+      "Authenticate user with email and password. Sent with a guest's access token " <>
+        "(`Authorization: Bearer`), what the guest did is merged into the account and the " <>
+        "guest deleted, as the website's sign-in does; any other token is ignored here.",
     request_body: {
       "Login credentials",
       "application/json",
@@ -62,6 +66,7 @@ defmodule GamendWeb.Api.V1.SessionController do
         case Tokens.refusal(user) do
           nil ->
             maybe_attach_device(conn, user)
+            UserAuth.merge_guest(conn.assigns[:guest], user)
             issue_tokens(conn, user)
 
           {status, code, message} ->
@@ -183,7 +188,8 @@ defmodule GamendWeb.Api.V1.SessionController do
         "locks it answers `429 account_locked` and voids the code, so `resend_confirmation` " <>
         "sends a new one once the lock lifts; the link in the email keeps working. The " <>
         "password is checked before the code, so a refused one (`422`) costs no attempt. " <>
-        "Signing in revokes every earlier token of the account.",
+        "Signing in revokes every earlier token of the account. Sent with a guest's access " <>
+        "token, the guest's progress becomes the new account's, as `login` merges it.",
     request_body: {
       "Registration code",
       "application/json",
@@ -221,8 +227,12 @@ defmodule GamendWeb.Api.V1.SessionController do
         GamendWeb.UserAuth.disconnect_sessions(expired_tokens)
 
         case Tokens.refusal(user) do
-          nil -> issue_tokens(conn, user)
-          {status, error_code, message} -> reply_error(conn, status, error_code, message)
+          nil ->
+            UserAuth.merge_guest(conn.assigns[:guest], user)
+            issue_tokens(conn, user)
+
+          {status, error_code, message} ->
+            reply_error(conn, status, error_code, message)
         end
 
       {:error, %Ecto.Changeset{} = changeset} ->

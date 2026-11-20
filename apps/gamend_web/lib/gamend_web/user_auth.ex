@@ -71,18 +71,8 @@ defmodule GamendWeb.UserAuth do
     conn = create_or_extend_session(conn, user, params)
 
     # A guest who signs in to an account they already have brings what they
-    # did with them: it is merged into the account, never over it
-    # (`Accounts.GuestMerge`), in this request so the first page shows it.
-    # The guest account, which nothing can reach again once this session is
-    # replaced, is then deleted (through `Accounts.delete_user/1`, so plugins
-    # clean up after it). Its game sockets are closed first: the merge revokes
-    # its tokens, which a socket already connected never checks again, and
-    # one left open could keep spending what the merge moves.
-    if replaced_guest do
-      GamendWeb.endpoint().broadcast("user_socket:#{replaced_guest.id}", "disconnect", %{})
-      Accounts.GuestMerge.merge(replaced_guest, user)
-      Gamend.Async.run(fn -> Accounts.delete_user(replaced_guest) end)
-    end
+    # did with them, in this request so the first page shows it.
+    merge_guest(replaced_guest, user)
 
     # Fire-and-forget login hook for non-token logins (magic-link tokens are
     # handled specially in Accounts.login_user_by_magic_link so they already
@@ -101,6 +91,34 @@ defmodule GamendWeb.UserAuth do
 
     conn |> redirect(to: user_return_to || signed_in_path(conn))
   end
+
+  @doc """
+  A guest who signed in to `user` brings what they did with them: merged
+  into the account, never over it (`Accounts.GuestMerge`), then deleted
+  (through `Accounts.delete_user/1`, so plugins clean up after it), since
+  nothing can reach it once its session is replaced. Its game sockets are
+  closed first: the merge revokes its tokens, which a socket already
+  connected never checks again, and one left open could keep spending
+  what the merge moves.
+
+  The website's sign-in calls it with the session's guest
+  (`log_in_user/3`), the API's with the guest whose token the sign-in
+  carried (`GamendWeb.Auth.GuestCaller`). Nothing for nil, for an account
+  that is no guest, or for the same account.
+  """
+  @spec merge_guest(Accounts.User.t() | nil, Accounts.User.t()) :: :ok
+  def merge_guest(%Accounts.User{id: id} = guest, %Accounts.User{id: user_id} = user)
+      when id != user_id do
+    if Accounts.User.anonymous?(guest) do
+      GamendWeb.endpoint().broadcast("user_socket:#{id}", "disconnect", %{})
+      Accounts.GuestMerge.merge(guest, user)
+      Gamend.Async.run(fn -> Accounts.delete_user(guest) end)
+    end
+
+    :ok
+  end
+
+  def merge_guest(_guest, _user), do: :ok
 
   defp replaced_anonymous_user(conn, %Accounts.User{id: id}) do
     case Scope.user(conn.assigns[:current_scope]) do

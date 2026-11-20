@@ -1,6 +1,7 @@
 defmodule GamendWeb.AdminLive.PaymentsTest do
   use GamendWeb.ConnCase, async: false
 
+  import Ecto.Query
   import Phoenix.LiveViewTest
 
   alias Gamend.Accounts.User
@@ -164,7 +165,11 @@ defmodule GamendWeb.AdminLive.PaymentsTest do
     # This server runs in the sandbox: its sale is a test, not revenue.
     assert has_element?(view, "#payments-revenue-empty")
 
-    Repo.update_all(Gamend.Payments.Charge, set: [environment: "production"])
+    # Only this test's charge: on Postgres a race test's rows outlive its sandbox.
+    Repo.update_all(from(c in Gamend.Payments.Charge, where: c.purchase_id == ^purchase.id),
+      set: [environment: "production"]
+    )
+
     {:ok, view, _html} = conn |> log_in_user(admin) |> live(~p"/admin/payments")
     slug = String.downcase(purchase.currency)
 

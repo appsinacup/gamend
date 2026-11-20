@@ -497,9 +497,18 @@ defmodule Gamend.Accounts do
     - `{:error, %Ecto.Changeset{}}` for a password the account would refuse.
       It is checked before the code, so it costs no attempt and says nothing
       about the code.
-    - `{:error, :invalid_code}` for a wrong, spent or expired code, an address
-      with no unconfirmed account, or one already confirmed: the same answer,
-      so it tells no one which addresses are registered.
+    - `{:error, :invalid_code}` for a wrong, spent or expired code, or an
+      address with no account waiting: the same answer, so it tells no one
+      which addresses are registered.
+    - `{:error, :already_confirmed}` for the right code of an account that
+      has a password already (its link was opened, then a password chosen in
+      settings): it has nothing to set, and whoever holds the code reads the
+      inbox, so may learn to log in instead. The code is spent.
+    
+    The right code of an account the link confirmed, which has no password
+    yet, sets one and signs in as for one never confirmed: the player who
+    opened the link on a computer finishes in the game that waited on the
+    code.
     - `{:error, {:locked, seconds}}`: a wrong code counts toward the address's
       sign-in lockout (`Gamend.Accounts.LoginLockouts`), shared with passwords.
       The failure that locks it also voids the code, so guessing needs a fresh
@@ -511,7 +520,8 @@ defmodule Gamend.Accounts do
   """
   @spec confirm_user_by_code(String.t(), String.t(), String.t()) ::
           {:ok, {Gamend.Accounts.User.t(), [Gamend.Accounts.UserToken.t()]}}
-          | {:error, :invalid_code | {:locked, pos_integer()} | Ecto.Changeset.t()}
+          | {:error,
+             :invalid_code | :already_confirmed | {:locked, pos_integer()} | Ecto.Changeset.t()}
   def confirm_user_by_code(_email, _code, _password) do
     case Application.get_env(:gamend_sdk, :stub_mode, :raise) do
       :placeholder ->
@@ -530,12 +540,14 @@ defmodule Gamend.Accounts do
     Returns {:ok, user} when the token is valid and user was confirmed.
     Returns {:error, :not_found} or {:error, :invalid} when token is invalid/expired.
     
-    Confirming spends the link and the code sent with it. An account confirmed
-    this way has no password: registration takes none, and one set before the
-    address was proved is removed, since whoever set it may not own the inbox
-    (an account registered when the API still took one, or a guest account
-    that was given an email). Its owner sets one in settings, where the link's
-    page signs them in, or confirms with the code instead.
+    Confirming spends the link, not the code sent with it. An account
+    confirmed this way has no password: registration takes none, and one set
+    before the address was proved is removed, since whoever set it may not own
+    the inbox (an account registered when the API still took one, or a guest
+    account that was given an email). Its owner sets one in settings, where
+    the link's page signs them in, or with the code, which still works: a
+    game client that registered waits on the code, and its player may open
+    the link on a computer instead (`confirm_user_by_code/3`).
     
   """
   @spec confirm_user_by_token(String.t()) ::

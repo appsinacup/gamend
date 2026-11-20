@@ -15,6 +15,7 @@ defmodule Gamend.Payments.ReceiptRaceTest do
   alias Gamend.Accounts.User
   alias Gamend.AccountsFixtures
   alias Gamend.Payments
+  alias Gamend.Payments.Charge
   alias Gamend.Payments.Entitlement
   alias Gamend.Payments.Product
   alias Gamend.Payments.Purchase
@@ -81,6 +82,7 @@ defmodule Gamend.Payments.ReceiptRaceTest do
     cleanup(fn ->
       Repo.delete_all(from p in Purchase, where: p.product_id == ^product.id)
       Repo.delete_all(from e in Entitlement, where: e.product_id == ^product.id)
+      Repo.delete_all(from c in Charge, where: c.product_id == ^product.id)
       Repo.delete_all(from p in Product, where: p.id == ^product.id)
     end)
 

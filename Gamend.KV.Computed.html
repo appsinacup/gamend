@@ -5,10 +5,10 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1483">
+    <meta name="project" content="gamend_core v1.1.1484">
 
 
-    <title>Gamend.KV.Computed — gamend_core v1.1.1483</title>
+    <title>Gamend.KV.Computed — gamend_core v1.1.1484</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1483
+          v1.1.1484
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />KV.<wbr />Computed</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1483)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1484)</small>
 
     </h1>
 
@@ -120,9 +120,14 @@ and a second copy of it in a row would have to be kept in step with the
 first. A computed row is that value under a key of its own:</p><pre><code class="makeup elixir" translate="no"><span class="n">config</span><span class="w"> </span><span class="ss">:gamend_core</span><span class="p">,</span><span class="w"> </span><span class="ss">:computed_rows</span><span class="p">,</span><span class="w"> </span><span class="p" data-group-id="group-1">%{</span><span class="w">
   </span><span class="s">&quot;pass&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p" data-group-id="group-2">%{</span><span class="ss">value</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="group-3">{</span><span class="nc">MyGame.Pass</span><span class="p">,</span><span class="w"> </span><span class="ss">:row</span><span class="p" data-group-id="group-3">}</span><span class="p">,</span><span class="w"> </span><span class="ss">from</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="group-4">[</span><span class="s">&quot;progress&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;sail_day&quot;</span><span class="p" data-group-id="group-4">]</span><span class="p" data-group-id="group-2">}</span><span class="w">
 </span><span class="p" data-group-id="group-1">}</span></code></pre><ul><li><code class="inline">value</code> is <code class="inline">{module, function}</code>, called with the scope asked for
-(<code class="inline">%{user_id: id | nil, lobby_id: id | nil}</code>): a map is the row's value,
-anything else no row.</li><li><code class="inline">from</code> lists the stored keys it is worked out from. A write or a delete
-of one, in the same scope, says the computed row moved.</li></ul><p><a href="Gamend.KV.html#get/2"><code class="inline">Gamend.KV.get/2</code></a> answers it, so the HTTP API and <code class="inline">kv:subscribe</code> do too,
+(<code class="inline">%{user_id: id | nil, lobby_id: id | nil, part: part | nil}</code>): a map
+is the row's value, anything else no row.</li><li><code class="inline">from</code> lists the stored keys it is worked out from. A write or a delete
+of one, in the same scope, says the computed row moved.</li></ul><p>A key ending in <code class="inline">*</code> is a family of rows, one a part: a row per language
+worked out from that language's stored row.</p><pre><code class="makeup elixir" translate="no"><span class="s">&quot;word_pools:*&quot;</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p" data-group-id="group-1">%{</span><span class="ss">value</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="group-2">{</span><span class="nc">MyGame.WordPools</span><span class="p">,</span><span class="w"> </span><span class="ss">:row</span><span class="p" data-group-id="group-2">}</span><span class="p">,</span><span class="w"> </span><span class="ss">from</span><span class="p">:</span><span class="w"> </span><span class="p" data-group-id="group-3">[</span><span class="s">&quot;words:*&quot;</span><span class="p" data-group-id="group-3">]</span><span class="p" data-group-id="group-1">}</span></code></pre><p><code class="inline">word_pools:fr</code> is then <code class="inline">MyGame.WordPools.row/1</code> with <code class="inline">part: &quot;fr&quot;</code>, and a
+write of <code class="inline">words:fr</code> moves it, and only it. A <code class="inline">from</code> key with no <code class="inline">*</code> moves
+no row of a family: which part would it be? A key named whole wins over a
+family, and the longest prefix over a shorter one, as <code class="inline">kv_schemas</code>
+patterns do.</p><p><a href="Gamend.KV.html#get/2"><code class="inline">Gamend.KV.get/2</code></a> answers it, so the HTTP API and <code class="inline">kv:subscribe</code> do too,
 behind the same <code class="inline">before_kv_get</code> decision as a stored row. When it moves,
 everyone subscribed to it is told <code class="inline">{:kv_stale, %{key, user_id, lobby_id}}</code>
 on its topic (<a href="Gamend.KV.html#subscribe/2"><code class="inline">Gamend.KV.subscribe/2</code></a>), after the write commits; the user
@@ -166,7 +171,7 @@ says itself: <a href="Gamend.KV.html#refresh/2"><code class="inline">Gamend.KV.r
 
       </div>
 
-        <div class="summary-synopsis"><p>Whether <code class="inline">key</code> is a computed row.</p></div>
+        <div class="summary-synopsis"><p>Whether <code class="inline">key</code> is a computed row, one of a family's included.</p></div>
 
     </div>
 
@@ -215,7 +220,7 @@ answers no row, <code class="inline">:not_computed</code> for a key that is stor
       <h1 class="signature" translate="no">scope()</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L34" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L45" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -226,7 +231,11 @@ answers no row, <code class="inline">:not_computed</code> for a key that is stor
 
       <div class="specs">
 
-          <pre translate="no"><span class="attribute">@type</span> scope() :: %{user_id: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil, lobby_id: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil}</pre>
+          <pre translate="no"><span class="attribute">@type</span> scope() :: %{
+  user_id: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil,
+  lobby_id: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil,
+  part: <a href="https://elixir.hexdocs.pm/String.html#t:t/0">String.t</a>() | nil
+}</pre>
 
       </div>
 
@@ -256,7 +265,7 @@ answers no row, <code class="inline">:not_computed</code> for a key that is stor
       <h1 class="signature" translate="no">computed?(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L38" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L55" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -271,7 +280,7 @@ answers no row, <code class="inline">:not_computed</code> for a key that is stor
 
       </div>
 
-<p>Whether <code class="inline">key</code> is a computed row.</p>
+<p>Whether <code class="inline">key</code> is a computed row, one of a family's included.</p>
   </section>
 </section>
 <section class="detail" id="dependents/1">
@@ -284,7 +293,7 @@ answers no row, <code class="inline">:not_computed</code> for a key that is stor
       <h1 class="signature" translate="no">dependents(key)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L61" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L78" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -312,7 +321,7 @@ answers no row, <code class="inline">:not_computed</code> for a key that is stor
       <h1 class="signature" translate="no">fetch(key, user_id, lobby_id)</h1>
 
 
-        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L46" class="icon-action" rel="help nofollow" aria-label="View Source">
+        <a href="https://github.com/appsinacup/gamend/blob/v1.0.7/lib/gamend/kv/computed.ex#L63" class="icon-action" rel="help nofollow" aria-label="View Source">
           <i class="ri-code-s-slash-line" aria-hidden="true"></i>
         </a>
 
@@ -341,9 +350,9 @@ answers no row, <code class="inline">:not_computed</code> for a key that is stor
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1483">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1484">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1483">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1484">Hex Preview</a>
 
             </span>
 

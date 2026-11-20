@@ -13,10 +13,21 @@ first. A computed row is that value under a key of its own:
     }
 
   * `value` is `{module, function}`, called with the scope asked for
-    (`%{user_id: id | nil, lobby_id: id | nil}`): a map is the row's value,
-    anything else no row.
+    (`%{user_id: id | nil, lobby_id: id | nil, part: part | nil}`): a map
+    is the row's value, anything else no row.
   * `from` lists the stored keys it is worked out from. A write or a delete
     of one, in the same scope, says the computed row moved.
+
+A key ending in `*` is a family of rows, one a part: a row per language
+worked out from that language's stored row.
+
+    "word_pools:*" => %{value: {MyGame.WordPools, :row}, from: ["words:*"]}
+
+`word_pools:fr` is then `MyGame.WordPools.row/1` with `part: "fr"`, and a
+write of `words:fr` moves it, and only it. A `from` key with no `*` moves
+no row of a family: which part would it be? A key named whole wins over a
+family, and the longest prefix over a shorter one, as `kv_schemas`
+patterns do.
 
 `Gamend.KV.get/2` answers it, so the HTTP API and `kv:subscribe` do too,
 behind the same `before_kv_get` decision as a stored row. When it moves,
@@ -34,7 +45,11 @@ A computed key is never stored: a row written under it is never read.
 # `scope`
 
 ```elixir
-@type scope() :: %{user_id: String.t() | nil, lobby_id: String.t() | nil}
+@type scope() :: %{
+  user_id: String.t() | nil,
+  lobby_id: String.t() | nil,
+  part: String.t() | nil
+}
 ```
 
 # `computed?`
@@ -43,7 +58,7 @@ A computed key is never stored: a row written under it is never read.
 @spec computed?(String.t()) :: boolean()
 ```
 
-Whether `key` is a computed row.
+Whether `key` is a computed row, one of a family's included.
 
 # `dependents`
 

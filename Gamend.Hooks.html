@@ -4,17 +4,17 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1491">
+    <meta name="generator" content="ExDoc v0.40.5">
+    <meta name="project" content="gamend_core v1.1.1493">
 
 
-    <title>Gamend.Hooks — gamend_core v1.1.1491</title>
+    <title>Gamend.Hooks — gamend_core v1.1.1493</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
     <script defer src="dist/sidebar_items-280E27A0.js"></script>
     <script defer src="docs_config.js"></script>
-    <script defer src="dist/html-MI33G4N7.js"></script>
+    <script defer src="dist/html-LBCGAQQV.js"></script>
 
   </head>
   <body>
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1491
+          v1.1.1493
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Hooks</span> <small>behaviour</small>
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1491)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1493)</small>
 
     </h1>
 
@@ -1005,7 +1005,7 @@ return never rewrites the args, so a bare <code class="inline">:ok</code> is the
 
       </div>
 
-        <div class="summary-synopsis"><p>A socket of the user's opened: <code class="inline">pid</code> its process, <code class="inline">kind</code> <code class="inline">&quot;socket&quot;</code> (a
+        <div class="summary-synopsis"><p>A socket of the user's opened: <code class="inline">pid</code> its process, <code class="inline">kind &quot;socket&quot;</code> (a
 client's user channel) or <code class="inline">&quot;page&quot;</code> (a host's page, <a href="Gamend.Accounts.Online.html"><code class="inline">Gamend.Accounts.Online</code></a>).
 Every socket, where <code class="inline">after_user_online/1</code> is once a session: a game
 registers the socket where it needs (a presence on <code class="inline">pid</code>, which ends with
@@ -1666,7 +1666,7 @@ to the player:</p><pre><code class="makeup elixir" translate="no"><span class="k
 <p>Replaces the built-in username rules for one handle.</p><p>Receives the handle as it will be stored (NFKC-normalized, lowercased) and
 answers <code class="inline">:ok</code>, <code class="inline">{:error, message}</code> (shown to the player), or <code class="inline">:default</code> to
 keep core's rules: letters and digits of one script or Latin with Chinese,
-Japanese or Korean, joined by <code class="inline">.</code> <code class="inline">_</code> <code class="inline">-</code> (<a href="Gamend.Accounts.Username.html"><code class="inline">Gamend.Accounts.Username</code></a>).
+Japanese or Korean, joined by <code class="inline">. _ -</code> (<a href="Gamend.Accounts.Username.html"><code class="inline">Gamend.Accounts.Username</code></a>).
 Core still enforces length, uniqueness and the absence of invisible
 characters. The generator asks the same question, so a policy that refuses
 every <code class="inline">word-1234</code> must hand out handles in <a href="#c:before_user_register/2"><code class="inline">before_user_register/2</code></a>.
@@ -4337,7 +4337,7 @@ return never rewrites the args, so a bare <code class="inline">:ok</code> is the
 
       </div>
 
-<p>A socket of the user's opened: <code class="inline">pid</code> its process, <code class="inline">kind</code> <code class="inline">&quot;socket&quot;</code> (a
+<p>A socket of the user's opened: <code class="inline">pid</code> its process, <code class="inline">kind &quot;socket&quot;</code> (a
 client's user channel) or <code class="inline">&quot;page&quot;</code> (a host's page, <a href="Gamend.Accounts.Online.html"><code class="inline">Gamend.Accounts.Online</code></a>).
 Every socket, where <code class="inline">after_user_online/1</code> is once a session: a game
 registers the socket where it needs (a presence on <code class="inline">pid</code>, which ends with
@@ -4827,9 +4827,9 @@ effects happen even after the first blocked the operation.</p><pre><code class="
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1491">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1493">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1491">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1493">Hex Preview</a>
 
             </span>
 
@@ -4852,7 +4852,7 @@ effects happen even after the first blocked the operation.</p><pre><code class="
 
         <p class="built-using">
           Built using
-          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.4) for the
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.5) for the
 
             <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
 

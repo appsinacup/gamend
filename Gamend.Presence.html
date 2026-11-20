@@ -4,17 +4,17 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="generator" content="ExDoc v0.40.4">
-    <meta name="project" content="gamend_core v1.1.1491">
+    <meta name="generator" content="ExDoc v0.40.5">
+    <meta name="project" content="gamend_core v1.1.1493">
 
 
-    <title>Gamend.Presence — gamend_core v1.1.1491</title>
+    <title>Gamend.Presence — gamend_core v1.1.1493</title>
 
     <link rel="stylesheet" href="dist/html-elixir-RXHHCTJW.css" />
 
     <script defer src="dist/sidebar_items-280E27A0.js"></script>
     <script defer src="docs_config.js"></script>
-    <script defer src="dist/html-MI33G4N7.js"></script>
+    <script defer src="dist/html-LBCGAQQV.js"></script>
 
   </head>
   <body>
@@ -37,7 +37,7 @@
 gamend_core
         </a>
         <div class="sidebar-projectVersion" translate="no">
-          v1.1.1491
+          v1.1.1493
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@ gamend_core
   <div class="heading-with-actions top-heading">
     <h1>
       <span translate="no">Gamend.<wbr />Presence</span> 
-      <small class="app-vsn" translate="no">(gamend_core v1.1.1491)</small>
+      <small class="app-vsn" translate="no">(gamend_core v1.1.1493)</small>
 
     </h1>
 
@@ -114,7 +114,7 @@ gamend_core
 
 
     <section id="moduledoc">
-<p>Cluster-wide tracking of who is connected where.</p><p>Backed by <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html"><code class="inline">Phoenix.Presence</code></a>, so entries are tied to process liveness and
+<p>Cluster-wide tracking of who is connected where.</p><p>Backed by <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html"><code class="inline">Phoenix.Presence</code></a>, so entries are tied to process liveness and
 replicated between nodes by CRDT: a node that dies takes its entries with it,
 with no sweeper to notice. That is the property node-local ETS and database
 flags both lack.</p><p>Used for signaling room membership and lobby spectators. Not for anything
@@ -170,7 +170,7 @@ tabs of one player are two). <a href="#keys/1"><code class="inline">keys/1</code
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:fetch/2"><code class="inline">Phoenix.Presence.fetch/2</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:fetch/2"><code class="inline">Phoenix.Presence.fetch/2</code></a>.</p></div>
 
     </div>
 
@@ -188,7 +188,7 @@ tabs of one player are two). <a href="#keys/1"><code class="inline">keys/1</code
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:get_by_key/2"><code class="inline">Phoenix.Presence.get_by_key/2</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:get_by_key/2"><code class="inline">Phoenix.Presence.get_by_key/2</code></a>.</p></div>
 
     </div>
 
@@ -219,7 +219,7 @@ tabs of one player are two). <a href="#keys/1"><code class="inline">keys/1</code
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:list/1"><code class="inline">Phoenix.Presence.list/1</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:list/1"><code class="inline">Phoenix.Presence.list/1</code></a>.</p></div>
 
     </div>
 
@@ -241,7 +241,7 @@ has already gone can ask it too (<a href="Gamend.Accounts.Online.html"><code cla
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:track/3"><code class="inline">Phoenix.Presence.track/3</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:track/3"><code class="inline">Phoenix.Presence.track/3</code></a>.</p></div>
 
     </div>
 
@@ -251,7 +251,7 @@ has already gone can ask it too (<a href="Gamend.Accounts.Online.html"><code cla
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:track/4"><code class="inline">Phoenix.Presence.track/4</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:track/4"><code class="inline">Phoenix.Presence.track/4</code></a>.</p></div>
 
     </div>
 
@@ -274,7 +274,7 @@ found on the user's topic, <a href="#users_topic/1"><code class="inline">users_t
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:untrack/2"><code class="inline">Phoenix.Presence.untrack/2</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:untrack/2"><code class="inline">Phoenix.Presence.untrack/2</code></a>.</p></div>
 
     </div>
 
@@ -284,7 +284,7 @@ found on the user's topic, <a href="#users_topic/1"><code class="inline">users_t
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:untrack/3"><code class="inline">Phoenix.Presence.untrack/3</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:untrack/3"><code class="inline">Phoenix.Presence.untrack/3</code></a>.</p></div>
 
     </div>
 
@@ -294,7 +294,7 @@ found on the user's topic, <a href="#users_topic/1"><code class="inline">users_t
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:update/3"><code class="inline">Phoenix.Presence.update/3</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:update/3"><code class="inline">Phoenix.Presence.update/3</code></a>.</p></div>
 
     </div>
 
@@ -304,7 +304,7 @@ found on the user's topic, <a href="#users_topic/1"><code class="inline">users_t
 
       </div>
 
-        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:update/4"><code class="inline">Phoenix.Presence.update/4</code></a>.</p></div>
+        <div class="summary-synopsis"><p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:update/4"><code class="inline">Phoenix.Presence.update/4</code></a>.</p></div>
 
     </div>
 
@@ -413,7 +413,7 @@ tabs of one player are two). <a href="#keys/1"><code class="inline">keys/1</code
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:fetch/2"><code class="inline">Phoenix.Presence.fetch/2</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:fetch/2"><code class="inline">Phoenix.Presence.fetch/2</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="fetchers_pids/0">
@@ -457,7 +457,7 @@ tabs of one player are two). <a href="#keys/1"><code class="inline">keys/1</code
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:get_by_key/2"><code class="inline">Phoenix.Presence.get_by_key/2</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:get_by_key/2"><code class="inline">Phoenix.Presence.get_by_key/2</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="keys/1">
@@ -536,7 +536,7 @@ tabs of one player are two). <a href="#keys/1"><code class="inline">keys/1</code
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:list/1"><code class="inline">Phoenix.Presence.list/1</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:list/1"><code class="inline">Phoenix.Presence.list/1</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="other_socket?/2">
@@ -588,7 +588,7 @@ has already gone can ask it too (<a href="Gamend.Accounts.Online.html"><code cla
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:track/3"><code class="inline">Phoenix.Presence.track/3</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:track/3"><code class="inline">Phoenix.Presence.track/3</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="track/4">
@@ -610,7 +610,7 @@ has already gone can ask it too (<a href="Gamend.Accounts.Online.html"><code cla
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:track/4"><code class="inline">Phoenix.Presence.track/4</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:track/4"><code class="inline">Phoenix.Presence.track/4</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="tracked/2">
@@ -663,7 +663,7 @@ found on the user's topic, <a href="#users_topic/1"><code class="inline">users_t
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:untrack/2"><code class="inline">Phoenix.Presence.untrack/2</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:untrack/2"><code class="inline">Phoenix.Presence.untrack/2</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="untrack/3">
@@ -685,7 +685,7 @@ found on the user's topic, <a href="#users_topic/1"><code class="inline">users_t
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:untrack/3"><code class="inline">Phoenix.Presence.untrack/3</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:untrack/3"><code class="inline">Phoenix.Presence.untrack/3</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="update/3">
@@ -707,7 +707,7 @@ found on the user's topic, <a href="#users_topic/1"><code class="inline">users_t
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:update/3"><code class="inline">Phoenix.Presence.update/3</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:update/3"><code class="inline">Phoenix.Presence.update/3</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="update/4">
@@ -729,7 +729,7 @@ found on the user's topic, <a href="#users_topic/1"><code class="inline">users_t
 
   <section class="docstring">
 
-<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.16/Phoenix.Presence.html#c:update/4"><code class="inline">Phoenix.Presence.update/4</code></a>.</p>
+<p>Callback implementation for <a href="https://phoenix.hexdocs.pm/1.8.17/Phoenix.Presence.html#c:update/4"><code class="inline">Phoenix.Presence.update/4</code></a>.</p>
   </section>
 </section>
 <section class="detail" id="users_buckets/0">
@@ -797,9 +797,9 @@ found on the user's topic, <a href="#users_topic/1"><code class="inline">users_t
         <p>
 
             <span class="line">
-              <a href="https://hex.pm/packages/gamend_core/1.1.1491">Hex Package</a>
+              <a href="https://hex.pm/packages/gamend_core/1.1.1493">Hex Package</a>
 
-              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1491">Hex Preview</a>
+              <a href="https://preview.hex.pm/preview/gamend_core/1.1.1493">Hex Preview</a>
 
             </span>
 
@@ -822,7 +822,7 @@ found on the user's topic, <a href="#users_topic/1"><code class="inline">users_t
 
         <p class="built-using">
           Built using
-          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.4) for the
+          <a href="https://github.com/elixir-lang/ex_doc" title="ExDoc" target="_blank" rel="help noopener" translate="no">ExDoc</a> (v0.40.5) for the
 
             <a href="https://elixir-lang.org" title="Elixir" target="_blank" translate="no">Elixir programming language</a>
 

@@ -132,7 +132,7 @@ impl Socket {
         }
     }
 
-    fn on_free() {
+    pub fn on_free() {
         if self.ws != 0 {
             websocket::close(self.ws);
         }
